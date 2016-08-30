@@ -1,0 +1,168 @@
+package com.intel.webscaleml.nn.nn
+
+import com.intel.webscaleml.nn.tensor.{torch, DenseTensor}
+import org.scalatest.{Matchers, FlatSpec}
+
+import scala.math._
+class ClassNLLCriterionSpec extends FlatSpec with Matchers{
+  "A ClassNLL Criterion " should "generate correct output and grad" in {
+    val criterion = new ClassNLLCriterion[Double]()
+    val input = torch.Tensor[Double](3,3)
+    input(Array(1,1)) = -1.0262627674932
+    input(Array(1,2)) = -1.2412600935171
+    input(Array(1,3)) = -1.0423174168648
+    input(Array(2,1)) = -0.90330565804228
+    input(Array(2,2)) = -1.3686840144413
+    input(Array(2,3)) = -1.0778380454479
+    input(Array(3,1)) = -0.99131220658219
+    input(Array(3,2)) = -1.0559142847536
+    input(Array(3,3)) = -1.2692712660404
+    val target = torch.Tensor[Double](3)
+    target(Array(1)) = 1
+    target(Array(2)) = 2
+    target(Array(3)) = 3
+    val expectedOutput = 1.2214060159916
+    val expectedGrad = torch.Tensor[Double](3,3)
+    expectedGrad(Array(1,1)) = -0.33333333333333
+    expectedGrad(Array(1,2)) = 0
+    expectedGrad(Array(1,3)) = 0
+    expectedGrad(Array(2,1)) = 0
+    expectedGrad(Array(2,2)) = -0.33333333333333
+    expectedGrad(Array(2,3)) = 0
+    expectedGrad(Array(3,1)) = 0
+    expectedGrad(Array(3,2)) = 0
+    expectedGrad(Array(3,3)) = -0.33333333333333
+    val output = criterion.forward(input,target)
+    val gradInput = criterion.backward(input,target)
+    assert(abs(expectedOutput -output) < 1e-6)
+    expectedGrad.map(gradInput,(v1,v2)=>{assert(abs(v1-v2)<1e-6);v1})
+  }
+  "A ClassNLL Criterion with sizeAverage False" should "generate correct output and grad" in {
+    val criterion = new ClassNLLCriterion[Double](null,false)
+    val input = torch.Tensor[Double](3,3)
+    input(Array(1,1)) = -1.10821131127
+    input(Array(1,2)) = -0.92179085988591
+    input(Array(1,3)) = -1.3017876357682
+    input(Array(2,1)) = -0.72992115377362
+    input(Array(2,2)) = -1.2817109257719
+    input(Array(2,3)) = -1.4250730090114
+    input(Array(3,1)) = -1.1074577039332
+    input(Array(3,2)) = -1.0506933510994
+    input(Array(3,3)) = -1.1397251596433
+    val target = torch.Tensor[Double](3)
+    target(Array(1)) = 1
+    target(Array(2)) = 2
+    target(Array(3)) = 3
+    val expectedOutput = 3.5296473966852
+    val expectedGrad = torch.Tensor[Double](3,3)
+    expectedGrad(Array(1,1)) = -1
+    expectedGrad(Array(1,2)) = 0
+    expectedGrad(Array(1,3)) = 0
+    expectedGrad(Array(2,1)) = 0
+    expectedGrad(Array(2,2)) = -1
+    expectedGrad(Array(2,3)) = 0
+    expectedGrad(Array(3,1)) = 0
+    expectedGrad(Array(3,2)) = 0
+    expectedGrad(Array(3,3)) = -1
+    val output = criterion.forward(input,target)
+    val gradInput = criterion.backward(input,target)
+    assert(abs(expectedOutput -output) < 1e-6)
+    expectedGrad.map(gradInput,(v1,v2)=>{assert(abs(v1-v2)<1e-6);v1})
+  }
+
+  "A ClassNLL Criterion with weight" should "generate correct output and grad" in {
+    val weight = torch.Tensor[Double](3)
+    weight(Array(1)) = 0.35054216370918
+    weight(Array(2)) = 0.76185464672744
+    weight(Array(3)) = 0.66953149507754
+    val criterion = new ClassNLLCriterion(weight,false)
+    val input = torch.Tensor[Double](3,3)
+    input(Array(1,1)) = -1.1894985426003
+    input(Array(1,2)) = -1.1789041748521
+    input(Array(1,3)) = -0.94672288864566
+    input(Array(2,1)) = -0.70491562360676
+    input(Array(2,2)) = -1.3937761580642
+    input(Array(2,3)) = -1.3559084361956
+    input(Array(3,1)) = -1.0404241993415
+    input(Array(3,2)) = -1.0287857984981
+    input(Array(3,3)) = -1.240448289816
+    val target = torch.Tensor[Double](3)
+    target(Array(1)) = 1
+    target(Array(2)) = 2
+    target(Array(3)) = 3
+    val expectedOutput = 2.309343433418
+    val expectedGrad = torch.Tensor[Double](3,3)
+    expectedGrad(Array(1,1)) = -0.35054216370918
+    expectedGrad(Array(1,2)) = 0
+    expectedGrad(Array(1,3)) = 0
+    expectedGrad(Array(2,1)) = 0
+    expectedGrad(Array(2,2)) = -0.76185464672744
+    expectedGrad(Array(2,3)) = 0
+    expectedGrad(Array(3,1)) = 0
+    expectedGrad(Array(3,2)) = 0
+    expectedGrad(Array(3,3)) = -0.66953149507754
+    val output = criterion.forward(input,target)
+    val gradInput = criterion.backward(input,target)
+    assert(abs(expectedOutput -output) < 1e-6)
+    expectedGrad.map(gradInput,(v1,v2)=>{assert(abs(v1-v2)<1e-6);v1})
+  }
+  "A ClassNLL Criterion with weight and sizeAverage" should "generate correct output and grad" in {
+    val weight = torch.Tensor[Double](3)
+    weight(Array(1)) = 0.539598016534
+    weight(Array(2)) = 0.20644677849486
+    weight(Array(3)) = 0.67927200254053
+    val criterion = new ClassNLLCriterion(weight)
+    val input = torch.Tensor[Double](3,3)
+    input(Array(1,1)) = -1.2412808758149
+    input(Array(1,2)) = -1.4300331461186
+    input(Array(1,3)) = -0.75144359487463
+    input(Array(2,1)) = -1.2200775853117
+    input(Array(2,2)) = -1.1747087276299
+    input(Array(2,3)) = -0.92663456371434
+    input(Array(3,1)) = -1.1718541533533
+    input(Array(3,2)) = -1.0983546295516
+    input(Array(3,3)) = -1.0306113735619
+    val target = torch.Tensor[Double](3)
+    target(Array(1)) = 1
+    target(Array(2)) = 2
+    target(Array(3)) = 3
+    val expectedOutput = 1.1312383221403
+    val expectedGrad = torch.Tensor[Double](3,3)
+    expectedGrad(Array(1,1)) = -0.37858111084791
+    expectedGrad(Array(1,2)) = 0
+    expectedGrad(Array(1,3)) = 0
+    expectedGrad(Array(2,1)) = 0
+    expectedGrad(Array(2,2)) = -0.14484273169791
+    expectedGrad(Array(2,3)) = 0
+    expectedGrad(Array(3,1)) = 0
+    expectedGrad(Array(3,2)) = 0
+    expectedGrad(Array(3,3)) = -0.47657615745419
+    val output = criterion.forward(input,target)
+    val gradInput = criterion.backward(input,target)
+    assert(abs(expectedOutput -output) < 1e-6)
+    expectedGrad.map(gradInput,(v1,v2)=>{assert(abs(v1-v2)<1e-6);v1})
+  }
+
+  "A ClassNLL Criterion with 1d input" should "generate correct output and grad" in{
+    val weightData:Array[Double] = Array(
+      0.86300174100325, 0.39250248204917, 0.73511490179226
+    )
+    val weight = torch.Tensor[Double](torch.storage(weightData),1,Array(3))
+    val criterion = new ClassNLLCriterion(weight)
+    val inputData:Array[Double] = Array(
+      -0.80726062008062, -1.5266720155708, -1.0886697225727
+    )
+    val input = torch.Tensor[Double](torch.storage(inputData),1,Array(3))
+    val target = torch.Tensor[Double](1)
+    target(Array(1)) = 2
+    val expectedOutput = 1.5266720155708
+    val expectedGradData:Array[Double] = Array(
+      0, -1, 0
+    )
+    val expectedGrad = torch.Tensor[Double](torch.storage(expectedGradData),1,Array(3))
+    val output = criterion.forward(input,target)
+    val gradInput = criterion.backward(input,target)
+    output should be(expectedOutput +- 1e-6)
+    gradInput.map(expectedGrad,(v1,v2)=>{v1 should be(v2 +- 1e-6);v1})
+  }
+}
