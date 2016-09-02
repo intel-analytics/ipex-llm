@@ -1,4 +1,4 @@
-package com.intel.analytics.dllib.nn.mkl;
+package com.intel.analytics.dllib.lib.mkl;
 
 
 public class Primitives {
