@@ -1,10 +1,10 @@
-package com.intel.webscaleml.nn.nn.performTest
+package com.intel.analytics.dllib.lib.nn.performTest
 
 import java.io._
 import java.util.Properties
 
-import com.intel.webscaleml.nn.nn.{Criterion, Module}
-import com.intel.webscaleml.nn.tensor.Tensor
+import com.intel.analytics.dllib.lib.nn.{Criterion, Module}
+import com.intel.analytics.dllib.lib.tensor.Tensor
 import org.dmg.pmml.False
 
 import scala.reflect.runtime.universe._

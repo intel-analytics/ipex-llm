@@ -1,4 +1,4 @@
-package com.intel.webscaleml.mkl;
+package com.intel.analytics.dllib.mkl;
 
 import com.github.fommil.jni.JniLoader;
 

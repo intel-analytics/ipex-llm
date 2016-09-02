@@ -1,6 +1,6 @@
-package com.intel.webscaleml.nn.nn
+package com.intel.analytics.dllib.lib.nn
 
-import com.intel.webscaleml.nn.tensor.{torch, DenseTensor$}
+import com.intel.analytics.dllib.lib.tensor.{torch, DenseTensor$}
 import org.scalatest.FlatSpec
 
 class ReshapeSpec extends FlatSpec{

@@ -1,6 +1,6 @@
-package com.intel.webscaleml.nn.nn.mkl_dnn
+package com.intel.analytics.dllib.lib.nn.mkl_dnn
 
-import com.intel.webscaleml.nn.tensor.{Tensor, torch}
+import com.intel.analytics.dllib.lib.tensor.{Tensor, torch}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.math._

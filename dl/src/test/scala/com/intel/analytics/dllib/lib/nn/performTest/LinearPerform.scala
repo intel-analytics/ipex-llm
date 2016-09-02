@@ -1,9 +1,9 @@
-package com.intel.webscaleml.nn.nn.performTest
+package com.intel.analytics.dllib.lib.nn.performTest
 
 import java.io.{BufferedWriter, File, FileWriter}
 
-import com.intel.webscaleml.nn.nn.Linear
-import com.intel.webscaleml.nn.tensor.{RandomGenerator, torch}
+import com.intel.analytics.dllib.lib.nn.Linear
+import com.intel.analytics.dllib.lib.tensor.{RandomGenerator, torch}
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 import org.scalatest.concurrent.Timeouts._
 import org.scalatest.time.{Millis, Span}

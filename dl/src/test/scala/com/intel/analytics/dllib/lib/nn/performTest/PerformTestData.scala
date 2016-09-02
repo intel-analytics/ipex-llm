@@ -1,4 +1,4 @@
-package com.intel.webscaleml.nn.nn.performTest
+package com.intel.analytics.dllib.lib.nn.performTest
 
 /**
   * Created by yao on 6/6/16.

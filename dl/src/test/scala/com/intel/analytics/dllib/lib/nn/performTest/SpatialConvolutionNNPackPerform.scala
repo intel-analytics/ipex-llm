@@ -1,6 +1,6 @@
-package com.intel.webscaleml.nn.nn.performTest
+package com.intel.analytics.dllib.lib.nn.performTest
 
-import com.intel.webscaleml.nn.tensor.torch
+import com.intel.analytics.dllib.lib.tensor.torch
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 /**
   * Created by yansh on 16-7-7.

@@ -1,11 +1,11 @@
-package com.intel.webscaleml.nn.nn.th
+package com.intel.analytics.dllib.lib.nn.th
 
-import com.intel.webscaleml.nn.nn.{Module, Sequential, SpatialConvolution}
-import com.intel.webscaleml.nn.tensor.{Tensor, torch}
-import com.intel.webscaleml.nn.th.TH
+import com.intel.analytics.dllib.lib.nn.{Module, Sequential, SpatialConvolution}
+import com.intel.analytics.dllib.lib.tensor.{Tensor, torch}
+import com.intel.analytics.dllib.lib.th.TH
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.util.Random
-import com.intel.webscaleml.nn.tensor.RandomGenerator._
+import com.intel.analytics.dllib.lib.tensor.RandomGenerator._
 
 /**
   * Created by leon on 16-1-18.
@@ -301,7 +301,7 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers{
 //      val dH = 1
 //      val padW = 0
 //      val padH = 0
-//      val layer = new com.intel.webscaleml.nn.nn.nnpack.SpatialConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
+//      val layer = new com.intel.analytics.dllib.lib.nn.nnpack.SpatialConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
 //      val model = new Sequential[Float]()
 //      model.add(layer)
 //

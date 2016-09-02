@@ -1,9 +1,9 @@
-package com.intel.webscaleml.nn.optim
+package com.intel.analytics.dllib.lib.optim
 
-import com.intel.webscaleml.nn.tensor.Tensor
+import com.intel.analytics.dllib.lib.tensor.Tensor
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, Matchers, FlatSpec}
-import com.intel.webscaleml.nn.tensor.TensorNumericMath.TensorNumeric._
+import com.intel.analytics.dllib.lib.tensor.TensorNumericMath.TensorNumeric._
 
 class ShuffleBatchDataSetSpec extends FlatSpec with Matchers with BeforeAndAfter{
   var sc : SparkContext = null

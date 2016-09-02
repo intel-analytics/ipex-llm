@@ -1,4 +1,4 @@
-package com.intel.webscaleml.nn.nn
+package com.intel.analytics.dllib.lib.nn
 
 import org.scalatest.{Matchers, FlatSpec}
 

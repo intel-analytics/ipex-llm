@@ -1,9 +1,9 @@
-package com.intel.webscaleml.nn.nn.performTest
+package com.intel.analytics.dllib.lib.nn.performTest
 
-import com.intel.webscaleml.nn.nn.BatchNormalization
-import com.intel.webscaleml.nn.tensor.torch
+import com.intel.analytics.dllib.lib.nn.BatchNormalization
+import com.intel.analytics.dllib.lib.tensor.torch
 import org.scalatest.{BeforeAndAfter, FlatSpec}
-import com.intel.webscaleml.nn.tensor.RandomGenerator._
+import com.intel.analytics.dllib.lib.tensor.RandomGenerator._
 
 
 /**

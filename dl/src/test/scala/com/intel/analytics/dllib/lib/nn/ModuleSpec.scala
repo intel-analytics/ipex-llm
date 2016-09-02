@@ -1,6 +1,6 @@
-package com.intel.webscaleml.nn.nn
+package com.intel.analytics.dllib.lib.nn
 
-import com.intel.webscaleml.nn.tensor.Storage
+import com.intel.analytics.dllib.lib.tensor.Storage
 import org.scalatest.{Matchers, FlatSpec}
 
 import scala.util.Random

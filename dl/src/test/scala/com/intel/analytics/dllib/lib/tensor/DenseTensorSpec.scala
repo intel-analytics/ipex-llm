@@ -1,4 +1,4 @@
-package com.intel.webscaleml.nn.tensor
+package com.intel.analytics.dllib.lib.tensor
 
 import org.scalatest.{Matchers, FlatSpec}
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
@@ -354,20 +354,20 @@ class DenseTensorSpec extends FlatSpec with Matchers {
 
   "toString" should "be correct" in {
     var t : Tensor[Double] = new DenseTensor[Double]()
-    val EMPTY_STRING = """[com.intel.webscaleml.nn.tensor.DenseTensor$mcD$sp with no dimension]"""
+    val EMPTY_STRING = """[com.intel.analytics.dllib.lib.tensor.DenseTensor$mcD$sp with no dimension]"""
     t.toString should be(EMPTY_STRING)
     t = new DenseTensor(torch.storage(Array(1.0, 2.0, 3.0)))
     val OneD_STRING =
         "1.0\n" +
         "2.0\n" +
         "3.0\n" +
-        "[com.intel.webscaleml.nn.tensor.DenseTensor$mcD$sp of size 3]"
+        "[com.intel.analytics.dllib.lib.tensor.DenseTensor$mcD$sp of size 3]"
     t.toString should be(OneD_STRING)
     val MATRIX_STRING =
         "1.0\t2.0\t3.0\t4.0\t\n" +
         "5.0\t6.0\t7.0\t8.0\t\n" +
         "9.0\t10.0\t11.0\t12.0\t\n" +
-        "[com.intel.webscaleml.nn.tensor.DenseTensor$mcD$sp of size 3x4]"
+        "[com.intel.analytics.dllib.lib.tensor.DenseTensor$mcD$sp of size 3x4]"
     t = new DenseTensor[Double](3, 4)
     var i = 0
     t.apply1(v => {i = i + 1; i})

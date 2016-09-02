@@ -1,6 +1,6 @@
-package com.intel.webscaleml.nn.tensor
+package com.intel.analytics.dllib.lib.tensor
 
-import com.intel.webscaleml.nn.nn._
+import com.intel.analytics.dllib.lib.nn._
 import org.scalatest.{Matchers, FlatSpec}
 
 class FileSpec extends FlatSpec with Matchers {

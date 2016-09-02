@@ -1,7 +1,7 @@
-package com.intel.webscaleml.nn.optim
+package com.intel.analytics.dllib.lib.optim
 
-import com.intel.webscaleml.nn.nn._
-import com.intel.webscaleml.nn.tensor.{T, torch}
+import com.intel.analytics.dllib.lib.nn._
+import com.intel.analytics.dllib.lib.tensor.{T, torch}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, Matchers, FlatSpec}

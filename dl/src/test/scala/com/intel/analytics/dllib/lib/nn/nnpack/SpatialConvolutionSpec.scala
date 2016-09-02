@@ -1,6 +1,6 @@
-package com.intel.webscaleml.nn.nn.nnpack
+package com.intel.analytics.dllib.lib.nn.nnpack
 
-import com.intel.webscaleml.nn.th.TH
+import com.intel.analytics.dllib.lib.th.TH
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers{
@@ -24,7 +24,7 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers{
 //    val dH = 1
 //    val padW = 1
 //    val padH = 1
-//    val layer = new com.intel.webscaleml.nn.nn.nnpack.SpatialConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
+//    val layer = new com.intel.analytics.dllib.lib.nn.nnpack.SpatialConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
 //    val model = new Sequential[Float]()
 //    model.add(layer)
 //
@@ -109,7 +109,7 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers{
 //    val dH = 1
 //    val padW = 1
 //    val padH = 1
-//    val layer = new com.intel.webscaleml.nn.nn.nnpack.SpatialConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
+//    val layer = new com.intel.analytics.dllib.lib.nn.nnpack.SpatialConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
 //
 //    Random.setSeed(3)
 //    //    val input = torch.Tensor[Float](8, 64, 224, 224).apply1(e => Random.nextFloat())
@@ -120,7 +120,7 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers{
 //    val output = layer.forward(input)
 //    val gradInput = layer.backward(input, gradOutput)
 //
-//    val sparkLayer = new com.intel.webscaleml.nn.nn.SpatialConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
+//    val sparkLayer = new com.intel.analytics.dllib.lib.nn.SpatialConvolution[Float](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
 //    sparkLayer.weight.copy(layer.weight)
 //    sparkLayer.bias.copy(layer.bias)
 //

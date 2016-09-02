@@ -1,8 +1,8 @@
-package com.intel.webscaleml.nn.nn.th
+package com.intel.analytics.dllib.lib.nn.th
 
-import com.intel.webscaleml.nn.nn.Tanh
-import com.intel.webscaleml.nn.tensor.{Tensor, torch}
-import com.intel.webscaleml.nn.th.TH
+import com.intel.analytics.dllib.lib.nn.Tanh
+import com.intel.analytics.dllib.lib.tensor.{Tensor, torch}
+import com.intel.analytics.dllib.lib.th.TH
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._

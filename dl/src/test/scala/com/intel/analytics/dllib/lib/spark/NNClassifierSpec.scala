@@ -1,8 +1,8 @@
-package com.intel.webscaleml.nn.spark
+package com.intel.analytics.dllib.lib.spark
 
-import com.intel.webscaleml.nn.nn._
-import com.intel.webscaleml.nn.optim.SGD
-import com.intel.webscaleml.nn.tensor.{T, Table, torch}
+import com.intel.analytics.dllib.lib.nn._
+import com.intel.analytics.dllib.lib.optim.SGD
+import com.intel.analytics.dllib.lib.tensor.{T, Table, torch}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.evaluation.BinaryClassificationEvaluator

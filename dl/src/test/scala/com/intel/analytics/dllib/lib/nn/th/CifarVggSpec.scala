@@ -1,12 +1,12 @@
-package com.intel.webscaleml.nn.nn.th
+package com.intel.analytics.dllib.lib.nn.th
 
 import java.util.HashMap
 
-import com.intel.webscaleml.nn.example.{Cifar, GoogleNet}
-import com.intel.webscaleml.nn.nn.{ClassNLLCriterion, Module}
-import com.intel.webscaleml.nn.optim.SGD
-import com.intel.webscaleml.nn.tensor._
-import com.intel.webscaleml.nn.th.TH
+import com.intel.analytics.dllib.lib.example.{Cifar, GoogleNet}
+import com.intel.analytics.dllib.lib.nn.{ClassNLLCriterion, Module}
+import com.intel.analytics.dllib.lib.optim.SGD
+import com.intel.analytics.dllib.lib.tensor._
+import com.intel.analytics.dllib.lib.th.TH
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._

@@ -1,7 +1,7 @@
-package com.intel.webscaleml.nn.nn
+package com.intel.analytics.dllib.lib.nn
 
 import org.scalatest.FlatSpec
-import com.intel.webscaleml.nn.tensor.{torch, DenseTensor$}
+import com.intel.analytics.dllib.lib.tensor.{torch, DenseTensor$}
 import scala.math.abs
 
 class SigmoidSpec extends  FlatSpec{

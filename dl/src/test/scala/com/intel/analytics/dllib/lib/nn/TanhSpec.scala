@@ -1,8 +1,8 @@
-package com.intel.webscaleml.nn.nn
+package com.intel.analytics.dllib.lib.nn
 
 import org.scalatest.{Matchers, FlatSpec}
 import scala.math.abs
-import com.intel.webscaleml.nn.tensor.{torch, DenseTensor$}
+import com.intel.analytics.dllib.lib.tensor.{torch, DenseTensor$}
 
 
 class TanhSpec extends FlatSpec with Matchers {

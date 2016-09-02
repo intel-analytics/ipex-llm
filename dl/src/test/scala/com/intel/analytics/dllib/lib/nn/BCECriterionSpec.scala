@@ -1,7 +1,7 @@
-package com.intel.webscaleml.nn.nn
+package com.intel.analytics.dllib.lib.nn
 
-import com.intel.webscaleml.nn.optim.SGD
-import com.intel.webscaleml.nn.tensor.{T, Tensor, torch}
+import com.intel.analytics.dllib.lib.optim.SGD
+import com.intel.analytics.dllib.lib.tensor.{T, Tensor, torch}
 import org.scalatest.{Matchers, FlatSpec}
 
 class BCECriterionSpec extends FlatSpec with Matchers {

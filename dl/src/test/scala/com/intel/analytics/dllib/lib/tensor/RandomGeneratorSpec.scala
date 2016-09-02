@@ -1,6 +1,6 @@
-package com.intel.webscaleml.nn.tensor.th
+package com.intel.analytics.dllib.lib.tensor.th
 
-import com.intel.webscaleml.nn.tensor.{RandomGenerator, Tensor, torch, DenseTensor}
+import com.intel.analytics.dllib.lib.tensor.{RandomGenerator, Tensor, torch, DenseTensor}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 

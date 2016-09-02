@@ -1,7 +1,7 @@
-package com.intel.webscaleml.nn.nn.performTest
+package com.intel.analytics.dllib.lib.nn.performTest
 
-import com.intel.webscaleml.nn.nn.ClassNLLCriterion
-import com.intel.webscaleml.nn.tensor.{RandomGenerator, torch}
+import com.intel.analytics.dllib.lib.nn.ClassNLLCriterion
+import com.intel.analytics.dllib.lib.tensor.{RandomGenerator, torch}
 import org.scalatest.{BeforeAndAfter, FlatSpec}
 
 /**

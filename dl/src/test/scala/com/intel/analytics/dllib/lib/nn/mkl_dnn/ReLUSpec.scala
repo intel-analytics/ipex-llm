@@ -1,6 +1,6 @@
-package com.intel.webscaleml.nn.nn.mkl_dnn
+package com.intel.analytics.dllib.lib.nn.mkl_dnn
 
-import com.intel.webscaleml.nn.tensor.torch
+import com.intel.analytics.dllib.lib.tensor.torch
 import org.scalatest.FlatSpec
 
 import scala.math.abs

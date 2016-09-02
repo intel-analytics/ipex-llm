@@ -1,6 +1,6 @@
-package com.intel.webscaleml.nn.tensor
+package com.intel.analytics.dllib.lib.tensor
 
-import com.intel.webscaleml.nn.tensor.TensorType.DoubleReal
+import com.intel.analytics.dllib.lib.tensor.TensorType.DoubleReal
 import org.scalatest.{Matchers, FlatSpec}
 
 class SparseTensorMathSpec extends FlatSpec with Matchers {

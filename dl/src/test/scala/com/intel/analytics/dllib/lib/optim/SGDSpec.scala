@@ -1,6 +1,6 @@
-package com.intel.webscaleml.nn.optim
+package com.intel.analytics.dllib.lib.optim
 
-import com.intel.webscaleml.nn.tensor.{T, Table, torch, Tensor}
+import com.intel.analytics.dllib.lib.tensor.{T, Table, torch, Tensor}
 import org.scalatest.{Matchers, FlatSpec}
 import scala.collection.mutable.ArrayBuffer
 import scala.math._

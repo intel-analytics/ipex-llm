@@ -1,11 +1,11 @@
-package com.intel.webscaleml.nn.nn.th
+package com.intel.analytics.dllib.lib.nn.th
 
 import breeze.numerics.abs
-import com.intel.webscaleml.nn.nn.SpatialBatchNormalization
-import com.intel.webscaleml.nn.tensor.{Tensor, torch}
-import com.intel.webscaleml.nn.th.TH
+import com.intel.analytics.dllib.lib.nn.SpatialBatchNormalization
+import com.intel.analytics.dllib.lib.tensor.{Tensor, torch}
+import com.intel.analytics.dllib.lib.th.TH
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-import com.intel.webscaleml.nn.tensor.RandomGenerator._
+import com.intel.analytics.dllib.lib.tensor.RandomGenerator._
 
 class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
   before{

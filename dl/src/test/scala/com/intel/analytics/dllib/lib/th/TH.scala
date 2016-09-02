@@ -1,11 +1,11 @@
-package com.intel.webscaleml.nn.th
+package com.intel.analytics.dllib.lib.th
 
 import java.io._
 
-import com.intel.webscaleml.nn.nn._
-import com.intel.webscaleml.nn.tensor.TensorType.FloatType
-import com.intel.webscaleml.nn.tensor.TorchObject._
-import com.intel.webscaleml.nn.tensor._
+import com.intel.analytics.dllib.lib.nn._
+import com.intel.analytics.dllib.lib.tensor.TensorType.FloatType
+import com.intel.analytics.dllib.lib.tensor.TorchObject._
+import com.intel.analytics.dllib.lib.tensor._
 
 import scala.io.Source
 import scala.sys.process._

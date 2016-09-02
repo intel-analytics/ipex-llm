@@ -1,7 +1,7 @@
-package com.intel.webscaleml.nn.tensor.th
+package com.intel.analytics.dllib.lib.tensor.th
 
-import com.intel.webscaleml.nn.tensor.{Tensor, torch, DenseTensor}
-import com.intel.webscaleml.nn.th.TH
+import com.intel.analytics.dllib.lib.tensor.{Tensor, torch, DenseTensor}
+import com.intel.analytics.dllib.lib.th.TH
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.sys.process._
 

@@ -1,7 +1,7 @@
-package com.intel.webscaleml.nn.optim
+package com.intel.analytics.dllib.lib.optim
 
-import com.intel.webscaleml.nn.tensor.TensorNumericMath.TensorNumeric.TensorNumericDouble
-import com.intel.webscaleml.nn.tensor.torch
+import com.intel.analytics.dllib.lib.tensor.TensorNumericMath.TensorNumeric.TensorNumericDouble
+import com.intel.analytics.dllib.lib.tensor.torch
 import org.scalatest.{Matchers, FlatSpec}
 
 class CommunicatorSpec extends FlatSpec with Matchers {

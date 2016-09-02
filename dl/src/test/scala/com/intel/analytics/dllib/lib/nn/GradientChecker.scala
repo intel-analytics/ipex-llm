@@ -1,7 +1,7 @@
-package com.intel.webscaleml.nn.nn
+package com.intel.analytics.dllib.lib.nn
 
-import com.intel.webscaleml.nn.tensor.TensorNumericMath.TensorNumeric
-import com.intel.webscaleml.nn.tensor.{torch, Tensor}
+import com.intel.analytics.dllib.lib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.dllib.lib.tensor.{torch, Tensor}
 
 import scala.reflect.ClassTag
 
