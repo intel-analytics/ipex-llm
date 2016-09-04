@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module org.jetbrains.idea.maven.project.MavenProjectsManager.isMavenModule="true" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_5" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/target/classes" />
+    <output-test url="file://$MODULE_DIR$/target/test-classes" />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: com.github.fommil:jniloader:1.1" level="project" />
+    <orderEntry type="library" name="Maven: net.sourceforge.f2j:arpack_combined_all:0.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:core:1.1.2" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_ref-osx-x86_64:natives:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:native_ref-java:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_ref-linux-x86_64:natives:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_ref-linux-i686:natives:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_ref-win-x86_64:natives:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_ref-win-i686:natives:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_ref-linux-armhf:natives:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_system-osx-x86_64:natives:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:native_system-java:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_system-linux-x86_64:natives:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_system-linux-i686:natives:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_system-linux-armhf:natives:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_system-win-x86_64:natives:1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.github.fommil.netlib:netlib-native_system-win-i686:natives:1.1" level="project" />
+    <orderEntry type="library" name="Maven: junit:junit:4.11" level="project" />
+    <orderEntry type="library" name="Maven: org.hamcrest:hamcrest-core:1.3" level="project" />
+  </component>
+</module>
