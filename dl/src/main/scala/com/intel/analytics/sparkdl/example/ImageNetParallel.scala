@@ -22,7 +22,7 @@ import com.intel.analytics.sparkdl.example.Utils._
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim.EpochOptimizer.Regime
 import com.intel.analytics.sparkdl.optim._
-import com.intel.analytics.sparkdl.ps.OneReduceParameterManager
+import com.intel.analytics.sparkdl.ps.{AllReduceParameterManager, OneReduceParameterManager}
 import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.utils.T
 import org.apache.hadoop.io.Text
@@ -136,7 +136,14 @@ object ImageNetParallel {
     val dataSets = new ShuffleBatchDataSet[(Double, Array[Byte]), Double](
       croppedData, if (cropImage) toTensorWithoutCrop(mean, std) else toTensor2(mean, std),
       params.workerConfig[Int]("batch"), params.workerConfig[Int]("batch"))
-    val pm = new OneReduceParameterManager[Double](parameter, dataSets.partitions(), metrics)
+    val pm = params.pmType match {
+      case "onereduce" =>
+        new OneReduceParameterManager[Double](parameter, dataSets.partitions(), metrics)
+      case "allreduce" =>
+        new AllReduceParameterManager[Double](parameter, dataSets.partitions(), metrics)
+      case _ =>
+        throw new IllegalArgumentException
+    }
 
     val validation = croppedData.zipPartitions((if (cropImage) {
       loadCroppedData(testFiles, sc, labelsMap, classNum + 0.5)
@@ -356,13 +363,13 @@ object ImageNetParallel {
   }
 
   def computeMean(data: RDD[(Double, Array[Byte])]): (Double, Double, Double) = {
-    data.map(d => ImageNetUtils.computeMean(d._2, dataOffset)).
+    data.map(d => ImageNetUtils.computeMean(d._2, 8)).
       reduce((a, b) => (a._1 + b._1, a._2 + b._2, a._3 + b._3))
   }
 
   def computeVar(data: RDD[(Double, Array[Byte])], meanR: Double, meanG: Double, meanB: Double)
   : (Double, Double, Double) = {
-    data.map(d => ImageNetUtils.computeVar(d._2, meanR, meanG, meanB, dataOffset)).
+    data.map(d => ImageNetUtils.computeVar(d._2, meanR, meanG, meanB, 8)).
       reduce((a, b) => (a._1 + b._1, a._2 + b._2, a._3 + b._3))
   }
 

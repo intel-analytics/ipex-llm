@@ -40,7 +40,8 @@ object Utils {
     classNum: Int = 100,
     labelsFile: String = "./labels",
     dataType: String = "float",
-    crop: Boolean = false
+    crop: Boolean = false,
+    pmType : String = "onereduce"
   )
 
   val defaultParams = Params()
@@ -183,6 +184,9 @@ object Utils {
       opt[Unit]("crop")
         .text("crop the image before or not")
         .action((_, c) => c.copy(crop = true))
+      opt[String]("pmType")
+        .text("parameter aggregation type : onreduce | allreduce")
+        .action((x, c) => c.copy(pmType = x.toLowerCase))
     }
   }
 
