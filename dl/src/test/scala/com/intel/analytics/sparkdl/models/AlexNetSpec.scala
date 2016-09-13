@@ -17,6 +17,7 @@
 
 package com.intel.analytics.sparkdl.models
 
+import com.intel.analytics.sparkdl.models.imagenet.AlexNet_OWT
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim.SGD
 import com.intel.analytics.sparkdl.tensor._

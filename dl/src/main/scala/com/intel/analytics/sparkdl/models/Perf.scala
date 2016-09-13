@@ -17,7 +17,9 @@
 
 package com.intel.analytics.sparkdl.models
 
-import com.github.fommil.netlib.{NativeSystemBLAS, BLAS}
+import com.github.fommil.netlib.{BLAS, NativeSystemBLAS}
+import com.intel.analytics.sparkdl.models.imagenet._
+import com.intel.analytics.sparkdl.models.mnist.LeNet5
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
@@ -29,7 +31,7 @@ import scala.reflect.ClassTag
  * Performance test for the models
  */
 object Perf {
-  val parser = new OptionParser[Params]("Performance Test") {
+  val parser = new OptionParser[PerfParams]("Performance Test") {
     head("Performance Test of Models")
     opt[Int]('b', "batchSize")
       .text("Batch size of input data")
@@ -68,7 +70,7 @@ object Perf {
   }
 
   def main(args: Array[String]): Unit = {
-    parser.parse(args, new Params()).map(param => {
+    parser.parse(args, new PerfParams()).map(param => {
       param.dataType match {
         case "float" => performance[Float](param)
         case "double" => performance[Double](param)
@@ -77,7 +79,7 @@ object Perf {
     })
   }
 
-  def performance[T: ClassTag](param: Params)(implicit tn: TensorNumeric[T]): Unit = {
+  def performance[T: ClassTag](param: PerfParams)(implicit tn: TensorNumeric[T]): Unit = {
     val (model, input) = param.module match {
       case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 227, 227))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor[T](param.batchSize, 3, 224, 224))
@@ -139,7 +141,7 @@ object Perf {
   }
 }
 
-case class Params(
+case class PerfParams(
   batchSize: Int = 128,
   iteration: Int = 50,
   warmUp: Int = 10,

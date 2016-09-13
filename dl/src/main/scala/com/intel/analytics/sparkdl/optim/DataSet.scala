@@ -149,13 +149,20 @@ class ShuffleBatchDataSet[D: ClassTag, @specialized(Float, Double) T: ClassTag](
 
   private var curPosition = 0
 
+  private var datacount : Option[Int] = None
+
+  def setDataCount(dataCount : Int): Unit = {
+    this.datacount = Some(dataCount)
+  }
+
   private var shuffledIndex: RDD[Array[Int]] = dataSets.mapPartitions(iter => {
     Iterator.single(Array.range(0, iter.length))
   }).setName("Shuffled Index").cache()
   shuffledIndex.count()
 
   lazy private val maxLength = shuffledIndex.map(_.length).max()
-  lazy private val count = shuffledIndex.map(_.length).sum().toLong
+  lazy private val count = if (datacount.isDefined) datacount.get
+  else shuffledIndex.map(_.length).sum().toLong
 
 
   override def fetch(): RDD[Iterator[(Tensor[T], Tensor[T])]] = {

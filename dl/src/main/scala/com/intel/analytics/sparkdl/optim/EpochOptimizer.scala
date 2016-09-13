@@ -30,7 +30,7 @@ abstract class EpochOptimizer[T](
   pm: ParameterManager[T],
   dataSets: DataSet[_, T] with HasEpoch,
   metrics: Metrics,
-  config: Table = T()) extends Optimizer(module, criterion, dataSets) {
+  config: Table = T()) extends DistributedOptimizer(module, criterion, dataSets) {
 
   protected var maxEpoch: Option[Int] = None
 

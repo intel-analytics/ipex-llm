@@ -18,9 +18,10 @@
 package com.intel.analytics.sparkdl.example
 
 import com.intel.analytics.sparkdl.example.Utils._
+import com.intel.analytics.sparkdl.models.imagenet.{AlexNet, GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.sparkdl.nn.ClassNLLCriterion
 import com.intel.analytics.sparkdl.optim.{GradAggEpochOptimizer, Metrics, ShuffleBatchDataSet}
-import com.intel.analytics.sparkdl.ps.{OneReduceParameterManager, AllReduceParameterManager}
+import com.intel.analytics.sparkdl.ps.{AllReduceParameterManager, OneReduceParameterManager}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -61,9 +62,8 @@ object TestModelParallel {
     println("done")
     val criterion = new ClassNLLCriterion[Float]()
     val (model, size) = netType match {
-      case "alexnet" => (com.intel.analytics.sparkdl.models.AlexNet[Float](classNum), 227)
-      case "googlenet_v1" => (com.intel.analytics.sparkdl.models.GoogleNet_v1[Float](classNum), 224)
-      case "googlenet_v2" => (com.intel.analytics.sparkdl.models.GoogleNet_v2[Float](classNum), 224)
+      case "googlenet_v1" => (GoogleNet_v1[Float](classNum), 224)
+      case "googlenet_v2" => (GoogleNet_v2[Float](classNum), 224)
     }
     println(model)
     val parameters = model.getParameters()._1

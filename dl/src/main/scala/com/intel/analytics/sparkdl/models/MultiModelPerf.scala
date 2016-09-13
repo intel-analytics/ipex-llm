@@ -18,6 +18,7 @@
 package com.intel.analytics.sparkdl.models
 
 import com.github.fommil.netlib.{BLAS, NativeSystemBLAS}
+import com.intel.analytics.sparkdl.models.imagenet.{AlexNet, AlexNet_OWT, GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
