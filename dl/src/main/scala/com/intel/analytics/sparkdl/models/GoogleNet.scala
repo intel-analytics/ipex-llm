@@ -49,7 +49,7 @@ object GoogleNet_v1 {
     conv5.add(new ReLU[D](true))
     concat.add(conv5)
     val pool = new Sequential[D]
-    pool.add(new SpatialMaxPooling[D](3, 3, 1, 1, 1, 1))
+    pool.add(new SpatialMaxPooling[D](3, 3, 1, 1, 1, 1).ceil())
     pool.add(new SpatialConvolution[D](inputSize,
       config[Table](4)(1), 1, 1, 1, 1).setInitMethod(Xavier))
     concat.add(pool)
@@ -57,33 +57,67 @@ object GoogleNet_v1 {
   }
 
   def apply[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[D] = {
-    val model = new Sequential[D]
-    model.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3).setInitMethod(Xavier))
-    model.add(new ReLU[D](true))
-    model.add(new SpatialMaxPooling[D](3, 3, 2, 2, 1, 1))
-    model.add(new LocalNormalizationAcrossChannels[D](5, 0.0001, 0.75))
-    model.add(new SpatialConvolution[D](64, 64, 1, 1, 1, 1, 0, 0).setInitMethod(Xavier))
-    model.add(new ReLU[D](true))
-    model.add(new SpatialConvolution[D](64, 192, 3, 3, 1, 1, 1, 1).setInitMethod(Xavier))
-    model.add(new ReLU[D](true))
-    model.add(new LocalNormalizationAcrossChannels[D](5, 0.0001, 0.75))
-    model.add(new SpatialMaxPooling[D](3, 3, 2, 2, 1, 1))
-    model.add(inception[D](192, T(T(64), T(96, 128), T(16, 32), T(32))))
-    model.add(inception[D](256, T(T(128), T(128, 192), T(32, 96), T(64))))
-    model.add(new SpatialMaxPooling[D](3, 3, 2, 2, 1, 1))
-    model.add(inception[D](480, T(T(192), T(96, 208), T(16, 48), T(64))))
-    model.add(inception[D](512, T(T(160), T(112, 224), T(24, 64), T(64))))
-    model.add(inception[D](512, T(T(128), T(128, 256), T(24, 64), T(64))))
-    model.add(inception[D](512, T(T(112), T(144, 288), T(32, 64), T(64))))
-    model.add(inception[D](528, T(T(256), T(160, 320), T(32, 128), T(128))))
-    model.add(new SpatialMaxPooling[D](3, 3, 2, 2, 1, 1))
-    model.add(inception[D](832, T(T(256), T(160, 320), T(32, 128), T(128))))
-    model.add(inception[D](832, T(T(384), T(192, 384), T(48, 128), T(128))))
-    model.add(new SpatialAveragePooling[D](7, 7, 1, 1))
-    model.add(new Dropout[D](0.4))
-    model.add(new View[D](1024).setNumInputDims(3))
-    model.add(new Linear[D](1024, classNum).setInitMethod(Xavier))
-    model.add(new LogSoftMax[D])
+    val model = new Concat[D](2)
+
+    val feature1 = new Sequential[D]
+    feature1.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3).setInitMethod(Xavier))
+    feature1.add(new ReLU[D](true))
+    feature1.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil())
+    feature1.add(new LocalNormalizationAcrossChannels[D](5, 0.0001, 0.75))
+    feature1.add(new SpatialConvolution[D](64, 64, 1, 1, 1, 1).setInitMethod(Xavier))
+    feature1.add(new ReLU[D](true))
+    feature1.add(new SpatialConvolution[D](64, 192, 3, 3, 1, 1, 1, 1).setInitMethod(Xavier))
+    feature1.add(new ReLU[D](true))
+    feature1.add(new LocalNormalizationAcrossChannels[D](5, 0.0001, 0.75))
+    feature1.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil())
+    feature1.add(inception[D](192, T(T(64), T(96, 128), T(16, 32), T(32))))
+    feature1.add(inception[D](256, T(T(128), T(128, 192), T(32, 96), T(64))))
+    feature1.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil())
+    feature1.add(inception[D](480, T(T(192), T(96, 208), T(16, 48), T(64))))
+
+    val output1 = new Sequential[D]
+    output1.add(feature1)
+    output1.add(new SpatialAveragePooling[D](5, 5, 3, 3))
+    output1.add(new SpatialConvolution[D](320, 128, 1, 1, 1, 1))
+    output1.add(new ReLU[D]())
+    output1.add(new Linear[D](128 * 4 * 4, 1024))
+    output1.add(new ReLU[D]())
+    output1.add(new Dropout[D]())
+    output1.add(new Linear[D](1024, 1000))
+    output1.add(new LogSoftMax[D])
+
+    val feature2 = new Sequential[D]
+    feature2.add(feature1)
+    feature2.add(inception[D](512, T(T(160), T(112, 224), T(24, 64), T(64))))
+    feature2.add(inception[D](512, T(T(128), T(128, 256), T(24, 64), T(64))))
+    feature2.add(inception[D](512, T(T(112), T(144, 288), T(32, 64), T(64))))
+
+    val output2 = new Sequential[D]
+    output2.add(feature2)
+    output2.add(new SpatialAveragePooling[D](5, 5, 3, 3))
+    output2.add(new SpatialConvolution[D](416, 128, 1, 1, 1, 1))
+    output2.add(new ReLU[D]())
+    output2.add(new Linear[D](128 * 4 * 4, 1024))
+    output2.add(new ReLU[D]())
+    output2.add(new Dropout[D]())
+    output2.add(new Linear[D](1024, 1000))
+    output2.add(new LogSoftMax[D])
+
+    val output3 = new Sequential[D]
+    output3.add(feature2)
+    output3.add(inception[D](528, T(T(256), T(160, 320), T(32, 128), T(128))))
+    output3.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil())
+    output3.add(inception[D](832, T(T(256), T(160, 320), T(32, 128), T(128))))
+    output3.add(inception[D](832, T(T(384), T(192, 384), T(48, 128), T(128))))
+    output3.add(new SpatialAveragePooling[D](7, 7, 1, 1))
+    output3.add(new Dropout[D](0.4))
+    output3.add(new View[D](1024).setNumInputDims(3))
+    output3.add(new Linear[D](1024, classNum).setInitMethod(Xavier))
+    output3.add(new LogSoftMax[D])
+
+    model.add(output1)
+    model.add(output2)
+    model.add(output3)
     model.reset()
     model
   }
