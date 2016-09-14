@@ -162,11 +162,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
     })
 
     optm.optimize(_ => (0.1, gradient), target, T())
-    val truncateParm = new FP16Parameter(target)
-    truncateParm.copyTo(target)
     optm.optimize(_ => (0.1, gradient), target, T())
-    truncateParm.copyFrom(target)
-    truncateParm.copyTo(target)
     pm.getParameter() should be(target)
 
   }
@@ -175,7 +171,6 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
     Engine.setCoreNum(1000) // or thread pool will be deadlock for local mode
     sc = new SparkContext("local[4]", "AllReduceParameterManagerSpec")
     val parameter = torch.Tensor[Double](9).rand()
-    val truncate = new FP16Parameter(parameter)
     val parameterRDD = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
         Iterator.single(torch.Tensor[Double](9).rand())
@@ -205,9 +200,6 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
     i = 0
     while(i < iteration) {
-      val curParam = oneReduce.getParameter()
-      truncate.copyFrom(curParam)
-      truncate.copyTo(curParam)
       oneReduce.sync(parameterRDD).count()
       oneReduce.sumAndUpdate(gradientRDD, (w, g, s) => {
         g.div(5)
