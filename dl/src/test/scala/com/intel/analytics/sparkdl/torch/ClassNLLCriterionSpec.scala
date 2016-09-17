@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.ClassNLLCriterion
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class ClassNLLCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers {
@@ -30,7 +30,7 @@ class ClassNLLCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "A ClassNLL Criterion " should "generate correct output and grad" in {
     val criterion = new ClassNLLCriterion[Double]()
-    val input = torch.Tensor[Double](3, 3)
+    val input = Tensor[Double](3, 3)
     input(Array(1, 1)) = -1.0262627674932
     input(Array(1, 2)) = -1.2412600935171
     input(Array(1, 3)) = -1.0423174168648
@@ -40,7 +40,7 @@ class ClassNLLCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers {
     input(Array(3, 1)) = -0.99131220658219
     input(Array(3, 2)) = -1.0559142847536
     input(Array(3, 3)) = -1.2692712660404
-    val target = torch.Tensor[Double](3)
+    val target = Tensor[Double](3)
     target(Array(1)) = 1
     target(Array(2)) = 2
     target(Array(3)) = 3

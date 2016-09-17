@@ -17,18 +17,18 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.torch
 import org.scalatest.FlatSpec
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 class ReshapeSpec extends FlatSpec {
   "A Reshape Module " should "generate correct output and grad" in {
     val module = new Reshape[Double](Array(3, 2))
     for (batchSize <- 1 to 4) {
-      val input = torch.Tensor[Double](batchSize, 1, 6)
+      val input = Tensor[Double](batchSize, 1, 6)
       input.rand()
       val inputOrg = input.clone()
       val output = module.forward(input)
-      val gradOutput = torch.Tensor[Double](batchSize, 3, 2)
+      val gradOutput = Tensor[Double](batchSize, 3, 2)
       gradOutput.rand()
       val gradOutputOrg = gradOutput.clone()
       val gradInput = module.backward(input, gradOutput)
@@ -48,21 +48,21 @@ class ReshapeSpec extends FlatSpec {
     }
 
     intercept[IllegalArgumentException] {
-      module.forward(torch.Tensor[Double](2, 2))
+      module.forward(Tensor[Double](2, 2))
     }
 
     intercept[IllegalArgumentException] {
-      module.forward(torch.Tensor[Double](3, 2, 2))
+      module.forward(Tensor[Double](3, 2, 2))
     }
   }
 
   "A Reshape Module default batch" should "generate correct output and grad" in {
     val module = new Reshape[Double](Array(3, 2))
-    val input = torch.Tensor[Double](2, 3)
+    val input = Tensor[Double](2, 3)
     input.rand()
     val inputOrg = input.clone()
     val output = module.forward(input)
-    val gradOutput = torch.Tensor[Double](3, 2)
+    val gradOutput = Tensor[Double](3, 2)
     gradOutput.rand()
     val gradOutputOrg = gradOutput.clone()
     val gradInput = module.backward(input, gradOutput)
@@ -79,11 +79,11 @@ class ReshapeSpec extends FlatSpec {
 
   "A Reshape Module disable batch" should "generate correct output and grad" in {
     val module = new Reshape[Double](Array(3, 2), Some(false))
-    val input = torch.Tensor[Double](1, 2, 3)
+    val input = Tensor[Double](1, 2, 3)
     input.rand()
     val inputOrg = input.clone()
     val output = module.forward(input)
-    val gradOutput = torch.Tensor[Double](3, 2)
+    val gradOutput = Tensor[Double](3, 2)
     gradOutput.rand()
     val gradOutputOrg = gradOutput.clone()
     val gradInput = module.backward(input, gradOutput)
@@ -98,18 +98,18 @@ class ReshapeSpec extends FlatSpec {
     assert(gradOutput == gradOutputOrg)
 
     intercept[IllegalArgumentException] {
-      module.forward(torch.Tensor[Double](2, 3, 2))
+      module.forward(Tensor[Double](2, 3, 2))
     }
   }
 
   "A Reshape Module enable batch" should "generate correct output and grad" in {
     val module = new Reshape[Double](Array(3, 2), Some(true))
     for (batchSize <- 1 to 4) {
-      val input = torch.Tensor[Double](batchSize, 1, 6)
+      val input = Tensor[Double](batchSize, 1, 6)
       input.rand()
       val inputOrg = input.clone()
       val output = module.forward(input)
-      val gradOutput = torch.Tensor[Double](batchSize, 3, 2)
+      val gradOutput = Tensor[Double](batchSize, 3, 2)
       gradOutput.rand()
       val gradOutputOrg = gradOutput.clone()
       val gradInput = module.backward(input, gradOutput)
@@ -129,7 +129,7 @@ class ReshapeSpec extends FlatSpec {
     }
 
     intercept[IllegalArgumentException] {
-      module.forward(torch.Tensor[Double](3, 2))
+      module.forward(Tensor[Double](3, 2))
     }
   }
 }

@@ -17,8 +17,8 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.torch
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.math._
 
@@ -30,8 +30,8 @@ class LinearSpec extends FlatSpec with Matchers {
     val linear = new Linear[Double](inputN, outputN)
     val mse = new MSECriterion[Double]
 
-    val input = torch.Tensor[Double](inputN)
-    val res = torch.Tensor[Double](outputN)
+    val input = Tensor[Double](inputN)
+    val res = Tensor[Double](outputN)
     var err = 0.0
     for (i <- 1 to 10000) {
       input.rand()
@@ -52,8 +52,8 @@ class LinearSpec extends FlatSpec with Matchers {
     val weight = params._1(0)
     val bias = params._1(1)
 
-    val expectedWeight = torch.Tensor[Double](outputN, inputN)
-    val expectedBias = torch.Tensor[Double](outputN)
+    val expectedWeight = Tensor[Double](outputN, inputN)
+    val expectedBias = Tensor[Double](outputN)
     for (y <- 1 to outputN) {
       expectedBias(Array(y)) = 1.0 * y
       for (x <- 1 to inputN) {
@@ -80,8 +80,8 @@ class LinearSpec extends FlatSpec with Matchers {
     val linear = new Linear[Double](inputN, outputN)
     val mse = new MSECriterion[Double]
 
-    val input = torch.Tensor[Double](batchN, inputN)
-    val res = torch.Tensor[Double](batchN, outputN)
+    val input = Tensor[Double](batchN, inputN)
+    val res = Tensor[Double](batchN, outputN)
     var err = 0.0
     for (i <- 1 to 10000) {
       input.rand()
@@ -104,8 +104,8 @@ class LinearSpec extends FlatSpec with Matchers {
     val weight = params._1(0)
     val bias = params._1(1)
 
-    val expectedWeight = torch.Tensor[Double](outputN, inputN)
-    val expectedBias = torch.Tensor[Double](outputN)
+    val expectedWeight = Tensor[Double](outputN, inputN)
+    val expectedBias = Tensor[Double](outputN)
     for (y <- 1 to outputN) {
       expectedBias(Array(y)) = 1.0 * y
       for (x <- 1 to inputN) {
@@ -127,7 +127,7 @@ class LinearSpec extends FlatSpec with Matchers {
   "Linear module in batch mode" should "be good in gradient check" in {
     val linear = new Linear[Double](5, 2)
     linear.reset()
-    val input = torch.Tensor[Double](3, 5).rand()
+    val input = Tensor[Double](3, 5).rand()
 
     val checker = new GradientChecker(1e-2, 1e-2)
     checker.checkLayer(linear, input) should be(true)

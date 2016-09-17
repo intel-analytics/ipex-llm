@@ -19,43 +19,43 @@ package com.intel.analytics.sparkdl.utils
 
 import com.intel.analytics.sparkdl.models.{AlexNet, GoogleNet_v1}
 import com.intel.analytics.sparkdl.nn.Module
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 class SaveObjSpec extends FlatSpec with Matchers {
   "A tensor load from saved file" should "be same with original tensor" in {
-    val originTensor = torch.Tensor[Double](3, 2, 4).rand()
+    val originTensor = Tensor[Double](3, 2, 4).rand()
     val filePath = java.io.File.createTempFile("SaveObjSpecTensor", ".obj").getAbsolutePath
-    torch.saveObj(originTensor, filePath, true)
-    val loadedTensor = torch.loadObj[Tensor[Double]](filePath)
+    Tensor.saveObj(originTensor, filePath, true)
+    val loadedTensor = Tensor.loadObj[Tensor[Double]](filePath)
     loadedTensor should be(originTensor)
   }
 
   "Alexnet load from saved file" should "be same with the original one" in {
     val model = AlexNet[Double](1000)
     val filePath = java.io.File.createTempFile("SaveObjSpecAlexnet", ".obj").getAbsolutePath
-    model.forward(torch.Tensor[Double](4, 3, 227, 227))
-    torch.saveObj(model, filePath, true)
-    val loadedModel = torch.loadObj[Module[Double]](filePath)
+    model.forward(Tensor[Double](4, 3, 227, 227))
+    Tensor.saveObj(model, filePath, true)
+    val loadedModel = Tensor.loadObj[Module[Double]](filePath)
     loadedModel should be(model)
-    loadedModel.forward(torch.Tensor[Double](4, 3, 227, 227))
+    loadedModel.forward(Tensor[Double](4, 3, 227, 227))
   }
 
   "GoogleNet load from saved file" should "be same with the original one" in {
     val model = GoogleNet_v1[Double](1000)
     val filePath = java.io.File.createTempFile("SaveObjSpecGoogleNet", ".obj").getAbsolutePath
-    model.forward(torch.Tensor[Double](4, 3, 224, 224))
-    torch.saveObj(model, filePath, true)
-    val loadedModel = torch.loadObj[Module[Double]](filePath)
+    model.forward(Tensor[Double](4, 3, 224, 224))
+    Tensor.saveObj(model, filePath, true)
+    val loadedModel = Tensor.loadObj[Module[Double]](filePath)
     loadedModel should be(model)
-    loadedModel.forward(torch.Tensor[Double](4, 3, 224, 224))
+    loadedModel.forward(Tensor[Double](4, 3, 224, 224))
   }
 
   "A table load from saved file" should "be same with original table" in {
     val table = T("test" -> "test2", "test3" -> 4)
     val filePath = java.io.File.createTempFile("SaveObjSpecTable", ".obj").getAbsolutePath
-    torch.saveObj(table, filePath, true)
-    val loadedTable = torch.loadObj[Table](filePath)
+    Tensor.saveObj(table, filePath, true)
+    val loadedTable = Tensor.loadObj[Table](filePath)
     loadedTable should be(table)
   }
 }

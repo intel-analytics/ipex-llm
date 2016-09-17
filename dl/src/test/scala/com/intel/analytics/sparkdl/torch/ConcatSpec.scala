@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn._
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -41,8 +41,8 @@ class ConcatSpec extends FlatSpec with BeforeAndAfter with Matchers {
     layer2.add(new SpatialBatchNormalization[Double](3, 1e-3))
     module.add(layer1).add(layer2)
 
-    val input = torch.Tensor[Double](4, 3, 4, 4).randn()
-    val gradOutput = torch.Tensor[Double](4, 6, 4, 4).randn()
+    val input = Tensor[Double](4, 3, 4, 4).randn()
+    val gradOutput = Tensor[Double](4, 6, 4, 4).randn()
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       """
@@ -99,8 +99,8 @@ class ConcatSpec extends FlatSpec with BeforeAndAfter with Matchers {
     layer2.add(new LogSoftMax())
     module.add(layer1).add(layer2)
 
-    val input = torch.Tensor[Double](4, 1000).randn()
-    val gradOutput = torch.Tensor[Double](4, 2000).randn()
+    val input = Tensor[Double](4, 1000).randn()
+    val gradOutput = Tensor[Double](4, 2000).randn()
 
     val start = System.nanoTime()
     val output = module.forward(input)

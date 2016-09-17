@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -101,8 +101,8 @@ class SampledBatchDataSet[D: ClassTag, @specialized(Float, Double) T: ClassTag](
   override def fetch(): RDD[Iterator[(Tensor[T], Tensor[T])]] = {
     dataSets.sample(false, batchNum * batchSize * partitionNum / count.toDouble, System.nanoTime())
       .mapPartitions(iter => {
-        val input = torch.Tensor[T]()
-        val target = torch.Tensor[T]()
+        val input = Tensor[T]()
+        val target = Tensor[T]()
         iter.grouped(batchSize).map(_.grouped(stackSize).map(toTensor(_, input, target)))
       })
   }
@@ -115,8 +115,8 @@ class SampledBatchDataSet[D: ClassTag, @specialized(Float, Double) T: ClassTag](
 
   override def fetchAll(): RDD[(Tensor[T], Tensor[T])] = {
     dataSets.mapPartitions(iter => {
-      val input = torch.Tensor[T]()
-      val target = torch.Tensor[T]()
+      val input = Tensor[T]()
+      val target = Tensor[T]()
       iter.grouped(batchSize).map(toTensor(_, input, target))
     })
   }
@@ -182,8 +182,8 @@ class ShuffleBatchDataSet[D: ClassTag, @specialized(Float, Double) T: ClassTag](
       }
       require(n == batchNum * batchSize)
 
-      val input = torch.Tensor[T]()
-      val target = torch.Tensor[T]()
+      val input = Tensor[T]()
+      val target = Tensor[T]()
       dataBuffer.grouped(batchSize).map(_.grouped(stackSize).map(toTensor(_, input, target)))
     })
     curPosition += batchNum * batchSize
@@ -210,8 +210,8 @@ class ShuffleBatchDataSet[D: ClassTag, @specialized(Float, Double) T: ClassTag](
 
   override def fetchAll(): RDD[(Tensor[T], Tensor[T])] = {
     dataSets.mapPartitions(iter => {
-      val input = torch.Tensor[T]()
-      val target = torch.Tensor[T]()
+      val input = Tensor[T]()
+      val target = Tensor[T]()
       iter.grouped(batchSize).map(toTensor(_, input, target))
     })
   }
@@ -274,8 +274,8 @@ class ShuffleFullBatchDataSet[D: ClassTag, @specialized(Float, Double) T: ClassT
       val data = blockIter.next()
       val indexes = indexIter.next()
 
-      val input = torch.Tensor[T]()
-      val target = torch.Tensor[T]()
+      val input = Tensor[T]()
+      val target = Tensor[T]()
       val batchNum = math.ceil(data.length.toDouble / batchSize).toInt
       Iterator.range(0, batchNum * innerLoop).map(i => new ShuffleIterator(data, indexes,
         (i % batchNum) * batchSize, batchSize).grouped(stackSize).map(toTensor(_, input, target)))
@@ -303,8 +303,8 @@ class ShuffleFullBatchDataSet[D: ClassTag, @specialized(Float, Double) T: ClassT
 
   override def fetchAll(): RDD[(Tensor[T], Tensor[T])] = {
     dataSets.mapPartitions(iter => {
-      val input = torch.Tensor[T]()
-      val target = torch.Tensor[T]()
+      val input = Tensor[T]()
+      val target = Tensor[T]()
       iter.grouped(batchSize).map(toTensor(_, input, target))
     })
   }

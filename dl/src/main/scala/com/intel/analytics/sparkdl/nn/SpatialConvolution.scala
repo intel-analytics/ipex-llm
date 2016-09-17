@@ -38,18 +38,18 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   private var initMethod: InitializationMethod = Default
 )(implicit ev: TensorNumeric[T]) extends Module[T] {
 
-  val weight: Tensor[T] = torch.Tensor[T](nOutputPlane, nInputPlane, kH, kW)
+  val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
   private var weightMM: Tensor[T] = null
   private var gradientBiasMT: Tensor[T] = null
-  val bias: Tensor[T] = torch.Tensor[T](nOutputPlane)
-  this.gradWeight = torch.Tensor[T](nOutputPlane, nInputPlane, kH, kW)
+  val bias: Tensor[T] = Tensor[T](nOutputPlane)
+  this.gradWeight = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
   private var gradWeightMM: Tensor[T] = null
-  this.gradBias = torch.Tensor[T](nOutputPlane)
-  val fInput = torch.Tensor[T]()
-  val fGradInput = torch.Tensor[T]()
-  private val ones = torch.Tensor[T]()
-  private val onesBatch = torch.Tensor[T]()
-  private val onesBias = torch.Tensor[T]()
+  this.gradBias = Tensor[T](nOutputPlane)
+  val fInput = Tensor[T]()
+  val fGradInput = Tensor[T]()
+  private val ones = Tensor[T]()
+  private val onesBatch = Tensor[T]()
+  private val onesBias = Tensor[T]()
   reset()
 
   private var im2colTime = 0L
@@ -195,9 +195,9 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     } else {
       val batchSize = input.size(1)
       if (gradWeightMM == null) {
-        gradWeightMM = torch.Tensor[T]().resize(Array(batchSize, nOutputPlane,
+        gradWeightMM = Tensor[T]().resize(Array(batchSize, nOutputPlane,
           nInputPlane * kH * kW))
-        gradientBiasMT = torch.Tensor[T]().resize(Array(batchSize, nOutputPlane))
+        gradientBiasMT = Tensor[T]().resize(Array(batchSize, nOutputPlane))
       }
       if (ones.dim() != 1 || ones.size(1) != gradOutput.size(3) * gradOutput.size(4)) {
         ones.resize(Array(gradOutput.size(3) * gradOutput.size(4))).fill(ev.fromType(1.0))
@@ -335,7 +335,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
 
     ev.getType() match {
       case "Double" =>
-        val gradOutput2d = torch.Tensor(gradOutput.storage().asInstanceOf[Storage[Double]],
+        val gradOutput2d = Tensor(gradOutput.storage().asInstanceOf[Storage[Double]],
           gradOutput.storageOffset(), Array(gradOutput.size(1),
             gradOutput.size(2) * gradOutput.size(3)))
         fgradInput.asInstanceOf[Tensor[Double]].addmm(0.0, fgradInput.asInstanceOf[Tensor[Double]],
@@ -348,7 +348,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           gradInput.size(2), gradOutput.size(3), gradOutput.size(2))
         col2imTime += System.nanoTime() - before
       case "Float" =>
-        val gradOutput2d = torch.Tensor(gradOutput.storage().asInstanceOf[Storage[Float]],
+        val gradOutput2d = Tensor(gradOutput.storage().asInstanceOf[Storage[Float]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
         fgradInput.asInstanceOf[Tensor[Float]].addmm(0.0f, fgradInput.asInstanceOf[Tensor[Float]],
@@ -369,7 +369,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
 
     ev.getType() match {
       case "Double" =>
-        val gradOutput2d = torch.Tensor[Double](gradOutput.storage().asInstanceOf[Storage[Double]],
+        val gradOutput2d = Tensor[Double](gradOutput.storage().asInstanceOf[Storage[Double]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
 
@@ -393,7 +393,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           i += 1
         }
       case "Float" =>
-        val gradOutput2d = torch.Tensor[Float](gradOutput.storage().asInstanceOf[Storage[Float]],
+        val gradOutput2d = Tensor[Float](gradOutput.storage().asInstanceOf[Storage[Float]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
 
@@ -426,7 +426,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
 
     ev.getType() match {
       case "Double" =>
-        val gradOutput2d = torch.Tensor[Double](gradOutput.storage().asInstanceOf[Storage[Double]],
+        val gradOutput2d = Tensor[Double](gradOutput.storage().asInstanceOf[Storage[Double]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
 
@@ -436,7 +436,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         gradBias.asInstanceOf[Tensor[Double]].addmv(0.0, 1.0, gradOutput2d,
           ones.asInstanceOf[Tensor[Double]])
       case "Float" =>
-        val gradOutput2d = torch.Tensor[Float](gradOutput.storage().asInstanceOf[Storage[Float]],
+        val gradOutput2d = Tensor[Float](gradOutput.storage().asInstanceOf[Storage[Float]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
 

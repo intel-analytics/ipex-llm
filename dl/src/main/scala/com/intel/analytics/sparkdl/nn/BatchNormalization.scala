@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 import scala.collection.mutable.ArrayBuffer
@@ -34,15 +34,15 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](val nOutput: I
     "To set affine=false call SpatialBatchNormalization(nFeature,  eps, momentum, false)")
 
   val nDim = 2
-  val runningMean = torch.Tensor[T](nOutput)
-  val runningVar = torch.Tensor[T](nOutput).fill(ev.fromType[Int](1))
-  val saveMean = torch.Tensor[T](nOutput)
-  val saveStd = torch.Tensor[T](nOutput).fill(ev.fromType[Int](1))
+  val runningMean = Tensor[T](nOutput)
+  val runningVar = Tensor[T](nOutput).fill(ev.fromType[Int](1))
+  val saveMean = Tensor[T](nOutput)
+  val saveStd = Tensor[T](nOutput).fill(ev.fromType[Int](1))
 
-  val weight: Tensor[T] = if (affine) torch.Tensor[T](nOutput) else null
-  val bias: Tensor[T] = if (affine) torch.Tensor[T](nOutput) else null
-  gradWeight = if (affine) torch.Tensor[T](nOutput) else null
-  gradBias = if (affine) torch.Tensor[T](nOutput) else null
+  val weight: Tensor[T] = if (affine) Tensor[T](nOutput) else null
+  val bias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
+  gradWeight = if (affine) Tensor[T](nOutput) else null
+  gradBias = if (affine) Tensor[T](nOutput) else null
 
   if (affine) {
     reset()

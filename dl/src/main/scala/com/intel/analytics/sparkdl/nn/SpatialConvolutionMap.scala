@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Storage, DenseTensorConv, torch, Tensor}
+import com.intel.analytics.sparkdl.tensor.{Storage, DenseTensorConv, Tensor}
 
 import scala.reflect.ClassTag
 
@@ -34,16 +34,16 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
 )(implicit ev: TensorNumeric[T]) extends Module[T] {
   val nInputPlane = ev.toType[Int](connTable.select(2, 1).max())
   val nOutputPlane = ev.toType[Int](connTable.select(2, 2).max())
-  val weight: Tensor[T] = torch.Tensor[T](connTable.size(1), kH, kW)
-  val bias: Tensor[T] = torch.Tensor[T](nOutputPlane)
-  this.gradWeight = torch.Tensor[T](connTable.size(1), kH, kW)
-  this.gradBias = torch.Tensor[T](nOutputPlane)
-  //  val fInput = torch.Tensor()
-  //  val fGradInput = torch.Tensor()
+  val weight: Tensor[T] = Tensor[T](connTable.size(1), kH, kW)
+  val bias: Tensor[T] = Tensor[T](nOutputPlane)
+  this.gradWeight = Tensor[T](connTable.size(1), kH, kW)
+  this.gradBias = Tensor[T](nOutputPlane)
+  //  val fInput = Tensor()
+  //  val fGradInput = Tensor()
   reset()
 
   override def reset(): Unit = {
-    val ninp = torch.Tensor[T](this.nOutputPlane).zero()
+    val ninp = Tensor[T](this.nOutputPlane).zero()
     var i = 1
     while (i <= connTable.size(1)) {
       ninp(Array(ev.toType[Int](connTable(Array(i, 2))))) = ev.plus(ninp(Array(ev.toType[Int](
@@ -273,7 +273,7 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
 object SpatialConvolutionMap {
   def full[@specialized(Float, Double) T: ClassTag](nin: Int, nout: Int)(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    val ft = torch.Tensor[T](nin * nout, 2)
+    val ft = Tensor[T](nin * nout, 2)
     var p = 1
     var i = 1
     var j = 1
@@ -291,7 +291,7 @@ object SpatialConvolutionMap {
 
   def oneToOne[@specialized(Float, Double) T: ClassTag](nfeat: Int)(
     implicit ev: TensorNumeric[T]): Unit = {
-    val ft = torch.Tensor[T](nfeat, 2)
+    val ft = Tensor[T](nfeat, 2)
     var i = 1
     while (i <= nfeat) {
       ft(i)(1) = ev.fromType[Int](i)
@@ -303,8 +303,8 @@ object SpatialConvolutionMap {
   def random[@specialized(Float, Double) T: ClassTag](nin: Int, nout: Int, nto: Int)(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
     val nker = nto * nout
-    val tbl = torch.Tensor[T](nker, 2)
-    val fi = torch.randperm[T](nin)
+    val tbl = Tensor[T](nker, 2)
+    val fi = Tensor.randperm[T](nin)
     var frcntr = 1
     val nfi = Math.floor(nin / nto).toInt // number of distinct nto chunks
     val totbl = tbl.select(2, 2)
@@ -321,7 +321,7 @@ object SpatialConvolutionMap {
       ufrtbl.select(1, i).copy(ufitbl.select(1, frcntr))
       frcntr = frcntr + 1
       if (frcntr - 1 == nfi) {
-        fi.copy(torch.randperm[T](nin))
+        fi.copy(Tensor.randperm[T](nin))
         frcntr = 1
       }
       i = i + 1

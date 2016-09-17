@@ -141,8 +141,8 @@ object Cifar {
     val size = images.size
     val featureShape = Array(3, 32, 32)
     val featureSize = featureShape.product
-    val input = torch.Tensor[Double](Array(size) ++ featureShape)
-    val target = torch.Tensor[Double](size)
+    val input = Tensor[Double](Array(size) ++ featureShape)
+    val target = Tensor[Double](size)
     val features = input.storage().asInstanceOf[Storage[Double]].array()
     val targets = target.storage().asInstanceOf[Storage[Double]].array()
     var i = 0
@@ -163,8 +163,8 @@ object Cifar {
       input: Seq[(Double, Array[Double])]): (Tensor[Double], Tensor[Double]) = {
       val size = batchSize
       val featureShape = Array(3, 32, 32)
-      val result = torch.Tensor[Double](Array(size) ++ featureShape)
-      val target = torch.Tensor[Double](size)
+      val result = Tensor[Double](Array(size) ++ featureShape)
+      val target = Tensor[Double](size)
       val features = result.storage().array()
       val targets = target.storage().array()
       var i = 0
@@ -347,7 +347,7 @@ object Cifar {
   }
 
   def getModel(file: String): Module[Double] = {
-    val model = torch.load[Module[Double]](file)
+    val model = Tensor.load[Module[Double]](file)
     model
   }
 

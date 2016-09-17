@@ -49,7 +49,7 @@ object TH {
     val luaTime = runNM(code: String, parameters: Map[String, Any], result: Array[String])
 
     result.foreach { k =>
-      val tmp: Any = torch.load(subPath + k + suffix)
+      val tmp: Any = Tensor.load(subPath + k + suffix)
       resultMap += (k -> tmp)
     }
 
@@ -79,26 +79,26 @@ object TH {
       parameters(k) match {
         case _: Tensor[_] =>
           if (parameters(k).asInstanceOf[Tensor[_]].getType() == FloatType) {
-            torch.save(parameters(k), tmpPath, TYPE_FLOAT_TENSOR)
+            Tensor.save(parameters(k), tmpPath, TYPE_FLOAT_TENSOR)
           } else {
-            torch.save(parameters(k), tmpPath, TYPE_DOUBLE_TENSOR)
+            Tensor.save(parameters(k), tmpPath, TYPE_DOUBLE_TENSOR)
           }
         case _: Linear[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_LINEAR)
+          Tensor.save(parameters(k), tmpPath, TYPE_LINEAR)
         case _: SpatialConvolution[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_SPATIALCONVOLUTION)
+          Tensor.save(parameters(k), tmpPath, TYPE_SPATIALCONVOLUTION)
         case _: SpatialMaxPooling[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_SPATIALMAXPOOLING)
+          Tensor.save(parameters(k), tmpPath, TYPE_SPATIALMAXPOOLING)
         case _: Threshold[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_THRESHOLD)
+          Tensor.save(parameters(k), tmpPath, TYPE_THRESHOLD)
         case _: Concat[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_CONCAT)
+          Tensor.save(parameters(k), tmpPath, TYPE_CONCAT)
         case _: Sequential[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_SEQUENTIAL)
+          Tensor.save(parameters(k), tmpPath, TYPE_SEQUENTIAL)
         case _: View[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_VIEW)
+          Tensor.save(parameters(k), tmpPath, TYPE_VIEW)
         case _: Dropout[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_DROPOUT)
+          Tensor.save(parameters(k), tmpPath, TYPE_DROPOUT)
         case _ =>
       }
       varCode.append(k + " = torch.load(\'" + tmpPath + "\')\n")
@@ -162,7 +162,7 @@ object TH {
     val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
     val absolutePath = tmpFile.getAbsolutePath
     val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
-    val tmp: Any = torch.load(subPath + result + suffix)
+    val tmp: Any = Tensor.load(subPath + result + suffix)
     tmp
   }
 

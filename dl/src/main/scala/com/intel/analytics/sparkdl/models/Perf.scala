@@ -20,7 +20,7 @@ package com.intel.analytics.sparkdl.models
 import com.github.fommil.netlib.{NativeSystemBLAS, BLAS}
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import scopt.OptionParser
 
 import scala.reflect.ClassTag
@@ -78,17 +78,17 @@ object Perf {
 
   def performance[T: ClassTag](param: Params)(implicit tn: TensorNumeric[T]): Unit = {
     val (model, input) = param.module match {
-      case "alexnet" => (AlexNet(1000), torch.Tensor[T](param.batchSize, 3, 224, 224))
-      case "alexnetowt" => (AlexNet_OWT(1000), torch.Tensor[T](param.batchSize, 3, 224, 224))
-      case "googlenet_v1" => (GoogleNet_v1(1000), torch.Tensor[T](param.batchSize, 3, 224, 224))
-      case "vgg16" => (Vgg_16(1000), torch.Tensor[T](param.batchSize, 3, 224, 224))
-      case "vgg19" => (Vgg_19(1000), torch.Tensor[T](param.batchSize, 3, 224, 224))
-      case "lenet5" => (LeNet5(10), torch.Tensor[T](param.batchSize, 1, 28, 28))
+      case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 224, 224))
+      case "alexnetowt" => (AlexNet_OWT(1000), Tensor[T](param.batchSize, 3, 224, 224))
+      case "googlenet_v1" => (GoogleNet_v1(1000), Tensor[T](param.batchSize, 3, 224, 224))
+      case "vgg16" => (Vgg_16(1000), Tensor[T](param.batchSize, 3, 224, 224))
+      case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
+      case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
     }
     input.rand()
     println(model)
     val criterion = new ClassNLLCriterion[T]()
-    val labels = torch.Tensor[T](param.batchSize).fill(tn.fromType(1))
+    val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
 
     require(BLAS.getInstance().isInstanceOf[NativeSystemBLAS])
     for (i <- 1 to param.warmUp) {

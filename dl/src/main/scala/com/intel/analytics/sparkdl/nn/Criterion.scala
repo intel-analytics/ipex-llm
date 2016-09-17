@@ -20,7 +20,7 @@ package com.intel.analytics.sparkdl.nn
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.commons.lang3.SerializationUtils
 
-import com.intel.analytics.sparkdl.tensor.{torch, Tensor}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.reflect.ClassTag
 
@@ -40,7 +40,7 @@ class Criterion[@specialized(Float, Double) T: ClassTag](
     this.output
   }
 
-  def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = torch.Tensor[T]()
+  def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = Tensor[T]()
 
   def cloneCriterion(): Criterion[T] = {
     SerializationUtils.clone(this)

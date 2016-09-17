@@ -18,14 +18,14 @@
 package com.intel.analytics.sparkdl.ps
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric.TensorNumericDouble
-import com.intel.analytics.sparkdl.tensor.torch
 import com.intel.analytics.sparkdl.utils.Engine
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 class FP16ParameterSpec extends FlatSpec with Matchers {
 
   "convert double tensor to fp16 array and back" should "be same when the number is integer" in {
-    val tensor = torch.Tensor[Double](5)
+    val tensor = Tensor[Double](5)
     tensor.setValue(1, 1.0)
     tensor.setValue(2, 2.0)
     tensor.setValue(3, 3.0)
@@ -41,7 +41,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "get a truncated value when the number is float with to many mantissa" in {
-    val tensor = torch.Tensor[Double](5)
+    val tensor = Tensor[Double](5)
     tensor.setValue(1, 1.111111)
     tensor.setValue(2, 2.111111)
     tensor.setValue(3, 3.111111)
@@ -51,7 +51,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     val parameter = new FP16Parameter[Double](tensor)
     parameter.copyTo(tensor)
 
-    val target = torch.Tensor[Double](5)
+    val target = Tensor[Double](5)
     target.setValue(1, 1.109375)
     target.setValue(2, 2.109375)
     target.setValue(3, 3.109375)
@@ -62,7 +62,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be correct when only perform on a slice" in {
-    val tensor = torch.Tensor[Double](5)
+    val tensor = Tensor[Double](5)
     tensor.setValue(1, 1.111111)
     tensor.setValue(2, 2.111111)
     tensor.setValue(3, 3.111111)
@@ -75,7 +75,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     val test = tensor.clone()
     parameter2.copyTo(0, test, 1, 2)
 
-    val target = torch.Tensor[Double](5)
+    val target = Tensor[Double](5)
     target.setValue(1, 1.111111)
     target.setValue(2, 2.109375)
     target.setValue(3, 3.109375)
@@ -86,7 +86,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "throw exception when slice size is not consisted" in {
-    val tensor = torch.Tensor[Double](5)
+    val tensor = Tensor[Double](5)
     val parameter = new FP16Parameter[Double](tensor)
     val buffer = parameter.bytes(1, 2)
     val parameter2 = new FP16Parameter[Double](buffer)
@@ -96,7 +96,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be same when the number is integer in single thread env" in {
-    val tensor = torch.Tensor[Double](5)
+    val tensor = Tensor[Double](5)
     tensor.setValue(1, 1.0)
     tensor.setValue(2, 2.0)
     tensor.setValue(3, 3.0)
@@ -113,7 +113,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be same when the number is integer in too many thread env" in {
-    val tensor = torch.Tensor[Double](5)
+    val tensor = Tensor[Double](5)
     tensor.setValue(1, 1.0)
     tensor.setValue(2, 2.0)
     tensor.setValue(3, 3.0)
@@ -130,7 +130,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   "convert float tensor to fp16 array and back" should "be same when the number is integer" in {
-    val tensor = torch.Tensor[Float](5)
+    val tensor = Tensor[Float](5)
     tensor.setValue(1, 1.0f)
     tensor.setValue(2, 2.0f)
     tensor.setValue(3, 3.0f)
@@ -146,7 +146,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "get a truncated value when the number is float with to many mantissa" in {
-    val tensor = torch.Tensor[Float](5)
+    val tensor = Tensor[Float](5)
     tensor.setValue(1, 1.111111f)
     tensor.setValue(2, 2.111111f)
     tensor.setValue(3, 3.111111f)
@@ -156,7 +156,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     val parameter = new FP16Parameter[Float](tensor)
     parameter.copyTo(tensor)
 
-    val target = torch.Tensor[Float](5)
+    val target = Tensor[Float](5)
     target.setValue(1, 1.109375f)
     target.setValue(2, 2.109375f)
     target.setValue(3, 3.109375f)
@@ -167,7 +167,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be correct when only perform on a slice" in {
-    val tensor = torch.Tensor[Float](5)
+    val tensor = Tensor[Float](5)
     tensor.setValue(1, 1.111111f)
     tensor.setValue(2, 2.111111f)
     tensor.setValue(3, 3.111111f)
@@ -180,7 +180,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     val test = tensor.clone()
     parameter2.copyTo(0, test, 1, 2)
 
-    val target = torch.Tensor[Float](5)
+    val target = Tensor[Float](5)
     target.setValue(1, 1.111111f)
     target.setValue(2, 2.109375f)
     target.setValue(3, 3.109375f)
@@ -191,7 +191,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "throw exception when slice size is not consisted" in {
-    val tensor = torch.Tensor[Float](5)
+    val tensor = Tensor[Float](5)
     val parameter = new FP16Parameter[Float](tensor)
     val buffer = parameter.bytes(1, 2)
     val parameter2 = new FP16Parameter[Float](buffer)
@@ -201,7 +201,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be same when the number is integer in single thread env" in {
-    val tensor = torch.Tensor[Float](5)
+    val tensor = Tensor[Float](5)
     tensor.setValue(1, 1.0f)
     tensor.setValue(2, 2.0f)
     tensor.setValue(3, 3.0f)
@@ -218,7 +218,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be same when the number is integer in too many thread env" in {
-    val tensor = torch.Tensor[Float](5)
+    val tensor = Tensor[Float](5)
     tensor.setValue(1, 1.0f)
     tensor.setValue(2, 2.0f)
     tensor.setValue(3, 3.0f)
@@ -235,7 +235,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   "Add bytes to double parameter" should "be correct" in {
-    val tensor1 = torch.Tensor[Double](5)
+    val tensor1 = Tensor[Double](5)
     tensor1.setValue(1, 1.0)
     tensor1.setValue(2, 2.0)
     tensor1.setValue(3, 3.0)
@@ -243,7 +243,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor1.setValue(5, 5.0)
     val param1 = new FP16Parameter(tensor1)
 
-    val tensor2 = torch.Tensor[Double](5)
+    val tensor2 = Tensor[Double](5)
     tensor2.setValue(1, 2.0)
     tensor2.setValue(2, 3.0)
     tensor2.setValue(3, 4.0)
@@ -259,7 +259,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be correct in serialize version" in {
-    val tensor1 = torch.Tensor[Double](5)
+    val tensor1 = Tensor[Double](5)
     tensor1.setValue(1, 1.0)
     tensor1.setValue(2, 2.0)
     tensor1.setValue(3, 3.0)
@@ -267,7 +267,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor1.setValue(5, 5.0)
 
     val param1 = new FP16Parameter(tensor1)
-    val tensor2 = torch.Tensor[Double](5)
+    val tensor2 = Tensor[Double](5)
     tensor2.setValue(1, 2.0)
     tensor2.setValue(2, 3.0)
     tensor2.setValue(3, 4.0)
@@ -282,7 +282,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be correct with slice" in {
-    val tensor1 = torch.Tensor[Double](5)
+    val tensor1 = Tensor[Double](5)
     tensor1.setValue(1, 1.0)
     tensor1.setValue(2, 2.0)
     tensor1.setValue(3, 3.0)
@@ -291,7 +291,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
 
     val param1 = new FP16Parameter(tensor1)
 
-    val tensor2 = torch.Tensor[Double](5)
+    val tensor2 = Tensor[Double](5)
     tensor2.setValue(1, 2.0)
     tensor2.setValue(2, 3.0)
     tensor2.setValue(3, 4.0)
@@ -299,7 +299,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor2.setValue(5, 6.0)
 
     val param2 = new FP16Parameter(tensor2)
-    val test = torch.Tensor[Double](5)
+    val test = Tensor[Double](5)
     test.setValue(1, 1.0)
     test.setValue(2, 5.0)
     test.setValue(3, 7.0)
@@ -313,7 +313,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   "Add bytes to float parameter" should "be correct" in {
-    val tensor1 = torch.Tensor[Float](5)
+    val tensor1 = Tensor[Float](5)
     tensor1.setValue(1, 1.0f)
     tensor1.setValue(2, 2.0f)
     tensor1.setValue(3, 3.0f)
@@ -321,7 +321,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor1.setValue(5, 5.0f)
     val param1 = new FP16Parameter(tensor1)
 
-    val tensor2 = torch.Tensor[Float](5)
+    val tensor2 = Tensor[Float](5)
     tensor2.setValue(1, 2.0f)
     tensor2.setValue(2, 3.0f)
     tensor2.setValue(3, 4.0f)
@@ -337,7 +337,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be correct in serialize version" in {
-    val tensor1 = torch.Tensor[Float](5)
+    val tensor1 = Tensor[Float](5)
     tensor1.setValue(1, 1.0f)
     tensor1.setValue(2, 2.0f)
     tensor1.setValue(3, 3.0f)
@@ -345,7 +345,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor1.setValue(5, 5.0f)
 
     val param1 = new FP16Parameter(tensor1)
-    val tensor2 = torch.Tensor[Float](5)
+    val tensor2 = Tensor[Float](5)
     tensor2.setValue(1, 2.0f)
     tensor2.setValue(2, 3.0f)
     tensor2.setValue(3, 4.0f)
@@ -360,7 +360,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be correct with slice" in {
-    val tensor1 = torch.Tensor[Float](5)
+    val tensor1 = Tensor[Float](5)
     tensor1.setValue(1, 1.0f)
     tensor1.setValue(2, 2.0f)
     tensor1.setValue(3, 3.0f)
@@ -369,7 +369,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
 
     val param1 = new FP16Parameter(tensor1)
 
-    val tensor2 = torch.Tensor[Float](5)
+    val tensor2 = Tensor[Float](5)
     tensor2.setValue(1, 2.0f)
     tensor2.setValue(2, 3.0f)
     tensor2.setValue(3, 4.0f)
@@ -377,7 +377,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor2.setValue(5, 6.0f)
 
     val param2 = new FP16Parameter(tensor2)
-    val test = torch.Tensor[Float](5)
+    val test = Tensor[Float](5)
     test.setValue(1, 1.0f)
     test.setValue(2, 5.0f)
     test.setValue(3, 7.0f)
@@ -391,7 +391,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be correct with slice in single thread" in {
-    val tensor1 = torch.Tensor[Float](5)
+    val tensor1 = Tensor[Float](5)
     tensor1.setValue(1, 1.0f)
     tensor1.setValue(2, 2.0f)
     tensor1.setValue(3, 3.0f)
@@ -401,7 +401,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     Engine.setCoreNum(1)
     val param1 = new FP16Parameter(tensor1)
 
-    val tensor2 = torch.Tensor[Float](5)
+    val tensor2 = Tensor[Float](5)
     tensor2.setValue(1, 2.0f)
     tensor2.setValue(2, 3.0f)
     tensor2.setValue(3, 4.0f)
@@ -409,7 +409,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor2.setValue(5, 6.0f)
 
     val param2 = new FP16Parameter(tensor2)
-    val test = torch.Tensor[Float](5)
+    val test = Tensor[Float](5)
     test.setValue(1, 1.0f)
     test.setValue(2, 5.0f)
     test.setValue(3, 7.0f)
@@ -423,7 +423,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be correct with slice in too many threads" in {
-    val tensor1 = torch.Tensor[Float](5)
+    val tensor1 = Tensor[Float](5)
     tensor1.setValue(1, 1.0f)
     tensor1.setValue(2, 2.0f)
     tensor1.setValue(3, 3.0f)
@@ -433,7 +433,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     Engine.setCoreNum(100)
     val param1 = new FP16Parameter(tensor1)
 
-    val tensor2 = torch.Tensor[Float](5)
+    val tensor2 = Tensor[Float](5)
     tensor2.setValue(1, 2.0f)
     tensor2.setValue(2, 3.0f)
     tensor2.setValue(3, 4.0f)
@@ -441,7 +441,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor2.setValue(5, 6.0f)
 
     val param2 = new FP16Parameter(tensor2)
-    val test = torch.Tensor[Float](5)
+    val test = Tensor[Float](5)
     test.setValue(1, 1.0f)
     test.setValue(2, 5.0f)
     test.setValue(3, 7.0f)
@@ -455,7 +455,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   "copy from double tensor" should "be correct" in {
-    val tensor1 = torch.Tensor[Double](5)
+    val tensor1 = Tensor[Double](5)
     tensor1.setValue(1, 1.0)
     tensor1.setValue(2, 2.0)
     tensor1.setValue(3, 3.0)
@@ -472,7 +472,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   "copy from float tensor" should "be correct" in {
-    val tensor1 = torch.Tensor[Float](5)
+    val tensor1 = Tensor[Float](5)
     tensor1.setValue(1, 1.0f)
     tensor1.setValue(2, 2.0f)
     tensor1.setValue(3, 3.0f)

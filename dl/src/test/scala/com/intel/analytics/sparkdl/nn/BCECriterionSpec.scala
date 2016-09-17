@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.optim.SGD
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -26,11 +26,11 @@ class BCECriterionSpec extends FlatSpec with Matchers {
 
   "BCECriterion " should "return return right output and gradInput" in {
     val criterion = new BCECriterion[Double]()
-    val output = torch.Tensor[Double](3)
+    val output = Tensor[Double](3)
     output(Array(1)) = 0.4
     output(Array(2)) = 0.5
     output(Array(3)) = 0.6
-    val target = torch.Tensor[Double](3)
+    val target = Tensor[Double](3)
     target(Array(1)) = 0
     target(Array(2)) = 1
     target(Array(3)) = 1
@@ -79,7 +79,7 @@ class BCECriterionSpec extends FlatSpec with Matchers {
     val trainSize = 100000
     val testSize = 10000
 
-    val inputs = torch.Tensor[Double](trainSize, 2)
+    val inputs = Tensor[Double](trainSize, 2)
     val r = new scala.util.Random(1)
     inputs.apply1(v => r.nextDouble())
 
@@ -107,7 +107,7 @@ class BCECriterionSpec extends FlatSpec with Matchers {
       if (l / inputs.size(1) * batchSize < 8e-3) epoch += 1
     }
 
-    val testData = torch.Tensor[Double](testSize, 2)
+    val testData = Tensor[Double](testSize, 2)
     testData.apply1(v => r.nextDouble())
     val testTarget = actualModel.forward(testData).apply1(v => Math.round(v))
 

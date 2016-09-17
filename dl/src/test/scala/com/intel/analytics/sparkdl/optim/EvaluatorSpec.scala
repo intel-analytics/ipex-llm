@@ -19,15 +19,15 @@ package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Linear, LogSoftMax, Sequential}
 import com.intel.analytics.sparkdl.ps.OneReduceParameterManager
-import com.intel.analytics.sparkdl.tensor.torch
 import com.intel.analytics.sparkdl.utils.T
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
 
 class EvaluatorSpec extends FlatSpec with Matchers {
   "accuracy on 2d tensor" should "be correct" in {
-    val output = torch.Tensor(torch.storage(Array[Double](
+    val output = Tensor(Storage(Array[Double](
       0, 0, 0, 1,
       0, 1, 0, 0,
       1, 0, 0, 0,
@@ -38,7 +38,7 @@ class EvaluatorSpec extends FlatSpec with Matchers {
       0, 1, 0, 0
     )), 1, Array(8, 4))
 
-    val target = torch.Tensor(torch.storage(Array[Double](
+    val target = Tensor(Storage(Array[Double](
       4,
       2,
       1,
@@ -55,15 +55,15 @@ class EvaluatorSpec extends FlatSpec with Matchers {
   }
 
   "accuracy on 1d tensor" should "be correct" in {
-    val output = torch.Tensor(torch.storage(Array[Double](
+    val output = Tensor(Storage(Array[Double](
       0, 0, 0, 1
     )))
 
-    val target1 = torch.Tensor(torch.storage(Array[Double](
+    val target1 = Tensor(Storage(Array[Double](
       4
     )))
 
-    val target2 = torch.Tensor(torch.storage(Array[Double](
+    val target2 = Tensor(Storage(Array[Double](
       2
     )))
 
@@ -77,23 +77,23 @@ class EvaluatorSpec extends FlatSpec with Matchers {
   }
 
   "top5 accuracy on 1d tensor" should "be correct" in {
-    val output = torch.Tensor(torch.storage(Array[Double](
+    val output = Tensor(Storage(Array[Double](
       0.1, 0.2, 0.6, 0.01, 0.005, 0.005, 0.05, 0.03
     )))
 
-    val target1 = torch.Tensor(torch.storage(Array[Double](
+    val target1 = Tensor(Storage(Array[Double](
       2
     )))
 
-    val target2 = torch.Tensor(torch.storage(Array[Double](
+    val target2 = Tensor(Storage(Array[Double](
       5
     )))
 
-    val target3 = torch.Tensor(torch.storage(Array[Double](
+    val target3 = Tensor(Storage(Array[Double](
       3
     )))
 
-    val target4 = torch.Tensor(torch.storage(Array[Double](
+    val target4 = Tensor(Storage(Array[Double](
       7
     )))
 
@@ -115,7 +115,7 @@ class EvaluatorSpec extends FlatSpec with Matchers {
   }
 
   "Top5 accuracy on 2d tensor" should "be correct" in {
-    val output = torch.Tensor(torch.storage(Array[Double](
+    val output = Tensor(Storage(Array[Double](
       0, 0, 8, 1, 2, 0, 0, 0,
       0, 1, 0, 0, 2, 3, 4, 6,
       1, 0, 0, 0.6, 0.1, 0.2, 0.3, 0.4,
@@ -126,7 +126,7 @@ class EvaluatorSpec extends FlatSpec with Matchers {
       0, 1, 0, 0, 2, 4, 3, 2
     )), 1, Array(8, 8))
 
-    val target = torch.Tensor(torch.storage(Array[Double](
+    val target = Tensor(Storage(Array[Double](
       4,
       2,
       1,
@@ -191,10 +191,10 @@ class EvaluatorSpec extends FlatSpec with Matchers {
     optimizer.setTestDataSet(dataSet)
     optimizer.optimize()
 
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2.max(1)._2(Array(1)) should be(2.0)
     sc.stop()
   }

@@ -21,7 +21,7 @@ import com.intel.analytics.sparkdl.example.MNIST._
 import com.intel.analytics.sparkdl.example.Utils._
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim._
-import com.intel.analytics.sparkdl.tensor.torch
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.apache.log4j.{Level, Logger}
 
 import scala.util.Random
@@ -70,8 +70,8 @@ object MNISTLocal {
     var wallClockTime = 0L
     val (mean, std) = computeMeanStd(trainData)
     println(s"mean is $mean std is $std")
-    val input = torch.Tensor[Double]()
-    val target = torch.Tensor[Double]()
+    val input = Tensor[Double]()
+    val target = Tensor[Double]()
     while (e < config.get[Int]("epoch").get) {
       shuffle(trainData)
       var trainLoss = 0.0
@@ -113,8 +113,8 @@ object MNISTLocal {
       var correct = 0
       var count = 0
       var testLoss = 0.0
-      val buffer1 = torch.Tensor[Double]()
-      val buffer2 = torch.Tensor[Double]()
+      val buffer1 = Tensor[Double]()
+      val buffer2 = Tensor[Double]()
       while (k < testData.length) {
         val (input, target) = toTensor(mean, std)(Array(testData(k)), buffer1, buffer2)
         val output = module.forward(input)

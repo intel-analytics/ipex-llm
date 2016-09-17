@@ -20,7 +20,7 @@ package com.intel.analytics.sparkdl.nn
 import java.util
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
@@ -31,11 +31,11 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag]
 (val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75, val k: Double = 1.0)(
   implicit ev: TensorNumeric[T]) extends Module[T] {
 
-  private val scale = torch.Tensor[T]()
-  private val paddedSquare = torch.Tensor[T]()
-  private val paddedRatio = torch.Tensor[T]()
-  private val accumRatio = torch.Tensor[T]()
-  private val accumRatioTimeInput = torch.Tensor[T]()
+  private val scale = Tensor[T]()
+  private val paddedSquare = Tensor[T]()
+  private val paddedRatio = Tensor[T]()
+  private val accumRatio = Tensor[T]()
+  private val accumRatioTimeInput = Tensor[T]()
 
   @transient
   private var results: Array[Future[Unit]] = null

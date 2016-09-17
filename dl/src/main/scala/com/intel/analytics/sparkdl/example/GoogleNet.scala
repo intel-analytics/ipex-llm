@@ -302,14 +302,14 @@ object GoogleNet {
   }
 
   def performanceDouble(batchSize: Int, iter: Int, netType: String): Unit = {
-    val input = torch.Tensor[Double](batchSize, 3, 224, 224).fill(0.5)
+    val input = Tensor[Double](batchSize, 3, 224, 224).fill(0.5)
     val model = getModelCaffe[Double](1000)
     val criterion = new ClassNLLCriterion[Double]()
     var i = 0
     val sgd = new SGD[Double]
     val labelData = new Array[Double](batchSize)
     util.Arrays.fill(labelData, 10)
-    val labels = torch.Tensor[Double](torch.storage(labelData))
+    val labels = Tensor[Double](Storage(labelData))
 
     println(model)
     println("warm up")
@@ -347,14 +347,14 @@ object GoogleNet {
   }
 
   def performanceFloat(batchSize: Int, iter: Int, netType: String): Unit = {
-    val input = torch.Tensor[Float](batchSize, 3, 224, 224).fill(0.5f)
+    val input = Tensor[Float](batchSize, 3, 224, 224).fill(0.5f)
     val model = getModelCaffe[Float](1000)
     val criterion = new ClassNLLCriterion[Float]()
     var i = 0
     val sgd = new SGD[Float]
     val labelData = new Array[Float](batchSize)
     util.Arrays.fill(labelData, 10)
-    val labels = torch.Tensor[Float](torch.storage(labelData))
+    val labels = Tensor[Float](Storage(labelData))
 
     println(model)
     println("warm up")

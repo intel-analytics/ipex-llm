@@ -206,7 +206,7 @@ class NNClassificationModel[@specialized(Float, Double) T: ClassTag](
   override protected def predict(features: Vector): Double = {
     var result: Tensor[T] = null
     if (T.isInstanceOf[Double]) {
-      result = module.forward(torch.Tensor(torch.storage(features.toArray.asInstanceOf[Array[T]])))
+      result = module.forward(Tensor(Storage(features.toArray.asInstanceOf[Array[T]])))
     } else {
       val array: Array[T] = new Array[T](features.toArray.length)
       var index = 0
@@ -214,7 +214,7 @@ class NNClassificationModel[@specialized(Float, Double) T: ClassTag](
         array(index) = ev.fromType[Double](x)
         index += 1
       }
-      result = module.forward(torch.Tensor(torch.storage(array)))
+      result = module.forward(Tensor(Storage(array)))
     }
 
     require(result.nDimension() == 1)

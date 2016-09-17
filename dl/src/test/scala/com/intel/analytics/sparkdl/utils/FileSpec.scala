@@ -18,8 +18,9 @@
 package com.intel.analytics.sparkdl.utils
 
 import com.intel.analytics.sparkdl.nn._
-import com.intel.analytics.sparkdl.tensor.torch
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
+
 
 class FileSpec extends FlatSpec with Matchers {
   "save/load Java object file" should "work properly" in {
@@ -44,8 +45,8 @@ class FileSpec extends FlatSpec with Matchers {
     module.add(new Linear(100, 6))
     module.add(new LogSoftMax[Double]())
 
-    torch.saveObj(module, absolutePath, true)
-    val testModule: Module[Double] = torch.loadObj(absolutePath)
+    Tensor.saveObj(module, absolutePath, true)
+    val testModule: Module[Double] = Tensor.loadObj(absolutePath)
 
     testModule should be(module)
   }

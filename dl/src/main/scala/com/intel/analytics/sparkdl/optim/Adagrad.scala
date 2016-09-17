@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{torch, Tensor}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -58,7 +58,7 @@ class Adagrad[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeri
       if (_state.get[Tensor[T]]("paramVariance").isDefined) {
         (_state.get[Tensor[T]]("paramVariance").get, _state.get[Tensor[T]]("paramStd").get)
       } else {
-        (torch.Tensor[T]().resizeAs(dfdx).zero(), torch.Tensor[T]().resizeAs(dfdx))
+        (Tensor[T]().resizeAs(dfdx).zero(), Tensor[T]().resizeAs(dfdx))
       }
 
     _paramVariance.addcmul(ev.fromType[Int](1), dfdx, dfdx)

@@ -17,15 +17,15 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.torch
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.math.abs
 
 class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
   "A SpatialAveragePooling" should "generate correct output and gradInput" in {
     val module = new SpatialAveragePooling[Double](3, 2, 2, 1)
-    val input = torch.Tensor[Double](1, 4, 3)
+    val input = Tensor[Double](1, 4, 3)
     input(Array(1, 1, 1)) = 0.25434372201562
     input(Array(1, 1, 2)) = 0.20443214406259
     input(Array(1, 1, 3)) = 0.33442943682894
@@ -38,15 +38,15 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     input(Array(1, 4, 1)) = 0.14862711215392
     input(Array(1, 4, 2)) = 0.050680571002886
     input(Array(1, 4, 3)) = 0.93014938035049
-    val gradOutput = torch.Tensor[Double](1, 3, 1)
+    val gradOutput = Tensor[Double](1, 3, 1)
     gradOutput(Array(1, 1, 1)) = 0.22147525195032
     gradOutput(Array(1, 2, 1)) = 0.30394183006138
     gradOutput(Array(1, 3, 1)) = 0.77438542619348
-    val expectedOutput = torch.Tensor[Double](1, 3, 1)
+    val expectedOutput = Tensor[Double](1, 3, 1)
     expectedOutput(Array(1, 1, 1)) = 0.24123108809969
     expectedOutput(Array(1, 2, 1)) = 0.37001391376058
     expectedOutput(Array(1, 3, 1)) = 0.44922655339663
-    val expectedGrad = torch.Tensor[Double](1, 4, 3)
+    val expectedGrad = Tensor[Double](1, 4, 3)
     expectedGrad(Array(1, 1, 1)) = 0.036912541991721
     expectedGrad(Array(1, 1, 2)) = 0.036912541991721
     expectedGrad(Array(1, 1, 3)) = 0.036912541991721
@@ -77,7 +77,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
 
   "A SpatialAveragePooling" should "generate correct output and gradInput with 4D input" in {
     val module = new SpatialAveragePooling[Double](2, 2)
-    val input = torch.Tensor[Double](2, 1, 3, 3)
+    val input = Tensor[Double](2, 1, 3, 3)
     input(Array(1, 1, 1, 1)) = 0.026265420718119
     input(Array(1, 1, 1, 2)) = 0.99608502909541
     input(Array(1, 1, 1, 3)) = 0.38350357743911
@@ -96,7 +96,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     input(Array(2, 1, 3, 1)) = 0.27236858918332
     input(Array(2, 1, 3, 2)) = 0.9949026464019
     input(Array(2, 1, 3, 3)) = 0.0028261682018638
-    val gradOutput = torch.Tensor[Double](2, 1, 2, 2)
+    val gradOutput = Tensor[Double](2, 1, 2, 2)
     gradOutput(Array(1, 1, 1, 1)) = 0.40912644844502
     gradOutput(Array(1, 1, 1, 2)) = 0.31045490363613
     gradOutput(Array(1, 1, 2, 1)) = 0.81302798143588
@@ -105,7 +105,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     gradOutput(Array(2, 1, 1, 2)) = 0.25494889705442
     gradOutput(Array(2, 1, 2, 1)) = 0.88176139933057
     gradOutput(Array(2, 1, 2, 2)) = 0.95890677929856
-    val expectedOutput = torch.Tensor[Double](2, 1, 2, 2)
+    val expectedOutput = Tensor[Double](2, 1, 2, 2)
     expectedOutput(Array(1, 1, 1, 1)) = 0.54306805803208
     expectedOutput(Array(1, 1, 1, 2)) = 0.47543162287911
     expectedOutput(Array(1, 1, 2, 1)) = 0.45214644580847
@@ -114,7 +114,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     expectedOutput(Array(2, 1, 1, 2)) = 0.26966595818521
     expectedOutput(Array(2, 1, 2, 1)) = 0.53641468723072
     expectedOutput(Array(2, 1, 2, 2)) = 0.31797854258912
-    val expectedGrad = torch.Tensor[Double](2, 1, 3, 3)
+    val expectedGrad = Tensor[Double](2, 1, 3, 3)
     expectedGrad(Array(1, 1, 1, 1)) = 0.10228161211126
     expectedGrad(Array(1, 1, 1, 2)) = 0.17989533802029
     expectedGrad(Array(1, 1, 1, 3)) = 0.077613725909032
@@ -151,7 +151,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
 
   "A SpatialAveragePooling" should "generate correct output and gradInput with 3D input" in {
     val module = new SpatialAveragePooling[Double](2, 3)
-    val input = torch.Tensor[Double](2, 3, 3)
+    val input = Tensor[Double](2, 3, 3)
     input(Array(1, 1, 1)) = 0.59898642194457
     input(Array(1, 1, 2)) = 0.45444282400422
     input(Array(1, 1, 3)) = 0.68826303933747
@@ -170,17 +170,17 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     input(Array(2, 3, 1)) = 0.28639033297077
     input(Array(2, 3, 2)) = 0.80424255039543
     input(Array(2, 3, 3)) = 0.10117407562211
-    val gradOutput = torch.Tensor[Double](2, 1, 2)
+    val gradOutput = Tensor[Double](2, 1, 2)
     gradOutput(Array(1, 1, 1)) = 0.60744401183911
     gradOutput(Array(1, 1, 2)) = 0.74274225486442
     gradOutput(Array(2, 1, 1)) = 0.071322691626847
     gradOutput(Array(2, 1, 2)) = 0.6038177870214
-    val expectedOutput = torch.Tensor[Double](2, 1, 2)
+    val expectedOutput = Tensor[Double](2, 1, 2)
     expectedOutput(Array(1, 1, 1)) = 0.69643987486294
     expectedOutput(Array(1, 1, 2)) = 0.62641731727247
     expectedOutput(Array(2, 1, 1)) = 0.37555689271539
     expectedOutput(Array(2, 1, 2)) = 0.38529951882083
-    val expectedGrad = torch.Tensor[Double](2, 3, 3)
+    val expectedGrad = Tensor[Double](2, 3, 3)
     expectedGrad(Array(1, 1, 1)) = 0.10124066863985
     expectedGrad(Array(1, 1, 2)) = 0.22503104445059
     expectedGrad(Array(1, 1, 3)) = 0.12379037581074
@@ -217,7 +217,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
 
   "A SpatialAveragePooling in ceil mode" should "generate correct output and gradInput" in {
     val module = new SpatialAveragePooling[Double](3, 1, 2, 2).ceil()
-    val input = torch.Tensor[Double](1, 4, 3)
+    val input = Tensor[Double](1, 4, 3)
     input(Array(1, 1, 1)) = 0.25434372201562
     input(Array(1, 1, 2)) = 0.20443214406259
     input(Array(1, 1, 3)) = 0.33442943682894
@@ -230,7 +230,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     input(Array(1, 4, 1)) = 0.14862711215392
     input(Array(1, 4, 2)) = 0.050680571002886
     input(Array(1, 4, 3)) = 0.93014938035049
-    val gradOutput = torch.Tensor[Double](1, 3, 1)
+    val gradOutput = Tensor[Double](1, 3, 1)
     gradOutput(Array(1, 1, 1)) = 0.22147525195032
     gradOutput(Array(1, 2, 1)) = 0.30394183006138
     gradOutput(Array(1, 3, 1)) = 0.77438542619348
@@ -238,11 +238,11 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     output.size(1) should be(1)
     output.size(2) should be(3)
     output.size(3) should be(1)
-    val expectedOutput = torch.Tensor[Double](1, 3, 1)
+    val expectedOutput = Tensor[Double](1, 3, 1)
     expectedOutput(Array(1, 1, 1)) = 0.264402
     expectedOutput(Array(1, 2, 1)) = 0.521967
     val gradInput = module.backward(input, gradOutput)
-    val expectedGrad = torch.Tensor[Double](1, 4, 3)
+    val expectedGrad = Tensor[Double](1, 4, 3)
     expectedGrad(Array(1, 1, 1)) = 0.07382508398344
     expectedGrad(Array(1, 1, 2)) = 0.07382508398344
     expectedGrad(Array(1, 1, 3)) = 0.07382508398344
@@ -261,7 +261,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
 
   "A SpatialAvgPooling of float" should "be good in gradient checker" in {
     val module = new SpatialAveragePooling[Float](2, 2)
-    val input = torch.Tensor[Float](1, 3, 3).rand()
+    val input = Tensor[Float](1, 3, 3).rand()
     val checker = new GradientChecker(1e-2, 1e-2)
     checker.checkLayer(module, input) should be(true)
   }

@@ -24,7 +24,7 @@ class ArrayStorageSpec extends FlatSpec with Matchers {
   "update value" should "be test" in {
     var i = 0
     val values = Array(1.0, 2.0, 3.0)
-    val storage = torch.storage(values)
+    val storage = Storage(values)
     val time = System.nanoTime()
     while (i < 1e8) {
       storage(0) = 2.0
@@ -36,7 +36,7 @@ class ArrayStorageSpec extends FlatSpec with Matchers {
 
   "basic test" should "pass" in {
     val values = Array(1.0, 2.0, 3.0)
-    val storage = torch.storage(values)
+    val storage = Storage(values)
     storage(0) should be(1.0)
     storage.length() should be(3)
     storage(1) = 4.0
@@ -60,8 +60,8 @@ class ArrayStorageSpec extends FlatSpec with Matchers {
   "copy from double to double" should "pass" in {
     val values1 = Array(1.0, 2.0, 3.0)
     val values2 = Array(4.0, 5.0, 6.0)
-    val storage1 = torch.storage(values1)
-    val storage2 = torch.storage(values2)
+    val storage1 = Storage(values1)
+    val storage2 = Storage(values2)
     storage1.copy(storage2)
     storage2(0) = 8.0
     storage1(0) should be(4.0)

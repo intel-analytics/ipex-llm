@@ -18,12 +18,12 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.reflect.ClassTag
 
 class MSECriterion[T: ClassTag](implicit ev: TensorNumeric[T]) extends Criterion[T] {
-  var gradInput: Tensor[T] = torch.Tensor[T]()
+  var gradInput: Tensor[T] = Tensor[T]()
   var sizeAverage = true
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {

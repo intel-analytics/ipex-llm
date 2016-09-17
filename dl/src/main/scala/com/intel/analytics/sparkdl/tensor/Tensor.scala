@@ -17,9 +17,14 @@
 
 package com.intel.analytics.sparkdl.tensor
 
+import java.io.Serializable
+
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
-import com.intel.analytics.sparkdl.utils.Table
-import org.apache.spark.mllib.linalg.{Matrix, Vector}
+import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.sparkdl.utils.{File, Table, TorchObject}
+import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
+
+import scala.reflect.ClassTag
 
 trait Tensor[T] extends Serializable with TensorMath[T] {
   /**
@@ -484,3 +489,90 @@ sealed trait TensorDataType
 object DoubleType extends TensorDataType
 
 object FloatType extends TensorDataType
+
+object Tensor {
+  def apply[@specialized(Float, Double) T: ClassTag]()(
+    implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor[T]()
+
+  def apply[@specialized(Float, Double) T: ClassTag](d1: Int)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor[T](d1)
+
+  def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor[T](d1, d2)
+
+  def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor[T](d1, d2, d3)
+
+  def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor[T](d1, d2, d3, d4)
+
+  def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int, d5: Int)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor[T](d1, d2, d3, d4, d5)
+
+  def apply[@specialized(Float, Double) T: ClassTag](dims: Int*)(
+    implicit ev: TensorNumeric[T]): Tensor[T] =
+    new DenseTensor[T](new ArrayStorage[T](new Array[T](dims.product)), 0, dims.toArray,
+      DenseTensor.size2Stride(dims.toArray), dims.length)
+
+  def apply[@specialized(Float, Double) T: ClassTag](sizes: Array[Int])(
+    implicit ev: TensorNumeric[T]): Tensor[T] =
+    new DenseTensor(new ArrayStorage[T](new Array[T](sizes.product)), 0, sizes.clone(),
+      DenseTensor.size2Stride(sizes.clone()), sizes.length)
+
+  def apply[@specialized(Float, Double) T: ClassTag](storage: Storage[T])(
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    new DenseTensor(storage.asInstanceOf[Storage[T]])
+  }
+
+  def apply[@specialized(Float, Double) T: ClassTag](storage: Storage[T],
+                                                     storageOffset: Int,
+                                                     size: Array[Int] = null,
+                                                     stride: Array[Int] = null)
+                                                    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    new DenseTensor(storage.asInstanceOf[Storage[T]], storageOffset, size, stride)
+  }
+
+  def apply[@specialized(Float, Double) T: ClassTag](other: Tensor[T])(
+    implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor(other)
+
+  def apply[@specialized(Float, Double) T: ClassTag](vector: BrzDenseVector[T])(
+    implicit ev: TensorNumeric[T]): Tensor[T] = apply(Storage(vector.data),
+    vector.offset + 1, Array(vector.length), Array(vector.stride))
+
+  def apply(vector: DenseVector): Tensor[Double] =
+    apply[Double](Storage(vector.toArray))
+
+  def apply[@specialized(Float, Double) T: ClassTag](matrix: BrzDenseMatrix[T])(
+    implicit ev: TensorNumeric[T]): Tensor[T] = apply(Storage(matrix.data),
+    matrix.offset + 1, Array(matrix.rows, matrix.cols),
+    if (matrix.isTranspose) Array(1, matrix.majorStride) else Array(matrix.majorStride, 1))
+
+  def apply(matrix: DenseMatrix): Tensor[Double] = {
+    val strides = if (matrix.isTransposed) {
+      Array(matrix.numCols, 1)
+    } else {
+      Array(1, matrix.numRows) // column major
+    }
+    apply(Storage(matrix.toArray), 1, Array(matrix.numRows, matrix.numCols), strides)
+  }
+
+  def randperm[@specialized(Float, Double) T: ClassTag](size: Int)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = DenseTensor.randperm[T](size)
+
+  def expand[T](tensor: Tensor[T], sizes: Int*): Tensor[T] = tensor.expand(sizes.toArray)
+
+  def expandAs[T](tensor: Tensor[T], template: Tensor[T]): Tensor[T] = tensor.expandAs(template)
+
+  def repeatTensor[T](tensor: Tensor[T], sizes: Int*): Tensor[T] =
+    tensor.repeatTensor(sizes.toArray)
+
+  def load[T](fileName: String): T = File.load[T](fileName)
+
+  def loadObj[T](fileName: String): T = File.loadObj[T](fileName)
+
+  def save(data: Any, fileName: String, objectType: TorchObject): Unit =
+    File.save(data, fileName, objectType)
+
+  def saveObj(obj: Serializable, fileName: String, isOverwrite: Boolean = false): Unit =
+    File.save(obj, fileName, isOverwrite)
+}

@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.{Linear, MSECriterion}
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -36,9 +36,9 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val linear = new Linear[Double](inputN, outputN)
     val mse = new MSECriterion[Double]
 
-    val input = torch.Tensor[Double](inputN)
-    val res = torch.Tensor[Double](outputN)
-    val grad = torch.Tensor[Double](outputN).rand()
+    val input = Tensor[Double](inputN)
+    val res = Tensor[Double](outputN)
+    val grad = Tensor[Double](outputN).rand()
     val seed = 100
 
     input.rand()
@@ -83,8 +83,8 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val linear = new Linear[Double](inputN, outputN)
     val mse = new MSECriterion[Double]
 
-    val input = torch.Tensor[Double](inputN).rand()
-    val grad = torch.Tensor[Double](outputN).rand()
+    val input = Tensor[Double](inputN).rand()
+    val grad = Tensor[Double](outputN).rand()
     val seed = 100
 
     val code = "torch.manualSeed(" + seed + ")\n" +
@@ -126,8 +126,8 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val linear = new Linear[Double](inputN, outputN)
 
-    val input = torch.Tensor[Double](1156, inputN).rand()
-    val grad = torch.Tensor[Double](1156, outputN).rand()
+    val input = Tensor[Double](1156, inputN).rand()
+    val grad = Tensor[Double](1156, outputN).rand()
     val seed = 100
 
     val code = "torch.manualSeed(" + seed + ")\n" +

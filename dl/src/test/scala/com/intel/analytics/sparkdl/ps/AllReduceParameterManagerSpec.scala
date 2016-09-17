@@ -18,10 +18,10 @@
 package com.intel.analytics.sparkdl.ps
 
 import com.intel.analytics.sparkdl.optim.SGD
-import com.intel.analytics.sparkdl.tensor.torch
 import com.intel.analytics.sparkdl.utils.{Engine, T}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
@@ -35,7 +35,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
   "sync parameter" should "broadcast parameter to given parameter rdd" in {
     sc = new SparkContext("local[4]", "AllReduceParameterManagerSpec")
-    val param = torch.Tensor[Double](5)
+    val param = Tensor[Double](5)
     param.setValue(1, 10.0)
     param.setValue(2, 10.0)
     param.setValue(3, 10.0)
@@ -44,7 +44,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
     Engine.setCoreNum(1000)
     val parameters = sc.parallelize(Seq(1 to 5), 5)
-      .mapPartitions(iter => Iterator.single(torch.Tensor[Double](5).fill(10.0)))
+      .mapPartitions(iter => Iterator.single(Tensor[Double](5).fill(10.0)))
     val pm = new AllReduceParameterManager[Double](param, parameters)
     pm.sync(parameters).collect().map(_ should be(param))
     pm.getParameter() should be(param)
@@ -52,7 +52,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
   it should "broadcast parameter to given parameter rdd for float tensor" in {
     sc = new SparkContext("local[4]", "AllReduceParameterManagerSpec")
-    val param = torch.Tensor[Float](5)
+    val param = Tensor[Float](5)
     param.setValue(1, 10.0f)
     param.setValue(2, 10.0f)
     param.setValue(3, 10.0f)
@@ -61,7 +61,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
     Engine.setCoreNum(1000)
     val parameters = sc.parallelize(Seq(1 to 5), 5)
-      .mapPartitions(iter => Iterator.single(torch.Tensor[Float](5).fill(10.0f)))
+      .mapPartitions(iter => Iterator.single(Tensor[Float](5).fill(10.0f)))
     val pm = new AllReduceParameterManager[Float](param, parameters)
     pm.sync(parameters).collect().map(_ should be(param))
     pm.getParameter() should be(param)
@@ -69,7 +69,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
   "sum and update" should "be correct" in {
     sc = new SparkContext("local[4]", "AllReduceParameterManagerSpec")
-    val parameters = torch.Tensor[Double](9)
+    val parameters = Tensor[Double](9)
     parameters.setValue(1, 1.0)
     parameters.setValue(2, 2.0)
     parameters.setValue(3, 3.0)
@@ -83,7 +83,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
     Engine.setCoreNum(1000)
     val gradients = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
-        val result = torch.Tensor[Double](9)
+        val result = Tensor[Double](9)
         result.setValue(1, 4.0)
         result.setValue(2, 3.0)
         result.setValue(3, 6.0)
@@ -100,7 +100,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
       w.add(g)
     })
 
-    val target = torch.Tensor[Double](9)
+    val target = Tensor[Double](9)
     target.setValue(1, 21.0)
     target.setValue(2, 17.0)
     target.setValue(3, 33.0)
@@ -115,7 +115,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
   it should "be correct for sgd" in {
     sc = new SparkContext("local[4]", "AllReduceParameterManagerSpec")
-    val parameters = torch.Tensor[Double](9)
+    val parameters = Tensor[Double](9)
     parameters.setValue(1, 1.0)
     parameters.setValue(2, 2.0)
     parameters.setValue(3, 3.0)
@@ -130,13 +130,13 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
     val parameterRDD = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
-        Iterator.single(torch.Tensor[Double](9))
+        Iterator.single(Tensor[Double](9))
       })
 
     Engine.setCoreNum(1000)
     val gradients = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
-        val result = torch.Tensor[Double](9)
+        val result = Tensor[Double](9)
         result.setValue(1, 4.0)
         result.setValue(2, 3.0)
         result.setValue(3, 6.0)
@@ -175,7 +175,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
     sc = new SparkContext("local[4]", "AllReduceParameterManagerSpec")
 
     Engine.setCoreNum(1000)
-    val parameters = torch.Tensor[Float](9)
+    val parameters = Tensor[Float](9)
     parameters.setValue(1, 1.0f)
     parameters.setValue(2, 2.0f)
     parameters.setValue(3, 3.0f)
@@ -188,7 +188,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
     val gradients = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
-        val result = torch.Tensor[Float](9)
+        val result = Tensor[Float](9)
         result.setValue(1, 4.0f)
         result.setValue(2, 3.0f)
         result.setValue(3, 6.0f)
@@ -205,7 +205,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
       w.add(g)
     })
 
-    val target = torch.Tensor[Float](9)
+    val target = Tensor[Float](9)
     target.setValue(1, 21.0f)
     target.setValue(2, 17.0f)
     target.setValue(3, 33.0f)
@@ -222,7 +222,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
     sc = new SparkContext("local[4]", "AllReduceParameterManagerSpec")
 
     Engine.setCoreNum(1000)
-    val parameters = torch.Tensor[Float](9)
+    val parameters = Tensor[Float](9)
     parameters.setValue(1, 1.0f)
     parameters.setValue(2, 2.0f)
     parameters.setValue(3, 3.0f)
@@ -235,7 +235,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
     val gradients = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
-        val result = torch.Tensor[Float](9)
+        val result = Tensor[Float](9)
         result.setValue(1, 4.0f)
         result.setValue(2, 3.0f)
         result.setValue(3, 6.0f)
@@ -257,7 +257,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
       require(s[Double]("test") == 1.0)
     })
 
-    val target = torch.Tensor[Float](9)
+    val target = Tensor[Float](9)
     target.setValue(1, 41.0f)
     target.setValue(2, 32.0f)
     target.setValue(3, 63.0f)

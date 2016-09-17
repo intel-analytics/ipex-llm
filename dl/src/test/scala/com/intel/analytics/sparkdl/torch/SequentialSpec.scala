@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.{Linear, Sequential}
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
@@ -35,8 +35,8 @@ class SequentialSpec extends FlatSpec with BeforeAndAfter with Matchers {
     module.add(new Linear(10, 25))
     module.add(new Linear(25, 10))
 
-    val input = torch.Tensor[Double](10).randn()
-    val gradOutput = torch.Tensor[Double](10).randn()
+    val input = Tensor[Double](10).randn()
+    val gradOutput = Tensor[Double](10).randn()
 
     val start = System.nanoTime()
     val output = module.forward(input)
