@@ -105,9 +105,8 @@ object ImageNetParallel {
     workerConfig("profile") = true
 
     val regime: Array[Regime] = Array(
-      Regime(1, 4, T("learningRate" -> 4e-2, "weightDecay" -> 5e-4)),
-      Regime(5, 18, T("learningRate" -> 2e-2, "weightDecay" -> 5e-4)),
-      Regime(19, 29, T("learningRate" -> 5e-3, "weightDecay" -> 5e-4)),
+      Regime(1, 18, T("learningRate" -> 1e-2, "weightDecay" -> 2e-4)),
+      Regime(19, 29, T("learningRate" -> 5e-3, "weightDecay" -> 2e-4)),
       Regime(30, 43, T("learningRate" -> 1e-3, "weightDecay" -> 0.0)),
       Regime(44, 52, T("learningRate" -> 5e-4, "weightDecay" -> 0.0)),
       Regime(53, 100000000, T("learningRate" -> 1e-4, "weightDecay" -> 0.0))
