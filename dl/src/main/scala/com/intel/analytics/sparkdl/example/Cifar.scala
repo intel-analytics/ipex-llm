@@ -23,7 +23,7 @@ import com.intel.analytics.sparkdl.optim._
 import com.intel.analytics.sparkdl.ps.{OneReduceParameterManager, ParameterManager}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
-import com.intel.analytics.sparkdl.utils.Table
+import com.intel.analytics.sparkdl.utils.{File, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
@@ -347,7 +347,7 @@ object Cifar {
   }
 
   def getModel(file: String): Module[Double] = {
-    val model = Tensor.load[Module[Double]](file)
+    val model = File.load[Module[Double]](file)
     model
   }
 

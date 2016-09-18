@@ -23,7 +23,7 @@ import java.util
 import com.intel.analytics.sparkdl.nn.ClassNLLCriterion
 import com.intel.analytics.sparkdl.optim.SGD
 import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.utils.T
+import com.intel.analytics.sparkdl.utils.{File, T}
 
 object ImageNetLocal {
   val startTime = System.nanoTime()
@@ -190,8 +190,8 @@ object ImageNetLocal {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Accuracy is $accuracy")
 
         // Save model to a file each epoch
-        Tensor.saveObj(model, s"${netType}${accuracy}.model${i}", true)
-        Tensor.saveObj(state, s"${netType}${accuracy}.state${i}", true)
+        File.save(model, s"${netType}${accuracy}.model${i}", true)
+        File.save(state, s"${netType}${accuracy}.state${i}", true)
       }
 
       log("shuffle")

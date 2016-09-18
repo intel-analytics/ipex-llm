@@ -45,8 +45,8 @@ class FileSpec extends FlatSpec with Matchers {
     module.add(new Linear(100, 6))
     module.add(new LogSoftMax[Double]())
 
-    Tensor.saveObj(module, absolutePath, true)
-    val testModule: Module[Double] = Tensor.loadObj(absolutePath)
+    File.save(module, absolutePath, true)
+    val testModule: Module[Double] = File.loadObj(absolutePath)
 
     testModule should be(module)
   }

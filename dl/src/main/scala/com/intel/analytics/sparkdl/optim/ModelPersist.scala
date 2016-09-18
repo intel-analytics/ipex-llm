@@ -19,7 +19,7 @@ package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.nn.Module
 import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.utils.Table
+import com.intel.analytics.sparkdl.utils.{File, Table}
 
 trait ModelPersist[@specialized(Float, Double) T] {
 
@@ -53,9 +53,9 @@ trait ModelPersist[@specialized(Float, Double) T] {
       require(model != null)
 
       if (iter == 0) {
-        Tensor.saveObj(model, path.get, isOverWrite)
+        File.save(model, path.get, isOverWrite)
       } else if (modelSaveInterval.isDefined && iter % modelSaveInterval.get == 0) {
-        Tensor.saveObj(model, s"${path.get}.$iter", isOverWrite)
+        File.save(model, s"${path.get}.$iter", isOverWrite)
       }
     }
 
@@ -71,9 +71,9 @@ trait ModelPersist[@specialized(Float, Double) T] {
       require(state != null)
 
       if (iter == 0) {
-        Tensor.saveObj(state, s"${path.get}.state", isOverWrite)
+        File.save(state, s"${path.get}.state", isOverWrite)
       } else if (modelSaveInterval.isDefined && iter % modelSaveInterval.get == 0) {
-        Tensor.saveObj(state, s"${path.get}.state.$iter", isOverWrite)
+        File.save(state, s"${path.get}.state.$iter", isOverWrite)
       }
     }
 

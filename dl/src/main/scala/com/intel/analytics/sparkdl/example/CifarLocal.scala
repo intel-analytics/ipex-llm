@@ -21,7 +21,7 @@ import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim.SGD
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
-import com.intel.analytics.sparkdl.utils.T
+import com.intel.analytics.sparkdl.utils.{File, T}
 
 import scala.io.Source
 import scala.reflect.ClassTag
@@ -218,7 +218,7 @@ class CifarLocal[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNum
   }
 
   def getModel(file: String): Module[Double] = {
-    val model = Tensor.load[Module[Double]](file)
+    val model = File.load[Module[Double]](file)
 
     model
   }

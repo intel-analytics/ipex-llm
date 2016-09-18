@@ -565,14 +565,4 @@ object Tensor {
 
   def repeatTensor[T](tensor: Tensor[T], sizes: Int*): Tensor[T] =
     tensor.repeatTensor(sizes.toArray)
-
-  def load[T](fileName: String): T = File.load[T](fileName)
-
-  def loadObj[T](fileName: String): T = File.loadObj[T](fileName)
-
-  def save(data: Any, fileName: String, objectType: TorchObject): Unit =
-    File.save(data, fileName, objectType)
-
-  def saveObj(obj: Serializable, fileName: String, isOverwrite: Boolean = false): Unit =
-    File.save(obj, fileName, isOverwrite)
 }
