@@ -57,8 +57,6 @@ object GoogleNet_v1 {
   }
 
   def apply[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[D] = {
-    val model = new Concat[D](2)
-
     val feature1 = new Sequential[D]
     feature1.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3).setInitMethod(Xavier))
     feature1.add(new ReLU[D](true))
@@ -76,10 +74,10 @@ object GoogleNet_v1 {
     feature1.add(inception[D](480, T(T(192), T(96, 208), T(16, 48), T(64))))
 
     val output1 = new Sequential[D]
-    output1.add(feature1)
     output1.add(new SpatialAveragePooling[D](5, 5, 3, 3))
-    output1.add(new SpatialConvolution[D](320, 128, 1, 1, 1, 1))
+    output1.add(new SpatialConvolution[D](512, 128, 1, 1, 1, 1))
     output1.add(new ReLU[D]())
+    output1.add(new View[D](128 * 4 * 4).setNumInputDims(3))
     output1.add(new Linear[D](128 * 4 * 4, 1024))
     output1.add(new ReLU[D]())
     output1.add(new Dropout[D]())
@@ -87,16 +85,15 @@ object GoogleNet_v1 {
     output1.add(new LogSoftMax[D])
 
     val feature2 = new Sequential[D]
-    feature2.add(feature1)
     feature2.add(inception[D](512, T(T(160), T(112, 224), T(24, 64), T(64))))
     feature2.add(inception[D](512, T(T(128), T(128, 256), T(24, 64), T(64))))
     feature2.add(inception[D](512, T(T(112), T(144, 288), T(32, 64), T(64))))
 
     val output2 = new Sequential[D]
-    output2.add(feature2)
     output2.add(new SpatialAveragePooling[D](5, 5, 3, 3))
-    output2.add(new SpatialConvolution[D](416, 128, 1, 1, 1, 1))
+    output2.add(new SpatialConvolution[D](528, 128, 1, 1, 1, 1))
     output2.add(new ReLU[D]())
+    output2.add(new View[D](128 * 4 * 4).setNumInputDims(3))
     output2.add(new Linear[D](128 * 4 * 4, 1024))
     output2.add(new ReLU[D]())
     output2.add(new Dropout[D]())
@@ -104,7 +101,6 @@ object GoogleNet_v1 {
     output2.add(new LogSoftMax[D])
 
     val output3 = new Sequential[D]
-    output3.add(feature2)
     output3.add(inception[D](528, T(T(256), T(160, 320), T(32, 128), T(128))))
     output3.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil())
     output3.add(inception[D](832, T(T(256), T(160, 320), T(32, 128), T(128))))
@@ -115,9 +111,23 @@ object GoogleNet_v1 {
     output3.add(new Linear[D](1024, classNum).setInitMethod(Xavier))
     output3.add(new LogSoftMax[D])
 
-    model.add(output1)
-    model.add(output2)
-    model.add(output3)
+    val split2 = new Concat[D](2)
+    split2.add(output3)
+    split2.add(output2)
+
+    val mainBranch = new Sequential[D]()
+    mainBranch.add(feature2)
+    mainBranch.add(split2)
+
+    val split1 = new Concat[D](2)
+    split1.add(mainBranch)
+    split1.add(output1)
+
+    val model = new Sequential[D]()
+
+    model.add(feature1)
+    model.add(split1)
+
     model.reset()
     model
   }
