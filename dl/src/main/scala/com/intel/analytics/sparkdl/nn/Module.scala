@@ -32,6 +32,17 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
   var gradBias: Tensor[T] = null
   var gradient: (Tensor[T], Tensor[T]) = (gradWeight, gradBias)
 
+  private var name : String = null
+
+  def setName(name : String) : this.type = {
+    this.name = name
+    this
+  }
+
+  def getName() : String = {
+    if(this.name == null) this.toString else this.name
+  }
+
   // list of sub modules
   val modules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
 
