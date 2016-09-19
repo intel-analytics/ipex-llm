@@ -55,7 +55,7 @@ object Perf {
       .text("Model name. It can be alexnet | alexnetowt | googlenet_v1 | vgg16 | vgg19 | lenet5")
       .action((v, p) => p.copy(module = v))
       .validate(v =>
-        if (Set("alexnet", "alexnetowt", "googlenet_v1", "vgg16", "vgg19", "lenet5").
+        if (Set("alexnet", "alexnetowt", "googlenet_v1", "googlenet_v2", "vgg16", "vgg19", "lenet5").
           contains(v.toLowerCase())) {
           success
         } else {
@@ -81,6 +81,7 @@ object Perf {
       case "alexnet" => (AlexNet(1000), torch.Tensor[T](param.batchSize, 3, 227, 227))
       case "alexnetowt" => (AlexNet_OWT(1000), torch.Tensor[T](param.batchSize, 3, 224, 224))
       case "googlenet_v1" => (GoogleNet_v1(1000), torch.Tensor[T](param.batchSize, 3, 224, 224))
+      case "googlenet_v2" => (GoogleNet_v2(1000), torch.Tensor[T](param.batchSize, 3, 224, 224))
       case "vgg16" => (Vgg_16(1000), torch.Tensor[T](param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), torch.Tensor[T](param.batchSize, 3, 224, 224))
       case "lenet5" => (LeNet5(10), torch.Tensor[T](param.batchSize, 1, 28, 28))

@@ -81,7 +81,7 @@ object GoogleNet_v1 {
     output1.add(new Linear[D](128 * 4 * 4, 1024))
     output1.add(new ReLU[D]())
     output1.add(new Dropout[D]())
-    output1.add(new Linear[D](1024, 1000))
+    output1.add(new Linear[D](1024, classNum))
     output1.add(new LogSoftMax[D])
 
     val feature2 = new Sequential[D]
@@ -97,7 +97,7 @@ object GoogleNet_v1 {
     output2.add(new Linear[D](128 * 4 * 4, 1024))
     output2.add(new ReLU[D]())
     output2.add(new Dropout[D]())
-    output2.add(new Linear[D](1024, 1000))
+    output2.add(new Linear[D](1024, classNum))
     output2.add(new LogSoftMax[D])
 
     val output3 = new Sequential[D]
@@ -135,55 +135,77 @@ object GoogleNet_v1 {
 
 object GoogleNet_v2 {
   def apply[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[D] = {
-    val features = new Sequential[D]
-    features.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3))
-    features.add(new SpatialBatchNormalization(64, 1e-3))
-    features.add(new ReLU[D](true))
-    features.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil())
-    features.add(new SpatialConvolution[D](64, 64, 1, 1))
-    features.add(new ReLU[D](true))
-    features.add(new SpatialConvolution[D](64, 192, 3, 3, 1, 1, 1, 1))
-    features.add(new SpatialBatchNormalization(192, 1e-3))
-    features.add(new ReLU[D](true))
-    features.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil())
-    features.add(inception(192, T(T(64), T(64, 64), T(64, 96), T("avg", 32))))
-    features.add(inception(256, T(T(64), T(64, 96), T(64, 96), T("avg", 64))))
-    features.add(inception(320, T(T(0), T(128, 160), T(64, 96), T("max", 0))))
-    features.add(new SpatialConvolution[D](576, 576, 2, 2, 2, 2))
-    features.add(inception(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128))))
-    features.add(inception(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128))))
-    features.add(inception(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96))))
-    features.add(inception(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96))))
+    val features1 = new Sequential[D]
+    features1.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3))
+    features1.add(new SpatialBatchNormalization(64, 1e-3))
+    features1.add(new ReLU[D](true))
+    features1.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil())
+    features1.add(new SpatialConvolution[D](64, 64, 1, 1))
+    features1.add(new ReLU[D](true))
+    features1.add(new SpatialConvolution[D](64, 192, 3, 3, 1, 1, 1, 1))
+    features1.add(new SpatialBatchNormalization(192, 1e-3))
+    features1.add(new ReLU[D](true))
+    features1.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil())
+    features1.add(inception(192, T(T(64), T(64, 64), T(64, 96), T("avg", 32))))
+    features1.add(inception(256, T(T(64), T(64, 96), T(64, 96), T("avg", 64))))
+    features1.add(inception(320, T(T(0), T(128, 160), T(64, 96), T("max", 0))))
 
-    val mainBranch = new Sequential[D]
-    mainBranch.add(inception(576, T(T(0), T(128, 192), T(192, 256), T("max", 0))))
-    mainBranch.add(new SpatialConvolution[D](1024, 1024, 2, 2, 2, 2))
-    mainBranch.add(new SpatialBatchNormalization(1024, 1e-3))
-    mainBranch.add(inception(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128))))
-    mainBranch.add(inception(1024, T(T(352), T(192, 320), T(192, 224), T("max", 128))))
-    mainBranch.add(new SpatialAveragePooling[D](7, 7, 1, 1))
-    mainBranch.add(new View[D](1024).setNumInputDims(3))
-    mainBranch.add(new Linear[D](1024, classNum))
-    mainBranch.add(new LogSoftMax[D])
+    val output1 = new Sequential[D]
+    output1.add(new SpatialAveragePooling[D](5, 5, 3, 3).ceil())
+    output1.add(new SpatialConvolution[D](576, 128, 1, 1, 1, 1))
+    output1.add(new SpatialBatchNormalization(128, 1e-3))
+    output1.add(new ReLU[D](true))
+    output1.add(new View[D](128 * 4 * 4).setNumInputDims(3))
+    output1.add(new Linear[D](128 * 4 * 4, 1024))
+    output1.add(new ReLU[D](true))
+    output1.add(new Linear[D](1024, classNum))
+    output1.add(new LogSoftMax[D])
 
-    val auxClassifier = new Sequential[D]
-    auxClassifier.add(new SpatialAveragePooling[D](5, 5, 3, 3).ceil())
-    auxClassifier.add(new SpatialConvolution[D](576, 128, 1, 1, 1, 1))
-    auxClassifier.add(new SpatialBatchNormalization(128, 1e-3))
-    auxClassifier.add(new View[D](128 * 4 * 4).setNumInputDims(3))
-    auxClassifier.add(new Linear[D](128 * 4 * 4, 768))
-    auxClassifier.add(new ReLU[D]())
-    auxClassifier.add(new Linear[D](768, classNum))
-    auxClassifier.add(new LogSoftMax[D])
 
-    val splitter = new Concat[D](2)
-    splitter.add(mainBranch)
-    splitter.add(auxClassifier)
+    val features2 = new Sequential[D]
+    features2.add(inception(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128))))
+    features2.add(inception(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128))))
+    features2.add(inception(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96))))
+    features2.add(inception(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96))))
+    features2.add(inception(576, T(T(0), T(128, 192), T(192, 256), T("max", 0))))
 
-    val model = new Sequential[D]
-    model.add(features)
-    model.add(splitter)
+    val output2 = new Sequential[D]
+    output2.add(new SpatialAveragePooling[D](5, 5, 3, 3).ceil())
+    output2.add(new SpatialConvolution[D](1024, 128, 1, 1, 1, 1))
+    output2.add(new SpatialBatchNormalization(128, 1e-3))
+    output2.add(new ReLU[D](true))
+    output2.add(new View[D](128 * 2 * 2).setNumInputDims(3))
+    output2.add(new Linear[D](128 * 2 * 2, 1024))
+    output2.add(new ReLU[D](true))
+    output2.add(new Linear[D](1024, classNum))
+    output2.add(new LogSoftMax[D])
 
+    val output3 = new Sequential[D]
+    output3.add(inception(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128))))
+    output3.add(inception(1024, T(T(352), T(192, 320), T(192, 224), T("max", 128))))
+    output3.add(new SpatialAveragePooling[D](7, 7, 1, 1).ceil())
+    output3.add(new View[D](1024).setNumInputDims(3))
+    output3.add(new Linear[D](1024, classNum))
+    output3.add(new LogSoftMax[D])
+
+    val split2 = new Concat[D](2)
+    split2.add(output3)
+    split2.add(output2)
+
+    val mainBranch = new Sequential[D]()
+    mainBranch.add(features2)
+    mainBranch.add(split2)
+
+    val split1 = new Concat[D](2)
+    split1.add(mainBranch)
+    split1.add(output1)
+
+    val model = new Sequential[D]()
+
+    model.add(features1)
+    model.add(split1)
+
+    model.reset()
     model
   }
 
@@ -202,8 +224,13 @@ object GoogleNet_v2 {
     conv3.add(new SpatialConvolution[D](inputSize, config[Table](2)(1), 1, 1, 1, 1))
     conv3.add(new SpatialBatchNormalization(config[Table](2)(1), 1e-3))
     conv3.add(new ReLU[D](true))
-    conv3.add(new SpatialConvolution[D](config[Table](2)(1),
-      config[Table](2)(2), 3, 3, 1, 1, 1, 1))
+    if(config[Table](4)[String](1) == "max" && config[Table](4)[Int](2) == 0) {
+      conv3.add(new SpatialConvolution[D](config[Table](2)(1),
+        config[Table](2)(2), 3, 3, 2, 2, 1, 1))
+    } else {
+      conv3.add(new SpatialConvolution[D](config[Table](2)(1),
+        config[Table](2)(2), 3, 3, 1, 1, 1, 1))
+    }
     conv3.add(new SpatialBatchNormalization(config[Table](2)(2), 1e-3))
     conv3.add(new ReLU[D](true))
     concat.add(conv3)
@@ -218,17 +245,26 @@ object GoogleNet_v2 {
     conv3xx.add(new SpatialBatchNormalization(config[Table](3)(2), 1e-3))
     conv3xx.add(new ReLU[D](true))
 
-    conv3xx.add(new SpatialConvolution[D](config[Table](3)(2),
-      config[Table](3)(2), 3, 3, 1, 1, 1, 1))
+    if(config[Table](4)[String](1) == "max" && config[Table](4)[Int](2) == 0) {
+      conv3xx.add(new SpatialConvolution[D](config[Table](3)(2),
+        config[Table](3)(2), 3, 3, 2, 2, 1, 1))
+    } else {
+      conv3xx.add(new SpatialConvolution[D](config[Table](3)(2),
+        config[Table](3)(2), 3, 3, 1, 1, 1, 1))
+    }
     conv3xx.add(new SpatialBatchNormalization(config[Table](3)(2), 1e-3))
     conv3xx.add(new ReLU[D](true))
     concat.add(conv3xx)
 
     val pool = new Sequential[D]
-    pool.add(new SpatialZeroPadding[D](1, 1, 1, 1))
     config[Table](4)[String](1) match {
-      case "max" => pool.add(new SpatialMaxPooling[D](3, 3, 1, 1).ceil())
-      case "avg" => pool.add(new SpatialAveragePooling[D](3, 3, 1, 1).ceil())
+      case "max" =>
+        if(config[Table](4)[Int](2) != 0) {
+          pool.add(new SpatialMaxPooling[D](3, 3, 1, 1, 1, 1).ceil())
+        } else {
+          pool.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil())
+        }
+      case "avg" => pool.add(new SpatialAveragePooling[D](3, 3, 1, 1, 1, 1).ceil())
       case _ => throw new IllegalArgumentException
     }
 
@@ -238,7 +274,6 @@ object GoogleNet_v2 {
       pool.add(new ReLU[D]())
     }
     concat.add(pool)
-
     concat
   }
 }
