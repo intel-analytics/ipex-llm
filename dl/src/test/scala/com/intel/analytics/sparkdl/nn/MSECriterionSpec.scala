@@ -17,15 +17,15 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.torch
 import org.scalatest.FlatSpec
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.math._
 
 class MSECriterionSpec extends FlatSpec {
   "A MSE Criterion " should "generate correct output and grad" in {
     val mse = new MSECriterion[Double]
-    val input = torch.Tensor[Double](2, 2, 2)
+    val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 0.17503996845335
     input(Array(1, 1, 2)) = 0.83220188552514
     input(Array(1, 2, 1)) = 0.48450597329065
@@ -34,7 +34,7 @@ class MSECriterionSpec extends FlatSpec {
     input(Array(2, 1, 2)) = 0.34398410236463
     input(Array(2, 2, 1)) = 0.55356747563928
     input(Array(2, 2, 2)) = 0.20383032318205
-    val target = torch.Tensor[Double](2, 2, 2)
+    val target = Tensor[Double](2, 2, 2)
     target(Array(1, 1, 1)) = 0.69956525065936
     target(Array(1, 1, 2)) = 0.86074831243604
     target(Array(1, 2, 1)) = 0.54923197557218
@@ -44,7 +44,7 @@ class MSECriterionSpec extends FlatSpec {
     target(Array(2, 2, 1)) = 0.49997645849362
     target(Array(2, 2, 2)) = 0.23869121982716
     val expectedOutput = 0.08947300078144
-    val expectedGrad = torch.Tensor[Double](2, 2, 2)
+    val expectedGrad = Tensor[Double](2, 2, 2)
     expectedGrad(Array(1, 1, 1)) = -0.1311313205515
     expectedGrad(Array(1, 1, 2)) = -0.0071366067277268
     expectedGrad(Array(1, 2, 1)) = -0.016181500570383
@@ -65,7 +65,7 @@ class MSECriterionSpec extends FlatSpec {
   "A MSE Criterion with sizeAverage:false " should "generate correct output and grad" in {
     val mse = new MSECriterion[Double]
     mse.sizeAverage = false
-    val input = torch.Tensor[Double](2, 2, 2)
+    val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 0.64631252549589
     input(Array(1, 1, 2)) = 0.1541522629559
     input(Array(1, 2, 1)) = 0.6778122568503
@@ -74,7 +74,7 @@ class MSECriterionSpec extends FlatSpec {
     input(Array(2, 1, 2)) = 0.83826910308562
     input(Array(2, 2, 1)) = 0.27449130127206
     input(Array(2, 2, 2)) = 0.63781907199882
-    val target = torch.Tensor[Double](2, 2, 2)
+    val target = Tensor[Double](2, 2, 2)
     target(Array(1, 1, 1)) = 0.8999215872027
     target(Array(1, 1, 2)) = 0.7839112279471
     target(Array(1, 2, 1)) = 0.11587709793821
@@ -84,7 +84,7 @@ class MSECriterionSpec extends FlatSpec {
     target(Array(2, 2, 1)) = 0.37541538593359
     target(Array(2, 2, 2)) = 0.34106521727517
     val expectedOutput = 1.1619503498653
-    val expectedGrad = torch.Tensor[Double](2, 2, 2)
+    val expectedGrad = Tensor[Double](2, 2, 2)
     expectedGrad(Array(1, 1, 1)) = -0.50721812341362
     expectedGrad(Array(1, 1, 2)) = -1.2595179299824
     expectedGrad(Array(1, 2, 1)) = 1.1238703178242

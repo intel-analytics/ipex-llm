@@ -21,6 +21,7 @@ import java.io._
 
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.tensor._
+import com.intel.analytics.sparkdl.utils.File
 import com.intel.analytics.sparkdl.utils.TorchObject._
 
 import scala.io.Source
@@ -49,7 +50,7 @@ object TH {
     val luaTime = runNM(code: String, parameters: Map[String, Any], result: Array[String])
 
     result.foreach { k =>
-      val tmp: Any = torch.load(subPath + k + suffix)
+      val tmp: Any = File.load(subPath + k + suffix)
       resultMap += (k -> tmp)
     }
 
@@ -79,26 +80,26 @@ object TH {
       parameters(k) match {
         case _: Tensor[_] =>
           if (parameters(k).asInstanceOf[Tensor[_]].getType() == FloatType) {
-            torch.save(parameters(k), tmpPath, TYPE_FLOAT_TENSOR)
+            File.save(parameters(k), tmpPath, TYPE_FLOAT_TENSOR)
           } else {
-            torch.save(parameters(k), tmpPath, TYPE_DOUBLE_TENSOR)
+            File.save(parameters(k), tmpPath, TYPE_DOUBLE_TENSOR)
           }
         case _: Linear[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_LINEAR)
+          File.save(parameters(k), tmpPath, TYPE_LINEAR)
         case _: SpatialConvolution[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_SPATIALCONVOLUTION)
+          File.save(parameters(k), tmpPath, TYPE_SPATIALCONVOLUTION)
         case _: SpatialMaxPooling[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_SPATIALMAXPOOLING)
+          File.save(parameters(k), tmpPath, TYPE_SPATIALMAXPOOLING)
         case _: Threshold[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_THRESHOLD)
+          File.save(parameters(k), tmpPath, TYPE_THRESHOLD)
         case _: Concat[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_CONCAT)
+          File.save(parameters(k), tmpPath, TYPE_CONCAT)
         case _: Sequential[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_SEQUENTIAL)
+          File.save(parameters(k), tmpPath, TYPE_SEQUENTIAL)
         case _: View[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_VIEW)
+          File.save(parameters(k), tmpPath, TYPE_VIEW)
         case _: Dropout[_] =>
-          torch.save(parameters(k), tmpPath, TYPE_DROPOUT)
+          File.save(parameters(k), tmpPath, TYPE_DROPOUT)
         case _ =>
       }
       varCode.append(k + " = torch.load(\'" + tmpPath + "\')\n")
@@ -162,7 +163,7 @@ object TH {
     val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
     val absolutePath = tmpFile.getAbsolutePath
     val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
-    val tmp: Any = torch.load(subPath + result + suffix)
+    val tmp: Any = File.load(subPath + result + suffix)
     tmp
   }
 

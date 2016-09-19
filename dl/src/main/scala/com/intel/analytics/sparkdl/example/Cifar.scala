@@ -23,7 +23,7 @@ import com.intel.analytics.sparkdl.optim._
 import com.intel.analytics.sparkdl.ps.{OneReduceParameterManager, ParameterManager}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
-import com.intel.analytics.sparkdl.utils.Table
+import com.intel.analytics.sparkdl.utils.{File, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
@@ -141,8 +141,8 @@ object Cifar {
     val size = images.size
     val featureShape = Array(3, 32, 32)
     val featureSize = featureShape.product
-    val input = torch.Tensor[Double](Array(size) ++ featureShape)
-    val target = torch.Tensor[Double](size)
+    val input = Tensor[Double](Array(size) ++ featureShape)
+    val target = Tensor[Double](size)
     val features = input.storage().asInstanceOf[Storage[Double]].array()
     val targets = target.storage().asInstanceOf[Storage[Double]].array()
     var i = 0
@@ -163,8 +163,8 @@ object Cifar {
       input: Seq[(Double, Array[Double])]): (Tensor[Double], Tensor[Double]) = {
       val size = batchSize
       val featureShape = Array(3, 32, 32)
-      val result = torch.Tensor[Double](Array(size) ++ featureShape)
-      val target = torch.Tensor[Double](size)
+      val result = Tensor[Double](Array(size) ++ featureShape)
+      val target = Tensor[Double](size)
       val features = result.storage().array()
       val targets = target.storage().array()
       var i = 0
@@ -347,7 +347,7 @@ object Cifar {
   }
 
   def getModel(file: String): Module[Double] = {
-    val model = torch.load[Module[Double]](file)
+    val model = File.load[Module[Double]](file)
     model
   }
 

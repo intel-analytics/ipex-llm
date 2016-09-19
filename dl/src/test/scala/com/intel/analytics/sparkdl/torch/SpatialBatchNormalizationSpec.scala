@@ -19,9 +19,10 @@ package com.intel.analytics.sparkdl.torch
 
 import breeze.numerics.abs
 import com.intel.analytics.sparkdl.nn.SpatialBatchNormalization
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+
 
 class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAndAfter {
   before {
@@ -37,20 +38,20 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
 
     val sbn = new SpatialBatchNormalization[Double](3, 1e-3)
 
-    val input = torch.Tensor[Double](16, 3, 4, 4)
+    val input = Tensor[Double](16, 3, 4, 4)
     var i = 0
     input.apply1(e => {
       RNG.uniform(0.0, 255)
     })
     //    input.apply1(e => 0.5)
-    val gradOutput = torch.Tensor[Double](16, 3, 4, 4)
+    val gradOutput = Tensor[Double](16, 3, 4, 4)
     i = 0
     gradOutput.apply1(e => {
       i += 1;
       0.1 * i
     })
 
-    val gradOutput2 = torch.Tensor[Double](16, 3, 4, 4)
+    val gradOutput2 = Tensor[Double](16, 3, 4, 4)
     i = 0
     gradOutput2.apply1(e => {
       i += 1;
@@ -134,20 +135,20 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
 
     val sbn = new SpatialBatchNormalization[Double](3, 1e-3)
 
-    val input = torch.Tensor[Double](16, 3, 4, 4)
+    val input = Tensor[Double](16, 3, 4, 4)
     var i = 0
     input.apply1(e => {
       RNG.uniform(0.0, 255)
     })
     //    input.apply1(e => 0.5)
-    val gradOutput = torch.Tensor[Double](16, 3, 4, 4)
+    val gradOutput = Tensor[Double](16, 3, 4, 4)
     i = 0
     gradOutput.apply1(e => {
       i += 1;
       0.1 * i
     })
 
-    val gradOutput2 = torch.Tensor[Double](16, 3, 4, 4)
+    val gradOutput2 = Tensor[Double](16, 3, 4, 4)
     i = 0
     gradOutput2.apply1(e => {
       i += 1;

@@ -17,7 +17,7 @@
 
 package com.intel.analytics.sparkdl.optim
 
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -34,7 +34,7 @@ class SGDSpec extends FlatSpec with Matchers {
       val v = x(Array(1))
       return (v * v, r)
     }
-    val x = torch.Tensor[Double](1)
+    val x = Tensor[Double](1)
     x.fill(10)
     for (i <- 1 to 10) {
       optimMethod.optimize(feval, x, state, state)
@@ -44,7 +44,7 @@ class SGDSpec extends FlatSpec with Matchers {
 
   "sgd" should "perform well on rosenbrock function" in {
 
-    val x = torch.Tensor[Double](2).fill(0)
+    val x = Tensor[Double](2).fill(0)
     val config = T("learningRate" -> 1e-3)
     val optm = new SGD[Double]
     var fx = new ArrayBuffer[Double]

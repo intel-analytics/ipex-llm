@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.reflect.ClassTag
 
@@ -30,7 +30,7 @@ class GradientChecker(stepSize: Double, threshold: Double) {
     val computedGrad = layer.updateGradInput(input, gradOutput)
     computedGrad.resize(Array(computedGrad.nElement()))
 
-    val perturbation = torch.Tensor[T]()
+    val perturbation = Tensor[T]()
     perturbation.set(input)
     perturbation.resize(input.nElement())
     var result = true
@@ -54,7 +54,7 @@ class GradientChecker(stepSize: Double, threshold: Double) {
 
   def lossAndGradient[T: ClassTag](output: Tensor[T])(
     implicit ev: TensorNumeric[T]): (Double, Tensor[T]) = {
-    val gradOutput = torch.Tensor[T]().resizeAs(output).copy(output)
+    val gradOutput = Tensor[T]().resizeAs(output).copy(output)
     var loss = 0.0
     gradOutput.apply1(a => {
       val aDouble = ev.toType[Double](a)

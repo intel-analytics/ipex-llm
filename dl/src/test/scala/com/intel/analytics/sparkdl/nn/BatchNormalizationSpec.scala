@@ -17,7 +17,7 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.torch
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 class BatchNormalizationSpec extends FlatSpec with Matchers {
@@ -30,7 +30,7 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     bn.bias(1) = 0.1
     bn.bias(2) = 0.2
     bn.bias(3) = 0.3
-    val input = torch.Tensor[Double](3, 3)
+    val input = Tensor[Double](3, 3)
 
     var i = 0
     input.apply1(e => {
@@ -63,14 +63,14 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     bn.bias(1) = 0.1
     bn.bias(2) = 0.2
     bn.bias(3) = 0.3
-    val input = torch.Tensor[Double](3, 3)
+    val input = Tensor[Double](3, 3)
     var i = 0
     input.apply1(e => {
       i += 1; i
     })
     val output = bn.forward(input)
 
-    val gradOutput = torch.Tensor[Double](3, 3)
+    val gradOutput = Tensor[Double](3, 3)
     var j = 0.0
     gradOutput.apply1(e => {
       j += 0.1; j
@@ -113,14 +113,14 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     bn.bias(1) = 0.1
     bn.bias(2) = 0.2
     bn.bias(3) = 0.3
-    val input = torch.Tensor[Double](3, 3)
+    val input = Tensor[Double](3, 3)
     var i = 0
     input.apply1(e => {
       i += 1; i
     })
     var output = bn.forward(input)
 
-    val gradOutput = torch.Tensor[Double](3, 3)
+    val gradOutput = Tensor[Double](3, 3)
     var j = 0.0
     gradOutput.apply1(e => {
       j += 0.1; j

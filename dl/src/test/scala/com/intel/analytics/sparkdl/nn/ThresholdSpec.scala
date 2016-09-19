@@ -17,15 +17,15 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.torch
 import org.scalatest.FlatSpec
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.math.abs
 
 class ThresholdSpec extends FlatSpec {
   "A Threshold Module " should "generate correct output and grad" in {
     val module = new Threshold[Double](1, 0.8)
-    val input = torch.Tensor[Double](2, 2, 2)
+    val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = -0.89699813351035
     input(Array(1, 1, 2)) = 1.8529373928905
     input(Array(1, 2, 1)) = 1.8799053365365
@@ -34,7 +34,7 @@ class ThresholdSpec extends FlatSpec {
     input(Array(2, 1, 2)) = 0.73405137099326
     input(Array(2, 2, 1)) = 1.3404842875898
     input(Array(2, 2, 2)) = -0.64910735283047
-    val gradOutput = torch.Tensor[Double](2, 2, 2)
+    val gradOutput = Tensor[Double](2, 2, 2)
     gradOutput(Array(1, 1, 1)) = 0.31924905977212
     gradOutput(Array(1, 1, 2)) = 0.22160539613105
     gradOutput(Array(1, 2, 1)) = 0.19705923949368
@@ -43,7 +43,7 @@ class ThresholdSpec extends FlatSpec {
     gradOutput(Array(2, 1, 2)) = 0.7669838971924
     gradOutput(Array(2, 2, 1)) = 0.10939974407665
     gradOutput(Array(2, 2, 2)) = 0.70845287665725
-    val expectedOutput = torch.Tensor[Double](2, 2, 2)
+    val expectedOutput = Tensor[Double](2, 2, 2)
     expectedOutput(Array(1, 1, 1)) = 0.8
     expectedOutput(Array(1, 1, 2)) = 1.8529373928905
     expectedOutput(Array(1, 2, 1)) = 1.8799053365365
@@ -52,7 +52,7 @@ class ThresholdSpec extends FlatSpec {
     expectedOutput(Array(2, 1, 2)) = 0.8
     expectedOutput(Array(2, 2, 1)) = 1.3404842875898
     expectedOutput(Array(2, 2, 2)) = 0.8
-    val expectedGrad = torch.Tensor[Double](2, 2, 2)
+    val expectedGrad = Tensor[Double](2, 2, 2)
     expectedGrad(Array(1, 1, 1)) = 0
     expectedGrad(Array(1, 1, 2)) = 0.22160539613105
     expectedGrad(Array(1, 2, 1)) = 0.19705923949368
@@ -79,7 +79,7 @@ class ThresholdSpec extends FlatSpec {
 
   "A Threshold Module with inPlace = true" should "generate correct output and grad" in {
     val module = new Threshold[Double](1, 0.8, true)
-    val input = torch.Tensor[Double](2, 2, 2)
+    val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = -0.89699813351035
     input(Array(1, 1, 2)) = 1.8529373928905
     input(Array(1, 2, 1)) = 1.8799053365365
@@ -88,7 +88,7 @@ class ThresholdSpec extends FlatSpec {
     input(Array(2, 1, 2)) = 0.73405137099326
     input(Array(2, 2, 1)) = 1.3404842875898
     input(Array(2, 2, 2)) = -0.64910735283047
-    val gradOutput = torch.Tensor[Double](2, 2, 2)
+    val gradOutput = Tensor[Double](2, 2, 2)
     gradOutput(Array(1, 1, 1)) = 0.31924905977212
     gradOutput(Array(1, 1, 2)) = 0.22160539613105
     gradOutput(Array(1, 2, 1)) = 0.19705923949368
@@ -97,7 +97,7 @@ class ThresholdSpec extends FlatSpec {
     gradOutput(Array(2, 1, 2)) = 0.7669838971924
     gradOutput(Array(2, 2, 1)) = 0.10939974407665
     gradOutput(Array(2, 2, 2)) = 0.70845287665725
-    val expectedOutput = torch.Tensor[Double](2, 2, 2)
+    val expectedOutput = Tensor[Double](2, 2, 2)
     expectedOutput(Array(1, 1, 1)) = 0.8
     expectedOutput(Array(1, 1, 2)) = 1.8529373928905
     expectedOutput(Array(1, 2, 1)) = 1.8799053365365
@@ -106,7 +106,7 @@ class ThresholdSpec extends FlatSpec {
     expectedOutput(Array(2, 1, 2)) = 0.8
     expectedOutput(Array(2, 2, 1)) = 1.3404842875898
     expectedOutput(Array(2, 2, 2)) = 0.8
-    val expectedGrad = torch.Tensor[Double](2, 2, 2)
+    val expectedGrad = Tensor[Double](2, 2, 2)
     expectedGrad(Array(1, 1, 1)) = 0
     expectedGrad(Array(1, 1, 2)) = 0.22160539613105
     expectedGrad(Array(1, 2, 1)) = 0.19705923949368

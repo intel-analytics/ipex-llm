@@ -17,7 +17,7 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.math._
@@ -48,10 +48,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1, Array(nOutputPlane,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1, Array(nOutputPlane,
       nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     val output = layer.updateOutput(input)
     output(Array(1, 1, 1)) should be(49)
     output(Array(1, 1, 2)) should be(63)
@@ -90,10 +90,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(3, 1, 3, 4))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(3, 1, 3, 4))
     val output = layer.updateOutput(input)
     output(Array(1, 1, 1, 1)) should be(49)
     output(Array(1, 1, 1, 2)) should be(63)
@@ -140,10 +140,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 3, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 3, Array(1, 3, 3))
     val output = layer.updateOutput(input)
     output(Array(1, 1, 1)) should be(49)
     output(Array(1, 1, 2)) should be(63)
@@ -181,12 +181,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(1, 2, 2))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(1, 2, 2))
     layer.updateGradInput(input, gradOutput)
     layer.accGradParameters(input, gradOutput)
     val output = layer.updateOutput(input)
@@ -221,10 +221,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(1.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     val output = layer.updateOutput(input)
     output(Array(1, 1, 1)) should be(50)
     output(Array(1, 1, 2)) should be(64)
@@ -257,10 +257,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     val output = layer.updateOutput(input)
     output(Array(1, 1, 1)) should be(18)
     output(Array(1, 1, 2)) should be(30)
@@ -292,10 +292,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     val output = layer.updateOutput(input)
     output(Array(1, 1, 1)) should be(8)
     output(Array(1, 1, 2)) should be(13)
@@ -328,10 +328,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     val output = layer.updateOutput(input)
     output(Array(1, 1, 1)) should be(23)
     output(Array(1, 1, 2)) should be(49)
@@ -368,10 +368,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     val output = layer.updateOutput(input)
     output(Array(1, 1, 1)) should be(14)
     output(Array(1, 1, 2)) should be(23)
@@ -420,10 +420,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0, 0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(nInputPlane, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(nInputPlane, 3, 3))
     val output = layer.updateOutput(input)
     output(Array(1, 1, 1)) should be(49 * 2)
     output(Array(1, 1, 2)) should be(63 * 2)
@@ -473,10 +473,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0, 1.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(nInputPlane, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(nInputPlane, 3, 3))
     val output = layer.updateOutput(input)
     output(Array(1, 1, 1)) should be(49 * 2)
     output(Array(1, 1, 2)) should be(63 * 2)
@@ -532,10 +532,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0, 0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(nInputPlane, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(nInputPlane, 3, 3))
     val output = layer.updateOutput(input)
     output(Array(1, 1, 1)) should be(49 * 2)
     output(Array(1, 1, 2)) should be(63 * 2)
@@ -581,12 +581,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(1, 2, 2))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(1, 2, 2))
     val gradInput = layer.updateGradInput(input, gradOutput)
     gradInput(Array(1, 1, 1)) should be(2)
     gradInput(Array(1, 1, 2)) should be(7)
@@ -639,12 +639,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(3, 1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(3, 1, 3, 3))
     layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(3, 1, 2, 2))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(3, 1, 2, 2))
     val gradInput = layer.updateGradInput(input, gradOutput)
     gradInput(Array(1, 1, 1, 1)) should be(2)
     gradInput(Array(1, 1, 1, 2)) should be(7)
@@ -705,12 +705,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 2,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 2,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 4, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 4, Array(1, 3, 3))
     layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 3, Array(1, 2, 2))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 3, Array(1, 2, 2))
     val gradInput = layer.updateGradInput(input, gradOutput)
     gradInput(Array(1, 1, 1)) should be(2)
     gradInput(Array(1, 1, 2)) should be(7)
@@ -753,12 +753,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(1, 2, 2))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(1, 2, 2))
     layer.updateGradInput(input, gradOutput)
     layer.updateOutput(input)
     val gradInput = layer.updateGradInput(input, gradOutput)
@@ -803,12 +803,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(1, 2, 2))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(1, 2, 2))
     val gradInput = layer.updateGradInput(input, gradOutput)
     gradInput(Array(1, 1, 1)) should be(2)
     gradInput(Array(1, 1, 2)) should be(0)
@@ -850,12 +850,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(1, 2, 2))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(1, 2, 2))
     val gradInput = layer.updateGradInput(input, gradOutput)
     gradInput(Array(1, 1, 1)) should be(2)
     gradInput(Array(1, 1, 2)) should be(7)
@@ -898,12 +898,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(1, 2, 4))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(1, 2, 4))
     val gradInput = layer.updateGradInput(input, gradOutput)
     gradInput(Array(1, 1, 1)) should be(7)
     gradInput(Array(1, 1, 2)) should be(8)
@@ -948,12 +948,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(1, 4, 2))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(1, 4, 2))
     val gradInput = layer.updateGradInput(input, gradOutput)
     gradInput(Array(1, 1, 1)) should be(6)
     gradInput(Array(1, 1, 2)) should be(20)
@@ -1013,12 +1013,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0, 0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(nInputPlane, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(nInputPlane, 3, 3))
     val output = layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(2, 2, 2))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(2, 2, 2))
     val gradInput = layer.updateGradInput(input, gradOutput)
     gradInput(Array(1, 1, 1)) should be(4)
     gradInput(Array(1, 1, 2)) should be(14)
@@ -1114,12 +1114,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(-0.2619934213478, 0.28232013358659, -0.048443703240033)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(nInputPlane, 5, 6))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(nInputPlane, 5, 6))
     val output = layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1,
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1,
       Array(nOutputPlane, 3, 3))
     val gradInput = layer.updateGradInput(input, gradOutput)
     val expectedGradData = Array(
@@ -1142,7 +1142,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       -0.14235221, -0.20526800703813
     )
 
-    val expectedGrad = torch.Tensor[Double](torch.storage(expectedGradData), 1, Array(2, 5, 6))
+    val expectedGrad = Tensor[Double](Storage(expectedGradData), 1, Array(2, 5, 6))
     expectedGrad.map(gradInput, (v1, v2) => {
       v1 should be(v2 +- 1e-6);
       v1
@@ -1205,12 +1205,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0, 0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(nInputPlane, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(nInputPlane, 3, 3))
     val output = layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1,
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1,
       Array(nOutputPlane, 2, 2))
     val gradInput = layer.updateGradInput(input, gradOutput)
     gradInput(Array(1, 1, 1)) should be(6)
@@ -1263,12 +1263,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(1, 2, 2))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(1, 2, 2))
     layer.updateGradInput(input, gradOutput)
     layer.accGradParameters(input, gradOutput)
 
@@ -1321,12 +1321,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(3, 1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(3, 1, 3, 3))
     layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(3, 1, 2, 2))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(3, 1, 2, 2))
     layer.updateGradInput(input, gradOutput)
     layer.accGradParameters(input, gradOutput)
 
@@ -1368,12 +1368,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(1, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
     layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(1, 2, 2))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(1, 2, 2))
     layer.updateGradInput(input, gradOutput)
     layer.accGradParameters(input, gradOutput)
 
@@ -1432,12 +1432,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0, 0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(nInputPlane, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(nInputPlane, 3, 3))
     val output = layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(2, 2, 2))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(2, 2, 2))
     layer.updateGradInput(input, gradOutput)
     layer.accGradParameters(input, gradOutput)
 
@@ -1515,12 +1515,12 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0, 0.0, 0.0)
 
-    layer.weight.copy(torch.Tensor[Double](torch.storage(kernelData), 1,
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
       Array(nOutputPlane, nInputPlane, kH, kW)))
-    layer.bias.copy(torch.Tensor[Double](torch.storage(biasData), 1, Array(nOutputPlane)))
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(nInputPlane, 3, 3))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(nInputPlane, 3, 3))
     val output = layer.updateOutput(input)
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1,
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1,
       Array(nOutputPlane, 2, 2))
     layer.updateGradInput(input, gradOutput)
     layer.accGradParameters(input, gradOutput)
@@ -1571,11 +1571,11 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.00075597771376307, 0.24760437974888, 0.017539558871527,
       0.0097350586336657, 0.16691246244305, 0.089457577292526
     )
-    val weight = torch.Tensor[Double](torch.storage(weightData), 1, Array(3, 2, 2, 3))
+    val weight = Tensor[Double](Storage(weightData), 1, Array(3, 2, 2, 3))
     val biasData = Array(
       -0.2619934213478, 0.28232013358659, -0.048443703240033
     )
-    val bias = torch.Tensor[Double](torch.storage(biasData), 1, Array(3))
+    val bias = Tensor[Double](Storage(biasData), 1, Array(3))
     val module = new SpatialConvolution[Double](2, 3, 3, 2, 2, 3, 1, 2)
     module.weight.copy(weight)
     module.bias.copy(bias)
@@ -1602,7 +1602,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.41214634198695, 0.37712478893809, 0.96965333609842, 0.76970787090249, 0.4584473001305,
       0.55620927736163
     )
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(2, 5, 6))
+    val input = Tensor[Double](Storage(inputData), 1, Array(2, 5, 6))
     val gradOutputData = Array(
       0.62875230400823, 0.32400949206203, 0.34562376490794,
       0.48625181033276, 0.99999123509042, 0.13880217191763,
@@ -1616,7 +1616,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.27066777111031, 0.56331930914894, 0.040327817667276,
       0.53744582436047, 0.54968754481524, 0.045935253845528
     )
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(3, 3, 3))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(3, 3, 3))
     val expectedOutputData = Array(
       -0.2619934213478, -0.2619934213478, -0.2619934213478,
       -0.83737774911124, -0.38522056607752, -0.73170056476513,
@@ -1630,7 +1630,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.30583199116269, -0.032030947882614, 0.33200759191869,
       -0.026512479362137, 0.057499212591395, -0.30984396543234
     )
-    val expectedOutput = torch.Tensor[Double](torch.storage(expectedOutputData), 1, Array(3, 3, 3))
+    val expectedOutput = Tensor[Double](Storage(expectedOutputData), 1, Array(3, 3, 3))
     val expectedGradData = Array(
       0, 0, 0, 0, 0, 0,
       -0.17478219987071, -0.061261206120279, -0.13082965455208, -0.11008777280852,
@@ -1650,7 +1650,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.070098395440994, 0.054066545221617, 0.010560706796531, 0.033162304609837,
       -0.14235221, -0.20526800703813
     )
-    val expectedGrad = torch.Tensor[Double](torch.storage(expectedGradData), 1, Array(2, 5, 6))
+    val expectedGrad = Tensor[Double](Storage(expectedGradData), 1, Array(2, 5, 6))
     val inputOrg = input.clone()
     val gradOutputOrg = gradOutput.clone()
     val output = module.forward(input)
@@ -1668,7 +1668,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val gradBiasData = Array(
       5.1377515662462, 3.8248416814022, 2.8428408897016
     )
-    val gradBias = torch.Tensor[Double](torch.storage(gradBiasData), 1, Array(3))
+    val gradBias = Tensor[Double](Storage(gradBiasData), 1, Array(3))
     val gradWeightData = Array(
       2.0666666537599, 1.5350372840705, 2.5491404817346,
       0.079378455201224, 0.66457160043632, 0.3247547531408,
@@ -1688,7 +1688,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.6242494305183, 1.1418853367335, 0.94981153758242,
       0.44375239087041, 0.2308612946304, 0.278725442139
     )
-    val gradWeight = torch.Tensor[Double](torch.storage(gradWeightData), 1, Array(3, 2, 2, 3))
+    val gradWeight = Tensor[Double](Storage(gradWeightData), 1, Array(3, 2, 2, 3))
     module.gradBias.map(gradBias, (v1, v2) => {
       assert(abs(v1 - v2) < 1e-6);
       v1
@@ -1720,11 +1720,11 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.00075597771376307, 0.24760437974888, 0.017539558871527,
       0.0097350586336657, 0.16691246244305, 0.089457577292526
     )
-    val weight = torch.Tensor[Double](torch.storage(weightData), 1, Array(3, 2, 2, 3))
+    val weight = Tensor[Double](Storage(weightData), 1, Array(3, 2, 2, 3))
     val biasData = Array(
       -0.2619934213478, 0.28232013358659, -0.048443703240033
     )
-    val bias = torch.Tensor[Double](torch.storage(biasData), 1, Array(3))
+    val bias = Tensor[Double](Storage(biasData), 1, Array(3))
     val module = new SpatialConvolution[Double](2, 3, 3, 2, 2, 3, 1, 2)
     module.weight.copy(weight)
     module.bias.copy(bias)
@@ -1751,7 +1751,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.41214634198695, 0.37712478893809, 0.96965333609842, 0.76970787090249, 0.4584473001305,
       0.55620927736163
     )
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(2, 5, 6))
+    val input = Tensor[Double](Storage(inputData), 1, Array(2, 5, 6))
     val gradOutputData = Array(
       0.62875230400823, 0.32400949206203, 0.34562376490794,
       0.48625181033276, 0.99999123509042, 0.13880217191763,
@@ -1765,7 +1765,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.27066777111031, 0.56331930914894, 0.040327817667276,
       0.53744582436047, 0.54968754481524, 0.045935253845528
     )
-    val gradOutput = torch.Tensor[Double](torch.storage(gradOutputData), 1, Array(3, 3, 3))
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(3, 3, 3))
     val expectedOutputData = Array(
       -0.2619934213478, -0.2619934213478, -0.2619934213478,
       -0.83737774911124, -0.38522056607752, -0.73170056476513,
@@ -1779,7 +1779,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.30583199116269, -0.032030947882614, 0.33200759191869,
       -0.026512479362137, 0.057499212591395, -0.30984396543234
     )
-    val expectedOutput = torch.Tensor[Double](torch.storage(expectedOutputData), 1, Array(3, 3, 3))
+    val expectedOutput = Tensor[Double](Storage(expectedOutputData), 1, Array(3, 3, 3))
     val expectedGradData = Array(
       0, 0, 0, 0, 0, 0,
       -0.17478219987071, -0.061261206120279, -0.13082965455208, -0.11008777280852,
@@ -1799,7 +1799,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.070098395440994, 0.054066545221617, 0.010560706796531, 0.033162304609837,
       -0.14235221, -0.20526800703813
     )
-    val expectedGrad = torch.Tensor[Double](torch.storage(expectedGradData), 1, Array(2, 5, 6))
+    val expectedGrad = Tensor[Double](Storage(expectedGradData), 1, Array(2, 5, 6))
     val inputOrg = input.clone()
     val gradOutputOrg = gradOutput.clone()
     module.forward(input)
@@ -1819,7 +1819,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val gradBiasData = Array(
       5.1377515662462, 3.8248416814022, 2.8428408897016
     )
-    val gradBias = torch.Tensor[Double](torch.storage(gradBiasData), 1, Array(3))
+    val gradBias = Tensor[Double](Storage(gradBiasData), 1, Array(3))
     val gradWeightData = Array(
       2.0666666537599, 1.5350372840705, 2.5491404817346,
       0.079378455201224, 0.66457160043632, 0.3247547531408,
@@ -1839,7 +1839,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.6242494305183, 1.1418853367335, 0.94981153758242,
       0.44375239087041, 0.2308612946304, 0.278725442139
     )
-    val gradWeight = torch.Tensor[Double](torch.storage(gradWeightData), 1, Array(3, 2, 2, 3))
+    val gradWeight = Tensor[Double](Storage(gradWeightData), 1, Array(3, 2, 2, 3))
     module.gradBias.map(gradBias * 2, (v1, v2) => {
       assert(abs(v1 - v2) < 1e-6);
       v1
@@ -1873,11 +1873,11 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       -0.13420979883522, -0.02474349392578, -0.07446510232985, -0.06092475168407,
       -0.024276099633425
     )
-    val weight = torch.Tensor[Double](torch.storage(weightData), 1, Array(2, 1, 5, 5))
+    val weight = Tensor[Double](Storage(weightData), 1, Array(2, 1, 5, 5))
     val biasData = Array(
       -0.140272492636, 0.12101946240291
     )
-    val bias = torch.Tensor[Double](torch.storage(biasData), 1, Array(2))
+    val bias = Tensor[Double](Storage(biasData), 1, Array(2))
     val exInputData = Array(
       1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
       1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2,
@@ -1888,7 +1888,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       1.8, 1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5,
       1.9, 2, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6
     )
-    val exInput = torch.Tensor[Double](torch.storage(exInputData), 1, Array(1, 8, 8))
+    val exInput = Tensor[Double](Storage(exInputData), 1, Array(1, 8, 8))
     val exOutputData = Array(
       -0.11965132333453, -0.12005417477305, -0.12045702621157, -0.12085987765009,
       -0.12005417477305, -0.12045702621157, -0.12085987765009, -0.12126272908862,
@@ -1899,7 +1899,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.11257671489626, 0.11794821764604, 0.12331972039582, 0.1286912231456,
       0.11794821764604, 0.12331972039582, 0.1286912231456, 0.13406272589537
     )
-    val exOutput = torch.Tensor[Double](torch.storage(exOutputData), 1, Array(32))
+    val exOutput = Tensor[Double](Storage(exOutputData), 1, Array(32))
     val exGradInputData = Array(
       0.0079654085733948, 0.0096565042347231, 0.014703831650016, 0.033518589810872,
       0.042944031100268, 0.041046080578993, 0.035838139843191, 0.017224067379238,
@@ -1918,7 +1918,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       0.014089544022944, 0.00053779660636034, -0.00096172856578671, -5.9256955889099e-05,
       -0.007382602101755, 0.0061204756133857, 0.0076231763364756, 0.0066996137710091
     )
-    val exGradInput = torch.Tensor[Double](torch.storage(exGradInputData), 1, Array(1, 8, 8))
+    val exGradInput = Tensor[Double](Storage(exGradInputData), 1, Array(1, 8, 8))
     val exWeightData = Array(
       -0.10789623575114, -0.13057475680118, -0.1489912616964, -0.13037506002174,
       -0.12873374150111,
@@ -1942,11 +1942,11 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       -0.1177339176977, -0.0071056864391529, -0.055665368494115, -0.040963091499226,
       -0.0031525130994743
     )
-    val exWeight = torch.Tensor[Double](torch.storage(exWeightData), 1, Array(2, 1, 5, 5))
+    val exWeight = Tensor[Double](Storage(exWeightData), 1, Array(2, 1, 5, 5))
     val exBiasData = Array(
       -0.12589204188339, 0.13263872589399
     )
-    val exBias = torch.Tensor[Double](torch.storage(exBiasData), 1, Array(2))
+    val exBias = Tensor[Double](Storage(exBiasData), 1, Array(2))
     val gradWeightData = Array(
       -1.6813905293348, -1.7934765170998, -1.9055625048648, -2.0176484926298, -2.1297344803948,
       -1.7934765170998, -1.9055625048648, -2.0176484926298, -2.1297344803948, -2.2418204681598,
@@ -1960,11 +1960,11 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       -1.5863503325497, -1.6745555107851, -1.7627606890205, -1.8509658672559, -1.9391710454913,
       -1.6745555107851, -1.7627606890205, -1.8509658672559, -1.9391710454913, -2.0273762237267
     )
-    val gradWeight = torch.Tensor[Double](torch.storage(gradWeightData), 1, Array(2, 1, 5, 5))
+    val gradWeight = Tensor[Double](Storage(gradWeightData), 1, Array(2, 1, 5, 5))
     val gradBiasData = Array(
       -1.1208598776501, -0.88205178235396
     )
-    val gradBias = torch.Tensor[Double](torch.storage(gradBiasData), 1, Array(2))
+    val gradBias = Tensor[Double](Storage(gradBiasData), 1, Array(2))
     val exErr = 1.0172073752036
     val maxIter = 10
     var model = new Sequential[Double]()
@@ -1976,13 +1976,13 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val linearInputNum = 2 * 4 * 4
     val rs = new Reshape[Double](Array(linearInputNum), Some(false))
     model.add(rs)
-    val input = torch.Tensor[Double](10, 1, 8, 8)
+    val input = Tensor[Double](10, 1, 8, 8)
     for (i <- 1 to 10)
       for (j <- 1 to 8)
         for (k <- 1 to 8)
           input(Array(i, 1, j, k)) = (i + j + k) / 10.0
     val loss = new MSECriterion[Double]()
-    val t = torch.Tensor[Double](linearInputNum)
+    val t = Tensor[Double](linearInputNum)
     t.fill(1)
     var err = 0.0
     var output: Tensor[Double] = null
@@ -2047,7 +2047,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     }
 
 
-    val input = torch.Tensor[Double](torch.storage(inputData), 1, Array(nInputPlane, 32, 32))
+    val input = Tensor[Double](Storage(inputData), 1, Array(nInputPlane, 32, 32))
     val output = layer.updateOutput(input)
   }
 
@@ -2064,7 +2064,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       padW, padH)
     layer.reset()
 
-    val input = torch.Tensor[Double](2, 1, 5, 5).rand()
+    val input = Tensor[Double](2, 1, 5, 5).rand()
     val checker = new GradientChecker(1e-2, 1e-2)
     checker.checkLayer(layer, input) should be(true)
 

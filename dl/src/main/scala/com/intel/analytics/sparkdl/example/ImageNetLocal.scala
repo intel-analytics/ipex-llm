@@ -22,8 +22,8 @@ import java.util
 
 import com.intel.analytics.sparkdl.nn.ClassNLLCriterion
 import com.intel.analytics.sparkdl.optim.SGD
-import com.intel.analytics.sparkdl.tensor.torch
-import com.intel.analytics.sparkdl.utils.T
+import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.utils.{File, T}
 
 object ImageNetLocal {
   val startTime = System.nanoTime()
@@ -95,8 +95,8 @@ object ImageNetLocal {
     val sgd = new SGD[Double]
     val state = T("momentum" -> 0.9, "dampening" -> 0.0)
     val stageImgs = new util.ArrayDeque[Image](batchSize)
-    val input = torch.Tensor[Double](batchSize, 3, 224, 224)
-    val target = torch.Tensor[Double](batchSize)
+    val input = Tensor[Double](batchSize, 3, 224, 224)
+    val target = Tensor[Double](batchSize)
     val iter = ImageNetUtils.toTensorDouble(
       donkey.map(d => {
         stageImgs.push(d._2)
@@ -190,8 +190,8 @@ object ImageNetLocal {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Accuracy is $accuracy")
 
         // Save model to a file each epoch
-        torch.saveObj(model, s"${netType}${accuracy}.model${i}", true)
-        torch.saveObj(state, s"${netType}${accuracy}.state${i}", true)
+        File.save(model, s"${netType}${accuracy}.model${i}", true)
+        File.save(state, s"${netType}${accuracy}.state${i}", true)
       }
 
       log("shuffle")
@@ -246,8 +246,8 @@ object ImageNetLocal {
     val sgd = new SGD[Float]
     val state = T("momentum" -> 0.9, "dampening" -> 0.0)
     val stageImgs = new util.ArrayDeque[Image](batchSize)
-    val input = torch.Tensor[Float](batchSize, 3, 224, 224)
-    val target = torch.Tensor[Float](batchSize)
+    val input = Tensor[Float](batchSize, 3, 224, 224)
+    val target = Tensor[Float](batchSize)
     val meanRFloat = meanR.toFloat
     val meanGFloat = meanG.toFloat
     val meanBFloat = meanB.toFloat

@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.Reshape
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
@@ -33,9 +33,9 @@ class ReshapeSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A Reshape Module " should "generate correct output and grad" in {
     val module = new Reshape[Double](Array(3, 2))
 
-    val input = torch.Tensor[Double](4, 1, 6)
+    val input = Tensor[Double](4, 1, 6)
     input.rand()
-    val gradOutput = torch.Tensor[Double](4, 3, 2)
+    val gradOutput = Tensor[Double](4, 3, 2)
     gradOutput.rand()
 
     val start = System.nanoTime()

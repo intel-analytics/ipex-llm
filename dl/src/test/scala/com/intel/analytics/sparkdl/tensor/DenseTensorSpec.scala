@@ -44,7 +44,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
 
   "Construct with storage" should "return 1D vector" in {
     val storage = Array(1.0, 2.0, 3.0)
-    val t: Tensor[Double] = new DenseTensor(torch.storage(storage))
+    val t: Tensor[Double] = new DenseTensor(Storage(storage))
     t.nDimension should be(1)
     t.size().length should be(1)
     t.size(1) should be(3)
@@ -114,7 +114,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   }
 
   "One index on a 1d-dimension tensor" should "return value" in {
-    val t: Tensor[Double] = new DenseTensor(torch.storage(Array(3.0, 4, 5)))
+    val t: Tensor[Double] = new DenseTensor(Storage(Array(3.0, 4, 5)))
     t.valueAt(2) should be(4.0)
   }
 
@@ -152,7 +152,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   "One index update a multi-dimension tensor with tensor" should
     "copy the tensor to the subset" in {
     val t: Tensor[Double] = new DenseTensor[Double](3, 2).fill(1)
-    val src: Tensor[Double] = new DenseTensor(torch.storage(Array(8.0, 9)))
+    val src: Tensor[Double] = new DenseTensor(Storage(Array(8.0, 9)))
     t(2) = src
     t(Array(1, 1)) should be(1)
     t(Array(1, 2)) should be(1)
@@ -163,7 +163,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   }
 
   "One index update a 1d-dimension tensor" should "update the value" in {
-    val t: Tensor[Double] = new DenseTensor(torch.storage(Array(3.0, 4, 5)))
+    val t: Tensor[Double] = new DenseTensor(Storage(Array(3.0, 4, 5)))
     t(2) = 6
     t.valueAt(1) should be(3.0)
     t.valueAt(2) should be(6.0)
@@ -204,7 +204,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t(Array(3, 1)) should be(7)
     t(Array(3, 2)) should be(6)
 
-    val src: Tensor[Double] = new DenseTensor(torch.storage(Array(9.0, 10)))
+    val src: Tensor[Double] = new DenseTensor(Storage(Array(9.0, 10)))
 
     t(T(T(2, 3), 1)) = src
     t(Array(1, 1)) should be(1)
@@ -255,7 +255,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   }
 
   "clone" should "get a seperated tensor" in {
-    val t: Tensor[Double] = new DenseTensor(torch.storage(Array(1.0, 2, 3)))
+    val t: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2, 3)))
     val t1 = t.clone()
     t.isSameSizeAs(t1) should be(true)
     t1.isContiguous() should be(true)
@@ -388,18 +388,18 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   }
 
   "equals" should "be correct" in {
-    val t: Tensor[Double] = new DenseTensor(torch.storage(Array(1.0, 2, 3)))
-    val t1: Tensor[Double] = new DenseTensor(torch.storage(Array(1.0, 2, 3)))
-    val t2: Tensor[Double] = new DenseTensor(torch.storage(Array(1.0, 2, 4)))
+    val t: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2, 3)))
+    val t1: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2, 3)))
+    val t2: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2, 4)))
 
     t == t1 should be(true)
     t == t2 should be(false)
   }
 
   "hashCode" should "be correct" in {
-    val t: Tensor[Double] = new DenseTensor(torch.storage(Array(1.0, 2, 3)))
-    val t1: Tensor[Double] = new DenseTensor(torch.storage(Array(1.0, 2, 3)))
-    val t2: Tensor[Double] = new DenseTensor(torch.storage(Array(1.0, 2, 4)))
+    val t: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2, 3)))
+    val t1: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2, 3)))
+    val t2: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2, 4)))
 
     t.hashCode() == t1.hashCode() should be(true)
     t.hashCode() == t2.hashCode() should be(false)
@@ -410,7 +410,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val EMPTY_STRING =
       """[com.intel.analytics.sparkdl.tensor.DenseTensor$mcD$sp with no dimension]"""
     t.toString should be(EMPTY_STRING)
-    t = new DenseTensor(torch.storage(Array(1.0, 2.0, 3.0)))
+    t = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
     val OneD_STRING =
       "1.0\n" +
         "2.0\n" +
@@ -462,7 +462,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   }
 
   "unfold" should "be correct" in {
-    val x = torch.Tensor[Double](3)
+    val x = Tensor[Double](3)
     for (i <- 1 to 3) x(i) = i
 
     x.unfold(1, 2, 1)(Array(1, 1)) should be(1)
@@ -485,13 +485,13 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   }
 
   "randperm" should "be correct" in {
-    val a = torch.randperm[Double](1)
+    val a = Tensor.randperm[Double](1)
     a.size(1) should be(1)
     a(Array(1)) should be(1.0)
   }
 
   "expand" should "be correct" in {
-    val x = torch.Tensor[Double](3, 1)
+    val x = Tensor[Double](3, 1)
     var i = 0
     x.apply1(e => {
       i += 1; i
@@ -512,9 +512,9 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   }
 
   "repreatTensor" should "generate right tensor" in {
-    val x = torch.Tensor[Double](3)
+    val x = Tensor[Double](3)
     for (i <- 1 to 3) x(i) = i
-    val result = torch.repeatTensor[Double](x, 2, 2)
+    val result = Tensor.repeatTensor[Double](x, 2, 2)
 
     result.nDimension() should be(2)
     result.size(1) should be(2)
@@ -533,11 +533,11 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     result(Array(2, 5)) should be(2)
     result(Array(2, 6)) should be(3)
 
-    val result2 = torch.repeatTensor(x, 3, 2)
+    val result2 = Tensor.repeatTensor(x, 3, 2)
   }
 
   "Tensor to BreezeMatrix" should "correct" in {
-    val tensor = new DenseTensor(torch.storage[Double](Array(1.0, 2, 3, 4)), 1, Array(2, 2))
+    val tensor = new DenseTensor(Storage[Double](Array(1.0, 2, 3, 4)), 1, Array(2, 2))
     val matrix = tensor.toBreezeMatrix()
     matrix.isTranspose should be(true)
     matrix(0, 0) should be(1.0)
@@ -557,14 +557,14 @@ class DenseTensorSpec extends FlatSpec with Matchers {
 
   "BreezeMatrix to Tensor" should "correct" in {
     val matrix = new BrzDenseMatrix(2, 2, Array(1.0, 2.0, 3.0, 4.0))
-    val tensor = torch.Tensor(matrix)
+    val tensor = Tensor(matrix)
     tensor(Array(1, 1)) should be(1.0)
     tensor(Array(1, 2)) should be(2.0)
     tensor(Array(2, 1)) should be(3.0)
     tensor(Array(2, 2)) should be(4.0)
 
     val matrixTranspose = new BrzDenseMatrix(2, 2, Array(1.0, 2.0, 3.0, 4.0), 0, 2, true)
-    val tensorTranspose = torch.Tensor(matrixTranspose)
+    val tensorTranspose = Tensor(matrixTranspose)
     tensorTranspose(Array(1, 1)) should be(1.0)
     tensorTranspose(Array(1, 2)) should be(3.0)
     tensorTranspose(Array(2, 1)) should be(2.0)
@@ -572,7 +572,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   }
 
   "Tensor to BreezeVector" should "correct" in {
-    val tensor = new DenseTensor(torch.storage(Array(1.0, 2, 3, 4)))
+    val tensor = new DenseTensor(Storage(Array(1.0, 2, 3, 4)))
     val vector = tensor.toBreezeVector()
     vector(0) should be(1.0)
     vector(1) should be(2.0)
@@ -582,7 +582,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
 
   "BreezeVector to Tensor" should "correct" in {
     val vector = new BrzDenseVector(Array(1.0, 2.0, 3.0, 4.0))
-    val tensor = torch.Tensor(vector)
+    val tensor = Tensor(vector)
     tensor(Array(1)) should be(1.0)
     tensor(Array(2)) should be(2.0)
     tensor(Array(3)) should be(3.0)
@@ -590,7 +590,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   }
 
   "Tensor to MLMatrix" should "correct" in {
-    val tensor = new DenseTensor(torch.storage(Array(1.0, 2, 3, 4)), 1, Array(2, 2))
+    val tensor = new DenseTensor(Storage(Array(1.0, 2, 3, 4)), 1, Array(2, 2))
     val matrix = tensor.toMLlibMatrix()
     matrix.isTransposed should be(true)
     matrix(0, 0) should be(1.0)
@@ -610,14 +610,14 @@ class DenseTensorSpec extends FlatSpec with Matchers {
 
   "MLMatrix to Tensor" should "correct" in {
     val matrix = new DenseMatrix(2, 2, Array(1.0, 2.0, 3.0, 4.0))
-    val tensor = torch.Tensor(matrix)
+    val tensor = Tensor(matrix)
     tensor(Array(1, 1)) should be(1.0)
     tensor(Array(2, 1)) should be(2.0)
     tensor(Array(1, 2)) should be(3.0)
     tensor(Array(2, 2)) should be(4.0)
 
     val matrixTranspose = new DenseMatrix(2, 2, Array(1.0, 2.0, 3.0, 4.0), true)
-    val tensorTranspose = torch.Tensor(matrixTranspose)
+    val tensorTranspose = Tensor(matrixTranspose)
     tensorTranspose(Array(1, 1)) should be(1.0)
     tensorTranspose(Array(1, 2)) should be(3.0)
     tensorTranspose(Array(2, 1)) should be(2.0)
@@ -625,7 +625,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   }
 
   "Tensor to MLVector" should "correct" in {
-    val tensor = new DenseTensor(torch.storage(Array(1.0, 2, 3, 4)))
+    val tensor = new DenseTensor(Storage(Array(1.0, 2, 3, 4)))
     val vector = tensor.toMLlibVector()
     vector(0) should be(1.0)
     vector(1) should be(2.0)
@@ -635,7 +635,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
 
   "MLVector to Tensor" should "correct" in {
     val vector = new DenseVector(Array(1.0, 2.0, 3.0, 4.0))
-    val tensor = torch.Tensor(vector)
+    val tensor = Tensor(vector)
     tensor(Array(1)) should be(1.0)
     tensor(Array(2)) should be(2.0)
     tensor(Array(3)) should be(3.0)

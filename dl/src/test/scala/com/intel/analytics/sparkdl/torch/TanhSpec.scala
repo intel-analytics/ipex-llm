@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.Tanh
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
@@ -32,7 +32,7 @@ class TanhSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "A Tanh Module " should "generate correct output and grad" in {
     val module = new Tanh[Double]()
-    val input = torch.Tensor[Double](2, 2, 2)
+    val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = -0.17020166106522
     input(Array(1, 1, 2)) = 0.57785657607019
     input(Array(1, 2, 1)) = -1.3404131438583
@@ -41,7 +41,7 @@ class TanhSpec extends FlatSpec with BeforeAndAfter with Matchers {
     input(Array(2, 1, 2)) = -1.5014141565189
     input(Array(2, 2, 1)) = 0.3380249235779
     input(Array(2, 2, 2)) = -0.625677742064
-    val gradOutput = torch.Tensor[Double](2, 2, 2)
+    val gradOutput = Tensor[Double](2, 2, 2)
     gradOutput(Array(1, 1, 1)) = 0.79903302760795
     gradOutput(Array(1, 1, 2)) = 0.019753993256018
     gradOutput(Array(1, 2, 1)) = 0.63136631483212

@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.Table
 
 import scala.reflect.ClassTag
@@ -49,7 +49,7 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
       dfdx.add(ev.fromType[Double](wd), x)
     } else if (wds != null) {
       val decayParameters = _state.get[Tensor[T]]("decayParameters").getOrElse({
-        val DP = torch.Tensor[T]().resizeAs(dfdx)
+        val DP = Tensor[T]().resizeAs(dfdx)
         _state("decayParameters") = DP
         DP
       })
@@ -60,7 +60,7 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     if (mom != 0) {
       val stateDFDX = _state.get[Tensor[T]]("dfdx") match {
         case None =>
-          val DFDX = torch.Tensor[T]().resizeAs(dfdx).copy(dfdx)
+          val DFDX = Tensor[T]().resizeAs(dfdx).copy(dfdx)
           _state("dfdx") = DFDX
           DFDX
         case s: Some[Tensor[T]] => s.get.mul(ev.fromType[Double](mom)).
@@ -78,7 +78,7 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
 
     if (lrs != null) {
       val deltaParameters = _state.get[Tensor[T]]("deltaParameters").getOrElse({
-        val deltaP = torch.Tensor[T]().resizeAs(dfdx)
+        val deltaP = Tensor[T]().resizeAs(dfdx)
         _state("deltaParameters") = deltaP
         deltaP
       })

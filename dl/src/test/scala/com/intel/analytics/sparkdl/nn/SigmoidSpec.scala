@@ -17,15 +17,15 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.torch
 import org.scalatest.FlatSpec
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.math.abs
 
 class SigmoidSpec extends FlatSpec {
   "A Sigmoid Module " should "generate correct output and grad" in {
     val module = new Sigmoid[Double]
-    val input = torch.Tensor[Double](2, 2, 2)
+    val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 0.063364277360961
     input(Array(1, 1, 2)) = 0.90631252736785
     input(Array(1, 2, 1)) = 0.22275671223179
@@ -34,7 +34,7 @@ class SigmoidSpec extends FlatSpec {
     input(Array(2, 1, 2)) = 0.97488326719031
     input(Array(2, 2, 1)) = 0.94414822547697
     input(Array(2, 2, 2)) = 0.68123375508003
-    val gradOutput = torch.Tensor[Double](2, 2, 2)
+    val gradOutput = Tensor[Double](2, 2, 2)
     gradOutput(Array(1, 1, 1)) = 0.38652365817688
     gradOutput(Array(1, 1, 2)) = 0.034144022269174
     gradOutput(Array(1, 2, 1)) = 0.68105488433503
@@ -43,7 +43,7 @@ class SigmoidSpec extends FlatSpec {
     gradOutput(Array(2, 1, 2)) = 0.35317355184816
     gradOutput(Array(2, 2, 1)) = 0.24361599306576
     gradOutput(Array(2, 2, 2)) = 0.65869987895712
-    val expectedOutput = torch.Tensor[Double](2, 2, 2)
+    val expectedOutput = Tensor[Double](2, 2, 2)
     expectedOutput(Array(1, 1, 1)) = 0.51583577126786
     expectedOutput(Array(1, 1, 2)) = 0.71224499952187
     expectedOutput(Array(1, 2, 1)) = 0.55546003768115
@@ -52,7 +52,7 @@ class SigmoidSpec extends FlatSpec {
     expectedOutput(Array(2, 1, 2)) = 0.72609176575892
     expectedOutput(Array(2, 2, 1)) = 0.71993681755829
     expectedOutput(Array(2, 2, 2)) = 0.66401400310487
-    val expectedGrad = torch.Tensor[Double](2, 2, 2)
+    val expectedGrad = Tensor[Double](2, 2, 2)
     expectedGrad(Array(1, 1, 1)) = 0.096533985368059
     expectedGrad(Array(1, 1, 2)) = 0.0069978877068295
     expectedGrad(Array(1, 2, 1)) = 0.16816892172375

@@ -687,8 +687,8 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     require(dim > 0 && dim <= this.nDimension, "dimension out of range")
     val sizes = this.size() // here slice
     sizes(dim - 1) = 1
-    val values = torch.Tensor[T](sizes)
-    val indices = torch.Tensor[T](sizes)
+    val values = Tensor[T](sizes)
+    val indices = Tensor[T](sizes)
     DenseTensorDimApply.dimApply3[T](this, values, indices, dim, (tdata, toffset, tstride,
     tsize, vdata, voffset, vstride,
     vsize, idata, ioffset, istride, isize) => {
@@ -845,12 +845,12 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       xSize = Array(1) ++ xSize
       i += 1
     }
-    val size = new DenseTensor(torch.storage[T](xSize.map(x => ev.fromType[Int](x)))).
-      cmul(new DenseTensor(torch.storage[T](sizes.map(x => ev.fromType[Int](x))))).
+    val size = new DenseTensor(Storage[T](xSize.map(x => ev.fromType[Int](x)))).
+      cmul(new DenseTensor(Storage[T](sizes.map(x => ev.fromType[Int](x))))).
       storage().array().map(x => ev.toType[Int](x))
     xTensor.resize(xSize)
     result.resize(size)
-    var urTensor = torch.Tensor(result)
+    var urTensor = Tensor(result)
 
     i = 1
     while (i <= xTensor.dim()) {
@@ -1141,10 +1141,10 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     val topKSize = this.size()
     topKSize(selectDim - 1) = k
 
-    val resultTensor = if (result == null) torch.Tensor[T]() else result
+    val resultTensor = if (result == null) Tensor[T]() else result
     resultTensor.resize(topKSize)
 
-    val indicesTensor = if (indices == null) torch.Tensor[T]() else indices
+    val indicesTensor = if (indices == null) Tensor[T]() else indices
     indicesTensor.resize(topKSize)
 
     DenseTensorDimApply.dimApply3[T](this, resultTensor, indicesTensor, selectDim,
@@ -1539,7 +1539,7 @@ object DenseTensor {
       i = i - 1
     }
 
-    torch.Tensor(new ArrayStorage(array))
+    Tensor(new ArrayStorage(array))
   }
 
   private[tensor] def sameStride(l: Array[Int], r: Array[Int]): Boolean = {

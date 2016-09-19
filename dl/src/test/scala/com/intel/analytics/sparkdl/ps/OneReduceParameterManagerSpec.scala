@@ -18,10 +18,10 @@
 package com.intel.analytics.sparkdl.ps
 
 import com.intel.analytics.sparkdl.optim.SGD
-import com.intel.analytics.sparkdl.tensor.torch
 import com.intel.analytics.sparkdl.utils.{Engine, T}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
@@ -35,14 +35,14 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
   "sync and get parameter" should "be correct" in {
     sc = new SparkContext("local[4]", "OneReduceParameterManagerSpec")
-    val param = torch.Tensor[Double](5)
+    val param = Tensor[Double](5)
     param.setValue(1, 1.0)
     param.setValue(2, 2.0)
     param.setValue(3, 3.0)
     param.setValue(4, 4.0)
     param.setValue(5, 5.0)
     val parameters = sc.parallelize(Seq(1 to 5), 5)
-      .mapPartitions(iter => Iterator.single(torch.Tensor[Double](5).randn()))
+      .mapPartitions(iter => Iterator.single(Tensor[Double](5).randn()))
 
     val pm = new OneReduceParameterManager(param, parameters)
     val newParams = pm.sync(parameters)
@@ -51,7 +51,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
   it should "be correct for float parameter" in {
     sc = new SparkContext("local[4]", "OneReduceParameterManagerSpec")
-    val param = torch.Tensor[Float](5)
+    val param = Tensor[Float](5)
     param.setValue(1, 1.0f)
     param.setValue(2, 2.0f)
     param.setValue(3, 3.0f)
@@ -59,7 +59,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
     param.setValue(5, 5.0f)
 
     val parameters = sc.parallelize(Seq(1 to 5), 5)
-      .mapPartitions(iter => Iterator.single(torch.Tensor[Float](5).randn()))
+      .mapPartitions(iter => Iterator.single(Tensor[Float](5).randn()))
     val pm = new OneReduceParameterManager(param, parameters)
     val newParams = pm.sync(parameters)
     newParams.collect().map(_ should be(param))
@@ -67,7 +67,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
   "sum and update" should "be correct" in {
     sc = new SparkContext("local[4]", "OneReduceParameterManagerSpec")
-    val param = torch.Tensor[Double](5)
+    val param = Tensor[Double](5)
     param.setValue(1, 1.0)
     param.setValue(2, 2.0)
     param.setValue(3, 3.0)
@@ -76,7 +76,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
     val parameters = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
-        val result = torch.Tensor[Double](5)
+        val result = Tensor[Double](5)
         result.setValue(1, 4.0)
         result.setValue(2, 3.0)
         result.setValue(3, 6.0)
@@ -89,7 +89,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
       w.add(g)
     })
 
-    val target = torch.Tensor[Double](5)
+    val target = Tensor[Double](5)
     target.setValue(1, 21.0)
     target.setValue(2, 17.0)
     target.setValue(3, 33.0)
@@ -100,7 +100,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
   it should "be correct for float parameter" in {
     sc = new SparkContext("local[4]", "OneReduceParameterManagerSpec")
-    val param = torch.Tensor[Float](5)
+    val param = Tensor[Float](5)
     param.setValue(1, 1.0f)
     param.setValue(2, 2.0f)
     param.setValue(3, 3.0f)
@@ -109,7 +109,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
     val parameters = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
-        val result = torch.Tensor[Float](5)
+        val result = Tensor[Float](5)
         result.setValue(1, 4.0f)
         result.setValue(2, 3.0f)
         result.setValue(3, 6.0f)
@@ -122,7 +122,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
       w.add(g)
     })
 
-    val target = torch.Tensor[Float](5)
+    val target = Tensor[Float](5)
     target.setValue(1, 21.0f)
     target.setValue(2, 17.0f)
     target.setValue(3, 33.0f)
@@ -133,7 +133,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
   it should "be correct for sgd" in {
     sc = new SparkContext("local[4]", "AllReduceParameterManagerSpec")
-    val parameters = torch.Tensor[Double](9)
+    val parameters = Tensor[Double](9)
     parameters.setValue(1, 1.0)
     parameters.setValue(2, 2.0)
     parameters.setValue(3, 3.0)
@@ -148,7 +148,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
     Engine.setCoreNum(1000)
     val gradients = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
-        val result = torch.Tensor[Double](9)
+        val result = Tensor[Double](9)
         result.setValue(1, 4.0)
         result.setValue(2, 3.0)
         result.setValue(3, 6.0)
@@ -174,7 +174,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
   it should "state should be saved" in {
     sc = new SparkContext("local[4]", "OneReduceParameterManagerSpec")
-    val param = torch.Tensor[Double](5)
+    val param = Tensor[Double](5)
     param.setValue(1, 1.0)
     param.setValue(2, 2.0)
     param.setValue(3, 3.0)
@@ -183,7 +183,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
     val parameters = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
-        val result = torch.Tensor[Double](5)
+        val result = Tensor[Double](5)
         result.setValue(1, 4.0)
         result.setValue(2, 3.0)
         result.setValue(3, 6.0)
@@ -202,7 +202,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
       w.add(g)
     })
 
-    val target = torch.Tensor[Double](5)
+    val target = Tensor[Double](5)
     target.setValue(1, 41.0)
     target.setValue(2, 32.0)
     target.setValue(3, 63.0)
@@ -213,11 +213,11 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
 
   "get state" should "return modified state" in {
     sc = new SparkContext("local[4]", "OneReduceParameterManagerSpec")
-    val param = torch.Tensor[Double](5)
+    val param = Tensor[Double](5)
 
     val parameters = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
-        val result = torch.Tensor[Double](5)
+        val result = Tensor[Double](5)
         Iterator.single(result)
       })
     val pm = new OneReduceParameterManager(param, parameters)

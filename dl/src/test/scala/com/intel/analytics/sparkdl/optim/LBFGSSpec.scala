@@ -17,15 +17,15 @@
 
 package com.intel.analytics.sparkdl.optim
 
-import com.intel.analytics.sparkdl.tensor.torch
 import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.collection.mutable.ArrayBuffer
 
 class LBFGSSpec extends FlatSpec with Matchers {
   "torchLBFGS in regular batch test" should "perform well on rosenbrock function" in {
-    val x = torch.Tensor[Double](2).fill(0)
+    val x = Tensor[Double](2).fill(0)
     val optm = new LBFGS[Double]
     val result = optm.optimize(TestUtils.rosenBrock, x,
       T("maxIter" -> 100, "learningRate" -> 1e-1))
@@ -47,7 +47,7 @@ class LBFGSSpec extends FlatSpec with Matchers {
   }
 
   "torchLBFGS in stochastic test" should "perform well on rosenbrock function" in {
-    val x = torch.Tensor[Double](2).fill(0)
+    val x = Tensor[Double](2).fill(0)
     val optm = new LBFGS[Double]
     val fx = new ArrayBuffer[Double]()
 

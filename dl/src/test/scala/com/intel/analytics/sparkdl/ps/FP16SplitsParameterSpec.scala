@@ -17,12 +17,12 @@
 
 package com.intel.analytics.sparkdl.ps
 
-import com.intel.analytics.sparkdl.tensor.torch
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 class FP16SplitsParameterSpec extends FlatSpec with Matchers {
   "convert double tensor to fp16 array and back" should "be same when the number is integer" in {
-    val tensor = torch.Tensor[Double](5)
+    val tensor = Tensor[Double](5)
     tensor.setValue(1, 1.0)
     tensor.setValue(2, 2.0)
     tensor.setValue(3, 3.0)
@@ -38,7 +38,7 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "get a truncated value when the number is float with to many mantissa" in {
-    val tensor = torch.Tensor[Double](5)
+    val tensor = Tensor[Double](5)
     tensor.setValue(1, 1.111111)
     tensor.setValue(2, 2.111111)
     tensor.setValue(3, 3.111111)
@@ -48,7 +48,7 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
     val parameter = new FP16SplitsParameter[Double](tensor, 3)
     parameter.copyTo(tensor)
 
-    val target = torch.Tensor[Double](5)
+    val target = Tensor[Double](5)
     target.setValue(1, 1.109375)
     target.setValue(2, 2.109375)
     target.setValue(3, 3.109375)
@@ -59,7 +59,7 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be correct when only perform on a slice" in {
-    val tensor = torch.Tensor[Double](5)
+    val tensor = Tensor[Double](5)
     tensor.setValue(1, 1.111111)
     tensor.setValue(2, 2.111111)
     tensor.setValue(3, 3.111111)
@@ -72,7 +72,7 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
     val test = tensor.clone()
     parameter2.copyTo(0, test, 2, 2)
 
-    val target = torch.Tensor[Double](5)
+    val target = Tensor[Double](5)
     target.setValue(1, 1.111111)
     target.setValue(2, 2.111111)
     target.setValue(3, 3.109375)
@@ -83,7 +83,7 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "throw exception when slice size is not consisted" in {
-    val tensor = torch.Tensor[Double](5)
+    val tensor = Tensor[Double](5)
     val parameter = new FP16SplitsParameter[Double](tensor, 3)
     intercept[IllegalArgumentException] {
       parameter.bytes(1, 2)
@@ -91,7 +91,7 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
   }
 
   "convert float tensor to fp16 array and back" should "be same when the number is integer" in {
-    val tensor = torch.Tensor[Float](5)
+    val tensor = Tensor[Float](5)
     tensor.setValue(1, 1.0f)
     tensor.setValue(2, 2.0f)
     tensor.setValue(3, 3.0f)
@@ -108,7 +108,7 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
 
 
   it should "get a truncated value when the number is float with to many mantissa" in {
-    val tensor = torch.Tensor[Float](5)
+    val tensor = Tensor[Float](5)
     tensor.setValue(1, 1.111111f)
     tensor.setValue(2, 2.111111f)
     tensor.setValue(3, 3.111111f)
@@ -118,7 +118,7 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
     val parameter = new FP16SplitsParameter[Float](tensor, 3)
     parameter.copyTo(tensor)
 
-    val target = torch.Tensor[Float](5)
+    val target = Tensor[Float](5)
     target.setValue(1, 1.109375f)
     target.setValue(2, 2.109375f)
     target.setValue(3, 3.109375f)
@@ -129,7 +129,7 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be correct when only perform on a slice" in {
-    val tensor = torch.Tensor[Float](5)
+    val tensor = Tensor[Float](5)
     tensor.setValue(1, 1.111111f)
     tensor.setValue(2, 2.111111f)
     tensor.setValue(3, 3.111111f)
@@ -142,7 +142,7 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
     val test = tensor.clone()
     parameter2.copyTo(0, test, 2, 2)
 
-    val target = torch.Tensor[Float](5)
+    val target = Tensor[Float](5)
     target.setValue(1, 1.111111f)
     target.setValue(2, 2.111111f)
     target.setValue(3, 3.109375f)
@@ -153,7 +153,7 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "throw exception when slice size is not consisted" in {
-    val tensor = torch.Tensor[Float](5)
+    val tensor = Tensor[Float](5)
     val parameter = new FP16SplitsParameter[Float](tensor, 3)
     intercept[IllegalArgumentException] {
       parameter.bytes(1, 2)

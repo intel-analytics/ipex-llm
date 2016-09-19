@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.SpatialAveragePooling
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
@@ -32,7 +32,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with BeforeAndAfter with Matche
 
   "A SpatialAveragePooling" should "generate correct output and gradInput" in {
     val module = new SpatialAveragePooling[Double](3, 2, 2, 1)
-    val input = torch.Tensor[Double](1, 4, 3)
+    val input = Tensor[Double](1, 4, 3)
     input(Array(1, 1, 1)) = 0.25434372201562
     input(Array(1, 1, 2)) = 0.20443214406259
     input(Array(1, 1, 3)) = 0.33442943682894
@@ -45,7 +45,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with BeforeAndAfter with Matche
     input(Array(1, 4, 1)) = 0.14862711215392
     input(Array(1, 4, 2)) = 0.050680571002886
     input(Array(1, 4, 3)) = 0.93014938035049
-    val gradOutput = torch.Tensor[Double](1, 3, 1)
+    val gradOutput = Tensor[Double](1, 3, 1)
     gradOutput(Array(1, 1, 1)) = 0.22147525195032
     gradOutput(Array(1, 2, 1)) = 0.30394183006138
     gradOutput(Array(1, 3, 1)) = 0.77438542619348

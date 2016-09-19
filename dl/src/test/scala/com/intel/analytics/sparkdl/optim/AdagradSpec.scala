@@ -17,15 +17,15 @@
 
 package com.intel.analytics.sparkdl.optim
 
-import com.intel.analytics.sparkdl.tensor.torch
 import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.collection.mutable.ArrayBuffer
 
 class AdagradSpec extends FlatSpec with Matchers {
   "adagrad" should "perform well on rosenbrock function" in {
-    val x = torch.Tensor[Double](2).fill(0)
+    val x = Tensor[Double](2).fill(0)
     val config = T("learningRate" -> 1e-1)
     val optm = new Adagrad[Double]
     var fx = new ArrayBuffer[Double]

@@ -22,7 +22,7 @@ import java.util.HashMap
 import com.intel.analytics.sparkdl.example.GoogleNet
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.sparkdl.optim.SGD
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.torch.TH
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.utils.{RandomGenerator, T}
@@ -38,8 +38,8 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     Random.setSeed(3)
-    val input = torch.Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = torch.Tensor[Double](4).apply1(e => Random.nextInt(1000))
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
+    val labels = Tensor[Double](4).apply1(e => Random.nextInt(1000))
 
     val seed = 100
     RNG.setSeed(seed)
@@ -227,7 +227,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val errTorch = TH.map("err").asInstanceOf[HashMap[Double, Double]].get(1.0)
     val errTest = criterion.forward(outputTest, labels)
     println(s"err:${abs(errTest - errTorch)}")
-    assert(abs(errTest - errTorch) < 4e-11)
+    assert(abs(errTest - errTorch) < 4e-10)
 
     val gradOutputTorch = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
     val gradOutputTest = criterion.backward(outputTest, labels)
@@ -246,8 +246,8 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     Random.setSeed(3)
-    val input = torch.Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = torch.Tensor[Double](4).apply1(e => Random.nextInt(1000))
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
+    val labels = Tensor[Double](4).apply1(e => Random.nextInt(1000))
 
     val seed = 100
     RNG.setSeed(seed)

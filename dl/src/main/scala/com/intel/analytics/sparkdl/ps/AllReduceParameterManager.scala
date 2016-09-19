@@ -19,7 +19,7 @@ package com.intel.analytics.sparkdl.ps
 
 import com.intel.analytics.sparkdl.optim.Metrics
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.{Engine, T, Table}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.{BlockId, StorageLevel, TaskResultBlockId}
@@ -98,8 +98,8 @@ class AllReduceParameterManager[T: ClassTag](
       var localState: Table = null
       while (k < localSplits.length) {
         if (localSplits(k).partitionId == pid) {
-          localWeight = torch.Tensor[T](localSplits(k).length)(driverClassTag, driverEV)
-          localGradient = torch.Tensor[T](localSplits(k).length)(driverClassTag, driverEV)
+          localWeight = Tensor[T](localSplits(k).length)(driverClassTag, driverEV)
+          localGradient = Tensor[T](localSplits(k).length)(driverClassTag, driverEV)
           localState = T()
         }
         k += 1

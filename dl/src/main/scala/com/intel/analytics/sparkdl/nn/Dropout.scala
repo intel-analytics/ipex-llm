@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.{Engine, RandomGenerator}
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
@@ -30,7 +30,7 @@ class Dropout[@specialized(Float, Double) T: ClassTag](
   val initP: Double = 0.5, val inplace: Boolean = false, var scale: Boolean = true)(
   implicit ev: TensorNumeric[T]) extends Module[T] {
   private var p = initP
-  var noise = torch.Tensor[T]()
+  var noise = Tensor[T]()
 
   @transient
   protected var results: Array[Future[Unit]] = null

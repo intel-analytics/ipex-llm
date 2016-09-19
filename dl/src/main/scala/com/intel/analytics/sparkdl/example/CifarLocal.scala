@@ -20,8 +20,8 @@ package com.intel.analytics.sparkdl.example
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim.SGD
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
-import com.intel.analytics.sparkdl.utils.T
+import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import com.intel.analytics.sparkdl.utils.{File, T}
 
 import scala.io.Source
 import scala.reflect.ClassTag
@@ -62,25 +62,25 @@ class CifarLocal[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNum
     val netType = args(9)
 
 
-    val fullTrainData = torch.Tensor[T](50000, 3, 32, 32)
-    val fullTrainLabel = torch.Tensor[T](50000)
+    val fullTrainData = Tensor[T](50000, 3, 32, 32)
+    val fullTrainLabel = Tensor[T](50000)
     var i = 1
     val trainDataFile = Source.fromFile(trainFile).getLines().foreach { line =>
       val record = line.split("\\|")
       val label = ev.fromType[Double](record(0).toDouble)
-      val image = torch.Tensor[T](torch.storage[T](record.slice(1, record.length).map(_.toDouble).
+      val image = Tensor[T](Storage[T](record.slice(1, record.length).map(_.toDouble).
         map(ev.fromType[Double](_))))
       fullTrainLabel(i) = label
       fullTrainData(i).copy(image)
       i += 1
     }
     i = 1
-    val fullTestData = torch.Tensor[T](10000, 3, 32, 32)
-    val fullTestLabel = torch.Tensor[T](10000)
+    val fullTestData = Tensor[T](10000, 3, 32, 32)
+    val fullTestLabel = Tensor[T](10000)
     val testDataFile = Source.fromFile(testFile).getLines().foreach { line =>
       val record = line.split("\\|")
       val label = ev.fromType[Double](record(0).toDouble)
-      val image = torch.Tensor[T](torch.storage[T](record.slice(1, record.length).map(_.toDouble).
+      val image = Tensor[T](Storage[T](record.slice(1, record.length).map(_.toDouble).
         map(ev.fromType[Double](_))))
       fullTestLabel(i) = label
       fullTestData(i).copy(image)
@@ -218,7 +218,7 @@ class CifarLocal[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNum
   }
 
   def getModel(file: String): Module[Double] = {
-    val model = torch.load[Module[Double]](file)
+    val model = File.load[Module[Double]](file)
 
     model
   }

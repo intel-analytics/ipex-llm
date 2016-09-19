@@ -17,15 +17,15 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.torch
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.math.abs
 
 class TanhSpec extends FlatSpec with Matchers {
   "A Tanh Module " should "generate correct output and grad" in {
     val module = new Tanh[Double]()
-    val input = torch.Tensor[Double](2, 2, 2)
+    val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = -0.17020166106522
     input(Array(1, 1, 2)) = 0.57785657607019
     input(Array(1, 2, 1)) = -1.3404131438583
@@ -34,7 +34,7 @@ class TanhSpec extends FlatSpec with Matchers {
     input(Array(2, 1, 2)) = -1.5014141565189
     input(Array(2, 2, 1)) = 0.3380249235779
     input(Array(2, 2, 2)) = -0.625677742064
-    val gradOutput = torch.Tensor[Double](2, 2, 2)
+    val gradOutput = Tensor[Double](2, 2, 2)
     gradOutput(Array(1, 1, 1)) = 0.79903302760795
     gradOutput(Array(1, 1, 2)) = 0.019753993256018
     gradOutput(Array(1, 2, 1)) = 0.63136631483212
@@ -43,7 +43,7 @@ class TanhSpec extends FlatSpec with Matchers {
     gradOutput(Array(2, 1, 2)) = 0.030344664584845
     gradOutput(Array(2, 2, 1)) = 0.33804601291195
     gradOutput(Array(2, 2, 2)) = 0.8807330634445
-    val expectedOutput = torch.Tensor[Double](2, 2, 2)
+    val expectedOutput = Tensor[Double](2, 2, 2)
     expectedOutput(Array(1, 1, 1)) = -0.16857698275003
     expectedOutput(Array(1, 1, 2)) = 0.52110579963112
     expectedOutput(Array(1, 2, 1)) = -0.87177144344863
@@ -52,7 +52,7 @@ class TanhSpec extends FlatSpec with Matchers {
     expectedOutput(Array(2, 1, 2)) = -0.90540347425835
     expectedOutput(Array(2, 2, 1)) = 0.32571298952384
     expectedOutput(Array(2, 2, 2)) = -0.55506882753488
-    val expectedGrad = torch.Tensor[Double](2, 2, 2)
+    val expectedGrad = Tensor[Double](2, 2, 2)
     expectedGrad(Array(1, 1, 1)) = 0.77632594793144
     expectedGrad(Array(1, 1, 2)) = 0.014389771607755
     expectedGrad(Array(1, 2, 1)) = 0.15153710218424
@@ -79,7 +79,7 @@ class TanhSpec extends FlatSpec with Matchers {
 
   "A Tanh Module " should "be good in gradient check" in {
     val module = new Tanh[Double]()
-    val input = torch.Tensor[Double](2, 2, 2).rand()
+    val input = Tensor[Double](2, 2, 2).rand()
 
     val checker = new GradientChecker(1e-2, 1e-2)
     checker.checkLayer(module, input) should be(true)
