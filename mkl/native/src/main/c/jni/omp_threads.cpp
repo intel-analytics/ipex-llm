@@ -10,19 +10,20 @@ extern "C" {
  * Method:    setNumThreads
  * Signature: (I)V
  */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_setNumThreads
-  (JNIEnv * env, jclass cls, jint num_threads) {
+JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_setNumThreads(
+    JNIEnv* env, jclass cls, jint num_threads)
+{
   omp_set_num_threads(num_threads);
 }
-
 
 /*
  * Class:     com_intel_webscaleml_mkl_MKL
  * Method:    getNumThreads
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_getNumThreads
-  (JNIEnv * env, jclass cls) {
+JNIEXPORT jint JNICALL
+Java_com_intel_analytics_sparkdl_mkl_MKL_getNumThreads(JNIEnv* env, jclass cls)
+{
   return omp_get_max_threads();
 }
 /*
