@@ -29,7 +29,9 @@ import scala.reflect.ClassTag
  * @param ev
  * @tparam T
  */
-class Echo[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T]) extends Module[T] {
+class Echo[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T])
+  extends Module[T] {
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     this.output = input
     println(s"${getName()} : Activation size is ${input.size().mkString("x")}")

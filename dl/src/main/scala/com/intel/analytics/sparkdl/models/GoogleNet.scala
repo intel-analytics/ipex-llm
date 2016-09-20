@@ -170,7 +170,8 @@ object GoogleNet_v2 {
     val features2 = new Sequential[D]
     features2.add(inception(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128)), "inception_4a/"))
     features2.add(inception(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)), "inception_4b/"))
-    features2.add(inception(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96)), "inception_4c/"))
+    features2.add(inception(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96)),
+      "inception_4c/"))
     features2.add(inception(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)), "inception_4d/"))
     features2.add(inception(576, T(T(0), T(128, 192), T(192, 256), T("max", 0)), "inception_4e/"))
 
@@ -275,7 +276,7 @@ object GoogleNet_v2 {
     val pool = new Sequential[D]
     config[Table](4)[String](1) match {
       case "max" =>
-        if(config[Table](4)[Int](2) != 0) {
+        if (config[Table](4)[Int](2) != 0) {
           pool.add(new SpatialMaxPooling[D](3, 3, 1, 1, 1, 1).ceil().setName(namePrefix + "pool"))
         } else {
           pool.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil().setName(namePrefix + "pool"))
