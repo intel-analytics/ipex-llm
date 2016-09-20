@@ -199,6 +199,10 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
   def cloneModule(): Module[T] = {
     SerializationUtils.clone(this)
   }
+
+  // Support for mkl init.
+  def getClassPtr() : Long = {0L}
+  def initMkl() : Unit = {}
 }
 
 object Module {
