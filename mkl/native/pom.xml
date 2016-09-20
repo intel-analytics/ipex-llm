@@ -46,7 +46,16 @@
                                 <source>
                                     <directory>${basedir}/src/main/c/jni</directory>
                                     <fileNames>
-                                        <fileName>mkl.c</fileName>
+                                        <fileName>omp_threads.cpp</fileName>
+                                        <fileName>layer.cpp</fileName>
+                                        <fileName>convolution.cpp</fileName>
+                                        <fileName>pooling.cpp</fileName>
+                                        <fileName>lrn.cpp</fileName>
+                                        <fileName>linear.cpp</fileName>
+                                        <fileName>relu.cpp</fileName>
+                                        <fileName>batch_norm.cpp</fileName>
+                                        <fileName>utils.cpp</fileName>
+                                        <fileName>debug.cpp</fileName>
                                     </fileNames>
                                 </source>
                             </sources>
@@ -64,7 +73,11 @@
                                 <compilerEndOption>-fPIC</compilerEndOption>
                                 <compilerEndOption>-fopenmp</compilerEndOption>
                                 <compilerEndOption>-Wall</compilerEndOption>
-                                <compilerEndOption>-std=c99</compilerEndOption>
+                                <compilerEndOption>-std=c++11</compilerEndOption>
+                                <!--
+                                <compilerEndOption>-DDEBUG</compilerEndOption>
+                                <compilerEndOption>-DPERF</compilerEndOption>
+                                -->
                             </compilerEndOptions>
                             <linkerStartOptions>
                                 <linkerStartOption>-I ${JAVA_HOME}/include/</linkerStartOption>
@@ -74,6 +87,8 @@
                                 <linkerMiddleOption>-lpthread</linkerMiddleOption>
                                 <linkerMiddleOption>-lm</linkerMiddleOption>
                                 <linkerMiddleOption>-lrt</linkerMiddleOption>
+                                <linkerMiddleOption>-lrt</linkerMiddleOption>
+                                <linkerMiddleOption>-lmkl_rt</linkerMiddleOption>
                             </linkerMiddleOptions>
                             <linkerEndOptions>
                                 <linkerEndOption>-shared</linkerEndOption>
