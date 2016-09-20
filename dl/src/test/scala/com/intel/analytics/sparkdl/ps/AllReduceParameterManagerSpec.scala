@@ -170,13 +170,13 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
   it should "be same when compare to OneReduceParameter" in {
     Engine.setCoreNum(1000) // or thread pool will be deadlock for local mode
     sc = new SparkContext("local[4]", "AllReduceParameterManagerSpec")
-    val parameter = torch.Tensor[Double](9).rand()
+    val parameter = Tensor[Double](9).rand()
     val parameterRDD = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
-        Iterator.single(torch.Tensor[Double](9).rand())
+        Iterator.single(Tensor[Double](9).rand())
       })
 
-    val gradient = torch.Tensor[Double](9).rand()
+    val gradient = Tensor[Double](9).rand()
     val gradientRDD = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
         Iterator.single(gradient.clone())

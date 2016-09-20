@@ -127,9 +127,9 @@ object ImageNetParallel {
     val dataSets = new ShuffleBatchDataSet[(Float, Array[Byte]), Float](croppedData,
       if (cropImage) toTensorWithoutCrop(mean, std) else toTensor(mean, std),
       params.workerConfig[Int]("batch"), params.workerConfig[Int]("batch"))
-    val pm = if(params.pmType == "allreduce") {
+    val pm = if (params.pmType == "allreduce") {
       new AllReduceParameterManager[Float](parameter, dataSets.partitions(), metrics)
-    } else if(params.pmType == "onereduce") {
+    } else if (params.pmType == "onereduce") {
       new OneReduceParameterManager[Float](parameter, dataSets.partitions(), metrics)
     } else {
       throw new IllegalArgumentException()
@@ -201,14 +201,14 @@ object ImageNetParallel {
     (input, target)
   }
 
-  def computeMean(data: RDD[(Float, Array[Byte])], cropped : Boolean): (Double, Double, Double) = {
-    data.map(d => ImageNetUtils.computeMean(d._2, if(cropped) 0 else 8)).
+  def computeMean(data: RDD[(Float, Array[Byte])], cropped: Boolean): (Double, Double, Double) = {
+    data.map(d => ImageNetUtils.computeMean(d._2, if (cropped) 0 else 8)).
       reduce((a, b) => (a._1 + b._1, a._2 + b._2, a._3 + b._3))
   }
 
   def computeVar(data: RDD[(Float, Array[Byte])], meanR: Double, meanG: Double, meanB: Double,
-    cropped : Boolean) : (Double, Double, Double) = {
-    data.map(d => ImageNetUtils.computeVar(d._2, meanR, meanG, meanB, if(cropped) 0 else 8)).
+    cropped: Boolean): (Double, Double, Double) = {
+    data.map(d => ImageNetUtils.computeVar(d._2, meanR, meanG, meanB, if (cropped) 0 else 8)).
       reduce((a, b) => (a._1 + b._1, a._2 + b._2, a._3 + b._3))
   }
 

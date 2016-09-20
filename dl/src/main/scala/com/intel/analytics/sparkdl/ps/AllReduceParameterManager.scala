@@ -247,8 +247,6 @@ class AllReduceParameterManager[T: ClassTag](
 
       before = System.nanoTime()
       val paramBlockIds = localSplits(splitId).blockIds
-      //Parameter[T](bm.getRemoteBytes(paramBlockIds(localSplits(splitId).partitionId)).get)(
-      //  driverClassTag).copyTo(localParam)
       localUpdate(localParam, localGradient, localState)
       driverMetrics.add("worker update", System.nanoTime() - before)
 
