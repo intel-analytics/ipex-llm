@@ -104,8 +104,10 @@ private[nn] abstract class Container[@specialized(Float, Double) T: ClassTag](
       if (containMkl(modules(i))) {
         if (i >= 1 && containMkl(modules(i - 1))) {
           ev.getType() match {
-            case "Float" => MKL.SetPrevFloat(modules(i - 1).getClassPtr(), modules(i).getClassPtr())
-            case "Double" => MKL.SetPrevDouble(modules(i - 1).getClassPtr(), modules(i).getClassPtr())
+            case "Float" => MKL.SetPrevFloat(modules(i - 1).getClassPtr(),
+                                             modules(i).getClassPtr())
+            case "Double" => MKL.SetPrevDouble(modules(i - 1).getClassPtr(),
+                                               modules(i).getClassPtr())
           }
         }
       } else {
