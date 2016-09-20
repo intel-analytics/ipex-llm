@@ -263,6 +263,10 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
     this.setup()
     this
   }
+
+  // Support for mkl init.
+  def getClassPtr() : Long = {0L}
+  def initMkl() : Unit = {}
 }
 
 object Module {
