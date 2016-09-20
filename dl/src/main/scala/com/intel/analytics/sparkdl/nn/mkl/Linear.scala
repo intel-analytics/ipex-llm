@@ -27,23 +27,10 @@ class Linear[@specialized(Float, Double) T: ClassTag](
 
   reset()
 
-  // this is pointer to the layout of MKL used internal and the memory is allocated in native code.
-  // the magic codes are:
-  // layoutMKL(0) -> input
-  // layoutMKL(1) -> inputDiff / gradInput
-  // layoutMKL(2) -> output
-  // layoutMKL(3) -> outputDiff
-  // layoutMKL(4) -> kernel / filter
-  // layoutMKL(5) -> kernelDiff / gradWeight
-  // layoutMKL(6) -> bias
-  // layoutMKL(7) -> biasDiff / gradBias
-  val layoutMKL = Array.fill[Long](8)(-1)
-
   def setInitMethod(initMethod : InitializationMethod) : this.type = {
     this.initMethod = initMethod
     this
   }
-
 
   override def reset(): Unit ={
     initMethod match {
