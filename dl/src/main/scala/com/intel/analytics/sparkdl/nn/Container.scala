@@ -21,6 +21,7 @@ import com.intel.analytics.sparkdl.utils.Table
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.utils.{Activities, Table}
+import com.intel.analytics.sparkdl.mkl.MKL
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -100,4 +101,23 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
     })
     (result, offset, newIndexes)
   }
+
+//  override def initMkl() : Unit = {
+//    def containMkl(module : Module[T]) : Boolean = {
+//      return if (module.toString.startsWith("mkl.")) true else false
+//    }
+//
+//    for (i <- 0 until modules.length) {
+//      if (containMkl(modules(i))) {
+//        if (i >= 1 && containMkl(modules(i - 1))) {
+//          ev.getType() match {
+//            case "Float" => MKL.SetPrevFloat(modules(i - 1).getClassPtr(), modules(i).getClassPtr())
+//            case "Double" => MKL.SetPrevDouble(modules(i - 1).getClassPtr(), modules(i).getClassPtr())
+//          }
+//        }
+//      } else {
+//        modules(i).initMkl()
+//      }
+//    }
+//  }
 }

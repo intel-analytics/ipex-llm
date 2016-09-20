@@ -209,6 +209,10 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
   def cloneModule(): Module[A, B, T] = {
     SerializationUtils.clone(this)
   }
+
+  // Support for mkl init.
+  def getClassPtr() : Long = {0L}
+  def initMkl() : Unit = {}
 }
 
 object Module {
