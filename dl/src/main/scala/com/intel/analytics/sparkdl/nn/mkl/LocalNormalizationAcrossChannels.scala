@@ -27,8 +27,6 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag]
   var classPtr = 0L
   private var firstPass = true
 
-  val layoutMKL = Array.fill[Long](8)(-1)
-
   override def getClassPtr(): Long = classPtr
 
   override def equals(obj: Any): Boolean = {

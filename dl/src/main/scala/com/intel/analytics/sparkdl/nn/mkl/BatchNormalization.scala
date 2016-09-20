@@ -27,13 +27,6 @@ class SpatialBatchNormalization[@specialized(Float, Double) T:ClassTag] (val nOu
   val saveMean = Tensor[T](nOutput)
   val saveStd = Tensor[T](nOutput).fill(ev.fromType[Int](1))
 
-  private var prevLayout : Array[Long] = Array()
-  private var nextLayout : Array[Long] = Array()
-  private var usePrev = false
-  private var useNext = false
-  private var forNext = false
-  private var forPrev = false
-
   private var classPtr = 0L
   private var firstPass = true
   
