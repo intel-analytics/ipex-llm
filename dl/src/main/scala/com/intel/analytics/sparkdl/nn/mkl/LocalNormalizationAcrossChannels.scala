@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.intel.analytics.sparkdl.nn.mkl
 
 import com.intel.analytics.sparkdl.mkl.MKL
@@ -8,12 +25,12 @@ import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import scala.reflect.ClassTag
 import scala.language.implicitConversions
 
-/**
-  * Created by wyz on 16-9-7.
-  */
-class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag]
-(val size : Int = 5, val alpha : Double = 1.0, val beta : Double = 0.75, val k : Double = 1.0)(
-  implicit ev: TensorNumeric[T]) extends Module[T] {
+class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag](
+    val size: Int = 5,
+    val alpha: Double = 1.0,
+    val beta: Double = 0.75,
+    val k: Double = 1.0)(implicit ev: TensorNumeric[T])
+    extends Module[T] {
 
   private val scale = Tensor[T]()
   private val paddedSquare = Tensor[T]()
@@ -34,14 +51,23 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag]
       return false
     }
 
-    if (!obj.isInstanceOf[LocalNormalizationAcrossChannels[T]])
-      return false
+    if (!obj.isInstanceOf[LocalNormalizationAcrossChannels[T]]) { return false }
     val other = obj.asInstanceOf[LocalNormalizationAcrossChannels[T]]
-    if (this.eq(other))
-      return true
+    if (this.eq(other)) { return true }
 
     size == other.size &&
-      alpha == other.alpha && beta == other.beta && k == other.k
+    alpha == other.alpha && beta == other.beta && k == other.k
+  }
+
+  override def hashCode() : Int = {
+    val seed = 37
+    var hash = super.hashCode()
+    hash = hash * seed + size.hashCode()
+    hash = hash * seed + alpha.hashCode()
+    hash = hash * seed + beta.hashCode()
+    hash = hash * seed + k.hashCode()
+
+    hash
   }
 
   override def toString(): String = {
@@ -49,107 +75,112 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag]
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.nDimension() == 4, "Input must have 4 dimensions, corresponding to (batch, channels, height, width)")
+    require(input.nDimension() == 4,
+            "Input must have 4 dimensions, corresponding to (batch, channels, height, width)")
     require(input.isContiguous(), "Input is not contiguous")
 
     output.resizeAs(input)
 
-    val inputOffset  = input.storageOffset()  - 1;
+    val inputOffset = input.storageOffset() - 1;
     val outputOffset = output.storageOffset() - 1;
 
-    // +---------+-------+-------+
-    // |         | 3-dim | 4-dim |
-    // +=========+=======+=======+
-    // | Number  | ?     | 1     |
-    // +---------+-------+-------+
-    // | Channel | 1     | 2     |
-    // +---------+-------+-------+
-    // | Height  | 2     | 3     |
-    // +---------+-------+-------+
-    // | Width   | 3     | 4     |
-    // +---------+-------+-------+
-    // Table: Index of 3-dim/4-dim input
-
-    val inputWidth   = input.size(input.dim())
-    val inputHeight  = input.size(input.dim() - 1)
+    val inputWidth = input.size(input.dim())
+    val inputHeight = input.size(input.dim() - 1)
     val inputChannel = if (input.dim() <= 3) 1 else input.size(input.dim() - 2)
-    val inputNumber  = if (input.dim() <= 3) 1 else input.size(input.dim() - 3)
+    val inputNumber = if (input.dim() <= 3) 1 else input.size(input.dim() - 3)
     // TODO we may set input.size(input.dim() - 3) == 1 if input.dim() == 3
 
     if (firstPass) {
       ev.getType() match {
-        case "Float" => classPtr = MKL.LRNInitFloat(
-          inputNumber, inputChannel, inputHeight, inputWidth,
-          size, alpha.toFloat, beta.toFloat, k.toFloat, 4)
-        case "Double" => classPtr = MKL.LRNInitDouble(
-          inputNumber, inputChannel, inputHeight, inputWidth,
-          size, alpha.toDouble, beta.toDouble, k.toDouble, 4)
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+        case "Float" =>
+          classPtr = MKL.LRNInitFloat(inputNumber,
+                                      inputChannel,
+                                      inputHeight,
+                                      inputWidth,
+                                      size,
+                                      alpha.toFloat,
+                                      beta.toFloat,
+                                      k.toFloat,
+                                      4)
+        case "Double" =>
+          classPtr = MKL.LRNInitDouble(inputNumber,
+                                       inputChannel,
+                                       inputHeight,
+                                       inputWidth,
+                                       size,
+                                       alpha.toDouble,
+                                       beta.toDouble,
+                                       k.toDouble,
+                                       4)
+        case _ =>
+          throw new UnsupportedOperationException(s"Only Float/Double supported")
       }
       firstPass = false
     }
 
-    implicit def bool2int(b:Boolean) = if (b) 1 else 0
+    implicit def bool2int(b: Boolean) = if (b) 1 else 0
     ev.getType() match {
-      case "Float" => MKL.LRNForwardFloat(
-        input.storage().array().asInstanceOf[Array[Float]], inputOffset,
-        output.storage().array().asInstanceOf[Array[Float]], outputOffset,
-        classPtr
-      )
-      case "Double" => MKL.LRNForwardDouble(
-        input.storage().array().asInstanceOf[Array[Double]], inputOffset,
-        output.storage().array().asInstanceOf[Array[Double]], outputOffset,
-        classPtr
-      )
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+      case "Float" =>
+        MKL.LRNForwardFloat(
+          input.storage().array().asInstanceOf[Array[Float]],
+          inputOffset,
+          output.storage().array().asInstanceOf[Array[Float]],
+          outputOffset,
+          classPtr
+        )
+      case "Double" =>
+        MKL.LRNForwardDouble(
+          input.storage().array().asInstanceOf[Array[Double]],
+          inputOffset,
+          output.storage().array().asInstanceOf[Array[Double]],
+          outputOffset,
+          classPtr
+        )
+      case _ =>
+        throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
 
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.nDimension() == 4, "Input must have 4 dimensions, corresponding to (batch, channels, height, width)")
+    require(input.nDimension() == 4,
+            "Input must have 4 dimensions, corresponding to (batch, channels, height, width)")
     require(gradOutput.isContiguous(), "gradOutput is not contiguous")
 
     gradInput.resizeAs(input)
 
-    val inputOffset  = input.storageOffset()  - 1;
+    val inputOffset = input.storageOffset() - 1;
     val outputOffset = output.storageOffset() - 1;
 
-    // +---------+-------+-------+
-    // |         | 3-dim | 4-dim |
-    // +=========+=======+=======+
-    // | Number  | ?     | 1     |
-    // +---------+-------+-------+
-    // | Channel | 1     | 2     |
-    // +---------+-------+-------+
-    // | Height  | 2     | 3     |
-    // +---------+-------+-------+
-    // | Width   | 3     | 4     |
-    // +---------+-------+-------+
-    // Table: Index of 3-dim/4-dim input
-
-    val inputWidth   = input.size(input.dim())
-    val inputHeight  = input.size(input.dim() - 1)
+    val inputWidth = input.size(input.dim())
+    val inputHeight = input.size(input.dim() - 1)
     val inputChannel = input.size(input.dim() - 2)
-    val inputNumber  = if (input.dim() == 3) 1 else input.size(input.dim() - 3)
+    val inputNumber = if (input.dim() == 3) 1 else input.size(input.dim() - 3)
     // TODO we may set input.size(input.dim() - 3) == 1 if input.dim() == 3
 
     val gradOutputOffset = gradOutput.storageOffset() - 1
-    val gradInputOffset = gradInput.storageOffset() -1
+    val gradInputOffset = gradInput.storageOffset() - 1
 
     ev.getType() match {
-      case "Float" =>  MKL.LRNBackwardFloat(
-        input.storage().array().asInstanceOf[Array[Float]], inputOffset,
-        gradOutput.storage().array().asInstanceOf[Array[Float]], gradOutputOffset,
-        gradInput.storage().array().asInstanceOf[Array[Float]], gradInputOffset,
-        classPtr)
-      case "Double" =>  MKL.LRNBackwardDouble(
-        input.storage().array().asInstanceOf[Array[Double]], inputOffset,
-        gradOutput.storage().array().asInstanceOf[Array[Double]], gradOutputOffset,
-        gradInput.storage().array().asInstanceOf[Array[Double]], gradInputOffset,
-        classPtr)
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+      case "Float" =>
+        MKL.LRNBackwardFloat(input.storage().array().asInstanceOf[Array[Float]],
+                             inputOffset,
+                             gradOutput.storage().array().asInstanceOf[Array[Float]],
+                             gradOutputOffset,
+                             gradInput.storage().array().asInstanceOf[Array[Float]],
+                             gradInputOffset,
+                             classPtr)
+      case "Double" =>
+        MKL.LRNBackwardDouble(input.storage().array().asInstanceOf[Array[Double]],
+                              inputOffset,
+                              gradOutput.storage().array().asInstanceOf[Array[Double]],
+                              gradOutputOffset,
+                              gradInput.storage().array().asInstanceOf[Array[Double]],
+                              gradInputOffset,
+                              classPtr)
+      case _ =>
+        throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
 
     gradInput
