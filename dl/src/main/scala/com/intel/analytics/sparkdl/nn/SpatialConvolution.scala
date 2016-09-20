@@ -35,14 +35,20 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   val dH: Int = 1, // The step of the convolution in the height dimension
   val padW: Int = 0, // The additional zeros added per width to the input planes.
   val padH: Int = 0, // The additional zeros added per height to the input planes.
+  val nGroup : Int = 1, // Kernel group number
   private var initMethod: InitializationMethod = Default
 )(implicit ev: TensorNumeric[T]) extends Module[T] {
 
-  val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
+  require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
+  require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
+
+  val weight: Tensor[T] = Tensor[T](nGroup, nOutputPlane / nGroup,
+    nInputPlane / nGroup, kH, kW)
+  this.gradWeight = Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup, kH, kW)
+
   private var weightMM: Tensor[T] = null
   private var gradientBiasMT: Tensor[T] = null
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
-  this.gradWeight = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
   private var gradWeightMM: Tensor[T] = null
   this.gradBias = Tensor[T](nOutputPlane)
   val fInput = Tensor[T]()
@@ -87,7 +93,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     require(input.isContiguous())
 
     if (weightMM == null) {
-      weightMM = weight.view(nOutputPlane, nInputPlane * kH * kW)
+      weightMM = weight.view(nGroup, nOutputPlane / nGroup, nInputPlane * kH * kW / nGroup)
     }
     val dimWidth = if (input.dim() == 3) 3 else 4
     val dimHeight = if (input.dim() == 3) 2 else 3
@@ -108,15 +114,27 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       require(input.isContiguous())
       val contiguousInput = input.contiguous()
       output.resize(Array(nOutputPlane, outputHeight, outputWidth))
-      fInput.resize(Array(kW * kH * nInputPlane, outputHeight * outputWidth))
-      updateOutputFrame(contiguousInput, output, weightMM, bias, fInput, kW, kH, dW, dH,
-        padW, padH, nInputPlane,
-        inputWidth, inputHeight, nOutputPlane, outputWidth, outputHeight)
+      fInput.resize(Array(nGroup, kW * kH * nInputPlane / nGroup, outputHeight * outputWidth))
+      var g = 0
+      while(g < nGroup) {
+        updateOutputFrame(
+          contiguousInput.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
+          output.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+          weightMM.select(1, g + 1),
+          bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+          fInput.select(1, g + 1),
+          kW, kH, dW, dH,
+          padW, padH,
+          nInputPlane / nGroup, inputWidth, inputHeight,
+          nOutputPlane / nGroup, outputWidth, outputHeight)
+        g += 1
+      }
     } else {
       require(input.size(2) == nInputPlane)
       val batchSize = input.size(1)
       output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
-      fInput.resize(Array(batchSize, kW * kH * nInputPlane, outputHeight * outputWidth))
+      fInput.resize(Array(batchSize, nGroup, kW * kH * nInputPlane / nGroup,
+        outputHeight * outputWidth))
 
       if (results == null || results.length != batchSize) {
         results = new Array[Future[Unit]](batchSize)
@@ -129,9 +147,20 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           val inputT = input.select(1, _i).contiguous()
           val outputT = output.select(1, _i)
           val fInputT = fInput.select(1, _i)
-          updateOutputFrame(inputT, outputT, weightMM, bias, fInputT, kW, kH, dW, dH,
-            padW, padH, nInputPlane,
-            inputWidth, inputHeight, nOutputPlane, outputWidth, outputHeight)
+          var g = 0
+          while(g < nGroup) {
+            updateOutputFrame(
+              inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
+              outputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+              weightMM.select(1, g + 1),
+              bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+              fInputT.select(1, g + 1),
+              kW, kH, dW, dH,
+              padW, padH,
+              nInputPlane / nGroup, inputWidth, inputHeight,
+              nOutputPlane / nGroup, outputWidth, outputHeight)
+            g += 1
+          }
         }(Engine.getInstance())
         i += 1
       }
@@ -153,20 +182,35 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     if (input.nDimension() == 3) {
       require(gradOutput.isContiguous())
       val contiguousGradOutput = gradOutput.contiguous()
-      updateGradInputFrame(gradInput, contiguousGradOutput, weightMM.transpose(1, 2), fGradInput,
-        kW, kH, dW, dH, padW, padH)
+      var g = 0
+      while(g < nGroup) {
+        updateGradInputFrame(
+          gradInput.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
+          contiguousGradOutput.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+          weightMM.select(1, g + 1).transpose(1, 2),
+          fGradInput.select(1, g + 1),
+          kW, kH, dW, dH, padW, padH)
+        g += 1
+      }
     } else {
-      val transposedWeightMM = weightMM.transpose(1, 2)
-      var i = 0
       val batchSize = input.size(1)
+      var i = 0
       while (i < batchSize) {
         val _i = i + 1
         results(i) = Future {
           val gradInputT = gradInput.select(1, _i)
           val gradOutputT = gradOutput.select(1, _i).contiguous()
           val fgradInputT = fGradInput.select(1, _i)
-          updateGradInputFrame(gradInputT, gradOutputT, transposedWeightMM, fgradInputT, kW, kH,
-            dW, dH, padW, padH)
+          var g = 0
+          while(g < nGroup) {
+            updateGradInputFrame(
+              gradInputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
+              gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+              weightMM.select(1, g + 1).transpose(1, 2),
+              fgradInputT.select(1, g + 1),
+              kW, kH, dW, dH, padW, padH)
+            g += 1
+          }
         }(Engine.getInstance())
         i += 1
       }
@@ -188,15 +232,24 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
 
     if (input.nDimension() == 3) {
       if (gradWeightMM == null) {
-        gradWeightMM = gradWeight.view(nOutputPlane, nInputPlane * kH * kW)
+        gradWeightMM = gradWeight.view(nGroup, nOutputPlane / nGroup,
+          nInputPlane * kH * kW / nGroup)
       }
-      accGradParametersFrame(contiguousGradOutput, gradWeightMM, gradBias, fInput,
-        ev.fromType[Double](scale))
+      var g = 0
+      while(g < nGroup) {
+        accGradParametersFrame(
+          contiguousGradOutput.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+          gradWeightMM.select(1, g + 1),
+          gradBias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+          fInput.select(1, g + 1),
+          ev.fromType[Double](scale))
+        g += 1
+      }
     } else {
       val batchSize = input.size(1)
       if (gradWeightMM == null) {
-        gradWeightMM = Tensor[T]().resize(Array(batchSize, nOutputPlane,
-          nInputPlane * kH * kW))
+        gradWeightMM = Tensor[T]().resize(Array(batchSize, nGroup, nOutputPlane / nGroup,
+          nInputPlane * kH * kW / nGroup))
         gradientBiasMT = Tensor[T]().resize(Array(batchSize, nOutputPlane))
       }
       if (ones.dim() != 1 || ones.size(1) != gradOutput.size(3) * gradOutput.size(4)) {
@@ -212,9 +265,17 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         results(i) = Future {
           val gradOutputT = contiguousGradOutput.select(1, _i)
           val fInputT = fInput.select(1, _i)
-          calcGradParametersFrame(gradOutputT, gradWeightMM.select(1, _i),
-            gradientBiasMT.select(1, _i),
-            fInputT, ev.fromType[Double](scale))
+          var g = 0
+          while(g < nGroup) {
+            calcGradParametersFrame(
+              gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+              gradWeightMM.select(1, _i).select(1, g + 1),
+              gradientBiasMT.select(1, _i).narrow(1, g * nOutputPlane / nGroup + 1,
+                nOutputPlane / nGroup),
+              fInputT.select(1, g + 1),
+              ev.fromType[Double](scale))
+            g += 1
+          }
         }(Engine.getInstance())
         i += 1
       }
@@ -225,8 +286,8 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         i += 1
       }
 
-      val gradView = gradWeightMM.view(batchSize, nOutputPlane * nInputPlane * kH * kW).t
-      val grad = gradWeight.view(nOutputPlane * nInputPlane * kH * kW)
+      val gradView = gradWeightMM.view(batchSize, nOutputPlane * nInputPlane * kH * kW / nGroup).t
+      val grad = gradWeight.view(nOutputPlane * nInputPlane * kH * kW / nGroup)
       grad.addmv(ev.fromType(1.0), ev.fromType(1.0), gradView, onesBatch)
       gradBias.addmv(ev.fromType(1.0), ev.fromType(1.0), gradientBiasMT.t, onesBatch)
     }
