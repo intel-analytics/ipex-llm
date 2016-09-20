@@ -52,9 +52,9 @@ class AllReduceParameterManager[T: ClassTag](
     val taskSize = parameterLength / partitionNum
     require(taskSize != 0, "parameter length should not less than partition number")
     val extraSize = parameterLength % partitionNum
+    val broadcastParameter = dataset.sparkContext.broadcast(parameter)
 
     splits = {
-      val broadcastParameter = dataset.sparkContext.broadcast(parameter)
       val pid2Splits = dataset.mapPartitions(iter => {
         val localParameter = broadcastParameter.value
         val pid = TaskContext.getPartitionId()
@@ -87,6 +87,7 @@ class AllReduceParameterManager[T: ClassTag](
     val driverEV = ev
     val broadcastSplit = sc.broadcast(splits)
     buffers = dataset.mapPartitions(iter => {
+      val localParameter = broadcastParameter.value
       val paramBuffer =
         new FP16SplitsParameter[T](parameterLength, partitionNum)(driverClassTag).
           asInstanceOf[Parameter[T]]
@@ -98,7 +99,8 @@ class AllReduceParameterManager[T: ClassTag](
       var localState: Table = null
       while (k < localSplits.length) {
         if (localSplits(k).partitionId == pid) {
-          localWeight = Tensor[T](localSplits(k).length)(driverClassTag, driverEV)
+          localWeight = Tensor[T](localSplits(k).length)(driverClassTag, driverEV).
+            copy(localParameter.narrow(1, localSplits(k).start + 1, localSplits(k).length))
           localGradient = Tensor[T](localSplits(k).length)(driverClassTag, driverEV)
           localState = T()
         }
@@ -245,8 +247,6 @@ class AllReduceParameterManager[T: ClassTag](
 
       before = System.nanoTime()
       val paramBlockIds = localSplits(splitId).blockIds
-      Parameter[T](bm.getRemoteBytes(paramBlockIds(localSplits(splitId).partitionId)).get)(
-        driverClassTag).copyTo(localParam)
       localUpdate(localParam, localGradient, localState)
       driverMetrics.add("worker update", System.nanoTime() - before)
 
@@ -263,14 +263,15 @@ class AllReduceParameterManager[T: ClassTag](
   }
 
   override def getParameter(): Tensor[T] = {
-    val bm = SparkEnv.get.blockManager
-    splits.map(s => {
-      Future {
-        bm.getRemoteBytes(s.blockIds(s.partitionId)).map(localBuffer => {
-          Parameter(localBuffer).copyTo(0, parameter, s.start, s.length)
-        })
-      }(Engine.getInstance())
-    }).map(Await.result(_, Duration.Inf))
+    val pidToWeightSplit = buffers.mapPartitions(iter => {
+      val localWeights = iter.next()._2
+      val curPartitionId = TaskContext.getPartitionId()
+      Iterator.single(Map(curPartitionId -> localWeights))
+    }).reduce(_ ++ _)
+
+    splits.map(split => {
+      parameter.narrow(1, split.start + 1, split.length).copy(pidToWeightSplit(split.partitionId))
+    })
 
     parameter
   }

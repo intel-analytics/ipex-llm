@@ -162,13 +162,55 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
     })
 
     optm.optimize(_ => (0.1, gradient), target, T())
-    val truncateParm = new FP16Parameter(target)
-    truncateParm.copyTo(target)
     optm.optimize(_ => (0.1, gradient), target, T())
-    truncateParm.copyFrom(target)
-    truncateParm.copyTo(target)
     pm.getParameter() should be(target)
 
+  }
+
+  it should "be same when compare to OneReduceParameter" in {
+    Engine.setCoreNum(1000) // or thread pool will be deadlock for local mode
+    sc = new SparkContext("local[4]", "AllReduceParameterManagerSpec")
+    val parameter = Tensor[Double](9).rand()
+    val parameterRDD = sc.parallelize(Seq(1 to 5), 5)
+      .mapPartitions(iter => {
+        Iterator.single(Tensor[Double](9).rand())
+      })
+
+    val gradient = Tensor[Double](9).rand()
+    val gradientRDD = sc.parallelize(Seq(1 to 5), 5)
+      .mapPartitions(iter => {
+        Iterator.single(gradient.clone())
+      })
+    val allReduce = new AllReduceParameterManager[Double](parameter, gradientRDD)
+    val oneReduce = new OneReduceParameterManager[Double](parameter.clone(), gradientRDD)
+
+    val iteration = 50
+    val optm = new SGD[Double]()
+    var i = 0
+    while(i < iteration) {
+      allReduce.sync(parameterRDD).count()
+      allReduce.sumAndUpdate(gradientRDD, (w, g, s) => {
+        g.div(5)
+        optm.optimize(_ => (0.1, g), w, T("momentum" -> 0.9, "dampening" -> 0.0,
+          "weightDecay" -> 5e-4), s)
+      })
+      i += 1
+    }
+    val allReduceParam = allReduce.sync(parameterRDD).first()
+
+    i = 0
+    while(i < iteration) {
+      oneReduce.sync(parameterRDD).count()
+      oneReduce.sumAndUpdate(gradientRDD, (w, g, s) => {
+        g.div(5)
+        optm.optimize(_ => (0.1, g), w, T("momentum" -> 0.9, "dampening" -> 0.0,
+          "weightDecay" -> 5e-4), s)
+      })
+      i += 1
+    }
+
+    val oneReduceParam = oneReduce.sync(parameterRDD).first()
+    allReduceParam should be(oneReduceParam)
   }
 
   it should "be correct for float parameter" in {
