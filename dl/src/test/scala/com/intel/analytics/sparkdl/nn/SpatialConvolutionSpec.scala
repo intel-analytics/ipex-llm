@@ -23,7 +23,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.math._
 
 class SpatialConvolutionSpec extends FlatSpec with Matchers {
-  "A SpatialConvolution" should "generate correct output" in {
+  "A SpatialConvolution layer" should "generate correct output" in {
     val nInputPlane = 1
     val nOutputPlane = 1
     val kW = 2
@@ -59,7 +59,39 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     output(Array(1, 2, 2)) should be(105)
   }
 
-  "A SpatialConvolution with batch input" should "generate correct output" in {
+  it should "generate correct output when group != 1" in {
+    val input1 = Tensor[Double](3, 4, 5).rand()
+    val input2 = Tensor[Double](3, 4, 5).rand()
+
+    val input = Tensor[Double](6, 4, 5).rand()
+    input.narrow(1, 1, 3).copy(input1)
+    input.narrow(1, 4, 3).copy(input2)
+
+    val layer1 = new SpatialConvolution[Double](3, 4,
+      2, 2, 1, 1, 0, 0)
+    layer1.bias.fill(0)
+    val output1 = layer1.updateOutput(input1)
+
+    val layer2 = new SpatialConvolution[Double](3, 4,
+      2, 2, 1, 1, 0, 0)
+    layer2.bias.fill(0)
+    val output2 = layer2.updateOutput(input2)
+
+    val layer = new SpatialConvolution[Double](6, 8,
+      2, 2, 1, 1, 0, 0, 2)
+    layer.weight.select(1, 1).copy(layer1.weight.select(1, 1))
+    layer.weight.select(1, 2).copy(layer2.weight.select(1, 1))
+    layer.bias.fill(0)
+    val output = layer.updateOutput(input)
+
+    val targetOutput = Tensor[Double](output1.size(1) * 2, output1.size(2), output1.size(3))
+    targetOutput.narrow(1, 1, 4).copy(output1)
+    targetOutput.narrow(1, 5, 4).copy(output2)
+
+    output should be(targetOutput)
+  }
+
+  it should "generate correct output for batch input" in {
     val nInputPlane = 1
     val nOutputPlane = 1
     val kW = 2
@@ -115,7 +147,40 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     output(Array(3, 1, 2, 3)) should be(56)
   }
 
-  "A SpatialConvolution with offset" should "generate correct output" in {
+  it should "generate correct output when group != 1 for batch input" in {
+    val input1 = Tensor[Double](4, 3, 4, 5).rand()
+    val input2 = Tensor[Double](4, 3, 4, 5).rand()
+
+    val input = Tensor[Double](4, 6, 4, 5)
+    input.narrow(2, 1, 3).copy(input1)
+    input.narrow(2, 4, 3).copy(input2)
+
+    val layer1 = new SpatialConvolution[Double](3, 4,
+      2, 2, 1, 1, 0, 0)
+    layer1.bias.fill(0)
+    val output1 = layer1.updateOutput(input1)
+
+    val layer2 = new SpatialConvolution[Double](3, 4,
+      2, 2, 1, 1, 0, 0)
+    layer2.bias.fill(0)
+    val output2 = layer2.updateOutput(input2)
+
+    val layer = new SpatialConvolution[Double](6, 8,
+      2, 2, 1, 1, 0, 0, 2)
+    layer.weight.select(1, 1).copy(layer1.weight.select(1, 1))
+    layer.weight.select(1, 2).copy(layer2.weight.select(1, 1))
+    layer.bias.fill(0)
+    val output = layer.updateOutput(input)
+
+    val targetOutput = Tensor[Double](output1.size(1), output1.size(2) * 2, output1.size(3),
+      output1.size(4))
+    targetOutput.narrow(2, 1, 4).copy(output1)
+    targetOutput.narrow(2, 5, 4).copy(output2)
+
+    output should be(targetOutput)
+  }
+
+  it should "generate correct output when there's offset" in {
     val nInputPlane = 1
     val nOutputPlane = 1
     val kW = 2
@@ -151,7 +216,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     output(Array(1, 2, 2)) should be(105)
   }
 
-  "A SpatialConvolution" should "generate correct output even called twice" in {
+  it should "generate correct output even called twice" in {
     val nInputPlane = 1
     val nOutputPlane = 1
     val kW = 2
@@ -196,7 +261,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     output(Array(1, 2, 2)) should be(105)
   }
 
-  "A SpatialConvolution with bias" should "generate correct output" in {
+  it should "generate correct output when there's bias" in {
     val nInputPlane = 1
     val nOutputPlane = 1
     val kW = 2
@@ -599,7 +664,49 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     gradInput(Array(1, 3, 3)) should be(20)
   }
 
-  "A SpatialConvolution with batch input" should "generate correct gradInput" in {
+  it should "generate correct gradInput when group != 1" in {
+    val input1 = Tensor[Double](3, 4, 5).rand()
+    val gradOutput1 = Tensor[Double](4, 3, 4).rand()
+    val input2 = Tensor[Double](3, 4, 5).rand()
+    val gradOutput2 = Tensor[Double](4, 3, 4).rand()
+
+    val input = Tensor[Double](6, 4, 5).rand()
+    input.narrow(1, 1, 3).copy(input1)
+    input.narrow(1, 4, 3).copy(input2)
+    val gradOutput = Tensor[Double](8, 3, 4).rand()
+    gradOutput.narrow(1, 1, 4).copy(gradOutput1)
+    gradOutput.narrow(1, 5, 4).copy(gradOutput2)
+
+    val layer1 = new SpatialConvolution[Double](3, 4,
+      2, 2, 1, 1, 0, 0)
+    layer1.bias.fill(0)
+    layer1.updateOutput(input1)
+    val gradInput1 = layer1.updateGradInput(input1, gradOutput1)
+
+    val layer2 = new SpatialConvolution[Double](3, 4,
+      2, 2, 1, 1, 0, 0)
+    layer2.bias.fill(0)
+    layer2.updateOutput(input2)
+    val gradInput2 = layer2.updateGradInput(input2, gradOutput2)
+
+
+    val layer = new SpatialConvolution[Double](6, 8,
+      2, 2, 1, 1, 0, 0, 2)
+    layer.weight.select(1, 1).copy(layer1.weight.select(1, 1))
+    layer.weight.select(1, 2).copy(layer2.weight.select(1, 1))
+    layer.bias.fill(0)
+    layer.updateOutput(input)
+    val gradInput = layer.updateGradInput(input, gradOutput)
+
+    val targetGradInput = Tensor[Double](gradInput1.size(1) * 2, gradInput1.size(2),
+      gradInput1.size(3))
+    targetGradInput.narrow(1, 1, 3).copy(gradInput1)
+    targetGradInput.narrow(1, 4, 3).copy(gradInput2)
+
+    gradInput should be(targetGradInput)
+  }
+
+  it should "generate correct gradInput for batch input" in {
     val nInputPlane = 1
     val nOutputPlane = 1
     val kW = 2
@@ -673,6 +780,48 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     gradInput(Array(3, 1, 3, 1)) should be(12)
     gradInput(Array(3, 1, 3, 2)) should be(31)
     gradInput(Array(3, 1, 3, 3)) should be(20)
+  }
+
+  it should "generate correct gradInput when group != 1 for batch input" in {
+    val input1 = Tensor[Double](4, 3, 4, 5).rand()
+    val gradOutput1 = Tensor[Double](4, 4, 3, 4).rand()
+    val input2 = Tensor[Double](4, 3, 4, 5).rand()
+    val gradOutput2 = Tensor[Double](4, 4, 3, 4).rand()
+
+    val input = Tensor[Double](4, 6, 4, 5).rand()
+    input.narrow(2, 1, 3).copy(input1)
+    input.narrow(2, 4, 3).copy(input2)
+    val gradOutput = Tensor[Double](4, 8, 3, 4).rand()
+    gradOutput.narrow(2, 1, 4).copy(gradOutput1)
+    gradOutput.narrow(2, 5, 4).copy(gradOutput2)
+
+    val layer1 = new SpatialConvolution[Double](3, 4,
+      2, 2, 1, 1, 0, 0)
+    layer1.bias.fill(0)
+    layer1.updateOutput(input1)
+    val gradInput1 = layer1.updateGradInput(input1, gradOutput1)
+
+    val layer2 = new SpatialConvolution[Double](3, 4,
+      2, 2, 1, 1, 0, 0)
+    layer2.bias.fill(0)
+    layer2.updateOutput(input2)
+    val gradInput2 = layer2.updateGradInput(input2, gradOutput2)
+
+
+    val layer = new SpatialConvolution[Double](6, 8,
+      2, 2, 1, 1, 0, 0, 2)
+    layer.weight.select(1, 1).copy(layer1.weight.select(1, 1))
+    layer.weight.select(1, 2).copy(layer2.weight.select(1, 1))
+    layer.bias.fill(0)
+    layer.updateOutput(input)
+    val gradInput = layer.updateGradInput(input, gradOutput)
+
+    val targetGradInput = Tensor[Double](gradInput1.size(1), gradInput1.size(2) * 2,
+      gradInput1.size(3), gradInput1.size(4))
+    targetGradInput.narrow(2, 1, 3).copy(gradInput1)
+    targetGradInput.narrow(2, 4, 3).copy(gradInput2)
+
+    gradInput should be(targetGradInput)
   }
 
   "A SpatialConvolution with offset" should "generate correct gradInput" in {
@@ -1280,7 +1429,48 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     layer.gradBias(Array(1)) should be(10)
   }
 
-  "A SpatialConvolution with batch input" should "generate correct gradWeight" in {
+  it should "generate correct gradWeight when group != 1" in {
+    val input1 = Tensor[Double](3, 4, 5).rand()
+    val gradOutput1 = Tensor[Double](4, 3, 4).rand()
+    val input2 = Tensor[Double](3, 4, 5).rand()
+    val gradOutput2 = Tensor[Double](4, 3, 4).rand()
+
+    val input = Tensor[Double](6, 4, 5).rand()
+    input.narrow(1, 1, 3).copy(input1)
+    input.narrow(1, 4, 3).copy(input2)
+    val gradOutput = Tensor[Double](8, 3, 4).rand()
+    gradOutput.narrow(1, 1, 4).copy(gradOutput1)
+    gradOutput.narrow(1, 5, 4).copy(gradOutput2)
+
+    val layer1 = new SpatialConvolution[Double](3, 4,
+      2, 2, 1, 1, 0, 0)
+    layer1.bias.fill(0)
+    layer1.updateOutput(input1)
+    val gradInput1 = layer1.updateGradInput(input1, gradOutput1)
+    layer1.accGradParameters(input1, gradOutput1)
+
+    val layer2 = new SpatialConvolution[Double](3, 4,
+      2, 2, 1, 1, 0, 0)
+    layer2.bias.fill(0)
+    layer2.updateOutput(input2)
+    val gradInput2 = layer2.updateGradInput(input2, gradOutput2)
+    layer2.accGradParameters(input2, gradOutput2)
+
+
+    val layer = new SpatialConvolution[Double](6, 8,
+      2, 2, 1, 1, 0, 0, 2)
+    layer.weight.select(1, 1).copy(layer1.weight.select(1, 1))
+    layer.weight.select(1, 2).copy(layer2.weight.select(1, 1))
+    layer.bias.fill(0)
+    layer.updateOutput(input)
+    val gradInput = layer.updateGradInput(input, gradOutput)
+    layer.accGradParameters(input, gradOutput)
+
+    layer.weight.select(1, 1) should be(layer1.weight.select(1, 1))
+    layer.weight.select(1, 2) should be(layer2.weight.select(1, 1))
+  }
+
+  it should "generate correct gradWeight for batch input" in {
     val nInputPlane = 1
     val nOutputPlane = 1
     val kW = 2
@@ -1336,6 +1526,47 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     layer.gradWeight(Array(1, 1, 1, 2, 2)) should be(77 * 3)
 
     layer.gradBias(Array(1)) should be(10 * 3)
+  }
+
+  it should "generate correct gradWeight when group != 1 for batch input" in {
+    val input1 = Tensor[Double](4, 3, 4, 5).rand()
+    val gradOutput1 = Tensor[Double](4, 4, 3, 4).rand()
+    val input2 = Tensor[Double](4, 3, 4, 5).rand()
+    val gradOutput2 = Tensor[Double](4, 4, 3, 4).rand()
+
+    val input = Tensor[Double](4, 6, 4, 5).rand()
+    input.narrow(2, 1, 3).copy(input1)
+    input.narrow(2, 4, 3).copy(input2)
+    val gradOutput = Tensor[Double](4, 8, 3, 4).rand()
+    gradOutput.narrow(2, 1, 4).copy(gradOutput1)
+    gradOutput.narrow(2, 5, 4).copy(gradOutput2)
+
+    val layer1 = new SpatialConvolution[Double](3, 4,
+      2, 2, 1, 1, 0, 0)
+    layer1.bias.fill(0)
+    layer1.updateOutput(input1)
+    val gradInput1 = layer1.updateGradInput(input1, gradOutput1)
+    layer1.accGradParameters(input1, gradOutput1)
+
+    val layer2 = new SpatialConvolution[Double](3, 4,
+      2, 2, 1, 1, 0, 0)
+    layer2.bias.fill(0)
+    layer2.updateOutput(input2)
+    val gradInput2 = layer2.updateGradInput(input2, gradOutput2)
+    layer2.accGradParameters(input2, gradOutput2)
+
+
+    val layer = new SpatialConvolution[Double](6, 8,
+      2, 2, 1, 1, 0, 0, 2)
+    layer.weight.select(1, 1).copy(layer1.weight.select(1, 1))
+    layer.weight.select(1, 2).copy(layer2.weight.select(1, 1))
+    layer.bias.fill(0)
+    layer.updateOutput(input)
+    val gradInput = layer.updateGradInput(input, gradOutput)
+    layer.accGradParameters(input, gradOutput)
+
+    layer.weight.select(1, 1) should be(layer1.weight.select(1, 1))
+    layer.weight.select(1, 2) should be(layer2.weight.select(1, 1))
   }
 
   "A SpatialConvolution" should "generate correct gradWeight even called twice" in {
