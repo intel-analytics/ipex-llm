@@ -55,7 +55,8 @@ object Perf {
       .text("Model name. It can be alexnet | alexnetowt | googlenet_v1 | vgg16 | vgg19 | lenet5")
       .action((v, p) => p.copy(module = v))
       .validate(v =>
-        if (Set("alexnet", "alexnetowt", "googlenet_v1", "vgg16", "vgg19", "lenet5").
+        if (Set("alexnet", "alexnetowt", "googlenet_v1", "googlenet_v2", "vgg16", "vgg19",
+          "lenet5").
           contains(v.toLowerCase())) {
           success
         } else {
@@ -81,6 +82,7 @@ object Perf {
       case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "googlenet_v1" => (GoogleNet_v1(1000), Tensor[T](param.batchSize, 3, 224, 224))
+      case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "vgg16" => (Vgg_16(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
@@ -123,10 +125,10 @@ object Perf {
     }
     val times = model.getTimes()
     println("Time cost of each layer(ms):")
-    println(times.map(t => (t._1, (t._2 + t._3) / 1e6 / param.iteration,
+    println(times.map(t => (t._1.getName(), (t._2 + t._3) / 1e6 / param.iteration,
       t._2 / 1e6 / param.iteration, t._3 / 1e6 / param.iteration))
-      .sortWith(_._2 > _._2).map(l => s"${l._1} : total ${l._2}, " +
-      s"forward ${l._3}, backward ${l._4}").mkString("\n"))
+      .flatMap(l => Array(s"${l._1}  forward: ${l._3}ms. ", s"${l._1}  backward: ${l._4}ms. "))
+      .mkString("\n"))
 
     println(s"Model is ${param.module}")
     println(s"Average forward time is ${totalForwardTime / param.iteration / 1e6}ms")

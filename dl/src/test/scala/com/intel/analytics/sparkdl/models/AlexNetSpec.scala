@@ -19,15 +19,13 @@ package com.intel.analytics.sparkdl.models
 
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim.SGD
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.torch.TH
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
-import com.intel.analytics.sparkdl.utils.{RandomGenerator, T}
+import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
-import scala.reflect.ClassTag
 import scala.util.Random
 
 class AlexNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
@@ -42,7 +40,7 @@ class AlexNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val seed = 100
     RNG.setSeed(seed)
-    val model = getModel[Float](1000)
+    val model = AlexNet_OWT[Float](1000, false)
     model.zeroGradParameters()
 
 
@@ -68,10 +66,10 @@ local classifier = nn.Sequential()
 classifier:add(nn.View(256*6*6))
 --classifier:add(nn.Dropout(0.5))
 classifier:add(nn.Linear(256*6*6, 4096))
-classifier:add(nn.Threshold(0, 1e-6))
+classifier:add(nn.ReLU())
 --classifier:add(nn.Dropout(0.5))
 classifier:add(nn.Linear(4096, 4096))
-classifier:add(nn.Threshold(0, 1e-6))
+classifier:add(nn.ReLU())
 classifier:add(nn.Linear(4096, nClasses))
 classifier:add(nn.LogSoftMax())
 
@@ -125,7 +123,6 @@ gradInput = model.gradInput
         println(s"${parameters.storage().array()(i)} ${parameterTorch.storage().array()(i)}")
       }
     }
-
 
     val criterion = new ClassNLLCriterion[Float]()
     val state = T("learningRate" -> 1e-2, "momentum" -> 0.9, "weightDecay" -> 5e-4,
@@ -188,7 +185,6 @@ gradInput = model.gradInput
       abss += tmp
     }
     assert(abss < 2e-2)
-    println(s"weightsAbs:$abss")
   }
 
   "AlexNet" should "generate correct output" in {
@@ -219,18 +215,14 @@ feature:add(nn.ReLU())
 feature:add(nn.SpatialConvolutionMM(256,256,3,3,1,1,1,1))      --  13 ->  13
 feature:add(nn.ReLU())
 feature:add(nn.SpatialMaxPooling(3,3,2,2))                   -- 13 -> 6
--- 1.3. Create Classifier (fully connected layers)
 local classifier = nn.Sequential()
 classifier:add(nn.View(256*6*6))
---classifier:add(nn.Dropout(0.5))
 classifier:add(nn.Linear(256*6*6, 4096))
-classifier:add(nn.Threshold(0, 1e-6))
---classifier:add(nn.Dropout(0.5))
+classifier:add(nn.ReLU())
 classifier:add(nn.Linear(4096, 4096))
-classifier:add(nn.Threshold(0, 1e-6))
+classifier:add(nn.ReLU())
 classifier:add(nn.Linear(4096, nClasses))
 classifier:add(nn.LogSoftMax())
--- 1.4. Combine 1.1 and 1.3 to produce final model
 model = nn.Sequential():add(feature):add(classifier)
 local parameters, gradParameters = model:getParameters()
 model:zeroGradParameters()
@@ -265,15 +257,15 @@ gradInput = model:backward(input, gradOutput)
     TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
-    val model = getModel[Double](1000)
+    val model = AlexNet_OWT[Double](1000, false)
     model.zeroGradParameters()
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
-    require(parameters == parameterTorch, "parameter compare failed")
+    parameters should be(parameterTorch)
 
-    val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
-    val gradparameterTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
-    require(gradparameters == gradparameterTorch, "gradparameter compare failed")
+    val gradParameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
+    val gradParameterTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
+    gradParameters should be(gradParameterTorch)
 
     val (weights, grad) = model.getParameters()
     val criterion = new ClassNLLCriterion[Double]()
@@ -294,74 +286,18 @@ gradInput = model:backward(input, gradOutput)
     model.zeroGradParameters()
     val outputTest = model.forward(input)
     val output = TH.map("output").asInstanceOf[Tensor[Double]]
-    var abss = 0.0
-    outputTest.map(output, (v1, v2) => {
-      if (abs(v1 - v2) != 0) abss += abs(v1 - v2)
-      v1
-    })
-    assert(abss < 1e-13)
-    println(s"outputAbs:$abss")
+    outputTest should be(output)
 
     val errTest = criterion.forward(outputTest, labels)
     val err = TH.map("err").asInstanceOf[Double]
-    println(s"${abs(errTest - err)}")
-    assert(abs(errTest - err) == 0)
+    errTest should be(err)
 
     val gradOutputTest = criterion.backward(outputTest, labels)
     val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
-    abss = 0.0
-    gradOutputTest.map(gradOutput, (v1, v2) => {
-      if (abs(v1 - v2) != 0) abss += abs(v1 - v2)
-      v1
-    })
-    assert(abss < 1e-13)
-    println(s"gradOutputTestAbs:$abss")
+    gradOutputTest should be(gradOutput)
 
     val gradInput = model.backward(input, gradOutputTest)
     val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
-    abss = 0.0
-    gradInput.map(gradInputTorch, (v1, v2) => {
-      if (abs(v1 - v2) != 0) abss += abs(v1 - v2)
-      v1
-    })
-    assert(abss < 1e-13)
-    println(s"gradInputTestAbs:$abss")
-
+    gradInput should be(gradInputTorch)
   }
-
-  // alexnet without dropout
-  def getModel[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[T] = {
-    val feature = new Sequential[T]
-    feature.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2))
-    feature.add(new ReLU(true))
-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
-    feature.add(new SpatialConvolution(64, 192, 5, 5, 1, 1, 2, 2))
-    feature.add(new ReLU(true))
-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
-    feature.add(new SpatialConvolution[T](192, 384, 3, 3, 1, 1, 1, 1))
-    feature.add(new ReLU(true))
-    feature.add(new SpatialConvolution[T](384, 256, 3, 3, 1, 1, 1, 1))
-    feature.add(new ReLU(true))
-    feature.add(new SpatialConvolution[T](256, 256, 3, 3, 1, 1, 1, 1))
-    feature.add(new ReLU(true))
-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
-
-
-
-    val classifier = new Sequential[T]
-    classifier.add(new View[T](256 * 6 * 6))
-    classifier.add(new Linear[T](256 * 6 * 6, 4096))
-    classifier.add(new Threshold[T](0, 1e-6))
-    classifier.add(new Linear[T](4096, 4096))
-    classifier.add(new Threshold[T](0, 1e-6))
-    classifier.add(new Linear[T](4096, classNum))
-    classifier.add(new LogSoftMax[T])
-
-
-    val model = new Sequential[T]
-    model.add(feature).add(classifier)
-
-    model
-  }
-
 }
