@@ -40,7 +40,7 @@ object Perf {
     opt[Int]('w', "warmUp")
       .text("Warm up iteration number. These iterations will run first and won't be count in " +
         "the perf test result.")
-      .action((v, p) => p.copy(iteration = v))
+      .action((v, p) => p.copy(warmUp = v))
     opt[String]('t', "type")
       .text("Data type. It can be float | double")
       .action((v, p) => p.copy(dataType = v))
@@ -141,8 +141,8 @@ object Perf {
 
 case class Params(
   batchSize: Int = 128,
-  iteration: Int = 10,
-  warmUp: Int = 5,
+  iteration: Int = 50,
+  warmUp: Int = 10,
   dataType: String = "float",
   module: String = "alexnet"
 )

@@ -17,8 +17,6 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import java.util
-
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
 
@@ -31,11 +29,14 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag]
 (val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75, val k: Double = 1.0)(
   implicit ev: TensorNumeric[T]) extends Module[T] {
 
-  private val scale = Tensor[T]()
-  private val paddedSquare = Tensor[T]()
-  private val paddedRatio = Tensor[T]()
-  private val accumRatio = Tensor[T]()
-  private val accumRatioTimeInput = Tensor[T]()
+  @transient
+  private var scale : Tensor[T] = null
+
+  @transient
+  private var paddedRatio : Tensor[T] = null
+
+  @transient
+  private var accumRatio : Tensor[T] = null
 
   @transient
   private var results: Array[Future[Unit]] = null
@@ -81,35 +82,26 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag]
     require(input.isContiguous(), "Input is not contiguous")
 
     output.resizeAs(input)
+    if(scale == null) {
+      scale = Tensor[T]().resizeAs(input)
+    }
     scale.resizeAs(input)
 
     val batchNum = input.size(1)
-    val channel = input.size(2)
-    val height = input.size(3)
-    val width = input.size(4)
-    paddedSquare.resize(batchNum, channel + size - 1, height, width)
-
     if (results == null || results.length != batchNum) {
       results = new Array[Future[Unit]](batchNum)
     }
 
-    if (classTag[T] == classTag[Double]) {
-      LocalNormalizationAcrossChannels.lrnForwardDouble(
-        input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
-        paddedSquare.asInstanceOf[Tensor[Double]], scale.asInstanceOf[Tensor[Double]],
-        prePad, alpha,
-        size, beta, k, results
-      )
-    } else if (classTag[T] == classTag[Float]) {
-      LocalNormalizationAcrossChannels.lrnForwardFloat(
-        input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
-        paddedSquare.asInstanceOf[Tensor[Float]], scale.asInstanceOf[Tensor[Float]],
-        prePad, alpha.toFloat,
-        size, beta.toFloat, k.toFloat, results
-      )
-    } else {
-      throw new IllegalArgumentException
+    var b = 1
+    while(b <= batchNum) {
+      val _b = b
+      results(b - 1) = Future {
+        LocalNormalizationAcrossChannels.forwardFrame(input.select(1, _b), output.select(1, _b),
+          scale.select(1, _b), alpha, size, beta, k)
+      }(Engine.getInstance())
+      b += 1
     }
+    Engine.releaseInstance(results)
 
     this.output
   }
@@ -124,403 +116,96 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag]
     val height = input.size(3)
     val width = input.size(4)
 
-    paddedRatio.resize(batchNum, channel + size - 1, height, width)
-    accumRatio.resize(batchNum, 1, height, width)
+    if(paddedRatio == null) {
+      paddedRatio = Tensor[T]().resize(batchNum, channel + size - 1, height, width)
+    }
+
+    if(accumRatio == null) {
+      accumRatio = Tensor[T]().resize(batchNum, height, width)
+    }
+
     gradInput.resizeAs(input)
-    accumRatioTimeInput.resize(batchNum, 1, height, width)
 
     if (results == null || results.length != batchNum) {
       results = new Array[Future[Unit]](batchNum)
     }
 
-    if (classTag[T] == classTag[Double]) {
-      LocalNormalizationAcrossChannels.lrnBackwardDouble(
-        input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
-        gradOutput.asInstanceOf[Tensor[Double]],
-        gradInput.asInstanceOf[Tensor[Double]], paddedRatio.asInstanceOf[Tensor[Double]],
-        scale.asInstanceOf[Tensor[Double]],
-        accumRatio.asInstanceOf[Tensor[Double]],
-        accumRatioTimeInput.asInstanceOf[Tensor[Double]], size, alpha,
-        beta, results
-      )
-    } else if (classTag[T] == classTag[Float]) {
-      LocalNormalizationAcrossChannels.lrnBackwardFloat(
-        input.asInstanceOf[Tensor[Float]], output.asInstanceOf[Tensor[Float]],
-        gradOutput.asInstanceOf[Tensor[Float]],
-        gradInput.asInstanceOf[Tensor[Float]], paddedRatio.asInstanceOf[Tensor[Float]],
-        scale.asInstanceOf[Tensor[Float]],
-        accumRatio.asInstanceOf[Tensor[Float]], accumRatioTimeInput.asInstanceOf[Tensor[Float]],
-        size, alpha.toFloat,
-        beta.toFloat, results
-      )
-    } else {
-      throw new IllegalArgumentException
+    var b = 1
+    while(b <= batchNum) {
+      val _b = b
+      results(b - 1) = Future {
+        LocalNormalizationAcrossChannels.backwardFrame(input.select(1, _b), output.select(1, _b),
+          scale.select(1, _b), gradOutput.select(1, _b), gradInput.select(1, _b),
+          paddedRatio.select(1, _b), accumRatio.select(1, _b), alpha, size, beta)
+      }(Engine.getInstance())
+      b += 1
     }
+    Engine.releaseInstance(results)
 
     this.gradInput
   }
 }
 
 object LocalNormalizationAcrossChannels {
-  private def lrnBackwardDouble(
-    input: Tensor[Double], output: Tensor[Double], gradOutput: Tensor[Double],
-    gradInput: Tensor[Double], paddedRatio: Tensor[Double], scale: Tensor[Double],
-    accumRatio: Tensor[Double], accumRatioTimeInput: Tensor[Double],
-    size: Int, alpha: Double, beta: Double, results: Array[Future[Unit]]): Unit = {
+  private def forwardFrame[T](input: Tensor[T], output: Tensor[T],
+    scale: Tensor[T], alpha: Double, size: Int, beta: Double, k: Double)
+    (implicit ev: TensorNumeric[T]): Unit = {
+    val channels = input.size(1)
 
-    val batchNum = input.size(1)
-    val channel = input.size(2)
-    val height = input.size(3)
-    val width = input.size(4)
+    val inputSquare = output
+    inputSquare.pow(input, ev.fromType(2))
+    val prePad = (size - 1) / 2 + 1
+    val prePadCrop = if(prePad > channels) channels else prePad
+    val scaleFirst = scale.select(1, 1).zero()
 
-    val paddedRatioData = paddedRatio.storage().array()
-    val gradInputData = gradInput.storage().array()
-    val gradOutputData = gradOutput.storage().array()
-    val outputData = output.storage().array()
-    val scaleData = scale.storage().array()
-    val accumRatioData = accumRatio.storage().array()
-    val accumRationTimeInputData = accumRatioTimeInput.storage().array()
-    val inputData = input.storage().array()
-    val ratioValue = 2.0 * alpha * beta / size
-    val inversePrePad = size - (size + 1) / 2
-    var i = 0
-    while (i < batchNum) {
-      val b = i + 1
-      results(i) = Future {
-        val gradInputOffset = gradInput.select(1, b).storageOffset() - 1
-        val gradOutputOffset = gradOutput.select(1, b).storageOffset() - 1
-        val scaleOffset = scale.select(1, b).storageOffset() - 1
-
-        var j = 0
-        while (j < channel * height * width) {
-          gradInputData(gradInputOffset + j) = math.pow(scaleData(scaleOffset + j), -beta)
-          gradInputData(gradInputOffset + j) *= gradOutputData(gradOutputOffset + j)
-          j += 1
-        }
-
-        val paddedRatioOffset = paddedRatio.select(1, b).
-          select(1, inversePrePad).storageOffset() - 1
-        val outputOffset = output.storageOffset() - 1
-        j = 0
-        while (j < channel * height * width) {
-          paddedRatioData(paddedRatioOffset + j) =
-            gradOutputData(gradOutputOffset + j) * outputData(outputOffset + j)
-          paddedRatioData(paddedRatioOffset + j) /= scaleData(scaleOffset + j)
-          j += 1
-        }
-        val accumRatioOffset = accumRatio.select(1, b).storageOffset() - 1
-        j = 0
-        while (j < height * width) {
-          accumRatioData(accumRatioOffset + j) = 0
-          j += 1
-        }
-        var c = 0
-        val initPaddedRatioOffset = paddedRatio.select(1, b).storageOffset() - 1
-        while (c < size - 1) {
-          j = 0
-          while (j < width * height) {
-            accumRatioData(accumRatioOffset + j) +=
-              paddedRatioData(initPaddedRatioOffset + c * width * height + j)
-            j += 1
-          }
-          c += 1
-        }
-
-        val accumRatioTimeInputOffset = accumRatioTimeInput.select(1, b).storageOffset() - 1
-        val inputOffset = input.select(1, b).storageOffset() - 1
-        c = 0
-        while (c < channel) {
-          j = 0
-          while (j < height * width) {
-            accumRatioData(accumRatioOffset + j) += paddedRatioData(initPaddedRatioOffset +
-              (c + size - 1) * width * height + j)
-            accumRationTimeInputData(accumRatioTimeInputOffset + j) =
-              accumRatioData(accumRatioOffset + j) *
-                inputData(inputOffset + c * height * width + j)
-            gradInputData(gradInputOffset + c * height * width + j) -=
-              ratioValue * accumRationTimeInputData(accumRatioTimeInputOffset + j)
-            accumRatioData(accumRatioOffset + j) -=
-              paddedRatioData(initPaddedRatioOffset + j + c * width * height)
-            j += 1
-          }
-          c += 1
-        }
-      }(Engine.getInstance())
-      i += 1
+    var c = 1
+    while(c <= prePadCrop) {
+      scaleFirst.add(inputSquare.select(1, c))
+      c += 1
     }
 
-    i = 0
-    while (i < batchNum) {
-      Await.result(results(i), Duration.Inf)
-      i += 1
+    c = 2
+    while(c <= channels){
+      val scalePrevious = scale.select(1, c - 1)
+      val scaleCurrent = scale.select(1, c)
+      scaleCurrent.copy(scalePrevious)
+      if(c < channels - prePad + 2) {
+        val squareNext = inputSquare.select(1, c + prePad - 1)
+        scaleCurrent.add(ev.fromType(1), squareNext)
+      }
+      if(c > prePad) {
+        val squarePrevious = inputSquare.select(1, c - prePad)
+        scaleCurrent.add(ev.fromType(-1), squarePrevious)
+      }
+      c += 1
     }
+
+    scale.mul(ev.fromType(alpha / size)).add(ev.fromType(k))
+    output.pow(scale, ev.fromType(-beta))
+    output.cmul(input)
   }
 
-  private def lrnBackwardFloat(
-    input: Tensor[Float], output: Tensor[Float], gradOutput: Tensor[Float],
-    gradInput: Tensor[Float], paddedRatio: Tensor[Float], scale: Tensor[Float],
-    accumRatio: Tensor[Float], accumRatioTimeInput: Tensor[Float],
-    size: Int, alpha: Float, beta: Float, results: Array[Future[Unit]]): Unit = {
+  private def backwardFrame[T](
+    input : Tensor[T], output : Tensor[T], scale : Tensor[T],
+    gradOutput : Tensor[T], gradInput: Tensor[T], paddedRatio: Tensor[T],
+    accumRatio: Tensor[T], alpha: Double, size: Int, beta: Double)
+    (implicit ev: TensorNumeric[T]): Unit = {
 
-    val batchNum = input.size(1)
-    val channel = input.size(2)
-    val height = input.size(3)
-    val width = input.size(4)
+    val channels = input.size(1)
+    val inversePrePad = size - (size - 1) / 2
+    val cacheRatioValue = ev.fromType(-2 * alpha * beta / size)
 
-    val paddedRatioData = paddedRatio.storage().array()
-    val gradInputData = gradInput.storage().array()
-    val gradOutputData = gradOutput.storage().array()
-    val outputData = output.storage().array()
-    val scaleData = scale.storage().array()
-    val accumRatioData = accumRatio.storage().array()
-    val accumRationTimeInputData = accumRatioTimeInput.storage().array()
-    val inputData = input.storage().array()
-    val ratioValue = 2.0f * alpha * beta / size
-    val inversePrePad = size - (size + 1) / 2
-    var i = 0
-    while (i < batchNum) {
-      val b = i + 1
-      results(i) = Future {
-        val gradInputOffset = gradInput.select(1, b).storageOffset() - 1
-        val gradOutputOffset = gradOutput.select(1, b).storageOffset() - 1
-        val scaleOffset = scale.select(1, b).storageOffset() - 1
-
-        var j = 0
-        while (j < channel * height * width) {
-          gradInputData(gradInputOffset + j) = math.pow(scaleData(scaleOffset + j), -beta).toFloat
-          gradInputData(gradInputOffset + j) *= gradOutputData(gradOutputOffset + j)
-          j += 1
-        }
-
-        val initPaddedRatioOffset = paddedRatio.select(1, b).storageOffset() - 1
-        val paddedRatioOffset =
-          paddedRatio.select(1, b).select(1, inversePrePad).storageOffset() - 1
-        val outputOffset = output.storageOffset() - 1
-        j = 0
-        while (j < channel * height * width) {
-          paddedRatioData(paddedRatioOffset + j) =
-            gradOutputData(gradOutputOffset + j) * outputData(outputOffset + j)
-          paddedRatioData(paddedRatioOffset + j) /= scaleData(scaleOffset + j)
-          j += 1
-        }
-        val accumRatioOffset = accumRatio.select(1, b).storageOffset() - 1
-        j = 0
-        while (j < height * width) {
-          accumRatioData(accumRatioOffset + j) = 0
-          j += 1
-        }
-        var c = 0
-        while (c < size - 1) {
-          j = 0
-          while (j < width * height) {
-            accumRatioData(accumRatioOffset + j) +=
-              paddedRatioData(initPaddedRatioOffset + c * width * height + j)
-            j += 1
-          }
-          c += 1
-        }
-
-        val accumRatioTimeInputOffset = accumRatioTimeInput.select(1, b).storageOffset() - 1
-        val inputOffset = input.select(1, b).storageOffset() - 1
-        c = 0
-        while (c < channel) {
-          j = 0
-          while (j < height * width) {
-            accumRatioData(accumRatioOffset + j) += paddedRatioData(initPaddedRatioOffset +
-              (c + size - 1) * width * height + j)
-            accumRationTimeInputData(accumRatioTimeInputOffset + j) =
-              accumRatioData(accumRatioOffset + j) * inputData(
-                inputOffset + c * height * width + j)
-            gradInputData(gradInputOffset + c * height * width + j) -=
-              ratioValue * accumRationTimeInputData(accumRatioTimeInputOffset + j)
-            accumRatioData(accumRatioOffset + j) -=
-              paddedRatioData(initPaddedRatioOffset + j + c * width * height)
-            j += 1
-          }
-          c += 1
-        }
-      }(Engine.getInstance())
-      i += 1
-    }
-
-    i = 0
-    while (i < batchNum) {
-      Await.result(results(i), Duration.Inf)
-      i += 1
-    }
-  }
-
-  private def lrnForwardDouble(input: Tensor[Double], output: Tensor[Double],
-    paddedSquare: Tensor[Double],
-    scale: Tensor[Double], prePad: Int, alpha: Double, size: Int, beta: Double, k: Double,
-    results: Array[Future[Unit]]): Unit = {
-
-    val batchNum = input.size(1)
-    val channel = input.size(2)
-    val height = input.size(3)
-    val width = input.size(4)
-
-    val outputData = output.storage().array()
-    val inputData = input.storage().array()
-    val paddedSquareData = paddedSquare.storage().array()
-    val scaleData = scale.storage().array()
-
-    var i = 0
-    while (i < batchNum) {
-      val b = i + 1
-      results(i) = Future {
-        // Square input
-        val inputOffset = input.select(1, b).storageOffset() - 1
-        val initPaddedSquareOffset =
-          paddedSquare.select(1, b).select(1, prePad + 1).storageOffset() - 1
-        var j = 0
-        while (j < height * width * channel) {
-          paddedSquareData(initPaddedSquareOffset + j) =
-            inputData(inputOffset + j) * inputData(inputOffset + j)
-          j += 1
-        }
-
-        // Init scale with k
-        val scaleOffset = scale.select(1, b).storageOffset() - 1
-        j = 0
-        while (j < channel * height * width) {
-          scaleData(scaleOffset + j) = k
-          j += 1
-        }
-
-        // Sum first size of channels squared input data into first channel of scale
-        val alphaOverSize = alpha / size
-        val paddedSquareOffset = paddedSquare.select(1, b).storageOffset() - 1
-        var c = 0
-        while (c < size) {
-          j = 0
-          while (j < height * width) {
-            scaleData(scaleOffset + j) +=
-              alphaOverSize * paddedSquareData(paddedSquareOffset + c * height * width + j)
-            j += 1
-          }
-          c += 1
-        }
-
-        // Shift a window across the kernel
-        c = 1
-        while (c < channel) {
-          System.arraycopy(scaleData, scaleOffset + (c - 1) * height * width, scaleData,
-            scaleOffset + c * height * width, height * width)
-          j = 0
-          while (j < height * width) {
-            scaleData(scaleOffset + c * height * width + j) += alphaOverSize *
-              paddedSquareData(paddedSquareOffset + (c + size - 1) * height * width + j)
-            scaleData(scaleOffset + c * height * width + j) -= alphaOverSize *
-              paddedSquareData(paddedSquareOffset + (c - 1) * height * width + j)
-            j += 1
-          }
-          c += 1
-        }
-
-        // apply scale to input to get the output
-        val outputOffset = output.select(1, b).storageOffset() - 1
-        j = 0
-        while (j < channel * height * width) {
-          outputData(outputOffset + j) =
-            math.pow(scaleData(scaleOffset + j), -beta) * inputData(inputOffset + j)
-          j += 1
-        }
-      }(Engine.getInstance())
-      i += 1
-    }
-
-    i = 0
-    while (i < batchNum) {
-      Await.result(results(i), Duration.Inf)
-      i += 1
-    }
-  }
-
-  private def lrnForwardFloat(input: Tensor[Float], output: Tensor[Float],
-    paddedSquare: Tensor[Float],
-    scale: Tensor[Float], prePad: Int, alpha: Float, size: Int, beta: Float, k: Float,
-    results: Array[Future[Unit]]): Unit = {
-
-    val batchNum = input.size(1)
-    val channel = input.size(2)
-    val height = input.size(3)
-    val width = input.size(4)
-
-    val outputData = output.storage().array()
-    val inputData = input.storage().array()
-    val paddedSquareData = paddedSquare.storage().array()
-    val scaleData = scale.storage().array()
-
-    var i = 0
-    while (i < batchNum) {
-      val b = i + 1
-      results(i) = Future {
-        // Square input
-        val inputOffset = input.select(1, b).storageOffset() - 1
-        val initPaddedSquareOffset =
-          paddedSquare.select(1, b).select(1, prePad + 1).storageOffset() - 1
-        var j = 0
-        while (j < height * width * channel) {
-          paddedSquareData(initPaddedSquareOffset + j) =
-            inputData(inputOffset + j) * inputData(inputOffset + j)
-          j += 1
-        }
-
-        // Init scale with k
-        val scaleOffset = scale.select(1, b).storageOffset() - 1
-        j = 0
-        while (j < channel * height * width) {
-          scaleData(scaleOffset + j) = k
-          j += 1
-        }
-
-        // Sum first size of channels squared input data into first channel of scale
-        val alphaOverSize = alpha / size
-        val paddedSquareOffset = paddedSquare.select(1, b).storageOffset() - 1
-        var c = 0
-        while (c < size) {
-          j = 0
-          while (j < height * width) {
-            scaleData(scaleOffset + j) += alphaOverSize *
-              paddedSquareData(paddedSquareOffset + c * height * width + j)
-            j += 1
-          }
-          c += 1
-        }
-
-        // Shift a window across the kernel
-        c = 1
-        while (c < channel) {
-          System.arraycopy(scaleData, scaleOffset + (c - 1) * height * width, scaleData,
-            scaleOffset + c * height * width, height * width)
-          j = 0
-          while (j < height * width) {
-            scaleData(scaleOffset + c * height * width + j) += alphaOverSize *
-              paddedSquareData(paddedSquareOffset + (c + size - 1) * height * width + j)
-            scaleData(scaleOffset + c * height * width + j) -= alphaOverSize *
-              paddedSquareData(paddedSquareOffset + (c - 1) * height * width + j)
-            j += 1
-          }
-          c += 1
-        }
-
-        // apply scale to input to get the output
-        val outputOffset = output.select(1, b).storageOffset() - 1
-        j = 0
-        while (j < channel * height * width) {
-          outputData(outputOffset + j) =
-            math.pow(scaleData(scaleOffset + j), -beta).toFloat * inputData(inputOffset + j)
-          j += 1
-        }
-      }(Engine.getInstance())
-      i += 1
-    }
-
-    i = 0
-    while (i < batchNum) {
-      Await.result(results(i), Duration.Inf)
-      i += 1
+    gradInput.pow(scale, ev.fromType(-beta)).cmul(gradOutput)
+    paddedRatio.zero()
+    val paddedRatioCenter = paddedRatio.narrow(1, inversePrePad, channels)
+    paddedRatioCenter.cmul(gradOutput, output).cdiv(scale)
+    accumRatio.sum(paddedRatio.narrow(1, 1, size - 1), 1)
+    var c = 1
+    while(c <= channels) {
+      accumRatio.add(paddedRatio.select(1, c + size - 1))
+      gradInput.select(1, c).addcmul(cacheRatioValue, input.select(1, c), accumRatio)
+      accumRatio.add(ev.fromType(-1), paddedRatio.select(1, c))
+      c += 1
     }
   }
 }

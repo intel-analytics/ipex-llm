@@ -91,11 +91,7 @@ class LocalNormalizationAcrossChannelsSpec extends FlatSpec with Matchers {
     layer.forward(input)
     val output = layer.forward(input)
 
-    var diff = 0.0
-    output.map(outputRef, (a, b) => {
-      diff += math.abs(a - b); a
-    })
-    diff should be(0.0)
+    output should be(outputRef)
   }
 
   "LocalNormalizationAcrossChannels BackWard Double" should "be correct" in {
@@ -137,11 +133,7 @@ class LocalNormalizationAcrossChannelsSpec extends FlatSpec with Matchers {
     val outputRef = referenceLRNForwardAcrossChannels(input, 0.0001, 0.75, 15)
     val output = layer.forward(input)
 
-    var diff = 0.0
-    output.map(outputRef, (a, b) => {
-      diff += math.abs(a - b); a
-    })
-    diff should be(0.0)
+    output should be(outputRef)
   }
 
   "LocalNormalizationAcrossChannels Foward Float" should "be correct" in {
@@ -151,11 +143,7 @@ class LocalNormalizationAcrossChannelsSpec extends FlatSpec with Matchers {
     val outputRef = referenceLRNForwardAcrossChannels(input, 0.0001f, 0.75f, 5)
     val output = layer.forward(input)
 
-    var diff = 0.0f
-    output.map(outputRef, (a, b) => {
-      diff += math.abs(a - b); a
-    })
-    diff should be(0.0f)
+    output should be(outputRef)
   }
 
   "LocalNormalizationAcrossChannels with Large Region Foward Float" should "be correct" in {
@@ -165,10 +153,6 @@ class LocalNormalizationAcrossChannelsSpec extends FlatSpec with Matchers {
     val outputRef = referenceLRNForwardAcrossChannels(input, 0.0001f, 0.75f, 15)
     val output = layer.forward(input)
 
-    var diff = 0.0f
-    output.map(outputRef, (a, b) => {
-      diff += math.abs(a - b); a
-    })
-    diff should be(0.0f)
+    output should be(outputRef)
   }
 }
