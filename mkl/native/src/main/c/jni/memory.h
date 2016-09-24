@@ -375,9 +375,18 @@ size_t MKLData<DType>::getMklLayoutSize()
 }
 
 template <typename DType>
+dnnLayout_t MKLData<DType>::getUsrLayout()
+{
+  return layoutUsr;
+}
+
+template <typename DType>
 dnnLayout_t MKLData<DType>::getMklLayout()
 {
-  return layoutMkl;
+  if (layoutMkl)
+    return layoutMkl;
+  else
+    return layoutUsr;
 }
 
 template <typename JArrayType, typename JType>

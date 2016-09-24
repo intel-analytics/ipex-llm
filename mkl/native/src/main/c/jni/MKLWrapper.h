@@ -468,4 +468,43 @@ dnnError_t dnnInnerProductCreateBackwardBias<double>(
   return dnnInnerProductCreateBackwardBias_F64(pInnerProduct, attributes,
                                                dimentions, dstSize);
 }
+
+template <typename Type>
+dnnError_t dnnConcatCreate(dnnPrimitive_t *pConcat,
+                           dnnPrimitiveAttributes_t attributes,
+                           size_t nSrcTensors, dnnLayout_t *src)
+{
+  return dnnConcatCreate_F32(pConcat, attributes, nSrcTensors, src);
+}
+
+template <>
+dnnError_t dnnConcatCreate<double>(dnnPrimitive_t *pConcat,
+                                   dnnPrimitiveAttributes_t attributes,
+                                   size_t nSrcTensors, dnnLayout_t *src)
+{
+  return dnnConcatCreate_F64(pConcat, attributes, nSrcTensors, src);
+}
+
+template <typename Type>
+dnnError_t dnnSplitCreate(dnnPrimitive_t *pSplit,
+                          dnnPrimitiveAttributes_t attributes,
+                          const size_t nDstTensors, dnnLayout_t layout,
+                          size_t dstChannelSize[])
+{
+  
+  return dnnSplitCreate_F32(pSplit, attributes, nDstTensors, layout,
+                            dstChannelSize);
+}
+
+template <>
+dnnError_t dnnSplitCreate<double>(dnnPrimitive_t *pSplit,
+                                  dnnPrimitiveAttributes_t attributes,
+                                  const size_t nDstTensors, dnnLayout_t layout,
+                                  size_t dstChannelSize[])
+{
+  
+  return dnnSplitCreate_F64(pSplit, attributes, nDstTensors, layout,
+                            dstChannelSize);
+}
+
 #endif
