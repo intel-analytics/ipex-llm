@@ -261,4 +261,12 @@ public class MKL {
             double[] input, int inputOffset, double[] gradOutput, int gradOutputOffset,
             double[] gradBias, int gradBiasOffset,
             double[] kernel, int kernelOffset, double[] bias, int biasOffset, long classPtr);
+
+    /* Concat API */
+    public native static long ConcatInitFloat(int numChannels, int dimension, int[] size);
+    public native static void ConcatForwardFloat(float[][] input, int[] inputOffset, float[] output, int outputOffset, long classPtr);
+    public native static void ConcatBackwardFloat(float[][] gradInput, int[] gradInputOffset, float[] output, int outputOffset, long classPtr);
+    public native static long ConcatInitDouble(int numChannels, int dimension, int[] size);
+    public native static void ConcatForwardDouble(double[][] input, int[] inputOffset, double[] output, int outputOffset, long classPtr);
+    public native static void ConcatBackwardDouble(double[][] gradInput, int[] gradInputOffset, double[] output, int outputOffset, long classPtr);
 }

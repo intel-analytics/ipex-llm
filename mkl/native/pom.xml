@@ -54,6 +54,7 @@
                                         <fileName>linear.cpp</fileName>
                                         <fileName>relu.cpp</fileName>
                                         <fileName>batch_norm.cpp</fileName>
+                                        <fileName>concat.cpp</fileName>
                                         <fileName>utils.cpp</fileName>
                                         <fileName>debug.cpp</fileName>
                                     </fileNames>
