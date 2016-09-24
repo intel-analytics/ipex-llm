@@ -43,6 +43,17 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
     if (this.name == null) this.toString else this.name
   }
 
+  private var needComputeBack = true
+
+  def setNeedComputeBack(need: Boolean): this.type = {
+    needComputeBack = need
+    this
+  }
+
+  def isNeedComputeBack(): Boolean = {
+    needComputeBack
+  }
+
   // list of sub modules
   val modules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
 

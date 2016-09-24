@@ -40,7 +40,6 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     val strideHeight: Int = 1,
     val padWidth: Int = 0,
     val padHeight: Int = 0,
-    val needCompute: Boolean = true,
     val groups: Int = 1,
     private var initMethod: InitializationMethod = Default
 )(implicit ev: TensorNumeric[T])
@@ -244,7 +243,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
 
     implicit def bool2int(b: Boolean) = if (b) 1 else 0
     val start = System.nanoTime()
-    if (needCompute) {
+    if (isNeedComputeBack()) {
       ev.getType() match {
         case "Double" =>
           MKL.ConvolutionBackwardDataDouble(
@@ -405,8 +404,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"""mkl.SpatialConvolution($nInputPlane -> $nOutputPlane, $kernelWidth x $kernelHeight,
-      $strideWidth, $strideHeight, $padWidth, $padHeight)"""
+    s"""mkl.SpatialConvolution($nInputPlane -> $nOutputPlane, $kernelWidth x $kernelHeight, $strideWidth, $strideHeight, $padWidth, $padHeight)"""
   }
 
   override def findModel(paramOffset: Int, indexes: Array[Int]): (Module[T], Int, Array[Int]) = {
