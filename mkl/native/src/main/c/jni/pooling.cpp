@@ -25,6 +25,9 @@ class MKLPooling : public MKLLayer<DType>
  private:
   std::shared_ptr<MKLData<DType>> workspace;
 
+  size_t inputSize[4];
+  size_t inputStrides[4];
+
   size_t kernelSize[2];
 
   size_t outputSizeCeil[4];
@@ -89,6 +92,15 @@ void MKLPooling<DType>::init(size_t inputNumber, size_t inputChannel,
 
   this->ceilMode = ceilMode;
 
+  inputSize[0] = inputWidth;
+  inputSize[1] = inputHeight;
+  inputSize[2] = inputChannel;
+  inputSize[3] = inputNumber;
+
+  inputStrides[0] = 1;
+  for (int i        = 1; i < 4; i++)
+    inputStrides[i] = inputStrides[i - 1] * inputSize[i - 1];
+
   // compute output
   outputSizeCeil[0] =
       computeOut(inputWidth, padWidth, kernelWidth, strideWidth, true);
@@ -117,6 +129,8 @@ void MKLPooling<DType>::init(size_t inputNumber, size_t inputChannel,
     this->ceilMode = true;
 
   // create usr layout.
+  this->input->createUsrLayout(dimension, inputSize, inputStrides);
+  this->gradInput->createUsrLayout(dimension, inputSize, inputStrides);
   if (this->ceilMode) {
     this->output->createUsrLayout(dimension, outputSizeCeil, outputStridesCeil);
     this->gradOutput->createUsrLayout(dimension, outputSizeCeil,
@@ -349,15 +363,15 @@ void JNIPoolingUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
 extern "C" {
 #endif
 
-// Double
-PoolingInit(Double, jdouble, jdoubleArray)
-    PoolingForward(Double, jdouble, jdoubleArray)
-        PoolingBackward(Double, jdouble, jdoubleArray)
+  // Double
+  PoolingInit(Double, jdouble, jdoubleArray);
+  PoolingForward(Double, jdouble, jdoubleArray);
+  PoolingBackward(Double, jdouble, jdoubleArray);
 
-    // Float
-    PoolingInit(Float, jfloat, jfloatArray)
-        PoolingForward(Float, jfloat, jfloatArray)
-            PoolingBackward(Float, jfloat, jfloatArray)
+  // Float
+  PoolingInit(Float, jfloat, jfloatArray);
+  PoolingForward(Float, jfloat, jfloatArray);
+  PoolingBackward(Float, jfloat, jfloatArray);
 
 #ifdef __cplusplus
 }
