@@ -317,4 +317,10 @@ public class MKL {
     public native static long ConcatInitDouble(int numChannels, int dimension, int[] size);
     public native static void ConcatForwardDouble(double[][] input, int[] inputOffset, double[] output, int outputOffset, long classPtr);
     public native static void ConcatBackwardDouble(double[][] gradInput, int[] gradInputOffset, double[] output, int outputOffset, long classPtr);
+
+    /* Sum API */
+    public native static long SumInitFloat(int numChannels, int dimension, int[] size);
+    public native static void SumForwardFloat(float[][] input, int[] inputOffset, float[] output, int outputOffset, long classPtr);
+    public native static long SumInitDouble(int numChannels, int dimension, int[] size);
+    public native static void SumForwardDouble(double[][] input, int[] inputOffset, double[] output, int outputOffset, long classPtr);
 }

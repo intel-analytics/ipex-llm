@@ -507,4 +507,21 @@ dnnError_t dnnSplitCreate<double>(dnnPrimitive_t *pSplit,
                             dstChannelSize);
 }
 
+template <typename Type>
+dnnError_t dnnSumCreate(
+  dnnPrimitive_t *pSum,
+  dnnPrimitiveAttributes_t attributes, const size_t nSummands,
+  dnnLayout_t layout, Type *coefficients)
+{
+  return dnnSumCreate_F32(pSum, attributes, nSummands, layout, coefficients);
+}
+
+template <>
+dnnError_t dnnSumCreate<double>(
+  dnnPrimitive_t *pSum,
+  dnnPrimitiveAttributes_t attributes, const size_t nSummands,
+  dnnLayout_t layout, double *coefficients)
+{
+  return dnnSumCreate_F64(pSum, attributes, nSummands, layout, coefficients);
+}
 #endif
