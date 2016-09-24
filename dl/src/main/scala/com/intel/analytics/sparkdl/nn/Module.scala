@@ -50,6 +50,17 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
     if (this.name == null) this.getClass.getName else this.name
   }
 
+  private var needComputeBack = true
+
+  def setNeedComputeBack(need: Boolean): this.type = {
+    needComputeBack = need
+    this
+  }
+
+  def isNeedComputeBack(): Boolean = {
+    needComputeBack
+  }
+
   // list of sub modules
   val modules: ArrayBuffer[Module[Activities, Activities, T]]
     = ArrayBuffer[Module[Activities, Activities, T]]()
