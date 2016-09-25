@@ -20,8 +20,9 @@ package com.intel.analytics.sparkdl.example
 import com.intel.analytics.sparkdl.example.ImageNetUtils._
 import com.intel.analytics.sparkdl.example.Utils._
 import com.intel.analytics.sparkdl.nn._
-import com.intel.analytics.sparkdl.optim.EpochOptimizer.Regime
 import com.intel.analytics.sparkdl.optim._
+import com.intel.analytics.sparkdl.optim.SGD
+import com.intel.analytics.sparkdl.optim.SGD.{EpochSchedule, Poly, Regime}
 import com.intel.analytics.sparkdl.ps.{AllReduceParameterManager, OneReduceParameterManager}
 import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.utils.T
@@ -104,13 +105,16 @@ object ImageNetParallel {
     val workerConfig = params.workerConfig.clone()
     workerConfig("profile") = true
 
-    val regime: Array[Regime] = Array(
+    /*val regimes: Array[Regime] = Array(
       Regime(1, 18, T("learningRate" -> 1e-2, "weightDecay" -> 2e-4)),
       Regime(19, 29, T("learningRate" -> 5e-3, "weightDecay" -> 2e-4)),
       Regime(30, 43, T("learningRate" -> 1e-3, "weightDecay" -> 0.0)),
       Regime(44, 52, T("learningRate" -> 5e-4, "weightDecay" -> 0.0)),
       Regime(53, 100000000, T("learningRate" -> 1e-4, "weightDecay" -> 0.0))
     )
+
+    driverConfig("learningRateSchedule") = EpochSchedule(regimes)*/
+    driverConfig("learningRateSchedule") = Poly(0.5, 75000)
 
     val croppedData = if (cropImage) {
       loadCroppedData(trainFiles, sc, labelsMap, classNum + 0.5).coalesce(partitionNum, true)
@@ -151,7 +155,6 @@ object ImageNetParallel {
     val optimizer = new GradAggEpochOptimizer[Float](model, criterion,
       getOptimMethodFloat(params.masterOptM),
       pm, dataSets, metrics, driverConfig)
-    optimizer.setRegimes(regime)
     optimizer.addEvaluation("top1", EvaluateMethods.calcAccuracy)
     optimizer.addEvaluation("top5", EvaluateMethods.calcTop5Accuracy)
     optimizer.setTestDataSet(testDataSets)
