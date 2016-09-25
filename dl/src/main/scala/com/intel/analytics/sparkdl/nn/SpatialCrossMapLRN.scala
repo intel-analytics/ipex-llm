@@ -25,7 +25,7 @@ import scala.concurrent.{Await, Future}
 import scala.reflect._
 import com.intel.analytics.sparkdl.utils.Engine
 
-class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag]
+class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
 (val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75, val k: Double = 1.0)(
   implicit ev: TensorNumeric[T]) extends Module[T] {
 
@@ -49,10 +49,10 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag]
       return false
     }
 
-    if (!obj.isInstanceOf[LocalNormalizationAcrossChannels[T]]) {
+    if (!obj.isInstanceOf[SpatialCrossMapLRN[T]]) {
       return false
     }
-    val other = obj.asInstanceOf[LocalNormalizationAcrossChannels[T]]
+    val other = obj.asInstanceOf[SpatialCrossMapLRN[T]]
     if (this.eq(other)) {
       return true
     }
@@ -96,7 +96,7 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag]
     while(b <= batchNum) {
       val _b = b
       results(b - 1) = Future {
-        LocalNormalizationAcrossChannels.forwardFrame(input.select(1, _b), output.select(1, _b),
+        SpatialCrossMapLRN.forwardFrame(input.select(1, _b), output.select(1, _b),
           scale.select(1, _b), alpha, size, beta, k)
       }(Engine.getInstance())
       b += 1
@@ -134,7 +134,7 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag]
     while(b <= batchNum) {
       val _b = b
       results(b - 1) = Future {
-        LocalNormalizationAcrossChannels.backwardFrame(input.select(1, _b), output.select(1, _b),
+        SpatialCrossMapLRN.backwardFrame(input.select(1, _b), output.select(1, _b),
           scale.select(1, _b), gradOutput.select(1, _b), gradInput.select(1, _b),
           paddedRatio.select(1, _b), accumRatio.select(1, _b), alpha, size, beta)
       }(Engine.getInstance())
@@ -146,7 +146,7 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag]
   }
 }
 
-object LocalNormalizationAcrossChannels {
+object SpatialCrossMapLRN {
   private def forwardFrame[T](input: Tensor[T], output: Tensor[T],
     scale: Tensor[T], alpha: Double, size: Int, beta: Double, k: Double)
     (implicit ev: TensorNumeric[T]): Unit = {

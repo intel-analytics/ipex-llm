@@ -20,7 +20,7 @@ package com.intel.analytics.sparkdl.nn
 import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
-class LocalNormalizationAcrossChannelsSpec extends FlatSpec with Matchers {
+class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
   private def referenceLRNForwardAcrossChannels
   (input: Tensor[Double], alpha: Double, beta: Double, size: Int): Tensor[Double] = {
     val output = Tensor[Double]()
@@ -84,7 +84,7 @@ class LocalNormalizationAcrossChannelsSpec extends FlatSpec with Matchers {
   }
 
   "LocalNormalizationAcrossChannels Foward Double" should "be correct" in {
-    val layer = new LocalNormalizationAcrossChannels[Double](5, 0.0001, 0.75, 1.0)
+    val layer = new SpatialCrossMapLRN[Double](5, 0.0001, 0.75, 1.0)
     val input = Tensor[Double](2, 7, 3, 3)
     input.rand()
     val outputRef = referenceLRNForwardAcrossChannels(input, 0.0001, 0.75, 5)
@@ -95,7 +95,7 @@ class LocalNormalizationAcrossChannelsSpec extends FlatSpec with Matchers {
   }
 
   "LocalNormalizationAcrossChannels BackWard Double" should "be correct" in {
-    val layer = new LocalNormalizationAcrossChannels[Double](5, 0.0001, 0.75, 1.0)
+    val layer = new SpatialCrossMapLRN[Double](5, 0.0001, 0.75, 1.0)
     val input = Tensor[Double](2, 7, 3, 3)
     input.rand()
     val checker = new GradientChecker(1e-2, 1e-2)
@@ -103,7 +103,7 @@ class LocalNormalizationAcrossChannelsSpec extends FlatSpec with Matchers {
   }
 
   "LocalNormalizationAcrossChannels BackWard Float" should "be correct" in {
-    val layer = new LocalNormalizationAcrossChannels[Float](5, 0.0001, 0.75, 1.0)
+    val layer = new SpatialCrossMapLRN[Float](5, 0.0001, 0.75, 1.0)
     val input = Tensor[Float](2, 7, 3, 3)
     input.rand()
     val checker = new GradientChecker(1e-2, 1e-2)
@@ -111,7 +111,7 @@ class LocalNormalizationAcrossChannelsSpec extends FlatSpec with Matchers {
   }
 
   "LocalNormalizationAcrossChannels with Large Region BackWard Double" should "be correct" in {
-    val layer = new LocalNormalizationAcrossChannels[Double](15, 0.0001, 0.75, 1.0)
+    val layer = new SpatialCrossMapLRN[Double](15, 0.0001, 0.75, 1.0)
     val input = Tensor[Double](2, 7, 3, 3)
     input.rand()
     val checker = new GradientChecker(1e-2, 1e-2)
@@ -119,7 +119,7 @@ class LocalNormalizationAcrossChannelsSpec extends FlatSpec with Matchers {
   }
 
   "LocalNormalizationAcrossChannels with Large Region BackWard Float" should "be correct" in {
-    val layer = new LocalNormalizationAcrossChannels[Float](15, 0.0001, 0.75, 1.0)
+    val layer = new SpatialCrossMapLRN[Float](15, 0.0001, 0.75, 1.0)
     val input = Tensor[Float](2, 7, 3, 3)
     input.rand()
     val checker = new GradientChecker(1e-2, 1e-2)
@@ -127,7 +127,7 @@ class LocalNormalizationAcrossChannelsSpec extends FlatSpec with Matchers {
   }
 
   "LocalNormalizationAcrossChannels with Large Region Foward Double" should "be correct" in {
-    val layer = new LocalNormalizationAcrossChannels[Double](15, 0.0001, 0.75, 1.0)
+    val layer = new SpatialCrossMapLRN[Double](15, 0.0001, 0.75, 1.0)
     val input = Tensor[Double](2, 7, 3, 3)
     input.rand()
     val outputRef = referenceLRNForwardAcrossChannels(input, 0.0001, 0.75, 15)
@@ -137,7 +137,7 @@ class LocalNormalizationAcrossChannelsSpec extends FlatSpec with Matchers {
   }
 
   "LocalNormalizationAcrossChannels Foward Float" should "be correct" in {
-    val layer = new LocalNormalizationAcrossChannels[Float](5, 0.0001f, 0.75f, 1.0f)
+    val layer = new SpatialCrossMapLRN[Float](5, 0.0001f, 0.75f, 1.0f)
     val input = Tensor[Float](2, 7, 3, 3)
     input.rand()
     val outputRef = referenceLRNForwardAcrossChannels(input, 0.0001f, 0.75f, 5)
@@ -147,7 +147,7 @@ class LocalNormalizationAcrossChannelsSpec extends FlatSpec with Matchers {
   }
 
   "LocalNormalizationAcrossChannels with Large Region Foward Float" should "be correct" in {
-    val layer = new LocalNormalizationAcrossChannels[Float](15, 0.0001f, 0.75f, 1.0f)
+    val layer = new SpatialCrossMapLRN[Float](15, 0.0001f, 0.75f, 1.0f)
     val input = Tensor[Float](2, 7, 3, 3)
     input.rand()
     val outputRef = referenceLRNForwardAcrossChannels(input, 0.0001f, 0.75f, 15)
