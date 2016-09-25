@@ -72,10 +72,12 @@ class SpatialCrossMapLRNSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val layer = new SpatialCrossMapLRN[Double](5, 1.0, 0.75, 1.0)
     val input = Tensor[Double](16, 3, 224, 224).rand()
     val gradOutput = Tensor[Double](16, 3, 224, 224).rand()
+    layer.updateOutput(input)
     val output = layer.updateGradInput(input, gradOutput)
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "layer = nn.SpatialCrossMapLRN(5, 1.0, 0.75, 1.0)\n" +
+      "layer:forward(input) " +
       "gradInput = layer:updateGradInput(input, gradOutput) "
 
     val torchResult = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
@@ -92,10 +94,12 @@ class SpatialCrossMapLRNSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val layer = new SpatialCrossMapLRN[Double](5, 1.0, 0.75, 1.0)
     val input = Tensor[Double](16, 32, 128, 128).rand()
     val gradOutput = Tensor[Double](16, 32, 128, 128).rand()
+    layer.updateOutput(input)
     val output = layer.updateGradInput(input, gradOutput)
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "layer = nn.SpatialCrossMapLRN(5, 1.0, 0.75, 1.0)\n" +
+      "layer:forward(input) " +
       "gradInput = layer:updateGradInput(input, gradOutput) "
 
     val torchResult = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
