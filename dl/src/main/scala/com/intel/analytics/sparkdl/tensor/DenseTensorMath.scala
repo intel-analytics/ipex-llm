@@ -17,7 +17,7 @@
 
 package com.intel.analytics.sparkdl.tensor
 
-import com.intel.analytics.sparkdl.mkl.MKL
+  import com.intel.analytics.sparkdl.mkl.MKL
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath._
 import com.intel.analytics.sparkdl.tensor.{DenseTensorApply => Apply}
 
@@ -33,7 +33,7 @@ object DenseTensorMath {
       self.copy(x)
     }
 
-    if(self.isContiguous()) {
+    if (self.isContiguous()) {
       ev.scal(self.nElement, value, self.storage().array(), self.storageOffset() - 1, 1)
     } else {
       val func = new TensorFunc2[T] {
@@ -48,11 +48,11 @@ object DenseTensorMath {
 
   def cmul[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    if(x != null) {
+    if (x != null) {
       self.copy(x)
     }
     require(self.nElement() == y.nElement(), "element number doesn't match")
-    if(self.isContiguous() && y.isContiguous()) {
+    if (self.isContiguous() && y.isContiguous()) {
       ev.vMul(self.nElement(), self.storage().array(), self.storageOffset() - 1,
         y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
           - 1)
@@ -69,11 +69,11 @@ object DenseTensorMath {
 
   def cdiv[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    if(x != null) {
+    if (x != null) {
       self.copy(x)
     }
     require(self.nElement() == y.nElement(), "element number doesn't match")
-    if(self.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
+    if (self.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
       ev.vDiv(self.nElement(), self.storage().array(), self.storageOffset() - 1,
         y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
           - 1)
@@ -267,11 +267,11 @@ object DenseTensorMath {
     sum
   }
 
-  def sum[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x : Tensor[T], _dim: Int)
+  def sum[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
 
     require(_dim >= 0 && _dim < x.nDimension, s"dimension ${_dim + 1} out of range")
-    val result = if(self == null) new DenseTensor[T]() else self
+    val result = if (self == null) new DenseTensor[T]() else self
     val sizes = x.size()
     sizes(_dim) = 1
     result.resize(sizes)

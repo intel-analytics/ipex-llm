@@ -20,7 +20,6 @@ package com.intel.analytics.sparkdl.tensor
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
 import com.intel.analytics.sparkdl.mkl.MKL
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric.{TensorNumericDouble, TensorNumericFloat}
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.utils.Table
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
@@ -792,7 +791,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     addcmul(ev.fromType(1), tensor1, tensor2)
 
   override def addcdiv(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
-    if(this.isContiguous() && tensor1.isContiguous() && tensor2.isContiguous()) {
+    if (this.isContiguous() && tensor1.isContiguous() && tensor2.isContiguous()) {
       ev.getType() match {
         case "Double" =>
           val v = value.asInstanceOf[Double]

@@ -20,7 +20,6 @@ package com.intel.analytics.sparkdl.tensor
 import java.util
 
 import com.intel.analytics.sparkdl.mkl.MKL
-import com.intel.analytics.sparkdl.utils.RandomGenerator
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 class TensorNumericMath
@@ -82,26 +81,27 @@ object TensorNumericMath {
 
     def toType[@specialized(Float, Double, Int) K](t: T)(implicit c: ConvertableTo[K]): K
 
-    def vPowx(n : Int, a : Array[T], aOffset : Int, b : T, y : Array[T], yOffset : Int): Unit
+    def vPowx(n: Int, a: Array[T], aOffset: Int, b: T, y: Array[T], yOffset: Int): Unit
 
-    def scal(n : Int, sa : T, sx : Array[T], offset : Int, incx : Int): Unit
+    def scal(n: Int, sa: T, sx: Array[T], offset: Int, incx: Int): Unit
 
-    def inv(v : T): T
+    def inv(v: T): T
 
-    def add(n : Int, a : Array[T], offset : Int, v : T, stride : Int) : Unit
+    def add(n: Int, a: Array[T], offset: Int, v: T, stride: Int): Unit
 
-    def vMul(n : Int, a : Array[T], aOffset : Int, b : Array[T], bOffset : Int, y : Array[T],
-      yOffset : Int) : Unit
+    def vMul(n: Int, a: Array[T], aOffset: Int, b: Array[T], bOffset: Int, y: Array[T],
+      yOffset: Int): Unit
 
-    def vDiv(n : Int, a : Array[T], aOffset : Int, b : Array[T], bOffset : Int, y : Array[T],
-      yOffset : Int) : Unit
+    def vDiv(n: Int, a: Array[T], aOffset: Int, b: Array[T], bOffset: Int, y: Array[T],
+      yOffset: Int): Unit
 
-    def sum(n : Int, a : Array[T], aOffset : Int, stride : Int) : T
+    def sum(n: Int, a: Array[T], aOffset: Int, stride: Int): T
 
     def getType(): String
   }
 
   class TensorNumericOps[@specialized(Float, Double) T](lhs: T)(implicit ev: TensorNumeric[T]) {
+    // scalastyle:off methodName
     def +(rhs: T): T = ev.plus(lhs, rhs)
 
     def -(rhs: T): T = ev.minus(lhs, rhs)
@@ -109,6 +109,7 @@ object TensorNumericMath {
     def *(rhs: T): T = ev.times(lhs, rhs)
 
     def /(rhs: T): T = ev.divide(lhs, rhs)
+    // scalastyle:on methodName
   }
 
   object TensorNumeric {
@@ -207,7 +208,7 @@ object TensorNumericMath {
 
       override def add(n: Int, a: Array[Float], offset: Int, v: Float, stride: Int): Unit = {
         var i = 0
-        while(i < n) {
+        while (i < n) {
           a(offset + i * stride) += v
           i += 1
         }
@@ -215,11 +216,11 @@ object TensorNumericMath {
 
       override def vMul(n: Int, a: Array[Float], aOffset: Int, b: Array[Float], bOffset: Int,
         y: Array[Float], yOffset: Int): Unit = {
-        if(MKL.isMKLLoaded) {
+        if (MKL.isMKLLoaded) {
           MKL.vsMul(n, a, aOffset, b, bOffset, y, yOffset)
         } else {
           var i = 0
-          while(i < n) {
+          while (i < n) {
             y(yOffset + i) = a(aOffset + i) * b(bOffset + i)
             i += 1
           }
@@ -228,21 +229,21 @@ object TensorNumericMath {
 
       override def vDiv(n: Int, a: Array[Float], aOffset: Int, b: Array[Float], bOffset: Int,
         y: Array[Float], yOffset: Int): Unit = {
-        if(MKL.isMKLLoaded) {
+        if (MKL.isMKLLoaded) {
           MKL.vsDiv(n, a, aOffset, b, bOffset, y, yOffset)
         } else {
           var i = 0
-          while(i < n) {
+          while (i < n) {
             y(yOffset + i) = a(aOffset + i) / b(bOffset + i)
             i += 1
           }
         }
       }
 
-      override def sum(n: Int, a: Array[Float], aOffset : Int, stride: Int): Float = {
+      override def sum(n: Int, a: Array[Float], aOffset: Int, stride: Int): Float = {
         var i = 0
         var r = 0.0f
-        while(i < n) {
+        while (i < n) {
           r += a(aOffset + i * stride)
           i += 1
         }
@@ -343,7 +344,7 @@ object TensorNumericMath {
 
       override def add(n: Int, a: Array[Double], offset: Int, v: Double, stride: Int): Unit = {
         var i = 0
-        while(i < n) {
+        while (i < n) {
           a(offset + i * stride) += v
           i += 1
         }
@@ -351,11 +352,11 @@ object TensorNumericMath {
 
       override def vMul(n: Int, a: Array[Double], aOffset: Int, b: Array[Double], bOffset: Int,
         y: Array[Double], yOffset: Int): Unit = {
-        if(MKL.isMKLLoaded) {
+        if (MKL.isMKLLoaded) {
           MKL.vdMul(n, a, aOffset, b, bOffset, y, yOffset)
         } else {
           var i = 0
-          while(i < n) {
+          while (i < n) {
             y(yOffset + i) = a(aOffset + i) * b(bOffset + i)
             i += 1
           }
@@ -364,11 +365,11 @@ object TensorNumericMath {
 
       override def vDiv(n: Int, a: Array[Double], aOffset: Int, b: Array[Double], bOffset: Int,
         y: Array[Double], yOffset: Int): Unit = {
-        if(MKL.isMKLLoaded) {
+        if (MKL.isMKLLoaded) {
           MKL.vdDiv(n, a, aOffset, b, bOffset, y, yOffset)
         } else {
           var i = 0
-          while(i < n) {
+          while (i < n) {
             y(yOffset + i) = a(aOffset + i) / b(bOffset + i)
             i += 1
           }
@@ -378,7 +379,7 @@ object TensorNumericMath {
       override def sum(n: Int, a: Array[Double], aOffset: Int, stride: Int): Double = {
         var i = 0
         var r = 0.0
-        while(i < n) {
+        while (i < n) {
           r += a(aOffset + i * stride)
           i += 1
         }

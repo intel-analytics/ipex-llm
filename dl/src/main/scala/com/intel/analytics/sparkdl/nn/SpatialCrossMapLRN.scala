@@ -30,13 +30,13 @@ class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
   implicit ev: TensorNumeric[T]) extends Module[T] {
 
   @transient
-  private var scale : Tensor[T] = null
+  private var scale: Tensor[T] = null
 
   @transient
-  private var paddedRatio : Tensor[T] = null
+  private var paddedRatio: Tensor[T] = null
 
   @transient
-  private var accumRatio : Tensor[T] = null
+  private var accumRatio: Tensor[T] = null
 
   @transient
   private var results: Array[Future[Unit]] = null
@@ -61,7 +61,7 @@ class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
       alpha == other.alpha && beta == other.beta && k == other.k
   }
 
-  override def hashCode() : Int = {
+  override def hashCode(): Int = {
     val seed = 37
     var hash = super.hashCode()
     hash = hash * seed + size.hashCode()
@@ -82,7 +82,7 @@ class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
     require(input.isContiguous(), "Input is not contiguous")
 
     output.resizeAs(input)
-    if(scale == null) {
+    if (scale == null) {
       scale = Tensor[T]().resizeAs(input)
     }
     scale.resizeAs(input)
@@ -93,7 +93,7 @@ class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
     }
 
     var b = 1
-    while(b <= batchNum) {
+    while (b <= batchNum) {
       val _b = b
       results(b - 1) = Future {
         SpatialCrossMapLRN.forwardFrame(input.select(1, _b), output.select(1, _b),
@@ -116,11 +116,11 @@ class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
     val height = input.size(3)
     val width = input.size(4)
 
-    if(paddedRatio == null) {
+    if (paddedRatio == null) {
       paddedRatio = Tensor[T]().resize(batchNum, channel + size - 1, height, width)
     }
 
-    if(accumRatio == null) {
+    if (accumRatio == null) {
       accumRatio = Tensor[T]().resize(batchNum, height, width)
     }
 
@@ -131,7 +131,7 @@ class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
     }
 
     var b = 1
-    while(b <= batchNum) {
+    while (b <= batchNum) {
       val _b = b
       results(b - 1) = Future {
         SpatialCrossMapLRN.backwardFrame(input.select(1, _b), output.select(1, _b),
@@ -155,25 +155,25 @@ object SpatialCrossMapLRN {
     val inputSquare = output
     inputSquare.pow(input, ev.fromType(2))
     val prePad = (size - 1) / 2 + 1
-    val prePadCrop = if(prePad > channels) channels else prePad
+    val prePadCrop = if (prePad > channels) channels else prePad
     val scaleFirst = scale.select(1, 1).zero()
 
     var c = 1
-    while(c <= prePadCrop) {
+    while (c <= prePadCrop) {
       scaleFirst.add(inputSquare.select(1, c))
       c += 1
     }
 
     c = 2
-    while(c <= channels){
+    while (c <= channels) {
       val scalePrevious = scale.select(1, c - 1)
       val scaleCurrent = scale.select(1, c)
       scaleCurrent.copy(scalePrevious)
-      if(c < channels - prePad + 2) {
+      if (c < channels - prePad + 2) {
         val squareNext = inputSquare.select(1, c + prePad - 1)
         scaleCurrent.add(ev.fromType(1), squareNext)
       }
-      if(c > prePad) {
+      if (c > prePad) {
         val squarePrevious = inputSquare.select(1, c - prePad)
         scaleCurrent.add(ev.fromType(-1), squarePrevious)
       }
@@ -186,8 +186,8 @@ object SpatialCrossMapLRN {
   }
 
   private def backwardFrame[T](
-    input : Tensor[T], output : Tensor[T], scale : Tensor[T],
-    gradOutput : Tensor[T], gradInput: Tensor[T], paddedRatio: Tensor[T],
+    input: Tensor[T], output: Tensor[T], scale: Tensor[T],
+    gradOutput: Tensor[T], gradInput: Tensor[T], paddedRatio: Tensor[T],
     accumRatio: Tensor[T], alpha: Double, size: Int, beta: Double)
     (implicit ev: TensorNumeric[T]): Unit = {
 
@@ -201,7 +201,7 @@ object SpatialCrossMapLRN {
     paddedRatioCenter.cmul(gradOutput, output).cdiv(scale)
     accumRatio.sum(paddedRatio.narrow(1, 1, size - 1), 1)
     var c = 1
-    while(c <= channels) {
+    while (c <= channels) {
       accumRatio.add(paddedRatio.select(1, c + size - 1))
       gradInput.select(1, c).addcmul(cacheRatioValue, input.select(1, c), accumRatio)
       accumRatio.add(ev.fromType(-1), paddedRatio.select(1, c))
