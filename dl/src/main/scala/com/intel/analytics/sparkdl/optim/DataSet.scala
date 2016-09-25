@@ -19,6 +19,7 @@ package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.utils.RandomGenerator
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
@@ -222,10 +223,9 @@ class ShuffleBatchDataSet[D: ClassTag, @specialized(Float, Double) T: ClassTag](
 object ShuffleBatchDataSet {
   def inPlaceShuffle[T](data: Array[T]): Array[T] = {
     var i = 0
-    val rand = new Random(System.nanoTime())
     val length = data.length
     while (i < length) {
-      val exchange = rand.nextInt(length - i) + i
+      val exchange = RandomGenerator.RNG.uniform(0, length - i).toInt + i
       val tmp = data(exchange)
       data(exchange) = data(i)
       data(i) = tmp
