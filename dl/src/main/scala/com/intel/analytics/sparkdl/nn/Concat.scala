@@ -98,6 +98,8 @@ class Concat[T: ClassTag](val dimension: Int)(
 
       if (currentGradInput != null) {
         if (i == 0) {
+          require(this.gradInput.isContiguous())
+          require(currentGradInput.isContiguous())
           this.gradInput.copy(currentGradInput)
         } else {
           this.gradInput.add(currentGradInput)
@@ -160,6 +162,8 @@ class Concat[T: ClassTag](val dimension: Int)(
 
       if (currentGradInput != null) {
         if (i == 0) {
+          require(this.gradInput.isContiguous())
+          require(currentGradInput.isContiguous())
           this.gradInput.copy(currentGradInput)
         } else {
           this.gradInput.add(currentGradInput)
