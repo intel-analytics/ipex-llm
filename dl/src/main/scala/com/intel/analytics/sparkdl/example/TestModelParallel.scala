@@ -60,9 +60,10 @@ object TestModelParallel {
     trainData.count()
     println("done")
     val criterion = new ClassNLLCriterion[Float]()
-    val model = netType match {
-      case "alexnet" => AlexNet.getModel[Float](classNum)
-      case "googlenet" => GoogleNet.getModelCaffe[Float](classNum)
+    val (model, size) = netType match {
+      case "alexnet" => (com.intel.analytics.sparkdl.models.AlexNet[Float](classNum), 227)
+      case "googlenet_v1" => (com.intel.analytics.sparkdl.models.GoogleNet_v1[Float](classNum), 224)
+      case "googlenet_v2" => (com.intel.analytics.sparkdl.models.GoogleNet_v2[Float](classNum), 224)
     }
     println(model)
     val parameters = model.getParameters()._1
@@ -70,7 +71,7 @@ object TestModelParallel {
 
     val optM = getOptimMethodFloat(params.masterOptM)
     val dataSets = new ShuffleBatchDataSet[Int, Float](
-      trainData, (d, t1, t2) => (t1.resize(Array(params.workerConfig[Int]("batch"), 3, 224, 224)),
+      trainData, (d, t1, t2) => (t1.resize(Array(params.workerConfig[Int]("batch"), 3, size, size)),
         t2.resize(Array(params.workerConfig[Int]("batch"))).fill(1)),
       params.workerConfig[Int]("batch"), params.workerConfig[Int]("batch"))
 
