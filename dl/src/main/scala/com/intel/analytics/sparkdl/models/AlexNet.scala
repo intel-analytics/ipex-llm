@@ -85,7 +85,7 @@ object AlexNet {
     model.add(new ReLU[T](true).setName("relu7"))
     model.add(new Dropout[T](0.5).setName("drop7"))
     model.add(new Linear[T](4096, classNum).setName("fc8"))
-    model.add(new LogSoftMax[T])
+    model.add(new LogSoftMax[T].setName("loss"))
     model
   }
 }
