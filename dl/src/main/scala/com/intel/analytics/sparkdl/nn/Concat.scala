@@ -141,8 +141,10 @@ class Concat[T: ClassTag](val dimension: Int)(
       val _offset = offset
       val _i = i
       results(i) = Future {
-        gradouts(_i) = gradOutput.narrow(dimension, _offset,
-          currentOutput.size(dimension)).contiguous()
+        val contiguousTensor = gradOutput.narrow(dimension, _offset,
+          currentOutput.size(dimension))
+        require(contiguousTensor.isContiguous())
+        gradouts(_i) = contiguousTensor.contiguous()
       }(Engine.getInstance())
       i += 1
       offset += currentOutput.size(dimension)
