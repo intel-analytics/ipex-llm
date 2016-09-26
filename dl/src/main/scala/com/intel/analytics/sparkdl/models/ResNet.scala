@@ -19,17 +19,21 @@ object ResNet {
 
     def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[T] = {
       val useConv = shortcutType == "C" || (shortcutType == "B" && nInputPlane != nOutputPlane)
-      val model = new Sequential[T]()
+
       if (useConv == true) {
+        val model = new Sequential[T]()
         model.add(new SpatialConvolution[T](nInputPlane, nOutputPlane, 1, 1, stride, stride))
         model.add(new SpatialBatchNormalization(nOutputPlane))
         model
       } else if (nInputPlane != nOutputPlane) {
+        val model = new Sequential[T]()
         model.add(new SpatialAveragePooling[T](1, 1, stride, stride))
-        // sc.add(new Concat[T](2).add(Identity).add(MulConstant(0)) //  -- ZhangYao's code here
+        model.add(new ConcatAddTable[T](true)
+                  .add(new Identity[T]())
+                  .add(new MulConstant[T](0)))
         model
-      } // else { val sc = new Identity(); sc } //    -- ZhangYao's code here
-      model
+        // sc.add(new Concat[T](2).add(Identity).add(MulConstant(0)) //  -- ZhangYao's code here
+      }  else { val model = new Identity(); model} //    -- ZhangYao's code here
     }
 
     def basicblock(n: Int, stride: Int): Module[T] = {
@@ -43,6 +47,12 @@ object ResNet {
       s.add(new SpatialConvolution[T](n ,n, 3, 3, 1, 1, 1, 1))
       s.add(new SpatialBatchNormalization[T](n))
 
+      val model = new Sequential[T]()
+      model.add(new ConcatAddTable[T](true)
+              .add(s)
+              .add(shortcut(nInputPlane, n, stride)))
+      model.add(new ReLU[T](true))
+      model
       //val model = new Sequential[T]()
       //model.add(new ConcatTable().add(s).add(shortcut(nInputPlane, n, stride))) //   -- Zhang yao's code here
       //model.add(new CAddTable(true))
@@ -61,6 +71,12 @@ object ResNet {
       s.add(new SpatialConvolution[T](n, n*4, 1, 1, 1, 1, 0, 0))
       s.add(new SpatialBatchNormalization[T](n * 4))
 
+      val model = new Sequential[T]()
+      model.add(new ConcatAddTable[T](true)
+        .add(s)
+        .add(shortcut(nInputPlane, n*4, stride)))
+      model.add(new ReLU[T](true))
+      model
       //val model = new Sequential[T]()
       //model.add(new ConcatTable().add(s).add(shortcut(nInputPlane, n*4, stride))) -- Zhang yao's code
       //model.add(new CAddTable(true)) -- Zhangyao's code
