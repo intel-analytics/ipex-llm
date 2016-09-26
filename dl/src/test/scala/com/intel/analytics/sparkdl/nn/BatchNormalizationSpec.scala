@@ -50,8 +50,6 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     output(Array(3, 1)) should be(0.2225 +- 0.0001)
     output(Array(3, 2)) should be(0.4449 +- 0.0001)
     output(Array(3, 3)) should be(0.6674 +- 0.0001)
-
-    println(output)
   }
 
   "A BatchNormalization" should "generate correct gradient" in {
