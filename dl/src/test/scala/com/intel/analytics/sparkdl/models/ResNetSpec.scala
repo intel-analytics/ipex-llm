@@ -37,8 +37,8 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     Random.setSeed(1)
-    val input = torch.Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = torch.Tensor[Double](8).apply1(e => Random.nextInt(100))
+    val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
+    val labels = Tensor[Double](8).apply1(e => Random.nextInt(100))
 
     val seed = 100
     RNG.setSeed(seed)
@@ -137,8 +137,8 @@ gradInput = model.gradInput
       "dampening" -> 0.0)
     val sgd = new SGD[Float]
 
-    val floatInput = torch.Tensor[Float](8, 3, 224, 224)
-    val floatLabel = torch.Tensor[Float](8)
+    val floatInput = Tensor[Float](8, 3, 224, 224)
+    val floatLabel = Tensor[Float](8)
 
     for (i <- 0 until floatInput.nElement()) {
       floatInput.storage().array()(i) = input.storage().array()(i).toFloat

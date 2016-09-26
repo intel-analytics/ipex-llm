@@ -1,7 +1,7 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.optim.SGD
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -17,7 +17,7 @@ class CrossEntropyCriterionSpec extends FlatSpec with Matchers {
   "CrossEntropyCriterion " should "return return right output and gradInput" in {
     val criterion = new CrossEntropyCriterion[Double]()
 
-    val input = torch.Tensor[Double](3, 3)
+    val input = Tensor[Double](3, 3)
     input(Array(1, 1)) = 0.33655226649716
     input(Array(1, 2)) = 0.77367000770755
     input(Array(1, 3)) = 0.031494265655056
@@ -28,18 +28,18 @@ class CrossEntropyCriterionSpec extends FlatSpec with Matchers {
     input(Array(3, 2)) = 0.85653987620026
     input(Array(3, 3)) = 0.42569971177727
 
-    val target = torch.Tensor[Double](3)
+    val target = Tensor[Double](3)
     target(Array(1)) = 1
     target(Array(2)) = 2
     target(Array(3)) = 3
-    println("input.dim() = " + input.dim())
+    //println("input.dim() = " + input.dim())
 
     val expectedOutput = 1.2267281042702334
 
     val loss = criterion.forward(input, target)
     loss should be(expectedOutput +- 1e-8)
 
-    val expectedGrad = torch.Tensor[Double](3, 3)
+    val expectedGrad = Tensor[Double](3, 3)
     expectedGrad(Array(1, 1)) = -0.23187185
     expectedGrad(Array(1, 2)) = 0.15708656
     expectedGrad(Array(1, 3)) = 0.07478529
@@ -137,7 +137,7 @@ class CrossEntropyCriterionSpec extends FlatSpec with Matchers {
     val trainSize = 100000
     val testSize = 1000
 
-    val inputs = torch.Tensor[Double](trainSize, 3)
+    val inputs = Tensor[Double](trainSize, 3)
     val r = new scala.util.Random(1)
     inputs.apply1(v => r.nextDouble())
 
@@ -172,7 +172,7 @@ class CrossEntropyCriterionSpec extends FlatSpec with Matchers {
       if (l / inputs.size(1) * batchSize < 6.3e-1) epoch += 1
     }
     //println("after training")
-    val testData = torch.Tensor[Double](testSize, 3)
+    val testData = Tensor[Double](testSize, 3)
     testData.apply1(v => r.nextDouble())
     //val testTarget = actualModel.forward(testData).apply1(v => Math.round(v))
     val testTarget = actualModel.forward(testData).resize(Array(testSize, 3)).max(2)._2.squeeze(2)
