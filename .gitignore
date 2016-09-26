@@ -20,3 +20,4 @@ project/plugins/project/
 
 # other
 *.txt
+*.swp # vim swap file
