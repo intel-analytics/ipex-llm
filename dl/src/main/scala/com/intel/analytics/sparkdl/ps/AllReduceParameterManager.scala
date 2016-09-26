@@ -220,9 +220,9 @@ class AllReduceParameterManager[T: ClassTag](
       val bm = SparkEnv.get.blockManager
       val newParams = localSplits.map(s => localSplitBlockids(splitId, s.partitionId)).map(bid => {
         Future {
-          val r = Parameter[T](bm.getRemoteBytes(bid).getOrElse(
+            val r = Parameter[T](bm.getLocalBytes(bid).getOrElse(bm.getRemoteBytes(bid).getOrElse(              
             throw new IllegalArgumentException(s"Can't get the block(${bid})")
-          ))(driverClassTag)
+          )))(driverClassTag)
           bm.removeBlock(bid)
           r
         }(Engine.getInstance())
