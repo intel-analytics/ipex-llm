@@ -114,7 +114,7 @@ object ImageNetParallel {
     )
 
     driverConfig("learningRateSchedule") = EpochSchedule(regimes)*/
-    driverConfig("learningRateSchedule") = Poly(0.5, 75000)
+    driverConfig("learningRateSchedule") = Poly(0.5, 84375)
 
     val croppedData = if (cropImage) {
       loadCroppedData(trainFiles, sc, labelsMap, classNum + 0.5).coalesce(partitionNum, true)
