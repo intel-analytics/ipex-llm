@@ -1302,6 +1302,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     if (MKL.isMKLLoaded && this.isContiguous() && x.isContiguous()) {
       ev.vLog1p(this.nElement(), x.storage().array(), x.storageOffset() - 1,
         this.storage().array(), this.storageOffset() - 1)
+
     } /*else {
       val func = new TensorFunc4[T] {
         override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
@@ -1309,6 +1310,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
         }
       }
       DenseTensorApply.apply2[T](this, x, func)
+
     }*/
     this
   }

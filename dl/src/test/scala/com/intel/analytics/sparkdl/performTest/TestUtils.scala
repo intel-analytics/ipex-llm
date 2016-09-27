@@ -3,7 +3,6 @@ package com.intel.analytics.sparkdl.performTest
 import java.io._
 
 import scala.reflect.runtime.universe._
-import com.intel.analytics.sparkdl.tensor
 
 /**
   * Created by yao on 6/6/16.
@@ -15,9 +14,10 @@ object TestUtils {
     return System.getProperty("run_perform", "false").toBoolean
   }
 
-  def testMathOperation[T: TypeTag](doOperation: () => Tensor[T], printString: String, iters: Int = iter): Double = {
-    require(typeOf[T] =:= typeOf[Double] || typeOf[T] =:= typeOf[Float]
-      , "Input type can only be Tensor[Double] or Tensor[Float]")
+  def testMathOperation[T: TypeTag](doOperation: () => T, printString: String, iters: Int = iter): Double = {
+    //require(typeOf[T] =:= typeOf[Double] || typeOf[T] =:= typeOf[Float]
+    //  , "Input type can only be Tensor[Double] or Tensor[Float]")
+
     val filename = "run_time.csv"
     val writer = new BufferedWriter(new FileWriter(new File(filename), true))
 

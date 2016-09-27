@@ -52,6 +52,8 @@ object TensorNumericMath {
 
     def pow(x: T, y: T): T
 
+    def log1p(x: T): T
+
     def isGreater(x: T, y: T): Boolean
 
     def rand(): T
@@ -146,6 +148,8 @@ object TensorNumericMath {
       def pow(x: Float): Float = Math.pow(x, -1).toFloat
 
       def pow(x: Float, y: Float): Float = Math.pow(x, y).toFloat
+
+      def log1p(x: Float): Float = Math.log1p(x).toFloat
 
       def isGreater(x: Float, y: Float): Boolean = (x > y)
 
@@ -303,6 +307,8 @@ object TensorNumericMath {
       def pow(x: Double): Double = Math.pow(x, -1)
 
       def pow(x: Double, y: Double): Double = Math.pow(x, y)
+
+      def log1p(x: Double): Double = Math.log1p(x)
 
       def isGreater(x: Double, y: Double): Boolean = (x > y)
 
