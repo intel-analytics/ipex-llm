@@ -196,7 +196,7 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdLn
    JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdLog1p
       (JNIEnv * env, jclass cls, jint n, jdoubleArray a, jint aOffset, jdoubleArray y,
       jint yOffset) {
-   
+
       jdouble * jni_a = (*env)->GetPrimitiveArrayCritical(env, a, JNI_FALSE);
       jdouble * jni_y = (*env)->GetPrimitiveArrayCritical(env, y, JNI_FALSE);
 
