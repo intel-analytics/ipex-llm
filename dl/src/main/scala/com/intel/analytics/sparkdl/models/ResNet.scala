@@ -16,17 +16,16 @@ object ResNet {
   def apply[T: ClassTag](classNum: Int, opt: Table)(implicit ev: TensorNumeric[T]): Module[T] = {
 
     val depth = opt.get("depth").getOrElse(18)
-    val shortcutType = if (opt.get("shortcutType") != null) opt.get("shortcutType") else "B"
-
+    val shortCutType = opt.get("shortcutType")
+    val shortcutType = shortCutType.getOrElse("B")
 
     def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[T] = {
-      val useConv = shortcutType == "C" || (shortcutType == "B" && nInputPlane != nOutputPlane)
+      val useConv = shortcutType.equals("C") || (shortcutType == "B" && nInputPlane != nOutputPlane)
 
       if (useConv == true) {
-        val model = new Sequential[T]()
-        model.add(new SpatialConvolution[T](nInputPlane, nOutputPlane, 1, 1, stride, stride))
-        model.add(new SpatialBatchNormalization(nOutputPlane))
-        model
+        new Sequential[T]()
+          .add(new SpatialConvolution[T](nInputPlane, nOutputPlane, 1, 1, stride, stride))
+          .add(new SpatialBatchNormalization(nOutputPlane))
       } else if (nInputPlane != nOutputPlane) {
         val model = new Sequential[T]()
         model.add(new SpatialAveragePooling[T](1, 1, stride, stride))
@@ -34,8 +33,9 @@ object ResNet {
                   .add(new Identity[T]())
                   .add(new MulConstant[T](ev.fromType(0))))
         model
-        // sc.add(new Concat[T](2).add(Identity).add(MulConstant(0)) //  -- ZhangYao's code here
-      }  else { val model = new Identity(); model} //    -- ZhangYao's code here
+      }  else {
+        new Identity()
+      } //    -- ZhangYao's code here
     }
 
     def basicblock(n: Int, stride: Int): Module[T] = {
@@ -50,10 +50,11 @@ object ResNet {
       s.add(new SpatialBatchNormalization[T](n))
 
       val model = new Sequential[T]()
-      //model.add(new ConcatAddTable[T](true)
-      //        .add(s)
-      //        .add(shortcut(nInputPlane, n, stride)))
-      model.add(s)
+      //model.add(shortcut(nInputPlane, n, stride))
+      model.add(new ConcatAddTable[T](false)
+              .add(s)
+              .add(s))
+      //        //.add(shortcut(nInputPlane, n, stride)))
       model.add(new ReLU[T](true))
       model
       //val model = new Sequential[T]()
@@ -102,6 +103,7 @@ object ResNet {
 
       // configuration for ResNet-50
       val cfg = Map(
+        //10  -> ((1, 1, 1, 1), 512, basicblock:(Int, Int) => Module[T]),
         18  -> ((2, 2, 2, 2), 512, basicblock:(Int, Int) => Module[T]),
         34  -> ((3, 4, 6, 3), 512, basicblock:(Int, Int) => Module[T]),
         50  -> ((3, 4, 6, 3), 2048, bottleneck:(Int, Int) => Module[T]),
