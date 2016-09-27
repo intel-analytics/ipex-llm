@@ -114,7 +114,11 @@ object SGD {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
-      val clr = -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
+      val clr = if(nevals > maxIteration) {
+        0.0
+      } else {
+        -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
+      }
       state("evalCounter") = nevals + 1
       config("clr") = clr
     }
