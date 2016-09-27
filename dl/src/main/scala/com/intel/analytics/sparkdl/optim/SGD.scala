@@ -119,6 +119,7 @@ object SGD {
       } else {
         -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
       }
+      println(s"iteration is : ${nevals}. current learning rate is $clr")
       state("evalCounter") = nevals + 1
       config("clr") = clr
     }
