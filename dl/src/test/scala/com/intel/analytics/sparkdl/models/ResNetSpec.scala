@@ -19,15 +19,13 @@ package com.intel.analytics.sparkdl.models
 import com.intel.analytics.sparkdl.utils.Table
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim.SGD
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.torch.TH
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
-import com.intel.analytics.sparkdl.utils.{RandomGenerator, T}
+import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
-import scala.reflect.ClassTag
 import scala.util.Random
 
 class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
@@ -43,80 +41,155 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
     val opt: Table = new Table()
-    opt("depth") = 50
     opt("shortcutType") = "C"
-    opt("dataset") = "imagenet"
+    opt("depth") = 50
+    opt("imagenet") = "imagenet"
     val model = ResNet[Float](opt)
-    //val model = getModel[Float](1000)
     model.zeroGradParameters()
 
 
     val code = "torch.manualSeed(" + seed + ")\n" +
-      """local nClasses = 1000
-local feature = nn.Sequential()
-feature:add(nn.SpatialConvolutionMM(3,64,11,11,4,4,2,2))       -- 224 -> 55
-feature:add(nn.ReLU())
-feature:add(nn.SpatialMaxPooling(3,3,2,2))                   -- 55 ->  27
-feature:add(nn.SpatialConvolutionMM(64,192,5,5,1,1,2,2))       --  27 -> 27
-feature:add(nn.ReLU())
-feature:add(nn.SpatialMaxPooling(3,3,2,2))                   --  27 ->  13
-feature:add(nn.SpatialConvolutionMM(192,384,3,3,1,1,1,1))      --  13 ->  13
-feature:add(nn.ReLU())
-feature:add(nn.SpatialConvolutionMM(384,256,3,3,1,1,1,1))      --  13 ->  13
-feature:add(nn.ReLU())
-feature:add(nn.SpatialConvolutionMM(256,256,3,3,1,1,1,1))      --  13 ->  13
-feature:add(nn.ReLU())
-feature:add(nn.SpatialMaxPooling(3,3,2,2))                   -- 13 -> 6
+      """
+        require 'optim'
+         local nn = require 'nn'
+        local Convolution = nn.SpatialConvolution
+        local Avg = nn.SpatialAveragePooling
+        local ReLU = nn.ReLU
+        local Max = nn.SpatialMaxPooling
+        local SBatchNorm = nn.SpatialBatchNormalization
 
--- 1.3. Create Classifier (fully connected layers)
-local classifier = nn.Sequential()
-classifier:add(nn.View(256*6*6))
---classifier:add(nn.Dropout(0.5))
-classifier:add(nn.Linear(256*6*6, 4096))
-classifier:add(nn.Threshold(0, 1e-6))
---classifier:add(nn.Dropout(0.5))
-classifier:add(nn.Linear(4096, 4096))
-classifier:add(nn.Threshold(0, 1e-6))
-classifier:add(nn.Linear(4096, nClasses))
-classifier:add(nn.LogSoftMax())
+        local nClasses = 1000
+        local depth = 50
+        local shortcutType = 'C'
+        local iChannels
+        local function shortcut(nInputPlane, nOutputPlane, stride)
+          local useConv = shortcutType == 'C' or
+                  (shortcutType == 'B' and nInputPlane ~= nOutputPlane)
+          if useConv then
+                 -- 1x1 convolution
+            return nn.Sequential()
+                    :add(Convolution(nInputPlane, nOutputPlane, 1, 1, stride, stride))
+                    :add(SBatchNorm(nOutputPlane))
+            elseif nInputPlane ~= nOutputPlane then
+                 -- Strided, zero-padded identity shortcut
+              return nn.Sequential()
+                    :add(nn.SpatialAveragePooling(1, 1, stride, stride))
+                    :add(nn.Concat(2)
+                       :add(nn.Identity())
+                       :add(nn.MulConstant(0)))
+            else
+              return nn.Identity()
+           end
+        end
+
+        local function basicblock(n, stride)
+          local nInputPlane = iChannels
+          iChannels = n
+
+          local s = nn.Sequential()
+          s:add(Convolution(nInputPlane,n,3,3,stride,stride,1,1))
+          s:add(SBatchNorm(n))
+          s:add(ReLU(true))
+          s:add(Convolution(n,n,3,3,1,1,1,1))
+          s:add(SBatchNorm(n))
+
+          return nn.Sequential()
+                 :add(nn.ConcatTable()
+                    :add(s)
+                    :add(shortcut(nInputPlane, n, stride)))
+                 :add(nn.CAddTable(true))
+                 :add(ReLU(true))
+        end
+
+        local function bottleneck(n, stride)
+          local nInputPlane = iChannels
+          iChannels = n * 4
+
+          local s = nn.Sequential()
+          s:add(Convolution(nInputPlane,n,1,1,1,1,0,0))
+          s:add(SBatchNorm(n))
+          s:add(ReLU(true))
+          s:add(Convolution(n,n,3,3,stride,stride,1,1))
+          s:add(SBatchNorm(n))
+          s:add(ReLU(true))
+          s:add(Convolution(n,n*4,1,1,1,1,0,0))
+          s:add(SBatchNorm(n * 4))
+
+          return nn.Sequential()
+                 :add(nn.ConcatTable()
+                   :add(s)
+                   :add(shortcut(nInputPlane, n * 4, stride)))
+                 :add(nn.CAddTable(true))
+                 :add(ReLU(true))
+        end
 
 
--- 1.4. Combine 1.1 and 1.3 to produce final model
-model = nn.Sequential():add(feature):add(classifier)
+        local function layer(block, features, count, stride)
+          local s = nn.Sequential()
+          for i=1,count do
+            s:add(block(features, i == 1 and stride or 1))
+          end
+          return s
+        end
 
-local parameters, gradParameters = model:getParameters()
-model:zeroGradParameters()
-parameters_initial = parameters : clone()
-gradParameters_initial = gradParameters : clone()
+        local model = nn.Sequential()
 
-local criterion =  nn.ClassNLLCriterion()
 
-state = {
-  learningRate = 1e-2,
-  momentum = 0.9,
-  dampening = 0.0,
-  weightDecay = 5e-4
-}
+        local cfg = {
+                 [18]  = {{2, 2, 2, 2}, 512, basicblock},
+                 [34]  = {{3, 4, 6, 3}, 512, basicblock},
+                 [50]  = {{3, 4, 6, 3}, 2048, bottleneck},
+                 [101] = {{3, 4, 23, 3}, 2048, bottleneck},
+                 [152] = {{3, 8, 36, 3}, 2048, bottleneck},
+              }
 
-feval = function(x)
-model:zeroGradParameters()
-model_initial = model : clone()
+              assert(cfg[depth], 'Invalid depth: ' .. tostring(depth))
+              local def, nFeatures, block = table.unpack(cfg[depth])
+              iChannels = 64
+              print(' | ResNet-' .. depth .. ' ImageNet')
 
-local output1 = model:forward(input)
-local err1 = criterion:forward(output1, labels)
-local gradOutput1 = criterion:backward(output1, labels)
-model:backward(input, gradOutput1)
-return err1, gradParameters
-end
 
-for i = 1,1,1 do
-  optim.sgd(feval, parameters, state)
-end
+        -- The ResNet ImageNet model
+        model:add(Convolution(3,64,7,7,2,2,3,3))
+        model:add(SBatchNorm(64))
+        model:add(ReLU(true))
+        model:add(Max(3,3,2,2,1,1))
+        model:add(layer(block, 64, def[1]))
+        model:add(layer(block, 128, def[2], 2))
+        model:add(layer(block, 256, def[3], 2))
+        model:add(layer(block, 512, def[4], 2))
+        model:add(Avg(7, 7, 1, 1))
+        model:add(nn.View(nFeatures):setNumInputDims(3))
+        model:add(nn.Linear(nFeatures, 1000))
 
-output=model.output
-err=criterion.output
-gradOutput=criterion.gradInput
-gradInput = model.gradInput
+        local parameters, gradParameters = model:getParameters()
+        model:zeroGradParameters()
+        parameters_initial = parameters : clone()
+        gradParameters_initial = gradParameters : clone()
+        local criterion =  nn.CrossEntropyCriterion()
+        state = {
+          learningRate = 1e-1,
+          momentum = 0.9,
+          dampening = 0.0,
+          weightDecay = 1e-4
+        }
+        feval = function(x)
+        model:zeroGradParameters()
+        model_initial = model : clone()
+        local output1 = model:forward(input)
+        local err1 = criterion:forward(output1, labels)
+        local gradOutput1 = criterion:backward(output1, labels)
+        model:backward(input, gradOutput1)
+        return err1, gradParameters
+        end
+        for i = 1,5,1 do
+          optim.sgd(feval, parameters, state)
+        end
+        local output = model:forward(input)
+        local err = criterion:forward(output, labels)
+        local gradOutput = criterion:backward(output, labels)
+        --local stateDfdx = state.dfdx
+        gradInput = model:backward(input, gradOutput)
       """
 
     TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
@@ -125,12 +198,11 @@ gradInput = model.gradInput
     val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Float]]
 
-    for (i <- 0 until parameters.nElement()) {
-      if (abs(parameters.storage().array()(i) - parameterTorch.storage().array()(i)) > 1e-8) {
-        println(s"${parameters.storage().array()(i)} ${parameterTorch.storage().array()(i)}")
-      }
-    }
-
+    //for (i <- 0 until parameters.nElement()) {
+    //  if (abs(parameters.storage().array()(i) - parameterTorch.storage().array()(i)) > 1e-8) {
+   //     println(s"${parameters.storage().array()(i)} ${parameterTorch.storage().array()(i)}")
+   //   }
+   // }
 
     val criterion = new CrossEntropyCriterion[Float]()
     val state = T("learningRate" -> 1e-1, "momentum" -> 0.9, "weightDecay" -> 1e-4,
@@ -193,17 +265,16 @@ gradInput = model.gradInput
       abss += tmp
     }
     assert(abss < 2e-2)
-    println(s"weightsAbs:$abss")
   }
-/*
+ /*
   "AlexNet" should "generate correct output" in {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
 
     Random.setSeed(1)
-    val input = torch.Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = torch.Tensor[Double](8).apply1(e => Random.nextInt(100))
+    val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
+    val labels = Tensor[Double](8).apply1(e => Random.nextInt(100))
 
     val seed = 100
     RNG.setSeed(seed)
@@ -224,18 +295,14 @@ feature:add(nn.ReLU())
 feature:add(nn.SpatialConvolutionMM(256,256,3,3,1,1,1,1))      --  13 ->  13
 feature:add(nn.ReLU())
 feature:add(nn.SpatialMaxPooling(3,3,2,2))                   -- 13 -> 6
--- 1.3. Create Classifier (fully connected layers)
 local classifier = nn.Sequential()
 classifier:add(nn.View(256*6*6))
---classifier:add(nn.Dropout(0.5))
 classifier:add(nn.Linear(256*6*6, 4096))
-classifier:add(nn.Threshold(0, 1e-6))
---classifier:add(nn.Dropout(0.5))
+classifier:add(nn.ReLU())
 classifier:add(nn.Linear(4096, 4096))
-classifier:add(nn.Threshold(0, 1e-6))
+classifier:add(nn.ReLU())
 classifier:add(nn.Linear(4096, nClasses))
 classifier:add(nn.LogSoftMax())
--- 1.4. Combine 1.1 and 1.3 to produce final model
 model = nn.Sequential():add(feature):add(classifier)
 local parameters, gradParameters = model:getParameters()
 model:zeroGradParameters()
@@ -270,15 +337,15 @@ gradInput = model:backward(input, gradOutput)
     TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
-    val model = getModel[Double](1000)
+    val model = AlexNet_OWT[Double](1000, false)
     model.zeroGradParameters()
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
-    require(parameters == parameterTorch, "parameter compare failed")
+    parameters should be(parameterTorch)
 
-    val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
-    val gradparameterTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
-    require(gradparameters == gradparameterTorch, "gradparameter compare failed")
+    val gradParameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
+    val gradParameterTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
+    gradParameters should be(gradParameterTorch)
 
     val (weights, grad) = model.getParameters()
     val criterion = new ClassNLLCriterion[Double]()
@@ -299,74 +366,19 @@ gradInput = model:backward(input, gradOutput)
     model.zeroGradParameters()
     val outputTest = model.forward(input)
     val output = TH.map("output").asInstanceOf[Tensor[Double]]
-    var abss = 0.0
-    outputTest.map(output, (v1, v2) => {
-      if (abs(v1 - v2) != 0) abss += abs(v1 - v2)
-      v1
-    })
-    assert(abss < 1e-13)
-    println(s"outputAbs:$abss")
+    outputTest should be(output)
 
     val errTest = criterion.forward(outputTest, labels)
     val err = TH.map("err").asInstanceOf[Double]
-    println(s"${abs(errTest - err)}")
-    assert(abs(errTest - err) == 0)
+    errTest should be(err)
 
     val gradOutputTest = criterion.backward(outputTest, labels)
     val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
-    abss = 0.0
-    gradOutputTest.map(gradOutput, (v1, v2) => {
-      if (abs(v1 - v2) != 0) abss += abs(v1 - v2)
-      v1
-    })
-    assert(abss < 1e-13)
-    println(s"gradOutputTestAbs:$abss")
+    gradOutputTest should be(gradOutput)
 
     val gradInput = model.backward(input, gradOutputTest)
     val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
-    abss = 0.0
-    gradInput.map(gradInputTorch, (v1, v2) => {
-      if (abs(v1 - v2) != 0) abss += abs(v1 - v2)
-      v1
-    })
-    assert(abss < 1e-13)
-    println(s"gradInputTestAbs:$abss")
-
-  }*/
-
-  // alexnet without dropout
-  def getModel[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[T] = {
-    val feature = new Sequential[T]
-    feature.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2))
-    feature.add(new ReLU(true))
-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
-    feature.add(new SpatialConvolution(64, 192, 5, 5, 1, 1, 2, 2))
-    feature.add(new ReLU(true))
-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
-    feature.add(new SpatialConvolution[T](192, 384, 3, 3, 1, 1, 1, 1))
-    feature.add(new ReLU(true))
-    feature.add(new SpatialConvolution[T](384, 256, 3, 3, 1, 1, 1, 1))
-    feature.add(new ReLU(true))
-    feature.add(new SpatialConvolution[T](256, 256, 3, 3, 1, 1, 1, 1))
-    feature.add(new ReLU(true))
-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
-
-
-
-    val classifier = new Sequential[T]
-    classifier.add(new View[T](256 * 6 * 6))
-    classifier.add(new Linear[T](256 * 6 * 6, 4096))
-    classifier.add(new Threshold[T](0, 1e-6))
-    classifier.add(new Linear[T](4096, 4096))
-    classifier.add(new Threshold[T](0, 1e-6))
-    classifier.add(new Linear[T](4096, classNum))
-    classifier.add(new LogSoftMax[T])
-
-
-    val model = new Sequential[T]
-    model.add(feature).add(classifier)
-
-    model
+    gradInput should be(gradInputTorch)
   }
-
+  */
 }
