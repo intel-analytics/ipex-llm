@@ -33,6 +33,7 @@ int computeOut(int input, int pad, int kernel, int stride, bool ceilMode)
   }
 }
 
+#if 0
 int main()
 {
   std::cout << computeOut(4, 0, 3, 2, true);
@@ -43,3 +44,4 @@ int main()
 
   return 0;
 }
+#endif

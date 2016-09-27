@@ -179,6 +179,9 @@ void MKLBatchNorm<DType>::firstPass()
 template <typename DType>
 void MKLBatchNorm<DType>::preExecute(DType *input)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   this->input->createConversion();
 }
 
