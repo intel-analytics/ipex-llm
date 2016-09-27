@@ -51,10 +51,10 @@ object ResNet {
 
       val model = new Sequential[T]()
       //model.add(shortcut(nInputPlane, n, stride))
-      model.add(new ConcatAddTable[T](false)
+      model.add(new ConcatAddTable[T](true)
               .add(s)
-              .add(s))
-      //        //.add(shortcut(nInputPlane, n, stride)))
+//              .add(s))
+              .add(shortcut(nInputPlane, n, stride)))
       model.add(new ReLU[T](true))
       model
       //val model = new Sequential[T]()
