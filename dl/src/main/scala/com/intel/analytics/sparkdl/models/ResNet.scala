@@ -10,9 +10,6 @@ import scala.reflect.ClassTag
   * Created by ywan on 16-9-23.
   */
 
-class Ichannels (myIchannel: Int = 0) {
-  var ichannel: Int = myIchannel
-}
 
 object ResNet {
   var iChannels = 0
@@ -20,7 +17,7 @@ object ResNet {
 
     val depth = opt.get("depth").getOrElse(18)
     val shortcutType = if (opt.get("shortcutType") != null) opt.get("shortcutType") else "B"
-    var iChannel = new Ichannels(0)
+
 
     def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[T] = {
       val useConv = shortcutType == "C" || (shortcutType == "B" && nInputPlane != nOutputPlane)
@@ -53,9 +50,10 @@ object ResNet {
       s.add(new SpatialBatchNormalization[T](n))
 
       val model = new Sequential[T]()
-      model.add(new ConcatAddTable[T](true)
-              .add(s)
-              .add(shortcut(nInputPlane, n, stride)))
+      //model.add(new ConcatAddTable[T](true)
+      //        .add(s)
+      //        .add(shortcut(nInputPlane, n, stride)))
+      model.add(s)
       model.add(new ReLU[T](true))
       model
       //val model = new Sequential[T]()
@@ -130,7 +128,7 @@ object ResNet {
       model.add(new SpatialAveragePooling[T](7, 7, 1, 1))
       model.add(new View[T](nFeatures).setNumInputDims(3))
       model.add(new Linear[T](nFeatures, classNum))
-
+      //model.add(new LogSoftMax[T])
     //}
     model
 
