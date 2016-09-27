@@ -42,16 +42,15 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val opt: Table = new Table()
     opt("shortcutType") = "C"
-    opt("depth") = 50
+    opt("depth") = 18
     opt("imagenet") = "imagenet"
-    val model = ResNet[Float](opt)
+    val classNum: Int = 100
+    val model = ResNet[Float](classNum, opt)
     model.zeroGradParameters()
 
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       """
-        require 'optim'
-         local nn = require 'nn'
         local Convolution = nn.SpatialConvolution
         local Avg = nn.SpatialAveragePooling
         local ReLU = nn.ReLU
@@ -59,7 +58,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         local SBatchNorm = nn.SpatialBatchNormalization
 
         local nClasses = 1000
-        local depth = 50
+        local depth = 18
         local shortcutType = 'C'
         local iChannels
         local function shortcut(nInputPlane, nOutputPlane, stride)
@@ -146,7 +145,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
               assert(cfg[depth], 'Invalid depth: ' .. tostring(depth))
               local def, nFeatures, block = table.unpack(cfg[depth])
               iChannels = 64
-              print(' | ResNet-' .. depth .. ' ImageNet')
+              --print(' | ResNet-' .. depth .. ' ImageNet')
 
 
         -- The ResNet ImageNet model
@@ -160,7 +159,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         model:add(layer(block, 512, def[4], 2))
         model:add(Avg(7, 7, 1, 1))
         model:add(nn.View(nFeatures):setNumInputDims(3))
-        model:add(nn.Linear(nFeatures, 1000))
+        model:add(nn.Linear(nFeatures, 100))
 
         local parameters, gradParameters = model:getParameters()
         model:zeroGradParameters()
@@ -187,6 +186,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         end
         local output = model:forward(input)
         local err = criterion:forward(output, labels)
+        --println('err = ' .. err)
         local gradOutput = criterion:backward(output, labels)
         --local stateDfdx = state.dfdx
         gradInput = model:backward(input, gradOutput)
