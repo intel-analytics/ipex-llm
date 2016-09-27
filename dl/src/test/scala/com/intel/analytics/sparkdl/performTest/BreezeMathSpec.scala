@@ -23,7 +23,7 @@ class BreezeMathSpec  extends FlatSpec{
   val scalar = 5
 
   var testCase = " Breeze 4096 * 4096 matrix add operation"
-  TestUtils.testMathOperation(() => matrixLargeLeft+matrixLargeRight, testCase, 10)
+  TestUtils.testMathOperation(() => matrixLargeLeft+matrixLargeRight, testCase, 1)
 
   testCase = " Breeze 512 * 512 matrix add operation"
   TestUtils.testMathOperation(() => matrixMidLeft+matrixMidRight, testCase)
@@ -32,7 +32,7 @@ class BreezeMathSpec  extends FlatSpec{
   TestUtils.testMathOperation(() => matrixSmallLeft+matrixSmallRight, testCase)
 
   testCase = " Breeze 4096 * 4096 matrix minus operation"
-  TestUtils.testMathOperation(() => matrixLargeLeft-matrixLargeRight, testCase, 10)
+  TestUtils.testMathOperation(() => matrixLargeLeft-matrixLargeRight, testCase, 1)
 
   testCase = " Breeze 512 * 512 matrix minus operation"
   TestUtils.testMathOperation(() => matrixMidLeft-matrixMidRight, testCase)
@@ -41,7 +41,7 @@ class BreezeMathSpec  extends FlatSpec{
   TestUtils.testMathOperation(() => matrixSmallLeft-matrixSmallRight, testCase)
 
   testCase = " Breeze 4096 * 4096 matrix multiply operation"
-  TestUtils.testMathOperation(() => matrixLargeLeft*matrixLargeRight, testCase, 10)
+  TestUtils.testMathOperation(() => matrixLargeLeft*matrixLargeRight, testCase, 1)
 
   testCase = " Breeze 512 * 512 matrix multiply operation"
   TestUtils.testMathOperation(() => matrixMidLeft*matrixMidRight, testCase)
@@ -50,7 +50,7 @@ class BreezeMathSpec  extends FlatSpec{
   TestUtils.testMathOperation(() => matrixSmallLeft * matrixSmallRight, testCase)
 
   testCase = " Breeze 4096 * 4096 matrix divide operation"
-  TestUtils.testMathOperation(() => matrixLargeLeft/matrixLargeRight, testCase, 10)
+  TestUtils.testMathOperation(() => matrixLargeLeft/matrixLargeRight, testCase, 1)
 
   testCase = " Breeze 512 * 512 matrix divide operation"
   TestUtils.testMathOperation(() => matrixMidLeft/matrixMidRight, testCase)
@@ -77,7 +77,7 @@ class BreezeMathSpec  extends FlatSpec{
   TestUtils.testMathOperation(() => vectorSmall.addmv(1, matrixSmallRight, vectorSmall), testCase)*/
 
   testCase = " Breeze 4096 * 4096 matrix pow operation"
-  TestUtils.testMathOperation(() => pow(matrixLargeRight,scalar), testCase, 10)
+  TestUtils.testMathOperation(() => pow(matrixLargeRight,scalar), testCase, 1)
 
   testCase = " Breeze 512 * 512 matrix pow operation"
   TestUtils.testMathOperation(() => pow(matrixMidRight, scalar), testCase)
@@ -86,7 +86,7 @@ class BreezeMathSpec  extends FlatSpec{
   TestUtils.testMathOperation(() => pow(matrixSmallRight, scalar), testCase)
 
   testCase = " Breeze 4096 * 4096 matrix log operation"
-  TestUtils.testMathOperation(() => log(matrixLargeRight), testCase, 10)
+  TestUtils.testMathOperation(() => log(matrixLargeRight), testCase, 1)
 
   testCase = " Breeze 512 * 512 matrix log operation"
   TestUtils.testMathOperation(() => log(matrixMidRight), testCase)
@@ -95,7 +95,7 @@ class BreezeMathSpec  extends FlatSpec{
   TestUtils.testMathOperation(() => log(matrixSmallRight), testCase)
 
   testCase = " Breeze 4096 * 4096 matrix exp operation"
-  TestUtils.testMathOperation(() => exp(matrixLargeRight), testCase, 10)
+  TestUtils.testMathOperation(() => exp(matrixLargeRight), testCase, 1)
 
   testCase = " Breeze 512 * 512 matrix exp operation"
   TestUtils.testMathOperation(() => exp(matrixMidRight), testCase)
@@ -104,7 +104,7 @@ class BreezeMathSpec  extends FlatSpec{
   TestUtils.testMathOperation(() => exp(matrixSmallRight), testCase)
 
   testCase = " Breeze 4096 * 4096 matrix sqrt operation"
-  TestUtils.testMathOperation(() => sqrt(matrixLargeRight), testCase, 10)
+  TestUtils.testMathOperation(() => sqrt(matrixLargeRight), testCase, 1)
 
   testCase = " Breeze 512 * 512 matrix sqrt operation"
   TestUtils.testMathOperation(() => sqrt(matrixMidRight), testCase)
@@ -113,7 +113,7 @@ class BreezeMathSpec  extends FlatSpec{
   TestUtils.testMathOperation(() => sqrt(matrixSmallRight), testCase)
 
   testCase = " Breeze 4096 * 4096 matrix log1p operation"
-  TestUtils.testMathOperation(() => log1p(matrixLargeRight), testCase, 10)
+  TestUtils.testMathOperation(() => log1p(matrixLargeRight), testCase, 1)
 
   testCase = " Breeze 512 * 512 matrix log1p operation"
   TestUtils.testMathOperation(() => log1p(matrixMidRight), testCase)

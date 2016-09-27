@@ -8,7 +8,7 @@ import scala.reflect.runtime.universe._
   * Created by yao on 6/6/16.
   */
 object TestUtils {
-  val iter = 30
+  val iter = 10
 
   def isRun (): Boolean = {
     return System.getProperty("run_perform", "false").toBoolean
@@ -22,7 +22,7 @@ object TestUtils {
     val writer = new BufferedWriter(new FileWriter(new File(filename), true))
 
     //warm up
-    val warmIter = System.getProperty("Performance.WarmIteration", "10").toInt
+    val warmIter = System.getProperty("Performance.WarmIteration", "5").toInt
     for (j <- 0 until warmIter){
       doOperation()
     }
