@@ -35,16 +35,16 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     Random.setSeed(1)
-    val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](8).apply1(e => Random.nextInt(100))
+    val classNum: Int = 1000
+    val input = Tensor[Double](256, 3, 224, 224).apply1(e => Random.nextDouble())
+    val labels = Tensor[Double](256).apply1(e => Random.nextInt(classNum))
 
     val seed = 100
     RNG.setSeed(seed)
     val opt: Table = new Table()
-    opt("shortcutType") = "C"
-    opt("depth") = 18
+    opt("shortcutType") = "B"
+    opt("depth") = 50
     opt("imagenet") = "imagenet"
-    val classNum: Int = 100
     val model = ResNet[Double](classNum, opt)
     model.zeroGradParameters()
 
@@ -57,9 +57,9 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         local Max = nn.SpatialMaxPooling
         local SBatchNorm = nn.SpatialBatchNormalization
 
-        local nClasses = 100
-        local depth = 18
-        local shortcutType = 'C'
+        local nClasses = 1000
+        local depth = 50
+        local shortcutType = 'B'
         local iChannels
         local function shortcut(nInputPlane, nOutputPlane, stride)
           local useConv = shortcutType == 'C' or
@@ -207,11 +207,11 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
 
-    /*for (i <- 0 until parameters.nElement()) {
+    for (i <- 0 until parameters.nElement()) {
       if (abs(parameters.storage().array()(i) - parameterTorch.storage().array()(i)) > 1e-8) {
         println(s"${parameters.storage().array()(i)} ${parameterTorch.storage().array()(i)}")
       }
-    }*/
+    }
 
     //val criterion = new ClassNLLCriterion[Double]()
     val (weights, grad) = model.getParameters()
@@ -220,16 +220,6 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val state = T("learningRate" -> 1e-2, "momentum" -> 0.9, "weightDecay" -> 5e-4,
       "dampening" -> 0.0)
     val sgd = new SGD[Double]
-
-//    val input = Tensor[Double](8, 3, 224, 224)
-//    val label = Tensor[Double](8)
-
-//    for (i <- 0 until input.nElement()) {
-//      input.storage().array()(i) = input.storage().array()(i).toFloat
-//    }
-//    for (i <- 0 until floatLabel.nElement()) {
-//      floatLabel.storage().array()(i) = labels.storage().array()(i).toFloat
-//    }
 
     for (i <- 1 to 4) {
       model.zeroGradParameters()
