@@ -58,6 +58,7 @@
                                         <fileName>sum.cpp</fileName>
                                         <fileName>utils.cpp</fileName>
                                         <fileName>debug.cpp</fileName>
+                                        <fileName>cpu_info.cpp</fileName>
                                     </fileNames>
                                 </source>
                             </sources>
@@ -92,6 +93,7 @@
                                 <linkerMiddleOption>-lmkl_rt</linkerMiddleOption>
                             </linkerMiddleOptions>
                             <linkerEndOptions>
+                                <linkerEndOption>-static-libstdc++</linkerEndOption>
                                 <linkerEndOption>-shared</linkerEndOption>
                                 <linkerEndOption>-lc</linkerEndOption>
                                 <linkerEndOption>-fPIC</linkerEndOption>

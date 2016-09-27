@@ -15,7 +15,7 @@ LogMessage::LogMessage(const char *file, int line, LogType type)
   snprintf(buf, len, "%c %s %s:%d] ", "DIWEFI"[type], "MKL", fileName, line);
   stream() << buf;
 
-  delete buf;
+  delete[] buf;
 }
 
 LogMessage::~LogMessage()
