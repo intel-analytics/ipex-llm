@@ -385,4 +385,18 @@ trait TensorMath[T] {
   def topk(k: Int, dim: Int = -1, increase: Boolean = true, result: Tensor[T] = null,
     indices: Tensor[T] = null)
   : (Tensor[T], Tensor[T])
+
+  /**
+    * Replaces all elements in-place with the elements of lnx
+    * @param x
+    * @return current tensor reference
+    */
+  def log(x : Tensor[T]): Tensor[T]
+
+  def exp(x: Tensor[T]): Tensor[T]
+
+  def sqrt(x: Tensor[T]): Tensor[T]
+
+  def log1p(x: Tensor[T]): Tensor[T]
+
 }
