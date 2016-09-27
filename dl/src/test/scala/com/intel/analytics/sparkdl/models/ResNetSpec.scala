@@ -163,7 +163,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         model:add(layer(block, 512, def[4], 2))
         model:add(Avg(7, 7, 1, 1))
         model:add(nn.View(nFeatures):setNumInputDims(3))
-        model:add(nn.Linear(nFeatures, 100))
+        model:add(nn.Linear(nFeatures, nClasses))
         --model:add(nn.LogSoftMax())
 
         local parameters, gradParameters = model:getParameters()
@@ -286,7 +286,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     Random.setSeed(1)
     val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](8).apply1(e => Random.nextInt(100))
+    val labels = Tensor[Double](8).apply1(e => Random.nextInt(nClasses))
 
     val seed = 100
     RNG.setSeed(seed)
