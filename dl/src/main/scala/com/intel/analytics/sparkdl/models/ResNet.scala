@@ -15,9 +15,10 @@ class Ichannels (myIchannel: Int = 0) {
 }
 
 object ResNet {
-  def apply[T: ClassTag](opt: Table)(implicit ev: TensorNumeric[T]): Module[T] = {
+  var iChannels = 0
+  def apply[T: ClassTag](classNum: Int, opt: Table)(implicit ev: TensorNumeric[T]): Module[T] = {
 
-    val depth = opt.get("depth")
+    val depth = opt.get("depth").getOrElse(18)
     val shortcutType = if (opt.get("shortcutType") != null) opt.get("shortcutType") else "B"
     var iChannel = new Ichannels(0)
 
@@ -41,8 +42,8 @@ object ResNet {
     }
 
     def basicblock(n: Int, stride: Int): Module[T] = {
-      var nInputPlane = iChannel.ichannel
-      iChannel.ichannel = n
+      var nInputPlane = iChannels
+      iChannels = n
 
       val s = new Sequential[T]()
       s.add(new SpatialConvolution[T](nInputPlane, n, 3, 3, stride, stride, 1, 1))
@@ -65,8 +66,8 @@ object ResNet {
     }
 
     def bottleneck(n: Int, stride: Int): Module[T] = {
-      var nInputPlane   = iChannel.ichannel
-      iChannel.ichannel = n * 4
+      var nInputPlane   = iChannels
+      iChannels = n * 4
 
       val s = new Sequential[T]()
       s.add(new SpatialConvolution[T](nInputPlane, n, 1, 1, 1, 1, 0, 0))
@@ -90,14 +91,10 @@ object ResNet {
       //model.add(new ReLU(true))
     }
 
-    def layer(block: String, features: Int, count: Int, stride: Int = 1): Module[T] = {
+    def layer(block: (Int, Int) => Module[T], features: Int, count: Int, stride: Int = 1): Module[T] = {
       val s = new Sequential[T]()
       for (i <- 1 to count) {
-        block match {
-          case "basicblock" => s.add(basicblock(features, if (i == 1) stride else 1))
-          case "bottleneck" => s.add(bottleneck(features, if (i == 1) stride else 1))
-          case _            => throw new NoSuchElementException("Invaid block call in layer")
-        }
+        s.add(block(features, if (i == 1) stride else 1))
       }
       s
     }
@@ -106,11 +103,18 @@ object ResNet {
     //if (opt.get("dataset") == "imagenet") {
 
       // configuration for ResNet-50
-      val block: String = "bottleneck"
-      val loopConfig = Array(3, 4, 6, 3)
-      val nFeatures  = 2048
+      val cfg = Map(
+        18  -> ((2, 2, 2, 2), 512, basicblock:(Int, Int) => Module[T]),
+        34  -> ((3, 4, 6, 3), 512, basicblock:(Int, Int) => Module[T]),
+        50  -> ((3, 4, 6, 3), 2048, bottleneck:(Int, Int) => Module[T]),
+        101 -> ((3, 4, 23, 3), 2048, bottleneck:(Int, Int) => Module[T]),
+        152 -> ((3, 8, 36, 3), 2048, bottleneck:(Int, Int) => Module[T])
+      )
 
-      iChannel.ichannel = 64
+      assert(cfg.keySet.exists(_ == depth))
+
+    val (loopConfig, nFeatures, block) = cfg.get(depth).get
+    iChannels = 64
       println(" | ResNet-" + depth + " ImageNet")
 
       //-- The ResNet ImageNet Model
@@ -119,13 +123,13 @@ object ResNet {
       model.add(new SpatialBatchNormalization[T](64))
       model.add(new ReLU[T](true))
       model.add(new SpatialMaxPooling[T](3, 3, 2, 2, 1, 1))
-      model.add(layer(block, 64, loopConfig(0)))
-      model.add(layer(block, 128, loopConfig(1), 2))
-      model.add(layer(block, 256, loopConfig(2), 2))
-      model.add(layer(block, 512, loopConfig(3), 2))
+      model.add(layer(block, 64, loopConfig._1))
+      model.add(layer(block, 128, loopConfig._2, 2))
+      model.add(layer(block, 256, loopConfig._3, 2))
+      model.add(layer(block, 512, loopConfig._4, 2))
       model.add(new SpatialAveragePooling[T](7, 7, 1, 1))
       model.add(new View[T](nFeatures).setNumInputDims(3))
-      model.add(new Linear[T](nFeatures, 1000))
+      model.add(new Linear[T](nFeatures, classNum))
 
     //}
     model
