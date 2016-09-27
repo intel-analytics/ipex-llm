@@ -111,6 +111,9 @@ void MKLReLU<DType>::firstPass()
 template <typename DType>
 void MKLReLU<DType>::preExecute(DType *input)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   this->input->createConversion();
 }
 
