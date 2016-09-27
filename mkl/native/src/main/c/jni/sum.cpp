@@ -110,6 +110,9 @@ void MKLSum<DType>::firstPass()
 template <typename DType>
 void MKLSum<DType>::updateOutput(DType **input, DType *output)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   if (this->isFirstPass) firstPass();
 
   for (int i = 0; i < numSums; i++) {

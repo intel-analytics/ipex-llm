@@ -143,6 +143,9 @@ void MKLConcat<DType>::firstPass()
 template <typename DType>
 void MKLConcat<DType>::updateOutput(DType **input, DType *output)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   if (this->isFirstPass) firstPass();
 
   for (int i = 0; i < numConcats; i++) {
@@ -170,6 +173,9 @@ void MKLConcat<DType>::updateOutput(DType **input, DType *output)
 template <typename DType>
 void MKLConcat<DType>::updateGradInput(DType **gradInput, DType *gradOutput)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   for (int i = 0; i < numConcats; i++) {
     this->gradInput[i]->setUsrData(gradInput[i]);
     this->gradInput[i]->createConversion();

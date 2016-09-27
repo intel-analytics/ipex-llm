@@ -154,6 +154,9 @@ void MKLLinear<DType>::firstPass()
 template <typename DType>
 void MKLLinear<DType>::preExecute(DType *input)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   this->input->createConversion();
   this->kernel->createConversion();
   this->bias->createConversion();

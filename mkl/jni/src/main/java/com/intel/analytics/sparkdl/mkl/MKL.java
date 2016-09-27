@@ -23,7 +23,8 @@ public class MKL {
         try {
             tmpFile = extract("libjmkl.so");
             System.load(tmpFile.getAbsolutePath());
-        } catch (Throwable e) {
+        } catch (Exception e) {
+            System.out.println("Can't load the library" + tmpFile.getAbsolutePath());
             isLoaded = false;
         }
     }
