@@ -43,7 +43,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val opt: Table = new Table()
     opt("shortcutType") = "B"
-    opt("depth") = 18
+    opt("depth") = 50
     opt("imagenet") = "imagenet"
     val model = ResNet[Double](classNum, opt)
     model.zeroGradParameters()
@@ -58,7 +58,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         local SBatchNorm = nn.SpatialBatchNormalization
 
         local nClasses = 1000
-        local depth = 18
+        local depth = 50
         local shortcutType = 'B'
         local iChannels
         local function shortcut(nInputPlane, nOutputPlane, stride)
@@ -166,52 +166,56 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         model:add(nn.Linear(nFeatures, nClasses))
         --model:add(nn.LogSoftMax())
 
+
         local parameters, gradParameters = model:getParameters()
-        model:zeroGradParameters()
-        parameters_initial = parameters : clone()
-        gradParameters_initial = gradParameters : clone()
+                --model:zeroGradParameters()
+                parameters_initial = parameters : clone()
+                gradParameters_initial = gradParameters : clone()
 
-        --local criterion =  nn.ClassNLLCriterion()
-        local criterion = nn.CrossEntropyCriterion()
-        state = {
-          learningRate = 1e-2,
-          momentum = 0.9,
-          dampening = 0.0,
-          weightDecay = 5e-4
-        }
+                --local criterion =  nn.ClassNLLCriterion()
+                local criterion = nn.CrossEntropyCriterion()
+                state = {
+                  learningRate = 1e-2,
+                  momentum = 0.9,
+                  dampening = 0.0,
+                  weightDecay = 5e-4
+                }
 
-        feval = function(x)
-        model:zeroGradParameters()
-        model_initial = model : clone()
 
-        local output1 = model:forward(input)
-        local err1 = criterion:forward(output1, labels)
-        local gradOutput1 = criterion:backward(output1, labels)
-        model:backward(input, gradOutput1)
-        return err1, gradParameters
-        end
+           local function feval()
+              return criterion.output, gradParameters
+           end
 
-        for i = 1,5,1 do
-          optim.sgd(feval, parameters, state)
-        end
+              local output = model:forward(input)
+              local loss = criterion:forward(model.output, labels)
+              model:zeroGradParameters()
+              criterion:backward(model.output, labels)
+              model:backward(input, criterion.gradInput)
+             for i = 1, 1, 1 do
+              optim.sgd(feval, parameters, state)
+             end
 
-        output=model.output
-        err=criterion.output
-        gradOutput=criterion.gradInput
-        gradInput = model.gradInput
+                output=model.output
+                err=criterion.output
+                gradOutput=criterion.gradInput
+                gradInput = model.gradInput
+
+
+
+
       """
 
-//    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
-//      "parameters_initial", "gradParameters_initial", "gradInput", "model"))
+    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
+        "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
-//    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
-//    val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
-//
-//    for (i <- 0 until parameters.nElement()) {
-//      if (abs(parameters.storage().array()(i) - parameterTorch.storage().array()(i)) > 1e-8) {
-//        println(s"${parameters.storage().array()(i)} ${parameterTorch.storage().array()(i)}")
-//      }
-//    }
+    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
+    val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
+
+    for (i <- 0 until parameters.nElement()) {
+      if (abs(parameters.storage().array()(i) - parameterTorch.storage().array()(i)) > 1e-8) {
+        println(s"${parameters.storage().array()(i)} ${parameterTorch.storage().array()(i)}")
+      }
+    }
 
     //val criterion = new ClassNLLCriterion[Double]()
     val (weights, grad) = model.getParameters()
@@ -220,17 +224,16 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val state = T("learningRate" -> 1e-2, "momentum" -> 0.9, "weightDecay" -> 5e-4,
       "dampening" -> 0.0)
     val sgd = new SGD[Double]
+    model.zeroGradParameters()
+    val outputtest = model.forward(input)
+    val loss = criterion.forward(outputTest, labels)
+    val gradoutputtest = criterion.backward(outputtest, labels)
+    model.backward(input, gradoutputtest)
 
-    for (i <- 1 to 4) {
-      model.zeroGradParameters()
-      val outputtest = model.forward(input)
-      val loss = criterion.forward(outputtest, labels)
-      val gradoutputtest = criterion.backward(outputtest, labels)
-      model.backward(input, gradoutputtest)
+    for (i <- 1 to 2) {
       sgd.optimize(_ => (loss, grad), weights, state, state)
     }
 
-    model.zeroGradParameters()
 //    val output = TH.map("output").asInstanceOf[Tensor[Double]]
     val outputTest = model.forward(input)
 
