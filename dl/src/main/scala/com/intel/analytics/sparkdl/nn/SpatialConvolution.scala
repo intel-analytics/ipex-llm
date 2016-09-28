@@ -35,8 +35,8 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   val strideH: Int = 1, // The step of the convolution in the height dimension
   val padW: Int = 0, // The additional zeros added per width to the input planes.
   val padH: Int = 0, // The additional zeros added per height to the input planes.
-  val nGroup : Int = 1, // Kernel group number
-  val propagateBack : Boolean = true, // propagate gradient back
+  val nGroup: Int = 1, // Kernel group number
+  val propagateBack: Boolean = true, // propagate gradient back
   private var initMethod: InitializationMethod = Default
 )(implicit ev: TensorNumeric[T]) extends Module[T] {
 
@@ -58,8 +58,12 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   private val ones = Tensor[T]()
   private val onesBatch = Tensor[T]()
   private val onesBias = Tensor[T]()
-  private val _1x1 = if(kernelH == 1 && kernelW == 1 && strideW == 1 && strideH == 1
-    && padH == 0 && padW == 0) true else false
+  private val _1x1 = if (kernelH == 1 && kernelW == 1 && strideW == 1 && strideH == 1
+    && padH == 0 && padW == 0) {
+    true
+  } else {
+    false
+  }
   reset()
 
   private var im2colTime = 0L
@@ -118,7 +122,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       require(input.size(1) == nInputPlane)
       require(input.isContiguous())
       output.resize(Array(nOutputPlane, outputHeight, outputWidth))
-      if(_1x1) {
+      if (_1x1) {
         fInput.set(input)
         fInput.resize(Array(nGroup, kernelW * kernelH * nInputPlane / nGroup,
           outputHeight * outputWidth))
@@ -127,7 +131,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           outputHeight * outputWidth))
       }
       var g = 0
-      while(g < nGroup) {
+      while (g < nGroup) {
         updateOutputFrame(
           input.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
           output.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
@@ -144,7 +148,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       require(input.size(2) == nInputPlane)
       val batchSize = input.size(1)
       output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
-      if(_1x1) {
+      if (_1x1) {
         fInput.set(input)
         fInput.resize(Array(batchSize, nGroup, kernelW * kernelH * nInputPlane / nGroup,
           outputHeight * outputWidth))
@@ -166,7 +170,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           val outputT = output.select(1, _i)
           val fInputT = fInput.select(1, _i)
           var g = 0
-          while(g < nGroup) {
+          while (g < nGroup) {
             updateOutputFrame(
               inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
               outputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
@@ -193,13 +197,13 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    if(!propagateBack) {
+    if (!propagateBack) {
       return gradInput
     }
 
     require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
     gradInput.resizeAs(input)
-    if(_1x1) {
+    if (_1x1) {
       fGradInput.set(gradInput)
       fGradInput.resizeAs(fInput)
     } else {
@@ -209,7 +213,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     if (input.nDimension() == 3) {
       require(gradOutput.isContiguous())
       var g = 0
-      while(g < nGroup) {
+      while (g < nGroup) {
         updateGradInputFrame(
           gradInput.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
           gradOutput.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
@@ -229,7 +233,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           require(gradOutputT.isContiguous())
           val fgradInputT = fGradInput.select(1, _i)
           var g = 0
-          while(g < nGroup) {
+          while (g < nGroup) {
             updateGradInputFrame(
               gradInputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
               gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
@@ -263,7 +267,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           nInputPlane * kernelH * kernelW / nGroup)
       }
       var g = 0
-      while(g < nGroup) {
+      while (g < nGroup) {
         accGradParametersFrame(
           gradOutput.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
           gradWeightMM.select(1, g + 1),
@@ -293,7 +297,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           val gradOutputT = gradOutput.select(1, _i)
           val fInputT = fInput.select(1, _i)
           var g = 0
-          while(g < nGroup) {
+          while (g < nGroup) {
             calcGradParametersFrame(
               gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
               gradWeightMM.select(1, _i).select(1, g + 1),
@@ -363,7 +367,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       gradBias == other.gradBias
   }
 
-  override def hashCode() : Int = {
+  override def hashCode(): Int = {
     val seed = 37
     var hash = super.hashCode()
     hash = hash * seed + nInputPlane.hashCode()
@@ -400,7 +404,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     implicit ev: TensorNumeric[T]): Unit = {
 
     val output2d = output.view(nOutputPlane, outputHeight * outputWidth)
-    if(!_1x1) {
+    if (!_1x1) {
       ev.getType() match {
         case "Double" =>
           val before = System.nanoTime()
@@ -429,9 +433,9 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         val gradOutput2d = Tensor(gradOutput.storage().asInstanceOf[Storage[Double]],
           gradOutput.storageOffset(), Array(gradOutput.size(1),
             gradOutput.size(2) * gradOutput.size(3)))
-        fgradInput.asInstanceOf[Tensor[Double]].addmm(0.0,fgradInput.asInstanceOf[Tensor[Double]],
+        fgradInput.asInstanceOf[Tensor[Double]].addmm(0.0, fgradInput.asInstanceOf[Tensor[Double]],
           1.0, weight.asInstanceOf[Tensor[Double]], gradOutput2d)
-        if(!_1x1) {
+        if (!_1x1) {
           gradInput.asInstanceOf[Tensor[Double]].zero()
           val before = System.nanoTime()
           NNPrimitive.col2imDouble(fgradInput.asInstanceOf[Tensor[Double]],
@@ -446,7 +450,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
         fgradInput.asInstanceOf[Tensor[Float]].addmm(0.0f, fgradInput.asInstanceOf[Tensor[Float]],
           1.0f, weight.asInstanceOf[Tensor[Float]], gradOutput2d)
-        if(!_1x1) {
+        if (!_1x1) {
           gradInput.asInstanceOf[Tensor[Float]].zero()
           val before = System.nanoTime()
           NNPrimitive.col2imFloat(fgradInput.asInstanceOf[Tensor[Float]],

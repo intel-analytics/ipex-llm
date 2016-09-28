@@ -130,7 +130,8 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
           var sum = 0.0
           var i = 0
           while (i < n) {
-            sum += input(i % stride2 + (_f - 1) * stride2 + inputOffset + (i / stride2) * inputStride)
+            sum += input(i % stride2 + (_f - 1) * stride2 + inputOffset +
+              (i / stride2) * inputStride)
             i += 1
           }
           mean = sum / n
@@ -192,7 +193,8 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
           var sum = 0.0f
           var i = 0
           while (i < n) {
-            sum += input(i % stride2 + (_f - 1) * stride2 + inputOffset + (i / stride2) * inputStride)
+            sum += input(i % stride2 + (_f - 1) * stride2 + inputOffset +
+              (i / stride2) * inputStride)
             i += 1
           }
           mean = sum / n
