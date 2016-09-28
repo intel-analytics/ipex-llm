@@ -527,7 +527,8 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     })
     val r = Tensor[Float](1,3)
     r.pow(t,2)
-    r should be(Tensor(Storage(Array(4.0,9.0,16.0))))
+    r should be(Tensor[Float](Storage[Float](
+      Array(4.0f,9.0f,16.0f)), 1, Array(1, 3)))
   }
 
   "log" should "return correct value" in {
@@ -538,7 +539,8 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     })
     val r = Tensor[Float](1,3)
     r.log(t)
-    r should be(Tensor(Storage(Array(0.6931472,1.0986123,1.3862944))))
+    r should be(Tensor[Float](Storage[Float](
+      Array(0.6931472f,1.0986123f,1.3862944f)), 1, Array(1, 3)))
   }
 
   "exp" should "return correct value" in {
@@ -549,7 +551,8 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     })
     val r = Tensor[Float](1,3)
     r.exp(t)
-    r should be(Tensor(Storage(Array(7.389056,20.085537,54.59815))))
+    r should be(Tensor[Float](Storage[Float](
+      Array(7.389056f,20.085537f,54.59815f)), 1, Array(1, 3)))
   }
 
   "sqrt" should "return correct value" in {
@@ -560,7 +563,8 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     })
     val r = Tensor[Float](1,3)
     r.sqrt(t)
-    r should be(Tensor(Storage(Array(1.4142135,1.7320508,2.0))))
+    r should be(Tensor[Float](Storage[Float](
+      Array(1.4142135f,1.7320508f,2.0f)), 1, Array(1, 3)))
   }
 
   "log1p" should "return correct value" in {
@@ -571,6 +575,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     })
     val r = Tensor[Float](1,3)
     r.log1p(t)
-    r should be(Tensor(Storage(Array(1.0986123,1.3862944,1.609438))))
+    r should be(Tensor[Float](Storage[Float](
+      Array(1.0986123f,1.3862944f,1.609438f)), 1, Array(1, 3)))
   }
 }

@@ -26,11 +26,13 @@ import scala.reflect.ClassTag
  * This is AlexNet that was presented in the One Weird Trick paper. http://arxiv.org/abs/1404.5997
  */
 object AlexNet_OWT {
-  def apply[T: ClassTag](classNum: Int, hasDropout : Boolean = true)
+  def apply[T: ClassTag](classNum: Int, hasDropout : Boolean = true, firstLayerPropagateBack :
+  Boolean = false)
     (implicit ev: TensorNumeric[T]): Module[T] = {
 
     val model = new Sequential[T]
-    model.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2, 1, false).setName("conv1"))
+    model.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2, 1, firstLayerPropagateBack)
+      .setName("conv1"))
     model.add(new ReLU[T](true).setName("relu1"))
     model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool1"))
     model.add(new SpatialConvolution[T](64, 192, 5, 5, 1, 1, 2, 2).setName("conv2"))

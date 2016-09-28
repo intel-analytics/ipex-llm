@@ -40,7 +40,7 @@ class AlexNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val seed = 100
     RNG.setSeed(seed)
-    val model = AlexNet_OWT[Float](1000, false)
+    val model = AlexNet_OWT[Float](1000, false, true)
     model.zeroGradParameters()
 
 
@@ -257,7 +257,7 @@ gradInput = model:backward(input, gradOutput)
     TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
-    val model = AlexNet_OWT[Double](1000, false)
+    val model = AlexNet_OWT[Double](1000, false, true)
     model.zeroGradParameters()
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
