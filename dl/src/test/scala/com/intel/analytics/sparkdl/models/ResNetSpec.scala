@@ -43,7 +43,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val opt: Table = new Table()
     opt("shortcutType") = "B"
-    opt("depth") = 50
+    opt("depth") = 18
     opt("imagenet") = "imagenet"
     val model = ResNet[Double](classNum, opt)
     model.zeroGradParameters()
@@ -58,7 +58,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         local SBatchNorm = nn.SpatialBatchNormalization
 
         local nClasses = 1000
-        local depth = 50
+        local depth = 18
         local shortcutType = 'B'
         local iChannels
         local function shortcut(nInputPlane, nOutputPlane, stride)
