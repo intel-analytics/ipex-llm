@@ -519,5 +519,58 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     )), 1, Array(5, 5)))
   }
 
+  "powx" should "return correct value" in {
+    val t: Tensor[Float] = Tensor(1, 3)
+    var i = 1
+    t.apply1(_ => {
+      i = i + 1; i
+    })
+    val r = Tensor[Float](1,3)
+    r.pow(t,2)
+    r should be(Tensor(Storage(Array(4.0,9.0,16.0))))
+  }
 
+  "log" should "return correct value" in {
+    val t: Tensor[Float] = Tensor(1, 3)
+    var i = 1
+    t.apply1(_ => {
+      i = i + 1; i
+    })
+    val r = Tensor[Float](1,3)
+    r.log(t)
+    r should be(Tensor(Storage(Array(0.6931472,1.0986123,1.3862944))))
+  }
+
+  "exp" should "return correct value" in {
+    val t: Tensor[Float] = Tensor(1, 3)
+    var i = 1
+    t.apply1(_ => {
+      i = i + 1; i
+    })
+    val r = Tensor[Float](1,3)
+    r.exp(t)
+    r should be(Tensor(Storage(Array(7.389056,20.085537,54.59815))))
+  }
+
+  "sqrt" should "return correct value" in {
+    val t: Tensor[Float] = Tensor(1, 3)
+    var i = 1
+    t.apply1(_ => {
+      i = i + 1; i
+    })
+    val r = Tensor[Float](1,3)
+    r.sqrt(t)
+    r should be(Tensor(Storage(Array(1.4142135,1.7320508,2.0))))
+  }
+
+  "log1p" should "return correct value" in {
+    val t: Tensor[Float] = Tensor(1, 3)
+    var i = 1
+    t.apply1(_ => {
+      i = i + 1; i
+    })
+    val r = Tensor[Float](1,3)
+    r.log1p(t)
+    r should be(Tensor(Storage(Array(1.0986123,1.3862944,1.609438))))
+  }
 }

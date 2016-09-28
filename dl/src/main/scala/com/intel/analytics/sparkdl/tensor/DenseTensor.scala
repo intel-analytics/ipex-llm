@@ -1303,7 +1303,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       ev.vLog1p(this.nElement(), x.storage().array(), x.storageOffset() - 1,
         this.storage().array(), this.storageOffset() - 1)
 
-    } /*else {
+    } else {
       val func = new TensorFunc4[T] {
         override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
           data1(offset1) = ev.log1p(data2(offset2))
@@ -1311,7 +1311,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       }
       DenseTensorApply.apply2[T](this, x, func)
 
-    }*/
+    }
     this
   }
 
