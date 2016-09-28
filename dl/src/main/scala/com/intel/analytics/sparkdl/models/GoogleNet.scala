@@ -115,7 +115,7 @@ object GoogleNet_v1 {
     output3.add(new Linear[D](1024, classNum).setInitMethod(Xavier).setName("loss3/classifier"))
     output3.add(new LogSoftMax[D].setName("loss3/loss3"))
 
-    val split2 = new Concat[D](2)
+    val split2 = new Concat[D](2).setName("split2")
     split2.add(output3)
     split2.add(output2)
 
@@ -123,7 +123,7 @@ object GoogleNet_v1 {
     mainBranch.add(feature2)
     mainBranch.add(split2)
 
-    val split1 = new Concat[D](2)
+    val split1 = new Concat[D](2).setName("split1")
     split1.add(mainBranch)
     split1.add(output1)
 

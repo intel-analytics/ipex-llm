@@ -32,6 +32,8 @@ class Concat[T: ClassTag](val dimension: Int)(
   private var results: Array[Future[Unit]] = null
   private var gradouts: Array[Tensor[T]] = null
 
+  protected var forwardTimeOverhead = 0L
+
   def getSize(): Array[Int] = {
     return size
   }
@@ -49,7 +51,7 @@ class Concat[T: ClassTag](val dimension: Int)(
       }
       i += 1
     }
-
+    val before = System.nanoTime()
     this.output.resize(this.size)
     if (results == null || results.length != this.modules.length) {
       results = new Array[Future[Unit]](this.modules.length)
@@ -82,8 +84,14 @@ class Concat[T: ClassTag](val dimension: Int)(
       Await.result(results(i), Duration.Inf)
       i += 1
     }
+    forwardTimeOverhead += System.nanoTime() - before
 
     this.output
+  }
+
+  override def getTimes(): Array[(Module[T], Long, Long)] = {
+    this.modules.map(_.getTimes()).flatten.toArray ++
+      Array((this, forwardTimeOverhead, backwardTime))
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
@@ -129,7 +137,7 @@ class Concat[T: ClassTag](val dimension: Int)(
   }
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    val before = System.nanoTime()
+    var before = System.nanoTime()
     this.gradInput.resizeAs(input)
     var offset = 1
     if (gradouts == null || gradouts.length != this.modules.length) {
@@ -163,6 +171,7 @@ class Concat[T: ClassTag](val dimension: Int)(
       Await.result(results(i), Duration.Inf)
       i += 1
     }
+    backwardTime += System.nanoTime() - before
 
     i = 0
     offset = 1
@@ -171,6 +180,7 @@ class Concat[T: ClassTag](val dimension: Int)(
       val currentGradInput = this.modules(i).backward(input,
         gradouts(i))
 
+      before = System.nanoTime()
       if (currentGradInput != null) {
         if (i == 0) {
           require(this.gradInput.isContiguous())
@@ -182,9 +192,9 @@ class Concat[T: ClassTag](val dimension: Int)(
       }
       i += 1
       offset += currentOutput.size(dimension)
+      backwardTime += System.nanoTime() - before
     }
 
-    backwardTime += System.nanoTime() - before
     this.gradInput
   }
 
@@ -264,5 +274,11 @@ class Concat[T: ClassTag](val dimension: Int)(
         }
         .mkString(line)
     }$line$tab${last}output$line$tab}"
+  }
+
+  override def resetTimes(): Unit = {
+    forwardTimeOverhead = 0
+    forwardTime = 0
+    backwardTime = 0
   }
 }
