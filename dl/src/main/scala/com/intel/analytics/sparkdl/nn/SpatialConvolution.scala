@@ -36,6 +36,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   val padW: Int = 0, // The additional zeros added per width to the input planes.
   val padH: Int = 0, // The additional zeros added per height to the input planes.
   val nGroup : Int = 1, // Kernel group number
+  val propagateBack : Boolean = true, // propagate gradient back
   private var initMethod: InitializationMethod = Default
 )(implicit ev: TensorNumeric[T]) extends Module[T] {
 
@@ -192,6 +193,10 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    if(!propagateBack) {
+      return gradInput
+    }
+
     require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
     gradInput.resizeAs(input)
     if(_1x1) {

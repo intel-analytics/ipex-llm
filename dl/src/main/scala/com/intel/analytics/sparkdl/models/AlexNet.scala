@@ -30,7 +30,7 @@ object AlexNet_OWT {
     (implicit ev: TensorNumeric[T]): Module[T] = {
 
     val model = new Sequential[T]
-    model.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2).setName("conv1"))
+    model.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2, 1, false).setName("conv1"))
     model.add(new ReLU[T](true).setName("relu1"))
     model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool1"))
     model.add(new SpatialConvolution[T](64, 192, 5, 5, 1, 1, 2, 2).setName("conv2"))
@@ -62,7 +62,7 @@ object AlexNet_OWT {
 object AlexNet {
   def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[T] = {
     val model = new Sequential[T]()
-    model.add(new SpatialConvolution[T](3, 96, 11, 11, 4, 4).setName("conv1"))
+    model.add(new SpatialConvolution[T](3, 96, 11, 11, 4, 4, 0, 0, 1, false).setName("conv1"))
     model.add(new ReLU[T](true).setName("relu1"))
     model.add(new SpatialCrossMapLRN[T](5, 0.0001, 0.75).setName("norm1"))
     model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool1"))
