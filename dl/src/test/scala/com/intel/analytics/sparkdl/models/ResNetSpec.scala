@@ -37,8 +37,8 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     Random.setSeed(1)
     val classNum: Int = 1000
-    val input = Tensor[Double](256, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](256).apply1(e => Random.nextInt(classNum))
+    val input = Tensor[Float](256, 3, 224, 224).apply1(e => Random.nextFloat())
+    val labels = Tensor[Float](256).apply1(e => Random.nextInt(classNum))
 
     val seed = 100
     RNG.setSeed(seed)
@@ -46,7 +46,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     opt("shortcutType") = "B"
     opt("depth") = 50
     opt("imagenet") = "imagenet"
-    val model = ResNet[Double](classNum, opt)
+    val model = ResNet[Float](classNum, opt)
     model.zeroGradParameters()
 
 
@@ -207,7 +207,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     //    "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
     //val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
-    val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
+    val parameters = model.getParameters()._1.asInstanceOf[Tensor[Float]]
 
     /*for (i <- 0 until parameters.nElement()) {
       if (abs(parameters.storage().array()(i) - parameterTorch.storage().array()(i)) > 1e-8) {
@@ -217,11 +217,11 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     //val criterion = new ClassNLLCriterion[Double]()
     val (weights, grad) = model.getParameters()
-    val criterion = new CrossEntropyCriterion[Double]()
+    val criterion = new CrossEntropyCriterion[Float]()
 
     val state = T("learningRate" -> 1e-2, "momentum" -> 0.9, "weightDecay" -> 5e-4,
       "dampening" -> 0.0)
-    val sgd = new SGD[Double]
+    val sgd = new SGD[Float]
     model.zeroGradParameters()
     for (i <- 1 to 2) {
     val outputtest = model.forward(input)
