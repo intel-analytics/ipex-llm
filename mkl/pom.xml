@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>mkl-parent_0.1</artifactId>
-    <groupId>com.intel.analytics.dllib</groupId>
+    <groupId>com.intel.analytics.sparkdl</groupId>
     <packaging>pom</packaging>
     <modules>
         <module>native</module>
