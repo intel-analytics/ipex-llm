@@ -146,6 +146,9 @@ void MKLPooling<DType>::init(size_t inputNumber, size_t inputChannel,
 template <typename DType>
 void MKLPooling<DType>::updateOutput(DType *input, DType *output)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnError_t status  = E_UNIMPLEMENTED;
   dnnLayout_t layout = NULL;
 
@@ -231,6 +234,9 @@ template <typename DType>
 void MKLPooling<DType>::updateGradInput(DType *input, DType *gradOutput,
                                         DType *gradInput)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
 #ifdef DEBUG
   LOG(DBG) << "gradOutput = " << gradOutput
            << " dataUsr = " << this->gradOutput->getUsrData();

@@ -215,6 +215,9 @@ void MKLConvolution<DType>::firstPass()
 template <typename DType>
 void MKLConvolution<DType>::preExecute(DType *input)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   this->input->createConversion();
   this->kernel->createConversion();
   this->bias->createConversion();
@@ -576,5 +579,70 @@ ConvolutionBackwardKernel(Float, jfloat, jfloatArray);
 ConvolutionBackwardBias(Float, jfloat, jfloatArray);
 
 #ifdef __cplusplus
+}
+#endif
+
+#if 0
+int main(void)
+{
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
+  MKLConvolution<float> *conv = new MKLConvolution<float>();
+  conv->init(32, 64, 56, 56, 192, 64, 3, 3, 1, 1, 1, 1, 4, 1);
+  float *input = new float[32 * 64 * 56 * 56];
+  int oW = (56 + 2 * 1 - 3) / 1 + 1;
+  int oH = (56 + 2 * 1 - 3) / 1 + 1;
+  float *output = new float[32 * 192 * oW * oH];
+  // std::fill_n(input, 32 * 64 * 56 * 56, 0.1);
+  // std::fill_n(output, 32 * 192 * oW * oH, 0.1);
+
+  conv->input->setUsrData(input);
+  conv->output->setUsrData(output);
+
+  float *kernel = new float[32 * 192 * 3 * 3 * 2];
+  float *bias = new float[192];
+
+  // std::fill_n(kernel, 64 * 3 * 3, 0.1);
+  // std::fill_n(bias, 64, 0.1);
+
+  conv->kernel->setUsrData(kernel);
+  conv->bias->setUsrData(bias);
+
+  float *gradInput = new float[32 * 64 * 56 * 56];
+  float *gradOutput = new float[32 * 192 * oW * oH];
+
+  conv->gradInput->setUsrData(gradInput);
+  conv->gradOutput->setUsrData(gradOutput);
+
+  // std::fill_n(gradOutput, 32 * 192 * oW * oH, 0.1);
+
+  float *gradKernel = new float[32 * 192 * 3 * 3 * 2];
+  float *gradBias = new float[192];
+
+  conv->gradKernel->setUsrData(gradKernel);
+  conv->gradBias->setUsrData(gradBias);
+
+  for (int i = 0; i < 10; i++) {
+    conv->updateOutput(input, output);
+    conv->updateGradInput(input, gradOutput, gradInput);
+    conv->updateGradKernel(input, gradOutput, gradKernel);
+    conv->updateGradBias(input, gradOutput, gradBias);
+  }
+  
+  struct timespec start, end;
+  clock_gettime(CLOCK_MONOTONIC, &start);
+  for (int i = 0; i < 20; i++) {
+    conv->updateOutput(input, output);
+    conv->updateGradInput(input, gradOutput, gradInput);
+    conv->updateGradKernel(input, gradOutput, gradKernel);
+    conv->updateGradBias(input, gradOutput, gradBias);
+  }
+  clock_gettime(CLOCK_MONOTONIC, &end);
+
+  LOG(DBG) << "costs " << (end.tv_sec - start.tv_sec) * 1000 +
+    (double)(end.tv_nsec - start.tv_nsec) / 1000000;
+
+  return 0;
 }
 #endif

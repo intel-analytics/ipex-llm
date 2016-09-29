@@ -4,6 +4,7 @@
 
 #include "MKLWrapper.h"
 #include "memory.h"
+#include "cpu_info.hpp"
 
 template <typename DType>
 class MKLLayer
