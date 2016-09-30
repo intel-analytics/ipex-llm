@@ -46,8 +46,8 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
 
   def concatTableUpdateGradInput(input: Tensor[T], gradOutputs: ArrayBuffer[Tensor[T]]): Tensor[T] = {
     for ((module, i) <- modules.zipWithIndex) {
-      val gradOutput = gradOutputs(i)
-      val currentGradInput = module.updateGradInput(input, gradOutput)
+      //val gradOutput = gradOutputs(i)
+      val currentGradInput = module.updateGradInput(input, gradOutputs(i))
       if (i == 0) {
         gradInput = gradInput.resizeAs(currentGradInput).copy(currentGradInput)
       } else {
