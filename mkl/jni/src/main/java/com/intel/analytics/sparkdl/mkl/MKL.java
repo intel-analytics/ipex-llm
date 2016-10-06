@@ -22,6 +22,7 @@ public class MKL {
         isLoaded = true;
         try {
             tmpFile = extract("libjmkl.so");
+            System.out.println(tmpFile.getAbsolutePath());
             System.load(tmpFile.getAbsolutePath());
         } catch (Exception e) {
             System.out.println("Can't load the library" + tmpFile.getAbsolutePath());
@@ -110,6 +111,7 @@ public class MKL {
 
     // Extract so file from jar to a temp path
     private static File extract(String path) {
+        System.out.println(path);
         try {
             URL url = MKL.class.getResource("/" + path);
             if (url == null) {
@@ -138,7 +140,7 @@ public class MKL {
             int inputNumber, int inputChannel, int inputHeight, int inputWidth,
             int kernelNumber, int kernelChannel, int kernelHeight, int kernelWidth,
             int strideHeight, int strideWidth, int padHeight, int padWidth,
-            int dimension, int groups);
+            int dimension, int groups, String name);
     public native static void ConvolutionForwardFloat(
             float[] input, int inputOffset, float[] output, int outputOffset,
             float[] kernel, int kernelOffset, float[] bias, int biasOffset, long classPtr);
@@ -159,7 +161,7 @@ public class MKL {
             int inputNumber, int inputChannel, int inputHeight, int inputWidth,
             int kernelNumber, int kernelChannel, int kernelHeight, int kernelWidth,
             int strideHeight, int strideWidth, int padHeight, int padWidth,
-            int dimension, int groups);
+            int dimension, int groups, String name);
     public native static void ConvolutionForwardDouble(
             double[] input, int inputOffset, double[] output, int outputOffset,
             double[] kernel, int kernelOffset, double[] bias, int biasOffset, long classPtr);
@@ -178,7 +180,7 @@ public class MKL {
 
     /* ReLU API */
     public native static long ReLUInitFloat(
-            int inputNumber, int inputChannel, int inputHeight, int inputWidth, int dimension);
+            int inputNumber, int inputChannel, int inputHeight, int inputWidth, int dimension, String name);
     public native static void ReLUForwardFloat(
             float[] input, int inputOffset, float[] output, int outputOffset, long classPtr);
     public native static void ReLUBackwardFloat(
@@ -186,7 +188,7 @@ public class MKL {
             float[] gradInput, int gradInputOffset, long classPtr);
 
     public native static long ReLUInitDouble(
-            int inputNumber, int inputChannel, int inputHeight, int inputWidth, int dimension);
+            int inputNumber, int inputChannel, int inputHeight, int inputWidth, int dimension, String name);
     public native static void ReLUForwardDouble(
             double[] input, int inputOffset, double[] output, int outputOffset, long classPtr);
     public native static void ReLUBackwardDouble(
@@ -198,7 +200,7 @@ public class MKL {
         int inputNumber, int inputChannel, int inputHeight, int inputWidth,
         int kernelHeight, int kernelWidth, int strideHeight, int strideWidth,
         int padHeight, int padWidth, int dimension, int ceilMode,
-        int algorithm);
+        int algorithm, String name);
     public native static void PoolingForwardFloat(
         float[] input, int inputOffset, float[] output, int outputOffset,
         long classPtr);
@@ -211,7 +213,7 @@ public class MKL {
         int inputNumber, int inputChannel, int inputHeight, int inputWidth,
         int kernelHeight, int kernelWidth, int strideHeight, int strideWidth,
         int padHeight, int padWidth, int dimension, int ceilMode,
-        int algorithm);
+        int algorithm, String name);
     public native static void PoolingForwardDouble(
         double[] input, int inputOffset, double[] output, int outputOffset,
         long classPtr);
@@ -224,7 +226,7 @@ public class MKL {
     public native static long BatchNormInitFloat(
             int inputNumber, int inputChannel, int inputHeight, int inputWidth,
             double eps, int useKernel, int useBias,
-            int dimension);
+            int dimension, String name);
     public native static void BatchNormForwardFloat(
             float[] input, int inputOffset, float[] output, int outputOffset,
             float[] kernel, int kernelOffset, float[] bias, int biasOffset, long classPtr);
@@ -236,7 +238,7 @@ public class MKL {
     public native static long BatchNormInitDouble(
             int inputNumber, int inputChannel, int inputHeight, int inputWidth,
             double eps, int useKernel, int useBias,
-            int dimension);
+            int dimension, String name);
     public native static void BatchNormForwardDouble(
             double[] input, int inputOffset, double[] output, int outputOffset,
             double[] kernel, int kernelOffset, double[] bias, int biasOffset, long classPtr);
@@ -265,7 +267,21 @@ public class MKL {
     /* Init MKL Model */
     public native static void SetPrevFloat(long prev, long current);
     public native static void SetPrevDouble(long prev, long current);
-    
+
+    public native static void SetConcatPrevFloat(long prev, int index, long current);
+    public native static void SetConcatPrevDouble(long prev, int index, long current);
+    public native static void SetConcatNextFloat(long prev, int index, long current);
+    public native static void SetConcatNextDouble(long prev, int index, long current);
+
+    public native static void SetSumNextFloat(long prev, int index, long current);
+    public native static void SetSumNextDouble(long prev, int index, long current);
+
+    public native static void SetNextFloat(long prev, long current);
+    public native static void SetNextDouble(long prev, long current);
+
+    public native static void SetIPrevFloat(long prev, int index, long current);
+    public native static void SetIPrevDouble(long prev, int index, long current);
+
     /* Delete all memmory allocated */
     public native static void ReleaseAllMemFloat(long classPtr);
     public native static void ReleaseAllMemDouble(long classPtr);
@@ -275,7 +291,7 @@ public class MKL {
     /* Linear API */
     public native static long LinearInitFloat(
             int inputHeight, int inputWidth, int outputChannel,
-            int kernelHeight, int kernelWidth);
+            int kernelHeight, int kernelWidth, String name);
     public native static void LinearForwardFloat(
             float[] input, int inputOffset, float[] output, int outputOffset,
             float[] kernel, int kernelOffset, float[] bias, int biasOffset, long classPtr);
@@ -294,7 +310,7 @@ public class MKL {
 
     public native static long LinearInitDouble(
             int inputHeight, int inputWidth, int outputChannel,
-            int kernelHeight, int kernelWidth);
+            int kernelHeight, int kernelWidth, String name);
     public native static void LinearForwardDouble(
             double[] input, int inputOffset, double[] output, int outputOffset,
             double[] kernel, int kernelOffset, double[] bias, int biasOffset, long classPtr);
@@ -321,7 +337,9 @@ public class MKL {
 
     /* Sum API */
     public native static long SumInitFloat(int numChannels, int dimension, int[] size);
-    public native static void SumForwardFloat(float[][] input, int[] inputOffset, float[] output, int outputOffset, long classPtr);
+    public native static void SumForwardFloat(float[] input, int inputOffset, float[][] output, int[] outputOffset, long classPtr);
+    public native static void SumBackwardFloat(float[] inputDiff, int inputOffset, float[][] outputDiff, int[] outputDiffOffset, long classPtr);
     public native static long SumInitDouble(int numChannels, int dimension, int[] size);
-    public native static void SumForwardDouble(double[][] input, int[] inputOffset, double[] output, int outputOffset, long classPtr);
+    public native static void SumForwardDouble(double[] input, int inputOffset, double[][] output, int[] outputOffset, long classPtr);
+    public native static void SumBackwardDouble(double[] inputDiff, int inputOffset, double[][] outputDiff, int[] outputDiffOffset, long classPtr);
 }

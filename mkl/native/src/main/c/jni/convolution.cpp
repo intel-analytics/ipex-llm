@@ -27,7 +27,7 @@ class MKLConvolution : public MKLLayer<DType>
             size_t inputWidth, size_t kernelNumber, size_t kernelChannel,
             size_t kernelHeight, size_t kernelWidth, size_t strideHeight,
             size_t strideWidth, int padHeight, int padWidth, int dimension,
-            int groups);
+            int groups, const char *name);
 
   void updateOutput(DType *input, DType *output);
   void updateGradInput(DType *input, DType *gradOutput, DType *gradInput);
@@ -96,10 +96,11 @@ void MKLConvolution<DType>::init(size_t inputNumber, size_t inputChannel,
                                  size_t kernelHeight, size_t kernelWidth,
                                  size_t strideHeight, size_t strideWidth,
                                  int padHeight, int padWidth, int dimension,
-                                 int groups)
+                                 int groups, const char *name)
 {
   this->dimension = dimension;
   this->groups    = groups;
+  this->name.assign(name);
 
   inputSize[0] = inputWidth;
   inputSize[1] = inputHeight;
@@ -219,8 +220,11 @@ void MKLConvolution<DType>::preExecute(DType *input)
   caffe::cpu::OpenMpManager::bindOpenMpThreads();
 
   this->input->createConversion();
+  //LOG(DBG) << "DOES INPUT CREATE NEW MEM?";
   this->kernel->createConversion();
+  //LOG(DBG) << "AFTER KERNEL";
   this->bias->createConversion();
+  //LOG(DBG) << "AFTER BIAS";
 }
 
 template <typename DType>
@@ -233,6 +237,7 @@ void MKLConvolution<DType>::updateOutput(DType *input, DType *output)
   // TODO Should we set the kernel and bias address every time?
   preExecute(input);
   this->output->createConversion();
+  //LOG(DBG) << "AFTER OUTPUT";
 
 #ifdef DEBUG
   printData<DType>(reinterpret_cast<DType *>(this->input->getUsrData()),
@@ -279,6 +284,8 @@ void MKLConvolution<DType>::updateGradInput(DType *input, DType *gradOutput,
   resources[dnnResourceDiffDst] = this->gradOutput->getConvertedData();
   resources[dnnResourceFilter]  = this->kernel->getConvertedData();
   resources[dnnResourceDiffSrc] = this->gradInput->getData();
+
+  //LOG(DBG) << "resources[dnnResourceDiffDst] " << resources[dnnResourceDiffDst];
 
   // 4. main computing parts.
   PERFSTART();
@@ -352,12 +359,13 @@ jlong JNIConvolutionInit(JNIEnv *env, jclass thisClass, jint inputNumber,
                          jint kernelNumber, jint kernelChannel,
                          jint kernelHeight, jint kernelWidth, jint strideHeight,
                          jint strideWidth, jint padHeight, jint padWidth,
-                         jint dimension, jint groups)
+                         jint dimension, jint groups, const jstring name)
 {
+  const char *jName = env->GetStringUTFChars(name, NULL);
   MKLConvolution<DType> *conv = new MKLConvolution<DType>();
   conv->init(inputNumber, inputChannel, inputHeight, inputWidth, kernelNumber,
              kernelChannel, kernelHeight, kernelWidth, strideHeight,
-             strideWidth, padHeight, padWidth, dimension, groups);
+             strideWidth, padHeight, padWidth, dimension, groups, jName);
 
   return reinterpret_cast<long>(conv);
 }
@@ -494,12 +502,12 @@ void JNIConvolutionUpdateGradBias(JNIEnv *env, jclass thisClass,
           jint inputHeight, jint inputWidth, jint kernelNumber,               \
           jint kernelChannel, jint kernelHeight, jint kernelWidth,            \
           jint strideHeight, jint strideWidth, jint padHeight, jint padWidth, \
-          jint dimension, jint groups)                                        \
+          jint dimension, jint groups, jstring name)                                        \
   {                                                                           \
     return JNIConvolutionInit<JArrayType, JType>(                             \
         env, thisClass, inputNumber, inputChannel, inputHeight, inputWidth,   \
         kernelNumber, kernelChannel, kernelHeight, kernelWidth, strideHeight, \
-        strideWidth, padHeight, padWidth, dimension, groups);                 \
+        strideWidth, padHeight, padWidth, dimension, groups, name);                 \
   }
 
 #define ConvolutionForward(DType, JType, JArrayType)                          \

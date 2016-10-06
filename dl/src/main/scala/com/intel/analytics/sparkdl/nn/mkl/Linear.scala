@@ -90,16 +90,29 @@ class Linear[@specialized(Float, Double) T: ClassTag](
     if (firstPass) {
       ev.getType() match {
         case "Double" =>
-          classPtr = MKL
-            .LinearInitDouble(inputHeight, inputWidth, outputChannels, kernelHeight, kernelWidth)
+          classPtr = MKL.LinearInitDouble(inputHeight,
+                                          inputWidth,
+                                          outputChannels,
+                                          kernelHeight,
+                                          kernelWidth,
+                                          this.getName())
         case "Float" =>
-          classPtr =
-            MKL.LinearInitFloat(inputHeight, inputWidth, outputChannels, kernelHeight, kernelWidth)
+          classPtr = MKL.LinearInitFloat(inputHeight,
+                                         inputWidth,
+                                         outputChannels,
+                                         kernelHeight,
+                                         kernelWidth,
+                                         this.getName())
         case _ =>
           throw new UnsupportedOperationException(s"Only Float/Double supported")
       }
 
       firstPass = false
+    }
+
+    if (initForward) {
+      this.updateMklOut()
+      this.initForward = false
     }
 
     ev.getType() match {
@@ -151,6 +164,11 @@ class Linear[@specialized(Float, Double) T: ClassTag](
     val kernelHeight = outputSize
     val kernelWidth = inputSize
     val outputChannels = outputSize
+
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
+    }
 
     if (needCompute) {
       ev.getType() match {
@@ -295,7 +313,7 @@ class Linear[@specialized(Float, Double) T: ClassTag](
     bias == other.bias
   }
 
-  override def hashCode() : Int = {
+  override def hashCode(): Int = {
     val seed = 37
     var hash = super.hashCode()
     hash = hash * seed + gradWeight.hashCode()

@@ -18,10 +18,59 @@
 package com.intel.analytics.sparkdl.nn.mkl
 
 import com.intel.analytics.sparkdl.models._
-import org.scalatest.FlatSpec
+import org.scalatest.{FlatSpec, Matchers}
 
-class GoogLeNetSpec extends FlatSpec{
-  "GoogLeNet V1 with mkl dnn" should "ends with no segment fault" in {
-    Perf.performance[Float](new Params(batchSize = 32, module = "alexnet"))
+class GoogLeNetSpec extends FlatSpec with Matchers{
+  // "GoogLeNet V1 with mkl dnn" should "ends with no segment fault" in {
+  //   Perf.performance[Float](new Params(batchSize = 32, module = "googlenet_v2"))
+  // }
+
+  "GoogLeNet V1 with mkl dnn" should "ends with the same result" in {
+    import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Module}
+    import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+    import com.intel.analytics.sparkdl.tensor.Tensor
+    import scala.reflect.ClassTag
+
+    def testModel[T : ClassTag]()(implicit tn : TensorNumeric[T]) : Unit = {
+      val modelMkl = GoogleNet_v1[T](1000)
+      val modelNN  = GoogleNetNN_v1[T](1000)
+
+      val input = Tensor[T](32, 3, 224, 224)
+      input.rand()
+      println(modelMkl)
+      println(modelNN)
+
+      val criterion = new ClassNLLCriterion[T]()
+
+      val labelsMkl = Tensor[T](32).fill(tn.fromType(1))
+      val outputMkl = modelMkl.forward(input)
+      criterion.forward(outputMkl, labelsMkl)
+      val gradOutputMkl = criterion.backward(outputMkl, labelsMkl)
+      val resultMkl = modelMkl.backward(input, gradOutputMkl)
+
+      val labelNN = Tensor[T](32).fill(tn.fromType(1))
+      val outputNN = modelNN.forward(input)
+      criterion.forward(outputNN, labelNN)
+      val gradOutputNN = criterion.backward(outputNN, labelNN)
+      val resultNN = modelNN.backward(input, gradOutputNN)
+
+      println(labelsMkl)
+      println("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+      println(labelNN)
+
+      println(outputMkl)
+      println("==================================================================================")
+      println(outputNN)
+
+      outputMkl should be equals outputNN
+      gradOutputMkl should be equals gradOutputNN
+      resultMkl should be equals resultNN
+      outputMkl should be equals input
+
+      println(outputMkl.storage().array().length)
+      println(input.storage().array().length)
+    }
+
+    testModel[Float]()
   }
 }

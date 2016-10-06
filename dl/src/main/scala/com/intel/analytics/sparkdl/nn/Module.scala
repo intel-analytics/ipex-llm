@@ -25,6 +25,8 @@ import org.apache.commons.lang3.SerializationUtils
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
+import com.intel.analytics.sparkdl.mkl.MKL
+
 
 abstract class TensorModule[@specialized(Float, Double) T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends Module[Tensor[T], Tensor[T], T]
@@ -223,7 +225,67 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
 
   // Support for mkl init.
   def getClassPtr() : Long = {0L}
-  def initMkl() : Unit = {}
+  def getInputPtr() : Long = getClassPtr()
+  def getOutputPtr() : Long = getClassPtr()
+  var hasSet = false
+  def initMkl(prevPtr: Long) : Unit = {
+    println("I WANT TO SET THE PREV LAYOUT IN MODULE")
+    if (prevPtr != 0 && this.getClassPtr() != 0 &&
+        prevPtr != this.getClassPtr()) {
+      ev.getType() match {
+        case "Double" =>
+          MKL.SetPrevDouble(prevPtr, this.getClassPtr())
+        case "Float" =>
+          MKL.SetPrevFloat(prevPtr, this.getClassPtr())
+        case _ =>
+          throw new UnsupportedOperationException(s"Only Float/Double support")
+      }
+    }
+  }
+
+  var isPrevMkl = false
+  var isNextMKl = false
+
+  private var prevPtr = 0L
+  private var nextPtr = 0L
+
+  def setPrevPtr(ptr : Long) = { prevPtr = ptr }
+  def setNextPtr(ptr : Long) = { nextPtr = ptr }
+  def getPrevPtr() : Long = prevPtr
+  def getNextPtr() : Long = nextPtr
+
+  var initForward = true
+  var initBackward = true
+
+  def updateMklOut(): Unit = {
+    // If the layer uses mkl dnn api, the ptr (prevPtr and classPtr) will not equal to 0.
+    // And of cause the previous ptr and current ptr will not equal to each other.
+    //println("prev = " + getPrevPtr().toHexString + " " + this.getName() + "\tcurrent = " + getClassPtr().toHexString)
+    if (getPrevPtr() != 0 && getClassPtr() != getPrevPtr()) {
+      ev.getType() match {
+        case "Double" =>
+          MKL.SetPrevDouble(getPrevPtr(), getInputPtr())
+        case "Float" =>
+          MKL.SetPrevFloat(getPrevPtr(), getInputPtr())
+        case _ =>
+          throw new UnsupportedOperationException(s"Only Float/Double support")
+      }
+    }
+  }
+
+  def updateMklGradInput() : Unit = {
+    //println("next = " + getNextPtr().toHexString + " " + this.getName() + "\tcurrent = " + getClassPtr().toHexString)
+    if (getNextPtr() != 0 && getClassPtr() != getNextPtr()) {
+      ev.getType() match {
+        case "Double" =>
+          MKL.SetNextDouble(getNextPtr(), getOutputPtr())
+        case "Float" =>
+          MKL.SetNextFloat(getNextPtr(), getOutputPtr())
+        case _ =>
+          throw new UnsupportedOperationException(s"Only Float/Double support")
+      }
+    }
+  }
 }
 
 object Module {
