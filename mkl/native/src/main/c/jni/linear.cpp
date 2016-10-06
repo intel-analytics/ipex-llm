@@ -13,7 +13,7 @@ class MKLLinear : public MKLLayer<DType>
   ~MKLLinear();
 
   void init(size_t inputHeight, size_t inputWidth, size_t outputChannel,
-            size_t kernelHeight, size_t kernelWidth);
+            size_t kernelHeight, size_t kernelWidth, const char *name);
 
   void updateOutput(DType *input, DType *output);
   void updateGradInput(DType *input, DType *gradOutput, DType *gradInput);
@@ -70,9 +70,10 @@ MKLLinear<DType>::~MKLLinear()
 template <typename DType>
 void MKLLinear<DType>::init(size_t inputHeight, size_t inputWidth,
                             size_t outputChannel, size_t kernelHeight,
-                            size_t kernelWidth)
+                            size_t kernelWidth, const char *name)
 {
   this->dimension = 2;
+  this->name.assign(name);
 
   inputSize[0] = inputWidth;
   inputSize[1] = inputHeight;
@@ -289,10 +290,12 @@ void MKLLinear<DType>::updateGradBias(DType *input, DType *gradOutput,
 template <typename ArrayType, typename DType>
 jlong JNILinearInit(JNIEnv *env, jclass thisClass, jint inputHeight,
                     jint inputWidth, jint outputChannel, jint kernelHeight,
-                    jint kernelWidth)
+                    jint kernelWidth, jstring name)
 {
+  const char *jName = env->GetStringUTFChars(name, NULL);
   MKLLinear<DType> *ptr = new MKLLinear<DType>();
-  ptr->init(inputHeight, inputWidth, outputChannel, kernelHeight, kernelWidth);
+  ptr->init(inputHeight, inputWidth, outputChannel, kernelHeight, kernelWidth,
+            jName);
 
   return reinterpret_cast<long>(ptr);
 }
@@ -417,11 +420,11 @@ void JNILinearUpdateGradBias(JNIEnv *env, jclass thisClass, ArrayType input,
   JNIEXPORT                                                                 \
   jlong JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_LinearInit##DType( \
       JNIEnv *env, jclass thisClass, jint inputHeight, jint inputWidth,     \
-      jint outputChannel, jint kernelHeight, jint kernelWidth)              \
+      jint outputChannel, jint kernelHeight, jint kernelWidth, jstring name)              \
   {                                                                         \
     return JNILinearInit<JArrayType, JType>(env, thisClass, inputHeight,    \
                                             inputWidth, outputChannel,      \
-                                            kernelHeight, kernelWidth);     \
+                                            kernelHeight, kernelWidth, name);     \
   }
 
 #define LinearForward(DType, JType, JArrayType)                               \

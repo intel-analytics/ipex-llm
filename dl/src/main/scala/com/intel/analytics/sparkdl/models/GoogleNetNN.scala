@@ -24,16 +24,7 @@ import com.intel.analytics.sparkdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
-// import com.intel.analytics.sparkdl.nn.mkl.Linear
-import com.intel.analytics.sparkdl.nn.mkl.SpatialBatchNormalization
-import com.intel.analytics.sparkdl.nn.mkl.ReLU
-import com.intel.analytics.sparkdl.nn.mkl.LocalNormalizationAcrossChannels
-import com.intel.analytics.sparkdl.nn.mkl.SpatialAveragePooling
-import com.intel.analytics.sparkdl.nn.mkl.SpatialConvolution
-import com.intel.analytics.sparkdl.nn.mkl.SpatialMaxPooling
-//import com.intel.analytics.sparkdl.nn.mkl.Concat
-
-object GoogleNet_v1 {
+object GoogleNetNN_v1 {
   private def inception[D: ClassTag](inputSize: Int, config: Table, namePrefix : String)(
     implicit ev: TensorNumeric[D]): Module[D] = {
     val concat = new Concat[D](2)
@@ -147,7 +138,7 @@ object GoogleNet_v1 {
   }
 }
 
-object GoogleNet_v2 {
+object GoogleNetNN_v2 {
   def apply[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[D] = {
     val features1 = new Sequential[D]
     features1.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3).setName("conv1/7x7_s2")

@@ -64,6 +64,16 @@ object Perf {
             "vgg16 | vgg19 | lenet5 now")
         }
       )
+    opt[String]('e', "engine")
+      .text("Engine name. It can be mkl | scala")
+      .action((v, p) => p.copy(engine = v))
+      .validate(v =>
+        if (v.toLowerCase() == "mkl" || v.toLowerCase() == "scala") {
+          success
+        } else {
+          failure("Engine name can only be mkl or scala now")
+        }
+      )
     help("help").text("Prints this usage text")
   }
 
@@ -105,6 +115,11 @@ object Perf {
       println(s"Warm up iteration $i: forward ${forwardTime / 1e6}ms, " +
         s"backward ${backwardTime / 1e6}ms, " +
         s"total ${(forwardTime + backwardTime) / 1e6}ms")
+//      if (i == 1) {
+//        param.engine match {
+//          case "mkl" => model.initMkl(0L)
+//        }
+//      }
     }
     model.resetTimes()
     var totalForwardTime = 0L
@@ -142,7 +157,8 @@ object Perf {
 case class Params(
   batchSize: Int = 128,
   iteration: Int = 10,
-  warmUp: Int = 5,
+  warmUp: Int = 10,
   dataType: String = "float",
-  module: String = "alexnet"
+  module: String = "alexnet",
+  engine: String = "mkl"
 )

@@ -22,6 +22,15 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+import com.intel.analytics.sparkdl.nn.mkl.SpatialBatchNormalization
+import com.intel.analytics.sparkdl.nn.mkl.ReLU
+import com.intel.analytics.sparkdl.nn.mkl.LocalNormalizationAcrossChannels
+import com.intel.analytics.sparkdl.nn.mkl.Linear
+import com.intel.analytics.sparkdl.nn.mkl.SpatialAveragePooling
+import com.intel.analytics.sparkdl.nn.mkl.SpatialConvolution
+import com.intel.analytics.sparkdl.nn.mkl.SpatialMaxPooling
+import com.intel.analytics.sparkdl.nn.mkl.Concat
+
 /**
  * This is AlexNet that was presented in the One Weird Trick paper. http://arxiv.org/abs/1404.5997
  */
@@ -62,7 +71,7 @@ object AlexNet_OWT {
 object AlexNet {
   def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[T] = {
     val model = new Sequential[T]()
-    model.add(new SpatialConvolution[T](3, 96, 11, 11, 4, 4).setName("conv1"))
+    model.add(new SpatialConvolution[T](3, 96, 11, 11, 4, 4).setName("conv1").setNeedComputeBack(false))
     model.add(new ReLU[T](true).setName("relu1"))
     model.add(new LocalNormalizationAcrossChannels[T](5, 0.0001, 0.75).setName("norm1"))
     model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool1"))
