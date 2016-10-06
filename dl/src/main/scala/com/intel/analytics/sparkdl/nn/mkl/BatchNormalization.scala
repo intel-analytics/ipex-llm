@@ -106,7 +106,8 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
                                             eps,
                                             useWeight,
                                             useBias,
-                                            4)
+                                            4,
+                                            this.getName())
         case "Double" =>
           classPtr = MKL.BatchNormInitDouble(inputNumber,
                                              inputChannel,
@@ -115,11 +116,17 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
                                              eps,
                                              useBias,
                                              useBias,
-                                             4)
+                                             4,
+                                             this.getName())
         case _ =>
           throw new UnsupportedOperationException(s"Only Float/Double supported")
       }
       firstPass = false
+    }
+
+    if (initForward) {
+      this.updateMklOut()
+      this.initForward = false
     }
 
     ev.getType() match {
@@ -169,6 +176,11 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
 
     val gradOutputOffset = gradOutput.storageOffset() - 1
     val gradInputOffset = gradInput.storageOffset() - 1
+
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
+    }
 
     implicit def bool2int(b: Boolean) = if (b) 1 else 0
     ev.getType() match {

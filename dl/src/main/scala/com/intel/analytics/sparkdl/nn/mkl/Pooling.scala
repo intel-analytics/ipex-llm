@@ -36,7 +36,7 @@ class SpatialPooling[@specialized(Float, Double) T: ClassTag](
     val padHeight: Int = 0)(implicit ev: TensorNumeric[T])
     extends Module[T] {
 
-  implicit def bool2int(b: Boolean) : Int = if (b) 1 else 0
+  implicit def bool2int(b: Boolean): Int = if (b) 1 else 0
 
   var classPtr: Long = 0L
   private var firstPass = true
@@ -92,6 +92,11 @@ class SpatialPooling[@specialized(Float, Double) T: ClassTag](
       computeOut(inputWidth, padHeight, kernelWidth, strideWidth)
     val outputChannel = inputChannel
     val outputNumber = inputNumber
+
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
+    }
 
     ev.getType() match {
       case "Float" =>
@@ -158,7 +163,8 @@ class SpatialPooling[@specialized(Float, Double) T: ClassTag](
                                           padWidth,
                                           4,
                                           ceil_mode,
-                                          algorithm)
+                                          algorithm,
+                                          this.getName())
         case "Double" =>
           classPtr = MKL.PoolingInitDouble(inputNumber,
                                            inputChannel,
@@ -172,12 +178,18 @@ class SpatialPooling[@specialized(Float, Double) T: ClassTag](
                                            padWidth,
                                            4,
                                            ceil_mode,
-                                           algorithm)
+                                           algorithm,
+                                           this.getName())
         case _ =>
           throw new UnsupportedOperationException(s"Only Float/Double supported")
       }
 
       firstPass = false
+    }
+
+    if (initForward) {
+      this.updateMklOut()
+      this.initForward = false
     }
 
     ev.getType() match {

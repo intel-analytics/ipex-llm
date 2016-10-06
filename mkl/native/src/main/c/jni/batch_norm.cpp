@@ -14,7 +14,7 @@ class MKLBatchNorm : public MKLLayer<DType>
 
   void init(size_t inputNumber, size_t inputChannel, size_t inputHeight,
             size_t inputWidth, double eps, int useKernel, int useBias,
-            int dimension);
+            int dimension, const char *name);
 
   void updateOutput(DType *input, DType *output);
   void updateGradInput(DType *input, DType *gradOutput, DType *gradInput);
@@ -94,9 +94,10 @@ template <typename DType>
 void MKLBatchNorm<DType>::init(size_t inputNumber, size_t inputChannel,
                                size_t inputHeight, size_t inputWidth,
                                double eps, int useKernel, int useBias,
-                               int dimension)
+                               int dimension, const char *name)
 {
   this->dimension = dimension;
+  this->name.assign(name);
 
   inputSize[0] = inputWidth;
   inputSize[1] = inputHeight;
@@ -134,11 +135,16 @@ template <typename DType>
 void MKLBatchNorm<DType>::firstPass()
 {
   dnnError_t status = E_UNIMPLEMENTED;
-  dnnLayout_t layout;
+  dnnLayout_t layout = NULL;
 
-  status =
+  if (this->input->isUsePrev()) {
+    layout = this->input->layoutPrev;
+  }
+  if (!layout) {
+    status =
       dnnLayoutCreate<DType>(&layout, this->dimension, inputSize, inputStrides);
-  CHECK_EQ(status, E_SUCCESS);
+    CHECK_EQ(status, E_SUCCESS);
+  }
 
   // forward
   status = dnnBatchNormalizationCreateForward<DType>(&(this->forwardPrim), NULL,
@@ -173,7 +179,9 @@ void MKLBatchNorm<DType>::firstPass()
   this->isFirstPass = false;
 
   // delte the layout
-  dnnLayoutDelete<DType>(layout);
+  if (!this->input->isUsePrev()) {
+    dnnLayoutDelete<DType>(layout);
+  }
 }
 
 template <typename DType>
@@ -302,11 +310,13 @@ void MKLBatchNorm<DType>::updateGradInput(DType *input, DType *gradOutput,
 template <typename ArrayType, typename DType>
 jlong JNIBatchNormInit(JNIEnv *env, jclass thisClass, jint inputNumber,
                        jint inputChannel, jint inputHeight, jint inputWidth,
-                       double eps, jint useKernel, jint useBias, jint dimension)
+                       double eps, jint useKernel, jint useBias, jint dimension,
+                       jstring name)
 {
+  const char *jName = env->GetStringUTFChars(name, NULL);
   MKLBatchNorm<DType> *ptr = new MKLBatchNorm<DType>();
   ptr->init(inputNumber, inputChannel, inputHeight, inputWidth, eps, useKernel,
-            useBias, dimension);
+            useBias, dimension, jName);
 
   return reinterpret_cast<long>(ptr);
 }
@@ -377,11 +387,11 @@ void JNIBatchNormUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
   jlong JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_BatchNormInit##DType( \
       JNIEnv *env, jclass thisClass, jint inputNumber, jint inputChannel,      \
       jint inputHeight, jint inputWidth, jdouble eps, jint useKernel,          \
-      jint useBias, jint dimension)                                            \
+      jint useBias, jint dimension, jstring name)                                            \
   {                                                                            \
     return JNIBatchNormInit<JArrayType, JType>(                                \
         env, thisClass, inputNumber, inputChannel, inputHeight, inputWidth,    \
-        eps, useKernel, useBias, dimension);                                   \
+        eps, useKernel, useBias, dimension, name);                                   \
   }
 
 #define BatchNormForward(DType, JType, JArrayType)                            \

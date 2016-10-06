@@ -62,8 +62,8 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
 
   override def getClassPtr(): Long = classPtr
 
-  def getIm2ColTime() : Long = im2colTime
-  def getCol2ImgTime() : Long = col2imTime
+  def getIm2ColTime(): Long = im2colTime
+  def getCol2ImgTime(): Long = col2imTime
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
@@ -133,6 +133,10 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     val biasOffset = bias.storageOffset() - 1
     val kernelOffset = weight.storageOffset() - 1
 
+    if (!MKL.isMKLLoaded) {
+      println("UNLOADED MKL!!!!!!!!!!!!!!!")
+    }
+
     if (firstPass) {
       ev.getType() match {
         case "Double" =>
@@ -149,7 +153,8 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
                                                padHeight,
                                                padWidth,
                                                4,
-                                               groups)
+                                               groups,
+                                               this.getName())
         case "Float" =>
           classPtr = MKL.ConvolutionInitFloat(inputNumber,
                                               inputChannel,
@@ -164,11 +169,17 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
                                               padHeight,
                                               padWidth,
                                               4,
-                                              groups)
+                                              groups,
+                                              this.getName())
         case _ =>
           throw new UnsupportedOperationException(s"Only Float supported")
       }
       firstPass = false
+    }
+
+    if (initForward) {
+      this.updateMklOut()
+      this.initForward = false
     }
 
     implicit def bool2int(b: Boolean) = if (b) 1 else 0
@@ -240,6 +251,11 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     val inputOffset = input.storageOffset() - 1
     val biasOffset = bias.storageOffset() - 1
     val kernelOffset = weight.storageOffset() - 1
+
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
+    }
 
     implicit def bool2int(b: Boolean) = if (b) 1 else 0
     val start = System.nanoTime()
@@ -384,7 +400,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     gradBias == other.gradBias
   }
 
-  override def hashCode() : Int = {
+  override def hashCode(): Int = {
     val seed = 37
     var hash = super.hashCode()
     hash = hash * seed + nInputPlane.hashCode()

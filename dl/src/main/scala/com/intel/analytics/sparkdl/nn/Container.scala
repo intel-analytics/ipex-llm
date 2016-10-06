@@ -102,7 +102,6 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
     (result, offset, newIndexes)
   }
 
-<<<<<<< 3886cc3d68fddce3f3b4b9a31d7aea899dacbc0b
 //  override def initMkl() : Unit = {
 //    def containMkl(module : Module[T]) : Boolean = {
 //      return if (module.toString.startsWith("mkl.")) true else false
@@ -121,26 +120,5 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
 //      }
 //    }
 //  }
-=======
-  override def initMkl() : Unit = {
-    def containMkl(module : Module[T]) : Boolean = {
-      return if (module.toString.startsWith("mkl.")) true else false
-    }
 
-    for (i <- 0 until modules.length) {
-      if (containMkl(modules(i))) {
-        if (i >= 1 && containMkl(modules(i - 1))) {
-          ev.getType() match {
-            case "Float" => MKL.SetPrevFloat(modules(i - 1).getClassPtr(),
-                                             modules(i).getClassPtr())
-            case "Double" => MKL.SetPrevDouble(modules(i - 1).getClassPtr(),
-                                               modules(i).getClassPtr())
-          }
-        }
-      } else {
-        modules(i).initMkl()
-      }
-    }
-  }
->>>>>>> fix the codestyle of scala source code
 }
