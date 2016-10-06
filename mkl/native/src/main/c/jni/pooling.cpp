@@ -17,7 +17,8 @@ class MKLPooling : public MKLLayer<DType>
   void init(size_t inputNumber, size_t inputChannel, size_t inputHeight,
             size_t inputWidth, size_t kernelHeight, size_t kernelWidth,
             size_t strideHeight, size_t strideWidth, int padHeight,
-            int padWidth, int dimension, bool ceilMode, Algorithm pAl);
+            int padWidth, int dimension, bool ceilMode, Algorithm pAl,
+            const char *name);
 
   void updateOutput(DType *input, DType *output);
   void updateGradInput(DType *input, DType *gradOutput, DType *gradInput);
@@ -62,10 +63,12 @@ void MKLPooling<DType>::init(size_t inputNumber, size_t inputChannel,
                              size_t kernelHeight, size_t kernelWidth,
                              size_t strideHeight, size_t strideWidth,
                              int padHeight, int padWidth, int dimension,
-                             bool ceilMode, Algorithm pAl)
+                             bool ceilMode, Algorithm pAl, const char *name)
 {
   MKLLayer<DType>::init(inputNumber, inputChannel, inputHeight, inputWidth,
                         dimension);
+
+  this->name.assign(name);
 
   switch (pAl) {
     case MAX:
@@ -159,9 +162,14 @@ void MKLPooling<DType>::updateOutput(DType *input, DType *output)
 #endif
 
   if (this->isFirstPass) {
-    status = dnnLayoutCreate<DType>(&layout, this->dimension, this->inputSize,
-                                    this->inputStrides);
-    CHECK_EQ(status, E_SUCCESS);
+    if (this->input->isUsePrev()) {
+      layout = this->input->layoutPrev;
+    }
+    if (!layout) {
+      status = dnnLayoutCreate<DType>(&layout, this->dimension, this->inputSize,
+                                      this->inputStrides);
+      CHECK_EQ(status, E_SUCCESS);
+    }
 
     // forward
     status = dnnPoolingCreateForward<DType>(&(this->forwardPrim), NULL,
@@ -181,7 +189,9 @@ void MKLPooling<DType>::updateOutput(DType *input, DType *output)
 
     this->gradInput->createMklLayout(this->backwardPrim, dnnResourceDiffSrc);
     this->gradOutput->createMklLayout(this->backwardPrim, dnnResourceDiffDst);
-    dnnLayoutDelete<DType>(layout);
+    if (! this->input->isUsePrev()) {
+      dnnLayoutDelete<DType>(layout);
+    }
 
     // the first pass we only create the layout, primitive, which are only
     // created the first time and not change.
@@ -269,15 +279,17 @@ void MKLPooling<DType>::updateGradInput(DType *input, DType *gradOutput,
 }
 
 template <typename ArrayType, typename DType>
-jlong JNIPoolingInit(jint inputNumber, jint inputChannel, jint inputHeight,
+jlong JNIPoolingInit(JNIEnv *env, jclass thisClass, jint inputNumber, jint inputChannel, jint inputHeight,
                      jint inputWidth, jint kernelHeight, jint kernelWidth,
                      jint strideHeight, jint strideWidth, jint padHeight,
-                     jint padWidth, jint dimension, jint ceilMode, jint pAl)
+                     jint padWidth, jint dimension, jint ceilMode, jint pAl,
+                     jstring name)
 {
+  const char *jName = env->GetStringUTFChars(name, NULL);
   MKLPooling<DType> *pool = new MKLPooling<DType>();
   pool->init(inputNumber, inputChannel, inputHeight, inputWidth, kernelHeight,
              kernelWidth, strideHeight, strideWidth, padHeight, padWidth,
-             dimension, ceilMode, static_cast<Algorithm>(pAl));
+             dimension, ceilMode, static_cast<Algorithm>(pAl), jName);
 
   return reinterpret_cast<jlong>(pool);
 }
@@ -334,12 +346,13 @@ void JNIPoolingUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
       JNIEnv *env, jclass thisClass, jint inputNumber, jint inputChannel,     \
       jint inputHeight, jint inputWidth, jint kernelHeight, jint kernelWidth, \
       jint strideHeight, jint strideWidth, jint padHeight, jint padWidth,     \
-      jint dimension, jint ceilMode, jint pAl)                                \
+      jint dimension, jint ceilMode, jint pAl, jstring name)                                \
   {                                                                           \
-    return JNIPoolingInit<JArrayType, JType>(                                 \
+    return JNIPoolingInit<JArrayType, JType>(                                \
+        env, thisClass, \
         inputNumber, inputChannel, inputHeight, inputWidth, kernelHeight,     \
         kernelWidth, strideHeight, strideWidth, padHeight, padWidth,          \
-        dimension, ceilMode, pAl);                                            \
+        dimension, ceilMode, pAl, name);                                            \
   }
 
 #define PoolingForward(DType, JType, JArrayType)                               \

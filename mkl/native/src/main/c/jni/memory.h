@@ -31,7 +31,7 @@ class MKLData
   // TODO If the input always the same, we should not have a set method.
   void setUsrData(void *ptr);
   // this is only for re-using previous layer memory.
-  void setMklData(void *ptr);
+  void setMklData(void *ptr, bool isMkl);
 
   // get
   dnnLayout_t getUsrLayout();
@@ -79,6 +79,13 @@ class MKLData
                         size_t *toStrides);
 
   size_t getMklLayoutSize();
+  size_t getUsrLayoutSize();
+
+  dnnLayout_t layoutPrev;
+  void *dataPrev;
+
+  dnnLayout_t layoutNext;
+  void *dataNext;
 
  private:
   // call dnnAllocateBuffer to allocate a new block of mem
@@ -94,8 +101,13 @@ class MKLData
   dnnPrimitive_t mklToUsr;
   dnnPrimitive_t usrToMkl;
 
+  dnnPrimitive_t prevToCurr;
+  dnnPrimitive_t nextToCurr;
+
   bool useNext;
   bool usePrev;
+
+  bool isDataMkl;
 };
 
 template <typename DType>
@@ -112,6 +124,16 @@ MKLData<DType>::MKLData()
 
   useNext = false;
   usePrev = false;
+
+  isDataMkl = true;
+
+  prevToCurr = NULL;
+  layoutPrev = NULL;
+  dataPrev = NULL;
+
+  nextToCurr = NULL;
+  layoutNext = NULL;
+  dataNext = NULL;
 }
 
 template <typename DType>
@@ -125,15 +147,19 @@ MKLData<DType>::~MKLData()
     dnnLayoutDelete<DType>(layoutMkl);
     layoutMkl = NULL;
   }
-  if (dataMkl) {
+  if (dataMkl && isDataMkl) {
     dnnReleaseBuffer<DType>(dataMkl);
     dataMkl = NULL;
+  }
+
+  if (prevToCurr) {
+    dnnDelete<DType>(prevToCurr);
   }
 
   dnnDelete<DType>(mklToUsr);
   dnnDelete<DType>(usrToMkl);
 
-  LOG(DBG) << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+  //LOG(DBG) << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 }
 
 template <typename DType>
@@ -159,33 +185,60 @@ void MKLData<DType>::createConversion(bool doNotCreateConversion)
 {
   if (!layoutUsr && !layoutMkl) return;
 
-  if (isUsePrev() || isUseNext()) return;
+  /*
+  if (isUsePrev() || isUseNext()) {
+  }
+  */
+  // If we use previous output, we should not create the usr -> mkl conversion.
+  if (isUsePrev() && dataPrev && layoutPrev && !prevToCurr) {
+    dnnError_t status;
 
-  // this->willToUsr = willToUsr;
-  int isSame = dnnLayoutCompare<DType>(layoutUsr, layoutMkl);
-  // it not unnecessary to convert when the layout in scala and mkl is the same.
-  // But we shoud pay attention to that it's not sure layout must be the same
-  // when the dnnLayoutGetMemorySize is the same.
-  if (!isSame) {
-    if (!dataMkl) {
-      allocate();
+    if (!dnnLayoutCompare<DType>(layoutPrev, layoutMkl)) {
+      //LOG(DBG) << "CONVOLUTION SHOULD CONVERT";
+      //LOG(DBG) << "layoutPrev " << layoutPrev;
+      //LOG(DBG) << "layoutMkl " << layoutMkl;
+      if (!dataMkl) { allocate(); }
+      status = dnnConversionCreate<DType>(&prevToCurr, layoutPrev, layoutMkl);
+      CHECK_EQ(status, E_SUCCESS);
     }
+  } else if (isUseNext() && dataNext && layoutNext && !nextToCurr) {
+    dnnError_t status;
+    //LOG(DBG) << "CONVOLUTION GRAD SHOULD CONVERT";
+    //LOG(DBG) << "layoutNext " << layoutNext;
+    //LOG(DBG) << "layoutMkl " << layoutMkl;
 
-    if (!doNotCreateConversion) {
-      if (mklToUsr) {
-        dnnDelete<DType>(mklToUsr);
-        mklToUsr = NULL;
-      }
-      if (usrToMkl) {
-        dnnDelete<DType>(usrToMkl);
-        usrToMkl = NULL;
-      }
-      dnnError_t status;
-      status = dnnConversionCreate<DType>(&mklToUsr, layoutMkl, layoutUsr);
+    if (!dnnLayoutCompare<DType>(layoutNext, layoutMkl)) {
+      if (!dataMkl) { allocate(); }
+      status = dnnConversionCreate<DType>(&nextToCurr, layoutNext, layoutMkl);
       CHECK_EQ(status, E_SUCCESS);
+    }
+  } else {
+    // this->willToUsr = willToUsr;
+    int isSame = dnnLayoutCompare<DType>(layoutUsr, layoutMkl);
+    // it not unnecessary to convert when the layout in scala and mkl is the same.
+    // But we shoud pay attention to that it's not sure layout must be the same
+    // when the dnnLayoutGetMemorySize is the same.
+    if (!isSame) {
+      if (!dataMkl) {
+        allocate();
+      }
 
-      status = dnnConversionCreate<DType>(&usrToMkl, layoutUsr, layoutMkl);
-      CHECK_EQ(status, E_SUCCESS);
+      if (!doNotCreateConversion) {
+        if (mklToUsr) {
+          dnnDelete<DType>(mklToUsr);
+          mklToUsr = NULL;
+        }
+        if (usrToMkl) {
+          dnnDelete<DType>(usrToMkl);
+          usrToMkl = NULL;
+        }
+        dnnError_t status;
+        status = dnnConversionCreate<DType>(&mklToUsr, layoutMkl, layoutUsr);
+        CHECK_EQ(status, E_SUCCESS);
+
+        status = dnnConversionCreate<DType>(&usrToMkl, layoutUsr, layoutMkl);
+        CHECK_EQ(status, E_SUCCESS);
+      }
     }
   }
 }
@@ -194,6 +247,9 @@ template <typename DType>
 void MKLData<DType>::backToUsr()
 {
   // TODO we should put the if statement of isUseNex here.
+  //LOG(DBG) << "dataUsr = " << dataUsr;
+  //LOG(DBG) << "dataMkl = " << dataMkl;
+  //LOG(DBG) << "mklToUsr = " << mklToUsr;
   if (dataUsr && dataMkl) {
     convert(mklToUsr, dataMkl, dataUsr);
   }
@@ -232,13 +288,37 @@ void *MKLData<DType>::getConvertedData()
 {
   void *ret = dataUsr;
 
+  //LOG(DBG) << "------------------------------------------";
+
+  if (isUsePrev() && dataPrev && layoutPrev) {
+    if (prevToCurr) {
+      //LOG(DBG) << "START CONVERT PREV -> CURR";
+      convert(prevToCurr, dataPrev, dataMkl);
+      //LOG(DBG) << "END CONVERT PREV -> CURR";
+      return dataMkl;
+    } else {
+      return dataPrev;
+    }
+  }
+
+  //LOG(DBG) << "++++++";
+
+  if (isUseNext() && dataNext && layoutNext) {
+    if (nextToCurr) {
+      //LOG(DBG) << "START CONVERT NEXT -> CURR";
+      //LOG(DBG) << "dataMkl " << dataMkl;
+      convert(nextToCurr, dataNext, dataMkl);
+      return dataMkl;
+    } else {
+      return dataNext;
+    }
+  }
+
   // TODO something wrong
   // 1. The data of previous layer we use should be allocated by mkl
   // 2. Default it always convert the data.
   if (usrToMkl) {
-    if (!isUsePrev() && !isUseNext()) {
-      convert(usrToMkl, dataUsr, dataMkl);
-    }
+    convert(usrToMkl, dataUsr, dataMkl);
     ret = dataMkl;
   } else if (dataMkl) {
     // sometimes, we need create memory for mkl, like workspace in pooling.
@@ -265,6 +345,18 @@ template <typename DType>
 void MKLData<DType>::setUsrData(void *ptr)
 {
   dataUsr = ptr;
+}
+
+template <typename DType>
+void MKLData<DType>::setMklData(void *ptr, bool isMkl)
+{
+  isDataMkl = isMkl;
+  if (dataMkl && isDataMkl) {
+    dnnReleaseBuffer<DType>(dataMkl);
+    dataMkl = NULL;
+  }
+
+  dataMkl = ptr;
 }
 
 template <typename DType>

@@ -13,7 +13,7 @@ class MKLReLU : public MKLLayer<DType>
   ~MKLReLU();
 
   void init(size_t inputNumber, size_t inputChannel, size_t inputHeight,
-            size_t inputWidth, int dimension);
+            size_t inputWidth, int dimension, const char *name);
 
   void updateOutput(DType *input, DType *output);
   void updateGradInput(DType *input, DType *gradOutput, DType *gradInput);
@@ -45,9 +45,11 @@ MKLReLU<DType>::~MKLReLU()
 
 template <typename DType>
 void MKLReLU<DType>::init(size_t inputNumber, size_t inputChannel,
-                          size_t inputHeight, size_t inputWidth, int dimension)
+                          size_t inputHeight, size_t inputWidth, int dimension,
+                          const char *name)
 {
   this->dimension = dimension;
+  this->name.assign(name);
 
   inputSize[0] = inputWidth;
   inputSize[1] = inputHeight;
@@ -81,11 +83,17 @@ template <typename DType>
 void MKLReLU<DType>::firstPass()
 {
   dnnError_t status = E_UNIMPLEMENTED;
-  dnnLayout_t layout;
+  dnnLayout_t layout = NULL;
 
-  status =
+  if (this->input->isUsePrev()) {
+    layout = this->input->layoutPrev;
+  }
+  if (!layout) {
+    LOG(DBG) << "layoutPrev is NULL";
+    status =
       dnnLayoutCreate<DType>(&layout, this->dimension, inputSize, inputStrides);
-  CHECK_EQ(status, E_SUCCESS);
+    CHECK_EQ(status, E_SUCCESS);
+  } 
 
   // forward
   status = dnnReLUCreateForward<DType>(&(this->forwardPrim), NULL, layout,
@@ -103,6 +111,10 @@ void MKLReLU<DType>::firstPass()
 
   this->gradOutput->createMklLayout(this->backwardPrim, dnnResourceDiffDst);
   this->gradInput->createMklLayout(this->backwardPrim, dnnResourceDiffSrc);
+
+  if (! this->input->isUsePrev()) {
+    dnnLayoutDelete<DType>(layout);
+  }
 
   // we create the layout only at the first time
   this->isFirstPass = false;
@@ -192,10 +204,11 @@ void MKLReLU<DType>::updateGradInput(DType *input, DType *gradOutput,
 template <typename ArrayType, typename DType>
 jlong JNIReLUInit(JNIEnv *env, jclass thisClass, jint inputNumber,
                   jint inputChannel, jint inputHeight, jint inputWidth,
-                  jint dimension)
+                  jint dimension, jstring name)
 {
+  const char *jName = env->GetStringUTFChars(name, NULL);
   MKLReLU<DType> *ptr = new MKLReLU<DType>();
-  ptr->init(inputNumber, inputChannel, inputHeight, inputWidth, dimension);
+  ptr->init(inputNumber, inputChannel, inputHeight, inputWidth, dimension, jName);
 
   return reinterpret_cast<long>(ptr);
 }
@@ -243,11 +256,11 @@ void JNIReLUUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
   JNIEXPORT                                                               \
   jlong JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_ReLUInit##DType( \
       JNIEnv *env, jclass thisClass, jint inputNumber, jint inputChannel, \
-      jint inputHeight, jint inputWidth, jint dimension)                  \
+      jint inputHeight, jint inputWidth, jint dimension, jstring name)                  \
   {                                                                       \
     return JNIReLUInit<JArrayType, JType>(env, thisClass, inputNumber,    \
                                           inputChannel, inputHeight,      \
-                                          inputWidth, dimension);         \
+                                          inputWidth, dimension, name);         \
   }
 
 #define ReLUForward(DType, JType, JArrayType)                                  \

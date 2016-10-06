@@ -14,6 +14,8 @@ class MKLLayer
   ~MKLLayer();
 
   static void setPrev(long prev, long curr);
+  static void setNext(long next, long curr);
+  // virtual void setIPrev(int index, long curr);
 
   void init(size_t inputNumber, size_t inputChannel, size_t inputHeight,
             size_t inputWidth, size_t dimension);
@@ -21,6 +23,7 @@ class MKLLayer
   std::shared_ptr<MKLData<DType>> input, output, gradInput, gradOutput;
 
   int dimension;
+  std::string name;
 
   // parameters of pooling layer
   size_t inputSize[4];
@@ -92,22 +95,77 @@ void MKLLayer<DType>::setPrev(long prev, long curr)
   MKLLayer<DType> *prevLayer = reinterpret_cast<MKLLayer<DType> *>(prev);
   MKLLayer<DType> *currLayer = reinterpret_cast<MKLLayer<DType> *>(curr);
 
-  dnnLayout_t prevLayout = prevLayer->gradOutput->getMklLayout();
-  dnnLayout_t currLayout = currLayer->gradInput->getMklLayout();
+#if 0
+//  dnnLayout_t prevLayout = prevLayer->gradOutput->getMklLayout();
+//  dnnLayout_t currLayout = currLayer->gradInput->getMklLayout();
+//
+//  if (dnnLayoutCompare<DType>(prevLayout, currLayout)) {
+//    prevLayer->gradOutput->setUseNext(true);
+//    prevLayer->gradOutput->setMklData(currLayer->gradInput->getData(),
+//                                      currLayer->gradInput->getUsrData() !=
+//                                      currLayer->gradInput->getMklData());
+//    currLayer->gradInput->setUsePrev(true);
+//  } else {
+//    LOG(DBG) << "The layout is not the same";
+//  }
+#endif
 
-  if (dnnLayoutCompare<DType>(prevLayout, currLayout)) {
-    prevLayer->gradOutput->setUseNext(true);
-    prevLayer->gradOutput = currLayer->gradInput;
-    currLayer->gradInput->setUsePrev(true);
+  if (prevLayer && prevLayer->output->getMklData()) {
+    dnnLayout_t prevLayout = prevLayer->output->getMklLayout();
+    dnnLayout_t currLayout = currLayer->input->getMklLayout();
+
+    currLayer->input->layoutPrev = prevLayout;
+    void *dataMkl = prevLayer->output->getMklData();
+    currLayer->input->dataPrev = dataMkl;
+
+    currLayer->input->setUsePrev(true);
+    prevLayer->output->setUseNext(true);
   }
 
-  prevLayout = prevLayer->output->getMklLayout();
-  currLayout = currLayer->input->getMklLayout();
+#if 0
+//  prevLayout = prevLayer->gradOutput->getMklLayout();
+//  currLayout = currLayer->gradInput->getMklLayout();
+//
+//  if (currLayout)
+//    prevLayer->gradOutput->setMklLayout(currLayout);
+//  if (currLayer->gradInput->getMklData()) {
+//    void *dataMkl = currLayer->gradInput->getMklData();
+//    prevLayer->gradOutput->setMklData(data, true);
+//
+//    prevLayer->gradOutput->setUseNext(true);
+//    currLayer->gradInput->setUsePrev(true);
+//  }
+#endif
 
-  if (dnnLayoutCompare<DType>(prevLayout, currLayout)) {
-    prevLayer->output->setUseNext(true);
-    currLayer->input = prevLayer->output;
-    currLayer->input->setUsePrev(true);
+#if 0
+//  if (dnnLayoutCompare<DType>(prevLayout, currLayout)) {
+//    prevLayer->output->setUseNext(true);
+//    currLayer->input->setMklData(prevLayer->output->getData(),
+//                                 prevLayer->output->getUsrData() !=
+//                                 prevLayer->output->getMklData());
+//    currLayer->input->setUsePrev(true);
+//  } else {
+//    LOG(DBG) << "The layout is not the same";
+//  }
+#endif
+}
+
+template <typename DType>
+void MKLLayer<DType>::setNext(long next, long curr)
+{
+  MKLLayer<DType> *nextLayer = reinterpret_cast<MKLLayer<DType> *>(next);
+  MKLLayer<DType> *currLayer = reinterpret_cast<MKLLayer<DType> *>(curr);
+
+  //LOG(DBG) << "nextLayer = " << nextLayer;
+  //LOG(DBG) << "currLayer = " << currLayer;
+
+  if (nextLayer && nextLayer->gradInput->getMklData()) {
+    currLayer->gradOutput->layoutNext = nextLayer->gradInput->getMklLayout();
+    currLayer->gradOutput->dataNext = nextLayer->gradInput->getMklData();
+
+    currLayer->gradOutput->setUseNext(true);
+    nextLayer->gradInput->setUsePrev(true);
   }
 }
+
 #endif

@@ -118,6 +118,11 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag](
       firstPass = false
     }
 
+    if (initForward) {
+      this.updateMklOut()
+      this.initForward = false
+    }
+
     implicit def bool2int(b: Boolean) = if (b) 1 else 0
     ev.getType() match {
       case "Float" =>
@@ -161,6 +166,11 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag](
 
     val gradOutputOffset = gradOutput.storageOffset() - 1
     val gradInputOffset = gradInput.storageOffset() - 1
+
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
+    }
 
     ev.getType() match {
       case "Float" =>

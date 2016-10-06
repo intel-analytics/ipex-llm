@@ -94,9 +94,14 @@ void MKLLRN<DType>::firstPass()
   dnnError_t status = E_UNIMPLEMENTED;
   dnnLayout_t layout;
 
-  status =
+  if (this->input->isUsePrev()) {
+    layout = this->input->layoutPrev;
+  }
+  if (!layout) {
+    status =
       dnnLayoutCreate<DType>(&layout, this->dimension, inputSize, inputStrides);
-  CHECK_EQ(status, E_SUCCESS);
+    CHECK_EQ(status, E_SUCCESS);
+  }
 
   status = dnnLRNCreateForward<DType>(&(this->forwardPrim), NULL, layout, size,
                                       alpha, beta, k);
@@ -116,7 +121,9 @@ void MKLLRN<DType>::firstPass()
   this->workspace->createMklLayout(this->forwardPrim, dnnResourceWorkspace);
   this->workspace->createConversion(true);
 
-  dnnLayoutDelete<DType>(layout);
+  if (!this->input->isUsePrev()) {
+    dnnLayoutDelete<DType>(layout);
+  }
 
   // we create the layout only at the first time
   this->isFirstPass = false;
@@ -134,6 +141,9 @@ void MKLLRN<DType>::preExecute(DType *input)
 template <typename DType>
 void MKLLRN<DType>::updateOutput(DType *input, DType *output)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   if (this->isFirstPass) firstPass();
 
   // Because the address will change every time, so we need create conversion
@@ -175,6 +185,9 @@ template <typename DType>
 void MKLLRN<DType>::updateGradInput(DType *input, DType *gradOutput,
                                     DType *gradInput)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnError_t status;
   void *resources[dnnResourceNumber];
 
