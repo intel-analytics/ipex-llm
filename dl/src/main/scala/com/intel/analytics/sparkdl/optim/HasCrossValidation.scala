@@ -60,6 +60,7 @@ trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable wit
           coalesce(models.partitions.length, false).
           zipPartitions(models)((data, cacheModelIter) => {
             val localModel = cacheModelIter.next().model
+            localModel.evaluate()
             val localEvaluation = evaluationBroadcast.value
             Iterator.single(data.foldLeft((0, 0))((count, t) => {
               val result = localEvaluation(localModel.forward(t._1), t._2)

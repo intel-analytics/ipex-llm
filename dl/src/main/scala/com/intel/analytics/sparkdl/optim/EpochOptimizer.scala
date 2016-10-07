@@ -210,6 +210,7 @@ class WeightAvgEpochOptimizer[@specialized(Float, Double) T: ClassTag](
               var stacks = 0
               var tmp = System.nanoTime()
               localModule.zeroGradParameters()
+              localModule.training()
               metrics.add("init gradient time", System.nanoTime() - tmp)
               val batch = data.next()
               var recordsss = 0
