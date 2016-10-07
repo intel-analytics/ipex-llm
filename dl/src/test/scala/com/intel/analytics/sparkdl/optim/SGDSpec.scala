@@ -160,10 +160,10 @@ class SGDSpec extends FlatSpec with Matchers {
       if(e <= 3) {
         config[Double]("clr") should be(-1e-2)
         config[Double]("weightDecay") should be(2e-4)
-      } else if(e <= 7) {
+      } else if (e <= 7) {
         config[Double]("clr") should be(-5e-3)
         config[Double]("weightDecay") should be(2e-4)
-      } else if(e <= 10) {
+      } else if (e <= 10) {
         config[Double]("clr") should be(-1e-3)
         config[Double]("weightDecay") should be(0.0)
       }
