@@ -52,7 +52,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   private var gradWeightMM: Tensor[T] = null
   this.gradBias = Tensor[T](nOutputPlane)
 //  val fInput = Tensor[T]()
-  val fGradInput = Tensor[T]()
+  //val fGradInput = Tensor[T]()
   private val ones = Tensor[T]()
   private val onesBatch = Tensor[T]()
   private val onesBias = Tensor[T]()
@@ -177,13 +177,25 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
+    require(input.isContiguous())
     gradInput.resizeAs(input)
-    val fInput = input2finput(input)
 
-    fGradInput.resizeAs(fInput)
+    val fGradInput = Tensor[T]
+    val dimWidth = if (input.dim() == 3) 3 else 4
+    val dimHeight = if (input.dim() == 3) 2 else 3
+
+    val inputWidth = input.size(dimWidth)
+    val inputHeight = input.size(dimHeight)
+
+    val outputWidth = (inputWidth + 2 * padW - kW) / dW + 1
+    val outputHeight = (inputHeight + 2 * padH - kH) / dH + 1
+
+    require(outputWidth >= 1 && outputHeight >= 1, "output size is too small")
 
     if (input.nDimension() == 3) {
-      require(gradOutput.isContiguous())
+      require(input.size(1) == nInputPlane)
+      require(input.isContiguous())
+      fGradInput.resize(Array(nGroup, kW * kH * nInputPlane / nGroup, outputHeight * outputWidth))
       val contiguousGradOutput = gradOutput.contiguous()
       var g = 0
       while(g < nGroup) {
@@ -196,7 +208,10 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         g += 1
       }
     } else {
+      require(input.size(2) == nInputPlane)
       val batchSize = input.size(1)
+      fGradInput.resize(Array(batchSize, nGroup, kW * kH * nInputPlane / nGroup,
+        outputHeight * outputWidth))
       var i = 0
       while (i < batchSize) {
         val _i = i + 1
