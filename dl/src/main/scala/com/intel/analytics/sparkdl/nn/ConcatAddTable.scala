@@ -24,7 +24,6 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
     for ((module, i) <- modules.zipWithIndex) {
       updateBuffer(i, concatOutput, module.updateOutput(input))
     }
-
     concatOutput
   }
 
@@ -46,6 +45,7 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
 
 
   def concatTableUpdateGradInput(input: Tensor[T], gradOutputs: ArrayBuffer[Tensor[T]]): Tensor[T] = {
+
     for ((module, i) <- modules.zipWithIndex) {
       //val gradOutput = gradOutputs(i)
       val currentGradInput = module.updateGradInput(input, gradOutputs(i))
