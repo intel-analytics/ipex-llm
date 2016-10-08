@@ -51,7 +51,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
   private var gradWeightMM: Tensor[T] = null
   this.gradBias = Tensor[T](nOutputPlane)
-  val fInput = Tensor[T]()
+//  val fInput = Tensor[T]()
   val fGradInput = Tensor[T]()
   private val ones = Tensor[T]()
   private val onesBatch = Tensor[T]()
@@ -92,6 +92,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     require(input.dim() == 3 || input.dim() == 4, "Only support 3D or 4D(batch mode) input")
     require(input.isContiguous())
 
+    val fInput = Tensor[T]()
     if (weightMM == null) {
       weightMM = weight.view(nGroup, nOutputPlane / nGroup, nInputPlane * kH * kW / nGroup)
     }
@@ -177,6 +178,8 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
     gradInput.resizeAs(input)
+    val fInput = input2finput(input)
+
     fGradInput.resizeAs(fInput)
 
     if (input.nDimension() == 3) {
@@ -229,6 +232,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     scale: Double = 1.0): Unit = {
     require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
     val contiguousGradOutput = gradOutput.contiguous()
+    val fInput = input2finput(input)
 
     if (input.nDimension() == 3) {
       if (gradWeightMM == null) {
@@ -363,6 +367,108 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     (this, paramOffset - nOutputPlane * nInputPlane * kH * kW - nOutputPlane, indexes)
   }
 
+
+
+
+  private def input2finput(input: Tensor[T])(
+                                 implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(input.dim() == 3 || input.dim() == 4, "Only support 3D or 4D(batch mode) input")
+    require(input.isContiguous())
+
+    val fInput = Tensor[T]()
+
+    val dimWidth = if (input.dim() == 3) 3 else 4
+    val dimHeight = if (input.dim() == 3) 2 else 3
+
+    val inputWidth = input.size(dimWidth)
+    val inputHeight = input.size(dimHeight)
+
+    val outputWidth = (inputWidth + 2 * padW - kW) / dW + 1
+    val outputHeight = (inputHeight + 2 * padH - kH) / dH + 1
+
+    require(outputWidth >= 1 && outputHeight >= 1, "output size is too small")
+    if (input.dim() == 3) {
+      require(input.size(1) == nInputPlane)
+      require(input.isContiguous())
+      val contiguousInput = input.contiguous()
+      fInput.resize(Array(nGroup, kW * kH * nInputPlane / nGroup, outputHeight * outputWidth))
+      var g = 0
+      while (g < nGroup) {
+        copy2finput(
+          contiguousInput.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
+          fInput.select(1, g + 1),
+          kW, kH, dW, dH,
+          padW, padH,
+          nInputPlane / nGroup, inputWidth, inputHeight,
+          nOutputPlane / nGroup, outputWidth, outputHeight)
+        g += 1
+      }
+    } else {
+      require(input.size(2) == nInputPlane)
+      val batchSize = input.size(1)
+      fInput.resize(Array(batchSize, nGroup, kW * kH * nInputPlane / nGroup,
+        outputHeight * outputWidth))
+
+      if (results == null || results.length != batchSize) {
+        results = new Array[Future[Unit]](batchSize)
+      }
+
+      var i = 0
+      while (i < batchSize) {
+        val _i = i + 1
+        results(i) = Future {
+          val inputT = input.select(1, _i).contiguous()
+          val fInputT = fInput.select(1, _i)
+          var g = 0
+          while (g < nGroup) {
+            copy2finput(
+              inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
+              fInputT.select(1, g + 1),
+              kW, kH, dW, dH,
+              padW, padH,
+              nInputPlane / nGroup, inputWidth, inputHeight,
+              nOutputPlane / nGroup, outputWidth, outputHeight)
+            g += 1
+          }
+        }(Engine.getInstance())
+        i += 1
+      }
+
+      i = 0
+      while (i < results.length) {
+        Await.result(results(i), Duration.Inf)
+        i += 1
+      }
+    }
+
+    fInput
+  }
+
+  private def copy2finput(input: Tensor[T], fInput: Tensor[T],
+                                    kW: Int, kH: Int, dW: Int, dH: Int, padW: Int, padH: Int,
+                                    nInputPlane: Int, inputWidth: Int, inputHeight: Int,
+                                    nOutputPlane: Int, outputWidth: Int, outputHeight: Int)(
+                                     implicit ev: TensorNumeric[T]): Unit = {
+
+    ev.getType() match {
+      case "Double" =>
+        val before = System.nanoTime()
+        NNPrimitive.im2colDouble(fInput.asInstanceOf[Tensor[Double]],
+          input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH, nInputPlane,
+          inputWidth, inputHeight, outputWidth, outputHeight)
+        im2colTime += System.nanoTime() - before
+      case "Float" =>
+        val before = System.nanoTime()
+        NNPrimitive.im2colFloat(fInput.asInstanceOf[Tensor[Float]],
+          input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH, nInputPlane,
+          inputWidth, inputHeight, outputWidth, outputHeight)
+        im2colTime += System.nanoTime() - before
+      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+    }
+
+  }
+
+
   private def updateOutputFrame(input: Tensor[T], output: Tensor[T], weight: Tensor[T],
     bias: Tensor[T], fInput: Tensor[T],
     kW: Int, kH: Int, dW: Int, dH: Int, padW: Int, padH: Int,
@@ -389,6 +495,8 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     output2d.addmm(ev.fromType[Int](0), output2d, ev.fromType[Int](1), weight, fInput)
     output2d.addr(ev.fromType(1), bias, onesBias)
   }
+
+
 
   private def updateGradInputFrame(gradInput: Tensor[T], gradOutput: Tensor[T],
     weight: Tensor[T], fgradInput: Tensor[T], kW: Int, kH: Int, dW: Int, dH: Int,
