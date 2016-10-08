@@ -49,7 +49,9 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
       //val gradOutput = gradOutputs(i)
       val currentGradInput = module.updateGradInput(input, gradOutputs(i))
       if (i == 0) {
-        gradInput = gradInput.resizeAs(currentGradInput).copy(currentGradInput)
+        //gradInput = gradInput.resizeAs(currentGradInput).copy(currentGradInput)
+        gradInput.resizeAs(currentGradInput).copy(currentGradInput)
+
       } else {
         gradInput.add(currentGradInput)
       }
