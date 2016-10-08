@@ -53,17 +53,15 @@ class Linear[@specialized(Float, Double) T: ClassTag](
   override def reset(): Unit = {
     initMethod match {
       case Default =>
-        val stdv = 1.0 / math.sqrt(weight.size(2)) // todo, better to support uniform
+        val stdv = 1.0 / math.sqrt(weight.size(2))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
         bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
       case Xavier =>
         val fanIn = weight.size(2)
         val fanOut = weight.size(1)
-        val stdv = math.sqrt(3 / (fanIn + fanOut)) // todo, better to support uniform
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
+        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
+        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
-      case _ =>
-        throw new UnsupportedOperationException(s"Only Default / Xavier supported")
     }
   }
 
