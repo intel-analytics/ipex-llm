@@ -37,8 +37,8 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     Random.setSeed(1)
     val classNum: Int = 1000
-    val input = Tensor[Float](256, 3, 224, 224).apply1(e => Random.nextFloat())
-    val labels = Tensor[Float](256).apply1(e => Random.nextInt(classNum))
+    val input = Tensor[Double](256, 3, 224, 224).apply1(e => Random.nextDouble())
+    val labels = Tensor[Double](256).apply1(e => Random.nextInt(classNum))
 
     val seed = 100
     RNG.setSeed(seed)
@@ -191,22 +191,22 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
               return criterion.output, gradParameters
            end
 
-             for i = 1, 2, 1 do
+             for i = 1, 5, 1 do
               w, err = optim.sgd(feval, parameters, state)
-              print('i = ' .. i)
-              print(err)
+              --print(err)
              end
 
                 output=model.output
                 gradOutput=criterion.gradInput
-                gradInput = model.gradInputll
+                err = criterion.output
+                gradInput = model.gradInput
 
       """
 
-    //TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
-    //    "parameters_initial", "gradParameters_initial", "gradInput", "model"))
+    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
+        "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
-    //val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
+    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Float]]
 
     /*for (i <- 0 until parameters.nElement()) {
@@ -215,51 +215,63 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       }
     }*/
 
-    //val criterion = new ClassNLLCriterion[Double]()
     val (weights, grad) = model.getParameters()
     val criterion = new CrossEntropyCriterion[Float]()
 
     val state = T("learningRate" -> 1e-2, "momentum" -> 0.9, "weightDecay" -> 5e-4,
       "dampening" -> 0.0)
     val sgd = new SGD[Float]
-    model.zeroGradParameters()
-    for (i <- 1 to 2) {
-    val outputtest = model.forward(input)
-    val loss = criterion.forward(outputtest, labels)
-    val gradoutputtest = criterion.backward(outputtest, labels)
-    model.backward(input, gradoutputtest)
-      sgd.optimize(_ => (loss, grad), weights, state, state)
+
+    val floatInput = Tensor[Float](256, 3, 224, 224)
+    val floatLabels = Tensor[Float](256)
+    for (i <- 0 until floatInput.nElement()) {
+      floatInput.storage().array()(i) = input.storage().array()(i).toFloat
+    }
+    for (i <- 0 until floatLabels.nElement()) {
+      floatLabels.storage().array()(i) = labels.storage().array()(i).toFloat
     }
 
-    //val output = TH.map("output").asInstanceOf[Tensor[Double]]
-    val outputTest = model.forward(input)
+    model.zeroGradParameters()
+    for (i <- 1 to 4) {
+      val outputtest = model.forward(floatInput)
+      val loss = criterion.forward(outputtest, floatLabels)
+      val gradoutputtest = criterion.backward(outputtest, floatLabels)
+      model.backward(floatInput, gradoutputtest)
+      sgd.optimize(_ => (loss, grad), weights, state, state)
+      println("scala loss: i = " + i)
+      println(loss)
+    }
 
-   /*var abss = 0.0
+    val output = TH.map("output").asInstanceOf[Tensor[Double]]
+    val outputTest = model.forward(floatInput)
+
+    var abss = 0.0
     for (i <- 0 until outputTest.nElement()) {
       val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i))
       abss += tmp
     }
-    assert(abss < 1e-2)
-    println(s"outputAbs:$abss")
-*/
-    val errTest = criterion.forward(outputTest, labels)
+    //assert(abss < 1e-2)
+    println(s"this should be small: outputAbs:$abss")
+
+    val errTest = criterion.forward(outputTest, floatLabels)
     println(s"Test scala loss: $errTest")
-    //val err = TH.map("err").asInstanceOf[Double]
-    //println(s"${abs(errTest - err)}")
+    val err = TH.map("err").asInstanceOf[Double]
+    println(s"Test torch loss: $errTest")
+    println(s"${abs(errTest - err)}")
     //assert(abs(errTest - err) < 1.5e-6)
 
-    val gradOutputTest = criterion.backward(outputTest, labels)
-    //val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
-    //abss = 0.0
-    /*for (i <- 0 until gradOutputTest.nElement()) {
+    val gradOutputTest = criterion.backward(outputTest, floatLabels)
+    val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
+    abss = 0.0
+    for (i <- 0 until gradOutputTest.nElement()) {
       val tmp = abs(gradOutputTest.storage().array()(i) - gradOutput.storage().array()(i))
       abss += tmp
     }
     //assert(abss == 0.0)
-    assert(abss < 2e-6)
-    println(s"gradOutputTestAbs:$abss")
+    //assert(abss < 2e-6)
+    println(s"this should be small: gradOutputTestAbs:$abss")
 
-    val gradInput = model.backward(input, gradOutputTest)
+    val gradInput = model.backward(floatInput, gradOutputTest)
     val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
 
     abss = 0.0
@@ -267,9 +279,19 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       val tmp = abs(gradInputTorch.storage().array()(i) - gradInput.storage().array()(i))
       abss += tmp
     }
-    assert(abss < 2e-6)
-    println(s"gradInputTestAbs:$abss")
-*/
+    //assert(abss < 2e-6)
+    println(s"this should be small: gradInputTestAbs:$abss")
+
+    println(s"compare output between Lua and Scala:")
+    abss = 0.0
+    for (i <- 0 until outputTest.nElement()) {
+      val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i))
+      abss += tmp
+      val thOut = output.storage().array()(i)
+      val scOut = outputTest.storage().array()(i)
+      println(s"Lua = $thOut , Scala = $scOut")
+    }
+
 //    val (weights, grad) = model.getParameters()
 //    val modelTorch = TH.map("model").asInstanceOf[Module[Double]]
 //    val (weightsTorch, gradTorch) = modelTorch.getParameters()
@@ -339,7 +361,7 @@ local gradOutput1 = criterion:backward(output1, labels)
 model:backward(input, gradOutput1)
 return err1, gradParameters
 end
-for i = 1,5,1 do
+for i = 1,1, 1 do
   optim.sgd(feval, parameters, state)
 end
 local output = model:forward(input)
@@ -369,7 +391,7 @@ gradInput = model:backward(input, gradOutput)
       "dampening" -> 0.0)
     val sgd = new SGD[Double]
 
-    for (i <- 1 to 5) {
+    for (i <- 1 to 1) {
       model.zeroGradParameters()
       val outputTest = model.forward(input)
       val loss = criterion.forward(outputTest, labels)
