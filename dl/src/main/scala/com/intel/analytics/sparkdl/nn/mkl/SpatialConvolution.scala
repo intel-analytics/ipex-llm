@@ -71,10 +71,18 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   }
 
   override def reset(): Unit = {
-    val stdv = 1.0 / math.sqrt(kernelWidth * kernelHeight * nInputPlane)
-    // todo, better to support uniform
-    weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-    bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
+    initMethod match {
+      case Default =>
+        val stdv = 1.0 / math.sqrt(kernelWidth * kernelHeight * nInputPlane)
+        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
+        bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
+      case Xavier =>
+        val fanIn = nInputPlane * kernelHeight * kernelWidth
+        val fanOut = nOutputPlane * kernelHeight * kernelWidth
+        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
+        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+        bias.fill(ev.fromType(0))
+    }
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
