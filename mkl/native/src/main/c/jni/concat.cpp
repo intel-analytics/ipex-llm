@@ -54,6 +54,9 @@ void MKLConcat<DType>::init(int numConcats, int dimension, int *size)
   this->numConcats = numConcats;
   this->dimension  = dimension;
   this->numSplits  = new size_t[numConcats];
+  for (int i = 0; i < numConcats; i++) {
+    this->numSplits[i] = NULL;
+  }
 
   size_t inputSize[dimension];
   size_t inputStrides[dimension];
@@ -114,11 +117,15 @@ template <typename DType>
 void MKLConcat<DType>::firstPass()
 {
   dnnLayout_t *layouts = new dnnLayout_t[numConcats];
+  for (int i = 0; i < numConcats; i++) {
+    layouts[i] = NULL;
+  }
 
   for (int i = 0; i < numConcats; i++) {
     if (this->input[i]->isUsePrev()) {
       layouts[i] = this->input[i]->layoutPrev;
     }
+
     if (!layouts[i]) {
       layouts[i] = this->input[i]->getUsrLayout();
     }
