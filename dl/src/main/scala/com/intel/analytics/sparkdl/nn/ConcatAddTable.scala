@@ -11,16 +11,15 @@ import scala.reflect.ClassTag
   */
 class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends Container[T] {
-  //val concatOutput = ArrayBuffer[Tensor[T]]()
-  //val cAddGradInput = ArrayBuffer[Tensor[T]]()
+  val concatOutput = ArrayBuffer[Tensor[T]]()
+  val cAddGradInput = ArrayBuffer[Tensor[T]]()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] ={
-    val concatOutput = concatTableUpdateOutput(input)
+   concatTableUpdateOutput(input)
     cADDTableUpdateOutput(concatOutput)
   }
 
   def concatTableUpdateOutput(input: Tensor[T]): ArrayBuffer[Tensor[T]] = {
-    val concatOutput = ArrayBuffer[Tensor[T]]()
     for ((module, i) <- modules.zipWithIndex) {
       updateBuffer(i, concatOutput, module.updateOutput(input))
     }
@@ -45,14 +44,12 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
 
 
   def concatTableUpdateGradInput(input: Tensor[T], gradOutputs: ArrayBuffer[Tensor[T]]): Tensor[T] = {
-
     for ((module, i) <- modules.zipWithIndex) {
       //val gradOutput = gradOutputs(i)
       val currentGradInput = module.updateGradInput(input, gradOutputs(i))
       if (i == 0) {
         //gradInput = gradInput.resizeAs(currentGradInput).copy(currentGradInput)
         gradInput.resizeAs(currentGradInput).copy(currentGradInput)
-
       } else {
         gradInput.add(currentGradInput)
       }
@@ -69,7 +66,6 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
   }
 
   def cAddTableUpdateGradInput(input: ArrayBuffer[Tensor[T]], gradOutputs: Tensor[T]): ArrayBuffer[Tensor[T]] = {
-    val cAddGradInput = ArrayBuffer[Tensor[T]]()
     for ((in, i) <- input.zipWithIndex) {
       if (ip)
         updateBuffer(i, cAddGradInput, gradOutputs)
@@ -81,14 +77,11 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    val concatOutput = concatTableUpdateOutput(input)
-    val cAddGradInput = cAddTableUpdateGradInput(concatOutput, gradOutput)
+    cAddTableUpdateGradInput(concatOutput, gradOutput)
     concatTableUpdateGradInput(input, cAddGradInput)
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T], scale: Double): Unit = {
-    val concatOutput = concatTableUpdateOutput(input)
-    val cAddGradInput = cAddTableUpdateGradInput(concatOutput, gradOutput)
     for ((module, i) <- modules.zipWithIndex) {
       module.accGradParameters(input, cAddGradInput(i), scale)
     }
