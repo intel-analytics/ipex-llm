@@ -20,6 +20,8 @@ class MKLConcat : public MKLLayer<DType>
   void updateOutput(DType **input, DType *output);
   void updateGradInput(DType **gradInput, DType *gradOutput);
 
+  void setGroupPrev(long prev, long curr);
+
   // attention, we will override the four variables of MKLLayer
   vector<shared_ptr<MKLData<DType>>> input;
   vector<shared_ptr<MKLData<DType>>> gradInput;
@@ -76,6 +78,10 @@ void MKLConcat<DType>::init(int numConcats, int dimension, int *size)
     }
     offset += dimension;
 
+    //for (int j = 0; j < dimension; j++) {
+    //  LOG(DBG) << "inputSize[ " << j << "] = " << inputSize[j];
+    //}
+
     // we must be sure that inputSize[2] is channels, or it will be 1
     // if dimension == 2, which means there are only height and width. -> height
     // if dimension >  2, which means there is channel in the tensor, -> channel
@@ -110,7 +116,13 @@ void MKLConcat<DType>::firstPass()
   dnnLayout_t *layouts = new dnnLayout_t[numConcats];
 
   for (int i = 0; i < numConcats; i++) {
-    layouts[i] = this->input[i]->getUsrLayout();
+    if (this->input[i]->isUsePrev()) {
+      layouts[i] = this->input[i]->layoutPrev;
+    }
+    if (!layouts[i]) {
+      layouts[i] = this->input[i]->getUsrLayout();
+    }
+    // if (layouts[i] == NULL) LOG(DBG) << "layouts[" << i << "] = NULL";
   }
 
   dnnError_t status = E_UNIMPLEMENTED;
@@ -284,6 +296,49 @@ void JNIConcatUpdateGradInput(JNIEnv *env, jclass thisClass,
   env->ReleasePrimitiveArrayCritical(inputDiffOffset, jInputDiffOffset, 0);
 }
 
+template <typename ArrayType, typename DType>
+void JNIConcatSetPrev(JNIEnv *env, jclass thisClass, long prev, int index,
+                      long curr)
+{
+  MKLLayer<DType> *prevLayer = reinterpret_cast<MKLLayer<DType>*>(prev);
+  MKLConcat<DType> *currLayer = reinterpret_cast<MKLConcat<DType>*>(curr);
+
+  //LOG(DBG) << "prevLayer = " << prevLayer;
+  //LOG(DBG) << "currLayer = " << currLayer;
+  //LOG(DBG) << "currLayer->input.size() = " << currLayer->input.size();
+
+  if (prevLayer && currLayer && index < currLayer->input.size()) {
+    if (prevLayer->output->getMklLayout() && prevLayer->output->getMklData()) {
+      currLayer->input[index]->layoutPrev = prevLayer->output->getMklLayout();
+      currLayer->input[index]->dataPrev = prevLayer->output->getMklData();
+
+      currLayer->input[index]->setUsePrev(true);
+      // TODO we should **and** all the input
+      prevLayer->output->setUseNext(true);
+    }
+  }
+}
+
+template <typename ArrayType, typename DType>
+void JNIConcatSetNext(JNIEnv *env, jclass thisClass, long prev, int index,
+                      long curr)
+{
+  MKLLayer<DType> *prevLayer = reinterpret_cast<MKLLayer<DType>*>(prev);
+  MKLConcat<DType> *currLayer = reinterpret_cast<MKLConcat<DType>*>(curr);
+
+  if (prevLayer && currLayer && index < currLayer->gradInput.size()) {
+    if (currLayer->gradInput[index]->getMklLayout() &&
+        currLayer->gradInput[index]->getMklData()) {
+      prevLayer->gradOutput->layoutNext = currLayer->gradInput[index]->getMklLayout();
+      prevLayer->gradOutput->dataNext = currLayer->gradInput[index]->getMklData();
+
+      prevLayer->gradOutput->setUseNext(true);
+      currLayer->gradInput[index]->setUsePrev(true);
+    }
+  }
+}
+  
+
 // Macro
 #define ConcatInit(DType, JType, JArrayType)                                \
   JNIEXPORT                                                                 \
@@ -318,6 +373,21 @@ void JNIConcatUpdateGradInput(JNIEnv *env, jclass thisClass,
                                                 outputDiffOffset, classPtr);   \
   }
 
+#define ConcatPrev(DType, JType, JArrayType) \
+  JNIEXPORT \
+  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetConcatPrev##DType( \
+      JNIEnv *env, jclass thisClass, jlong prev, jint index, jlong curr) \
+  { \
+    JNIConcatSetPrev<JArrayType, JType>(env, thisClass, prev, index, curr);\
+  }
+
+#define ConcatNext(DType, JType, JArrayType) \
+  JNIEXPORT \
+  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetConcatNext##DType( \
+      JNIEnv *env, jclass thisClass, jlong prev, jint index, jlong curr) \
+  { \
+    JNIConcatSetNext<JArrayType, JType>(env, thisClass, prev, index, curr);\
+  }
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -326,11 +396,15 @@ extern "C" {
 ConcatInit(Double, jdouble, jdoubleArray);
 ConcatForward(Double, jdouble, jdoubleArray);
 ConcatBackward(Double, jdouble, jdoubleArray);
+ConcatPrev(Double, jdouble, jdoubleArray);
+ConcatNext(Double, jdouble, jdoubleArray);
 
 // Float
 ConcatInit(Float, jfloat, jfloatArray);
 ConcatForward(Float, jfloat, jfloatArray);
 ConcatBackward(Float, jfloat, jfloatArray);
+ConcatPrev(Float, jfloat, jfloatArray);
+ConcatNext(Float, jfloat, jfloatArray);
 
 #ifdef __cplusplus
 }

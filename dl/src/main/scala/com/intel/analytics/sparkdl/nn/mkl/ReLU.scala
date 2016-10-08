@@ -55,6 +55,11 @@ class ReLU[@specialized(Float, Double) T: ClassTag](ip: Boolean = false)(
     val inputNumber = if (input.dim() <= 3) 1 else input.size(input.dim() - 3)
     // TODO we may set input.size(input.dim() - 3) == 1 if input.dim() == 3
 
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
+    }
+
     implicit def bool2int(b: Boolean) = if (b) 1 else 0
     val start = System.nanoTime()
     ev.getType() match {
@@ -98,13 +103,18 @@ class ReLU[@specialized(Float, Double) T: ClassTag](ip: Boolean = false)(
     if (firstPass) {
       ev.getType() match {
         case "Float" =>
-          classPtr = MKL.ReLUInitFloat(inputNumber, inputChannel, inputHeight, inputWidth, 4);
+          classPtr = MKL.ReLUInitFloat(inputNumber, inputChannel, inputHeight, inputWidth, 4, this.getName());
         case "Double" =>
-          classPtr = MKL.ReLUInitDouble(inputNumber, inputChannel, inputHeight, inputWidth, 4);
+          classPtr = MKL.ReLUInitDouble(inputNumber, inputChannel, inputHeight, inputWidth, 4, this.getName());
         case _ =>
           throw new UnsupportedOperationException(s"Only Float/Double supported")
       }
       firstPass = false
+    }
+
+    if (initForward) {
+      this.updateMklOut()
+      this.initForward = false
     }
 
     implicit def bool2int(b: Boolean) = if (b) 1 else 0

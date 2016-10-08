@@ -36,11 +36,11 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
   private var gradouts: Array[Tensor[T]] = null
   private var gradOutputs: Array[Array[T]] = Array[Array[T]]()
 
-  var concatPtr : Long = 0L
+  var concatPtr: Long = 0L
   var concat1Pass: Boolean = true
 
-  var sumPtr : Long = 0L
-  var sum1Pass : Boolean = true
+  var sumPtr: Long = 0L
+  var sum1Pass: Boolean = true
 
   override def getClassPtr(): Long = concatPtr
 
@@ -49,7 +49,56 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    if (sum1Pass) {
+      val nDimension = input.nDimension()
+      val oneOutput: Array[Int] = new Array[Int](nDimension)
+
+      for (j <- 0 until nDimension) {
+        oneOutput(j) = input.size(nDimension - j)
+      }
+
+      ev.getType() match {
+        case "Double" =>
+          sumPtr = MKL.SumInitDouble(this.modules.length, nDimension, oneOutput)
+        case "Float" =>
+          sumPtr = MKL.SumInitFloat(this.modules.length, nDimension, oneOutput)
+        case _ =>
+          throw new UnsupportedOperationException(s"Only Float supported")
+      }
+      sum1Pass = false
+    }
+
+//    val sumOuts: Array[Tensor[T]] = new Array[Tensor[T]](this.modules.length)
+//    val sumOutputs: Array[Array[T]] = new Array[Array[T]](this.modules.length)
+//    val sumOutputsOffset: Array[Int] = new Array[Int](this.modules.length)
+//    for (i <- 0 until this.modules.length) {
+//      sumOuts(i) = Tensor[T]()
+//      sumOuts(i).resizeAs(input)
+//      sumOutputs(i) = sumOuts(i).storage().array()
+//      sumOutputsOffset(i) = sumOuts(i).storageOffset() - 1
+//    }
+//
+//    ev.getType() match {
+//      case "Double" =>
+//        MKL.SumForwardDouble(input.storage().array().asInstanceOf[Array[Double]],
+//                             input.storageOffset() - 1,
+//                             sumOutputs.asInstanceOf[Array[Array[Double]]],
+//                             sumOutputsOffset,
+//                             sumPtr)
+//      case "Float" =>
+//        MKL.SumForwardFloat(input.storage().array().asInstanceOf[Array[Float]],
+//                            input.storageOffset() - 1,
+//                            sumOutputs.asInstanceOf[Array[Array[Float]]],
+//                            sumOutputsOffset,
+//                            sumPtr)
+//    }
+
     // TODO should check the size of every tensor. It must be same as the first tensor
+    for (j <- 0 until this.modules.length) {
+      if (initForward) {
+        this.modules(j).setPrevPtr(this.getPrevPtr())
+      }
+    }
     val outs = new Array[Tensor[T]](this.modules.length)
     var i = 0
     while (i < this.modules.length) {
@@ -68,24 +117,35 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
     // TODO dimension here is different with "dimension" in MKL 2017
     // TODO check all dimensions of input tensors are same
     if (concat1Pass) {
+      // TODO we should not specify the dimension.
       val nDimension = outs(0).nDimension()
-      val inputSize: Array[Int] = new Array[Int](this.modules.length * nDimension)
+      val inputSize: Array[Int] = new Array[Int](this.modules.length * 4)
 
+      // TODO should make it simple
       for (i <- 0 until this.modules.length) {
         for (j <- 0 until nDimension) {
-          inputSize(i * nDimension + j) = outs(i).size(nDimension - j)
+          inputSize(i * 4 + 4 - nDimension + j) = outs(i).size(nDimension - j)
+        }
+
+        for (j <- 0 until (4 - nDimension)) {
+          inputSize(i * 4 + j) = 1
         }
       }
 
       ev.getType() match {
         case "Double" =>
-          concatPtr = MKL.ConcatInitDouble(this.modules.length, nDimension, inputSize)
+          concatPtr = MKL.ConcatInitDouble(this.modules.length, 4, inputSize)
         case "Float" =>
-          concatPtr = MKL.ConcatInitFloat(this.modules.length, nDimension, inputSize)
+          concatPtr = MKL.ConcatInitFloat(this.modules.length, 4, inputSize)
         case _ =>
           throw new UnsupportedOperationException(s"Only Float supported")
       }
       concat1Pass = false
+    }
+
+    if (this.initForward) {
+      this.updateMklOut()
+      this.initForward = false
     }
 
     // get all of the tensors in outs to float/double array
@@ -95,7 +155,6 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
       inputs(i) = outs(i).storage().array()
       inputsOffset(i) = outs(i).storageOffset() - 1
     }
-
 
     ev.getType() match {
       case "Double" =>
@@ -144,7 +203,7 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     // TODO call mkl native code to update gradient input
-    var totalSize : Long = 0L
+    var totalSize: Long = 0L
     this.gradInput.resizeAs(input)
     if (gradouts == null || gradouts.length != this.modules.length) {
       gradouts = new Array[Tensor[T]](this.modules.length)
@@ -158,6 +217,16 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
       gradOutputsOffset(i) = gradouts(i).storageOffset() - 1
     }
 
+    for (i <- 0 until this.modules.length) {
+      this.modules(i).setNextPtr(this.modules(i).getOutputPtr())
+    }
+
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
+    }
+
+    val concatStart = System.nanoTime()
     ev.getType() match {
       case "Double" =>
         MKL.ConcatBackwardDouble(gradOutputs.asInstanceOf[Array[Array[Double]]],
@@ -174,8 +243,9 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
       case _ =>
         throw new UnsupportedOperationException(s"Only Float / Double is supported")
     }
+    val concatEnd = System.nanoTime()
 
-    val tmpGradInputs : Array[Tensor[T]] = new Array[Tensor[T]](this.modules.length)
+    val tmpGradInputs: Array[Tensor[T]] = new Array[Tensor[T]](this.modules.length)
 
     for (i <- 0 until this.modules.length) {
       val currentOutput = this.modules(i).output
@@ -194,6 +264,7 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
     //  }
     //}
 
+    val sumStart = System.nanoTime()
     val subGradInputs: Array[Array[T]] = new Array[Array[T]](this.modules.length)
     val subGradInputsOffset: Array[Int] = new Array[Int](this.modules.length)
     for (i <- 0 until this.modules.length) {
@@ -201,43 +272,25 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
       subGradInputsOffset(i) = tmpGradInputs(i).storageOffset() - 1
     }
 
-    if (sum1Pass) {
-      val nDimension = tmpGradInputs(0).nDimension()
-      val subGradInputSize: Array[Int] = new Array[Int](this.modules.length * nDimension)
-
-      for (i <- 0 until this.modules.length) {
-        for (j <- 0 until nDimension) {
-          subGradInputSize(i * nDimension + j) = tmpGradInputs(i).size(nDimension - j)
-        }
-      }
-
-      ev.getType() match {
-        case "Double" =>
-          sumPtr = MKL.SumInitDouble(this.modules.length, nDimension, subGradInputSize)
-        case "Float" =>
-          sumPtr = MKL.SumInitFloat(this.modules.length, nDimension, subGradInputSize)
-        case _ =>
-          throw new UnsupportedOperationException(s"Only Float supported")
-      }
-      sum1Pass = false
-    }
-
     ev.getType() match {
       case "Double" =>
-        MKL.SumForwardDouble(subGradInputs.asInstanceOf[Array[Array[Double]]],
-                             subGradInputsOffset,
-                             gradInput.storage().array().asInstanceOf[Array[Double]],
+        MKL.SumBackwardDouble(gradInput.storage().array().asInstanceOf[Array[Double]],
                              gradInput.storageOffset() - 1,
+                             subGradInputs.asInstanceOf[Array[Array[Double]]],
+                             subGradInputsOffset,
                              sumPtr)
       case "Float" =>
-        MKL.SumForwardFloat(subGradInputs.asInstanceOf[Array[Array[Float]]],
-                            subGradInputsOffset,
-                            gradInput.storage().array().asInstanceOf[Array[Float]],
+        MKL.SumBackwardFloat(gradInput.storage().array().asInstanceOf[Array[Float]],
                             gradInput.storageOffset() - 1,
+                            subGradInputs.asInstanceOf[Array[Array[Float]]],
+                            subGradInputsOffset,
                             sumPtr)
       case _ =>
         throw new UnsupportedOperationException(s"Only Float supported")
     }
+    val sumEnd = System.nanoTime()
+    // println("Concat costs " + (concatEnd - concatStart) / 1e6)
+    // println("Sum costs " + (sumEnd - sumStart) / 1e6)
 
     this.gradInput
   }
@@ -301,5 +354,108 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
           model.setLine(line + tab + ext)
         }}"
     }.mkString(line)}$line$tab${last}output$line$tab}"
+  }
+
+  override def initMkl(prevPtr : Long): Unit = {
+    if (prevPtr != 0) {
+      println("I WANT TO SET THE PREV LAYOUT IN CONCAT")
+//      ev.getType() match {
+//        case "Double" =>
+//          MKL.SetPrevDouble(prevPtr, this.sumPtr)
+//        case "Float" =>
+//          MKL.SetPrevFloat(prevPtr, this.sumPtr)
+//      }
+
+//      for (i <- 0 until this.modules.length) {
+//        if (this.modules(i).getClassPtr() != 0) {
+//          ev.getType() match {
+//            case "Double" =>
+//              MKL.SetIPrevDouble(this.sumPtr, i, this.modules(i).getInputPtr())
+//            case "Float" =>
+//              MKL.SetIPrevFloat(this.sumPtr, i, this.modules(i).getInputPtr())
+//            case _ => throw new UnsupportedOperationException(s"Only support Float/Double")
+//          }
+//        }
+//      }
+
+      for (i <- 0 until this.modules.length) {
+        ev.getType() match {
+          case "Double" =>
+            this.modules(i).initMkl(this.modules(i).getInputPtr())
+          case "Float" =>
+            this.modules(i).initMkl(this.modules(i).getInputPtr())
+          case _ => throw new UnsupportedOperationException(s"Only support Float/Double")
+        }
+      }
+    }
+  }
+
+  // TODO we should use the next
+  override def getInputPtr(): Long = sumPtr
+
+  override def getOutputPtr(): Long = concatPtr
+
+  override def updateMklOut(): Unit = {
+    // Set the input of modules(i)
+    for (i <- 0 until this.modules.length) {
+      ev.getType() match {
+        case "Double" =>
+          MKL.SetPrevDouble(this.getPrevPtr(), this.getInputPtr())
+        case "Float" =>
+          MKL.SetPrevFloat(this.getPrevPtr(), this.getInputPtr())
+        case _ =>
+          throw new UnsupportedOperationException(s"Only support Float/Double")
+      }
+    }
+    // Set the input of all concats.
+    // println("CONCAT " + this.getName() + " " + this.concatPtr.toHexString)
+    for (i <- 0 until this.modules.length) {
+      println("prev = " + this.modules(i).getOutputPtr().toHexString + " " + "CONCAT \tcurrent = " + this.concatPtr.toHexString)
+      ev.getType() match {
+        case "Double" =>
+          MKL.SetConcatPrevDouble(this.modules(i).getOutputPtr(), i, this.concatPtr)
+        case "Float" =>
+          MKL.SetConcatPrevFloat(this.modules(i).getOutputPtr(), i, this.concatPtr)
+        case _ =>
+          throw new UnsupportedOperationException(s"Only support Float/Double")
+      }
+    }
+  }
+
+  override def updateMklGradInput(): Unit = {
+    for (i <- 0 until this.modules.length) {
+      ev.getType() match {
+        case "Double" =>
+          MKL.SetNextDouble(this.getNextPtr(), this.getOutputPtr())
+        case "Float" =>
+          MKL.SetNextFloat(this.getNextPtr(), this.getOutputPtr())
+        case _ =>
+          throw new UnsupportedOperationException(s"Only support Float/Double")
+      }
+    }
+
+    // for concat
+    for (i <- 0 until this.modules.length) {
+      ev.getType() match {
+        case "Double" =>
+          MKL.SetConcatNextDouble(this.modules(i).getOutputPtr(), i, this.concatPtr)
+        case "Float" =>
+          MKL.SetConcatNextFloat(this.modules(i).getOutputPtr(), i, this.concatPtr)
+        case _ =>
+          throw new UnsupportedOperationException(s"Only support Float/Double")
+      }
+    }
+
+    // for sum
+    for (i <- 0 until this.modules.length) {
+      ev.getType() match {
+        case "Double" =>
+          MKL.SetSumNextDouble(this.modules(i).getInputPtr(), i, this.sumPtr)
+        case "Float" =>
+          MKL.SetSumNextFloat(this.modules(i).getInputPtr(), i, this.sumPtr)
+        case _ =>
+          throw new UnsupportedOperationException(s"Only support Float/Double")
+      }
+    }
   }
 }
