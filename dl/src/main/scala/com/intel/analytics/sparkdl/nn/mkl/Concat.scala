@@ -48,7 +48,12 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
     return size
   }
 
+  override def reset(): Unit = {
+    require(this.modules.length <= 4 && this.modules.length >= 1)
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    require(this.modules.length <= 4 && this.modules.length >= 1)
     if (sum1Pass) {
       val nDimension = input.nDimension()
       val oneOutput: Array[Int] = new Array[Int](nDimension)
@@ -354,40 +359,6 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
           model.setLine(line + tab + ext)
         }}"
     }.mkString(line)}$line$tab${last}output$line$tab}"
-  }
-
-  override def initMkl(prevPtr : Long): Unit = {
-    if (prevPtr != 0) {
-      println("I WANT TO SET THE PREV LAYOUT IN CONCAT")
-//      ev.getType() match {
-//        case "Double" =>
-//          MKL.SetPrevDouble(prevPtr, this.sumPtr)
-//        case "Float" =>
-//          MKL.SetPrevFloat(prevPtr, this.sumPtr)
-//      }
-
-//      for (i <- 0 until this.modules.length) {
-//        if (this.modules(i).getClassPtr() != 0) {
-//          ev.getType() match {
-//            case "Double" =>
-//              MKL.SetIPrevDouble(this.sumPtr, i, this.modules(i).getInputPtr())
-//            case "Float" =>
-//              MKL.SetIPrevFloat(this.sumPtr, i, this.modules(i).getInputPtr())
-//            case _ => throw new UnsupportedOperationException(s"Only support Float/Double")
-//          }
-//        }
-//      }
-
-      for (i <- 0 until this.modules.length) {
-        ev.getType() match {
-          case "Double" =>
-            this.modules(i).initMkl(this.modules(i).getInputPtr())
-          case "Float" =>
-            this.modules(i).initMkl(this.modules(i).getInputPtr())
-          case _ => throw new UnsupportedOperationException(s"Only support Float/Double")
-        }
-      }
-    }
   }
 
   // TODO we should use the next
