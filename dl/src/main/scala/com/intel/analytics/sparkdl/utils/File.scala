@@ -402,7 +402,7 @@ object File {
     val padW = source.padW
     val padH = source.padH
     val gradBias = source.gradBias
-    val fGradInput = source.fGradInput
+//    val fGradInput = source.fGradInput
 //    val fInput = source.fInput
     val bias = source.bias
     val weight = source.weight
@@ -418,7 +418,7 @@ object File {
     table.put("dH", dH)
     table.put("padW", padW)
     table.put("padH", padH)
-    table.put("fGradInput", fGradInput)
+//    table.put("fGradInput", fGradInput)
 //    table.put("fInput", fInput)
     table.put("gradBias", gradBias)
     table.put("output", output)
@@ -1125,10 +1125,10 @@ object File {
     result.bias.copy(bias)
     result.gradWeight.resizeAs(gradWeight)
     result.gradWeight.copy(gradWeight)
-    if (fgradInput != null) {
+/*    if (fgradInput != null) {
       result.fGradInput.resizeAs(fgradInput)
       result.fGradInput.copy(fgradInput)
-    }
+    }*/
     result
   }
 
