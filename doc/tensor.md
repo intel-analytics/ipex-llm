@@ -193,17 +193,124 @@ Copy the give tensor value to the select subset of the current tensor by the giv
 
 Write the value to the value indexed by the given index array.
 
-###  update(t: Table, value: T): Unit ###
+###  update(t: Table, value: T): Unit  ###
 
 Fill the select subset of the current tensor with the given value. The element of the given table can be an Int or another Table. An Int means select on current dimension; A tablemeans narrow on current dimension, the table should has two elements, of which the first is start index and the second is the end index. An empty table is equals to Table(1, size_of_current_dimension) If the table length is less than the tensor dimension, the missing dimension is applied by an empty table.
 
-###  update(t: Table, src: Tensor[T]): Unit ###
+###  update(t: Table, src: Tensor[T]): Unit  ###
 
 Copy the given tensor value to the select subset of the current tensor The element of the given table can be an Int or another Table. An Int means select on current dimension; A table means narrow on current dimension, the table should has two elements, of which the first is start index and the second is the end index. An empty table is equals to Table(1, size_of_current_dimension) If the table length is less than the tensor dimension, the missing dimension is applied by an empty table.
 
-###  update(filter: T => Boolean, value: T): Unit ###
+###  update(filter: T => Boolean, value: T): Unit  ###
 
 Update the value meeting the filter criteria with the give value.
 
 <a name="sparkdl.Tensor.isContiguous"></a>
-###  isContiguous(): Boolean ###
+###  isContiguous(): Boolean  ###
+
+Check if the tensor is contiguous on the storage
+
+<a name="sparkdl.Tensor.contiguous"></a>
+###  contiguous(): Tensor[T]  ###
+
+Get a contiguous tensor from current tensor
+
+<a name="sparkdl.Tensor.isSameSizeAs"></a>
+###  isSameSizeAs(other: Tensor[_]): Boolean  ###
+
+Check if the size is same with the give tensor
+
+<a name="sparkdl.Tensor.clone"></a>
+###  clone(): Tensor[T]  ###
+
+Get a new tensor with same value and different storage
+
+<a name="sparkdl.Tensor.resizeAs"></a>
+###  resizeAs(src: Tensor[_]): Tensor[T]  ###
+
+Resize the current tensor to the same size of the given tensor. It will still use the same storage if the storage is sufficient for the new size.
+
+<a name="sparkdl.Tensor.resize"></a>
+###  resize(d1 : Int [,d2 : Int [,d3 : Int [,d4 : Int [,d5 : Int ]]]]): Tensor[T]  ###
+
+Resize the current tensor to the give shape
+
+###  resize(sizes: Array[Int], strides: Array[Int] = null): Tensor[T]  ###
+
+Resize the current tensor to the give shape
+
+<a name="sparkdl.Tensor.nElement"></a>
+###  nElement(): Int  ###
+
+Element number
+
+<a name="sparkdl.Tensor.select"></a>
+###  select(dim: Int, index: Int): Tensor[T]  ###
+
+Remove the dim-th dimension and return the subset part.
+
+<a name="sparkdl.Tensor.storage"></a>
+###  storage(): Storage[T]  ###
+
+Get the storage.
+
+<a name="sparkdl.Tensor.storageOffset"></a>
+###  storageOffset(): Int  ###
+
+Return tensor offset on the storage, count from 1
+
+<a name="sparkdl.Tensor.set"></a>
+###  set(other: Tensor[T]): Tensor[T]  ###
+
+The Tensor is now going to "view" the same storage as the given tensor. As the result, any modification in the elements of the Tensor will have an impact on the elements of the given tensor, and vice-versa. This is an efficient method, as there is no memory copy!
+
+###  set(storage: Storage[T], storageOffset: Int = 1, sizes: Array[Int] = null, strides: Array[Int] = null): Tensor[T]  ###
+
+The Tensor is now going to "view" the given storage, starting at position storageOffset (>=1) with the given dimension sizes and the optional given strides. As the result, any modification in the elements of the Storage will have a impact on the elements of the Tensor, and vice-versa. This is an efficient method, as there is no memory copy!
+If only storage is provided, the whole storage will be viewed as a 1D Tensor.
+
+<a name="sparkdl.Tensor.narrow"></a>
+###  narrow(dim: Int, index: Int, size: Int): Tensor[T]  ###
+
+Get a subset of the tensor on dim-th dimension. The offset is given by index, and length is give by size. The important difference with select is that it will not reduce the dimension number. For Instance
+tensor =
+  1 2 3
+  4 5 6
+tensor.narrow(1, 1, 1) is
+  [1 2 3]
+tensor.narrow(2, 2, 3) is
+  2 3
+  5 6
+
+<a name="sparkdl.Tensor.copy"></a>
+###  copy(other: Tensor[T]): Tensor[T]  ###
+
+Copy the value of the given tensor to the current. They should have same size. It will use the old storage
+
+<a name="sparkdl.Tensor.apply1"></a>
+###  apply1(func: T => T): Tensor[T]  ###
+
+Apply a function to each element of the tensor and modified it value if it return a double.
+
+<a name="sparkdl.Tensor.map"></a>
+###  map(other: Tensor[T], func: (T, T) => T): Tensor[T]  ###
+
+Map value of another tensor to corresponding value of current tensor and apply function on the two value and change the value of the current tensor. The another tensor should has the same size of the current tensor.
+
+<a name="sparkdl.Tensor.squeeze"></a>
+###  squeeze(): Tensor[T]  ###
+
+Removes all singleton dimensions of the tensor
+
+###  squeeze(dim: Int): Tensor[T]  ###
+
+Removes given dimensions of the tensor if it's singleton
+
+<a name="sparkdl.Tensor.squeeze"></a>
+###  view(sizes: Int*): Tensor[T]  ###
+
+Return a new tensor with specified sizes. The input tensor must be contiguous, and the elements number in the given sizes must be equal to the current tensor
+
+###  view(sizes: Array[Int]): Tensor[T]  ###
+
+Return a new tensor with specified sizes. The input tensor must be contiguous, and the elements number in the given sizes must be equal to the current tensor

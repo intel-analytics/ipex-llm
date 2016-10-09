@@ -26,6 +26,10 @@ import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
 
 import scala.reflect.ClassTag
 
+/**
+ *
+ * @tparam T
+ */
 trait Tensor[T] extends Serializable with TensorMath[T] {
   /**
    * Dimension number of the tensor. For empty tensor, its dimension number is 0
@@ -145,6 +149,12 @@ trait Tensor[T] extends Serializable with TensorMath[T] {
    * @return the value on the given index
    */
   def apply(indexes: Array[Int]): T
+
+  /**
+   *
+   * @param d1
+   * @return
+   */
 
   def valueAt(d1: Int): T
 
@@ -454,6 +464,11 @@ trait Tensor[T] extends Serializable with TensorMath[T] {
 
   def expandAs(template: Tensor[T]): Tensor[T]
 
+  /**
+   *
+   * @param sizes
+   * @return
+   */
   def expand(sizes: Array[Int]): Tensor[T]
 
   /**
