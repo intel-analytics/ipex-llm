@@ -19,14 +19,18 @@ package com.intel.analytics.sparkdl.models
 import com.intel.analytics.sparkdl.utils.Table
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim.SGD
+import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.torch.TH
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import scala.collection.immutable
 import scala.math._
 import scala.util.Random
+import scala.collection.mutable.Map
+import scala.reflect.ClassTag
 
 class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "ResNet double" should "generate correct output" in {
@@ -167,7 +171,6 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         model:add(nn.Linear(nFeatures, nClasses))
         --model:add(nn.LogSoftMax())
 
-
         local parameters, gradParameters = model:getParameters()
                 --model:zeroGradParameters()
                 parameters_initial = parameters : clone()
@@ -203,7 +206,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
       """
 
-    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
+    TH.runNM(code, immutable.Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
         "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
     val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
@@ -214,6 +217,8 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         println(s"${parameters.storage().array()(i)} ${parameterTorch.storage().array()(i)}")
       }
     }*/
+
+    shareGradInput(model)
 
     val (weights, grad) = model.getParameters()
     val criterion = new CrossEntropyCriterion[Float]()
@@ -418,4 +423,33 @@ gradInput = model:backward(input, gradOutput)
     gradInput should be(gradInputTorch)
   }
   */
+
+
+  def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
+    (implicit ev: TensorNumeric[T]): Unit = {
+    def sharingKey(m: Module[T]) =
+      if (m.getName()!= null) m.getName() else m.getClass.getName
+
+    val cache = Map[Any, Storage[T]]()
+    model.mapModules(m => {
+      val moduleType = m.getClass.getName
+      if (!moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatAddTable")) {
+        val key = sharingKey(m)
+        if (!cache.contains(key)){
+          cache.put(key, Storage(Array(ev.fromType[Int](1))))
+        }
+
+        m.gradInput = Tensor[T](cache.get(key).get)
+      }
+    })
+
+    for ((m, i) <- model
+      .findModules("com.intel.analytics.sparkdl.nn.ConcatAddTable")
+      .zipWithIndex){
+      if (!cache.contains(i % 2)) {
+        cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
+      }
+      m.gradInput = Tensor[T](cache.get(i % 2).get)
+    }
+  }
 }
