@@ -227,8 +227,8 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       "dampening" -> 0.0)
     val sgd = new SGD[Float]
 
-    val floatInput = Tensor[Float](256, 3, 224, 224)
-    val floatLabels = Tensor[Float](256)
+    val floatInput = Tensor[Float](8, 3, 224, 224)
+    val floatLabels = Tensor[Float](8)
     for (i <- 0 until floatInput.nElement()) {
       floatInput.storage().array()(i) = input.storage().array()(i).toFloat
     }
@@ -438,7 +438,7 @@ gradInput = model:backward(input, gradOutput)
           cache.put(key, Storage(Array(ev.fromType[Int](1))))
         }
 
-        m.gradInput = Tensor[T](cache.get(key).get)
+        m.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
       }
     })
 
@@ -448,7 +448,7 @@ gradInput = model:backward(input, gradOutput)
       if (!cache.contains(i % 2)) {
         cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
       }
-      m.gradInput = Tensor[T](cache.get(i % 2).get)
+      m.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
     }
   }
 }

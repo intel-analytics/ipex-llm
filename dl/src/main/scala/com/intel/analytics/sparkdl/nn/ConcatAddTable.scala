@@ -95,7 +95,7 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
     val ext = "  |    "
     val extlast = "       "
     val last = "   ... -> "
-    s"nn.Concat {$line${tab}input$line${
+    s"nn.ConcatAddTable {$line${tab}input$line${
       modules.zipWithIndex
         .map { case (model: Module[T], index: Int) => {
           s"$tab$next(${index + 1}): ${
