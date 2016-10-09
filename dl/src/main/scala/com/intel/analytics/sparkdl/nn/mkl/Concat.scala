@@ -182,6 +182,8 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
   }
 
   // TODO should we implement this function, what's the difference from @backward
+  // TODO this function must be implemented, and then the testcases in mkl should be changed,
+  //      from backward -> updateGradInput.
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
 //    this.gradInput.resizeAs(input)
 //
