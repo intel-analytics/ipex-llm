@@ -402,8 +402,8 @@ object File {
     val padW = source.padW
     val padH = source.padH
     val gradBias = source.gradBias
-//    val fGradInput = source.fGradInput
-//    val fInput = source.fInput
+    val fGradInput = source.fGradInput
+    val fInput = source.fInput
     val bias = source.bias
     val weight = source.weight
     val gradWeight = source.gradWeight
@@ -418,8 +418,8 @@ object File {
     table.put("dH", dH)
     table.put("padW", padW)
     table.put("padH", padH)
-//    table.put("fGradInput", fGradInput)
-//    table.put("fInput", fInput)
+    table.put("fGradInput", fGradInput)
+    table.put("fInput", fInput)
     table.put("gradBias", gradBias)
     table.put("output", output)
     table.put("bias", bias)
@@ -894,19 +894,19 @@ object File {
     val connTable = elements.get("connTable").asInstanceOf[Tensor[Double]]
     val gradBias = elements.get("gradBias").asInstanceOf[Tensor[Double]]
     val weight = elements.get("weight").asInstanceOf[Tensor[Double]]
-    //    val finput = elements.get("finput").asInstanceOf[Tensor[Double]]
+    val finput = elements.get("finput").asInstanceOf[Tensor[Double]]
     val output = elements.get("output").asInstanceOf[Tensor[Double]]
     val gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
     val bias = elements.get("bias").asInstanceOf[Tensor[Double]]
     val gradWeight = elements.get("gradWeight").asInstanceOf[Tensor[Double]]
-    //    val fgradInput = elements.get("fgradInput").asInstanceOf[Tensor[Double]]
+    val fgradInput = elements.get("fgradInput").asInstanceOf[Tensor[Double]]
     val result = new SpatialConvolutionMap[Double](connTable, kW, kH, dW, dH, padW, padH)
     result.gradBias.resizeAs(gradBias)
     result.gradBias.copy(gradBias)
     result.weight.resizeAs(weight)
     result.weight.copy(weight)
-    //    result.fInput.resizeAs(finput)
-    //    result.fInput.copy(finput)
+    result.fInput.resizeAs(finput)
+    result.fInput.copy(finput)
     result.output.resizeAs(output)
     result.output.copy(output)
     result.gradInput.resizeAs(gradInput)
@@ -915,8 +915,8 @@ object File {
     result.bias.copy(bias)
     result.gradWeight.resizeAs(gradWeight)
     result.gradWeight.copy(gradWeight)
-    //    result.fGradInput.resizeAs(fgradInput)
-    //    result.fGradInput.copy(fgradInput)
+    result.fGradInput.resizeAs(fgradInput)
+    result.fGradInput.copy(fgradInput)
     result
   }
 
@@ -1113,10 +1113,10 @@ object File {
     result.gradBias.copy(gradBias)
     result.weight.resizeAs(weight)
     result.weight.copy(weight)
-//    if (finput != null) {
-//      result.fInput.resizeAs(finput)
-//      result.fInput.copy(finput)
-//    }
+    if (finput != null) {
+      result.fInput.resizeAs(finput)
+      result.fInput.copy(finput)
+    }
     result.output.resizeAs(output)
     result.output.copy(output)
     result.gradInput.resizeAs(gradInput)
@@ -1125,10 +1125,10 @@ object File {
     result.bias.copy(bias)
     result.gradWeight.resizeAs(gradWeight)
     result.gradWeight.copy(gradWeight)
-/*    if (fgradInput != null) {
+    if (fgradInput != null) {
       result.fGradInput.resizeAs(fgradInput)
       result.fGradInput.copy(fgradInput)
-    }*/
+    }
     result
   }
 
