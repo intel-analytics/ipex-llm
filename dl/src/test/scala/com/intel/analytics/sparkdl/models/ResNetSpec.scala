@@ -438,7 +438,7 @@ gradInput = model:backward(input, gradOutput)
           cache.put(key, Storage(Array(ev.fromType[Int](1))))
         }
 
-        m.gradInput.set(Tensor[T](cache.get(key).get, 1, Array(0)))
+        m.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
       }
     })
 
@@ -448,7 +448,7 @@ gradInput = model:backward(input, gradOutput)
       if (!cache.contains(i % 2)) {
         cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
       }
-      m.gradInput.set(Tensor[T](cache.get(i % 2).get, 1, Array(0)))
+      m.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
     }
   }
 }
