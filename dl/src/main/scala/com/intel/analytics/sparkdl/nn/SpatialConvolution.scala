@@ -132,24 +132,28 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     } else {
       require(input.size(2) == nInputPlane)
       val batchSize = input.size(1)
+
+      var i, j = 0
+      val minJobNum: Int = batchSize / Engine.coresNum
+      val remainJobNum: Int = batchSize - minJobNum * Engine.coresNum
+
       output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
-      fInput.resize(Array(Engine.coresNum, nGroup, kW * kH * nInputPlane / nGroup,
+      fInput.resize(Array(minJobNum+1, nGroup, kW * kH * nInputPlane / nGroup,
         outputHeight * outputWidth))
 
       if (results == null || results.length != Engine.coresNum) {
         results = new Array[Future[Unit]](Engine.coresNum)
       }
-
-      var i, j = 0
-      var step = batchSize / Engine.coresNum
-      while (j < step) {
-        var _j = 0
-        while (_j < Engine.coresNum) {
-          val _i = j * Engine.coresNum + _j + 1
-          results(_j) = Future {
-            val inputT = input.select(1, _i).contiguous()
-            val outputT = output.select(1, _i)
-            val fInputT = fInput.select(1, _j)
+      while (j < Engine.coresNum) {
+        val distJobNum: Int = minJobNum + (if (j < remainJobNum) 1 else 0)
+        val _j = j
+        results(j) = Future {
+          var _i = 1
+          val indexS: Int = _j * minJobNum + (if (_j < remainJobNum) _j else remainJobNum)
+          while (_i <= distJobNum) {
+            val inputT = input.select(1, _i + indexS)
+            val outputT = output.select(1, _i + indexS)
+            val fInputT = fInput.select(1, _i)
             var g = 0
             while (g < nGroup) {
               updateOutputFrame(
@@ -164,22 +168,16 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
                 nOutputPlane / nGroup, outputWidth, outputHeight)
               g += 1
             }
-          }(Engine.getInstance())
-          _j += 1
-        }
-        j = j + 1
-        i = 0
-        while (i < results.length) {
-          Await.result(results(i), Duration.Inf)
-          i += 1
-        }
+            _i += 1
+          }
+        }(Engine.getInstance())
+        j += 1
       }
-
-     /* i = 0
+      i = 0
       while (i < results.length) {
         Await.result(results(i), Duration.Inf)
         i += 1
-      }*/
+      }
     }
     output
   }
@@ -204,16 +202,21 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       }
     } else {
       val batchSize = input.size(1)
+
       var i, j = 0
-      var step = batchSize / Engine.coresNum
-      while (j < step) {
-        var _j = 0
-        while (_j < Engine.coresNum) {
-          val _i = j * Engine.coresNum + _j + 1
-          results(_j) = Future {
-            val gradInputT = gradInput.select(1, _i)
-            val gradOutputT = gradOutput.select(1, _i).contiguous()
-            val fgradInputT = fGradInput.select(1, _j)
+      val minJobNum: Int = batchSize / Engine.coresNum
+      val remainJobNum: Int = batchSize - minJobNum * Engine.coresNum
+
+      while (j < Engine.coresNum) {
+        val distJobNum: Int = minJobNum + (if (j < remainJobNum) 1 else 0)
+        val _j = j
+        results(j) = Future {
+          var _i = 1
+          val indexS: Int = _j * minJobNum + (if (_j < remainJobNum) _j else remainJobNum)
+          while (_i <= distJobNum) {
+            val gradInputT = gradInput.select(1, _i+indexS)
+            val gradOutputT = gradOutput.select(1, _i+indexS).contiguous()
+            val fgradInputT = fGradInput.select(1, _i)
             var g = 0
             while (g < nGroup) {
               updateGradInputFrame(
@@ -224,15 +227,15 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
                 kW, kH, dW, dH, padW, padH)
               g += 1
             }
-          }(Engine.getInstance())
-          _j += 1
-        }
+            _i += 1
+          }
+        }(Engine.getInstance())
         j += 1
-        i = 0
-        while (i < results.length) {
-          Await.result(results(i), Duration.Inf)
-          i += 1
-        }
+      }
+      i = 0
+      while (i < results.length) {
+        Await.result(results(i), Duration.Inf)
+        i += 1
       }
     }
 
@@ -275,15 +278,20 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       if (onesBatch.dim() != 1 || onesBatch.size(1) != batchSize) {
         onesBatch.resize(Array(batchSize)).fill(ev.fromType(1.0))
       }
+
       var i, j = 0
-      var step = batchSize / Engine.coresNum
-      while (j < step) {
-        var _j = 0
-        while (_j < Engine.coresNum) {
-          val _i = j * Engine.coresNum + _j + 1
-          results(_j) = Future {
-            val gradOutputT = contiguousGradOutput.select(1, _i)
-            val fInputT = fInput.select(1, _j)
+      val minJobNum: Int = batchSize / Engine.coresNum
+      val remainJobNum: Int = batchSize - minJobNum * Engine.coresNum
+
+      while (j < Engine.coresNum) {
+        val distJobNum: Int = minJobNum + (if (j < remainJobNum) 1 else 0)
+        val _j = j
+        results(j) = Future {
+          var _i = 1
+          val indexS: Int = _j * minJobNum + (if (_j < remainJobNum) _j else remainJobNum)
+          while (_i <= distJobNum) {
+            val gradOutputT = contiguousGradOutput.select(1, _i+indexS)
+            val fInputT = fInput.select(1, _i)
             var g = 0
             while (g < nGroup) {
               calcGradParametersFrame(
@@ -295,15 +303,15 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
                 ev.fromType[Double](scale))
               g += 1
             }
-          }(Engine.getInstance())
-          _j += 1
-        }
+            _i += 1
+          }
+        }(Engine.getInstance())
         j += 1
-        i = 0
-        while (i < results.length) {
-          Await.result(results(i), Duration.Inf)
-          i += 1
-        }
+      }
+      i = 0
+      while (i < results.length) {
+        Await.result(results(i), Duration.Inf)
+        i += 1
       }
 
       val gradView = gradWeightMM.view(batchSize, nOutputPlane * nInputPlane * kH * kW / nGroup).t
