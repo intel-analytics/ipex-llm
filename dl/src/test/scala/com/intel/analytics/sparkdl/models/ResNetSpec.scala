@@ -227,8 +227,8 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       "dampening" -> 0.0)
     val sgd = new SGD[Float]
 
-    val floatInput = Tensor[Float](256, 3, 224, 224)
-    val floatLabels = Tensor[Float](256)
+    val floatInput = Tensor[Float](8, 3, 224, 224)
+    val floatLabels = Tensor[Float](8)
     for (i <- 0 until floatInput.nElement()) {
       floatInput.storage().array()(i) = input.storage().array()(i).toFloat
     }
@@ -449,6 +449,18 @@ gradInput = model:backward(input, gradOutput)
         cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
       }
       m.gradInput = Tensor[T](cache.get(i % 2).get)
+    }
+
+    cache.put("gradWeightMM", Storage(Array(ev.fromType[Int](1))))
+    cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
+    cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
+    for ((m, i) <- model
+      .findModules("com.intel.analytics.sparkdl.nn.SpatialConvolution")
+      .zipWithIndex){
+      val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
+      tmpModel.gradWeightMM = Tensor[T](cache.get("gradWeightMM").get)
+      tmpModel.fInput = Tensor[T](cache.get("fInput").get)
+      tmpModel.fGradInput = Tensor[T](cache.get("fGradInput").get)
     }
   }
 }
