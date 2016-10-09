@@ -65,8 +65,8 @@ class ConcatSpec extends FlatSpec with Matchers {
       val outputDnn = concatDnn.updateOutput(input)
       val outputBlas = concatBlas.updateOutput(input)
 
-      val gradInputDnn = concatDnn.updateGradInput(input, gradOutput)
-      val gradInputBlas = concatBlas.updateGradInput(input, gradOutput)
+      val gradInputDnn = concatDnn.backward(input, gradOutput)
+      val gradInputBlas = concatBlas.backward(input, gradOutput)
 
       outputDnn should be equals (outputBlas)
       gradInputDnn should be equals (gradInputBlas)
@@ -121,8 +121,8 @@ class ConcatSpec extends FlatSpec with Matchers {
       val outputDnn = concatDnn.updateOutput(input)
       val outputBlas = concatBlas.updateOutput(input)
 
-      val gradInputDnn = concatDnn.updateGradInput(input, gradOutput)
-      val gradInputBlas = concatBlas.updateGradInput(input, gradOutput)
+      val gradInputDnn = concatDnn.backward(input, gradOutput)
+      val gradInputBlas = concatBlas.backward(input, gradOutput)
 
       outputDnn should be equals (outputBlas)
       gradInputDnn should be equals (gradInputBlas)
@@ -163,7 +163,8 @@ class ConcatSpec extends FlatSpec with Matchers {
       println(gradOutput.size().mkString("\t"))
 
       val convDnn: Array[SpatialConvolution[T]] = new Array[SpatialConvolution[T]](numConcats)
-      val convBlas: Array[nn.SpatialConvolution[T]] = new Array[nn.SpatialConvolution[T]](numConcats)
+      val convBlas: Array[nn.SpatialConvolution[T]] =
+        new Array[nn.SpatialConvolution[T]](numConcats)
 
       val concatDnn = new Concat[T](2)
       val concatBlas = new nn.Concat[T](2)
@@ -188,8 +189,10 @@ class ConcatSpec extends FlatSpec with Matchers {
       println(outputBlas)
       outputDnn should be equals (outputBlas)
 
-      val gradInputDnn = concatDnn.updateGradInput(input, gradOutput)
-      val gradInputBlas = concatBlas.updateGradInput(input, gradOutput)
+      val gradInputDnn = concatDnn.backward(input, gradOutput)
+      val gradInputBlas = concatBlas.backward(input, gradOutput)
+      println(gradInputDnn)
+      println(gradInputBlas)
       gradInputDnn should be equals (gradInputBlas)
     }
 
