@@ -49,7 +49,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   private var weightMM: Tensor[T] = null
   private var gradientBiasMT: Tensor[T] = null
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
-  private var gradWeightMM: Tensor[T] = null
+  //private var gradWeightMM: Tensor[T] = null
   this.gradBias = Tensor[T](nOutputPlane)
   val fInput = Tensor[T]()
   val fGradInput = Tensor[T]()
@@ -247,7 +247,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
     val contiguousGradOutput = gradOutput.contiguous()
    // val fInput = input2finput(input)
-   // var gradWeightMM: Tensor[T] = null
+    var gradWeightMM: Tensor[T] = null
 
     if (input.nDimension() == 3) {
       if (gradWeightMM == null) {
