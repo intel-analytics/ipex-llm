@@ -435,7 +435,7 @@ gradInput = model:backward(input, gradOutput)
       if (!moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatAddTable")) {
         val key = sharingKey(m)
         if (!cache.contains(key)){
-          cache.put(key, Storage(Array(ev.fromType[Int](1))))
+          cache.put(key, Storage(Array(ev.fromType[Int](1000000000))))
         }
 
         m.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
