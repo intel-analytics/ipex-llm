@@ -437,26 +437,30 @@ gradInput = model:backward(input, gradOutput)
   def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
     (implicit ev: TensorNumeric[T]): Unit = {
     def sharingKey(m: Module[T]) = m.getClass.getName
-
+    var shareStorage = Storage[T]()
     val cache = Map[Any, Storage[T]]()
     model.mapModules(m => {
       val moduleType = m.getClass.getName
       if (!moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatAddTable")) {
         val key = sharingKey(m)
         if (!cache.contains(key)){
-          cache.put(key, Storage(Array(ev.fromType[Int](1))))
+          //cache.put(key, Storage(Array(ev.fromType[Int](1))))
+          cache.put(key, shareStorage)
         }
 
         m.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
       }
     })
-
+    var shareStorageOdd  = Storage[T]()
+    var shareStorageEven = Storage[T]()
     for ((m, i) <- model
       .findModules("com.intel.analytics.sparkdl.nn.ConcatAddTable")
       .zipWithIndex){
       if (!cache.contains(i % 2)) {
-        cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
-      }
+        //cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
+        cache.put(i%2, shareStorageOdd)
+      } else { cache.put(i%2, shareStorageEven)}
+
       m.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
     }
   }
