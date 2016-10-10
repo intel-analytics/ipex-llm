@@ -19,32 +19,37 @@ package com.intel.analytics.sparkdl.models
 import com.intel.analytics.sparkdl.utils.Table
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim.SGD
+import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.torch.TH
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import scala.collection.immutable
 import scala.math._
 import scala.util.Random
+import scala.collection.mutable.Map
+import scala.reflect.ClassTag
 
 class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "ResNet double" should "generate correct output" in {
+//    System.setProperty("java.io.tmpdir", "/disk2/test");
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
 
     Random.setSeed(1)
+    val classNum: Int = 1000
     val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](8).apply1(e => Random.nextInt(100))
+    val labels = Tensor[Double](8).apply1(e => Random.nextInt(classNum))
 
     val seed = 100
     RNG.setSeed(seed)
     val opt: Table = new Table()
-    opt("shortcutType") = "C"
+    opt("shortcutType") = "B"
     opt("depth") = 18
     opt("imagenet") = "imagenet"
-    val classNum: Int = 100
     val model = ResNet[Double](classNum, opt)
     model.zeroGradParameters()
 
@@ -57,9 +62,9 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         local Max = nn.SpatialMaxPooling
         local SBatchNorm = nn.SpatialBatchNormalization
 
-        local nClasses = 100
+        local nClasses = 1000
         local depth = 18
-        local shortcutType = 'C'
+        local shortcutType = 'B'
         local iChannels
         local function shortcut(nInputPlane, nOutputPlane, stride)
           local useConv = shortcutType == 'C' or
@@ -163,7 +168,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         model:add(layer(block, 512, def[4], 2))
         model:add(Avg(7, 7, 1, 1))
         model:add(nn.View(nFeatures):setNumInputDims(3))
-        model:add(nn.Linear(nFeatures, 100))
+        model:add(nn.Linear(nFeatures, nClasses))
         --model:add(nn.LogSoftMax())
 
         local parameters, gradParameters = model:getParameters()
@@ -201,8 +206,8 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         gradInput = model.gradInput
       """
 
-    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
-      "parameters_initial", "gradParameters_initial", "gradInput", "model"))
+    TH.runNM(code, immutable.Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
+        "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
     val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
@@ -213,7 +218,8 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       }
     }*/
 
-    //val criterion = new ClassNLLCriterion[Double]()
+    shareGradInput(model)
+
     val (weights, grad) = model.getParameters()
     val criterion = new CrossEntropyCriterion[Double]()
 
@@ -263,9 +269,9 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       val tmp = abs(gradOutputTest.storage().array()(i) - gradOutput.storage().array()(i))
       abss += tmp
     }
-    //assert(abss == 0.0)
+//    assert(abss == 0.0)
     assert(abss < 2e-6)
-    println(s"gradOutputTestAbs:$abss")
+    println(s"this should be small: gradOutputTestAbs:$abss")
 
     val gradInput = model.backward(input, gradOutputTest)
     val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
@@ -275,7 +281,18 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       val tmp = abs(gradInputTorch.storage().array()(i) - gradInput.storage().array()(i))
       abss += tmp
     }
-    println(s"gradInputTestAbs:$abss")
+    assert(abss < 2e-6)
+    println(s"this should be small: gradInputTestAbs:$abss")
+
+    println(s"compare output between Lua and Scala:")
+    abss = 0.0
+    for (i <- 0 until outputTest.nElement()) {
+      val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i))
+      abss += tmp
+      val thOut = output.storage().array()(i)
+      val scOut = outputTest.storage().array()(i)
+      println(s"Lua = $thOut , Scala = $scOut")
+    }
 
 //    val (weights, grad) = model.getParameters()
 //    val modelTorch = TH.map("model").asInstanceOf[Module[Double]]
@@ -296,7 +313,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     Random.setSeed(1)
     val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](8).apply1(e => Random.nextInt(100))
+    val labels = Tensor[Double](8).apply1(e => Random.nextInt(nClasses))
 
     val seed = 100
     RNG.setSeed(seed)
@@ -346,7 +363,7 @@ local gradOutput1 = criterion:backward(output1, labels)
 model:backward(input, gradOutput1)
 return err1, gradParameters
 end
-for i = 1,5,1 do
+for i = 1,1, 1 do
   optim.sgd(feval, parameters, state)
 end
 local output = model:forward(input)
@@ -376,7 +393,7 @@ gradInput = model:backward(input, gradOutput)
       "dampening" -> 0.0)
     val sgd = new SGD[Double]
 
-    for (i <- 1 to 5) {
+    for (i <- 1 to 1) {
       model.zeroGradParameters()
       val outputTest = model.forward(input)
       val loss = criterion.forward(outputTest, labels)
@@ -403,4 +420,45 @@ gradInput = model:backward(input, gradOutput)
     gradInput should be(gradInputTorch)
   }
   */
+
+
+
+  def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
+    (implicit ev: TensorNumeric[T]): Unit = {
+    def sharingKey(m: Module[T]) = m.getClass.getName
+    val cache = Map[Any, Storage[T]]()
+    model.mapModules(m => {
+      val moduleType = m.getClass.getName
+      if (!moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatAddTable")) {
+        val key = sharingKey(m)
+        if (!cache.contains(key)){
+          cache.put(key, Storage(Array(ev.fromType[Int](1))))
+        }
+
+        m.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
+      }
+    })
+    val shareStorageOdd  = Storage[T]()
+    val shareStorageEven = Storage[T]()
+    for ((m, i) <- model
+      .findModules("com.intel.analytics.sparkdl.nn.ConcatAddTable")
+      .zipWithIndex){
+      if (!cache.contains(i % 2)) {
+        cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
+      }
+      m.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
+    }
+
+    cache.put("gradWeightMM", Storage(Array(ev.fromType[Int](1))))
+    cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
+    cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
+    for ((m, i) <- model
+      .findModules("com.intel.analytics.sparkdl.nn.SpatialConvolution")
+      .zipWithIndex){
+      val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
+      tmpModel.gradWeightMM = Tensor[T](cache.get("gradWeightMM").get)
+//      tmpModel.fInput = Tensor[T](cache.get("fInput").get)
+      tmpModel.fGradInput = Tensor[T](cache.get("fGradInput").get)
+    }
+  }
 }

@@ -49,10 +49,10 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   private var weightMM: Tensor[T] = null
   private var gradientBiasMT: Tensor[T] = null
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
-  private var gradWeightMM: Tensor[T] = null
+  var gradWeightMM: Tensor[T] = null
   this.gradBias = Tensor[T](nOutputPlane)
   val fInput = Tensor[T]()
-  val fGradInput = Tensor[T]()
+  var fGradInput = Tensor[T]()
   private val ones = Tensor[T]()
   private val onesBatch = Tensor[T]()
   private val onesBias = Tensor[T]()
@@ -250,8 +250,13 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       if (gradWeightMM == null) {
         gradWeightMM = Tensor[T]().resize(Array(batchSize, nGroup, nOutputPlane / nGroup,
           nInputPlane * kH * kW / nGroup))
-        gradientBiasMT = Tensor[T]().resize(Array(batchSize, nOutputPlane))
+      } else {
+        gradWeightMM.resize(Array(batchSize, nGroup, nOutputPlane / nGroup,
+          nInputPlane * kH * kW / nGroup))
       }
+
+      gradientBiasMT = Tensor[T]().resize(Array(batchSize, nOutputPlane))
+
       if (ones.dim() != 1 || ones.size(1) != gradOutput.size(3) * gradOutput.size(4)) {
         ones.resize(Array(gradOutput.size(3) * gradOutput.size(4))).fill(ev.fromType(1.0))
       }
