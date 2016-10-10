@@ -55,7 +55,7 @@ void MKLConcat<DType>::init(int numConcats, int dimension, int *size)
   this->dimension  = dimension;
   this->numSplits  = new size_t[numConcats];
   for (int i = 0; i < numConcats; i++) {
-    this->numSplits[i] = NULL;
+    this->numSplits[i] = 0;
   }
 
   size_t inputSize[dimension];
