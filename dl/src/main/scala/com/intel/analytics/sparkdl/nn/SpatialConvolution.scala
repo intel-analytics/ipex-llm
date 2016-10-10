@@ -133,13 +133,14 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       require(input.size(2) == nInputPlane)
       val batchSize = input.size(1)
 
+      output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
+      fInput.resize(Array(Engine.coresNum, nGroup, kW * kH * nInputPlane / nGroup,
+        outputHeight * outputWidth))
+
       var i, j = 0
       val minJobNum: Int = batchSize / Engine.coresNum
       val remainJobNum: Int = batchSize - minJobNum * Engine.coresNum
 
-      output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
-      fInput.resize(Array(Engine.coresNum, nGroup, kW * kH * nInputPlane / nGroup,
-        outputHeight * outputWidth))
 
       if (results == null || results.length != Engine.coresNum) {
         results = new Array[Future[Unit]](Engine.coresNum)
@@ -202,7 +203,6 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       }
     } else {
       val batchSize = input.size(1)
-
       var i, j = 0
       val minJobNum: Int = batchSize / Engine.coresNum
       val remainJobNum: Int = batchSize - minJobNum * Engine.coresNum
