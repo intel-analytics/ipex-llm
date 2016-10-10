@@ -20,11 +20,10 @@ package com.intel.analytics.sparkdl.nn.mkl
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
-import com.intel.analytics.sparkdl.nn.Module
+import com.intel.analytics.sparkdl.nn.{Module, TensorModule}
 import com.intel.analytics.sparkdl.mkl.MKL
 
 import scala.language.implicitConversions
-
 import scala.reflect.ClassTag
 
 class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
@@ -32,8 +31,7 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
     val eps: Double = 1e-5,
     val momentum: Double = 0.1,
     val affine: Boolean = true)(implicit ev: TensorNumeric[T])
-    extends Module[T] {
-
+  extends TensorModule[T] {
   require(nOutput > 0,
           "To set affine=false call SpatialBatchNormalization(nFeature,  eps, momentum, false)")
 

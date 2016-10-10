@@ -18,10 +18,11 @@
 package com.intel.analytics.sparkdl.nn.mkl
 
 import com.intel.analytics.sparkdl.mkl.MKL
-import com.intel.analytics.sparkdl.nn.Module
+import com.intel.analytics.sparkdl.nn.{Module, TensorModule}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
+
 import scala.reflect.ClassTag
 import scala.language.implicitConversions
 
@@ -29,8 +30,7 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag](
     val size: Int = 5,
     val alpha: Double = 1.0,
     val beta: Double = 0.75,
-    val k: Double = 1.0)(implicit ev: TensorNumeric[T])
-    extends Module[T] {
+    val k: Double = 1.0)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   private val scale = Tensor[T]()
   private val paddedSquare = Tensor[T]()

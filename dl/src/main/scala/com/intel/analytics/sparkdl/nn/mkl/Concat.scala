@@ -27,10 +27,11 @@ import com.intel.analytics.sparkdl.nn.{Container, Module}
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.mkl.MKL
+import com.intel.analytics.sparkdl.utils.Activities
 
 import scala.reflect.ClassTag
 
-class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) extends Container[T] {
+class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])  extends Container[Tensor[T], Tensor[T], T] {
 
   private var size: Array[Int] = null
   private var gradouts: Array[Tensor[T]] = null
@@ -107,7 +108,7 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
     val outs = new Array[Tensor[T]](this.modules.length)
     var i = 0
     while (i < this.modules.length) {
-      val currentOutput = this.modules(i).updateOutput(input)
+      val currentOutput = this.modules(i).updateOutput(input).asInstanceOf[Tensor[T]]
       outs(i) = currentOutput
       if (i == 0) {
         this.size = currentOutput.size()
@@ -219,7 +220,7 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
     val gradOutputsOffset: Array[Int] = new Array[Int](this.modules.length)
     for (i <- 0 until this.modules.length) {
       if (gradouts(i) == null) gradouts(i) = Tensor()
-      gradouts(i).resizeAs(this.modules(i).output)
+      gradouts(i).resizeAs(this.modules(i).output.asInstanceOf[Tensor[T]])
       gradOutputs(i) = gradouts(i).storage().array()
       gradOutputsOffset(i) = gradouts(i).storageOffset() - 1
     }
@@ -255,8 +256,8 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
     val tmpGradInputs: Array[Tensor[T]] = new Array[Tensor[T]](this.modules.length)
 
     for (i <- 0 until this.modules.length) {
-      val currentOutput = this.modules(i).output
-      tmpGradInputs(i) = this.modules(i).backward(input, gradouts(i))
+      val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
+      tmpGradInputs(i) = this.modules(i).backward(input, gradouts(i)).asInstanceOf[Tensor[T]]
     }
 
     // It can't be converted to mkl dnn concat forward, becaus the size of all
@@ -353,14 +354,19 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T]) ext
     val last = "   ... -> "
     val ext = "  |    "
     val extlast = "       "
-    s"mkl.Concat {$line${tab}input$line${modules.zipWithIndex.map {
-      case (model: Module[T], index: Int) =>
-        s"$tab$next(${index + 1}): ${if (index == modules.length - 1) {
-          model.setLine(line + tab + extlast)
-        } else {
-          model.setLine(line + tab + ext)
-        }}"
-    }.mkString(line)}$line$tab${last}output$line$tab}"
+    s"mkl.Concat {$line${tab}input$line${
+      modules.zipWithIndex
+        .map { case (model: Module[Activities, Activities, T], index: Int)
+        => s"$tab$next(${index + 1}): ${
+          if (index == modules.length - 1) {
+            model.setLine(line + tab + extlast)
+          } else {
+            model.setLine(line + tab + ext)
+          }
+        }"
+             }
+        .mkString(line)
+    }$line$tab${last}output$line$tab}"
   }
 
   // TODO we should use the next
