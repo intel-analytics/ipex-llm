@@ -18,13 +18,12 @@
 package com.intel.analytics.sparkdl.nn.mkl
 
 import com.intel.analytics.sparkdl.mkl.MKL
-import com.intel.analytics.sparkdl.nn.Module
+import com.intel.analytics.sparkdl.nn.{Module, TensorModule}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.utils.RandomGenerator
 import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.language.implicitConversions
-
 import scala.reflect.ClassTag
 
 class SpatialPooling[@specialized(Float, Double) T: ClassTag](
@@ -34,8 +33,7 @@ class SpatialPooling[@specialized(Float, Double) T: ClassTag](
     val strideHeight: Int,
     val padWidth: Int = 0,
     val padHeight: Int = 0)(implicit ev: TensorNumeric[T])
-    extends Module[T] {
-
+  extends TensorModule[T] {
   implicit def bool2int(b: Boolean): Int = if (b) 1 else 0
 
   var classPtr: Long = 0L

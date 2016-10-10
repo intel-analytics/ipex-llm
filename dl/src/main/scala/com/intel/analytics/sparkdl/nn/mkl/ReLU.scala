@@ -18,17 +18,16 @@
 package com.intel.analytics.sparkdl.nn.mkl
 
 import com.intel.analytics.sparkdl.mkl.MKL
-import com.intel.analytics.sparkdl.nn.Module
+import com.intel.analytics.sparkdl.nn.{Module, TensorModule}
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.language.implicitConversions
-
 import scala.reflect.ClassTag
 
 class ReLU[@specialized(Float, Double) T: ClassTag](ip: Boolean = false)(
     implicit ev: TensorNumeric[T])
-    extends Module[T] {
+    extends TensorModule[T] {
 
   override def toString(): String = {
     s"mkl.ReLU"

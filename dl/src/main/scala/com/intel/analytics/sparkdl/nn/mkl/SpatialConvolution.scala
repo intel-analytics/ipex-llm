@@ -18,17 +18,12 @@
 package com.intel.analytics.sparkdl.nn.mkl
 
 import com.intel.analytics.sparkdl.mkl.MKL
-import com.intel.analytics.sparkdl.nn.Module
+import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 import scala.language.implicitConversions
-
-import com.intel.analytics.sparkdl.nn.InitializationMethod
-import com.intel.analytics.sparkdl.nn.Default
-import com.intel.analytics.sparkdl.nn.Xavier
-
 import scala.reflect.ClassTag
 
 class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
@@ -43,7 +38,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     val groups: Int = 1,
     private var initMethod: InitializationMethod = Default
 )(implicit ev: TensorNumeric[T])
-    extends Module[T] {
+    extends TensorModule[T] {
   val weight: Tensor[T] =
     Tensor[T](nOutputPlane, nInputPlane, kernelHeight, kernelWidth)
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
@@ -82,6 +77,9 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
+      case Constant =>
+        weight.fill(ev.fromType(0.123))
+        bias.fill(ev.fromType(0.123))
     }
   }
 
@@ -431,7 +429,8 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     s"""mkl.SpatialConvolution($nInputPlane -> $nOutputPlane, $kernelWidth x $kernelHeight, $strideWidth, $strideHeight, $padWidth, $padHeight)"""
   }
 
-  override def findModel(paramOffset: Int, indexes: Array[Int]): (Module[T], Int, Array[Int]) = {
+  override def findModel(paramOffset: Int,
+                         indexes: Array[Int]): (Module[Tensor[T], Tensor[T], T], Int, Array[Int]) = {
     (this,
      paramOffset - nOutputPlane * nInputPlane * kernelHeight * kernelWidth - nOutputPlane,
      indexes)
