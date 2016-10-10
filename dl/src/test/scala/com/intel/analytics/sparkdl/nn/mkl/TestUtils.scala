@@ -23,17 +23,31 @@ import com.intel.analytics.sparkdl.tensor.Tensor
 import scala.reflect.ClassTag
 
 object Tools {
-  def CumulativeError[T: ClassTag](tensor1: Tensor[T], tensor2: Tensor[T], msg: String)(
-      implicit ev: TensorNumeric[T]): Double = {
+  def Error[T: ClassTag](tensor1: Tensor[T], tensor2: Tensor[T])(
+    implicit ev: TensorNumeric[T]): Double = {
     require(tensor1.nElement() == tensor2.nElement())
-    var tmp = 0.0
+    var ret = 0.0
     for (i <- 0 until tensor1.nElement()) {
-      tmp += math.abs(
+      ret += math.abs(
         ev.toType[Double](tensor1.storage().array()(i)) -
           ev.toType[Double](tensor2.storage().array()(i)))
     }
-    println(msg.toUpperCase + " ERROR: " + tmp)
-    tmp
+    ret
+  }
+
+  def CumulativeError[T: ClassTag](tensor1: Tensor[T], tensor2: Tensor[T], msg: String)(
+      implicit ev: TensorNumeric[T]): Double = {
+    val ret = Error[T](tensor1, tensor2)
+    println(msg.toUpperCase + " CUMULATIVE ERROR: " + ret)
+    ret
+  }
+
+  def AverageError[T: ClassTag](tensor1: Tensor[T], tensor2: Tensor[T], msg: String)(
+    implicit ev: TensorNumeric[T]): Double = {
+    require(tensor1.nElement() > 0)
+    val ret = Error[T](tensor1, tensor2) / tensor1.nElement()
+    println(msg.toUpperCase + " AVERAGE ERROR: " + ret)
+    ret
   }
 
   def GetRandTimes(): Int = 10
