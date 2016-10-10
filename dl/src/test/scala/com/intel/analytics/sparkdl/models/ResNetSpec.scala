@@ -219,6 +219,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }*/
 
     shareGradInput(model)
+    shareFInput(model)
 
     val (weights, grad) = model.getParameters()
     val criterion = new CrossEntropyCriterion[Float]()
@@ -425,6 +426,14 @@ gradInput = model:backward(input, gradOutput)
   */
 
 
+  def shareFInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
+                                                             (implicit ev: TensorNumeric[T]): Unit = {
+    model.mapModules(m => {
+      m.fInput = Tensor[T](Storage(Array(ev.fromType[Int](1))))
+    })
+  }
+
+
   def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
     (implicit ev: TensorNumeric[T]): Unit = {
     def sharingKey(m: Module[T]) = m.getClass.getName
@@ -435,7 +444,7 @@ gradInput = model:backward(input, gradOutput)
       if (!moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatAddTable")) {
         val key = sharingKey(m)
         if (!cache.contains(key)){
-          cache.put(key, Storage(Array(ev.fromType[Int](1000000000))))
+          cache.put(key, Storage(Array(ev.fromType[Int](1))))
         }
 
         m.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))

@@ -51,7 +51,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
   private var gradWeightMM: Tensor[T] = null
   this.gradBias = Tensor[T](nOutputPlane)
-  val fInput = Tensor[T]()
+  //val fInput = Tensor[T]()
   val fGradInput = Tensor[T]()
   private val ones = Tensor[T]()
   private val onesBatch = Tensor[T]()
