@@ -35,6 +35,14 @@ class MKLConvolution : public MKLLayer<DType>
   void updateGradBias(DType *input, DType *gradOutput, DType *gradBias);
 
   std::shared_ptr<MKLData<DType>> kernel;
+  /*
+   * Attention 2016-10-10
+   *
+   * I don't know why should we must set different kernel parameters
+   * for forward and backward (updateOutput and updateGradInput).
+   * Otherwise, the result of gradient input is not correct.
+   */
+  std::shared_ptr<MKLData<DType>> backKernel;
   std::shared_ptr<MKLData<DType>> bias;
 
   std::shared_ptr<MKLData<DType>> gradKernel;
@@ -72,6 +80,7 @@ class MKLConvolution : public MKLLayer<DType>
 template <typename DType>
 MKLConvolution<DType>::MKLConvolution()
     : kernel(new MKLData<DType>),
+      backKernel(new MKLData<DType>),
       bias(new MKLData<DType>),
       gradKernel(new MKLData<DType>),
       gradBias(new MKLData<DType>),
@@ -158,6 +167,7 @@ void MKLConvolution<DType>::init(size_t inputNumber, size_t inputChannel,
   this->input->createUsrLayout(dimension, inputSize, inputStrides);
   this->output->createUsrLayout(dimension, outputSize, outputStrides);
   this->kernel->createUsrLayout(kernelDimension, kernelSize, kernelStrides);
+  this->backKernel->createUsrLayout(kernelDimension, kernelSize, kernelStrides);
   this->bias->createUsrLayout(1, biasSize, biasStrides);
 
   this->gradInput->createUsrLayout(dimension, inputSize, inputStrides);
@@ -192,6 +202,7 @@ void MKLConvolution<DType>::firstPass()
 
   this->gradOutput->createMklLayout(this->backwardPrim, dnnResourceDiffDst);
   this->gradInput->createMklLayout(this->backwardPrim, dnnResourceDiffSrc);
+  this->backKernel->createMklLayout(this->backwardPrim, dnnResourceFilter);
 
   // backward kernel
   status = dnnGroupsConvolutionCreateBackwardFilter<DType>(
@@ -280,9 +291,10 @@ void MKLConvolution<DType>::updateGradInput(DType *input, DType *gradOutput,
 
   this->gradOutput->createConversion();
   this->gradInput->createConversion();
+  this->backKernel->createConversion();
 
   resources[dnnResourceDiffDst] = this->gradOutput->getConvertedData();
-  resources[dnnResourceFilter]  = this->kernel->getConvertedData();
+  resources[dnnResourceFilter]  = this->backKernel->getConvertedData();
   resources[dnnResourceDiffSrc] = this->gradInput->getData();
 
   //LOG(DBG) << "resources[dnnResourceDiffDst] " << resources[dnnResourceDiffDst];
@@ -418,7 +430,7 @@ void JNIConvolutionUpdateGradInput(JNIEnv *env, jclass thisClass,
                                      ptr->gradInput));
 
   std::shared_ptr<ZipArray<ArrayType, DType>> jKernel(
-      new ZipArray<ArrayType, DType>(env, kernel, kernelOffset, ptr->kernel));
+      new ZipArray<ArrayType, DType>(env, kernel, kernelOffset, ptr->backKernel));
 
   std::shared_ptr<ZipArray<ArrayType, DType>> jBias(
       new ZipArray<ArrayType, DType>(env, bias, biasOffset, ptr->bias));
