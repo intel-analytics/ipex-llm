@@ -22,3 +22,5 @@ sealed trait InitializationMethod
 case object Default extends InitializationMethod
 
 case object Xavier extends InitializationMethod
+
+case object Constant extends InitializationMethod

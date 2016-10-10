@@ -18,17 +18,12 @@
 package com.intel.analytics.sparkdl.nn.mkl
 
 import com.intel.analytics.sparkdl.mkl.MKL
-import com.intel.analytics.sparkdl.nn.Module
+import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 import scala.language.implicitConversions
-
-import com.intel.analytics.sparkdl.nn.InitializationMethod
-import com.intel.analytics.sparkdl.nn.Default
-import com.intel.analytics.sparkdl.nn.Xavier
-
 import scala.reflect.ClassTag
 
 class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
@@ -82,6 +77,9 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
+      case Constant =>
+        weight.fill(ev.fromType(0.123))
+        bias.fill(ev.fromType(0.123))
     }
   }
 
