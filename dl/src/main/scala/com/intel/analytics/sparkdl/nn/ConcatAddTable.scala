@@ -15,7 +15,7 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
   val cAddGradInput = ArrayBuffer[Tensor[T]]()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] ={
-    concatTableUpdateOutput(input)
+   concatTableUpdateOutput(input)
     cADDTableUpdateOutput(concatOutput)
   }
 
@@ -23,7 +23,6 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
     for ((module, i) <- modules.zipWithIndex) {
       updateBuffer(i, concatOutput, module.updateOutput(input))
     }
-
     concatOutput
   }
 
@@ -46,10 +45,11 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
 
   def concatTableUpdateGradInput(input: Tensor[T], gradOutputs: ArrayBuffer[Tensor[T]]): Tensor[T] = {
     for ((module, i) <- modules.zipWithIndex) {
-      val gradOutput = gradOutputs(i)
-      val currentGradInput = module.updateGradInput(input, gradOutput)
+      //val gradOutput = gradOutputs(i)
+      val currentGradInput = module.updateGradInput(input, gradOutputs(i))
       if (i == 0) {
-        gradInput = gradInput.resizeAs(currentGradInput).copy(currentGradInput)
+        //gradInput = gradInput.resizeAs(currentGradInput).copy(currentGradInput)
+        gradInput.resizeAs(currentGradInput).copy(currentGradInput)
       } else {
         gradInput.add(currentGradInput)
       }
@@ -95,7 +95,7 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
     val ext = "  |    "
     val extlast = "       "
     val last = "   ... -> "
-    s"nn.Concat {$line${tab}input$line${
+    s"nn.ConcatAddTable {$line${tab}input$line${
       modules.zipWithIndex
         .map { case (model: Module[T], index: Int) => {
           s"$tab$next(${index + 1}): ${

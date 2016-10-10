@@ -1293,8 +1293,10 @@ object DenseTensor {
         d -= 1
       }
       if (totalSize + self._storageOffset > 0) {
-        if (self._storage == null || totalSize + self._storageOffset > self._storage.length) {
+        if (self._storage == null ) {
           self._storage = new ArrayStorage(new Array[T](totalSize + self._storageOffset))
+        } else if (totalSize + self._storageOffset > self._storage.length) {
+          self._storage.resize(totalSize + self._storageOffset)
         }
       }
     } else {

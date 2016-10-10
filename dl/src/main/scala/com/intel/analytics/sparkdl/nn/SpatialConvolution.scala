@@ -399,7 +399,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     weight: Tensor[T], fgradInput: Tensor[T], kW: Int, kH: Int, dW: Int, dH: Int,
     padW: Int, padH: Int)(implicit ev: TensorNumeric[T]): Unit = {
 
-    ev.getType() match {
+    ev.getType() mat== nullch {
       case "Double" =>
         val gradOutput2d = Tensor(gradOutput.storage().asInstanceOf[Storage[Double]],
           gradOutput.storageOffset(), Array(gradOutput.size(1),
