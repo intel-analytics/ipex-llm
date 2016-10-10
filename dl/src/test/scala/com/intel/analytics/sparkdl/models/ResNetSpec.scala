@@ -451,5 +451,17 @@ gradInput = model:backward(input, gradOutput)
       }
       m.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
     }
+
+    cache.put("gradWeightMM", Storage(Array(ev.fromType[Int](1))))
+    cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
+    cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
+    for ((m, i) <- model
+      .findModules("com.intel.analytics.sparkdl.nn.SpatialConvolution")
+      .zipWithIndex){
+      val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
+      tmpModel.gradWeightMM = Tensor[T](cache.get("gradWeightMM").get)
+      tmpModel.fInput = Tensor[T](cache.get("fInput").get)
+      tmpModel.fGradInput = Tensor[T](cache.get("fGradInput").get)
+    }
   }
 }
