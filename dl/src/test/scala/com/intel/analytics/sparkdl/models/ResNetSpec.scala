@@ -171,38 +171,36 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         --model:add(nn.LogSoftMax())
 
         local parameters, gradParameters = model:getParameters()
-        model:zeroGradParameters()
-        parameters_initial = parameters : clone()
-        gradParameters_initial = gradParameters : clone()
+                parameters_initial = parameters : clone()
+                gradParameters_initial = gradParameters : clone()
 
-        --local criterion =  nn.ClassNLLCriterion()
-        local criterion = nn.CrossEntropyCriterion()
-        state = {
-          learningRate = 1e-2,
-          momentum = 0.9,
-          dampening = 0.0,
-          weightDecay = 5e-4
-        }
+                --local criterion =  nn.ClassNLLCriterion()
+                local criterion = nn.CrossEntropyCriterion()
+                state = {
+                  learningRate = 1e-2,
+                  momentum = 0.9,
+                  dampening = 0.0,
+                  weightDecay = 5e-4
+                }
 
-        feval = function(x)
-        model:zeroGradParameters()
-        model_initial = model : clone()
+         feval = function(x)
+              model:forward(input)
+              criterion:forward(model.output, labels)
+              model:zeroGradParameters()
+              criterion:backward(model.output, labels)
+              model:backward(input, criterion.gradInput)
+              return criterion.output, gradParameters
+           end
 
-        local output1 = model:forward(input)
-        local err1 = criterion:forward(output1, labels)
-        local gradOutput1 = criterion:backward(output1, labels)
-        model:backward(input, gradOutput1)
-        return err1, gradParameters
-        end
+             for i = 1, 5, 1 do
+              w, err = optim.sgd(feval, parameters, state)
+             end
 
-        for i = 1,5,1 do
-          optim.sgd(feval, parameters, state)
-        end
+                output=model.output
+                gradOutput=criterion.gradInput
+                err = criterion.output
+                gradInput = model.gradInput
 
-        output=model.output
-        err=criterion.output
-        gradOutput=criterion.gradInput
-        gradInput = model.gradInput
       """
 
     TH.runNM(code, immutable.Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
@@ -228,17 +226,28 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       "dampening" -> 0.0)
     val sgd = new SGD[Double]
 
-    for (i <- 1 to 4) {
+   /* val floatInput = Tensor[Float](256, 3, 224, 224)
+    val floatLabels = Tensor[Float](256)
+    for (i <- 0 until floatInput.nElement()) {
+      floatInput.storage().array()(i) = input.storage().array()(i).toFloat
+    }
+    for (i <- 0 until floatLabels.nElement()) {
+      floatLabels.storage().array()(i) = labels.storage().array()(i).toFloat
+    }*/
+
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      model.forward(input)
+      criterion.forward(model.output, labels)
       model.zeroGradParameters()
-      val outputtest = model.forward(input)
-      val loss = criterion.forward(outputtest, labels)
-      val gradoutputtest = criterion.backward(outputtest, labels)
-      model.backward(input, gradoutputtest)
-      sgd.optimize(_ => (loss, grad), weights, state, state)
+      criterion.backward(model.output, labels)
+      model.backward(input, criterion.gradInput)
+      (criterion.output, grad)
+    }
+    for (i <- 1 until 5) {
+      sgd.optimize(feval, weights, state)
     }
 
-    model.zeroGradParameters()
-    val output = TH.map("output").asInstanceOf[Tensor[Double]]
+   val output = TH.map("output").asInstanceOf[Tensor[Double]]
     val outputTest = model.forward(input)
     var abss = 0.0
     for (i <- 0 until outputTest.nElement()) {
