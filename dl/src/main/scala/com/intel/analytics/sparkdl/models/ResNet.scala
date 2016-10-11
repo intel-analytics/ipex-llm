@@ -17,10 +17,10 @@ object ResNet {
 
     val depth = opt.get("depth").getOrElse(18)
     val shortCutType = opt.get("shortcutType")
-    val shortcutType = shortCutType.getOrElse("B")
+    val shortcutType = shortCutType.getOrElse(ShortcutType.B)
 
     def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[T] = {
-      val useConv = shortcutType.equals("C") || (shortcutType == "B" && nInputPlane != nOutputPlane)
+      val useConv = shortcutType == ShortcutType.C || (shortcutType == ShortcutType.B && nInputPlane != nOutputPlane)
 
       if (useConv == true) {
         new Sequential[T]()
@@ -141,5 +141,6 @@ object ResNet {
   object ShortcutType{
     case object A extends ShortcutType(0)
     case object B extends ShortcutType(1)
+    case object C extends ShortcutType(2)
   }
 }
