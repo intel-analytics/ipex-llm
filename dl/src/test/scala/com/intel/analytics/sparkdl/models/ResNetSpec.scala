@@ -48,7 +48,6 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val opt: Table = new Table()
     opt("shortcutType") = "B"
     opt("depth") = 18
-    opt("imagenet") = "imagenet"
     val model = ResNet[Double](classNum, opt)
     model.zeroGradParameters()
 

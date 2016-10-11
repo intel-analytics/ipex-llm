@@ -135,4 +135,11 @@ object ResNet {
     model
 
   }
+
+  sealed abstract class ShortcutType(typeId: Int)
+
+  object ShortcutType{
+    case object A extends ShortcutType(0)
+    case object B extends ShortcutType(1)
+  }
 }
