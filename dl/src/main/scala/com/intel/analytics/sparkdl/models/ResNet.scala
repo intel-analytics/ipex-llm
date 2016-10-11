@@ -17,7 +17,7 @@ object ResNet {
 
     val depth = opt.get("depth").getOrElse(18)
     val shortCutType = opt.get("shortcutType")
-    val shortcutType = shortCutType.getOrElse(ShortcutType.B)
+    val shortcutType = shortCutType.getOrElse(ShortcutType.B).asInstanceOf[ShortcutType]
 
     def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[T] = {
       val useConv = shortcutType == ShortcutType.C || (shortcutType == ShortcutType.B && nInputPlane != nOutputPlane)
