@@ -152,14 +152,6 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
     this
   }
 
-  def mapModules(f: Module[T] => Unit): Unit = {
-    f(this)
-
-    if (modules != null) {
-      modules.foreach(_.mapModules(f))
-    }
-  }
-
   final def isTraining(): Boolean = {
     this.train
   }

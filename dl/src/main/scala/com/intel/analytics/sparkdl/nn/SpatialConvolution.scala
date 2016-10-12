@@ -133,8 +133,8 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     } else {
       require(input.size(2) == nInputPlane)
       val batchSize = input.size(1)
-
       output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
+
       fInput.resize(Array(Engine.coresNum, nGroup, kW * kH * nInputPlane / nGroup,
         outputHeight * outputWidth))
 
@@ -267,8 +267,6 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     scale: Double = 1.0): Unit = {
     require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
     val contiguousGradOutput = gradOutput.contiguous()
-   // val fInput = input2finput(input)
-    //var gradWeightMM: Tensor[T] = null
 
 
     val dimWidth = if (input.dim() == 3) 3 else 4
@@ -317,7 +315,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       }
 
       if (onesBatch.dim() != 1 || onesBatch.size(1) != batchSize) {
-        onesBatch.resize(Array(Engine.coresNum)).fill(ev.fromType(1.0))
+        onesBatch.resize(Array(batchSize)).fill(ev.fromType(1.0))
       }
 
 
@@ -364,16 +362,10 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         i += 1
       }
 
-      val gradView = gradWeightMM.view(Engine.coresNum, nOutputPlane * nInputPlane * kH * kW / nGroup).t
+      val gradView = gradWeightMM.view(batchSize, nOutputPlane * nInputPlane * kH * kW / nGroup).t
       val grad = gradWeight.view(nOutputPlane * nInputPlane * kH * kW / nGroup)
       grad.addmv(ev.fromType(1.0), ev.fromType(1.0), gradView, onesBatch)
       gradBias.addmv(ev.fromType(1.0), ev.fromType(1.0), gradientBiasMT.t, onesBatch)
-
-
-     /* val gradView = gradWeightMM.view(batchSize, nOutputPlane * nInputPlane * kH * kW / nGroup).t
-      val grad = gradWeight.view(nOutputPlane * nInputPlane * kH * kW / nGroup)
-      grad.addmv(ev.fromType(1.0), ev.fromType(1.0), gradView, onesBatch)
-      gradBias.addmv(ev.fromType(1.0), ev.fromType(1.0), gradientBiasMT.t, onesBatch)*/
     }
   }
 
@@ -497,8 +489,6 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     output2d.addmm(ev.fromType[Int](0), output2d, ev.fromType[Int](1), weight, fInput)
     output2d.addr(ev.fromType(1), bias, onesBias)
   }
-
-
 
   private def updateGradInputFrame(gradInput: Tensor[T], gradOutput: Tensor[T],
     weight: Tensor[T], fgradInput: Tensor[T], kW: Int, kH: Int, dW: Int, dH: Int,
