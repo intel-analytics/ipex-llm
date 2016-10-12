@@ -15,7 +15,7 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
   val cAddGradInput = ArrayBuffer[Tensor[T]]()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] ={
-   concatTableUpdateOutput(input)
+    concatTableUpdateOutput(input)
     cADDTableUpdateOutput(concatOutput)
   }
 
@@ -45,10 +45,9 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
 
   def concatTableUpdateGradInput(input: Tensor[T], gradOutputs: ArrayBuffer[Tensor[T]]): Tensor[T] = {
     for ((module, i) <- modules.zipWithIndex) {
-      //val gradOutput = gradOutputs(i)
-      val currentGradInput = module.updateGradInput(input, gradOutputs(i))
+      val currentGradOutput = gradOutputs(i)
+      val currentGradInput = module.updateGradInput(input, currentGradOutput)
       if (i == 0) {
-        //gradInput = gradInput.resizeAs(currentGradInput).copy(currentGradInput)
         gradInput.resizeAs(currentGradInput).copy(currentGradInput)
       } else {
         gradInput.add(currentGradInput)
@@ -106,7 +105,7 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
             }
           }"
         }
-             }.mkString(line)
+        }.mkString(line)
     }$line$tab${last}output$line$tab}"
   }
 }

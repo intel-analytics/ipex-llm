@@ -47,9 +47,6 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val seed = 100
     RNG.setSeed(seed)
-/*    val opt: Table = new Table()
-    opt("shortcutType") = "B"
-    opt("depth") = 18*/
     val model = ResNet[Double](classNum, T("shortcutType" -> ShortcutType.B, "depth"->18))
     model.zeroGradParameters()
 
@@ -208,7 +205,6 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
     shareGradInput(model)
-//
 
     val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
@@ -227,14 +223,14 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       "dampening" -> 0.0)
     val sgd = new SGD[Double]
 
-   /* val floatInput = Tensor[Float](256, 3, 224, 224)
-    val floatLabels = Tensor[Float](256)
-    for (i <- 0 until floatInput.nElement()) {
-      floatInput.storage().array()(i) = input.storage().array()(i).toFloat
-    }
-    for (i <- 0 until floatLabels.nElement()) {
-      floatLabels.storage().array()(i) = labels.storage().array()(i).toFloat
-    }*/
+    /* val floatInput = Tensor[Float](256, 3, 224, 224)
+     val floatLabels = Tensor[Float](256)
+     for (i <- 0 until floatInput.nElement()) {
+       floatInput.storage().array()(i) = input.storage().array()(i).toFloat
+     }
+     for (i <- 0 until floatLabels.nElement()) {
+       floatLabels.storage().array()(i) = labels.storage().array()(i).toFloat
+     }*/
 
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
       model.forward(input)
@@ -248,7 +244,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       sgd.optimize(feval, weights, state)
     }
 
-   val output = TH.map("output").asInstanceOf[Tensor[Double]]
+    val output = TH.map("output").asInstanceOf[Tensor[Double]]
     val outputTest = model.forward(input)
     var abss = 0.0
     for (i <- 0 until outputTest.nElement()) {
@@ -270,7 +266,6 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       val tmp = abs(gradOutputTest.storage().array()(i) - gradOutput.storage().array()(i))
       abss += tmp
     }
-    //assert(abss == 0.0)
     assert(abss < 2e-6)
     println(s"gradOutputTestAbs:$abss")
 
@@ -284,169 +279,54 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
     println(s"gradInputTestAbs:$abss")
 
-//    val (weights, grad) = model.getParameters()
-//    val modelTorch = TH.map("model").asInstanceOf[Module[Double]]
-//    val (weightsTorch, gradTorch) = modelTorch.getParameters()
-//    sgd.optimize(_ => (errTest, grad), weights, state, state)
-//    abss = 0.0
-//    for (i <- 0 until weights.nElement()) {
-//      val tmp = abs(weights.storage().array()(i) - weightsTorch.storage().array()(i))
-//      abss += tmp
-//    }
-//    assert(abss < 2e-2)
+    //    val (weights, grad) = model.getParameters()
+    //    val modelTorch = TH.map("model").asInstanceOf[Module[Double]]
+    //    val (weightsTorch, gradTorch) = modelTorch.getParameters()
+    //    sgd.optimize(_ => (errTest, grad), weights, state, state)
+    //    abss = 0.0
+    //    for (i <- 0 until weights.nElement()) {
+    //      val tmp = abs(weights.storage().array()(i) - weightsTorch.storage().array()(i))
+    //      abss += tmp
+    //    }
+    //    assert(abss < 2e-2)
   }
- /*
-  "AlexNet" should "generate correct output" in {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
+
+  def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
+    (implicit ev: TensorNumeric[T]): Unit = {
+    def sharingKey(m: Module[T]) = m.getClass.getName
+    val cache = Map[Any, Storage[T]]()
+    model.mapModules(m => {
+      val moduleType = m.getClass.getName
+      if (!moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatAddTable")) {
+        val key = sharingKey(m)
+        if (!cache.contains(key)){
+          cache.put(key, Storage(Array(ev.fromType[Int](1))))
+        }
+
+        m.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
+      }
+    })
+
+    for ((m, i) <- model
+      .findModules("com.intel.analytics.sparkdl.nn.ConcatAddTable")
+      .zipWithIndex){
+      if (!cache.contains(i % 2)) {
+        cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
+      }
+      m.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
     }
 
-    Random.setSeed(1)
-    val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](8).apply1(e => Random.nextInt(nClasses))
-
-    val seed = 100
-    RNG.setSeed(seed)
-
-    val code = "torch.manualSeed(" + seed + ")\n" +
-      """local nClasses = 1000
-local feature = nn.Sequential()
-feature:add(nn.SpatialConvolutionMM(3,64,11,11,4,4,2,2))       -- 224 -> 55
-feature:add(nn.ReLU())
-feature:add(nn.SpatialMaxPooling(3,3,2,2))                   -- 55 ->  27
-feature:add(nn.SpatialConvolutionMM(64,192,5,5,1,1,2,2))       --  27 -> 27
-feature:add(nn.ReLU())
-feature:add(nn.SpatialMaxPooling(3,3,2,2))                   --  27 ->  13
-feature:add(nn.SpatialConvolutionMM(192,384,3,3,1,1,1,1))      --  13 ->  13
-feature:add(nn.ReLU())
-feature:add(nn.SpatialConvolutionMM(384,256,3,3,1,1,1,1))      --  13 ->  13
-feature:add(nn.ReLU())
-feature:add(nn.SpatialConvolutionMM(256,256,3,3,1,1,1,1))      --  13 ->  13
-feature:add(nn.ReLU())
-feature:add(nn.SpatialMaxPooling(3,3,2,2))                   -- 13 -> 6
-local classifier = nn.Sequential()
-classifier:add(nn.View(256*6*6))
-classifier:add(nn.Linear(256*6*6, 4096))
-classifier:add(nn.ReLU())
-classifier:add(nn.Linear(4096, 4096))
-classifier:add(nn.ReLU())
-classifier:add(nn.Linear(4096, nClasses))
-classifier:add(nn.LogSoftMax())
-model = nn.Sequential():add(feature):add(classifier)
-local parameters, gradParameters = model:getParameters()
-model:zeroGradParameters()
-parameters_initial = parameters : clone()
-gradParameters_initial = gradParameters : clone()
-local criterion =  nn.ClassNLLCriterion()
-state = {
-  learningRate = 1e-2,
-  momentum = 0.9,
-  dampening = 0.0,
-  weightDecay = 5e-4
-}
-feval = function(x)
-model:zeroGradParameters()
-model_initial = model : clone()
-local output1 = model:forward(input)
-local err1 = criterion:forward(output1, labels)
-local gradOutput1 = criterion:backward(output1, labels)
-model:backward(input, gradOutput1)
-return err1, gradParameters
-end
-for i = 1,1, 1 do
-  optim.sgd(feval, parameters, state)
-end
-local output = model:forward(input)
-local err = criterion:forward(output, labels)
-local gradOutput = criterion:backward(output, labels)
---local stateDfdx = state.dfdx
-gradInput = model:backward(input, gradOutput)
-      """
-
-    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
-      "parameters_initial", "gradParameters_initial", "gradInput", "model"))
-
-    val model = AlexNet_OWT[Double](1000, false)
-    model.zeroGradParameters()
-    val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
-    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
-    parameters should be(parameterTorch)
-
-    val gradParameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
-    val gradParameterTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
-    gradParameters should be(gradParameterTorch)
-
-    val (weights, grad) = model.getParameters()
-    val criterion = new ClassNLLCriterion[Double]()
-
-    val state = T("learningRate" -> 1e-2, "momentum" -> 0.9, "weightDecay" -> 5e-4,
-      "dampening" -> 0.0)
-    val sgd = new SGD[Double]
-
-    for (i <- 1 to 1) {
-      model.zeroGradParameters()
-      val outputTest = model.forward(input)
-      val loss = criterion.forward(outputTest, labels)
-      val gradOutputTest = criterion.backward(outputTest, labels)
-      model.backward(input, gradOutputTest)
-      sgd.optimize(_ => (loss, grad), weights, state, state)
+    cache.put("gradWeightMM", Storage(Array(ev.fromType[Int](1))))
+    cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
+    cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
+    for ((m, i) <- model
+      .findModules("com.intel.analytics.sparkdl.nn.SpatialConvolution")
+      .zipWithIndex){
+      val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
+      tmpModel.gradWeightMM = Tensor[T](cache.get("gradWeightMM").get)
+      tmpModel.fInput = Tensor[T](cache.get("fInput").get)
+      tmpModel.fGradInput = Tensor[T](cache.get("fGradInput").get)
     }
-
-    model.zeroGradParameters()
-    val outputTest = model.forward(input)
-    val output = TH.map("output").asInstanceOf[Tensor[Double]]
-    outputTest should be(output)
-
-    val errTest = criterion.forward(outputTest, labels)
-    val err = TH.map("err").asInstanceOf[Double]
-    errTest should be(err)
-
-    val gradOutputTest = criterion.backward(outputTest, labels)
-    val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
-    gradOutputTest should be(gradOutput)
-
-    val gradInput = model.backward(input, gradOutputTest)
-    val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
-    gradInput should be(gradInputTorch)
   }
-  */
- def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
-                                                            (implicit ev: TensorNumeric[T]): Unit = {
-   def sharingKey(m: Module[T]) = m.getClass.getName
-   val cache = Map[Any, Storage[T]]()
-   model.mapModules(m => {
-     val moduleType = m.getClass.getName
-     if (!moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatAddTable")) {
-       val key = sharingKey(m)
-       if (!cache.contains(key)){
-         cache.put(key, Storage(Array(ev.fromType[Int](1))))
-       }
-
-       m.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
-     }
-   })
-   val shareStorageOdd  = Storage[T]()
-   val shareStorageEven = Storage[T]()
-   for ((m, i) <- model
-     .findModules("com.intel.analytics.sparkdl.nn.ConcatAddTable")
-     .zipWithIndex){
-     if (!cache.contains(i % 2)) {
-       cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
-     }
-     m.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
-   }
-
-   cache.put("gradWeightMM", Storage(Array(ev.fromType[Int](1))))
-   cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
-   cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
-   for ((m, i) <- model
-     .findModules("com.intel.analytics.sparkdl.nn.SpatialConvolution")
-     .zipWithIndex){
-     val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
-     tmpModel.gradWeightMM = Tensor[T](cache.get("gradWeightMM").get)
-     tmpModel.fInput = Tensor[T](cache.get("fInput").get)
-     tmpModel.fGradInput = Tensor[T](cache.get("fGradInput").get)
-   }
- }
 
 }
