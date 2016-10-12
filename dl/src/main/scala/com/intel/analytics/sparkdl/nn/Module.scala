@@ -120,6 +120,14 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
   def findModel(paramOffset: Int,
     indexes: Array[Int] = Array()): (Module[T], Int, Array[Int]) = (this, paramOffset, indexes)
 
+  def mapModules(f: Module[T] => Unit): Unit = {
+    f(this)
+
+    if (modules != null) {
+      modules.foreach(_.mapModules(f))
+    }
+  }
+
   def findModules(name: String): ArrayBuffer[Module[T]] = {
     def matchName(module: Module[T]) =
       module.getClass.getName.equals(name)
@@ -136,6 +144,8 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
 
     nodes
   }
+
+
 
   def evaluate(): this.type = {
     train = false

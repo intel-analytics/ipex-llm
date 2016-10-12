@@ -17,10 +17,12 @@
 
 package com.intel.analytics.sparkdl.models
 
-import com.github.fommil.netlib.{NativeSystemBLAS, BLAS}
+import com.github.fommil.netlib.{BLAS, NativeSystemBLAS}
+import com.intel.analytics.sparkdl.models.ResNet.ShortcutType
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.utils.T
 import scopt.OptionParser
 
 import scala.reflect.ClassTag
@@ -56,7 +58,7 @@ object Perf {
       .action((v, p) => p.copy(module = v))
       .validate(v =>
         if (Set("alexnet", "alexnetowt", "googlenet_v1", "googlenet_v2", "vgg16", "vgg19",
-          "lenet5").
+          "lenet5", "resnet")
           contains(v.toLowerCase())) {
           success
         } else {
@@ -86,6 +88,7 @@ object Perf {
       case "vgg16" => (Vgg_16(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
+      case "resnet" => (ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50)), Tensor[T](param.batchSize, 3, 224, 224))
     }
     input.rand()
     println(model)
@@ -142,9 +145,9 @@ object Perf {
 case class TestCase[T](input: Tensor[T], target: Tensor[T], model: Module[T])
 
 case class Params(
-  batchSize: Int = 128,
+  batchSize: Int = 64,
   iteration: Int = 10,
   warmUp: Int = 5,
   dataType: String = "float",
-  module: String = "alexnet"
+  module: String = "resnet"
 )
