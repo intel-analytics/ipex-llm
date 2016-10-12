@@ -25,7 +25,7 @@ object ResNet {
       if (useConv == true) {
         new Sequential[T]()
           .add(new SpatialConvolution[T](nInputPlane, nOutputPlane, 1, 1, stride, stride))
-          .add(new SpatialBatchNormalization(nOutputPlane))
+         // .add(new SpatialBatchNormalization(nOutputPlane))
       } else if (nInputPlane != nOutputPlane) {
         val model = new Sequential[T]()
         model.add(new SpatialAveragePooling[T](1, 1, stride, stride))
@@ -44,10 +44,10 @@ object ResNet {
 
       val s = new Sequential[T]()
       s.add(new SpatialConvolution[T](nInputPlane, n, 3, 3, stride, stride, 1, 1))
-      s.add(new SpatialBatchNormalization[T](n))
+    //  s.add(new SpatialBatchNormalization[T](n))
       s.add(new ReLU[T](true))
       s.add(new SpatialConvolution[T](n ,n, 3, 3, 1, 1, 1, 1))
-      s.add(new SpatialBatchNormalization[T](n))
+   //   s.add(new SpatialBatchNormalization[T](n))
 
       val model = new Sequential[T]()
       //model.add(shortcut(nInputPlane, n, stride))
@@ -70,13 +70,13 @@ object ResNet {
 
       val s = new Sequential[T]()
       s.add(new SpatialConvolution[T](nInputPlane, n, 1, 1, 1, 1, 0, 0))
-      s.add(new SpatialBatchNormalization[T](n))
+   //   s.add(new SpatialBatchNormalization[T](n))
       s.add(new ReLU[T](true))
       s.add(new SpatialConvolution[T](n, n, 3, 3, stride, stride, 1, 1))
-      s.add(new SpatialBatchNormalization[T](n))
+  //    s.add(new SpatialBatchNormalization[T](n))
       s.add(new ReLU[T](true))
       s.add(new SpatialConvolution[T](n, n*4, 1, 1, 1, 1, 0, 0))
-      s.add(new SpatialBatchNormalization[T](n * 4))
+  //    s.add(new SpatialBatchNormalization[T](n * 4))
 
       val model = new Sequential[T]()
       model.add(new ConcatAddTable[T](true)
@@ -120,7 +120,7 @@ object ResNet {
       //-- The ResNet ImageNet Model
 
       model.add(new SpatialConvolution[T](3, 64, 7, 7, 2, 2, 3, 3))
-      model.add(new SpatialBatchNormalization[T](64))
+   //   model.add(new SpatialBatchNormalization[T](64))
       model.add(new ReLU[T](true))
       model.add(new SpatialMaxPooling[T](3, 3, 2, 2, 1, 1))
       model.add(layer(block, 64, loopConfig._1))
