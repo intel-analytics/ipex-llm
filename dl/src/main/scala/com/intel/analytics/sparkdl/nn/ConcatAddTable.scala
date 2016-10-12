@@ -90,21 +90,19 @@ class ConcatAddTable[T: ClassTag](ip: Boolean = false)(
     val tab = "  "
     val line = "\n"
     val next = "  |`-> "
-    val lastNext = "   `-> "
     val ext = "  |    "
-    val extlast = "       "
+    val extLast = "       "
     val last = "   ... -> "
     s"nn.ConcatAddTable {$line${tab}input$line${
       modules.zipWithIndex
-        .map { case (model: Module[T], index: Int) => {
+        .map { case (model: Module[T], index: Int) =>
           s"$tab$next(${index + 1}): ${
             if (index == modules.length - 1) {
-              model.setLine(line + tab + extlast)
+              model.setLine(line + tab + extLast)
             } else {
               model.setLine(line + tab + ext)
             }
           }"
-        }
         }.mkString(line)
     }$line$tab${last}output$line$tab}"
   }

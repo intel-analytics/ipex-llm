@@ -17,7 +17,6 @@
 
 package com.intel.analytics.sparkdl.models
 import com.intel.analytics.sparkdl.models.ResNet.ShortcutType
-import com.intel.analytics.sparkdl.utils.Table
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim.SGD
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
@@ -27,11 +26,10 @@ import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import scala.collection.immutable
+import scala.collection.{immutable, mutable}
 import scala.math._
-import scala.util.Random
-import scala.collection.mutable.Map
 import scala.reflect.ClassTag
+import scala.util.Random
 
 class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "ResNet double" should "generate correct output" in {
@@ -294,7 +292,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
   def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
     (implicit ev: TensorNumeric[T]): Unit = {
     def sharingKey(m: Module[T]) = m.getClass.getName
-    val cache = Map[Any, Storage[T]]()
+    val cache = mutable.Map[Any, Storage[T]]()
     model.mapModules(m => {
       val moduleType = m.getClass.getName
       if (!moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatAddTable")) {
