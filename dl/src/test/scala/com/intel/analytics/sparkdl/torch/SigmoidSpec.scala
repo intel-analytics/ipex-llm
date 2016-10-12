@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.Sigmoid
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
@@ -32,7 +32,7 @@ class SigmoidSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "A Sigmoid Module " should "generate correct output and grad" in {
     val module = new Sigmoid[Double]
-    val input = torch.Tensor[Double](2, 2, 2)
+    val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 0.063364277360961
     input(Array(1, 1, 2)) = 0.90631252736785
     input(Array(1, 2, 1)) = 0.22275671223179
@@ -41,7 +41,7 @@ class SigmoidSpec extends FlatSpec with BeforeAndAfter with Matchers {
     input(Array(2, 1, 2)) = 0.97488326719031
     input(Array(2, 2, 1)) = 0.94414822547697
     input(Array(2, 2, 2)) = 0.68123375508003
-    val gradOutput = torch.Tensor[Double](2, 2, 2)
+    val gradOutput = Tensor[Double](2, 2, 2)
     gradOutput(Array(1, 1, 1)) = 0.38652365817688
     gradOutput(Array(1, 1, 2)) = 0.034144022269174
     gradOutput(Array(1, 2, 1)) = 0.68105488433503

@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.Table
 
 import scala.reflect.ClassTag
@@ -26,19 +26,21 @@ import scala.reflect.ClassTag
 class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T])
   extends OptimMethod[T] {
 
+  import SGD._
+
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]), x: Tensor[T],
     config: Table, state: Table = null): (Tensor[T], Array[T]) = {
 
     val _state = if (state == null) config else state
-    val lr = config.get[Double]("learningRate").getOrElse(1e-3)
-    val lrd = config.get[Double]("learningRateDecay").getOrElse(0.0)
+    val lrSchedule = config.get[LearningRateSchedule]("learningRateSchedule").getOrElse(Default())
+    lrSchedule.updateHyperParameter(config, _state)
+
     val wd = config.get[Double]("weightDecay").getOrElse(0.0)
     val mom = config.get[Double]("momentum").getOrElse(0.0)
     val damp = config.get[Double]("dampening").getOrElse(mom)
     val nesterov = config.get[Boolean]("nesterov").getOrElse(false)
     val lrs = config.get[Tensor[T]]("learningRates").getOrElse(null)
     val wds = config.get[Tensor[T]]("weightDecays").getOrElse(null)
-    val nevals = _state.get[Int]("evalCounter").getOrElse(0)
 
     require(!nesterov || (mom > 0 && damp == 0),
       "Nesterov momentum requires a momentum and zero dampening")
@@ -49,7 +51,7 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
       dfdx.add(ev.fromType[Double](wd), x)
     } else if (wds != null) {
       val decayParameters = _state.get[Tensor[T]]("decayParameters").getOrElse({
-        val DP = torch.Tensor[T]().resizeAs(dfdx)
+        val DP = Tensor[T]().resizeAs(dfdx)
         _state("decayParameters") = DP
         DP
       })
@@ -60,7 +62,7 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     if (mom != 0) {
       val stateDFDX = _state.get[Tensor[T]]("dfdx") match {
         case None =>
-          val DFDX = torch.Tensor[T]().resizeAs(dfdx).copy(dfdx)
+          val DFDX = Tensor[T]().resizeAs(dfdx).copy(dfdx)
           _state("dfdx") = DFDX
           DFDX
         case s: Some[Tensor[T]] => s.get.mul(ev.fromType[Double](mom)).
@@ -74,11 +76,10 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
       }
     }
 
-    val clr = ev.fromType[Double](-lr / (1 + nevals * lrd))
-
+    val clr = ev.fromType(config[Double]("clr"))
     if (lrs != null) {
       val deltaParameters = _state.get[Tensor[T]]("deltaParameters").getOrElse({
-        val deltaP = torch.Tensor[T]().resizeAs(dfdx)
+        val deltaP = Tensor[T]().resizeAs(dfdx)
         _state("deltaParameters") = deltaP
         deltaP
       })
@@ -88,8 +89,66 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
       x.add(clr, dfdx)
     }
 
-    _state("evalCounter") = nevals + 1
 
     (x, Array(fx))
   }
+}
+
+object SGD {
+  trait LearningRateSchedule {
+    def updateHyperParameter(config : Table, state : Table) : Unit
+  }
+
+  case class EpochSchedule(regimes : Array[Regime]) extends LearningRateSchedule {
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
+      val epoch = config[Int]("epoch")
+      for (r <- regimes) {
+        if (epoch >= r.startEpoch && epoch <= r.endEpoch) {
+          config.add(r.config)
+        }
+      }
+      config("clr") = -config.get[Double]("learningRate").getOrElse(1e-3)
+    }
+  }
+  case class Poly(power : Double, maxIteration : Int) extends LearningRateSchedule {
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
+      val lr = config.get[Double]("learningRate").getOrElse(1e-3)
+      val nevals = state.get[Int]("evalCounter").getOrElse(0)
+      val clr = if (nevals > maxIteration) {
+        0.0
+      } else {
+        -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
+      }
+      println(s"iteration is : ${nevals}. current learning rate is $clr")
+      state("evalCounter") = nevals + 1
+      config("clr") = clr
+    }
+  }
+
+  case class Step(stepSize : Int, gamma : Double) extends LearningRateSchedule {
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
+      val lr = config.get[Double]("learningRate").getOrElse(1e-3)
+      var clr = -lr
+      val nevals = state.get[Int]("evalCounter").getOrElse(0)
+      var i = 0
+      while(i < nevals / stepSize) {
+        clr *= gamma
+        i += 1
+      }
+      state("evalCounter") = nevals + 1
+      config("clr") = clr
+    }
+  }
+
+  case class Default() extends LearningRateSchedule {
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
+      val lr = config.get[Double]("learningRate").getOrElse(1e-3)
+      val lrd = config.get[Double]("learningRateDecay").getOrElse(0.0)
+      val nevals = state.get[Int]("evalCounter").getOrElse(0)
+      config("clr") = -lr / (1 + nevals * lrd)
+      state("evalCounter") = nevals + 1
+    }
+  }
+
+  case class Regime(startEpoch: Int, endEpoch: Int, config: Table)
 }

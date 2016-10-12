@@ -44,7 +44,7 @@ object AlexNet {
     var backwardTime = 0L
     val times = dtype.toLowerCase match {
       case "float" =>
-        val input = torch.Tensor[Float](batchSize, 3, 224, 224).fill(0.5f)
+        val input = Tensor[Float](batchSize, 3, 224, 224).fill(0.5f)
         val model = getModelCaffeOWT[Float](1000)
         val (parm, grad) = model.getParameters()
         println(model)
@@ -52,7 +52,7 @@ object AlexNet {
         val criterion = new ClassNLLCriterion[Float]()
         val labelData = new Array[Float](batchSize)
         util.Arrays.fill(labelData, 10)
-        val labels = torch.Tensor[Float](torch.storage(labelData))
+        val labels = Tensor[Float](Storage(labelData))
         var i = 0
         println("warm up")
         while (i < 5) {
@@ -78,7 +78,7 @@ object AlexNet {
         }
         model.getTimes()
       case "double" =>
-        val input = torch.Tensor[Double](batchSize, 3, 224, 224).fill(0.5)
+        val input = Tensor[Double](batchSize, 3, 224, 224).fill(0.5)
         val model = getModelCaffeOWT[Double](1000)
         val (parm, grad) = model.getParameters()
         println(model)
@@ -86,7 +86,7 @@ object AlexNet {
         val criterion = new ClassNLLCriterion[Double]()
         val labelData = new Array[Double](batchSize)
         util.Arrays.fill(labelData, 10)
-        val labels = torch.Tensor[Double](torch.storage(labelData))
+        val labels = Tensor[Double](Storage(labelData))
         var i = 0
         println("warm up")
         while (i < 5) {

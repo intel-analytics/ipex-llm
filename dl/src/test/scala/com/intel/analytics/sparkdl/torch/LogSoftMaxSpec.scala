@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.LogSoftMax
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
@@ -33,8 +33,8 @@ class LogSoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A LogSoftMax Module " should "generate correct output and grad" in {
     val module = new LogSoftMax[Double]()
     Random.setSeed(100)
-    val input = torch.Tensor[Double](4, 10).apply1(e => Random.nextDouble())
-    val data = torch.Tensor[Double](4, 20).randn()
+    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
+    val data = Tensor[Double](4, 20).randn()
     val gradOutput = data.narrow(2, 1, 10)
 
     val start = System.nanoTime()

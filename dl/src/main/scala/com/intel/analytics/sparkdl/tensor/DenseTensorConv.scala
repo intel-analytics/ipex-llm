@@ -243,7 +243,7 @@ object DenseTensorConv {
     val nOutputRows = convSize(nInputRows, nKernelRows, srow, vf)
     val nOutputCols = convSize(nInputCols, nKernelCols, scol, vf)
 
-    val result = torch.Tensor[T](nOutputRows, nOutputCols)
+    val result = Tensor[T](nOutputRows, nOutputCols)
     conv2d(result.storage(), result.storageOffset() - 1, alpha, input.storage(),
       input.storageOffset() - 1, nInputRows, nInputCols, kernel.storage(),
       kernel.storageOffset() - 1, nKernelRows, nKernelCols,

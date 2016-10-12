@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.View
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
@@ -33,8 +33,8 @@ class ViewSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A View Container" should "generate correct output and grad" in {
     val module = new View[Double](2, 8)
 
-    val input = torch.Tensor[Double](4, 4).randn()
-    val gradOutput = torch.Tensor[Double](2, 8).randn()
+    val input = Tensor[Double](4, 4).randn()
+    val gradOutput = Tensor[Double](2, 8).randn()
 
     val start = System.nanoTime()
     val output = module.forward(input)

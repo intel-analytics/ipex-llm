@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.MSECriterion
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
@@ -32,7 +32,7 @@ class MSECriterionSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "A MSE Criterion " should "generate correct output and grad" in {
     val mse = new MSECriterion[Double]
-    val input = torch.Tensor[Double](2, 2, 2)
+    val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 0.17503996845335
     input(Array(1, 1, 2)) = 0.83220188552514
     input(Array(1, 2, 1)) = 0.48450597329065
@@ -41,7 +41,7 @@ class MSECriterionSpec extends FlatSpec with BeforeAndAfter with Matchers {
     input(Array(2, 1, 2)) = 0.34398410236463
     input(Array(2, 2, 1)) = 0.55356747563928
     input(Array(2, 2, 2)) = 0.20383032318205
-    val target = torch.Tensor[Double](2, 2, 2)
+    val target = Tensor[Double](2, 2, 2)
     target(Array(1, 1, 1)) = 0.69956525065936
     target(Array(1, 1, 2)) = 0.86074831243604
     target(Array(1, 2, 1)) = 0.54923197557218

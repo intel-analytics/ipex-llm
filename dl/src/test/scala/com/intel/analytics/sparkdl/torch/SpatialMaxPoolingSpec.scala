@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.SpatialMaxPooling
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
@@ -32,7 +32,7 @@ class SpatialMaxPoolingSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "A SpatialMaxPooling" should "generate correct output and gradInput" in {
     val module = new SpatialMaxPooling[Double](2, 2)
-    val input = torch.Tensor[Double](1, 3, 3)
+    val input = Tensor[Double](1, 3, 3)
     input(Array(1, 1, 1)) = 0.53367262030952
     input(Array(1, 1, 2)) = 0.79637692729011
     input(Array(1, 1, 3)) = 0.56747663160786
@@ -42,7 +42,7 @@ class SpatialMaxPoolingSpec extends FlatSpec with BeforeAndAfter with Matchers {
     input(Array(1, 3, 1)) = 0.30736334621906
     input(Array(1, 3, 2)) = 0.59734606579877
     input(Array(1, 3, 3)) = 0.42989541869611
-    val gradOutput = torch.Tensor[Double](1, 1, 1)
+    val gradOutput = Tensor[Double](1, 1, 1)
     gradOutput(Array(1, 1, 1)) = 0.023921491578221
 
     val start = System.nanoTime()

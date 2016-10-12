@@ -23,7 +23,7 @@ import java.nio.file._
 import java.util.{HashMap, Map}
 
 import com.intel.analytics.sparkdl.nn._
-import com.intel.analytics.sparkdl.tensor.{Storage, Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
 
 
 sealed abstract class TorchObject(val typeId: Int)
@@ -657,7 +657,7 @@ object File {
       data(i) = rawData.getDouble
       i += 1
     }
-    torch.storage(data)
+    Storage(data)
   }
 
   private def readFloatStorage(rawData: ByteBuffer): Storage[Float] = {
@@ -668,7 +668,7 @@ object File {
       data(i) = rawData.getFloat
       i += 1
     }
-    torch.storage(data)
+    Storage(data)
   }
 
   private def readLongStorage(rawData: ByteBuffer): Array[Int] = {
@@ -742,7 +742,7 @@ object File {
 
 
     val storage = readObject(rawData, objects).asInstanceOf[Storage[Double]]
-    torch.Tensor(storage, offset, sizes, strides)
+    Tensor(storage, offset, sizes, strides)
   }
 
   // Tensor float
@@ -765,7 +765,7 @@ object File {
 
 
     val storage = readObject(rawData, objects).asInstanceOf[Storage[Float]]
-    torch.Tensor(storage, offset, sizes, strides)
+    Tensor(storage, offset, sizes, strides)
   }
 
   // Modules

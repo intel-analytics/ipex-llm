@@ -17,9 +17,9 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.torch
 import com.intel.analytics.sparkdl.utils.RandomGenerator
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.math.abs
 
@@ -27,7 +27,7 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
 
   "A SpatialMaxPooling" should "generate correct output and gradInput" in {
     val module = new SpatialMaxPooling[Double](2, 2)
-    val input = torch.Tensor[Double](1, 3, 3)
+    val input = Tensor[Double](1, 3, 3)
     input(Array(1, 1, 1)) = 0.53367262030952
     input(Array(1, 1, 2)) = 0.79637692729011
     input(Array(1, 1, 3)) = 0.56747663160786
@@ -37,11 +37,11 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     input(Array(1, 3, 1)) = 0.30736334621906
     input(Array(1, 3, 2)) = 0.59734606579877
     input(Array(1, 3, 3)) = 0.42989541869611
-    val gradOutput = torch.Tensor[Double](1, 1, 1)
+    val gradOutput = Tensor[Double](1, 1, 1)
     gradOutput(Array(1, 1, 1)) = 0.023921491578221
-    val expectedOutput = torch.Tensor[Double](1, 1, 1)
+    val expectedOutput = Tensor[Double](1, 1, 1)
     expectedOutput(Array(1, 1, 1)) = 0.79637692729011
-    val expectedGrad = torch.Tensor[Double](1, 3, 3)
+    val expectedGrad = Tensor[Double](1, 3, 3)
     expectedGrad(Array(1, 1, 1)) = 0
     expectedGrad(Array(1, 1, 2)) = 0.023921491578221
     expectedGrad(Array(1, 1, 3)) = 0
@@ -69,7 +69,7 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
 
   "A SpatialMaxPooling of float" should "generate correct output and gradInput" in {
     val module = new SpatialMaxPooling[Float](2, 2)
-    val input = torch.Tensor[Float](1, 3, 3)
+    val input = Tensor[Float](1, 3, 3)
     input(Array(1, 1, 1)) = 0.53367262030952f
     input(Array(1, 1, 2)) = 0.79637692729011f
     input(Array(1, 1, 3)) = 0.56747663160786f
@@ -79,11 +79,11 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     input(Array(1, 3, 1)) = 0.30736334621906f
     input(Array(1, 3, 2)) = 0.59734606579877f
     input(Array(1, 3, 3)) = 0.42989541869611f
-    val gradOutput = torch.Tensor[Float](1, 1, 1)
+    val gradOutput = Tensor[Float](1, 1, 1)
     gradOutput(Array(1, 1, 1)) = 0.023921491578221f
-    val expectedOutput = torch.Tensor[Float](1, 1, 1)
+    val expectedOutput = Tensor[Float](1, 1, 1)
     expectedOutput(Array(1, 1, 1)) = 0.79637692729011f
-    val expectedGrad = torch.Tensor[Float](1, 3, 3)
+    val expectedGrad = Tensor[Float](1, 3, 3)
     expectedGrad(Array(1, 1, 1)) = 0
     expectedGrad(Array(1, 1, 2)) = 0.023921491578221f
     expectedGrad(Array(1, 1, 3)) = 0
@@ -111,7 +111,7 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
 
   "A SpatialMaxPooling in ceil mode" should "generate correct output and gradInput" in {
     val module = new SpatialMaxPooling[Double](2, 2).ceil()
-    val input = torch.Tensor[Double](1, 3, 3)
+    val input = Tensor[Double](1, 3, 3)
     input(Array(1, 1, 1)) = 0.52796983974986
     input(Array(1, 1, 2)) = 0.77937559061684
     input(Array(1, 1, 3)) = 0.35681968415156
@@ -121,17 +121,17 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     input(Array(1, 3, 1)) = 0.40316500258632
     input(Array(1, 3, 2)) = 0.081480369903147
     input(Array(1, 3, 3)) = 0.9328313653823
-    val gradOutput = torch.Tensor[Double](1, 2, 2)
+    val gradOutput = Tensor[Double](1, 2, 2)
     gradOutput(Array(1, 1, 1)) = 0.032919396646321
     gradOutput(Array(1, 1, 2)) = 0.54643597058021
     gradOutput(Array(1, 2, 1)) = 0.15019989991561
     gradOutput(Array(1, 2, 2)) = 0.29359312891029
-    val expectedOutput = torch.Tensor[Double](1, 2, 2)
+    val expectedOutput = Tensor[Double](1, 2, 2)
     expectedOutput(Array(1, 1, 1)) = 0.77937559061684
     expectedOutput(Array(1, 1, 2)) = 0.56990833440796
     expectedOutput(Array(1, 2, 1)) = 0.40316500258632
     expectedOutput(Array(1, 2, 2)) = 0.9328313653823
-    val expectedGrad = torch.Tensor[Double](1, 3, 3)
+    val expectedGrad = Tensor[Double](1, 3, 3)
     expectedGrad(Array(1, 1, 1)) = 0
     expectedGrad(Array(1, 1, 2)) = 0.032919396646321
     expectedGrad(Array(1, 1, 3)) = 0
@@ -159,7 +159,7 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
 
   "A SpatialMaxPooling with dW,dH and pad" should "generate correct output and gradInput" in {
     val module = new SpatialMaxPooling[Double](3, 2, 2, 2, 1, 1)
-    val input = torch.Tensor[Double](1, 4, 4)
+    val input = Tensor[Double](1, 4, 4)
     input(Array(1, 1, 1)) = 0.39016278996132
     input(Array(1, 1, 2)) = 0.2185998596251
     input(Array(1, 1, 3)) = 0.25424918020144
@@ -176,21 +176,21 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     input(Array(1, 4, 2)) = 0.09617441915907
     input(Array(1, 4, 3)) = 0.0016057807952166
     input(Array(1, 4, 4)) = 0.63314784877002
-    val gradOutput = torch.Tensor[Double](1, 3, 2)
+    val gradOutput = Tensor[Double](1, 3, 2)
     gradOutput(Array(1, 1, 1)) = 0.090864511439577
     gradOutput(Array(1, 1, 2)) = 0.023676526965573
     gradOutput(Array(1, 2, 1)) = 0.14472470176406
     gradOutput(Array(1, 2, 2)) = 0.55145429610275
     gradOutput(Array(1, 3, 1)) = 0.23100447538309
     gradOutput(Array(1, 3, 2)) = 0.7202813832555
-    val expectedOutput = torch.Tensor[Double](1, 3, 2)
+    val expectedOutput = Tensor[Double](1, 3, 2)
     expectedOutput(Array(1, 1, 1)) = 0.39016278996132
     expectedOutput(Array(1, 1, 2)) = 0.27032148116268
     expectedOutput(Array(1, 2, 1)) = 0.59107813285664
     expectedOutput(Array(1, 2, 2)) = 0.94037068192847
     expectedOutput(Array(1, 3, 1)) = 0.36138460785151
     expectedOutput(Array(1, 3, 2)) = 0.63314784877002
-    val expectedGrad = torch.Tensor[Double](1, 4, 4)
+    val expectedGrad = Tensor[Double](1, 4, 4)
     expectedGrad(Array(1, 1, 1)) = 0.090864511439577
     expectedGrad(Array(1, 1, 2)) = 0
     expectedGrad(Array(1, 1, 3)) = 0
@@ -226,7 +226,7 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
   "A SpatialMaxPooling with asymmetry dW,dH and pad" should
     "generate correct output and gradInput" in {
     val module = new SpatialMaxPooling[Double](3, 2, 2, 1, 0, 1)
-    val input = torch.Tensor[Double](1, 4, 3)
+    val input = Tensor[Double](1, 4, 3)
     input(Array(1, 1, 1)) = 0.33230334869586
     input(Array(1, 1, 2)) = 0.96416000230238
     input(Array(1, 1, 3)) = 0.36518415389583
@@ -239,19 +239,19 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     input(Array(1, 4, 1)) = 0.85843464848585
     input(Array(1, 4, 2)) = 0.8718444830738
     input(Array(1, 4, 3)) = 0.55945817148313
-    val gradOutput = torch.Tensor[Double](1, 5, 1)
+    val gradOutput = Tensor[Double](1, 5, 1)
     gradOutput(Array(1, 1, 1)) = 0.35993986087851
     gradOutput(Array(1, 2, 1)) = 0.49970405758359
     gradOutput(Array(1, 3, 1)) = 0.64157117158175
     gradOutput(Array(1, 4, 1)) = 0.090919603593647
     gradOutput(Array(1, 5, 1)) = 0.74979126174003
-    val expectedOutput = torch.Tensor[Double](1, 5, 1)
+    val expectedOutput = Tensor[Double](1, 5, 1)
     expectedOutput(Array(1, 1, 1)) = 0.96416000230238
     expectedOutput(Array(1, 2, 1)) = 0.96416000230238
     expectedOutput(Array(1, 3, 1)) = 0.87067628931254
     expectedOutput(Array(1, 4, 1)) = 0.8718444830738
     expectedOutput(Array(1, 5, 1)) = 0.8718444830738
-    val expectedGrad = torch.Tensor[Double](1, 4, 3)
+    val expectedGrad = Tensor[Double](1, 4, 3)
     expectedGrad(Array(1, 1, 1)) = 0
     expectedGrad(Array(1, 1, 2)) = 0.8596439184621
     expectedGrad(Array(1, 1, 3)) = 0
@@ -282,7 +282,7 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
 
   "A SpatialMaxPooling" should "generate correct output and gradInput with 3D input" in {
     val module = new SpatialMaxPooling[Double](3, 2, 2, 1, 1, 0)
-    val input = torch.Tensor[Double](2, 3, 3)
+    val input = Tensor[Double](2, 3, 3)
     input(Array(1, 1, 1)) = 0.71901097916998
     input(Array(1, 1, 2)) = 0.77136012469418
     input(Array(1, 1, 3)) = 0.55675543914549
@@ -301,7 +301,7 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     input(Array(2, 3, 1)) = 0.89873241703026
     input(Array(2, 3, 2)) = 0.36333921016194
     input(Array(2, 3, 3)) = 0.87027320521884
-    val gradOutput = torch.Tensor[Double](2, 2, 2)
+    val gradOutput = Tensor[Double](2, 2, 2)
     gradOutput(Array(1, 1, 1)) = 0.90343235363252
     gradOutput(Array(1, 1, 2)) = 0.15445829788223
     gradOutput(Array(1, 2, 1)) = 0.54508250067011
@@ -310,7 +310,7 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     gradOutput(Array(2, 1, 2)) = 0.73553358553909
     gradOutput(Array(2, 2, 1)) = 0.81981368502602
     gradOutput(Array(2, 2, 2)) = 0.67357461876236
-    val expectedOutput = torch.Tensor[Double](2, 2, 2)
+    val expectedOutput = Tensor[Double](2, 2, 2)
     expectedOutput(Array(1, 1, 1)) = 0.77136012469418
     expectedOutput(Array(1, 1, 2)) = 0.97276814724319
     expectedOutput(Array(1, 2, 1)) = 0.75221347878687
@@ -319,7 +319,7 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     expectedOutput(Array(2, 1, 2)) = 0.68115968839265
     expectedOutput(Array(2, 2, 1)) = 0.89873241703026
     expectedOutput(Array(2, 2, 2)) = 0.87027320521884
-    val expectedGrad = torch.Tensor[Double](2, 3, 3)
+    val expectedGrad = Tensor[Double](2, 3, 3)
     expectedGrad(Array(1, 1, 1)) = 0
     expectedGrad(Array(1, 1, 2)) = 0.90343235363252
     expectedGrad(Array(1, 1, 3)) = 0
@@ -357,7 +357,7 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
   "A SpatialMaxPooling of float" should "be good in gradient checker" in {
     RandomGenerator.RNG.setSeed(1000)
     val module = new SpatialMaxPooling[Float](2, 2)
-    val input = torch.Tensor[Float](1, 3, 3).rand()
+    val input = Tensor[Float](1, 3, 3).rand()
     val checker = new GradientChecker(1e-2, 1e-2)
     checker.checkLayer(module, input) should be(true)
   }

@@ -18,19 +18,30 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
-  var output: Tensor[T] = torch.Tensor[T]()
-  var gradInput: Tensor[T] = torch.Tensor[T]()
+  var output: Tensor[T] = Tensor[T]()
+  var gradInput: Tensor[T] = Tensor[T]()
 
   var gradWeight: Tensor[T] = null
   var gradBias: Tensor[T] = null
   var gradient: (Tensor[T], Tensor[T]) = (gradWeight, gradBias)
+
+  private var name : String = null
+
+  def setName(name : String) : this.type = {
+    this.name = name
+    this
+  }
+
+  def getName() : String = {
+    if (this.name == null) this.toString else this.name
+  }
 
   // list of sub modules
   val modules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
@@ -205,7 +216,7 @@ object Module {
       i += 1
     }
 
-    val result = torch.Tensor[T](length)
+    val result = Tensor[T](length)
     val resultStorage = result.storage()
 
     i = 0
@@ -239,7 +250,7 @@ object Module {
       return null
     }
 
-    return torch.Tensor(storage)
+    return Tensor(storage)
   }
 }
 

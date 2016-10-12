@@ -32,7 +32,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.intel.analytics.dllib.mkl</groupId>
+            <groupId>com.intel.analytics.sparkdl.mkl</groupId>
             <artifactId>mkl-java_0.1</artifactId>
             <version>${project.version}</version>
         </dependency>

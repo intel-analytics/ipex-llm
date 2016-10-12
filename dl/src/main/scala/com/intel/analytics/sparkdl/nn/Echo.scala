@@ -17,35 +17,33 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-class MSECriterion[T: ClassTag](implicit ev: TensorNumeric[T]) extends Criterion[T] {
-  var gradInput: Tensor[T] = Tensor[T]()
-  var sizeAverage = true
+/**
+ * This module is for debug purpose, which can print activation and gradient in your model
+ * topology
+ * @param ev$1
+ * @param ev
+ * @tparam T
+ */
+class Echo[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T])
+  extends Module[T] {
 
-  override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    output = ev.fromType[Int](0)
-
-    input.map(target, (a, b) => {
-      output = ev.plus(output, ev.times(ev.minus(a, b), ev.minus(a, b)));
-      a
-    })
-    if (sizeAverage) output = ev.divide(output, ev.fromType[Int](input.nElement()))
-    output
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    this.output = input
+    println(s"${getName()} : Activation size is ${input.size().mkString("x")}")
+    this.output
+  }
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    this.gradInput = gradOutput
+    println(s"${getName()} : Gradient size is ${gradOutput.size().mkString("x")}")
+    this.gradInput
   }
 
-  override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(input)
-    var norm = ev.fromType[Int](2)
-    if (sizeAverage) {
-      norm = ev.fromType[Double](2.0 / input.nElement())
-    }
-    gradInput.copy(input)
-    gradInput.map(target, (a, b) => ev.times(norm, ev.minus(a, b)))
-    gradInput
+  override def toString(): String = {
+    s"nn.Echo"
   }
-
 }

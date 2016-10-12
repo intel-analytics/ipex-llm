@@ -17,16 +17,16 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.torch
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 class LogSoftMaxSpec extends FlatSpec with Matchers {
   "A LogSoftMax Module " should "generate correct output" in {
     val module = new LogSoftMax[Double]()
-    val input = torch.Tensor[Double](2)
+    val input = Tensor[Double](2)
     input(Array(1)) = 0.1274271844660194
     input(Array(2)) = 0.6225728155339806
-    val expectedOutput = torch.Tensor[Double](2)
+    val expectedOutput = Tensor[Double](2)
     expectedOutput(Array(1)) = -0.9710581069556
     expectedOutput(Array(2)) = -0.47591247588764
     val output = module.forward(input)
@@ -35,7 +35,7 @@ class LogSoftMaxSpec extends FlatSpec with Matchers {
 
   "A LogSoftMax Module " should "generate correct output and grad" in {
     val module = new LogSoftMax[Double]()
-    val input = torch.Tensor[Double](3, 3)
+    val input = Tensor[Double](3, 3)
     input(Array(1, 1)) = 0.33655226649716
     input(Array(1, 2)) = 0.77367000770755
     input(Array(1, 3)) = 0.031494265655056
@@ -45,7 +45,7 @@ class LogSoftMaxSpec extends FlatSpec with Matchers {
     input(Array(3, 1)) = 0.45682632108219
     input(Array(3, 2)) = 0.85653987620026
     input(Array(3, 3)) = 0.42569971177727
-    val gradOutput = torch.Tensor[Double](3, 3)
+    val gradOutput = Tensor[Double](3, 3)
     gradOutput(Array(1, 1)) = 0.56766371615231
     gradOutput(Array(1, 2)) = 0.55222836649045
     gradOutput(Array(1, 3)) = 0.47152533312328
@@ -55,7 +55,7 @@ class LogSoftMaxSpec extends FlatSpec with Matchers {
     gradOutput(Array(3, 1)) = 0.054757355013862
     gradOutput(Array(3, 2)) = 0.93723741802387
     gradOutput(Array(3, 3)) = 0.45930492319167
-    val expectedOutput = torch.Tensor[Double](3, 3)
+    val expectedOutput = Tensor[Double](3, 3)
     expectedOutput(Array(1, 1)) = -1.1894637490911
     expectedOutput(Array(1, 2)) = -0.75234600788072
     expectedOutput(Array(1, 3)) = -1.4945217499332
@@ -65,7 +65,7 @@ class LogSoftMaxSpec extends FlatSpec with Matchers {
     expectedOutput(Array(3, 1)) = -1.2414854064608
     expectedOutput(Array(3, 2)) = -0.84177185134272
     expectedOutput(Array(3, 3)) = -1.2726120157657
-    val expectedGrad = torch.Tensor[Double](3, 3)
+    val expectedGrad = Tensor[Double](3, 3)
     expectedGrad(Array(1, 1)) = 0.083261006513078
     expectedGrad(Array(1, 2)) = -0.19774248918721
     expectedGrad(Array(1, 3)) = 0.11448148267413

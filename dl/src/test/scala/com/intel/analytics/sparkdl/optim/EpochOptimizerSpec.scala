@@ -19,8 +19,8 @@ package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.ps.{AllReduceParameterManager, OneReduceParameterManager}
-import com.intel.analytics.sparkdl.tensor.torch
-import com.intel.analytics.sparkdl.utils.{Engine, T}
+import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import com.intel.analytics.sparkdl.utils.{RandomGenerator, Engine, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -38,6 +38,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An Artificial Neural Network with MSE and LBFGS" should "be trained with good result" in {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
+    RandomGenerator.RNG.setSeed(1000)
 
     sc = new SparkContext("local[1]", "SerialOptimizerSpec")
 
@@ -87,10 +88,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimizer.setMaxEpoch(100)
     optimizer.optimize()
 
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1(Array(1)) should be(0.0 +- 1e-2)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2(Array(1)) should be(1.0 +- 1e-2)
   }
 
@@ -98,6 +99,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
+    RandomGenerator.RNG.setSeed(1000)
     sc = new SparkContext("local[1]", "SerialOptimizerSpec")
 
     // Prepare two kinds of input and their corresponding label
@@ -147,10 +149,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimizer.optimize()
 
     parameters.copy(pm.getParameter())
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1(Array(1)) should be(0.0 +- 1e-2)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2(Array(1)) should be(1.0 +- 1e-2)
   }
 
@@ -206,10 +208,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimizer.setMaxEpoch(100)
     optimizer.optimize()
 
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1(Array(1)) should be(0.0 +- 5e-2)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2(Array(1)) should be(1.0 +- 5e-2)
   }
 
@@ -266,10 +268,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimizer.optimize()
 
     parameters.copy(pm.getParameter())
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1(Array(1)) should be(0.0 +- 5e-2)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2(Array(1)) should be(1.0 +- 5e-2)
   }
 
@@ -324,10 +326,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimizer.setMaxEpoch(100)
     optimizer.optimize()
 
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2.max(1)._2(Array(1)) should be(2.0)
   }
 
@@ -382,10 +384,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimizer.optimize()
 
     parameters.copy(pm.getParameter())
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2.max(1)._2(Array(1)) should be(2.0)
   }
 
@@ -440,10 +442,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimizer.setMaxEpoch(100)
     optimizer.optimize()
 
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2.max(1)._2(Array(1)) should be(2.0)
   }
 
@@ -499,10 +501,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     parameters.copy(pm.getParameter())
 
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2.max(1)._2(Array(1)) should be(2.0)
   }
 
@@ -556,10 +558,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimizer.setMaxEpoch(100)
     optimizer.optimize()
 
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1(Array(1)) should be(0.0 +- 5e-2)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2(Array(1)) should be(1.0 +- 5e-2)
 
     sc.stop()
@@ -616,10 +618,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     parameters.copy(pm.getParameter())
 
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1(Array(1)) should be(0.0 +- 5e-2)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2(Array(1)) should be(1.0 +- 5e-2)
 
     sc.stop()
@@ -673,10 +675,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimizer.setMaxEpoch(200)
     optimizer.optimize()
 
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2.max(1)._2(Array(1)) should be(2.0)
     sc.stop()
   }
@@ -730,10 +732,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimizer.optimize()
 
     parameters.copy(pm.getParameter())
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2.max(1)._2(Array(1)) should be(2.0)
     sc.stop()
   }
@@ -786,10 +788,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimizer.setMaxEpoch(200)
     optimizer.optimize()
 
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2.max(1)._2(Array(1)) should be(2.0)
     sc.stop()
   }
@@ -843,10 +845,10 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimizer.optimize()
 
     parameters.copy(pm.getParameter())
-    val result1 = mlp.forward(torch.Tensor(torch.storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1)))
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = mlp.forward(torch.Tensor(torch.storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2)))
     result2.max(1)._2(Array(1)) should be(2.0)
     sc.stop()
   }

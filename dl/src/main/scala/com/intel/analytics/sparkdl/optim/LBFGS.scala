@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
@@ -87,7 +87,7 @@ class LBFGS[@specialized(Float, Double) T: ClassTag](
     val p = g.size(1)
 
     // check optimality of initial point
-    val tmp1 = _state.get[Tensor[T]]("tmp1").getOrElse(torch.Tensor[T]().resizeAs(g))
+    val tmp1 = _state.get[Tensor[T]]("tmp1").getOrElse(Tensor[T]().resizeAs(g))
     tmp1.copy(g).abs()
     if (ev.toType[Double](tmp1.sum()) < tolFun) {
       verbose("optimality condition below tolFun")
@@ -97,8 +97,8 @@ class LBFGS[@specialized(Float, Double) T: ClassTag](
     val (dir_bufs, stp_bufs) =
       if (!_state.get[Table]("dir_bufs").isDefined) {
         verbose("creating recyclable direction/step/history buffers")
-        val d = torch.Tensor[T](nCorrection + 1, p).split(1)
-        val s = torch.Tensor[T](nCorrection + 1, p).split(1)
+        val d = Tensor[T](nCorrection + 1, p).split(1)
+        val s = Tensor[T](nCorrection + 1, p).split(1)
         var i = 0
         while (i < d.length) {
           d(i) = d(i).squeeze(1)
@@ -120,8 +120,8 @@ class LBFGS[@specialized(Float, Double) T: ClassTag](
     val old_stps = _state.get[Table]("old_stps").getOrElse(T())
     val g_old = _state.get[Tensor[T]]("g_old").getOrElse(g.clone())
     var f_old = _state.get[T]("f_old").getOrElse(f)
-    val ro = _state.get[Tensor[T]]("ro").getOrElse(torch.Tensor[T](nCorrection))
-    val al = _state.get[Tensor[T]]("al").getOrElse(torch.Tensor[T](nCorrection))
+    val ro = _state.get[Tensor[T]]("ro").getOrElse(Tensor[T](nCorrection))
+    val al = _state.get[Tensor[T]]("al").getOrElse(Tensor[T](nCorrection))
 
     var _nIter = 0
     var isBreak = false

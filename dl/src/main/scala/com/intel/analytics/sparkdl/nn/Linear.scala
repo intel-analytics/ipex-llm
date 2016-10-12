@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{torch, Tensor}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.RandomGenerator
 import scala.reflect.ClassTag
 import RandomGenerator._
@@ -28,11 +28,11 @@ class Linear[@specialized(Float, Double) T: ClassTag](
   outputSize: Int,
   private var initMethod: InitializationMethod = Default
 )(implicit ev: TensorNumeric[T]) extends Module[T] {
-  val weight: Tensor[T] = torch.Tensor[T](outputSize, inputSize)
-  val bias: Tensor[T] = torch.Tensor[T](outputSize)
-  val addBuffer: Tensor[T] = torch.Tensor[T]()
-  this.gradWeight = torch.Tensor[T](outputSize, inputSize)
-  this.gradBias = torch.Tensor[T](outputSize)
+  val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
+  val bias: Tensor[T] = Tensor[T](outputSize)
+  val addBuffer: Tensor[T] = Tensor[T]()
+  this.gradWeight = Tensor[T](outputSize, inputSize)
+  this.gradBias = Tensor[T](outputSize)
   reset()
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {

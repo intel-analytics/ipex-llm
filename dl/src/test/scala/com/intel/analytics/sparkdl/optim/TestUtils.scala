@@ -17,7 +17,7 @@
 
 package com.intel.analytics.sparkdl.optim
 
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 
 object TestUtils {
 
@@ -37,14 +37,14 @@ object TestUtils {
     val d = x.size(1)
 
     // x1 = x(i)
-    val x1 = torch.Tensor[Double](d - 1).copy(x.narrow(1, 1, d - 1))
+    val x1 = Tensor[Double](d - 1).copy(x.narrow(1, 1, d - 1))
     // x(i + 1) - x(i)^2
     x1.cmul(x1).mul(-1).add(x.narrow(1, 2, d - 1))
     // 100 * (x(i + 1) - x(i)^2)^2
     x1.cmul(x1).mul(100)
 
     // x0 = x(i)
-    val x0 = torch.Tensor[Double](d - 1).copy(x.narrow(1, 1, d - 1))
+    val x0 = Tensor[Double](d - 1).copy(x.narrow(1, 1, d - 1))
     // 1-x(i)
     x0.mul(-1).add(1)
     x0.cmul(x0)
@@ -54,7 +54,7 @@ object TestUtils {
     val fout = x1.sum()
 
     // (2) compute f(x)/dx
-    val dxout = torch.Tensor[Double]().resizeAs(x).zero()
+    val dxout = Tensor[Double]().resizeAs(x).zero()
     // df(1:D-1) = - 400*x(1:D-1).*(x(2:D)-x(1:D-1).^2) - 2*(1-x(1:D-1));
     x1.copy(x.narrow(1, 1, d - 1))
     x1.cmul(x1).mul(-1).add(x.narrow(1, 2, d - 1)).cmul(x.narrow(1, 1, d - 1)).mul(-400)

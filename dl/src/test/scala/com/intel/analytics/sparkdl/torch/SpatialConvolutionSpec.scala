@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.{Module, Sequential, SpatialConvolution}
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -47,7 +47,7 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers 
       padW, padH)
 
     Random.setSeed(seed)
-    val input = torch.Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](16, 3, 224, 224).apply1(e => Random.nextDouble())
 
     val output = layer.updateOutput(input)
 
@@ -91,7 +91,7 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers 
     model.add(layer)
 
     Random.setSeed(3)
-    val input = torch.Tensor[Double](8, 64, 27, 27).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](8, 64, 27, 27).apply1(e => Random.nextDouble())
 
     val output = model.updateOutput(input)
 

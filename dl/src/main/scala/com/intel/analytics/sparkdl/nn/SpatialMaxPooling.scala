@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.Engine
 
 import scala.collection.mutable.ArrayBuffer
@@ -31,7 +31,7 @@ class SpatialMaxPooling[@specialized(Float, Double) T: ClassTag](
   (implicit ev: TensorNumeric[T]) extends Module[T] {
 
   var ceil_mode = false
-  var indices = torch.Tensor[T]()
+  var indices = Tensor[T]()
 
   def this(kW: Int, kH: Int)(implicit ev: TensorNumeric[T]) {
     this(kW, kH, kW, kH)

@@ -17,6 +17,8 @@
 
 package com.intel.analytics.sparkdl.tensor
 
+import scala.reflect.ClassTag
+
 /**
  * Storage defines a simple storage interface that controls the underlying storage for
  * any tensor object.
@@ -102,4 +104,13 @@ trait Storage[T] extends Iterable[T] with Serializable {
    * @return
    */
   def set(other: Storage[T]): this.type
+}
+
+object Storage {
+  def apply[T: ClassTag](): Storage[T] = new ArrayStorage[T](new Array[T](0))
+
+  def apply[T: ClassTag](size: Int): Storage[T] = new ArrayStorage[T](new Array[T](size))
+
+  def apply[@specialized(Float, Double) T: ClassTag](data: Array[T]): Storage[T] =
+    new ArrayStorage[T](data)
 }

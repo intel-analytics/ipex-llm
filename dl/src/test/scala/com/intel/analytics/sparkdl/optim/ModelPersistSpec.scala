@@ -19,8 +19,7 @@ package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.models.AlexNet
 import com.intel.analytics.sparkdl.nn.Module
-import com.intel.analytics.sparkdl.tensor.torch
-import com.intel.analytics.sparkdl.utils.{T, Table}
+import com.intel.analytics.sparkdl.utils.{File, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 class ModelPersistSpec extends FlatSpec with Matchers {
@@ -30,7 +29,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     mp.setPath(filePath)
     val model = AlexNet[Double](1000)
     mp.saveModel(model)
-    val loadedModel = torch.loadObj[Module[Double]](filePath)
+    val loadedModel = File.loadObj[Module[Double]](filePath)
     loadedModel should be(model)
   }
 
@@ -41,7 +40,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     mp.setPath(filePath)
     val model = AlexNet[Double](1000)
     mp.saveModel(model, 10, true)
-    val loadedModel = torch.loadObj[Module[Double]](filePath + ".10")
+    val loadedModel = File.loadObj[Module[Double]](filePath + ".10")
     loadedModel should be(model)
   }
 
@@ -51,7 +50,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     mp.setPath(filePath)
     val state = T("test" -> 123)
     mp.saveState(state)
-    val loadedState = torch.loadObj[Table](filePath + ".state")
+    val loadedState = File.loadObj[Table](filePath + ".state")
     loadedState should be(state)
   }
 
@@ -62,7 +61,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     mp.setPath(filePath)
     val state = T("test" -> 123)
     mp.saveState(state, 10, true)
-    val loadedState = torch.loadObj[Table](filePath + ".state.10")
+    val loadedState = File.loadObj[Table](filePath + ".state.10")
     loadedState should be(state)
   }
 }

@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.ReLU
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
@@ -32,7 +32,7 @@ class ReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "A ReLU Module " should "generate correct output and grad" in {
     val module = new ReLU[Double]()
-    val input = torch.Tensor[Double](2, 2, 2)
+    val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = -0.97008799016476
     input(Array(1, 1, 2)) = -0.89318234380335
     input(Array(1, 2, 1)) = -0.65073125436902
@@ -41,7 +41,7 @@ class ReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
     input(Array(2, 1, 2)) = 1.173689913936
     input(Array(2, 2, 1)) = 1.6776262558997
     input(Array(2, 2, 2)) = -0.64814318157732
-    val gradOutput = torch.Tensor[Double](2, 2, 2)
+    val gradOutput = Tensor[Double](2, 2, 2)
     gradOutput(Array(1, 1, 1)) = 0.43442418193445
     gradOutput(Array(1, 1, 2)) = 0.97614445211366
     gradOutput(Array(1, 2, 1)) = 0.081252868985757

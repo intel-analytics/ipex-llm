@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn.Dropout
-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -32,7 +32,7 @@ class DropoutSpec extends FlatSpec with BeforeAndAfter with Matchers {
   // Todo: Test when input is contiguous
   "Dropout module" should "converate to correct weight and bias" in {
     val module = new Dropout[Double](0.7, false, true)
-    val input = torch.Tensor[Double](100, 100).t
+    val input = Tensor[Double](100, 100).t
     val seed = 100
 
     input.rand()
