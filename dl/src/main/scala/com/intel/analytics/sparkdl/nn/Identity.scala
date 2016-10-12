@@ -23,7 +23,7 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 class Identity [@specialized(Float, Double) T: ClassTag]()
-                                                        (implicit ev: TensorNumeric[T]) extends Module[T] {
+  (implicit ev: TensorNumeric[T]) extends Module[T] {
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output = input
     output
@@ -34,12 +34,4 @@ class Identity [@specialized(Float, Double) T: ClassTag]()
     gradInput = gradOutput
     gradInput
   }
-
-//  def clearState(): Identity = {
-//    def clear(f: Any): Unit = {
-//      if (f.isInstanceOf[Tensor]) {
-//
-//      }
-//    }
-//  }
 }
