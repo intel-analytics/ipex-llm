@@ -81,7 +81,7 @@ object Perf {
 
   def performance[T: ClassTag](param: Params)(implicit tn: TensorNumeric[T]): Unit = {
     val (model, input) = param.module match {
-      case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 224, 224))
+      case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 227, 227))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "googlenet_v1" => (GoogleNet_v1(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224))
@@ -141,8 +141,6 @@ object Perf {
     System.exit(0)
   }
 }
-
-case class TestCase[T](input: Tensor[T], target: Tensor[T], model: Module[T])
 
 case class Params(
   batchSize: Int = 64,

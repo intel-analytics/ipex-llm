@@ -20,7 +20,7 @@ package com.intel.analytics.sparkdl.optim
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.ps.{AllReduceParameterManager, OneReduceParameterManager}
 import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
-import com.intel.analytics.sparkdl.utils.{Engine, T}
+import com.intel.analytics.sparkdl.utils.{RandomGenerator, Engine, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -38,6 +38,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An Artificial Neural Network with MSE and LBFGS" should "be trained with good result" in {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
+    RandomGenerator.RNG.setSeed(1000)
 
     sc = new SparkContext("local[1]", "SerialOptimizerSpec")
 
@@ -98,6 +99,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
+    RandomGenerator.RNG.setSeed(1000)
     sc = new SparkContext("local[1]", "SerialOptimizerSpec")
 
     // Prepare two kinds of input and their corresponding label
