@@ -232,7 +232,7 @@ object GoogleNet_v2 {
 
     val conv3 = new Sequential[D]
     conv3.add(new SpatialConvolution[D](inputSize, config[Table](2)(1), 1, 1, 1, 1)
-      .setName(namePrefix + "3x3_s2"))
+      .setName(namePrefix + "3x3_reduce"))
     conv3.add(new SpatialBatchNormalization(config[Table](2)(1), 1e-3)
       .setName(namePrefix + "3x3_reduce/bn"))
     conv3.add(new ReLU[D](true). setName(namePrefix + "3x3_reduce/bn/sc/relu"))
