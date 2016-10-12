@@ -92,7 +92,7 @@ template <typename DType>
 void MKLLRN<DType>::firstPass()
 {
   dnnError_t status = E_UNIMPLEMENTED;
-  dnnLayout_t layout;
+  dnnLayout_t layout = NULL;
 
   if (this->input->isUsePrev()) {
     layout = this->input->layoutPrev;
