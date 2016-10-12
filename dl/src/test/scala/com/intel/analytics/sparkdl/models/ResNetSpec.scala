@@ -16,6 +16,7 @@
  */
 
 package com.intel.analytics.sparkdl.models
+import com.intel.analytics.sparkdl.models.ResNet.ShortcutType
 import com.intel.analytics.sparkdl.utils.Table
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim.SGD
@@ -46,10 +47,10 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val seed = 100
     RNG.setSeed(seed)
-    val opt: Table = new Table()
+/*    val opt: Table = new Table()
     opt("shortcutType") = "B"
-    opt("depth") = 18
-    val model = ResNet[Double](classNum, opt)
+    opt("depth") = 18*/
+    val model = ResNet[Double](classNum, T("shortcutType" -> ShortcutType.B, "depth"->18))
     model.zeroGradParameters()
 
 
