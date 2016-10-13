@@ -137,8 +137,9 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
 
 object RGBImage {
   def readImage(path: Path, scaleTo: Int): Option[Array[Byte]] = {
+    var fis : FileInputStream = null
     try {
-      val fis = new FileInputStream(path.toString)
+      fis = new FileInputStream(path.toString)
       val channel = fis.getChannel
       val byteArrayOutputStream = new ByteArrayOutputStream
       channel.transferTo(0, channel.size, Channels.newChannel(byteArrayOutputStream))
@@ -178,6 +179,10 @@ object RGBImage {
         ex.printStackTrace
         System.err.println("Can't read file " + path)
         None
+    } finally {
+      if(fis != null) {
+        fis.close()
+      }
     }
   }
 }
