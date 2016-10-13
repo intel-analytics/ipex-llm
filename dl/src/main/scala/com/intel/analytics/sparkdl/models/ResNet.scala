@@ -94,7 +94,8 @@ object ResNet {
       34  -> ((3, 4, 6, 3), 512, basicBlock:(Int, Int) => Module[T]),
       50  -> ((3, 4, 6, 3), 2048, bottleneck:(Int, Int) => Module[T]),
       101 -> ((3, 4, 23, 3), 2048, bottleneck:(Int, Int) => Module[T]),
-      152 -> ((3, 8, 36, 3), 2048, bottleneck:(Int, Int) => Module[T])
+      152 -> ((3, 8, 36, 3), 2048, bottleneck:(Int, Int) => Module[T]),
+      200 -> ((3, 24, 36, 3), 2048, bottleneck:(Int, Int) => Module[T])
     )
 
     assert(cfg.keySet.contains(depth))
