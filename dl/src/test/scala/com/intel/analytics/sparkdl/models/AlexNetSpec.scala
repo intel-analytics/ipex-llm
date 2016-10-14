@@ -112,17 +112,17 @@ gradOutput=criterion.gradInput
 gradInput = model.gradInput
       """
 
-   /* TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
+    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
-    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]*/
+    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Float]]
 
-   /* for (i <- 0 until parameters.nElement()) {
+    for (i <- 0 until parameters.nElement()) {
       if (abs(parameters.storage().array()(i) - parameterTorch.storage().array()(i)) > 1e-8) {
         println(s"${parameters.storage().array()(i)} ${parameterTorch.storage().array()(i)}")
       }
-    }*/
+    }
 
     val criterion = new ClassNLLCriterion[Float]()
     val state = T("learningRate" -> 1e-2, "momentum" -> 0.9, "weightDecay" -> 5e-4,
@@ -140,24 +140,23 @@ gradInput = model.gradInput
     }
 
     model.zeroGradParameters()
-  //  val output = TH.map("output").asInstanceOf[Tensor[Double]]
+    val output = TH.map("output").asInstanceOf[Tensor[Double]]
     val outputTest = model.forward(floatInput)
-   /* var abss = 0.0
+    var abss = 0.0
     for (i <- 0 until outputTest.nElement()) {
       val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i))
       abss += tmp
     }
     assert(abss < 1e-2)
-    println(s"outputAbs:$abss")*/
+    println(s"outputAbs:$abss")
 
     val errTest = criterion.forward(outputTest, floatLabel)
-  /*  val err = TH.map("err").asInstanceOf[Double]
+    val err = TH.map("err").asInstanceOf[Double]
     println(s"${abs(errTest - err)}")
-    assert(abs(errTest - err) < 1e-6)*/
-    println(s"${errTest}")
+    assert(abs(errTest - err) < 1e-6)
 
     val gradOutputTest = criterion.backward(outputTest, floatLabel)
-   /* val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
+    val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
     abss = 0.0
     for (i <- 0 until gradOutputTest.nElement()) {
       val tmp = abs(gradOutputTest.storage().array()(i) - gradOutput.storage().array()(i))
@@ -165,27 +164,27 @@ gradInput = model.gradInput
     }
     assert(abss == 0.0)
     println(s"gradOutputTestAbs:$abss")
-*/
+
     val gradInput = model.backward(floatInput, gradOutputTest)
-    /*val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
+    val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
 
     abss = 0.0
     for (i <- 0 until gradInputTorch.nElement()) {
       val tmp = abs(gradInputTorch.storage().array()(i) - gradInput.storage().array()(i))
       abss += tmp
     }
-    println(s"gradInputTestAbs:$abss")*/
+    println(s"gradInputTestAbs:$abss")
 
     val (weights, grad) = model.getParameters()
     val modelTorch = TH.map("model").asInstanceOf[Module[Double]]
     val (weightsTorch, gradTorch) = modelTorch.getParameters()
     sgd.optimize(_ => (errTest, grad), weights, state, state)
-    /*abss = 0.0
+    abss = 0.0
     for (i <- 0 until weights.nElement()) {
       val tmp = abs(weights.storage().array()(i) - weightsTorch.storage().array()(i))
       abss += tmp
     }
-    assert(abss < 2e-2)*/
+    assert(abss < 2e-2)
   }
 
   "AlexNet" should "generate correct output" in {
@@ -255,18 +254,18 @@ local gradOutput = criterion:backward(output, labels)
 gradInput = model:backward(input, gradOutput)
       """
 
-   // TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
-   //   "parameters_initial", "gradParameters_initial", "gradInput", "model"))
+    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
+      "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
     val model = AlexNet_OWT[Double](1000, false)
     model.zeroGradParameters()
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
-   // val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
-   // parameters should be(parameterTorch)
+    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
+    parameters should be(parameterTorch)
 
     val gradParameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
-  //  val gradParameterTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
-  //  gradParameters should be(gradParameterTorch)
+    val gradParameterTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
+    gradParameters should be(gradParameterTorch)
 
     val (weights, grad) = model.getParameters()
     val criterion = new ClassNLLCriterion[Double]()
@@ -286,20 +285,19 @@ gradInput = model:backward(input, gradOutput)
 
     model.zeroGradParameters()
     val outputTest = model.forward(input)
-  /*  val output = TH.map("output").asInstanceOf[Tensor[Double]]
-    outputTest should be(output)*/
+    val output = TH.map("output").asInstanceOf[Tensor[Double]]
+    outputTest should be(output)
 
     val errTest = criterion.forward(outputTest, labels)
-    println(s"${errTest}")
-   /* val err = TH.map("err").asInstanceOf[Double]
-    errTest should be(err)*/
+    val err = TH.map("err").asInstanceOf[Double]
+    errTest should be(err)
 
     val gradOutputTest = criterion.backward(outputTest, labels)
-   /* val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
-    gradOutputTest should be(gradOutput)*/
+    val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
+    gradOutputTest should be(gradOutput)
 
     val gradInput = model.backward(input, gradOutputTest)
-   /* val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
-    gradInput should be(gradInputTorch)*/
+    val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
+    gradInput should be(gradInputTorch)
   }
 }
