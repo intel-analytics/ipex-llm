@@ -40,12 +40,12 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     Random.setSeed(1)
     val classNum: Int = 1000
-    val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](8).apply1(e => Random.nextInt(classNum))
+    val input = Tensor[Double](256, 3, 224, 224).apply1(e => Random.nextDouble())
+    val labels = Tensor[Double](256).apply1(e => Random.nextInt(classNum))
 
     val seed = 100
     RNG.setSeed(seed)
-    val model = ResNet[Double](classNum, T("shortcutType" -> ShortcutType.B, "depth"->18))
+    val model = ResNet[Double](classNum, T("shortcutType" -> ShortcutType.B, "depth"->50))
     model.zeroGradParameters()
 
 
@@ -58,7 +58,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         local SBatchNorm = nn.SpatialBatchNormalization
 
         local nClasses = 1000
-        local depth = 18
+        local depth = 50
         local shortcutType = 'B'
         local iChannels
         local function shortcut(nInputPlane, nOutputPlane, stride)
@@ -188,7 +188,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
               return criterion.output, gradParameters
            end
 
-             for i = 1, 5, 1 do
+             for i = 1, 100, 1 do
               w, err = optim.sgd(feval, parameters, state)
              end
 
@@ -238,7 +238,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       model.backward(input, criterion.gradInput)
       (criterion.output, grad)
     }
-    for (i <- 1 until 5) {
+    for (i <- 1 until 100) {
       sgd.optimize(feval, weights, state)
     }
 
@@ -249,8 +249,9 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i))
       abss += tmp
     }
-    assert(abss < 1e-2)
     println(s"outputAbs:$abss")
+    assert(abss < 1e-2)
+
 
     val errTest = criterion.forward(outputTest, labels)
     val err = TH.map("err").asInstanceOf[Double]
