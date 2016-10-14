@@ -45,8 +45,8 @@ class LocalOptimizer[T](
     var wallClockTime = 0L
     var count = 0
 
-    state("epoch") = 1
-    state("neval") = 1
+    state("epoch") = state.get[Int]("epoch").getOrElse(1)
+    state("neval") = state.get[Int]("neval").getOrElse(1)
     while (!endWhen(state)) {
       data.shuffle()
       data.reset()
