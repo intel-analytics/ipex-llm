@@ -21,6 +21,7 @@ import java.nio.file.{Files, Path, Paths}
 
 import com.intel.analytics.sparkdl.models.cifar.VggLike
 import com.intel.analytics.sparkdl.nn.ClassNLLCriterion
+import com.intel.analytics.sparkdl.optim.SGD.EpochStep
 import com.intel.analytics.sparkdl.optim.{LocalOptimizer, SGD, Top1Accuracy, Trigger}
 import com.intel.analytics.sparkdl.utils.T
 import scopt.OptionParser
@@ -36,16 +37,6 @@ object Cifar10Local {
     opt[String]('f', "folder")
       .text("where you put the Cifar10 data")
       .action((x, c) => c.copy(folder = x))
-    opt[String]('n', "net")
-      .text("net type : simplecnn | vgg")
-      .action((x, c) => c.copy(net = x.toLowerCase))
-      .validate(v =>
-        if (Set("simplecnn", "vgg").contains(v.toLowerCase())) {
-          success
-        } else {
-          failure("Net type can only be mlp | cnn | lenet in this example")
-        }
-      )
   }
 
   def main(args: Array[String]) {
@@ -62,10 +53,14 @@ object Cifar10Local {
         model = VggLike[Float](classNum = 10),
         criterion = new ClassNLLCriterion[Float](),
         optimMethod = new SGD[Float](),
-        config = T("learningRate" -> 1.0, "weightDecay" -> 0.0005, "momentum" -> 0.9,
-          "dampening" -> 0.0, "learningRateDecay" -> 1e-7),
-        state = T(),
-        endWhen = Trigger.maxEpoch(10)
+        state = T(
+          "learningRate" -> 1.0,
+          "weightDecay" -> 0.0005,
+          "momentum" -> 0.9,
+          "dampening" -> 0.0,
+          "learningRateSchedule" -> EpochStep(25, 0.5)
+        ),
+        endWhen = Trigger.maxEpoch(90)
       )
       optimizer.setValidationTrigger(Trigger.everyEpoch)
       optimizer.addValidation(new Top1Accuracy[Float])

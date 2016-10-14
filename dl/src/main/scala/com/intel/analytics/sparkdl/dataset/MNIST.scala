@@ -17,10 +17,11 @@
 
 package com.intel.analytics.sparkdl.dataset
 
+import com.intel.analytics.sparkdl.example.MNIST
 import com.intel.analytics.sparkdl.models.mnist.{LeNet5, MLP, SimpleCNN}
-import com.intel.analytics.sparkdl.nn.ClassNLLCriterion
-import com.intel.analytics.sparkdl.optim.{LocalOptimizer, SGD, Top1Accuracy, Trigger}
-import com.intel.analytics.sparkdl.utils.T
+import com.intel.analytics.sparkdl.nn.{Criterion, Module, ClassNLLCriterion}
+import com.intel.analytics.sparkdl.optim._
+import com.intel.analytics.sparkdl.utils.{RandomGenerator, T}
 import scopt.OptionParser
 
 /**
@@ -31,6 +32,29 @@ object MNISTLocal {
   case class MNISTLocalParams(
     folder: String = "./",
     net: String = "cnn"
+  )
+  case class Config(
+    model : Module[Float],
+    criterion : Criterion[Float],
+    optimMethod : OptimMethod[Float],
+    batchSize : Int,
+    maxEpoch : Int,
+    learningRate : Double
+  )
+
+  private val configs = Map(
+    "mlp" -> Config(
+      MLP[Float](classNum = 10),
+      new ClassNLLCriterion[Float](),
+      new SGD[Float](), 10, 10, 0.05),
+    "cnn" -> Config(
+      SimpleCNN[Float](classNum = 10),
+      new ClassNLLCriterion[Float](),
+      new SGD[Float](), 10, 10, 0.05),
+    "lenet" -> Config(
+      LeNet5[Float](classNum = 10),
+      new ClassNLLCriterion[Float](),
+      new SGD[Float](), 10, 10, 0.05)
   )
 
   private val parser = new OptionParser[MNISTLocalParams]("Spark-DL MNIST Local Example") {
@@ -52,6 +76,7 @@ object MNISTLocal {
 
   def main(args: Array[String]) {
     parser.parse(args, new MNISTLocalParams()).map(param => {
+      RandomGenerator.RNG.setSeed(1000)
       val trainData = param.folder + "/train-images.idx3-ubyte"
       val trainDLabel = param.folder + "/train-labels.idx1-ubyte"
       val validationData = param.folder + "/t10k-images.idx3-ubyte"
@@ -61,23 +86,15 @@ object MNISTLocal {
       val validationDataSource = new MNISTDataSource(validationData, validationLabel, looped =
         false)
       val normalizer = new GreyImageNormalizer(trainDataSource)
-      val toTensor = new GreyImageToTensor(batchSize = 10)
-      val model = param.net match {
-        case "mlp" => MLP[Float](classNum = 10)
-        case "cnn" => SimpleCNN[Float](classNum = 10)
-        case "lenet" => LeNet5[Float](classNum = 10)
-        case _ => throw new IllegalArgumentException
-      }
-
+      val toTensor = new GreyImageToTensor(configs(param.net).batchSize)
       val optimizer = new LocalOptimizer[Float](
         data = trainDataSource ++ normalizer ++ toTensor,
         validationData = validationDataSource ++ normalizer ++ toTensor,
-        model = model,
-        criterion = new ClassNLLCriterion[Float](),
-        optimMethod = new SGD[Float](),
-        config = T("learningRate" -> 0.05),
-        state = T(),
-        endWhen = Trigger.maxEpoch(2)
+        model = configs(param.net).model,
+        criterion = configs(param.net).criterion,
+        optimMethod = configs(param.net).optimMethod,
+        state = T("learningRate" -> configs(param.net).learningRate),
+        endWhen = Trigger.maxEpoch(configs(param.net).maxEpoch)
       )
       optimizer.setValidationTrigger(Trigger.everyEpoch)
       optimizer.addValidation(new Top1Accuracy[Float])

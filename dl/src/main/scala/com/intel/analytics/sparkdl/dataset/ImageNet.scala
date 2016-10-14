@@ -73,8 +73,7 @@ object ImageNetLocal {
         model = model,
         criterion = new ClassNLLCriterion[Float](),
         optimMethod = new SGD[Float](),
-        config = T("learningRate" -> 0.05),
-        state = T(),
+        state = T("learningRate" -> 0.05),
         endWhen = Trigger.maxEpoch(2)
       )
       optimizer.setCache(param.cache, Trigger.everyEpoch)

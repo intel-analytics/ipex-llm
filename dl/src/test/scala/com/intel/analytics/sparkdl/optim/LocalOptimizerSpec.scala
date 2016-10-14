@@ -154,7 +154,6 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
       new ClassNLLCriterion[Float],
       new SGD[Float](),
       T("learningRate" -> 20.0),
-      T(),
       Trigger.maxEpoch(100)
     )
 
@@ -182,7 +181,6 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
       new MSECriterion[Float],
       new SGD[Float](),
       T("learningRate" -> 200.0),
-      T(),
       Trigger.maxEpoch(10000)
     )
 
@@ -207,7 +205,6 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
       mlp,
       new ClassNLLCriterion[Float],
       new LBFGS[Float](),
-      T(),
       T(),
       Trigger.maxEpoch(100)
     )
@@ -238,7 +235,6 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
       new MSECriterion[Float],
       new LBFGS[Float](),
       T(),
-      T(),
       Trigger.maxEpoch(100)
     )
 
@@ -264,7 +260,6 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
       new ClassNLLCriterion[Float],
       new SGD[Float](),
       T("learningRate" -> 20.0),
-      T(),
       Trigger.maxEpoch(100)
     )
     optimizer.setValidationTrigger(Trigger.everyEpoch)

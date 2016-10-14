@@ -28,7 +28,6 @@ class LocalOptimizer[T](
   model: Module[T],
   criterion: Criterion[T],
   optimMethod: OptimMethod[T],
-  config: Table,
   state: Table,
   endWhen: Trigger
 ) extends Optimizer[T](model, endWhen) {
@@ -38,20 +37,20 @@ class LocalOptimizer[T](
     model: Module[T],
     criterion: Criterion[T],
     optimMethod: OptimMethod[T],
-    config: Table,
     state: Table,
-    endWhen: Trigger) = this(data, null, model, criterion, optimMethod, config, state,
-    endWhen)
+    endWhen: Trigger) = this(data, null, model, criterion, optimMethod, state, endWhen)
 
   override def optimize(): Module[T] = {
     val (weights, grad) = model.getParameters()
     var wallClockTime = 0L
+    var count = 0
 
     state("epoch") = 1
     state("neval") = 1
     while (!endWhen(state)) {
       data.shuffle()
       data.reset()
+      count = 0
       while (!data.finished()) {
         val start = System.nanoTime()
         val (input, target) = data.next()
@@ -61,12 +60,13 @@ class LocalOptimizer[T](
         val loss = criterion.forward(output, target)
         val gradOutput = criterion.backward(output, target)
         model.backward(input, gradOutput)
-        optimMethod.optimize(_ => (loss, grad), weights, state, state)
+        optimMethod.optimize(_ => (loss, grad), weights, state)
         val end = System.nanoTime()
         wallClockTime += end - start
+        count += input.size(1)
 
-        println(s"[Epoch ${state[Int]("epoch")}][Iteration ${state[Int]("neval")}][Wall Clock ${
-          wallClockTime / 1e9
+        println(s"[Epoch ${state[Int]("epoch")} $count/${data.total()}][Iteration ${
+          state[Int]("neval")}][Wall Clock ${wallClockTime / 1e9
         }s] loss is $loss, iteration time is ${(end - start) / 1e9}s data " +
           s"fetch time is " +
           s"${(dataFetchTime - start) / 1e9}s, train time ${(end - dataFetchTime) / 1e9}s." +
