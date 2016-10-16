@@ -45,7 +45,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val seed = 100
     RNG.setSeed(seed)
-    val model = ResNet[Double](classNum, T("shortcutType" -> ShortcutType.B, "depth"->18))
+    val model = ResNet[Double](classNum, T("shortcutType" -> ShortcutType.B, "depth"->50))
     model.zeroGradParameters()
 
 
@@ -58,7 +58,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         local SBatchNorm = nn.SpatialBatchNormalization
 
         local nClasses = 1000
-        local depth = 18
+        local depth = 50
         local shortcutType = 'B'
         local iChannels
         local function shortcut(nInputPlane, nOutputPlane, stride)
@@ -81,7 +81,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
            end
         end
 
-        local function basicblock(n, stride)
+      local function basicblock(n, stride)
           local nInputPlane = iChannels
           iChannels = n
 
@@ -188,7 +188,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
               return criterion.output, gradParameters
            end
 
-             for i = 1, 5, 1 do
+             for i = 1, 10, 1 do
               w, err = optim.sgd(feval, parameters, state)
              end
 
@@ -238,7 +238,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       model.backward(input, criterion.gradInput)
       (criterion.output, grad)
     }
-    for (i <- 1 until 5) {
+    for (i <- 1 until 10) {
       sgd.optimize(feval, weights, state)
     }
 
@@ -292,7 +292,9 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
   def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
     (implicit ev: TensorNumeric[T]): Unit = {
     def sharingKey(m: Module[T]) = m.getClass.getName
+
     val cache = mutable.Map[Any, Storage[T]]()
+
     model.mapModules(m => {
       val moduleType = m.getClass.getName
       if (!moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatAddTable")) {
@@ -300,7 +302,6 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         if (!cache.contains(key)){
           cache.put(key, Storage(Array(ev.fromType[Int](1))))
         }
-
         m.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
       }
     })
