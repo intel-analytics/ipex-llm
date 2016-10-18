@@ -20,7 +20,8 @@ package com.intel.analytics.sparkdl.dataset
 import java.nio.file.Paths
 
 import com.intel.analytics.sparkdl.models.imagenet.{AlexNet, GoogleNet_v1}
-import com.intel.analytics.sparkdl.nn.ClassNLLCriterion
+import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Criterion, Module}
+import com.intel.analytics.sparkdl.optim.SGD.LearningRateSchedule
 import com.intel.analytics.sparkdl.optim._
 import com.intel.analytics.sparkdl.utils.T
 import scopt.OptionParser
@@ -30,6 +31,49 @@ object ImageNetLocal {
     folder: String = "./",
     net: String = "alexnet",
     cache: String = "./"
+  )
+  case class Config(
+    model : Module[Float],
+    criterion : Criterion[Float],
+    optimMethod : OptimMethod[Float],
+    imageSize : Int,
+    batchSize : Int,
+    momentum : Double,
+    weightDecay : Double,
+    testTrigger : Trigger,
+    cacheTrigger : Trigger,
+    endWhen : Trigger,
+    learningRate : Double,
+    learningRateSchedule : LearningRateSchedule
+  )
+
+  private val configs = Map(
+    "alexnet" -> Config(
+      AlexNet[Float](classNum = 1000),
+      new ClassNLLCriterion[Float](),
+      new SGD[Float](),
+      imageSize = 227,
+      batchSize = 256,
+      momentum = 0.9,
+      weightDecay = 0.0005,
+      testTrigger = Trigger.severalIteration(1000),
+      cacheTrigger = Trigger.severalIteration(10000),
+      endWhen = Trigger.maxIteration(450000),
+      learningRate = 0.01,
+      learningRateSchedule = SGD.Step(100000, 0.1)),
+    "googlenetv1" -> Config(
+      GoogleNet_v1[Float](classNum = 1000),
+      new ClassNLLCriterion[Float](),
+      new SGD[Float](),
+      imageSize = 224,
+      batchSize = 32,
+      momentum = 0.9,
+      weightDecay = 0.0002,
+      testTrigger = Trigger.severalIteration(4000),
+      cacheTrigger = Trigger.severalIteration(40000),
+      endWhen = Trigger.maxIteration(2400000),
+      learningRate = 0.01,
+      learningRateSchedule = SGD.Poly(0.5, 2400000))
   )
 
   private val parser = new OptionParser[ImageNetLocalParam]("Spark-DL ImageNet Local Example") {
@@ -54,30 +98,31 @@ object ImageNetLocal {
 
   def main(args: Array[String]) {
     parser.parse(args, new ImageNetLocalParam()).map(param => {
+      val config = configs(param.net)
       val trainDataSource = new ImageNetDataSource(Paths.get(param.folder + "/train"),
         looped = true)
-      val validationDatasource = new ImageNetDataSource(Paths.get(param.folder + "/val"),
+      val validationDataSource = new ImageNetDataSource(Paths.get(param.folder + "/val"),
         looped = false)
-      val cropper = new RGBImageCropper(cropWidth = 224, cropHeight = 224)
+      val cropper = new RGBImageCropper(cropWidth = config.imageSize, cropHeight = config.imageSize)
       val normalizer = new RGBImageNormalizer(trainDataSource)
-      val toTensor = new RGBImageToTensor(batchSize = 10)
-      val model = param.net match {
-        case "alexnet" => AlexNet[Float](classNum = 1000)
-        case "googlenetv1" => GoogleNet_v1[Float](classNum = 1000)
-        case _ => throw new IllegalArgumentException
-      }
+      val toTensor = new RGBImageToTensor(batchSize = config.batchSize)
 
       val optimizer = new LocalOptimizer[Float](
         data = trainDataSource ++ cropper ++ normalizer ++ toTensor,
-        validationData = validationDatasource ++ cropper ++ normalizer ++ toTensor,
-        model = model,
-        criterion = new ClassNLLCriterion[Float](),
-        optimMethod = new SGD[Float](),
-        state = T("learningRate" -> 0.05),
-        endWhen = Trigger.maxEpoch(2)
+        validationData = validationDataSource ++ cropper ++ normalizer ++ toTensor,
+        model = config.model,
+        criterion = config.criterion,
+        optimMethod = config.optimMethod,
+        state = T(
+          "learningRate" -> config.learningRate,
+          "weightDecay" -> config.weightDecay,
+          "dampening" -> 0.0,
+          "learningRateSchedule" -> config.learningRateSchedule
+        ),
+        endWhen = config.endWhen
       )
-      optimizer.setCache(param.cache, Trigger.everyEpoch)
-      optimizer.setValidationTrigger(Trigger.everyEpoch)
+      optimizer.setCache(param.cache, config.cacheTrigger)
+      optimizer.setValidationTrigger(config.testTrigger)
       optimizer.addValidation(new Top1Accuracy[Float])
       optimizer.addValidation(new Top5Accuracy[Float])
       optimizer.optimize()
