@@ -106,6 +106,7 @@ trait TensorMath[T] {
    * @return
    */
   def *(t: Tensor[T]): Tensor[T]
+
   // scalastyle:on methodName
 
   /**
@@ -120,6 +121,8 @@ trait TensorMath[T] {
    * @return
    */
   def sum(dim: Int): Tensor[T]
+
+  def sum(x: Tensor[T], dim: Int): Tensor[T]
 
   /**
    * returns the mean of all elements of this.
@@ -260,6 +263,12 @@ trait TensorMath[T] {
    */
   def cmul(y: Tensor[T]): Tensor[T]
 
+  def cmul(x: Tensor[T], y: Tensor[T]): Tensor[T]
+
+  def cdiv(y: Tensor[T]): Tensor[T]
+
+  def cdiv(x: Tensor[T], y: Tensor[T]): Tensor[T]
+
   /**
    * multiply all elements of this with value in-place.
    *
@@ -358,6 +367,15 @@ trait TensorMath[T] {
   def addmv(alpha: T, mat: Tensor[T], vec2: Tensor[T]): Tensor[T]
 
   /**
+   * Replaces all elements in-place with the elements of x to the power of n
+   *
+   * @param x
+   * @param n
+   * @return current tensor reference
+   */
+  def pow(x: Tensor[T], n: T): Tensor[T]
+
+  /**
    * Get the top k smallest values and their indices.
    *
    * @param result   result buffer
@@ -368,6 +386,21 @@ trait TensorMath[T] {
    * @return
    */
   def topk(k: Int, dim: Int = -1, increase: Boolean = true, result: Tensor[T] = null,
-           indices: Tensor[T] = null)
+    indices: Tensor[T] = null)
   : (Tensor[T], Tensor[T])
+
+  /**
+   * Replaces all elements in-place with the elements of lnx
+   *
+   * @param x
+   * @return current tensor reference
+   */
+  def log(x: Tensor[T]): Tensor[T]
+
+  def exp(x: Tensor[T]): Tensor[T]
+
+  def sqrt(x: Tensor[T]): Tensor[T]
+
+  def log1p(x: Tensor[T]): Tensor[T]
+
 }

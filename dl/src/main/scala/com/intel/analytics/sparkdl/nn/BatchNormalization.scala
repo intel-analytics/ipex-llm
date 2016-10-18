@@ -19,6 +19,7 @@ package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.utils.Engine
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 import scala.collection.mutable.ArrayBuffer
@@ -26,13 +27,14 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
-class BatchNormalization[@specialized(Float, Double) T: ClassTag](val nOutput: Int,
-  val eps: Double = 1e-5, val momentum: Double = 0.1, val affine: Boolean = true)
-  (implicit ev: TensorNumeric[T]) extends Module[T] {
+class BatchNormalization[@specialized(Float, Double) T: ClassTag](
+  val nOutput: Int, // output feature map number
+  val eps: Double = 1e-5, // avoid divde zero
+  val momentum: Double = 0.1, // momentum for weight update
+  val affine: Boolean = true  // affine operation on output or not
+)(implicit ev: TensorNumeric[T]) extends Module[T] {
 
-  require(nOutput > 0,
-    "To set affine=false call SpatialBatchNormalization(nFeature,  eps, momentum, false)")
-
+  require(nOutput > 0)
   val nDim = 2
   val runningMean = Tensor[T](nOutput)
   val runningVar = Tensor[T](nOutput).fill(ev.fromType[Int](1))
@@ -43,6 +45,9 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](val nOutput: I
   val bias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
   gradWeight = if (affine) Tensor[T](nOutput) else null
   gradBias = if (affine) Tensor[T](nOutput) else null
+
+  @transient
+  private var results : Array[Future[_]] = null
 
   if (affine) {
     reset()
@@ -61,140 +66,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](val nOutput: I
     runningVar.fill(ev.fromType[Int](1))
   }
 
-  // TODO: need to support Float
-  def updateOutputDouble(input: Array[Double], inputOffset: Int, inputStride: Int,
-    output: Array[Double], outputOffset: Int, outputStride: Int,
-    nInput: Int, n: Int, stride2: Int
-  ): Unit = {
-    var mean = 0.0
-    var invstd = 0.0
-
-    val tasks = new ArrayBuffer[Future[Unit]](nInput)
-    val slices = (1 to nInput).iterator
-    while (slices.hasNext) {
-      val f = slices.next()
-      //        println(s"f: $f")
-      if (train) {
-        var sum = 0.0
-        var i = 0
-        while (i < n) {
-          sum += input(i % stride2 + (f - 1) * stride2 + inputOffset + (i / stride2) * inputStride)
-          i += 1
-        }
-        mean = sum / n
-        saveMean.setValue(f, ev.fromType[Double](mean))
-
-        sum = 0.0
-        i = 0
-        while (i < n) {
-          sum += (input(i % stride2 + (f - 1) * stride2 + inputOffset +
-            (i / stride2) * inputStride) - mean) * (input(i % stride2 + (f - 1) * stride2 +
-            inputOffset + (i / stride2) * inputStride) - mean)
-          i += 1
-        }
-
-        invstd = if (sum == 0 && eps == 0.0) {
-          0.0
-        } else {
-          1 / Math.sqrt(sum / n + eps)
-        }
-        saveStd.setValue(f, ev.fromType[Double](invstd))
-
-        runningMean.setValue(f, ev.fromType[Double](momentum * mean + (1 - momentum) *
-          ev.toType[Double](runningMean(Array(f)))))
-
-        val unbiasedVar = sum / (n - 1)
-        runningVar.setValue(f, ev.fromType[Double](momentum * unbiasedVar + (1 - momentum) *
-          ev.toType[Double](runningVar.storage().array()(f - 1))))
-      } else {
-        mean = ev.toType[Double](runningMean(Array(f)))
-        invstd = 1 / Math.sqrt(ev.toType[Double](runningVar(Array(f))) + eps)
-      }
-
-      val w = if (null != weight) ev.toType[Double](weight(Array(f))) else 1.0
-      val b = if (null != bias) ev.toType[Double](bias(Array(f))) else 0.0
-
-      var i = 0
-      while (i < n) {
-        output(i % stride2 + (f - 1) * stride2 +
-          inputOffset + (i / stride2) * inputStride) = (input(i % stride2 + (f - 1) * stride2 +
-          inputOffset + (i / stride2) * inputStride) - mean) * invstd * w + b
-        i += 1
-      }
-
-      //      }
-    }
-    for (t <- tasks) {
-      Await.result(t, Duration.Inf)
-    }
-  }
-
-  def updateOutputFloat(input: Array[Float], inputOffset: Int, inputStride: Int,
-    output: Array[Float], outputOffset: Int, outputStride: Int,
-    nInput: Int, n: Int, stride2: Int
-  ): Unit = {
-    var mean = 0.0f
-    var invstd = 0.0f
-
-    val tasks = new ArrayBuffer[Future[Unit]](nInput)
-    val slices = (1 to nInput).iterator
-    while (slices.hasNext) {
-      val f = slices.next()
-      //        println(s"f: $f")
-      if (train) {
-        var sum = 0.0f
-        var i = 0
-        while (i < n) {
-          sum += input(i % stride2 + (f - 1) * stride2 + inputOffset + (i / stride2) * inputStride)
-          i += 1
-        }
-        mean = sum / n
-        saveMean.setValue(f, ev.fromType[Float](mean))
-
-        sum = 0.0f
-        i = 0
-        while (i < n) {
-          sum += (input(i % stride2 + (f - 1) * stride2 + inputOffset +
-            (i / stride2) * inputStride) - mean) * (input(i % stride2 + (f - 1) * stride2 +
-            inputOffset + (i / stride2) * inputStride) - mean)
-          i += 1
-        }
-
-        invstd = if (sum == 0 && eps == 0.0) {
-          0.0f
-        } else {
-          1.0f / Math.sqrt(sum / n + eps).toFloat
-        }
-        saveStd.setValue(f, ev.fromType[Float](invstd))
-
-        runningMean.setValue(f, ev.fromType[Float](momentum.toFloat * mean +
-          (1 - momentum.toFloat) * ev.toType[Float](runningMean(Array(f)))))
-
-        val unbiasedVar = sum / (n - 1)
-        runningVar.setValue(f, ev.fromType[Float](momentum.toFloat * unbiasedVar +
-          (1 - momentum.toFloat) * ev.toType[Float](runningVar.storage().array()(f - 1))))
-      } else {
-        mean = ev.toType[Float](runningMean(Array(f)))
-        invstd = 1 / Math.sqrt(ev.toType[Float](runningVar(Array(f))) + eps.toFloat).toFloat
-      }
-
-      val w = if (null != weight) ev.toType[Float](weight(Array(f))) else 1.0f
-      val b = if (null != bias) ev.toType[Float](bias(Array(f))) else 0.0f
-
-      var i = 0
-      while (i < n) {
-        output(i % stride2 + (f - 1) * stride2 + inputOffset + (i / stride2) * inputStride) =
-          (input(i % stride2 + (f - 1) * stride2 + inputOffset + (i / stride2) * inputStride) -
-            mean) * invstd * w + b
-        i += 1
-      }
-    }
-    for (t <- tasks) {
-      Await.result(t, Duration.Inf)
-    }
-  }
-
-  def checkInputDim(input: Tensor[T]): Unit = {
+  private def checkInputDim(input: Tensor[T]): Unit = {
     require(input.dim() == nDim,
       s"only mini-batch supported (${nDim}D tensor), got ${input.dim()}D tensor instead")
     require(input.size(2) == runningMean.nElement(),
@@ -209,6 +81,9 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](val nOutput: I
     saveStd.resizeAs(runningVar)
 
     val nInput = input.size(2)
+    if(results == null || results.length > nInput) {
+      results = new Array[Future[_]](nInput)
+    }
     val n = input.nElement() / nInput
     ev.getType() match {
       case "Double" =>
@@ -241,6 +116,133 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](val nOutput: I
     output
   }
 
+  private def updateOutputDouble(input: Array[Double], inputOffset: Int, inputStride: Int,
+    output: Array[Double], outputOffset: Int, outputStride: Int,
+    nInput: Int, n: Int, stride2: Int
+  ): Unit = {
+    var f = 0
+    while (f < nInput) {
+      val _f = f + 1
+      results(f) = Future {
+        var mean = 0.0
+        var invstd = 0.0
+        if (train) {
+          var sum = 0.0
+          var i = 0
+          while (i < n) {
+            sum += input(i % stride2 + (_f - 1) * stride2 + inputOffset +
+              (i / stride2) * inputStride)
+            i += 1
+          }
+          mean = sum / n
+          saveMean.setValue(_f, ev.fromType[Double](mean))
+          sum = 0.0
+          i = 0
+          while (i < n) {
+            sum += (input(i % stride2 + (_f - 1) * stride2 + inputOffset +
+              (i / stride2) * inputStride) - mean) * (input(i % stride2 + (_f - 1) * stride2 +
+              inputOffset + (i / stride2) * inputStride) - mean)
+            i += 1
+          }
+
+          invstd = if (sum == 0 && eps == 0.0) {
+            0.0
+          } else {
+            1 / Math.sqrt(sum / n + eps)
+          }
+          saveStd.setValue(_f, ev.fromType[Double](invstd))
+
+          runningMean.setValue(_f, ev.fromType[Double](momentum * mean + (1 - momentum) *
+            ev.toType[Double](runningMean.valueAt(_f))))
+
+          val unbiasedVar = sum / (n - 1)
+          runningVar.setValue(_f, ev.fromType[Double](momentum * unbiasedVar + (1 - momentum) *
+            ev.toType[Double](runningVar.storage().array()(_f - 1))))
+        } else {
+          mean = ev.toType[Double](runningMean.valueAt(_f))
+          invstd = 1 / Math.sqrt(ev.toType[Double](runningVar.valueAt(_f)) + eps)
+        }
+
+        val w = if (null != weight) ev.toType[Double](weight.valueAt(_f)) else 1.0
+        val b = if (null != bias) ev.toType[Double](bias.valueAt(_f)) else 0.0
+
+        var i = 0
+        while (i < n) {
+          output(i % stride2 + (_f - 1) * stride2 +
+            inputOffset + (i / stride2) * inputStride) = (input(i % stride2 + (_f - 1) * stride2 +
+            inputOffset + (i / stride2) * inputStride) - mean) * invstd * w + b
+          i += 1
+        }
+      }(Engine.getInstance())
+      f += 1
+    }
+    Engine.releaseInstance[Any](results)
+  }
+
+  private def updateOutputFloat(input: Array[Float], inputOffset: Int, inputStride: Int,
+    output: Array[Float], outputOffset: Int, outputStride: Int,
+    nInput: Int, n: Int, stride2: Int
+  ): Unit = {
+    var f = 0
+    while (f < nInput) {
+      val _f = f + 1
+      results(f) = Future {
+        var mean = 0.0f
+        var invstd = 0.0f
+        if (train) {
+          var sum = 0.0f
+          var i = 0
+          while (i < n) {
+            sum += input(i % stride2 + (_f - 1) * stride2 + inputOffset +
+              (i / stride2) * inputStride)
+            i += 1
+          }
+          mean = sum / n
+          saveMean.setValue(_f, ev.fromType(mean))
+
+          sum = 0.0f
+          i = 0
+          while (i < n) {
+            sum += (input(i % stride2 + (_f - 1) * stride2 + inputOffset +
+              (i / stride2) * inputStride) - mean) * (input(i % stride2 + (_f - 1) * stride2 +
+              inputOffset + (i / stride2) * inputStride) - mean)
+            i += 1
+          }
+
+          invstd = if (sum == 0 && eps == 0.0) {
+            0.0f
+          } else {
+            1.0f / Math.sqrt(sum / n + eps).toFloat
+          }
+          saveStd.setValue(_f, ev.fromType(invstd))
+
+          runningMean.setValue(_f, ev.fromType(momentum * mean + (1 - momentum) *
+            ev.toType[Double](runningMean.valueAt(_f))))
+
+          val unbiasedVar = sum / (n - 1)
+          runningVar.setValue(_f, ev.fromType[Double](momentum * unbiasedVar + (1 - momentum) *
+            ev.toType[Double](runningVar.storage().array()(_f - 1))))
+        } else {
+          mean = ev.toType[Float](runningMean.valueAt(_f))
+          invstd = 1 / Math.sqrt(ev.toType[Double](runningVar.valueAt(_f)) + eps).toFloat
+        }
+
+        val w = if (null != weight) ev.toType[Float](weight.valueAt(_f)) else 1.0f
+        val b = if (null != bias) ev.toType[Float](bias.valueAt(_f)) else 0.0f
+
+        var i = 0
+        while (i < n) {
+          output(i % stride2 + (_f - 1) * stride2 +
+            inputOffset + (i / stride2) * inputStride) = (input(i % stride2 + (_f - 1) * stride2 +
+            inputOffset + (i / stride2) * inputStride) - mean) * invstd * w + b
+          i += 1
+        }
+      }(Engine.getInstance())
+      f += 1
+    }
+    Engine.releaseInstance[Any](results)
+  }
+
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     backward(input, gradOutput, ev.fromType[Int](1), gradInput, gradWeight, gradBias)
   }
@@ -258,188 +260,6 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](val nOutput: I
     result
   }
 
-  def backwardDouble(input: Array[Double], inputOffset: Int, inputStride: Int, inputStride2: Int,
-    gradOutput: Array[Double], gradOutputOffset: Int, gradOutputStride: Int, gradOutputStride2: Int,
-    gradInput: Array[Double], gradInputOffset: Int, gradInputStride: Int, gradInputStride2: Int,
-    nInput: Int, n: Int, scale: Double, gradWeight: Array[Double], gradWeightOffset: Int,
-    gradBias: Array[Double], gradBiasOffset: Int
-  ): Unit = {
-    val tasks = new ArrayBuffer[Future[Unit]](nInput)
-    val slices = (1 to nInput).iterator
-    while (slices.hasNext) {
-      val f = slices.next()
-      //      println(s"f: $f")
-      val w = if (null != weight) ev.toType[Double](weight(Array(f))) else 1.0
-      val (mean, invstd) = if (train) {
-        (ev.toType[Double](saveMean(Array(f))), ev.toType[Double](saveStd(Array(f))))
-      } else {
-        (ev.toType[Double](runningMean(Array(f))),
-          1 / Math.sqrt(ev.toType[Double](runningVar(Array(f))) + eps))
-      }
-
-      var sum = 0.0
-      var i = 0
-      while (i < n) {
-        val index = i % gradOutputStride2 + (f - 1) * gradOutputStride2 + gradOutputOffset +
-          (i / gradOutputStride2) * gradOutputStride
-        sum += gradOutput(index)
-        i += 1
-      }
-
-      var dotp = 0.0
-      i = 0
-      while (i < n) {
-        val inputIndex = i % inputStride2 + (f - 1) * inputStride2 + inputOffset +
-          (i / inputStride2) * inputStride
-        val gradOutputIndex = i % gradOutputStride2 + (f - 1) * gradOutputStride2 +
-          gradOutputOffset + (i / gradOutputStride2) * gradOutputStride
-        dotp += (input(inputIndex) - mean) * gradOutput(gradOutputIndex)
-        i += 1
-      }
-
-      if (null != gradInput) {
-        //        val gradIn = gradInput.select(2, f)
-
-        if (train) {
-          val k = dotp * invstd * invstd / n
-          i = 0
-          while (i < n) {
-            val inputIndex = i % inputStride2 + (f - 1) * inputStride2 + inputOffset +
-              (i / inputStride2) * inputStride
-            val gradInputIndex = i % gradInputStride2 + (f - 1) * gradInputStride2 +
-              gradInputOffset + (i / gradInputStride2) * gradInputStride
-            gradInput(gradInputIndex) = (input(inputIndex) - mean) * k
-            i += 1
-          }
-
-          val gradMean = sum / n
-          i = 0
-          while (i < n) {
-            val gradInputIndex = i % gradInputStride2 + (f - 1) * gradInputStride2 +
-              gradInputOffset + (i / gradInputStride2) * gradInputStride
-            val gradOutputIndex = i % gradOutputStride2 + (f - 1) * gradOutputStride2 +
-              gradOutputOffset + (i / gradOutputStride2) * gradOutputStride
-            gradInput(gradInputIndex) = (gradOutput(gradOutputIndex) - gradMean -
-              gradInput(gradInputIndex)) * invstd * w
-            i += 1
-          }
-        } else {
-          var i = 0
-          while (i < n) {
-            val gradInputIndex = i % gradInputStride2 + (f - 1) * gradInputStride2 +
-              gradInputOffset + (i / gradInputStride2) * gradInputStride
-            val gradOutputIndex = i % gradOutputStride2 + (f - 1) * gradOutputStride2 +
-              gradOutputOffset + (i / gradOutputStride2) * gradOutputStride
-            gradInput(gradInputIndex) = gradOutput(gradOutputIndex) * invstd * w
-            i += 1
-          }
-        }
-      }
-
-      if (null != gradWeight) {
-        gradWeight(f - 1 + gradWeightOffset) = scale * dotp * invstd
-      }
-
-      if (null != gradBias) {
-        gradBias(f - 1 + gradBiasOffset) = scale * sum
-      }
-
-    }
-    for (t <- tasks) {
-      Await.result(t, Duration.Inf)
-    }
-  }
-
-  def backwardFloat(input: Array[Float], inputOffset: Int, inputStride: Int, inputStride2: Int,
-    gradOutput: Array[Float], gradOutputOffset: Int, gradOutputStride: Int, gradOutputStride2: Int,
-    gradInput: Array[Float], gradInputOffset: Int, gradInputStride: Int, gradInputStride2: Int,
-    nInput: Int, n: Int, scale: Float, gradWeight: Array[Float], gradWeightOffset: Int,
-    gradBias: Array[Float], gradBiasOffset: Int
-  ): Unit = {
-    val tasks = new ArrayBuffer[Future[Unit]](nInput)
-    val slices = (1 to nInput).iterator
-    while (slices.hasNext) {
-      val f = slices.next()
-      //      println(s"f: $f")
-      val w = if (null != weight) ev.toType[Float](weight(Array(f))) else 1.0f
-      val (mean, invstd) = if (train) {
-        (ev.toType[Float](saveMean(Array(f))), ev.toType[Float](saveStd(Array(f))))
-      } else {
-        (ev.toType[Float](runningMean(Array(f))), 1 / Math.sqrt(ev.toType[Float](
-          runningVar(Array(f))) + eps.toFloat).toFloat)
-      }
-
-      var sum = 0.0f
-      var i = 0
-      while (i < n) {
-        val index = i % gradOutputStride2 + (f - 1) * gradOutputStride2 + gradOutputOffset +
-          (i / gradOutputStride2) * gradOutputStride
-        sum += gradOutput(index)
-        i += 1
-      }
-
-      var dotp = 0.0f
-      i = 0
-      while (i < n) {
-        val inputIndex = i % inputStride2 + (f - 1) * inputStride2 + inputOffset +
-          (i / inputStride2) * inputStride
-        val gradOutputIndex = i % gradOutputStride2 + (f - 1) * gradOutputStride2 +
-          gradOutputOffset + (i / gradOutputStride2) * gradOutputStride
-        dotp += (input(inputIndex) - mean) * gradOutput(gradOutputIndex)
-        i += 1
-      }
-
-      if (null != gradInput) {
-        if (train) {
-          val k = dotp * invstd * invstd / n
-          i = 0
-          while (i < n) {
-            val inputIndex = i % inputStride2 + (f - 1) * inputStride2 + inputOffset +
-              (i / inputStride2) * inputStride
-            val gradInputIndex = i % gradInputStride2 + (f - 1) * gradInputStride2 +
-              gradInputOffset + (i / gradInputStride2) * gradInputStride
-            gradInput(gradInputIndex) = (input(inputIndex) - mean) * k
-            i += 1
-          }
-
-          val gradMean = sum / n
-          i = 0
-          while (i < n) {
-            val gradInputIndex = i % gradInputStride2 + (f - 1) * gradInputStride2 +
-              gradInputOffset + (i / gradInputStride2) * gradInputStride
-            val gradOutputIndex = i % gradOutputStride2 + (f - 1) * gradOutputStride2 +
-              gradOutputOffset + (i / gradOutputStride2) * gradOutputStride
-            gradInput(gradInputIndex) = (gradOutput(gradOutputIndex) - gradMean -
-              gradInput(gradInputIndex)) * invstd * w
-            i += 1
-          }
-        } else {
-          var i = 0
-          while (i < n) {
-            val gradInputIndex = i % gradInputStride2 + (f - 1) * gradInputStride2 +
-              gradInputOffset + (i / gradInputStride2) * gradInputStride
-            val gradOutputIndex = i % gradOutputStride2 + (f - 1) * gradOutputStride2 +
-              gradOutputOffset + (i / gradOutputStride2) * gradOutputStride
-            gradInput(gradInputIndex) = gradOutput(gradOutputIndex) * invstd * w
-            i += 1
-          }
-        }
-      }
-
-      if (null != gradWeight) {
-        gradWeight(f - 1 + gradWeightOffset) = scale * dotp * invstd
-      }
-
-      if (null != gradBias) {
-        gradBias(f - 1 + gradBiasOffset) = scale * sum
-      }
-
-    }
-    for (t <- tasks) {
-      Await.result(t, Duration.Inf)
-    }
-  }
-
   def backward(input: Tensor[T], gradOutput: Tensor[T], scale: T = ev.fromType[Int](1),
     theGradInput: Tensor[T] = null, theGradWeight: Tensor[T] = null,
     theGradBias: Tensor[T] = null): Tensor[T] = {
@@ -451,6 +271,9 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](val nOutput: I
     }
 
     val nInput = input.size(2)
+    if(results == null || results.length > nInput) {
+      results = new Array[Future[_]](nInput)
+    }
     val n = input.nElement() / nInput
 
     ev.getType() match {
@@ -560,6 +383,182 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](val nOutput: I
     }
 
     gradInput
+  }
+
+  private def backwardDouble(input: Array[Double], inputOffset: Int, inputStride: Int,
+    inputStride2: Int, gradOutput: Array[Double], gradOutputOffset: Int, gradOutputStride: Int,
+    gradOutputStride2: Int, gradInput: Array[Double], gradInputOffset: Int, gradInputStride: Int,
+    gradInputStride2: Int, nInput: Int, n: Int, scale: Double, gradWeight: Array[Double],
+    gradWeightOffset: Int, gradBias: Array[Double], gradBiasOffset: Int
+  ): Unit = {
+    var f = 0
+    while (f < nInput) {
+      val _f = f + 1
+      results(f) = Future {
+        val w = if (null != weight) ev.toType[Double](weight.valueAt(_f)) else 1.0
+        val (mean, invstd) = if (train) {
+          (ev.toType[Double](saveMean.valueAt(_f)), ev.toType[Double](saveStd.valueAt(_f)))
+        } else {
+          (ev.toType[Double](runningMean.valueAt(_f)),
+            1 / Math.sqrt(ev.toType[Double](runningVar.valueAt(_f)) + eps))
+        }
+
+        var sum = 0.0
+        var i = 0
+        while (i < n) {
+          val index = i % gradOutputStride2 + (_f - 1) * gradOutputStride2 + gradOutputOffset +
+            (i / gradOutputStride2) * gradOutputStride
+          sum += gradOutput(index)
+          i += 1
+        }
+
+        var dotp = 0.0
+        i = 0
+        while (i < n) {
+          val inputIndex = i % inputStride2 + (_f - 1) * inputStride2 + inputOffset +
+            (i / inputStride2) * inputStride
+          val gradOutputIndex = i % gradOutputStride2 + (_f - 1) * gradOutputStride2 +
+            gradOutputOffset + (i / gradOutputStride2) * gradOutputStride
+          dotp += (input(inputIndex) - mean) * gradOutput(gradOutputIndex)
+          i += 1
+        }
+
+        if (null != gradInput) {
+          if (train) {
+            val k = dotp * invstd * invstd / n
+            i = 0
+            while (i < n) {
+              val inputIndex = i % inputStride2 + (_f - 1) * inputStride2 + inputOffset +
+                (i / inputStride2) * inputStride
+              val gradInputIndex = i % gradInputStride2 + (_f - 1) * gradInputStride2 +
+                gradInputOffset + (i / gradInputStride2) * gradInputStride
+              gradInput(gradInputIndex) = (input(inputIndex) - mean) * k
+              i += 1
+            }
+
+            val gradMean = sum / n
+            i = 0
+            while (i < n) {
+              val gradInputIndex = i % gradInputStride2 + (_f - 1) * gradInputStride2 +
+                gradInputOffset + (i / gradInputStride2) * gradInputStride
+              val gradOutputIndex = i % gradOutputStride2 + (_f - 1) * gradOutputStride2 +
+                gradOutputOffset + (i / gradOutputStride2) * gradOutputStride
+              gradInput(gradInputIndex) = (gradOutput(gradOutputIndex) - gradMean -
+                gradInput(gradInputIndex)) * invstd * w
+              i += 1
+            }
+          } else {
+            var i = 0
+            while (i < n) {
+              val gradInputIndex = i % gradInputStride2 + (_f - 1) * gradInputStride2 +
+                gradInputOffset + (i / gradInputStride2) * gradInputStride
+              val gradOutputIndex = i % gradOutputStride2 + (_f - 1) * gradOutputStride2 +
+                gradOutputOffset + (i / gradOutputStride2) * gradOutputStride
+              gradInput(gradInputIndex) = gradOutput(gradOutputIndex) * invstd * w
+              i += 1
+            }
+          }
+        }
+
+        if (null != gradWeight) {
+          gradWeight(_f - 1 + gradWeightOffset) = scale * dotp * invstd
+        }
+
+        if (null != gradBias) {
+          gradBias(_f - 1 + gradBiasOffset) = scale * sum
+        }
+      }(Engine.getInstance())
+      f += 1
+    }
+    Engine.releaseInstance[Any](results)
+  }
+
+  private def backwardFloat(input: Array[Float], inputOffset: Int, inputStride: Int,
+    inputStride2: Int, gradOutput: Array[Float], gradOutputOffset: Int, gradOutputStride: Int,
+    gradOutputStride2: Int, gradInput: Array[Float], gradInputOffset: Int, gradInputStride: Int,
+    gradInputStride2: Int, nInput: Int, n: Int, scale: Float, gradWeight: Array[Float],
+    gradWeightOffset: Int, gradBias: Array[Float], gradBiasOffset: Int
+  ): Unit = {
+    var f = 0
+    while (f < nInput) {
+      val _f = f + 1
+      results(f) = Future {
+        val w = if (null != weight) ev.toType[Float](weight.valueAt(_f)) else 1.0f
+        val (mean, invstd) = if (train) {
+          (ev.toType[Float](saveMean.valueAt(_f)), ev.toType[Float](saveStd.valueAt(_f)))
+        } else {
+          (ev.toType[Float](runningMean.valueAt(_f)),
+            1 / Math.sqrt(ev.toType[Float](runningVar.valueAt(_f)) + eps).toFloat)
+        }
+
+        var sum = 0.0f
+        var i = 0
+        while (i < n) {
+          val index = i % gradOutputStride2 + (_f - 1) * gradOutputStride2 + gradOutputOffset +
+            (i / gradOutputStride2) * gradOutputStride
+          sum += gradOutput(index)
+          i += 1
+        }
+
+        var dotp = 0.0f
+        i = 0
+        while (i < n) {
+          val inputIndex = i % inputStride2 + (_f - 1) * inputStride2 + inputOffset +
+            (i / inputStride2) * inputStride
+          val gradOutputIndex = i % gradOutputStride2 + (_f - 1) * gradOutputStride2 +
+            gradOutputOffset + (i / gradOutputStride2) * gradOutputStride
+          dotp += (input(inputIndex) - mean) * gradOutput(gradOutputIndex)
+          i += 1
+        }
+
+        if (null != gradInput) {
+          if (train) {
+            val k = dotp * invstd * invstd / n
+            i = 0
+            while (i < n) {
+              val inputIndex = i % inputStride2 + (_f - 1) * inputStride2 + inputOffset +
+                (i / inputStride2) * inputStride
+              val gradInputIndex = i % gradInputStride2 + (_f - 1) * gradInputStride2 +
+                gradInputOffset + (i / gradInputStride2) * gradInputStride
+              gradInput(gradInputIndex) = (input(inputIndex) - mean) * k
+              i += 1
+            }
+
+            val gradMean = sum / n
+            i = 0
+            while (i < n) {
+              val gradInputIndex = i % gradInputStride2 + (_f - 1) * gradInputStride2 +
+                gradInputOffset + (i / gradInputStride2) * gradInputStride
+              val gradOutputIndex = i % gradOutputStride2 + (_f - 1) * gradOutputStride2 +
+                gradOutputOffset + (i / gradOutputStride2) * gradOutputStride
+              gradInput(gradInputIndex) = (gradOutput(gradOutputIndex) - gradMean -
+                gradInput(gradInputIndex)) * invstd * w
+              i += 1
+            }
+          } else {
+            var i = 0
+            while (i < n) {
+              val gradInputIndex = i % gradInputStride2 + (_f - 1) * gradInputStride2 +
+                gradInputOffset + (i / gradInputStride2) * gradInputStride
+              val gradOutputIndex = i % gradOutputStride2 + (_f - 1) * gradOutputStride2 +
+                gradOutputOffset + (i / gradOutputStride2) * gradOutputStride
+              gradInput(gradInputIndex) = gradOutput(gradOutputIndex) * invstd * w
+              i += 1
+            }
+          }
+        }
+
+        if (null != gradWeight) {
+          gradWeight(_f - 1 + gradWeightOffset) = scale * dotp * invstd
+        }
+
+        if (null != gradBias) {
+          gradBias(_f - 1 + gradBiasOffset) = scale * sum
+        }
+      }(Engine.getInstance())
+      f += 1
+    }
+    Engine.releaseInstance[Any](results)
   }
 
   override def zeroGradParameters(): Unit = {

@@ -91,6 +91,46 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     output should be(targetOutput)
   }
 
+  it should "generate correct output when kernel is 1x1" in {
+    val nInputPlane = 1
+    val nOutputPlane = 1
+    val kW = 1
+    val kH = 1
+    val dW = 1
+    val dH = 1
+    val padW = 0
+    val padH = 0
+    val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH)
+
+    val inputData = Array(
+      1.0, 2, 3,
+      4, 5, 6,
+      7, 8, 9
+    )
+
+    val kernelData = Array(
+      2.0
+    )
+
+    val biasData = Array(0.0)
+
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1, Array(nOutputPlane,
+      nInputPlane, kH, kW)))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
+    val output = layer.updateOutput(input)
+    output(Array(1, 1, 1)) should be(2.0)
+    output(Array(1, 1, 2)) should be(4.0)
+    output(Array(1, 1, 3)) should be(6.0)
+    output(Array(1, 2, 1)) should be(8.0)
+    output(Array(1, 2, 2)) should be(10.0)
+    output(Array(1, 2, 3)) should be(12.0)
+    output(Array(1, 3, 1)) should be(14.0)
+    output(Array(1, 3, 2)) should be(16.0)
+    output(Array(1, 3, 3)) should be(18.0)
+  }
+
   it should "generate correct output for batch input" in {
     val nInputPlane = 1
     val nOutputPlane = 1
@@ -145,6 +185,79 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     output(Array(3, 1, 2, 1)) should be(91)
     output(Array(3, 1, 2, 2)) should be(105)
     output(Array(3, 1, 2, 3)) should be(56)
+  }
+
+  it should "generate correct output for batch input when kernel size is 1" in {
+    val nInputPlane = 1
+    val nOutputPlane = 1
+    val kW = 1
+    val kH = 1
+    val dW = 1
+    val dH = 1
+    val padW = 0
+    val padH = 0
+    val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+      padW, padH)
+
+    val inputData = Array(
+      1.0, 2, 3, 1,
+      4, 5, 6, 1,
+      7, 8, 9, 1,
+      1.0, 2, 3, 1,
+      4, 5, 6, 1,
+      7, 8, 9, 1,
+      1.0, 2, 3, 1,
+      4, 5, 6, 1,
+      7, 8, 9, 1
+    )
+
+    val kernelData = Array(
+      2.0
+    )
+
+    val biasData = Array(0.0)
+
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
+      Array(nOutputPlane, nInputPlane, kH, kW)))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(3, 1, 3, 4))
+    val output = layer.updateOutput(input)
+    output(Array(1, 1, 1, 1)) should be(2)
+    output(Array(1, 1, 1, 2)) should be(4)
+    output(Array(1, 1, 1, 3)) should be(6)
+    output(Array(1, 1, 1, 4)) should be(2)
+    output(Array(1, 1, 2, 1)) should be(8)
+    output(Array(1, 1, 2, 2)) should be(10)
+    output(Array(1, 1, 2, 3)) should be(12)
+    output(Array(1, 1, 2, 4)) should be(2)
+    output(Array(1, 1, 3, 1)) should be(14)
+    output(Array(1, 1, 3, 2)) should be(16)
+    output(Array(1, 1, 3, 3)) should be(18)
+    output(Array(1, 1, 3, 4)) should be(2)
+    output(Array(2, 1, 1, 1)) should be(2)
+    output(Array(2, 1, 1, 2)) should be(4)
+    output(Array(2, 1, 1, 3)) should be(6)
+    output(Array(2, 1, 1, 4)) should be(2)
+    output(Array(2, 1, 2, 1)) should be(8)
+    output(Array(2, 1, 2, 2)) should be(10)
+    output(Array(2, 1, 2, 3)) should be(12)
+    output(Array(2, 1, 2, 4)) should be(2)
+    output(Array(2, 1, 3, 1)) should be(14)
+    output(Array(2, 1, 3, 2)) should be(16)
+    output(Array(2, 1, 3, 3)) should be(18)
+    output(Array(2, 1, 3, 4)) should be(2)
+    output(Array(3, 1, 1, 1)) should be(2)
+    output(Array(3, 1, 1, 2)) should be(4)
+    output(Array(3, 1, 1, 3)) should be(6)
+    output(Array(3, 1, 1, 4)) should be(2)
+    output(Array(3, 1, 2, 1)) should be(8)
+    output(Array(3, 1, 2, 2)) should be(10)
+    output(Array(3, 1, 2, 3)) should be(12)
+    output(Array(3, 1, 2, 4)) should be(2)
+    output(Array(3, 1, 3, 1)) should be(14)
+    output(Array(3, 1, 3, 2)) should be(16)
+    output(Array(3, 1, 3, 3)) should be(18)
+    output(Array(3, 1, 3, 4)) should be(2)
   }
 
   it should "generate correct output when group != 1 for batch input" in {
@@ -664,6 +777,54 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     gradInput(Array(1, 3, 3)) should be(20)
   }
 
+  it should "generate correct gradInput when kernel size is 1x1" in {
+    val nInputPlane = 1
+    val nOutputPlane = 1
+    val kW = 1
+    val kH = 1
+    val dW = 1
+    val dH = 1
+    val padW = 0
+    val padH = 0
+    val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+      padW, padH)
+
+    val inputData = Array(
+      1.0, 2, 3,
+      4, 5, 6,
+      7, 8, 9
+    )
+
+    val kernelData = Array(
+      2.0
+    )
+
+    val gradOutputData = Array(
+      1.0, 2.0, 5.0,
+      3.0, 4.0, 6.0,
+      7.0, 8.0, 9.0
+    )
+
+    val biasData = Array(0.0)
+
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
+      Array(nOutputPlane, nInputPlane, kH, kW)))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
+    layer.updateOutput(input)
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(1, 3, 3))
+    val gradInput = layer.updateGradInput(input, gradOutput)
+    gradInput(Array(1, 1, 1)) should be(2)
+    gradInput(Array(1, 1, 2)) should be(4)
+    gradInput(Array(1, 1, 3)) should be(10)
+    gradInput(Array(1, 2, 1)) should be(6)
+    gradInput(Array(1, 2, 2)) should be(8)
+    gradInput(Array(1, 2, 3)) should be(12)
+    gradInput(Array(1, 3, 1)) should be(14)
+    gradInput(Array(1, 3, 2)) should be(16)
+    gradInput(Array(1, 3, 3)) should be(18)
+  }
+
   it should "generate correct gradInput when group != 1" in {
     val input1 = Tensor[Double](3, 4, 5).rand()
     val gradOutput1 = Tensor[Double](4, 3, 4).rand()
@@ -780,6 +941,84 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     gradInput(Array(3, 1, 3, 1)) should be(12)
     gradInput(Array(3, 1, 3, 2)) should be(31)
     gradInput(Array(3, 1, 3, 3)) should be(20)
+  }
+
+  it should "generate correct gradInput for batch input when kernel is 1x1" in {
+    val nInputPlane = 1
+    val nOutputPlane = 1
+    val kW = 1
+    val kH = 1
+    val dW = 1
+    val dH = 1
+    val padW = 0
+    val padH = 0
+    val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
+      padW, padH)
+
+    val inputData = Array(
+      1.0, 2, 3,
+      4, 5, 6,
+      7, 8, 9,
+      1.0, 2, 3,
+      4, 5, 6,
+      7, 8, 9,
+      1.0, 2, 3,
+      4, 5, 6,
+      7, 8, 9
+    )
+
+    val kernelData = Array(
+      2.0
+    )
+
+    val gradOutputData = Array(
+      1.0, 2.0, 4.0,
+      3.0, 4.0, 7.0,
+      8.0, 6.0, 9.0,
+      1.0, 2.0, 4.0,
+      3.0, 4.0, 7.0,
+      8.0, 6.0, 9.0,
+      1.0, 2.0, 4.0,
+      3.0, 4.0, 7.0,
+      8.0, 6.0, 9.0
+    )
+
+    val biasData = Array(0.0)
+
+    layer.weight.copy(Tensor[Double](Storage(kernelData), 1,
+      Array(nOutputPlane, nInputPlane, kH, kW)))
+    layer.bias.copy(Tensor[Double](Storage(biasData), 1, Array(nOutputPlane)))
+    val input = Tensor[Double](Storage(inputData), 1, Array(3, 1, 3, 3))
+    layer.updateOutput(input)
+    val gradOutput = Tensor[Double](Storage(gradOutputData), 1, Array(3, 1, 3, 3))
+    val gradInput = layer.updateGradInput(input, gradOutput)
+    gradInput(Array(1, 1, 1, 1)) should be(2)
+    gradInput(Array(1, 1, 1, 2)) should be(4)
+    gradInput(Array(1, 1, 1, 3)) should be(8)
+    gradInput(Array(1, 1, 2, 1)) should be(6)
+    gradInput(Array(1, 1, 2, 2)) should be(8)
+    gradInput(Array(1, 1, 2, 3)) should be(14)
+    gradInput(Array(1, 1, 3, 1)) should be(16)
+    gradInput(Array(1, 1, 3, 2)) should be(12)
+    gradInput(Array(1, 1, 3, 3)) should be(18)
+    gradInput(Array(2, 1, 1, 1)) should be(2)
+    gradInput(Array(2, 1, 1, 2)) should be(4)
+    gradInput(Array(2, 1, 1, 3)) should be(8)
+    gradInput(Array(2, 1, 2, 1)) should be(6)
+    gradInput(Array(2, 1, 2, 2)) should be(8)
+    gradInput(Array(2, 1, 2, 3)) should be(14)
+    gradInput(Array(2, 1, 3, 1)) should be(16)
+    gradInput(Array(2, 1, 3, 2)) should be(12)
+    gradInput(Array(2, 1, 3, 3)) should be(18)
+    gradInput(Array(3, 1, 1, 1)) should be(2)
+    gradInput(Array(3, 1, 1, 2)) should be(4)
+    gradInput(Array(3, 1, 1, 3)) should be(8)
+    gradInput(Array(3, 1, 2, 1)) should be(6)
+    gradInput(Array(3, 1, 2, 2)) should be(8)
+    gradInput(Array(3, 1, 2, 3)) should be(14)
+    gradInput(Array(3, 1, 3, 1)) should be(16)
+    gradInput(Array(3, 1, 3, 2)) should be(12)
+    gradInput(Array(3, 1, 3, 3)) should be(18)
   }
 
   it should "generate correct gradInput when group != 1 for batch input" in {

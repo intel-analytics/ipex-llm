@@ -17,12 +17,10 @@
 
 package com.intel.analytics.sparkdl.tensor
 
+  import com.intel.analytics.sparkdl.mkl.MKL
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath._
 import com.intel.analytics.sparkdl.tensor.{DenseTensorApply => Apply}
-import com.intel.analytics.sparkdl.utils.Engine
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
 object DenseTensorMath {
@@ -31,45 +29,16 @@ object DenseTensorMath {
   def mul[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], value: T)
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
     if (x != null) {
-      self.copy(x)
-    }
-
-    //    Apply.apply1[T](self, (d, i) => d(i) = ev.times(d(i), value))
-    val func = new TensorFunc2[T] {
-      override def apply(data: Array[T], index: Int): Unit = {
-        data(index) = ev.times(data(index), value)
-      }
-    }
-    Apply.apply1[T](self, func)
-    //    val data = self.storage().array
-    //    Apply.apply4(self, (i) => data(i)=ev.times(data(i), value))
-    self
-  }
-
-  def div[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], value: T)
-    (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    if (x != null) {
+      require(self.nElement() == x.nElement())
       self.copy(x)
     }
 
     if (self.isContiguous()) {
-      val data = self.storage().array()
-      val tasks = for (taskOffset <- 0 until self.nElement() / taskSize + 1) yield Future {
-        var i = taskOffset * taskSize + self.storageOffset() - 1
-        while (i < self.nElement() && i < (taskOffset + 1) * taskSize) {
-          data(i) = ev.divide(data(i), value)
-          i += 1
-        }
-      }(Engine.getInstance())
-
-      for (t <- tasks) {
-        Await.result(t, Duration.Inf)
-      }
-
+      ev.scal(self.nElement, value, self.storage().array(), self.storageOffset() - 1, 1)
     } else {
       val func = new TensorFunc2[T] {
         override def apply(data: Array[T], index: Int): Unit = {
-          data(index) = ev.divide(data(index), value)
+          data(index) = ev.times(data(index), value)
         }
       }
       Apply.apply1[T](self, func)
@@ -77,16 +46,45 @@ object DenseTensorMath {
     self
   }
 
-  def cmul[@specialized(Float, Double) T](self: DenseTensor[T], y: Tensor[T])
+  def cmul[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == y.nElement(), "element number doesn't match")
-    //    Apply.apply2[T](self, y, (a, i1, b, i2) => a(i1) = ev.times(a(i1), b(i2)))
-    val func2 = new TensorFunc4[T] {
-      override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
-        data1(offset1) = ev.times(data2(offset2), data1(offset1))
-      }
+    if (x != null) {
+      self.copy(x)
     }
-    Apply.apply2[T](self, y, func2)
+    require(self.nElement() == y.nElement(), "element number doesn't match")
+    if (self.isContiguous() && y.isContiguous()) {
+      ev.vMul(self.nElement(), self.storage().array(), self.storageOffset() - 1,
+        y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
+          - 1)
+    } else {
+      val func = new TensorFunc4[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+          data1(offset1) = ev.times(data2(offset2), data1(offset1))
+        }
+      }
+      Apply.apply2[T](self, y, func)
+    }
+    self
+  }
+
+  def cdiv[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    if (x != null) {
+      self.copy(x)
+    }
+    require(self.nElement() == y.nElement(), "element number doesn't match")
+    if (self.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
+      ev.vDiv(self.nElement(), self.storage().array(), self.storageOffset() - 1,
+        y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
+          - 1)
+    } else {
+      val func = new TensorFunc4[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+          data1(offset1) = ev.divide(data1(offset1), data2(offset2))
+        }
+      }
+      Apply.apply2[T](self, y, func)
+    }
     self
   }
 
@@ -269,22 +267,17 @@ object DenseTensorMath {
     sum
   }
 
-  def sum[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], _dim: Int)(
-    implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(_dim >= 0 && _dim < self.nDimension, s"dimension ${_dim + 1} out of range")
-    val result = new DenseTensor[T]()
-    val sizes = self.size()
+  def sum[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+
+    require(_dim >= 0 && _dim < x.nDimension, s"dimension ${_dim + 1} out of range")
+    val result = if (self == null) new DenseTensor[T]() else self
+    val sizes = x.size()
     sizes(_dim) = 1
-    DenseTensor.resize(result, sizes)
-    DenseTensorDimApply.dimApply2[T](result, self, _dim,
+    result.resize(sizes)
+    DenseTensorDimApply.dimApply2[T](result, x, _dim,
       (rData, rOffset, rStride, rSize, tData, tOffset, tStride, tSize) => {
-        var sum = ev.fromType[Int](0)
-        var i = 0
-        while (i < tSize) {
-          sum = ev.plus(sum, tData(tOffset + i * tStride))
-          i += 1
-        }
-        rData(rOffset) = sum
+        rData(rOffset) = ev.sum(tSize, tData, tOffset, tStride)
       })
 
     result

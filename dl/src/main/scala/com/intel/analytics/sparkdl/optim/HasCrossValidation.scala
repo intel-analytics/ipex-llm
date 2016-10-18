@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.nn.Module
-import com.intel.analytics.sparkdl.optim.Optimizer.CachedModel
+import com.intel.analytics.sparkdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.sparkdl.tensor.Tensor
 import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
