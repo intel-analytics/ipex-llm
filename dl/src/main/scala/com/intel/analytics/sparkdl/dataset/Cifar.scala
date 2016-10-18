@@ -45,7 +45,7 @@ object Cifar10Local {
       val validationDataSource = new CifarDataSource(Paths.get(param.folder + "/val"),
         looped = false)
       val normalizer = new RGBImageNormalizer(trainDataSource)
-      val toTensor = new RGBImageToTensor(batchSize = 100)
+      val toTensor = new RGBImageToTensor(batchSize = 128)
 
       val optimizer = new LocalOptimizer[Float](
         data = trainDataSource ++ normalizer ++ toTensor,
@@ -54,7 +54,7 @@ object Cifar10Local {
         criterion = new ClassNLLCriterion[Float](),
         optimMethod = new SGD[Float](),
         state = T(
-          "learningRate" -> 1.0,
+          "learningRate" -> 0.01,
           "weightDecay" -> 0.0005,
           "momentum" -> 0.9,
           "dampening" -> 0.0,
