@@ -16,22 +16,28 @@
  */
 package com.intel.analytics.sparkdl.dataset
 
-import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+
+trait NormalizerHelper {
+  def checkSum(sum : Double) : Boolean = {
+    sum < Double.MaxValue / (2 << 10) && sum > Double.MinValue / (2 << 10)
+  }
+}
 
 class GreyImageNormalizer(dataSource: DataSource[GreyImage], samples: Int = -1)
-  extends Transformer[GreyImage, GreyImage] {
+  extends Transformer[GreyImage, GreyImage] with NormalizerHelper {
 
-  private var mean: Float = 0
-  private var std: Float = 0
+  private var mean: Double = 0
+  private var std: Double = 0
 
-  def getMean(): Float = mean
+  def getMean(): Double = mean
 
-  def getStd(): Float = std
+  def getStd(): Double = std
 
   init()
 
   private def init() = {
-    var sum: Float = 0
+    var sum: Double = 0
     var total: Int = 0
     dataSource.shuffle()
     dataSource.reset()
@@ -45,6 +51,7 @@ class GreyImageNormalizer(dataSource: DataSource[GreyImage], samples: Int = -1)
       i += 1
     }
 
+    checkSum(sum)
     mean = sum / total
 
     sum = 0
@@ -58,6 +65,7 @@ class GreyImageNormalizer(dataSource: DataSource[GreyImage], samples: Int = -1)
       })
       i += 1
     }
+    checkSum(sum)
     std = math.sqrt(sum / total).toFloat
   }
 
@@ -66,7 +74,7 @@ class GreyImageNormalizer(dataSource: DataSource[GreyImage], samples: Int = -1)
       var i = 0
       val content = img.content
       while (i < content.length) {
-        content(i) = (content(i) - mean) / std
+        content(i) = ((content(i) - mean) / std).toFloat
         i += 1
       }
       img
@@ -75,25 +83,25 @@ class GreyImageNormalizer(dataSource: DataSource[GreyImage], samples: Int = -1)
 }
 
 class RGBImageNormalizer(dataSource: DataSource[RGBImage], samples: Int = -1)
-  extends Transformer[RGBImage, RGBImage] {
+  extends Transformer[RGBImage, RGBImage] with NormalizerHelper {
 
-  private var meanR: Float = 0
-  private var stdR: Float = 0
-  private var meanG: Float = 0
-  private var stdG: Float = 0
-  private var meanB: Float = 0
-  private var stdB: Float = 0
+  private var meanR: Double = 0
+  private var stdR: Double = 0
+  private var meanG: Double = 0
+  private var stdG: Double = 0
+  private var meanB: Double = 0
+  private var stdB: Double = 0
 
-  def getMean(): (Float, Float, Float) = (meanB, meanG, meanR)
+  def getMean(): (Double, Double, Double) = (meanB, meanG, meanR)
 
-  def getStd(): (Float, Float, Float) = (stdB, stdG, stdR)
+  def getStd(): (Double, Double, Double) = (stdB, stdG, stdR)
 
   init()
 
   private def init() = {
-    var sumR: Float = 0
-    var sumG: Float = 0
-    var sumB: Float = 0
+    var sumR: Double = 0
+    var sumG: Double = 0
+    var sumB: Double = 0
     var total: Int = 0
     dataSource.shuffle()
     dataSource.reset()
@@ -112,9 +120,10 @@ class RGBImageNormalizer(dataSource: DataSource[RGBImage], samples: Int = -1)
       i += 1
     }
 
-    meanR = sumR / total
-    meanG = sumG / total
-    meanB = sumB / total
+    require(checkSum(sumR) && checkSum(sumG) & checkSum(sumB))
+    meanR = (sumR / total).toFloat
+    meanG = (sumG / total).toFloat
+    meanB = (sumB / total).toFloat
     sumR = 0
     sumG = 0
     sumB = 0
@@ -134,6 +143,7 @@ class RGBImageNormalizer(dataSource: DataSource[RGBImage], samples: Int = -1)
       }
       i += 1
     }
+    require(checkSum(sumR) && checkSum(sumG) & checkSum(sumB))
     stdR = math.sqrt(sumR / total).toFloat
     stdG = math.sqrt(sumG / total).toFloat
     stdB = math.sqrt(sumB / total).toFloat
@@ -145,9 +155,9 @@ class RGBImageNormalizer(dataSource: DataSource[RGBImage], samples: Int = -1)
       require(content.length % 3 == 0)
       var i = 0
       while (i < content.length) {
-        content(i + 2) = (content(i + 2) - meanR) / stdR
-        content(i + 1) = (content(i + 1) - meanG) / stdG
-        content(i + 0) = (content(i + 0) - meanB) / stdB
+        content(i + 2) = ((content(i + 2) - meanR) / stdR).toFloat
+        content(i + 1) = ((content(i + 1) - meanG) / stdG).toFloat
+        content(i + 0) = ((content(i + 0) - meanB) / stdB).toFloat
         i += 3
       }
       img
@@ -231,8 +241,10 @@ class GreyImageToTensor(batchSize: Int) extends Transformer[GreyImage, (Tensor[F
 
   override def transform(prev: Iterator[GreyImage]): Iterator[(Tensor[Float], Tensor[Float])] = {
     new Iterator[(Tensor[Float], Tensor[Float])] {
-      private var featureTensor: Tensor[Float] = null
-      private var labelTensor: Tensor[Float] = null
+      private val featureTensor: Tensor[Float] = Tensor[Float]()
+      private val labelTensor: Tensor[Float] = Tensor[Float]()
+      private var featureData: Array[Float] = null
+      private var labelData: Array[Float] = null
       private var width = 0
       private var height = 0
 
@@ -243,20 +255,21 @@ class GreyImageToTensor(batchSize: Int) extends Transformer[GreyImage, (Tensor[F
           var i = 0
           while (i < batchSize && prev.hasNext) {
             val img = prev.next()
-            if (featureTensor == null) {
-              featureTensor = Tensor[Float]().resize(Array(batchSize, img.height(), img.width()))
-              labelTensor = Tensor[Float]().resize(Array(batchSize))
+            if(featureData == null) {
+              featureData = new Array[Float](batchSize * img.height() * img.width())
+              labelData = new Array[Float](batchSize)
               height = img.height()
               width = img.width()
             }
-            copyImage(img, featureTensor.storage().array(), i * img.width() * img.height())
-            labelTensor.setValue(i + 1, img.label())
+            copyImage(img, featureData, i * img.width() * img.height())
+            labelData(i) = img.label()
             i += 1
           }
-
-          if (i < batchSize) {
-            featureTensor.resize(Array(i, height, width))
-            labelTensor.resize(Array(i))
+          if(labelTensor.nElement() != i) {
+            featureTensor.set(Storage[Float](featureData),
+              storageOffset = 1, sizes = Array(i, height, width))
+            labelTensor.set(Storage[Float](labelData),
+              storageOffset = 1, sizes = Array(i))
           }
           (featureTensor, labelTensor)
         } else {
@@ -285,8 +298,10 @@ class RGBImageToTensor(batchSize: Int) extends Transformer[RGBImage, (Tensor[Flo
 
   override def transform(prev: Iterator[RGBImage]): Iterator[(Tensor[Float], Tensor[Float])] = {
     new Iterator[(Tensor[Float], Tensor[Float])] {
-      private var featureTensor: Tensor[Float] = null
-      private var labelTensor: Tensor[Float] = null
+      private val featureTensor: Tensor[Float] = Tensor[Float]()
+      private val labelTensor: Tensor[Float] = Tensor[Float]()
+      private var featureData: Array[Float] = null
+      private var labelData: Array[Float] = null
       private var width = 0
       private var height = 0
 
@@ -297,20 +312,22 @@ class RGBImageToTensor(batchSize: Int) extends Transformer[RGBImage, (Tensor[Flo
           var i = 0
           while (i < batchSize && prev.hasNext) {
             val img = prev.next()
-            if (featureTensor == null) {
-              featureTensor = Tensor[Float]().resize(Array(batchSize, 3, img.height(), img.width()))
-              labelTensor = Tensor[Float]().resize(Array(batchSize))
+            if(featureData == null) {
+              featureData = new Array[Float](batchSize * 3 * img.height() * img.width())
+              labelData = new Array[Float](batchSize)
               height = img.height()
               width = img.width()
             }
-            copyImage(img, featureTensor.storage().array(), i * img.width() * img.height() * 3)
-            labelTensor.setValue(i + 1, img.label())
+            copyImage(img, featureData, i * img.width() * img.height() * 3)
+            labelData(i) = img.label()
             i += 1
           }
 
-          if (i < batchSize) {
-            featureTensor.resize(Array(i, 3, height, width))
-            labelTensor.resize(Array(i))
+          if(labelTensor.nElement() != i) {
+            featureTensor.set(Storage[Float](featureData),
+              storageOffset = 1, sizes = Array(i, 3, height, width))
+            labelTensor.set(Storage[Float](labelData),
+              storageOffset = 1, sizes = Array(i))
           }
 
           (featureTensor, labelTensor)

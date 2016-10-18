@@ -325,11 +325,11 @@ trait DirectoryAsLabelDataSet {
     ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
     val directoryStream = Files.newDirectoryStream(path)
-    println("Start to read directories...")
+    println(s"Start to read directories $path")
     val labelMap = getLabelMap(path)
     import scala.collection.JavaConverters._
     directoryStream.asScala.flatMap(dir => {
-      println("Read " + dir.getFileName)
+      println(s"Find class ${dir.getFileName} -> ${labelMap(dir.getFileName.toString)}")
       Files.newDirectoryStream(dir).asScala.map(p =>
         (labelMap(dir.getFileName.toString).toFloat, p)).toSeq
     }).toArray.sortWith(
