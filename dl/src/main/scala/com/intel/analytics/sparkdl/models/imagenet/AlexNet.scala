@@ -42,8 +42,7 @@ object AlexNet_OWT {
     (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
 
     val model = new Sequential[Tensor[T], Tensor[T], T]()
-    model.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2, 1).setNeedComputeBack(false)
-      .setName("conv1"))
+    model.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2).setName("conv1").setNeedComputeBack(false))
     model.add(new ReLU[T](true).setName("relu1"))
     model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool1"))
     model.add(new SpatialConvolution[T](64, 192, 5, 5, 1, 1, 2, 2).setName("conv2"))
