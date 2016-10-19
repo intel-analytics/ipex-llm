@@ -180,10 +180,21 @@ object RGBImage {
         System.err.println("Can't read file " + path)
         None
     } finally {
-      if(fis != null) {
+      if (fis != null) {
         fis.close()
       }
     }
+  }
+
+  def convertToByte(data : Array[Float], length : Int, width : Int, scaleTo: Float = 255.0f):
+  Array[Byte] = {
+    var i = 0
+    val res = new Array[Byte](length * width * 3)
+    while(i < length * width * 3) {
+      res(i) = (data(i) * scaleTo).toByte
+      i += 1
+    }
+    res
   }
 }
 

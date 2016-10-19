@@ -73,7 +73,7 @@ class Worker(dataSet: DataSource[RGBImage], parallel: Int) {
     var i = 0
     var file = s"${target}-seq"
     val writer = new Writer(file)
-    while(dataSet.hasNext) {clea
+    while(dataSet.hasNext) {
       val data = dataSet.next()
       val imageKey = s"${data.label()}-${i}"
       println(s"write ${imageKey}")

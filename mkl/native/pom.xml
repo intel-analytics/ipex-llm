@@ -51,7 +51,7 @@
                                 </source>
                             </sources>
                             <compilerStartOptions>
-                                <compilerStartOption>-I ${MKL_HOME}/include/</compilerStartOption>
+                                <compilerStartOption>-I ${MKLROOT}/include/</compilerStartOption>
                                 <compilerStartOption>-I ${JAVA_HOME}/include/</compilerStartOption>
                                 <compilerStartOption>-I ${JAVA_HOME}/include/linux/</compilerStartOption>
                             </compilerStartOptions>
@@ -81,6 +81,7 @@
                                 <linkerEndOption>-fPIC</linkerEndOption>
                                 <linkerEndOption>-Wall</linkerEndOption>
                                 <linkerEndOption>-liomp5</linkerEndOption>
+                                <linkerEndOption>-lmkl_rt</linkerEndOption>
                             </linkerEndOptions>
                             <linkerFinalName>mkl-native_0.1</linkerFinalName>
                         </configuration>
