@@ -36,13 +36,13 @@ object DenseTensorBLAS {
   var time = 0L
 
   def gemm[@specialized(Float, Double) T](transa: String, transb: String,
-                                          m: Int, n: Int, k: Int,
-                                          alpha: T,
-                                          a: Array[T], aOffset: Int, lda: Int,
-                                          b: Array[T], bOffset: Int, ldb: Int,
-                                          beta: T,
-                                          c: Array[T], cOffset: Int, ldc: Int
-                                         )(implicit ev: TensorNumeric[T]): Unit = {
+    m: Int, n: Int, k: Int,
+    alpha: T,
+    a: Array[T], aOffset: Int, lda: Int,
+    b: Array[T], bOffset: Int, ldb: Int,
+    beta: T,
+    c: Array[T], cOffset: Int, ldc: Int)(implicit ev: TensorNumeric[T]): Unit = {
+
     val _transa = (transa == "t" || transa == "T")
     val _transb = (transb == "t" || transb == "T")
 
@@ -80,8 +80,8 @@ object DenseTensorBLAS {
   }
 
   def gemv[@specialized(Float, Double) T](alpha: T, matrix: Tensor[T], vector: Tensor[T],
-                                          beta: T, r: Tensor[T]
-                                         )(implicit ev: TensorNumeric[T]): Unit = {
+    beta: T, r: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
+
     require(matrix.size(2) == vector.size(1), "matrix vector size doesn't match")
     require(matrix.size(1) == r.size(1), "matrix result size doesn't match")
     if (matrix.stride(1) == 1) {
