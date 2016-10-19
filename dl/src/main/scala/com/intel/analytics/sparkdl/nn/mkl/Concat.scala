@@ -229,11 +229,6 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])  ex
       this.modules(i).setNextPtr(this.modules(i).getOutputPtr())
     }
 
-    if (initBackward) {
-      updateMklGradInput()
-      initBackward = false
-    }
-
     val concatStart = System.nanoTime()
     ev.getType() match {
       case "Double" =>
@@ -251,6 +246,7 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])  ex
       case _ =>
         throw new UnsupportedOperationException(s"Only Float / Double is supported")
     }
+
     val concatEnd = System.nanoTime()
 
     val tmpGradInputs: Array[Tensor[T]] = new Array[Tensor[T]](this.modules.length)
@@ -296,9 +292,15 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])  ex
       case _ =>
         throw new UnsupportedOperationException(s"Only Float supported")
     }
+
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
+    }
+
     val sumEnd = System.nanoTime()
-    // println("Concat costs " + (concatEnd - concatStart) / 1e6)
-    // println("Sum costs " + (sumEnd - sumStart) / 1e6)
+//    println("Concat costs " + (concatEnd - concatStart) / 1e6)
+//    println("Sum costs " + (sumEnd - sumStart) / 1e6)
 
     this.gradInput
   }
@@ -375,21 +377,24 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])  ex
   override def getOutputPtr(): Long = concatPtr
 
   override def updateMklOut(): Unit = {
-    // Set the input of modules(i)
-    for (i <- 0 until this.modules.length) {
+    // If some layers are not mkl dnn version, we should set the previous layer
+    // to convert the output based on layouts for scala.
+    // Some notations:
+    //
+    // 1. Why it can work in the updateMklOut? Because the process of concat is
+    //    that it will run submodules forward first, then do concat. And at the
+    //    first time, the output of an layer will always be converted.
+    val notInputAllMkl = this.modules.exists(_.getInputPtr() == 0)
+    if (notInputAllMkl) {
       ev.getType() match {
-        case "Double" =>
-          MKL.SetPrevDouble(this.getPrevPtr(), this.getInputPtr())
-        case "Float" =>
-          MKL.SetPrevFloat(this.getPrevPtr(), this.getInputPtr())
-        case _ =>
-          throw new UnsupportedOperationException(s"Only support Float/Double")
+        case "Double" => MKL.SetUseNextDouble(this.getPrevPtr(), 0)
+        case "Float" => MKL.SetUseNextFloat(this.getPrevPtr(), 0)
       }
     }
     // Set the input of all concats.
     // println("CONCAT " + this.getName() + " " + this.concatPtr.toHexString)
     for (i <- 0 until this.modules.length) {
-      println("prev = " + this.modules(i).getOutputPtr().toHexString + " " + "CONCAT \tcurrent = " + this.concatPtr.toHexString)
+//      println("prev = " + this.modules(i).getOutputPtr().toHexString + " " + "CONCAT \tcurrent = " + this.concatPtr.toHexString)
       ev.getType() match {
         case "Double" =>
           MKL.SetConcatPrevDouble(this.modules(i).getOutputPtr(), i, this.concatPtr)

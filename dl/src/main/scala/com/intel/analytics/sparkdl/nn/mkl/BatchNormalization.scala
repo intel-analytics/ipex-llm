@@ -60,7 +60,7 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
 
   override def reset(): Unit = {
     if (null != weight) {
-      weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1)))
+      weight.apply1(_ => ev.fromType[Double](0.1))
     }
 
     if (null != bias) {
@@ -112,7 +112,7 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
                                              inputHeight,
                                              inputWidth,
                                              eps,
-                                             useBias,
+                                             useWeight,
                                              useBias,
                                              4,
                                              this.getName())
@@ -175,11 +175,6 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
     val gradOutputOffset = gradOutput.storageOffset() - 1
     val gradInputOffset = gradInput.storageOffset() - 1
 
-    if (initBackward) {
-      updateMklGradInput()
-      initBackward = false
-    }
-
     implicit def bool2int(b: Boolean) = if (b) 1 else 0
     ev.getType() match {
       case "Float" =>
@@ -208,6 +203,10 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
                                     classPtr)
       case _ =>
         throw new UnsupportedOperationException(s"Only Float/Double supported")
+    }
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
     }
 
     gradInput
