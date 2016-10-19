@@ -45,7 +45,7 @@ class SpatialPooling[@specialized(Float, Double) T: ClassTag](
 
   // algorithm = 0 -> max
   // algorithm = 0 -> avg
-  val algorithm = 0;
+  val algorithm : Int = 0
 
   // TODO just for adopt to the testcase
   var ceil_mode = false
@@ -93,11 +93,6 @@ class SpatialPooling[@specialized(Float, Double) T: ClassTag](
     val outputChannel = inputChannel
     val outputNumber = inputNumber
 
-    if (initBackward) {
-      updateMklGradInput()
-      initBackward = false
-    }
-
     ev.getType() match {
       case "Float" =>
         MKL.PoolingBackwardFloat(input.storage().array().asInstanceOf[Array[Float]],
@@ -118,6 +113,12 @@ class SpatialPooling[@specialized(Float, Double) T: ClassTag](
       case _ =>
         throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
+
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
+    }
+
 
     gradInput
   }
@@ -146,8 +147,6 @@ class SpatialPooling[@specialized(Float, Double) T: ClassTag](
     }
 
     // TODO algorithm = 0 means using MAX
-    val algorithm = 0
-
     if (firstPass) {
       ev.getType() match {
         case "Float" =>
@@ -234,7 +233,7 @@ class SpatialMaxPooling[T: ClassTag](kernelWidth: Int,
     this(kernelWidth, kernelHeight, kernelWidth, kernelHeight)
   }
   override def toString(): String = {
-    s"mkl.SpatialMaxPooling"
+    s"mkl.SpatialMaxPooling($kernelWidth, $kernelHeight, $strideWidth, $strideHeight, $padWidth, $padHeight)"
   }
 }
 
@@ -255,6 +254,6 @@ class SpatialAveragePooling[T: ClassTag](kernelWidth: Int,
     this(kernelWidth, kernelHeight, kernelWidth, kernelHeight)
   }
   override def toString(): String = {
-    s"mkl.SpatialAvgPooling"
+    s"mkl.SpatialAveragePooling($kernelWidth, $kernelHeight, $strideWidth, $strideHeight, $padWidth, $padHeight)"
   }
 }

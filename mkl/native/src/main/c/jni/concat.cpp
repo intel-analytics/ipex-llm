@@ -54,6 +54,9 @@ void MKLConcat<DType>::init(int numConcats, int dimension, int *size)
   this->numConcats = numConcats;
   this->dimension  = dimension;
   this->numSplits  = new size_t[numConcats];
+  for (int i = 0; i < numConcats; i++) {
+    this->numSplits[i] = 0;
+  }
 
   size_t inputSize[dimension];
   size_t inputStrides[dimension];
@@ -114,11 +117,15 @@ template <typename DType>
 void MKLConcat<DType>::firstPass()
 {
   dnnLayout_t *layouts = new dnnLayout_t[numConcats];
+  for (int i = 0; i < numConcats; i++) {
+    layouts[i] = NULL;
+  }
 
   for (int i = 0; i < numConcats; i++) {
     if (this->input[i]->isUsePrev()) {
       layouts[i] = this->input[i]->layoutPrev;
     }
+
     if (!layouts[i]) {
       layouts[i] = this->input[i]->getUsrLayout();
     }
@@ -312,6 +319,11 @@ void JNIConcatSetPrev(JNIEnv *env, jclass thisClass, long prev, int index,
       currLayer->input[index]->layoutPrev = prevLayer->output->getMklLayout();
       currLayer->input[index]->dataPrev = prevLayer->output->getMklData();
 
+      if (currLayer->input[index]->getMklData()) {
+        dnnReleaseBuffer<DType>(currLayer->input[index]->getMklData());
+        currLayer->input[index]->setMklData(NULL);
+      }
+
       currLayer->input[index]->setUsePrev(true);
       // TODO we should **and** all the input
       prevLayer->output->setUseNext(true);
@@ -331,6 +343,11 @@ void JNIConcatSetNext(JNIEnv *env, jclass thisClass, long prev, int index,
         currLayer->gradInput[index]->getMklData()) {
       prevLayer->gradOutput->layoutNext = currLayer->gradInput[index]->getMklLayout();
       prevLayer->gradOutput->dataNext = currLayer->gradInput[index]->getMklData();
+
+      if (prevLayer->gradOutput->getMklData()) {
+        dnnReleaseBuffer<DType>(prevLayer->gradOutput->getMklData());
+        prevLayer->gradOutput->setMklData(NULL);
+      }
 
       prevLayer->gradOutput->setUseNext(true);
       currLayer->gradInput[index]->setUsePrev(true);

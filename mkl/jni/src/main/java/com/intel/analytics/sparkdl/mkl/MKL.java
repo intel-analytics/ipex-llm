@@ -294,4 +294,8 @@ public class MKL {
     public native static long SumInitDouble(int numChannels, int dimension, int[] size);
     public native static void SumForwardDouble(double[] input, int inputOffset, double[][] output, int[] outputOffset, long classPtr);
     public native static void SumBackwardDouble(double[] inputDiff, int inputOffset, double[][] outputDiff, int[] outputDiffOffset, long classPtr);
+
+    // Omit conversion API
+    public native static void SetUseNextFloat(long ptr, int value);
+    public native static void SetUseNextDouble(long ptr, int value);
 }

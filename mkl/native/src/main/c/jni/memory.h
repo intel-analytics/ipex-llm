@@ -31,7 +31,14 @@ class MKLData
   // TODO If the input always the same, we should not have a set method.
   void setUsrData(void *ptr);
   // this is only for re-using previous layer memory.
-  void setMklData(void *ptr, bool isMkl);
+  void setMklData(void *ptr, bool isMkl = false);
+
+  /**
+   * @brief Call memset to set memory -> 0.
+   *
+   * MaxPooling will not set the other data to 0 in a kernel area.
+   */
+  void setZero();
 
   // get
   dnnLayout_t getUsrLayout();
@@ -183,7 +190,10 @@ void MKLData<DType>::createMklLayout(dnnPrimitive_t primitive,
 template <typename DType>
 void MKLData<DType>::createConversion(bool doNotCreateConversion)
 {
-  if (!layoutUsr && !layoutMkl) return;
+  // Sometimes, when allocate memory for workspace, the usr layout of workspace
+  // may be the same as layout in mkl. So the check should be deleted.
+  // But fortunately, dnnLayoutCompare accepts NULL as one of arguments.
+  // if (!layoutUsr && !layoutMkl) return;
 
   /*
   if (isUsePrev() || isUseNext()) {
@@ -222,6 +232,9 @@ void MKLData<DType>::createConversion(bool doNotCreateConversion)
       if (!dataMkl) {
         allocate();
       }
+      // For debug, If we forcely allocate memory every time, it will be very
+      // safe and generate correct result. 2016-10-13
+      // else { dnnReleaseBuffer<DType>(dataMkl); allocate(); }
 
       if (!doNotCreateConversion) {
         if (mklToUsr) {
@@ -265,7 +278,9 @@ void MKLData<DType>::allocate()
   size_t size = dnnLayoutGetMemorySize<DType>(layoutMkl);
   memset(dataMkl, 0, size);
 
-  LOG(INFO) << "Allocating layout memory -> " << size << " bytes...";
+  // Print the length of array, not the bytes we allocated.
+  LOG(INFO) << "Allocating layout memory -> " << size/sizeof(DType)
+            << " x4 bytes...";
 }
 
 template <typename DType>
@@ -357,6 +372,15 @@ void MKLData<DType>::setMklData(void *ptr, bool isMkl)
   }
 
   dataMkl = ptr;
+}
+
+template <typename DType>
+void MKLData<DType>::setZero()
+{
+  if (dataMkl) {
+    size_t size = dnnLayoutGetMemorySize<DType>(layoutMkl);
+    memset(dataMkl, 0, size);
+  }
 }
 
 template <typename DType>

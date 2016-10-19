@@ -317,6 +317,11 @@ void JNISumSetNext(JNIEnv *env, jclass thisClass, long next, int index,
       currLayer->gradOutput[index]->layoutNext = nextLayer->gradInput->getMklLayout();
       currLayer->gradOutput[index]->dataNext = nextLayer->gradInput->getMklData();
 
+      if (currLayer->gradOutput[index]->getMklData()) {
+        dnnReleaseBuffer<DType>(currLayer->gradOutput[index]->getMklData());
+        currLayer->gradOutput[index]->setMklData(NULL);
+      }
+
       nextLayer->gradInput->setUsePrev(true);
       currLayer->gradOutput[index]->setUseNext(true);
     }

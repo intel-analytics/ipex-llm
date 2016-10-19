@@ -55,11 +55,6 @@ class ReLU[@specialized(Float, Double) T: ClassTag](ip: Boolean = false)(
     val inputNumber = if (input.dim() <= 3) 1 else input.size(input.dim() - 3)
     // TODO we may set input.size(input.dim() - 3) == 1 if input.dim() == 3
 
-    if (initBackward) {
-      updateMklGradInput()
-      initBackward = false
-    }
-
     implicit def bool2int(b: Boolean) = if (b) 1 else 0
     val start = System.nanoTime()
     ev.getType() match {
@@ -84,7 +79,10 @@ class ReLU[@specialized(Float, Double) T: ClassTag](ip: Boolean = false)(
       case _ =>
         throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
-
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
+    }
     gradInput
   }
 
@@ -138,7 +136,6 @@ class ReLU[@specialized(Float, Double) T: ClassTag](ip: Boolean = false)(
         throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
     // println("[SCALA] ReLU forward call JNI " + (System.nanoTime() - start) / 1e6)
-
     output
   }
 }

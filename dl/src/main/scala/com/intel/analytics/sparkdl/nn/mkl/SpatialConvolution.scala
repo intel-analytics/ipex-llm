@@ -18,17 +18,12 @@
 package com.intel.analytics.sparkdl.nn.mkl
 
 import com.intel.analytics.sparkdl.mkl.MKL
-import com.intel.analytics.sparkdl.nn.Module
+import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 import scala.language.implicitConversions
-
-import com.intel.analytics.sparkdl.nn.InitializationMethod
-import com.intel.analytics.sparkdl.nn.Default
-import com.intel.analytics.sparkdl.nn.Xavier
-
 import scala.reflect.ClassTag
 
 class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
@@ -44,12 +39,20 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     private var initMethod: InitializationMethod = Default
 )(implicit ev: TensorNumeric[T])
     extends Module[T] {
-  val weight: Tensor[T] =
-    Tensor[T](nOutputPlane, nInputPlane, kernelHeight, kernelWidth)
+  // TODO It should be re-factor.
+  //      Because the nn.SpatialConvolution support this, just for adopting it.
+  require(nInputPlane % groups == 0, "Number of input channels should be multiples of group.")
+  require(nOutputPlane % groups == 0, "Number of output channels should be multiples of group.")
+
+  val weight: Tensor[T] = Tensor[T](groups, nOutputPlane / groups,
+    nInputPlane / groups, kernelHeight, kernelWidth)
+  this.gradWeight = Tensor[T](groups, nOutputPlane / groups, nInputPlane / groups, kernelHeight, kernelWidth)
+//  val weight: Tensor[T] =
+//    Tensor[T](nOutputPlane, nInputPlane, kernelHeight, kernelWidth)
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
   this.gradInput = Tensor[T](nOutputPlane, nInputPlane, kernelHeight, kernelWidth)
   this.gradBias = Tensor[T](nOutputPlane)
-  this.gradWeight = Tensor[T](nOutputPlane, nInputPlane, kernelHeight, kernelWidth)
+//  this.gradWeight = Tensor[T](nOutputPlane, nInputPlane, kernelHeight, kernelWidth)
   val fInput = Tensor[T]()
   val fGradInput = Tensor[T]()
   reset()
@@ -71,10 +74,21 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   }
 
   override def reset(): Unit = {
-    val stdv = 1.0 / math.sqrt(kernelWidth * kernelHeight * nInputPlane)
-    // todo, better to support uniform
-    weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-    bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
+    initMethod match {
+      case Default =>
+        val stdv = 1.0 / math.sqrt(kernelWidth * kernelHeight * nInputPlane)
+        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
+        bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
+      case Xavier =>
+        val fanIn = nInputPlane * kernelHeight * kernelWidth
+        val fanOut = nOutputPlane * kernelHeight * kernelWidth
+        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
+        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+        bias.fill(ev.fromType(0))
+      case Constant =>
+        weight.fill(ev.fromType(0.1))
+        bias.fill(ev.fromType(0))
+    }
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -252,11 +266,6 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     val biasOffset = bias.storageOffset() - 1
     val kernelOffset = weight.storageOffset() - 1
 
-    if (initBackward) {
-      updateMklGradInput()
-      initBackward = false
-    }
-
     implicit def bool2int(b: Boolean) = if (b) 1 else 0
     val start = System.nanoTime()
     if (isNeedComputeBack()) {
@@ -360,6 +369,11 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       case _ =>
         throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
+    }
+
     gradInput
   }
 

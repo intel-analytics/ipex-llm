@@ -85,6 +85,9 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
+      case Constant =>
+        weight.fill(ev.fromType(0.123))
+        bias.fill(ev.fromType(0.123))
     }
   }
 
