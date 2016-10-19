@@ -61,6 +61,9 @@ class Linear[@specialized(Float, Double) T: ClassTag](
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
+      case Constant =>
+        weight.fill(ev.fromType(0.1))
+        bias.fill(ev.fromType(0))
     }
   }
 
@@ -162,11 +165,6 @@ class Linear[@specialized(Float, Double) T: ClassTag](
     val kernelWidth = inputSize
     val outputChannels = outputSize
 
-    if (initBackward) {
-      updateMklGradInput()
-      initBackward = false
-    }
-
     if (needCompute) {
       ev.getType() match {
         case "Double" =>
@@ -258,6 +256,10 @@ class Linear[@specialized(Float, Double) T: ClassTag](
 
       case _ =>
         throw new UnsupportedOperationException(s"Only Float/Double supported")
+    }
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
     }
 
     gradInput

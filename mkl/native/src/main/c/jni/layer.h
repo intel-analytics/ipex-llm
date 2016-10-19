@@ -16,6 +16,7 @@ class MKLLayer
   static void setPrev(long prev, long curr);
   static void setNext(long next, long curr);
   // virtual void setIPrev(int index, long curr);
+  static void setUseNext(long ptr, int value);
 
   void init(size_t inputNumber, size_t inputChannel, size_t inputHeight,
             size_t inputWidth, size_t dimension);
@@ -118,6 +119,11 @@ void MKLLayer<DType>::setPrev(long prev, long curr)
     void *dataMkl = prevLayer->output->getMklData();
     currLayer->input->dataPrev = dataMkl;
 
+    if (currLayer->input->getMklData()) {
+      dnnReleaseBuffer<DType>(currLayer->input->getMklLayout());
+      currLayer->input->setMklData(NULL);
+    }
+
     currLayer->input->setUsePrev(true);
     prevLayer->output->setUseNext(true);
   }
@@ -163,9 +169,24 @@ void MKLLayer<DType>::setNext(long next, long curr)
     currLayer->gradOutput->layoutNext = nextLayer->gradInput->getMklLayout();
     currLayer->gradOutput->dataNext = nextLayer->gradInput->getMklData();
 
+    if (currLayer->gradOutput->getMklData()) {
+      dnnReleaseBuffer<DType>(currLayer->gradOutput->getMklData());
+      currLayer->gradOutput->setMklData(NULL);
+    }
+
     currLayer->gradOutput->setUseNext(true);
     nextLayer->gradInput->setUsePrev(true);
   }
+}
+
+template <typename DType>
+void MKLLayer<DType>::setUseNext(long modulePtr, int value)
+{
+  MKLLayer<DType> *layer = reinterpret_cast<MKLLayer<DType>*>(modulePtr);
+  bool v = false;
+  if (value > 0) v = true;
+
+  if (layer) { layer->output->setUseNext(v); }
 }
 
 #endif

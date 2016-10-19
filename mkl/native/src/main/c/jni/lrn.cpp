@@ -151,6 +151,8 @@ void MKLLRN<DType>::updateOutput(DType *input, DType *output)
   // TODO Should we set the kernel and bias address every time?
   preExecute(input);
   this->output->createConversion();
+  // this->output->setZero();
+  this->workspace->setZero();
 
 #ifdef DEBUG
   printData<DType>(reinterpret_cast<DType *>(this->input->getUsrData()),

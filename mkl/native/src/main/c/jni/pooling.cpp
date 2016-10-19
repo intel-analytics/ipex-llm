@@ -144,6 +144,13 @@ void MKLPooling<DType>::init(size_t inputNumber, size_t inputChannel,
     this->gradOutput->createUsrLayout(dimension, outputSizeFloor,
                                       outputStridesFloor);
   }
+
+  /*
+   * This is a trick that it must allocate memory for workspace.
+   * Because defaultly, the sizeof workspace is <input size> * 2,
+   * and so we set usrLayout defaultly to NULL.
+   */
+  // this->workspace->createUsrLayout(dimension, inputSize, inputStrides);
 }
 
 template <typename DType>
@@ -187,9 +194,14 @@ void MKLPooling<DType>::updateOutput(DType *input, DType *output)
                                              stride, pad, dnnBorderZeros);
     CHECK_EQ(status, E_SUCCESS);
 
-    this->gradInput->createMklLayout(this->backwardPrim, dnnResourceDiffSrc);
-    this->gradOutput->createMklLayout(this->backwardPrim, dnnResourceDiffDst);
+    // It's ok to set primitive as forwardPrim, because the relative type
+    // is right.
+    this->gradInput->createMklLayout(this->forwardPrim, dnnResourceSrc);
+    this->gradOutput->createMklLayout(this->forwardPrim, dnnResourceDst);
     if (! this->input->isUsePrev()) {
+      dnnLayoutDelete<DType>(layout);
+    } else if (this->input->layoutPrev != layout) {
+      // TODO We should add this code to other layers.
       dnnLayoutDelete<DType>(layout);
     }
 
@@ -205,6 +217,8 @@ void MKLPooling<DType>::updateOutput(DType *input, DType *output)
 
   this->output->setUsrData(output);
   this->output->createConversion(!(ceilMode));
+  this->workspace->setZero();
+  // this->output->setZero();
 
   void *resources[dnnResourceNumber];
   resources[dnnResourceSrc]       = this->input->getConvertedData();
@@ -256,9 +270,12 @@ void MKLPooling<DType>::updateGradInput(DType *input, DType *gradOutput,
   // every forward/backward.
   this->gradInput->setUsrData(gradInput);
   this->gradInput->createConversion();
+  // Note: can't be deleted, because mkl dnn will not delete exist data
+  this->gradInput->setZero();
 
   this->gradOutput->setUsrData(gradOutput);
   this->gradOutput->createConversion(!(ceilMode));
+  // this->gradOutput->setZero();
 
   if (!ceilMode)
     this->gradOutput->padLastRowColumn(outputSizeFloor, outputStridesFloor,

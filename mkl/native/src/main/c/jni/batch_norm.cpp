@@ -221,6 +221,7 @@ void MKLBatchNorm<DType>::updateOutput(DType *input, DType *output)
       ptr[i + inputSize[2]] = 0;
     }
   }
+
 #ifdef DEBUG
   printData<DType>(reinterpret_cast<DType *>(this->input->getUsrData()),
                    this->inputSize[3], this->inputSize[2], this->inputSize[1],
