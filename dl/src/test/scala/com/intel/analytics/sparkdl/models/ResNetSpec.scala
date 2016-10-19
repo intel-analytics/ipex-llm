@@ -40,12 +40,12 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     Random.setSeed(1)
     val classNum: Int = 1000
-    val input = Tensor[Double](256, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](256).apply1(e => Random.nextInt(classNum))
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
+    val labels = Tensor[Double](4).apply1(e => Random.nextInt(classNum))
 
     val seed = 100
     RNG.setSeed(seed)
-    val model = ResNet[Double](classNum, T("shortcutType" -> ShortcutType.B, "depth"->50))
+    val model = ResNet[Double](classNum, T("shortcutType" -> ShortcutType.B, "depth"->18))
     model.zeroGradParameters()
 
 
@@ -58,7 +58,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         local SBatchNorm = nn.SpatialBatchNormalization
 
         local nClasses = 1000
-        local depth = 50
+        local depth = 18
         local shortcutType = 'B'
         local iChannels
         local function shortcut(nInputPlane, nOutputPlane, stride)
@@ -188,7 +188,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
               return criterion.output, gradParameters
            end
 
-             for i = 1, 100, 1 do
+             for i = 1, 5, 1 do
               w, err = optim.sgd(feval, parameters, state)
              end
 
@@ -238,12 +238,12 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       model.backward(input, criterion.gradInput)
       (criterion.output, grad)
     }
-    for (i <- 1 until 100) {
+    for (i <- 1 to 5) {
       sgd.optimize(feval, weights, state)
     }
 
     val output = TH.map("output").asInstanceOf[Tensor[Double]]
-    val outputTest = model.forward(input)
+    val outputTest = model.output //model.forward(input)
     var abss = 0.0
     for (i <- 0 until outputTest.nElement()) {
       val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i))
@@ -253,12 +253,12 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     assert(abss < 1e-2)
 
 
-    val errTest = criterion.forward(outputTest, labels)
+    val errTest = criterion.output //criterion.forward(outputTest, labels)
     val err = TH.map("err").asInstanceOf[Double]
     println(s"${abs(errTest - err)}")
     assert(abs(errTest - err) < 1.5e-6)
 
-    val gradOutputTest = criterion.backward(outputTest, labels)
+    val gradOutputTest = criterion.gradInput //criterion.backward(outputTest, labels)
     val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
     abss = 0.0
     for (i <- 0 until gradOutputTest.nElement()) {
@@ -268,7 +268,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     assert(abss < 2e-6)
     println(s"gradOutputTestAbs:$abss")
 
-    val gradInput = model.backward(input, gradOutputTest)
+    val gradInput = model.gradInput // model.backward(input, gradOutputTest)
     val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
 
     abss = 0.0
