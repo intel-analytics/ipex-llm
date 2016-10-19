@@ -24,14 +24,14 @@ import com.intel.analytics.sparkdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
-// import com.intel.analytics.sparkdl.nn.mkl.Linear
+import com.intel.analytics.sparkdl.nn.mkl.Linear
 import com.intel.analytics.sparkdl.nn.mkl.SpatialBatchNormalization
 import com.intel.analytics.sparkdl.nn.mkl.ReLU
 import com.intel.analytics.sparkdl.nn.mkl.LocalNormalizationAcrossChannels
 import com.intel.analytics.sparkdl.nn.mkl.SpatialAveragePooling
 import com.intel.analytics.sparkdl.nn.mkl.SpatialConvolution
 import com.intel.analytics.sparkdl.nn.mkl.SpatialMaxPooling
-//import com.intel.analytics.sparkdl.nn.mkl.Concat
+import com.intel.analytics.sparkdl.nn.mkl.Concat
 
 object GoogleNet_v1 {
   private def inception[D: ClassTag](inputSize: Int, config: Table, namePrefix : String)(

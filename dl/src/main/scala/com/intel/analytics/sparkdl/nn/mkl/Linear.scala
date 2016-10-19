@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.nn.mkl
 
 import com.intel.analytics.sparkdl.mkl.MKL
-import com.intel.analytics.sparkdl.nn.{Default, InitializationMethod, Module, Xavier}
+import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
@@ -61,6 +61,9 @@ class Linear[@specialized(Float, Double) T: ClassTag](
         val fanOut = weight.size(1)
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+        bias.fill(ev.fromType(0))
+      case Constant =>
+        weight.fill(ev.fromType(0.1))
         bias.fill(ev.fromType(0))
     }
   }
@@ -163,11 +166,6 @@ class Linear[@specialized(Float, Double) T: ClassTag](
     val kernelWidth = inputSize
     val outputChannels = outputSize
 
-    if (initBackward) {
-      updateMklGradInput()
-      initBackward = false
-    }
-
     if (needCompute) {
       ev.getType() match {
         case "Double" =>
@@ -259,6 +257,10 @@ class Linear[@specialized(Float, Double) T: ClassTag](
 
       case _ =>
         throw new UnsupportedOperationException(s"Only Float/Double supported")
+    }
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
     }
 
     gradInput

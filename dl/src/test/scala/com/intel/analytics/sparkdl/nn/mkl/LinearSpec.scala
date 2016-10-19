@@ -53,10 +53,5 @@ class LinearSpec  extends FlatSpec with Matchers {
     gradInput should be (blasGradInput)
     linear.gradWeight should be (blasLinear.gradWeight)
     linear.gradBias should be (blasLinear.gradBias)
-
-//    luaOutput1 should be (output1)
-//    luaOutput2 should be (output2)
-//    luaWeight should be (weight)
-//    luaBias should be (bias)
   }
 }

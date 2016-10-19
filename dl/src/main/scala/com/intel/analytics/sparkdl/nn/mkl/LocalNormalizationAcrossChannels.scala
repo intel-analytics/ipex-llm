@@ -167,11 +167,6 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag](
     val gradOutputOffset = gradOutput.storageOffset() - 1
     val gradInputOffset = gradInput.storageOffset() - 1
 
-    if (initBackward) {
-      updateMklGradInput()
-      initBackward = false
-    }
-
     ev.getType() match {
       case "Float" =>
         MKL.LRNBackwardFloat(input.storage().array().asInstanceOf[Array[Float]],
@@ -192,6 +187,11 @@ class LocalNormalizationAcrossChannels[@specialized(Float, Double) T: ClassTag](
       case _ =>
         throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
+    if (initBackward) {
+      updateMklGradInput()
+      initBackward = false
+    }
+
 
     gradInput
   }

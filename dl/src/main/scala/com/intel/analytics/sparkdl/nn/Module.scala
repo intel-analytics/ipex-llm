@@ -248,24 +248,25 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
   var initBackward = true
 
   def updateMklOut(): Unit = {
-    // If the layer uses mkl dnn api, the ptr (prevPtr and classPtr) will not equal to 0.
-    // And of cause the previous ptr and current ptr will not equal to each other.
-    //println("prev = " + getPrevPtr().toHexString + " " + this.getName() + "\tcurrent = " + getClassPtr().toHexString)
-    if (getPrevPtr() != 0 && getClassPtr() != getPrevPtr()) {
-      ev.getType() match {
-        case "Double" =>
-          MKL.SetPrevDouble(getPrevPtr(), getInputPtr())
-        case "Float" =>
-          MKL.SetPrevFloat(getPrevPtr(), getInputPtr())
-        case _ =>
-          throw new UnsupportedOperationException(s"Only Float/Double support")
-      }
-    }
+//    // If the layer uses mkl dnn api, the ptr (prevPtr and classPtr) will not equal to 0.
+//    // And of cause the previous ptr and current ptr will not equal to each other.
+////    println("prev = " + getPrevPtr().toHexString + " " + this.getName() + "\tcurrent = " + getClassPtr().toHexString)
+//    if (getPrevPtr() != 0 && getClassPtr() != getPrevPtr()) {
+//      ev.getType() match {
+//        case "Double" =>
+//          MKL.SetPrevDouble(getPrevPtr(), getInputPtr())
+//        case "Float" =>
+//          MKL.SetPrevFloat(getPrevPtr(), getInputPtr())
+//        case _ =>
+//          throw new UnsupportedOperationException(s"Only Float/Double support")
+//      }
+//    }
   }
 
   def updateMklGradInput() : Unit = {
-    //println("next = " + getNextPtr().toHexString + " " + this.getName() + "\tcurrent = " + getClassPtr().toHexString)
-    if (getNextPtr() != 0 && getClassPtr() != getNextPtr()) {
+//    println("next = " + getNextPtr().toHexString + " " + this.getName() + "\tcurrent = " + getClassPtr().toHexString)
+    // when we don't compute the backward, we should convert the gradinput.
+    if (getNextPtr() != 0 && getClassPtr() != getNextPtr() && isNeedComputeBack()) {
       ev.getType() match {
         case "Double" =>
           MKL.SetNextDouble(getNextPtr(), getOutputPtr())

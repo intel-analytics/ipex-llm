@@ -89,7 +89,6 @@ void MKLReLU<DType>::firstPass()
     layout = this->input->layoutPrev;
   }
   if (!layout) {
-    LOG(DBG) << "layoutPrev is NULL";
     status =
       dnnLayoutCreate<DType>(&layout, this->dimension, inputSize, inputStrides);
     CHECK_EQ(status, E_SUCCESS);

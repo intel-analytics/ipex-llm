@@ -32,6 +32,20 @@ void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetNextDouble(
   MKLLayer<double>::setNext(prev, curr);
 }
 
+JNIEXPORT
+void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetUseNextFloat(
+    JNIEnv *env, jclass thisClass, long ptr, int value)
+{
+  MKLLayer<double>::setUseNext(ptr, value);
+}
+
+JNIEXPORT
+void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetUseNextDouble(
+    JNIEnv *env, jclass thisClass, long ptr, int value)
+{
+  MKLLayer<double>::setUseNext(ptr, value);
+}
+
 #ifdef __cplusplus
 }
 #endif
