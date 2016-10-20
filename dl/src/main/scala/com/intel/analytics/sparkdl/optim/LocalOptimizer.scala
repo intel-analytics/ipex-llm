@@ -48,43 +48,42 @@ class LocalOptimizer[T](
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     while (!endWhen(state)) {
-      data.shuffle()
-      data.reset()
-      count = 0
-      while (!data.finished()) {
-        val start = System.nanoTime()
-        val (input, target) = data.next()
-        val dataFetchTime = System.nanoTime()
-        model.zeroGradParameters()
-        val output = model.forward(input)
-        val loss = criterion.forward(output, target)
-        val gradOutput = criterion.backward(output, target)
-        model.backward(input, gradOutput)
-        optimMethod.optimize(_ => (loss, grad), weights, state)
-        val end = System.nanoTime()
-        wallClockTime += end - start
-        count += input.size(1)
+      val start = System.nanoTime()
+      val (input, target) = data.next()
+      val dataFetchTime = System.nanoTime()
+      model.zeroGradParameters()
+      val output = model.forward(input)
+      val loss = criterion.forward(output, target)
+      val gradOutput = criterion.backward(output, target)
+      model.backward(input, gradOutput)
+      optimMethod.optimize(_ => (loss, grad), weights, state)
+      val end = System.nanoTime()
+      wallClockTime += end - start
+      count += input.size(1)
+      println(s"[Epoch ${state[Int]("epoch")} $count/${data.total()}][Iteration ${
+        state[Int]("neval")}][Wall Clock ${wallClockTime / 1e9
+      }s] loss is $loss, iteration time is ${(end - start) / 1e9}s data " +
+        s"fetch time is " +
+        s"${(dataFetchTime - start) / 1e9}s, train time ${(end - dataFetchTime) / 1e9}s." +
+        s" Throughput is ${input.size(1).toDouble / (end - start) * 1e9} img / second")
+      state("neval") = state[Int]("neval") + 1
 
-        println(s"[Epoch ${state[Int]("epoch")} $count/${data.total()}][Iteration ${
-          state[Int]("neval")}][Wall Clock ${wallClockTime / 1e9
-        }s] loss is $loss, iteration time is ${(end - start) / 1e9}s data " +
-          s"fetch time is " +
-          s"${(dataFetchTime - start) / 1e9}s, train time ${(end - dataFetchTime) / 1e9}s." +
-          s" Throughput is ${input.size(1).toDouble / (end - start) * 1e9} img / second")
-
-        validate(wallClockTime)
-
-        cacheTrigger.foreach(trigger => {
-          if (trigger(state) && cachePath.isDefined) {
-            println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
-            saveModel(s".${state[Int]("neval")}")
-            saveState(state, s".${state[Int]("neval")}")
-          }
-        })
-
-        state("neval") = state[Int]("neval") + 1
+      if(data.finished()) {
+        state("epoch") = state[Int]("epoch") + 1
+        data.shuffle()
+        data.reset()
+        count = 0
       }
-      state("epoch") = state[Int]("epoch") + 1
+
+      validate(wallClockTime)
+
+      cacheTrigger.foreach(trigger => {
+        if (trigger(state) && cachePath.isDefined) {
+          println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
+          saveModel(s".${state[Int]("neval")}")
+          saveState(state, s".${state[Int]("neval")}")
+        }
+      })
     }
     validate(wallClockTime)
 
