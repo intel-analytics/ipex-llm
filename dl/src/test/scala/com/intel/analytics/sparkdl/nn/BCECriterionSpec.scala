@@ -63,7 +63,9 @@ class BCECriterionSpec extends FlatSpec with Matchers {
       model
     }
 
-    def feval(grad: Tensor[Double], module: Module[Tensor[Double], Tensor[Double], Double], criterion: Criterion[Double],
+    def feval(grad: Tensor[Double],
+      module: Module[Tensor[Double], Tensor[Double], Double],
+      criterion: Criterion[Double],
       input: Tensor[Double], target: Tensor[Double])(weights: Tensor[Double])
     : (Double, Tensor[Double]) = {
       module.training()

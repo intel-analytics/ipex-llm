@@ -29,7 +29,8 @@ object MLP {
   val featureSize = rowN * colN
   val classNum = 10
 
-  def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+  def apply[T: ClassTag](classNum: Int)
+    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
     val mlp = new Sequential[Tensor[T], Tensor[T], T]
     val nHidden = featureSize / 2
     mlp.add(new Reshape(Array(featureSize)))

@@ -141,7 +141,9 @@ class CifarLocal[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNum
   }
 
 
-  def feval(grad: Tensor[T], module: Module[Tensor[T], Tensor[T], T], criterion: Criterion[T], input: Tensor[T],
+  def feval(grad: Tensor[T],
+    module: Module[Tensor[T], Tensor[T], T],
+    criterion: Criterion[T], input: Tensor[T],
     target: Tensor[T])(weights: Tensor[T])
   : (T, Tensor[T]) = {
     module.training()
@@ -164,7 +166,8 @@ class CifarLocal[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNum
   }
 
 
-  def evaluate(masterGrad: Tensor[T], module: Module[Tensor[T], Tensor[T], T], criterion: Criterion[T],
+  def evaluate(masterGrad: Tensor[T],
+    module: Module[Tensor[T], Tensor[T], T], criterion: Criterion[T],
     testData: Tensor[T], testLabel: Tensor[T], batchSize: Int = 1000): Unit = {
     module.evaluate()
     var i = 1

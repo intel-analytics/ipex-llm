@@ -29,7 +29,8 @@ import scala.reflect.runtime.universe._
 abstract class TensorModule[@specialized(Float, Double) T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends Module[Tensor[T], Tensor[T], T]
 
-abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag, @specialized(Float, Double) T: ClassTag](
+abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
+  @specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
   var output: B = Activities[B, T]().asInstanceOf[B]
   var gradInput: A = Activities[A, T]().asInstanceOf[A]
@@ -50,7 +51,8 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag, @spe
   }
 
   // list of sub modules
-  val modules: ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]] = ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]]()
+  val modules: ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]]
+    = ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]]()
 
   protected var train: Boolean = true
 
@@ -123,8 +125,10 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag, @spe
    * @param indexes     ignore it
    * @return module ref, offset(ignore), indexes from the current module
    */
-  def findModel(paramOffset: Int,
-    indexes: Array[Int] = Array()): (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
+  def findModel(
+    paramOffset: Int,
+    indexes: Array[Int] = Array()):
+  (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
 
   def evaluate(): this.type = {
     train = false

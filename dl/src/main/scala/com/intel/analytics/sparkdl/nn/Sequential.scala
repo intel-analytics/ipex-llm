@@ -42,10 +42,14 @@ class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: Clas
     var error = nextError.asInstanceOf[Activities]
     while (i > 0) {
       val input = modules(i - 1).output
-      error = modules(i).asInstanceOf[Module[Activities, Activities, T]].backward(input, error)
+      error = modules(i)
+        .asInstanceOf[Module[Activities, Activities, T]]
+        .backward(input, error)
       i -= 1
     }
-    error = modules(0).asInstanceOf[Module[Activities, Activities, T]].backward(input.asInstanceOf[Activities], error)
+    error = modules(0)
+      .asInstanceOf[Module[Activities, Activities, T]]
+      .backward(input.asInstanceOf[Activities], error)
 
     this.gradInput = error.asInstanceOf[A]
     gradInput
@@ -104,7 +108,8 @@ class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: Clas
     } -> output]${line + tab}" +
       s"${
         modules.zipWithIndex.map {
-          case (model: Module[Activities, Activities, T], index: Int) => s"(${index + 1}): ${model.setLine(line + tab)}"
+          case (model: Module[Activities, Activities, T], index: Int)
+          => s"(${index + 1}): ${model.setLine(line + tab)}"
         }.
           mkString(line + tab)
       }$line}"

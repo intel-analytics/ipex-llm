@@ -111,7 +111,8 @@ class OptimizerSpec extends FlatSpec with Matchers {
     dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 
-    val loadedModel = File.loadObj[Module[Tensor[Double], Tensor[Double], Double]](filePath + ".model")
+    val loadedModel = File
+      .loadObj[Module[Tensor[Double], Tensor[Double], Double]] (filePath + ".model")
     loadedModel should be(model)
   }
 
@@ -127,7 +128,8 @@ class OptimizerSpec extends FlatSpec with Matchers {
     dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 
-    val loadedModel = File.loadObj[Module[Tensor[Float], Tensor[Float], Double]](filePath + ".model.test")
+    val loadedModel =
+      File.loadObj[Module[Tensor[Float], Tensor[Float], Double]](filePath + ".model.test")
     loadedModel should be(model)
   }
 

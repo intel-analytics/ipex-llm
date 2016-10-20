@@ -28,7 +28,8 @@ object SimpleCNN {
   val colN = 28
   val featureSize = rowN * colN
 
-  def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+  def apply[T: ClassTag](classNum: Int)
+    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
     val model = new Sequential[Tensor[T], Tensor[T], T]()
     model.add(new Reshape(Array(1, rowN, colN)))
     model.add(new SpatialConvolution(1, 32, 5, 5))

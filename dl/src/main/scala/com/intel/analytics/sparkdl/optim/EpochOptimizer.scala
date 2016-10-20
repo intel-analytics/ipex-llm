@@ -160,12 +160,13 @@ class GradAggEpochOptimizer[T: ClassTag](
 }
 
 class WeightAvgEpochOptimizer[T: ClassTag](
-  @transient module: Module[Tensor[T], Tensor[T], T], criterion: Criterion[T], optm: OptimMethod[T],
+  @transient module: Module[Tensor[T], Tensor[T], T],
+  criterion: Criterion[T], optm: OptimMethod[T],
   pm: ParameterManager[T], dataSets: DataSet[_, T] with HasEpoch,
   metrics: Metrics, config: Table = T())(implicit ev: TensorNumeric[T])
   extends EpochOptimizer[T](module, criterion, optm, pm, dataSets, metrics, config) {
 
-  override def optimize():Module[Tensor[T], Tensor[T], T] = {
+  override def optimize(): Module[Tensor[T], Tensor[T], T] = {
     // don't send whole Optimizer in closure
     val broadcast = dataSets.getSparkContext().broadcast((ev, config, optm))
 

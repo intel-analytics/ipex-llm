@@ -67,7 +67,8 @@ class ConcatSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val gradParametersInitial = torchResult("gradParameters_initial").asInstanceOf[Tensor[Double]]
     val parametersInitial = torchResult("parameters_initial").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
-    val luaModule = torchResult("module").asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
+    val luaModule = torchResult("module")
+      .asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
 
     val (parameters, gradParameters) = module.getParameters()
     require(gradParametersInitial == gradParameters)
@@ -126,7 +127,8 @@ class ConcatSpec extends FlatSpec with BeforeAndAfter with Matchers {
       Array("output", "gradInput", "module"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
-    val luaModule = torchResult("module").asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
+    val luaModule = torchResult("module")
+      .asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
 
     luaOutput should be(output)
     luaGradInput should be(gradInput)

@@ -48,7 +48,10 @@ trait ModelPersist[@specialized(Float, Double) T] {
   }
 
 
-  def saveModel(model: Module[_ <: Activities, _ <: Activities, T], iter: Int, force: Boolean = false): this.type = {
+  def saveModel(
+    model: Module[_ <: Activities, _ <: Activities, T],
+    iter: Int,
+    force: Boolean = false): this.type = {
     if (this.path.isDefined) {
       require(model != null)
 
