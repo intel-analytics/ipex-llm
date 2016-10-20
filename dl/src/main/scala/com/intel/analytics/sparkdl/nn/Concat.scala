@@ -95,10 +95,10 @@ class Concat[T: ClassTag](val dimension: Int)(
     this.output
   }
 
-//  override def getTimes(): Array[(Module[_ <: Activities, _ <: Activities, T], Long, Long)] = {
-//    this.modules.flatMap(_.getTimes()).toArray ++
-//      Array((this, forwardTimeOverhead, backwardTime))
-//  }
+  override def getTimes(): Array[(Module[_ <: Activities, _ <: Activities, T], Long, Long)] = {
+    this.modules.flatMap(_.getTimes()).toArray ++
+      Array((this, forwardTimeOverhead, backwardTime))
+  }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     this.gradInput.resizeAs(input)
