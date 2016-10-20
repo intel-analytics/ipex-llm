@@ -40,12 +40,12 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       cancel("Torch is not installed")
     }
 
-    for (i <- 1 to 5) {
+    for (i <- 1 to 1) {
       println(s"unitTest-${i}")
-      unitTest(i, i+100, 50, 4)
+      unitTest(i, i+100, 18, 4)
     }
     println("test case when batchSize < Engine.coresNum")
-    unitTest(1, 100, 50, 2)
+    unitTest(1, 100, 18, 2)
 
   }
 
@@ -340,7 +340,8 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       .findModules("com.intel.analytics.sparkdl.nn.SpatialConvolution")
       .zipWithIndex){
       val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
-      tmpModel.gradWeightMM = Tensor[T](cache.get("gradWeightMM").get)
+      tmpModel.setSharedVar
+      tmpModel.setGradWeightMM(Tensor[T](cache.get("gradWeightMM").get))
       tmpModel.fInput = Tensor[T](cache.get("fInput").get)
       tmpModel.fGradInput = Tensor[T](cache.get("fGradInput").get)
     }
