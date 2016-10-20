@@ -311,6 +311,15 @@ model:zeroGradParameters()
 
     val gradInput = model.gradInput //.backward(input, gradOutputTest)
     val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
-    gradInput should be(gradInputTorch)
+
+    var abss = 0.0
+    for (i <- 0 until gradInputTorch.nElement()) {
+      val tmp = abs(gradInputTorch.storage().array()(i) - gradInput.storage().array()(i))
+      abss += tmp
+    }
+    println(s"gradInputTestAbs:$abss")
+
+
+    (abss < 1E-15) should be
   }
 }
