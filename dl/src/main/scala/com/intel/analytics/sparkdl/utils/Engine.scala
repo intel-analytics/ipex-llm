@@ -60,6 +60,10 @@ object Engine extends Logging {
     engine
   }
 
+  def releaseInstance[T](results : Array[Future[T]]): Seq[T] = {
+    results.map(Await.result(_, Duration.Inf))
+  }
+
   private val singleThreadEngine = new ExecutionContext {
     def execute(runnable: Runnable) {
       runnable.run()

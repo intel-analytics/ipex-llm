@@ -40,7 +40,7 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
   }
 
   def getName() : String = {
-    if (this.name == null) this.toString else this.name
+    if (this.name == null) this.getClass.getName else this.name
   }
 
   // list of sub modules

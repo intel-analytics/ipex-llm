@@ -146,7 +146,7 @@ class NNClassifier(override val uid: String)
 
   private def getOptimizer(module: Module[Double], featureSize: Int,
     dataset: DataSet[_, Double] with HasEpoch, pm: ParameterManager[Double],
-    metrics: Metrics): Optimizer[Double] = {
+    metrics: Metrics): DistributedOptimizer[Double] = {
     val epoch = $(state)[Int]("maxIter")
     $(optimizerType) match {
       case "serial" =>

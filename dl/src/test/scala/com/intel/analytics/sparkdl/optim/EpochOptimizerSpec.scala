@@ -99,6 +99,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
+    Engine.setCoreNum(1000)
     RandomGenerator.RNG.setSeed(1000)
     sc = new SparkContext("local[1]", "SerialOptimizerSpec")
 

@@ -26,6 +26,10 @@ import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
 
 import scala.reflect.ClassTag
 
+/**
+ * It is the class for handling numeric data.
+ * @tparam T should be Double or Float
+ */
 trait Tensor[T] extends Serializable with TensorMath[T] {
   /**
    * Dimension number of the tensor. For empty tensor, its dimension number is 0
@@ -146,6 +150,15 @@ trait Tensor[T] extends Serializable with TensorMath[T] {
    */
   def apply(indexes: Array[Int]): T
 
+  /**
+   * Query the value on a given position. The number of parameters
+   * should be equal to the dimension number of the tensor.
+   * Tensor should not be empty.
+   *
+   * @param d1,( d2, d3, d4, d5) the given position
+   * @return the value on a given position
+   */
+
   def valueAt(d1: Int): T
 
   def valueAt(d1: Int, d2: Int): T
@@ -199,6 +212,13 @@ trait Tensor[T] extends Serializable with TensorMath[T] {
    */
   def update(indexes: Array[Int], value: T): Unit
 
+  /**
+   * Write the value on a given position. The number of parameters
+   * should be equal to the dimension number of the tensor.
+   * @param d1,( d2, d3, d4, d5) the given position
+   * @param value the written value
+   * @return
+   */
   def setValue(d1: Int, value: T): this.type
 
   def setValue(d1: Int, d2: Int, value: T): this.type
@@ -365,7 +385,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] {
    * @return current tensor
    */
   def set(storage: Storage[T], storageOffset: Int = 1, sizes: Array[Int] = null,
-    strides: Array[Int] = null): Tensor[T]
+          strides: Array[Int] = null): Tensor[T]
 
   /**
    * Get a subset of the tensor on dim-th dimension. The offset is given by index, and length is
@@ -441,6 +461,15 @@ trait Tensor[T] extends Serializable with TensorMath[T] {
 
   def view(sizes: Array[Int]): Tensor[T]
 
+  /**
+
+   * Returns a tensor which contains all slices of size @param size
+   * in the dimension @param dim. Step between two slices is given by @param step.
+   * @param dim
+   * @param size
+   * @param step Step between two slices
+   * @return new tensor
+   */
   def unfold(dim: Int, size: Int, step: Int): Tensor[T]
 
   /**
@@ -452,8 +481,23 @@ trait Tensor[T] extends Serializable with TensorMath[T] {
    */
   def repeatTensor(sizes: Array[Int]): Tensor[T]
 
+  /**
+   * This is equivalent to this.expand(template.size())
+   *
+   * @param template the given tensor
+   * @return
+   */
   def expandAs(template: Tensor[T]): Tensor[T]
 
+  /**
+   * Expanding a tensor allocates new memory, tensor where singleton dimensions can be expanded
+   * to multiple ones by setting the stride to 0. Any dimension that has size 1 can be expanded
+   * to arbitrary value with new memory allocation. Attempting to expand along a dimension that
+   * does not have size 1 will result in an error.
+   *
+   * @param sizes the size that tensor will expend to
+   * @return
+   */
   def expand(sizes: Array[Int]): Tensor[T]
 
   /**
@@ -461,17 +505,43 @@ trait Tensor[T] extends Serializable with TensorMath[T] {
    * (a number) or less (in the case of the last Tensor). The sizes of the non-dim dimensions
    * remain unchanged. Internally, a series of narrows are performed along dimensions dim.
    * Argument dim defaults to 1.
+   *
+   * @param size
+   * @param dim
+   * @return
    */
   def split(size: Int, dim: Int = 1): Array[Tensor[T]]
 
+  /**
+   * convert the tensor to BreezeVector, the dimension of the tensor need to be 1.
+   * @return BrzDenseVector
+   */
   def toBreezeVector(): BrzDenseVector[T]
 
+  /**
+   * convert the tensor to MLlibVector, the dimension of the
+   * tensor need to be 1, and tensor need to be continuous.
+   * @return Vector
+   */
   def toMLlibVector(): Vector
 
+  /**
+   * convert the tensor to BreezeMatrix, the dimension of the tensor need to be 2.
+   * @return BrzDenseMatrix
+   */
   def toBreezeMatrix(): BrzDenseMatrix[T]
 
+  /**
+   * convert the tensor to MLlibMatrix, the dimension of the
+   * tensor need to be 2, and tensor need to be continuous.
+   * @return Matrix
+   */
   def toMLlibMatrix(): Matrix
 
+  /**
+   * return the tensor datatype( DoubleType or FloatType)
+   * @return
+   */
   def getType(): TensorDataType
 
   /**
@@ -491,9 +561,22 @@ object DoubleType extends TensorDataType
 object FloatType extends TensorDataType
 
 object Tensor {
+  /**
+   * Returns an empty tensor.
+   * @param ev
+   * @tparam T
+   * @return
+   */
   def apply[@specialized(Float, Double) T: ClassTag]()(
     implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor[T]()
 
+  /**
+   * Create a tensor up to 5 dimensions. The tensor size will be `d1 x d2 x d3 x d4 x d5`.
+   * @param d1,(d2, d3, d4, d5)
+   * @param ev
+   * @tparam T
+   * @return
+   */
   def apply[@specialized(Float, Double) T: ClassTag](d1: Int)(
     implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor[T](d1)
 
@@ -509,21 +592,60 @@ object Tensor {
   def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int, d5: Int)(
     implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor[T](d1, d2, d3, d4, d5)
 
+  /**
+   * Create a tensor on given dimensions. The tensor size will be the product of dims
+   * @param dims
+   * @param ev
+   * @tparam T
+   * @return
+   */
   def apply[@specialized(Float, Double) T: ClassTag](dims: Int*)(
     implicit ev: TensorNumeric[T]): Tensor[T] =
     new DenseTensor[T](new ArrayStorage[T](new Array[T](dims.product)), 0, dims.toArray,
       DenseTensor.size2Stride(dims.toArray), dims.length)
 
+  /**
+   * Create a tensor on given sizes. The tensor size will be the product of sizes
+   * @param sizes
+   * @param ev
+   * @tparam T
+   * @return
+   */
   def apply[@specialized(Float, Double) T: ClassTag](sizes: Array[Int])(
     implicit ev: TensorNumeric[T]): Tensor[T] =
     new DenseTensor(new ArrayStorage[T](new Array[T](sizes.product)), 0, sizes.clone(),
       DenseTensor.size2Stride(sizes.clone()), sizes.length)
 
+  /**
+   * Returns a tensor which uses the existing Storage storage.
+   *
+   * @param storage the given storage
+   * @param ev
+   * @tparam T
+   * @return
+   */
   def apply[@specialized(Float, Double) T: ClassTag](storage: Storage[T])(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
     new DenseTensor(storage.asInstanceOf[Storage[T]])
   }
 
+  /**
+   * Returns a tensor which uses the existing Storage storage, starting at
+   * position storageOffset (>=1). The size of each dimension of the tensor
+   * is given by the optional Array size. If not given, the size will be computed
+   * as the length of storage. The jump necessary to go from one element to the
+   * next one in each dimension is given by the optional Array stride. If not
+   * given, the stride() will be computed such that the tensor is as contiguous
+   * as possible in memory.
+   *
+   * @param storage
+   * @param storageOffset
+   * @param size
+   * @param stride
+   * @param ev
+   * @tparam T
+   * @return
+   */
   def apply[@specialized(Float, Double) T: ClassTag](storage: Storage[T],
                                                      storageOffset: Int,
                                                      size: Array[Int] = null,
@@ -532,21 +654,57 @@ object Tensor {
     new DenseTensor(storage.asInstanceOf[Storage[T]], storageOffset, size, stride)
   }
 
+  /**
+   * create a tensor with a given tensor. The tensor will have same size
+   * with the given tensor.
+   * @param other the given tensor
+   * @param ev
+   * @tparam T
+   * @return
+   */
   def apply[@specialized(Float, Double) T: ClassTag](other: Tensor[T])(
     implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor(other)
 
+  /**
+   * create a tensor with a given breeze vector. The tensor will have the same size
+   * with the given breeze vector.
+   * @param vector the given breeze vector
+   * @param ev
+   * @tparam T
+   * @return
+   */
   def apply[@specialized(Float, Double) T: ClassTag](vector: BrzDenseVector[T])(
     implicit ev: TensorNumeric[T]): Tensor[T] = apply(Storage(vector.data),
     vector.offset + 1, Array(vector.length), Array(vector.stride))
 
+  /**
+   * create a tensor with a given spark Densevector. The tensor will have the same size
+   * with the given spark Densevector.
+   * @param vector the given spark Densevector
+   * @return
+   */
   def apply(vector: DenseVector): Tensor[Double] =
     apply[Double](Storage(vector.toArray))
 
+  /**
+   * create a tensor with a given breeze matrix. The tensor will have the same size with
+   * the given breeze matrix.
+   * @param matrix the given breeze matrix
+   * @param ev
+   * @tparam T
+   * @return
+   */
   def apply[@specialized(Float, Double) T: ClassTag](matrix: BrzDenseMatrix[T])(
     implicit ev: TensorNumeric[T]): Tensor[T] = apply(Storage(matrix.data),
     matrix.offset + 1, Array(matrix.rows, matrix.cols),
     if (matrix.isTranspose) Array(1, matrix.majorStride) else Array(matrix.majorStride, 1))
 
+  /**
+   * create a tensor with a given spark Densematrix. The tensor will have the same size with
+   * the given spark Densematrix.
+   * @param matrix
+   * @return
+   */
   def apply(matrix: DenseMatrix): Tensor[Double] = {
     val strides = if (matrix.isTransposed) {
       Array(matrix.numCols, 1)
@@ -556,13 +714,41 @@ object Tensor {
     apply(Storage(matrix.toArray), 1, Array(matrix.numRows, matrix.numCols), strides)
   }
 
+  /**
+   * This is equivalent to DenseTensor.randperm[T](size)
+   * @param size
+   * @param ev
+   * @tparam T
+   * @return
+   */
   def randperm[@specialized(Float, Double) T: ClassTag](size: Int)(
     implicit ev: TensorNumeric[T]): Tensor[T] = DenseTensor.randperm[T](size)
 
+  /**
+   * This is equivalent to tensor.expand(sizes.toArray)
+   * @param tensor
+   * @param sizes
+   * @tparam T
+   * @return
+   */
   def expand[T](tensor: Tensor[T], sizes: Int*): Tensor[T] = tensor.expand(sizes.toArray)
 
+  /**
+   * This is equivalent to tensor.expandAs(template)
+   * @param tensor
+   * @param template
+   * @tparam T
+   * @return
+   */
   def expandAs[T](tensor: Tensor[T], template: Tensor[T]): Tensor[T] = tensor.expandAs(template)
 
+  /**
+   * This is equivalent to tensor.repeatTensor(sizes.toArray)
+   * @param tensor
+   * @param sizes
+   * @tparam T
+   * @return
+   */
   def repeatTensor[T](tensor: Tensor[T], sizes: Int*): Tensor[T] =
     tensor.repeatTensor(sizes.toArray)
 }

@@ -17,7 +17,7 @@
 
 package com.intel.analytics.sparkdl.utils
 
-import com.intel.analytics.sparkdl.models.{AlexNet, GoogleNet_v1}
+import com.intel.analytics.sparkdl.models.imagenet.{AlexNet, GoogleNet_v1}
 import com.intel.analytics.sparkdl.nn.Module
 import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
