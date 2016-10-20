@@ -40,27 +40,38 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       cancel("Torch is not installed")
     }
 
-    Random.setSeed(1)
-    val classNum: Int = 1000
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val labels = Tensor[Double](4).apply1(e => Random.nextInt(classNum))
+    for (i <- 1 to 5) {
+      println(s"unitTest-${i}")
+      unitTest(i, i+100, 50, 4)
+    }
+    println("test case when batchSize < Engine.coresNum")
+    unitTest(1, 100, 50, 2)
 
-    val seed = 100
+  }
+
+
+    def unitTest(inputSeed: Int, modelSeed: Int, depth: Int, batchSize: Int) {
+
+      Random.setSeed(inputSeed)
+      val classNum: Int = 1000
+    val input = Tensor[Double](batchSize, 3, 224, 224).apply1(e => Random.nextDouble())
+    val labels = Tensor[Double](batchSize).apply1(e => Random.nextInt(classNum))
+
+    val seed = modelSeed
     RNG.setSeed(seed)
-    val model = ResNet[Double](classNum, T("shortcutType" -> ShortcutType.B, "depth"->50))
+    val model = ResNet[Double](classNum, T("shortcutType" -> ShortcutType.B, "depth"->depth))
     model.zeroGradParameters()
 
 
     val code = "torch.manualSeed(" + seed + ")\n" +
+        "local depth = " + depth + "\n" +
       """
         local Convolution = nn.SpatialConvolution
         local Avg = nn.SpatialAveragePooling
         local ReLU = nn.ReLU
         local Max = nn.SpatialMaxPooling
         local SBatchNorm = nn.SpatialBatchNormalization
-
         local nClasses = 1000
-        local depth = 50
         local shortcutType = 'B'
         local iChannels
         local function shortcut(nInputPlane, nOutputPlane, stride)
@@ -190,7 +201,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
               return criterion.output, gradParameters
            end
 
-             for i = 1, 10, 1 do
+             for i = 1, 5, 1 do
               w, err = optim.sgd(feval, parameters, state)
              end
 
@@ -291,6 +302,10 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     //    }
     //    assert(abss < 2e-2)
   }
+
+
+
+
 
   def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
     (implicit ev: TensorNumeric[T]): Unit = {
