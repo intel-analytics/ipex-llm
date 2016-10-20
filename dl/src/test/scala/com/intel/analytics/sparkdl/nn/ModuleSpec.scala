@@ -17,7 +17,7 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.Storage
+import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -25,7 +25,7 @@ import scala.util.Random
 class ModuleSpec extends FlatSpec with Matchers {
 
   "getParameter" should "behave correctly" in {
-    val module = new Sequential[Double]
+    val module = new Sequential[Tensor[Double], Tensor[Double], Double]
     val subModule1 = new Linear[Double](2, 3)
     val subModule2 = new Linear[Double](4, 5)
     module.add(subModule1)
@@ -57,7 +57,7 @@ class ModuleSpec extends FlatSpec with Matchers {
   }
 
   "getParameter from compact tensor" should "not create new storage" in {
-    val module = new Sequential[Double]
+    val module = new Sequential[Tensor[Double], Tensor[Double], Double]
     val subModule1 = new Linear[Double](2, 3)
     val subModule2 = new Linear[Double](4, 5)
     module.add(subModule1)
@@ -71,7 +71,7 @@ class ModuleSpec extends FlatSpec with Matchers {
   }
 
   "clone module" should "work correctly" in {
-    val module = new Sequential[Double]
+    val module = new Sequential[Tensor[Double], Tensor[Double], Double]
     module.add(new Linear(2, 3))
     module.add(new Linear(4, 5))
 

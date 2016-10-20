@@ -37,7 +37,7 @@ object Cifar {
   val classNumber = 10
 
 
-  def getOptim(model: Module[Double], params: Params, pm: ParameterManager[Double],
+  def getOptim(model: Module[Tensor[Double], Tensor[Double], Double], params: Params, pm: ParameterManager[Double],
     dataSets: DataSet[_, Double] with HasEpoch, config: Table,
     metrics: Metrics): DistributedOptimizer[Double] = {
     val optim = params.masterOptM match {
@@ -346,18 +346,18 @@ object Cifar {
     new ClassNLLCriterion[Double]()
   }
 
-  def getModel(file: String): Module[Double] = {
-    val model = File.load[Module[Double]](file)
+  def getModel(file: String): TensorModule[Double] = {
+    val model = File.load[TensorModule[Double]](file)
     model
   }
 
   def getModel[T: ClassTag](classNumber: Int, netType: String)(
-    implicit ev: TensorNumeric[T]): Module[T] = {
+    implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
     val model = netType match {
       case "vggBnDo" =>
-        val vggBnDo = new Sequential[T]()
+        val vggBnDo = new Sequential[Tensor[T], Tensor[T], T]()
 
-        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[T] = {
+        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[Tensor[T], Tensor[T], T] = {
           vggBnDo.add(new SpatialConvolution[T](nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
           vggBnDo.add(new SpatialBatchNormalization[T](nOutPutPlane, 1e-3))
           vggBnDo.add(new ReLU[T](true))
@@ -387,7 +387,7 @@ object Cifar {
         vggBnDo.add(new SpatialMaxPooling[T](2, 2, 2, 2).ceil())
         vggBnDo.add(new View[T](512))
 
-        val classifier = new Sequential[T]()
+        val classifier = new Sequential[Tensor[T], Tensor[T], T]()
         classifier.add(new Dropout[T](0.5))
         classifier.add(new Linear[T](512, 512))
         classifier.add(new BatchNormalization[T](512))
@@ -400,9 +400,9 @@ object Cifar {
         vggBnDo
 
       case "vggBn" =>
-        val vggBn = new Sequential[T]()
+        val vggBn = new Sequential[Tensor[T], Tensor[T], T]()
 
-        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[T] = {
+        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[Tensor[T], Tensor[T], T] = {
           vggBn.add(new SpatialConvolution[T](nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
           vggBn.add(new SpatialBatchNormalization[T](nOutPutPlane, 1e-3))
           vggBn.add(new ReLU[T](true))
@@ -432,7 +432,7 @@ object Cifar {
         vggBn.add(new SpatialMaxPooling[T](2, 2, 2, 2).ceil())
         vggBn.add(new View[T](512))
 
-        val classifier = new Sequential[T]()
+        val classifier = new Sequential[Tensor[T], Tensor[T], T]()
         classifier.add(new Linear[T](512, 512))
         classifier.add(new BatchNormalization[T](512))
         classifier.add(new ReLU[T](true))
@@ -443,9 +443,9 @@ object Cifar {
         vggBn
 
       case "vggDo" =>
-        val vggDo = new Sequential[T]()
+        val vggDo = new Sequential[Tensor[T], Tensor[T], T]()
 
-        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[T] = {
+        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[Tensor[T], Tensor[T], T] = {
           vggDo.add(new SpatialConvolution[T](nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
           vggDo.add(new ReLU[T](true))
           vggDo
@@ -474,7 +474,7 @@ object Cifar {
         vggDo.add(new SpatialMaxPooling[T](2, 2, 2, 2).ceil())
         vggDo.add(new View[T](512))
 
-        val classifier = new Sequential[T]()
+        val classifier = new Sequential[Tensor[T], Tensor[T], T]()
         classifier.add(new Dropout[T](0.5))
         classifier.add(new Linear[T](512, 512))
         classifier.add(new ReLU[T](true))
@@ -485,7 +485,7 @@ object Cifar {
 
         vggDo
       case _ =>
-        val model = new Sequential[T]
+        val model = new Sequential[Tensor[T], Tensor[T], T]
 
         /** *
          * https://github.com/torch/demos/blob/master/train-on-cifar/train-on-cifar.lua

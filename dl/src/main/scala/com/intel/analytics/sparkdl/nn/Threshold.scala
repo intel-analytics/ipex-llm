@@ -28,7 +28,7 @@ import com.intel.analytics.sparkdl.utils.Engine
 
 class Threshold[@specialized(Float, Double) T: ClassTag](
   th: Double = 1e-6, v: Double = 0.0, ip: Boolean = false)(
-  implicit ev: TensorNumeric[T]) extends Module[T] {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   var threshold = th
   var value = v
   var inPlace = ip

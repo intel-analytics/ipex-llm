@@ -18,14 +18,14 @@
 package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.dataset.DataSource
-import com.intel.analytics.sparkdl.nn.{Criterion, Module}
+import com.intel.analytics.sparkdl.nn.{Criterion, Module, TensorModule}
 import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.utils.Table
+import com.intel.analytics.sparkdl.utils.{Activities, Table}
 
 class LocalOptimizer[T](
   data: DataSource[(Tensor[T], Tensor[T])],
   validationData: DataSource[(Tensor[T], Tensor[T])],
-  model: Module[T],
+  model: Module[Tensor[T], Tensor[T], T],
   criterion: Criterion[T],
   optimMethod: OptimMethod[T],
   state: Table,
@@ -34,13 +34,13 @@ class LocalOptimizer[T](
 
   def this(
     data: DataSource[(Tensor[T], Tensor[T])],
-    model: Module[T],
+    model: Module[Tensor[T], Tensor[T], T],
     criterion: Criterion[T],
     optimMethod: OptimMethod[T],
     state: Table,
     endWhen: Trigger) = this(data, null, model, criterion, optimMethod, state, endWhen)
 
-  override def optimize(): Module[T] = {
+  override def optimize(): Module[Tensor[T], Tensor[T], T] = {
     val (weights, grad) = model.getParameters()
     var wallClockTime = 0L
     var count = 0
@@ -100,7 +100,7 @@ class LocalOptimizer[T](
         val results = validationData.map { case (input, target) =>
           val output = model.forward(input)
           validationMethods.map(validation => {
-            validation(output, target)
+            validation(output.asInstanceOf[Tensor[T]], target)
           }).toArray
         }.reduce((left, right) => {
           left.zip(right).map { case (l, r) =>

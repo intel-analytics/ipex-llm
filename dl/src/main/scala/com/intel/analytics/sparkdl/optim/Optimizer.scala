@@ -18,12 +18,13 @@
 package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.nn.Module
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.{File, Table}
 
 import scala.collection.mutable.ArrayBuffer
 
 abstract class Optimizer[@specialized(Float, Double) T](
-  protected val model: Module[T],
+  protected val model: Module[Tensor[T], Tensor[T], T],
   protected val endWhen: Trigger
 ) {
   protected var validationTrigger: Option[Trigger] = None
@@ -32,7 +33,7 @@ abstract class Optimizer[@specialized(Float, Double) T](
   protected var cachePath: Option[String] = None
   protected var isOverWrite: Boolean = false
 
-  def optimize(): Module[T]
+  def optimize(): Module[Tensor[T], Tensor[T], T]
 
   def setValidationTrigger(trigger: Trigger): this.type = {
     this.validationTrigger = Some(trigger)

@@ -28,7 +28,7 @@ import scala.reflect._
 
 class SpatialMaxPooling[@specialized(Float, Double) T: ClassTag](
   val kW: Int, val kH: Int, val dW: Int, val dH: Int, val padW: Int = 0, val padH: Int = 0)
-  (implicit ev: TensorNumeric[T]) extends Module[T] {
+  (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   var ceil_mode = false
   var indices = Tensor[T]()

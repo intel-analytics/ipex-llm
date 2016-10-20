@@ -19,6 +19,7 @@ package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.models.imagenet.AlexNet
 import com.intel.analytics.sparkdl.nn.Module
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.{File, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -29,7 +30,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     mp.setPath(filePath)
     val model = AlexNet[Double](1000)
     mp.saveModel(model)
-    val loadedModel = File.loadObj[Module[Double]](filePath)
+    val loadedModel = File.loadObj[Module[Tensor[Double], Tensor[Double], Double]](filePath)
     loadedModel should be(model)
   }
 
@@ -40,7 +41,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     mp.setPath(filePath)
     val model = AlexNet[Double](1000)
     mp.saveModel(model, 10, true)
-    val loadedModel = File.loadObj[Module[Double]](filePath + ".10")
+    val loadedModel = File.loadObj[Module[Tensor[Double], Tensor[Double], Double]](filePath + ".10")
     loadedModel should be(model)
   }
 

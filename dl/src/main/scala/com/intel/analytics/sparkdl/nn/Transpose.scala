@@ -23,7 +23,7 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 class Transpose[@specialized(Float, Double) T: ClassTag](
-  val permutations: Array[(Int, Int)])(implicit ev: TensorNumeric[T]) extends Module[T] {
+  val permutations: Array[(Int, Int)])(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input).copy(input)

@@ -32,9 +32,10 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   val eps: Double = 1e-5, // avoid divde zero
   val momentum: Double = 0.1, // momentum for weight update
   val affine: Boolean = true  // affine operation on output or not
-)(implicit ev: TensorNumeric[T]) extends Module[T] {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(nOutput > 0)
+
   val nDim = 2
   val runningMean = Tensor[T](nOutput)
   val runningVar = Tensor[T](nOutput).fill(ev.fromType[Int](1))
@@ -573,4 +574,5 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   override def toString(): String = {
     s"nn.BatchNormalization[${ev.getType()}]($nOutput, $eps, $momentum, $affine)"
   }
+
 }

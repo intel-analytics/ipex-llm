@@ -24,7 +24,7 @@ object TestUtils {
   /**
    * This function returns the function value, partial derivatives
    * and Hessian of the (general dimension) rosenbrock function, given by:
-   * f(x) = sum_{i=1:D-1} 100*(x(i+1) - x(i)^2)^2 + (1-x(i))^2
+   * f(x) = sum_{i=1:D-1} 100*(x(i+1) - x(i)^2)^2 + (1-x(i)) ^^ 2
    * where D is the dimension of x. The true minimum is 0 at x = (1 1 ... 1).
    *
    * See more about rosenbrock function at

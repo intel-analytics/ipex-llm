@@ -18,13 +18,14 @@
 package com.intel.analytics.sparkdl.models.mnist
 
 import com.intel.analytics.sparkdl.nn.{Linear, LogSoftMax, SpatialMaxPooling, _}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
 object LeNet5 {
-  def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[T] = {
-    val model = new Sequential[T]()
+  def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+    val model = new Sequential[Tensor[T], Tensor[T], T]()
     model.add(new Reshape[T](Array(1, 28, 28)))
     model.add(new SpatialConvolution[T](1, 6, 5, 5))
     model.add(new Tanh[T]())

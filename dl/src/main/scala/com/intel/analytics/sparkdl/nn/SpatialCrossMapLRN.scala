@@ -27,7 +27,7 @@ import com.intel.analytics.sparkdl.utils.Engine
 
 class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
 (val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75, val k: Double = 1.0)(
-  implicit ev: TensorNumeric[T]) extends Module[T] {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   @transient
   private var scale: Tensor[T] = null
