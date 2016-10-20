@@ -17,61 +17,101 @@
 
 package com.intel.analytics.sparkdl.optim
 
-import com.intel.analytics.sparkdl.nn.{Criterion, Module}
-import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.utils.{T, Table}
-import org.apache.spark.Logging
+import com.intel.analytics.sparkdl.nn.Module
+import com.intel.analytics.sparkdl.utils.{File, Table}
 
-/**
- * Train a neural network model on a distributed data set
- *
- * @param module    module to be optimized
- * @param criterion cost function
- * @param dataSet   distributed data set
- * @tparam T numeric type of model
- */
+import scala.collection.mutable.ArrayBuffer
+
 abstract class Optimizer[@specialized(Float, Double) T](
-  val module: Module[T], val criterion: Criterion[T],
-  dataSet: DataSet[_, T]) extends Serializable with Logging
-  with HasCrossValidation[T] with ModelPersist[T] {
-
-  import Optimizer._
+  protected val model: Module[T],
+  protected val endWhen: Trigger
+) {
+  protected var validationTrigger: Option[Trigger] = None
+  protected var cacheTrigger: Option[Trigger] = None
+  protected val validationMethods: ArrayBuffer[ValidationMethod[T]] = new ArrayBuffer()
+  protected var cachePath: Option[String] = None
+  protected var isOverWrite: Boolean = false
 
   def optimize(): Module[T]
 
-  // We pre-create models on each partition of the data set
-  private def init() = {
-    val broadcast = dataSet.getSparkContext().broadcast((module, criterion))
-    val models = dataSet.partitions().mapPartitions(_ => {
-      val (broadcastModule, broadcastCriterion) = broadcast.value
-      val localModule = broadcastModule.cloneModule()
-      val localCriterion = broadcastCriterion.cloneCriterion()
-      val (weights, grads) = localModule.getParameters()
-      Iterator.single(CachedModel(localModule, localCriterion, weights, grads, T()))
-    }).persist()
-    models.setName("modelRDD")
-    logInfo("Cache models...")
-    models.count()
-    logInfo("Cache models... done")
-    models
+  def setValidationTrigger(trigger: Trigger): this.type = {
+    this.validationTrigger = Some(trigger)
+    this
   }
 
-  val models = init()
+  def addValidation(validationMethod: ValidationMethod[T]): this.type = {
+    validationMethods.append(validationMethod)
+    this
+  }
+
+  def setCache(path: String, trigger: Trigger): this.type = {
+    this.cachePath = Some(path)
+    this.cacheTrigger = Some(trigger)
+    this
+  }
+
+  protected def saveModel(postfix: String = ""): this.type = {
+    if (this.cachePath.isDefined) {
+      File.save(model, s"${cachePath.get}.model$postfix", isOverWrite)
+    }
+    this
+  }
+
+  protected def saveState(state: Table, postfix: String = ""): this.type = {
+    if (this.cachePath.isDefined) {
+      File.save(state, s"${cachePath.get}.state$postfix", isOverWrite)
+    }
+    this
+  }
 }
 
-object Optimizer {
+trait Trigger {
+  def apply(state: Table): Boolean
+}
 
-  /**
-   * Represent a cached module and its cost function
-   *
-   * @param model     module instance
-   * @param criterion cost function instance
-   * @param weight    a single tensor storing all parameters of the module
-   * @param gradient  a single tensor storing all gradient of the parameters of the module
-   * @param state     contains train state
-   * @tparam T
-   */
-  case class CachedModel[T](model: Module[T], criterion: Criterion[T], weight: Tensor[T],
-    gradient: Tensor[T], state: Table)
+object Trigger {
+  def everyEpoch: Trigger = {
+    new Trigger() {
+      private var lastEpoch = -1
 
+      override def apply(state: Table): Boolean = {
+        if (lastEpoch == -1) {
+          lastEpoch = state[Int]("epoch")
+          false
+        } else {
+          if (state[Int]("epoch") == lastEpoch) {
+            false
+          } else {
+            lastEpoch = state[Int]("epoch")
+            true
+          }
+        }
+      }
+    }
+  }
+
+  def severalIteration(interval: Int): Trigger = {
+    new Trigger() {
+      override def apply(state: Table): Boolean = {
+        val curIteration = state[Int]("neval")
+        curIteration != 0 && curIteration % interval == 0
+      }
+    }
+  }
+
+  def maxEpoch(max: Int): Trigger = {
+    new Trigger() {
+      override def apply(state: Table): Boolean = {
+        state[Int]("epoch") > max
+      }
+    }
+  }
+
+  def maxIteration(max: Int): Trigger = {
+    new Trigger() {
+      override def apply(state: Table): Boolean = {
+        state[Int]("neval") > max
+      }
+    }
+  }
 }

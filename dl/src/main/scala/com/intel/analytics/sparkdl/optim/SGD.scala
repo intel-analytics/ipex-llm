@@ -140,6 +140,20 @@ object SGD {
     }
   }
 
+  case class EpochStep(stepSize : Int, gamma : Double) extends LearningRateSchedule {
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
+      val lr = config.get[Double]("learningRate").getOrElse(1e-3)
+      var clr = -lr
+      val epoch = config[Int]("epoch")
+      var i = 0
+      while(i < epoch / stepSize) {
+        clr *= gamma
+        i += 1
+      }
+      config("clr") = clr
+    }
+  }
+
   case class Default() extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)

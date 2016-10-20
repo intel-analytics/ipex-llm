@@ -17,6 +17,7 @@
 
 package com.intel.analytics.sparkdl.models
 
+import com.intel.analytics.sparkdl.models.imagenet.AlexNet_OWT
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim.SGD
 import com.intel.analytics.sparkdl.tensor._
@@ -42,7 +43,7 @@ class AlexNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val seed = 100
     RNG.setSeed(seed)
-    val model = AlexNet_OWT[Float](1000, false)
+    val model = AlexNet_OWT[Float](1000, false, true)
     model.zeroGradParameters()
 
 
@@ -267,7 +268,7 @@ model:zeroGradParameters()
     TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
-    val model = AlexNet_OWT[Double](1000, false)
+    val model = AlexNet_OWT[Double](1000, false, true)
     model.zeroGradParameters()
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]

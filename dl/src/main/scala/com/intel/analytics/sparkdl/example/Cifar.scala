@@ -39,7 +39,7 @@ object Cifar {
 
   def getOptim(model: Module[Double], params: Params, pm: ParameterManager[Double],
     dataSets: DataSet[_, Double] with HasEpoch, config: Table,
-    metrics: Metrics): Optimizer[Double] = {
+    metrics: Metrics): DistributedOptimizer[Double] = {
     val optim = params.masterOptM match {
       case "adagrad" => new Adagrad[Double]()
       case "sgd" => new SGD[Double]()

@@ -17,7 +17,7 @@
 
 package com.intel.analytics.sparkdl.optim
 
-import com.intel.analytics.sparkdl.models.AlexNet
+import com.intel.analytics.sparkdl.models.imagenet.AlexNet
 import com.intel.analytics.sparkdl.nn.Module
 import com.intel.analytics.sparkdl.utils.{File, T, Table}
 import org.scalatest.{FlatSpec, Matchers}

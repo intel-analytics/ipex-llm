@@ -395,10 +395,10 @@ object File {
     var table: Map[String, Any] = new HashMap()
     val nInputPlane = source.nInputPlane
     val nOutputPlane = source.nOutputPlane
-    val kW = source.kW
-    val kH = source.kH
-    val dW = source.dW
-    val dH = source.dH
+    val kW = source.kernelW
+    val kH = source.kernelH
+    val dW = source.strideW
+    val dH = source.strideH
     val padW = source.padW
     val padH = source.padH
     val gradBias = source.gradBias

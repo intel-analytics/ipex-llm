@@ -19,6 +19,8 @@ package com.intel.analytics.sparkdl.models
 
 import com.github.fommil.netlib.{BLAS, NativeSystemBLAS}
 import com.intel.analytics.sparkdl.models.ResNet.ShortcutType
+import com.intel.analytics.sparkdl.models.imagenet._
+import com.intel.analytics.sparkdl.models.mnist.LeNet5
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
@@ -31,7 +33,7 @@ import scala.reflect.ClassTag
  * Performance test for the models
  */
 object Perf {
-  val parser = new OptionParser[Params]("Performance Test") {
+  val parser = new OptionParser[PerfParams]("Performance Test") {
     head("Performance Test of Models")
     opt[Int]('b', "batchSize")
       .text("Batch size of input data")
@@ -42,7 +44,7 @@ object Perf {
     opt[Int]('w', "warmUp")
       .text("Warm up iteration number. These iterations will run first and won't be count in " +
         "the perf test result.")
-      .action((v, p) => p.copy(iteration = v))
+      .action((v, p) => p.copy(warmUp = v))
     opt[String]('t', "type")
       .text("Data type. It can be float | double")
       .action((v, p) => p.copy(dataType = v))
@@ -70,7 +72,7 @@ object Perf {
   }
 
   def main(args: Array[String]): Unit = {
-    parser.parse(args, new Params()).map(param => {
+    parser.parse(args, new PerfParams()).map(param => {
       param.dataType match {
         case "float" => performance[Float](param)
         case "double" => performance[Double](param)
@@ -79,7 +81,7 @@ object Perf {
     })
   }
 
-  def performance[T: ClassTag](param: Params)(implicit tn: TensorNumeric[T]): Unit = {
+  def performance[T: ClassTag](param: PerfParams)(implicit tn: TensorNumeric[T]): Unit = {
     val (model, input) = param.module match {
       case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 227, 227))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor[T](param.batchSize, 3, 224, 224))
@@ -142,10 +144,10 @@ object Perf {
   }
 }
 
-case class Params(
-  batchSize: Int = 64,
-  iteration: Int = 10,
-  warmUp: Int = 5,
+case class PerfParams(
+  batchSize: Int = 128,
+  iteration: Int = 50,
+  warmUp: Int = 10,
   dataType: String = "float",
   module: String = "resnet"
 )
