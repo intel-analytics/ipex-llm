@@ -23,7 +23,7 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.torch.TH
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
-import com.intel.analytics.sparkdl.utils.T
+import com.intel.analytics.sparkdl.utils.{T, Engine}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.{immutable, mutable}
@@ -32,8 +32,10 @@ import scala.reflect.ClassTag
 import scala.util.Random
 
 class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
+
   "ResNet double" should "generate correct output" in {
     //System.setProperty("java.io.tmpdir", "/disk2/test");
+    Engine.setCoreNum(4)
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }

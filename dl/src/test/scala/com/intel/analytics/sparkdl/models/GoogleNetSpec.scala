@@ -25,14 +25,16 @@ import com.intel.analytics.sparkdl.optim.SGD
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.torch.TH
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
-import com.intel.analytics.sparkdl.utils.{RandomGenerator, T}
+import com.intel.analytics.sparkdl.utils.{RandomGenerator, T, Engine}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
 import scala.util.Random
 
 class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
+
   "GoogleNet+bn" should "generate correct output" in {
+    Engine.setCoreNum(4)
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -241,6 +243,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "GoogleNet" should "generate correct output" in {
+    Engine.setCoreNum(4)
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
