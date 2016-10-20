@@ -34,8 +34,8 @@ class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
   val dH: Int = 1, // The step of the convolution in the height dimension
   val padW: Int = 0, // The additional zeros added per width to the input planes.
   val padH: Int = 0, // The additional zeros added per height to the input planes.
-  val adjW: Int = 0,
-  val adjH: Int = 0
+  val adjW: Int = 0, // Extra width to add to the output image.
+  val adjH: Int = 0  // Extra height to add to the output image.
     )(implicit ev: TensorNumeric[T]) extends Module[T] {
   require(adjW <= dW - 1 && adjH <= dH - 1,
     "adjW and adjH must be smaller than dW - 1 and dH - 1 respectively")
@@ -55,9 +55,6 @@ class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
   def getIm2ColTime(): Double = im2colTime
 
   def getCol2ImgTime(): Double = col2imTime
-
-  @transient
-  private var results: Array[Future[Unit]] = null
 
   override def reset(): Unit = {
     reset(0.0)
@@ -179,7 +176,7 @@ class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
         input_n.storage().array(), input_n.storageOffset() - 1, n,
         weight.storage().array(), weight.storageOffset() - 1, m,
         ev.fromType[Int](0),
-        columns.storage().array(), 0, n
+        columns.storage().array(), columns.storageOffset() - 1, n
       )
 
       // Unpack columns back into input:
@@ -322,6 +319,7 @@ class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
     scale: Double = 1.0): Unit = {
+    shapeCheck(input, gradOutput, gradWeight, gradBias, kH, kW, dH, dW, padH, padW, adjH, adjW)
 
     val batch = if (input.nDimension() == 3) {
       // Force batch
