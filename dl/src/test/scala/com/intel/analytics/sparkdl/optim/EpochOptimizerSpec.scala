@@ -57,7 +57,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
@@ -118,7 +118,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
@@ -178,7 +178,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
@@ -237,7 +237,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
@@ -298,7 +298,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 
@@ -355,7 +355,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 
@@ -414,7 +414,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 
@@ -471,7 +471,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 
@@ -531,7 +531,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
@@ -589,7 +589,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
@@ -650,7 +650,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 
@@ -706,7 +706,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 
@@ -763,7 +763,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 
@@ -819,7 +819,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 

@@ -27,7 +27,7 @@ class Linear[@specialized(Float, Double) T: ClassTag](
   inputSize: Int,
   outputSize: Int,
   private var initMethod: InitializationMethod = Default
-)(implicit ev: TensorNumeric[T]) extends Module[T] {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
   val bias: Tensor[T] = Tensor[T](outputSize)
   val addBuffer: Tensor[T] = Tensor[T]()
@@ -161,8 +161,7 @@ class Linear[@specialized(Float, Double) T: ClassTag](
   }
 
   override def findModel(paramOffset: Int,
-    indexes: Array[Int]): (Module[T], Int, Array[Int]) = {
+    indexes: Array[Int]): (Module[Tensor[T], Tensor[T], T], Int, Array[Int]) = {
     (this, paramOffset - outputSize * inputSize - outputSize, indexes)
   }
-
 }

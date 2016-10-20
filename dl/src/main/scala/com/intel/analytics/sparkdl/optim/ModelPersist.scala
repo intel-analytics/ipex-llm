@@ -19,7 +19,7 @@ package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.nn.Module
 import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.utils.{File, Table}
+import com.intel.analytics.sparkdl.utils.{Activities, File, Table}
 
 trait ModelPersist[@specialized(Float, Double) T] {
 
@@ -48,7 +48,10 @@ trait ModelPersist[@specialized(Float, Double) T] {
   }
 
 
-  def saveModel(model: Module[T], iter: Int, force: Boolean = false): this.type = {
+  def saveModel(
+    model: Module[_ <: Activities, _ <: Activities, T],
+    iter: Int,
+    force: Boolean = false): this.type = {
     if (this.path.isDefined) {
       require(model != null)
 
@@ -62,7 +65,7 @@ trait ModelPersist[@specialized(Float, Double) T] {
     this
   }
 
-  def saveModel(model: Module[T]): this.type = {
+  def saveModel(model: Module[_ <: Activities, _ <: Activities, T]): this.type = {
     saveModel(model, 0, true)
   }
 

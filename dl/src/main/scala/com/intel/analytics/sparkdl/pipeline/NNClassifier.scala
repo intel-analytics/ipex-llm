@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
 
 trait NNParams[@specialized(Float, Double) T] extends PredictorParams {
 
-  final val model: Param[Int => Module[T]] =
+  final val model: Param[Int => Module[Tensor[T], Tensor[T], T]] =
     new Param(this, "module factory", "neural network model")
 
   final val criterion: Param[Criterion[T]] =
@@ -61,7 +61,7 @@ trait NNParams[@specialized(Float, Double) T] extends PredictorParams {
 
   final def getOptimizerType: String = $(optimizerType)
 
-  final def getModel: Int => Module[T] = $(model)
+  final def getModel: Int => Module[Tensor[T], Tensor[T], T] = $(model)
 
   final def getState: Table = $(state)
 
@@ -87,7 +87,7 @@ class NNClassifier(override val uid: String)
 
   def this() = this(Identifiable.randomUID("nnc"))
 
-  def setModel(value: Int => Module[Double]): this.type = {
+  def setModel(value: Int => Module[Tensor[Double], Tensor[Double], Double]): this.type = {
     set(model, value)
   }
 
@@ -144,7 +144,7 @@ class NNClassifier(override val uid: String)
     new NNClassificationModel(uid, optimizer.module)
   }
 
-  private def getOptimizer(module: Module[Double], featureSize: Int,
+  private def getOptimizer(module: Module[Tensor[Double], Tensor[Double], Double], featureSize: Int,
     dataset: DataSet[_, Double] with HasEpoch, pm: ParameterManager[Double],
     metrics: Metrics): DistributedOptimizer[Double] = {
     val epoch = $(state)[Int]("maxIter")
@@ -199,7 +199,7 @@ class NNClassifier(override val uid: String)
 
 class NNClassificationModel[@specialized(Float, Double) T: ClassTag](
   override val uid: String,
-  val module: Module[T])(implicit ev: TensorNumeric[T])
+  val module: Module[Tensor[T], Tensor[T], T])(implicit ev: TensorNumeric[T])
   extends PredictionModel[Vector, NNClassificationModel[T]] with HasRawPredictionCol
     with Serializable {
 
