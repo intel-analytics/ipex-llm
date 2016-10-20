@@ -24,7 +24,8 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 object LeNet5 {
-  def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+  def apply[T: ClassTag](classNum: Int)
+    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
     val model = new Sequential[Tensor[T], Tensor[T], T]()
     model.add(new Reshape[T](Array(1, 28, 28)))
     model.add(new SpatialConvolution[T](1, 6, 5, 5))

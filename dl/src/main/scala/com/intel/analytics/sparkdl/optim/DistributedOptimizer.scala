@@ -74,7 +74,8 @@ object DistributedOptimizer {
    * @param state     contains train state
    * @tparam T
    */
-  case class CachedModel[T](model: Module[Tensor[T], Tensor[T], T], criterion: Criterion[T], weight: Tensor[T],
+  case class CachedModel[T](model: Module[Tensor[T], Tensor[T], T],
+    criterion: Criterion[T], weight: Tensor[T],
     gradient: Tensor[T], state: Table)
 
 }

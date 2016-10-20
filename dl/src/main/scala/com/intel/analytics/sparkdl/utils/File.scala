@@ -273,7 +273,8 @@ object File {
         i = i + 1
         rawdata.putInt(i)
         writeVersionAndClass("V 1", "nn.Sequential", rawdata, path)
-        writeSequential(source.asInstanceOf[Sequential[Tensor[Double], Tensor[Double], Double]], rawdata, path)
+        writeSequential(source
+          .asInstanceOf[Sequential[Tensor[Double], Tensor[Double], Double]], rawdata, path)
       case TYPE_DROPOUT =>
         i = i + 1
         rawdata.putInt(i)
@@ -482,7 +483,8 @@ object File {
     val modules: Map[Double, Module[Tensor[Double], Tensor[Double], Double]] = new HashMap()
 
     for (i <- 1 to source.modules.length) {
-      modules.put(i, source.modules(i - 1).asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]])
+      modules.put(i, source.modules(i - 1)
+        .asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]])
     }
 
     table.put("gradInput", gradInput)
@@ -502,7 +504,8 @@ object File {
     val modules: Map[Double, Module[Tensor[Double], Tensor[Double], Double]] = new HashMap()
 
     for (i <- 1 to source.modules.length) {
-      modules.put(i, source.modules(i - 1).asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]])
+      modules.put(i, source.modules(i - 1)
+        .asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]])
     }
 
     table.put("gradInput", gradInput)
@@ -1133,7 +1136,8 @@ object File {
   }
 
   private def readSequentialModule(
-    rawData: ByteBuffer, objects: Map[Int, Any]): Sequential[Tensor[Double], Tensor[Double], Double] = {
+    rawData: ByteBuffer, objects: Map[Int, Any]):
+  Sequential[Tensor[Double], Tensor[Double], Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[Any, Any]]
     val output = elements.get("output").asInstanceOf[Tensor[Double]]
     val modules = elements.get("modules").asInstanceOf[Map[Any, Any]]
@@ -1156,12 +1160,15 @@ object File {
     result
   }
 
-  private def readModules(modules: Map[Any, Any]): Array[Module[Tensor[Double], Tensor[Double], Double]] = {
+  private def readModules(modules: Map[Any, Any]):
+  Array[Module[Tensor[Double], Tensor[Double], Double]] = {
     val moduleLength = modules.keySet().size()
     val modulesArray = new Array[Module[Tensor[Double], Tensor[Double], Double]](moduleLength)
     for (k <- modules.keySet().toArray) {
       val key = k.asInstanceOf[Double]
-      modulesArray(key.toInt - 1) = modules.get(key).asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
+      modulesArray(key.toInt - 1) = modules
+        .get(key)
+        .asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
     }
     modulesArray
   }

@@ -233,7 +233,8 @@ object GoogleNet {
     concat
   }
 
-  def getModelCaffe[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
+  def getModelCaffe[D: ClassTag](classNum: Int)
+    (implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
     def inception[D: ClassTag](inputSize: Int, config: Table)(
       implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
       val concat = new Concat[D](2)

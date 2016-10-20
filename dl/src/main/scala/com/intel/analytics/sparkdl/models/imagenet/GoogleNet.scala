@@ -58,7 +58,8 @@ object GoogleNet_v1 {
     concat
   }
 
-  def apply[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
+  def apply[D: ClassTag](classNum: Int)
+    (implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
     val feature1 = new Sequential[Tensor[D], Tensor[D], D]
     feature1.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3, 1, false).setInitMethod(Xavier)
       .setName("conv1/7x7_s2"))
@@ -139,7 +140,8 @@ object GoogleNet_v1 {
 }
 
 object GoogleNet_v2 {
-  def apply[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
+  def apply[D: ClassTag](classNum: Int)
+    (implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
     val features1 = new Sequential[Tensor[D], Tensor[D], D]
     features1.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3, 1, false)
       .setName("conv1/7x7_s2"))

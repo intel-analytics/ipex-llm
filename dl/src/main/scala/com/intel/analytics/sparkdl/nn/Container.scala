@@ -25,7 +25,9 @@ import com.intel.analytics.sparkdl.utils.{Activities, Table}
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-private[nn] abstract class Container[A <: Activities : ClassTag, B <: Activities : ClassTag, @specialized(Float, Double) T: ClassTag](
+private[nn] abstract class Container[A <: Activities : ClassTag,
+    B <: Activities : ClassTag, @specialized(Float, Double)
+    T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Module[A, B, T] {
 
   def add(module: Module[_ <: Activities, _ <: Activities, T]): this.type = {
@@ -55,7 +57,8 @@ private[nn] abstract class Container[A <: Activities : ClassTag, B <: Activities
     this
   }
 
-  override def getTimes(): Array[(Module[_ <: Activities, _ <: Activities, T], Long, Long)] = {
+  override def getTimes():
+    Array[(Module[_ <: Activities, _ <: Activities, T], Long, Long)] = {
     this.modules.flatMap(_.getTimes()).toArray
   }
 
@@ -76,10 +79,11 @@ private[nn] abstract class Container[A <: Activities : ClassTag, B <: Activities
     (weights.toArray, gradWeights.toArray)
   }
 
-  override def findModel(paramOffset: Int,
-    indexes: Array[Int]): (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = {
+  override def findModel(paramOffset: Int, indexes: Array[Int]):
+    (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = {
     var offset = paramOffset
-    var result: Module[_ <: Activities, _ <: Activities, T] = this.asInstanceOf[Module[Activities, Activities, T]]
+    var result: Module[_ <: Activities, _ <: Activities, T]
+      = this.asInstanceOf[Module[Activities, Activities, T]]
     var newIndexes = indexes
     var i = 0
     modules.foreach(m => {

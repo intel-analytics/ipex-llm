@@ -44,7 +44,11 @@ class Concat[T: ClassTag](val dimension: Int)(
     val outs = new Array[Tensor[T]](this.modules.length)
     var i = 0
     while (i < this.modules.length) {
-      val currentOutput = this.modules(i).asInstanceOf[Module[Activities, Activities, T]].updateOutput(input.asInstanceOf[Activities]).asInstanceOf[Tensor[T]]
+      val currentOutput = this.modules(i)
+        .asInstanceOf[Module[Activities, Activities, T]]
+        .updateOutput(input.asInstanceOf[Activities])
+        .asInstanceOf[Tensor[T]]
+
       outs(i) = currentOutput.asInstanceOf[Tensor[T]]
       if (i == 0) {
         this.size = currentOutput.size()
@@ -103,8 +107,13 @@ class Concat[T: ClassTag](val dimension: Int)(
     var i = 0
     while (i < this.modules.length) {
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
-      val currentGradInput = this.modules(i).asInstanceOf[Module[Activities, Activities, T]].updateGradInput(input.asInstanceOf[Activities],
-        gradOutput.narrow(dimension, offset, currentOutput.size(dimension)).asInstanceOf[Activities]).asInstanceOf[Tensor[T]]
+      val currentGradInput = this.modules(i)
+        .asInstanceOf[Module[Activities, Activities, T]]
+        .updateGradInput(
+          input.asInstanceOf[Activities],
+          gradOutput.narrow(dimension, offset, currentOutput.size(dimension))
+            .asInstanceOf[Activities])
+        .asInstanceOf[Tensor[T]]
 
       if (currentGradInput != null) {
         if (i == 0) {
@@ -130,8 +139,8 @@ class Concat[T: ClassTag](val dimension: Int)(
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
       this.modules(i).asInstanceOf[Module[Activities, Activities, T]].accGradParameters(
         input.asInstanceOf[Activities],
-        gradOutput.narrow(dimension, offset, currentOutput.size(dimension)).asInstanceOf[Activities],
-        scale)
+        gradOutput.narrow(dimension, offset, currentOutput.size(dimension))
+          .asInstanceOf[Activities], scale)
 
       i += 1
       offset += currentOutput.size(dimension)
@@ -179,8 +188,10 @@ class Concat[T: ClassTag](val dimension: Int)(
     offset = 1
     while (i < this.modules.length) {
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
-      val currentGradInput = this.modules(i).asInstanceOf[Module[Activities, Activities, T]].backward(input.asInstanceOf[Activities],
-        gradouts(i).asInstanceOf[Activities]).asInstanceOf[Tensor[T]]
+      val currentGradInput = this.modules(i)
+        .asInstanceOf[Module[Activities, Activities, T]]
+        .backward(input.asInstanceOf[Activities], gradouts(i).asInstanceOf[Activities])
+        .asInstanceOf[Tensor[T]]
 
       before = System.nanoTime()
       if (currentGradInput != null) {
@@ -266,7 +277,8 @@ class Concat[T: ClassTag](val dimension: Int)(
     val extlast = "       "
     s"nn.Concat {$line${tab}input$line${
       modules.zipWithIndex
-        .map { case (model: Module[Tensor[T], Tensor[T], T], index: Int) => s"$tab$next(${index + 1}): ${
+        .map { case (model: Module[Tensor[_], Tensor[_], T], index: Int)
+        => s"$tab$next(${index + 1}): ${
           if (index == modules.length - 1) {
             model.setLine(line + tab + extlast)
           } else {

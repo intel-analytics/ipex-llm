@@ -24,9 +24,11 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 object VggLike {
-  def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+  def apply[T: ClassTag](classNum: Int)
+    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
     val vggBnDo = new Sequential[Tensor[T], Tensor[T], T]()
-    def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[Tensor[T], Tensor[T], T] = {
+    def convBNReLU(nInputPlane: Int, nOutPutPlane: Int)
+      : Sequential[Tensor[T], Tensor[T], T] = {
       vggBnDo.add(new SpatialConvolution[T](nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
       vggBnDo.add(new SpatialBatchNormalization[T](nOutPutPlane, 1e-3))
       vggBnDo.add(new ReLU[T](true))

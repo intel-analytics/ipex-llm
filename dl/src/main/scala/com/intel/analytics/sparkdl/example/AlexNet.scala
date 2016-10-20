@@ -45,7 +45,7 @@ object AlexNet {
     val times = dtype.toLowerCase match {
       case "float" =>
         val input = Tensor[Float](batchSize, 3, 224, 224).fill(0.5f)
-        val model = getModelCaffeOWT[Float](1000).asInstanceOf[Module[Tensor[Float], Tensor[Float], Float]]
+        val model = getModelCaffeOWT[Float](1000)
         val (parm, grad) = model.getParameters()
         println(model)
         println(parm.nElement())
@@ -79,7 +79,7 @@ object AlexNet {
         model.getTimes()
       case "double" =>
         val input = Tensor[Double](batchSize, 3, 224, 224).fill(0.5)
-        val model = getModelCaffeOWT[Double](1000).asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
+        val model = getModelCaffeOWT[Double](1000)
         val (parm, grad) = model.getParameters()
         println(model)
         println(parm.nElement())
@@ -119,7 +119,7 @@ object AlexNet {
 
     var n = 0
     println(times.map(t => ( {
-      n += 1;
+      n += 1
       s"${t._1}-$n"
     }, (t._2 + t._3) / 1e9 / iter,
       t._2 / 1e9 / iter, t._3 / 1e9 / iter))
@@ -127,7 +127,7 @@ object AlexNet {
     n = 0
     println(times.filter(_._1.isInstanceOf[SpatialConvolution[_]])
       .map(t => ( {
-        n += 1;
+        n += 1
         s"${t._1}-$n"
       }, t._1.asInstanceOf[SpatialConvolution[_]]))
       .map(t => (t._1, t._2.getIm2ColTime() / 1e9 / iter, t._2.getCol2ImgTime() / 1e9 / iter))
@@ -137,7 +137,8 @@ object AlexNet {
   }
 
   // This is AlexNet that was presented in the One Weird Trick paper. http://arxiv.org/abs/1404.5997
-  def getModel[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+  def getModel[T: ClassTag](classNum: Int)
+    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
     val feature = new Sequential[Tensor[T], Tensor[T], T]
     feature.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2))
     feature.add(new ReLU[T](true))
@@ -173,7 +174,8 @@ object AlexNet {
     model
   }
 
-  def getModelCaffeOWT[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+  def getModelCaffeOWT[T: ClassTag](classNum: Int)
+    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
     val feature = new Sequential[Tensor[T], Tensor[T], T]
     feature.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2))
     feature.add(new ReLU[T](true))

@@ -52,8 +52,8 @@ trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable wit
     this
   }
 
-  def test(module: Module[_ <: Activities, _ <: Activities, T], iter: Int, wallClockNanoTime: Option[Long] = None)
-  : Array[Double] = {
+  def test(module: Module[_ <: Activities, _ <: Activities, T],
+    iter: Int, wallClockNanoTime: Option[Long] = None): Array[Double] = {
     if (testDataSet.isDefined && iter % testInterval == 0) {
       evalMethods.map(evalM => {
         val evaluationBroadcast = testDataSet.get.getSparkContext().broadcast(evalM._2)

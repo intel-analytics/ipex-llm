@@ -37,7 +37,8 @@ object Cifar {
   val classNumber = 10
 
 
-  def getOptim(model: Module[Tensor[Double], Tensor[Double], Double], params: Params, pm: ParameterManager[Double],
+  def getOptim(model: Module[Tensor[Double],
+    Tensor[Double], Double], params: Params, pm: ParameterManager[Double],
     dataSets: DataSet[_, Double] with HasEpoch, config: Table,
     metrics: Metrics): DistributedOptimizer[Double] = {
     val optim = params.masterOptM match {
@@ -357,7 +358,8 @@ object Cifar {
       case "vggBnDo" =>
         val vggBnDo = new Sequential[Tensor[T], Tensor[T], T]()
 
-        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[Tensor[T], Tensor[T], T] = {
+        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int):
+          Sequential[Tensor[T], Tensor[T], T] = {
           vggBnDo.add(new SpatialConvolution[T](nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
           vggBnDo.add(new SpatialBatchNormalization[T](nOutPutPlane, 1e-3))
           vggBnDo.add(new ReLU[T](true))
@@ -402,7 +404,8 @@ object Cifar {
       case "vggBn" =>
         val vggBn = new Sequential[Tensor[T], Tensor[T], T]()
 
-        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[Tensor[T], Tensor[T], T] = {
+        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int):
+          Sequential[Tensor[T], Tensor[T], T] = {
           vggBn.add(new SpatialConvolution[T](nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
           vggBn.add(new SpatialBatchNormalization[T](nOutPutPlane, 1e-3))
           vggBn.add(new ReLU[T](true))
@@ -445,7 +448,8 @@ object Cifar {
       case "vggDo" =>
         val vggDo = new Sequential[Tensor[T], Tensor[T], T]()
 
-        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[Tensor[T], Tensor[T], T] = {
+        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int):
+        Sequential[Tensor[T], Tensor[T], T] = {
           vggDo.add(new SpatialConvolution[T](nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
           vggDo.add(new ReLU[T](true))
           vggDo

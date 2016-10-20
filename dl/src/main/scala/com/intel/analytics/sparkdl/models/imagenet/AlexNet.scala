@@ -64,7 +64,8 @@ object AlexNet_OWT {
  * ILSVRC2012 winner
  */
 object AlexNet {
-  def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+  def apply[T: ClassTag](classNum: Int)
+    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
     val model = new Sequential[Tensor[T], Tensor[T], T]()
     model.add(new SpatialConvolution[T](3, 96, 11, 11, 4, 4, 0, 0, 1, false).setName("conv1"))
     model.add(new ReLU[T](true).setName("relu1"))
