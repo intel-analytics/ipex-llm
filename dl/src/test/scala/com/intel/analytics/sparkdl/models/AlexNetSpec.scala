@@ -177,7 +177,7 @@ gradInput = model.gradInput
     println(s"gradInputTestAbs:$abss")
 
     val (weights, grad) = model.getParameters()
-    val modelTorch = TH.map("model").asInstanceOf[Module[Double]]
+    val modelTorch = TH.map("model").asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
     val (weightsTorch, gradTorch) = modelTorch.getParameters()
     sgd.optimize(_ => (errTest, grad), weights, state, state)
     abss = 0.0

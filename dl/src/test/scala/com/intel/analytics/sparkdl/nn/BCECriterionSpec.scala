@@ -45,8 +45,8 @@ class BCECriterionSpec extends FlatSpec with Matchers {
   }
 
   "Binary LR " should "converge correctly" in {
-    def specifiedModel(): Module[Double] = {
-      val model = new Sequential[Double]()
+    def specifiedModel(): Module[Tensor[Double], Tensor[Double], Double] = {
+      val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
       val linear = new Linear[Double](2, 1)
       linear.weight(Array(1, 1)) = 0.1
       linear.weight(Array(1, 2)) = -0.6
@@ -56,14 +56,14 @@ class BCECriterionSpec extends FlatSpec with Matchers {
       model
     }
 
-    def getTrainModel(): Module[Double] = {
-      val model = new Sequential[Double]()
+    def getTrainModel(): Module[Tensor[Double], Tensor[Double], Double] = {
+      val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
       model.add(new Linear[Double](2, 1))
       model.add(new Sigmoid[Double]())
       model
     }
 
-    def feval(grad: Tensor[Double], module: Module[Double], criterion: Criterion[Double],
+    def feval(grad: Tensor[Double], module: Module[Tensor[Double], Tensor[Double], Double], criterion: Criterion[Double],
       input: Tensor[Double], target: Tensor[Double])(weights: Tensor[Double])
     : (Double, Tensor[Double]) = {
       module.training()

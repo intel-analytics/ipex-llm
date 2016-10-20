@@ -23,7 +23,7 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 class Sigmoid[@specialized(Float, Double) T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends Module[T] {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input)

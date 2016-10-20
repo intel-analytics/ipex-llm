@@ -19,14 +19,20 @@ package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.utils.Activities
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe._
 
-abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
-  var output: Tensor[T] = Tensor[T]()
-  var gradInput: Tensor[T] = Tensor[T]()
+abstract class TensorModule[@specialized(Float, Double) T: ClassTag]
+  (implicit ev: TensorNumeric[T]) extends Module[Tensor[T], Tensor[T], T]
+
+abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag, @specialized(Float, Double) T: ClassTag](
+  implicit ev: TensorNumeric[T]) extends Serializable {
+  var output: B = Activities[B, T]().asInstanceOf[B]
+  var gradInput: A = Activities[A, T]().asInstanceOf[A]
 
   var gradWeight: Tensor[T] = null
   var gradBias: Tensor[T] = null
@@ -44,7 +50,7 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
   }
 
   // list of sub modules
-  val modules: ArrayBuffer[Module[T]] = ArrayBuffer[Module[T]]()
+  val modules: ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]] = ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]]()
 
   protected var train: Boolean = true
 
@@ -52,7 +58,7 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
 
   protected var backwardTime = 0L
 
-  def getTimes(): Array[(Module[T], Long, Long)] = {
+  def getTimes(): Array[(Module[_ <: Activities, _ <: Activities, T], Long, Long)] = {
     Array((this, forwardTime, backwardTime))
   }
 
@@ -61,14 +67,14 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
     backwardTime = 0
   }
 
-  final def forward(input: Tensor[T]): Tensor[T] = {
+  final def forward(input: A): B = {
     val before = System.nanoTime()
     val result = updateOutput(input)
     forwardTime += System.nanoTime() - before
     result
   }
 
-  def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  def backward(input: A, gradOutput: B): A = {
     val before = System.nanoTime()
     val result = updateGradInput(input, gradOutput)
     accGradParameters(input, gradOutput)
@@ -76,19 +82,19 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
     result
   }
 
-  def updateOutput(input: Tensor[T]): Tensor[T] = {
-    this.output = input
-    input
+  def updateOutput(input: A): B = {
+    this.output = input.asInstanceOf[B]
+    output
   }
 
-  def updateOutput(input: Tensor[T], flag: Int): Tensor[T] = {
-    this.output = input
-    input
+  def updateOutput(input: A, flag: Int): B = {
+    this.output = input.asInstanceOf[B]
+    output
   }
 
-  def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T]
+  def updateGradInput(input: A, gradOutput: B): A
 
-  def accGradParameters(input: Tensor[T], gradOutput: Tensor[T], scale: Double = 1.0): Unit = {}
+  def accGradParameters(input: A, gradOutput: B, scale: Double = 1.0): Unit = {}
 
   def zeroGradParameters(): Unit = {}
 
@@ -96,7 +102,7 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
 
   def getParameters(): (Tensor[T], Tensor[T]) = {
     val (weightParameters, gradParameters) = this.parameters()
-    return (Module.flatten(weightParameters), Module.flatten(gradParameters))
+    (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
   }
 
   /**
@@ -118,7 +124,7 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
    * @return module ref, offset(ignore), indexes from the current module
    */
   def findModel(paramOffset: Int,
-    indexes: Array[Int] = Array()): (Module[T], Int, Array[Int]) = (this, paramOffset, indexes)
+    indexes: Array[Int] = Array()): (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
 
   def evaluate(): this.type = {
     train = false
@@ -142,10 +148,10 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
     if (obj == null) {
       return false
     }
-    if (!obj.isInstanceOf[Module[T]]) {
+    if (!obj.isInstanceOf[Module[_ <: Activities, _ <: Activities, T]]) {
       return false
     }
-    val other = obj.asInstanceOf[Module[T]]
+    val other = obj.asInstanceOf[Module[_ <: Activities, _ <: Activities, T]]
     if (this.eq(other)) {
       return true
     }
@@ -196,23 +202,23 @@ abstract class Module[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serial
     hash
   }
 
-  def cloneModule(): Module[T] = {
+  def cloneModule(): Module[A, B, T] = {
     SerializationUtils.clone(this)
   }
 }
 
 object Module {
-  def flatten[@specialized(Float, Double) T: ClassTag](paramters: Array[Tensor[T]])(
+  def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    val compactedTensor = isCompact(paramters)
+    val compactedTensor = isCompact(parameters)
     if (compactedTensor != null) {
       return compactedTensor
     }
     var i = 0
     var length = 0
-    while (i < paramters.length) {
-      require(paramters(i).isContiguous())
-      length += paramters(i).nElement()
+    while (i < parameters.length) {
+      require(parameters(i).isContiguous())
+      length += parameters(i).nElement()
       i += 1
     }
 
@@ -221,11 +227,11 @@ object Module {
 
     i = 0
     var offset = 0
-    while (i < paramters.length) {
-      System.arraycopy(paramters(i).storage().array(), paramters(i).storageOffset() - 1,
-        resultStorage.array(), offset, paramters(i).nElement())
-      paramters(i).set(resultStorage, offset + 1, paramters(i).size(), paramters(i).stride())
-      offset += paramters(i).nElement()
+    while (i < parameters.length) {
+      System.arraycopy(parameters(i).storage().array(), parameters(i).storageOffset() - 1,
+        resultStorage.array(), offset, parameters(i).nElement())
+      parameters(i).set(resultStorage, offset + 1, parameters(i).size(), parameters(i).stride())
+      offset += parameters(i).nElement()
       i += 1
     }
 

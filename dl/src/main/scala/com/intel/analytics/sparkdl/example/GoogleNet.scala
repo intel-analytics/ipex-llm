@@ -30,21 +30,21 @@ import scala.reflect.ClassTag
 
 object GoogleNet {
   def getModel[D: ClassTag](classNum: Int, modelName: String = "")(
-    implicit ev: TensorNumeric[D]): Module[D] = {
+    implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
     modelName match {
       case "googlenet-bn" =>
         def inception(inputSize: Int, config: Table)(
-          implicit ev: TensorNumeric[D]): Module[D] = {
+          implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
           val concat = new Concat[D](2)
           if (config[Table](1)[Int](1) != 0) {
-            val conv1 = new Sequential[D]
+            val conv1 = new Sequential[Tensor[D], Tensor[D], D]
             conv1.add(new SpatialConvolution[D](inputSize, config[Table](1)(1), 1, 1, 1, 1))
             conv1.add(new SpatialBatchNormalization(config[Table](1)(1), 1e-3))
             conv1.add(new ReLU[D](true))
             concat.add(conv1)
           }
 
-          val conv3 = new Sequential[D]
+          val conv3 = new Sequential[Tensor[D], Tensor[D], D]
           conv3.add(new SpatialConvolution[D](inputSize, config[Table](2)(1), 1, 1, 1, 1))
           conv3.add(new SpatialBatchNormalization(config[Table](2)(1), 1e-3))
           conv3.add(new ReLU[D](true))
@@ -54,7 +54,7 @@ object GoogleNet {
           conv3.add(new ReLU[D](true))
           concat.add(conv3)
 
-          val conv3xx = new Sequential[D]
+          val conv3xx = new Sequential[Tensor[D], Tensor[D], D]
           conv3xx.add(new SpatialConvolution[D](inputSize, config[Table](3)(1), 1, 1, 1, 1))
           conv3xx.add(new SpatialBatchNormalization(config[Table](3)(1), 1e-3))
           conv3xx.add(new ReLU[D](true))
@@ -70,7 +70,7 @@ object GoogleNet {
           conv3xx.add(new ReLU[D](true))
           concat.add(conv3xx)
 
-          val pool = new Sequential[D]
+          val pool = new Sequential[Tensor[D], Tensor[D], D]
           pool.add(new SpatialZeroPadding[D](1, 1, 1, 1))
           config[Table](4)[String](1) match {
             case "max" => pool.add(new SpatialMaxPooling[D](3, 3, 1, 1).ceil())
@@ -87,7 +87,7 @@ object GoogleNet {
 
           concat
         }
-        val features = new Sequential[D]
+        val features = new Sequential[Tensor[D], Tensor[D], D]
         features.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3))
         features.add(new SpatialBatchNormalization(64, 1e-3))
         features.add(new ReLU[D](true))
@@ -107,7 +107,7 @@ object GoogleNet {
         features.add(inception(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96))))
         features.add(inception(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96))))
 
-        val mainBranch = new Sequential[D]
+        val mainBranch = new Sequential[Tensor[D], Tensor[D], D]
         mainBranch.add(inception(576, T(T(0), T(128, 192), T(192, 256), T("max", 0))))
         mainBranch.add(new SpatialConvolution[D](1024, 1024, 2, 2, 2, 2))
         mainBranch.add(new SpatialBatchNormalization(1024, 1e-3))
@@ -118,7 +118,7 @@ object GoogleNet {
         mainBranch.add(new Linear[D](1024, classNum))
         mainBranch.add(new LogSoftMax[D])
 
-        val auxClassifier = new Sequential[D]
+        val auxClassifier = new Sequential[Tensor[D], Tensor[D], D]
         auxClassifier.add(new SpatialAveragePooling[D](5, 5, 3, 3).ceil())
         auxClassifier.add(new SpatialConvolution[D](576, 128, 1, 1, 1, 1))
         auxClassifier.add(new SpatialBatchNormalization(128, 1e-3))
@@ -132,13 +132,13 @@ object GoogleNet {
         splitter.add(mainBranch)
         splitter.add(auxClassifier)
 
-        val model = new Sequential[D]
+        val model = new Sequential[Tensor[D], Tensor[D], D]
         model.add(features)
         model.add(splitter)
 
         model
       case default =>
-        val features = new Sequential[D]
+        val features = new Sequential[Tensor[D], Tensor[D], D]
         features.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3))
         features.add(new ReLU[D](true))
         features.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil())
@@ -156,7 +156,7 @@ object GoogleNet {
         features.add(inception(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96))))
         features.add(inception(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96))))
 
-        val mainBranch = new Sequential[D]
+        val mainBranch = new Sequential[Tensor[D], Tensor[D], D]
         mainBranch.add(inception(576, T(T(0), T(128, 192), T(192, 256), T("max", 0))))
         mainBranch.add(new SpatialConvolution[D](1024, 1024, 2, 2, 2, 2))
         mainBranch.add(inception(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128))))
@@ -166,7 +166,7 @@ object GoogleNet {
         mainBranch.add(new Linear[D](1024, classNum))
         mainBranch.add(new LogSoftMax[D])
 
-        val auxClassifier = new Sequential[D]
+        val auxClassifier = new Sequential[Tensor[D], Tensor[D], D]
         auxClassifier.add(new SpatialAveragePooling[D](5, 5, 3, 3).ceil())
         auxClassifier.add(new SpatialConvolution[D](576, 128, 1, 1, 1, 1))
         auxClassifier.add(new View[D](128 * 4 * 4).setNumInputDims(3))
@@ -179,7 +179,7 @@ object GoogleNet {
         splitter.add(mainBranch)
         splitter.add(auxClassifier)
 
-        val model = new Sequential[D]
+        val model = new Sequential[Tensor[D], Tensor[D], D]
         model.add(features)
         model.add(splitter)
 
@@ -188,16 +188,16 @@ object GoogleNet {
   }
 
   def inception[D: ClassTag](inputSize: Int, config: Table)(
-    implicit ev: TensorNumeric[D]): Module[D] = {
+    implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
     val concat = new Concat[D](2)
     if (config[Table](1)[Int](1) != 0) {
-      val conv1 = new Sequential[D]
+      val conv1 = new Sequential[Tensor[D], Tensor[D], D]
       conv1.add(new SpatialConvolution[D](inputSize, config[Table](1)(1), 1, 1, 1, 1))
       conv1.add(new ReLU[D](true))
       concat.add(conv1)
     }
 
-    val conv3 = new Sequential[D]
+    val conv3 = new Sequential[Tensor[D], Tensor[D], D]
     conv3.add(new SpatialConvolution[D](inputSize, config[Table](2)(1), 1, 1, 1, 1))
     conv3.add(new ReLU[D](true))
     conv3.add(new SpatialConvolution[D](config[Table](2)(1),
@@ -205,7 +205,7 @@ object GoogleNet {
     conv3.add(new ReLU[D](true))
     concat.add(conv3)
 
-    val conv3xx = new Sequential[D]
+    val conv3xx = new Sequential[Tensor[D], Tensor[D], D]
     conv3xx.add(new SpatialConvolution[D](inputSize, config[Table](3)(1), 1, 1, 1, 1))
     conv3xx.add(new ReLU[D](true))
     conv3xx.add(new SpatialConvolution[D](config[Table](3)(1),
@@ -216,7 +216,7 @@ object GoogleNet {
     conv3xx.add(new ReLU[D](true))
     concat.add(conv3xx)
 
-    val pool = new Sequential[D]
+    val pool = new Sequential[Tensor[D], Tensor[D], D]
     pool.add(new SpatialZeroPadding[D](1, 1, 1, 1))
     config[Table](4)[String](1) match {
       case "max" => pool.add(new SpatialMaxPooling[D](3, 3, 1, 1).ceil())
@@ -233,17 +233,17 @@ object GoogleNet {
     concat
   }
 
-  def getModelCaffe[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[D] = {
+  def getModelCaffe[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
     def inception[D: ClassTag](inputSize: Int, config: Table)(
-      implicit ev: TensorNumeric[D]): Module[D] = {
+      implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
       val concat = new Concat[D](2)
-      val conv1 = new Sequential[D]
+      val conv1 = new Sequential[Tensor[D], Tensor[D], D]
       conv1.add(new SpatialConvolution[D](inputSize,
         config[Table](1)(1), 1, 1, 1, 1).setInitMethod(Xavier))
       conv1.add(new ReLU[D](true))
       concat.add(conv1)
 
-      val conv3 = new Sequential[D]
+      val conv3 = new Sequential[Tensor[D], Tensor[D], D]
       conv3.add(new SpatialConvolution[D](inputSize, config[Table](2)(1), 1, 1, 1, 1).
         setInitMethod(Xavier))
       conv3.add(new ReLU[D](true))
@@ -252,7 +252,7 @@ object GoogleNet {
       conv3.add(new ReLU[D](true))
       concat.add(conv3)
 
-      val conv5 = new Sequential[D]
+      val conv5 = new Sequential[Tensor[D], Tensor[D], D]
       conv5.add(new SpatialConvolution[D](inputSize, config[Table](3)(1), 1, 1, 1, 1).
         setInitMethod(Xavier))
       conv5.add(new ReLU[D](true))
@@ -261,7 +261,7 @@ object GoogleNet {
       conv5.add(new ReLU[D](true))
       concat.add(conv5)
 
-      val pool = new Sequential[D]
+      val pool = new Sequential[Tensor[D], Tensor[D], D]
       pool.add(new SpatialMaxPooling[D](3, 3, 1, 1, 1, 1))
       pool.add(new SpatialConvolution[D](inputSize, config[Table](4)(1), 1, 1, 1, 1).
         setInitMethod(Xavier))
@@ -270,7 +270,7 @@ object GoogleNet {
       concat
     }
 
-    val features = new Sequential[D]
+    val features = new Sequential[Tensor[D], Tensor[D], D]
     features.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3).setInitMethod(Xavier))
     features.add(new ReLU[D](true))
     features.add(new SpatialMaxPooling[D](3, 3, 2, 2, 1, 1))

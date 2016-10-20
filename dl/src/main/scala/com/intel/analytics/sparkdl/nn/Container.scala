@@ -17,16 +17,18 @@
 
 package com.intel.analytics.sparkdl.nn
 
+import com.intel.analytics.sparkdl.utils.Table
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.sparkdl.utils.{Activities, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-private[nn] abstract class Container[@specialized(Float, Double) T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends Module[T] {
+private[nn] abstract class Container[A <: Activities : ClassTag, B <: Activities : ClassTag, @specialized(Float, Double) T: ClassTag](
+  implicit ev: TensorNumeric[T]) extends Module[A, B, T] {
 
-  def add(module: Module[T]): this.type = {
+  def add(module: Module[_ <: Activities, _ <: Activities, T]): this.type = {
     modules += module
     this
   }
@@ -53,8 +55,8 @@ private[nn] abstract class Container[@specialized(Float, Double) T: ClassTag](
     this
   }
 
-  override def getTimes(): Array[(Module[T], Long, Long)] = {
-    this.modules.map(_.getTimes()).flatten.toArray
+  override def getTimes(): Array[(Module[_ <: Activities, _ <: Activities, T], Long, Long)] = {
+    this.modules.flatMap(_.getTimes()).toArray
   }
 
   override def resetTimes(): Unit = {
@@ -75,9 +77,9 @@ private[nn] abstract class Container[@specialized(Float, Double) T: ClassTag](
   }
 
   override def findModel(paramOffset: Int,
-    indexes: Array[Int]): (Module[T], Int, Array[Int]) = {
+    indexes: Array[Int]): (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = {
     var offset = paramOffset
-    var result: Module[T] = this
+    var result: Module[_ <: Activities, _ <: Activities, T] = this.asInstanceOf[Module[Activities, Activities, T]]
     var newIndexes = indexes
     var i = 0
     modules.foreach(m => {

@@ -18,14 +18,15 @@
 package com.intel.analytics.sparkdl.models.cifar
 
 import com.intel.analytics.sparkdl.nn.{LogSoftMax, _}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
 object VggLike {
-  def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[T] = {
-    val vggBnDo = new Sequential[T]()
-    def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[T] = {
+  def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+    val vggBnDo = new Sequential[Tensor[T], Tensor[T], T]()
+    def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[Tensor[T], Tensor[T], T] = {
       vggBnDo.add(new SpatialConvolution[T](nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
       vggBnDo.add(new SpatialBatchNormalization[T](nOutPutPlane, 1e-3))
       vggBnDo.add(new ReLU[T](true))
@@ -55,7 +56,7 @@ object VggLike {
     vggBnDo.add(new SpatialMaxPooling[T](2, 2, 2, 2).ceil())
     vggBnDo.add(new View[T](512))
 
-    val classifier = new Sequential[T]()
+    val classifier = new Sequential[Tensor[T], Tensor[T], T]()
     classifier.add(new Dropout[T](0.5))
     classifier.add(new Linear[T](512, 512))
     classifier.add(new BatchNormalization[T](512))

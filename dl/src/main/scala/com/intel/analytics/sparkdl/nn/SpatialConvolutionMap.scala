@@ -31,7 +31,7 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val padW: Int = 0, // The additional zeros added per width to the input planes.
   val padH: Int = 0 // The additional zeros added per height to the input planes.
 
-)(implicit ev: TensorNumeric[T]) extends Module[T] {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val nInputPlane = ev.toType[Int](connTable.select(2, 1).max())
   val nOutputPlane = ev.toType[Int](connTable.select(2, 2).max())
   val weight: Tensor[T] = Tensor[T](connTable.size(1), kH, kW)
