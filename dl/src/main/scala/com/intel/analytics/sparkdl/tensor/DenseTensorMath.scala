@@ -57,7 +57,7 @@ object DenseTensorMath {
       val func = new TensorFunc6[T] {
         override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
                           data3: Array[T], offset3: Int): Unit = {
-          data1(offset1) = ev.times(data2(offset2), data3(offset1))
+          data1(offset1) = ev.times(data2(offset2), data3(offset3))
         }
       }
       Apply.apply3[T](self, x, y, func)
@@ -76,7 +76,7 @@ object DenseTensorMath {
       val func = new TensorFunc6[T] {
         override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
                           data3: Array[T], offset3: Int): Unit = {
-          data1(offset1) = ev.divide(data2(offset1), data3(offset2))
+          data1(offset1) = ev.divide(data2(offset2), data3(offset3))
         }
       }
       Apply.apply3[T](self, x, y, func)
