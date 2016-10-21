@@ -836,11 +836,11 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
-  override def cmul(y: Tensor[T]): Tensor[T] = DenseTensorMath.cmul(this, null, y)
+  override def cmul(y: Tensor[T]): Tensor[T] = DenseTensorMath.cmul(this, this, y)
 
   override def cmul(x: Tensor[T], y: Tensor[T]): Tensor[T] = DenseTensorMath.cmul(this, x, y)
 
-  override def cdiv(y: Tensor[T]): Tensor[T] = DenseTensorMath.cdiv(this, null, y)
+  override def cdiv(y: Tensor[T]): Tensor[T] = DenseTensorMath.cdiv(this, this, y)
 
   override def cdiv(x: Tensor[T], y: Tensor[T]): Tensor[T] = DenseTensorMath.cdiv(this, x, y)
 
