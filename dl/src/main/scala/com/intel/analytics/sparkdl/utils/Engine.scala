@@ -33,7 +33,7 @@ object Engine extends Logging {
   /**
    * Work load parallelism
    */
-  private var poolSize: Int = System.getProperty("scala.concurrent.context.maxThreads",
+  private var poolSize: Int = System.getProperty("dl.engine.cores",
     (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
 
   private var engine: ExecutionContext = null
