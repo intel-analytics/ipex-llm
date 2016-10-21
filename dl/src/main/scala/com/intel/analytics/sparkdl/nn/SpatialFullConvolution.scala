@@ -35,8 +35,10 @@ class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
   val padW: Int = 0, // The additional zeros added per width to the input planes.
   val padH: Int = 0, // The additional zeros added per height to the input planes.
   val adjW: Int = 0, // Extra width to add to the output image.
-  val adjH: Int = 0  // Extra height to add to the output image.
-    )(implicit ev: TensorNumeric[T]) extends Module[T] {
+  val adjH: Int = 0, // Extra height to add to the output image.
+  private var initMethod: InitializationMethod = Default
+  )(implicit ev: TensorNumeric[T]) extends Module[T] {
+
   require(adjW <= dW - 1 && adjH <= dH - 1,
     "adjW and adjH must be smaller than dW - 1 and dH - 1 respectively")
 
@@ -45,8 +47,10 @@ class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
 
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
   this.gradBias = Tensor[T](nOutputPlane)
-  val columns = Tensor[T]()
-  val ones = Tensor[T]()
+  @transient
+  val columns : Tensor[T] = null
+  @transient
+  val ones : Tensor[T] = null
   reset()
 
   private var im2colTime = 0L
@@ -57,18 +61,32 @@ class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
   def getCol2ImgTime(): Double = col2imTime
 
   override def reset(): Unit = {
-    reset(0.0)
-  }
-
-  def reset(stdV: Double): Unit = {
-    val stdv = if (stdV != 0) {
-      stdV * math.sqrt(3)
-    } else {
-      1.0 / math.sqrt(kW * kH * nInputPlane)
-    }
-    weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-    if(null != bias) {
-      bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
+    initMethod match {
+      case Default =>
+        val stdv = 1.0 / math.sqrt(kW * kH * nInputPlane)
+        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
+        bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
+      case Xavier =>
+        val fanIn = nInputPlane * kH * kW
+        val fanOut = nOutputPlane * kH * kW
+        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
+        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+        bias.fill(ev.fromType(0))
+      case Bilinear =>
+        require(weight.nDimension() == 4, "weight must be 4 dim")
+        require(kH == kW, "Kernel must be square")
+        val f = Math.ceil(kW / 2.0).toInt
+        val c = (2 * f - 1 - f % 2) / (2.0f * f)
+        val weightArray = weight.storage().array()
+        val weightOffset = weight.storageOffset() - 1
+        var i = 0
+        while(i < weight.nElement()) {
+          val x : Float = i % kW
+          val y : Float = (i / kW) % kH
+          weightArray(i + weightOffset) = ev.fromType[Float](
+            (1f - math.abs(x / f - c)) * (1f - math.abs(y / f - c)))
+          i += 1
+        }
     }
   }
 
