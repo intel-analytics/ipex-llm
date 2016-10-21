@@ -180,8 +180,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
       mlp,
       new MSECriterion[Float],
       new SGD[Float](),
-      T("learningRate" -> 200.0),
-      Trigger.maxEpoch(10000)
+      T("learningRate" -> 20.0),
+      Trigger.maxEpoch(10)
     )
 
     val result = optimizer.optimize()
