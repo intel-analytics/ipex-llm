@@ -18,6 +18,7 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import com.intel.analytics.sparkdl.utils.Engine
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.math._
