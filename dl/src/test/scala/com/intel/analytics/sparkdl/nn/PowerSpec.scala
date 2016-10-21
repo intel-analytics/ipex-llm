@@ -99,4 +99,19 @@ class PowerSpec extends FlatSpec with Matchers {
 
   }
 
+  "A Power(3, 2, 2)" should "generate correct output and grad" in {
+    val input = Tensor(Storage[Double](Array(1.0, 2, 3, 4, 5, 6)), 1, Array(2, 3))
+
+    val gradOutput = Tensor(Storage(Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6)), 1, Array(2, 3))
+
+    val power = new Power[Double](3, 2, 2)
+
+    val output = power.forward(input)
+    val gradInput = power.backward(input, gradOutput)
+
+    output should be (Tensor(Storage(Array(64.0, 216, 512, 1000, 1728, 2744)), 1, Array(2, 3)))
+    gradInput should be (Tensor(Storage(Array(9.6, 43.2, 115.2, 240, 432, 705.6)), 1, Array(2, 3)))
+
+  }
+
 }

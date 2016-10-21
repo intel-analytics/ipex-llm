@@ -71,7 +71,7 @@ class PowerSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A Power(3)" should "generate correct output and grad" in {
-    val layer = new Power[Double](2)
+    val layer = new Power[Double](3)
     val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 1
     input(Array(1, 1, 2)) = 2
@@ -97,7 +97,7 @@ class PowerSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val code = "module = nn.Power(2)\n" +
+    val code = "module = nn.Power(3)\n" +
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
