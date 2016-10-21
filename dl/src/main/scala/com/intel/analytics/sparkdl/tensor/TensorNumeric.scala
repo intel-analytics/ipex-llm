@@ -91,6 +91,8 @@ object TensorNumericMath {
 
     def vSqrt(n: Int, a: Array[T], aOffset: Int, y: Array[T], yOffset: Int): Unit
 
+    def vAbs(n: Int, a: Array[T], aOffset: Int, y: Array[T], yOffset: Int): Unit
+
     def vLog1p(n: Int, a: Array[T], aOffset: Int, y: Array[T], yOffset: Int): Unit
 
     def scal(n: Int, sa: T, sx: Array[T], offset: Int, incx: Int): Unit
@@ -229,6 +231,12 @@ object TensorNumericMath {
       : Unit = {
         require(MKL.isMKLLoaded)
         MKL.vsSqrt(n, a, aOffset, y, yOffset)
+      }
+
+      override def vAbs(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
+      : Unit = {
+        require(MKL.isMKLLoaded)
+        MKL.vsAbs(n, a, aOffset, y, yOffset)
       }
 
       override def vLog1p(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
@@ -391,6 +399,12 @@ object TensorNumericMath {
       : Unit = {
         require(MKL.isMKLLoaded)
         MKL.vdSqrt(n, a, aOffset, y, yOffset)
+      }
+
+      override def vAbs(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int)
+      : Unit = {
+        require(MKL.isMKLLoaded)
+        MKL.vdAbs(n, a, aOffset, y, yOffset)
       }
 
       override def vLog1p(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int)
