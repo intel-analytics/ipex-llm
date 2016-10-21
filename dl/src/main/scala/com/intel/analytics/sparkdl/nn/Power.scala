@@ -56,7 +56,7 @@ class Power[@specialized(Float, Double) T: ClassTag](
       //     -> dy/dx = 2 * scale * (shift + scale * x)
       //              = diff_scale * shift + diff_scale * scale * x
       gradInput.copy(input)
-      gradInput.mul(ev.fromType[Double](diffScale * shift))
+      gradInput.mul(ev.fromType[Double](diffScale * scale))
       if(shift != 0) {
         gradInput.add(ev.fromType(diffScale * shift))
       }
@@ -66,7 +66,7 @@ class Power[@specialized(Float, Double) T: ClassTag](
       //              = scale * power * (scale * x)^power * (scale * x)^(-1)
       //              = power * y / x
       gradInput.fill(ev.fromType[Int](0))
-      gradInput = output.addcdiv(ev.fromType[Double](power), output, input)
+      gradInput.addcdiv(ev.fromType[Double](power), output, input)
     } else {
       gradInput.copy(input)
       if(scale != 1) {
@@ -75,7 +75,7 @@ class Power[@specialized(Float, Double) T: ClassTag](
       if(shift != 0) {
         gradInput.add(ev.fromType[Double](shift))
       }
-      gradInput.cdiv(gradInput, output)
+      gradInput.cdiv(output, gradInput)
       if (diffScale != 1) {
         gradInput.mul(ev.fromType[Double](diffScale))
       }

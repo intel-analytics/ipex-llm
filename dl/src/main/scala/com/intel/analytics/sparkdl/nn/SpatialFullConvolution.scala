@@ -48,9 +48,9 @@ class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
   this.gradBias = Tensor[T](nOutputPlane)
   @transient
-  val columns : Tensor[T] = null
+  var columns : Tensor[T] = null
   @transient
-  val ones : Tensor[T] = null
+  var ones : Tensor[T] = null
   reset()
 
   private var im2colTime = 0L
@@ -161,12 +161,18 @@ class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
     output.resize(batchSize, nOutputPlane, outputHeight, outputWidth)
 
     // Resize temporary columns
+    if(null == columns) {
+      columns = Tensor[T]()
+    }
     columns.resize(nOutputPlane * kW * kH, inputHeight * inputWidth)
     columns.zero()
 
     // Define a buffer of ones, for bias accumulation
     // Note: this buffer can be shared with other modules, it only ever gets increased,
     // and always contains ones.
+    if(null == ones) {
+      ones = Tensor[T]()
+    }
     if (ones.nDimension != 2 || ones.size(1) * ones.size(2) < outputHeight * outputWidth) {
       // Resize plane and fill with ones...
       ones.resize(outputHeight, outputWidth)
