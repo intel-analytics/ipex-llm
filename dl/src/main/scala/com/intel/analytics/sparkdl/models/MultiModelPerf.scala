@@ -17,6 +17,8 @@
 
 package com.intel.analytics.sparkdl.models
 
+import java.util.concurrent.Executors
+
 import com.github.fommil.netlib.{BLAS, NativeSystemBLAS}
 import com.intel.analytics.sparkdl.utils.T
 import com.intel.analytics.sparkdl.models.ResNet.ShortcutType
@@ -27,7 +29,6 @@ import com.intel.analytics.sparkdl.tensor.Tensor
 import scopt.OptionParser
 
 import scala.concurrent.{Await, ExecutionContext, Future}
-import ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
@@ -106,6 +107,16 @@ object MultiModelPerf {
     val gradLength = grads(0).nElement()
     val taskSize = gradLength / param.cores
     val extraTask = gradLength % param.cores
+
+    implicit val context = new ExecutionContext {
+      val threadPool = Executors.newFixedThreadPool(param.cores)
+
+      def execute(runnable: Runnable) {
+        threadPool.submit(runnable)
+      }
+
+      def reportFailure(t: Throwable) {}
+    }
 
     for (i <- 1 to param.warmUp) {
       val time = System.nanoTime()
