@@ -266,33 +266,33 @@ trait TensorMath[T] {
   def cmul(y: Tensor[T]): Tensor[T]
 
   /**
-    * Element-wise multiply
-    * z.cmul(x, y) equals z = x * y
-    *
-    * @param x tensor
-    * @param y tensor
-    * @return current tensor
-    */
+   * Element-wise multiply
+   * z.cmul(x, y) equals z = x * y
+   *
+   * @param x tensor
+   * @param y tensor
+   * @return current tensor
+   */
   def cmul(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
   /**
-    * Element-wise divide
-    * x.cdiv(y) all elements of x divide all elements of y.
-    * x = x / y
-    *
-    * @param y tensor
-    * @return current tensor
-    */
+   * Element-wise divide
+   * x.cdiv(y) all elements of x divide all elements of y.
+   * x = x / y
+   *
+   * @param y tensor
+   * @return current tensor
+   */
   def cdiv(y: Tensor[T]): Tensor[T]
 
   /**
-    * Element-wise divide
-    * z.cdiv(x, y) means z = x / y
-    *
-    * @param x tensor
-    * @param y tensor
-    * @return current tensor
-    */
+   * Element-wise divide
+   * z.cdiv(x, y) means z = x / y
+   *
+   * @param x tensor
+   * @param y tensor
+   * @return current tensor
+   */
   def cdiv(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
   /**
