@@ -26,7 +26,7 @@ class Power[@specialized(Float, Double) T: ClassTag](
   val power: Int,
   val scale : Double = 1,
   val shift : Double = 0)
-(implicit ev: TensorNumeric[T]) extends Module[T] {
+(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val diffScale = power * scale
 

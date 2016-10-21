@@ -85,7 +85,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val padH = 2
     val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
-    val model = new Sequential[Double]()
+    val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
     model.add(layer)
 
     Random.setSeed(3)
@@ -146,7 +146,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val padH = 1
     val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
-    val model = new Sequential[Double]()
+    val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
     model.add(layer)
 
     Random.setSeed(3)
