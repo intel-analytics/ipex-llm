@@ -495,4 +495,171 @@ object NNPrimitive {
       }
     }
   }
+
+  // For SpatialFullConvolution
+  def col2imWithDilationDouble(columns : Tensor[Double], image : Tensor[Double],
+    channels : Int, height : Int, width : Int,
+    kernelH : Int, kernelW : Int,
+    padH : Int, padW : Int,
+    strideH : Int, strideW : Int,
+    dilationH : Int, dilationW : Int) {
+
+    val dataIm = image.storage().array()
+    val dataImOffset = image.storageOffset() - 1
+    val dataCol = columns.storage().array()
+    val dataColOffset = columns.storageOffset() - 1
+
+    val heightCol = (height + 2 * padH -
+      (dilationH * (kernelH - 1) + 1)) / strideH + 1
+    val widthCol = (width + 2 * padW -
+      (dilationW * (kernelW - 1) + 1)) / strideW + 1
+    val channelsCol = channels * kernelH * kernelW
+    var cCol = 0
+    while (cCol < channelsCol) {
+      val wOffset = cCol % kernelW
+      val hOffset = (cCol / kernelW) % kernelH
+      val cIm = cCol / kernelH / kernelW
+      var hCol = 0
+      while (hCol < heightCol) {
+        var wCol = 0
+        while (wCol < widthCol) {
+          val hIm = hCol * strideH - padH + hOffset * dilationH
+          val wIm = wCol * strideW - padW + wOffset * dilationW
+          if (hIm >= 0 && hIm < height && wIm >= 0 && wIm < width) {
+            dataIm((cIm * height + hIm) * width + wIm + dataImOffset) +=
+              dataCol((cCol * heightCol + hCol) * widthCol + wCol + dataColOffset)
+          }
+          wCol += 1
+        }
+        hCol += 1
+      }
+      cCol += 1
+    }
+  }
+
+  def col2imWithDilationFloat(columns : Tensor[Float], image : Tensor[Float],
+    channels : Int, height : Int, width : Int,
+    kernelH : Int, kernelW : Int,
+    padH : Int, padW : Int,
+    strideH : Int, strideW : Int,
+    dilationH : Int, dilationW : Int) {
+
+    val dataIm = image.storage().array()
+    val dataImOffset = image.storageOffset() - 1
+    val dataCol = columns.storage().array()
+    val dataColOffset = columns.storageOffset() - 1
+
+    val heightCol = (height + 2 * padH -
+      (dilationH * (kernelH - 1) + 1)) / strideH + 1
+    val widthCol = (width + 2 * padW -
+      (dilationW * (kernelW - 1) + 1)) / strideW + 1
+    val channelsCol = channels * kernelH * kernelW
+    var cCol = 0
+    while (cCol < channelsCol) {
+      val wOffset = cCol % kernelW
+      val hOffset = (cCol / kernelW) % kernelH
+      val cIm = cCol / kernelH / kernelW
+      var hCol = 0
+      while (hCol < heightCol) {
+        var wCol = 0
+        while (wCol < widthCol) {
+          val hIm = hCol * strideH - padH + hOffset * dilationH
+          val wIm = wCol * strideW - padW + wOffset * dilationW
+          if (hIm >= 0 && hIm < height && wIm >= 0 && wIm < width) {
+            dataIm((cIm * height + hIm) * width + wIm + dataImOffset) +=
+              dataCol((cCol * heightCol + hCol) * widthCol + wCol + dataColOffset)
+          }
+          wCol += 1
+        }
+        hCol += 1
+      }
+      cCol += 1
+    }
+  }
+
+  def im2colWithDilationDouble(image: Tensor[Double], columns: Tensor[Double],
+    channels : Int, height : Int, width : Int,
+    kernelH : Int, kernelW : Int,
+    padH : Int, padW : Int,
+    strideH : Int, strideW : Int,
+    dilationH : Int, dilationW : Int): Unit = {
+
+    val dataIm = image.storage().array()
+    val dataImOffset = image.storageOffset() - 1
+    val dataCol = columns.storage().array()
+    val dataColOffset = columns.storageOffset() - 1
+
+    val heightCol = (height + 2 * padH -
+      (dilationH * (kernelH - 1) + 1)) / strideH + 1
+    val widthCol = (width + 2 * padW -
+      (dilationW * (kernelW - 1) + 1)) / strideW + 1
+    val channelsCol = channels * kernelH * kernelW
+    var cCol = 0
+    while (cCol < channelsCol) {
+      val wOffset = cCol % kernelW
+      val hOffset = (cCol / kernelW) % kernelH
+      val cIm = cCol / kernelH / kernelW
+      var hCol = 0
+      while (hCol < heightCol) {
+        var wCol = 0
+        while (wCol < widthCol) {
+          val hIm = hCol * strideH - padH + hOffset * dilationH
+          val wIm = wCol * strideW - padW + wOffset * dilationW
+          dataCol((cCol * heightCol + hCol) * widthCol + wCol + dataColOffset) =
+            if (hIm >= 0 && wIm >= 0 && hIm < height && wIm < width) {
+              dataIm((cIm * height + hIm) * width + wIm + dataImOffset)
+            }
+            else {
+              0
+            }
+          wCol += 1
+        }
+        hCol += 1
+      }
+      cCol += 1
+    }
+  }
+
+  def im2colWithDilationFloat(image: Tensor[Float], columns: Tensor[Float],
+    channels : Int, height : Int, width : Int,
+    kernelH : Int, kernelW : Int,
+    padH : Int, padW : Int,
+    strideH : Int, strideW : Int,
+    dilationH : Int, dilationW : Int): Unit = {
+
+    val dataIm = image.storage().array()
+    val dataImOffset = image.storageOffset() - 1
+    val dataCol = columns.storage().array()
+    val dataColOffset = columns.storageOffset() - 1
+
+    val heightCol = (height + 2 * padH -
+      (dilationH * (kernelH - 1) + 1)) / strideH + 1
+    val widthCol = (width + 2 * padW -
+      (dilationW * (kernelW - 1) + 1)) / strideW + 1
+    val channelsCol = channels * kernelH * kernelW
+    var cCol = 0
+    while (cCol < channelsCol) {
+      val wOffset = cCol % kernelW
+      val hOffset = (cCol / kernelW) % kernelH
+      val cIm = cCol / kernelH / kernelW
+      var hCol = 0
+      while (hCol < heightCol) {
+        var wCol = 0
+        while (wCol < widthCol) {
+          val hIm = hCol * strideH - padH + hOffset * dilationH
+          val wIm = wCol * strideW - padW + wOffset * dilationW
+          dataCol((cCol * heightCol + hCol) * widthCol + wCol + dataColOffset) =
+            if (hIm >= 0 && wIm >= 0 && hIm < height && wIm < width) {
+              dataIm((cIm * height + hIm) * width + wIm + dataImOffset)
+            }
+            else {
+              0
+            }
+          wCol += 1
+        }
+        hCol += 1
+      }
+      cCol += 1
+    }
+  }
 }
