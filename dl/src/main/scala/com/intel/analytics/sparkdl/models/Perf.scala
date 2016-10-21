@@ -17,10 +17,14 @@
 
 package com.intel.analytics.sparkdl.models
 
-import com.github.fommil.netlib.{NativeSystemBLAS, BLAS}
+import com.github.fommil.netlib.{BLAS, NativeSystemBLAS}
+import com.intel.analytics.sparkdl.models.ResNet.ShortcutType
+import com.intel.analytics.sparkdl.models.imagenet._
+import com.intel.analytics.sparkdl.models.mnist.LeNet5
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.utils.T
 import scopt.OptionParser
 
 import scala.reflect.ClassTag
@@ -29,7 +33,7 @@ import scala.reflect.ClassTag
  * Performance test for the models
  */
 object Perf {
-  val parser = new OptionParser[Params]("Performance Test") {
+  val parser = new OptionParser[PerfParams]("Performance Test") {
     head("Performance Test of Models")
     opt[Int]('b', "batchSize")
       .text("Batch size of input data")
@@ -40,7 +44,7 @@ object Perf {
     opt[Int]('w', "warmUp")
       .text("Warm up iteration number. These iterations will run first and won't be count in " +
         "the perf test result.")
-      .action((v, p) => p.copy(iteration = v))
+      .action((v, p) => p.copy(warmUp = v))
     opt[String]('t', "type")
       .text("Data type. It can be float | double")
       .action((v, p) => p.copy(dataType = v))
@@ -56,7 +60,7 @@ object Perf {
       .action((v, p) => p.copy(module = v))
       .validate(v =>
         if (Set("alexnet", "alexnetowt", "googlenet_v1", "googlenet_v2", "vgg16", "vgg19",
-          "lenet5").
+          "lenet5", "resnet")
           contains(v.toLowerCase())) {
           success
         } else {
@@ -68,7 +72,7 @@ object Perf {
   }
 
   def main(args: Array[String]): Unit = {
-    parser.parse(args, new Params()).map(param => {
+    parser.parse(args, new PerfParams()).map(param => {
       param.dataType match {
         case "float" => performance[Float](param)
         case "double" => performance[Double](param)
@@ -77,7 +81,7 @@ object Perf {
     })
   }
 
-  def performance[T: ClassTag](param: Params)(implicit tn: TensorNumeric[T]): Unit = {
+  def performance[T: ClassTag](param: PerfParams)(implicit tn: TensorNumeric[T]): Unit = {
     val (model, input) = param.module match {
       case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 227, 227))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor[T](param.batchSize, 3, 224, 224))
@@ -86,6 +90,7 @@ object Perf {
       case "vgg16" => (Vgg_16(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
+      case "resnet" => (ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->200)), Tensor[T](param.batchSize, 3, 224, 224))
     }
     input.rand()
     println(model)
@@ -139,10 +144,10 @@ object Perf {
   }
 }
 
-case class Params(
+case class PerfParams(
   batchSize: Int = 128,
-  iteration: Int = 10,
-  warmUp: Int = 5,
+  iteration: Int = 50,
+  warmUp: Int = 10,
   dataType: String = "float",
-  module: String = "alexnet"
+  module: String = "resnet"
 )

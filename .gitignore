@@ -17,6 +17,8 @@ project/plugins/project/
 .worksheet
 *.iml
 .idea/*
+dl/.idea/*
 
 # other
 *.txt
+*.csv

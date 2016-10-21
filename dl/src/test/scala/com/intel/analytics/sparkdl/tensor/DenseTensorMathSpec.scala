@@ -142,12 +142,14 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     val mat1: Tensor[Double] = new DenseTensor(3, 2)
     var i = 0
     mat1.apply1(_ => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     val mat2: Tensor[Double] = new DenseTensor(2, 3)
     i = 0
     mat2.apply1(_ => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     val r = mat2 * mat1
     r(Array(1, 1)) should be(22)
@@ -160,12 +162,14 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     val mat1: Tensor[Double] = new DenseTensor(3, 2)
     var i = 0
     mat1.apply1(_ => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     val mat2: Tensor[Double] = new DenseTensor(3, 2)
     i = 0
     mat2.apply1(_ => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     val r = mat2.t * mat1
     r(Array(1, 1)) should be(35)
@@ -178,12 +182,14 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     val mat1: Tensor[Double] = new DenseTensor(2, 3)
     var i = 0
     mat1.apply1(_ => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     val mat2: Tensor[Double] = new DenseTensor(2, 3)
     i = 0
     mat2.apply1(_ => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     val r = mat2 * mat1.t
     r(Array(1, 1)) should be(14)
@@ -196,12 +202,14 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     val mat1: Tensor[Double] = new DenseTensor(3, 2)
     var i = 0
     mat1.apply1(_ => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     val mat2: Tensor[Double] = new DenseTensor(2, 3)
     i = 0
     mat2.apply1(_ => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     val r = mat1.t * mat2.t
     r(Array(1, 1)) should be(22)
@@ -259,7 +267,8 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor(3, 3)
     var i = 0
     t.apply1(v => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
 
     t.max() should be(9)
@@ -287,7 +296,8 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor(2, 3)
     var i = 0
     t.apply1(e => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     t.sum() should be(21)
 
@@ -413,7 +423,8 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor(2, 3)
     var i = 0
     t.apply1(e => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     t.mean() should be(3.5)
 
@@ -438,7 +449,8 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     val t: Tensor[Double] = new DenseTensor(2, 3, 4)
     var i = 0
     t.apply1(e => {
-      i = i + 1; i
+      i = i + 1;
+      i
     })
     t.mean() should be(12.5)
 
@@ -517,5 +529,182 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
       1.0, 6.0, 2.0, 4.0, 3.0,
       1.0, 6.0, 2.0, 4.0, 3.0
     )), 1, Array(5, 5)))
+  }
+
+  "powx" should "return correct value" in {
+    val t: Tensor[Float] = Tensor(1, 3)
+    var i = 1
+    t.apply1(_ => {
+      i = i + 1;
+      i
+    })
+    val r = Tensor[Float](1, 3)
+    r.pow(t, 2)
+    r should be(Tensor[Float](Storage[Float](
+      Array(4.0f, 9.0f, 16.0f)), 1, Array(1, 3)))
+  }
+
+  "log" should "return correct value" in {
+    val t: Tensor[Float] = Tensor(1, 3)
+    var i = 1
+    t.apply1(_ => {
+      i = i + 1;
+      i
+    })
+    val r = Tensor[Float](1, 3)
+    r.log(t)
+    r should be(Tensor[Float](Storage[Float](
+      Array(0.6931472f, 1.0986123f, 1.3862944f)), 1, Array(1, 3)))
+  }
+
+  "exp" should "return correct value" in {
+    val t: Tensor[Float] = Tensor(1, 3)
+    var i = 1
+    t.apply1(_ => {
+      i = i + 1;
+      i
+    })
+    val r = Tensor[Float](1, 3)
+    r.exp(t)
+    r should be(Tensor[Float](Storage[Float](
+      Array(7.389056f, 20.085537f, 54.59815f)), 1, Array(1, 3)))
+  }
+
+  "sqrt" should "return correct value" in {
+    val t: Tensor[Float] = Tensor(1, 3)
+    var i = 1
+    t.apply1(_ => {
+      i = i + 1;
+      i
+    })
+    val r = Tensor[Float](1, 3)
+    r.sqrt(t)
+    r should be(Tensor[Float](Storage[Float](
+      Array(1.4142135f, 1.7320508f, 2.0f)), 1, Array(1, 3)))
+  }
+
+  "log1p" should "return correct value" in {
+    val t: Tensor[Float] = Tensor(1, 3)
+    var i = 1
+    t.apply1(_ => {
+      i = i + 1;
+      i
+    })
+    val r = Tensor[Float](1, 3)
+    r.log1p(t)
+    r should be(Tensor[Float](Storage[Float](
+      Array(1.0986123f, 1.3862944f, 1.609438f)), 1, Array(1, 3)))
+  }
+
+  "gemm(N, N)" should "return correct value" in {
+    val matrixA = Tensor[Float](2, 3)
+    val matrixB = Tensor[Float](3, 2)
+
+    var i = 0
+    matrixA.apply1(_ => {
+      i = i + 1;
+      i
+    })
+    matrixB.copy(matrixA)
+
+    val matrixC = Tensor[Float](2, 2)
+
+    DenseTensorBLAS.gemm[Float](
+      "N", "N",
+      2, 2, 3,
+      1,
+      matrixA.storage().array(), matrixA.storageOffset() - 1, 2,
+      matrixB.storage().array(), matrixB.storageOffset() - 1, 3,
+      0,
+      matrixC.storage().array(), matrixC.storageOffset() - 1, 2
+    )
+
+    val result = Tensor[Float](Storage(Array[Float](22, 28, 49, 64)), 1, Array(2, 2))
+
+    matrixC should be (result)
+  }
+
+  "gemm(N, T)" should "return correct value" in {
+    val matrixA = Tensor[Float](2, 3)
+    val matrixB = Tensor[Float](2, 3)
+
+    var i = 0
+    matrixA.apply1(_ => {
+      i = i + 1;
+      i
+    })
+    matrixB.copy(matrixA)
+
+    val matrixC = Tensor[Float](2, 2)
+
+    DenseTensorBLAS.gemm[Float](
+      "N", "T",
+      2, 2, 3,
+      1,
+      matrixA.storage().array(), matrixA.storageOffset() - 1, 2,
+      matrixB.storage().array(), matrixB.storageOffset() - 1, 2,
+      0,
+      matrixC.storage().array(), matrixC.storageOffset() - 1, 2
+    )
+
+    val result = Tensor[Float](Storage(Array[Float](35, 44, 44, 56)), 1, Array(2, 2))
+
+    matrixC should be (result)
+  }
+
+  "gemm(T, N)" should "return correct value" in {
+    val matrixA = Tensor[Float](3, 2)
+    val matrixB = Tensor[Float](3, 2)
+
+    var i = 0
+    matrixA.apply1(_ => {
+      i = i + 1;
+      i
+    })
+    matrixB.copy(matrixA)
+
+    val matrixC = Tensor[Float](2, 2)
+
+    DenseTensorBLAS.gemm[Float](
+      "T", "N",
+      2, 2, 3,
+      1,
+      matrixA.storage().array(), matrixA.storageOffset() - 1, 3,
+      matrixB.storage().array(), matrixB.storageOffset() - 1, 3,
+      0,
+      matrixC.storage().array(), matrixC.storageOffset() - 1, 2
+    )
+
+    val result = Tensor[Float](Storage(Array[Float](14, 32, 32, 77)), 1, Array(2, 2))
+
+    matrixC should be (result)
+  }
+
+  "gemm(T, T)" should "return correct value" in {
+    val matrixA = Tensor[Float](3, 2)
+    val matrixB = Tensor[Float](2, 3)
+
+    var i = 0
+    matrixA.apply1(_ => {
+      i = i + 1;
+      i
+    })
+    matrixB.copy(matrixA)
+
+    val matrixC = Tensor[Float](2, 2)
+
+    DenseTensorBLAS.gemm[Float](
+      "T", "T",
+      2, 2, 3,
+      1,
+      matrixA.storage().array(), matrixA.storageOffset() - 1, 3,
+      matrixB.storage().array(), matrixB.storageOffset() - 1, 2,
+      0,
+      matrixC.storage().array(), matrixC.storageOffset() - 1, 2
+    )
+
+    val result = Tensor[Float](Storage(Array[Float](22, 49, 28, 64)), 1, Array(2, 2))
+
+    matrixC should be (result)
   }
 }

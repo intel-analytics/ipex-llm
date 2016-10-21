@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.nn.Module
-import com.intel.analytics.sparkdl.optim.Optimizer.CachedModel
+import com.intel.analytics.sparkdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.sparkdl.tensor.Tensor
 import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
@@ -60,6 +60,7 @@ trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable wit
           coalesce(models.partitions.length, false).
           zipPartitions(models)((data, cacheModelIter) => {
             val localModel = cacheModelIter.next().model
+            localModel.evaluate()
             val localEvaluation = evaluationBroadcast.value
             Iterator.single(data.foldLeft((0, 0))((count, t) => {
               val result = localEvaluation(localModel.forward(t._1), t._2)

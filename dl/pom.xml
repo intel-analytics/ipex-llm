@@ -20,6 +20,11 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.twelvemonkeys.imageio</groupId>
+            <artifactId>imageio-jpeg</artifactId>
+            <version>3.2.1</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>2.7.1</version>
@@ -32,7 +37,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.intel.analytics.dllib.mkl</groupId>
+            <groupId>com.intel.analytics.sparkdl.mkl</groupId>
             <artifactId>mkl-java_0.1</artifactId>
             <version>${project.version}</version>
         </dependency>

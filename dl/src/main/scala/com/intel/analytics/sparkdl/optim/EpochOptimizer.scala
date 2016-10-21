@@ -30,11 +30,7 @@ abstract class EpochOptimizer[T](
   pm: ParameterManager[T],
   dataSets: DataSet[_, T] with HasEpoch,
   metrics: Metrics,
-  config: Table = T()) extends Optimizer(module, criterion, dataSets) {
-
-  import EpochOptimizer._
-
-  protected var regimes: Array[Regime] = Array[Regime]()
+  config: Table = T()) extends DistributedOptimizer(module, criterion, dataSets) {
 
   protected var maxEpoch: Option[Int] = None
 
@@ -42,11 +38,6 @@ abstract class EpochOptimizer[T](
     if (maxEpoch > 0) {
       this.maxEpoch = Some(maxEpoch)
     }
-    this
-  }
-
-  def setRegimes(regimes: Array[Regime]): this.type = {
-    this.regimes = regimes.clone()
     this
   }
 }
@@ -75,12 +66,6 @@ class GradAggEpochOptimizer[@specialized(Float, Double) T: ClassTag](
       logInfo(s"[Epoch $i/$epochNum] Train start")
       val epochStart = System.nanoTime()
 
-      // set optimize parameter from regime
-      for (r <- regimes) {
-        if (i >= r.startEpoch && i <= r.endEpoch) {
-          config.add(r.config)
-        }
-      }
       logInfo("config" + config)
 
       logInfo(s"[Epoch $i/$epochNum] Shuffle data")
@@ -91,6 +76,7 @@ class GradAggEpochOptimizer[@specialized(Float, Double) T: ClassTag](
         (shuffleEnd -
           epochStart) / 1e9
       }s")
+      config("epoch") = i
       while (!dataSets.epochFinished()) {
         val lossSum = sc.accumulator(0.0, "loss sum")
         val recordsNum = sc.accumulator(0, "record number")
@@ -189,21 +175,14 @@ class WeightAvgEpochOptimizer[@specialized(Float, Double) T: ClassTag](
     for (i <- 1 to epochNum) {
       logInfo(s"[Epoch $i/$epochNum] Train start")
       val epochStart = System.nanoTime()
-
-      // set optimize parameter from regime
-      for (r <- regimes) {
-        if (i >= r.startEpoch && i <= r.endEpoch) {
-          config.add(r.config)
-        }
-      }
       logInfo("config" + config)
-
       logInfo(s"[Epoch $i/$epochNum] Shuffle data")
       dataSets.reset()
       val shuffleEnd = System.nanoTime()
       var accumulateCount = 0
       logInfo(s"[Epoch $i/$epochNum] Shuffle data complete. Takes" +
         s" ${(shuffleEnd - epochStart) / 1e9}s")
+      config("epoch") = i
       while (!dataSets.epochFinished()) {
         val lossSum = sc.accumulator(0.0, "loss sum")
         val recordsNum = sc.accumulator(0, "record number")
@@ -231,6 +210,7 @@ class WeightAvgEpochOptimizer[@specialized(Float, Double) T: ClassTag](
               var stacks = 0
               var tmp = System.nanoTime()
               localModule.zeroGradParameters()
+              localModule.training()
               metrics.add("init gradient time", System.nanoTime() - tmp)
               val batch = data.next()
               var recordsss = 0
@@ -291,10 +271,4 @@ class WeightAvgEpochOptimizer[@specialized(Float, Double) T: ClassTag](
     saveState(pm.getState())
     module
   }
-}
-
-object EpochOptimizer {
-
-  case class Regime(startEpoch: Int, endEpoch: Int, config: Table)
-
 }

@@ -17,10 +17,34 @@
 
 package com.intel.analytics.sparkdl.tensor
 
+/**
+ * It provides multiple math operation functions for manipulating Tensor objects.
+ * All functions support both allocating a new Tensor to return the result
+ * and treating the caller as a target Tensor, in which case the target Tensor(s)
+ * will be resized accordingly and filled with the result. This property is especially
+ * useful when one wants to have tight control over when memory is allocated.
+ *
+ * @tparam T should be double or float
+ */
 trait TensorMath[T] {
   // scalastyle:off methodName
+
+  /**
+   * Add all elements of this with value not in place.
+   * It will allocate new memory.
+   * @param s
+   * @return
+   */
+
   def +(s: T): Tensor[T]
 
+  /**
+   * Add a Tensor to another one, return the result in new allocated memory.
+   * The number of elements in the Tensors must match, but the sizes do not matter.
+   * The size of the returned Tensor will be the size of the first Tensor
+   * @param t
+   * @return
+   */
   def +(t: Tensor[T]): Tensor[T]
 
   def +(e: Either[Tensor[T], T]): Tensor[T] = {
@@ -30,39 +54,136 @@ trait TensorMath[T] {
     }
   }
 
+  /**
+   * subtract all elements of this with the value not in place.
+   * It will allocate new memory.
+   * @param s
+   * @return
+   */
   def -(s: T): Tensor[T]
 
+  /**
+   * Subtract a Tensor from another one, return the result in new allocated memory.
+   * The number of elements in the Tensors must match, but the sizes do not matter.
+   * The size of the returned Tensor will be the size of the first Tensor
+   * @param t
+   * @return
+   */
   def -(t: Tensor[T]): Tensor[T]
 
   def unary_-(): Tensor[T]
 
+  /**
+   * divide all elements of this with value not in place.
+   * It will allocate new memory.
+   * @param s
+   * @return
+   */
   def /(s: T): Tensor[T]
 
+  /**
+   * Divide a Tensor by another one, return the result in new allocated memory.
+   * The number of elements in the Tensors must match, but the sizes do not matter.
+   * The size of the returned Tensor will be the size of the first Tensor
+   * @param t
+   * @return
+   */
   def /(t: Tensor[T]): Tensor[T]
 
+  /**
+   * multiply all elements of this with value not in place.
+   * It will allocate new memory.
+   * @param s
+   * @return
+   */
   def *(s: T): Tensor[T]
 
+  /**
+   * Multiply a Tensor by another one, return the result in new allocated memory.
+   * The number of elements in the Tensors must match, but the sizes do not matter.
+   * The size of the returned Tensor will be the size of the first Tensor
+   * @param t
+   * @return
+   */
   def *(t: Tensor[T]): Tensor[T]
+
   // scalastyle:on methodName
 
+  /**
+   * returns the sum of the elements of this
+   * @return
+   */
   def sum(): T
 
+  /**
+   * performs the sum operation over the dimension dim
+   * @param dim
+   * @return
+   */
   def sum(dim: Int): Tensor[T]
 
+  def sum(x: Tensor[T], dim: Int): Tensor[T]
+
+  /**
+   * returns the mean of all elements of this.
+   * @return
+   */
   def mean(): T
 
+  /**
+   * performs the mean operation over the dimension dim.
+   *
+   * @param dim
+   * @return
+   */
   def mean(dim: Int): Tensor[T]
 
+  /**
+   * returns the single biggest element of x
+   * @return
+   */
   def max(): T
 
+  /**
+   * performs the max operation over the dimension n
+   * @param dim
+   * @return
+   */
   def max(dim: Int): (Tensor[T], Tensor[T])
 
+  /**
+   * This function computes 2 dimensional convolution of a single image
+   * with a single kernel (2D output). the dimensions of input and kernel
+   * need to be 2, and Input image needs to be bigger than kernel. The
+   * last argument controls if the convolution is a full ('F') or valid
+   * ('V') convolution. The default is valid convolution.
+   *
+   * @param kernel
+   * @param vf full ('F') or valid ('V') convolution.
+   * @return
+   */
   def conv2(kernel: Tensor[T], vf: Char = 'V'): Tensor[T]
 
+  /**
+   * This function operates with same options and input/output configurations as conv2,
+   * but performs cross-correlation of the input with the kernel k.
+   *
+   * @param kernel
+   * @param vf full ('F') or valid ('V') convolution.
+   * @return
+   */
   def xcorr2(kernel: Tensor[T], vf: Char = 'V'): Tensor[T]
 
+  /**
+   * replaces all elements in-place with the square root of the elements of this.
+   * @return
+   */
   def sqrt(): Tensor[T]
 
+  /**
+   * replaces all elements in-place with the absolute values of the elements of this.
+   * @return
+   */
   def abs(): Tensor[T]
 
   /**
@@ -75,8 +196,21 @@ trait TensorMath[T] {
   def add(value: T, y: Tensor[T]): Tensor[T]
 
   // Puts the result of x + value * y in current tensor
+  /**
+   * z.add(x, value, y) puts the result of x + value * y in z.
+   *
+   * @param x
+   * @param value
+   * @param y
+   * @return
+   */
   def add(x: Tensor[T], value: T, y: Tensor[T]): Tensor[T]
 
+  /**
+   * x.add(value) : add value to all elements of x in place.
+   * @param value
+   * @return
+   */
   def add(value: T): Tensor[T]
 
   /**
@@ -128,6 +262,12 @@ trait TensorMath[T] {
    * @return current tensor
    */
   def cmul(y: Tensor[T]): Tensor[T]
+
+  def cmul(x: Tensor[T], y: Tensor[T]): Tensor[T]
+
+  def cdiv(y: Tensor[T]): Tensor[T]
+
+  def cdiv(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
   /**
    * multiply all elements of this with value in-place.
@@ -227,6 +367,15 @@ trait TensorMath[T] {
   def addmv(alpha: T, mat: Tensor[T], vec2: Tensor[T]): Tensor[T]
 
   /**
+   * Replaces all elements in-place with the elements of x to the power of n
+   *
+   * @param x
+   * @param n
+   * @return current tensor reference
+   */
+  def pow(x: Tensor[T], n: T): Tensor[T]
+
+  /**
    * Get the top k smallest values and their indices.
    *
    * @param result   result buffer
@@ -239,4 +388,19 @@ trait TensorMath[T] {
   def topk(k: Int, dim: Int = -1, increase: Boolean = true, result: Tensor[T] = null,
     indices: Tensor[T] = null)
   : (Tensor[T], Tensor[T])
+
+  /**
+   * Replaces all elements in-place with the elements of lnx
+   *
+   * @param x
+   * @return current tensor reference
+   */
+  def log(x: Tensor[T]): Tensor[T]
+
+  def exp(x: Tensor[T]): Tensor[T]
+
+  def sqrt(x: Tensor[T]): Tensor[T]
+
+  def log1p(x: Tensor[T]): Tensor[T]
+
 }

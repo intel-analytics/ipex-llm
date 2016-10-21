@@ -33,7 +33,7 @@ object Engine extends Logging {
   /**
    * Work load parallelism
    */
-  private var poolSize: Int = System.getProperty("scala.concurrent.context.maxThreads",
+  private var poolSize: Int = System.getProperty("dl.engine.cores",
     (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
 
   private var engine: ExecutionContext = null
@@ -58,6 +58,10 @@ object Engine extends Logging {
       initEngine()
     }
     engine
+  }
+
+  def releaseInstance[T](results : Array[Future[T]]): Seq[T] = {
+    results.map(Await.result(_, Duration.Inf))
   }
 
   private val singleThreadEngine = new ExecutionContext {
