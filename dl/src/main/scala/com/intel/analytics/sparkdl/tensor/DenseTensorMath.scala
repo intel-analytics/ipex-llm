@@ -243,7 +243,7 @@ object DenseTensorMath {
       new DenseTensor(new ArrayStorage(Array(result)))
     } else if (self.nDimension() == 2 && t.nDimension() == 1) {
       val result = new DenseTensor[T](self.size(1))
-      DenseTensorBLAS.dgemv[T](ev.fromType[Int](1), self, t, ev.fromType[Int](0), result)
+      DenseTensorBLAS.gemv[T](ev.fromType[Int](1), self, t, ev.fromType[Int](0), result)
       result
     } else if (self.nDimension() == 2 && t.nDimension() == 2) {
       val result = new DenseTensor[T](t.size(2), self.size(1)).t()
@@ -367,7 +367,7 @@ object DenseTensorMath {
       __m2 = _m2.contiguous()
     }
 
-    DenseTensorBLAS.dgemm[T](transpose_m1, transpose_m2, _r.size(index1), _r.size(index2),
+    DenseTensorBLAS.gemm[T](transpose_m1, transpose_m2, _r.size(index1), _r.size(index2),
       __m1.size(index2), alpha, __m1.storage().array(), __m1.storageOffset() - 1,
       if (transpose_m1 == "n") __m1.stride(index2) else __m1.stride(index1),
       __m2.storage().array(), __m2.storageOffset() - 1,
