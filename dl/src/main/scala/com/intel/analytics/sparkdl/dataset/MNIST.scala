@@ -86,11 +86,12 @@ object MNISTLocal {
       val trainDataSource = new MNISTDataSource(trainData, trainDLabel, looped = true)
       val validationDataSource = new MNISTDataSource(validationData, validationLabel, looped =
         false)
-      val normalizer = new GreyImageNormalizer(trainDataSource)
+      val arrayByteToImage = ArrayByteToGreyImage(28, 28)
+      val normalizer = new GreyImageNormalizer(trainDataSource -> arrayByteToImage)
       val toTensor = new GreyImageToTensor(configs(param.net).batchSize)
       val optimizer = new LocalOptimizer[Float](
-        data = trainDataSource ++ normalizer ++ toTensor,
-        validationData = validationDataSource ++ normalizer ++ toTensor,
+        data = trainDataSource -> arrayByteToImage -> normalizer -> toTensor,
+        validationData = validationDataSource -> arrayByteToImage -> normalizer -> toTensor,
         model = configs(param.net).model,
         criterion = configs(param.net).criterion,
         optimMethod = configs(param.net).optimMethod,

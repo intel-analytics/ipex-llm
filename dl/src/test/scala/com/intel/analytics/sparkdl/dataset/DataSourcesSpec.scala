@@ -40,20 +40,22 @@ class DataSourcesSpec extends FlatSpec with Matchers {
       looped = false
     )
     dataSource.total() should be(10000)
-    dataSource.map(_.label()).min should be(1.0f)
+    dataSource.map(_._1).min should be(1.0f)
     dataSource.reset()
-    dataSource.map(_.label()).max should be(10.0f)
+    dataSource.map(_._1).max should be(10.0f)
   }
 
   "cifar data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("cifar")
-    val dataSource = new CifarDataSource(Paths.get(processPath(resource.getPath())), looped = false)
+    val dataSource = new CifarDataSource(Paths.get(processPath(resource.getPath())),
+      looped = false)
+    val imgDataSource = (dataSource -> ArrayByteToRGBImage(255.0f))
     dataSource.total() should be(7)
     val labelMap = dataSource.getLabelMap(Paths.get(processPath(resource.getPath())))
     labelMap("airplane") should be(1)
     labelMap("deer") should be(2)
 
-    val img1 = dataSource.next()
+    val img1 = imgDataSource.next()
     img1.label() should be(1f)
     img1.content(2) should be(234 / 255f)
     img1.content(1) should be(125 / 255f)
@@ -61,25 +63,26 @@ class DataSourcesSpec extends FlatSpec with Matchers {
     img1.content((22 + 4 * 32) * 3 + 2) should be(253 / 255f)
     img1.content((22 + 4 * 32) * 3 + 1) should be(148 / 255f)
     img1.content((22 + 4 * 32) * 3) should be(31 / 255f)
-    val img2 = dataSource.next()
+    val img2 = imgDataSource.next()
     img2.label() should be(1f)
-    val img3 = dataSource.next()
+    val img3 = imgDataSource.next()
     img3.label() should be(2f)
-    val img4 = dataSource.next()
+    val img4 = imgDataSource.next()
     img4.label() should be(2f)
     img4.content((9 + 8 * 32) * 3 + 2) should be(40 / 255f)
     img4.content((9 + 8 * 32) * 3 + 1) should be(51 / 255f)
     img4.content((9 + 8 * 32) * 3) should be(37 / 255f)
-    val img5 = dataSource.next()
+    val img5 = imgDataSource.next()
     img5.label() should be(2f)
-    val img6 = dataSource.next()
+    val img6 = imgDataSource.next()
     img6.label() should be(2f)
-    val img7 = dataSource.next()
+    val img7 = imgDataSource.next()
     img7.label() should be(1f)
   }
 
   "imagenet data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
+    val pathToImage = PathToRGBImage(256)
     val dataSource = new ImageNetDataSource(Paths.get(processPath(resource.getPath())), looped =
       false)
     dataSource.total() should be(8)
@@ -89,41 +92,43 @@ class DataSourcesSpec extends FlatSpec with Matchers {
     labelMap("n04370456") should be(2)
     labelMap("n15075141") should be(3)
 
-    val img1 = dataSource.next()
+    val imageDataSource = dataSource -> pathToImage
+
+    val img1 = imageDataSource.next()
     img1.label() should be(1f)
     (img1.width() == 256 || img1.height() == 256) should be(true)
     val path1 = java.io.File.createTempFile("UnitTest", "datasource1.jpg").getAbsolutePath
     img1.save(path1)
     println(s"save test image to $path1")
 
-    val img2 = dataSource.next()
+    val img2 = imageDataSource.next()
     img2.label() should be(1f)
     (img2.width() == 256 || img2.height() == 256) should be(true)
     val path2 = java.io.File.createTempFile("UnitTest", "datasource2.jpg").getAbsolutePath
     img1.save(path2)
     println(s"save test image to $path2")
 
-    val img3 = dataSource.next()
+    val img3 = imageDataSource.next()
     img3.label() should be(1f)
     (img3.width() == 256 || img3.height() == 256) should be(true)
 
-    val img4 = dataSource.next()
+    val img4 = imageDataSource.next()
     img4.label() should be(2f)
     (img4.width() == 256 || img4.height() == 256) should be(true)
 
-    val img5 = dataSource.next()
+    val img5 = imageDataSource.next()
     img5.label() should be(2f)
     (img5.width() == 256 || img5.height() == 256) should be(true)
 
-    val img6 = dataSource.next()
+    val img6 = imageDataSource.next()
     img6.label() should be(3f)
     (img6.width() == 256 || img6.height() == 256) should be(true)
 
-    val img7 = dataSource.next()
+    val img7 = imageDataSource.next()
     img7.label() should be(3f)
     (img7.width() == 256 || img7.height() == 256) should be(true)
 
-    val img8 = dataSource.next()
+    val img8 = imageDataSource.next()
     img8.label() should be(3f)
     (img8.width() == 256 || img8.height() == 256) should be(true)
   }

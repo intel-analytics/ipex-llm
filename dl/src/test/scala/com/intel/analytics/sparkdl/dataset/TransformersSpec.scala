@@ -57,10 +57,8 @@ class TransformersSpec extends FlatSpec with Matchers {
     val std = math.sqrt((1 to 27).map(e => (e - mean) * (e - mean)).sum / 27f).toFloat
     val target = image1.content.map(e => (e - mean) / std)
 
-    val dataSource = new ArrayDataSource[GreyImage, GreyImage](looped = false) {
+    val dataSource = new ArrayDataSource[GreyImage](looped = false) {
       override protected val data: Array[GreyImage] = Array(image1, image2, image3)
-
-      override def convert(rawData: GreyImage): GreyImage = rawData
     }
 
     val normalizer = new GreyImageNormalizer(dataSource)
@@ -83,14 +81,12 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new ArrayDataSource[GreyImage, GreyImage](true) {
+    val dataSource = new ArrayDataSource[GreyImage](true) {
       override protected val data: Array[GreyImage] = Array(image1, image2, image3)
-
-      override def convert(rawData: GreyImage): GreyImage = rawData
     }
 
     val toTensor = new GreyImageToTensor(2)
-    val tensorDataSource = dataSource ++ toTensor
+    val tensorDataSource = dataSource -> toTensor
     val (tensorResult1, labelTensor1) = tensorDataSource.next()
     tensorResult1.size(1) should be(2)
     tensorResult1.size(2) should be(32)
@@ -183,19 +179,20 @@ class TransformersSpec extends FlatSpec with Matchers {
       r
     })
 
-    val dataSource = new ArrayDataSource[RGBImage, RGBImage](false) {
+    val dataSource = new ArrayDataSource[RGBImage](false) {
       override protected val data: Array[RGBImage] = Array(image1, image2, image3)
-
-      override def convert(rawData: RGBImage): RGBImage = rawData
     }
 
-    val normalizer = new RGBImageNormalizer(dataSource)
+    val normalizer = RGBImageNormalizer(dataSource)
     val iter = normalizer.transform(Iterator.single(image1))
     val test = iter.next()
     normalizer.getMean() should be((firstFrameMean, secondFrameMean, thirdFrameMean))
-    normalizer.getStd() should be((firstFrameStd, secondFrameStd, thirdFrameStd))
+    val stds = normalizer.getStd()
+    stds._1 should be(firstFrameStd.toDouble +- 1e-6)
+    stds._2 should be(secondFrameStd.toDouble +- 1e-6)
+    stds._3 should be(thirdFrameStd.toDouble +- 1e-6)
 
-    test.content.zip(target).foreach { case (a, b) => a should be(b) }
+    test.content.zip(target).foreach { case (a, b) => a should be(b +- 1e-6f) }
   }
 
   "RGB Image toTensor" should "convert correctly" in {
@@ -209,14 +206,128 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new ArrayDataSource[RGBImage, RGBImage](true) {
+    val dataSource = new ArrayDataSource[RGBImage](true) {
       override protected val data: Array[RGBImage] = Array(image1, image2, image3)
-
-      override def convert(rawData: RGBImage): RGBImage = rawData
     }
 
     val toTensor = new RGBImageToTensor(2)
-    val tensorDataSource = dataSource ++ toTensor
+    val tensorDataSource = dataSource -> toTensor
+    val (tensorResult1, labelTensor1) = tensorDataSource.next()
+    tensorResult1.size(1) should be(2)
+    tensorResult1.size(2) should be(3)
+    tensorResult1.size(3) should be(32)
+    tensorResult1.size(4) should be(32)
+    val content1 = image1.content
+    var i = 0
+    tensorResult1.select(1, 1).select(1, 1).apply1(e => {
+      e should be(content1(i * 3))
+      i += 1
+      e
+    })
+
+    i = 0
+    tensorResult1.select(1, 1).select(1, 2).apply1(e => {
+      e should be(content1(i * 3 + 1))
+      i += 1
+      e
+    })
+
+    i = 0
+    tensorResult1.select(1, 1).select(1, 3).apply1(e => {
+      e should be(content1(i * 3 + 2))
+      i += 1
+      e
+    })
+    val content2 = image2.content
+    i = 0
+    tensorResult1.select(1, 2).select(1, 1).apply1(e => {
+      e should be(content2(i * 3))
+      i += 1
+      e
+    })
+
+    i = 0
+    tensorResult1.select(1, 2).select(1, 2).apply1(e => {
+      e should be(content2(i * 3 + 1))
+      i += 1
+      e
+    })
+
+    i = 0
+    tensorResult1.select(1, 2).select(1, 3).apply1(e => {
+      e should be(content2(i * 3 + 2))
+      i += 1
+      e
+    })
+
+    val (tensorResult2, labelTensor2) = tensorDataSource.next()
+    val content3 = image3.content
+    tensorResult2.size(1) should be(2)
+    tensorResult2.size(2) should be(3)
+    tensorResult2.size(3) should be(32)
+    tensorResult2.size(4) should be(32)
+
+    i = 0
+    tensorResult2.select(1, 1).select(1, 1).apply1(e => {
+      e should be(content3(i * 3))
+      i += 1
+      e
+    })
+
+    i = 0
+    tensorResult2.select(1, 1).select(1, 2).apply1(e => {
+      e should be(content3(i * 3 + 1))
+      i += 1
+      e
+    })
+
+    i = 0
+    tensorResult2.select(1, 1).select(1, 3).apply1(e => {
+      e should be(content3(i * 3 + 2))
+      i += 1
+      e
+    })
+    i = 0
+    tensorResult2.select(1, 2).select(1, 1).apply1(e => {
+      e should be(content1(i * 3))
+      i += 1
+      e
+    })
+
+    i = 0
+    tensorResult2.select(1, 2).select(1, 2).apply1(e => {
+      e should be(content1(i * 3 + 1))
+      i += 1
+      e
+    })
+
+    i = 0
+    tensorResult2.select(1, 2).select(1, 3).apply1(e => {
+      e should be(content1(i * 3 + 2))
+      i += 1
+      e
+    })
+  }
+
+  "Multi thread RGB Image toTensor" should "convert correctly" in {
+    val image1 = new RGBImage(32, 32)
+    val image2 = new RGBImage(32, 32)
+    val image3 = new RGBImage(32, 32)
+    val tensor1 = Tensor[Float](Storage[Float](image1.content), 1, Array(3, 32, 32))
+    val tensor2 = Tensor[Float](Storage[Float](image2.content), 1, Array(3, 32, 32))
+    val tensor3 = Tensor[Float](Storage[Float](image3.content), 1, Array(3, 32, 32))
+    tensor1.rand()
+    tensor2.rand()
+    tensor3.rand()
+
+    val dataSource = new ArrayDataSource[RGBImage](true) {
+      override protected val data: Array[RGBImage] = Array(image1, image2, image3)
+    }
+
+    val toTensor = new MultiThreadRGBImageToSingleTensor[RGBImage](
+      width = 32, height = 32, threadNum = 2, batchSize = 2, transformer = Identity[RGBImage]
+    )
+    val tensorDataSource = dataSource -> toTensor
     val (tensorResult1, labelTensor1) = tensorDataSource.next()
     tensorResult1.size(1) should be(2)
     tensorResult1.size(2) should be(3)

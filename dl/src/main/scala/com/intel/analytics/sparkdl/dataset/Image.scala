@@ -18,18 +18,15 @@
 package com.intel.analytics.sparkdl.dataset
 
 import java.awt.Color
-import java.awt.color.ColorSpace
 import java.awt.image.{BufferedImage, DataBufferByte}
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File, FileInputStream}
 import java.nio.ByteBuffer
 import java.nio.channels.Channels
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.Path
 import javax.imageio.ImageIO
 
-import com.intel.analytics.sparkdl.utils.RandomGenerator
-
 abstract class Image(protected var data: Array[Float], protected var _width: Int,
-  protected var _height: Int, protected var _label: Float) {
+  protected var _height: Int, protected var _label: Float) extends Serializable {
 
   def width(): Int = _width
 
@@ -100,6 +97,18 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
     this
   }
 
+  def copyTo(storage: Array[Float], offset: Int) : Unit = {
+    val frameLength = width() * height()
+    require(frameLength * 3 + offset <= storage.length)
+    var j = 0
+    while (j < frameLength) {
+      storage(offset + j) = content(j * 3)
+      storage(offset + j + frameLength) = content(j * 3 + 1)
+      storage(offset + j + frameLength * 2) = content(j * 3 + 2)
+      j += 1
+    }
+  }
+
   def save(path: String, scale: Float = 255.0f): Unit = {
     val image = new BufferedImage(width(), height(), BufferedImage.TYPE_INT_BGR)
     var y = 0
@@ -136,7 +145,7 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
 }
 
 object RGBImage {
-  def readImage(path: Path, scaleTo: Int): Option[Array[Byte]] = {
+  def readImage(path: Path, scaleTo: Int): Array[Byte] = {
     var fis : FileInputStream = null
     try {
       fis = new FileInputStream(path.toString)
@@ -170,15 +179,16 @@ object RGBImage {
 
       val bytes = new Array[Byte](8 + pixels.length)
       val byteBuffer = ByteBuffer.wrap(bytes)
+      require(imageBuff.getWidth * imageBuff.getHeight * 3 == pixels.length)
       byteBuffer.putInt(imageBuff.getWidth)
       byteBuffer.putInt(imageBuff.getHeight)
       System.arraycopy(pixels, 0, bytes, 8, pixels.length)
-      Some(bytes)
+      bytes
     } catch {
       case ex: Exception =>
         ex.printStackTrace
         System.err.println("Can't read file " + path)
-        None
+        throw ex
     } finally {
       if (fis != null) {
         fis.close()
@@ -195,162 +205,5 @@ object RGBImage {
       i += 1
     }
     res
-  }
-}
-
-abstract class ArrayDataSource[T, D](looped: Boolean) extends DataSource[D] {
-  private var offset = 0
-
-  protected val data: Array[T]
-
-  override def shuffle(): Unit = {
-    var i = 0
-    while (i < data.length) {
-      val exchange = i + RandomGenerator.RNG.uniform(0, data.length - i).toInt
-      val tmp = data(exchange)
-      data(exchange) = data(i)
-      data(i) = tmp
-      i += 1
-    }
-  }
-
-  override def reset(): Unit = {
-    offset = 0
-  }
-
-  override def next(): D = {
-    val r = convert(data(if (looped) (offset % data.length) else offset))
-    offset += 1
-    r
-  }
-
-  def convert(rawData: T): D
-
-  override def finished(): Boolean = (offset >= data.length)
-
-  override def hasNext: Boolean = {
-    if (looped) {
-      true
-    } else {
-      offset < data.length
-    }
-  }
-
-  override def total(): Long = data.length
-}
-
-class MNISTDataSource(trainDataPath: String, validationDataPath: String, looped: Boolean)
-  extends ArrayDataSource[Array[Byte], GreyImage](looped) {
-  private val ROW_N = 28
-  private val COL_N = 28
-
-  private val buffer = new GreyImage(ROW_N, COL_N)
-
-  override val data = load(trainDataPath, validationDataPath)
-
-  private def load(featureFile: String, labelFile: String): Array[Array[Byte]] = {
-    val labelBuffer = ByteBuffer.wrap(Files.readAllBytes(Paths.get(labelFile)))
-    val featureBuffer = ByteBuffer.wrap(Files.readAllBytes(Paths.get(featureFile)))
-    val labelMagicNumber = labelBuffer.getInt()
-
-    require(labelMagicNumber == 2049)
-    val featureMagicNumber = featureBuffer.getInt()
-    require(featureMagicNumber == 2051)
-
-    val labelCount = labelBuffer.getInt()
-    val featureCount = featureBuffer.getInt()
-    require(labelCount == featureCount)
-
-    val rowNum = featureBuffer.getInt()
-    require(rowNum == ROW_N)
-    val colNum = featureBuffer.getInt()
-    require(colNum == COL_N)
-
-    val result = new Array[Array[Byte]](featureCount)
-    var i = 0
-    while (i < featureCount) {
-      val img = new Array[Byte]((rowNum * colNum + 1))
-      img(0) = labelBuffer.get()
-      var y = 0
-      while (y < rowNum) {
-        var x = 0
-        while (x < colNum) {
-          img(1 + x + y * colNum) = featureBuffer.get()
-          x += 1
-        }
-        y += 1
-      }
-      result(i) = img
-      i += 1
-    }
-
-    result
-  }
-
-  override def convert(rawData: Array[Byte]): GreyImage = {
-    buffer.setLabel(rawData(0).toFloat + 1).copy(rawData, 255.0f, 1)
-  }
-}
-
-class CifarDataSource(path: Path, looped: Boolean, scaleTo: Int = 32)
-  extends ArrayDataSource[(Float, Array[Byte]), RGBImage](looped) with DirectoryAsLabelDataSet {
-  private val buffer = new RGBImage()
-
-  private val paths = loadPaths(path)
-
-  override protected val data: Array[(Float, Array[Byte])] = paths.map(imageFile => {
-    RGBImage.readImage(imageFile._2, scaleTo) match {
-      case Some(img) => Some(imageFile._1.toFloat, img)
-      case None => None
-    }
-  }).filter(_.isDefined).map(_.get)
-
-  override def convert(rawData: (Float, Array[Byte])): RGBImage = {
-    buffer.copy(rawData._2).setLabel(rawData._1)
-  }
-}
-
-class ImageNetDataSource(path: Path, looped: Boolean, scaleTo: Int = 256)
-  extends ArrayDataSource[(Float, Path), RGBImage](looped) with DirectoryAsLabelDataSet {
-
-  override val data: Array[(Float, Path)] = loadPaths(path)
-
-  private val buffer = new RGBImage()
-
-  override def convert(rawData: (Float, Path)): RGBImage = {
-    val imgData = RGBImage.readImage(rawData._2, scaleTo)
-    val label = rawData._1
-    if (imgData.isDefined) {
-      buffer.copy(imgData.get).setLabel(label)
-    } else {
-      null
-    }
-  }
-}
-
-trait DirectoryAsLabelDataSet {
-  def loadPaths(path: Path): Array[(Float, Path)] = {
-    Class.forName("javax.imageio.ImageIO")
-    Class.forName("java.awt.color.ICC_ColorSpace")
-    Class.forName("sun.java2d.cmm.lcms.LCMS")
-    ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
-
-    val directoryStream = Files.newDirectoryStream(path)
-    println(s"Start to read directories $path")
-    val labelMap = getLabelMap(path)
-    import scala.collection.JavaConverters._
-    directoryStream.asScala.flatMap(dir => {
-      println(s"Find class ${dir.getFileName} -> ${labelMap(dir.getFileName.toString)}")
-      Files.newDirectoryStream(dir).asScala.map(p =>
-        (labelMap(dir.getFileName.toString).toFloat, p)).toSeq
-    }).toArray.sortWith(
-      _._2.getFileName.toString < _._2.getFileName.toString
-    )
-  }
-
-  def getLabelMap(path: Path): Map[String, Int] = {
-    import scala.collection.JavaConverters._
-    Files.newDirectoryStream(path).asScala.map(_.getFileName.toString)
-      .toArray.sortWith(_ < _).zipWithIndex.map(c => c._1 -> (c._2 + 1)).toMap
   }
 }

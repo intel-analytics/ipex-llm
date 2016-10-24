@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.sparkdl.dataset
 
+import java.io.File
 import java.net.URI
 import java.nio.file.Paths
 
@@ -36,35 +37,36 @@ class ConvertSeqSpec extends FlatSpec with Matchers {
   }
 
   "convert ImageNet Image " should "correct" in {
-      val parallel = 1
-      val tmpFile = java.io.File.createTempFile("seq", "tmp")
-      val output = tmpFile.toString
-      val resource = getClass().getClassLoader().getResource("imagenet")
-      val dataSource =
-        new ImageNetDataSource(Paths.get(processPath(resource.getPath())), looped = false)
-      var worker = new Worker(dataSource, parallel)
-      worker.process(output)
+    val parallel = 1
+    val tmpFile = java.io.File.createTempFile("seq", "tmp")
+    val output = tmpFile.toString
+    val resource = getClass().getClassLoader().getResource("imagenet")
+    val dataSource =
+      new ImageNetDataSource(Paths.get(processPath(resource.getPath())), looped = false)
+    val pathToImage = PathToRGBImage(256)
+    val worker = new Worker(dataSource -> pathToImage, parallel)
+    worker.process(output)
 
-      dataSource.reset()
-      val uri = s"${output}-seq"
-      val path = new Path(uri)
-      val conf = new Configuration
-      val fs = FileSystem.get(URI.create(uri), conf)
-      val reader = new SequenceFile.Reader(fs, path, conf)
-      val key = ReflectionUtils.newInstance(reader.getKeyClass, conf).asInstanceOf[Writable]
-      val value = new Text
-      var position = reader.getPosition
-      while (reader.next(key, value)) {
-        val data = value.getBytes
-        val tmpImage = dataSource.next()
-        val dataImage = tmpImage.content
-        data(1000 + 8) should be((dataImage(1000) * 255).toByte)
-        data(5000 + 8) should be((dataImage(5000) * 255).toByte)
-        data(10000 + 8) should be((dataImage(10000) * 255).toByte)
-        data(15000 + 8) should be((dataImage(15000) * 255).toByte)
-        data(20000 + 8) should be((dataImage(20000) * 255).toByte)
-        position = reader.getPosition
-      }
+    dataSource.reset()
+    val uri = s"${output}-seq"
+    val path = new Path(uri)
+    val conf = new Configuration
+    val fs = FileSystem.get(new File(uri).toURI, conf)
+    val reader = new SequenceFile.Reader(fs, path, conf)
+    val key = ReflectionUtils.newInstance(reader.getKeyClass, conf).asInstanceOf[Writable]
+    val value = new Text
+    var position = reader.getPosition
+    while (reader.next(key, value)) {
+      val data = value.getBytes
+      val tmpImage = (dataSource -> pathToImage).next()
+      val dataImage = tmpImage.content
+      data(1000 + 8) should be((dataImage(1000) * 255).toByte)
+      data(5000 + 8) should be((dataImage(5000) * 255).toByte)
+      data(10000 + 8) should be((dataImage(10000) * 255).toByte)
+      data(15000 + 8) should be((dataImage(15000) * 255).toByte)
+      data(20000 + 8) should be((dataImage(20000) * 255).toByte)
+      position = reader.getPosition
+    }
   }
 
   "convert Cifar Image " should "correct" in {
@@ -74,21 +76,22 @@ class ConvertSeqSpec extends FlatSpec with Matchers {
     val resource = getClass().getClassLoader().getResource("cifar")
     val dataSource =
       new CifarDataSource(Paths.get(processPath(resource.getPath())), looped = false)
-    val worker = new Worker(dataSource, parallel)
+    val arrayToImage = ArrayByteToRGBImage()
+    val worker = new Worker(dataSource -> arrayToImage, parallel)
     worker.process(output)
 
     dataSource.reset()
     val uri = s"${output}-seq"
     val path = new Path(uri)
     val conf = new Configuration
-    val fs = FileSystem.get(URI.create(uri), conf)
+    val fs = FileSystem.get(new File(uri).toURI, conf)
     val reader = new SequenceFile.Reader(fs, path, conf)
     val key = ReflectionUtils.newInstance(reader.getKeyClass, conf).asInstanceOf[Writable]
     val value = new Text
     var position = reader.getPosition
     while (reader.next(key, value)) {
       val data = value.getBytes
-      val tmpImage = dataSource.next()
+      val tmpImage = (dataSource -> arrayToImage).next()
       val dataImage = tmpImage.content
       data(100 + 8) should be((dataImage(100) * 255.0f).toByte)
       data(500 + 8) should be((dataImage(500) * 255.0f).toByte)
