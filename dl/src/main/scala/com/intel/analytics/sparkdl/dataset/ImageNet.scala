@@ -17,12 +17,13 @@
 
 package com.intel.analytics.sparkdl.dataset
 
-import java.nio.file.Paths
+import java.nio.file.{Path, Paths}
 
 import com.intel.analytics.sparkdl.models.imagenet.{AlexNet, GoogleNet_v1}
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Criterion, Module}
 import com.intel.analytics.sparkdl.optim.SGD.LearningRateSchedule
 import com.intel.analytics.sparkdl.optim._
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.T
 import scopt.OptionParser
 
@@ -30,10 +31,12 @@ object ImageNetLocal {
   case class ImageNetLocalParam(
     folder: String = "./",
     net: String = "alexnet",
-    cache: String = "./"
+    cache: String = "./",
+    buffer: Int = 256,
+    parallel: Int = 1
   )
   case class Config(
-    model : Module[Float],
+    model : Module[Tensor[Float], Tensor[Float], Float],
     criterion : Criterion[Float],
     optimMethod : OptimMethod[Float],
     imageSize : Int,
@@ -84,6 +87,12 @@ object ImageNetLocal {
     opt[String]('c', "cache")
       .text("where you put the model and state snapshot")
       .action((x, c) => c.copy(cache = x))
+    opt[Int]('p', "parallel")
+      .text("parallel num")
+      .action((x, c) => c.copy(parallel = x))
+    opt[Int]('b', "buffer")
+      .text("buffer size")
+      .action((x, c) => c.copy(buffer = x))
     opt[String]('n', "net")
       .text("net type : alexnet | googlenetv1")
       .action((x, c) => c.copy(net = x.toLowerCase))
@@ -99,17 +108,24 @@ object ImageNetLocal {
   def main(args: Array[String]) {
     parser.parse(args, new ImageNetLocalParam()).map(param => {
       val config = configs(param.net)
-      val trainDataSource = new ImageNetDataSource(Paths.get(param.folder + "/train"),
+      val trainDataSource = ImageNetDataSource(Paths.get(param.folder + "/train"),
         looped = true)
-      val validationDataSource = new ImageNetDataSource(Paths.get(param.folder + "/val"),
+      val validationDataSource = ImageNetDataSource(Paths.get(param.folder + "/val"),
         looped = false)
-      val cropper = new RGBImageCropper(cropWidth = config.imageSize, cropHeight = config.imageSize)
-      val normalizer = new RGBImageNormalizer(trainDataSource)
-      val toTensor = new RGBImageToTensor(batchSize = config.batchSize)
+      val pathToImage = PathToRGBImage(256)
+      val cropper = RGBImageCropper(cropWidth = config.imageSize, cropHeight = config.imageSize)
+      val normalizer = RGBImageNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
+      val multiThreadToTensor = MultiThreadRGBImageToSingleTensor[(Float, Path)](
+        width = configs(param.net).imageSize,
+        height = configs(param.net).imageSize,
+        threadNum = param.parallel,
+        batchSize = config.batchSize,
+        transformer = pathToImage + cropper + normalizer
+      )
 
       val optimizer = new LocalOptimizer[Float](
-        data = trainDataSource ++ cropper ++ normalizer ++ toTensor,
-        validationData = validationDataSource ++ cropper ++ normalizer ++ toTensor,
+        data = trainDataSource -> multiThreadToTensor,
+        validationData = validationDataSource -> multiThreadToTensor,
         model = config.model,
         criterion = config.criterion,
         optimMethod = config.optimMethod,

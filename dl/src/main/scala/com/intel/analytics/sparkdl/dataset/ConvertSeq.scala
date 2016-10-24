@@ -31,6 +31,7 @@ object ConvertSeq {
     folder: String = "./",
     outputSeq: String = "./",
     parallel: Int = 1,
+    buffer : Int = 256,
     dataSetType: String = "ImageNet"
   )
 
@@ -45,6 +46,9 @@ object ConvertSeq {
     opt[Int]('p', "parallel")
       .text("parallel num")
       .action((x, c) => c.copy(parallel = x))
+    opt[Int]('b', "buffer")
+      .text("buffer size")
+      .action((x, c) => c.copy(buffer = x))
     opt[String]('d', "dataSetType")
       .text("dataset type")
       .action((x, c) => c.copy(dataSetType = x))
@@ -55,11 +59,13 @@ object ConvertSeq {
       param.dataSetType match {
         case "ImageNet" =>
           val dataSource = new ImageNetDataSource(Paths.get(param.folder), looped = false)
-          val worker = new Worker(dataSource, param.parallel)
+          val pathToImage = PathToRGBImage(256)
+          val worker = new Worker(dataSource -> pathToImage, param.parallel)
           worker.process(param.outputSeq)
         case "Cifar-10" =>
           val dataSource = new CifarDataSource(Paths.get(param.folder), looped = false)
-          val worker = new Worker(dataSource, param.parallel)
+          val arrayToImage = ArrayByteToRGBImage()
+          val worker = new Worker(dataSource -> arrayToImage, param.parallel)
           worker.process(param.outputSeq)
         case _ => throw new UnsupportedOperationException(s"Only ImageNet/Cifar-10 supported")
       }

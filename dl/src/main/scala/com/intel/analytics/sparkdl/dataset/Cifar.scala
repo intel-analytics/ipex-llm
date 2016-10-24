@@ -44,12 +44,13 @@ object Cifar10Local {
       val trainDataSource = new CifarDataSource(Paths.get(param.folder + "/train"), looped = true)
       val validationDataSource = new CifarDataSource(Paths.get(param.folder + "/val"),
         looped = false)
-      val normalizer = new RGBImageNormalizer(trainDataSource)
+      val arrayToImage = ArrayByteToRGBImage()
+      val normalizer = RGBImageNormalizer(trainDataSource -> arrayToImage)
       val toTensor = new RGBImageToTensor(batchSize = 128)
 
       val optimizer = new LocalOptimizer[Float](
-        data = trainDataSource ++ normalizer ++ toTensor,
-        validationData = validationDataSource ++ normalizer ++ toTensor,
+        data = trainDataSource -> arrayToImage -> normalizer -> toTensor,
+        validationData = validationDataSource -> arrayToImage -> normalizer -> toTensor,
         model = VggLike[Float](classNum = 10),
         criterion = new ClassNLLCriterion[Float](),
         optimMethod = new SGD[Float](),
