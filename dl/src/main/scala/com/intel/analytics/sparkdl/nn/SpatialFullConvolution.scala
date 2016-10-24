@@ -514,8 +514,9 @@ class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
     s"nn.SpatialFullConvolution($nInputPlane -> $nOutputPlane, $kW x $kH, $dW, $dH, $padW, $padH)"
   }
 
-  override def findModel(paramOffset: Int,
-                         indexes: Array[Int]): (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = {
+  override def findModel(
+    paramOffset: Int,
+    indexes: Array[Int]): (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = {
     (this, paramOffset - nOutputPlane * nInputPlane * kH * kW - nOutputPlane, indexes)
   }
 }
