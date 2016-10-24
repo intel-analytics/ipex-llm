@@ -47,44 +47,39 @@ object DenseTensorMath {
   }
 
   def cmul[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
-                                         (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    /*if (x != null) {
-      self.copy(x)
-    }*/
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(self.nElement() == y.nElement(), "element number doesn't match")
-    if (self.isContiguous() && y.isContiguous()) {
+    if (self.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
       ev.vMul(self.nElement(), x.storage().array(), x.storageOffset() - 1,
-        y.storage().array(), y.storageOffset() - 1, self.storage().array(),
-        self.storageOffset() - 1)
+        y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
+          - 1)
     } else {
-      val func = new TensorFunc4[T] {
-        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
-          data1(offset1) = ev.times(data2(offset2), data1(offset1))
+      val func = new TensorFunc6[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
+                          data3: Array[T], offset3: Int): Unit = {
+          data1(offset1) = ev.times(data2(offset2), data3(offset3))
         }
       }
-      Apply.apply2[T](self, y, func)
+      Apply.apply3[T](self, x, y, func)
     }
     self
   }
 
   def cdiv[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
-                                         (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    /*if (x != null) {
-      self.copy(x)
-    }*/
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(self.nElement() == y.nElement(), "element number doesn't match")
     if (self.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
       ev.vDiv(self.nElement(), x.storage().array(), x.storageOffset() - 1,
-
         y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
           - 1)
     } else {
-      val func = new TensorFunc4[T] {
-        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
-          data1(offset1) = ev.divide(data1(offset1), data2(offset2))
+      val func = new TensorFunc6[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
+                          data3: Array[T], offset3: Int): Unit = {
+          data1(offset1) = ev.divide(data2(offset2), data3(offset3))
         }
       }
-      Apply.apply2[T](self, y, func)
+      Apply.apply3[T](self, x, y, func)
     }
     self
   }

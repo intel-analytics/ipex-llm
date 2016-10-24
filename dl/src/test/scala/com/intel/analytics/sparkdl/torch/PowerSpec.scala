@@ -21,8 +21,6 @@ import com.intel.analytics.sparkdl.nn.{Power}
 import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import scala.math._
-
 class PowerSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
@@ -30,26 +28,26 @@ class PowerSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
-  "A Power" should "generate correct output and grad" in {
+  "A Power(2)" should "generate correct output and grad" in {
     val layer = new Power[Double](2)
     val input = Tensor[Double](2, 2, 2)
-    input(Array(1, 1, 1)) = -0.17020166106522
-    input(Array(1, 1, 2)) = 0.57785657607019
-    input(Array(1, 2, 1)) = -1.3404131438583
-    input(Array(1, 2, 2)) = 1.0938102817163
-    input(Array(2, 1, 1)) = 1.120370157063
-    input(Array(2, 1, 2)) = -1.5014141565189
-    input(Array(2, 2, 1)) = 0.3380249235779
-    input(Array(2, 2, 2)) = -0.625677742064
+    input(Array(1, 1, 1)) = 1
+    input(Array(1, 1, 2)) = 2
+    input(Array(1, 2, 1)) = 3
+    input(Array(1, 2, 2)) = 4
+    input(Array(2, 1, 1)) = 5
+    input(Array(2, 1, 2)) = 6
+    input(Array(2, 2, 1)) = 7
+    input(Array(2, 2, 2)) = 8
     val gradOutput = Tensor[Double](2, 2, 2)
-    gradOutput(Array(1, 1, 1)) = 0.79903302760795
-    gradOutput(Array(1, 1, 2)) = 0.019753993256018
-    gradOutput(Array(1, 2, 1)) = 0.63136631483212
-    gradOutput(Array(1, 2, 2)) = 0.29849314852618
-    gradOutput(Array(2, 1, 1)) = 0.94380705454387
-    gradOutput(Array(2, 1, 2)) = 0.030344664584845
-    gradOutput(Array(2, 2, 1)) = 0.33804601291195
-    gradOutput(Array(2, 2, 2)) = 0.8807330634445
+    gradOutput(Array(1, 1, 1)) = 0.1
+    gradOutput(Array(1, 1, 2)) = 0.2
+    gradOutput(Array(1, 2, 1)) = 0.3
+    gradOutput(Array(1, 2, 2)) = 0.4
+    gradOutput(Array(2, 1, 1)) = 0.5
+    gradOutput(Array(2, 1, 2)) = 0.6
+    gradOutput(Array(2, 2, 1)) = 0.7
+    gradOutput(Array(2, 2, 2)) = 0.8
 
     val start = System.nanoTime()
     val output = layer.forward(input)
@@ -63,18 +61,54 @@ class PowerSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
-    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    luaOutput1.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
-      v1
-    })
-    luaOutput2.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
-      v1
-    })
+    output should be (luaOutput)
+    gradInput should be (luaGradInput)
 
-    println("Test case : Tanh, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    println("Test case : Power, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A Power(3)" should "generate correct output and grad" in {
+    val layer = new Power[Double](3)
+    val input = Tensor[Double](2, 2, 2)
+    input(Array(1, 1, 1)) = 1
+    input(Array(1, 1, 2)) = 2
+    input(Array(1, 2, 1)) = 3
+    input(Array(1, 2, 2)) = 4
+    input(Array(2, 1, 1)) = 5
+    input(Array(2, 1, 2)) = 6
+    input(Array(2, 2, 1)) = 7
+    input(Array(2, 2, 2)) = 8
+    val gradOutput = Tensor[Double](2, 2, 2)
+    gradOutput(Array(1, 1, 1)) = 0.1
+    gradOutput(Array(1, 1, 2)) = 0.2
+    gradOutput(Array(1, 2, 1)) = 0.3
+    gradOutput(Array(1, 2, 2)) = 0.4
+    gradOutput(Array(2, 1, 1)) = 0.5
+    gradOutput(Array(2, 1, 2)) = 0.6
+    gradOutput(Array(2, 2, 1)) = 0.7
+    gradOutput(Array(2, 2, 2)) = 0.8
+
+    val start = System.nanoTime()
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "module = nn.Power(3)\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    output should be (luaOutput)
+    gradInput should be (luaGradInput)
+
+    println("Test case : Power, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 }

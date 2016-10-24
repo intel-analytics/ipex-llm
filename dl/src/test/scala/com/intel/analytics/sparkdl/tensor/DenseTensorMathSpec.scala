@@ -706,4 +706,67 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
 
       matrixC should be (result)
     }
+  "cdiv" should "return right result" in {
+    val x = Tensor[Float](2, 2).fill(1f)
+    val y = Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2))
+
+    x.cdiv(y)
+
+    x should be (Tensor(Storage(Array(1f / 1, 1f / 2, 1f / 3, 1f / 4)), 1, Array(2, 2)))
+    y should be (Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2)))
   }
+
+  "cdiv" should "return right result 2" in {
+    val x = Tensor[Float](2, 2).fill(1f)
+    val y = Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2))
+
+    y.cdiv(x, y)
+
+    x should be (Tensor(Storage(Array(1f, 1f, 1f, 1f)), 1, Array(2, 2)))
+    y should be (Tensor(Storage(Array(1f / 1, 1f / 2, 1f / 3, 1f / 4)), 1, Array(2, 2)))
+  }
+
+  "cdiv" should "return right result 3" in {
+    val x = Tensor[Float](2, 2).fill(1f)
+    val y = Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2))
+    val z = Tensor[Float](2, 2).zero()
+
+    z.cdiv(x, y)
+
+    x should be (Tensor(Storage(Array(1f, 1f, 1f, 1f)), 1, Array(2, 2)))
+    y should be (Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2)))
+    z should be (Tensor(Storage(Array(1f / 1, 1f / 2, 1f / 3, 1f / 4)), 1, Array(2, 2)))
+  }
+
+  "cmul" should "return right result" in {
+    val x = Tensor[Float](2, 2).fill(2f)
+    val y = Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2))
+
+    x.cmul(y)
+
+    x should be (Tensor(Storage(Array(2f * 1, 2f * 2, 2f * 3, 2f * 4)), 1, Array(2, 2)))
+    y should be (Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2)))
+  }
+
+  "cmul" should "return right result 2" in {
+    val x = Tensor[Float](2, 2).fill(2f)
+    val y = Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2))
+
+    y.cmul(x, y)
+
+    x should be (Tensor(Storage(Array(2f, 2f, 2f, 2f)), 1, Array(2, 2)))
+    y should be (Tensor(Storage(Array(2f * 1, 2f * 2, 2f * 3, 2f * 4)), 1, Array(2, 2)))
+  }
+
+  "cmul" should "return right result 3" in {
+    val x = Tensor[Float](2, 2).fill(2f)
+    val y = Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2))
+    val z = Tensor[Float](2, 2).zero()
+
+    z.cmul(x, y)
+
+    x should be (Tensor(Storage(Array(2f, 2f, 2f, 2f)), 1, Array(2, 2)))
+    y should be (Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2)))
+    z should be (Tensor(Storage(Array(2f * 1, 2f * 2, 2f * 3, 2f * 4)), 1, Array(2, 2)))
+  }
+}
