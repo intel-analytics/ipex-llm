@@ -16,41 +16,42 @@
  */
 package com.intel.analytics.sparkdl.torch
 
-import com.intel.analytics.sparkdl.nn.Abs
+import com.intel.analytics.sparkdl.nn.AddConstant
 import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 
-class AbsSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class AddConstantSpec extends FlatSpec with BeforeAndAfter with Matchers{
   before {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
   }
 
-  "A Abs Module " should "generate correct output and grad" in {
-    val module = new Abs[Double]
-    val input = Tensor[Double](2, 1, 2)
-    input(Array(1, 1, 1)) = 21
-    input(Array(1, 1, 2)) = -29
-    input(Array(2, 1, 1)) = -13
-    input(Array(2, 1, 2)) = 27
+  "A Add Module " should "generate correct output and grad" in {
+    val inputN = 5
+    val seed = 100
+    RNG.setSeed(seed)
+    val module = new AddConstant[Double](inputN, true)
+    val input = Tensor[Double](1, 5)
+    input(Array(1, 1)) = -1
+    input(Array(1, 2)) = -2
+    input(Array(1, 3)) = -3
+    input(Array(1, 4)) = -4
+    input(Array(1, 5)) = -5
 
-    val gradOutput = Tensor[Double](2, 1, 2)
-    gradOutput(Array(1, 1, 1)) = 10
-    gradOutput(Array(1, 1, 2)) = -23
-    gradOutput(Array(2, 1, 1)) = -10
-    gradOutput(Array(2, 1, 2)) = 23
+    val gradOutput = Tensor[Double](1, 5)
+    gradOutput(Array(1, 1)) = -2
+    gradOutput(Array(1, 2)) = 5
+    gradOutput(Array(1, 3)) = -10
+    gradOutput(Array(1, 4)) = 17
+    gradOutput(Array(1, 5)) = -26
 
-    val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input, gradOutput)
-    val end = System.nanoTime()
-    val scalaTime = end - start
-
-    val code = "module = nn.Abs()\n" +
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      "module = nn.AddConstant(5, true)\n" +
       "output = module:forward(input)\n" +
-      "gradInput = module:backward(input,gradOutput)"
+      "gradInput = module:backward(input, gradOutput)\n"
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
@@ -58,16 +59,13 @@ class AbsSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    luaOutput1.map(output, (v1, v2) => {
-      assert(Math.abs(v1 - v2) == 0);
-      v1
-    })
-    luaOutput2.map(gradInput, (v1, v2) => {
-      assert(Math.abs(v1 - v2) == 0);
-      v1
-    })
+    val start = System.nanoTime()
+    val output = module.forward(input)
+    val gradInput = module.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
 
-    println("Test case : ReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
-
+    luaOutput1 should be(output)
+    luaOutput2 should be(gradInput)
   }
 }

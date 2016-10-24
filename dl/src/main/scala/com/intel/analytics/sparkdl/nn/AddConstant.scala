@@ -21,34 +21,35 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-class Abs[@specialized(Float, Double) T: ClassTag]
- (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+
+class AddConstant[@specialized(Float, Double) T: ClassTag](
+   val constant_scalar: T,
+   val inplace: Boolean = false
+  )(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output.resizeAs(input)
-    output.abs(input)
+    if (inplace) {
+      input.add(constant_scalar)
+      output.set(input)
+    } else {
+      output.resizeAs(input).copy(input)
+      output.add(constant_scalar)
+    }
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(input).copy(gradOutput)
-
-    val inputArray = input.storage().array()
-    val gradArray = gradInput.storage().array()
-    val gradOffset = gradInput.storageOffset() - 1
-
-    var i = 0
-    while(i < gradInput.nElement()) {
-      val g = gradArray(i)
-      val z = inputArray(i)
-      gradArray(i + gradOffset) = ev.times(g,
-        if (ev.isGreater(z, ev.fromType(0))) ev.fromType(1) else ev.fromType(-1))
-      i += 1
+    if (inplace) {
+      gradInput.set(gradOutput)
+      input.add(ev.negative(constant_scalar))
+    } else {
+      gradInput.resizeAs(input).copy(gradOutput)
     }
     gradInput
   }
 
   override def toString(): String = {
-    s"nn.Abs"
+    s"nn.AddConstant"
   }
+
 }

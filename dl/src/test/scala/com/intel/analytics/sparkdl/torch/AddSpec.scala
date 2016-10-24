@@ -41,12 +41,12 @@ class AddSpec extends FlatSpec with BeforeAndAfter with Matchers{
     input(Array(1, 4)) = 4
     input(Array(1, 5)) = 5
 
-    val gradOutput = Tensor[Double](1, 5)
-    gradOutput(Array(1, 1)) = 2
-    gradOutput(Array(1, 2)) = 5
-    gradOutput(Array(1, 3)) = 10
-    gradOutput(Array(1, 4)) = 17
-    gradOutput(Array(1, 5)) = 26
+    val gradOutput = Tensor[Double](5)
+    gradOutput(Array(1)) = 2
+    gradOutput(Array(2)) = 5
+    gradOutput(Array(3)) = 10
+    gradOutput(Array(4)) = 17
+    gradOutput(Array(5)) = 26
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.Add(5)\n" +

@@ -24,10 +24,12 @@ import scala.reflect.ClassTag
 
 class Add[@specialized(Float, Double) T: ClassTag](inputSize: Int,
   private var initMethod: InitializationMethod = Default)(
-  implicit ev: TensorNumeric[T]) extends Module[T] {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val bias = Tensor[T](inputSize)
-  val ones = Tensor[T](1).fill(ev.fromType[Int](1))
+
+  @transient
+  var ones : Tensor[T] = null
   this.gradBias = Tensor[T](inputSize)
 
   reset()
@@ -42,11 +44,6 @@ class Add[@specialized(Float, Double) T: ClassTag](inputSize: Int,
       case Default =>
         val stdv = 1 / math.sqrt(bias.size(1))
         bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-      case Xavier =>
-        val fanIn = bias.size(2)
-        val fanOut = bias.size(1)
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-        bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
     }
   }
 
@@ -56,10 +53,12 @@ class Add[@specialized(Float, Double) T: ClassTag](inputSize: Int,
       output.add(bias)
     } else {
       val batchSize = input.size(1)
-      if (ones.size(1) != batchSize) ones.resize(batchSize).fill(ev.fromType[Int](1))
-      bias.view(bias.size.product)
-      output.view(batchSize, output.size.product)
-      output.addr(ev.fromType[Int](1), ones, bias)
+      if(null == ones) ones = Tensor[T]()
+      ones.resize(batchSize)
+      ones.fill(ev.fromType[Int](1))
+      val biasLocal = bias.view(bias.size.product)
+      val outputLocal = output.view(batchSize, output.size.product)
+      outputLocal.addr(ev.fromType[Int](1), ones, biasLocal)
     }
     output
   }
@@ -79,10 +78,18 @@ class Add[@specialized(Float, Double) T: ClassTag](inputSize: Int,
       if (input.isSameSizeAs(bias)) {
         gradBias.add(ev.fromType[Double](scale), gradOutput)
       } else {
-         gradOutput.view(input.size(1), gradOutput.size.product)
-         gradBias.view(gradBias.size().product).addmv(ev.fromType(scale), gradOutput.t(), ones)
+        val gradOutputLocal = gradOutput.view(input.size(1), gradOutput.size.product)
+        gradBias.view(gradBias.size().product).addmv(ev.fromType(scale), gradOutputLocal.t(), ones)
       }
     }
+  }
+
+  override def zeroGradParameters(): Unit = {
+    gradBias.zero()
+  }
+
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    (Array(this.bias), Array(this.gradBias))
   }
 
   override def toString(): String = {
