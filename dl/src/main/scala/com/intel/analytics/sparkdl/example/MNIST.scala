@@ -49,10 +49,10 @@ object MNIST {
     (input, target)
   }
 
-  def getModule(netType: String)(): Module[Double] = {
+  def getModule(netType: String)(): Module[Tensor[Double], Tensor[Double], Double] = {
     netType.toLowerCase match {
       case "ann" =>
-        val mlp = new Sequential[Double]
+        val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
         val nhiddens = featureSize / 2
         mlp.add(new Reshape(Array(featureSize)))
         mlp.add(new Linear(featureSize, nhiddens))
@@ -61,13 +61,13 @@ object MNIST {
         mlp.add(new LogSoftMax)
         mlp
       case "linear" =>
-        val mlp = new Sequential[Double]
+        val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
         mlp.add(new Reshape(Array(featureSize)))
         mlp.add(new Linear(featureSize, classNum))
         mlp.add(new LogSoftMax)
         mlp
       case "cnn" =>
-        val model = new Sequential[Double]()
+        val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
         model.add(new Reshape(Array(1, rowN, colN)))
         model.add(new SpatialConvolution(1, 32, 5, 5))
         model.add(new Tanh())
@@ -85,7 +85,7 @@ object MNIST {
         model.add(new LogSoftMax())
         model
       case "lenet" =>
-        val model = new Sequential[Double]()
+        val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
         model.add(new Reshape(Array(1, rowN, colN)))
         model.add(new SpatialConvolution(1, 6, 5, 5))
         model.add(new Tanh())

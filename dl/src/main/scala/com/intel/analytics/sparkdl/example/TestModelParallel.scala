@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.example
 
 import com.intel.analytics.sparkdl.example.Utils._
-import com.intel.analytics.sparkdl.models.imagenet.{AlexNet, GoogleNet_v1, GoogleNet_v2}
+import com.intel.analytics.sparkdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.sparkdl.nn.ClassNLLCriterion
 import com.intel.analytics.sparkdl.optim.{GradAggEpochOptimizer, Metrics, ShuffleBatchDataSet}
 import com.intel.analytics.sparkdl.ps.{AllReduceParameterManager, OneReduceParameterManager}

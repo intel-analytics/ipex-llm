@@ -36,7 +36,7 @@ class SaveObjSpec extends FlatSpec with Matchers {
     val filePath = java.io.File.createTempFile("SaveObjSpecAlexnet", ".obj").getAbsolutePath
     model.forward(Tensor[Double](4, 3, 227, 227))
     File.save(model, filePath, true)
-    val loadedModel = File.loadObj[Module[Double]](filePath)
+    val loadedModel = File.loadObj[Module[Tensor[Double], Tensor[Double], Double]](filePath)
     loadedModel should be(model)
     loadedModel.forward(Tensor[Double](4, 3, 227, 227))
   }
@@ -46,7 +46,7 @@ class SaveObjSpec extends FlatSpec with Matchers {
     val filePath = java.io.File.createTempFile("SaveObjSpecGoogleNet", ".obj").getAbsolutePath
     model.forward(Tensor[Double](4, 3, 224, 224))
     File.save(model, filePath, true)
-    val loadedModel = File.loadObj[Module[Double]](filePath)
+    val loadedModel = File.loadObj[Module[Tensor[Double], Tensor[Double], Double]](filePath)
     loadedModel should be(model)
     loadedModel.forward(Tensor[Double](4, 3, 224, 224))
   }

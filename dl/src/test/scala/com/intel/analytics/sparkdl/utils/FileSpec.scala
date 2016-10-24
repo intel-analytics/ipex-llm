@@ -29,7 +29,7 @@ class FileSpec extends FlatSpec with Matchers {
     val absolutePath = tmpFile.getAbsolutePath
 
 
-    val module = new Sequential[Double]
+    val module = new Sequential[Tensor[Double], Tensor[Double], Double]
 
     module.add(new SpatialConvolution(1, 6, 5, 5))
     module.add(new Tanh())
@@ -46,7 +46,7 @@ class FileSpec extends FlatSpec with Matchers {
     module.add(new LogSoftMax[Double]())
 
     File.save(module, absolutePath, true)
-    val testModule: Module[Double] = File.loadObj(absolutePath)
+    val testModule: Module[Tensor[Double], Tensor[Double], Double] = File.loadObj(absolutePath)
 
     testModule should be(module)
   }

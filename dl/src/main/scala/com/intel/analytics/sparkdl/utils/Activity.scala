@@ -15,31 +15,35 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.sparkdl.nn
+package com.intel.analytics.sparkdl.utils
 
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
-import scala.reflect.ClassTag
+import scala.reflect._
+import scala.reflect.runtime.universe._
 
-class Sigmoid[@specialized(Float, Double) T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
-
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output.resizeAs(input)
-    output.map(input, (_, i) => ev.divide(ev.fromType[Int](1), ev.plus(ev.fromType[Int](1),
-      ev.exp(ev.negative(i)))))
-    output
+trait Activities {
+  def toTensor[T](): Tensor[T] = {
+    this.asInstanceOf[Tensor[T]]
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(input)
-    gradInput.copy(gradOutput)
-    gradInput.map(output, (g, z) => ev.times(ev.times(g, ev.minus(ev.fromType[Int](1), z)), z))
-    gradInput
+  def toTable(): Table = {
+    this.asInstanceOf[Table]
   }
+}
 
-  override def toString(): String = {
-    s"nn.Sigmoid"
+object Activities {
+  def apply[A <: Activities: ClassTag, @specialized(Float, Double) T: ClassTag]()(
+    implicit ev: TensorNumeric[T]): Activities = {
+    var result: Activities = null
+
+    if (classTag[A] == classTag[Tensor[T]]) {
+      result = Tensor[T]()
+    } else if (classTag[A] == classTag[Tensor[T]]) {
+      result = T()
+    }
+
+    result
   }
 }

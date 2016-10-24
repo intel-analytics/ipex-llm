@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  * @tparam T
  */
 class Echo[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T])
-  extends Module[T] {
+  extends TensorModule[T]  {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     this.output = input

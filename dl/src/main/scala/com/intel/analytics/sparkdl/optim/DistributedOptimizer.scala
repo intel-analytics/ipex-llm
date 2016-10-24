@@ -23,6 +23,7 @@ import com.intel.analytics.sparkdl.utils.{File, T, Table}
 import org.apache.spark.Logging
 
 import scala.collection.mutable.ArrayBuffer
+import scala.reflect.ClassTag
 
 /**
  * Train a neural network model on a distributed data set
@@ -32,14 +33,14 @@ import scala.collection.mutable.ArrayBuffer
  * @param dataSet   distributed data set
  * @tparam T numeric type of model
  */
-abstract class DistributedOptimizer[@specialized(Float, Double) T](
-  val module: Module[T], val criterion: Criterion[T],
+abstract class DistributedOptimizer[T](
+  val module: Module[Tensor[T], Tensor[T], T], val criterion: Criterion[T],
   dataSet: DataSet[_, T]) extends Serializable with Logging
   with HasCrossValidation[T] with ModelPersist[T] {
 
   import DistributedOptimizer._
 
-  def optimize(): Module[T]
+  def optimize(): Module[Tensor[T], Tensor[T], T]
 
   // We pre-create models on each partition of the data set
   private def init() = {
@@ -73,7 +74,8 @@ object DistributedOptimizer {
    * @param state     contains train state
    * @tparam T
    */
-  case class CachedModel[T](model: Module[T], criterion: Criterion[T], weight: Tensor[T],
+  case class CachedModel[T](model: Module[Tensor[T], Tensor[T], T],
+    criterion: Criterion[T], weight: Tensor[T],
     gradient: Tensor[T], state: Table)
 
 }
