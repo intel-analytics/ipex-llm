@@ -256,8 +256,6 @@ trait TensorMath[T] {
    */
   def addcdiv(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T]
 
-
-
   def sub(value : T, y : Tensor[T]) : Tensor[T]
 
   // Puts the result of x - value * y in current tensor
@@ -271,7 +269,7 @@ trait TensorMath[T] {
    */
   def sub(y : Tensor[T]) : Tensor[T]
 
-  def sub(x : Tensor[T],y : Tensor[T]) : Tensor[T]
+  def sub(x : Tensor[T], y : Tensor[T]) : Tensor[T]
 
   def sub(value : T) : Tensor[T]
 
@@ -434,7 +432,7 @@ trait TensorMath[T] {
    * @return
    */
   def topk(k: Int, dim: Int = -1, increase: Boolean = true, result: Tensor[T] = null,
-           indices: Tensor[T] = null)
+    indices: Tensor[T] = null)
   : (Tensor[T], Tensor[T])
 
   /**
@@ -443,7 +441,7 @@ trait TensorMath[T] {
    * @param y
    * @return current tensor reference
    */
-  def log(y : Tensor[T]): Tensor[T]
+  def log(y: Tensor[T]): Tensor[T]
 
   def exp(y: Tensor[T]): Tensor[T]
 

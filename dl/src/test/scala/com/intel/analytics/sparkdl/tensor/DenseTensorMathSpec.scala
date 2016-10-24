@@ -530,72 +530,113 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
       1.0, 6.0, 2.0, 4.0, 3.0
     )), 1, Array(5, 5)))
   }
-    "powx" should "return correct value" in {
-      val t: Tensor[Float] = Tensor(1, 3)
-      var i = 1
-      t.apply1(_ => {
-        i = i + 1;
-        i
-      })
-      val r = Tensor[Float](1, 3)
-      r.pow(t, 2)
-      r should be(Tensor[Float](Storage[Float](
-        Array(4.0f, 9.0f, 16.0f)), 1, Array(1, 3)))
-    }
 
-    "log" should "return correct value" in {
-      val t: Tensor[Float] = Tensor(1, 3)
-      var i = 1
-      t.apply1(_ => {
-        i = i + 1;
-        i
-      })
-      val r = Tensor[Float](1, 3)
-      r.log(t)
-      r should be(Tensor[Float](Storage[Float](
-        Array(0.6931472f, 1.0986123f, 1.3862944f)), 1, Array(1, 3)))
-    }
+  "powx(x,a)" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val r: Tensor[Double] = Tensor(Storage(Array(0.0, 0.0, 0.0)))
+    r.pow(t, 2)
+    r should be(Tensor(Storage(Array(4.0, 9.0, 16.0))))
+  }
 
-    "exp" should "return correct value" in {
-      val t: Tensor[Float] = Tensor(1, 3)
-      var i = 1
-      t.apply1(_ => {
-        i = i + 1;
-        i
-      })
-      val r = Tensor[Float](1, 3)
-      r.exp(t)
-      r should be(Tensor[Float](Storage[Float](
-        Array(7.389056f, 20.085537f, 54.59815f)), 1, Array(1, 3)))
-    }
+  "powx(a)" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    t.pow(2)
+    t should be(Tensor(Storage(Array(4.0, 9.0, 16.0))))
+  }
 
-    "sqrt" should "return correct value" in {
-      val t: Tensor[Float] = Tensor(1, 3)
-      var i = 1
-      t.apply1(_ => {
-        i = i + 1;
-        i
-      })
-      val r = Tensor[Float](1, 3)
-      r.sqrt(t)
-      r should be(Tensor[Float](Storage[Float](
-        Array(1.4142135f, 1.7320508f, 2.0f)), 1, Array(1, 3)))
-    }
+  "log(x)" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val r: Tensor[Double] = Tensor(Storage(Array(0.0, 0.0, 0.0)))
+    r.log(t)
+    r should be(Tensor(Storage(Array(0.6931472, 1.0986123, 1.3862944))))
+  }
 
-    "log1p" should "return correct value" in {
-      val t: Tensor[Float] = Tensor(1, 3)
-      var i = 1
-      t.apply1(_ => {
-        i = i + 1;
-        i
-      })
-      val r = Tensor[Float](1, 3)
-      r.log1p(t)
-      r should be(Tensor[Float](Storage[Float](
-        Array(1.0986123f, 1.3862944f, 1.609438f)), 1, Array(1, 3)))
-    }
+  "log()" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    t.log(t)
+    t should be(Tensor(Storage(Array(0.6931472, 1.0986123, 1.3862944))))
+  }
 
-    "gemm(N, N)" should "return correct value" in {
+  "exp(x)" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val r: Tensor[Double] = Tensor(Storage(Array(0.0, 0.0, 0.0)))
+    r.exp(t)
+    r should be(Tensor(Storage(Array(7.389056, 20.085537, 54.59815))))
+  }
+
+  "exp()" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    t.exp()
+    t should be(Tensor(Storage(Array(7.389056, 20.085537, 54.59815))))
+  }
+
+  "sqrt(x)" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val r: Tensor[Double] = Tensor(Storage(Array(0.0, 0.0, 0.0)))
+    r.sqrt(t)
+    r should be(Tensor(Storage(Array(1.4142135, 1.7320508, 2.0))))
+  }
+
+  "sqrt()" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    t.sqrt()
+    t should be(Tensor(Storage(Array(1.4142135, 1.7320508, 2.0))))
+  }
+
+  "log1p(x)" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val r: Tensor[Double] = Tensor(Storage(Array(0.0, 0.0, 0.0)))
+    r.log1p(t)
+    r should be(Tensor(Storage(Array(1.0986123, 1.3862944, 1.609438))))
+  }
+
+  "log1p()" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    t.log1p()
+    t should be(Tensor(Storage(Array(1.0986123, 1.3862944, 1.609438))))
+  }
+
+  "matrix sub(T)" should "return correct value" in{
+    val a : Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val m = 1
+
+    a.sub(m)
+
+    a should be (Tensor(Storage(Array(1.0, 2.0, 3.0))))
+  }
+
+  "matrix sub(T,Tensor[T])" should "return correct value" in{
+    val a : Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val b : Tensor[Double] = Tensor(Storage(Array(1.0, 2.0, 3.0)))
+    val m = 2
+
+    a.sub(m, b)
+    a should be (Tensor(Storage(Array(0.0, -1.0, -2.0))))
+  }
+
+  "matrix sub(Tensor[T])" should "return correct value" in{
+    val a : Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val b : Tensor[Double] = Tensor(Storage(Array(1.0, 2.0, 3.0)))
+
+    a.sub(b)
+
+    val r = Tensor(Storage(Array(1.0, 1.0, 1.0)))
+
+    a should be (r)
+  }
+
+  "matrix sub(Tensor[T],T,Tensor[T])" should "return correct value" in{
+    val a : Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val b : Tensor[Double] = Tensor(Storage(Array(1.0, 2.0, 3.0)))
+    val c : Tensor[Double] = Tensor(Storage(Array(1.0, 2.0, 3.0)))
+
+    val m = 2
+    val d = a.sub(c, m, b)
+
+    d should be (Tensor(Storage(Array(-1.0, -2.0, -3.0))))
+  }
+
+  "gemm(N, N)" should "return correct value" in {
       val matrixA = Tensor[Float](2, 3)
       val matrixB = Tensor[Float](3, 2)
 
@@ -623,7 +664,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
       matrixC should be (result)
     }
 
-    "gemm(N, T)" should "return correct value" in {
+  "gemm(N, T)" should "return correct value" in {
       val matrixA = Tensor[Float](2, 3)
       val matrixB = Tensor[Float](2, 3)
 
@@ -651,7 +692,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
       matrixC should be (result)
     }
 
-    "gemm(T, N)" should "return correct value" in {
+  "gemm(T, N)" should "return correct value" in {
       val matrixA = Tensor[Float](3, 2)
       val matrixB = Tensor[Float](3, 2)
 
@@ -679,7 +720,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
       matrixC should be (result)
     }
 
-    "gemm(T, T)" should "return correct value" in {
+  "gemm(T, T)" should "return correct value" in {
       val matrixA = Tensor[Float](3, 2)
       val matrixB = Tensor[Float](2, 3)
 
@@ -706,6 +747,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
 
       matrixC should be (result)
     }
+
   "cdiv" should "return right result" in {
     val x = Tensor[Float](2, 2).fill(1f)
     val y = Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2))

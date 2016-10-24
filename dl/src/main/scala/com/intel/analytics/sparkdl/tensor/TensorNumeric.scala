@@ -61,21 +61,21 @@ object TensorNumericMath {
     def randn(): T
 
     def gemm(transa: String, transb: String, m: Int, n: Int, k: Int, alpha: T, a: Array[T],
-             aOffset: Int, lda: Int, b: Array[T], bOffset: Int, ldb: Int,
-             beta: T, c: Array[T], cOffset: Int, ldc: Int)
+      aOffset: Int, lda: Int, b: Array[T], bOffset: Int, ldb: Int,
+      beta: T, c: Array[T], cOffset: Int, ldc: Int)
 
     def gemv(trans: String, m: Int, n: Int, alpha: T, a: Array[T], aoffset: Int, lda: Int,
-             x: Array[T], xOffset: Int, incx: Int, beta: T, y: Array[T], yOffset: Int, incy: Int)
+      x: Array[T], xOffset: Int, incx: Int, beta: T, y: Array[T], yOffset: Int, incy: Int)
 
     def axpy(n: Int, da: T, dx: Array[T], _dx_offset: Int, incx: Int, dy: Array[T],
-             _dy_offset: Int, incy: Int)
+      _dy_offset: Int, incy: Int)
 
     def dot(n: Int, dx: Array[T], _dx_offset: Int, incx: Int, dy: Array[T], _dy_offset: Int,
-            incy: Int): T
+      incy: Int): T
 
     def ger(m: Int, n: Int, alpha: T, x: Array[T], _x_offset: Int, incx: Int, y: Array[T],
-            _y_offset: Int,
-            incy: Int, a: Array[T], _a_offset: Int, lda: Int)
+      _y_offset: Int,
+      incy: Int, a: Array[T], _a_offset: Int, lda: Int)
 
     def fill(data: Array[T], fromIndex: Int, toIndex: Int, value: T): Unit
 
@@ -99,17 +99,19 @@ object TensorNumericMath {
 
     def add(n: Int, a: Array[T], offset: Int, v: T, stride: Int): Unit
 
+    def sub(n: Int, a: Array[T], offset: Int, v: T, stride: Int): Unit
+
     def vAdd(n: Int, a: Array[T], aOffset: Int, b: Array[T], bOffset: Int, y: Array[T],
-             yOffset: Int): Unit
+      yOffset: Int): Unit
 
     def vSub(n: Int, a: Array[T], aOffset: Int, b: Array[T], bOffset: Int, y: Array[T],
-             yOffset: Int): Unit
+      yOffset: Int): Unit
 
     def vMul(n: Int, a: Array[T], aOffset: Int, b: Array[T], bOffset: Int, y: Array[T],
-             yOffset: Int): Unit
+      yOffset: Int): Unit
 
     def vDiv(n: Int, a: Array[T], aOffset: Int, b: Array[T], bOffset: Int, y: Array[T],
-             yOffset: Int): Unit
+      yOffset: Int): Unit
 
     def sum(n: Int, a: Array[T], aOffset: Int, stride: Int): T
 
@@ -164,38 +166,33 @@ object TensorNumericMath {
 
       def randn(): Float = RNG.normal(0, 1).toFloat
 
-      def gemm(
-                transa: String, transb: String, m: Int, n: Int, k: Int, alpha: Float, a: Array[Float],
-                aOffset: Int, lda: Int, b: Array[Float], bOffset: Int, ldb: Int,
-                beta: Float, c: Array[Float], cOffset: Int, ldc: Int): Unit = {
-
+      def gemm(transa: String, transb: String, m: Int, n: Int, k: Int, alpha: Float,
+        a: Array[Float], aOffset: Int, lda: Int, b: Array[Float], bOffset: Int, ldb: Int,
+        beta: Float, c: Array[Float], cOffset: Int, ldc: Int): Unit = {
         DenseTensorBLAS.getTensorBLAS.sgemm(transa, transb, m, n, k, alpha, a, aOffset, lda, b,
           bOffset, ldb, beta, c, cOffset, ldc)
       }
 
       def gemv(trans: String, m: Int, n: Int, alpha: Float, a: Array[Float], aoffset: Int, lda: Int,
-               x: Array[Float], xOffset: Int, incx: Int, beta: Float, y: Array[Float], yOffset: Int,
-               incy: Int): Unit = {
-
+        x: Array[Float], xOffset: Int, incx: Int, beta: Float, y: Array[Float], yOffset: Int,
+        incy: Int): Unit = {
         DenseTensorBLAS.getTensorBLAS.sgemv(trans, m, n, alpha, a, aoffset, lda, x, xOffset,
           incx, beta, y, yOffset, incy)
       }
 
       def axpy(n: Int, da: Float, dx: Array[Float], _dx_offset: Int, incx: Int, dy: Array[Float],
-               _dy_offset: Int, incy: Int): Unit = {
-
+        _dy_offset: Int, incy: Int): Unit = {
         DenseTensorBLAS.getTensorBLAS.saxpy(n, da, dx, _dx_offset, incx, dy, _dy_offset, incy)
       }
 
       def dot(n: Int, dx: Array[Float], _dx_offset: Int, incx: Int, dy: Array[Float],
-              _dy_offset: Int, incy: Int): Float = {
+        _dy_offset: Int, incy: Int): Float = {
         DenseTensorBLAS.getTensorBLAS.sdot(n, dx, _dx_offset, incx, dy, _dy_offset, incy)
       }
 
       def ger(m: Int, n: Int, alpha: Float, x: Array[Float], _x_offset: Int, incx: Int,
-              y: Array[Float], _y_offset: Int,
-              incy: Int, a: Array[Float], _a_offset: Int, lda: Int): Unit = {
-
+        y: Array[Float], _y_offset: Int,
+        incy: Int, a: Array[Float], _a_offset: Int, lda: Int): Unit = {
         DenseTensorBLAS.getTensorBLAS.sger(m, n, alpha, x, _x_offset, incx, y, _y_offset,
           incy, a, _a_offset, lda)
       }
@@ -214,11 +211,10 @@ object TensorNumericMath {
       def getType(): String = "Float"
 
       override def vPowx(n: Int, a: Array[Float], aOffset: Int, b: Float, y: Array[Float],
-                         yOffset: Int): Unit = {
+        yOffset: Int): Unit = {
         require(MKL.isMKLLoaded)
         MKL.vsPowx(n, a, aOffset, b, y, yOffset)
       }
-
 
       override def vLn(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
@@ -226,20 +222,17 @@ object TensorNumericMath {
         MKL.vsLn(n, a, aOffset, y, yOffset)
       }
 
-
       override def vExp(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
         require(MKL.isMKLLoaded)
         MKL.vsExp(n, a, aOffset, y, yOffset)
       }
 
-
       override def vSqrt(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
         require(MKL.isMKLLoaded)
         MKL.vsSqrt(n, a, aOffset, y, yOffset)
       }
-
 
       override def vLog1p(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
@@ -261,20 +254,28 @@ object TensorNumericMath {
         }
       }
 
+      override def sub(n: Int, a: Array[Float], offset: Int, v: Float, stride: Int): Unit = {
+        var i = 0
+        while (i < n) {
+          a(offset + i * stride) -= v
+          i += 1
+        }
+      }
+
       override def vAdd(n: Int, a: Array[Float], aOffset: Int, b: Array[Float], bOffset: Int,
-                        y: Array[Float], yOffset: Int): Unit = {
+        y: Array[Float], yOffset: Int): Unit = {
         require(MKL.isMKLLoaded)
         MKL.vsAdd(n, a, aOffset, b, bOffset, y, yOffset)
       }
 
       override def vSub(n: Int, a: Array[Float], aOffset: Int, b: Array[Float], bOffset: Int,
-                        y: Array[Float], yOffset: Int): Unit = {
+        y: Array[Float], yOffset: Int): Unit = {
         require(MKL.isMKLLoaded)
         MKL.vsSub(n, a, aOffset, b, bOffset, y, yOffset)
       }
 
       override def vMul(n: Int, a: Array[Float], aOffset: Int, b: Array[Float], bOffset: Int,
-                        y: Array[Float], yOffset: Int): Unit = {
+        y: Array[Float], yOffset: Int): Unit = {
         if (MKL.isMKLLoaded) {
           MKL.vsMul(n, a, aOffset, b, bOffset, y, yOffset)
         } else {
@@ -287,7 +288,7 @@ object TensorNumericMath {
       }
 
       override def vDiv(n: Int, a: Array[Float], aOffset: Int, b: Array[Float], bOffset: Int,
-                        y: Array[Float], yOffset: Int): Unit = {
+        y: Array[Float], yOffset: Int): Unit = {
         if (MKL.isMKLLoaded) {
           MKL.vsDiv(n, a, aOffset, b, bOffset, y, yOffset)
         } else {
@@ -344,35 +345,35 @@ object TensorNumericMath {
       def randn(): Double = RNG.normal(0, 1)
 
       def gemm(transa: String, transb: String, m: Int, n: Int, k: Int, alpha: Double,
-               a: Array[Double], aOffset: Int, lda: Int, b: Array[Double], bOffset: Int, ldb: Int,
-               beta: Double, c: Array[Double], cOffset: Int, ldc: Int): Unit = {
+        a: Array[Double], aOffset: Int, lda: Int, b: Array[Double], bOffset: Int, ldb: Int,
+        beta: Double, c: Array[Double], cOffset: Int, ldc: Int): Unit = {
 
         DenseTensorBLAS.getTensorBLAS.dgemm(transa, transb, m, n, k, alpha, a, aOffset, lda, b,
           bOffset, ldb, beta, c, cOffset, ldc)
       }
 
       def gemv(trans: String, m: Int, n: Int, alpha: Double, a: Array[Double], aoffset: Int,
-               lda: Int, x: Array[Double], xOffset: Int, incx: Int, beta: Double, y: Array[Double],
-               yOffset: Int, incy: Int): Unit = {
+        lda: Int, x: Array[Double], xOffset: Int, incx: Int, beta: Double, y: Array[Double],
+        yOffset: Int, incy: Int): Unit = {
 
         DenseTensorBLAS.getTensorBLAS.dgemv(trans, m, n, alpha, a, aoffset, lda, x, xOffset, incx,
           beta, y, yOffset, incy)
       }
 
       def axpy(n: Int, da: Double, dx: Array[Double], _dx_offset: Int, incx: Int,
-               dy: Array[Double], _dy_offset: Int, incy: Int): Unit = {
+        dy: Array[Double], _dy_offset: Int, incy: Int): Unit = {
 
         DenseTensorBLAS.getTensorBLAS.daxpy(n, da, dx, _dx_offset, incx, dy, _dy_offset, incy)
       }
 
       def dot(n: Int, dx: Array[Double], _dx_offset: Int, incx: Int, dy: Array[Double],
-              _dy_offset: Int, incy: Int): Double = {
+        _dy_offset: Int, incy: Int): Double = {
         DenseTensorBLAS.getTensorBLAS.ddot(n, dx, _dx_offset, incx, dy, _dy_offset, incy)
       }
 
       def ger(m: Int, n: Int, alpha: Double, x: Array[Double], _x_offset: Int, incx: Int,
-              y: Array[Double], _y_offset: Int,
-              incy: Int, a: Array[Double], _a_offset: Int, lda: Int): Unit = {
+        y: Array[Double], _y_offset: Int,
+        incy: Int, a: Array[Double], _a_offset: Int, lda: Int): Unit = {
 
         DenseTensorBLAS.getTensorBLAS.dger(m, n, alpha, x, _x_offset, incx, y, _y_offset,
           incy, a, _a_offset, lda)
@@ -392,27 +393,31 @@ object TensorNumericMath {
       def getType(): String = "Double"
 
       override def vPowx(n: Int, a: Array[Double], aOffset: Int, b: Double, y: Array[Double],
-                         yOffset: Int): Unit = {
+        yOffset: Int): Unit = {
         require(MKL.isMKLLoaded)
         MKL.vdPowx(n, a, aOffset, b, y, yOffset)
       }
 
-      override def vLn(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int): Unit = {
+      override def vLn(n: Int, a: Array[Double], aOffset: Int, y: Array[Double],
+                       yOffset: Int): Unit = {
         require(MKL.isMKLLoaded)
         MKL.vdLn(n, a, aOffset, y, yOffset)
       }
 
-      override def vExp(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int): Unit = {
+      override def vExp(n: Int, a: Array[Double], aOffset: Int, y: Array[Double],
+                        yOffset: Int): Unit = {
         require(MKL.isMKLLoaded)
         MKL.vdExp(n, a, aOffset, y, yOffset)
       }
 
-      override def vSqrt(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int): Unit = {
+      override def vSqrt(n: Int, a: Array[Double], aOffset: Int, y: Array[Double],
+                         yOffset: Int): Unit = {
         require(MKL.isMKLLoaded)
         MKL.vdSqrt(n, a, aOffset, y, yOffset)
       }
 
-      override def vLog1p(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int): Unit = {
+      override def vLog1p(n: Int, a: Array[Double], aOffset: Int, y: Array[Double],
+                          yOffset: Int): Unit = {
         require(MKL.isMKLLoaded)
         MKL.vdLog1p(n, a, aOffset, y, yOffset)
       }
@@ -431,20 +436,28 @@ object TensorNumericMath {
         }
       }
 
+      override def sub(n: Int, a: Array[Double], offset: Int, v: Double, stride: Int): Unit = {
+        var i = 0
+        while (i < n) {
+          a(offset + i * stride) -= v
+          i += 1
+        }
+      }
+
       override def vAdd(n: Int, a: Array[Double], aOffset: Int, b: Array[Double], bOffset: Int,
-                        y: Array[Double], yOffset: Int): Unit = {
+        y: Array[Double], yOffset: Int): Unit = {
         require(MKL.isMKLLoaded)
         MKL.vdAdd(n, a, aOffset, b, bOffset, y, yOffset)
       }
 
       override def vSub(n: Int, a: Array[Double], aOffset: Int, b: Array[Double], bOffset: Int,
-                        y: Array[Double], yOffset: Int): Unit = {
+        y: Array[Double], yOffset: Int): Unit = {
         require(MKL.isMKLLoaded)
         MKL.vdSub(n, a, aOffset, b, bOffset, y, yOffset)
       }
 
       override def vMul(n: Int, a: Array[Double], aOffset: Int, b: Array[Double], bOffset: Int,
-                        y: Array[Double], yOffset: Int): Unit = {
+        y: Array[Double], yOffset: Int): Unit = {
         if (MKL.isMKLLoaded) {
           MKL.vdMul(n, a, aOffset, b, bOffset, y, yOffset)
         } else {
@@ -457,7 +470,7 @@ object TensorNumericMath {
       }
 
       override def vDiv(n: Int, a: Array[Double], aOffset: Int, b: Array[Double], bOffset: Int,
-                        y: Array[Double], yOffset: Int): Unit = {
+        y: Array[Double], yOffset: Int): Unit = {
         if (MKL.isMKLLoaded) {
           MKL.vdDiv(n, a, aOffset, b, bOffset, y, yOffset)
         } else {

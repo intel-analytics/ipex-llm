@@ -27,7 +27,7 @@ object DenseTensorMath {
   val taskSize: Int = System.getProperty("cpu.task.size", "250000").toInt
 
   def mul[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], value: T)
-                                        (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     if (x != null) {
       require(self.nElement() == x.nElement())
       self.copy(x)
@@ -48,8 +48,9 @@ object DenseTensorMath {
 
   def cmul[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == y.nElement(), "element number doesn't match")
-    if (self.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
+    require(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
+      "element number doesn't match")
+    if (self.isContiguous() && x.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
       ev.vMul(self.nElement(), x.storage().array(), x.storageOffset() - 1,
         y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
           - 1)
@@ -67,8 +68,9 @@ object DenseTensorMath {
 
   def cdiv[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == y.nElement(), "element number doesn't match")
-    if (self.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
+    require(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
+      "element number doesn't match")
+    if (self.isContiguous() && y.isContiguous() && x.isContiguous() && MKL.isMKLLoaded) {
       ev.vDiv(self.nElement(), x.storage().array(), x.storageOffset() - 1,
         y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
           - 1)
@@ -85,15 +87,15 @@ object DenseTensorMath {
   }
 
   def cadd[@specialized(Float, Double) T](
-                                           self: DenseTensor[T], x: Tensor[T], value: T, y: Tensor[T])
-                                         (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(x != null)
+    self: DenseTensor[T], x: Tensor[T], value: T, y: Tensor[T])
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(x != null && y.nElement() == x.nElement())
 
     if (!self.eq(x)) {
       self.resizeAs(x).copy(x)
     }
 
-    if (self.eq(x) && self.isContiguous() && y.isContiguous() && self.nElement() == y.nElement()) {
+    if (self.eq(x) && self.isContiguous() && y.isContiguous()) {
       ev.axpy(y.nElement(), value, y.storage().array(), y.storageOffset() - 1, 1,
         self.storage().array(), self.storageOffset() - 1, 1)
     } else {
@@ -107,18 +109,18 @@ object DenseTensorMath {
     self
   }
 
-  def csub[@specialized(Float, Double) T](self : DenseTensor[T], x : Tensor[T], value : T, y : Tensor[T])
-                                         (implicit ev:TensorNumeric[T]): Tensor[T] = {
-    require(x != null)
-
+  def csub[@specialized(Float, Double) T]
+  (self: DenseTensor[T], x: Tensor[T], value: T, y: Tensor[T])
+  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(x != null && x.nElement() == y.nElement())
     if(!self.eq(x)) {
       self.resizeAs(x).copy(x)
     }
 
-    if(self.eq(x) && self.isContiguous() && y.isContiguous() && self.nElement() == y.nElement()) {
-      ev.axpy(y.nElement(), value, y.storage().array(), y.storageOffset() - 1, 1, self.storage().array(), self.storageOffset() - 1, 1)
+    if(self.eq(x) && self.isContiguous() && y.isContiguous()) {
+      ev.axpy(y.nElement(), value, y.storage().array(),
+        y.storageOffset() - 1, 1, self.storage().array(), self.storageOffset() - 1, 1)
     } else {
-      //      Apply.apply2[T](self, y, (a, i1, b, i2) => a(i1) = ev.minus(a(i1), ev.times(value, b(i2))))
       val func2 = new TensorFunc4[T] {
         override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit =
         { data1(offset1) = ev.minus(data1(offset1), ev.times(value, data2(offset2)))  }}
@@ -128,7 +130,7 @@ object DenseTensorMath {
   }
 
   def add[@specialized(Float, Double) T: ClassTag](s: T, t: DenseTensor[T])
-                                                  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     val result = new DenseTensor[T]()
     result.resizeAs(t)
     result.copy(t)
@@ -143,7 +145,7 @@ object DenseTensorMath {
   }
 
   def add[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], t: Tensor[T])
-                                                  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     val result = new DenseTensor[T]()
     result.resizeAs(self)
     result.copy(self)
@@ -165,7 +167,7 @@ object DenseTensorMath {
   }
 
   def sub[@specialized(Float, Double) T: ClassTag](s: T, t: DenseTensor[T])
-                                                  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     val result = new DenseTensor[T]()
     result.resizeAs(t)
     result.copy(t)
@@ -179,7 +181,7 @@ object DenseTensorMath {
   }
 
   def sub[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], t: Tensor[T])
-                                                  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     val result = new DenseTensor[T]()
     result.resizeAs(self)
     result.copy(self)
@@ -193,7 +195,7 @@ object DenseTensorMath {
   }
 
   def neg[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T])
-                                                  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     val result = new DenseTensor[T]()
     result.resizeAs(self)
     result.copy(self)
@@ -208,7 +210,7 @@ object DenseTensorMath {
   }
 
   def divide[@specialized(Float, Double) T: ClassTag](s: T, t: DenseTensor[T])
-                                                     (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     val result = new DenseTensor[T]()
     result.resizeAs(t)
     result.copy(t)
@@ -222,7 +224,7 @@ object DenseTensorMath {
   }
 
   def divide[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], t: Tensor[T])
-                                                     (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     val result = new DenseTensor[T]()
     result.resizeAs(self)
     result.copy(self)
@@ -236,7 +238,7 @@ object DenseTensorMath {
   }
 
   def mul[@specialized(Float, Double) T: ClassTag](s: T, t: DenseTensor[T])
-                                                  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     val result = new DenseTensor[T]()
     result.resizeAs(t)
     result.copy(t)
@@ -250,7 +252,7 @@ object DenseTensorMath {
   }
 
   def mul[@specialized(Float, Double) T: ClassTag](self: Tensor[T], t: Tensor[T])
-                                                  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     if (self.nDimension() == 1 && t.nDimension() == 1) {
       require(self.size(1) == t.size(1), "vector size not match")
 
@@ -272,15 +274,15 @@ object DenseTensorMath {
   }
 
   def pow[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], n: T)
-                                                  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(self.nElement() == x.nElement())
     if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
-      ev.vLn(self.nElement(), x.storage().array(), x.storageOffset() - 1,
+      ev.vPowx(self.nElement(), x.storage().array(), x.storageOffset() - 1, n,
         self.storage().array(), self.storageOffset() - 1)
     } else {
       val func = new TensorFunc4[T] {
         override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
-          data1(offset1) = ev.log(data2(offset2))
+          data1(offset1) = ev.pow(data2(offset2), n)
         }
       }
       DenseTensorApply.apply2[T](self, x, func)
@@ -289,7 +291,7 @@ object DenseTensorMath {
   }
 
   def exp[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
-                                                  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(self.nElement() == x.nElement())
     if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
       ev.vExp(self.nElement(), x.storage().array(), x.storageOffset() - 1,
@@ -306,7 +308,7 @@ object DenseTensorMath {
   }
 
   def log[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
-                                                  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(self.nElement() == x.nElement())
     if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
       ev.vLn(self.nElement(), x.storage().array(), x.storageOffset() - 1,
@@ -323,7 +325,7 @@ object DenseTensorMath {
   }
 
   def sqrt[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
-                                                   (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(self.nElement() == x.nElement())
     if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
       ev.vSqrt(self.nElement(), x.storage().array(), x.storageOffset() - 1,
@@ -340,7 +342,7 @@ object DenseTensorMath {
   }
 
   def log1p[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
-                                                    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(self.nElement() == x.nElement())
     if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
       ev.vLog1p(self.nElement(), x.storage().array(), x.storageOffset() - 1,
@@ -371,7 +373,7 @@ object DenseTensorMath {
   }
 
   def sum[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
-                                                  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(_dim >= 0 && _dim < x.nDimension, s"dimension ${_dim + 1} out of range")
     val result = if (self == null) new DenseTensor[T]() else self
     val sizes = x.size()
@@ -404,8 +406,8 @@ object DenseTensorMath {
   }
 
   def addmm[@specialized(Float, Double) T: ClassTag](r: Tensor[T], beta: T, t: Tensor[T],
-                                                     alpha: T, m1: Tensor[T], m2: Tensor[T])
-                                                    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    alpha: T, m1: Tensor[T], m2: Tensor[T])
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(m1.dim() == 2 && m2.dim() == 2,
       s"matrices expected, got ${m1.dim()}, ${m2.dim()} tensors")
     require(m1.size(2) == m2.size(1),
@@ -485,7 +487,7 @@ object DenseTensorMath {
   }
 
   def addr[@specialized(Float, Double) T](r: Tensor[T], beta: T, t: Tensor[T],
-                                          alpha: T, vec1: Tensor[T], vec2: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    alpha: T, vec1: Tensor[T], vec2: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(vec1.dim() == 1 && vec2.dim() == 1)
     require(t.dim() == 2)
     require(t.size(1) == vec1.size(1) && t.size(2) == vec2.size(1))
@@ -523,7 +525,7 @@ object DenseTensorMath {
   }
 
   def addmv[@specialized(Float, Double) T](r: Tensor[T], beta: T, t: Tensor[T], alpha: T,
-                                           mat: Tensor[T], vec: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    mat: Tensor[T], vec: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(mat.nDimension() == 2 && vec.nDimension() == 1)
     require(mat.size(2) == vec.size(1))
     require(t.nDimension() == 1)
