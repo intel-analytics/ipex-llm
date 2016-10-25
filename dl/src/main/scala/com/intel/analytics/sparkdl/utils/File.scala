@@ -24,6 +24,7 @@ import java.util.{HashMap, Map}
 
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import com.sun.xml.bind.v2.runtime.unmarshaller.SAXConnector
 
 
 sealed abstract class TorchObject(val typeId: Int)
@@ -835,7 +836,7 @@ object File {
     result.output.copy(output)
 
     for (m <- readModules(modules)) {
-      result.modules += m
+      result.modules += m.asInstanceOf[Module[Activities, Activities, Double]]
     }
     result
   }
@@ -1155,7 +1156,7 @@ object File {
     }
 
     for (m <- readModules(modules)) {
-      result.modules += m
+      result.modules += m.asInstanceOf[Module[Activities, Activities, Double]]
     }
     result
   }

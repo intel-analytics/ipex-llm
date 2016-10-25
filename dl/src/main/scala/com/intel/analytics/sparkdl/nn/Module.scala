@@ -51,8 +51,8 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
   }
 
   // list of sub modules
-  val modules: ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]]
-    = ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]]()
+  val modules: ArrayBuffer[Module[Activities, Activities, T]]
+    = ArrayBuffer[Module[Activities, Activities, T]]()
 
   protected var train: Boolean = true
 

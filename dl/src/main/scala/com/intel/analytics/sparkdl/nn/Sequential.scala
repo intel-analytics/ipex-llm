@@ -29,7 +29,7 @@ class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: Clas
     var i = 0
     var result = input.asInstanceOf[Activities]
     while (i < modules.length) {
-      result = modules(i).asInstanceOf[Module[Activities, Activities, T]].forward(result)
+      result = modules(i).forward(result)
       i += 1
     }
 
@@ -42,14 +42,10 @@ class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: Clas
     var error = nextError.asInstanceOf[Activities]
     while (i > 0) {
       val input = modules(i - 1).output
-      error = modules(i)
-        .asInstanceOf[Module[Activities, Activities, T]]
-        .backward(input, error)
+      error = modules(i).backward(input, error)
       i -= 1
     }
-    error = modules(0)
-      .asInstanceOf[Module[Activities, Activities, T]]
-      .backward(input.asInstanceOf[Activities], error)
+    error = modules(0).backward(input.asInstanceOf[Activities], error)
 
     this.gradInput = error.asInstanceOf[A]
     gradInput

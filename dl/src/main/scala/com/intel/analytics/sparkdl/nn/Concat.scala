@@ -45,7 +45,6 @@ class Concat[T: ClassTag](val dimension: Int)(
     var i = 0
     while (i < this.modules.length) {
       val currentOutput = this.modules(i)
-        .asInstanceOf[Module[Activities, Activities, T]]
         .updateOutput(input.asInstanceOf[Activities])
         .asInstanceOf[Tensor[T]]
 
@@ -108,7 +107,6 @@ class Concat[T: ClassTag](val dimension: Int)(
     while (i < this.modules.length) {
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
       val currentGradInput = this.modules(i)
-        .asInstanceOf[Module[Activities, Activities, T]]
         .updateGradInput(
           input.asInstanceOf[Activities],
           gradOutput.narrow(dimension, offset, currentOutput.size(dimension))
@@ -137,7 +135,7 @@ class Concat[T: ClassTag](val dimension: Int)(
     var i = 0
     while (i < this.modules.length) {
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
-      this.modules(i).asInstanceOf[Module[Activities, Activities, T]].accGradParameters(
+      this.modules(i).accGradParameters(
         input.asInstanceOf[Activities],
         gradOutput.narrow(dimension, offset, currentOutput.size(dimension))
           .asInstanceOf[Activities], scale)
@@ -189,7 +187,6 @@ class Concat[T: ClassTag](val dimension: Int)(
     while (i < this.modules.length) {
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
       val currentGradInput = this.modules(i)
-        .asInstanceOf[Module[Activities, Activities, T]]
         .backward(input.asInstanceOf[Activities], gradouts(i).asInstanceOf[Activities])
         .asInstanceOf[Tensor[T]]
 
@@ -277,7 +274,7 @@ class Concat[T: ClassTag](val dimension: Int)(
     val extlast = "       "
     s"nn.Concat {$line${tab}input$line${
       modules.zipWithIndex
-        .map { case (model: Module[Tensor[_], Tensor[_], T], index: Int)
+        .map { case (model: Module[Activities, Activities, T], index: Int)
         => s"$tab$next(${index + 1}): ${
           if (index == modules.length - 1) {
             model.setLine(line + tab + extlast)
