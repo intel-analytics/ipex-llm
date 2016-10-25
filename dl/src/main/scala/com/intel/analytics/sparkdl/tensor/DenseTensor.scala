@@ -1680,7 +1680,7 @@ object DenseTensor {
     // Randomly exchange the elements
     i = size - 1
     while (i > 0) {
-      val rand = Random.nextInt()
+      val rand = Random.nextInt(size)
       val tmp = array(i)
       array(i) = array(rand)
       array(rand) = tmp
