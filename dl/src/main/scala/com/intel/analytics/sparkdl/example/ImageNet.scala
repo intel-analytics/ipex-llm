@@ -23,6 +23,8 @@ import java.util
 import java.util.Collections
 import java.util.concurrent.{Executors, LinkedBlockingQueue}
 
+import com.intel.analytics.sparkdl.example.ImageNetLocal.{PCA, Split}
+import com.intel.analytics.sparkdl.example.ImageNetLocal.PCA.rgb
 import com.intel.analytics.sparkdl.tensor.Tensor
 
 object ImageNetUtils {
@@ -94,7 +96,7 @@ object ImageNetUtils {
     val frameLength = cropWidth * cropHeight
     while (i < frameLength) {
       result(resultOffset + i) = ((rawData(offset + (startIndex + (i / cropWidth) * width +
-        (i % cropWidth)) * 3 + 2) & 0xff) / 255.0 - mean._1) / std._1
+        (i % cropWidth)) * 3 + 2) & 0xff) / 255.0  - mean._1) / std._1
       result(resultOffset + i + frameLength) = ((rawData(offset +
         (startIndex + (i / cropWidth) * width + (i % cropWidth)) * 3 + 1) & 0xff) / 255.0
         - mean._2) / std._2
@@ -113,19 +115,19 @@ object ImageNetUtils {
     val width = buffer.getInt
     val height = buffer.getInt
 
-    val startW = r.nextInt(width - cropWidth)
-    val startH = r.nextInt(height - cropHeight)
+    val startW = r.nextInt((width - cropWidth)/2)
+    val startH = r.nextInt((height - cropHeight)/2)
     val offset = 2 * 4
     val startIndex = startW + startH * width
     var i = 0
     val frameLength = cropWidth * cropHeight
     while (i < frameLength) {
       result(resultOffset + i) = ((rawData(offset + (startIndex + (i / cropWidth) * width +
-        (i % cropWidth)) * 3 + 2) & 0xff) / 255.0f - mean._1) / std._1
+        (i % cropWidth)) * 3 + 2 )  & 0xff ) / 255.0f + (if (Split.getValFlag) rgb(Array(1)) else 0f) - mean._1) / std._1
       result(resultOffset + i + frameLength) = ((rawData(offset + (startIndex +
-        (i / cropWidth) * width + (i % cropWidth)) * 3 + 1) & 0xff) / 255.0f - mean._2) / std._2
+        (i / cropWidth) * width + (i % cropWidth)) * 3 + 1)  & 0xff) / 255.0f + (if (Split.getValFlag) rgb(Array(2)) else 0f) - mean._2) / std._2
       result(resultOffset + i + frameLength * 2) = ((rawData(offset +
-        (startIndex + (i / cropWidth) * width + (i % cropWidth)) * 3) & 0xff) / 255.0f
+        (startIndex + (i / cropWidth) * width + (i % cropWidth)) * 3) & 0xff) / 255.0f + (if (Split.getValFlag) rgb(Array(3)) else 0f)
         - mean._3) / std._3
       i += 1
     }

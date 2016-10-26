@@ -18,7 +18,7 @@
 package com.intel.analytics.sparkdl.models
 
 import com.github.fommil.netlib.{BLAS, NativeSystemBLAS}
-import com.intel.analytics.sparkdl.models.ResNet.ShortcutType
+import com.intel.analytics.sparkdl.models.imagenet.ResNet.ShortcutType
 import com.intel.analytics.sparkdl.models.imagenet._
 import com.intel.analytics.sparkdl.models.mnist.LeNet5
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Module}

@@ -20,10 +20,17 @@ package com.intel.analytics.sparkdl.example
 import java.awt.color.ColorSpace
 import java.util
 
-import com.intel.analytics.sparkdl.nn.ClassNLLCriterion
+import com.intel.analytics.sparkdl.models.imagenet.ResNet
+import com.intel.analytics.sparkdl.models.imagenet.ResNet.ShortcutType
+import com.intel.analytics.sparkdl.nn.{CrossEntropyCriterion, Module, SpatialBatchNormalization, SpatialConvolution}
 import com.intel.analytics.sparkdl.optim.{EvaluateMethods, SGD}
-import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.utils.{File, T}
+
+import scala.collection.mutable
+import scala.reflect.ClassTag
 
 object ImageNetLocal {
   val startTime = System.nanoTime()
@@ -53,10 +60,11 @@ object ImageNetLocal {
     labelsMap: Map[String, Double], testInterval: Int, donkeyVal: Donkey,
     dataSetVal: DataSets, batchSize: Int, modelPath : String): Unit = {
     // Compute Mean on amount of samples
-    val samples = 10000
+    //val samples = 10000
+    /*val samples = 100
     log(s"Start to calculate Mean on $samples samples")
     var (meanR, meanG, meanB) = Array.tabulate(samples)(n => {
-      print(".")
+      //print(".")
       val data = donkey.pull
       dataSet.post(data._2)
       ImageNetUtils.computeMean(data._1, data._2.dataOffset)
@@ -69,40 +77,51 @@ object ImageNetLocal {
     // Compute std on amount of samples
     log(s"Start to calculate std on $samples samples")
     var (varR, varG, varB) = Array.tabulate(samples)(n => {
-      print(".")
+      //print(".")
       val data = donkey.pull
       dataSet.post(data._2)
       ImageNetUtils.computeVar(data._1, meanR, meanG, meanB, data._2.dataOffset)
     }).reduce((a, b) => (a._1 + b._1, a._2 + b._2, a._3 + b._3))
     varR /= samples
     varG /= samples
-    varB /= samples
+    varB /= samples*/
 
     val model = netType match {
       case "alexnet" => AlexNet.getModel[Float](classNum)
       case "googlenet" => GoogleNet.getModel[Float](classNum)
       case "googlenet-bn" => GoogleNet.getModel[Float](classNum, "googlenet-bn")
       case "googlenet-cf" => GoogleNet.getModelCaffe[Float](classNum)
+      case "resnet" => ResNet[Float](classNum, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
       case _ => throw new IllegalArgumentException
     }
+    if (netType == "resnet") {
+      shareGradInput(model)
+      convInit("SpatialConvolution", model)
+      bnInit("SpatialBatchNormalization", model)
+    }
+
+
     val (weights, grad) = model.getParameters()
     println(s"modelsize ${weights.nElement()}")
     println(model)
-    val criterion = new ClassNLLCriterion[Float]()
+    val criterion = new CrossEntropyCriterion[Float]()
     val epochNum = 90
     val featureShape = Array(3, 224, 224)
     val targetShape = Array(1)
     val sgd = new SGD[Float]
-    val state = T("momentum" -> 0.9, "dampening" -> 0.0)
+    val state = T("learningRate" -> 0.1, "momentum" -> 0.9, "dampening" -> 0.0)
     val stageImgs = new util.ArrayDeque[Image](batchSize)
     val input = Tensor[Float](batchSize, 3, 224, 224)
     val target = Tensor[Float](batchSize)
-    val meanRFloat = meanR.toFloat
-    val meanGFloat = meanG.toFloat
-    val meanBFloat = meanB.toFloat
-    val varRFloat = varR.toFloat
-    val varGFloat = varG.toFloat
-    val varBFloat = varB.toFloat
+    val meanRFloat = MeanStd.mean(0) // meanR.toFloat
+    val meanGFloat = MeanStd.mean(1) // meanG.toFloat
+    val meanBFloat = MeanStd.mean(2) // meanB.toFloat
+    val varRFloat = MeanStd.std(0) // varR.toFloat
+    val varGFloat = MeanStd.std(1) // varG.toFloat
+    val varBFloat = MeanStd.std(2) // varB.toFloat
+
+    Split.unSetValFlag
+
     val iter = ImageNetUtils.toTensorFloat(
       donkey.map(d => {
         stageImgs.push(d._2)
@@ -117,6 +136,7 @@ object ImageNetLocal {
       target
     )
 
+    Split.setValFlag
 
     val stageImgsVal = new util.ArrayDeque[Image](batchSize)
     val iterVal = ImageNetUtils.toTensorFloat(
@@ -133,21 +153,23 @@ object ImageNetLocal {
       target
     )
 
-    log(s"meanR is $meanR meanG is $meanG meanB is $meanB")
-    log(s"varR is $varR varG is $varG varB is $varB")
+    //log(s"meanR is $meanR meanG is $meanG meanB is $meanB")
+    //log(s"varR is $varR varG is $varG varB is $varB")
     log("Start to train...")
 
     var wallClockTime = 0L
     for (i <- 1 to epochNum) {
       println(s"Epoch[$i] Train")
 
-      for (regime <- regimes(netType)) {
+      /*for (regime <- regimes(netType)) {
         if (i >= regime._1 && i <= regime._2) {
           state("learningRate") = regime._3
           state("weightDecay") = regime._4
         }
       }
+      */
 
+      state("learningRate") =  state("learningRate").asInstanceOf[Double] * Math.pow(0.1, math.floor((i-1)/30))
       var j = 0
       var c = 0
       model.training()
@@ -236,5 +258,107 @@ object ImageNetLocal {
 
     run(donkey, dataSet, netType, classNum, labelsMap, testInterval,
       donkeyVal, dataSetVal, batchSize, modelPath)
+  }
+
+  def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
+                                                             (implicit ev: TensorNumeric[T]): Unit = {
+    def sharingKey(m: Module[T]) = m.getClass.getName
+
+    val cache = mutable.Map[Any, Storage[T]]()
+
+    model.mapModules(m => {
+      val moduleType = m.getClass.getName
+      if (!moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatAddTable")) {
+        val key = sharingKey(m)
+        if (!cache.contains(key)){
+          cache.put(key, Storage(Array(ev.fromType[Int](1))))
+        }
+        m.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
+      }
+    })
+
+    for ((m, i) <- model
+      .findModules("com.intel.analytics.sparkdl.nn.ConcatAddTable")
+      .zipWithIndex){
+      if (!cache.contains(i % 2)) {
+        cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
+      }
+      m.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
+    }
+
+    cache.put("gradWeightMM", Storage(Array(ev.fromType[Int](1))))
+    cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
+    cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
+    for ((m, i) <- model
+      .findModules("com.intel.analytics.sparkdl.nn.SpatialConvolution")
+      .zipWithIndex){
+      val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
+      tmpModel.setSharedVar
+      tmpModel.setGradWeightMM(Tensor[T](cache.get("gradWeightMM").get))
+      tmpModel.fInput = Tensor[T](cache.get("fInput").get)
+      tmpModel.fGradInput = Tensor[T](cache.get("fGradInput").get)
+    }
+  }
+
+  def convInit[@specialized(Float, Double) T: ClassTag](name: String, model: Module[T])
+                                                       (implicit ev: TensorNumeric[T]): Unit = {
+    for ((m, i) <- model
+      .findModules(name)
+      .zipWithIndex) {
+      val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
+      val n = tmpModel.kernelW * tmpModel.kernelH * tmpModel.nOutputPlane
+      tmpModel.weight.apply1(_ => ev.fromType[Float](RNG.normal(0, Math.sqrt(2 / n)).toFloat))
+      tmpModel.bias.apply1(_ => ev.fromType[Float](0))
+    }
+  }
+
+  def bnInit[@specialized(Float, Double) T: ClassTag](name: String, model: Module[T])
+                                                     (implicit ev: TensorNumeric[T]): Unit = {
+    for ((m, i) <- model
+      .findModules(name)
+      .zipWithIndex) {
+      val tmpModel = m.asInstanceOf[SpatialBatchNormalization[T]]
+      tmpModel.weight.apply1(_ => ev.fromType[Float](1f))
+      tmpModel.bias.apply1(_ => ev.fromType[Float](0f))
+    }
+  }
+
+  object MeanStd {
+    val mean = Array(0.485f, 0.456f, 0.406f)
+    val std = Array(0.229f, 0.224f, 0.225f)
+  }
+  object PCA {
+    val eigval = Tensor[Float](Storage(Array( 0.2175f, 0.0188f, 0.0045f )), 1, Array(3))
+    val eigvec = Tensor[Float](Storage(Array( -0.5675f,  0.7192f,  0.4009f,
+                                       -0.5808f, -0.0045f, -0.8140f,
+                                       -0.5836f, -0.6948f,  0.4203f)), 1, Array(3, 3))
+    val alphastd = 0.1f
+    val alpha = Tensor[Float](3).apply1(_ => RNG.uniform(0, alphastd).toFloat)
+    val rgb = eigvec.clone.cmul(alpha.view(1, 3).expand(Array(3, 3)))
+      .cmul(eigval.view(1, 3).expand(Array(3, 3)))
+      .sum(2).squeeze
+  }
+  object ColorJitter {
+    val brightness = 0.4f
+    val contrast = 0.4f
+    val saturation = 0.4f
+    def blend[@specialized(Float, Double) T: ClassTag](img1: Tensor[T], img2: Tensor[T], alpha: T)
+                                                      (implicit ev: TensorNumeric[T]) =
+      img1.mul(alpha).add(ev.minus(ev.fromType(1), alpha), img2)
+    def grayScale[@specialized(Float, Double) T: ClassTag](dst: Tensor[T], img: Tensor[T])
+                                                          (implicit ev: TensorNumeric[T]): Tensor[T] = {
+      dst.resizeAs(img)
+      dst(1).zero
+      dst(1).add(ev.fromType(0.299), img(1)).add(ev.fromType(0.587), img(2)).add(ev.fromType(0.114), img(3))
+      dst(2).copy(dst(1))
+      dst(3).copy(dst(1))
+      dst
+    }
+  }
+  object Split {
+    var flag = false
+    def setValFlag() = flag = true
+    def unSetValFlag() = flag = false
+    def getValFlag() = flag
   }
 }

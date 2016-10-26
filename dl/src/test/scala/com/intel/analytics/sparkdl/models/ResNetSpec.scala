@@ -16,14 +16,15 @@
  */
 
 package com.intel.analytics.sparkdl.models
-import com.intel.analytics.sparkdl.models.ResNet.ShortcutType
+import com.intel.analytics.sparkdl.models.imagenet.ResNet
+import com.intel.analytics.sparkdl.models.imagenet.ResNet.ShortcutType
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim.SGD
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.torch.TH
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
-import com.intel.analytics.sparkdl.utils.{T, Engine}
+import com.intel.analytics.sparkdl.utils.{Engine, T}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.{immutable, mutable}

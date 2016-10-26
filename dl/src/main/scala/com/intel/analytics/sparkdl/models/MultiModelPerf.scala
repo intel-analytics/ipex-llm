@@ -21,8 +21,8 @@ import java.util.concurrent.Executors
 
 import com.github.fommil.netlib.{BLAS, NativeSystemBLAS}
 import com.intel.analytics.sparkdl.utils.T
-import com.intel.analytics.sparkdl.models.ResNet.ShortcutType
-import com.intel.analytics.sparkdl.models.imagenet.{AlexNet, AlexNet_OWT, GoogleNet_v1, GoogleNet_v2}
+import com.intel.analytics.sparkdl.models.imagenet.ResNet.ShortcutType
+import com.intel.analytics.sparkdl.models.imagenet._
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, CrossEntropyCriterion, Module}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor

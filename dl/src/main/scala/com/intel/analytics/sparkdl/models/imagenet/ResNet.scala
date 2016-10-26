@@ -15,10 +15,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.sparkdl.models
+package com.intel.analytics.sparkdl.models.imagenet
 
 import com.intel.analytics.sparkdl.nn._
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.utils.Table
 
 import scala.reflect.ClassTag
