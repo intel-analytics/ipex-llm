@@ -31,7 +31,7 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
   implicit ev: TensorNumeric[T]) extends Module[A, B, T] {
 
   def add(module: Module[_ <: Activities, _ <: Activities, T]): this.type = {
-    modules += module
+    modules += module.asInstanceOf[Module[Activities, Activities, T]]
     this
   }
 
