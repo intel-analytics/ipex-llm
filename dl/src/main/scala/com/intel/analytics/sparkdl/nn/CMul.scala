@@ -19,71 +19,98 @@ package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
+
 import scala.reflect.ClassTag
 
-class CAdd[@specialized(Float, Double) T: ClassTag](
+class CMul[@specialized(Float, Double) T: ClassTag](
   size: Array[Int])(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  val bias: Tensor[T] = Tensor[T](size)
-  this.gradBias = Tensor[T](size)
+  val weight: Tensor[T] = Tensor[T](size)
+  this.gradWeight = Tensor[T](size)
   reset()
 
   override def reset(): Unit = {
-    val stdv = 1.0/math.sqrt(bias.nElement())
-    bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+    val stdv = 1.0/math.sqrt(weight.nElement())
+    weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input).copy(input)
-    if (input.nElement() == bias.nElement()) {
-      output.add(bias)
+    if (input.nElement() == weight.nElement()) {
+      output.cmul(weight)
     } else {
-      val expand = if (bias.dim() == input.dim()) {
-        bias.view(bias.size())
+      val expand = if (weight.dim() == input.dim()) {
+        weight.view(weight.size())
       } else {
-        bias.view(Array(1) ++ bias.size())
+        weight.view(Array(1) ++ weight.size())
       }
+
       expand.expandAs(output)
-      output.add(expand)
+      output.cmul(expand)
     }
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput = gradOutput
+    gradInput.resizeAs(input).zero()
+    if (weight.nElement() == gradOutput.nElement()) {
+      gradInput.addcmul(ev.fromType[Int](1), weight, gradOutput)
+    } else {
+      val expand = if (weight.dim() == gradOutput.dim()) {
+        weight.view(weight.size())
+      } else {
+        weight.view(Array(1) ++ weight.size())
+      }
+
+      expand.expandAs(gradOutput)
+      gradInput.cmul(expand, gradOutput)
+    }
+
     gradInput
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
     scale: Double = 1.0): Unit = {
 
-    if (bias.nElement() == gradOutput.nElement()) {
-      gradBias.add(ev.fromType[Double](scale), gradOutput)
+    if (weight.nElement() == gradOutput.nElement()) {
+      gradWeight.addcmul(ev.fromType[Double](scale), input, gradOutput)
     } else {
-      val expand = if (bias.dim() == gradOutput.dim()) {
-        gradBias.view(gradBias.size())
+      if (weight.dim() == input.dim()) {
+        val sumFrom = Tensor[T](input.size()).copy(input)
+        sumFrom.cmul(gradOutput)
+
+        val sumInto = Tensor[T](input.size())
+        var i = 1
+        while (i <= weight.dim()) {
+          if (weight.size(i) != input.size(i)) {
+            sumInto.sum(sumFrom, i)
+          }
+          i += 1
+        }
+        gradWeight.add(ev.fromType[Double](scale), sumInto)
       } else {
-        gradBias.view(Array(1) ++ gradBias.size())
+        val repeat = Tensor[T](input.size()).copy(input)
+        repeat.cmul(gradOutput)
+        val sum = Tensor[T](input.size())
+        sum.sum(repeat, 1)
+        gradWeight.view(Array(1) ++ gradWeight.size()).add(ev.fromType[Double](scale), sum)
       }
 
-      expand.expandAs(gradOutput)
-      expand.add(ev.fromType[Double](scale), gradOutput)
     }
   }
 
   override def updateParameters(learningRate: T): Unit = {
-    bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
+    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
   }
 
   override def zeroGradParameters(): Unit = {
-    gradBias.zero()
+    gradWeight.zero()
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(this.bias), Array(this.gradBias))
+    (Array(this.weight), Array(this.gradWeight))
   }
 
   override def equals(obj: Any): Boolean = {
@@ -99,20 +126,20 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
       return true
     }
 
-    gradBias == other.gradBias &&
-      bias == other.bias
+    gradWeight == other.gradWeight &&
+      weight == other.weight
   }
 
   override def hashCode() : Int = {
     val seed = 37
     var hash = super.hashCode()
-    hash = hash * seed + gradBias.hashCode()
-    hash = hash * seed + bias.hashCode()
+    hash = hash * seed + gradWeight.hashCode()
+    hash = hash * seed + weight.hashCode()
 
     hash
   }
 
   override def toString(): String = {
-    s"nn.CAdd($size)"
+    s"nn.CMul($size)"
   }
 }

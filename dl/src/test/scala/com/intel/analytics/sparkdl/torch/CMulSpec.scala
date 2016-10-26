@@ -17,23 +17,23 @@
 
 package com.intel.analytics.sparkdl.torch
 
-import com.intel.analytics.sparkdl.nn.CAdd
+import com.intel.analytics.sparkdl.nn.CMul
 import com.intel.analytics.sparkdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class CAddSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class CMulSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
   }
 
-  "A CAdd(5, 1)" should "generate correct output and grad" in {
+  "A CMul(5, 1)" should "generate correct output and grad" in {
     val seed = 100
     RNG.setSeed(seed)
 
-    val layer = new CAdd[Double](Array(5, 1))
+    val layer = new CMul[Double](Array(5, 1))
     val input = Tensor[Double](5, 4)
     var i = 0
     input.apply1(_ => {i += 1; i})
@@ -48,29 +48,29 @@ class CAddSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val scalaTime = end - start
 
     val code = "torch.manualSeed(" + seed + ")\n" +
-      "module = nn.CAdd(5, 1)\n" +
-      "output = module:forward(input)\n" +
-      "gradInput = module:backward(input,gradOutput)\n" +
-      "gradBias = module.gradBias"
+      """module = nn.CMul(5, 1)
+        output = module:forward(input)
+        gradInput = module:backward(input,gradOutput)
+        gradWeight = module.gradWeight"""
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
-      Array("output", "gradInput", "gradBias"))
+      Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
-    val luaGradBias = torchResult("gradBias").asInstanceOf[Tensor[Double]]
+    val luaGradWeight = torchResult("gradWeight").asInstanceOf[Tensor[Double]]
 
     output should be (luaOutput)
     gradInput should be (luaGradInput)
-    layer.gradBias should be (luaGradBias)
+    layer.gradWeight should be (luaGradWeight)
 
-    println("Test case : CAdd, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    println("Test case : CMul, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
-  "A CAdd(3)" should "generate correct output and grad" in {
+  "A CMul(3)" should "generate correct output and grad" in {
     val seed = 100
     RNG.setSeed(seed)
 
-    val layer = new CAdd[Double](Array(3))
+    val layer = new CMul[Double](Array(3))
     val input = Tensor[Double](2, 3)
     var i = 0
     input.apply1(_ => {i += 1; i})
@@ -85,29 +85,29 @@ class CAddSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val scalaTime = end - start
 
     val code = "torch.manualSeed(" + seed + ")\n" +
-      "module = nn.CAdd(3)\n" +
-      "output = module:forward(input)\n" +
-      "gradInput = module:backward(input,gradOutput)" +
-      "gradBias = module.gradBias"
+      """module = nn.CMul(3)
+        output = module:forward(input)
+        gradInput = module:backward(input,gradOutput)
+        gradWeight = module.gradWeight"""
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
-      Array("output", "gradInput", "gradBias"))
+      Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
-    val luaGradBias = torchResult("gradBias").asInstanceOf[Tensor[Double]]
+    val luaGradWeight = torchResult("gradWeight").asInstanceOf[Tensor[Double]]
 
     output should be (luaOutput)
     gradInput should be (luaGradInput)
-    layer.gradBias should be (luaGradBias)
+    layer.gradWeight should be (luaGradWeight)
 
-    println("Test case : CAdd, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    println("Test case : CMul, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
-  "A CAdd(3, 4)" should "generate correct output and grad" in {
+  "A CMul(3, 4)" should "generate correct output and grad" in {
     val seed = 100
     RNG.setSeed(seed)
 
-    val layer = new CAdd[Double](Array(3, 4))
+    val layer = new CMul[Double](Array(3, 4))
     val input = Tensor[Double](2, 3, 4)
     var i = 0
     input.apply1(_ => {i += 1; i})
@@ -122,22 +122,23 @@ class CAddSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val scalaTime = end - start
 
     val code = "torch.manualSeed(" + seed + ")\n" +
-      "module = nn.CAdd(3, 4)\n" +
-      "output = module:forward(input)\n" +
-      "gradInput = module:backward(input,gradOutput)" +
-      "gradBias = module.gradBias"
+      """module = nn.CMul(3, 4)
+        output = module:forward(input)
+        gradInput = module:backward(input,gradOutput)
+        gradWeight = module.gradWeight"""
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
-      Array("output", "gradInput", "gradBias"))
+      Array("output", "gradInput", "gradWeight"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
-    val luaGradBias = torchResult("gradBias").asInstanceOf[Tensor[Double]]
+    val luaGradWeight = torchResult("gradWeight").asInstanceOf[Tensor[Double]]
 
     output should be (luaOutput)
     gradInput should be (luaGradInput)
-    layer.gradBias should be (luaGradBias)
+    layer.gradWeight should be (luaGradWeight)
 
-    println("Test case : CAdd, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    println("Test case : CMul, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
 }
+

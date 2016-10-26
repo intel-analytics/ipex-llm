@@ -771,4 +771,52 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     y should be (Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2)))
     z should be (Tensor(Storage(Array(2f * 1, 2f * 2, 2f * 3, 2f * 4)), 1, Array(2, 2)))
   }
+
+  "cmul" should "return right result 4" in {
+    val x = Tensor[Float](Storage(Array(1f, 2)), 1, Array(2, 1))
+    val y = Tensor(Storage(Array(1f, 2, 3, 4, 5, 6)), 1, Array(2, 3))
+    x.expandAs(y)
+    val z = Tensor[Float](2, 3).zero()
+
+    z.cmul(x, y)
+
+    x should be (Tensor(Storage(Array(1f, 2)), 1, Array(2, 3), Array(1, 0)))
+    y should be (Tensor(Storage(Array(1f, 2, 3, 4, 5, 6)), 1, Array(2, 3)))
+    z should be (Tensor(Storage(Array(1f * 1, 1f * 2, 1f * 3, 2f * 4, 2f * 5, 2f * 6)),
+      1, Array(2, 3)))
+  }
+
+  "cmul" should "return right result 5" in {
+    val x = Tensor[Float](Storage(Array(1f, 2, 3)), 1, Array(1, 3))
+    val y = Tensor(Storage(Array(1f, 2, 3, 4, 5, 6)), 1, Array(2, 3))
+    x.expandAs(y)
+    val z = Tensor[Float](2, 3).zero()
+
+    z.cmul(x, y)
+
+    x should be (Tensor(Storage(Array(1f, 2, 3)), 1, Array(2, 3), Array(0, 1)))
+    y should be (Tensor(Storage(Array(1f, 2, 3, 4, 5, 6)), 1, Array(2, 3)))
+    z should be (Tensor(Storage(Array(1f * 1, 2f * 2, 3f * 3, 1f * 4, 2f * 5, 3f * 6)),
+      1, Array(2, 3)))
+  }
+
+  "add" should "return right result" in {
+    val x = Tensor[Float](2, 2).fill(2f)
+    val y = Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2))
+
+    x.add(y)
+
+    x should be (Tensor(Storage(Array(2f + 1, 2f + 2, 2f + 3, 2f + 4)), 1, Array(2, 2)))
+    y should be (Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2)))
+  }
+
+  "add" should "return right result 2" in {
+    val x = Tensor[Float](2, 2).fill(2f)
+    val y = Tensor(Storage(Array(1f, 2, 3, 4)), 1, Array(2, 2))
+
+    y.add(x, 2, y)
+
+    x should be (Tensor(Storage(Array(2f, 2f, 2f, 2f)), 1, Array(2, 2)))
+    y should be (Tensor(Storage(Array(2f + 2, 2f + 4, 2f + 6, 2f + 8)), 1, Array(2, 2)))
+  }
 }
