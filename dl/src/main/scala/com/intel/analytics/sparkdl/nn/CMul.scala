@@ -24,7 +24,7 @@ import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import scala.reflect.ClassTag
 
 class CMul[@specialized(Float, Double) T: ClassTag](
-  size: Array[Int])(
+  val size: Array[Int])(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val weight: Tensor[T] = Tensor[T](size)
@@ -118,21 +118,23 @@ class CMul[@specialized(Float, Double) T: ClassTag](
       return false
     }
 
-    if (!obj.isInstanceOf[Linear[T]]) {
+    if (!obj.isInstanceOf[CMul[T]]) {
       return false
     }
-    val other = obj.asInstanceOf[Linear[T]]
+    val other = obj.asInstanceOf[CMul[T]]
     if (this.eq(other)) {
       return true
     }
 
-    gradWeight == other.gradWeight &&
+    size == other.size &&
+      gradWeight == other.gradWeight &&
       weight == other.weight
   }
 
   override def hashCode() : Int = {
     val seed = 37
     var hash = super.hashCode()
+    hash = hash * seed + size.hashCode()
     hash = hash * seed + gradWeight.hashCode()
     hash = hash * seed + weight.hashCode()
 
@@ -140,6 +142,6 @@ class CMul[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.CMul($size)"
+    s"nn.CMul(${java.util.Arrays.toString(size)})"
   }
 }

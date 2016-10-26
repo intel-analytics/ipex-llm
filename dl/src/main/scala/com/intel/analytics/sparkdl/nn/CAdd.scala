@@ -24,7 +24,7 @@ import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import scala.reflect.ClassTag
 
 class CAdd[@specialized(Float, Double) T: ClassTag](
-  size: Array[Int])(
+  val size: Array[Int])(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val bias: Tensor[T] = Tensor[T](size)
@@ -91,21 +91,23 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
       return false
     }
 
-    if (!obj.isInstanceOf[Linear[T]]) {
+    if (!obj.isInstanceOf[CAdd[T]]) {
       return false
     }
-    val other = obj.asInstanceOf[Linear[T]]
+    val other = obj.asInstanceOf[CAdd[T]]
     if (this.eq(other)) {
       return true
     }
 
-    gradBias == other.gradBias &&
+    size == other.size &&
+      gradBias == other.gradBias &&
       bias == other.bias
   }
 
   override def hashCode() : Int = {
     val seed = 37
     var hash = super.hashCode()
+    hash = hash * seed + size.hashCode()
     hash = hash * seed + gradBias.hashCode()
     hash = hash * seed + bias.hashCode()
 
@@ -113,6 +115,6 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.CAdd($size)"
+    s"nn.CAdd(${java.util.Arrays.toString(size)})"
   }
 }
