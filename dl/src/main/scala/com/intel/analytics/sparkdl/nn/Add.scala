@@ -22,9 +22,8 @@ import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
 
-class Add[@specialized(Float, Double) T: ClassTag](inputSize: Int,
-  private var initMethod: InitializationMethod = Default)(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+class Add[@specialized(Float, Double) T: ClassTag](inputSize: Int
+  )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val bias = Tensor[T](inputSize)
 
@@ -34,17 +33,9 @@ class Add[@specialized(Float, Double) T: ClassTag](inputSize: Int,
 
   reset()
 
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
-    this.initMethod = initMethod
-    this
-  }
-
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        val stdv = 1 / math.sqrt(bias.size(1))
-        bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-    }
+    val stdv = 1 / math.sqrt(bias.size(1))
+    bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

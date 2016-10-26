@@ -47,6 +47,7 @@ class AbsCriterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean
     }
     gradInput.mul(input, ev.fromType[Int](-1)).add(target)
 
+    require(gradInput.isContiguous())
     val bufferArray = gradInput.storage().array()
     val bufferOffset = gradInput.storageOffset() - 1
     var i = 0

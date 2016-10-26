@@ -31,6 +31,7 @@ class Abs[@specialized(Float, Double) T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    require(input.isContiguous() && gradOutput.isContiguous())
     gradInput.resizeAs(input).copy(gradOutput)
 
     val inputArray = input.storage().array()
