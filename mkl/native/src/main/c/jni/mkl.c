@@ -289,6 +289,44 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdDiv
    (*env)->ReleasePrimitiveArrayCritical(env, a, jni_a, 0);
 }
 
+/*
+    * Class:     com_intel_analytics_sparkdl_mkl_MKL
+    * Method:    vsLog1p
+    * Signature: (I[FI[FI)V
+    */
+   JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdAbs
+     (JNIEnv * env, jclass cls, jint n, jdoubleArray a, jint aOffset, jdoubleArray y,
+     jint yOffset) {
+
+    jdouble * jni_a = (*env)->GetPrimitiveArrayCritical(env, a, JNI_FALSE);
+    jdouble * jni_y = (*env)->GetPrimitiveArrayCritical(env, y, JNI_FALSE);
+
+    vdAbs( n, jni_a + aOffset, jni_y + yOffset);
+
+    (*env)->ReleasePrimitiveArrayCritical(env, y, jni_y, 0);
+    (*env)->ReleasePrimitiveArrayCritical(env, a, jni_a, 0);
+   }
+
+/*
+ * Class:     com_intel_analytics_sparkdl_mkl_MKL
+ * Method:    vdDiv
+ * Signature: (I[DI[DI[DI)V
+ */
+JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsAbs
+  (JNIEnv * env, jclass cls, jint n, jfloatArray a, jint aOffset,
+  jfloatArray y, jint yOffset) {
+
+
+   jfloat * jni_a = (*env)->GetPrimitiveArrayCritical(env, a, JNI_FALSE);
+   jfloat * jni_y = (*env)->GetPrimitiveArrayCritical(env, y, JNI_FALSE);
+
+   vsAbs(n, jni_a + aOffset, jni_y + yOffset);
+
+   (*env)->ReleasePrimitiveArrayCritical(env, y, jni_y, 0);
+   (*env)->ReleasePrimitiveArrayCritical(env, a, jni_a, 0);
+}
+
+
 #ifdef __cplusplus
 }
 #endif
