@@ -22,7 +22,7 @@ import com.intel.analytics.sparkdl.tensor.Tensor
 
 import scala.reflect.ClassTag
 
-class MSECriterion[T: ClassTag](implicit ev: TensorNumeric[T]) extends Criterion[T] {
+class MSECriterion[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   var gradInput: Tensor[T] = Tensor[T]()
   var sizeAverage = true
 
