@@ -19,12 +19,16 @@ package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.commons.lang3.SerializationUtils
-
 import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.utils.Activities
 
 import scala.reflect.ClassTag
 
-class Criterion[@specialized(Float, Double) T: ClassTag](
+abstract class TensorCriterion[@specialized(Float, Double) T: ClassTag]
+  (implicit ev: TensorNumeric[T]) extends Criterion[Tensor[T], Tensor[T], T]
+
+abstract class Criterion[A <: Activities: ClassTag, B <: Activities: ClassTag,
+  @specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
   var output: T = ev.fromType[Int](0)
 
@@ -42,7 +46,7 @@ class Criterion[@specialized(Float, Double) T: ClassTag](
 
   def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = Tensor[T]()
 
-  def cloneCriterion(): Criterion[T] = {
+  def cloneCriterion(): Criterion[A, B, T] = {
     SerializationUtils.clone(this)
   }
 }
