@@ -97,6 +97,10 @@ public class MKL {
 
     public native static void vdLog1p(int n, double[] a, int aOffset, double[] y, int yOffset);
 
+    public native static void vsAbs(int n, float[] a, int aOffset, float[] y, int yOffset);
+
+    public native static void vdAbs(int n, double[] a, int aOffset, double[] y, int yOffset);
+
     /**
      * Get the worker pool size of current JVM thread. Note different JVM thread has separated MKL worker pool.
      * @return

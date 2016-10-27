@@ -456,4 +456,5 @@ trait TensorMath[T] {
   def log1p(): Tensor[T]
 
 
+  def abs(x: Tensor[T]): Tensor[T]
 }
