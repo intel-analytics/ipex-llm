@@ -20,6 +20,7 @@ package com.intel.analytics.sparkdl.example
 import java.awt.color.ColorSpace
 import java.util
 
+import breeze.linalg.shuffle
 import com.intel.analytics.sparkdl.models.imagenet.ResNet
 import com.intel.analytics.sparkdl.models.imagenet.ResNet.ShortcutType
 import com.intel.analytics.sparkdl.nn.{CrossEntropyCriterion, Module, SpatialBatchNormalization, SpatialConvolution}
@@ -31,6 +32,7 @@ import com.intel.analytics.sparkdl.utils.{File, T}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
+import scala.util.Random
 
 object ImageNetLocal {
   val startTime = System.nanoTime()
@@ -120,8 +122,6 @@ object ImageNetLocal {
     val varGFloat = MeanStd.std(1) // varG.toFloat
     val varBFloat = MeanStd.std(2) // varB.toFloat
 
-    Split.unSetValFlag
-
     val iter = ImageNetUtils.toTensorFloat(
       donkey.map(d => {
         stageImgs.push(d._2)
@@ -133,10 +133,9 @@ object ImageNetLocal {
       (meanRFloat, meanGFloat, meanBFloat),
       (varRFloat, varGFloat, varBFloat),
       input,
-      target
+      target,
+      Split.TRAIN
     )
-
-    Split.setValFlag
 
     val stageImgsVal = new util.ArrayDeque[Image](batchSize)
     val iterVal = ImageNetUtils.toTensorFloat(
@@ -150,7 +149,8 @@ object ImageNetLocal {
       (meanRFloat, meanGFloat, meanBFloat),
       (varRFloat, varGFloat, varBFloat),
       input,
-      target
+      target,
+      Split.VAL
     )
 
     //log(s"meanR is $meanR meanG is $meanG meanB is $meanB")
@@ -338,27 +338,80 @@ object ImageNetLocal {
       .cmul(eigval.view(1, 3).expand(Array(3, 3)))
       .sum(2).squeeze
   }
+
+
+  object Lighting {
+    val alphastd = 0.1f
+    val eigval = Tensor[Float](Storage(Array( 0.2175f, 0.0188f, 0.0045f )), 1, Array(3))
+    val eigvec = Tensor[Float](Storage(Array( -0.5675f,  0.7192f,  0.4009f,
+      -0.5808f, -0.0045f, -0.8140f,
+      -0.5836f, -0.6948f,  0.4203f)), 1, Array(3, 3))
+    def lighting(input: Tensor[Float]): Unit = {
+      if (alphastd != 0) {
+        val alpha = Tensor[Float](3).apply1(_ => RNG.uniform(0, alphastd).toFloat)
+        val rgb = eigvec.clone
+          .cmul(alpha.view(1, 3).expand(Array(3, 3)))
+          .cmul(eigval.view(1, 3).expand(Array(3, 3)))
+          .sum(2).squeeze
+        for (i <- 1 to 3) input(i).add(rgb.storage().array()(i-1))
+      }
+    }
+  }
+  object ColorNormalize {
+    val mean = Array(0.485f, 0.456f, 0.406f)
+    val std = Array(0.229f, 0.224f, 0.225f)
+    def colorNormalize(input: Tensor[Float]): Unit = {
+      for (i <- 1 to 3) input(i).add(mean(i-1)).div(std(i-1))
+    }
+  }
   object ColorJitter {
-    val brightness = 0.4f
-    val contrast = 0.4f
-    val saturation = 0.4f
-    def blend[@specialized(Float, Double) T: ClassTag](img1: Tensor[T], img2: Tensor[T], alpha: T)
-                                                      (implicit ev: TensorNumeric[T]) =
-      img1.mul(alpha).add(ev.minus(ev.fromType(1), alpha), img2)
+    val bcsParameters = Map("brightness" -> 0.4f, "contrast" -> 0.4f, "saturation" -> 0.4f)
     def grayScale[@specialized(Float, Double) T: ClassTag](dst: Tensor[T], img: Tensor[T])
                                                           (implicit ev: TensorNumeric[T]): Tensor[T] = {
       dst.resizeAs(img)
       dst(1).zero
-      dst(1).add(ev.fromType(0.299), img(1)).add(ev.fromType(0.587), img(2)).add(ev.fromType(0.114), img(3))
+      dst(1).add(ev.fromType(0.299f), img(1)).add(ev.fromType(0.587f), img(2)).add(ev.fromType(0.114f), img(3))
       dst(2).copy(dst(1))
       dst(3).copy(dst(1))
       dst
     }
+    //def blend[@specialized(Float, Double) T: ClassTag](img1: Tensor[T], img2: Tensor[T], alpha: T)
+    //                                                  (implicit ev: TensorNumeric[T]) =
+    //  img1.mul(alpha).add(ev.minus(ev.fromType(1), alpha), img2)
+
+    def blend(img1: Tensor[Float], img2: Tensor[Float], alpha: Float) =
+      img1.mul(alpha).add(1.0f - alpha, img2)
+
+    def brightness(variance: Float)(input: Tensor[Float])= {
+      val gs = Tensor[Float]().resize(input.size).zero
+      val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
+      blend(input, gs, alpha)
+    }
+    def contrast(variance: Float)(input: Tensor[Float]) = {
+      val gs = Tensor[Float]().resize(input.size)
+      grayScale(gs, input)
+      gs.fill(gs(1).mean)
+      val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
+      blend(input, gs, alpha)
+    }
+    def saturation(variance: Float)(input:Tensor[Float]) = {
+      val gs = Tensor[Float]().resize(input.size)
+      grayScale(gs, input)
+      val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
+      blend(input, gs, alpha)
+    }
+    val ts = Map(
+      "brightness" -> {brightness(bcsParameters.get("brightness").get)(_)},
+      "contrast"   -> {contrast(bcsParameters.get("contrast").get)(_)},
+      "saturation" -> {saturation(bcsParameters.get("saturation").get)(_)}
+    )
+    def randomOrder(input: Tensor[Float]): Unit = {
+      ts.values.foreach( x => x(input) )
+    }
   }
+
   object Split {
-    var flag = false
-    def setValFlag() = flag = true
-    def unSetValFlag() = flag = false
-    def getValFlag() = flag
+    val TRAIN = false
+    val VAL = true
   }
 }

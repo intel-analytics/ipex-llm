@@ -62,6 +62,6 @@ class CrossEntropyCriterion[T: ClassTag](var weights: Tensor[T] = null)
 
   }
   override def toString(): String = {
-    s"nn.CrossEntropy"
+    s"nn.CrossEntropyCriterion"
   }
 }
