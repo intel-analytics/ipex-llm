@@ -17,7 +17,7 @@
 
 package com.intel.analytics.sparkdl.torch
 
-import com.intel.analytics.sparkdl.nn.{MSECriterion, SmoothL1Criterion}
+import com.intel.analytics.sparkdl.nn.SmoothL1Criterion
 import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -58,9 +58,9 @@ class SmoothL1CriterionSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val code = "mse = nn.SmoothL1Criterion()\n" +
-      "output = mse:forward(input,target)\n" +
-      "gradInput = mse:backward(input,target)"
+    val code = "sl = nn.SmoothL1Criterion()\n" +
+      "output = sl:forward(input,target)\n" +
+      "gradInput = sl:backward(input,target)"
 
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
