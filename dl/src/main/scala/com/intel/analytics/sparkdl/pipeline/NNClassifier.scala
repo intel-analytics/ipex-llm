@@ -38,7 +38,7 @@ trait NNParams[@specialized(Float, Double) T] extends PredictorParams {
   final val model: Param[Int => Module[Tensor[T], Tensor[T], T]] =
     new Param(this, "module factory", "neural network model")
 
-  final val criterion: Param[Criterion[Tensor[T], Tensor[T], T]] =
+  final val criterion: Param[Criterion[Tensor[T], T]] =
     new Param(this, "criterion", "criterion that evaluate the result")
 
   final val state: Param[Table] = new Param(this, "state", "states to train the neural network")
@@ -67,7 +67,7 @@ trait NNParams[@specialized(Float, Double) T] extends PredictorParams {
 
   final def getOptMethod: OptimMethod[T] = $(optMethod)
 
-  final def getCriterion: Criterion[Tensor[T], Tensor[T], T] = $(criterion)
+  final def getCriterion: Criterion[Tensor[T], T] = $(criterion)
 
   final def getBatchSize: Int = $(batchSize)
 
@@ -100,7 +100,7 @@ class NNClassifier(override val uid: String)
 
   def setOptimizerType(value: String): this.type = set(optimizerType, value)
 
-  def setCriterion(value: Criterion[Tensor[Double], Tensor[Double], Double]): this.type =
+  def setCriterion(value: Criterion[Tensor[Double], Double]): this.type =
     set(criterion, value)
 
   def setBatchSize(value: Int): this.type = set(batchSize, value)

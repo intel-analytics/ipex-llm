@@ -343,7 +343,7 @@ object Cifar {
     }
   }
 
-  def getCriterion(): Criterion[Tensor[Double], Tensor[Double], Double] = {
+  def getCriterion(): Criterion[Tensor[Double], Double] = {
     new ClassNLLCriterion[Double]()
   }
 

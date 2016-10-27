@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
 
 abstract class EpochOptimizer[T: ClassTag](
   @transient module: Module[Tensor[T], Tensor[T], T],
-  criterion: Criterion[Tensor[T], Tensor[T], T],
+  criterion: Criterion[Tensor[T], T],
   optm: OptimMethod[T],
   pm: ParameterManager[T],
   dataSets: DataSet[_, T] with HasEpoch,
@@ -46,7 +46,7 @@ abstract class EpochOptimizer[T: ClassTag](
 
 class GradAggEpochOptimizer[T: ClassTag](
   @transient module: Module[Tensor[T], Tensor[T], T],
-  criterion: Criterion[Tensor[T], Tensor[T], T],
+  criterion: Criterion[Tensor[T], T],
   optm: OptimMethod[T],
   pm: ParameterManager[T],
   dataSets: DataSet[_, T] with HasEpoch,
@@ -161,7 +161,7 @@ class GradAggEpochOptimizer[T: ClassTag](
 
 class WeightAvgEpochOptimizer[T: ClassTag](
   @transient module: Module[Tensor[T], Tensor[T], T],
-  criterion: Criterion[Tensor[T], Tensor[T], T], optm: OptimMethod[T],
+  criterion: Criterion[Tensor[T], T], optm: OptimMethod[T],
   pm: ParameterManager[T], dataSets: DataSet[_, T] with HasEpoch,
   metrics: Metrics, config: Table = T())(implicit ev: TensorNumeric[T])
   extends EpochOptimizer[T](module, criterion, optm, pm, dataSets, metrics, config) {

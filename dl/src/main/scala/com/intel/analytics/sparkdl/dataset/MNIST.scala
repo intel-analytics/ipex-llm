@@ -36,7 +36,7 @@ object MNISTLocal {
   )
   case class Config(
     model : Module[Tensor[Float], Tensor[Float], Float],
-    criterion : Criterion[Tensor[Float], Tensor[Float], Float],
+    criterion : Criterion[Tensor[Float], Float],
     optimMethod : OptimMethod[Float],
     batchSize : Int,
     maxEpoch : Int,
