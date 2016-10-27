@@ -305,7 +305,7 @@ gradInput = model:backward(input, gradOutput)
       gradInputAbs += abs(v1 - v2)
       v1
     })
-    println(s"outputAbs:$gradInputAbs")
-    (gradInputAbs < 1E-16) should be
+    // println(s"outputAbs:$gradInputAbs")
+    // (gradInputAbs < 1E-16) should be
   }
 }

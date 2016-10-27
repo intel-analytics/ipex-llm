@@ -531,182 +531,222 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     )), 1, Array(5, 5)))
   }
 
-  "powx" should "return correct value" in {
-    val t: Tensor[Float] = Tensor(1, 3)
-    var i = 1
-    t.apply1(_ => {
-      i = i + 1;
-      i
-    })
-    val r = Tensor[Float](1, 3)
+  "powx(x,a)" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val r: Tensor[Double] = Tensor(Storage(Array(0.0, 0.0, 0.0)))
     r.pow(t, 2)
-    r should be(Tensor[Float](Storage[Float](
-      Array(4.0f, 9.0f, 16.0f)), 1, Array(1, 3)))
+    r should be(Tensor(Storage(Array(4.0, 9.0, 16.0))))
   }
 
-  "log" should "return correct value" in {
-    val t: Tensor[Float] = Tensor(1, 3)
-    var i = 1
-    t.apply1(_ => {
-      i = i + 1;
-      i
-    })
-    val r = Tensor[Float](1, 3)
+  "powx(a)" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    t.pow(2)
+    t should be(Tensor(Storage(Array(4.0, 9.0, 16.0))))
+  }
+
+  "log(x)" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val r: Tensor[Double] = Tensor(Storage(Array(0.0, 0.0, 0.0)))
     r.log(t)
-    r should be(Tensor[Float](Storage[Float](
-      Array(0.6931472f, 1.0986123f, 1.3862944f)), 1, Array(1, 3)))
+    r should be(Tensor(Storage(Array(0.6931472, 1.0986123, 1.3862944))))
   }
 
-  "exp" should "return correct value" in {
-    val t: Tensor[Float] = Tensor(1, 3)
-    var i = 1
-    t.apply1(_ => {
-      i = i + 1;
-      i
-    })
-    val r = Tensor[Float](1, 3)
+  "log()" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    t.log(t)
+    t should be(Tensor(Storage(Array(0.6931472, 1.0986123, 1.3862944))))
+  }
+
+  "exp(x)" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val r: Tensor[Double] = Tensor(Storage(Array(0.0, 0.0, 0.0)))
     r.exp(t)
-    r should be(Tensor[Float](Storage[Float](
-      Array(7.389056f, 20.085537f, 54.59815f)), 1, Array(1, 3)))
+    r should be(Tensor(Storage(Array(7.389056, 20.085537, 54.59815))))
   }
 
-  "sqrt" should "return correct value" in {
-    val t: Tensor[Float] = Tensor(1, 3)
-    var i = 1
-    t.apply1(_ => {
-      i = i + 1;
-      i
-    })
-    val r = Tensor[Float](1, 3)
+  "exp()" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    t.exp()
+    t should be(Tensor(Storage(Array(7.389056, 20.085537, 54.59815))))
+  }
+
+  "sqrt(x)" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val r: Tensor[Double] = Tensor(Storage(Array(0.0, 0.0, 0.0)))
     r.sqrt(t)
-    r should be(Tensor[Float](Storage[Float](
-      Array(1.4142135f, 1.7320508f, 2.0f)), 1, Array(1, 3)))
+    r should be(Tensor(Storage(Array(1.4142135, 1.7320508, 2.0))))
   }
 
-  "log1p" should "return correct value" in {
-    val t: Tensor[Float] = Tensor(1, 3)
-    var i = 1
-    t.apply1(_ => {
-      i = i + 1;
-      i
-    })
-    val r = Tensor[Float](1, 3)
+  "sqrt()" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    t.sqrt()
+    t should be(Tensor(Storage(Array(1.4142135, 1.7320508, 2.0))))
+  }
+
+  "log1p(x)" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val r: Tensor[Double] = Tensor(Storage(Array(0.0, 0.0, 0.0)))
     r.log1p(t)
-    r should be(Tensor[Float](Storage[Float](
-      Array(1.0986123f, 1.3862944f, 1.609438f)), 1, Array(1, 3)))
+    r should be(Tensor(Storage(Array(1.0986123, 1.3862944, 1.609438))))
+  }
+
+  "log1p()" should "return correct value" in {
+    val t: Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    t.log1p()
+    t should be(Tensor(Storage(Array(1.0986123, 1.3862944, 1.609438))))
+  }
+
+  "matrix sub(T)" should "return correct value" in{
+    val a : Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val m = 1
+
+    a.sub(m)
+
+    a should be (Tensor(Storage(Array(1.0, 2.0, 3.0))))
+  }
+
+  "matrix sub(T,Tensor[T])" should "return correct value" in{
+    val a : Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val b : Tensor[Double] = Tensor(Storage(Array(1.0, 2.0, 3.0)))
+    val m = 2
+
+    a.sub(m, b)
+    a should be (Tensor(Storage(Array(0.0, -1.0, -2.0))))
+  }
+
+  "matrix sub(Tensor[T])" should "return correct value" in{
+    val a : Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val b : Tensor[Double] = Tensor(Storage(Array(1.0, 2.0, 3.0)))
+
+    a.sub(b)
+
+    val r = Tensor(Storage(Array(1.0, 1.0, 1.0)))
+
+    a should be (r)
+  }
+
+  "matrix sub(Tensor[T],T,Tensor[T])" should "return correct value" in{
+    val a : Tensor[Double] = Tensor(Storage(Array(2.0, 3.0, 4.0)))
+    val b : Tensor[Double] = Tensor(Storage(Array(1.0, 2.0, 3.0)))
+    val c : Tensor[Double] = Tensor(Storage(Array(1.0, 2.0, 3.0)))
+
+    val m = 2
+    val d = a.sub(c, m, b)
+
+    d should be (Tensor(Storage(Array(-1.0, -2.0, -3.0))))
   }
 
   "gemm(N, N)" should "return correct value" in {
-    val matrixA = Tensor[Float](2, 3)
-    val matrixB = Tensor[Float](3, 2)
+      val matrixA = Tensor[Float](2, 3)
+      val matrixB = Tensor[Float](3, 2)
 
-    var i = 0
-    matrixA.apply1(_ => {
-      i = i + 1;
-      i
-    })
-    matrixB.copy(matrixA)
+      var i = 0
+      matrixA.apply1(_ => {
+        i = i + 1;
+        i
+      })
+      matrixB.copy(matrixA)
 
-    val matrixC = Tensor[Float](2, 2)
+      val matrixC = Tensor[Float](2, 2)
 
-    DenseTensorBLAS.gemm[Float](
-      "N", "N",
-      2, 2, 3,
-      1,
-      matrixA.storage().array(), matrixA.storageOffset() - 1, 2,
-      matrixB.storage().array(), matrixB.storageOffset() - 1, 3,
-      0,
-      matrixC.storage().array(), matrixC.storageOffset() - 1, 2
-    )
+      DenseTensorBLAS.gemm[Float](
+        "N", "N",
+        2, 2, 3,
+        1,
+        matrixA.storage().array(), matrixA.storageOffset() - 1, 2,
+        matrixB.storage().array(), matrixB.storageOffset() - 1, 3,
+        0,
+        matrixC.storage().array(), matrixC.storageOffset() - 1, 2
+      )
 
-    val result = Tensor[Float](Storage(Array[Float](22, 28, 49, 64)), 1, Array(2, 2))
+      val result = Tensor[Float](Storage(Array[Float](22, 28, 49, 64)), 1, Array(2, 2))
 
-    matrixC should be (result)
-  }
+      matrixC should be (result)
+    }
 
   "gemm(N, T)" should "return correct value" in {
-    val matrixA = Tensor[Float](2, 3)
-    val matrixB = Tensor[Float](2, 3)
+      val matrixA = Tensor[Float](2, 3)
+      val matrixB = Tensor[Float](2, 3)
 
-    var i = 0
-    matrixA.apply1(_ => {
-      i = i + 1;
-      i
-    })
-    matrixB.copy(matrixA)
+      var i = 0
+      matrixA.apply1(_ => {
+        i = i + 1;
+        i
+      })
+      matrixB.copy(matrixA)
 
-    val matrixC = Tensor[Float](2, 2)
+      val matrixC = Tensor[Float](2, 2)
 
-    DenseTensorBLAS.gemm[Float](
-      "N", "T",
-      2, 2, 3,
-      1,
-      matrixA.storage().array(), matrixA.storageOffset() - 1, 2,
-      matrixB.storage().array(), matrixB.storageOffset() - 1, 2,
-      0,
-      matrixC.storage().array(), matrixC.storageOffset() - 1, 2
-    )
+      DenseTensorBLAS.gemm[Float](
+        "N", "T",
+        2, 2, 3,
+        1,
+        matrixA.storage().array(), matrixA.storageOffset() - 1, 2,
+        matrixB.storage().array(), matrixB.storageOffset() - 1, 2,
+        0,
+        matrixC.storage().array(), matrixC.storageOffset() - 1, 2
+      )
 
-    val result = Tensor[Float](Storage(Array[Float](35, 44, 44, 56)), 1, Array(2, 2))
+      val result = Tensor[Float](Storage(Array[Float](35, 44, 44, 56)), 1, Array(2, 2))
 
-    matrixC should be (result)
-  }
+      matrixC should be (result)
+    }
 
   "gemm(T, N)" should "return correct value" in {
-    val matrixA = Tensor[Float](3, 2)
-    val matrixB = Tensor[Float](3, 2)
+      val matrixA = Tensor[Float](3, 2)
+      val matrixB = Tensor[Float](3, 2)
 
-    var i = 0
-    matrixA.apply1(_ => {
-      i = i + 1;
-      i
-    })
-    matrixB.copy(matrixA)
+      var i = 0
+      matrixA.apply1(_ => {
+        i = i + 1;
+        i
+      })
+      matrixB.copy(matrixA)
 
-    val matrixC = Tensor[Float](2, 2)
+      val matrixC = Tensor[Float](2, 2)
 
-    DenseTensorBLAS.gemm[Float](
-      "T", "N",
-      2, 2, 3,
-      1,
-      matrixA.storage().array(), matrixA.storageOffset() - 1, 3,
-      matrixB.storage().array(), matrixB.storageOffset() - 1, 3,
-      0,
-      matrixC.storage().array(), matrixC.storageOffset() - 1, 2
-    )
+      DenseTensorBLAS.gemm[Float](
+        "T", "N",
+        2, 2, 3,
+        1,
+        matrixA.storage().array(), matrixA.storageOffset() - 1, 3,
+        matrixB.storage().array(), matrixB.storageOffset() - 1, 3,
+        0,
+        matrixC.storage().array(), matrixC.storageOffset() - 1, 2
+      )
 
-    val result = Tensor[Float](Storage(Array[Float](14, 32, 32, 77)), 1, Array(2, 2))
+      val result = Tensor[Float](Storage(Array[Float](14, 32, 32, 77)), 1, Array(2, 2))
 
-    matrixC should be (result)
-  }
+      matrixC should be (result)
+    }
 
   "gemm(T, T)" should "return correct value" in {
-    val matrixA = Tensor[Float](3, 2)
-    val matrixB = Tensor[Float](2, 3)
+      val matrixA = Tensor[Float](3, 2)
+      val matrixB = Tensor[Float](2, 3)
 
-    var i = 0
-    matrixA.apply1(_ => {
-      i = i + 1;
-      i
-    })
-    matrixB.copy(matrixA)
+      var i = 0
+      matrixA.apply1(_ => {
+        i = i + 1;
+        i
+      })
+      matrixB.copy(matrixA)
 
-    val matrixC = Tensor[Float](2, 2)
+      val matrixC = Tensor[Float](2, 2)
 
-    DenseTensorBLAS.gemm[Float](
-      "T", "T",
-      2, 2, 3,
-      1,
-      matrixA.storage().array(), matrixA.storageOffset() - 1, 3,
-      matrixB.storage().array(), matrixB.storageOffset() - 1, 2,
-      0,
-      matrixC.storage().array(), matrixC.storageOffset() - 1, 2
-    )
+      DenseTensorBLAS.gemm[Float](
+        "T", "T",
+        2, 2, 3,
+        1,
+        matrixA.storage().array(), matrixA.storageOffset() - 1, 3,
+        matrixB.storage().array(), matrixB.storageOffset() - 1, 2,
+        0,
+        matrixC.storage().array(), matrixC.storageOffset() - 1, 2
+      )
 
-    val result = Tensor[Float](Storage(Array[Float](22, 49, 28, 64)), 1, Array(2, 2))
+      val result = Tensor[Float](Storage(Array[Float](22, 49, 28, 64)), 1, Array(2, 2))
 
-    matrixC should be (result)
-  }
+      matrixC should be (result)
+    }
 
   "cdiv" should "return right result" in {
     val x = Tensor[Float](2, 2).fill(1f)

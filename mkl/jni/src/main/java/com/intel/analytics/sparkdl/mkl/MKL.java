@@ -53,10 +53,17 @@ public class MKL {
      */
     public native static void setNumThreads(int numThreads);
 
+    public native static void vsAdd(int n, float[] a, int aOffset, float[] b, int bOffset,
+                                    float[] y, int yOffset);
 
-    public native static void vsPowx(int n, float[] a, int aOffset, float b, float[] y, int yOffset);
+    public native static void vdAdd(int n, double[] a, int aOffset, double[] b, int bOffset,
+                                    double[] y, int yOffset);
 
-    public native static void vdPowx(int n, double[] a, int aOffset, double b, double[] y, int yOffset);
+    public native static void vsSub(int n, float[] a, int aOffset, float[] b, int bOffset,
+                                    float[] y, int yOffset);
+
+    public native static void vdSub(int n, double[] a, int aOffset, double[] b, int bOffset,
+                                    double[] y, int yOffset);
 
     public native static void vsMul(int n, float[] a, int aOffset, float[] b, int bOffset,
                                     float[] y, int yOffset);
@@ -69,6 +76,10 @@ public class MKL {
 
     public native static void vdDiv(int n, double[] a, int aOffset, double[] b, int bOffset,
                                     double[] y, int yOffset);
+
+    public native static void vsPowx(int n, float[] a, int aOffset, float b, float[] y, int yOffset);
+
+    public native static void vdPowx(int n, double[] a, int aOffset, double b, double[] y, int yOffset);
 
     public native static void vsLn(int n, float[] a, int aOffset, float[] y, int yOffset);
 

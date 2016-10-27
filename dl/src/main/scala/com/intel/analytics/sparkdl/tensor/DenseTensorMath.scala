@@ -17,7 +17,7 @@
 
 package com.intel.analytics.sparkdl.tensor
 
-  import com.intel.analytics.sparkdl.mkl.MKL
+import com.intel.analytics.sparkdl.mkl.MKL
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath._
 import com.intel.analytics.sparkdl.tensor.{DenseTensorApply => Apply}
 
@@ -48,8 +48,10 @@ object DenseTensorMath {
 
   def cmul[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == y.nElement(), "element number doesn't match")
-    if (self.isContiguous() && x.isContiguous() && y.isContiguous()) {
+    require(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
+      "element number doesn't match")
+    if (self.isContiguous() && x.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
+
       ev.vMul(self.nElement(), x.storage().array(), x.storageOffset() - 1,
         y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
           - 1)
@@ -79,8 +81,10 @@ object DenseTensorMath {
 
   def cdiv[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == y.nElement(), "element number doesn't match")
-    if (self.isContiguous() && x.isContiguous() && y.isContiguous()) {
+    require(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
+      "element number doesn't match")
+    if (self.isContiguous() && y.isContiguous() && x.isContiguous() && MKL.isMKLLoaded) {
+
       ev.vDiv(self.nElement(), x.storage().array(), x.storageOffset() - 1,
         y.storage().array(), y.storageOffset() - 1, self.storage().array(), self.storageOffset()
           - 1)
@@ -99,13 +103,13 @@ object DenseTensorMath {
   def cadd[@specialized(Float, Double) T](
     self: DenseTensor[T], x: Tensor[T], value: T, y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(x != null)
+    require(x != null && y.nElement() == x.nElement())
 
     if (!self.eq(x) && !self.eq(y)) {
       self.resizeAs(x).copy(x)
     }
 
-    if (self.eq(x) && self.isContiguous() && y.isContiguous() && self.nElement() == y.nElement()) {
+    if (self.eq(x) && self.isContiguous() && y.isContiguous()) {
       ev.axpy(y.nElement(), value, y.storage().array(), y.storageOffset() - 1, 1,
         self.storage().array(), self.storageOffset() - 1, 1)
     } else {
@@ -116,6 +120,26 @@ object DenseTensorMath {
         }
       }
       Apply.apply3[T](self, x, y, func)
+    }
+    self
+  }
+
+  def csub[@specialized(Float, Double) T]
+  (self: DenseTensor[T], x: Tensor[T], value: T, y: Tensor[T])
+  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(x != null && x.nElement() == y.nElement())
+    if(!self.eq(x)) {
+      self.resizeAs(x).copy(x)
+    }
+
+    if(self.eq(x) && self.isContiguous() && y.isContiguous()) {
+      ev.axpy(y.nElement(), value, y.storage().array(),
+        y.storageOffset() - 1, 1, self.storage().array(), self.storageOffset() - 1, 1)
+    } else {
+      val func2 = new TensorFunc4[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit =
+        { data1(offset1) = ev.minus(data1(offset1), ev.times(value, data2(offset2)))  }}
+      Apply.apply2[T](self, y, func2)
     }
     self
   }
@@ -264,6 +288,93 @@ object DenseTensorMath {
     }
   }
 
+  def pow[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], n: T)
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(self.nElement() == x.nElement())
+    if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
+      ev.vPowx(self.nElement(), x.storage().array(), x.storageOffset() - 1, n,
+        self.storage().array(), self.storageOffset() - 1)
+    } else {
+      val func = new TensorFunc4[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+          data1(offset1) = ev.pow(data2(offset2), n)
+        }
+      }
+      DenseTensorApply.apply2[T](self, x, func)
+    }
+    self
+  }
+
+  def exp[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(self.nElement() == x.nElement())
+    if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
+      ev.vExp(self.nElement(), x.storage().array(), x.storageOffset() - 1,
+        self.storage().array(), self.storageOffset() - 1)
+    } else {
+      val func = new TensorFunc4[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+          data1(offset1) = ev.exp(data2(offset2))
+        }
+      }
+      DenseTensorApply.apply2[T](self, x, func)
+    }
+    self
+  }
+
+  def log[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(self.nElement() == x.nElement())
+    if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
+      ev.vLn(self.nElement(), x.storage().array(), x.storageOffset() - 1,
+        self.storage().array(), self.storageOffset() - 1)
+    } else {
+      val func = new TensorFunc4[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+          data1(offset1) = ev.log(data2(offset2))
+        }
+      }
+      DenseTensorApply.apply2[T](self, x, func)
+    }
+    self
+  }
+
+  def sqrt[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(self.nElement() == x.nElement())
+    if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
+      ev.vSqrt(self.nElement(), x.storage().array(), x.storageOffset() - 1,
+        self.storage().array(), self.storageOffset() - 1)
+    } else {
+      val func = new TensorFunc4[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+          data1(offset1) = ev.sqrt(data2(offset2))
+        }
+      }
+      DenseTensorApply.apply2[T](self, x, func)
+    }
+    self
+  }
+
+  def log1p[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(self.nElement() == x.nElement())
+    if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
+      ev.vLog1p(self.nElement(), x.storage().array(), x.storageOffset() - 1,
+        self.storage().array(), self.storageOffset() - 1)
+
+    } else {
+      val func = new TensorFunc4[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+          data1(offset1) = ev.log1p(data2(offset2))
+        }
+      }
+      DenseTensorApply.apply2[T](self, x, func)
+
+    }
+    self
+  }
+
   def sumAll[@specialized(Float, Double) T](self: DenseTensor[T])(
     implicit ev: TensorNumeric[T]): T = {
     var sum = ev.fromType[Int](0)
@@ -278,7 +389,6 @@ object DenseTensorMath {
 
   def sum[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-
     require(_dim >= 0 && _dim < x.nDimension, s"dimension ${_dim + 1} out of range")
     val result = if (self == null) new DenseTensor[T]() else self
     val sizes = x.size()

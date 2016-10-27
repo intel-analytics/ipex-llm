@@ -195,6 +195,14 @@ trait TensorMath[T] {
    */
   def add(value: T, y: Tensor[T]): Tensor[T]
 
+  /**
+   * accumulates all elements of y into this
+   *
+   * @param y other tensor
+   * @return current tensor
+   */
+  def add(y: Tensor[T]): Tensor[T]
+
   // Puts the result of x + value * y in current tensor
   /**
    * z.add(x, value, y) puts the result of x + value * y in z.
@@ -213,6 +221,7 @@ trait TensorMath[T] {
    */
   def add(value: T): Tensor[T]
 
+  def add(x: Tensor[T], y: Tensor[T]): Tensor[T]
   /**
    * Performs the dot product. The number of elements must match: both Tensors are seen as a 1D
    * vector.
@@ -247,13 +256,22 @@ trait TensorMath[T] {
    */
   def addcdiv(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T]
 
+  def sub(value : T, y : Tensor[T]) : Tensor[T]
+
+  // Puts the result of x - value * y in current tensor
+  def sub(x : Tensor[T], value : T, y : Tensor[T]) : Tensor[T]
+
   /**
-   * accumulates all elements of y into this
+   * subtracts all elements of y from this
    *
    * @param y other tensor
    * @return current tensor
    */
-  def add(y: Tensor[T]): Tensor[T]
+  def sub(y : Tensor[T]) : Tensor[T]
+
+  def sub(x : Tensor[T], y : Tensor[T]) : Tensor[T]
+
+  def sub(value : T) : Tensor[T]
 
   /**
    * Element-wise multiply
@@ -395,11 +413,13 @@ trait TensorMath[T] {
   /**
    * Replaces all elements in-place with the elements of x to the power of n
    *
-   * @param x
+   * @param y
    * @param n
    * @return current tensor reference
    */
-  def pow(x: Tensor[T], n: T): Tensor[T]
+  def pow(y: Tensor[T], n : T): Tensor[T]
+
+  def pow(n: T): Tensor[T]
 
   /**
    * Get the top k smallest values and their indices.
@@ -418,16 +438,23 @@ trait TensorMath[T] {
   /**
    * Replaces all elements in-place with the elements of lnx
    *
-   * @param x
+   * @param y
    * @return current tensor reference
    */
-  def log(x: Tensor[T]): Tensor[T]
+  def log(y: Tensor[T]): Tensor[T]
 
-  def exp(x: Tensor[T]): Tensor[T]
+  def exp(y: Tensor[T]): Tensor[T]
 
-  def sqrt(x: Tensor[T]): Tensor[T]
+  def sqrt(y: Tensor[T]): Tensor[T]
 
-  def log1p(x: Tensor[T]): Tensor[T]
+  def log1p(y: Tensor[T]): Tensor[T]
+
+  def log(): Tensor[T]
+
+  def exp(): Tensor[T]
+
+  def log1p(): Tensor[T]
+
 
   def abs(x: Tensor[T]): Tensor[T]
 }
