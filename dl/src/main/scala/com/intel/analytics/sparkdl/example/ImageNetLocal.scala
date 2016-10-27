@@ -60,7 +60,7 @@ object ImageNetLocal {
 
   def run(donkey: Donkey, dataSet: DataSets, netType: String, classNum: Int,
     labelsMap: Map[String, Double], testInterval: Int, donkeyVal: Donkey,
-    dataSetVal: DataSets, batchSize: Int, modelPath : String): Unit = {
+    dataSetVal: DataSets, batchSize: Int, modelPath : String, modelDepth: Int): Unit = {
     // Compute Mean on amount of samples
     //val samples = 10000
     /*val samples = 100
@@ -93,7 +93,7 @@ object ImageNetLocal {
       case "googlenet" => GoogleNet.getModel[Float](classNum)
       case "googlenet-bn" => GoogleNet.getModel[Float](classNum, "googlenet-bn")
       case "googlenet-cf" => GoogleNet.getModelCaffe[Float](classNum)
-      case "resnet" => ResNet[Float](classNum, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
+      case "resnet" => ResNet[Float](classNum, T("shortcutType" -> ShortcutType.B, "depth" -> modelDepth))
       case _ => throw new IllegalArgumentException
     }
     if (netType == "resnet") {
@@ -234,8 +234,8 @@ object ImageNetLocal {
     Class.forName("sun.java2d.cmm.lcms.LCMS")
     ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
-    require(args.length == 9, "invalid args, should be <path> <parallelism> <labelPath>" +
-      " <testInterval> <netType> <classNum> <dataType> <batchSize>")
+    require(args.length == 10, "invalid args, should be <path> <parallelism> <labelPath>" +
+      " <testInterval> <netType> <classNum> <dataType> <batchSize> <modelDepth>")
 
     val path = args(0)
     val parallelism = args(1).toInt
@@ -246,6 +246,7 @@ object ImageNetLocal {
     val classNum = args(6).toInt
     val batchSize = args(7).toInt
     val modelPath = args(8)
+    val modelDepth = args(9).toInt
 
     val dataSet = new DataSets(path, classNum, labelsMap)
     val donkey = new Donkey(parallelism, dataSet)
@@ -257,7 +258,7 @@ object ImageNetLocal {
     log("shuffle end")
 
     run(donkey, dataSet, netType, classNum, labelsMap, testInterval,
-      donkeyVal, dataSetVal, batchSize, modelPath)
+      donkeyVal, dataSetVal, batchSize, modelPath, modelDepth)
   }
 
   def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
