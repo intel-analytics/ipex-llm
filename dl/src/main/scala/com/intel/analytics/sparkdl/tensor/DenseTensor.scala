@@ -1315,6 +1315,21 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
+  override def abs(x: Tensor[T]): Tensor[T] = {
+    require(this.nElement() == x.nElement())
+    if (MKL.isMKLLoaded && this.isContiguous() && x.isContiguous()) {
+      ev.vAbs(this.nElement(), x.storage().array(), x.storageOffset() - 1,
+        this.storage().array(), this.storageOffset() - 1)
+    } else {
+      val func = new TensorFunc4[T] {
+        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+          data1(offset1) = ev.abs(data2(offset2))
+        }
+      }
+      DenseTensorApply.apply2[T](this, x, func)
+    }
+    this
+  }
 }
 
 object DenseTensor {
