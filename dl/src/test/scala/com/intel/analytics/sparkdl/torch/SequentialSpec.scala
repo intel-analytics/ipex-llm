@@ -31,7 +31,7 @@ class SequentialSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A Sequential Container" should "generate correct output and grad" in {
-    val module = new Sequential[Double]()
+    val module = new Sequential[Tensor[Double], Tensor[Double], Double]()
     module.add(new Linear(10, 25))
     module.add(new Linear(25, 10))
 

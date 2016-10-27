@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
 
 class SpatialZeroPadding[@specialized(Float, Double) T: ClassTag](
   padLeft: Int, padRight: Int, padTop: Int, padBottom: Int)(
-  implicit ev: TensorNumeric[T]) extends Module[T] {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   def this(padLeft: Int)(implicit ev: TensorNumeric[T]) = this(padLeft, padLeft, padLeft, padLeft)
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

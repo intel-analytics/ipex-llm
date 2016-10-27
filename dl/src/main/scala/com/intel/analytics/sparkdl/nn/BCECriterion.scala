@@ -46,7 +46,7 @@ class BCECriterion[T: ClassTag](var weights: Tensor[T] = null, sizeAverage: Bool
 
     output = target.dot(buffer)
 
-    buffer.mul(input, ev.fromType[Int](-1)).add(ev.fromType[Int](1)).add(eps).apply1(ev.log(_))
+    buffer.mul(input, ev.fromType[Int](-1)).add(ev.fromType[Int](1)).add(eps).apply1(ev.log)
     if (null != weights) buffer.cmul(weights)
 
     output = ev.plus(output, buffer.sum())

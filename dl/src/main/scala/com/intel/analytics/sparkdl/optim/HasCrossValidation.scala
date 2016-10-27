@@ -20,6 +20,7 @@ package com.intel.analytics.sparkdl.optim
 import com.intel.analytics.sparkdl.nn.Module
 import com.intel.analytics.sparkdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.utils.Activities
 import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
 
@@ -51,8 +52,8 @@ trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable wit
     this
   }
 
-  def test(module: Module[T], iter: Int, wallClockNanoTime: Option[Long] = None)
-  : Array[Double] = {
+  def test(module: Module[_ <: Activities, _ <: Activities, T],
+    iter: Int, wallClockNanoTime: Option[Long] = None): Array[Double] = {
     if (testDataSet.isDefined && iter % testInterval == 0) {
       evalMethods.map(evalM => {
         val evaluationBroadcast = testDataSet.get.getSparkContext().broadcast(evalM._2)

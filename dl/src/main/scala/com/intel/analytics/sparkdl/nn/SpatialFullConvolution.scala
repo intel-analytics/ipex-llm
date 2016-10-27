@@ -19,6 +19,7 @@ package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
+import com.intel.analytics.sparkdl.utils.Activities
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 import scala.concurrent.duration.Duration
@@ -37,7 +38,7 @@ class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
   val adjW: Int = 0, // Extra width to add to the output image.
   val adjH: Int = 0, // Extra height to add to the output image.
   private var initMethod: InitializationMethod = Default
-  )(implicit ev: TensorNumeric[T]) extends Module[T] {
+  )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(adjW <= dW - 1 && adjH <= dH - 1,
     "adjW and adjH must be smaller than dW - 1 and dH - 1 respectively")
@@ -513,8 +514,9 @@ class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
     s"nn.SpatialFullConvolution($nInputPlane -> $nOutputPlane, $kW x $kH, $dW, $dH, $padW, $padH)"
   }
 
-  override def findModel(paramOffset: Int,
-                         indexes: Array[Int]): (Module[T], Int, Array[Int]) = {
+  override def findModel(
+    paramOffset: Int,
+    indexes: Array[Int]): (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = {
     (this, paramOffset - nOutputPlane * nInputPlane * kH * kW - nOutputPlane, indexes)
   }
 }

@@ -31,7 +31,7 @@ class ModuleSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "getParameter" should "behave correctly" in {
-    val module = new Sequential[Double]
+    val module = new Sequential[Tensor[Double], Tensor[Double], Double]
     val subModule1 = new Linear[Double](2, 3)
     val subModule2 = new Linear[Double](4, 5)
     module.add(subModule1)
