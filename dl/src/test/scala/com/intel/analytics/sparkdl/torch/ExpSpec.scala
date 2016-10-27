@@ -21,14 +21,14 @@ import com.intel.analytics.sparkdl.nn.{Exp, Power}
 import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class EchoSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class ExpSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
   }
 
-  "A Power(2)" should "generate correct output and grad" in {
+  "An Exp" should "generate correct output and grad" in {
     val layer = new Exp[Double]()
     val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 1

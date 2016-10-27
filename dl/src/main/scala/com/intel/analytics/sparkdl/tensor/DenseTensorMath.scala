@@ -307,8 +307,9 @@ object DenseTensorMath {
 
   def exp[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    if (self.nElement() != x.nElement())
+    if (self.nElement() != x.nElement()) {
       self.resizeAs(x)
+    }
 
     if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
       ev.vExp(self.nElement(), x.storage().array(), x.storageOffset() - 1,

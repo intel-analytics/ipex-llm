@@ -25,28 +25,29 @@ import com.intel.analytics.sparkdl.utils.Activities
 import scala.reflect.ClassTag
 
 abstract class TensorCriterion[@specialized(Float, Double) T: ClassTag]
-  (implicit ev: TensorNumeric[T]) extends Criterion[Tensor[T], Tensor[T], T]
+  (implicit ev: TensorNumeric[T]) extends Criterion[Tensor[T], T]
 
-abstract class Criterion[A <: Activities: ClassTag, B <: Activities: ClassTag,
+abstract class Criterion[A <: Activities: ClassTag,
   @specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
   var output: T = ev.fromType[Int](0)
 
-  def forward(input: Tensor[T], target: Tensor[T]): T = {
+  def forward(input: A, target: A): T = {
     updateOutput(input, target)
   }
 
-  def backward(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
+  def backward(input: A, target: A): A = {
     updateGradInput(input, target)
   }
 
-  def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
+  def updateOutput(input: A, target: A): T = {
     this.output
   }
 
-  def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = Tensor[T]()
+  def updateGradInput(input: A, target: A): A =
+    Activities.apply[A, T]().asInstanceOf[A]
 
-  def cloneCriterion(): Criterion[A, B, T] = {
+  def cloneCriterion(): Criterion[A, T] = {
     SerializationUtils.clone(this)
   }
 }
