@@ -457,4 +457,5 @@ trait TensorMath[T] {
 
 
   def abs(x: Tensor[T]): Tensor[T]
+
 }

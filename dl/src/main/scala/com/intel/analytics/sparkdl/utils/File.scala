@@ -20,11 +20,12 @@ package com.intel.analytics.sparkdl.utils
 import java.io._
 import java.nio._
 import java.nio.file._
-import java.util.{HashMap, Map}
-
+// import java.util.{HashMap, Map}
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
-import com.sun.xml.bind.v2.runtime.unmarshaller.SAXConnector
+
+import scala.collection.mutable
+import scala.collection.mutable.Map
 
 
 sealed abstract class TorchObject(val typeId: Int)
@@ -86,7 +87,7 @@ object File {
     val path = Paths.get(fileName)
     val rawData = ByteBuffer.wrap(Files.readAllBytes(path))
     rawData.order(ByteOrder.LITTLE_ENDIAN)
-    val objects: Map[Int, Any] = new HashMap()
+    val objects: Map[Int, Any] = new mutable.HashMap()
     readObject(rawData, objects).asInstanceOf[T]
   }
 
@@ -155,12 +156,12 @@ object File {
 
     val typeId = rawData.getInt()
 
-    typeId match {
+    val res = typeId match {
       case TYPE_NIL => null
       case TYPE_TORCH =>
         val indexId = rawData.getInt()
-        if (objects.containsKey(indexId)) {
-          objects.get(indexId)
+        if (objects.contains(indexId)) {
+          objects.get(indexId).getOrElse(null)
         } else {
           val (versionNumber, className) = readVersionAndClass(rawData)
           // Todo: Use reflection to do this is better
@@ -195,8 +196,8 @@ object File {
         }
       case TYPE_TABLE =>
         val indexId = rawData.getInt()
-        if (objects.containsKey(indexId)) {
-          objects.get(indexId)
+        if (objects.contains(indexId)) {
+          objects.get(indexId).getOrElse(null)
         } else {
           val result = readTable(rawData, objects)
           objects.put(indexId, result)
@@ -206,6 +207,11 @@ object File {
       case TYPE_STRING => readString(rawData)
       case TYPE_BOOLEAN => readBoolean(rawData)
       case _ => throw new UnsupportedOperationException(typeId.toString)
+    }
+    if (res.isInstanceOf[Some[Any]]) {
+      res.asInstanceOf[Some[Any]].getOrElse(null)
+    } else {
+      res
     }
   }
 
@@ -394,7 +400,7 @@ object File {
 
   private def writeSpatialConvolution(source: SpatialConvolution[Double], rawdata: ByteBuffer,
     path: Path): Unit = {
-    var table: Map[String, Any] = new HashMap()
+    var table: Map[String, Any] = new mutable.HashMap()
     val nInputPlane = source.nInputPlane
     val nOutputPlane = source.nOutputPlane
     val kW = source.kernelW
@@ -433,7 +439,7 @@ object File {
 
   private def writeSpatialMaxPooling(source: SpatialMaxPooling[Double], rawdata: ByteBuffer,
     path: Path): Unit = {
-    var table: Map[String, Any] = new HashMap()
+    var table: Map[String, Any] = new mutable.HashMap()
     val indices = source.indices
     val ceilMode = source.ceil_mode
     val kW = source.kW
@@ -459,7 +465,7 @@ object File {
   }
 
   private def writeThreshold(source: Threshold[Double], rawdata: ByteBuffer, path: Path): Unit = {
-    var table: Map[String, Any] = new HashMap()
+    var table: Map[String, Any] = new mutable.HashMap()
     val value = source.value
     val output = source.output
     val inPlace = source.inPlace
@@ -475,13 +481,13 @@ object File {
   }
 
   private def writeConcat(source: Concat[Double], rawdata: ByteBuffer, path: Path): Unit = {
-    var table: Map[String, Any] = new HashMap()
+    var table: Map[String, Any] = new mutable.HashMap()
     val dimension = source.dimension
     val size = source.getSize()
     val output = source.output
     val train = source.training()
     val gradInput = source.gradInput
-    val modules: Map[Double, Module[Tensor[Double], Tensor[Double], Double]] = new HashMap()
+    val modules: Map[Double, Module[Tensor[Double], Tensor[Double], Double]] = new mutable.HashMap()
 
     for (i <- 1 to source.modules.length) {
       modules.put(i, source.modules(i - 1)
@@ -499,10 +505,10 @@ object File {
 
   private def writeSequential(source: Sequential[Tensor[Double], Tensor[Double], Double],
     rawdata: ByteBuffer, path: Path): Unit = {
-    var table: Map[String, Any] = new HashMap()
+    var table: Map[String, Any] = new mutable.HashMap()
     val output = source.output
     val gradInput = source.gradInput
-    val modules: Map[Double, Module[Tensor[Double], Tensor[Double], Double]] = new HashMap()
+    val modules: Map[Double, Module[Tensor[Double], Tensor[Double], Double]] = new mutable.HashMap()
 
     for (i <- 1 to source.modules.length) {
       modules.put(i, source.modules(i - 1)
@@ -517,7 +523,7 @@ object File {
   }
 
   private def writeDropout(source: Dropout[Double], rawdata: ByteBuffer, path: Path): Unit = {
-    var table: Map[String, Any] = new HashMap()
+    var table: Map[String, Any] = new mutable.HashMap()
     val p = source.getP()
     val output = source.output
     val noise = source.noise
@@ -536,7 +542,7 @@ object File {
   }
 
   private def writeView(source: View[Double], rawdata: ByteBuffer, path: Path): Unit = {
-    var table: Map[String, Any] = new HashMap()
+    var table: Map[String, Any] = new mutable.HashMap()
     val size = source.getSize()
     val output = source.output
     val numElements = source.numElements
@@ -550,7 +556,7 @@ object File {
 
 
   private def writeLinear(source: Linear[Double], rawdata: ByteBuffer, path: Path): Unit = {
-    val table: Map[String, Any] = new HashMap()
+    val table: Map[String, Any] = new mutable.HashMap()
     val gradBias = source.gradBias
     val output = source.output
     val gradInput = source.gradInput
@@ -569,13 +575,14 @@ object File {
 
 
   private def writeTable(source: Map[Any, Any], rawdata: ByteBuffer, path: Path): Unit = {
-    val size = source.size()
+    val size = source.size
     flush(rawdata, path)
     rawdata.putInt(size)
 
-    val it = source.keySet().iterator();
-    while (it.hasNext()) {
-      var key = it.next();
+    val t1 = source.keySet
+    val it = t1.toIterator
+    while (it.hasNext) {
+      var key = it.next()
       if (key.isInstanceOf[String]) {
         writeObject(key.asInstanceOf[String], rawdata, path, TYPE_STRING)
       }
@@ -583,31 +590,31 @@ object File {
         writeObject(key.asInstanceOf[Double], rawdata, path, TYPE_NUMBER)
       }
 
-      if (source.get(key) == null) {
-        writeObject(source.get(key), rawdata, path, TYPE_NIL)
+      val sourceKey = source.get(key).getOrElse(null)
+      if ( sourceKey == null) {
+        writeObject(sourceKey, rawdata, path, TYPE_NIL)
       }
-      else if (source.get(key).isInstanceOf[Tensor[_]]) {
-        writeObject(source.get(key).asInstanceOf[Tensor[Double]], rawdata, path, TYPE_DOUBLE_TENSOR)
+      else if (sourceKey.isInstanceOf[Tensor[_]]) {
+        writeObject(sourceKey.asInstanceOf[Tensor[Double]], rawdata, path, TYPE_DOUBLE_TENSOR)
       }
-      else if (source.get(key).isInstanceOf[Int]) {
-        writeObject(source.get(key).asInstanceOf[Int].toDouble, rawdata, path, TYPE_NUMBER)
+      else if (sourceKey.isInstanceOf[Int]) {
+        writeObject(sourceKey.asInstanceOf[Int].toDouble, rawdata, path, TYPE_NUMBER)
       }
-      else if (source.get(key).isInstanceOf[Double]) {
-        writeObject(source.get(key).asInstanceOf[Double], rawdata, path, TYPE_NUMBER)
+      else if (sourceKey.isInstanceOf[Double]) {
+        writeObject(sourceKey.asInstanceOf[Double], rawdata, path, TYPE_NUMBER)
       }
-      else if (source.get(key).isInstanceOf[Boolean]) {
-        writeObject(source.get(key).asInstanceOf[Boolean], rawdata, path, TYPE_BOOLEAN)
+      else if (sourceKey.isInstanceOf[Boolean]) {
+        writeObject(sourceKey.asInstanceOf[Boolean], rawdata, path, TYPE_BOOLEAN)
       }
-      else if (source.get(key).isInstanceOf[Map[_, _]]) {
-        writeObject(source.get(key).asInstanceOf[Map[Any, Any]], rawdata, path, TYPE_TABLE)
+      else if (sourceKey.isInstanceOf[Map[_, _]]) {
+        writeObject(sourceKey.asInstanceOf[Map[Any, Any]], rawdata, path, TYPE_TABLE)
       }
-      else if (source.get(key).isInstanceOf[Linear[_]]) {
-        writeObject(source.get(key).asInstanceOf[Linear[Double]], rawdata, path, TYPE_LINEAR)
+      else if (sourceKey.isInstanceOf[Linear[_]]) {
+        writeObject(sourceKey.asInstanceOf[Linear[Double]], rawdata, path, TYPE_LINEAR)
       }
-      else if (source.get(key).isInstanceOf[Array[Int]]) {
-        writeObject(source.get(key).asInstanceOf[Array[Int]], rawdata, path, TYPE_LONG_STORAGE)
+      else if (sourceKey.isInstanceOf[Array[Int]]) {
+        writeObject(sourceKey.asInstanceOf[Array[Int]], rawdata, path, TYPE_LONG_STORAGE)
       }
-
     }
     byteWrite(rawdata, path)
   }
@@ -717,7 +724,7 @@ object File {
   // Table
   private def readTable(rawData: ByteBuffer, objects: Map[Int, Any]): Map[Any, Any] = {
     val size = rawData.getInt
-    val result = new HashMap[Any, Any]()
+    val result = new mutable.HashMap[Any, Any]()
     var i = 0
     while (i < size) {
       result.put(readObject(rawData, objects), readObject(rawData, objects))
@@ -776,16 +783,16 @@ object File {
   private def readSpatialMaxPooling(
     rawData: ByteBuffer, objects: Map[Int, Any]): SpatialMaxPooling[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val output = elements.get("output").asInstanceOf[Tensor[Double]]
-    val padW = elements.get("padW").asInstanceOf[Double].toInt
-    val padH = elements.get("padH").asInstanceOf[Double].toInt
-    val indices = elements.get("indices").asInstanceOf[Tensor[Double]]
-    val dW = elements.get("dW").asInstanceOf[Double].toInt
-    val dH = elements.get("dH").asInstanceOf[Double].toInt
-    val gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
-    val ceilMode = elements.get("ceil_mode").asInstanceOf[Boolean]
-    val kW = elements.get("kW").asInstanceOf[Double].toInt
-    val kH = elements.get("kH").asInstanceOf[Double].toInt
+    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val padW = elements.get("padW").getOrElse(null).asInstanceOf[Double].toInt
+    val padH = elements.get("padH").getOrElse(null).asInstanceOf[Double].toInt
+    val indices = elements.get("indices").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val dW = elements.get("dW").getOrElse(null).asInstanceOf[Double].toInt
+    val dH = elements.get("dH").getOrElse(null).asInstanceOf[Double].toInt
+    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val ceilMode = elements.get("ceil_mode").getOrElse(null).asInstanceOf[Boolean]
+    val kW = elements.get("kW").getOrElse(null).asInstanceOf[Double].toInt
+    val kH = elements.get("kH").getOrElse(null).asInstanceOf[Double].toInt
     val result = new SpatialMaxPooling[Double](kW, kH, dW, dH, padW, padH)
     result.ceil_mode = ceilMode
     result.output.resizeAs(output)
@@ -800,19 +807,19 @@ object File {
   private def readSpatialAveragePooling(
     rawData: ByteBuffer, objects: Map[Int, Any]): SpatialAveragePooling[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val padW = elements.get("padW").asInstanceOf[Double].toInt
-    val padH = elements.get("padH").asInstanceOf[Double].toInt
-    val dW = elements.get("dW").asInstanceOf[Double].toInt
-    val dH = elements.get("dH").asInstanceOf[Double].toInt
-    val ceilMode = elements.get("ceil_mode").asInstanceOf[Boolean]
-    val kW = elements.get("kW").asInstanceOf[Double].toInt
-    val kH = elements.get("kH").asInstanceOf[Double].toInt
-    val countIncludePad = elements.get("count_include_pad").asInstanceOf[Boolean]
-    val divide = elements.get("divide").asInstanceOf[Boolean]
+    val padW = elements.get("padW").getOrElse(null).asInstanceOf[Double].toInt
+    val padH = elements.get("padH").getOrElse(null).asInstanceOf[Double].toInt
+    val dW = elements.get("dW").getOrElse(null).asInstanceOf[Double].toInt
+    val dH = elements.get("dH").getOrElse(null).asInstanceOf[Double].toInt
+    val ceilMode = elements.get("ceil_mode").getOrElse(null).asInstanceOf[Boolean]
+    val kW = elements.get("kW").getOrElse(null).asInstanceOf[Double].toInt
+    val kH = elements.get("kH").getOrElse(null).asInstanceOf[Double].toInt
+    val countIncludePad = elements.get("count_include_pad").getOrElse(null).asInstanceOf[Boolean]
+    val divide = elements.get("divide").getOrElse(null).asInstanceOf[Boolean]
     val result = new SpatialAveragePooling[Double](kW, kH, dW, dH, padW, padH, ceilMode,
       countIncludePad, divide)
-    val output = elements.get("output").asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
+    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
     result.output.resizeAs(output)
     result.output.copy(output)
     result.gradInput.resizeAs(gradInput)
@@ -822,13 +829,13 @@ object File {
 
   private def readConcat(rawData: ByteBuffer, objects: Map[Int, Any]): Concat[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val output = elements.get("output").asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
+    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
     // size array will be adjust to the input in the training
-    val size = elements.get("size").asInstanceOf[Array[Int]]
-    val dimension = elements.get("dimension").asInstanceOf[Double].toInt
-    val train = elements.get("train").asInstanceOf[Boolean] // what's this?
-    val modules = elements.get("modules").asInstanceOf[Map[Any, Any]]
+    val size = elements.get("size").getOrElse(null).asInstanceOf[Array[Int]]
+    val dimension = elements.get("dimension").getOrElse(null).asInstanceOf[Double].toInt
+    val train = elements.get("train").getOrElse(null).asInstanceOf[Boolean] // what's this?
+    val modules = elements.get("modules").getOrElse(null).asInstanceOf[Map[Any, Any]]
     val result = new Concat[Double](dimension)
     result.gradInput.resizeAs(gradInput)
     result.gradInput.copy(gradInput)
@@ -843,11 +850,11 @@ object File {
 
   private def readDropout(rawData: ByteBuffer, objects: Map[Int, Any]): Dropout[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val p = elements.get("p").asInstanceOf[Double]
-    val output = elements.get("output").asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
-    val noise = elements.get("noise").asInstanceOf[Tensor[Double]]
-    val train = elements.get("train").asInstanceOf[Boolean]
+    val p = elements.get("p").getOrElse(null).asInstanceOf[Double]
+    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val noise = elements.get("noise").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val train = elements.get("train").getOrElse(null).asInstanceOf[Boolean]
 
     val result = new Dropout[Double](p, false, true)
     result.output.resizeAs(output)
@@ -863,12 +870,12 @@ object File {
 
   private def readLinear(rawData: ByteBuffer, objects: Map[Int, Any]): Linear[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val output = elements.get("output").asInstanceOf[Tensor[Double]]
-    val gradBias = elements.get("gradBias").asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
-    val bias = elements.get("bias").asInstanceOf[Tensor[Double]]
-    val weight = elements.get("weight").asInstanceOf[Tensor[Double]]
-    val gradWeight = elements.get("gradWeight").asInstanceOf[Tensor[Double]]
+    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradBias = elements.get("gradBias").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val bias = elements.get("bias").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val weight = elements.get("weight").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradWeight = elements.get("gradWeight").getOrElse(null).asInstanceOf[Tensor[Double]]
     val result = new Linear[Double](weight.size(2), weight.size(1))
     result.output.resizeAs(output)
     result.output.copy(output)
@@ -889,20 +896,20 @@ object File {
     rawData: ByteBuffer, objects: Map[Int, Any]): SpatialConvolutionMap[Double] = {
 
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val padH = elements.get("padH").asInstanceOf[Double].toInt
-    val padW = elements.get("padW").asInstanceOf[Double].toInt
-    val dH = elements.get("dH").asInstanceOf[Double].toInt
-    val dW = elements.get("dW").asInstanceOf[Double].toInt
-    val kH = elements.get("kH").asInstanceOf[Double].toInt
-    val kW = elements.get("kW").asInstanceOf[Double].toInt
-    val connTable = elements.get("connTable").asInstanceOf[Tensor[Double]]
-    val gradBias = elements.get("gradBias").asInstanceOf[Tensor[Double]]
-    val weight = elements.get("weight").asInstanceOf[Tensor[Double]]
+    val padH = elements.get("padH").getOrElse(null).asInstanceOf[Double].toInt
+    val padW = elements.get("padW").getOrElse(null).asInstanceOf[Double].toInt
+    val dH = elements.get("dH").getOrElse(null).asInstanceOf[Double].toInt
+    val dW = elements.get("dW").getOrElse(null).asInstanceOf[Double].toInt
+    val kH = elements.get("kH").getOrElse(null).asInstanceOf[Double].toInt
+    val kW = elements.get("kW").getOrElse(null).asInstanceOf[Double].toInt
+    val connTable = elements.get("connTable").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradBias = elements.get("gradBias").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val weight = elements.get("weight").getOrElse(null).asInstanceOf[Tensor[Double]]
     //    val finput = elements.get("finput").asInstanceOf[Tensor[Double]]
-    val output = elements.get("output").asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
-    val bias = elements.get("bias").asInstanceOf[Tensor[Double]]
-    val gradWeight = elements.get("gradWeight").asInstanceOf[Tensor[Double]]
+    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val bias = elements.get("bias").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradWeight = elements.get("gradWeight").getOrElse(null).asInstanceOf[Tensor[Double]]
     //    val fgradInput = elements.get("fgradInput").asInstanceOf[Tensor[Double]]
     val result = new SpatialConvolutionMap[Double](connTable, kW, kH, dW, dH, padW, padH)
     result.gradBias.resizeAs(gradBias)
@@ -927,19 +934,19 @@ object File {
   private def readBatchNormalization(
     rawData: ByteBuffer, objects: Map[Int, Any]): BatchNormalization[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val eps = elements.get("eps").asInstanceOf[Double]
-    val momentum = elements.get("momentum").asInstanceOf[Double]
-    val affine = elements.get("affine").asInstanceOf[Boolean]
-    val gradBias = elements.get("gradBias").asInstanceOf[Tensor[Double]]
-    val weight = elements.get("weight").asInstanceOf[Tensor[Double]]
-    val runningMean = elements.get("running_mean").asInstanceOf[Tensor[Double]]
-    val runningVar = elements.get("running_var").asInstanceOf[Tensor[Double]]
-    val saveMean = elements.get("save_mean").asInstanceOf[Tensor[Double]]
-    val saveStd = elements.get("save_std").asInstanceOf[Tensor[Double]]
-    val output = elements.get("output").asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
-    val bias = elements.get("bias").asInstanceOf[Tensor[Double]]
-    val gradWeight = elements.get("gradWeight").asInstanceOf[Tensor[Double]]
+    val eps = elements.get("eps").getOrElse(null).asInstanceOf[Double]
+    val momentum = elements.get("momentum").getOrElse(null).asInstanceOf[Double]
+    val affine = elements.get("affine").getOrElse(null).asInstanceOf[Boolean]
+    val gradBias = elements.get("gradBias").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val weight = elements.get("weight").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val runningMean = elements.get("running_mean").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val runningVar = elements.get("running_var").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val saveMean = elements.get("save_mean").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val saveStd = elements.get("save_std").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val bias = elements.get("bias").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradWeight = elements.get("gradWeight").getOrElse(null).asInstanceOf[Tensor[Double]]
     val nOutput = runningMean.size(1)
     val result = new BatchNormalization[Double](nOutput, eps, momentum, affine)
     result.gradBias.resizeAs(gradBias)
@@ -969,19 +976,19 @@ object File {
   private def readSpatialBatchNormalization(
     rawData: ByteBuffer, objects: Map[Int, Any]): SpatialBatchNormalization[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val eps = elements.get("eps").asInstanceOf[Double]
-    val momentum = elements.get("momentum").asInstanceOf[Double]
-    val affine = elements.get("affine").asInstanceOf[Boolean]
-    val gradBias = elements.get("gradBias").asInstanceOf[Tensor[Double]]
-    val weight = elements.get("weight").asInstanceOf[Tensor[Double]]
-    val runningMean = elements.get("running_mean").asInstanceOf[Tensor[Double]]
-    val runningVar = elements.get("running_var").asInstanceOf[Tensor[Double]]
-    val saveMean = elements.get("save_mean").asInstanceOf[Tensor[Double]]
-    val saveStd = elements.get("save_std").asInstanceOf[Tensor[Double]]
-    val output = elements.get("output").asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
-    val bias = elements.get("bias").asInstanceOf[Tensor[Double]]
-    val gradWeight = elements.get("gradWeight").asInstanceOf[Tensor[Double]]
+    val eps = elements.get("eps").getOrElse(null).asInstanceOf[Double]
+    val momentum = elements.get("momentum").getOrElse(null).asInstanceOf[Double]
+    val affine = elements.get("affine").getOrElse(null).asInstanceOf[Boolean]
+    val gradBias = elements.get("gradBias").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val weight = elements.get("weight").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val runningMean = elements.get("running_mean").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val runningVar = elements.get("running_var").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val saveMean = elements.get("save_mean").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val saveStd = elements.get("save_std").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val bias = elements.get("bias").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradWeight = elements.get("gradWeight").getOrElse(null).asInstanceOf[Tensor[Double]]
     val nOutput = runningMean.size(1)
     val result = new SpatialBatchNormalization[Double](nOutput, eps, momentum, affine)
     result.gradBias.resizeAs(gradBias)
@@ -1015,11 +1022,11 @@ object File {
   private def readThreshold(rawData: ByteBuffer, objects: Map[Int, Any]): Threshold[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
     val result = new Threshold[Double]
-    val value = elements.get("val").asInstanceOf[Double]
-    val output = elements.get("output").asInstanceOf[Tensor[Double]]
-    val inPlace = elements.get("inplace").asInstanceOf[Boolean]
-    val gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
-    val threshold = elements.get("threshold").asInstanceOf[Double]
+    val value = elements.get("val").getOrElse(null).asInstanceOf[Double]
+    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val inPlace = elements.get("inplace").getOrElse(null).asInstanceOf[Boolean]
+    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val threshold = elements.get("threshold").getOrElse(null).asInstanceOf[Double]
     result.value = value
     result.output.resizeAs(output)
     result.output.copy(output)
@@ -1033,22 +1040,22 @@ object File {
   private def readLogSoftMax(rawData: ByteBuffer, objects: Map[Int, Any]): LogSoftMax[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
     val result = new LogSoftMax[Double]
-    result.output = elements.get("output").asInstanceOf[Tensor[Double]]
-    result.gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
+    result.output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    result.gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
     result
   }
 
   private def readView(rawData: ByteBuffer, objects: Map[Int, Any]): View[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val size = elements.get("size").asInstanceOf[Array[Int]]
+    val size = elements.get("size").getOrElse(null).asInstanceOf[Array[Int]]
     val result = new View[Double](size)
-    if (elements.containsKey("output")) {
-      val output = elements.get("output").asInstanceOf[Tensor[Double]]
+    if (elements.contains("output")) {
+      val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
       result.output.resizeAs(output)
       result.output.copy(output)
     }
-    val numElements = elements.get("numElements").asInstanceOf[Double].toInt
-    val numInputDims = elements.get("numInputDims").asInstanceOf[Double].toInt
+    val numElements = elements.get("numElements").getOrElse(null).asInstanceOf[Double].toInt
+    val numInputDims = elements.get("numInputDims").getOrElse(null).asInstanceOf[Double].toInt
     result.setNumInputDims(numInputDims)
     require(result.numElements == numElements, "Invalid view file")
     result
@@ -1058,24 +1065,24 @@ object File {
     rawData: ByteBuffer, objects: Map[Int, Any]): SpatialZeroPadding[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
     val result = new SpatialZeroPadding[Double](
-      elements.get("pad_l").asInstanceOf[Double].toInt,
-      elements.get("pad_r").asInstanceOf[Double].toInt,
-      elements.get("pad_t").asInstanceOf[Double].toInt,
-      elements.get("pad_b").asInstanceOf[Double].toInt
+      elements.get("pad_l").getOrElse(null).asInstanceOf[Double].toInt,
+      elements.get("pad_r").getOrElse(null).asInstanceOf[Double].toInt,
+      elements.get("pad_t").getOrElse(null).asInstanceOf[Double].toInt,
+      elements.get("pad_b").getOrElse(null).asInstanceOf[Double].toInt
     )
-    result.output = elements.get("output").asInstanceOf[Tensor[Double]]
-    result.gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
+    result.output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    result.gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
     result
   }
 
   private def readReLU(rawData: ByteBuffer, objects: Map[Int, Any]): ReLU[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
     val result = new ReLU[Double]
-    result.value = elements.get("val").asInstanceOf[Double]
-    result.output = elements.get("output").asInstanceOf[Tensor[Double]]
-    result.inPlace = elements.get("inplace").asInstanceOf[Boolean]
-    result.gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
-    result.threshold = elements.get("threshold").asInstanceOf[Double]
+    result.value = elements.get("val").getOrElse(null).asInstanceOf[Double]
+    result.output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    result.inPlace = elements.get("inplace").getOrElse(null).asInstanceOf[Boolean]
+    result.gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
+    result.threshold = elements.get("threshold").getOrElse(null).asInstanceOf[Double]
     result
   }
 
@@ -1087,7 +1094,7 @@ object File {
 
   private def readReshape(rawData: ByteBuffer, objects: Map[Int, Any]): Reshape[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val size = elements.get("size").asInstanceOf[Array[Int]]
+    val size = elements.get("size").getOrElse(null).asInstanceOf[Array[Int]]
     val result = new Reshape[Double](size)
     result
   }
@@ -1095,22 +1102,22 @@ object File {
   private def readSpatialConvolution(
     rawData: ByteBuffer, objects: Map[Int, Any]): SpatialConvolution[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val padH = elements.get("padH").asInstanceOf[Double].toInt
-    val padW = elements.get("padW").asInstanceOf[Double].toInt
-    val dH = elements.get("dH").asInstanceOf[Double].toInt
-    val dW = elements.get("dW").asInstanceOf[Double].toInt
-    val kH = elements.get("kH").asInstanceOf[Double].toInt
-    val kW = elements.get("kW").asInstanceOf[Double].toInt
-    val nInputPlane = elements.get("nInputPlane").asInstanceOf[Double].toInt
-    val nOutputPlane = elements.get("nOutputPlane").asInstanceOf[Double].toInt
-    val gradBias = elements.get("gradBias").asInstanceOf[Tensor[Double]]
-    val weight = elements.get("weight").asInstanceOf[Tensor[Double]]
-    val finput = elements.get("finput").asInstanceOf[Tensor[Double]]
-    val output = elements.get("output").asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
-    val bias = elements.get("bias").asInstanceOf[Tensor[Double]]
-    val gradWeight = elements.get("gradWeight").asInstanceOf[Tensor[Double]]
-    val fgradInput = elements.get("fgradInput").asInstanceOf[Tensor[Double]]
+    val padH = elements.get("padH").getOrElse(null).asInstanceOf[Double].toInt
+    val padW = elements.get("padW").getOrElse(null).asInstanceOf[Double].toInt
+    val dH = elements.get("dH").getOrElse(null).asInstanceOf[Double].toInt
+    val dW = elements.get("dW").getOrElse(null).asInstanceOf[Double].toInt
+    val kH = elements.get("kH").getOrElse(null).asInstanceOf[Double].toInt
+    val kW = elements.get("kW").getOrElse(null).asInstanceOf[Double].toInt
+    val nInputPlane = elements.get("nInputPlane").getOrElse(null).asInstanceOf[Double].toInt
+    val nOutputPlane = elements.get("nOutputPlane").getOrElse(null).asInstanceOf[Double].toInt
+    val gradBias = elements.get("gradBias").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val weight = elements.get("weight").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val finput = elements.get("finput").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val bias = elements.get("bias").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val gradWeight = elements.get("gradWeight").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val fgradInput = elements.get("fgradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
     val result = new SpatialConvolution[Double](
       nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
     result.gradBias.resizeAs(gradBias)
@@ -1140,15 +1147,15 @@ object File {
     rawData: ByteBuffer, objects: Map[Int, Any]):
   Sequential[Tensor[Double], Tensor[Double], Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[Any, Any]]
-    val output = elements.get("output").asInstanceOf[Tensor[Double]]
-    val modules = elements.get("modules").asInstanceOf[Map[Any, Any]]
+    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
+    val modules = elements.get("modules").getOrElse(null).asInstanceOf[Map[Any, Any]]
     val result = new Sequential[Tensor[Double], Tensor[Double], Double]()
     if (null != output) {
       result.output.resizeAs(output)
       result.output.copy(output)
     }
-    if (elements.containsKey("gradInput")) {
-      val gradInput = elements.get("gradInput").asInstanceOf[Tensor[Double]]
+    if (elements.contains("gradInput")) {
+      val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
       if (null != gradInput) {
         result.gradInput.resizeAs(gradInput)
         result.gradInput.copy(gradInput)
@@ -1163,12 +1170,12 @@ object File {
 
   private def readModules(modules: Map[Any, Any]):
   Array[Module[Tensor[Double], Tensor[Double], Double]] = {
-    val moduleLength = modules.keySet().size()
+    val moduleLength = modules.keySet.size
     val modulesArray = new Array[Module[Tensor[Double], Tensor[Double], Double]](moduleLength)
-    for (k <- modules.keySet().toArray) {
+    for (k <- modules.keySet.toArray) {
       val key = k.asInstanceOf[Double]
       modulesArray(key.toInt - 1) = modules
-        .get(key)
+        .get(key).getOrElse(null)
         .asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
     }
     modulesArray

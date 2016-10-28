@@ -26,7 +26,6 @@ import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
-import scala.util.Random
 
 
 private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
@@ -1273,6 +1272,13 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       }
     }
 
+    result
+  }
+
+  override def reshape(sizes: Array[Int]): Tensor[T] = {
+    val result = new DenseTensor[T]()
+    result.resize(sizes)
+    result.copy(this)
     result
   }
 

@@ -21,8 +21,8 @@ import java.io._
 
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.tensor._
-import com.intel.analytics.sparkdl.utils.{Activities, File}
 import com.intel.analytics.sparkdl.utils.TorchObject._
+import com.intel.analytics.sparkdl.utils.{File, Table}
 
 import scala.io.Source
 import scala.sys.process._
@@ -100,6 +100,8 @@ object TH {
           File.save(parameters(k), tmpPath, TYPE_VIEW)
         case _: Dropout[_] =>
           File.save(parameters(k), tmpPath, TYPE_DROPOUT)
+        case _: Table =>
+          File.save(parameters(k).asInstanceOf[Table].getState(), tmpPath, TYPE_TABLE)
         case _ =>
       }
       varCode.append(k + " = torch.load(\'" + tmpPath + "\')\n")

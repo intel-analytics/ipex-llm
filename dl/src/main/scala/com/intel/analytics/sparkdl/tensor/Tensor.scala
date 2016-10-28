@@ -21,9 +21,8 @@ import java.io.Serializable
 
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.utils.{Activities, File, Table, TorchObject}
+import com.intel.analytics.sparkdl.utils.{Activities, Table}
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
-import scala.reflect.runtime.universe._
 
 import scala.reflect.ClassTag
 
@@ -553,6 +552,14 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activities {
    * @return true if there's difference, vice versa
    */
   def diff(other: Tensor[T], count: Int = 1, reverse: Boolean = false): Boolean
+
+  /**
+   * convert the tensor to a new tensor without any change of the tensor
+   *
+   * @param sizes the size that tensor will reshape to
+   * @return
+   */
+  def reshape(sizes: Array[Int]): Tensor[T]
 }
 
 sealed trait TensorDataType
