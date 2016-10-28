@@ -30,7 +30,10 @@ class SmoothL1Criterion[T: ClassTag](sizeAverage: Boolean = true)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.nElement() == target.nElement())
-    buffer = Tensor[T]().resizeAs(input).copy(input)
+    if (buffer == null) {
+      buffer = Tensor[T]()
+    }
+    buffer.resizeAs(input).copy(input)
     buffer.add(ev.fromType(-1), target).abs()
     var data = buffer.storage().array()
     for (i <- 0 until data.length) {
@@ -51,6 +54,9 @@ class SmoothL1Criterion[T: ClassTag](sizeAverage: Boolean = true)
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     require(input.nElement() == target.nElement())
     val norm = ev.fromType(if (sizeAverage) 1.0 / input.nElement() else 1.0)
+    if (gradInput == null) {
+      gradInput = Tensor[T]()
+    }
     gradInput.resizeAs(input).copy(input)
     gradInput.add(ev.fromType(-1), target)
     var data = gradInput.storage().array()
