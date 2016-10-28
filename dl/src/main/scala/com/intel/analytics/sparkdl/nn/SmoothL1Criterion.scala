@@ -24,22 +24,24 @@ import scala.reflect.ClassTag
 
 class SmoothL1Criterion[T: ClassTag](sizeAverage: Boolean = true)
                                     (implicit ev: TensorNumeric[T]) extends Criterion[T] {
-  var gradInput: Tensor[T] = Tensor[T]()
+  @transient var gradInput: Tensor[T] = null
 
-  var buffer = Tensor[T]()
+  @transient var buffer: Tensor[T] = null
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.nElement() == target.nElement())
-    buffer.resizeAs(input).zero()
-    buffer.copy(input)
-    var sum = (buffer - target).abs().apply1(z =>
-      if (ev.toType[Double](z) < 1) {
-        ev.times(ev.fromType[Double](0.5), ev.times(z, z))
+    buffer = Tensor[T]().resizeAs(input).copy(input)
+    buffer.add(ev.fromType(-1), target).abs()
+    var data = buffer.storage().array()
+    for (i <- 0 until data.length) {
+      if (ev.isGreater(ev.fromType(1), data(i))) {
+        data(i) = ev.times(ev.fromType[Double](0.5), ev.times(data(i), data(i)))
       }
       else {
-        ev.minus(z, ev.fromType[Double](0.5))
-      })
-      .sum()
+        data(i) = ev.minus(data(i), ev.fromType[Double](0.5))
+      }
+    }
+    var sum = buffer.sum()
     if (sizeAverage) {
       sum = ev.divide(sum, ev.fromType(input.nElement()))
     }
@@ -49,18 +51,20 @@ class SmoothL1Criterion[T: ClassTag](sizeAverage: Boolean = true)
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     require(input.nElement() == target.nElement())
     val norm = ev.fromType(if (sizeAverage) 1.0 / input.nElement() else 1.0)
-    gradInput.resizeAs(input)
-    gradInput.copy(input)
-    (gradInput - target).apply1(x => {
-      if (ev.isGreater(ev.negative(x), ev.fromType(1))) {
-        ev.negative(norm)
+    gradInput.resizeAs(input).copy(input)
+    gradInput.add(ev.fromType(-1), target)
+    var data = gradInput.storage().array()
+    for (i <- 0 until data.length) {
+      if (ev.isGreater(ev.fromType(-1), data(i))) {
+        data(i) = ev.negative(norm)
       }
-      else if (ev.isGreater(x, ev.fromType(1))) {
-        norm
+      else if (ev.isGreater(data(i), ev.fromType(1))) {
+        data(i) = norm
       }
       else {
-        ev.times(norm, x)
+        data(i) = ev.times(norm, data(i))
       }
-    })
+    }
+    gradInput
   }
 }
