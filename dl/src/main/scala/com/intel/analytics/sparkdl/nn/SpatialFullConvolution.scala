@@ -22,8 +22,6 @@ import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.utils.Activities
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
 class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
@@ -73,7 +71,7 @@ class SpatialFullConvolution[@specialized(Float, Double) T: ClassTag](
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
-      case Bilinear =>
+      case BilinearFiller =>
         require(weight.nDimension() == 4, "weight must be 4 dim")
         require(kH == kW, "Kernel must be square")
         val f = Math.ceil(kW / 2.0).toInt

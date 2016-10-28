@@ -17,17 +17,16 @@
 
 package com.intel.analytics.sparkdl.models
 
-import java.util.HashMap
-
 import com.intel.analytics.sparkdl.example.GoogleNet
-import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Module}
+import com.intel.analytics.sparkdl.nn.ClassNLLCriterion
 import com.intel.analytics.sparkdl.optim.SGD
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.torch.TH
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
-import com.intel.analytics.sparkdl.utils.{RandomGenerator, T}
+import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import scala.collection.mutable.HashMap
 import scala.math._
 import scala.util.Random
 
@@ -56,32 +55,25 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
              conv1:add(nn.ReLU(true))
              concat:add(conv1)
           end
-
           local conv3 = nn.Sequential()
           conv3:add(nn.SpatialConvolution(input_size, config[2][1],1,1,1,1))
           conv3:add(nn.SpatialBatchNormalization(config[2][1],1e-3))
           conv3:add(nn.ReLU(true))
-
           conv3:add(nn.SpatialConvolution(config[2][1], config[2][2],3,3,1,1,1,1))
           conv3:add(nn.SpatialBatchNormalization(config[2][2],1e-3))
           conv3:add(nn.ReLU(true))
-
           concat:add(conv3)
-
           local conv3xx = nn.Sequential()
           conv3xx:add(nn.SpatialConvolution(  input_size, config[3][1],1,1,1,1))
           conv3xx:add(nn.SpatialBatchNormalization(config[3][1],1e-3))
           conv3xx:add(nn.ReLU(true))
-
           conv3xx:add(nn.SpatialConvolution(config[3][1], config[3][2],3,3,1,1,1,1))
           conv3xx:add(nn.SpatialBatchNormalization(config[3][2],1e-3))
           conv3xx:add(nn.ReLU(true))
-
           conv3xx:add(nn.SpatialConvolution(config[3][2], config[3][2],3,3,1,1,1,1))
           conv3xx:add(nn.SpatialBatchNormalization(config[3][2],1e-3))
           conv3xx:add(nn.ReLU(true))
           concat:add(conv3xx)
-
           local pool = nn.Sequential()
           pool:add(nn.SpatialZeroPadding(1,1,1,1)) -- remove after getting nn R2 into fbcode
           if config[4][1] == 'max' then
@@ -95,14 +87,10 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
              pool:add(nn.SpatialConvolution(input_size, config[4][2],1,1,1,1))
              pool:add(nn.SpatialBatchNormalization(config[4][2],1e-3))
              pool:add(nn.ReLU(true))
-
           end
           concat:add(pool)
-
           return concat
         end
-
-
         local features = nn.Sequential()
         features:add(nn.SpatialConvolution(3,64,7,7,2,2,3,3))
         features:add(nn.SpatialBatchNormalization(64,1e-3))
@@ -121,68 +109,55 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         features:add(inception( 576, {{192},{ 96,128},{ 96,128},{'avg',128}})) -- 4(b)
         features:add(inception( 576, {{160},{128,160},{128,160},{'avg', 96}})) -- 4(c)
         features:add(inception( 576, {{ 96},{128,192},{160,192},{'avg', 96}})) -- 4(d)
-
         local main_branch = nn.Sequential()
         main_branch:add(inception( 576, {{  0},{128,192},{192,256},{'max',  0}})) -- 4(e)
         main_branch:add(nn.SpatialConvolution(1024,1024,2,2,2,2))
         main_branch:add(nn.SpatialBatchNormalization(1024,1e-3))
-
         main_branch:add(inception(1024, {{352},{192,320},{160,224},{'avg',128}})) -- 5(a)
         main_branch:add(inception(1024, {{352},{192,320},{192,224},{'max',128}})) -- 5(b)
         main_branch:add(nn.SpatialAveragePooling(7,7,1,1))
         main_branch:add(nn.View(1024):setNumInputDims(3))
         main_branch:add(nn.Linear(1024,nClasses))
         main_branch:add(nn.LogSoftMax())
-
         -- add auxillary classifier here (thanks to Christian Szegedy for the details)
         local aux_classifier = nn.Sequential()
         aux_classifier:add(nn.SpatialAveragePooling(5,5,3,3):ceil())
         aux_classifier:add(nn.SpatialConvolution(576,128,1,1,1,1))
         aux_classifier:add(nn.SpatialBatchNormalization(128,1e-3))
-
         aux_classifier:add(nn.View(128*4*4):setNumInputDims(3))
         aux_classifier:add(nn.Linear(128*4*4,768))
         aux_classifier:add(nn.ReLU())
         aux_classifier:add(nn.Linear(768,nClasses))
         aux_classifier:add(nn.LogSoftMax())
-
         local splitter = nn.Concat(2)
         splitter:add(main_branch):add(aux_classifier)
         local model = nn.Sequential():add(features):add(splitter)
-
         parameters, gradParameters = model:getParameters()
         model:zeroGradParameters()
         parameters_initial = parameters : clone()
         gradParameters_initial = gradParameters : clone()
-
         criterion =  nn.ClassNLLCriterion()
-
         state = {
           learningRate = 1e-2,
           momentum = 0.9,
           dampening = 0.0,
           weightDecay = 5e-4
         }
-
         feval = function(x)
           model:zeroGradParameters()
           model_initial = model : clone()
-
           local output1 = model:forward(input)
           local err1 = criterion:forward(output1, labels)
           local gradOutput1 = criterion:backward(output1, labels)
           model:backward(input, gradOutput1)
           return err1, gradParameters
         end
-
         for i = 1,5,1 do
           w, err = optim.sgd(feval, parameters, state)
         end
-
         output=model.output
         gradOutput=criterion.gradInput
         gradInput = model.gradInput
-
         model2=model:get(2)
         parameters, gradParameters = model:getParameters()
       """
@@ -224,7 +199,8 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val outputTorch = TH.map("output").asInstanceOf[Tensor[Double]]
     outputTest should be equals outputTorch
 
-    val errTorch = TH.map("err").asInstanceOf[HashMap[Double, Double]].get(1.0)
+    val errTorch = TH.map("err").asInstanceOf[HashMap[Double, Double]].
+      get(1.0).getOrElse(null).asInstanceOf[Double]
     val errTest = criterion.forward(outputTest, labels)
     println(s"err:${abs(errTest - errTorch)}")
     assert(abs(errTest - errTorch) < 4e-10)
@@ -430,7 +406,8 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     println(s"outputAbs:$outputAbs")
 
     val errTest = criterion.forward(outputTest, labels)
-    val errTorch = TH.map("err").asInstanceOf[HashMap[Double, Double]].get(1.0)
+    val errTorch = TH.map("err").asInstanceOf[HashMap[Double, Double]].
+      get(1.0).getOrElse(null).asInstanceOf[Double]
     println(s"err:${abs(errTest - errTorch)}")
     assert(abs(errTest - errTorch) == 0)
 
