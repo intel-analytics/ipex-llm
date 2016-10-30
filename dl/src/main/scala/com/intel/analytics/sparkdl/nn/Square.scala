@@ -48,6 +48,8 @@ class Square[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    require(input.isSameSizeAs(gradOutput),
+      "input and gradOutput need to have the same shape")
     gradInput.resizeAs(input)
 
     if (input.dim() == 1 || !input.isContiguous() || !gradOutput.isContiguous()
