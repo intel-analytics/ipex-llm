@@ -25,13 +25,31 @@ class ExpSpec extends FlatSpec with Matchers {
     val input = Tensor(Storage[Double](Array(1.0, 2, 3, 4, 5, 6)), 1, Array(2, 3))
 
     val output = Tensor(Storage(Array(
-      2.7183, 7.3891, 20.0855,
-      54.5982, 148.4132, 403.4288)), 1, Array(2, 3))
+      2.718281828459045, 7.38905609893065, 20.085536923187668,
+      54.598150033144236, 148.4131591025766, 403.4287934927351)), 1, Array(2, 3))
 
     val exp = new Exp[Double]()
 
     val powerOutput = exp.forward(input)
 
-    powerOutput should be equals (output)
+    powerOutput should equal (output)
+  }
+
+  "A Exp" should "generate correct gradInput" in {
+    val input = Tensor(Storage[Double](Array(1.0, 2, 3, 4, 5, 6)), 1, Array(2, 3))
+
+    val gradOutput = Tensor(Storage(Array(
+      2.7183, 7.3891, 20.0855,
+      54.5982, 148.4132, 403.4288)), 1, Array(2, 3))
+
+    val exp = new Exp[Double]()
+
+    exp.forward(input)
+    val gradInput = exp.backward(input, gradOutput)
+    val expectedGradInput = Tensor(Storage(Array(
+      7.389105494300223, 54.59847442060847, 403.4280518706859,
+      2980.9607151396153, 22026.47186452252, 162754.79404422196)), 1, Array(2, 3))
+
+    gradInput should equal (expectedGradInput)
   }
 }
