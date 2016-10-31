@@ -168,21 +168,45 @@ object ImageNetLocal {
         }
       }
       */
-
+      def feval(x: Tensor[Float]): (Float, Tensor[Float]) = {
+        (criterion.output, grad)
+      }
       state("learningRate") =  state("learningRate").asInstanceOf[Double] * Math.pow(0.1, math.floor((i-1)/30))
       var j = 0
       var c = 0
-      model.training()
+
       while (j < dataSet.getTotal) {
+        model.training()
         val start = System.nanoTime()
         val (input, target) = iter.next()
         val readImgTime = System.nanoTime()
-        model.zeroGradParameters()
+
+
         val output = model.forward(input)
         val loss = criterion.forward(output, target)
-        val gradOutput = criterion.backward(output, target)
-        model.backward(input, gradOutput)
-        sgd.optimize(_ => (loss, grad), weights, state, state)
+
+        model.zeroGradParameters()
+        criterion.backward(output, target)
+        model.backward(input, criterion.gradInput)
+
+        //sgd.optimize(_ => (loss, grad), weights, state, state)
+        sgd.optimize(feval, weights, state)
+
+        /*
+        def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+          model.forward(input)
+          criterion.forward(model.output, labels)
+          model.zeroGradParameters()
+          criterion.backward(model.output, labels)
+          model.backward(input, criterion.gradInput)
+          (criterion.output, grad)
+        }
+        for (i <- 1 to 5) {
+          sgd.optimize(feval, weights, state)
+        }
+*/
+
+
         val end = System.nanoTime()
         wallClockTime += end - start
         log(s"Epoch[$i][Iteration $c $j/${dataSet.getTotal}][Wall Clock ${wallClockTime / 1e9}s]" +
@@ -194,6 +218,15 @@ object ImageNetLocal {
         }
         j += input.size(1)
         c += 1
+
+
+        val (top1Correct, curTop1Batch) = EvaluateMethods.calcAccuracy(output, target)
+        val (top5Correct, curTop5Batch) = EvaluateMethods.calcTop5Accuracy(output, target)
+
+        val top1Accuracy = top1Correct.toDouble / curTop1Batch.toDouble // / dataSetVal.getTotal
+        val top5Accuracy = top5Correct.toDouble / curTop5Batch.toDouble // / dataSetVal.getTotal
+        println(s"[Wall Clock ${wallClockTime / 1e9}s] Train: Top-1 Accuracy is $top1Accuracy")
+        println(s"[Wall Clock ${wallClockTime / 1e9}s] Train: Top-5 Accuracy is $top5Accuracy")
       }
 
       if (i % testInterval == 0) {
