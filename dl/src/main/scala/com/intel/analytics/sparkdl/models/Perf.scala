@@ -21,7 +21,7 @@ import com.github.fommil.netlib.{BLAS, NativeSystemBLAS}
 import com.intel.analytics.sparkdl.models.imagenet.ResNet.ShortcutType
 import com.intel.analytics.sparkdl.models.imagenet._
 import com.intel.analytics.sparkdl.models.mnist.LeNet5
-import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Module}
+import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, CrossEntropyCriterion, Module}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.T
@@ -90,11 +90,19 @@ object Perf {
       case "vgg16" => (Vgg_16(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
-      case "resnet" => (ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->200)), Tensor[T](param.batchSize, 3, 224, 224))
+      case "resnet" => (ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50)), Tensor[T](param.batchSize, 3, 224, 224))
     }
     input.rand()
     println(model)
-    val criterion = new ClassNLLCriterion[T]()
+    val criterion = param.module match {
+      case "resnet" => {
+        ResNet.shareGradInput(model)
+        ResNet.convInit("SpatialConvolution", model)
+        ResNet.bnInit("SpatialBatchNormalization", model)
+        new CrossEntropyCriterion[T]()
+      }
+      case _ => new ClassNLLCriterion[T]()
+    }
     val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
 
     require(BLAS.getInstance().isInstanceOf[NativeSystemBLAS])
@@ -145,8 +153,8 @@ object Perf {
 }
 
 case class PerfParams(
-  batchSize: Int = 128,
-  iteration: Int = 50,
+  batchSize: Int = 50,
+  iteration: Int = 10,
   warmUp: Int = 10,
   dataType: String = "float",
   module: String = "resnet"

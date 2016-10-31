@@ -97,9 +97,9 @@ object ImageNetLocal {
       case _ => throw new IllegalArgumentException
     }
     if (netType == "resnet") {
-      shareGradInput(model)
-      convInit("SpatialConvolution", model)
-      bnInit("SpatialBatchNormalization", model)
+      ResNet.shareGradInput(model)
+      ResNet.convInit("SpatialConvolution", model)
+      ResNet.bnInit("SpatialBatchNormalization", model)
     }
 
 
@@ -294,7 +294,7 @@ object ImageNetLocal {
       donkeyVal, dataSetVal, batchSize, modelPath, modelDepth)
   }
 
-  def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
+  /*def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
                                                              (implicit ev: TensorNumeric[T]): Unit = {
     def sharingKey(m: Module[T]) = m.getClass.getName
 
@@ -355,7 +355,7 @@ object ImageNetLocal {
       tmpModel.weight.apply1(_ => ev.fromType[Float](1f))
       tmpModel.bias.apply1(_ => ev.fromType[Float](0f))
     }
-  }
+  }*/
 
   object MeanStd {
     val mean = Array(0.485f, 0.456f, 0.406f)
