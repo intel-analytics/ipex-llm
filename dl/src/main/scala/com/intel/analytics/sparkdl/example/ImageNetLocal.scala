@@ -111,7 +111,7 @@ object ImageNetLocal {
     val featureShape = Array(3, 224, 224)
     val targetShape = Array(1)
     val sgd = new SGD[Float]
-    val state = T("learningRate" -> 0.1, "momentum" -> 0.9, "dampening" -> 0.0)
+    val state = T("learningRate" -> 0.1, "momentum" -> 0.9, "dampening" -> 0.0, "weightDecay" -> 1e-4)
     val stageImgs = new util.ArrayDeque[Image](batchSize)
     val input = Tensor[Float](batchSize, 3, 224, 224)
     val target = Tensor[Float](batchSize)

@@ -24,8 +24,11 @@ import java.util.Collections
 import java.util.concurrent.{Executors, LinkedBlockingQueue}
 
 import com.intel.analytics.sparkdl.example.ImageNetLocal.{ColorJitter, ColorNormalize, Lighting}
-import com.intel.analytics.sparkdl.example.ImageNetLocal.PCA.rgb
+import scala.util.control.Breaks._
+import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.tensor.Tensor
+
+import scala.util.Random
 
 object ImageNetUtils {
 
@@ -112,6 +115,32 @@ object ImageNetUtils {
     }
   }
 
+  def randomSizedCrop(width: Int, height: Int)(cropWidth: Int, cropHeight: Int): (Int, Int) = {
+    val area = width * height
+    val r = scala.util.Random
+    var y1 = r.nextInt((height - cropHeight)/2)
+    var x1 = r.nextInt((width - cropWidth)/2)
+    breakable {
+      for (j <- 1 to 10) {
+        val targetArea = RNG.uniform(0.08, 1.0) * area
+        val aspectRatio = RNG.uniform(3 / 4, 4 / 3)
+        var w = Math.round(Math.sqrt(targetArea * aspectRatio))
+        var h = Math.round(Math.sqrt(targetArea / aspectRatio))
+        if (RNG.uniform(0, 1) < 0.5) {
+          val tmp = (w, h).swap
+          w = tmp._1
+          h = tmp._2
+        }
+        if (h <= height && w <= width) {
+          y1 = RNG.uniform(0, height - h).toInt
+          x1 = RNG.uniform(0, width - w).toInt
+          break
+        }
+      }
+    }
+    (x1, y1)
+  }
+
   def cropFloat(rawData: Array[Byte], cropWidth: Int, cropHeight: Int,
     mean: (Float, Float, Float), std: (Float, Float, Float), result: Array[Float],
     resultOffset: Int): Unit = {
@@ -123,6 +152,9 @@ object ImageNetUtils {
 
     val startW = r.nextInt((width - cropWidth)/2)
     val startH = r.nextInt((height - cropHeight)/2)
+
+    //val (startW, startH) = randomSizedCrop(width, height)(cropWidth, cropHeight)
+
     val offset = 2 * 4
     val startIndex = startW + startH * width
     var i = 0
