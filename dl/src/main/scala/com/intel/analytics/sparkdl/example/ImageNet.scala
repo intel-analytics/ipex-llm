@@ -80,8 +80,8 @@ object ImageNetUtils {
         if (!valFlag) {
           ColorJitter.randomOrder(input(i))
           Lighting.lighting(input(i))
-          ColorNormalize.colorNormalize(input(i))
         }
+        ColorNormalize.colorNormalize(input(i))
       }
       //ColorJitter.RandomOrder(input)
       (input, target)
