@@ -181,7 +181,7 @@ object MultiModelPerf {
 case class MultiModelPerfParams(
   batchSize: Int = 50,
   iteration: Int = 20,
-  cores: Int = 1,
+  cores: Int = 25,
   warmUp: Int = 10,
   dataType: String = "float",
   module: String = "resnet"
