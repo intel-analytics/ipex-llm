@@ -25,7 +25,7 @@ object DenseTensorApply {
    * @param func (tensor1Data, tensor1Offset)
    */
   def apply1[@specialized(Float, Double) T](
-    tensor: DenseTensor[T], func: TensorFunc2[T]): Unit = {
+    tensor: Tensor[T], func: TensorFunc2[T]): Unit = {
 
     if (tensor.nDimension == 0) {
       return
@@ -58,7 +58,7 @@ object DenseTensorApply {
    * @param tensor2 the tensor
    * @param func    (tensor1Data, tensor1Offset, tensor2Data, tensor2Offset)
    */
-  def apply2[@specialized(Float, Double) T](tensor1: DenseTensor[T], tensor2: Tensor[T],
+  def apply2[@specialized(Float, Double) T](tensor1: Tensor[T], tensor2: Tensor[T],
     func: TensorFunc4[T]): Unit = {
     require(tensor1.nElement() == tensor2.nElement(), "inconsistent tensor size")
 
@@ -139,7 +139,7 @@ object DenseTensorApply {
    * @param func    (tensor1Data, tensor1Offset, tensor2Data, tensor2Offset, tensor3Data,
    *                tensor3Offset)
    */
-  private[tensor] def apply3[@specialized(Float, Double) T](tensor1: DenseTensor[T],
+  private[sparkdl] def apply3[@specialized(Float, Double) T](tensor1: Tensor[T],
     tensor2: Tensor[T], tensor3: Tensor[T],
     func: TensorFunc6[T]): Unit = {
 
