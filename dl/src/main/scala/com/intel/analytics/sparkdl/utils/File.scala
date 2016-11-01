@@ -24,8 +24,16 @@ import java.nio.file._
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+import scala.collection.mutable.{HashMap, Map}
+=======
 import scala.collection.mutable
 import scala.collection.mutable.Map
+>>>>>>> add Bilinear layer and convert java.map to scala.map
+=======
+import scala.collection.mutable.{HashMap, Map}
+>>>>>>> some modify of Bilinear
 
 
 sealed abstract class TorchObject(val typeId: Int)
@@ -87,7 +95,7 @@ object File {
     val path = Paths.get(fileName)
     val rawData = ByteBuffer.wrap(Files.readAllBytes(path))
     rawData.order(ByteOrder.LITTLE_ENDIAN)
-    val objects: Map[Int, Any] = new mutable.HashMap()
+    val objects: Map[Int, Any] = new HashMap()
     readObject(rawData, objects).asInstanceOf[T]
   }
 
@@ -400,7 +408,15 @@ object File {
 
   private def writeSpatialConvolution(source: SpatialConvolution[Double], rawdata: ByteBuffer,
     path: Path): Unit = {
+<<<<<<< HEAD
+<<<<<<< HEAD
+    val table: Map[String, Any] = new HashMap()
+=======
     var table: Map[String, Any] = new mutable.HashMap()
+>>>>>>> add Bilinear layer and convert java.map to scala.map
+=======
+    val table: Map[String, Any] = new HashMap()
+>>>>>>> some modify of Bilinear
     val nInputPlane = source.nInputPlane
     val nOutputPlane = source.nOutputPlane
     val kW = source.kernelW
@@ -439,7 +455,15 @@ object File {
 
   private def writeSpatialMaxPooling(source: SpatialMaxPooling[Double], rawdata: ByteBuffer,
     path: Path): Unit = {
+<<<<<<< HEAD
+<<<<<<< HEAD
+    val table: Map[String, Any] = new HashMap()
+=======
     var table: Map[String, Any] = new mutable.HashMap()
+>>>>>>> add Bilinear layer and convert java.map to scala.map
+=======
+    val table: Map[String, Any] = new HashMap()
+>>>>>>> some modify of Bilinear
     val indices = source.indices
     val ceilMode = source.ceil_mode
     val kW = source.kW
@@ -465,7 +489,15 @@ object File {
   }
 
   private def writeThreshold(source: Threshold[Double], rawdata: ByteBuffer, path: Path): Unit = {
+<<<<<<< HEAD
+<<<<<<< HEAD
+    val table: Map[String, Any] = new HashMap()
+=======
     var table: Map[String, Any] = new mutable.HashMap()
+>>>>>>> add Bilinear layer and convert java.map to scala.map
+=======
+    val table: Map[String, Any] = new HashMap()
+>>>>>>> some modify of Bilinear
     val value = source.value
     val output = source.output
     val inPlace = source.inPlace
@@ -481,13 +513,21 @@ object File {
   }
 
   private def writeConcat(source: Concat[Double], rawdata: ByteBuffer, path: Path): Unit = {
+<<<<<<< HEAD
+<<<<<<< HEAD
+    val table: Map[String, Any] = new HashMap()
+=======
     var table: Map[String, Any] = new mutable.HashMap()
+>>>>>>> add Bilinear layer and convert java.map to scala.map
+=======
+    val table: Map[String, Any] = new HashMap()
+>>>>>>> some modify of Bilinear
     val dimension = source.dimension
     val size = source.getSize()
     val output = source.output
     val train = source.training()
     val gradInput = source.gradInput
-    val modules: Map[Double, Module[Tensor[Double], Tensor[Double], Double]] = new mutable.HashMap()
+    val modules: Map[Double, Module[Tensor[Double], Tensor[Double], Double]] = new HashMap()
 
     for (i <- 1 to source.modules.length) {
       modules.put(i, source.modules(i - 1)
@@ -505,10 +545,18 @@ object File {
 
   private def writeSequential(source: Sequential[Tensor[Double], Tensor[Double], Double],
     rawdata: ByteBuffer, path: Path): Unit = {
+<<<<<<< HEAD
+<<<<<<< HEAD
+    val table: Map[String, Any] = new HashMap()
+=======
     var table: Map[String, Any] = new mutable.HashMap()
+>>>>>>> add Bilinear layer and convert java.map to scala.map
+=======
+    val table: Map[String, Any] = new HashMap()
+>>>>>>> some modify of Bilinear
     val output = source.output
     val gradInput = source.gradInput
-    val modules: Map[Double, Module[Tensor[Double], Tensor[Double], Double]] = new mutable.HashMap()
+    val modules: Map[Double, Module[Tensor[Double], Tensor[Double], Double]] = new HashMap()
 
     for (i <- 1 to source.modules.length) {
       modules.put(i, source.modules(i - 1)
@@ -523,7 +571,15 @@ object File {
   }
 
   private def writeDropout(source: Dropout[Double], rawdata: ByteBuffer, path: Path): Unit = {
+<<<<<<< HEAD
+<<<<<<< HEAD
+    val table: Map[String, Any] = new HashMap()
+=======
     var table: Map[String, Any] = new mutable.HashMap()
+>>>>>>> add Bilinear layer and convert java.map to scala.map
+=======
+    val table: Map[String, Any] = new HashMap()
+>>>>>>> some modify of Bilinear
     val p = source.getP()
     val output = source.output
     val noise = source.noise
@@ -542,7 +598,15 @@ object File {
   }
 
   private def writeView(source: View[Double], rawdata: ByteBuffer, path: Path): Unit = {
+<<<<<<< HEAD
+<<<<<<< HEAD
+    val table: Map[String, Any] = new HashMap()
+=======
     var table: Map[String, Any] = new mutable.HashMap()
+>>>>>>> add Bilinear layer and convert java.map to scala.map
+=======
+    val table: Map[String, Any] = new HashMap()
+>>>>>>> some modify of Bilinear
     val size = source.getSize()
     val output = source.output
     val numElements = source.numElements
@@ -556,7 +620,7 @@ object File {
 
 
   private def writeLinear(source: Linear[Double], rawdata: ByteBuffer, path: Path): Unit = {
-    val table: Map[String, Any] = new mutable.HashMap()
+    val table: Map[String, Any] = new HashMap()
     val gradBias = source.gradBias
     val output = source.output
     val gradInput = source.gradInput
@@ -724,7 +788,7 @@ object File {
   // Table
   private def readTable(rawData: ByteBuffer, objects: Map[Int, Any]): Map[Any, Any] = {
     val size = rawData.getInt
-    val result = new mutable.HashMap[Any, Any]()
+    val result = new HashMap[Any, Any]()
     var i = 0
     while (i < size) {
       result.put(readObject(rawData, objects), readObject(rawData, objects))
