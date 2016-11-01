@@ -19,13 +19,22 @@ package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Linear, LogSoftMax, Sequential}
 import com.intel.analytics.sparkdl.ps.OneReduceParameterManager
+import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
 import com.intel.analytics.sparkdl.utils.T
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.scalatest.{FlatSpec, Matchers}
-import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class EvaluatorSpec extends FlatSpec with Matchers {
+class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
+
+  var sc: SparkContext = null
+
+  after {
+    if (sc != null) {
+      sc.stop()
+    }
+  }
+
   "accuracy on 2d tensor" should "be correct" in {
     val output = Tensor(Storage(Array[Double](
       0, 0, 0, 1,
@@ -146,7 +155,7 @@ class EvaluatorSpec extends FlatSpec with Matchers {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
-    val sc = new SparkContext("local[4]", "EpochOptimizerSpec")
+    sc = new SparkContext("local[4]", "EpochOptimizerSpec")
 
     // Prepare two kinds of input and their corresponding label
     val input1: Array[Double] = Array(0, 1, 0, 1)
