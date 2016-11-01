@@ -50,6 +50,10 @@ class Table private[sparkdl](
     Option(state(key).asInstanceOf[T])
   }
 
+  def contains(key: Any): Boolean = {
+    state.contains(key)
+  }
+
   def apply[T](key: Any): T = {
     state(key).asInstanceOf[T]
   }
