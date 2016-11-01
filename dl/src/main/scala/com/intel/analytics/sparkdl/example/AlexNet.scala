@@ -119,7 +119,7 @@ object AlexNet {
 
     var n = 0
     println(times.map(t => ( {
-      n += 1;
+      n += 1
       s"${t._1}-$n"
     }, (t._2 + t._3) / 1e9 / iter,
       t._2 / 1e9 / iter, t._3 / 1e9 / iter))
@@ -127,7 +127,7 @@ object AlexNet {
     n = 0
     println(times.filter(_._1.isInstanceOf[SpatialConvolution[_]])
       .map(t => ( {
-        n += 1;
+        n += 1
         s"${t._1}-$n"
       }, t._1.asInstanceOf[SpatialConvolution[_]]))
       .map(t => (t._1, t._2.getIm2ColTime() / 1e9 / iter, t._2.getCol2ImgTime() / 1e9 / iter))
@@ -137,8 +137,9 @@ object AlexNet {
   }
 
   // This is AlexNet that was presented in the One Weird Trick paper. http://arxiv.org/abs/1404.5997
-  def getModel[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[T] = {
-    val feature = new Sequential[T]
+  def getModel[T: ClassTag](classNum: Int)
+    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+    val feature = new Sequential[Tensor[T], Tensor[T], T]
     feature.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2))
     feature.add(new ReLU[T](true))
     feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
@@ -155,7 +156,7 @@ object AlexNet {
 
 
 
-    val classifier = new Sequential[T]
+    val classifier = new Sequential[Tensor[T], Tensor[T], T]
     classifier.add(new View[T](256 * 6 * 6))
     classifier.add(new Dropout[T](0.5))
     classifier.add(new Linear[T](256 * 6 * 6, 4096))
@@ -167,14 +168,15 @@ object AlexNet {
     classifier.add(new LogSoftMax[T])
 
 
-    val model = new Sequential[T]
+    val model = new Sequential[Tensor[T], Tensor[T], T]
     model.add(feature).add(classifier)
 
     model
   }
 
-  def getModelCaffeOWT[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[T] = {
-    val feature = new Sequential[T]
+  def getModelCaffeOWT[T: ClassTag](classNum: Int)
+    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+    val feature = new Sequential[Tensor[T], Tensor[T], T]
     feature.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2))
     feature.add(new ReLU[T](true))
     feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
@@ -191,7 +193,7 @@ object AlexNet {
 
 
 
-    val classifier = new Sequential[T]
+    val classifier = new Sequential[Tensor[T], Tensor[T], T]
     classifier.add(new View[T](256 * 6 * 6))
     classifier.add(new Linear[T](256 * 6 * 6, 4096))
     classifier.add(new Linear[T](4096, 4096))
@@ -199,7 +201,7 @@ object AlexNet {
     classifier.add(new LogSoftMax[T])
 
 
-    val model = new Sequential[T]
+    val model = new Sequential[Tensor[T], Tensor[T], T]
     model.add(feature).add(classifier)
 
     model

@@ -18,6 +18,7 @@
 package com.intel.analytics.sparkdl.models.mnist
 
 import com.intel.analytics.sparkdl.nn.{LogSoftMax, _}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -28,8 +29,9 @@ object MLP {
   val featureSize = rowN * colN
   val classNum = 10
 
-  def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[T] = {
-    val mlp = new Sequential[T]
+  def apply[T: ClassTag](classNum: Int)
+    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+    val mlp = new Sequential[Tensor[T], Tensor[T], T]
     val nHidden = featureSize / 2
     mlp.add(new Reshape(Array(featureSize)))
     mlp.add(new Linear(featureSize, nHidden))

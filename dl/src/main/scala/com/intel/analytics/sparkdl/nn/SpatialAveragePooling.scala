@@ -35,7 +35,7 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
   private var ceilMode: Boolean = false,
   private var countIncludePad: Boolean = true,
   private var divide: Boolean = true
-)(implicit ev: TensorNumeric[T]) extends Module[T] {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   @transient
   private var results: Array[Future[Unit]] = null

@@ -53,10 +53,17 @@ public class MKL {
      */
     public native static void setNumThreads(int numThreads);
 
+    public native static void vsAdd(int n, float[] a, int aOffset, float[] b, int bOffset,
+                                    float[] y, int yOffset);
 
-    public native static void vsPowx(int n, float[] a, int aOffset, float b, float[] y, int yOffset);
+    public native static void vdAdd(int n, double[] a, int aOffset, double[] b, int bOffset,
+                                    double[] y, int yOffset);
 
-    public native static void vdPowx(int n, double[] a, int aOffset, double b, double[] y, int yOffset);
+    public native static void vsSub(int n, float[] a, int aOffset, float[] b, int bOffset,
+                                    float[] y, int yOffset);
+
+    public native static void vdSub(int n, double[] a, int aOffset, double[] b, int bOffset,
+                                    double[] y, int yOffset);
 
     public native static void vsMul(int n, float[] a, int aOffset, float[] b, int bOffset,
                                     float[] y, int yOffset);
@@ -69,6 +76,10 @@ public class MKL {
 
     public native static void vdDiv(int n, double[] a, int aOffset, double[] b, int bOffset,
                                     double[] y, int yOffset);
+
+    public native static void vsPowx(int n, float[] a, int aOffset, float b, float[] y, int yOffset);
+
+    public native static void vdPowx(int n, double[] a, int aOffset, double b, double[] y, int yOffset);
 
     public native static void vsLn(int n, float[] a, int aOffset, float[] y, int yOffset);
 
@@ -85,6 +96,10 @@ public class MKL {
     public native static void vsLog1p(int n, float[] a, int aOffset, float[] y, int yOffset);
 
     public native static void vdLog1p(int n, double[] a, int aOffset, double[] y, int yOffset);
+
+    public native static void vsAbs(int n, float[] a, int aOffset, float[] y, int yOffset);
+
+    public native static void vdAbs(int n, double[] a, int aOffset, double[] y, int yOffset);
 
     /**
      * Get the worker pool size of current JVM thread. Note different JVM thread has separated MKL worker pool.

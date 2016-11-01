@@ -145,7 +145,7 @@ object TestDummyDataSource extends DataSource[(Tensor[Float], Tensor[Float])] {
 class LocalOptimizerSpec extends FlatSpec with Matchers {
   "Local Optimizer" should "train model well with CrossEntropy and SGD" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Float]
+    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
     val optimizer = new LocalOptimizer[Float](
@@ -169,7 +169,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
 
   it should "train model well with MSE and SGD" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Float]
+    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
@@ -180,8 +180,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
       mlp,
       new MSECriterion[Float],
       new SGD[Float](),
-      T("learningRate" -> 200.0),
-      Trigger.maxEpoch(10000)
+      T("learningRate" -> 20.0),
+      Trigger.maxEpoch(10)
     )
 
     val result = optimizer.optimize()
@@ -196,7 +196,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
 
   it should "train model with CrossEntropy and LBFGS" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Float]
+    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 
@@ -221,7 +221,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
 
   it should "train model with MSE and LBFGS" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Float]
+    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
@@ -250,7 +250,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
 
   it should "get correct validation result" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Float]
+    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
     val optimizer = new LocalOptimizer[Float](

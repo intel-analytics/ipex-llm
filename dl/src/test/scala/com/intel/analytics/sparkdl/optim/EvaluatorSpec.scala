@@ -163,7 +163,7 @@ class EvaluatorSpec extends FlatSpec with Matchers {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 

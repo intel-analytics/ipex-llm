@@ -190,14 +190,14 @@ object DenseTensorApply {
       }
 
       if (i2 == tensor2Size) {
-        val r = updateCounter(tensor1, tensor2Counter, tensor2Offset, tensor2Dim)
+        val r = updateCounter(tensor2, tensor2Counter, tensor2Offset, tensor2Dim)
         hasFinished = r._1
         tensor2Offset = r._2
         i2 = 0
       }
 
-      if (i3 == tensor1Size) {
-        val r = updateCounter(tensor1, tensor3Counter, tensor3Offset, tensor3Dim)
+      if (i3 == tensor3Size) {
+        val r = updateCounter(tensor3, tensor3Counter, tensor3Offset, tensor3Dim)
         hasFinished = r._1
         tensor3Offset = r._2
         i3 = 0
