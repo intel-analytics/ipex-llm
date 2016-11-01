@@ -102,6 +102,11 @@ object MultiModelPerf {
         new CrossEntropyCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
     })
     require(BLAS.getInstance().isInstanceOf[NativeSystemBLAS])
+    if (param.module == "resnet") {
+      tests.map(x => {ResNet.shareGradInput(x._1)
+                      ResNet.convInit("SpatialConvolution", x._1)
+                      ResNet.bnInit("SpatialBatchNormalization", x._1)})
+    }
 
     val grads = tests.map(_._1.getParameters()._2).toArray
     val gradLength = grads(0).nElement()
@@ -174,9 +179,9 @@ object MultiModelPerf {
 }
 
 case class MultiModelPerfParams(
-  batchSize: Int = 128,
-  iteration: Int = 50,
-  cores: Int = 28,
+  batchSize: Int = 50,
+  iteration: Int = 20,
+  cores: Int = 1,
   warmUp: Int = 10,
   dataType: String = "float",
   module: String = "resnet"
