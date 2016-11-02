@@ -23,19 +23,9 @@ import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.utils.Table
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-<<<<<<< HEAD
-<<<<<<< HEAD
 
 import scala.collection.mutable.HashMap
 import scala.util.Random
-=======
-import scala.collection.mutable.HashMap
->>>>>>> add Bilinear layer and convert java.map to scala.map
-=======
-
-import scala.collection.mutable.HashMap
-import scala.util.Random
->>>>>>> some modify of Bilinear
 
 class BilinearSpec extends FlatSpec with BeforeAndAfter with Matchers{
   before {
@@ -48,41 +38,7 @@ class BilinearSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val seed = 100
     RNG.setSeed(seed)
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     val input1 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
-=======
-    val input1 = Tensor[Double](5, 5)
-    input1(Array(1, 1)) = 1
-    input1(Array(1, 2)) = 2
-    input1(Array(1, 3)) = 3
-    input1(Array(1, 4)) = 4
-    input1(Array(1, 5)) = 5
-    input1(Array(2, 1)) = 11
-    input1(Array(2, 2)) = 22
-    input1(Array(2, 3)) = 33
-    input1(Array(2, 4)) = 44
-    input1(Array(2, 5)) = 55
-    input1(Array(3, 1)) = 10
-    input1(Array(3, 2)) = 20
-    input1(Array(3, 3)) = 30
-    input1(Array(3, 4)) = 40
-    input1(Array(3, 5)) = 50
-    input1(Array(4, 1)) = 14
-    input1(Array(4, 2)) = 24
-    input1(Array(4, 3)) = 34
-    input1(Array(4, 4)) = 44
-    input1(Array(4, 5)) = 54
-    input1(Array(5, 1)) = 9
-    input1(Array(5, 2)) = 4
-    input1(Array(5, 3)) = 13
-    input1(Array(5, 4)) = 29
-    input1(Array(5, 5)) = 32
-
->>>>>>> add Bilinear layer and convert java.map to scala.map
-=======
-    val input1 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
->>>>>>> some modify of Bilinear
     val input2 = Tensor[Double](5, 3).fill(2.toDouble)
     val gradOutput = Tensor[Double](5, 2).fill(1.toDouble)
 
@@ -110,15 +66,7 @@ class BilinearSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val luaGradBias = torchResult("gradBias").asInstanceOf[Tensor[Double]]
     val luaGradWeight = torchResult("gradWeight").asInstanceOf[Tensor[Double]]
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     val module = new Bilinear[Double](5, 3, 2)
-=======
-    val module = new Bilinear[Table, Tensor[Double], Double](5, 3, 2)
->>>>>>> add Bilinear layer and convert java.map to scala.map
-=======
-    val module = new Bilinear[Double](5, 3, 2)
->>>>>>> some modify of Bilinear
     val start = System.nanoTime()
     module.reset()
     val bias = module.bias
