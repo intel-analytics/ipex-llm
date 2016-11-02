@@ -37,7 +37,7 @@ object ImageNetLocal {
   )
   case class Config(
     model : Module[Tensor[Float], Tensor[Float], Float],
-    criterion : Criterion[Float],
+    criterion : Criterion[Tensor[Float], Float],
     optimMethod : OptimMethod[Float],
     imageSize : Int,
     batchSize : Int,
