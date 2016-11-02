@@ -36,7 +36,7 @@ class CAddSpec extends FlatSpec with Matchers {
     }
 
     def gradUpdate(mlp : TensorModule[Float], x : Tensor[Float], y : Tensor[Float],
-      criterion : Criterion[Float], learningRate : Float) : Float = {
+      criterion : TensorCriterion[Float], learningRate : Float) : Float = {
 
       val pred = mlp.forward (x)
       val err = criterion.forward (pred, y)

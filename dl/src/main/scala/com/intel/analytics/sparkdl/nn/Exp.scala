@@ -14,38 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-class MSECriterion[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
-  var gradInput: Tensor[T] = Tensor[T]()
-  var sizeAverage = true
-
-  override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    output = ev.fromType[Int](0)
-
-    input.map(target, (a, b) => {
-      output = ev.plus(output, ev.times(ev.minus(a, b), ev.minus(a, b)));
-      a
-    })
-    if (sizeAverage) output = ev.divide(output, ev.fromType[Int](input.nElement()))
-    output
+class Exp[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T])
+  extends TensorModule[T] {
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    output.exp(input)
   }
-
-  override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(input)
-    var norm = ev.fromType[Int](2)
-    if (sizeAverage) {
-      norm = ev.fromType[Double](2.0 / input.nElement())
-    }
-    gradInput.copy(input)
-    gradInput.map(target, (a, b) => ev.times(norm, ev.minus(a, b)))
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput
+      .resizeAs(gradOutput)
+      .cmul(output, gradOutput)
   }
 
+  override def toString(): String = {
+    s"nn.Exp"
+  }
 }

@@ -23,7 +23,8 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 class SmoothL1Criterion[T: ClassTag](sizeAverage: Boolean = true)
-                                    (implicit ev: TensorNumeric[T]) extends Criterion[T] {
+                                    (implicit ev: TensorNumeric[T])
+  extends TensorCriterion[T] {
   @transient var gradInput: Tensor[T] = null
 
   @transient var buffer: Tensor[T] = null
