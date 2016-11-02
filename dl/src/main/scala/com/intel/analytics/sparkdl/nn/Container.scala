@@ -26,8 +26,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 private[nn] abstract class Container[A <: Activities : ClassTag,
-    B <: Activities : ClassTag, @specialized(Float, Double)
-    T: ClassTag](
+    B <: Activities : ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Module[A, B, T] {
 
   def add(module: Module[_ <: Activities, _ <: Activities, T]): this.type = {
@@ -48,6 +47,7 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
   }
 
   override def training(): this.type = {
+    train = true
     modules.foreach(_.training())
     this
   }

@@ -30,7 +30,7 @@ class RReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
-  "A ReLU Module " should "generate correct output and grad not inplace when train = true" in {
+  "A RReLU Module " should "generate correct output and grad not inplace when train = true" in {
     val seed = 100
     RNG.setSeed(seed)
 
@@ -70,19 +70,13 @@ class RReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    luaOutput1.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0);
-      v1
-    })
-    luaOutput2.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) == 0);
-      v1
-    })
+    luaOutput1 should be (output)
+    luaOutput2 should be (gradInput)
 
-    println("Test case : ReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    println("Test case : RReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
-  "A ReLU Module " should "generate correct output and grad inplace when train = true" in {
+  "A RReLU Module " should "generate correct output and grad inplace when train = true" in {
     val seed = 100
     RNG.setSeed(seed)
 
@@ -122,20 +116,14 @@ class RReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    luaOutput1.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0);
-      v1
-    })
-    luaOutput2.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) == 0);
-      v1
-    })
+    luaOutput1 should be (output)
+    luaOutput2 should be (gradInput)
 
-    println("Test case : ReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    println("Test case : RReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
 
-  "A ReLU Module " should "generate correct output and grad not inplace when train = false" in {
+  "A RReLU Module " should "generate correct output and grad not inplace when train = false" in {
     val seed = 100
     RNG.setSeed(seed)
 
@@ -177,19 +165,13 @@ class RReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    luaOutput1.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0);
-      v1
-    })
-    luaOutput2.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) == 0);
-      v1
-    })
+    luaOutput1 should be (output)
+    luaOutput2 should be (gradInput)
 
-    println("Test case : ReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    println("Test case : RReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
-  "A ReLU Module " should "generate correct output and grad inplace when train = false" in {
+  "A RReLU Module " should "generate correct output and grad inplace when train = false" in {
     val seed = 100
     RNG.setSeed(seed)
 
@@ -231,15 +213,9 @@ class RReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    luaOutput1.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0);
-      v1
-    })
-    luaOutput2.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) == 0);
-      v1
-    })
+    luaOutput1 should be (output)
+    luaOutput2 should be (gradInput)
 
-    println("Test case : ReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    println("Test case : RReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 }

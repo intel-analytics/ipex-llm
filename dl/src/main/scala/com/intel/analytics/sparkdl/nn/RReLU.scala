@@ -27,11 +27,15 @@ class RReLU[T: ClassTag](
   upper: Double = 1.0/3,
   inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
-  val noise = Tensor()
-  train = true
+  @transient
+  var noise: Tensor[T] = null
   require(lower < upper && lower > 0 && upper > 0)
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    if (noise == null) {
+      noise = Tensor[T]()
+    }
+
     if (train) {
       noise.resizeAs(input)
       if (inplace) {
@@ -93,7 +97,11 @@ class RReLU[T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.isSameSizeAs(gradOutput))
-    if (train & upper - lower > 1E-6) {
+    if (noise == null) {
+      noise = Tensor[T]()
+    }
+
+    if (train && upper - lower > 1E-6) {
       if (inplace) {
         gradOutput.cmul(gradOutput, noise)
         gradInput.set(gradOutput)
@@ -129,5 +137,9 @@ class RReLU[T: ClassTag](
       }
     }
     gradInput
+  }
+
+  override def toString: String = {
+    "nn.RReLU"
   }
 }
