@@ -53,6 +53,7 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
   }
 
   override def evaluate(): this.type = {
+    train = false
     modules.foreach(_.evaluate())
     this
   }
