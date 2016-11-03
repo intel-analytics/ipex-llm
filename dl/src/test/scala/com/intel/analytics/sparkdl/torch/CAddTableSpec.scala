@@ -37,7 +37,7 @@ class CAddTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
 
     val model = new Sequential[Activities, Activities, Double]()
-    val ctable = new ConcatTable[Double]()
+    val ctable = new ConcatTable[Tensor[Double], Double]()
     ctable.add(new Linear(5, 3))
     ctable.add(new Linear(5, 3))
     model.add(ctable)
@@ -72,7 +72,7 @@ class CAddTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
 
     val model = new Sequential[Activities, Activities, Double]()
-    val ctable = new ConcatTable[Double]()
+    val ctable = new ConcatTable[Tensor[Double], Double]()
     ctable.add(new Linear(5, 3))
     ctable.add(new Linear(5, 3))
     model.add(ctable)

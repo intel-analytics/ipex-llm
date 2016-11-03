@@ -23,20 +23,14 @@ import com.intel.analytics.sparkdl.utils.{Activities, T, Table}
 
 import scala.reflect.ClassTag
 
-class ConcatTable[T : ClassTag](implicit ev: TensorNumeric[T])
-  extends Container[Activities, Activities, T] {
+class ConcatTable[A <: Activities : ClassTag, T : ClassTag]
+  (implicit ev: TensorNumeric[T]) extends Container[A, Table, T] {
 
-  output = T()
-
-  override def updateOutput(input: Activities): Activities = {
+  override def updateOutput(input: A): Table = {
     var i = 0
     while (i < modules.length) {
       val currentOutput = modules(i).updateOutput(input)
-      if (!output.toTable().contains(i + 1)) {
-        output.toTable().insert(i + 1, currentOutput)
-      } else if (currentOutput != output.toTable().get(i + 1).get) {
-        output.toTable().update(i + 1, currentOutput)
-      }
+      output.toTable()(i + 1) = currentOutput
       i += 1
     }
     output
@@ -44,8 +38,8 @@ class ConcatTable[T : ClassTag](implicit ev: TensorNumeric[T])
 
   /**
    * add in to out
-   * @param out
-   * @param in
+   * @param out a table
+   * @param in a table
    */
   private def addTable(out: Activities, in: Activities) : Unit = {
     if (in.isInstanceOf[Tensor[T]] && out.isInstanceOf[Tensor[T]]) {
@@ -55,103 +49,88 @@ class ConcatTable[T : ClassTag](implicit ev: TensorNumeric[T])
     } else {
       var i = 1
       while (i <= out.toTable().length()) {
-        addTable(out.toTable().get[Activities](i).get, in.toTable().get[Activities](i).get)
+        addTable(out.toTable()(i), in.toTable()(i))
         i += 1
       }
     }
   }
 
   /**
-   * copy in to out
-   * @param out
-   * @param in
+   * copy src to out
+   * @param out a table
+   * @param src a table
    */
-  private def copyTable(out: Activities, in: Activities) : Unit = {
-    if (in.isInstanceOf[Tensor[T]] && out.isInstanceOf[Tensor[T]]) {
-      out.toTensor[T]().resizeAs(in.toTensor[T]()).copy(in.toTensor[T]())
+  private def copyTable(out: Activities, src: Activities) : Unit = {
+    if (src.isInstanceOf[Tensor[T]] && out.isInstanceOf[Tensor[T]]) {
+      out.toTensor[T]().resizeAs(src.toTensor[T]()).copy(src.toTensor[T]())
     } else {
       var i = 1
       while (i <= out.toTable().length()) {
-        copyTable(out.toTable().get[Activities](i).get, in.toTable().get[Activities]().get)
+        copyTable(out.toTable()(i), src.toTable()(i))
         i += 1
       }
     }
   }
 
   /**
-   * return a clone of in
-   * @param in
-   * @return cloned table
+   * return a clone of src,
+   * Notice: this is a deep copy, while Table.clone is a shallow copy.
+   * @param src a table
+   * @return cloned table of src
    */
-  private def cloneTable(in: Activities) : Activities = {
-    if (in.isInstanceOf[Tensor[T]]) {
-      in.toTensor[T]().clone()
+  private def cloneTable(src: Activities) : Activities = {
+    if (src.isInstanceOf[Tensor[T]]) {
+      src.toTensor[T]().clone()
     } else {
       val out = T()
       var i = 1
-      while (i <= in.toTable().length()) {
-        out(i) = cloneTable(in.toTable()(i))
+      while (i <= src.toTable().length()) {
+        out(i) = cloneTable(src.toTable()(i))
         i += 1
       }
       out
     }
   }
 
-  def backward(method: String, input: Activities, gradOutput: Activities,
-    scale : Double = 1.0) : Activities = {
+  override def updateGradInput(input: A, gradOutput: Table): A = {
+    val isInputTable = input.isInstanceOf[Table]
+    val wasGradInputTable = gradInput.isInstanceOf[Table]
 
-    val isTable = input.isInstanceOf[Table]
-    val wasTable = gradInput.isInstanceOf[Table]
-
-    if (isTable) {
-      if (!wasTable) {
-        gradInput = null
-      }
+    if (isInputTable) {
       var i = 0
       while (i < modules.length) {
-        method match {
-          case "updateGradInput" =>
-            val currentGradInput = modules(i).updateGradInput(input,
-              gradOutput.toTable().get(i + 1).get)
-            require(currentGradInput.isInstanceOf[Table],
-              "currentGradInput is not a table!")
-            if (i == 0) {
-              if (null == gradInput) {
-                gradInput = cloneTable(currentGradInput)
-              } else {
-                copyTable(gradInput, currentGradInput)
-              }
-            } else {
-              addTable(gradInput, currentGradInput)
-            }
-          case "accGradParameters" =>
-            modules(i).accGradParameters(input, gradOutput.toTable().get(i + 1).get, scale)
+        val currentGradInput = modules(i).updateGradInput(input,
+          gradOutput.toTable()(i + 1))
+        require(currentGradInput.isInstanceOf[Table],
+          "currentGradInput is not a table!")
+        if (i == 0) {
+          if (!wasGradInputTable ||
+            gradInput.toTable().length() != currentGradInput.toTable().length()) {
+            // We need deep copy here.
+            gradInput = cloneTable(currentGradInput).asInstanceOf[A]
+          } else {
+            copyTable(gradInput, currentGradInput)
+          }
+        } else {
+          addTable(gradInput, currentGradInput)
         }
         i += 1
       }
 
     } else {
-      if (wasTable) {
-        gradInput = null
-      }
       var i = 0
       while (i < modules.length) {
-        method match {
-          case "updateGradInput" =>
-            val currentGradInput = modules(i).updateGradInput(input,
-              gradOutput.toTable().get(i + 1).get)
-            if (i == 0) {
-              if (null == gradInput) {
-                gradInput = currentGradInput.toTensor().clone()
-              } else {
-                gradInput.toTensor[T]().resizeAs(
-                  currentGradInput.toTensor[T]()).copy(currentGradInput.toTensor[T]())
-              }
-            } else {
-              gradInput.toTensor[T]().add(currentGradInput.toTensor[T]())
-            }
-          case "accGradParameters" =>
-            modules(i).accGradParameters(input, gradOutput.toTable().get(i + 1).get, scale)
+        val currentGradInput = modules(i).updateGradInput(input,
+          gradOutput.toTable()(i + 1)).toTensor[T]()
+        if (i == 0) {
+          if (wasGradInputTable) {
+            gradInput = currentGradInput.clone().asInstanceOf[A]
+          } else {
+            gradInput.toTensor[T]().resizeAs(
+              currentGradInput).copy(currentGradInput)
+          }
+        } else {
+          gradInput.toTensor[T]().add(currentGradInput)
         }
         i += 1
       }
@@ -159,14 +138,13 @@ class ConcatTable[T : ClassTag](implicit ev: TensorNumeric[T])
     gradInput
   }
 
-  override def updateGradInput(input: Activities, gradOutput: Activities): Activities = {
-    backward("updateGradInput", input, gradOutput)
-  }
-
-  override def accGradParameters(input: Activities, gradOutput: Activities,
-    scale: Double = 0.1): Unit = {
-
-    backward("accGradParameters", input, gradOutput)
+  override def accGradParameters(input: A, gradOutput: Table,
+    scale: Double = 1.0): Unit = {
+    var i = 0
+    while (i < modules.length) {
+      modules(i).accGradParameters(input, gradOutput.toTable()(i + 1), scale)
+      i += 1
+    }
   }
 
   override def toString(): String = {
