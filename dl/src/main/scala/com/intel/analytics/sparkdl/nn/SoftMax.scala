@@ -2,26 +2,45 @@ package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.sparkdl.utils.Engine
 
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
 class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
+  @transient
+  private var results: Array[Future[Unit]] = null
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    val (nFrame, stride) = if (input.nDimension() == 1) {
+      (1, 1)
+    } else if (input.nDimension() == 2) {
+      (input.size(1), 1)
+    } else if (input.nDimension() == 3) {
+      (1, input.size(2) * input.size(3))
+    } else {
+      (input.size(1), input.size(3) * input.size(4))
+    }
+    if (results == null || results.length != nFrame * stride) {
+      results = new Array[Future[Unit]](nFrame * stride)
+    }
     output.resizeAs(input)
-    SoftMax.updateOutput[T](input, output)
+    SoftMax.updateOutput[T](input, output, results)
+    output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(output)
-    SoftMax.updateGradInput[T](input, gradOutput, gradInput, output)
+    SoftMax.updateGradInput[T](input, gradOutput, gradInput, output, results)
     gradInput
   }
 }
 
 object SoftMax{
   // Notice: SoftMin will call this function
-  private[nn] def updateOutput[T: ClassTag](input: Tensor[T], output: Tensor[T])
+  private[nn] def updateOutput[T: ClassTag](input: Tensor[T], output: Tensor[T], results: Array[Future[Unit]])
     (implicit ev: TensorNumeric[T]) : Tensor[T] = {
     require(1 <= input.nDimension() && input.nDimension() <= 4, "1D, 2D, 3D or 4D tensor expected")
     val (nFrame, dim, stride) = if (input.nDimension() == 1) {
@@ -43,35 +62,44 @@ object SoftMax{
 
     var t = 0
     while (t < stride * nFrame) {
-      val inputOffset = (t / stride) * dim * stride + t % stride
-      val outputOffset = (t / stride) * dim * stride + t % stride
+      val _t = t
+      results(_t) = Future {
+        val inputOffset = (_t / stride) * dim * stride + _t % stride
+        val outputOffset = (_t / stride) * dim * stride + _t % stride
 
-      var inputMax : T =  ev.fromType[Float](Float.MinValue)
+        var inputMax : T =  ev.fromType[Float](Float.MinValue)
 
-      var d = 0
-      while (d < dim) {
-        if (ev.isGreater(inputArray(d * stride + inputOffset), inputMax)) {
-          inputMax = inputArray(d * stride + inputOffset)
+        var d = 0
+        while (d < dim) {
+          if (ev.isGreater(inputArray(d * stride + inputOffset), inputMax)) {
+            inputMax = inputArray(d * stride + inputOffset)
+          }
+          d += 1
         }
-        d += 1
-      }
 
-      var sum = ev.fromType[Int](0)
-      d = 0
-      while (d < dim) {
-        val z = ev.exp(ev.minus(inputArray(d * stride + inputOffset), inputMax))
-        outputArray(d * stride + outputOffset) = z
-        sum = ev.plus(sum, z)
-        d += 1
-      }
+        var sum = ev.fromType[Int](0)
+        d = 0
+        while (d < dim) {
+          val z = ev.exp(ev.minus(inputArray(d * stride + inputOffset), inputMax))
+          outputArray(d * stride + outputOffset) = z
+          sum = ev.plus(sum, z)
+          d += 1
+        }
 
-      d = 0
-      while (d < dim) {
-        outputArray(d * stride + outputOffset) =
-          ev.times(outputArray(d * stride + outputOffset), ev.divide(ev.fromType[Int](1), sum))
-        d += 1
-      }
+        d = 0
+        while (d < dim) {
+          outputArray(d * stride + outputOffset) =
+            ev.times(outputArray(d * stride + outputOffset), ev.divide(ev.fromType[Int](1), sum))
+          d += 1
+        }
+      }(Engine.getInstance())
 
+      t += 1
+    }
+
+    t = 0
+    while (t < stride * nFrame) {
+      Await.result(results(t), Duration.Inf)
       t += 1
     }
 
@@ -79,7 +107,7 @@ object SoftMax{
   }
 
   private[nn] def updateGradInput[T: ClassTag](input: Tensor[T], gradOutput: Tensor[T],
-    gradInput: Tensor[T], output: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    gradInput: Tensor[T], output: Tensor[T], results: Array[Future[Unit]])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(input.size().deep == gradOutput.size().deep)
     val (nFrame, dim, stride) = if (output.nDimension() == 1) {
       (1, output.size(1), 1)
@@ -105,26 +133,35 @@ object SoftMax{
 
     var t = 0
     while (t < stride * nFrame) {
-      val gradInputOffset = (t / stride) * dim * stride + t % stride
-      val outputOffset = (t / stride) * dim * stride + t % stride
-      val gradOutputOffset = (t / stride) * dim * stride + t % stride
+      val _t = t
+      results(_t) = Future {
+        val gradInputOffset = (_t / stride) * dim * stride + _t % stride
+        val outputOffset = (_t / stride) * dim * stride + _t % stride
+        val gradOutputOffset = (_t / stride) * dim * stride + _t % stride
 
-      var sum = ev.fromType[Int](0)
-      var d = 0
-      while (d < dim) {
-        sum = ev.plus(sum, ev.times(gradOutputArray(d * stride + gradOutputOffset),
-          outputArray(d * stride + outputOffset)))
-        d += 1
-      }
+        var sum = ev.fromType[Int](0)
+        var d = 0
+        while (d < dim) {
+          sum = ev.plus(sum, ev.times(gradOutputArray(d * stride + gradOutputOffset),
+            outputArray(d * stride + outputOffset)))
+          d += 1
+        }
 
-      d = 0
-      while (d < dim) {
-        gradInputArray(d * stride + gradInputOffset) =
-          ev.times(outputArray(d * stride + outputOffset),
-            ev.minus(gradOutputArray(d * stride + gradOutputOffset), sum))
-        d += 1
-      }
+        d = 0
+        while (d < dim) {
+          gradInputArray(d * stride + gradInputOffset) =
+            ev.times(outputArray(d * stride + outputOffset),
+              ev.minus(gradOutputArray(d * stride + gradOutputOffset), sum))
+          d += 1
+        }
+      }(Engine.getInstance())
 
+      t += 1
+    }
+
+    t = 0
+    while (t < stride * nFrame) {
+      Await.result(results(t), Duration.Inf)
       t += 1
     }
 
