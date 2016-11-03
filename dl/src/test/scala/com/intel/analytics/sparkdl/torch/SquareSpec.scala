@@ -28,11 +28,10 @@ class SquareSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
-  def random() = RandomGenerator.RNG.normal(-10, 10)
-
   "A Square()" should "generate correct output and grad" in {
     val layer = new Square[Double]()
     val input = Tensor[Double](2, 2, 2)
+    def random(): Double = RandomGenerator.RNG.normal(-10, 10)
     input.apply1(x => random())
     val gradOutput = Tensor[Double](2, 2, 2)
     gradOutput.apply1(x => random())
