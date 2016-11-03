@@ -16,7 +16,7 @@
  */
 package com.intel.analytics.sparkdl.torch
 
-import com.intel.analytics.sparkdl.nn.{Copy, Exp}
+import com.intel.analytics.sparkdl.nn.Copy
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.RandomGenerator
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -28,7 +28,7 @@ class CopySpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
-  def randomn() = RandomGenerator.RNG.normal(-10, 10)
+  def randomn(): Double = RandomGenerator.RNG.normal(-10, 10)
 
   "An Copy" should "generate correct output and grad" in {
     val layer = new Copy[Double]()
