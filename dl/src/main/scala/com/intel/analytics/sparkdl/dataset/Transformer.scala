@@ -138,7 +138,6 @@ object RGBImageNormalizer {
       i += 1
       print(s"Mean: $i / $totalCount \r")
     }
-
     println()
     require(total > 0)
     val meanR = sumR / total
@@ -164,6 +163,7 @@ object RGBImageNormalizer {
       print(s"Std: $i / $totalCount \r")
       i += 1
     }
+    println()
     val stdR = math.sqrt(sumR / total)
     val stdG = math.sqrt(sumG / total)
     val stdB = math.sqrt(sumB / total)

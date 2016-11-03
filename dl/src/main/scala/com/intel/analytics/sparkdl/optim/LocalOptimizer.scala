@@ -47,6 +47,8 @@ class LocalOptimizer[T](
 
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
+    data.reset()
+    data.shuffle()
     while (!endWhen(state)) {
       val start = System.nanoTime()
       val (input, target) = data.next()
@@ -70,8 +72,8 @@ class LocalOptimizer[T](
 
       if(data.finished()) {
         state("epoch") = state[Int]("epoch") + 1
-        data.shuffle()
         data.reset()
+        data.shuffle()
         count = 0
       }
 
