@@ -23,7 +23,7 @@ import scala.reflect.ClassTag
 
 
 class AbsCriterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean = true)
-(implicit ev: TensorNumeric[T]) extends Criterion[T] {
+(implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   var buffer = Tensor[T]()
   var gradInput: Tensor[T] = Tensor[T]()

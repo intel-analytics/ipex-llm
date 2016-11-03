@@ -26,7 +26,7 @@ class LocalOptimizer[T](
   data: DataSource[(Tensor[T], Tensor[T])],
   validationData: DataSource[(Tensor[T], Tensor[T])],
   model: Module[Tensor[T], Tensor[T], T],
-  criterion: Criterion[T],
+  criterion: Criterion[Tensor[T], T],
   optimMethod: OptimMethod[T],
   state: Table,
   endWhen: Trigger
@@ -35,7 +35,7 @@ class LocalOptimizer[T](
   def this(
     data: DataSource[(Tensor[T], Tensor[T])],
     model: Module[Tensor[T], Tensor[T], T],
-    criterion: Criterion[T],
+    criterion: Criterion[Tensor[T], T],
     optimMethod: OptimMethod[T],
     state: Table,
     endWhen: Trigger) = this(data, null, model, criterion, optimMethod, state, endWhen)

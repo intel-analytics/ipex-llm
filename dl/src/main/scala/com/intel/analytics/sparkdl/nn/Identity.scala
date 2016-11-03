@@ -18,34 +18,22 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.utils.Activities
 
 import scala.reflect.ClassTag
 
-class MSECriterion[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
-  var gradInput: Tensor[T] = Tensor[T]()
-  var sizeAverage = true
+class Identity[@specialized(Float, Double) T: ClassTag]()
+  (implicit ev: TensorNumeric[T]) extends Module[Activities, Activities, T] {
 
-  override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    output = ev.fromType[Int](0)
-
-    input.map(target, (a, b) => {
-      output = ev.plus(output, ev.times(ev.minus(a, b), ev.minus(a, b)));
-      a
-    })
-    if (sizeAverage) output = ev.divide(output, ev.fromType[Int](input.nElement()))
+  override def updateOutput(input: Activities): Activities = {
+    output = input
     output
   }
 
-  override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(input)
-    var norm = ev.fromType[Int](2)
-    if (sizeAverage) {
-      norm = ev.fromType[Double](2.0 / input.nElement())
-    }
-    gradInput.copy(input)
-    gradInput.map(target, (a, b) => ev.times(norm, ev.minus(a, b)))
+  override def updateGradInput(input: Activities,
+    gradOutput: Activities): Activities = {
+
+    gradInput = gradOutput
     gradInput
   }
-
 }
