@@ -1276,6 +1276,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def reshape(sizes: Array[Int]): Tensor[T] = {
+    require(sizes.length == this.nElement())
     val result = new DenseTensor[T]()
     result.resize(sizes)
     result.copy(this)

@@ -554,9 +554,9 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activities {
   def diff(other: Tensor[T], count: Int = 1, reverse: Boolean = false): Boolean
 
   /**
-   * convert the tensor to a new tensor without any change of the tensor
+   * create a new tensor without any change of the tensor
    *
-   * @param sizes the size that tensor will reshape to
+   * @param sizes the size of the new Tensor
    * @return
    */
   def reshape(sizes: Array[Int]): Tensor[T]

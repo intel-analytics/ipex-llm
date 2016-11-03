@@ -160,7 +160,7 @@ object File {
       case TYPE_TORCH =>
         val indexId = rawData.getInt()
         if (objects.contains(indexId)) {
-          objects.get(indexId).getOrElse(null)
+          objects.get(indexId).get
         } else {
           val (versionNumber, className) = readVersionAndClass(rawData)
           // Todo: Use reflection to do this is better
@@ -196,7 +196,7 @@ object File {
       case TYPE_TABLE =>
         val indexId = rawData.getInt()
         if (objects.contains(indexId)) {
-          objects.get(indexId).getOrElse(null)
+          objects.get(indexId).get
         } else {
           val result = readTable(rawData, objects)
           objects.put(indexId, result)
@@ -578,8 +578,7 @@ object File {
     flush(rawdata, path)
     rawdata.putInt(size)
 
-    val t1 = source.keySet
-    val it = t1.toIterator
+    val it = source.keySet.toIterator
     while (it.hasNext) {
       var key = it.next()
       if (key.isInstanceOf[String]) {
