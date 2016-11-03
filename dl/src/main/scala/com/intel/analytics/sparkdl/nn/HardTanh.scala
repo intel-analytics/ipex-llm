@@ -16,9 +16,12 @@
  */
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.sparkdl.tensor._
+import com.intel.analytics.sparkdl.utils.Engine
 
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
 class HardTanh[T: ClassTag](
@@ -28,6 +31,9 @@ class HardTanh[T: ClassTag](
 )(implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
   require(maxValue > minValue, "maxValue must be larger than minValue")
+  @transient
+  private var tasks: Array[Future[Unit]] = null
+
   val min = ev.fromType[Double](minValue)
   val max = ev.fromType[Double](maxValue)
 
@@ -71,25 +77,45 @@ class HardTanh[T: ClassTag](
       val outputData = output.storage().array()
       val outputOffset = input.storageOffset() - 1
 
+      if (tasks == null || tasks.length != inputData.length) {
+        tasks = new Array[Future[Unit]](inputData.length)
+      }
+
       var i = 0
       if (inplace) {
         while (i < input.nElement()) {
-          if (ev.isGreater(min, inputData(i + inputOffset))) {
-            inputData.update(i + inputOffset, min)
-          } else if (ev.isGreater(inputData(i + inputOffset), max)) {
-            inputData.update(i + inputOffset, max)
-          }
+          val _i = i
+          tasks(_i) = Future {
+            if (ev.isGreater(min, inputData(_i + inputOffset))) {
+              inputData.update(_i + inputOffset, min)
+            } else if (ev.isGreater(inputData(_i + inputOffset), max)) {
+              inputData.update(_i + inputOffset, max)
+            }
+          }(Engine.getInstance())
+          i += 1
+        }
+        i = 0
+        while (i < input.nElement()) {
+          Await.result(tasks(i), Duration.Inf)
           i += 1
         }
       } else {
         while (i < input.nElement()) {
-          if (ev.isGreater(min, inputData(i + inputOffset))) {
-            outputData.update(i + outputOffset, min)
-          } else if (ev.isGreaterEq(max, inputData(i + inputOffset))) {
-            outputData.update(i + outputOffset, inputData(i + inputOffset))
-          } else {
-            outputData.update(i + outputOffset, max)
-          }
+          val _i = i
+          tasks(_i) = Future {
+            if (ev.isGreater(min, inputData(_i + inputOffset))) {
+              outputData.update(_i + outputOffset, min)
+            } else if (ev.isGreaterEq(max, inputData(_i + inputOffset))) {
+              outputData.update(_i + outputOffset, inputData(_i + inputOffset))
+            } else {
+              outputData.update(_i + outputOffset, max)
+            }
+          }(Engine.getInstance())
+          i += 1
+        }
+        i = 0
+        while (i < input.nElement()) {
+          Await.result(tasks(i), Duration.Inf)
           i += 1
         }
       }
@@ -122,7 +148,7 @@ class HardTanh[T: ClassTag](
         DenseTensorApply.apply2[T](gradOutput, input, func)
       } else {
         val func = new TensorFunc6[T] {
-          override def apply (data1: Array[T], offset1: Int, data2: Array[T],
+          override def apply(data1: Array[T], offset1: Int, data2: Array[T],
             offset2: Int, data3: Array[T], offset3: Int): Unit = {
             if (ev.isGreaterEq(min, data3(offset3)) || ev.isGreaterEq(data3(offset3), max)) {
               data1(offset1) = ev.fromType[Double](0)
@@ -141,32 +167,52 @@ class HardTanh[T: ClassTag](
       val gradInputData = gradInput.storage().array()
       val gradInputOffset = gradInput.storageOffset() - 1
 
+      if (tasks == null || tasks.length != inputData.length) {
+        tasks = new Array[Future[Unit]](inputData.length)
+      }
+
       var i = 0
       if (inplace) {
         while (i < input.nElement()) {
-          if (ev.isGreaterEq(min, inputData(i + inputOffset))
-            || ev.isGreaterEq(inputData(i + inputOffset), max)) {
-            gradInputData.update(i + gradInputOffset, ev.fromType[Double](0))
-          }
+          val _i = i
+          tasks(_i) = Future {
+            if (ev.isGreaterEq(min, inputData(_i + inputOffset))
+              || ev.isGreaterEq(inputData(_i + inputOffset), max)) {
+              gradInputData.update(_i + gradInputOffset, ev.fromType[Double](0))
+            }
+          }(Engine.getInstance())
+          i += 1
+        }
+        i = 0
+        while (i < input.nElement()) {
+          Await.result(tasks(i), Duration.Inf)
           i += 1
         }
       } else {
         while (i < input.nElement()) {
-          if (ev.isGreaterEq(min, inputData(i + inputOffset))
-            || ev.isGreaterEq(inputData(i + inputOffset), max)) {
-            gradInputData.update(i + gradInputOffset, ev.fromType[Double](0))
-          } else {
-            gradInputData.update(i + gradInputOffset, gradOutputData(i + gradOutputOffset))
-          }
+          val _i = i
+          tasks(_i) = Future {
+            if (ev.isGreaterEq(min, inputData(_i + inputOffset))
+              || ev.isGreaterEq(inputData(_i + inputOffset), max)) {
+              gradInputData.update(_i + gradInputOffset, ev.fromType[Double](0))
+            } else {
+              gradInputData.update(_i + gradInputOffset, gradOutputData(_i + gradOutputOffset))
+            }
+          }(Engine.getInstance())
+          i += 1
+        }
+        i = 0
+        while (i < input.nElement()) {
+          Await.result(tasks(i), Duration.Inf)
           i += 1
         }
       }
-
     }
+
     gradInput
   }
 
-  override def toString(): String = {
+  override def toString: String = {
     s"nn.HardTanh"
   }
 }
