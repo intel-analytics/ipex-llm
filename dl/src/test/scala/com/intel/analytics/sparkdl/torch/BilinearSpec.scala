@@ -39,8 +39,8 @@ class BilinearSpec extends FlatSpec with BeforeAndAfter with Matchers{
     RNG.setSeed(seed)
 
     val input1 = Tensor[Double](5, 5).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](5, 3).fill(2.toDouble)
-    val gradOutput = Tensor[Double](5, 2).fill(1.toDouble)
+    val input2 = Tensor[Double](5, 3).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double](5, 2).apply1(e => Random.nextDouble())
 
     var input = new Table()
     input(1.toDouble) = input1
