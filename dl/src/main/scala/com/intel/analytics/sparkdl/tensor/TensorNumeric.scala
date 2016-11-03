@@ -56,6 +56,8 @@ object TensorNumericMath {
 
     def isGreater(x: T, y: T): Boolean
 
+    def isGreaterEq(x: T, y: T): Boolean
+
     def rand(): T
 
     def randn(): T
@@ -163,6 +165,8 @@ object TensorNumericMath {
       def log1p(x: Float): Float = Math.log1p(x).toFloat
 
       def isGreater(x: Float, y: Float): Boolean = (x > y)
+
+      def isGreaterEq(x: Float, y: Float): Boolean = (x >= y)
 
       def rand(): Float = RNG.uniform(0, 1).toFloat
 
@@ -347,6 +351,8 @@ object TensorNumericMath {
       def log1p(x: Double): Double = Math.log1p(x)
 
       def isGreater(x: Double, y: Double): Boolean = (x > y)
+
+      def isGreaterEq(x: Double, y: Double): Boolean = (x >= y)
 
       def rand(): Double = RNG.uniform(0, 1)
 
