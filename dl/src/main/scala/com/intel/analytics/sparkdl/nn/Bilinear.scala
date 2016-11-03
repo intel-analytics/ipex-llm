@@ -54,19 +54,19 @@ class Bilinear[T: ClassTag](inputSize1: Int,
   override def updateOutput(input: Table): Tensor[T] = {
     require(input.length() == 2,
       "input should be a table containing two data Tensors")
-    val res1 = input.apply[Tensor[T]](1)
-    val res2 = input.apply[Tensor[T]](2)
+    val res1 = input[Tensor[T]](1)
+    val res2 = input[Tensor[T]](2)
 
     require(res1.nDimension() == 2 && res2.nDimension() == 2 && res1.size(1) == res2.size(1),
       "input Tensors should be two-dimensional and have the same number of rows")
     require(res1.size(2) == weight.size(2) && res2.size(2) == weight.size(3),
       "dimensionality of first input and second input is erroneous")
 
-    // --set up buffer
+    // set up buffer
     if(null == buff2) buff2 = Tensor[T]()
     buff2.resizeAs(res2)
 
-    // --compute output scores
+    // compute output scores
     output.resize(res1.size(1), weight.size(1))
     var k = 1
     while(k < (weight.size(1) + 1)) {
@@ -83,8 +83,8 @@ class Bilinear[T: ClassTag](inputSize1: Int,
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    val res1 = input.apply[Tensor[T]](1)
-    val res2 = input.apply[Tensor[T]](2)
+    val res1 = input[Tensor[T]](1)
+    val res2 = input[Tensor[T]](2)
 
     require(res1.size(1) == gradOutput.size(1),
       "number of rows in gradOutput does not match input")
@@ -94,23 +94,23 @@ class Bilinear[T: ClassTag](inputSize1: Int,
     if (!gradInput.contains(1)) gradInput.insert(1, Tensor[T]())
     if (!gradInput.contains(2)) gradInput.insert(2, Tensor[T]())
 
-    val gradInput1 = gradInput.apply[Tensor[T]](1)
-    val gradInput2 = gradInput.apply[Tensor[T]](2)
+    val gradInput1 = gradInput[Tensor[T]](1)
+    val gradInput2 = gradInput[Tensor[T]](2)
 
     // compute d output / d input:
-    gradInput1.resizeAs(res1).fill(ev.fromType(0))
-    gradInput2.resizeAs(res2).fill(ev.fromType(0))
+    gradInput1.resizeAs(res1).zero()
+    gradInput2.resizeAs(res2).zero()
 
     // do first slice of weight tensor (k = 1)
-    gradInput1.addmm(res2, weight(1).t())
+    gradInput1.addmm(res2, weight.select(1, 1).t())
     gradInput1.cmul(gradOutput.narrow(2, 1, 1).expand(
       Array(gradInput1.size(1), gradInput1.size(2))))
 
-    gradInput2.addmm(ev.fromType(1), res1, weight(1))
+    gradInput2.addmm(ev.fromType(1), res1, weight.select(1, 1))
     gradInput2.cmul(gradOutput.narrow(2, 1, 1).expand(
       Array(gradInput2.size(1), gradInput2.size(2))))
 
-    // --do remaing slices of weight tensor
+    // do remaing slices of weight tensor
     if(weight.size(1) > 1) {
       if (null == buff1) buff1 = Tensor[T]()
       buff1.resizeAs(res1)
@@ -120,12 +120,12 @@ class Bilinear[T: ClassTag](inputSize1: Int,
         buff1.zero()
         buff2.zero()
 
-        buff1.addmm(res2, weight(k).t())
+        buff1.addmm(res2, weight.select(1, k).t())
         buff1.cmul(gradOutput.narrow(2, k, 1).expand(
           Array(gradInput1.size(1), gradInput1.size(2))))
         gradInput1.add(buff1)
 
-        buff2.addmm(input(1), weight(k))
+        buff2.addmm(input(1), weight.select(1, k))
         buff2.cmul(gradOutput.narrow(2, k, 1).expand(
           Array(gradInput2.size(1), gradInput2.size(2))))
         gradInput2.add(buff2)
@@ -136,19 +136,19 @@ class Bilinear[T: ClassTag](inputSize1: Int,
   }
 
   override def accGradParameters(input: Table, gradOutput: Tensor[T], scale: Double = 1.0): Unit = {
-    val res1 = input.apply[Tensor[T]](1)
-    val res2 = input.apply[Tensor[T]](2)
+    val res1 = input[Tensor[T]](1)
+    val res2 = input[Tensor[T]](2)
 
-    // --make sure we have buffer
+    // make sure we have buffer
     if(null == buff1) buff1 = Tensor[T]()
     buff1.resizeAs(res1)
 
-    // --accumulate parameter gradients:
+    // accumulate parameter gradients:
     var k = 1
     while(k < (weight.size(1) + 1)) {
       buff1.zero()
       buff1.cmul(res1, gradOutput.narrow(2, k, 1).expandAs(res1))
-      gradWeight(k).addmm(buff1.t(), input(2))
+      gradWeight.select(1, k).addmm(buff1.t(), input(2))
       k += 1
     }
     if(null != bias) gradBias.add(ev.fromType(scale), gradOutput.sum(1))
