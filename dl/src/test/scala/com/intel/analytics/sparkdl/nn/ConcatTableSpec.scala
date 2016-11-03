@@ -18,13 +18,13 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
-import com.intel.analytics.sparkdl.utils.T
+import com.intel.analytics.sparkdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 class ConcatTableSpec extends FlatSpec with Matchers {
 
   "A ConcateTable" should "return right output and grad" in {
-    val ct = new ConcatTable[Double]()
+    val ct = new ConcatTable[Table, Double]()
     ct.add(new Identity[Double]())
     ct.add(new Identity[Double]())
 

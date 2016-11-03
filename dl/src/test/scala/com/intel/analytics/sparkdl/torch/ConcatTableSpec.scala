@@ -36,7 +36,8 @@ class ConcatTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
 
-    val ctable = new ConcatTable[Double]()
+    val ctable = new ConcatTable[Tensor[Double], Double]()
+    ctable.zeroGradParameters()
     ctable.add(new Linear(5, 2))
     ctable.add(new Linear(5, 3))
     val input = Tensor[Double](5).apply1(_ => Random.nextDouble())
@@ -46,27 +47,33 @@ class ConcatTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val output = ctable.forward(input)
 
     val gradOutput = T(gradOutput1, gradOutput2)
-    val gradInput = ctable.updateGradInput(input, gradOutput)
+    val gradInput = ctable.backward(input, gradOutput)
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       """module = nn.ConcatTable():add(nn.Linear(5, 2)):add(nn.Linear(5, 3))
+        module:zeroGradParameters()
         gradOutput = {gradOutput1, gradOutput2}
         output = module:forward(input)
         gradInput = module:backward(input, gradOutput)
         output1 = output[1]
         output2 = output[2]
+        parameters, gradParameters = module:getParameters()
       """
 
     val (luaTime, torchResult) = TH.run(code,
       Map("input" -> input, "gradOutput1" -> gradOutput1, "gradOutput2" -> gradOutput2),
-      Array("output1", "output2", "gradInput"))
+      Array("output1", "output2", "gradInput", "gradParameters"))
     val luaOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+    val luaGradParameters = torchResult("gradParameters").asInstanceOf[Tensor[Double]]
     val luaOutput = T(luaOutput1, luaOutput2)
+
+    val gradParameters = ctable.getParameters()._2.asInstanceOf[Tensor[Double]]
 
     output should be (luaOutput)
     gradInput should be (luaGradInput)
+    gradParameters should be (luaGradParameters)
   }
 
 }

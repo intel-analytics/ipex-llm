@@ -40,7 +40,7 @@ object Activities {
 
     if (classTag[A] == classTag[Tensor[T]]) {
       result = Tensor[T]()
-    } else if (classTag[A] == classTag[Tensor[T]]) {
+    } else if (classTag[A] == classTag[Table]) {
       result = T()
     }
 

@@ -26,15 +26,13 @@ import scala.reflect.ClassTag
 class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
 
-  gradInput = T()
-
   override def updateOutput(input: Table): Tensor[T] = {
-    output = if (inplace) {
-      input.get[Tensor[T]](1).get
+    if (inplace) {
+      output = input[Tensor[T]](1)
     } else {
-      val input1 = input.get[Tensor[T]](1).get
+      val input1 = input[Tensor[T]](1)
       if (null == output) {
-        input1.clone()
+        output = input1.clone()
       } else {
         output.resizeAs(input1).copy(input1)
       }
@@ -42,7 +40,7 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = 
 
     var i = 2
     while (i <= input.length()) {
-      output.add(input.get[Tensor[T]](i).get)
+      output.add(input[Tensor[T]](i))
       i += 1
     }
 
@@ -56,16 +54,11 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = 
         gradInput(i) = gradOutput
       } else {
         if (gradInput.contains(i)) {
-          gradInput.get[Tensor[T]](i).get.resizeAs(gradOutput).copy(gradOutput)
+          gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
         } else {
           gradInput.insert(i, gradOutput.clone())
         }
       }
-      i += 1
-    }
-
-    while(i <= gradInput.length()) {
-      gradInput.remove(i)
       i += 1
     }
 
