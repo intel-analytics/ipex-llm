@@ -204,6 +204,109 @@ class ShuffleBatchDataSetSpec extends FlatSpec with Matchers with BeforeAndAfter
     }).count()
   }
 
+  it should "be correct for multithread dataset" in {
+    sc = new SparkContext("local[1]", "ShuffleBatchDataSetSpec")
+    val rdd = sc.parallelize(Array(1, 2, 3, 4), 4).
+      mapPartitions(iter => Iterator.range(0, 8).map(i => (i, i)))
+    val dataset = new MultiThreadShuffleBatchDataSet[(Int, Int), Double](rdd,
+      (seq, input: Tensor[Double], target: Tensor[Double]) => {
+        input.resize(Array(seq.size, 1))
+        target.resize(Array(seq.size))
+
+        var i = 0
+        while (i < seq.size) {
+          input.setValue(i + 1, 1, seq(i)._1)
+          target.setValue(i + 1, seq(i)._2)
+          i += 1
+        }
+        (input, target)
+      }, 3, 4, 1)
+
+    require(!dataset.epochFinished())
+
+    dataset.fetch().map(batch => {
+      require(batch.hasNext)
+      val b1 = batch.next()
+      require(b1._1.size(1) == 3)
+      require(b1._1.valueAt(1, 1) == 0.0, b1._1.valueAt(1, 1))
+      require(b1._1.valueAt(2, 1) == 1.0, b1._1.valueAt(1, 1))
+      require(b1._1.valueAt(3, 1) == 2.0, b1._1.valueAt(1, 1))
+      require(b1._2.size(1) == 3)
+      require(b1._2.valueAt(1) == 0.0, b1._2.valueAt(1, 1))
+      require(b1._2.valueAt(2) == 1.0, b1._2.valueAt(1, 1))
+      require(b1._2.valueAt(3) == 2.0, b1._2.valueAt(1, 1))
+
+      val b2 = batch.next()
+      require(!batch.hasNext)
+      require(b2._1.size(1) == 1)
+      require(b2._1.valueAt(1, 1) == 3.0, b2._1.valueAt(1, 1))
+      require(b2._2.size(1) == 1)
+      require(b2._2.valueAt(1) == 3.0, b2._2.valueAt(1, 1))
+    }).count()
+
+    dataset.fetch().map(batch => {
+      require(batch.hasNext)
+      val b1 = batch.next()
+      require(b1._1.size(1) == 3)
+      require(b1._1.valueAt(1, 1) == 4.0, b1._1.valueAt(1, 1))
+      require(b1._1.valueAt(2, 1) == 5.0, b1._1.valueAt(1, 1))
+      require(b1._1.valueAt(3, 1) == 6.0, b1._1.valueAt(1, 1))
+      require(b1._2.size(1) == 3)
+      require(b1._2.valueAt(1) == 4.0, b1._2.valueAt(1, 1))
+      require(b1._2.valueAt(2) == 5.0, b1._2.valueAt(1, 1))
+      require(b1._2.valueAt(3) == 6.0, b1._2.valueAt(1, 1))
+
+      val b2 = batch.next()
+      require(!batch.hasNext)
+      require(b2._1.size(1) == 1)
+      require(b2._1.valueAt(1, 1) == 7.0, b2._1.valueAt(1, 1))
+      require(b2._2.size(1) == 1)
+      require(b2._2.valueAt(1) == 7.0, b2._2.valueAt(1, 1))
+    }).count()
+
+    require(dataset.epochFinished())
+
+    dataset.fetch().map(batch => {
+      require(batch.hasNext)
+      val b1 = batch.next()
+      require(b1._1.size(1) == 3)
+      require(b1._1.valueAt(1, 1) == 0.0, b1._1.valueAt(1, 1))
+      require(b1._1.valueAt(2, 1) == 1.0, b1._1.valueAt(1, 1))
+      require(b1._1.valueAt(3, 1) == 2.0, b1._1.valueAt(1, 1))
+      require(b1._2.size(1) == 3)
+      require(b1._2.valueAt(1) == 0.0, b1._2.valueAt(1, 1))
+      require(b1._2.valueAt(2) == 1.0, b1._2.valueAt(1, 1))
+      require(b1._2.valueAt(3) == 2.0, b1._2.valueAt(1, 1))
+
+      val b2 = batch.next()
+      require(!batch.hasNext)
+      require(b2._1.size(1) == 1)
+      require(b2._1.valueAt(1, 1) == 3.0, b2._1.valueAt(1, 1))
+      require(b2._2.size(1) == 1)
+      require(b2._2.valueAt(1) == 3.0, b2._2.valueAt(1, 1))
+    }).count()
+
+    dataset.fetch().map(batch => {
+      require(batch.hasNext)
+      val b1 = batch.next()
+      require(b1._1.size(1) == 3)
+      require(b1._1.valueAt(1, 1) == 4.0, b1._1.valueAt(1, 1))
+      require(b1._1.valueAt(2, 1) == 5.0, b1._1.valueAt(1, 1))
+      require(b1._1.valueAt(3, 1) == 6.0, b1._1.valueAt(1, 1))
+      require(b1._2.size(1) == 3)
+      require(b1._2.valueAt(1) == 4.0, b1._2.valueAt(1, 1))
+      require(b1._2.valueAt(2) == 5.0, b1._2.valueAt(1, 1))
+      require(b1._2.valueAt(3) == 6.0, b1._2.valueAt(1, 1))
+
+      val b2 = batch.next()
+      require(!batch.hasNext)
+      require(b2._1.size(1) == 1)
+      require(b2._1.valueAt(1, 1) == 7.0, b2._1.valueAt(1, 1))
+      require(b2._2.size(1) == 1)
+      require(b2._2.valueAt(1) == 7.0, b2._2.valueAt(1, 1))
+    }).count()
+  }
+
   "fetch two batch with same size of stack" should "be correct" in {
     sc = new SparkContext("local[4]", "ShuffleBatchDataSetSpec")
     val rdd = sc.parallelize(Array(1, 2, 3, 4), 4).

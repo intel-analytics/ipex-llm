@@ -63,7 +63,7 @@ object ImageNetParallel {
     conf.setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
     conf.setExecutorEnv("KMP_BLOCKTIME", "0")
     conf.setExecutorEnv("OMP_WAIT_POLICY", "passive")
-    conf.setExecutorEnv("OMP_NUM_THREADS", s"${params.parallelism}")
+    conf.setExecutorEnv("OMP_NUM_THREADS", "1")
     conf.set("spark.task.maxFailures", "1")
     conf.set("spark.shuffle.blockTransferService", "nio")
     conf.set("spark.akka.frameSize", "10") // akka networking speed is slow
@@ -105,7 +105,8 @@ object ImageNetParallel {
     val workerConfig = params.workerConfig.clone()
     workerConfig("profile") = true
 
-    driverConfig("learningRateSchedule") = Poly(0.5, 84375)
+    driverConfig("learningRateSchedule") = Poly(0.5, 62000)
+    //driverConfig("learningRateSchedule") = Poly(0.5, 90000)
 
     val croppedData = if (cropImage) {
       loadCroppedData(trainFiles, sc, labelsMap, classNum + 0.5).coalesce(partitionNum, true)
@@ -119,9 +120,10 @@ object ImageNetParallel {
 
     val parameter = model.getParameters()._1
     val metrics = new Metrics
-    val dataSets = new ShuffleBatchDataSet[(Float, Array[Byte]), Float](croppedData,
+    val dataSets = new MultiThreadShuffleBatchDataSet[(Float, Array[Byte]), Float](croppedData,
+    //val dataSets = new ShuffleBatchDataSet[(Float, Array[Byte]), Float](croppedData,
       if (cropImage) toTensorWithoutCrop(mean, std) else toTensor(mean, std),
-      params.workerConfig[Int]("batch"), params.workerConfig[Int]("batch"))
+      params.workerConfig[Int]("stack"), params.workerConfig[Int]("batch"))
     val pm = if (params.pmType == "allreduce") {
       new AllReduceParameterManager[Float](parameter, dataSets.partitions(), metrics)
     } else if (params.pmType == "onereduce") {
@@ -143,7 +145,8 @@ object ImageNetParallel {
     val testDataSets = new ShuffleBatchDataSet[(Float, Array[Byte]), Float](validation,
       if (cropImage) toTensorWithoutCrop(mean, std) else toTensor(mean, std), 4, 4)
 
-    val optimizer = new GradAggEpochOptimizer[Float](model, criterion,
+    val optimizer = new BetterGradAggEpochOptimizer[Float](model, criterion,
+    //val optimizer = new GradAggEpochOptimizer[Float](model, criterion,
       getOptimMethodFloat(params.masterOptM),
       pm, dataSets, metrics, driverConfig)
     optimizer.addEvaluation("top1", EvaluateMethods.calcAccuracy)

@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
 abstract class DistributedOptimizer[T](
   val module: Module[Tensor[T], Tensor[T], T],
   val criterion: Criterion[Tensor[T], T],
-  dataSet: DataSet[_, T]) extends Serializable with Logging
+  val dataSet: DataSet[_, T]) extends Serializable with Logging
   with HasCrossValidation[T] with ModelPersist[T] {
 
   import DistributedOptimizer._

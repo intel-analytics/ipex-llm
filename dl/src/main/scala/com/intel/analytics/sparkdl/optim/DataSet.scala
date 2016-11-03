@@ -17,6 +17,9 @@
 
 package com.intel.analytics.sparkdl.optim
 
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
+
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.RandomGenerator
@@ -24,6 +27,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect.ClassTag
 import scala.util.Random
 
@@ -240,6 +245,123 @@ object ShuffleBatchDataSet {
     }
     data
   }
+}
+
+object MultiThreadShuffleBatchDataSet {
+  val threadNum = System.getProperty(
+    "com.intel.analytics.sparkdl.optim.MultiThreadShuffleBatchDataSet.threadNum",
+    (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
+
+  val context = new ExecutionContext {
+    val threadPool =
+      new ThreadPoolExecutor(threadNum, threadNum, 0L, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue[Runnable])
+
+    def execute(runnable: Runnable) {
+      threadPool.submit(runnable)
+    }
+
+    def reportFailure(t: Throwable) {}
+  }
+}
+
+class MultiThreadShuffleBatchDataSet[D: ClassTag, @specialized(Float, Double) T: ClassTag](
+  val dataSets: RDD[D],
+  val toTensor: (Seq[D], Tensor[T], Tensor[T]) => (Tensor[T], Tensor[T]),
+  val stackSize: Int,
+  val batchSize: Int, // use stackSize
+  val batchNum: Int = 1)(implicit ev: TensorNumeric[T])
+  extends DataSet[D, T] with HasEpoch {
+
+  import MultiThreadShuffleBatchDataSet._
+
+  require(stackSize <= batchSize && stackSize > 0)
+  require(batchSize > 0 && batchNum > 0)
+
+  private var curPosition = 0
+
+  private var datacount : Option[Int] = None
+
+  def setDataCount(dataCount : Int): Unit = {
+    this.datacount = Some(dataCount)
+  }
+
+  private var shuffledIndex: RDD[Array[Int]] = dataSets.mapPartitions(iter => {
+    Iterator.single(Array.range(0, iter.length))
+  }).setName("Shuffled Index").cache()
+  shuffledIndex.count()
+
+  lazy private val maxLength = shuffledIndex.map(_.length).max()
+  lazy private val count = if (datacount.isDefined) datacount.get
+  else shuffledIndex.map(_.length).sum().toLong
+
+
+  override def fetch(): RDD[Iterator[(Tensor[T], Tensor[T])]] = {
+    val position = curPosition
+    val result = dataSets.zipPartitions(shuffledIndex)((dataIter, indexIter) => {
+      val indexes = indexIter.next()
+      val indexBuffer = new Array[Int](batchNum * batchSize)
+      var n = 0
+      while (n < batchNum * batchSize) {
+        indexBuffer(n) = indexes((position + n) % indexes.length)
+        n += 1
+      }
+
+      val orderedIndex = indexBuffer.sortWith(_ < _)
+      val dataBuffer = new Array[D](batchNum * batchSize)
+      n = 0
+      var i = 0
+      while (dataIter.hasNext && n < orderedIndex.length) {
+        val d = dataIter.next()
+        if (i == orderedIndex(n)) {
+          dataBuffer(n) = d
+          n += 1
+        }
+        i += 1
+      }
+      require(n == batchNum * batchSize)
+      dataBuffer.grouped(batchSize).map(
+        batch => {
+          val buffer = batch.grouped(stackSize).toArray
+          buffer.map(s => Future {
+            val input = Tensor[T]()
+            val target = Tensor[T]()
+            toTensor(s, input, target)
+          }(context)).map(Await.result(_, Duration.Inf)).iterator
+        }
+      )
+    })
+    curPosition += batchNum * batchSize
+    result
+  }
+
+  override def reset(): Unit = {
+    shuffledIndex.unpersist()
+    shuffledIndex = dataSets.mapPartitions(iter => {
+      Iterator.single(Array.range(0, iter.length))
+    }).map(ShuffleBatchDataSet.inPlaceShuffle(_)).setName("Shuffled Index").cache()
+    curPosition = 0
+  }
+
+  override def epochFinished(): Boolean = {
+    curPosition >= maxLength
+  }
+
+  override def total(): Long = count
+
+  override def getSparkContext(): SparkContext = dataSets.sparkContext
+
+  override def getPartitionNum(): Int = dataSets.partitions.length
+
+  override def fetchAll(): RDD[(Tensor[T], Tensor[T])] = {
+    dataSets.mapPartitions(iter => {
+      val input = Tensor[T]()
+      val target = Tensor[T]()
+      iter.grouped(batchSize).map(toTensor(_, input, target))
+    })
+  }
+
+  override def partitions(): RDD[_] = dataSets
 }
 
 /**
