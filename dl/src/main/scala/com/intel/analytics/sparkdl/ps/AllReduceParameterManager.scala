@@ -17,148 +17,156 @@
 
 package com.intel.analytics.sparkdl.ps
 
+import java.util.concurrent.Executors
+
 import com.intel.analytics.sparkdl.optim.Metrics
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.utils.{Engine, T, Table}
+import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.sparkdl.utils.{T, Table}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.storage.{BlockId, StorageLevel, TaskResultBlockId}
+import org.apache.spark.storage.{StorageLevel, TaskResultBlockId}
 import org.apache.spark.{Logging, SparkContext, SparkEnv, TaskContext}
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{ExecutionContext, Await, Future}
 import scala.reflect._
+
+object AllReduceParameterManager {
+  var task1InnerTime: Long = 0L
+
+  private val poolSize: Int = System.getProperty(
+    "com.intel.analytics.sparkdl.ps.AllReduceParameterManager.poolSize",
+    (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
+
+  private val maxClusterSize = System.getProperty(
+    "com.intel.analytics.sparkdl.ps.AllReduceParameterManager.maxClusterSize", "10000").toInt
+
+  private val context = new ExecutionContext {
+    val threadPool = Executors.newFixedThreadPool(poolSize)
+
+    def execute(runnable: Runnable) {
+      threadPool.submit(runnable)
+    }
+
+    def reportFailure(t: Throwable) {}
+  }
+
+  private def getWeightBlockId(pid : Int): TaskResultBlockId = {
+    TaskResultBlockId(maxClusterSize + pid)
+  }
+
+  private def getGradientBlockId(pidFrom : Int, pidTo : Int): TaskResultBlockId = {
+    TaskResultBlockId(pidTo + pidFrom * maxClusterSize * 10)
+  }
+}
 
 class AllReduceParameterManager[T: ClassTag](
   parameter: Tensor[T], dataset: RDD[_], metrics: Metrics = new Metrics()
 )(implicit ev: TensorNumeric[T]) extends ParameterManager[T] with Logging {
 
+  import AllReduceParameterManager._
+
   @transient
   private val sc: SparkContext = dataset.sparkContext
 
   @transient
-  private var splits: Array[ParamSplit] = null
-
-  @transient
   private var buffers: RDD[(Parameter[T], Tensor[T], Tensor[T], Table)] = null
 
+  val parameterLength = parameter.nElement()
+
+  val partitionNum: Int = dataset.partitions.length
+
+  val taskSize = parameterLength / partitionNum
+  require(taskSize != 0, "parameter length should not less than partition number")
+
+  val extraSize = parameterLength % partitionNum
+
   private def init() = {
-    val partitionIds = dataset.mapPartitions(iter =>
-      Iterator.single(TaskContext.getPartitionId())).collect()
-    require(partitionIds.distinct.length == partitionIds.length)
-    val parameterLength = parameter.nElement()
-    val partitionNum: Int = dataset.partitions.length
-    val taskSize = parameterLength / partitionNum
-    require(taskSize != 0, "parameter length should not less than partition number")
-    val extraSize = parameterLength % partitionNum
     val broadcastParameter = dataset.sparkContext.broadcast(parameter)
-
-    splits = {
-      val pid2Splits = dataset.mapPartitions(iter => {
-        val localParameter = broadcastParameter.value
-        val pid = TaskContext.getPartitionId()
-        var splitId = -1
-        var i = 0
-        while (i < partitionIds.length) {
-          if (partitionIds(i) == pid) {
-            splitId = i
-          }
-          i += 1
-        }
-        require(splitId != -1)
-        val offset = splitId * taskSize + math.min(extraSize, splitId)
-        val length = taskSize + (if (splitId < extraSize) 1 else 0)
-        val blockIds = partitionIds.map(i => {
-          val fp16param = new FP16Parameter[T](length)
-          fp16param.copyFrom(0, localParameter, offset, length)
-          // assume the cluster size is smaller than 10000
-          val blockId = TaskResultBlockId(pid * 10000 + i)
-          SparkEnv.get.blockManager.putBytes(
-            blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
-          i -> blockId
-        }).toMap
-        Iterator.single(Map(pid -> ParamSplit(pid, offset, length, blockIds)))
-      }).reduce(_ ++ _)
-      partitionIds.map(pid2Splits(_))
-    }
-
-    val driverClassTag = classTag[T]
-    val driverEV = ev
-    val broadcastSplit = sc.broadcast(splits)
+    val _classTag = classTag[T]
+    val _ev = ev
+    val _parameterLength = parameterLength
+    val _partitionNum = partitionNum
+    val _taskSize = taskSize
+    val _extraSize = extraSize
     buffers = dataset.mapPartitions(iter => {
-      val localParameter = broadcastParameter.value
-      val paramBuffer =
-        new FP16SplitsParameter[T](parameterLength, partitionNum)(driverClassTag).
-          asInstanceOf[Parameter[T]]
+      val taskParameter = broadcastParameter.value
+      val paramBuffer = new FP16SplitsParameter[T](_parameterLength,
+        _partitionNum)(_classTag).asInstanceOf[Parameter[T]]
       val pid = TaskContext.getPartitionId()
-      val localSplits = broadcastSplit.value
-      var k = 0
-      var localWeight: Tensor[T] = null
-      var localGradient: Tensor[T] = null
-      var localState: Table = null
-      while (k < localSplits.length) {
-        if (localSplits(k).partitionId == pid) {
-          localWeight = Tensor[T](localSplits(k).length)(driverClassTag, driverEV).
-            copy(localParameter.narrow(1, localSplits(k).start + 1, localSplits(k).length))
-          localGradient = Tensor[T](localSplits(k).length)(driverClassTag, driverEV)
-          localState = T()
-        }
-        k += 1
-      }
+      val start = pid * _taskSize + math.min(pid, _extraSize)
+      val length = _taskSize + (if (pid < _extraSize) 1 else 0)
+      val localWeight = Tensor[T](length)(_classTag, _ev).copy(taskParameter.narrow(1,
+        start + 1, length))
+      val localGradient = Tensor[T](length)(_classTag, _ev)
+      val localState = T()
+      val fp16param = new FP16Parameter[T](length)(_classTag)
+      fp16param.copyFrom(0, taskParameter, start, length)
+      val blockId = getWeightBlockId(pid)
+      SparkEnv.get.blockManager.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
       Iterator.single((paramBuffer, localWeight, localGradient, localState))
     }).setName("Parameter Manager Buffers").persist()
+    buffers.count()
   }
 
   init()
 
   override def sync(parameters: RDD[Tensor[T]]): RDD[Tensor[T]] = {
-    val before = System.nanoTime()
-    val broadcastSplit = buffers.context.broadcast(splits)
-    metrics.set("driver broadcast split table", System.nanoTime() - before)
+    val _classTag = classTag[T]
+    val _partitionNum = partitionNum
+    val _taskSize = taskSize
+    val _extraSize = extraSize
+    val _metrics = metrics
 
-    val partitionNum: Int = dataset.partitions.length
     metrics.set("worker fetch split table", 0.0, sc, partitionNum)
-    metrics.set("worker sync weight", 0.0, sc, partitionNum)
-    val driverMetrics = metrics
-    val driverClassTag = classTag[T]
+    metrics.set("worker sync weight average", 0.0, sc, partitionNum)
+    metrics.set("sync weight for each node", mutable.ArrayBuffer[Double](), sc)
     parameters.mapPartitions(paramIter => {
       var before = System.nanoTime()
-      val localSplits = broadcastSplit.value
-      driverMetrics.add("worker fetch split table", System.nanoTime() - before)
+      AllReduceParameterManager.task1InnerTime = System.nanoTime()
+      _metrics.add("worker fetch split table", System.nanoTime() - before)
       require(paramIter.hasNext)
       val localParameter = paramIter.next()
       require(!paramIter.hasNext)
 
       before = System.nanoTime()
       val bm = SparkEnv.get.blockManager
-      val pid = TaskContext.getPartitionId()
-      localSplits.map(s => {
+      (0 until _partitionNum).map(pid => {
         Future {
-          val localBuffer = bm.getRemoteBytes(s.blockIds(pid)).get
-          require(localBuffer.array().length == s.length * 2)
-          Parameter(localBuffer)(driverClassTag).copyTo(0, localParameter, s.start, s.length)
-        }(Engine.getInstance())
+          val blockId = getWeightBlockId(pid)
+          val localBuffer = bm.getRemoteBytes(blockId).get
+          val start = pid * _taskSize + math.min(pid, _extraSize)
+          val length = _taskSize + (if (pid < _extraSize) 1 else 0)
+          require(localBuffer.array().length == length * 2)
+          Parameter(localBuffer)(_classTag).copyTo(0, localParameter, start, length)
+        }(context)
       }).map(Await.result(_, Duration.Inf))
 
-      driverMetrics.add("worker sync weight", System.nanoTime() - before)
+      val weightSync = System.nanoTime() - before
+      _metrics.add("worker sync weight average", weightSync)
+      _metrics.add("sync weight for each node", weightSync)
       Iterator.single(localParameter)
     })
   }
 
   override def sumAndUpdate(parameters: RDD[Tensor[T]],
     update: (Tensor[T], Tensor[T], Table) => Unit): Unit = {
-    require(splits != null)
-    var before = System.nanoTime()
-    val driverMetrics = metrics
-    val driverClassTag = classTag[T]
-    val broadcastSplits = buffers.context.broadcast(splits)
-    val partitionNum: Int = dataset.partitions.length
-    metrics.set("driver broadcast splits", System.nanoTime() - before)
+    val before = System.nanoTime()
+    val _classTag = classTag[T]
+    val _partitionNum = partitionNum
+    val _taskSize = taskSize
+    val _extraSize = extraSize
+    val _metrics = metrics
 
+    metrics.set("driver broadcast splits", System.nanoTime() - before)
     metrics.set("worker prepare parameter", 0.0, sc, partitionNum)
     metrics.set("worker put result", 0.0, sc, partitionNum)
-    val paramTable = parameters.zipPartitions(buffers)((paramStatusIter, bufferIter) => {
+    metrics.set("task1 avg time", 0.0, sc, partitionNum)
+    metrics.set("task1 time from worker", mutable.ArrayBuffer[Double](), sc)
+
+    val task1Before = System.nanoTime()
+    parameters.zipPartitions(buffers)((paramStatusIter, bufferIter) => {
       require(paramStatusIter.hasNext)
       val localParameter = paramStatusIter.next()
       require(!paramStatusIter.hasNext)
@@ -166,100 +174,99 @@ class AllReduceParameterManager[T: ClassTag](
 
       var before = System.nanoTime()
       localBuffer.copyFrom(localParameter)
-      driverMetrics.add("worker prepare parameter", System.nanoTime() - before)
+      _metrics.add("worker prepare parameter", System.nanoTime() - before)
 
-      val localSplits = broadcastSplits.value
       before = System.nanoTime()
       val env = SparkEnv.get
-      val pid = TaskContext.getPartitionId()
-      var i = 0
-      val results = mutable.Map[(Int, Int), BlockId]()
-      while (i < localSplits.length) {
-        // we assume the cluster is not larger than 10000
-        val blockId = TaskResultBlockId(TaskContext.get().taskAttemptId() * 10000 + i)
+      val curPid = TaskContext.getPartitionId()
+      var pid = 0
+      while (pid < _partitionNum) {
+        val start = pid * _taskSize + math.min(pid, _extraSize)
+        val length = _taskSize + (if (pid < _extraSize) 1 else 0)
+        val blockId = getGradientBlockId(curPid, pid)
+        env.blockManager.removeBlock(blockId)
         env.blockManager.putBytes(
-          blockId, localBuffer.bytes(localSplits(i).start, localSplits(i).length),
+          blockId, localBuffer.bytes(start, length),
           StorageLevel.MEMORY_ONLY_SER)
-        results.put((i, pid), blockId)
-        i += 1
+        pid += 1
       }
-      driverMetrics.add("worker put result", System.nanoTime() - before)
+      _metrics.add("worker put result", System.nanoTime() - before)
+      _metrics.add("task1 avg time", System.nanoTime() - AllReduceParameterManager.task1InnerTime)
+      _metrics.add("task1 time from worker", System.nanoTime() -
+        AllReduceParameterManager.task1InnerTime)
+      Iterator.empty
+    }).count()
+    metrics.set("task1 time from driver", System.nanoTime() - task1Before)
 
-      Iterator.single(results)
-    }).reduce(_ ++= _)
-
-    metrics.set("gradient sync", 0.0, sc, partitionNum)
+    val task2Before = System.nanoTime()
+    metrics.set("gradient sync average", 0.0, sc, partitionNum)
+    metrics.set("gradient sync for each node", mutable.ArrayBuffer[Double](), sc)
     metrics.set("gradient reduce", 0.0, sc, partitionNum)
     metrics.set("worker gradient extract", 0.0, sc, partitionNum)
     metrics.set("worker fetch broadcast values", 0.0, sc, partitionNum)
     metrics.set("worker update", 0.0, sc, partitionNum)
     metrics.set("worker serialize weight", 0.0, sc, partitionNum)
-    before = System.nanoTime()
-    val broadcastSplitBlockids = buffers.context.broadcast(paramTable)
-    val broadcastUpdate = buffers.context.broadcast(update)
-    metrics.set("driver broadcast split blocks and udpate", System.nanoTime() - before)
+    metrics.set("task2 time from worker", mutable.ArrayBuffer[Double](), sc)
+    val broadcastUpdate = sc.broadcast(update)
     buffers.mapPartitions(iter => {
+      val task2InnerBefore = System.nanoTime()
       var before = System.nanoTime()
-      val localSplitBlockids = broadcastSplitBlockids.value
-      val localSplits = broadcastSplits.value
-      val localUpdate = broadcastUpdate.value
-      driverMetrics.add("worker fetch broadcast values", System.nanoTime() - before)
+      _metrics.add("worker fetch broadcast values", System.nanoTime() - before)
       before = System.nanoTime()
-      val pid = TaskContext.getPartitionId()
-      var k = 0
-      var splitId = -1
-      while (k < localSplits.length) {
-        if (pid == localSplits(k).partitionId) {
-          splitId = k
-        }
-        k += 1
-      }
-      require(splitId != -1, s"can't find split for current partition ${pid} (${
-        localSplits.map(_.partitionId).mkString(",")
-      })")
+      val curPid = TaskContext.getPartitionId()
       val bm = SparkEnv.get.blockManager
-      val newParams = localSplits.map(s => localSplitBlockids(splitId, s.partitionId)).map(bid => {
+      val newParams = (0 until _partitionNum).map(pid => {
         Future {
-          val r = Parameter[T](bm.getRemoteBytes(bid).getOrElse(
-            throw new IllegalArgumentException(s"Can't get the block(${bid})")
-          ))(driverClassTag)
-          bm.removeBlock(bid)
-          r
-        }(Engine.getInstance())
+          val start = pid * _taskSize + math.min(pid, _extraSize)
+          val length = _taskSize + (if (pid < _extraSize) 1 else 0)
+          val blockId = getGradientBlockId(pid, curPid)
+          Parameter[T](bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId)
+            .getOrElse(
+              throw new IllegalArgumentException(s"Can't get the block(${blockId})")
+            )))(_classTag)
+        }(context)
       }).map(Await.result(_, Duration.Inf))
-      driverMetrics.add("gradient sync", System.nanoTime() - before)
+      val syncGradient = System.nanoTime() - before
+      _metrics.add("gradient sync average", syncGradient)
+      _metrics.add("gradient sync for each node", syncGradient)
 
       before = System.nanoTime()
-      val taskSize = localSplits(splitId).length / Engine.coresNum()
-      val extraSize = localSplits(splitId).length % Engine.coresNum()
-      val availableTask = if (taskSize == 0) extraSize else Engine.coresNum
+      val start = curPid * _taskSize + math.min(curPid, _extraSize)
+      val length = _taskSize + (if (curPid < _extraSize) 1 else 0)
+      val innerTaskSize = length / poolSize
+      val innerExtraSize = length % poolSize
+      val availableTask = if (innerTaskSize == 0) innerExtraSize else poolSize
       (0 until availableTask).map(tid => Future {
-        val start = tid * taskSize + math.min(extraSize, tid)
-        val length = taskSize + (if (tid < extraSize) 1 else 0)
-        newParams.reduce((l, r) => l.add(r.bytes(start, length), start, length))
-      }(Engine.getInstance())).map(Await.result(_, Duration.Inf))
-      driverMetrics.add("gradient reduce", System.nanoTime() - before)
+        val innerStart = tid * innerTaskSize + math.min(innerExtraSize, tid)
+        val innerLength = innerTaskSize + (if (tid < innerExtraSize) 1 else 0)
+        newParams.reduce((l, r) => l.add(r.bytes(innerStart, innerLength), innerStart,
+          innerLength))
+      }(context)).map(Await.result(_, Duration.Inf))
+      _metrics.add("gradient reduce", System.nanoTime() - before)
 
       before = System.nanoTime()
       val (localParameter, localParam, localGradient, localState) = iter.next()
       newParams.head.copyTo(localGradient)
-      driverMetrics.add("worker gradient extract", System.nanoTime() - before)
+      _metrics.add("worker gradient extract", System.nanoTime() - before)
 
       before = System.nanoTime()
-      val paramBlockIds = localSplits(splitId).blockIds
-      localUpdate(localParam, localGradient, localState)
-      driverMetrics.add("worker update", System.nanoTime() - before)
+      val workerUpdate = broadcastUpdate.value
+      workerUpdate(localParam, localGradient, localState)
+      _metrics.add("worker update", System.nanoTime() - before)
 
       before = System.nanoTime()
-      newParams.head.copyFrom(localParam)
-      paramBlockIds.map { case (pid, paramBlockId) =>
-        SparkEnv.get.blockManager.removeBlock(paramBlockId)
-        SparkEnv.get.blockManager.putBytes(
-          paramBlockId, newParams.head.bytes(), StorageLevel.MEMORY_ONLY_SER)
-      }
-      driverMetrics.add("worker serialize weight", System.nanoTime() - before)
-      Iterator.single(1)
+
+      val blockId = getWeightBlockId(curPid)
+      SparkEnv.get.blockManager.removeBlock(blockId)
+      SparkEnv.get.blockManager.putBytes(
+        blockId,
+        Parameter[T](localParam)(_classTag).bytes(), StorageLevel.MEMORY_ONLY_SER)
+      _metrics.add("worker serialize weight", System.nanoTime() - before)
+      _metrics.add("task2 time from worker", System.nanoTime() - task2InnerBefore)
+      Iterator.empty
     }).count()
+
+    metrics.set("task2 time from driver", System.nanoTime() - task2Before)
   }
 
   override def getParameter(): Tensor[T] = {
@@ -269,8 +276,17 @@ class AllReduceParameterManager[T: ClassTag](
       Iterator.single(Map(curPartitionId -> localWeights))
     }).reduce(_ ++ _)
 
-    splits.map(split => {
-      parameter.narrow(1, split.start + 1, split.length).copy(pidToWeightSplit(split.partitionId))
+
+    val partitionNum: Int = dataset.partitions.length
+    val parameterLength = parameter.nElement()
+    val taskSize = parameterLength / partitionNum
+    require(taskSize != 0, "parameter length should not less than partition number")
+    val extraSize = parameterLength % partitionNum
+
+    (0 until partitionNum).map(pid => {
+      val start = pid * taskSize + math.min(pid, extraSize)
+      val length = taskSize + (if (pid < extraSize) 1 else 0)
+      parameter.narrow(1, start + 1, length).copy(pidToWeightSplit(pid))
     })
 
     parameter
@@ -278,5 +294,3 @@ class AllReduceParameterManager[T: ClassTag](
 
   override def getState(): Table = T()
 }
-
-case class ParamSplit(partitionId: Int, start: Int, length: Int, blockIds: Map[Int, BlockId])

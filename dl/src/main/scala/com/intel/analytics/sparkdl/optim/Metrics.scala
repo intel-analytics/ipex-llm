@@ -18,18 +18,23 @@
 package com.intel.analytics.sparkdl.optim
 
 import com.google.common.util.concurrent.AtomicDouble
-import org.apache.spark.{Accumulator, SparkContext}
+import org.apache.spark.{Accumulable, Accumulator, SparkContext}
 
-import scala.collection.mutable.Map
+import scala.collection.mutable.{ArrayBuffer, Map}
 
 class Metrics extends Serializable {
   private val localMetricsMap: Map[String, LocalMetricsEntry] = Map()
+  private val aggregateDistributeMetricsMap: Map[String, AggregateDistributeMetricsEntry] = Map()
   private val distributeMetricsMap: Map[String, DistributeMetricsEntry] = Map()
 
   def add(name: String, value: Double): this.type = {
-    require(localMetricsMap.contains(name) || distributeMetricsMap.contains(name))
+    require(localMetricsMap.contains(name) || aggregateDistributeMetricsMap.contains(name) || distributeMetricsMap.contains(name))
     if (localMetricsMap.contains(name)) {
       localMetricsMap(name).value.addAndGet(value)
+    }
+
+    if (aggregateDistributeMetricsMap.contains(name)) {
+      aggregateDistributeMetricsMap(name).value += value
     }
 
     if (distributeMetricsMap.contains(name)) {
@@ -39,7 +44,8 @@ class Metrics extends Serializable {
   }
 
   def set(name: String, value: Double, parallel: Int = 1): this.type = {
-    require(!distributeMetricsMap.contains(name), "duplicated distribute metric")
+    require(!aggregateDistributeMetricsMap.contains(name), "duplicated distribute metric")
+    require(!distributeMetricsMap.contains(name), "duplicated distribute metric2")
     if (localMetricsMap.contains(name)) {
       localMetricsMap(name).value.set(value)
       localMetricsMap(name).parallel = parallel
@@ -51,22 +57,38 @@ class Metrics extends Serializable {
 
   def set(name: String, value: Double, sc: SparkContext, parallel: Int): this.type = {
     require(!localMetricsMap.contains(name), "duplicated local metric")
+    if (aggregateDistributeMetricsMap.contains(name)) {
+      aggregateDistributeMetricsMap(name).value.setValue(value)
+      aggregateDistributeMetricsMap(name).parallel = parallel
+    } else {
+      aggregateDistributeMetricsMap(name) = AggregateDistributeMetricsEntry(sc.accumulator(value, name), parallel)
+    }
+    this
+  }
+
+  def set(name: String, value: ArrayBuffer[Double], sc: SparkContext): this.type = {
+    require(!localMetricsMap.contains(name), "duplicated local metric")
+    require(!aggregateDistributeMetricsMap.contains(name), "duplicated distribute metric")
     if (distributeMetricsMap.contains(name)) {
       distributeMetricsMap(name).value.setValue(value)
-      distributeMetricsMap(name).parallel = parallel
     } else {
-      distributeMetricsMap(name) = DistributeMetricsEntry(sc.accumulator(value, name), parallel)
+      distributeMetricsMap(name) = DistributeMetricsEntry(sc.accumulableCollection(value))
     }
     this
   }
 
   def get(name: String): (Double, Int) = {
-    require(localMetricsMap.contains(name) || distributeMetricsMap.contains(name))
+    require(localMetricsMap.contains(name) || aggregateDistributeMetricsMap.contains(name))
     if (localMetricsMap.contains(name)) {
       (localMetricsMap(name).value.get(), localMetricsMap(name).parallel)
     } else {
-      (distributeMetricsMap(name).value.value, distributeMetricsMap(name).parallel)
+      (aggregateDistributeMetricsMap(name).value.value, aggregateDistributeMetricsMap(name).parallel)
     }
+  }
+
+  def get(name: String, number: Int): Array[Double] = {
+    require(distributeMetricsMap.contains(name))
+    distributeMetricsMap(name).value.value.toArray.dropRight(number)
   }
 
   def summary(unit: String = "s", scale: Double = 1e9): String = {
@@ -74,13 +96,19 @@ class Metrics extends Serializable {
       localMetricsMap.map(
         entry => s"${entry._1} : ${entry._2.value.get() / entry._2.parallel / scale} $unit\n")
         .mkString("") +
-      distributeMetricsMap.map(
+      aggregateDistributeMetricsMap.map(
         entry => s"${entry._1} : ${entry._2.value.value / entry._2.parallel / scale} $unit\n")
         .mkString("") +
+      distributeMetricsMap.map { entry =>
+        s"${entry._1} : ${entry._2.value.value.map(_ / scale).mkString(" ")} \n"
+      }.mkString("") +
       "====================================="
   }
 }
 
+
 private case class LocalMetricsEntry(value: AtomicDouble, var parallel: Int)
 
-private case class DistributeMetricsEntry(value: Accumulator[Double], var parallel: Int)
+private case class AggregateDistributeMetricsEntry(value: Accumulator[Double], var parallel: Int)
+
+private case class DistributeMetricsEntry(value: Accumulable[ArrayBuffer[Double], Double])
