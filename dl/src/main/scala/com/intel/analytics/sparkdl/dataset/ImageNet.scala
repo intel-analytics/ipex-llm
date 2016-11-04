@@ -132,6 +132,7 @@ object ImageNetLocal {
         state = T(
           "learningRate" -> config.learningRate,
           "weightDecay" -> config.weightDecay,
+          "momentum" -> config.momentum,
           "dampening" -> 0.0,
           "learningRateSchedule" -> config.learningRateSchedule
         ),
