@@ -359,8 +359,8 @@ class ConcatSpec extends FlatSpec with Matchers {
       val gradInputDnn2 = dnn2.backward(input, gradOutput)
       gradInputDnn1 should be equals (gradInputDnn2)
 
-      Tools.AverageError[T](output1, output2, "output") should be(0.0 +- 1e-6)
-      Tools.AverageError[T](gradInputDnn1, gradInputDnn2, "gradinput") should be(0.0 +- 1e-6)
+      Tools.averageError[T](output1, output2, "output") should be(0.0 +- 1e-6)
+      Tools.averageError[T](gradInputDnn1, gradInputDnn2, "gradinput") should be(0.0 +- 1e-6)
     }
 
     for (i <- 0 until 10) {
@@ -425,8 +425,8 @@ class ConcatSpec extends FlatSpec with Matchers {
       val gradInputDnn2 = dnn2.backward(input, gradOutput)
       gradInputDnn1 should be equals (gradInputDnn2)
 
-      Tools.AverageError[T](output1, output2, "output") should be(0.0 +- 1e-6)
-      Tools.AverageError[T](gradInputDnn1, gradInputDnn2, "gradinput") should be(0.0 +- 1e-6)
+      Tools.averageError[T](output1, output2, "output") should be(0.0 +- 1e-6)
+      Tools.averageError[T](gradInputDnn1, gradInputDnn2, "gradinput") should be(0.0 +- 1e-6)
     }
 
     for (i <- 0 until 10) {
@@ -435,10 +435,10 @@ class ConcatSpec extends FlatSpec with Matchers {
     }
   }
 
-  "Concat with GoogLeNet inception contains two version of layers" should "generate correct results" in {
+  "Concat contains two version of layers" should "generate correct results" in {
     def model[T: ClassTag](backend: String)(implicit ev: TensorNumeric[T]): Module[T] = {
       backend match {
-        case "dnn" => {
+        case "dnn" =>
           val concat = new Concat[T](2)
 
           val conv1 = new nn.Sequential[T]()
@@ -468,9 +468,8 @@ class ConcatSpec extends FlatSpec with Matchers {
           concat.add(conv5)
           concat.add(pool)
           concat
-        }
 
-        case "blas" => {
+        case "blas" =>
           val concat = new nn.Concat[T](2)
 
           val conv1 = new nn.Sequential[T]()
@@ -500,7 +499,6 @@ class ConcatSpec extends FlatSpec with Matchers {
           concat.add(conv5)
           concat.add(pool)
           concat
-        }
       }
     }
 
@@ -527,8 +525,8 @@ class ConcatSpec extends FlatSpec with Matchers {
       val gradInputBlas = blas.backward(input, gradOutput)
       gradInputDnn should be equals (gradInputBlas)
 
-      Tools.AverageError[T](outputDnn, outputBlas, "output") should be(0.0 +- 1e-5)
-      Tools.AverageError[T](gradInputDnn, gradInputBlas, "gradinput") should be(0.0 +- 1e-5)
+      Tools.averageError[T](outputDnn, outputBlas, "output") should be(0.0 +- 1e-5)
+      Tools.averageError[T](gradInputDnn, gradInputBlas, "gradinput") should be(0.0 +- 1e-5)
     }
 
     for (i <- 0 until 10) {
@@ -540,7 +538,7 @@ class ConcatSpec extends FlatSpec with Matchers {
   "Concat with GoogLeNet inception contains mix backend" should "generate correct result" in {
     def model[T: ClassTag](backend: String)(implicit ev: TensorNumeric[T]): Module[T] = {
       backend match {
-        case "mix" => {
+        case "mix" =>
           val concat = new Concat[T](2)
 
           val conv1 = new nn.Sequential[T]()
@@ -551,10 +549,11 @@ class ConcatSpec extends FlatSpec with Matchers {
           val randNum = scala.util.Random
 
           def randModule(m1: () => Module[T], m2: () => Module[T]): Module[T] = {
-            if (randNum.nextInt(2) != 0)
+            if (randNum.nextInt(2) != 0) {
               m1()
-            else
+            } else {
               m2()
+            }
           }
 
           conv1.add(
@@ -615,9 +614,8 @@ class ConcatSpec extends FlatSpec with Matchers {
           concat.add(conv5)
           concat.add(pool)
           concat
-        }
 
-        case "blas" => {
+        case "blas" =>
           val concat = new nn.Concat[T](2)
 
           val conv1 = new nn.Sequential[T]()
@@ -647,7 +645,6 @@ class ConcatSpec extends FlatSpec with Matchers {
           concat.add(conv5)
           concat.add(pool)
           concat
-        }
       }
     }
 
@@ -672,8 +669,8 @@ class ConcatSpec extends FlatSpec with Matchers {
       val gradInputM2 = m2.backward(input, gradOutput)
       gradInputM1 should be equals (gradInputM2)
 
-      Tools.AverageError[T](outputM1, outputM2, "output") should be(0.0 +- 1e-5)
-      Tools.AverageError[T](gradInputM1, gradInputM2, "gradInput") should be(0.0 +- 1e-5)
+      Tools.averageError[T](outputM1, outputM2, "output") should be(0.0 +- 1e-5)
+      Tools.averageError[T](gradInputM1, gradInputM2, "gradInput") should be(0.0 +- 1e-5)
     }
 
     for (i <- 0 until 3) {

@@ -152,7 +152,7 @@ void MKLLRN<DType>::updateOutput(DType *input, DType *output)
   preExecute(input);
   this->output->createConversion();
   // this->output->setZero();
-  this->workspace->setZero();
+  // this->workspace->setZero();
 
 #ifdef DEBUG
   printData<DType>(reinterpret_cast<DType *>(this->input->getUsrData()),
@@ -171,6 +171,8 @@ void MKLLRN<DType>::updateOutput(DType *input, DType *output)
   status = dnnExecute<DType>(this->forwardPrim, resources);
   PERFEND("main computing");
   CHECK_EQ(status, E_SUCCESS);
+
+  this->input->setIsConverted(true);
 
 #ifdef DEBUG
   printData<DType>(reinterpret_cast<DType *>(this->output->getData()),
@@ -208,6 +210,8 @@ void MKLLRN<DType>::updateGradInput(DType *input, DType *gradOutput,
   status = dnnExecute<DType>(this->backwardPrim, resources);
   CHECK_EQ(status, E_SUCCESS);
   PERFEND("main computing");
+
+  this->input->setIsConverted(false);
 
   if (!this->gradInput->isUsePrev()) {
     this->gradInput->backToUsr();

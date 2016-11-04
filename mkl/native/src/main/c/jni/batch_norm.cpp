@@ -13,7 +13,7 @@ class MKLBatchNorm : public MKLLayer<DType>
   ~MKLBatchNorm();
 
   void init(size_t inputNumber, size_t inputChannel, size_t inputHeight,
-            size_t inputWidth, double eps, int useKernel, int useBias,
+            size_t inputWidth, DType eps, int useKernel, int useBias,
             int dimension, const char *name);
 
   void updateOutput(DType *input, DType *output);
@@ -38,7 +38,7 @@ class MKLBatchNorm : public MKLLayer<DType>
   size_t outputSize[4];
   size_t outputStrides[4];
 
-  double eps;
+  DType eps;
   bool useKernel;
   bool useBias;
 
@@ -58,7 +58,9 @@ MKLBatchNorm<DType>::MKLBatchNorm()
       bias(NULL),
       gradKernel(NULL),
       gradBias(NULL),
-      scaleShiftPrim(NULL)
+      scaleShiftPrim(NULL),
+      useKernel(true),
+      useBias(true)
 {
   eps = 0.00001;
 }
@@ -93,7 +95,7 @@ void MKLBatchNorm<DType>::setGradBias(DType *ptr)
 template <typename DType>
 void MKLBatchNorm<DType>::init(size_t inputNumber, size_t inputChannel,
                                size_t inputHeight, size_t inputWidth,
-                               double eps, int useKernel, int useBias,
+                               DType eps, int useKernel, int useBias,
                                int dimension, const char *name)
 {
   this->dimension = dimension;
@@ -187,8 +189,10 @@ void MKLBatchNorm<DType>::firstPass()
 template <typename DType>
 void MKLBatchNorm<DType>::preExecute(DType *input)
 {
-  caffe::cpu::OpenMpManager::setGpuDisabled();
-  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+  if (this->isUseOpenMpManager) {
+    caffe::cpu::OpenMpManager::setGpuDisabled();
+    caffe::cpu::OpenMpManager::bindOpenMpThreads();
+  }
 
   this->input->createConversion();
 }
@@ -203,6 +207,9 @@ void MKLBatchNorm<DType>::updateOutput(DType *input, DType *output)
   // TODO Should we set the kernel and bias address every time?
   preExecute(input);
   this->output->createConversion();
+
+  // workspace->setZero();
+  // scaleShift->setZero();
 
   DType *ptr = reinterpret_cast<DType *>(scaleShift->getData());
 
@@ -241,6 +248,8 @@ void MKLBatchNorm<DType>::updateOutput(DType *input, DType *output)
   PERFEND("main computing");
   CHECK_EQ(status, E_SUCCESS);
 
+  this->input->setIsConverted(true);
+
 #ifdef DEBUG
   printData<DType>(reinterpret_cast<DType *>(this->output->getData()),
                    outputSize[3], outputSize[2], outputSize[1], outputSize[0],
@@ -276,6 +285,8 @@ void MKLBatchNorm<DType>::updateGradInput(DType *input, DType *gradOutput,
   CHECK_EQ(status, E_SUCCESS);
   PERFEND("main computing");
 
+  this->input->setIsConverted(false);
+
   if (useKernel) {
     void *diffRes[dnnResourceNumber];
     diffRes[dnnResourceDiffDst]        = this->gradOutput->getConvertedData();
@@ -291,6 +302,7 @@ void MKLBatchNorm<DType>::updateGradInput(DType *input, DType *gradOutput,
     DType *ptr = reinterpret_cast<DType *>(scaleShift->getData());
     for (int i = 0; i < inputSize[2]; i++) {
       gradKernel[i] = ptr[i];
+      gradBias[i] = 0;
       if (useBias) {
         gradBias[i] = ptr[i + inputSize[2]];
       }
@@ -311,7 +323,7 @@ void MKLBatchNorm<DType>::updateGradInput(DType *input, DType *gradOutput,
 template <typename ArrayType, typename DType>
 jlong JNIBatchNormInit(JNIEnv *env, jclass thisClass, jint inputNumber,
                        jint inputChannel, jint inputHeight, jint inputWidth,
-                       double eps, jint useKernel, jint useBias, jint dimension,
+                       DType eps, jint useKernel, jint useBias, jint dimension,
                        jstring name)
 {
   const char *jName = env->GetStringUTFChars(name, NULL);
@@ -387,7 +399,7 @@ void JNIBatchNormUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
   JNIEXPORT                                                                    \
   jlong JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_BatchNormInit##DType( \
       JNIEnv *env, jclass thisClass, jint inputNumber, jint inputChannel,      \
-      jint inputHeight, jint inputWidth, jdouble eps, jint useKernel,          \
+      jint inputHeight, jint inputWidth, JType eps, jint useKernel,          \
       jint useBias, jint dimension, jstring name)                                            \
   {                                                                            \
     return JNIBatchNormInit<JArrayType, JType>(                                \

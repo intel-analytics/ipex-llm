@@ -100,9 +100,11 @@ class ReLU[@specialized(Float, Double) T: ClassTag](ip: Boolean = false)(
     if (firstPass) {
       ev.getType() match {
         case "Float" =>
-          classPtr = MKL.ReLUInitFloat(inputNumber, inputChannel, inputHeight, inputWidth, 4, this.getName());
+          classPtr = MKL.ReLUInitFloat(inputNumber, inputChannel,
+                                       inputHeight, inputWidth, 4, this.getName());
         case "Double" =>
-          classPtr = MKL.ReLUInitDouble(inputNumber, inputChannel, inputHeight, inputWidth, 4, this.getName());
+          classPtr = MKL.ReLUInitDouble(inputNumber, inputChannel,
+                                        inputHeight, inputWidth, 4, this.getName());
         case _ =>
           throw new UnsupportedOperationException(s"Only Float/Double supported")
       }

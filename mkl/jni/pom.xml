@@ -5,7 +5,7 @@
     <parent>
         <artifactId>mkl-parent_0.1</artifactId>
         <groupId>com.intel.analytics.sparkdl</groupId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.0-dnn-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -60,7 +60,7 @@
                                         <artifactItem>
                                             <groupId>com.intel.analytics.sparkdl.mkl</groupId>
                                             <artifactId>mkl-native_0.1</artifactId>
-                                            <version>0.1.0-SNAPSHOT</version>
+                                            <version>0.1.0-dnn-SNAPSHOT</version>
                                             <type>so</type>
                                             <overWrite>false</overWrite>
                                             <outputDirectory>${project.build.directory}/classes</outputDirectory>

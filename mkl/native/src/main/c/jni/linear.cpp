@@ -193,6 +193,9 @@ void MKLLinear<DType>::updateOutput(DType *input, DType *output)
   PERFEND("main computing");
   CHECK_EQ(status, E_SUCCESS);
 
+  this->input->setIsConverted(true);
+  this->kernel->setIsConverted(true);
+
 #ifdef DEBUG
   printData<DType>(reinterpret_cast<DType *>(this->output->getData()),
                    outputSize[3], outputSize[2], outputSize[1], outputSize[0],
@@ -225,6 +228,9 @@ void MKLLinear<DType>::updateGradInput(DType *input, DType *gradOutput,
   status = dnnExecute<DType>(this->backwardPrim, resources);
   CHECK_EQ(status, E_SUCCESS);
   PERFEND("main computing");
+
+  this->gradOutput->setIsConverted(true);
+  this->kernel->setIsConverted(false);
 
   if (!this->gradInput->isUsePrev()) {
     this->gradInput->backToUsr();
@@ -259,6 +265,8 @@ void MKLLinear<DType>::updateGradKernel(DType *input, DType *gradOutput,
   CHECK_EQ(status, E_SUCCESS);
   PERFEND("main computing");
 
+  this->input->setIsConverted(false);
+
   // the kernel need not re-use for previous layer
   this->gradKernel->backToUsr();
 }
@@ -283,6 +291,8 @@ void MKLLinear<DType>::updateGradBias(DType *input, DType *gradOutput,
   status = dnnExecute<DType>(this->gradBiasPrim, resources);
   CHECK_EQ(status, E_SUCCESS);
   PERFEND("main computing");
+
+  this->gradOutput->setIsConverted(false);
 
   this->gradBias->backToUsr();
 }

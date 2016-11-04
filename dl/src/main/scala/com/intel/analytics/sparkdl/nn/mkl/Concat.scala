@@ -260,13 +260,13 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])  ex
     // gradient input is the same.
     // copy method here doesn't costs too much
     // TODO convert to eltwise
-    //if (currentGradInput != null) {
-    //  if (i == 0) {
-    //    this.gradInput.copy(currentGradInput)
-    //  } else {
-    //    this.gradInput.add(currentGradInput)
-    //  }
-    //}
+    // if (currentGradInput != null) {
+    //   if (i == 0) {
+    //     this.gradInput.copy(currentGradInput)
+    //   } else {
+    //     this.gradInput.add(currentGradInput)
+    //   }
+    // }
 
     val sumStart = System.nanoTime()
     val subGradInputs: Array[Array[T]] = new Array[Array[T]](this.modules.length)
@@ -394,7 +394,8 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])  ex
     // Set the input of all concats.
     // println("CONCAT " + this.getName() + " " + this.concatPtr.toHexString)
     for (i <- 0 until this.modules.length) {
-//      println("prev = " + this.modules(i).getOutputPtr().toHexString + " " + "CONCAT \tcurrent = " + this.concatPtr.toHexString)
+//      println("prev = " + this.modules(i).getOutputPtr().toHexString + " " +
+//              "CONCAT \tcurrent = " + this.concatPtr.toHexString)
       ev.getType() match {
         case "Double" =>
           MKL.SetConcatPrevDouble(this.modules(i).getOutputPtr(), i, this.concatPtr)
@@ -407,7 +408,7 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])  ex
   }
 
   override def updateMklGradInput(): Unit = {
-    for (i <- 0 until this.modules.length) {
+//    for (i <- 0 until this.modules.length) {
       ev.getType() match {
         case "Double" =>
           MKL.SetNextDouble(this.getNextPtr(), this.getOutputPtr())
@@ -416,7 +417,7 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])  ex
         case _ =>
           throw new UnsupportedOperationException(s"Only support Float/Double")
       }
-    }
+//    }
 
     // for concat
     for (i <- 0 until this.modules.length) {

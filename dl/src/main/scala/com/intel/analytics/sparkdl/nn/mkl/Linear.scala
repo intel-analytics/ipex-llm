@@ -324,7 +324,7 @@ class Linear[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.mkl.Linear($inputSize -> $outputSize)"
+    s"mkl.Linear($inputSize -> $outputSize)"
   }
 
   override def findModel(paramOffset: Int,

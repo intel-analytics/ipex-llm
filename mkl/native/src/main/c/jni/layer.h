@@ -41,6 +41,10 @@ class MKLLayer
   bool isFirstPass;
 
   dnnPrimitive_t forwardPrim, backwardPrim;
+
+  bool isUseOpenMpManager;
+  bool getIsUseOpenMp();
+  void setIsUseOpenMp(bool val);
 };
 
 template <typename DType>
@@ -72,7 +76,8 @@ MKLLayer<DType>::MKLLayer()
       gradOutput(new MKLData<DType>()),
       isFirstPass(true),
       forwardPrim(NULL),
-      backwardPrim(NULL)
+      backwardPrim(NULL),
+      isUseOpenMpManager(true)
 {
 }
 
@@ -88,6 +93,18 @@ MKLLayer<DType>::~MKLLayer()
     dnnDelete<DType>(backwardPrim);
     backwardPrim = NULL;
   }
+}
+
+template <typename DType>
+bool MKLLayer<DType>::getIsUseOpenMp()
+{
+  return isUseOpenMpManager;
+}
+
+template <typename DType>
+void MKLLayer<DType>::setIsUseOpenMp(bool val)
+{
+  isUseOpenMpManager = val;
 }
 
 template <typename DType>

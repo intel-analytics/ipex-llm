@@ -229,18 +229,18 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
   def getOutputPtr() : Long = getClassPtr()
   var hasSet = false
   def initMkl(prevPtr: Long) : Unit = {
-    println("I WANT TO SET THE PREV LAYOUT IN MODULE")
-    if (prevPtr != 0 && this.getClassPtr() != 0 &&
-        prevPtr != this.getClassPtr()) {
-      ev.getType() match {
-        case "Double" =>
-          MKL.SetPrevDouble(prevPtr, this.getClassPtr())
-        case "Float" =>
-          MKL.SetPrevFloat(prevPtr, this.getClassPtr())
-        case _ =>
-          throw new UnsupportedOperationException(s"Only Float/Double support")
-      }
-    }
+//    println("I WANT TO SET THE PREV LAYOUT IN MODULE")
+//    if (prevPtr != 0 && this.getClassPtr() != 0 &&
+//        prevPtr != this.getClassPtr()) {
+//      ev.getType() match {
+//        case "Double" =>
+//          MKL.SetPrevDouble(prevPtr, this.getClassPtr())
+//        case "Float" =>
+//          MKL.SetPrevFloat(prevPtr, this.getClassPtr())
+//        case _ =>
+//          throw new UnsupportedOperationException(s"Only Float/Double support")
+//      }
+//    }
   }
 
   var isPrevMkl = false
@@ -249,8 +249,8 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
   private var prevPtr = 0L
   private var nextPtr = 0L
 
-  def setPrevPtr(ptr : Long) = { prevPtr = ptr }
-  def setNextPtr(ptr : Long) = { nextPtr = ptr }
+  def setPrevPtr(ptr : Long) : Unit = { prevPtr = ptr }
+  def setNextPtr(ptr : Long) : Unit = { nextPtr = ptr }
   def getPrevPtr() : Long = prevPtr
   def getNextPtr() : Long = nextPtr
 
@@ -258,25 +258,28 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
   var initBackward = true
 
   def updateMklOut(): Unit = {
-//    // If the layer uses mkl dnn api, the ptr (prevPtr and classPtr) will not equal to 0.
-//    // And of cause the previous ptr and current ptr will not equal to each other.
-////    println("prev = " + getPrevPtr().toHexString + " " + this.getName() + "\tcurrent = " + getClassPtr().toHexString)
-//    if (getPrevPtr() != 0 && getClassPtr() != getPrevPtr()) {
-//      ev.getType() match {
-//        case "Double" =>
-//          MKL.SetPrevDouble(getPrevPtr(), getInputPtr())
-//        case "Float" =>
-//          MKL.SetPrevFloat(getPrevPtr(), getInputPtr())
-//        case _ =>
-//          throw new UnsupportedOperationException(s"Only Float/Double support")
-//      }
-//    }
+//     If the layer uses mkl dnn api, the ptr (prevPtr and classPtr) will not equal to 0.
+//     And of cause the previous ptr and current ptr will not equal to each other.
+//    println("prev = " + getPrevPtr().toHexString + " " +
+//            this.getName() + "\tcurrent = " + getClassPtr().toHexString)
+    if (getPrevPtr() != 0 && getClassPtr() != getPrevPtr()) {
+      ev.getType() match {
+        case "Double" =>
+          MKL.SetPrevDouble(getPrevPtr(), getInputPtr())
+        case "Float" =>
+          MKL.SetPrevFloat(getPrevPtr(), getInputPtr())
+        case _ =>
+          throw new UnsupportedOperationException(s"Only Float/Double support")
+      }
+    }
   }
 
   def updateMklGradInput() : Unit = {
-//    println("next = " + getNextPtr().toHexString + " " + this.getName() + "\tcurrent = " + getClassPtr().toHexString)
+//    println("next = " + getNextPtr().toHexString + " " +
+//            this.getName() + "\tcurrent = " + getClassPtr().toHexString)
     // when we don't compute the backward, we should convert the gradinput.
-    if (getNextPtr() != 0 && getClassPtr() != getNextPtr() && isNeedComputeBack()) {
+//    if (getNextPtr() != 0 && getClassPtr() != getNextPtr() && isNeedComputeBack()) {
+    if (getNextPtr() != 0 && getClassPtr() != getNextPtr()) {
       ev.getType() match {
         case "Double" =>
           MKL.SetNextDouble(getNextPtr(), getOutputPtr())

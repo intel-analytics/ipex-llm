@@ -307,7 +307,7 @@ dnnError_t dnnReleaseBuffer<double>(void *pPtr)
 template <typename Type>
 dnnError_t dnnBatchNormalizationCreateForward(
     dnnPrimitive_t *pBatchNormalization, dnnPrimitiveAttributes_t attributes,
-    const dnnLayout_t dataLayout, float eps)
+    const dnnLayout_t dataLayout, Type eps)
 {
   return dnnBatchNormalizationCreateForward_F32(pBatchNormalization, attributes,
                                                 dataLayout, eps);
@@ -316,7 +316,7 @@ dnnError_t dnnBatchNormalizationCreateForward(
 template <>
 dnnError_t dnnBatchNormalizationCreateForward<double>(
     dnnPrimitive_t *pBatchNormalization, dnnPrimitiveAttributes_t attributes,
-    const dnnLayout_t dataLayout, float eps)
+    const dnnLayout_t dataLayout, double eps)
 {
   return dnnBatchNormalizationCreateForward_F64(pBatchNormalization, attributes,
                                                 dataLayout, eps);
@@ -325,7 +325,7 @@ dnnError_t dnnBatchNormalizationCreateForward<double>(
 template <typename Type>
 dnnError_t dnnBatchNormalizationCreateBackwardScaleShift(
     dnnPrimitive_t *pBatchNormalization, dnnPrimitiveAttributes_t attributes,
-    const dnnLayout_t dataLayout, float eps)
+    const dnnLayout_t dataLayout, Type eps)
 {
   return dnnBatchNormalizationCreateBackwardScaleShift_F32(
       pBatchNormalization, attributes, dataLayout, eps);
@@ -334,7 +334,7 @@ dnnError_t dnnBatchNormalizationCreateBackwardScaleShift(
 template <>
 dnnError_t dnnBatchNormalizationCreateBackwardScaleShift<double>(
     dnnPrimitive_t *pBatchNormalization, dnnPrimitiveAttributes_t attributes,
-    const dnnLayout_t dataLayout, float eps)
+    const dnnLayout_t dataLayout, double eps)
 {
   return dnnBatchNormalizationCreateBackwardScaleShift_F64(
       pBatchNormalization, attributes, dataLayout, eps);

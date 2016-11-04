@@ -231,7 +231,8 @@ class SpatialMaxPooling[T: ClassTag](kernelWidth: Int,
     this(kernelWidth, kernelHeight, kernelWidth, kernelHeight)
   }
   override def toString(): String = {
-    s"mkl.SpatialMaxPooling($kernelWidth, $kernelHeight, $strideWidth, $strideHeight, $padWidth, $padHeight)"
+    s"""mkl.SpatialMaxPooling($kernelWidth, $kernelHeight, $strideWidth, $strideHeight,
+       |$padWidth, $padHeight)""".stripMargin.replaceAll("\n", " ")
   }
 }
 
@@ -252,6 +253,7 @@ class SpatialAveragePooling[T: ClassTag](kernelWidth: Int,
     this(kernelWidth, kernelHeight, kernelWidth, kernelHeight)
   }
   override def toString(): String = {
-    s"mkl.SpatialAveragePooling($kernelWidth, $kernelHeight, $strideWidth, $strideHeight, $padWidth, $padHeight)"
+    s"""mkl.SpatialAveragePooling($kernelWidth, $kernelHeight,$strideWidth, $strideHeight,
+       |$padWidth, $padHeight)""".stripMargin.replaceAll("\n", " ")
   }
 }
