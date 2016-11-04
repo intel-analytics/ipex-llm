@@ -392,6 +392,8 @@ trait TensorMath[T] {
 
   def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T]): Tensor[T]
 
+  def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T], t3: Tensor[T]): Tensor[T]
+
   /**
    * return pseudo-random numbers, require 0<=args.length<=2
    * if args.length = 0, return [0, 1)
@@ -468,6 +470,7 @@ trait TensorMath[T] {
 
   def abs(x: Tensor[T]): Tensor[T]
 
+  def norm(value: T, dim: Int): Tensor[T]
   /**
    * Implements > operator comparing each element in x with y
    *
