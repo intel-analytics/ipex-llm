@@ -5,6 +5,7 @@
 #include <cstring>
 #include <memory>
 #include "MKLWrapper.h"
+#include "utils.h"
 #include "debug.h"
 
 template <typename DType>
@@ -88,6 +89,9 @@ class MKLData
   size_t getMklLayoutSize();
   size_t getUsrLayoutSize();
 
+  void setIsConverted(bool value);
+  bool getIsConverted();
+
   dnnLayout_t layoutPrev;
   void *dataPrev;
 
@@ -115,6 +119,13 @@ class MKLData
   bool usePrev;
 
   bool isDataMkl;
+
+  // Optimization for multi conversion. For example, in convolution,
+  // we need input converted in updateOutput and updateGradKernel, and there
+  // will be double conversions (one in updateOutput, one in updateGradKernel).
+  // So we should omit the second conversion in updateGradKernel.
+  // Attention, the isConverted must be set back to false after one iteration.
+  bool isConverted;
 };
 
 template <typename DType>
@@ -141,6 +152,8 @@ MKLData<DType>::MKLData()
   nextToCurr = NULL;
   layoutNext = NULL;
   dataNext = NULL;
+
+  isConverted = false;
 }
 
 template <typename DType>
@@ -307,9 +320,11 @@ void *MKLData<DType>::getConvertedData()
 
   if (isUsePrev() && dataPrev && layoutPrev) {
     if (prevToCurr) {
-      //LOG(DBG) << "START CONVERT PREV -> CURR";
-      convert(prevToCurr, dataPrev, dataMkl);
-      //LOG(DBG) << "END CONVERT PREV -> CURR";
+      if (!getIsConverted()) {
+        //LOG(DBG) << "START CONVERT PREV -> CURR";
+        convert(prevToCurr, dataPrev, dataMkl);
+        //LOG(DBG) << "END CONVERT PREV -> CURR";
+      }
       return dataMkl;
     } else {
       return dataPrev;
@@ -320,9 +335,11 @@ void *MKLData<DType>::getConvertedData()
 
   if (isUseNext() && dataNext && layoutNext) {
     if (nextToCurr) {
-      //LOG(DBG) << "START CONVERT NEXT -> CURR";
-      //LOG(DBG) << "dataMkl " << dataMkl;
-      convert(nextToCurr, dataNext, dataMkl);
+      if (!getIsConverted()) {
+        //LOG(DBG) << "START CONVERT NEXT -> CURR";
+        convert(nextToCurr, dataNext, dataMkl);
+        //LOG(DBG) << "END CONVERT NEXT -> CURR";
+      }
       return dataMkl;
     } else {
       return dataNext;
@@ -379,7 +396,9 @@ void MKLData<DType>::setZero()
 {
   if (dataMkl) {
     size_t size = dnnLayoutGetMemorySize<DType>(layoutMkl);
-    memset(dataMkl, 0, size);
+    // memset(dataMkl, 0, size);
+    setValue<DType>(size/sizeof(DType), DType(0),
+                    reinterpret_cast<DType*>(dataMkl));
   }
 }
 
@@ -503,6 +522,18 @@ dnnLayout_t MKLData<DType>::getMklLayout()
     return layoutMkl;
   else
     return layoutUsr;
+}
+
+template <typename DType>
+void MKLData<DType>::setIsConverted(bool value)
+{
+  isConverted = value;
+}
+
+template <typename DType>
+bool MKLData<DType>::getIsConverted()
+{
+  return isConverted;
 }
 
 template <typename JArrayType, typename JType>

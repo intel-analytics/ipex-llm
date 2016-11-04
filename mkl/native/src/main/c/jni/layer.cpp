@@ -46,6 +46,22 @@ void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetUseNextDouble(
   MKLLayer<double>::setUseNext(ptr, value);
 }
 
+JNIEXPORT
+void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetUseOpenMpFloat(
+    JNIEnv *env, jclass thisClass, long ptr, int value)
+{
+  MKLLayer<float>* layer = reinterpret_cast<MKLLayer<float>*>(ptr);
+  layer->setIsUseOpenMp(static_cast<bool>(value));
+}
+
+JNIEXPORT
+void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetUseOpenMpDouble(
+    JNIEnv *env, jclass thisClass, long ptr, int value)
+{
+  MKLLayer<double>* layer = reinterpret_cast<MKLLayer<double>*>(ptr);
+  layer->setIsUseOpenMp(static_cast<bool>(value));
+}
+
 #ifdef __cplusplus
 }
 #endif

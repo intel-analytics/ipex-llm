@@ -225,7 +225,7 @@ public class MKL {
     /* Batch Normalization */
     public native static long BatchNormInitFloat(
             int inputNumber, int inputChannel, int inputHeight, int inputWidth,
-            double eps, int useKernel, int useBias,
+            float eps, int useKernel, int useBias,
             int dimension, String name);
     public native static void BatchNormForwardFloat(
             float[] input, int inputOffset, float[] output, int outputOffset,
@@ -346,4 +346,8 @@ public class MKL {
     // Omit conversion API
     public native static void SetUseNextFloat(long ptr, int value);
     public native static void SetUseNextDouble(long ptr, int value);
+
+    // OpenMP manager
+    public native static void SetUseOpenMpFloat(long ptr, int value);
+    public native static void SetUseOpenMpDouble(long ptr, int value);
 }

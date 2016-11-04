@@ -24,6 +24,7 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /*
@@ -38,7 +39,11 @@ import scala.reflect.ClassTag
 object AlexNetBlas {
   def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[T] = {
     val model = new Sequential[T]()
-    model.add(new nn.SpatialConvolution[T](3, 96, 11, 11, 4, 4).setName("conv1").setNeedComputeBack(true).setInitMethod(Xavier))
+    model.add(
+      new nn.SpatialConvolution[T](3, 96, 11, 11, 4, 4)
+        .setName("conv1")
+        .setNeedComputeBack(true)
+        .setInitMethod(Xavier))
     model.add(new nn.ReLU[T](false).setName("relu1"))
     model.add(new nn.LocalNormalizationAcrossChannels[T](5, 0.0001, 0.75).setName("norm1"))
     model.add(new nn.SpatialMaxPooling[T](3, 3, 2, 2).setName("pool1"))
@@ -56,10 +61,10 @@ object AlexNetBlas {
     model.add(new nn.View[T](256 * 6 * 6))
     model.add(new nn.Linear[T](256 * 6 * 6, 4096).setName("fc6"))
     model.add(new nn.ReLU[T](false).setName("relu6"))
-    // model.add(new nn.Dropout[T](0.5).setName("drop6"))
+    model.add(new nn.Dropout[T](0.5).setName("drop6"))
     model.add(new nn.Linear[T](4096, 4096).setName("fc7"))
     model.add(new nn.ReLU[T](false).setName("relu7"))
-    // model.add(new nn.Dropout[T](0.5).setName("drop7"))
+    model.add(new nn.Dropout[T](0.5).setName("drop7"))
     model.add(new nn.Linear[T](4096, classNum).setName("fc8"))
     model.add(new nn.LogSoftMax[T])
     model
@@ -69,37 +74,42 @@ object AlexNetBlas {
 object AlexNetDnn {
   def apply[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[T] = {
     val model = new nn.Sequential[T]()
-    model.add(new SpatialConvolution[T](3, 96, 11, 11, 4, 4).setName("conv1").setNeedComputeBack(true).setInitMethod(Xavier))
+    model.add(
+      new SpatialConvolution[T](3, 96, 11, 11, 4, 4)
+        .setName("conv1")
+        .setNeedComputeBack(true)
+        .setInitMethod(Xavier))
     model.add(new ReLU[T](false).setName("relu1"))
-    model.add(new LocalNormalizationAcrossChannels[T](5, 0.0001, 0.75).setName("norm1"))
+    model.add(new SpatialCrossMapLRN[T](5, 0.0001, 0.75).setName("norm1"))
     model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool1"))
-    model.add(new SpatialConvolution[T](96, 256, 5, 5, 1, 1, 2, 2, 1).setName("conv2"))
+    model.add(new SpatialConvolution[T](96, 256, 5, 5, 1, 1, 2, 2, 2).setName("conv2"))
     model.add(new ReLU[T](false).setName("relu2"))
-    model.add(new LocalNormalizationAcrossChannels[T](5, 0.0001, 0.75).setName("norm2"))
+    model.add(new SpatialCrossMapLRN[T](5, 0.0001, 0.75).setName("norm2"))
     model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool2"))
     model.add(new SpatialConvolution[T](256, 384, 3, 3, 1, 1, 1, 1).setName("conv3"))
     model.add(new ReLU[T](false).setName("relu3"))
-    model.add(new SpatialConvolution[T](384, 384, 3, 3, 1, 1, 1, 1, 1).setName("conv4"))
+    model.add(new SpatialConvolution[T](384, 384, 3, 3, 1, 1, 1, 1, 2).setName("conv4"))
     model.add(new ReLU[T](false).setName("relu4"))
-    model.add(new SpatialConvolution[T](384, 256, 3, 3, 1, 1, 1, 1, 1).setName("conv5"))
+    model.add(new SpatialConvolution[T](384, 256, 3, 3, 1, 1, 1, 1, 2).setName("conv5"))
     model.add(new ReLU[T](false).setName("relu5"))
     model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool5"))
     model.add(new View[T](256 * 6 * 6))
     model.add(new Linear[T](256 * 6 * 6, 4096).setName("fc6"))
     model.add(new ReLU[T](false).setName("relu6"))
-//    model.add(new Dropout[T](0.5).setName("drop6"))
+    model.add(new Dropout[T](0.5).setName("drop6"))
     model.add(new Linear[T](4096, 4096).setName("fc7"))
     model.add(new ReLU[T](false).setName("relu7"))
-//    model.add(new Dropout[T](0.5).setName("drop7"))
+    model.add(new Dropout[T](0.5).setName("drop7"))
     model.add(new Linear[T](4096, classNum).setName("fc8"))
-    model.add(new LogSoftMax[T])
+    model.add(new Dummy[T]())
+    model.add(new LogSoftMax[T]().setName("loss"))
     model
   }
 }
 
 class AlexNetSpec extends FlatSpec with Matchers {
   "AlexNet" should "generate correct output and gradient input" in {
-    def test[T : ClassTag]()(implicit ev : TensorNumeric[T]) : Unit = {
+    def test[T: ClassTag]()(implicit ev: TensorNumeric[T]): Unit = {
       val batchSize = 4
       val modelBlas = AlexNetBlas(100)
       val modelDnn = AlexNetDnn(100)
@@ -126,7 +136,7 @@ class AlexNetSpec extends FlatSpec with Matchers {
 
       val input = Tensor[T](Array(batchSize, 3, 227, 227)).rand()
 
-      for (i <- 0 until Tools.GetRandTimes()) {
+      for (i <- 0 until Tools.getRandTimes()) {
         val outputBlas = modelBlas.forward(input)
         criterionBlas.forward(outputBlas, labelsBlas)
         val gradOutputBlas = criterionBlas.backward(outputBlas, labelsBlas)
@@ -137,15 +147,82 @@ class AlexNetSpec extends FlatSpec with Matchers {
         val gradOutputDnn = criterionDnn.backward(outputDnn, labelsDnn)
         val gradInputDnn = modelDnn.backward(input, gradOutputDnn)
 
-        Tools.CumulativeError(outputDnn, outputBlas, "iteration " + i + " output")
-        Tools.CumulativeError(gradOutputBlas, gradOutputDnn, "iteration " + i + " gradoutput")
-        Tools.CumulativeError(gradInputBlas, gradInputDnn, "iteration " + i + " gradinput")
+        Tools.cumulativeError(outputDnn, outputBlas, "iteration " + i + " output")
+        Tools.cumulativeError(gradOutputBlas, gradOutputDnn, "iteration " + i + " gradoutput")
+        Tools.cumulativeError(gradInputBlas, gradInputDnn, "iteration " + i + " gradinput")
       }
 
-      Tools.CumulativeError(modelBlas.output, modelDnn.output, "output") should be (0.0 +- 1e-5)
-      Tools.CumulativeError(modelBlas.gradInput, modelDnn.gradInput, "gradinput") should be (0.0 +- 1e-4)
+      Tools.cumulativeError(modelBlas.output, modelDnn.output, "output") should be(0.0 +- 1e-5)
+      Tools.cumulativeError(modelBlas.gradInput, modelDnn.gradInput, "gradinput") should be(
+        0.0 +- 1e-4)
     }
 
     test[Float]()
+  }
+
+  "An AlexNet forward and backward" should "the same output, gradient as intelcaffe w/ dnn" in {
+    val caffeCmd = Tools.getCollectCmd()
+    val modelPath = Tools.getModuleHome() + "mkl2017_alexnet/train_val.prototxt"
+
+    import scala.sys.process._
+    (caffeCmd, modelPath).productIterator.mkString(" ").!!
+
+    val batchSize = 4
+    val model = AlexNetDnn[Float](1000)
+
+    val criterion = new ClassNLLCriterion[Float]()
+    // Attention, labels must be set to 1, or the value from caffe label + 1
+    val labels = Tensor[Float](batchSize).fill(1)
+
+    model.reset()
+    val para = model.parameters()
+    for (i <- 0 until para._1.length) {
+      para._1(i).copy(Tools.getTensor[Float](f"CPUWght00$i%02d", para._1(i).size()))
+    }
+    val input = Tools.getTensor[Float]("CPUFwrd_data_input", Array(batchSize, 3, 227, 227))
+
+    val modules = ArrayBuffer[Module[Float]]()
+    Tools.flattenModules(model, modules)
+
+    val output = model.forward(input)
+    val loss = criterion.forward(output, labels)
+    val lossCaffe = Tools.getTensor[Float]("CPUFwrd_loss", Array(1))
+
+    loss should be(lossCaffe.storage().array()(0))
+/*
+
+    val layerOutput = ArrayBuffer[Tensor[Float]]()
+    for (i <- 0 until modules.length) {
+      layerOutput += Tools.getTensorFloat("CPUFwrd_" + modules(i).getName().replaceAll("/", "_"),
+                                      modules(i).output.size())
+
+      Tools.cumulativeError(modules(i).output, layerOutput(i), "") should be (0.0)
+    }
+*/
+
+    val gradOutput = criterion.backward(output, labels)
+    val gradInput = model.backward(input, gradOutput)
+/*
+
+    val layerGradInput = ArrayBuffer[Tensor[Float]]()
+    for (i <- 0 until modules.length) {
+      layerGradInput += Tools.getTensorFloat("CPUBwrd_" + modules(i).getName().replaceAll("/", "_"),
+                                             modules(i).output.size())
+      Tools.cumulativeError(modules(i).gradInput, layerGradInput(i), "") should be (0.0)
+    }
+*/
+
+    val gradInputCaffe = Tools.getTensor[Float]("CPUBwrd_conv1", gradInput.size())
+    val gradWeightsCaffe = Tools.getTensor[Float]("CPUGrad0000", para._2(0).size())
+/*
+
+    val gradWeight = ArrayBuffer[Tensor[Float]]()
+    for (i <- 0 until para._2.length) {
+      gradWeight += Tools.getTensorFloat(f"CPUGrad00$i%02d", para._2(i).size())
+      Tools.cumulativeError(para._2(i), gradWeight(i), "")
+    }
+*/
+    Tools.cumulativeError(gradInput, gradInputCaffe, "gradInput") should be (0.0)
+    Tools.cumulativeError(para._2(0), gradWeightsCaffe, "gradWeight") should be (0.0)
   }
 }

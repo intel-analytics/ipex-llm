@@ -39,16 +39,23 @@ import scala.reflect.ClassTag
 object GoogleNet_v2Blas {
   def apply[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[D] = {
     val features1 = new Sequential[D]
-    features1.add(new nn.SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3).setName("conv1/7x7_s2")
-                    .setNeedComputeBack(false).setInitMethod(Xavier))
-//    features1.add(new nn.SpatialBatchNormalization(64, 1e-3).setName("conv1/7x7_s2/bn"))
+    features1.add(
+      new nn.SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3)
+        .setName("conv1/7x7_s2")
+        .setNeedComputeBack(false)
+        .setInitMethod(Xavier))
+    features1.add(new nn.SpatialBatchNormalization(64, 1e-3).setName("conv1/7x7_s2/bn"))
     features1.add(new nn.ReLU[D](true).setName("conv1/7x7_s2/bn/sc/relu"))
     features1.add(new nn.SpatialMaxPooling[D](3, 3, 2, 2).ceil().setName("pool1/3x3_s2"))
-    features1.add(new nn.SpatialConvolution[D](64, 64, 1, 1).setName("conv2/3x3_reduce").setInitMethod(Xavier))
-//    features1.add(new nn.SpatialBatchNormalization(64, 1e-3).setName("conv2/3x3_reduce/bn"))
+    features1.add(
+      new nn.SpatialConvolution[D](64, 64, 1, 1).setName("conv2/3x3_reduce").setInitMethod(Xavier))
+    features1.add(new nn.SpatialBatchNormalization(64, 1e-3).setName("conv2/3x3_reduce/bn"))
     features1.add(new nn.ReLU[D](true).setName("conv2/3x3_reduce/bn/sc/relu"))
-    features1.add(new nn.SpatialConvolution[D](64, 192, 3, 3, 1, 1, 1, 1).setName("conv2/3x3").setInitMethod(Xavier))
-//    features1.add(new nn.SpatialBatchNormalization(192, 1e-3).setName("conv2/3x3/bn"))
+    features1.add(
+      new nn.SpatialConvolution[D](64, 192, 3, 3, 1, 1, 1, 1)
+        .setName("conv2/3x3")
+        .setInitMethod(Xavier))
+    features1.add(new nn.SpatialBatchNormalization(192, 1e-3).setName("conv2/3x3/bn"))
     features1.add(new nn.ReLU[D](true).setName("conv2/3x3/bn/sc/relu"))
     features1.add(new nn.SpatialMaxPooling[D](3, 3, 2, 2).ceil().setName("pool2/3x3_s2"))
     features1.add(inception(192, T(T(64), T(64, 64), T(64, 96), T("avg", 32)), "inception_3a/"))
@@ -57,8 +64,11 @@ object GoogleNet_v2Blas {
 
     val output1 = new Sequential[D]
     output1.add(new nn.SpatialAveragePooling[D](5, 5, 3, 3).ceil().setName("pool3/5x5_s3"))
-    output1.add(new nn.SpatialConvolution[D](576, 128, 1, 1, 1, 1).setName("loss1/conv").setInitMethod(Xavier))
-//    output1.add(new nn.SpatialBatchNormalization(128, 1e-3).setName("loss1/conv/bn"))
+    output1.add(
+      new nn.SpatialConvolution[D](576, 128, 1, 1, 1, 1)
+        .setName("loss1/conv")
+        .setInitMethod(Xavier))
+    output1.add(new nn.SpatialBatchNormalization(128, 1e-3).setName("loss1/conv/bn"))
     output1.add(new nn.ReLU[D](true).setName("loss1/conv/bn/sc/relu"))
     output1.add(new View[D](128 * 4 * 4).setNumInputDims(3))
     output1.add(new nn.Linear[D](128 * 4 * 4, 1024).setName("loss1/fc"))
@@ -66,19 +76,23 @@ object GoogleNet_v2Blas {
     output1.add(new nn.Linear[D](1024, classNum).setName("loss1/classifier"))
     output1.add(new LogSoftMax[D].setName("loss1/loss"))
 
-
     val features2 = new Sequential[D]
     features2.add(inception(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128)), "inception_4a/"))
-    features2.add(inception(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)), "inception_4b/"))
-    features2.add(inception(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96)),
-                            "inception_4c/"))
-    features2.add(inception(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)), "inception_4d/"))
+    features2.add(
+      inception(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)), "inception_4b/"))
+    features2.add(
+      inception(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96)), "inception_4c/"))
+    features2.add(
+      inception(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)), "inception_4d/"))
     features2.add(inception(576, T(T(0), T(128, 192), T(192, 256), T("max", 0)), "inception_4e/"))
 
     val output2 = new Sequential[D]
     output2.add(new nn.SpatialAveragePooling[D](5, 5, 3, 3).ceil().setName("pool4/5x5_s3"))
-    output2.add(new nn.SpatialConvolution[D](1024, 128, 1, 1, 1, 1).setName("loss2/conv").setInitMethod(Xavier))
-//    output2.add(new nn.SpatialBatchNormalization(128, 1e-3).setName("loss2/conv/bn"))
+    output2.add(
+      new nn.SpatialConvolution[D](1024, 128, 1, 1, 1, 1)
+        .setName("loss2/conv")
+        .setInitMethod(Xavier))
+    output2.add(new nn.SpatialBatchNormalization(128, 1e-3).setName("loss2/conv/bn"))
     output2.add(new nn.ReLU[D](true).setName("loss2/conv/bn/sc/relu"))
     output2.add(new View[D](128 * 2 * 2).setNumInputDims(3))
     output2.add(new nn.Linear[D](128 * 2 * 2, 1024).setName("loss2/fc"))
@@ -87,10 +101,10 @@ object GoogleNet_v2Blas {
     output2.add(new LogSoftMax[D].setName("loss2/loss"))
 
     val output3 = new Sequential[D]
-    output3.add(inception(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128)),
-                          "inception_5a/"))
-    output3.add(inception(1024, T(T(352), T(192, 320), T(192, 224), T("max", 128)),
-                          "inception_5b/"))
+    output3.add(
+      inception(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128)), "inception_5a/"))
+    output3.add(
+      inception(1024, T(T(352), T(192, 320), T(192, 224), T("max", 128)), "inception_5b/"))
     output3.add(new nn.SpatialAveragePooling[D](7, 7, 1, 1).ceil().setName("pool5/7x7_s1"))
     output3.add(new View[D](1024).setNumInputDims(3))
     output3.add(new nn.Linear[D](1024, classNum).setName("loss3/classifier").setInitMethod(Xavier))
@@ -117,64 +131,75 @@ object GoogleNet_v2Blas {
     model
   }
 
-  def inception[D: ClassTag](inputSize: Int, config: Table, namePrefix : String)(
-    implicit ev: TensorNumeric[D]): Module[D] = {
+  def inception[D: ClassTag](inputSize: Int, config: Table, namePrefix: String)(
+      implicit ev: TensorNumeric[D]): Module[D] = {
     val concat = new nn.Concat[D](2)
     if (config[Table](1)[Int](1) != 0) {
       val conv1 = new Sequential[D]
-      conv1.add(new nn.SpatialConvolution[D](inputSize, config[Table](1)(1), 1, 1, 1, 1)
-                  .setName(namePrefix + "1x1").setInitMethod(Xavier))
-//      conv1.add(new nn.SpatialBatchNormalization(config[Table](1)(1), 1e-3)
-//                  .setName(namePrefix + "1x1/bn"))
+      conv1.add(
+        new nn.SpatialConvolution[D](inputSize, config[Table](1)(1), 1, 1, 1, 1)
+          .setName(namePrefix + "1x1")
+          .setInitMethod(Xavier))
+      conv1.add(new nn.SpatialBatchNormalization(config[Table](1)(1), 1e-3)
+                  .setName(namePrefix + "1x1/bn"))
       conv1.add(new nn.ReLU[D](true).setName(namePrefix + "1x1/bn/sc/relu"))
       concat.add(conv1)
     }
 
     val conv3 = new Sequential[D]
-    conv3.add(new nn.SpatialConvolution[D](inputSize, config[Table](2)(1), 1, 1, 1, 1)
-                .setName(namePrefix + "3x3_reduce").setInitMethod(Xavier))
-//    conv3.add(new nn.SpatialBatchNormalization(config[Table](2)(1), 1e-3)
-//                .setName(namePrefix + "3x3_reduce/bn"))
-    conv3.add(new nn.ReLU[D](true). setName(namePrefix + "3x3_reduce/bn/sc/relu"))
-    if(config[Table](4)[String](1) == "max" && config[Table](4)[Int](2) == 0) {
-      conv3.add(new nn.SpatialConvolution[D](config[Table](2)(1),
-                                          config[Table](2)(2), 3, 3, 2, 2, 1, 1)
-                  .setName(namePrefix + "3x3").setInitMethod(Xavier))
+    conv3.add(
+      new nn.SpatialConvolution[D](inputSize, config[Table](2)(1), 1, 1, 1, 1)
+        .setName(namePrefix + "3x3_reduce")
+        .setInitMethod(Xavier))
+    conv3.add(new nn.SpatialBatchNormalization(config[Table](2)(1), 1e-3)
+                .setName(namePrefix + "3x3_reduce/bn"))
+    conv3.add(new nn.ReLU[D](true).setName(namePrefix + "3x3_reduce/bn/sc/relu"))
+    if (config[Table](4)[String](1) == "max" && config[Table](4)[Int](2) == 0) {
+      conv3.add(
+        new nn.SpatialConvolution[D](config[Table](2)(1), config[Table](2)(2), 3, 3, 2, 2, 1, 1)
+          .setName(namePrefix + "3x3")
+          .setInitMethod(Xavier))
     } else {
-      conv3.add(new nn.SpatialConvolution[D](config[Table](2)(1),
-                                          config[Table](2)(2), 3, 3, 1, 1, 1, 1).setName(namePrefix + "3x3")
-                  .setInitMethod(Xavier))
+      conv3.add(
+        new nn.SpatialConvolution[D](config[Table](2)(1), config[Table](2)(2), 3, 3, 1, 1, 1, 1)
+          .setName(namePrefix + "3x3")
+          .setInitMethod(Xavier))
     }
-//    conv3.add(new nn.SpatialBatchNormalization(config[Table](2)(2), 1e-3)
-//                .setName(namePrefix + "3x3/bn"))
+    conv3.add(new nn.SpatialBatchNormalization(config[Table](2)(2), 1e-3)
+                .setName(namePrefix + "3x3/bn"))
     conv3.add(new nn.ReLU[D](true).setName(namePrefix + "3x3/bn/sc/relu"))
     concat.add(conv3)
 
     val conv3xx = new Sequential[D]
-    conv3xx.add(new nn.SpatialConvolution[D](inputSize, config[Table](3)(1), 1, 1, 1, 1)
-                  .setName(namePrefix + "double3x3_reduce").setInitMethod(Xavier))
-//    conv3xx.add(new nn.SpatialBatchNormalization(config[Table](3)(1), 1e-3)
-//                  .setName(namePrefix + "double3x3_reduce/bn"))
+    conv3xx.add(
+      new nn.SpatialConvolution[D](inputSize, config[Table](3)(1), 1, 1, 1, 1)
+        .setName(namePrefix + "double3x3_reduce")
+        .setInitMethod(Xavier))
+    conv3xx.add(new nn.SpatialBatchNormalization(config[Table](3)(1), 1e-3)
+                  .setName(namePrefix + "double3x3_reduce/bn"))
     conv3xx.add(new nn.ReLU[D](true).setName(namePrefix + "double3x3_reduce/bn/sc/relu"))
 
-    conv3xx.add(new nn.SpatialConvolution[D](config[Table](3)(1),
-                                          config[Table](3)(2), 3, 3, 1, 1, 1, 1).setName(namePrefix + "double3x3a")
-                  .setInitMethod(Xavier))
-//    conv3xx.add(new nn.SpatialBatchNormalization(config[Table](3)(2), 1e-3)
-//                  .setName(namePrefix + "double3x3a/bn"))
+    conv3xx.add(
+      new nn.SpatialConvolution[D](config[Table](3)(1), config[Table](3)(2), 3, 3, 1, 1, 1, 1)
+        .setName(namePrefix + "double3x3a")
+        .setInitMethod(Xavier))
+    conv3xx.add(new nn.SpatialBatchNormalization(config[Table](3)(2), 1e-3)
+                  .setName(namePrefix + "double3x3a/bn"))
     conv3xx.add(new nn.ReLU[D](true).setName(namePrefix + "double3x3a/bn/sc/relu"))
 
-    if(config[Table](4)[String](1) == "max" && config[Table](4)[Int](2) == 0) {
-      conv3xx.add(new nn.SpatialConvolution[D](config[Table](3)(2),
-                                            config[Table](3)(2), 3, 3, 2, 2, 1, 1).setName(namePrefix + "double3x3b")
-                    .setInitMethod(Xavier))
+    if (config[Table](4)[String](1) == "max" && config[Table](4)[Int](2) == 0) {
+      conv3xx.add(
+        new nn.SpatialConvolution[D](config[Table](3)(2), config[Table](3)(2), 3, 3, 2, 2, 1, 1)
+          .setName(namePrefix + "double3x3b")
+          .setInitMethod(Xavier))
     } else {
-      conv3xx.add(new nn.SpatialConvolution[D](config[Table](3)(2),
-                                            config[Table](3)(2), 3, 3, 1, 1, 1, 1).setName(namePrefix + "double3x3b")
-                    .setInitMethod(Xavier))
+      conv3xx.add(
+        new nn.SpatialConvolution[D](config[Table](3)(2), config[Table](3)(2), 3, 3, 1, 1, 1, 1)
+          .setName(namePrefix + "double3x3b")
+          .setInitMethod(Xavier))
     }
-//    conv3xx.add(new nn.SpatialBatchNormalization(config[Table](3)(2), 1e-3)
-//                  .setName(namePrefix + "double3x3b/bn"))
+    conv3xx.add(new nn.SpatialBatchNormalization(config[Table](3)(2), 1e-3)
+                  .setName(namePrefix + "double3x3b/bn"))
     conv3xx.add(new nn.ReLU[D](true).setName(namePrefix + "double3x3b/bn/sc/relu"))
     concat.add(conv3xx)
 
@@ -182,20 +207,24 @@ object GoogleNet_v2Blas {
     config[Table](4)[String](1) match {
       case "max" =>
         if (config[Table](4)[Int](2) != 0) {
-          pool.add(new nn.SpatialMaxPooling[D](3, 3, 1, 1, 1, 1).ceil().setName(namePrefix + "pool"))
+          pool.add(
+            new nn.SpatialMaxPooling[D](3, 3, 1, 1, 1, 1).ceil().setName(namePrefix + "pool"))
         } else {
           pool.add(new nn.SpatialMaxPooling[D](3, 3, 2, 2).ceil().setName(namePrefix + "pool"))
         }
-      case "avg" => pool.add(new SpatialAveragePooling[D](3, 3, 1, 1, 1, 1).ceil()
-                               .setName(namePrefix + "pool"))
+      case "avg" =>
+        pool.add(
+          new SpatialAveragePooling[D](3, 3, 1, 1, 1, 1).ceil().setName(namePrefix + "pool"))
       case _ => throw new IllegalArgumentException
     }
 
     if (config[Table](4)[Int](2) != 0) {
-      pool.add(new nn.SpatialConvolution[D](inputSize, config[Table](4)[Int](2), 1, 1, 1, 1)
-                 .setName(namePrefix + "pool_proj").setInitMethod(Xavier))
-//      pool.add(new nn.SpatialBatchNormalization(config[Table](4)(2), 1e-3)
-//                 .setName(namePrefix + "pool_proj/bn"))
+      pool.add(
+        new nn.SpatialConvolution[D](inputSize, config[Table](4)[Int](2), 1, 1, 1, 1)
+          .setName(namePrefix + "pool_proj")
+          .setInitMethod(Xavier))
+      pool.add(new nn.SpatialBatchNormalization(config[Table](4)(2), 1e-3)
+                 .setName(namePrefix + "pool_proj/bn"))
       pool.add(new nn.ReLU[D](true).setName(namePrefix + "pool_proj/bn/sc/relu"))
     }
     concat.add(pool)
@@ -206,16 +235,23 @@ object GoogleNet_v2Blas {
 object GoogleNet_v2Dnn {
   def apply[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[D] = {
     val features1 = new Sequential[D]
-    features1.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3).setName("conv1/7x7_s2")
-                    .setNeedComputeBack(true).setInitMethod(Constant))
-//    features1.add(new SpatialBatchNormalization(64, 1e-3).setName("conv1/7x7_s2/bn"))
+    features1.add(
+      new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3)
+        .setName("conv1/7x7_s2")
+        .setNeedComputeBack(false)
+        .setInitMethod(Constant))
+    features1.add(new SpatialBatchNormalization(64, 1e-3).setName("conv1/7x7_s2/bn"))
     features1.add(new ReLU[D](true).setName("conv1/7x7_s2/bn/sc/relu"))
     features1.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil().setName("pool1/3x3_s2"))
-    features1.add(new SpatialConvolution[D](64, 64, 1, 1).setName("conv2/3x3_reduce").setInitMethod(Constant))
-//    features1.add(new SpatialBatchNormalization(64, 1e-3).setName("conv2/3x3_reduce/bn"))
+    features1.add(
+      new SpatialConvolution[D](64, 64, 1, 1).setName("conv2/3x3_reduce").setInitMethod(Constant))
+    features1.add(new SpatialBatchNormalization(64, 1e-3).setName("conv2/3x3_reduce/bn"))
     features1.add(new ReLU[D](true).setName("conv2/3x3_reduce/bn/sc/relu"))
-    features1.add(new SpatialConvolution[D](64, 192, 3, 3, 1, 1, 1, 1).setName("conv2/3x3").setInitMethod(Constant))
-//    features1.add(new SpatialBatchNormalization(192, 1e-3).setName("conv2/3x3/bn"))
+    features1.add(
+      new SpatialConvolution[D](64, 192, 3, 3, 1, 1, 1, 1)
+        .setName("conv2/3x3")
+        .setInitMethod(Constant))
+    features1.add(new SpatialBatchNormalization(192, 1e-3).setName("conv2/3x3/bn"))
     features1.add(new ReLU[D](true).setName("conv2/3x3/bn/sc/relu"))
     features1.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil().setName("pool2/3x3_s2"))
     features1.add(inception(192, T(T(64), T(64, 64), T(64, 96), T("avg", 32)), "inception_3a/"))
@@ -224,8 +260,11 @@ object GoogleNet_v2Dnn {
 
     val output1 = new Sequential[D]
     output1.add(new SpatialAveragePooling[D](5, 5, 3, 3).ceil().setName("pool3/5x5_s3"))
-    output1.add(new SpatialConvolution[D](576, 128, 1, 1, 1, 1).setName("loss1/conv").setInitMethod(Constant))
-//    output1.add(new SpatialBatchNormalization(128, 1e-3).setName("loss1/conv/bn"))
+    output1.add(
+      new SpatialConvolution[D](576, 128, 1, 1, 1, 1)
+        .setName("loss1/conv")
+        .setInitMethod(Constant))
+    output1.add(new SpatialBatchNormalization(128, 1e-3).setName("loss1/conv/bn"))
     output1.add(new ReLU[D](true).setName("loss1/conv/bn/sc/relu"))
     output1.add(new View[D](128 * 4 * 4).setNumInputDims(3))
     output1.add(new Linear[D](128 * 4 * 4, 1024).setName("loss1/fc").setInitMethod(Constant))
@@ -233,19 +272,23 @@ object GoogleNet_v2Dnn {
     output1.add(new Linear[D](1024, classNum).setName("loss1/classifier").setInitMethod(Constant))
     output1.add(new LogSoftMax[D].setName("loss1/loss"))
 
-
     val features2 = new Sequential[D]
     features2.add(inception(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128)), "inception_4a/"))
-    features2.add(inception(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)), "inception_4b/"))
-    features2.add(inception(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96)),
-                            "inception_4c/"))
-    features2.add(inception(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)), "inception_4d/"))
+    features2.add(
+      inception(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)), "inception_4b/"))
+    features2.add(
+      inception(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96)), "inception_4c/"))
+    features2.add(
+      inception(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)), "inception_4d/"))
     features2.add(inception(576, T(T(0), T(128, 192), T(192, 256), T("max", 0)), "inception_4e/"))
 
     val output2 = new Sequential[D]
     output2.add(new SpatialAveragePooling[D](5, 5, 3, 3).ceil().setName("pool4/5x5_s3"))
-    output2.add(new SpatialConvolution[D](1024, 128, 1, 1, 1, 1).setName("loss2/conv").setInitMethod(Constant))
-//    output2.add(new SpatialBatchNormalization(128, 1e-3).setName("loss2/conv/bn"))
+    output2.add(
+      new SpatialConvolution[D](1024, 128, 1, 1, 1, 1)
+        .setName("loss2/conv")
+        .setInitMethod(Constant))
+    output2.add(new SpatialBatchNormalization(128, 1e-3).setName("loss2/conv/bn"))
     output2.add(new ReLU[D](true).setName("loss2/conv/bn/sc/relu"))
     output2.add(new View[D](128 * 2 * 2).setNumInputDims(3))
     output2.add(new Linear[D](128 * 2 * 2, 1024).setName("loss2/fc").setInitMethod(Constant))
@@ -254,10 +297,10 @@ object GoogleNet_v2Dnn {
     output2.add(new LogSoftMax[D].setName("loss2/loss"))
 
     val output3 = new Sequential[D]
-    output3.add(inception(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128)),
-                          "inception_5a/"))
-    output3.add(inception(1024, T(T(352), T(192, 320), T(192, 224), T("max", 128)),
-                          "inception_5b/"))
+    output3.add(
+      inception(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128)), "inception_5a/"))
+    output3.add(
+      inception(1024, T(T(352), T(192, 320), T(192, 224), T("max", 128)), "inception_5b/"))
     output3.add(new SpatialAveragePooling[D](7, 7, 1, 1).ceil().setName("pool5/7x7_s1"))
     output3.add(new View[D](1024).setNumInputDims(3))
     output3.add(new Linear[D](1024, classNum).setName("loss3/classifier").setInitMethod(Constant))
@@ -284,67 +327,75 @@ object GoogleNet_v2Dnn {
     model
   }
 
-  def inception[D: ClassTag](inputSize: Int, config: Table, namePrefix : String)(
-    implicit ev: TensorNumeric[D]): Module[D] = {
+  def inception[D: ClassTag](inputSize: Int, config: Table, namePrefix: String)(
+      implicit ev: TensorNumeric[D]): Module[D] = {
     val concat = new nn.Concat[D](2)
     if (config[Table](1)[Int](1) != 0) {
       val conv1 = new Sequential[D]
-      conv1.add(new SpatialConvolution[D](inputSize, config[Table](1)(1), 1, 1, 1, 1)
-                  .setName(namePrefix + "1x1").setInitMethod(Constant))
-//      conv1.add(new SpatialBatchNormalization(config[Table](1)(1), 1e-3)
-//                  .setName(namePrefix + "1x1/bn"))
+      conv1.add(
+        new SpatialConvolution[D](inputSize, config[Table](1)(1), 1, 1, 1, 1)
+          .setName(namePrefix + "1x1")
+          .setInitMethod(Constant))
+      conv1.add(new SpatialBatchNormalization(config[Table](1)(1), 1e-3)
+                  .setName(namePrefix + "1x1/bn"))
       conv1.add(new ReLU[D](true).setName(namePrefix + "1x1/bn/sc/relu"))
       concat.add(conv1)
     }
 
     val conv3 = new Sequential[D]
-    conv3.add(new SpatialConvolution[D](inputSize, config[Table](2)(1), 1, 1, 1, 1)
-                .setName(namePrefix + "3x3_reduce").setInitMethod(Constant))
-//    conv3.add(new SpatialBatchNormalization(config[Table](2)(1), 1e-3)
-//                .setName(namePrefix + "3x3_reduce/bn"))
-    conv3.add(new ReLU[D](true). setName(namePrefix + "3x3_reduce/bn/sc/relu"))
-    if(config[Table](4)[String](1) == "max" && config[Table](4)[Int](2) == 0) {
-      conv3.add(new SpatialConvolution[D](config[Table](2)(1),
-                                             config[Table](2)(2), 3, 3, 2, 2, 1, 1)
-                  .setName(namePrefix + "3x3").setInitMethod(Constant))
+    conv3.add(
+      new SpatialConvolution[D](inputSize, config[Table](2)(1), 1, 1, 1, 1)
+        .setName(namePrefix + "3x3_reduce")
+        .setInitMethod(Constant))
+    conv3.add(new SpatialBatchNormalization(config[Table](2)(1), 1e-3)
+                .setName(namePrefix + "3x3_reduce/bn"))
+    conv3.add(new ReLU[D](true).setName(namePrefix + "3x3_reduce/bn/sc/relu"))
+    if (config[Table](4)[String](1) == "max" && config[Table](4)[Int](2) == 0) {
+      conv3.add(
+        new SpatialConvolution[D](config[Table](2)(1), config[Table](2)(2), 3, 3, 2, 2, 1, 1)
+          .setName(namePrefix + "3x3")
+          .setInitMethod(Constant))
     } else {
-      conv3.add(new SpatialConvolution[D](config[Table](2)(1),
-                                             config[Table](2)(2), 3, 3, 1, 1, 1, 1).setName(namePrefix + "3x3")
-                  .setInitMethod(Constant))
+      conv3.add(
+        new SpatialConvolution[D](config[Table](2)(1), config[Table](2)(2), 3, 3, 1, 1, 1, 1)
+          .setName(namePrefix + "3x3")
+          .setInitMethod(Constant))
     }
-//    conv3.add(new SpatialBatchNormalization(config[Table](2)(2), 1e-3)
-//                .setName(namePrefix + "3x3/bn"))
+    conv3.add(new SpatialBatchNormalization(config[Table](2)(2), 1e-3)
+                .setName(namePrefix + "3x3/bn"))
     conv3.add(new ReLU[D](true).setName(namePrefix + "3x3/bn/sc/relu"))
     concat.add(conv3)
 
     val conv3xx = new Sequential[D]
-    conv3xx.add(new SpatialConvolution[D](inputSize, config[Table](3)(1), 1, 1, 1, 1)
-                  .setName(namePrefix + "double3x3_reduce").setInitMethod(Constant))
-//    conv3xx.add(new SpatialBatchNormalization(config[Table](3)(1), 1e-3)
-//                  .setName(namePrefix + "double3x3_reduce/bn"))
+    conv3xx.add(
+      new SpatialConvolution[D](inputSize, config[Table](3)(1), 1, 1, 1, 1)
+        .setName(namePrefix + "double3x3_reduce")
+        .setInitMethod(Constant))
+    conv3xx.add(new SpatialBatchNormalization(config[Table](3)(1), 1e-3)
+                  .setName(namePrefix + "double3x3_reduce/bn"))
     conv3xx.add(new ReLU[D](true).setName(namePrefix + "double3x3_reduce/bn/sc/relu"))
 
-    conv3xx.add(new SpatialConvolution[D](config[Table](3)(1),
-                                             config[Table](3)(2), 3, 3, 1, 1, 1, 1).setName(namePrefix +
-                                                                                            "double3x3a")
-                  .setInitMethod(Constant))
-//    conv3xx.add(new SpatialBatchNormalization(config[Table](3)(2), 1e-3)
-//                  .setName(namePrefix + "double3x3a/bn"))
+    conv3xx.add(
+      new SpatialConvolution[D](config[Table](3)(1), config[Table](3)(2), 3, 3, 1, 1, 1, 1)
+        .setName(namePrefix + "double3x3a")
+        .setInitMethod(Constant))
+    conv3xx.add(new SpatialBatchNormalization(config[Table](3)(2), 1e-3)
+                  .setName(namePrefix + "double3x3a/bn"))
     conv3xx.add(new ReLU[D](true).setName(namePrefix + "double3x3a/bn/sc/relu"))
 
-    if(config[Table](4)[String](1) == "max" && config[Table](4)[Int](2) == 0) {
-      conv3xx.add(new SpatialConvolution[D](config[Table](3)(2),
-                                               config[Table](3)(2), 3, 3, 2, 2, 1, 1).setName(namePrefix +
-                                                                                              "double3x3b")
-                    .setInitMethod(Constant))
+    if (config[Table](4)[String](1) == "max" && config[Table](4)[Int](2) == 0) {
+      conv3xx.add(
+        new SpatialConvolution[D](config[Table](3)(2), config[Table](3)(2), 3, 3, 2, 2, 1, 1)
+          .setName(namePrefix + "double3x3b")
+          .setInitMethod(Constant))
     } else {
-      conv3xx.add(new SpatialConvolution[D](config[Table](3)(2),
-                                               config[Table](3)(2), 3, 3, 1, 1, 1, 1).setName(namePrefix +
-                                                                                              "double3x3b")
-                    .setInitMethod(Constant))
+      conv3xx.add(
+        new SpatialConvolution[D](config[Table](3)(2), config[Table](3)(2), 3, 3, 1, 1, 1, 1)
+          .setName(namePrefix + "double3x3b")
+          .setInitMethod(Constant))
     }
-//    conv3xx.add(new SpatialBatchNormalization(config[Table](3)(2), 1e-3)
-//                  .setName(namePrefix + "double3x3b/bn"))
+    conv3xx.add(new SpatialBatchNormalization(config[Table](3)(2), 1e-3)
+                  .setName(namePrefix + "double3x3b/bn"))
     conv3xx.add(new ReLU[D](true).setName(namePrefix + "double3x3b/bn/sc/relu"))
     concat.add(conv3xx)
 
@@ -356,16 +407,19 @@ object GoogleNet_v2Dnn {
         } else {
           pool.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil().setName(namePrefix + "pool"))
         }
-      case "avg" => pool.add(new SpatialAveragePooling[D](3, 3, 1, 1, 1, 1).ceil()
-                               .setName(namePrefix + "pool"))
+      case "avg" =>
+        pool.add(
+          new SpatialAveragePooling[D](3, 3, 1, 1, 1, 1).ceil().setName(namePrefix + "pool"))
       case _ => throw new IllegalArgumentException
     }
 
     if (config[Table](4)[Int](2) != 0) {
-      pool.add(new SpatialConvolution[D](inputSize, config[Table](4)[Int](2), 1, 1, 1, 1)
-                 .setName(namePrefix + "pool_proj").setInitMethod(Constant))
-//      pool.add(new SpatialBatchNormalization(config[Table](4)(2), 1e-3)
-//                 .setName(namePrefix + "pool_proj/bn"))
+      pool.add(
+        new SpatialConvolution[D](inputSize, config[Table](4)[Int](2), 1, 1, 1, 1)
+          .setName(namePrefix + "pool_proj")
+          .setInitMethod(Constant))
+      pool.add(new SpatialBatchNormalization(config[Table](4)(2), 1e-3)
+                 .setName(namePrefix + "pool_proj/bn"))
       pool.add(new ReLU[D](true).setName(namePrefix + "pool_proj/bn/sc/relu"))
     }
     concat.add(pool)
@@ -375,7 +429,7 @@ object GoogleNet_v2Dnn {
 
 class GoogLeNetV2Spec extends FlatSpec with Matchers {
   "GoogLeNet generete output and gradient" should "correctly" in {
-    def test[T : ClassTag]()(implicit ev : TensorNumeric[T]) {
+    def test[T: ClassTag]()(implicit ev: TensorNumeric[T]) {
       val batchSize = 8
       val modelDnn = GoogleNet_v2Dnn(1000)
       val modelBlas = GoogleNet_v2Blas(1000)
@@ -398,7 +452,7 @@ class GoogLeNetV2Spec extends FlatSpec with Matchers {
       val criterionDnn = new ClassNLLCriterion[T]()
       val labelsDnn = Tensor[T](batchSize).fill(ev.fromType(1))
 
-      for (i <- 0 until Tools.GetRandTimes()) {
+      for (i <- 0 until Tools.getRandTimes()) {
         val outputBlas = modelBlas.forward(input)
         criterionBlas.forward(outputBlas, labelsBlas)
         val gradOutputBlas = criterionBlas.backward(outputBlas, labelsBlas)
@@ -410,41 +464,45 @@ class GoogLeNetV2Spec extends FlatSpec with Matchers {
         val gradInputDnn = modelDnn.backward(input, gradOutputDnn)
 
         for (i <- 0 until seqBlas.modules.length) {
-          Tools.CumulativeError(seqDnn.modules(i).output, seqBlas.modules(i).output, "module " + i + " output")
+          Tools.cumulativeError(seqDnn.modules(i).output,
+                                seqBlas.modules(i).output,
+                                "module " + i + " output")
         }
 
-        Tools.CumulativeError(outputDnn, outputBlas, "iteration " + i + " output")
-        Tools.CumulativeError(gradOutputBlas, gradOutputDnn, "iteration " + i + " gradoutput")
-        Tools.CumulativeError(gradInputBlas, gradInputDnn, "iteration " + i + " gradinput")
+        Tools.cumulativeError(outputDnn, outputBlas, "iteration " + i + " output")
+        Tools.cumulativeError(gradOutputBlas, gradOutputDnn, "iteration " + i + " gradoutput")
+        Tools.cumulativeError(gradInputBlas, gradInputDnn, "iteration " + i + " gradinput")
       }
 
-      Tools.AverageAll(modelBlas.output, "blas output")
-      Tools.AverageAll(modelDnn.output, "dnn output")
-      Tools.CumulativeError(modelBlas.output, modelDnn.output, "output") should be (0.0 +- 1e-4)
-      Tools.AverageAll(modelBlas.gradInput, "blas gradinput")
-      Tools.AverageAll(modelDnn.gradInput, "dnn gradInput")
-      Tools.CumulativeError(modelDnn.gradInput, modelBlas.gradInput, "gradinput") should be (0.0 +- 2*1e-4)
+      Tools.averageAllTensors(modelBlas.output, "blas output")
+      Tools.averageAllTensors(modelDnn.output, "dnn output")
+      Tools.cumulativeError(modelBlas.output, modelDnn.output, "output") should be(0.0 +- 1e-4)
+      Tools.averageAllTensors(modelBlas.gradInput, "blas gradinput")
+      Tools.averageAllTensors(modelDnn.gradInput, "dnn gradInput")
+      Tools.cumulativeError(modelDnn.gradInput, modelBlas.gradInput, "gradinput") should be(
+        0.0 +- 2 * 1e-4)
     }
 
     test[Float]()
   }
 
   "GoogLeNet v2 compared with IntelCaffe with MKL-DNN" should "correct input and gradient" in {
-    // TODO currently, there is some problem with output, gradOutput, gradInput of IntelCaffe with MKL-DNN
-    val modelDnn : Module[Float] = GoogleNet_v2Dnn(1000)
+    // TODO currently, there is some problem with output, gradOutput,
+    //      gradInput of IntelCaffe with MKL-DNN
+    val modelDnn: Module[Float] = GoogleNet_v2Dnn(1000)
     modelDnn.reset()
 
-    val input = Tools.GetTensorFloat("input", Array(32, 3, 224, 224))
+    val input = Tools.getTensorFloat("input", Array(32, 3, 224, 224))
 
     modelDnn.forward(input)
     println(modelDnn.output.size().mkString(" "))
 
-    val output = Tools.GetTensorFloat("output", modelDnn.output.size())
+    val output = Tools.getTensorFloat("output", modelDnn.output.size())
 
-    Tools.PrintTensor(input, msg = "input")
-    Tools.AverageAll(input, "input")
-    Tools.AverageAll(modelDnn.output, "spark-dl with mkl dnn output")
-    Tools.AverageAll(output, "IntelCaffe with mkl dnn output")
-    Tools.CumulativeError(modelDnn.output, output, "output")
+    Tools.printTensor(input, msg = "input")
+    Tools.averageAllTensors(input, "input")
+    Tools.averageAllTensors(modelDnn.output, "spark-dl with mkl dnn output")
+    Tools.averageAllTensors(output, "IntelCaffe with mkl dnn output")
+    Tools.cumulativeError(modelDnn.output, output, "output")
   }
 }

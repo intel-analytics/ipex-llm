@@ -90,6 +90,8 @@ object Perf {
   }
 
   def performance[T: ClassTag](param: PerfParams)(implicit tn: TensorNumeric[T]): Unit = {
+    import com.intel.analytics.sparkdl.utils.Engine
+    Engine.setCoreNum(2)
     val (model, input) = param.module match {
       case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 227, 227))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor[T](param.batchSize, 3, 224, 224))
@@ -99,7 +101,8 @@ object Perf {
       case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
     }
-    input.rand()
+     input.rand()
+//    input.fill(tn.fromType(0.01))
     println(model)
     val criterion = new ClassNLLCriterion[T]()
     val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
