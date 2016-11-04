@@ -29,13 +29,17 @@ class Cosine[@specialized(Float, Double) T: ClassTag](inputSize : Int, outputSiz
   var weight = Tensor[T](outputSize, inputSize)
 
   @transient
-  var _weightNorm: Tensor[T] = null
+  var _weightNorm: Tensor[T] = Tensor[T]()
   @transient
-  var _inputNorm: Tensor[T] = null
+  var _inputNorm: Tensor[T] = Tensor[T]()
   @transient
   var __norm: T = ev.fromType(0)
   @transient
-  var _sum: Tensor[T] = null
+  var _sum: Tensor[T] = Tensor[T]()
+  @transient
+  var _weight: Tensor[T] = Tensor[T]()
+  @transient
+  var _gradOutput: Tensor[T] = Tensor[T]()
 
   reset()
 
@@ -45,41 +49,37 @@ class Cosine[@specialized(Float, Double) T: ClassTag](inputSize : Int, outputSiz
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (null == _weightNorm) _weightNorm = Tensor[T]()
-    if (null == _inputNorm) _inputNorm = Tensor[T]()
-
+    require(input.dim() == 1 || input.dim() == 2, "input must be vector or matrix")
     _weightNorm = weight.norm(ev.fromType(2), 2).add(ev.fromType(1e-12))
 
     if (input.dim() == 1) {
       output.resize(outputSize).zero()
       output.addmv(ev.fromType(1), weight, input)
 
-      __norm = ev.plus(ev.sqrt(input.cmul(input).sum()), ev.fromType(1e-12))
+      __norm = ev.plus(input.norm(), ev.fromType(1e-12))
       output.cdiv(_weightNorm.view(outputSize)).div(__norm)
     } else if (input.dim() == 2) {
       val batchSize = input.size(1)
       val nElement = output.nElement()
       output.resize(batchSize, outputSize)
       if (output.nElement() != nElement) output.zero()
-      val tmp = weight.t()
-      output.addmm(ev.fromType(0), output, ev.fromType(1), input, tmp)
+      output.addmm(ev.fromType(0), output, ev.fromType(1), input, weight.t())
 
       _inputNorm = input.norm(ev.fromType(2), 2)
       output.cdiv(_weightNorm.view(1, outputSize).expandAs(output))
       output.cdiv(Tensor[T](_inputNorm.storage(), _inputNorm.storageOffset(), _inputNorm.size(), _inputNorm.stride()).expandAs(output))
-    } else {
-      sys.error("input must be vector or matrix")
     }
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]) : Tensor[T] = {
+    require(input.dim() == 1 || input.dim() == 2, "input must be vector or matrix")
     val nElement = gradInput.nElement()
     gradInput.resizeAs(input)
     if (gradInput.nElement() != nElement) gradInput.zero()
 
     if (input.dim() == 1) {
-      val _weight = Tensor[T].resizeAs(weight).copy(weight)
+      _weight.resizeAs(weight).copy(weight)
       _weight.cdiv(Tensor[T](_weightNorm.storage(), _weightNorm.storageOffset(), _weightNorm.size(), _weightNorm.stride()).expandAs(weight))
       _weight.div(__norm)
       _weight.addr(ev.fromType(1), _weight, ev.divide(ev.fromType(-1), ev.times(__norm, __norm)), output, input)
@@ -89,11 +89,9 @@ class Cosine[@specialized(Float, Double) T: ClassTag](inputSize : Int, outputSiz
       val weightNorm = _weightNorm.view(1, outputSize).expandAs(gradOutput)
 
       gradInput.copy(input).cdiv(inputNorm)
-      val _gradOutput = Tensor[T]()
       _gradOutput.resizeAs(gradOutput).copy(gradOutput)
       _gradOutput.cmul(output)
 
-      if (null == _sum) _sum = Tensor[T]()
       _sum.sum(_gradOutput, 2)
       gradInput.cmul(_sum.expandAs(input))
 
@@ -110,8 +108,9 @@ class Cosine[@specialized(Float, Double) T: ClassTag](inputSize : Int, outputSiz
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T], scale: Double = 1.0): Unit = {
+    require(input.dim() == 1 || input.dim() == 2, "input must be vector or matrix")
+
     if (input.dim() == 1) {
-      val _gradOutput = Tensor[T]()
       _gradOutput.resizeAs(gradOutput).copy(gradOutput)
 
       var weightNorm = Tensor[T]()
@@ -122,12 +121,13 @@ class Cosine[@specialized(Float, Double) T: ClassTag](inputSize : Int, outputSiz
       _gradOutput.cdiv(weightNorm)
       _gradOutput.cmul(output)
 
-      val _weight = Tensor[T].resizeAs(weight).copy(weight)
+      _weight.resizeAs(weight).copy(weight)
       _weight.cmul(_gradOutput.view(outputSize, 1).expandAs(weight))
+      gradWeight.add(ev.fromType(-1), _weight)
     } else if (input.dim() == 2) {
-      val _weight = Tensor[T].resizeAs(weight).copy(weight)
+      _weight.resizeAs(weight).copy(weight)
+      _gradOutput.resizeAs(gradOutput).copy(gradOutput)
 
-      val _gradOutput = Tensor[T].resizeAs(gradOutput).copy(gradOutput)
       _gradOutput.cmul(output)
       _sum.sum(_gradOutput, 1)
 
@@ -141,10 +141,18 @@ class Cosine[@specialized(Float, Double) T: ClassTag](inputSize : Int, outputSiz
       _weight.addmm(ev.fromType(-1), _weight, ev.fromType(1), gradOutput.t(), input_)
       _weight.cdiv(_weightNorm.expandAs(_weight))
       gradWeight.add(_weight)
-    } else {
-      sys.error("input must be vector or matrix")
     }
   }
 
+  override def zeroGradParameters(): Unit = {
+    gradWeight.zero()
+  }
 
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    (Array(this.weight), Array(this.gradWeight))
+  }
+
+  override def toString(): String = {
+    s"nn.Bilinear($inputSize, $outputSize)"
+  }
 }

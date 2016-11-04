@@ -22,7 +22,7 @@ import com.intel.analytics.sparkdl.utils.Activities
 
 import scala.reflect.ClassTag
 
-class Bottle [A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTag]
+class Bottle[A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTag]
 (module: Module[A, B, T], nInputDim: Int = 2, nOutputDim: Int)
 (implicit ev: TensorNumeric[T]) extends Container[A, B, T] {
 
@@ -34,9 +34,27 @@ class Bottle [A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTa
   val outShape = Tensor[Double](nOutputDim)
 
   // --add module to modules
-  //val tmp2 =  module.asInstanceOf[Module[Activities, Activities, T]]
-  //val tmp = modules(1)
-  //println("done")
+  //this.modules(0) = module.asInstanceOf[Module[Activities, Activities, T]]
+
+  def arrayIntToDouble(data : Array[Int]): Array[Double] = {
+    var i = 0
+    val res = new Array[Double](data.length)
+    while (i < data.length) {
+      res(i) = data(i).toDouble
+      i += 1
+    }
+    res
+  }
+
+  def arrayDoubleToInt(data : Array[Double]): Array[Int] = {
+    var i = 0
+    val res = new Array[Int](data.length)
+    while (i < data.length) {
+      res(i) = data(i).toInt
+      i += 1
+    }
+    res
+  }
 
   override def updateOutput(input: A): B = {
     // --first batchDims dimensions will be fused
@@ -44,18 +62,18 @@ class Bottle [A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTa
     val res = input.toTensor[T]()
     val batchDims = res.dim() - nInputDim + 1
     if (batchDims > 1){
-      val inSize = Tensor[Double](Storage(Array(4.toDouble, 5.toDouble, 10.toDouble))) //LongTensor
+      val inSize = Tensor[Double](Storage(arrayIntToDouble(res.size))) //LongTensor
 
       val squeezeSize = inSize.storage().array().slice(0, batchDims - 1).product
       inShape.copy(inSize.narrow(1, batchDims, res.dim() - batchDims + 1))
       inShape.narrow(1, 1, 1).mul(squeezeSize)
 
       //--Forward with the module's dimension
-      val newInput = res.view(Array(20,10))
+      val newInput = res.view(arrayDoubleToInt(inShape.storage().array()))
       val output1 = modules(0).updateOutput(newInput).toTensor[T]()
-      require(output1.dim() == nOutputDim)
+      require(output1.dim() == nOutputDim, "Wrong number of output dims on module")
 
-      outShape.copy(Tensor[Double](Storage(Array(20.toDouble, 10.toDouble)))) //LongTensor
+      outShape.copy(Tensor[Double](Storage(arrayIntToDouble(output1.size)))) //LongTensor
 
       if(math.abs(dimDelta) > 0) inSize.resize(inSize.size(1) - dimDelta)
       println(batchDims)
@@ -63,9 +81,7 @@ class Bottle [A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTa
       inSize.narrow(1, batchDims, inSize.size(1) - batchDims + 1).copy(outShape)
       inSize.narrow(1, batchDims, 1).div(squeezeSize)
 
-      //--unbottle
-      val t2 = output1.view(4, 5, 2) //????
-      output.asInstanceOf[Tensor[T]].set(t2)
+      output.asInstanceOf[Tensor[T]].set(output1.view(arrayDoubleToInt(inSize.storage().array())))
     } else {
       output.asInstanceOf[Tensor[T]].set(modules(0).updateOutput(input.toTensor[T]()).toTensor[T]())
     }
@@ -74,8 +90,8 @@ class Bottle [A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTa
 
   override def updateGradInput(input: A, gradOutput: B): A = {
     if(input.toTensor().dim() > nInputDim){
-      val input_ = input.toTensor().view(20,10) //(inShape.nElement())
-      val gradOutput_ = gradOutput.toTensor().view(20,2) //.view(outShape.nElement())
+      val input_ = input.toTensor().view(arrayDoubleToInt(inShape.storage().array())) //(inShape.nElement())
+      val gradOutput_ = gradOutput.toTensor().view(arrayDoubleToInt(outShape.storage().array())) //.view(outShape.nElement())
       modules(0).updateGradInput(input_, gradOutput_)
       val t2 = modules(0).gradInput.toTensor[T]().resizeAs(input.toTensor())
       gradInput.asInstanceOf[Activities].toTensor[T]().set(t2)
@@ -88,8 +104,8 @@ class Bottle [A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTa
 
   override def accGradParameters(input: A, gradOutput: B, scale: Double): Unit = {
     if (input.toTensor().dim() > nInputDim){
-      val input_ = input.toTensor().view(20,10)//(inShape.nElement())
-      val gradOutput_ = gradOutput.toTensor().view(20,2) //(outShape.nElement())
+      val input_ = input.toTensor().view(arrayDoubleToInt(inShape.storage().array()))//(inShape.nElement())
+      val gradOutput_ = gradOutput.toTensor().view(arrayDoubleToInt(outShape.storage().array())) //(outShape.nElement())
       modules(0).accGradParameters(input_, gradOutput_, scale)
     } else {
       modules(0).accGradParameters(input, gradOutput, scale)

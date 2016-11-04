@@ -42,24 +42,26 @@ class CosineSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val start = System.nanoTime()
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
+    val gradWeight = module.gradWeight
     val end = System.nanoTime()
     val scalaTime = end - start
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.Cosine(2, 3)\n" +
-      "weight = module.weight\n" +
+      "gradWeight = module.gradWeight\n" +
       "output = module:forward(input)\n" +
-      "gradInput = module:backward(input,gradOutput)"
+      "gradInput = module:backward(input,gradOutput)\n"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput), Array("output", "gradInput","weight"))
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput), Array("output", "gradInput","gradWeight"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+    val luagradWeight = torchResult("gradWeight").asInstanceOf[Tensor[Double]]
 
     luaOutput1 should be(output)
     luaOutput2 should be(gradInput)
+    luagradWeight should be(gradWeight)
 
-    println("done")
   }
 
   "A Cosine Module" should "generate correct output and grad in 1D" in {
@@ -67,30 +69,31 @@ class CosineSpec extends FlatSpec with BeforeAndAfter with Matchers{
     RNG.setSeed(seed)
 
     val module = new Cosine[Double](3, 2)
+    var input = Tensor[Double](3).apply1(_ => Random.nextDouble())
 
-    val input = Tensor[Double](3).apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](2).apply1(_ => Random.nextDouble())
 
     val start = System.nanoTime()
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
+    val gradWeight = module.gradWeight
     val end = System.nanoTime()
     val scalaTime = end - start
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.Cosine(3, 2)\n" +
-      "weight = module.weight\n" +
+      "gradWeight = module.gradWeight\n" +
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput), Array("output", "gradInput","weight"))
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput), Array("output", "gradInput","gradWeight"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+    val luagradWeight = torchResult("gradWeight").asInstanceOf[Tensor[Double]]
 
     luaOutput1 should be(output)
     luaOutput2 should be(gradInput)
-
-    println("done")
+    luagradWeight should be(gradWeight)
   }
 }
