@@ -138,7 +138,7 @@ object ImageNetLocal {
         ),
         endWhen = config.endWhen
       )
-      optimizer.setCache(param.cache, config.cacheTrigger)
+      optimizer.setCache(param.cache + "/" + param.net, config.cacheTrigger)
       optimizer.setValidationTrigger(config.testTrigger)
       optimizer.addValidation(new Top1Accuracy[Float])
       optimizer.addValidation(new Top5Accuracy[Float])
