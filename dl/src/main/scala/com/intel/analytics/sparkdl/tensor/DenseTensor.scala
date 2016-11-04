@@ -965,6 +965,9 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   override def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T]): Tensor[T] =
     DenseTensorMath.addr(this, v1, this, v2, t1, t2)
 
+  override def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T], t3: Tensor[T]): Tensor[T] =
+    DenseTensorMath.addr(this, v1, t1, v2, t2, t3)
+
   override def addmv(beta: T, vec1: Tensor[T], alpha: T, mat: Tensor[T],
     vec2: Tensor[T]): Tensor[T] =
     DenseTensorMath.addmv(this, beta, vec1, alpha, mat, vec2)
@@ -1342,6 +1345,8 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   override def log1p(x: Tensor[T]): Tensor[T] = DenseTensorMath.log1p[T](this, x)
 
   override def log1p(): Tensor[T] = DenseTensorMath.log1p[T](this, this)
+
+  override def norm(value: T, dim: Int): Tensor[T] = DenseTensorMath.norm(this, value, dim - 1)
 
   override def abs(x: Tensor[T]): Tensor[T] = {
     require(this.nElement() == x.nElement())

@@ -604,6 +604,39 @@ object DenseTensorMath {
     result
   }
 
+  def norm[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], value: T, _dim: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(_dim >= 0 && _dim < self.nDimension, "invalid dimension")
+    val result = new DenseTensor[T]()
+    val sizes = self.size()
+    sizes(_dim) = 1
+    DenseTensor.resize(result, sizes)
+
+    if (value == 0) {
+      DenseTensorDimApply.dimApply2[T](result, self, _dim,
+        (rData, rOffset, rStride, rSize, tData, tOffset, tStride, tSize) => {
+          var sum = ev.fromType[Int](0)
+          var i = 0
+          while (i < tSize) {
+            sum = ev.plus(sum, tData(tOffset + i * tStride))
+            i += 1
+          }
+          rData(rOffset) = sum
+        })
+    } else {
+      DenseTensorDimApply.dimApply2[T](result, self, _dim,
+        (rData, rOffset, rStride, rSize, tData, tOffset, tStride, tSize) => {
+          var sum = ev.fromType[Int](0)
+          var i = 0
+          while (i < tSize) {
+            sum = ev.plus(sum, ev.pow(ev.abs(tData(tOffset + i * tStride)), value))
+            i += 1
+          }
+          rData(rOffset) = ev.pow(sum, ev.divide(ev.fromType(1.0), value))
+        })
+    }
+    result
+  }
+
   def nearlyEqual[@specialized(Float, Double) T](a: T, b: T, epsilon: Double)(
     implicit ev: TensorNumeric[T]): Boolean = {
     ev.getType() match {
