@@ -24,7 +24,10 @@ import scala.reflect.ClassTag
 
 class GradientChecker(stepSize: Double, threshold: Double) {
 
-  def checkLayer[T: ClassTag](layer: Module[T], input: Tensor[T], epsilon: Double = 0.001)
+  def checkLayer[T: ClassTag](
+    layer: Module[Tensor[T], Tensor[T], T],
+    input: Tensor[T],
+    epsilon: Double = 0.001)
     (implicit ev: TensorNumeric[T]): Boolean = {
     val gradOutput = lossAndGradient(layer.updateOutput(input))._2
     val computedGrad = layer.updateGradInput(input, gradOutput)

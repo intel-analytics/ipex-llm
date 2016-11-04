@@ -90,17 +90,18 @@ object Perf {
       case "vgg16" => (Vgg_16(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
-      case "resnet" => (ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50)), Tensor[T](param.batchSize, 3, 224, 224))
+      case "resnet" => {
+        val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
+        ResNet.shareGradInput(curModel)
+        ResNet.convInit("SpatialConvolution", curModel)
+        ResNet.bnInit("SpatialConvolution", curModel)
+        (curModel, Tensor[T](param.batchSize, 3, 224, 224))
+      }
     }
     input.rand()
     println(model)
     val criterion = param.module match {
-      case "resnet" => {
-        ResNet.shareGradInput(model)
-        ResNet.convInit("SpatialConvolution", model)
-        ResNet.bnInit("SpatialBatchNormalization", model)
-        new CrossEntropyCriterion[T]()
-      }
+      case "resnet" => new CrossEntropyCriterion[T]()
       case _ => new ClassNLLCriterion[T]()
     }
     val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
@@ -108,7 +109,7 @@ object Perf {
     require(BLAS.getInstance().isInstanceOf[NativeSystemBLAS])
     for (i <- 1 to param.warmUp) {
       var time = System.nanoTime()
-      val output = model.forward(input)
+      val output = model.forward(input).asInstanceOf[Tensor[T]]
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       time = System.nanoTime()
@@ -124,7 +125,7 @@ object Perf {
     var totalBackwardTime = 0L
     for (i <- 1 to param.iteration) {
       var time = System.nanoTime()
-      val output = model.forward(input)
+      val output = model.forward(input).asInstanceOf[Tensor[T]]
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       totalForwardTime += forwardTime

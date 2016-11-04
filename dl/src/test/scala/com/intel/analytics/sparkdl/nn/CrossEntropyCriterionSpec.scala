@@ -59,8 +59,8 @@ class CrossEntropyCriterionSpec extends FlatSpec with Matchers {
   }
 
   "Multi-Classification LR " should "converge correctly" in {
-    def specifiedModel(): Module[Double] = {
-      val model = new Sequential[Double]()
+    def specifiedModel(): Module[Tensor[Double], Tensor[Double], Double] = {
+      val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
       val linear = new Linear[Double](3, 3)
       linear.weight(Array(1, 1)) = -0.3
       linear.weight(Array(1, 2)) =  1.6
@@ -85,15 +85,15 @@ class CrossEntropyCriterionSpec extends FlatSpec with Matchers {
       model
     }
 
-    def getTrainModel(): Module[Double] = {
-      val model = new Sequential[Double]()
+    def getTrainModel(): Module[Tensor[Double], Tensor[Double], Double] = {
+      val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
       model.add(new Linear[Double](3, 3))
       //model.add(new LogSoftMax[Double]())
       model.add(new Sigmoid[Double]())
       model
     }
 
-    def feval(grad: Tensor[Double], module: Module[Double], criterion: Criterion[Double],
+    def feval(grad: Tensor[Double], module: Module[Tensor[Double], Tensor[Double], Double], criterion: TensorCriterion[Double],
               input: Tensor[Double], target: Tensor[Double])(weights: Tensor[Double])
     : (Double, Tensor[Double]) = {
       //println("enter feval")
@@ -101,7 +101,7 @@ class CrossEntropyCriterionSpec extends FlatSpec with Matchers {
       grad.zero()
       //val trainSize = input.size(1)
       //println("trainSize = " + trainSize)
-      val output = module.forward(input)//.resize(Array(trainSize, 3))
+      val output = module.forward(input) //.resize(Array(trainSize, 3))
       /*println("size2 = " + output.size(2))
       println("inputs:")
       for (i <- 1 to 10) {
@@ -126,7 +126,7 @@ class CrossEntropyCriterionSpec extends FlatSpec with Matchers {
           println(output(i))
       }*/
 
-      val loss = criterion.forward(output, target)
+      val loss = criterion.forward(output, target).asInstanceOf[Double]
       //println("loss = " + loss)
       val gradOut = criterion.backward(output, target)
       module.backward(input, gradOut)
@@ -187,7 +187,7 @@ class CrossEntropyCriterionSpec extends FlatSpec with Matchers {
       if (testTarget(Array(i)) == testResult(Array(i))) corrects += 1
       i += 1
     }
-
+    println(s"corrects = ${corrects}, testSize = ${testSize}")
     assert(abs(corrects - testSize) / testSize <  0.1 )
   }
 }

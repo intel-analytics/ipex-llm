@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
 class MulConstant[@specialized(Float, Double) T: ClassTag](
   constantScalar:T,
   ip: Boolean = false)
-  (implicit ev: TensorNumeric[T]) extends Module[T] {
+  (implicit ev: TensorNumeric[T]) extends Module[Tensor[T], Tensor[T], T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     if (ip) {

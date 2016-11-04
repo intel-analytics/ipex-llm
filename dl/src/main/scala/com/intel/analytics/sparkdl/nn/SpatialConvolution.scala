@@ -38,7 +38,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   val nGroup: Int = 1, // Kernel group number
   val propagateBack: Boolean = true, // propagate gradient back
   private var initMethod: InitializationMethod = Default
-)(implicit ev: TensorNumeric[T]) extends Module[T] {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
@@ -591,7 +591,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   }
 
   override def findModel(paramOffset: Int,
-    indexes: Array[Int]): (Module[T], Int, Array[Int]) = {
+    indexes: Array[Int]): (Module[Tensor[T], Tensor[T], T], Int, Array[Int]) = {
     (this, paramOffset - nOutputPlane * nInputPlane * kernelH * kernelW - nOutputPlane, indexes)
   }
 

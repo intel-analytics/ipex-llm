@@ -19,10 +19,12 @@ package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Linear, LogSoftMax, Sequential}
 import com.intel.analytics.sparkdl.ps.OneReduceParameterManager
+import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
 import com.intel.analytics.sparkdl.utils.T
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+
 import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
 
 class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter  {
@@ -33,6 +35,7 @@ class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter  {
       sc.stop()
     }
   }
+
 
   "accuracy on 2d tensor" should "be correct" in {
     val output = Tensor(Storage(Array[Double](
@@ -171,7 +174,7 @@ class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter  {
       }
     }
 
-    val mlp = new Sequential[Double]
+    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 

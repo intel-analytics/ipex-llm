@@ -21,7 +21,7 @@ import java.io._
 
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.tensor._
-import com.intel.analytics.sparkdl.utils.File
+import com.intel.analytics.sparkdl.utils.{Activities, File}
 import com.intel.analytics.sparkdl.utils.TorchObject._
 
 import scala.io.Source
@@ -94,7 +94,7 @@ object TH {
           File.save(parameters(k), tmpPath, TYPE_THRESHOLD)
         case _: Concat[_] =>
           File.save(parameters(k), tmpPath, TYPE_CONCAT)
-        case _: Sequential[_] =>
+        case _: Sequential[_, _, _] =>
           File.save(parameters(k), tmpPath, TYPE_SEQUENTIAL)
         case _: View[_] =>
           File.save(parameters(k), tmpPath, TYPE_VIEW)

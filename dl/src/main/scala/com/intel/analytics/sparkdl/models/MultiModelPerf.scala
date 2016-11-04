@@ -98,15 +98,16 @@ object MultiModelPerf {
         new ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
       case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
         new ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
-      case "resnet" => (ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50)), Tensor[T](param.batchSize, 3, 224, 224).rand(),
-        new CrossEntropyCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
+      case "resnet" => {
+        val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
+        ResNet.shareGradInput(curModel)
+        ResNet.convInit("SpatialConvolution", curModel)
+        ResNet.bnInit("SpatialBatchNormalization", curModel)
+        (curModel, Tensor[T](param.batchSize, 3, 224, 224).rand(),
+          new CrossEntropyCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
+      }
     })
     require(BLAS.getInstance().isInstanceOf[NativeSystemBLAS])
-    if (param.module == "resnet") {
-      tests.map(x => {ResNet.shareGradInput(x._1)
-                      ResNet.convInit("SpatialConvolution", x._1)
-                      ResNet.bnInit("SpatialBatchNormalization", x._1)})
-    }
 
     val grads = tests.map(_._1.getParameters()._2).toArray
     val gradLength = grads(0).nElement()
@@ -127,7 +128,7 @@ object MultiModelPerf {
       val time = System.nanoTime()
       (0 until param.cores).map(j => Future {
         val (model, input, criterion, labels) = tests(j)
-        val output = model.forward(input)
+        val output = model.forward(input).asInstanceOf[Tensor[T]]
         criterion.forward(output, labels)
         val gradOutput = criterion.backward(output, labels)
         model.backward(input, gradOutput)
@@ -153,7 +154,7 @@ object MultiModelPerf {
       val time = System.nanoTime()
       (0 until param.cores).map(j => Future {
         val (model, input, criterion, labels) = tests(j)
-        val output = model.forward(input)
+        val output = model.forward(input).asInstanceOf[Tensor[T]]
         criterion.forward(output, labels)
         val gradOutput = criterion.backward(output, labels)
         model.backward(input, gradOutput)

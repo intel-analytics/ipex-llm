@@ -17,35 +17,38 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.sparkdl.utils.Activities
 
 import scala.reflect.ClassTag
 
-class Sequential[T: ClassTag](implicit ev: TensorNumeric[T]) extends Container[T] {
+class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTag]
+  (implicit ev: TensorNumeric[T]) extends Container[A, B, T] {
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+  override def updateOutput(input: A): B = {
     var i = 0
-    var result = input
+    var result = input.asInstanceOf[Activities]
     while (i < modules.length) {
       result = modules(i).forward(result)
       i += 1
     }
-    this.output = result
-    result
+
+    this.output = result.asInstanceOf[B]
+    output
   }
 
-  override def updateGradInput(input: Tensor[T], nextError: Tensor[T]): Tensor[T] = {
+  override def updateGradInput(input: A, nextError: B): A = {
     var i = modules.length - 1
-    var error = nextError
+    var error = nextError.asInstanceOf[Activities]
     while (i > 0) {
       val input = modules(i - 1).output
       error = modules(i).backward(input, error)
       i -= 1
     }
-    error = modules(0).backward(input, error)
-    this.gradInput = error
-    error
+    error = modules(0).backward(input.asInstanceOf[Activities], error)
+
+    this.gradInput = error.asInstanceOf[A]
+    gradInput
   }
 
   override def equals(obj: Any): Boolean = {
@@ -53,10 +56,10 @@ class Sequential[T: ClassTag](implicit ev: TensorNumeric[T]) extends Container[T
       return false
     }
 
-    if (!obj.isInstanceOf[Sequential[T]]) {
+    if (!obj.isInstanceOf[Sequential[A, B, T]]) {
       return false
     }
-    val other = obj.asInstanceOf[Sequential[T]]
+    val other = obj.asInstanceOf[Sequential[A, B, T]]
     if (this.eq(other)) {
       return true
     }
@@ -95,17 +98,19 @@ class Sequential[T: ClassTag](implicit ev: TensorNumeric[T]) extends Container[T
 
     s"nn.Sequential {${line + tab}[input -> ${
       modules.zipWithIndex.map {
-        case (m: Module[T], i: Int) => "(" + (i + 1) + ")"
+        case (m: Module[Activities, Activities, T], i: Int) => "(" + (i + 1) + ")"
       }.
         mkString(" -> ")
     } -> output]${line + tab}" +
       s"${
         modules.zipWithIndex.map {
-          case (model: Module[T], index: Int) => s"(${index + 1}): ${model.setLine(line + tab)}"
+          case (model: Module[Activities, Activities, T], index: Int)
+          => s"(${index + 1}): ${model.setLine(line + tab)}"
         }.
           mkString(line + tab)
       }$line}"
   }
+
 }
 
 

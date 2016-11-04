@@ -254,9 +254,9 @@ object ImageNetUtils {
     var (sumR, sumG, sumB) = (0.0, 0.0, 0.0)
     var i = dataOffset
     while (i < data.length) {
-      val r = ((data(i + 2) & 0xff) / 255.0 - meanR)
-      val g = ((data(i + 1) & 0xff) / 255.0 - meanG)
-      val b = ((data(i + 0) & 0xff) / 255.0 - meanB)
+      val r = (data(i + 2) & 0xff) / 255.0 - meanR
+      val g = (data(i + 1) & 0xff) / 255.0 - meanG
+      val b = (data(i + 0) & 0xff) / 255.0 - meanB
       sumR += r * r
       sumG += g * g
       sumB += b * b
@@ -309,7 +309,7 @@ class Image(path: Path) {
         new BufferedImage(widthAfterScale, heightAfterScale, BufferedImage.TYPE_3BYTE_BGR)
       imageBuff.getGraphics.drawImage(scaledImage, 0, 0, new Color(0, 0, 0), null)
       val pixels: Array[Byte] =
-        (imageBuff.getRaster.getDataBuffer.asInstanceOf[DataBufferByte]).getData
+        imageBuff.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData
       require(pixels.length % nChannels == 0)
       val buffer = new Array[Byte](dataOffset + pixels.length)
       val byteBuffer = ByteBuffer.wrap(buffer)

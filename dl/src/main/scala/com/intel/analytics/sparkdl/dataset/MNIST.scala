@@ -19,8 +19,9 @@ package com.intel.analytics.sparkdl.dataset
 
 import com.intel.analytics.sparkdl.example.MNIST
 import com.intel.analytics.sparkdl.models.mnist.{LeNet5, MLP, SimpleCNN}
-import com.intel.analytics.sparkdl.nn.{Criterion, Module, ClassNLLCriterion}
+import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Criterion, Module, TensorModule}
 import com.intel.analytics.sparkdl.optim._
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.{RandomGenerator, T}
 import scopt.OptionParser
 
@@ -34,8 +35,8 @@ object MNISTLocal {
     net: String = "cnn"
   )
   case class Config(
-    model : Module[Float],
-    criterion : Criterion[Float],
+    model : Module[Tensor[Float], Tensor[Float], Float],
+    criterion : Criterion[Tensor[Float], Float],
     optimMethod : OptimMethod[Float],
     batchSize : Int,
     maxEpoch : Int,

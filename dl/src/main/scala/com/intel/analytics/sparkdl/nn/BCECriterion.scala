@@ -23,7 +23,7 @@ import com.intel.analytics.sparkdl.tensor.Tensor
 import scala.reflect.ClassTag
 
 class BCECriterion[T: ClassTag](var weights: Tensor[T] = null, sizeAverage: Boolean = true)
-  (implicit ev: TensorNumeric[T]) extends Criterion[T] {
+  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   var gradInput: Tensor[T] = Tensor[T]()
   var total_weight = ev.fromType[Int](0)
   val eps = ev.fromType[Double](1e-12)
@@ -46,7 +46,7 @@ class BCECriterion[T: ClassTag](var weights: Tensor[T] = null, sizeAverage: Bool
 
     output = target.dot(buffer)
 
-    buffer.mul(input, ev.fromType[Int](-1)).add(ev.fromType[Int](1)).add(eps).apply1(ev.log(_))
+    buffer.mul(input, ev.fromType[Int](-1)).add(ev.fromType[Int](1)).add(eps).apply1(ev.log)
     if (null != weights) buffer.cmul(weights)
 
     output = ev.plus(output, buffer.sum())

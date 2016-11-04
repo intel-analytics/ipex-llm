@@ -2438,7 +2438,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val gradBias = Tensor[Double](Storage(gradBiasData), 1, Array(2))
     val exErr = 1.0172073752036
     val maxIter = 10
-    var model = new Sequential[Double]()
+    var model = new Sequential[Tensor[Double], Tensor[Double], Double]()
     var sc = new SpatialConvolution[Double](1, 2, 5, 5)
 
     sc.weight.copy(weight)

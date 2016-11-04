@@ -19,18 +19,20 @@ package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.nn.{Criterion, Module}
 import com.intel.analytics.sparkdl.ps.ParameterManager
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.utils.{T, Table}
+
 import scala.reflect.ClassTag
 
-abstract class EpochOptimizer[T](
-  @transient module: Module[T],
-  criterion: Criterion[T],
+abstract class EpochOptimizer[T: ClassTag](
+  @transient module: Module[Tensor[T], Tensor[T], T],
+  criterion: Criterion[Tensor[T], T],
   optm: OptimMethod[T],
   pm: ParameterManager[T],
   dataSets: DataSet[_, T] with HasEpoch,
   metrics: Metrics,
-  config: Table = T()) extends DistributedOptimizer(module, criterion, dataSets) {
+  config: Table = T()) extends DistributedOptimizer[T](module, criterion, dataSets) {
 
   protected var maxEpoch: Option[Int] = None
 
@@ -42,18 +44,18 @@ abstract class EpochOptimizer[T](
   }
 }
 
-class GradAggEpochOptimizer[@specialized(Float, Double) T: ClassTag](
-  @transient module: Module[T],
-  criterion: Criterion[T],
+class GradAggEpochOptimizer[T: ClassTag](
+  @transient module: Module[Tensor[T], Tensor[T], T],
+  criterion: Criterion[Tensor[T], T],
   optm: OptimMethod[T],
   pm: ParameterManager[T],
   dataSets: DataSet[_, T] with HasEpoch,
   metrics: Metrics,
   config: Table = T())
   (implicit ev: TensorNumeric[T])
-  extends EpochOptimizer(module, criterion, optm, pm, dataSets, metrics, config) {
+  extends EpochOptimizer[T](module, criterion, optm, pm, dataSets, metrics, config) {
 
-  override def optimize(): Module[T] = {
+  override def optimize(): Module[Tensor[T], Tensor[T], T] = {
     // don't send whole Optimizer in closure
     val broadcastEV = dataSets.getSparkContext().broadcast(ev)
 
@@ -157,13 +159,14 @@ class GradAggEpochOptimizer[@specialized(Float, Double) T: ClassTag](
   }
 }
 
-class WeightAvgEpochOptimizer[@specialized(Float, Double) T: ClassTag](
-  @transient module: Module[T], criterion: Criterion[T], optm: OptimMethod[T],
+class WeightAvgEpochOptimizer[T: ClassTag](
+  @transient module: Module[Tensor[T], Tensor[T], T],
+  criterion: Criterion[Tensor[T], T], optm: OptimMethod[T],
   pm: ParameterManager[T], dataSets: DataSet[_, T] with HasEpoch,
   metrics: Metrics, config: Table = T())(implicit ev: TensorNumeric[T])
-  extends EpochOptimizer(module, criterion, optm, pm, dataSets, metrics, config) {
+  extends EpochOptimizer[T](module, criterion, optm, pm, dataSets, metrics, config) {
 
-  override def optimize(): Module[T] = {
+  override def optimize(): Module[Tensor[T], Tensor[T], T] = {
     // don't send whole Optimizer in closure
     val broadcast = dataSets.getSparkContext().broadcast((ev, config, optm))
 

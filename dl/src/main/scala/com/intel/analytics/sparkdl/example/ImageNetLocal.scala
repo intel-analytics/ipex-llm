@@ -93,13 +93,14 @@ object ImageNetLocal {
       case "googlenet" => GoogleNet.getModel[Float](classNum)
       case "googlenet-bn" => GoogleNet.getModel[Float](classNum, "googlenet-bn")
       case "googlenet-cf" => GoogleNet.getModelCaffe[Float](classNum)
-      case "resnet" => ResNet[Float](classNum, T("shortcutType" -> ShortcutType.B, "depth" -> modelDepth))
+      case "resnet" => {
+        val curModel = ResNet[Float](classNum, T("shortcutType" -> ShortcutType.B, "depth" -> modelDepth))
+        ResNet.shareGradInput(curModel)
+        ResNet.convInit("SpatialConvolution", curModel)
+        ResNet.bnInit("SpatialBatchNormalization", curModel)
+        curModel
+      }
       case _ => throw new IllegalArgumentException
-    }
-    if (netType == "resnet") {
-      ResNet.shareGradInput(model)
-      ResNet.convInit("SpatialConvolution", model)
-      ResNet.bnInit("SpatialBatchNormalization", model)
     }
 
 
@@ -182,7 +183,7 @@ object ImageNetLocal {
         val readImgTime = System.nanoTime()
 
 
-        val output = model.forward(input)
+        val output = model.forward(input).asInstanceOf[Tensor[Float]]
         val loss = criterion.forward(output, target)
 
         model.zeroGradParameters()
@@ -236,7 +237,7 @@ object ImageNetLocal {
         var k = 0
         while (k < dataSetVal.getTotal) {
           val (input, target) = iterVal.next()
-          val output = model.forward(input)
+          val output = model.forward(input).asInstanceOf[Tensor[Float]]
           top1Correct += EvaluateMethods.calcAccuracy(output, target)._1
           top5Correct += EvaluateMethods.calcTop5Accuracy(output, target)._1
           while (!stageImgsVal.isEmpty) {
@@ -294,68 +295,6 @@ object ImageNetLocal {
       donkeyVal, dataSetVal, batchSize, modelPath, modelDepth)
   }
 
-  /*def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
-                                                             (implicit ev: TensorNumeric[T]): Unit = {
-    def sharingKey(m: Module[T]) = m.getClass.getName
-
-    val cache = mutable.Map[Any, Storage[T]]()
-
-    model.mapModules(m => {
-      val moduleType = m.getClass.getName
-      if (!moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatAddTable")) {
-        val key = sharingKey(m)
-        if (!cache.contains(key)){
-          cache.put(key, Storage(Array(ev.fromType[Int](1))))
-        }
-        m.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
-      }
-    })
-
-    for ((m, i) <- model
-      .findModules("com.intel.analytics.sparkdl.nn.ConcatAddTable")
-      .zipWithIndex){
-      if (!cache.contains(i % 2)) {
-        cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
-      }
-      m.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
-    }
-
-    cache.put("gradWeightMM", Storage(Array(ev.fromType[Int](1))))
-    cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
-    cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
-    for ((m, i) <- model
-      .findModules("com.intel.analytics.sparkdl.nn.SpatialConvolution")
-      .zipWithIndex){
-      val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
-      tmpModel.setSharedVar
-      tmpModel.setGradWeightMM(Tensor[T](cache.get("gradWeightMM").get))
-      tmpModel.fInput = Tensor[T](cache.get("fInput").get)
-      tmpModel.fGradInput = Tensor[T](cache.get("fGradInput").get)
-    }
-  }
-
-  def convInit[@specialized(Float, Double) T: ClassTag](name: String, model: Module[T])
-                                                       (implicit ev: TensorNumeric[T]): Unit = {
-    for ((m, i) <- model
-      .findModules(name)
-      .zipWithIndex) {
-      val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
-      val n = tmpModel.kernelW * tmpModel.kernelH * tmpModel.nOutputPlane
-      tmpModel.weight.apply1(_ => ev.fromType[Float](RNG.normal(0, Math.sqrt(2 / n)).toFloat))
-      tmpModel.bias.apply1(_ => ev.fromType[Float](0))
-    }
-  }
-
-  def bnInit[@specialized(Float, Double) T: ClassTag](name: String, model: Module[T])
-                                                     (implicit ev: TensorNumeric[T]): Unit = {
-    for ((m, i) <- model
-      .findModules(name)
-      .zipWithIndex) {
-      val tmpModel = m.asInstanceOf[SpatialBatchNormalization[T]]
-      tmpModel.weight.apply1(_ => ev.fromType[Float](1f))
-      tmpModel.bias.apply1(_ => ev.fromType[Float](0f))
-    }
-  }*/
 
   object MeanStd {
     val mean = Array(0.485f, 0.456f, 0.406f)

@@ -87,7 +87,7 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val padH = 2
     val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH)
-    val model = new Sequential[Double]()
+    val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
     model.add(layer)
 
     Random.setSeed(3)
@@ -110,7 +110,7 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
     val luaBias = torchResult("bias").asInstanceOf[Tensor[Double]]
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
-    val luaModel = torchResult("model").asInstanceOf[Module[Double]]
+    val luaModel = torchResult("model").asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
 
     val weight = layer.weight
     val bias = layer.bias

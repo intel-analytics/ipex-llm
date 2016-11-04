@@ -30,7 +30,7 @@ class Table private[sparkdl](
   state: Map[Any, Any] = new mutable.HashMap[Any, Any](),
   // index of last element in the contiguous numeric number indexed elements start from 1
   private var topIndex: Int = 0
-) extends Serializable {
+) extends Serializable with Activities {
 
   private[sparkdl] def this(data: Array[Any]) = {
     this(new mutable.HashMap[Any, Any](), 0)
@@ -48,6 +48,10 @@ class Table private[sparkdl](
     }
 
     Option(state(key).asInstanceOf[T])
+  }
+
+  def contains(key: Any): Boolean = {
+    state.contains(key)
   }
 
   def apply[T](key: Any): T = {

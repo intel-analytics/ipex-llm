@@ -23,7 +23,7 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 class View[@specialized(Float, Double) T: ClassTag](sizes: Array[Int])(
-  implicit ev: TensorNumeric[T]) extends Module[T] {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   def getSize(): Array[Int] = {
     return sizes

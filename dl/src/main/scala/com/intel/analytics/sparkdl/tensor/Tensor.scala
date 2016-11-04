@@ -21,8 +21,9 @@ import java.io.Serializable
 
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.utils.{File, Table, TorchObject}
+import com.intel.analytics.sparkdl.utils.{Activities, File, Table, TorchObject}
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
+import scala.reflect.runtime.universe._
 
 import scala.reflect.ClassTag
 
@@ -30,7 +31,7 @@ import scala.reflect.ClassTag
  * It is the class for handling numeric data.
  * @tparam T should be Double or Float
  */
-trait Tensor[T] extends Serializable with TensorMath[T] {
+trait Tensor[T] extends Serializable with TensorMath[T] with Activities {
   /**
    * Dimension number of the tensor. For empty tensor, its dimension number is 0
    *

@@ -179,7 +179,7 @@ gradInput = model.gradInput
     println(s"gradInputTestAbs:$abss")
 
     val (weights, grad) = model.getParameters()
-    val modelTorch = TH.map("model").asInstanceOf[Module[Double]]
+    val modelTorch = TH.map("model").asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
     val (weightsTorch, gradTorch) = modelTorch.getParameters()
     sgd.optimize(_ => (errTest, grad), weights, state, state)
     abss = 0.0
@@ -313,14 +313,14 @@ model:zeroGradParameters()
     val gradInput = model.gradInput //.backward(input, gradOutputTest)
     val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
 
-    var abss = 0.0
-    for (i <- 0 until gradInputTorch.nElement()) {
-      val tmp = abs(gradInputTorch.storage().array()(i) - gradInput.storage().array()(i))
-      abss += tmp
-    }
-    println(s"gradInputTestAbs:$abss")
 
+    var gradInputAbs = 0.0
+    gradInput.map(gradInputTorch, (v1, v2) => {
+      gradInputAbs += abs(v1 - v2)
+      v1
+    })
+    println(s"outputAbs:$gradInputAbs")
+    // (gradInputAbs < 1E-16) should be
 
-    (abss < 1E-15) should be
   }
 }

@@ -24,11 +24,8 @@ import scala.reflect.ClassTag
 
 
 class CrossEntropyCriterion[T: ClassTag](var weights: Tensor[T] = null)
-                                        (implicit ev: TensorNumeric[T]) extends Criterion[T] {
+                                        (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   var gradInput: Tensor[T] = Tensor[T]()
-  //var total_weight = ev.fromType[Int](0)
-  //val eps = ev.fromType[Double](1e-12)
-  if (weights != null) require(weights.dim() == 1, "weights input should be 1-D Tensor")
 
   val nll = new ClassNLLCriterion(weights)
   val lsm = new LogSoftMax()
@@ -48,15 +45,6 @@ class CrossEntropyCriterion[T: ClassTag](var weights: Tensor[T] = null)
     target.squeeze()
     nll.updateGradInput(lsm.output, target)
     lsm.updateGradInput(input, nll.gradInput)
-
-  //  gradInput.resizeAs(input)
-   // gradInput.zero()
-  //  gradInput.view(lsm.gradInput, size)
-    /*this.gradInput.view(lsm.gradInput, size)
-    this.gradInput
-    var lsmOutput = lsm.updateOutput(input)
-    var nllGrad = nll.updateGradInput(lsmOutput, target)
-    var lsmGrad = lsm.updateGradInput(input, nllGrad)*/
     this.gradInput = lsm.gradInput.view(size)
     this.gradInput
 

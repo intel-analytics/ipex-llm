@@ -17,20 +17,24 @@
 
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.Tensor
+
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.sparkdl.utils.Activities
 
 import scala.reflect.ClassTag
 
-class Identity [@specialized(Float, Double) T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Module[T] {
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+class Identity[@specialized(Float, Double) T: ClassTag]()
+  (implicit ev: TensorNumeric[T]) extends Module[Activities, Activities, T] {
+
+  override def updateOutput(input: Activities): Activities = {
     output = input
     output
   }
 
-  override def updateGradInput(input: Tensor[T],
-                               gradOutput: Tensor[T]): Tensor[T] = {
+
+  override def updateGradInput(input: Activities,
+    gradOutput: Activities): Activities = {
+
     gradInput = gradOutput
     gradInput
   }
