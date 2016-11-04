@@ -1368,6 +1368,18 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
+  override def norm(): T = {
+    var res: T = ev.fromType(0)
+    val func = new TensorFunc2[T] {
+      override def apply(data1: Array[T], offset1: Int): Unit = {
+        res = ev.plus(res, ev.times(data1(offset1), data1(offset1)))
+      }
+    }
+    DenseTensorApply.apply1[T](this, func)
+
+    ev.sqrt(res)
+  }
+
   /**
    * Fills the masked elements of itself with value val
    *

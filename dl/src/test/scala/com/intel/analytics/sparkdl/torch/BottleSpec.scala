@@ -21,6 +21,8 @@ import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import scala.util.Random
+
 
 class BottleSpec extends FlatSpec with BeforeAndAfter with Matchers{
   before {
@@ -35,14 +37,8 @@ class BottleSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val module = new Bottle[Tensor[Double], Tensor[Double], Double](new Linear(10, 2), 2, 2)
     module.add(new Linear(10, 2))
 
-    var tmp = Tensor[Double](3)
-    tmp.setValue(1,1)
-    tmp(1) = 1
-    tmp(2) = 2
-    tmp(3) = 3
-
-    val input = Tensor[Double](4, 5, 10).fill(RNG.uniform(-1, 1)) //fill(1)//.
-    val gradOutput = Tensor[Double](4, 10).randn()
+    val input = Tensor[Double](4, 5, 10).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](4, 10).apply1(_ => Random.nextDouble())
 
     val start = System.nanoTime()
     val output = module.forward(input)
