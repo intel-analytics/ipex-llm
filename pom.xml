@@ -164,10 +164,15 @@
     </modules>
     <distributionManagement>
         <repository>
+            <id>arda.nexus.releases</id>
+            <name>arda's nexus</name>
+            <url>http://10.239.45.219:8081/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
             <id>arda.nexus.snapshots</id>
             <name>arda's nexus</name>
             <url>http://10.239.45.219:8081/content/repositories/snapshots/</url>
-        </repository>
+        </snapshotRepository>
     </distributionManagement>
 
     <dependencyManagement>
