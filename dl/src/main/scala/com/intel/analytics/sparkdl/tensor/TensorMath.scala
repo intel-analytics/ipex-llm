@@ -455,7 +455,18 @@ trait TensorMath[T] {
 
   def log1p(): Tensor[T]
 
-
   def abs(x: Tensor[T]): Tensor[T]
+
+  def gt(x: Tensor[T], y: Tensor[T]): Tensor[T]
+
+  def lt(x: Tensor[T], y: Tensor[T]): Tensor[T]
+
+  def eq(x: Tensor[T], y: T): Tensor[T]
+
+  def maskedFill(mask: Tensor[T], e: T): Tensor[T]
+
+  def maskedCopy(mask: Tensor[T], y: Tensor[T]): Tensor[T]
+
+  def maskedSelect(mask: Tensor[T], y: Tensor[T]): Tensor[T]
 
 }
