@@ -31,7 +31,6 @@ class CMaxTable[T: ClassTag](implicit ev: TensorNumeric[T])
 
   override def updateOutput(input: Table): Tensor[T] = {
     val res1 = input[Tensor[T]](1)
-    val res2 = input[Tensor[T]](2)
 
     output.resizeAs(res1).copy(res1)
     if (null == maxIdx) maxIdx = Tensor[T]()
@@ -60,7 +59,7 @@ class CMaxTable[T: ClassTag](implicit ev: TensorNumeric[T])
       val mask = Tensor[T].resize(maxIdx.size())
       mask.eq(maxIdx, ev.fromType(i))
 
-      gradInput.apply[Tensor[T]](i).maskedCopy(mask, Tensor[T].maskedSelect(mask, gradOutput))
+      gradInput[Tensor[T]](i).maskedCopy(mask, Tensor[T].maskedSelect(mask, gradOutput))
 
       i += 1
     }

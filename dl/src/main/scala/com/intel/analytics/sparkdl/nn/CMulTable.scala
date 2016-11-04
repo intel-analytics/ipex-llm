@@ -42,7 +42,7 @@ class CMulTable[T: ClassTag]()(
       var j = 1
       while (j <= input.length()) {
         if (i != j) gradInput[Tensor[T]](i).cmul(input(j))
-         j += 1
+        j += 1
       }
       i += 1
     }

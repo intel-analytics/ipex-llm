@@ -30,7 +30,6 @@ class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
 
   override def updateOutput(input: Table): Tensor[T] = {
     val res1 = input[Tensor[T]](1)
-    val res2 = input[Tensor[T]](2)
 
     if (null == minIdx) minIdx = Tensor[T]()
     output.resizeAs(res1).copy(res1)
