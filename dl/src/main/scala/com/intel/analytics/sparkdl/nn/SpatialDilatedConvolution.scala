@@ -122,7 +122,7 @@ class SpatialDilatedConvolution[T: ClassTag](
       kH, kW, dH, dW, padH, padW, dilationH, dilationW)
     require(input.isContiguous())
 
-    val batch = if (input.nDimension() == 3) {
+    val isBatch = if (input.nDimension() == 3) {
       // Force batch
       input.resize(1, input.size(1), input.size(2), input.size(3))
       false
@@ -223,7 +223,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     }
 
     // Resize output
-    if (batch == false) {
+    if (!isBatch) {
       output.resize(nOutputPlane, outputHeight, outputWidth)
       input.resize(nInputPlane, inputHeight, inputWidth)
     }
@@ -234,7 +234,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     shapeCheck(input, gradOutput, weight, null,
       kH, kW, dH, dW, padH, padW, dilationH, dilationW)
 
-    val batch = if (input.nDimension() == 3) {
+    val isBatch = if (input.nDimension() == 3) {
       // Force batch
       input.resize(1, input.size(1), input.size(2), input.size(3))
       gradOutput.resize(1, gradOutput.size(1), gradOutput.size(2), gradOutput.size(3))
@@ -307,7 +307,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     }
 
     // Resize output
-    if (batch == false) {
+    if (!isBatch) {
       gradOutput.resize(nOutputPlane, outputHeight, outputWidth)
       input.resize(nInputPlane, inputHeight, inputWidth)
       gradInput.resize(nInputPlane, inputHeight, inputWidth)
@@ -321,7 +321,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     shapeCheck(input, gradOutput, gradWeight, gradBias,
       kH, kW, dH, dW, padH, padW, dilationH, dilationW)
 
-    val batch = if (input.nDimension() == 3) {
+    val isBatch = if (input.nDimension() == 3) {
       // Force batch
       input.resize(1, input.size(1), input.size(2), input.size(3))
       gradOutput.resize(1, gradOutput.size(1), gradOutput.size(2), gradOutput.size(3))
@@ -416,7 +416,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     }
 
     // Resize
-    if (batch == false) {
+    if (!isBatch) {
       gradOutput.resize(nOutputPlane, outputHeight, outputWidth)
       input.resize(nInputPlane, inputHeight, inputWidth)
     }

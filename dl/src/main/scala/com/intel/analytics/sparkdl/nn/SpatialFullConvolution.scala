@@ -139,7 +139,7 @@ class SpatialFullConvolution[T: ClassTag](
     shapeCheck(input, null, weight, bias, kH, kW, dH, dW, padH, padW, adjH, adjW)
     require(input.isContiguous())
 
-    val batch = if (input.nDimension() == 3) {
+    val isBatch = if (input.nDimension() == 3) {
       // Force batch
       input.resize(1, input.size(1), input.size(2), input.size(3))
       false
@@ -248,7 +248,7 @@ class SpatialFullConvolution[T: ClassTag](
     }
 
     // Resize output
-    if(batch == false) {
+    if(!isBatch) {
       output.resize(nOutputPlane, outputHeight, outputWidth)
       input.resize(nInputPlane, inputHeight, inputWidth)
     }
@@ -259,7 +259,7 @@ class SpatialFullConvolution[T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     shapeCheck(input, gradOutput, weight, null, kH, kW, dH, dW, padH, padW, adjH, adjW)
 
-    val batch = if (input.nDimension() == 3) {
+    val isBatch = if (input.nDimension() == 3) {
       // Force batch
       input.resize(1, input.size(1), input.size(2), input.size(3))
       gradOutput.resize(1, gradOutput.size(1), gradOutput.size(2), gradOutput.size(3))
@@ -331,7 +331,7 @@ class SpatialFullConvolution[T: ClassTag](
     }
 
     // Resize output
-    if (batch == false) {
+    if (!isBatch) {
       gradOutput.resize(nOutputPlane, outputHeight, outputWidth)
       input.resize(nInputPlane, inputHeight, inputWidth)
       gradInput.resize(nInputPlane, inputHeight, inputWidth)
@@ -344,7 +344,7 @@ class SpatialFullConvolution[T: ClassTag](
     scale: Double = 1.0): Unit = {
     shapeCheck(input, gradOutput, gradWeight, gradBias, kH, kW, dH, dW, padH, padW, adjH, adjW)
 
-    val batch = if (input.nDimension() == 3) {
+    val isBatch = if (input.nDimension() == 3) {
       // Force batch
       input.resize(1, input.size(1), input.size(2), input.size(3))
       gradOutput.resize(1, gradOutput.size(1), gradOutput.size(2), gradOutput.size(3))
@@ -440,7 +440,7 @@ class SpatialFullConvolution[T: ClassTag](
     }
 
     // Resize
-    if (batch == false) {
+    if (!isBatch) {
       gradOutput.resize(nOutputPlane, outputHeight, outputWidth)
       input.resize(nInputPlane, inputHeight, inputWidth)
     }
