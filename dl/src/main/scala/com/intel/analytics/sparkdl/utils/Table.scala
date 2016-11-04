@@ -17,8 +17,12 @@
 
 package com.intel.analytics.sparkdl.utils
 
+import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+
 import scala.collection.mutable
 import scala.collection.mutable.Map
+import scala.reflect.ClassTag
 
 /**
  * Simulate the Table data structure in lua
@@ -215,4 +219,78 @@ object T {
     }
     table
   }
+
+  def recursiveResizeAs[T : ClassTag](target : Activities, src: Activities)(
+    implicit ev: TensorNumeric[T]): Activities = {
+    var result: Activities = null
+    if (src.isInstanceOf[Table]) {
+      val srcTable = src.toTable()
+      result = if (target.isInstanceOf[Table]) {
+        T(target)
+      } else {
+        target.toTable()
+      }
+      val resultTable = result.toTable()
+      var i = 1
+      while (i <= src.toTable().length()) {
+        if (resultTable.contains(i)) {
+          resultTable(i) = recursiveResizeAs(resultTable(i), srcTable(i))
+        } else {
+          resultTable(i) = recursiveResizeAs(null, srcTable(i))
+        }
+        i += 1
+      }
+      while (i <= resultTable.length()) {
+        resultTable.remove(i)
+        i += 1
+      }
+    } else if (src.isInstanceOf[Tensor[T]]) {
+      result = if (target.isInstanceOf[Tensor[T]]) {
+        target
+      } else {
+        Tensor[T]()
+      }
+      result.toTensor[T]().resizeAs(src.toTensor())
+    }
+    result
+  }
+
+  def recursiveFill[T](table: Activities, value : Double)(
+  implicit ev: TensorNumeric[T]): Unit = {
+    require(table.isInstanceOf[Activities],
+      s"expecting tensors or tables thereof. Got ${table} instead"
+    )
+    if (table.isInstanceOf[Table]) {
+      var i = 1
+      while (i <= table.toTable().length()) {
+        recursiveFill(table.toTable()(i), value)
+        i += 1
+      }
+    } else {
+      table.toTensor[T]().fill(ev.fromType[Double](value))
+    }
+  }
+
+  /**
+   * x := x + alpha * y
+   * @param x
+   * @param alpha
+   * @param y
+   * @tparam T: Float or Double
+   * @return x
+   */
+  def recursiveAdd[T](x: Activities, alpha : Double = 1.0, y: Activities)(
+  implicit ev: TensorNumeric[T]): Activities = {
+    if (y.isInstanceOf[Tensor[T]] && x.isInstanceOf[Tensor[T]]) {
+      x.toTensor[T]().add(ev.fromType[Double](alpha), y.toTensor[T]())
+    } else {
+      var i = 1
+      while (i <= x.toTable().length()) {
+        recursiveAdd[T](x.toTable()(i), alpha, y.toTable()(i))
+        i += 1
+      }
+    }
+    x
+  }
+
 }
