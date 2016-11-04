@@ -59,6 +59,10 @@ class SoftMin[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule
     gradInput.mul(ev.fromType[Int](-1))
     gradInput
   }
+
+  override def toString(): String = {
+    s"nn.SoftMin"
+  }
 }
 
 
