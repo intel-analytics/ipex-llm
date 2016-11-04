@@ -1358,6 +1358,108 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     }
     this
   }
+
+  override def maskedFill(mask: Tensor[T], value: T): Tensor[T] = {
+    require(this.nElement() == mask.nElement())
+
+    val func = new TensorFunc4[T] {
+      def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+        require(ev.toType[Int](data2(offset2)) == 1 || ev.toType[Int](data2(offset2)) == 0,
+          "Mask tensor can take 0 and 1 values only")
+        if (ev.toType[Int](data2(offset2)) == 1) {
+          data1(offset1) = value
+        }
+      }
+    }
+    DenseTensorApply.apply2[T](this, mask, func)
+    this
+  }
+
+  override def maskedCopy(mask: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    require(this.nElement() == mask.nElement())
+    require(y.isContiguous())
+
+    val data3 = y.storage().array()
+    var offset = 0
+    val func = new TensorFunc4[T] {
+      override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+        require(ev.toType[Int](data2(offset2)) == 1 || ev.toType[Int](data2(offset2)) == 0,
+          "Mask tensor can take 0 and 1 values only")
+        if (ev.toType[Int](data2(offset2)) == 1) {
+          require(offset < data3.length, "Number of elements of y < number of ones in mask")
+          data1(offset1) = data3(offset)
+          offset += 1
+        }
+      }
+    }
+    DenseTensorApply.apply2[T](this, mask, func)
+    this
+  }
+
+  override def maskedSelect(mask: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    require(y.nElement() == mask.nElement())
+    val length = mask.sum()
+    var offset = 0
+    this.resize(ev.toType[Double](length).toInt)
+    val result = this.storage().array()
+
+    val func = new TensorFunc4[T] {
+      override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+        require(ev.toType[Int](data2(offset2)) == 1 || ev.toType[Int](data2(offset2)) == 0,
+          "Mask tensor can take 0 and 1 values only")
+        if (ev.toType[Int](data2(offset2)) == 1) {
+          result(offset) = data1(offset1)
+          offset += 1
+        }
+      }
+    }
+    DenseTensorApply.apply2[T](y, mask, func)
+    this
+  }
+
+  override def gt(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    val func = new TensorFunc6[T] {
+      def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
+                data3: Array[T], offset3: Int): Unit = {
+        if (ev.isGreater(data2(offset1), data3(offset2))) {
+          data1(offset1) = ev.fromType(1)
+        } else {
+          data1(offset1) = ev.fromType(0)
+        }
+      }
+    }
+    DenseTensorApply.apply3[T](this, x, y, func)
+    this
+  }
+
+  override def lt(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    val func = new TensorFunc6[T] {
+      def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
+                data3: Array[T], offset3: Int): Unit = {
+        if (ev.toType[Double](ev.minus(data2(offset1), data3(offset2))) < 0) {
+          data1(offset1) = ev.fromType(1)
+        } else {
+          data1(offset1) = ev.fromType(0)
+        }
+      }
+    }
+    DenseTensorApply.apply3[T](this, x, y, func)
+    this
+  }
+
+  override def eq(x: Tensor[T], value: T): Tensor[T] = {
+    val func = new TensorFunc4[T] {
+      def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+        if (data2(offset1) == value) {
+          data1(offset1) = ev.fromType(1)
+        } else {
+          data1(offset1) = ev.fromType(0)
+        }
+      }
+    }
+    DenseTensorApply.apply2[T](this, x, func)
+    this
+  }
 }
 
 object DenseTensor {
