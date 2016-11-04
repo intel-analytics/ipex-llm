@@ -217,7 +217,9 @@ void MKLSum<DType>::updateGradInput(DType *gradInput, DType **gradOutput)
   status = dnnExecute<DType>(this->backwardPrim, resources);
   PERFEND("main computing");
 
-  if (!this->gradInput->isUsePrev()) this->gradInput->backToUsr();
+  if (!this->gradInput->isUsePrev()) {
+    this->gradInput->backToUsr();
+  }
 }
 
 template <typename ArrayType, typename DType>

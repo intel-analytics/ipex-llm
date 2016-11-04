@@ -5,6 +5,9 @@
 #include "memory.h"
 #include "utils.h"
 
+#include <iostream>
+#include <fstream>
+
 static int getMKLBuildDate()
 {
   static int build = 0;
@@ -48,6 +51,9 @@ class MKLConvolution : public MKLLayer<DType>
   std::shared_ptr<MKLData<DType>> gradKernel;
   std::shared_ptr<MKLData<DType>> gradBias;
 
+  std::shared_ptr<MKLData<DType>> gradOutputK;
+  std::shared_ptr<MKLData<DType>> gradOutputB;
+
  private:
   // this method is not the same as createMklLayout in MKLMemory
   void firstPass();
@@ -87,7 +93,9 @@ MKLConvolution<DType>::MKLConvolution()
       kernelAdr(NULL),
       biasAdr(NULL),
       kernelPrim(NULL),
-      biasPrim(NULL)
+      biasPrim(NULL),
+      gradOutputK(new MKLData<DType>),
+      gradOutputB(new MKLData<DType>)
 {
 }
 
@@ -150,6 +158,10 @@ void MKLConvolution<DType>::init(size_t inputNumber, size_t inputChannel,
   kernelSize[3] = kernelNumber / groupsMKL;
   kernelSize[4] = groupsMKL;
 
+  for (int i = 0; i < 5; i++) {
+    LOG(INFO) << "kernelSize[" << i << "] = " << kernelSize[i];
+  }
+
   kernelStrides[0] = 1;
   for (int i         = 1; i < 5; i++)
     kernelStrides[i] = kernelStrides[i - 1] * kernelSize[i - 1];
@@ -175,6 +187,9 @@ void MKLConvolution<DType>::init(size_t inputNumber, size_t inputChannel,
   this->gradKernel->createUsrLayout(kernelDimension, kernelSize, kernelStrides);
   // bias dimension is 1
   this->gradBias->createUsrLayout(1, biasSize, biasStrides);
+
+  this->gradOutputK->createUsrLayout(dimension, outputSize, outputStrides);
+  this->gradOutputB->createUsrLayout(dimension, outputSize, outputStrides);
 }
 
 template <typename DType>
@@ -211,6 +226,7 @@ void MKLConvolution<DType>::firstPass()
   CHECK_EQ(status, E_SUCCESS);
 
   this->gradKernel->createMklLayout(this->kernelPrim, dnnResourceDiffFilter);
+  this->gradOutputK->createMklLayout(this->kernelPrim, dnnResourceDiffDst);
 
   // backward bias
   status = dnnGroupsConvolutionCreateBackwardBias<DType>(
@@ -219,6 +235,7 @@ void MKLConvolution<DType>::firstPass()
   CHECK_EQ(status, E_SUCCESS);
 
   this->gradBias->createMklLayout(this->biasPrim, dnnResourceDiffBias);
+  this->gradOutputB->createMklLayout(this->biasPrim, dnnResourceDiffDst);
 
   // we create the layout only at the first time
   this->isFirstPass = false;
@@ -227,8 +244,10 @@ void MKLConvolution<DType>::firstPass()
 template <typename DType>
 void MKLConvolution<DType>::preExecute(DType *input)
 {
-  caffe::cpu::OpenMpManager::setGpuDisabled();
-  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+  if (this->getIsUseOpenMp()) {
+    caffe::cpu::OpenMpManager::setGpuDisabled();
+    caffe::cpu::OpenMpManager::bindOpenMpThreads();
+  }
 
   this->input->createConversion();
   //LOG(DBG) << "DOES INPUT CREATE NEW MEM?";
@@ -270,6 +289,8 @@ void MKLConvolution<DType>::updateOutput(DType *input, DType *output)
   PERFEND("main computing");
   CHECK_EQ(status, E_SUCCESS);
 
+  this->input->setIsConverted(true);
+
 #ifdef DEBUG
   printData<DType>(reinterpret_cast<DType *>(this->output->getData()),
                    outputSize[3], outputSize[2], outputSize[1], outputSize[0],
@@ -306,6 +327,8 @@ void MKLConvolution<DType>::updateGradInput(DType *input, DType *gradOutput,
   CHECK_EQ(status, E_SUCCESS);
   PERFEND("main computing");
 
+  this->gradOutput->setIsConverted(true);
+
   if (!this->gradInput->isUsePrev()) {
     this->gradInput->backToUsr();
   }
@@ -316,6 +339,7 @@ void MKLConvolution<DType>::updateGradInput(DType *input, DType *gradOutput,
                    "backward gradient input");
 #endif
 }
+
 template <typename DType>
 void MKLConvolution<DType>::updateGradKernel(DType *input, DType *gradOutput,
                                              DType *gradKernel)
@@ -325,10 +349,16 @@ void MKLConvolution<DType>::updateGradKernel(DType *input, DType *gradOutput,
 
   preExecute(input);
 
-  this->gradOutput->createConversion();
+  this->gradOutputK->layoutNext = this->gradOutput->layoutNext;
+  this->gradOutputK->dataNext = this->gradOutput->dataNext;
+  if (this->gradOutput->isUseNext()) {
+    this->gradOutputK->setUseNext(true);
+  }
+
+  this->gradOutputK->createConversion();
   this->gradKernel->createConversion();
 
-  resources[dnnResourceDiffDst]    = this->gradOutput->getConvertedData();
+  resources[dnnResourceDiffDst]    = this->gradOutputK->getConvertedData();
   resources[dnnResourceSrc]        = this->input->getConvertedData();
   resources[dnnResourceDiffFilter] = this->gradKernel->getData();
 
@@ -337,6 +367,16 @@ void MKLConvolution<DType>::updateGradKernel(DType *input, DType *gradOutput,
   status = dnnExecute<DType>(this->kernelPrim, resources);
   CHECK_EQ(status, E_SUCCESS);
   PERFEND("main computing");
+
+  this->input->setIsConverted(false);
+  // because we may not do upgradInput at the first layer of network,
+  // so the kernel converted attribute should be set to false here.
+  // and gradOutput converted attributes should be set to true here,
+  // which MUST be set to false back at updateGradBias.
+  this->gradOutput->setIsConverted(true);
+
+  // we don't need kernel at all here, we use backKernel!
+  // this->kernel->setIsConverted(false);
 
   // the kernel need not re-use for previous layer
   this->gradKernel->backToUsr();
@@ -351,10 +391,16 @@ void MKLConvolution<DType>::updateGradBias(DType *input, DType *gradOutput,
 
   preExecute(input);
 
-  this->gradOutput->createConversion();
+  if (this->gradOutput->isUseNext()) {
+    this->gradOutputB->layoutNext = this->gradOutput->layoutNext;
+    this->gradOutputB->dataNext = this->gradOutput->dataNext;
+    this->gradOutputB->setUseNext(true);
+  }
+
+  this->gradOutputB->createConversion();
   this->gradBias->createConversion();
 
-  resources[dnnResourceDiffDst]  = this->gradOutput->getConvertedData();
+  resources[dnnResourceDiffDst]  = this->gradOutputB->getConvertedData();
   resources[dnnResourceDiffBias] = this->gradBias->getData();
 
   // 4. main computing parts.
@@ -362,6 +408,8 @@ void MKLConvolution<DType>::updateGradBias(DType *input, DType *gradOutput,
   status = dnnExecute<DType>(this->biasPrim, resources);
   CHECK_EQ(status, E_SUCCESS);
   PERFEND("main computing");
+
+  this->gradOutput->setIsConverted(false);
 
   this->gradBias->backToUsr();
 }
@@ -457,7 +505,7 @@ void JNIConvolutionUpdateGradKernel(JNIEnv *env, jclass thisClass,
 
   std::shared_ptr<ZipArray<ArrayType, DType>> jOutputDiff(
       new ZipArray<ArrayType, DType>(env, outputDiff, outputDiffOffset,
-                                     ptr->gradOutput));
+                                     ptr->gradOutputK));
 
   std::shared_ptr<ZipArray<ArrayType, DType>> jKernelDiff(
       new ZipArray<ArrayType, DType>(env, kernelDiff, kernelDiffOffset,
@@ -490,7 +538,7 @@ void JNIConvolutionUpdateGradBias(JNIEnv *env, jclass thisClass,
 
   std::shared_ptr<ZipArray<ArrayType, DType>> jOutputDiff(
       new ZipArray<ArrayType, DType>(env, outputDiff, outputDiffOffset,
-                                     ptr->gradOutput));
+                                     ptr->gradOutputB));
 
   std::shared_ptr<ZipArray<ArrayType, DType>> jBiasDiff(
       new ZipArray<ArrayType, DType>(env, biasDiff, biasDiffOffset,

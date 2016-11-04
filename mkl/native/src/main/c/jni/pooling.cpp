@@ -217,7 +217,7 @@ void MKLPooling<DType>::updateOutput(DType *input, DType *output)
 
   this->output->setUsrData(output);
   this->output->createConversion(!(ceilMode));
-  this->workspace->setZero();
+  // this->workspace->setZero();
   // this->output->setZero();
 
   void *resources[dnnResourceNumber];
@@ -270,7 +270,7 @@ void MKLPooling<DType>::updateGradInput(DType *input, DType *gradOutput,
   // every forward/backward.
   this->gradInput->setUsrData(gradInput);
   this->gradInput->createConversion();
-  // Note: can't be deleted, because mkl dnn will not delete exist data
+  // Note: MUST not be deleted, because mkl dnn will not delete exist data
   this->gradInput->setZero();
 
   this->gradOutput->setUsrData(gradOutput);

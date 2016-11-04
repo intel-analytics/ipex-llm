@@ -60,7 +60,7 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
 
   override def reset(): Unit = {
     if (null != weight) {
-      weight.apply1(_ => ev.fromType[Double](0.1))
+      weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1)))
     }
 
     if (null != bias) {
@@ -84,10 +84,10 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
     val inputOffset = input.storageOffset() - 1;
     val outputOffset = output.storageOffset() - 1;
 
-    val inputWidth = input.size(input.dim())
-    val inputHeight = input.size(input.dim() - 1)
-    val inputChannel = if (input.dim() <= 2) 1 else input.size(input.dim() - 2)
-    val inputNumber = if (input.dim() <= 3) 1 else input.size(input.dim() - 3)
+    val inputNumber = input.size(1)
+    val inputChannel = input.size(2)
+    val inputHeight = if (input.dim() <= 2) 1 else input.size(3)
+    val inputWidth = if (input.dim() <= 3) 1 else input.size(4)
     // TODO we may set input.size(input.dim() - 3) == 1 if input.dim() == 3
 
     val kernelOffset = weight.storageOffset() - 1
@@ -101,7 +101,7 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
                                             inputChannel,
                                             inputHeight,
                                             inputWidth,
-                                            eps,
+                                            eps.toFloat,
                                             useWeight,
                                             useBias,
                                             4,
@@ -160,10 +160,10 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
     val inputOffset = input.storageOffset() - 1;
     val outputOffset = output.storageOffset() - 1;
 
-    val inputWidth = input.size(input.dim())
-    val inputHeight = input.size(input.dim() - 1)
-    val inputChannel = if (input.dim() <= 2) 1 else input.size(input.dim() - 2)
-    val inputNumber = if (input.dim() <= 3) 1 else input.size(input.dim() - 3)
+    val inputNumber = input.size(1)
+    val inputChannel = input.size(2)
+    val inputHeight = if (input.dim() <= 2) 1 else input.size(3)
+    val inputWidth = if (input.dim() <= 3) 1 else input.size(4)
     // TODO we may set input.size(input.dim() - 3) == 1 if input.dim() == 3
 
     val kernelOffset = weight.storageOffset() - 1
@@ -214,6 +214,11 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T], scale: Double): Unit = {}
 
+  override def updateParameters(learningRate: T): Unit = {
+    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
+    bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
+  }
+
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
     gradBias.zero()
@@ -223,6 +228,17 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
   }
 
+  override def toString(): String = {
+    s"mkl.SpatialBatchNormalization[${ev.getType()}]($nOutput, $eps, $momentum, $affine)"
+  }
+}
+
+class BatchNormalization[@specialized(Float, Double) T: ClassTag](
+    nOutput: Int,
+    eps: Double = 1e-5,
+    momentum: Double = 0.1,
+    affine: Boolean = true)(implicit ev: TensorNumeric[T])
+    extends SpatialBatchNormalization[T](nOutput, eps, momentum, affine) {
   override def toString(): String = {
     s"mkl.BatchNormalization[${ev.getType()}]($nOutput, $eps, $momentum, $affine)"
   }

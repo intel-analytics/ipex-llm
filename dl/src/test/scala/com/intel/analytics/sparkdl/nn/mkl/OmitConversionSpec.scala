@@ -194,7 +194,7 @@ class OmitConversionSpec extends FlatSpec with Matchers {
     def test[T: ClassTag]()(implicit ev: TensorNumeric[T]): Unit = {
       val modelDnn = getModel[T]("dnn")
       val modelBlas = getModel[T]("blas")
-      val seqDnn  = modelDnn.asInstanceOf[nn.Sequential[T]]
+      val seqDnn = modelDnn.asInstanceOf[nn.Sequential[T]]
       val seqBlas = modelBlas.asInstanceOf[nn.Sequential[T]]
       println(modelDnn)
       println(modelBlas)
@@ -212,12 +212,14 @@ class OmitConversionSpec extends FlatSpec with Matchers {
         val outputDnn = modelDnn.forward(input)
 
         for (i <- 0 until seqBlas.modules.length) {
-          Tools.CumulativeError(seqDnn.modules(i).output, seqBlas.modules(i).output, "module " + i + " output")
+          Tools.cumulativeError(seqDnn.modules(i).output,
+                                seqBlas.modules(i).output,
+                                "module " + i + " output")
         }
         outputDnn should be equals (outputBlas)
-        Tools.CumulativeError(outputDnn, outputBlas, "output") should be(0.0 +- 2*1e-5)
+        Tools.cumulativeError(outputDnn, outputBlas, "output") should be(0.0 +- 2 * 1e-5)
 
-        outputDnn.nElement() should be (outputBlas.nElement())
+        outputDnn.nElement() should be(outputBlas.nElement())
 
         val gradOutput = Tensor[T]().resizeAs(outputDnn).fill(ev.fromType(0.1))
 
@@ -228,14 +230,14 @@ class OmitConversionSpec extends FlatSpec with Matchers {
 //          "gradInput") should be (0.0 +- 1e-6)
 
         gradInputDnn should be equals (gradInputBlas)
-        Tools.AverageError(gradInputDnn, gradInputBlas, "gradInput") should be(0.0 +- 2*1e-5)
+        Tools.averageError(gradInputDnn, gradInputBlas, "gradInput") should be(0.0 +- 2 * 1e-5)
 
-        /*
-         * TODO
-         *
-         * It's very stange that the cumulative error or average error of gradient weight
-         * and gradient bias has big difference.
-         */
+       /*
+        * TODO
+        *
+        * It's very stange that the cumulative error or average error of gradient weight
+        * and gradient bias has big difference.
+        */
       }
     }
 
@@ -260,7 +262,7 @@ class OmitConversionSpec extends FlatSpec with Matchers {
       val outputBlas = modelBlas.forward(input)
 
       outputDnn should be equals (outputBlas)
-      Tools.AverageError(outputDnn, outputBlas, "output") should be(0.0 +- 1e-6)
+      Tools.averageError(outputDnn, outputBlas, "output") should be(0.0 +- 1e-6)
 
       val gradOutput = Tensor[T]().resizeAs(outputDnn) rand ()
 
@@ -268,7 +270,7 @@ class OmitConversionSpec extends FlatSpec with Matchers {
       val gradInputBlas = modelBlas.backward(input, gradOutput)
 
       gradInputDnn should be equals (gradInputBlas)
-      Tools.AverageError(gradInputDnn, gradInputBlas, "gradInput") should be(0.0 +- 1e-5)
+      Tools.averageError(gradInputDnn, gradInputBlas, "gradInput") should be(0.0 +- 1e-5)
 
       val (gradWeightDnn, gradBiasDnn) = modelDnn.getParameters()
       val (gradWeightBlas, gradBiasBlas) = modelBlas.getParameters()
@@ -279,14 +281,14 @@ class OmitConversionSpec extends FlatSpec with Matchers {
        * It's very stange that the cumulative error or average error of gradient weight
        * and gradient bias has big difference.
        */
-      Tools.AverageError(gradWeightDnn, gradWeightBlas, "gradWeight") should be(0.0 +- 1e-6)
-      Tools.AverageError(gradBiasDnn, gradBiasBlas, "gradBias") // should be(0.0 +- 1e2)
+      Tools.averageError(gradWeightDnn, gradWeightBlas, "gradWeight") should be(0.0 +- 1e-6)
+      Tools.averageError(gradBiasDnn, gradBiasBlas, "gradBias") // should be(0.0 +- 1e2)
     }
 
     test[Float]()
   }
 
-  "OmitConversion with mix layers five iterations" should "generate correct output and gradient input" in {
+  "OmitConversion with mix layers five iterations" should "correct output and gradient input" in {
     def test[T: ClassTag]()(implicit ev: TensorNumeric[T]): Unit = {
       val modelDnn = getModel[T]("mix")
       val modelBlas = getModel[T]("blas")
@@ -315,10 +317,10 @@ class OmitConversionSpec extends FlatSpec with Matchers {
         outBlas += ("output" -> outputBlas)
 
         outputDnn should be equals (outputBlas)
-        Tools.AverageError(outputDnn, outputBlas, "iteration " + i + " output") should be(
-          0.0 +- 1e-6)
+        Tools.averageError(outputDnn, outputBlas,
+                           "iteration " + i + " output") should be(0.0 +- 1e-6)
 
-        Tools.AverageError(outDnn, outBlas, error)
+        Tools.averageError(outDnn, outBlas, error)
 
         val gradOutput = Tensor[T]().resizeAs(outputDnn) rand ()
 
@@ -326,7 +328,7 @@ class OmitConversionSpec extends FlatSpec with Matchers {
         val gradInputBlas = modelBlas.backward(input, gradOutput)
 
         gradInputDnn should be equals (gradInputBlas)
-        Tools.AverageError(gradInputDnn, gradInputBlas, "iteration " + i + " gradInput") should be(
+        Tools.averageError(gradInputDnn, gradInputBlas, "iteration " + i + " gradInput") should be(
           0.0 +- 1e-5)
 
         val (gradWeightDnn, gradBiasDnn) = modelDnn.getParameters()
@@ -338,14 +340,14 @@ class OmitConversionSpec extends FlatSpec with Matchers {
          * It's very stange that the cumulative error or average error of gradient weight
          * and gradient bias has big difference.
          */
-        Tools.AverageError(gradWeightDnn, gradWeightBlas, "iteration " + i + " gradWeight") should be(
-          0.0 +- 1e-6)
-        Tools.AverageError(gradBiasDnn, gradBiasBlas, "iteration " + i + " gradBias") // should be(0.0 +- 1e2)
+        Tools.averageError(gradWeightDnn, gradWeightBlas,
+                           "iteration " + i + " gradWeight") should be(0.0 +- 1e-6)
+        Tools.averageError(gradBiasDnn, gradBiasBlas, "iteration " + i + " gradBias")
 
       }
     }
 
-    for (i <- 0 until Tools.GetRandTimes()) {
+    for (i <- 0 until Tools.getRandTimes()) {
       test[Float]()
       test[Double]()
     }

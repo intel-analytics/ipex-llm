@@ -44,9 +44,10 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   require(nInputPlane % groups == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % groups == 0, "Number of output channels should be multiples of group.")
 
-  val weight: Tensor[T] = Tensor[T](groups, nOutputPlane / groups,
-    nInputPlane / groups, kernelHeight, kernelWidth)
-  this.gradWeight = Tensor[T](groups, nOutputPlane / groups, nInputPlane / groups, kernelHeight, kernelWidth)
+  val weight: Tensor[T] = Tensor[T](groups, nOutputPlane / groups, nInputPlane / groups,
+                                    kernelHeight, kernelWidth)
+  this.gradWeight =
+    Tensor[T]().resizeAs(weight)
 //  val weight: Tensor[T] =
 //    Tensor[T](nOutputPlane, nInputPlane, kernelHeight, kernelWidth)
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
@@ -63,6 +64,8 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   var classPtr = 0L
   private var firstPass = true
 
+  private var useOpenMp = true
+
   override def getClassPtr(): Long = classPtr
 
   def getIm2ColTime(): Long = im2colTime
@@ -70,6 +73,11 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
+    this
+  }
+
+  def setUseOpenMp(useIt : Boolean) : this.type = {
+    useOpenMp = useIt
     this
   }
 
@@ -151,6 +159,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       println("UNLOADED MKL!!!!!!!!!!!!!!!")
     }
 
+    implicit def bool2int(b: Boolean) = if (b) 1 else 0
     if (firstPass) {
       ev.getType() match {
         case "Double" =>
@@ -169,6 +178,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
                                                4,
                                                groups,
                                                this.getName())
+          MKL.SetUseOpenMpDouble(classPtr, useOpenMp)
         case "Float" =>
           classPtr = MKL.ConvolutionInitFloat(inputNumber,
                                               inputChannel,
@@ -185,6 +195,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
                                               4,
                                               groups,
                                               this.getName())
+          MKL.SetUseOpenMpFloat(classPtr, useOpenMp)
         case _ =>
           throw new UnsupportedOperationException(s"Only Float supported")
       }
@@ -196,7 +207,6 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       this.initForward = false
     }
 
-    implicit def bool2int(b: Boolean) = if (b) 1 else 0
     val start = System.nanoTime()
     ev.getType() match {
       case "Double" =>
@@ -434,7 +444,9 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"""mkl.SpatialConvolution($nInputPlane -> $nOutputPlane, $kernelWidth x $kernelHeight, $strideWidth, $strideHeight, $padWidth, $padHeight)"""
+    s"""mkl.SpatialConvolution($nInputPlane -> $nOutputPlane,
+       |$kernelWidth x $kernelHeight, $strideWidth, $strideHeight,
+       |$padWidth, $padHeight)""".stripMargin.replaceAll("\n", " ")
   }
 
   override def findModel(paramOffset: Int,

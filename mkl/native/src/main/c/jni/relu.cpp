@@ -156,6 +156,8 @@ void MKLReLU<DType>::updateOutput(DType *input, DType *output)
   PERFEND("main computing");
   CHECK_EQ(status, E_SUCCESS);
 
+  this->input->setIsConverted(true);
+
 #ifdef DEBUG
   printData<DType>(reinterpret_cast<DType *>(this->output->getData()),
                    outputSize[3], outputSize[2], outputSize[1], outputSize[0],
@@ -188,6 +190,8 @@ void MKLReLU<DType>::updateGradInput(DType *input, DType *gradOutput,
   status = dnnExecute<DType>(this->backwardPrim, resources);
   CHECK_EQ(status, E_SUCCESS);
   PERFEND("main computing");
+
+  this->input->setIsConverted(false);
 
   if (!this->gradInput->isUsePrev()) {
     this->gradInput->backToUsr();

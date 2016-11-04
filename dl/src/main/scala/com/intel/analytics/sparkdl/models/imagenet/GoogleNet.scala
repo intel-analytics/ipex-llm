@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
 import com.intel.analytics.sparkdl.nn.mkl.Linear
 import com.intel.analytics.sparkdl.nn.mkl.SpatialBatchNormalization
 import com.intel.analytics.sparkdl.nn.mkl.ReLU
-import com.intel.analytics.sparkdl.nn.mkl.LocalNormalizationAcrossChannels
+import com.intel.analytics.sparkdl.nn.mkl.SpatialCrossMapLRN
 import com.intel.analytics.sparkdl.nn.mkl.SpatialAveragePooling
 import com.intel.analytics.sparkdl.nn.mkl.SpatialConvolution
 import com.intel.analytics.sparkdl.nn.mkl.SpatialMaxPooling
@@ -96,7 +96,7 @@ object GoogleNet_v1 {
     output1.add(new View[D](128 * 4 * 4).setNumInputDims(3))
     output1.add(new Linear[D](128 * 4 * 4, 1024).setName("loss1/fc"))
     output1.add(new ReLU[D](true).setName("loss1/relu_fc"))
-    output1.add(new Dropout[D](0.7).setName("loss1/drop_fc"))
+    // output1.add(new Dropout[D](0.7).setName("loss1/drop_fc"))
     output1.add(new Linear[D](1024, classNum).setName("loss1/classifier"))
     output1.add(new LogSoftMax[D].setName("loss1/loss"))
 
@@ -112,7 +112,7 @@ object GoogleNet_v1 {
     output2.add(new View[D](128 * 4 * 4).setNumInputDims(3))
     output2.add(new Linear[D](128 * 4 * 4, 1024).setName("loss2/fc"))
     output2.add(new ReLU[D](true).setName("loss2/relu_fc"))
-    output2.add(new Dropout[D](0.7).setName("loss2/drop_fc"))
+    // output2.add(new Dropout[D](0.7).setName("loss2/drop_fc"))
     output2.add(new Linear[D](1024, classNum).setName("loss2/classifier"))
     output2.add(new LogSoftMax[D].setName("loss2/loss"))
 
@@ -122,7 +122,7 @@ object GoogleNet_v1 {
     output3.add(inception[D](832, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_5a/"))
     output3.add(inception[D](832, T(T(384), T(192, 384), T(48, 128), T(128)), "inception_5b/"))
     output3.add(new SpatialAveragePooling[D](7, 7, 1, 1).setName("pool5/7x7_s1"))
-    output3.add(new Dropout[D](0.4).setName("pool5/drop_7x7_s1"))
+    // output3.add(new Dropout[D](0.4).setName("pool5/drop_7x7_s1"))
     output3.add(new View[D](1024).setNumInputDims(3))
     output3.add(new Linear[D](1024, classNum).setInitMethod(Xavier).setName("loss3/classifier"))
     output3.add(new LogSoftMax[D].setName("loss3/loss3"))
@@ -210,7 +210,7 @@ object GoogleNet_v2 {
     output3.add(new Linear[D](1024, classNum).setName("loss3/classifier"))
     output3.add(new LogSoftMax[D].setName("loss3/loss"))
 
-    val split2 = new nn.Concat[D](2)
+    val split2 = new Concat[D](2)
     split2.add(output3)
     split2.add(output2)
 
@@ -218,7 +218,7 @@ object GoogleNet_v2 {
     mainBranch.add(features2)
     mainBranch.add(split2)
 
-    val split1 = new nn.Concat[D](2)
+    val split1 = new Concat[D](2)
     split1.add(mainBranch)
     split1.add(output1)
 
