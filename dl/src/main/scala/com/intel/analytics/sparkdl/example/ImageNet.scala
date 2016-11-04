@@ -230,8 +230,8 @@ class Image(path: Path) {
   val widthScale: Int = 256
   val heightScale: Int = 256
   val nChannels: Int = 3
-  val cropWidth: Int = 224
-  val cropHeight: Int = 224
+  val cropWidth: Int = 227
+  val cropHeight: Int = 227
   val dataOffset: Int = 8
 
   val label: String = path.getParent.getFileName.toString

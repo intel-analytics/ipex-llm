@@ -22,6 +22,7 @@ import com.intel.analytics.sparkdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.sparkdl.nn.ClassNLLCriterion
 import com.intel.analytics.sparkdl.optim.{GradAggEpochOptimizer, Metrics, ShuffleBatchDataSet}
 import com.intel.analytics.sparkdl.ps.{AllReduceParameterManager, OneReduceParameterManager}
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -45,9 +46,9 @@ object TestModelParallel {
   private def train(params: Params) = {
     val conf = new SparkConf().setAppName(s"Test")
     conf.setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
-    conf.setExecutorEnv("KMP_BLOCKTIME", "0")
-    conf.setExecutorEnv("OMP_WAIT_POLICY", "passive")
-    conf.setExecutorEnv("OMP_NUM_THREADS", s"${params.parallelism}")
+//    conf.setExecutorEnv("KMP_BLOCKTIME", "0")
+//    conf.setExecutorEnv("OMP_WAIT_POLICY", "passive")
+//    conf.setExecutorEnv("OMP_NUM_THREADS", s"${params.parallelism}")
     conf.set("spark.task.maxFailures", "1")
     conf.set("spark.shuffle.blockTransferService", "nio")
     conf.set("spark.akka.frameSize", "10") // akka networking speed is slow
@@ -71,7 +72,8 @@ object TestModelParallel {
 
     val optM = getOptimMethodFloat(params.masterOptM)
     val dataSets = new ShuffleBatchDataSet[Int, Float](
-      trainData, (d, t1, t2) => (t1.resize(Array(params.workerConfig[Int]("batch"), 3, size, size)),
+      trainData, (d, t1, t2) => (t1.resize(Array(params.workerConfig[Int]("batch"),
+                                                 3, size, size)).fill(0.5f),
         t2.resize(Array(params.workerConfig[Int]("batch"))).fill(1)),
       params.workerConfig[Int]("batch"), params.workerConfig[Int]("batch"))
 

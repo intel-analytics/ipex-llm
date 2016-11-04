@@ -125,15 +125,18 @@ object RGBImageNormalizer {
     val totalCount = if (samples < 0) dataSource.total() else samples
     var i = 0
     while ((i < samples || samples < 0) && !dataSource.finished()) {
-      val content = dataSource.next().content
-      require(content.length % 3 == 0)
-      var j = 0
-      while (j < content.length) {
-        sumR += content(j + 2)
-        sumG += content(j + 1)
-        sumB += content(j + 0)
-        total += 1
-        j += 3
+      val image = dataSource.next()
+      if (image != null) {
+        val content = image.content
+        require(content.length % 3 == 0)
+        var j = 0
+        while (j < content.length) {
+          sumR += content(j + 2)
+          sumG += content(j + 1)
+          sumB += content(j + 0)
+          total += 1
+          j += 3
+        }
       }
       i += 1
       print(s"Mean: $i / $totalCount \r")

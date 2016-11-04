@@ -24,6 +24,7 @@ import com.intel.analytics.sparkdl.nn.ClassNLLCriterion
 import com.intel.analytics.sparkdl.optim.{EvaluateMethods, SGD}
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.{File, T}
+import com.intel.analytics.sparkdl.models
 
 object ImageNetLocal {
   val startTime = System.nanoTime()
@@ -79,7 +80,7 @@ object ImageNetLocal {
     varB /= samples
 
     val model = netType match {
-      case "alexnet" => AlexNet.getModel[Float](classNum)
+      case "alexnet" => models.imagenet.AlexNet[Float](classNum)
       case "googlenet" => GoogleNet.getModel[Float](classNum)
       case "googlenet-bn" => GoogleNet.getModel[Float](classNum, "googlenet-bn")
       case "googlenet-cf" => GoogleNet.getModelCaffe[Float](classNum)
@@ -90,12 +91,12 @@ object ImageNetLocal {
     println(model)
     val criterion = new ClassNLLCriterion[Float]()
     val epochNum = 90
-    val featureShape = Array(3, 224, 224)
+    val featureShape = Array(3, 227, 227)
     val targetShape = Array(1)
     val sgd = new SGD[Float]
     val state = T("momentum" -> 0.9, "dampening" -> 0.0)
     val stageImgs = new util.ArrayDeque[Image](batchSize)
-    val input = Tensor[Float](batchSize, 3, 224, 224)
+    val input = Tensor[Float](batchSize, 3, 227, 227)
     val target = Tensor[Float](batchSize)
     val meanRFloat = meanR.toFloat
     val meanGFloat = meanG.toFloat
