@@ -96,8 +96,6 @@ object ImageNetLocal {
       case "resnet" => {
         val curModel = ResNet[Float](classNum, T("shortcutType" -> ShortcutType.B, "depth" -> modelDepth))
         ResNet.shareGradInput(curModel)
-        ResNet.convInit("SpatialConvolution", curModel)
-        ResNet.bnInit("SpatialBatchNormalization", curModel)
         curModel
       }
       case _ => throw new IllegalArgumentException

@@ -102,8 +102,8 @@ object ResNet {
       .findModules(name)
       .zipWithIndex) {
       val tmpModel = m.asInstanceOf[SpatialBatchNormalization[T]]
-      tmpModel.weight.apply1(_ => ev.fromType[Float](1f))
-      tmpModel.bias.apply1(_ => ev.fromType[Float](0f))
+      tmpModel.weight.apply1(_ => ev.fromType[Float](1.0f))
+      tmpModel.bias.apply1(_ => ev.fromType[Float](0.0f))
     }
   }
   var iChannels = 0
@@ -211,6 +211,15 @@ object ResNet {
       .add(new SpatialAveragePooling[T](7, 7, 1, 1))
       .add(new View[T](nFeatures).setNumInputDims(3))
       .add(new Linear[T](nFeatures, classNum))
+
+    convInit("com.intel.analytics.sparkdl.nn.SpatialConvolution", model)
+    bnInit("com.intel.analytics.sparkdl.nn.SpatialBatchNormalization", model)
+    for ((m, i) <- model
+      .findModules("com.intel.analytics.sparkdl.nn.Linear")
+      .zipWithIndex){
+      val tmpModel = m.asInstanceOf[Linear[T]]
+      tmpModel.bias.apply1(_ => ev.fromType[Float](0))
+    }
 
     model
   }
