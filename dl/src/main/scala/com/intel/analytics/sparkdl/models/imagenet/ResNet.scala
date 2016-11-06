@@ -166,7 +166,7 @@ object ResNet {
         .add(new SpatialBatchNormalization[T](n * 4))
 
       new Sequential[Activities, Activities, T]()
-        .add(new ConcatTable[Activities, T]()
+        .add(new ConcatTable[Tensor[T], T]()
           .add(s)
           .add(shortcut(nInputPlane, n*4, stride)))
         .add(new CAddTable(true))
