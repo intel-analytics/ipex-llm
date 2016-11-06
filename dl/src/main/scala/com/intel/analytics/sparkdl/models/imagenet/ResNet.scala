@@ -90,8 +90,8 @@ object ResNet {
       .findModules(name)
       .zipWithIndex) {
       val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
-      val n = tmpModel.kernelW * tmpModel.kernelH * tmpModel.nOutputPlane
-      tmpModel.weight.apply1(_ => ev.fromType[Float](RNG.normal(0, Math.sqrt(2 / n)).toFloat))
+      val n: Float = tmpModel.kernelW * tmpModel.kernelH * tmpModel.nOutputPlane
+      tmpModel.weight.apply1(_ => ev.fromType[Float](RNG.normal(0, Math.sqrt(2.0f / n)).toFloat))
       tmpModel.bias.apply1(_ => ev.fromType[Float](0))
     }
   }
