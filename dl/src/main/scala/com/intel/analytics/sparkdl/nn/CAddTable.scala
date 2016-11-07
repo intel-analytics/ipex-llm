@@ -53,7 +53,9 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = 
       if (inplace) {
         gradInput(i) = gradOutput
       } else {
-        if (gradInput.contains(i)) {
+//        if (gradInput.contains(i)) {
+//          gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
+        if (i <= gradInput.length) {
           gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
         } else {
           gradInput.insert(i, gradOutput.clone())
