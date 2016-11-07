@@ -217,6 +217,9 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
     ResNet.shareGradInput(model)
+   // ResNet.convInit("com.intel.analytics.sparkdl.nn.SpatialConvolution", model)
+  //  ResNet.bnInit("com.intel.analytics.sparkdl.nn.SpatialBatchNormalization", model)
+  //  ResNet.lnInit("com.intel.analytics.sparkdl.nn.Linear", model)
 
     val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]

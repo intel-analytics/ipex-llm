@@ -108,6 +108,15 @@ object ResNet {
       tmpModel.bias.apply1(_ => ev.fromType[Float](0.0f))
     }
   }
+  def lnInit[@specialized(Float, Double) T: ClassTag](name: String, model: Module[Activities, Activities, T])
+            (implicit ev: TensorNumeric[T]): Unit = {
+    for ((m, i) <- model
+      .findModules("com.intel.analytics.sparkdl.nn.Linear")
+      .zipWithIndex){
+      val tmpModel = m.asInstanceOf[Linear[T]]
+      tmpModel.bias.apply1(_ => ev.fromType[Float](0))
+    }
+  }
   var iChannels = 0
   def apply[T: ClassTag](classNum: Int, opt: Table)(implicit ev: TensorNumeric[T]): Module[Activities, Activities, T] = {
 
@@ -213,15 +222,6 @@ object ResNet {
       .add(new SpatialAveragePooling[T](7, 7, 1, 1))
       .add(new View[T](nFeatures).setNumInputDims(3))
       .add(new Linear[T](nFeatures, classNum))
-
-    convInit("com.intel.analytics.sparkdl.nn.SpatialConvolution", model)
-    bnInit("com.intel.analytics.sparkdl.nn.SpatialBatchNormalization", model)
-    for ((m, i) <- model
-      .findModules("com.intel.analytics.sparkdl.nn.Linear")
-      .zipWithIndex){
-      val tmpModel = m.asInstanceOf[Linear[T]]
-      tmpModel.bias.apply1(_ => ev.fromType[Float](0))
-    }
 
     model
   }
