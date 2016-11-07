@@ -17,6 +17,8 @@
 
 package com.intel.analytics.sparkdl.utils
 
+import com.intel.analytics.sparkdl.tensor.Tensor
+
 import scala.collection.mutable
 import scala.collection.mutable.Map
 
@@ -80,7 +82,9 @@ class Table private[sparkdl](
   }
 
   override def toString(): String = {
-    s"{${state.map { case (key: Any, value: Any) => s"$key: $value" }.mkString(", ")}}"
+    s" {\n\t${state.map{case (key: Any, value: Any) =>
+      s"$key: \n\t" + s"$value".split("\n").mkString("\n\t")
+    }.mkString("\n\t")}\n\t}"
   }
 
   override def equals(obj: Any): Boolean = {
@@ -174,6 +178,70 @@ class Table private[sparkdl](
   }
 
   def length(): Int = state.size
+
+  //  /**
+  //    * Recursively flatten the table to a one dimension table without nested table inside
+  //    * @return the flatten table
+  //    */
+  def flatten(): Table = {
+    flatten(1)
+  }
+
+  private def flatten(startIndex: Int): Table = {
+    var resultIndex = startIndex
+    var i = 1
+    val newState = mutable.Map[Any, Any]()
+
+    while (i <= state.size) {
+      state.get(i).get match {
+        case table: Table =>
+          val newTable = table.flatten(resultIndex)
+          newState ++= newTable.getState()
+          resultIndex = newState.size
+        case tensor: Tensor[_] =>
+          newState.put(resultIndex, tensor)
+      }
+      resultIndex += 1
+      i += 1
+    }
+    new Table(newState)
+  }
+
+  /**
+   * Recursively inverse flatten the flatten table to the same shape with target
+   * @param target the target shape to become
+   * @return the inverse flatten the table with the same shape with target
+   */
+  def inverseFlatten(target: Table): Table = {
+    inverseFlatten(target, 1)
+  }
+
+  /**
+   * Recursively inverse flatten the flatten table to the same shape with target
+   * @param target the target shape to become
+   * @param startIndex for each iteration the start index as an offset
+   * @return the inverse flatten the table with the same shape with target
+   */
+  private def inverseFlatten(target: Table, startIndex: Int): Table = {
+    var i = 1
+    var resultIndex = startIndex
+    val newState = mutable.Map[Any, Any]()
+
+    while (i <= target.getState().size) {
+      target.getState().get(i).get match {
+        case table: Table =>
+          val newTable = inverseFlatten(table, resultIndex)
+          newState.put(i, new Table(newTable.getState()))
+          resultIndex += newTable.getState().size
+        case tensor: Tensor[_] =>
+          newState.put(i, state.get(resultIndex).get)
+      }
+      i += 1
+      resultIndex += 1
+    }
+
+    new Table(newState)
+  }
 }
 
 object T {
