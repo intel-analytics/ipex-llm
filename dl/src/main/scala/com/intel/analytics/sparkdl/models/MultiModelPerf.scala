@@ -101,8 +101,9 @@ object MultiModelPerf {
       case "resnet" => {
         val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
         ResNet.shareGradInput(curModel)
-        ResNet.convInit("SpatialConvolution", curModel)
-        ResNet.bnInit("SpatialBatchNormalization", curModel)
+        ResNet.convInit("com.intel.analytics.sparkdl.nn.SpatialConvolution", curModel)
+        ResNet.bnInit("com.intel.analytics.sparkdl.nn.SpatialBatchNormalization", curModel)
+        ResNet.lnInit("com.intel.analytics.sparkdl.nn.Linear", curModel)
         (curModel, Tensor[T](param.batchSize, 3, 224, 224).rand(),
           new CrossEntropyCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
       }
