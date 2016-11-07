@@ -21,7 +21,7 @@ import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.utils.{T, Table}
 
-import scala.reflect.ClassTag
+import scala.reflect._
 
 class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
@@ -67,5 +67,12 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = 
 
   override def toString() : String = {
     "nn.CAddTable"
+  }
+}
+
+object Test {
+  def main(args: Array[String]): Unit = {
+    val a = T()
+    a.update(1, Tensor[Double]())
   }
 }

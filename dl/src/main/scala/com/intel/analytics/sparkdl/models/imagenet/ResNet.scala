@@ -34,7 +34,7 @@ object ResNet {
 
     val cache = mutable.Map[Any, Storage[T]]()
 
-    model.modules.zipWithIndex.map{case (m, i) =>
+    /*model.modules.zipWithIndex.map{case (m, i) =>
       val moduleType = m.getClass.getName
       if (!moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatTable")) {
         val key = sharingKey(m)
@@ -48,16 +48,17 @@ object ResNet {
         }
         m.gradInput = Tensor[T](cache.get(i%2).get, 1, Array(0))
       }
-    }
+    }*/
 
-    /*model.mapModules(m => {
+    model.mapModules(m => {
       val moduleType = m.getClass.getName
-      if (!moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatTable")) {
+      if (m.gradInput.isInstanceOf[Tensor[T]] && !moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatTable")) {
         val key = sharingKey(m)
         if (!cache.contains(key)){
           cache.put(key, Storage(Array(ev.fromType[Int](1))))
         }
-        m.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
+        val tmpModel = m.asInstanceOf[Module[Tensor[T], Tensor[T], T]]
+        tmpModel.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
       }
     })
 
@@ -67,8 +68,9 @@ object ResNet {
       if (!cache.contains(i % 2)) {
         cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
       }
-      m.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
-    }*/
+      val tmpModel = m.asInstanceOf[ConcatTable[Tensor[T], T]]
+      tmpModel.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
+    }
 
     cache.put("gradWeightMM", Storage(Array(ev.fromType[Int](1))))
     cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
