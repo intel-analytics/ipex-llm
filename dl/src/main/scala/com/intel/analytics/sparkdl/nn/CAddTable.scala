@@ -26,6 +26,8 @@ import scala.reflect._
 class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
 
+  gradInput = T()
+
   override def updateOutput(input: Table): Tensor[T] = {
     if (inplace) {
       output.set(input[Tensor[T]](1))
@@ -52,7 +54,7 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]) : Table = {
     var i = 1
     while (i <= input.length()) {
-      if (i > gradInput.length) gradInput.insert(i, gradOutput.clone)
+      if (i > gradInput.length) gradInput.insert(i, Tensor[T]().resizeAs(input(1)))
       if (inplace) {
         gradInput[Tensor[T]](i).set(gradOutput) // = gradOutput
       } else {
@@ -62,7 +64,10 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = 
       }
       i += 1
     }
-
+    i = input.length + 1
+    while (i <= gradInput.length) {
+      gradInput.remove(i)
+    }
     gradInput
   }
 
