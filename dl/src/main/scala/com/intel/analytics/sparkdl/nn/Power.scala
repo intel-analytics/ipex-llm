@@ -23,7 +23,7 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 class Power[@specialized(Float, Double) T: ClassTag](
-  val power: Int,
+  val power: Double,
   val scale : Double = 1,
   val shift : Double = 0)
 (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
