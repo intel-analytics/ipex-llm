@@ -21,8 +21,8 @@ class ClassSimplexCriterionSpec extends FlatSpec with BeforeAndAfter with Matche
     val target = Tensor[Double](6).fill(3)
 
     val start = System.nanoTime()
-    val output1 = criterion.forward(input, target)
-    val output2 = criterion.backward(input, target)
+    //val output1 = criterion.forward(input, target)
+    //val output2 = criterion.backward(input, target)
     val end = System.nanoTime()
     val scalaTime = end - start
 
