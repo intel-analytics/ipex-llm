@@ -27,17 +27,20 @@ class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
 
   @transient
   var minIdx: Tensor[T] = null
+  @transient
+  var mask: Tensor[T] = null
 
   override def updateOutput(input: Table): Tensor[T] = {
-    val res1 = input[Tensor[T]](1)
-
     if (null == minIdx) minIdx = Tensor[T]()
+    if (null == mask) mask = Tensor[T]()
+
+    val res1 = input[Tensor[T]](1)
     output.resizeAs(res1).copy(res1)
     minIdx.resizeAs(res1).fill(ev.fromType(1))
 
     var i = 2
     while (i <= input.length()) {
-      val mask = Tensor[T].resize(res1.size())
+      mask.resize(res1.size())
       mask.lt(input(i), output)
       minIdx.maskedFill(mask, ev.fromType(i))
 
@@ -50,10 +53,10 @@ class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
     var i = 1
     while (i <= input.length()) {
-      gradInput.insert(i, Tensor[T]())
+      if (!gradInput.contains(i)) gradInput.insert(i, Tensor[T]())
       gradInput[Tensor[T]](i).resizeAs(input(i)).zero()
 
-      val mask = Tensor[T].resize(minIdx.size())
+      mask.resize(minIdx.size())
       mask.eq(minIdx, ev.fromType(i))
 
       gradInput.apply[Tensor[T]](i).maskedCopy(mask, Tensor[T].maskedSelect(mask, gradOutput))

@@ -461,6 +461,8 @@ trait TensorMath[T] {
 
   def lt(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
+  def le(x: Tensor[T], y: Tensor[T]): Tensor[T]
+
   def eq(x: Tensor[T], y: T): Tensor[T]
 
   def maskedFill(mask: Tensor[T], e: T): Tensor[T]
