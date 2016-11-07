@@ -185,7 +185,7 @@ object ResNet {
       new Sequential[Activities, Activities, T]()
         .add(new ConcatAddTable[T](true)
           .add(s)
-          .add(shortcut(nInputPlane, n, stride)))
+          .add(shortcut(nInputPlane, n*4, stride)))
         .add(new ReLU[T](true))
         /*.add(new ConcatTable[Tensor[T], T]()
           .add(s)
