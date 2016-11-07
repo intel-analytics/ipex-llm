@@ -20,6 +20,7 @@ import com.intel.analytics.sparkdl.nn.HardTanh
 import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+
 class HardTanhSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
