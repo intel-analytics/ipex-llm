@@ -52,8 +52,7 @@ object ResNet {
 
     model.mapModules(m => {
       val moduleType = m.getClass.getName
-      if (m.gradInput.isInstanceOf[Tensor[T]] && !moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatTable")
-      && !moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatAddTable")) {
+      if (m.gradInput.isInstanceOf[Tensor[T]] && !moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatTable")) {
         val key = sharingKey(m)
         if (!cache.contains(key)){
           cache.put(key, Storage(Array(ev.fromType[Int](1))))
@@ -64,12 +63,12 @@ object ResNet {
     })
 
     for ((m, i) <- model
-      .findModules("com.intel.analytics.sparkdl.nn.ConcatAddTable")
+      .findModules("com.intel.analytics.sparkdl.nn.ConcatTable")
       .zipWithIndex){
       if (!cache.contains(i % 2)) {
         cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
       }
-      val tmpModel = m.asInstanceOf[ConcatAddTable[T]] //[Tensor[T], T]]
+      val tmpModel = m.asInstanceOf[ConcatTable[Tensor[T], T]]
       tmpModel.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
     }
 
@@ -155,18 +154,18 @@ object ResNet {
       s.add(new SpatialBatchNormalization[T](n))
 
       new Sequential[Activities, Activities, T]()
-        .add(new ConcatAddTable[T](true)
+ /*       .add(new ConcatAddTable[T](true)
           .add(s)
           .add(shortcut(nInputPlane, n, stride)))
         .add(new ReLU[T](true))
-        /*
+        */
         .add(new ConcatTable[Tensor[T], T]()
           .add(s)
           .add(shortcut(nInputPlane, n, stride)))
         .add(new CAddTable(true))
 
         .add(new ReLU[T](true))
-*/    }
+    }
 
     def bottleneck(n: Int, stride: Int): Module[Activities, Activities, T] = {
       val nInputPlane = iChannels
@@ -183,15 +182,15 @@ object ResNet {
         .add(new SpatialBatchNormalization[T](n * 4))
 
       new Sequential[Activities, Activities, T]()
-        .add(new ConcatAddTable[T](true)
-          .add(s)
-          .add(shortcut(nInputPlane, n*4, stride)))
-        .add(new ReLU[T](true))
-        /*.add(new ConcatTable[Tensor[T], T]()
+//        .add(new ConcatAddTable[T](true)
+//          .add(s)
+//          .add(shortcut(nInputPlane, n*4, stride)))
+//        .add(new ReLU[T](true))
+        .add(new ConcatTable[Tensor[T], T]()
           .add(s)
           .add(shortcut(nInputPlane, n*4, stride)))
         .add(new CAddTable(true))
-        .add(new ReLU[T](true))*/
+        .add(new ReLU[T](true))
     }
 
     def layer(block: (Int, Int) => Module[Activities, Activities, T], features: Int, count: Int, stride: Int = 1): Module[Activities, Activities, T] = {
