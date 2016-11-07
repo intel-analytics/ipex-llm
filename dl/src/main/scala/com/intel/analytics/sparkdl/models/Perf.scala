@@ -156,7 +156,7 @@ object Perf {
 case class PerfParams(
   batchSize: Int = 50,
   iteration: Int = 10,
-  warmUp: Int = 10,
+  warmUp: Int = 3,
   dataType: String = "float",
   module: String = "resnet"
 )
