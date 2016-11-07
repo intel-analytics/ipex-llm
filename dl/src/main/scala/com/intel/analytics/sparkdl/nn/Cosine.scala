@@ -22,7 +22,7 @@ import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
 
-class Cosine[@specialized(Float, Double) T: ClassTag](inputSize : Int, outputSize : Int)(
+class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
   this.gradWeight = Tensor[T](outputSize, inputSize)
