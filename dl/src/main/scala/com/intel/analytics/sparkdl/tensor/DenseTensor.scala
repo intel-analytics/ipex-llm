@@ -1398,6 +1398,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def maskedSelect(mask: Tensor[T], y: Tensor[T]): Tensor[T] = {
     require(y.nElement() == mask.nElement())
+    require(ev.isGreater(mask.sum(), ev.fromType(0)))
     val length = mask.sum()
     var offset = 0
     this.resize(ev.toType[Double](length).toInt)
@@ -1437,6 +1438,22 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
                 data3: Array[T], offset3: Int): Unit = {
         if (ev.toType[Double](ev.minus(data2(offset1), data3(offset2))) < 0) {
+          data1(offset1) = ev.fromType(1)
+        } else {
+          data1(offset1) = ev.fromType(0)
+        }
+      }
+    }
+    DenseTensorApply.apply3[T](this, x, y, func)
+    this
+  }
+
+
+  override def le(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    val func = new TensorFunc6[T] {
+      def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
+                data3: Array[T], offset3: Int): Unit = {
+        if (ev.toType[Double](ev.minus(data2(offset1), data3(offset2))) <= 0) {
           data1(offset1) = ev.fromType(1)
         } else {
           data1(offset1) = ev.fromType(0)
