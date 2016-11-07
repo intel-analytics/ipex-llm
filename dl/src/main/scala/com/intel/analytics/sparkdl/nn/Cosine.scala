@@ -26,7 +26,7 @@ class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
   this.gradWeight = Tensor[T](outputSize, inputSize)
-  var weight = Tensor[T](outputSize, inputSize)
+  val weight = Tensor[T](outputSize, inputSize)
 
   @transient
   var _weightNorm: Tensor[T] = Tensor[T]()
@@ -153,6 +153,6 @@ class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
   }
 
   override def toString(): String = {
-    s"nn.Bilinear($inputSize, $outputSize)"
+    s"nn.Cosine($inputSize, $outputSize)"
   }
 }
