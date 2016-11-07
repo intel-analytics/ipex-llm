@@ -52,16 +52,13 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]) : Table = {
     var i = 1
     while (i <= input.length()) {
+      if (i > gradInput.length) gradInput.insert(i, gradOutput.clone)
       if (inplace) {
         gradInput[Tensor[T]](i).set(gradOutput) // = gradOutput
       } else {
 //        if (gradInput.contains(i)) {
 //          gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
-        if (i <= gradInput.length) {
-          gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
-        } else {
-          gradInput.insert(i, gradOutput.clone())
-        }
+        gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
       }
       i += 1
     }
