@@ -179,10 +179,10 @@ class Table private[sparkdl](
 
   def length(): Int = state.size
 
-  //  /**
-  //    * Recursively flatten the table to a one dimension table without nested table inside
-  //    * @return the flatten table
-  //    */
+  /**
+   * Recursively flatten the table to a one dimension table without nested table inside
+   * @return the flatten table
+   */
   def flatten(): Table = {
     flatten(1)
   }
