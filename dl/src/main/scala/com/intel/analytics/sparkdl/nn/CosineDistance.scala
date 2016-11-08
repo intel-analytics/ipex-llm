@@ -22,17 +22,23 @@ import com.intel.analytics.sparkdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class CosineDistance[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
+class CosineDistance[T: ClassTag]()(
+  implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
 
-  //test
-  val buffer = Tensor[T]()
-  val w1 = Tensor[T]()
-  val w22 = Tensor[T]()
-  val w = Tensor[T]()
-  val w32 = Tensor[T]()
-  val ones = Tensor[T]()
+  @transient
+  val buffer: Tensor[T] = null
+  @transient
+  val w1: Tensor[T] = null
+  @transient
+  val w22: Tensor[T] = null
+  @transient
+  val w: Tensor[T] = null
+  @transient
+  val w32: Tensor[T] = null
+  @transient
+  val ones: Tensor[T] = null
 
-  def makeContiguous(input1: Tensor[T], input2: Tensor[T]): (Tensor[T], Tensor[T])= {
+  def makeContiguous(input1: Tensor[T], input2: Tensor[T]): (Tensor[T], Tensor[T]) = {
     var _input1 = Tensor[T]()
     var _input2 = Tensor[T]()
 
@@ -46,14 +52,14 @@ class CosineDistance[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Modul
     } else {
       _input2 = input2
     }
-    (_input1,_input2)
+    (_input1, _input2)
   }
 
   override def updateOutput(input: Table): Tensor[T] = {
     var input1 = input[Tensor[T]](1)
     var input2 = input[Tensor[T]](2)
 
-    //(input1,input2) = makeContiguous(input1, input2)
+    // (input1,input2) = makeContiguous(input1, input2)
 
     if (input1.dim() == 1) {
       input1 = input1.view(1, input1.nElement())
@@ -87,7 +93,7 @@ class CosineDistance[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Modul
     var v2 = input[Tensor[T]](2)
     var no_batch = false
 
-    //(v1,v2) = makeContiguous(v1, v2)
+    // (v1,v2) = makeContiguous(v1, v2)
 
     if (v1.dim() == 1) {
       v1 = v1.view(1, v1.nElement())
@@ -121,5 +127,9 @@ class CosineDistance[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Modul
       gradInput[Tensor[T]](2).resize(gw2.size(2))
     }
     gradInput
+  }
+
+  override def toString(): String = {
+    s"nn.CosineDistance"
   }
 }

@@ -21,12 +21,11 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-
 class Contiguous[@specialized(Float, Double) T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (!input.isContiguous()){
+    if (!input.isContiguous()) {
       output.resizeAs(input).copy(input)
     } else {
       output.set(input)
@@ -35,7 +34,7 @@ class Contiguous[@specialized(Float, Double) T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]) : Tensor[T] = {
-    if (!gradOutput.isContiguous()){
+    if (!gradOutput.isContiguous()) {
       gradInput.resizeAs(gradOutput).copy(gradOutput)
     } else {
       gradInput.set(gradOutput)

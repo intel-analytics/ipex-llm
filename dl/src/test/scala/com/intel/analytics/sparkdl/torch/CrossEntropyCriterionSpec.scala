@@ -52,15 +52,16 @@ class CrossEntropyCriterionSpec extends FlatSpec with BeforeAndAfter with Matche
       "output = module:forward(input, target)\n" +
       "gradInput = module:backward(input,target)\n"
 
-
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target), Array("output", "gradInput"))
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+      Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
     luaOutput1 should be(output)
     luaOutput2 should be(gradInput)
 
-    println("Test case : CrossEntropyCriterion, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+    println("Test case : CrossEntropyCriterion, Torch : " + luaTime +
+      " s, Scala : " + scalaTime / 1e9 + " s")
 
   }
 }
