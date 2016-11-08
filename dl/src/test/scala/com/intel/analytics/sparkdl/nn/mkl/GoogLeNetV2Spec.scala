@@ -37,8 +37,8 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.reflect.ClassTag
 
 object GoogleNet_v2Blas {
-  def apply[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[D] = {
-    val features1 = new Sequential[D]
+  def apply[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
+    val features1 = new Sequential[Tensor[D], Tensor[D], D]
     features1.add(
       new nn.SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3)
         .setName("conv1/7x7_s2")
@@ -62,7 +62,7 @@ object GoogleNet_v2Blas {
     features1.add(inception(256, T(T(64), T(64, 96), T(64, 96), T("avg", 64)), "inception_3b/"))
     features1.add(inception(320, T(T(0), T(128, 160), T(64, 96), T("max", 0)), "inception_3c/"))
 
-    val output1 = new Sequential[D]
+    val output1 = new Sequential[Tensor[D], Tensor[D], D]
     output1.add(new nn.SpatialAveragePooling[D](5, 5, 3, 3).ceil().setName("pool3/5x5_s3"))
     output1.add(
       new nn.SpatialConvolution[D](576, 128, 1, 1, 1, 1)
@@ -76,7 +76,7 @@ object GoogleNet_v2Blas {
     output1.add(new nn.Linear[D](1024, classNum).setName("loss1/classifier"))
     output1.add(new LogSoftMax[D].setName("loss1/loss"))
 
-    val features2 = new Sequential[D]
+    val features2 = new Sequential[Tensor[D], Tensor[D], D]
     features2.add(inception(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128)), "inception_4a/"))
     features2.add(
       inception(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)), "inception_4b/"))
@@ -86,7 +86,7 @@ object GoogleNet_v2Blas {
       inception(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)), "inception_4d/"))
     features2.add(inception(576, T(T(0), T(128, 192), T(192, 256), T("max", 0)), "inception_4e/"))
 
-    val output2 = new Sequential[D]
+    val output2 = new Sequential[Tensor[D], Tensor[D], D]
     output2.add(new nn.SpatialAveragePooling[D](5, 5, 3, 3).ceil().setName("pool4/5x5_s3"))
     output2.add(
       new nn.SpatialConvolution[D](1024, 128, 1, 1, 1, 1)
@@ -100,7 +100,7 @@ object GoogleNet_v2Blas {
     output2.add(new nn.Linear[D](1024, classNum).setName("loss2/classifier"))
     output2.add(new LogSoftMax[D].setName("loss2/loss"))
 
-    val output3 = new Sequential[D]
+    val output3 = new Sequential[Tensor[D], Tensor[D], D]
     output3.add(
       inception(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128)), "inception_5a/"))
     output3.add(
@@ -114,7 +114,7 @@ object GoogleNet_v2Blas {
     split2.add(output3)
     split2.add(output2)
 
-    val mainBranch = new Sequential[D]()
+    val mainBranch = new Sequential[Tensor[D], Tensor[D], D]()
     mainBranch.add(features2)
     mainBranch.add(split2)
 
@@ -122,7 +122,7 @@ object GoogleNet_v2Blas {
     split1.add(mainBranch)
     split1.add(output1)
 
-    val model = new Sequential[D]()
+    val model = new Sequential[Tensor[D], Tensor[D], D]()
 
     model.add(features1)
     model.add(split1)
@@ -132,10 +132,10 @@ object GoogleNet_v2Blas {
   }
 
   def inception[D: ClassTag](inputSize: Int, config: Table, namePrefix: String)(
-      implicit ev: TensorNumeric[D]): Module[D] = {
+      implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
     val concat = new nn.Concat[D](2)
     if (config[Table](1)[Int](1) != 0) {
-      val conv1 = new Sequential[D]
+      val conv1 = new Sequential[Tensor[D], Tensor[D], D]
       conv1.add(
         new nn.SpatialConvolution[D](inputSize, config[Table](1)(1), 1, 1, 1, 1)
           .setName(namePrefix + "1x1")
@@ -146,7 +146,7 @@ object GoogleNet_v2Blas {
       concat.add(conv1)
     }
 
-    val conv3 = new Sequential[D]
+    val conv3 = new Sequential[Tensor[D], Tensor[D], D]
     conv3.add(
       new nn.SpatialConvolution[D](inputSize, config[Table](2)(1), 1, 1, 1, 1)
         .setName(namePrefix + "3x3_reduce")
@@ -170,7 +170,7 @@ object GoogleNet_v2Blas {
     conv3.add(new nn.ReLU[D](true).setName(namePrefix + "3x3/bn/sc/relu"))
     concat.add(conv3)
 
-    val conv3xx = new Sequential[D]
+    val conv3xx = new Sequential[Tensor[D], Tensor[D], D]
     conv3xx.add(
       new nn.SpatialConvolution[D](inputSize, config[Table](3)(1), 1, 1, 1, 1)
         .setName(namePrefix + "double3x3_reduce")
@@ -203,7 +203,7 @@ object GoogleNet_v2Blas {
     conv3xx.add(new nn.ReLU[D](true).setName(namePrefix + "double3x3b/bn/sc/relu"))
     concat.add(conv3xx)
 
-    val pool = new Sequential[D]
+    val pool = new Sequential[Tensor[D], Tensor[D], D]
     config[Table](4)[String](1) match {
       case "max" =>
         if (config[Table](4)[Int](2) != 0) {
@@ -233,8 +233,8 @@ object GoogleNet_v2Blas {
 }
 
 object GoogleNet_v2Dnn {
-  def apply[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[D] = {
-    val features1 = new Sequential[D]
+  def apply[D: ClassTag](classNum: Int)(implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
+    val features1 = new Sequential[Tensor[D], Tensor[D], D]
     features1.add(
       new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3)
         .setName("conv1/7x7_s2")
@@ -258,7 +258,7 @@ object GoogleNet_v2Dnn {
     features1.add(inception(256, T(T(64), T(64, 96), T(64, 96), T("avg", 64)), "inception_3b/"))
     features1.add(inception(320, T(T(0), T(128, 160), T(64, 96), T("max", 0)), "inception_3c/"))
 
-    val output1 = new Sequential[D]
+    val output1 = new Sequential[Tensor[D], Tensor[D], D]
     output1.add(new SpatialAveragePooling[D](5, 5, 3, 3).ceil().setName("pool3/5x5_s3"))
     output1.add(
       new SpatialConvolution[D](576, 128, 1, 1, 1, 1)
@@ -272,7 +272,7 @@ object GoogleNet_v2Dnn {
     output1.add(new Linear[D](1024, classNum).setName("loss1/classifier").setInitMethod(Constant))
     output1.add(new LogSoftMax[D].setName("loss1/loss"))
 
-    val features2 = new Sequential[D]
+    val features2 = new Sequential[Tensor[D], Tensor[D], D]
     features2.add(inception(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128)), "inception_4a/"))
     features2.add(
       inception(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)), "inception_4b/"))
@@ -282,7 +282,7 @@ object GoogleNet_v2Dnn {
       inception(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)), "inception_4d/"))
     features2.add(inception(576, T(T(0), T(128, 192), T(192, 256), T("max", 0)), "inception_4e/"))
 
-    val output2 = new Sequential[D]
+    val output2 = new Sequential[Tensor[D], Tensor[D], D]
     output2.add(new SpatialAveragePooling[D](5, 5, 3, 3).ceil().setName("pool4/5x5_s3"))
     output2.add(
       new SpatialConvolution[D](1024, 128, 1, 1, 1, 1)
@@ -296,7 +296,7 @@ object GoogleNet_v2Dnn {
     output2.add(new Linear[D](1024, classNum).setName("loss2/classifier").setInitMethod(Constant))
     output2.add(new LogSoftMax[D].setName("loss2/loss"))
 
-    val output3 = new Sequential[D]
+    val output3 = new Sequential[Tensor[D], Tensor[D], D]
     output3.add(
       inception(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128)), "inception_5a/"))
     output3.add(
@@ -310,7 +310,7 @@ object GoogleNet_v2Dnn {
     split2.add(output3)
     split2.add(output2)
 
-    val mainBranch = new Sequential[D]()
+    val mainBranch = new Sequential[Tensor[D], Tensor[D], D]()
     mainBranch.add(features2)
     mainBranch.add(split2)
 
@@ -318,7 +318,7 @@ object GoogleNet_v2Dnn {
     split1.add(mainBranch)
     split1.add(output1)
 
-    val model = new Sequential[D]()
+    val model = new Sequential[Tensor[D], Tensor[D], D]()
 
     model.add(features1)
     model.add(split1)
@@ -328,10 +328,10 @@ object GoogleNet_v2Dnn {
   }
 
   def inception[D: ClassTag](inputSize: Int, config: Table, namePrefix: String)(
-      implicit ev: TensorNumeric[D]): Module[D] = {
+      implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
     val concat = new nn.Concat[D](2)
     if (config[Table](1)[Int](1) != 0) {
-      val conv1 = new Sequential[D]
+      val conv1 = new Sequential[Tensor[D], Tensor[D], D]
       conv1.add(
         new SpatialConvolution[D](inputSize, config[Table](1)(1), 1, 1, 1, 1)
           .setName(namePrefix + "1x1")
@@ -342,7 +342,7 @@ object GoogleNet_v2Dnn {
       concat.add(conv1)
     }
 
-    val conv3 = new Sequential[D]
+    val conv3 = new Sequential[Tensor[D], Tensor[D], D]
     conv3.add(
       new SpatialConvolution[D](inputSize, config[Table](2)(1), 1, 1, 1, 1)
         .setName(namePrefix + "3x3_reduce")
@@ -366,7 +366,7 @@ object GoogleNet_v2Dnn {
     conv3.add(new ReLU[D](true).setName(namePrefix + "3x3/bn/sc/relu"))
     concat.add(conv3)
 
-    val conv3xx = new Sequential[D]
+    val conv3xx = new Sequential[Tensor[D], Tensor[D], D]
     conv3xx.add(
       new SpatialConvolution[D](inputSize, config[Table](3)(1), 1, 1, 1, 1)
         .setName(namePrefix + "double3x3_reduce")
@@ -399,7 +399,7 @@ object GoogleNet_v2Dnn {
     conv3xx.add(new ReLU[D](true).setName(namePrefix + "double3x3b/bn/sc/relu"))
     concat.add(conv3xx)
 
-    val pool = new Sequential[D]
+    val pool = new Sequential[Tensor[D], Tensor[D], D]
     config[Table](4)[String](1) match {
       case "max" =>
         if (config[Table](4)[Int](2) != 0) {
@@ -433,8 +433,8 @@ class GoogLeNetV2Spec extends FlatSpec with Matchers {
       val batchSize = 8
       val modelDnn = GoogleNet_v2Dnn(1000)
       val modelBlas = GoogleNet_v2Blas(1000)
-      val seqDnn = modelDnn.asInstanceOf[Sequential[T]]
-      val seqBlas = modelBlas.asInstanceOf[Sequential[T]]
+      val seqDnn = modelDnn.asInstanceOf[Sequential[Tensor[T], Tensor[T], T]]
+      val seqBlas = modelBlas.asInstanceOf[Sequential[Tensor[T], Tensor[T], T]]
 
       modelDnn.reset()
       modelBlas.reset()
@@ -464,8 +464,8 @@ class GoogLeNetV2Spec extends FlatSpec with Matchers {
         val gradInputDnn = modelDnn.backward(input, gradOutputDnn)
 
         for (i <- 0 until seqBlas.modules.length) {
-          Tools.cumulativeError(seqDnn.modules(i).output,
-                                seqBlas.modules(i).output,
+          Tools.cumulativeError(seqDnn.modules(i).output.asInstanceOf[Tensor[T]],
+                                seqBlas.modules(i).output.asInstanceOf[Tensor[T]],
                                 "module " + i + " output")
         }
 
@@ -484,25 +484,5 @@ class GoogLeNetV2Spec extends FlatSpec with Matchers {
     }
 
     test[Float]()
-  }
-
-  "GoogLeNet v2 compared with IntelCaffe with MKL-DNN" should "correct input and gradient" in {
-    // TODO currently, there is some problem with output, gradOutput,
-    //      gradInput of IntelCaffe with MKL-DNN
-    val modelDnn: Module[Float] = GoogleNet_v2Dnn(1000)
-    modelDnn.reset()
-
-    val input = Tools.getTensorFloat("input", Array(32, 3, 224, 224))
-
-    modelDnn.forward(input)
-    println(modelDnn.output.size().mkString(" "))
-
-    val output = Tools.getTensorFloat("output", modelDnn.output.size())
-
-    Tools.printTensor(input, msg = "input")
-    Tools.averageAllTensors(input, "input")
-    Tools.averageAllTensors(modelDnn.output, "spark-dl with mkl dnn output")
-    Tools.averageAllTensors(output, "IntelCaffe with mkl dnn output")
-    Tools.cumulativeError(modelDnn.output, output, "output")
   }
 }

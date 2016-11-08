@@ -152,7 +152,7 @@ class PoolingSpec extends FlatSpec with Matchers {
     }
   }
 
-  def doTest(test: TestCase, cmd1: String, model : Module[Float]) : Unit = {
+  def doTest(test: TestCase, cmd1: String, model : TensorModule[Float]) : Unit = {
     val cmd = (cmd1, test.batchSize, test.channel, test.height, test.width,
       test.kW, test.kH, test.dW, test.dH, test.padW, test.padH)
       .productIterator.mkString(" ")
