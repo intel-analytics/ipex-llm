@@ -23,7 +23,7 @@ import scala.reflect.ClassTag
 
 /**
  * This class is a transform layer corresponding to the sigmoid function:
- *  f(x) = 1 / (1 + e ^ (-x))
+ *  f(x) = Log(1 / (1 + e ^^ (-x)))
  */
 class LogSigmoid[T: ClassTag] (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
