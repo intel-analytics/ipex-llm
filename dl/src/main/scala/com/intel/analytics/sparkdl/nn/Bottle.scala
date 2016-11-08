@@ -76,8 +76,6 @@ class Bottle[A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTag
       outShape.copy(Tensor[Double](Storage(arrayIntToDouble(output1.size))))
 
       if (math.abs(dimDelta) > 0) inSize.resize(inSize.size(1) - dimDelta)
-      println(batchDims)
-      println(inSize.size(1) - batchDims)
       inSize.narrow(1, batchDims, inSize.size(1) - batchDims + 1).copy(outShape)
       inSize.narrow(1, batchDims, 1).div(squeezeSize)
 
