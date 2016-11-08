@@ -29,10 +29,11 @@ import org.apache.spark.sql.catalyst.expressions.Concat
 import scala.reflect.ClassTag
 
 class OmitConversionSpec extends FlatSpec with Matchers {
-  def getModel[T: ClassTag](backend: String)(implicit ev: TensorNumeric[T]): Module[T] = {
-    val model = new nn.Sequential[T]()
+  def getModel[T: ClassTag](backend: String)(implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+    val model = new nn.Sequential[Tensor[T], Tensor[T], T]()
 
-    def getLayer[T](dnn: () => Module[T], blas: () => Module[T]): Module[T] = {
+    def getLayer[T](dnn: () => Module[Tensor[T], Tensor[T], T],
+                    blas: () => Module[Tensor[T], Tensor[T], T]): Module[Tensor[T], Tensor[T], T] = {
       backend match {
         case "dnn" => dnn()
         case "blas" => blas()
@@ -62,8 +63,8 @@ class OmitConversionSpec extends FlatSpec with Matchers {
 
     model.add(
       getLayer(
-        () => new nn.LocalNormalizationAcrossChannels[T](5, 0.0001, 0.75).setName("pool1/norm1"),
-        () => new nn.LocalNormalizationAcrossChannels[T](5, 0.0001, 0.75).setName("pool1/norm1")))
+        () => new nn.SpatialCrossMapLRN[T](5, 0.0001, 0.75).setName("pool1/norm1"),
+        () => new nn.SpatialCrossMapLRN[T](5, 0.0001, 0.75).setName("pool1/norm1")))
 
     model.add(
       getLayer(() =>
@@ -95,17 +96,17 @@ class OmitConversionSpec extends FlatSpec with Matchers {
 
     model.add(
       getLayer(
-        () => new nn.LocalNormalizationAcrossChannels[T](5, 0.0001, 0.75).setName("conv2/norm2"),
-        () => new nn.LocalNormalizationAcrossChannels[T](5, 0.0001, 0.75).setName("conv2/norm2")))
+        () => new nn.SpatialCrossMapLRN[T](5, 0.0001, 0.75).setName("conv2/norm2"),
+        () => new nn.SpatialCrossMapLRN[T](5, 0.0001, 0.75).setName("conv2/norm2")))
 
     model.add(
       getLayer(() => new SpatialMaxPooling[T](3, 3, 2, 2).ceil().setName("pool2/3x3_s2"),
                () => new nn.SpatialMaxPooling[T](3, 3, 2, 2).ceil().setName("pool2/3x3_s2")))
 
-    val conv1 = new nn.Sequential[T]()
-    val conv3 = new nn.Sequential[T]()
-    val conv5 = new nn.Sequential[T]()
-    val pool = new nn.Sequential[T]()
+    val conv1 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+    val conv3 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+    val conv5 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+    val pool = new nn.Sequential[Tensor[T], Tensor[T], T]()
 
     conv1.add(
       getLayer(() => new nn.SpatialConvolution[T](192, 64, 1, 1, 1, 1, 0, 0).setInitMethod(Xavier),
@@ -194,8 +195,8 @@ class OmitConversionSpec extends FlatSpec with Matchers {
     def test[T: ClassTag]()(implicit ev: TensorNumeric[T]): Unit = {
       val modelDnn = getModel[T]("dnn")
       val modelBlas = getModel[T]("blas")
-      val seqDnn = modelDnn.asInstanceOf[nn.Sequential[T]]
-      val seqBlas = modelBlas.asInstanceOf[nn.Sequential[T]]
+      val seqDnn = modelDnn.asInstanceOf[nn.Sequential[Tensor[T], Tensor[T], T]]
+      val seqBlas = modelBlas.asInstanceOf[nn.Sequential[Tensor[T], Tensor[T], T]]
       println(modelDnn)
       println(modelBlas)
 
@@ -212,8 +213,8 @@ class OmitConversionSpec extends FlatSpec with Matchers {
         val outputDnn = modelDnn.forward(input)
 
         for (i <- 0 until seqBlas.modules.length) {
-          Tools.cumulativeError(seqDnn.modules(i).output,
-                                seqBlas.modules(i).output,
+          Tools.cumulativeError(seqDnn.modules(i).output.asInstanceOf[Tensor[T]],
+                                seqBlas.modules(i).output.asInstanceOf[Tensor[T]],
                                 "module " + i + " output")
         }
         outputDnn should be equals (outputBlas)

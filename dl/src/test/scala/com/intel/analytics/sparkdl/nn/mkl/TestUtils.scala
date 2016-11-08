@@ -22,7 +22,7 @@ import java.nio.channels.FileChannel
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.util.NoSuchElementException
 
-import com.intel.analytics.sparkdl.nn.Module
+import com.intel.analytics.sparkdl.nn.{Module, TensorModule}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
 
@@ -158,13 +158,14 @@ object Tools {
     }
   }
 
-  def flattenModules(model: Module[Float], modules: ArrayBuffer[Module[Float]]) : Unit = {
+  def flattenModules(model: Module[Tensor[Float], Tensor[Float], Float],
+                     modules: ArrayBuffer[TensorModule[Float]]) : Unit = {
     if (model.modules.length >= 1) {
       for (i <- model.modules) {
-        flattenModules(i, modules)
+        flattenModules(i.asInstanceOf[TensorModule[Float]], modules)
       }
     } else {
-      modules += model
+      modules += model.asInstanceOf[TensorModule[Float]]
     }
   }
 
@@ -179,7 +180,7 @@ object Tools {
 class Dropout[@specialized(Float, Double) T: ClassTag]
 ( val initP: Double = 0.5,
   val inplace: Boolean = false,
-  var scale: Boolean = true)(implicit ev: TensorNumeric[T]) extends Module[T] {
+  var scale: Boolean = true)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     this.output.resizeAs(input).copy(input)
@@ -200,7 +201,7 @@ class Dropout[@specialized(Float, Double) T: ClassTag]
  * For truncate the float or double
  */
 class Dummy[@specialized(Float, Double) T: ClassTag]
-(implicit ev: TensorNumeric[T]) extends Module[T] {
+(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput = gradOutput.apply1(
