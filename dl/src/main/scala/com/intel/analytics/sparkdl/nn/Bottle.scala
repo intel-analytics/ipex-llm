@@ -23,64 +23,47 @@ import com.intel.analytics.sparkdl.utils.Activities
 import scala.reflect.ClassTag
 
 class Bottle[A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTag]
-(module: Module[A, B, T], nInputDim: Int = 2, nOutputDim: Int)
+(module: Module[A, B, T], nInputDim: Int = 2, nOutputDim1: Int = Int.MaxValue)
 (implicit ev: TensorNumeric[T]) extends Container[A, B, T] {
 
-  // nOutputDim = if (nOutputDim == null) nInputDim else nInputDim
+  val nOutputDim = if (nOutputDim1 == Int.MaxValue) nInputDim else nOutputDim1
+
   val dimDelta = nInputDim - nOutputDim
+  @transient
+  var inShape: Tensor[Double] = null
+  @transient
+  var outShape: Tensor[Double] = null
 
-  // Used to reshape the gradients
-  val inShape = Tensor[Double](nInputDim)
-  val outShape = Tensor[Double](nOutputDim)
-
-  // add module to modules
-  // this.modules(0) = module.asInstanceOf[Module[Activities, Activities, T]]
-
-  def arrayIntToDouble(data : Array[Int]): Array[Double] = {
-    var i = 0
-    val res = new Array[Double](data.length)
-    while (i < data.length) {
-      res(i) = data(i).toDouble
-      i += 1
-    }
-    res
-  }
-
-  def arrayDoubleToInt(data : Array[Double]): Array[Int] = {
-    var i = 0
-    val res = new Array[Int](data.length)
-    while (i < data.length) {
-      res(i) = data(i).toInt
-      i += 1
-    }
-    res
-  }
+   this.modules.insert(0, module.asInstanceOf[Module[Activities, Activities, T]])
 
   override def updateOutput(input: A): B = {
     // first batchDims dimensions will be fused
-    this.modules(0) = module.asInstanceOf[Module[Activities, Activities, T]]
     val res = input.toTensor[T]()
     val batchDims = res.dim() - nInputDim + 1
+
+    if (null == inShape) inShape = Tensor[Double](nInputDim)
+    if (null == outShape) outShape = Tensor[Double](nOutputDim)
+
     if (batchDims > 1) {
-      val inSize = Tensor[Double](Storage(arrayIntToDouble(res.size)))
+      val inSize = Tensor[Double](Storage(res.size.map(_.toDouble)))
 
       val squeezeSize = inSize.storage().array().slice(0, batchDims - 1).product
       inShape.copy(inSize.narrow(1, batchDims, res.dim() - batchDims + 1))
       inShape.narrow(1, 1, 1).mul(squeezeSize)
 
       // Forward with the module's dimension
-      val newInput = res.view(arrayDoubleToInt(inShape.storage().array()))
+      val newInput = res.view(inShape.storage().array().map(_.toInt))
       val output1 = modules(0).updateOutput(newInput).toTensor[T]()
       require(output1.dim() == nOutputDim, "Wrong number of output dims on module")
 
-      outShape.copy(Tensor[Double](Storage(arrayIntToDouble(output1.size))))
+      outShape.copy(Tensor[Double](Storage(output1.size.map(_.toDouble))))
 
       if (math.abs(dimDelta) > 0) inSize.resize(inSize.size(1) - dimDelta)
       inSize.narrow(1, batchDims, inSize.size(1) - batchDims + 1).copy(outShape)
       inSize.narrow(1, batchDims, 1).div(squeezeSize)
 
       output.asInstanceOf[Tensor[T]].
-        set(output1.view(arrayDoubleToInt(inSize.storage().array())))
+        set(output1.view(inSize.storage().array().map(_.toInt)))
     } else {
       output.asInstanceOf[Tensor[T]].
         set(modules(0).updateOutput(input.toTensor[T]()).toTensor[T]())
@@ -90,8 +73,8 @@ class Bottle[A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTag
 
   override def updateGradInput(input: A, gradOutput: B): A = {
     if (input.toTensor().dim() > nInputDim) {
-      val input_ = input.toTensor().view(arrayDoubleToInt(inShape.storage().array()))
-      val gradOutput_ = gradOutput.toTensor().view(arrayDoubleToInt(outShape.storage().array()))
+      val input_ = input.toTensor().view(inShape.storage().array().map(_.toInt))
+      val gradOutput_ = gradOutput.toTensor().view(outShape.storage().array().map(_.toInt))
       modules(0).updateGradInput(input_, gradOutput_)
       val t2 = modules(0).gradInput.toTensor[T]().resizeAs(input.toTensor())
       gradInput.asInstanceOf[Activities].toTensor[T]().set(t2)
@@ -105,8 +88,8 @@ class Bottle[A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTag
 
   override def accGradParameters(input: A, gradOutput: B, scale: Double): Unit = {
     if (input.toTensor().dim() > nInputDim) {
-      val input_ = input.toTensor().view(arrayDoubleToInt(inShape.storage().array()))
-      val gradOutput_ = gradOutput.toTensor().view(arrayDoubleToInt(outShape.storage().array()))
+      val input_ = input.toTensor().view(inShape.storage().array().map(_.toInt))
+      val gradOutput_ = gradOutput.toTensor().view(outShape.storage().array().map(_.toInt))
       modules(0).accGradParameters(input_, gradOutput_, scale)
     } else {
       modules(0).accGradParameters(input, gradOutput, scale)
@@ -114,6 +97,6 @@ class Bottle[A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTag
   }
 
   override def toString(): String = {
-    s"nn.Bottle"
+    s"nn.Bottle ($module, $nInputDim, $nOutputDim)"
   }
 }

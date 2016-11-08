@@ -22,7 +22,7 @@ import com.intel.analytics.sparkdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class CosineDistance[T: ClassTag]()(
+class CosineDistance[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
 
   @transient
