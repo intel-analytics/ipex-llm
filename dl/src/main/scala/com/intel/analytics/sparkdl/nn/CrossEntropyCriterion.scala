@@ -26,7 +26,6 @@ class CrossEntropyCriterion[T: ClassTag](
   private val gradInput: Tensor[T] = Tensor[T]()
   val lsm = new LogSoftMax[T]()
   val nll = new ClassNLLCriterion[T](weights)
-  var _gradInput = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     input.squeeze()
@@ -38,6 +37,7 @@ class CrossEntropyCriterion[T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     val size = input.size()
+    var _gradInput = Tensor[T]()
     input.squeeze()
 
     _gradInput = nll.updateGradInput(lsm.output, target)
