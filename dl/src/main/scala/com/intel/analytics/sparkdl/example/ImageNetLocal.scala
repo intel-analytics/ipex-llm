@@ -251,9 +251,9 @@ object ImageNetLocal {
         val top5Accuracy = top5Correct.toDouble / dataSetVal.getTotal
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Top-1 Accuracy is $top1Accuracy")
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Top-5 Accuracy is $top5Accuracy")
-        println(s"Save model and state to $modelPath-$i")
-        File.save(model, modelPath + s"-$i.model")
-        File.save(state, modelPath + s"-$i.state")
+        //println(s"Save model and state to $modelPath-$i")
+        //File.save(model, modelPath + s"-$i.model")
+        //File.save(state, modelPath + s"-$i.state")
       }
 
       log("shuffle")
