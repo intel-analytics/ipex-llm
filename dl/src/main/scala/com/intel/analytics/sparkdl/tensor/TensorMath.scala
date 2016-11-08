@@ -455,6 +455,7 @@ trait TensorMath[T] {
 
   def log1p(): Tensor[T]
 
+
   def abs(x: Tensor[T]): Tensor[T]
 
   /**
@@ -518,5 +519,9 @@ trait TensorMath[T] {
    * @return current tensor reference
    */
   def maskedSelect(mask: Tensor[T], y: Tensor[T]): Tensor[T]
+
+  def norm(): T
+
+  def sign(): Tensor[T]
 
 }

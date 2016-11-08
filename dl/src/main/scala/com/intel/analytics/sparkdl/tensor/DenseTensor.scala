@@ -1524,6 +1524,32 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     DenseTensorApply.apply2[T](this, x, func)
     this
   }
+
+  override def norm(): T = {
+    var res: T = ev.fromType(0)
+    val func = new TensorFunc2[T] {
+      override def apply(data1: Array[T], offset1: Int): Unit = {
+        res = ev.plus(res, ev.times(data1(offset1), data1(offset1)))
+      }
+    }
+    DenseTensorApply.apply1[T](this, func)
+
+    ev.sqrt(res)
+  }
+
+  override def sign(): Tensor[T] = {
+    val func = new TensorFunc2[T] {
+      override def apply(data1: Array[T], offset1: Int): Unit = {
+        if (ev.isGreater(data1(offset1), ev.fromType(0))) {
+          data1(offset1) = ev.fromType(1)
+        } else {
+          data1(offset1) = ev.fromType(-1)
+        }
+      }
+    }
+    DenseTensorApply.apply1[T](this, func)
+    this
+  }
 }
 
 object DenseTensor {
