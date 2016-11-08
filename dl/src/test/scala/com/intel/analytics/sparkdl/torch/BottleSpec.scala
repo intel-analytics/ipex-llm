@@ -54,12 +54,15 @@ class BottleSpec extends FlatSpec with BeforeAndAfter with Matchers{
     "gradInput = module:backward(input,gradOutput)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput), Array("output", "gradInput","inShape","outShape"))
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput", "inShape", "outShape"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
     luaOutput1 should be(output)
     luaOutput2 should be(gradInput)
-    println("Test case : Sequential, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+
+    println("Test case : Bottle, Torch : " + luaTime +
+      " s, Scala : " + scalaTime / 1e9 + " s")
   }
 }

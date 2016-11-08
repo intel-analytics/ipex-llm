@@ -47,14 +47,15 @@ class ContiguousSpec extends FlatSpec with BeforeAndAfter with Matchers{
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput), Array("output", "gradInput","inShape","outShape"))
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
     luaOutput1 should be(output)
     luaOutput2 should be(gradInput)
 
-    println("done")
-
+    println("Test case : Contiguous, Torch : " + luaTime +
+      " s, Scala : " + scalaTime / 1e9 + " s")
   }
 }

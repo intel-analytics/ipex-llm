@@ -50,10 +50,11 @@ class CosineSpec extends FlatSpec with BeforeAndAfter with Matchers{
       "module = nn.Cosine(2, 3)\n" +
       "gradWeight = module.gradWeight\n" +
       "output = module:forward(input)\n" +
-      "gradInput = module:backward(input,gradOutput)\n"
+      "gradInput = module:backward(input, gradOutput)\n"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput), Array("output", "gradInput","gradWeight"))
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput", "gradWeight"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
     val luagradWeight = torchResult("gradWeight").asInstanceOf[Tensor[Double]]
@@ -61,6 +62,9 @@ class CosineSpec extends FlatSpec with BeforeAndAfter with Matchers{
     luaOutput1 should be(output)
     luaOutput2 should be(gradInput)
     luagradWeight should be(gradWeight)
+
+    println("Test case : Cosine, Torch : " + luaTime +
+      " s, Scala : " + scalaTime / 1e9 + " s")
 
   }
 
@@ -87,7 +91,8 @@ class CosineSpec extends FlatSpec with BeforeAndAfter with Matchers{
       "gradInput = module:backward(input,gradOutput)"
 
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput), Array("output", "gradInput","gradWeight"))
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput", "gradWeight"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
     val luagradWeight = torchResult("gradWeight").asInstanceOf[Tensor[Double]]
@@ -95,5 +100,8 @@ class CosineSpec extends FlatSpec with BeforeAndAfter with Matchers{
     luaOutput1 should be(output)
     luaOutput2 should be(gradInput)
     luagradWeight should be(gradWeight)
+
+    println("Test case : Cosine, Torch : " + luaTime +
+      " s, Scala : " + scalaTime / 1e9 + " s")
   }
 }

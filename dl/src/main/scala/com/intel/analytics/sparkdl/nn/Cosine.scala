@@ -29,17 +29,17 @@ class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
   val weight = Tensor[T](outputSize, inputSize)
 
   @transient
-  var _weightNorm: Tensor[T] = Tensor[T]()
+  var _weightNorm: Tensor[T] = null
   @transient
-  var _inputNorm: Tensor[T] = Tensor[T]()
+  var _inputNorm: Tensor[T] = null
   @transient
   var __norm: T = ev.fromType(0)
   @transient
-  var _sum: Tensor[T] = Tensor[T]()
+  var _sum: Tensor[T] = null
   @transient
-  var _weight: Tensor[T] = Tensor[T]()
+  var _weight: Tensor[T] = null
   @transient
-  var _gradOutput: Tensor[T] = Tensor[T]()
+  var _gradOutput: Tensor[T] = null
 
   reset()
 
@@ -51,6 +51,12 @@ class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2, "input must be vector or matrix")
     _weightNorm = weight.norm(ev.fromType(2), 2).add(ev.fromType(1e-12))
+
+    if (null == _weightNorm) _weightNorm = Tensor[T]()
+    if (null == _inputNorm) _inputNorm = Tensor[T]()
+    if (null == _sum) _sum = Tensor[T]()
+    if (null == _weight) _weight = Tensor[T]()
+    if (null == _gradOutput) _gradOutput = Tensor[T]()
 
     if (input.dim() == 1) {
       output.resize(outputSize).zero()
@@ -67,7 +73,8 @@ class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
 
       _inputNorm = input.norm(ev.fromType(2), 2)
       output.cdiv(_weightNorm.view(1, outputSize).expandAs(output))
-      output.cdiv(Tensor[T](_inputNorm.storage(), _inputNorm.storageOffset(), _inputNorm.size(), _inputNorm.stride()).expandAs(output))
+      output.cdiv(Tensor[T](_inputNorm.storage(), _inputNorm.storageOffset(),
+        _inputNorm.size(), _inputNorm.stride()).expandAs(output))
     }
     output
   }
@@ -80,9 +87,11 @@ class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
 
     if (input.dim() == 1) {
       _weight.resizeAs(weight).copy(weight)
-      _weight.cdiv(Tensor[T](_weightNorm.storage(), _weightNorm.storageOffset(), _weightNorm.size(), _weightNorm.stride()).expandAs(weight))
+      _weight.cdiv(Tensor[T](_weightNorm.storage(), _weightNorm.storageOffset(),
+        _weightNorm.size(), _weightNorm.stride()).expandAs(weight))
       _weight.div(__norm)
-      _weight.addr(ev.fromType(1), _weight, ev.divide(ev.fromType(-1), ev.times(__norm, __norm)), output, input)
+      _weight.addr(ev.fromType(1), _weight, ev.divide(ev.fromType(-1),
+        ev.times(__norm, __norm)), output, input)
       gradInput.addmv(ev.fromType(0), ev.fromType(1), _weight.t(), gradOutput)
     } else if (input.dim() == 2) {
       val inputNorm = _inputNorm.expandAs(input)
@@ -107,7 +116,8 @@ class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T], scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
+   scale: Double = 1.0): Unit = {
     require(input.dim() == 1 || input.dim() == 2, "input must be vector or matrix")
 
     if (input.dim() == 1) {

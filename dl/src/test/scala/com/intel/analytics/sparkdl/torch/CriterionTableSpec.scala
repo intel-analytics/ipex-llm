@@ -64,7 +64,7 @@ class CriterionTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
     output should be(luaOutput1)
     gradInput should be(luaOutput2.get(1).getOrElse(null))
 
-    println("Test case : Bilinear, Torch : " + luaTime +
+    println("Test case : CriterionTable, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
   }
 }
