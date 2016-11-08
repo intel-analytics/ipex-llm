@@ -121,7 +121,7 @@ class ConcatSpec extends FlatSpec with Matchers {
         new SpatialConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
       convDnn.weight.copy(kernel)
       convDnn.bias.copy(bias)
-      val seqDnn = new nn.Sequential[T]
+      val seqDnn = new nn.Sequential[Tensor[T], Tensor[T], T]
       seqDnn.add(convDnn)
       val concatDnn = new Concat[T](2)
       concatDnn.add(seqDnn)
@@ -130,7 +130,7 @@ class ConcatSpec extends FlatSpec with Matchers {
         new nn.SpatialConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
       convBlas.weight.copy(kernel)
       convBlas.bias.copy(bias)
-      val seqBlas = new nn.Sequential[T]()
+      val seqBlas = new nn.Sequential[Tensor[T], Tensor[T], T]()
       seqBlas.add(convBlas)
       val concatBlas = new nn.Concat[T](2)
       concatBlas.add(seqBlas)
@@ -271,8 +271,8 @@ class ConcatSpec extends FlatSpec with Matchers {
         convBlas(i).weight.copy(kernel)
         convBlas(i).bias.copy(bias)
 
-        val seqDnn = new nn.Sequential[T]()
-        val seqBlas = new nn.Sequential[T]()
+        val seqDnn = new nn.Sequential[Tensor[T], Tensor[T], T]()
+        val seqBlas = new nn.Sequential[Tensor[T], Tensor[T], T]()
 
         seqDnn.add(convDnn(i))
         seqBlas.add(convBlas(i))
@@ -304,13 +304,13 @@ class ConcatSpec extends FlatSpec with Matchers {
   }
 
   "Concat with GoogLeNet inception contains all nn layers" should "generate correct results" in {
-    def model[T: ClassTag]()(implicit ev: TensorNumeric[T]): Module[T] = {
+    def model[T: ClassTag]()(implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
       val concat = new Concat[T](2)
 
-      val conv1 = new nn.Sequential[T]()
-      val conv3 = new nn.Sequential[T]()
-      val conv5 = new nn.Sequential[T]()
-      val pool = new nn.Sequential[T]()
+      val conv1 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+      val conv3 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+      val conv5 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+      val pool = new nn.Sequential[Tensor[T], Tensor[T], T]()
 
       conv1.add(new nn.SpatialConvolution[T](192, 64, 1, 1, 1, 1, 0, 0).setInitMethod(Xavier))
       conv1.add(new nn.ReLU[T](true))
@@ -370,13 +370,13 @@ class ConcatSpec extends FlatSpec with Matchers {
   }
 
   "Concat with GoogLeNet inception contains all mkl layers" should "generate correct results" in {
-    def model[T: ClassTag]()(implicit ev: TensorNumeric[T]): Module[T] = {
+    def model[T: ClassTag]()(implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
       val concat = new Concat[T](2)
 
-      val conv1 = new nn.Sequential[T]()
-      val conv3 = new nn.Sequential[T]()
-      val conv5 = new nn.Sequential[T]()
-      val pool = new nn.Sequential[T]()
+      val conv1 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+      val conv3 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+      val conv5 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+      val pool  = new nn.Sequential[Tensor[T], Tensor[T], T]()
 
       conv1.add(new SpatialConvolution[T](192, 64, 1, 1, 1, 1, 0, 0).setInitMethod(Xavier))
       conv1.add(new ReLU[T](true))
@@ -436,15 +436,15 @@ class ConcatSpec extends FlatSpec with Matchers {
   }
 
   "Concat contains two version of layers" should "generate correct results" in {
-    def model[T: ClassTag](backend: String)(implicit ev: TensorNumeric[T]): Module[T] = {
+    def model[T: ClassTag](backend: String)(implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
       backend match {
         case "dnn" =>
           val concat = new Concat[T](2)
 
-          val conv1 = new nn.Sequential[T]()
-          val conv3 = new nn.Sequential[T]()
-          val conv5 = new nn.Sequential[T]()
-          val pool = new nn.Sequential[T]()
+          val conv1 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+          val conv3 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+          val conv5 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+          val pool = new nn.Sequential[Tensor[T], Tensor[T], T]()
 
           conv1.add(new SpatialConvolution[T](192, 64, 1, 1, 1, 1, 0, 0).setInitMethod(Xavier))
           conv1.add(new ReLU[T](true))
@@ -472,10 +472,10 @@ class ConcatSpec extends FlatSpec with Matchers {
         case "blas" =>
           val concat = new nn.Concat[T](2)
 
-          val conv1 = new nn.Sequential[T]()
-          val conv3 = new nn.Sequential[T]()
-          val conv5 = new nn.Sequential[T]()
-          val pool = new nn.Sequential[T]()
+          val conv1 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+          val conv3 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+          val conv5 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+          val pool = new nn.Sequential[Tensor[T], Tensor[T], T]()
 
           conv1.add(new nn.SpatialConvolution[T](192, 64, 1, 1, 1, 1, 0, 0).setInitMethod(Xavier))
           conv1.add(new nn.ReLU[T](true))
@@ -536,19 +536,22 @@ class ConcatSpec extends FlatSpec with Matchers {
   }
 
   "Concat with GoogLeNet inception contains mix backend" should "generate correct result" in {
-    def model[T: ClassTag](backend: String)(implicit ev: TensorNumeric[T]): Module[T] = {
+    def model[T: ClassTag](backend: String)
+                          (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
       backend match {
         case "mix" =>
           val concat = new Concat[T](2)
 
-          val conv1 = new nn.Sequential[T]()
-          val conv3 = new nn.Sequential[T]()
-          val conv5 = new nn.Sequential[T]()
-          val pool = new nn.Sequential[T]()
+          val conv1 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+          val conv3 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+          val conv5 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+          val pool = new nn.Sequential[Tensor[T], Tensor[T], T]()
 
           val randNum = scala.util.Random
 
-          def randModule(m1: () => Module[T], m2: () => Module[T]): Module[T] = {
+          def randModule(m1: () => Module[Tensor[T], Tensor[T], T],
+                         m2: () => Module[Tensor[T], Tensor[T], T]):
+          Module[Tensor[T], Tensor[T], T] = {
             if (randNum.nextInt(2) != 0) {
               m1()
             } else {
@@ -618,10 +621,10 @@ class ConcatSpec extends FlatSpec with Matchers {
         case "blas" =>
           val concat = new nn.Concat[T](2)
 
-          val conv1 = new nn.Sequential[T]()
-          val conv3 = new nn.Sequential[T]()
-          val conv5 = new nn.Sequential[T]()
-          val pool = new nn.Sequential[T]()
+          val conv1 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+          val conv3 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+          val conv5 = new nn.Sequential[Tensor[T], Tensor[T], T]()
+          val pool = new nn.Sequential[Tensor[T], Tensor[T], T]()
 
           conv1.add(new nn.SpatialConvolution[T](192, 64, 1, 1, 1, 1, 0, 0).setInitMethod(Xavier))
           conv1.add(new nn.ReLU[T](true))
