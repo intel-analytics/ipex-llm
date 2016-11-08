@@ -21,21 +21,29 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * This class is a transform layer corresponding to the sigmoid function:
+ *  f(x) = 1 / (1 + e ^ (-x))
+ */
 class LogSigmoid[T: ClassTag] (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
-  val buffer = Tensor()
+  @transient private var buffer: Tensor[T] = null
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    if (buffer == null) {
+      buffer = Tensor[T]()
+    }
+
     output.resizeAs(input)
     buffer.resizeAs(input)
 
+    // Todo: Replace apply to get a better performance
     val func = new TensorFunc6[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
         data3: Array[T], offset3: Int): Unit = {
         val z = ev.exp(ev.negative(data2(offset2)))
         data3(offset3) = z
-        data1(offset1) = ev.negative(
-          ev.log(ev.plus(ev.fromType[Int](1), z)))
+        data1(offset1) = ev.negative(ev.log1p(z))
       }
     }
     DenseTensorApply.apply3[T](output, input, buffer, func)
@@ -48,6 +56,7 @@ class LogSigmoid[T: ClassTag] (implicit ev: TensorNumeric[T])
     gradInput
       .resizeAs(buffer)
 
+    // Todo: Replace apply to get a better performance
     val func = new TensorFunc6[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
         data3: Array[T], offset3: Int): Unit = {
