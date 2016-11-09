@@ -457,18 +457,66 @@ trait TensorMath[T] {
 
   def abs(x: Tensor[T]): Tensor[T]
 
+  /**
+    * Implements > operator comparing each element in x with y
+    *
+    * @param x
+    * @param y
+    * @return current tensor reference
+    */
   def gt(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
+  /**
+    * mplements < operator comparing each element in x with y
+    *
+    * @param x
+    * @param y
+    * @return current tensor reference
+    */
   def lt(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
+  /**
+    * mplements <= operator comparing each element in x with y
+    *
+    * @param x
+    * @param y
+    * @return current tensor reference
+    */
   def le(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
+  /**
+    * Implements == operator comparing each element in x with y
+    *
+    * @param y
+    * @return current tensor reference
+    */
   def eq(x: Tensor[T], y: T): Tensor[T]
 
+  /**
+    * Fills the masked elements of itself with value val
+    *
+    * @param mask
+    * @param e
+    * @return current tensor reference
+    */
   def maskedFill(mask: Tensor[T], e: T): Tensor[T]
 
+  /**
+    * Copies the elements of tensor into mask locations of itself.
+    *
+    * @param mask
+    * @param y
+    * @return current tensor reference
+    */
   def maskedCopy(mask: Tensor[T], y: Tensor[T]): Tensor[T]
 
+  /**
+    * Returns a new Tensor which contains all elements aligned to a 1 in the corresponding mask.
+    *
+    * @param mask
+    * @param y
+    * @return current tensor reference
+    */
   def maskedSelect(mask: Tensor[T], y: Tensor[T]): Tensor[T]
 
 }

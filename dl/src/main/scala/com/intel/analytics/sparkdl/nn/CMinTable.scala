@@ -22,6 +22,9 @@ import com.intel.analytics.sparkdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+  * Takes a table of Tensors and outputs the min of all of them.
+  */
 class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
   extends Module[Table, Tensor[T], T]{
 

@@ -22,7 +22,9 @@ import com.intel.analytics.sparkdl.utils.Table
 
 import scala.reflect.ClassTag
 
-
+/**
+  * Takes a table with two Tensor and returns the component-wise division between them.
+  */
 class CDivTable[T: ClassTag](implicit ev: TensorNumeric[T])
   extends Module[Table, Tensor[T], T]{
 
@@ -30,7 +32,7 @@ class CDivTable[T: ClassTag](implicit ev: TensorNumeric[T])
     val res1 = input[Tensor[T]](1)
     val res2 = input[Tensor[T]](2)
 
-    output.resize(res1.size()).copy(res1)
+    output.resizeAs(res1).copy(res1)
     output.cdiv(res2)
     output
   }

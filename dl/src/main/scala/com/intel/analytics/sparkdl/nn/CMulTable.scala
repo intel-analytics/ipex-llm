@@ -22,6 +22,9 @@ import com.intel.analytics.sparkdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+  * Takes a table of Tensors and outputs the multiplication of all of them.
+  */
 class CMulTable[T: ClassTag]()(
   implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T]{
   override def updateOutput(input: Table): Tensor[T] = {
