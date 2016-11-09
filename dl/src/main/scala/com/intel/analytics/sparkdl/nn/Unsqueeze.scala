@@ -25,8 +25,8 @@ import scala.reflect.ClassTag
 /**
  * Insert singleton dim (i.e., dimension 1) at position pos. For an input with dim = input.dim(),
  * there are dim + 1 possible positions to insert the singleton dimension.
- * @param pos
- * @param numInputDims
+ * @param pos The position will be insert singleton.
+ * @param numInputDims Optional. If in a batch model, set to the inputDims.
  */
 class Unsqueeze[T: ClassTag](
   val pos: Int,
@@ -37,7 +37,7 @@ class Unsqueeze[T: ClassTag](
     this.numInputDims = numInputDims
   }
 
-  def getActualPosition(input: Tensor[T]) : Int = {
+  private def getActualPosition(input: Tensor[T]) : Int = {
     // get valid dimesion offset for batchMode (if any)
     val inputDim = input.dim() // data batch dim
     numInputDims = if (numInputDims != Int.MinValue) numInputDims else inputDim // feature map dim
