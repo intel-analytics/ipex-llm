@@ -31,15 +31,13 @@ class MapTable[T: ClassTag](
   var module: Module[_ <: Activities, _ <: Activities, T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T]  {
 
-  def extend(n: Int): Unit = {
+  private def extend(n: Int): Unit = {
     modules.update(0, module.asInstanceOf[Module[Activities, Activities, T]])
     var i = 1
-    while (i <= n) {
-      if (modules.size <= i) {
+    while (i <= n && modules.size <= i) {
         modules.append(module
           .cloneModule()
           .asInstanceOf[Module[Activities, Activities, T]])
-      }
       i += 1
     }
   }
