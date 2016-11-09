@@ -21,17 +21,27 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * It is a transfer module that applies LeakyReLU, which parameter
+ * negval sets the slope of the negative part:
+ * LeakyReLU is defined as:
+ *  f(x) = max(0, x) + negval * min(0, x)
+ * @param negval sets the slope of the negative partl
+ * @param inplace if it is true, doing the operation in-place without
+ *                using extra state memory
+ */
 class LeakyReLU[T: ClassTag](
   negval: Double = 0.01,
   var inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  val negVal = ev.fromType[Double](negval)
+  private val negVal = ev.fromType[Double](negval)
 
   if (negval < 0) {
     inplace = false
   }
 
+  //Todo: performance should be optimized by replacing apply for contiguous input
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     if (inplace) {
       input.apply1(x => {
