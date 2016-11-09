@@ -22,6 +22,11 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Delete singleton all dimensions or a specific dim.
+ * @param dim Optional. The dimension to be delete. Default: delete all dimensions.
+ * @param numInputDims Optional. If in a batch model, set to the inputDims.
+ */
 class Squeeze[@specialized(Float, Double) T: ClassTag](
   var dim : Int = Int.MinValue,
   var numInputDims: Int = Int.MinValue
@@ -32,18 +37,17 @@ class Squeeze[@specialized(Float, Double) T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    var addone = false
+    var addOne = false
     if (numInputDims != Int.MinValue && input.dim() == numInputDims + 1) {
       if (dim != Int.MinValue) {
         dim += 1
       } else if (input.size(1) == 1) {
-        addone = true // in case of minibatch of size 1
+        addOne = true // in case of miniBatch of size 1
       }
     }
     output.set(input)
     if (dim != Int.MinValue) output.squeeze(dim) else output.squeeze()
-//    output.set(if (dim != Int.MinValue) input.squeeze(dim) else input.squeeze())
-    if (addone) {
+    if (addOne) {
       val s = output.size()
       s(1) = 1
       output.set(output.view(s))
