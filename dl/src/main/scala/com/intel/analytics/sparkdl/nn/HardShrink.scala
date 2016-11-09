@@ -21,10 +21,19 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * This is a transfer layer which applies the hard shrinkage function
+ * element-wise to the input Tensor. The parameter lambda is set to 0.5
+ * by default
+ *        ⎧ x, if x >  lambda
+ * f(x) = ⎨ x, if x < -lambda
+ *        ⎩ 0, otherwise
+ * @param lambda: a threshold value whose default value is 0.5
+ */
 class HardShrink[T: ClassTag](lambda: Double = 0.5)
   (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
-  val lam = ev.fromType[Double](lambda)
+  private val lam = ev.fromType[Double](lambda)
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input)
     output.map(input, (out, in) => {
