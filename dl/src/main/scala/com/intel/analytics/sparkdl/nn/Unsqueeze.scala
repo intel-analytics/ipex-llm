@@ -1,0 +1,70 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.intel.analytics.sparkdl.nn
+
+import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+
+import scala.reflect.ClassTag
+
+/**
+ * Insert singleton dim (i.e., dimension 1) at position pos. For an input with dim = input.dim(),
+ * there are dim + 1 possible positions to insert the singleton dimension.
+ * @param pos
+ * @param numInputDims
+ */
+class Unsqueeze[T: ClassTag](
+  val pos: Int,
+  var numInputDims: Int = Int.MinValue
+  )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
+
+  def setNumInputDims(numInputDims: Int): Unit = {
+    this.numInputDims = numInputDims
+  }
+
+  def getActualPosition(input: Tensor[T]) : Int = {
+    // get valid dimesion offset for batchMode (if any)
+    val inputDim = input.dim() // data batch dim
+    numInputDims = if (numInputDims != Int.MinValue) numInputDims else inputDim // feature map dim
+    val offsetDim = inputDim - numInputDims
+    require(offsetDim >= 0, "input feature map dim (numInputDims) must be <= input:dim()")
+
+    // the actual position; clearer error message for batchMode (if any)
+    val actualPos = pos + offsetDim
+    require(actualPos >= 1 && actualPos <= (inputDim + 1), s"Invalid position: $pos. " +
+      s"input:dim() is $input, input feature map dim (numInputDims) is $numInputDims.")
+
+    actualPos
+  }
+
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    val actualPos = getActualPosition(input)
+    output.addSingletonDimension(input, actualPos)
+    output
+  }
+
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    require(input.nElement() == gradOutput.nElement())
+    gradInput = gradOutput.view(input.size())
+    gradInput
+  }
+
+  override def toString(): String = {
+    s"nn.Unsqueeze($pos${if (numInputDims != Int.MinValue) ", " + numInputDims else ""})"
+  }
+}

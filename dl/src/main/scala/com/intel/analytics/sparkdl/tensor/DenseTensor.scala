@@ -1604,6 +1604,31 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     DenseTensorApply.apply1[T](this, func)
     this
   }
+
+  override def addSingletonDimension(t: Tensor[T], dim: Int = 1): Tensor[T] = {
+    require(dim > 0 && dim <= t.dim() + 1, s"invalid dimension: $dim. " +
+      s"Tensor is of ${t.dim()} dimensions.")
+
+    val size = new Array[Int](t.dim() + 1)
+    val stride = new Array[Int](t.dim() + 1)
+
+    var d = 0
+    while (d < dim - 1) {
+      size(d) = t.size(d + 1)
+      stride(d) = t.stride(d + 1)
+      d += 1
+    }
+    size(dim - 1) = 1
+    stride(dim - 1) = 1
+    d += 1
+    while (d < t.dim + 1) {
+      size(d) = t.size(d)
+      stride(d) = t.stride(d)
+      d += 1
+    }
+
+    this.set(t.storage(), t.storageOffset(), size, stride)
+  }
 }
 
 object DenseTensor {
