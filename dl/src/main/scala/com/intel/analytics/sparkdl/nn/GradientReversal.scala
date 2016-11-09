@@ -21,17 +21,27 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * It is a simple module preserves the input, but takes the
+ * gradient from the subsequent layer, multiplies it by -lambda
+ * and passes it to the preceding layer. This can be used to maximise
+ * an objective function whilst using gradient descent, as described in
+ *  ["Domain-Adversarial Training of Neural Networks"
+ *  (http://arxiv.org/abs/1505.07818)]
+ * @param lambda hyper-parameter lambda can be set dynamically during training
+ */
 class GradientReversal[T: ClassTag](var lambda: Double = 1) (implicit ev: TensorNumeric[T])
 
   extends TensorModule[T] {
 
-  def setLambda(lambda: Double): Unit = {
+  def setLambda(lambda: Double): this.type = {
     this.lambda = lambda
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.set(input)
   }
+
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(gradOutput)
       .copy(gradOutput)
