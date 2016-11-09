@@ -22,7 +22,9 @@ import com.intel.analytics.sparkdl.utils.Table
 
 import scala.reflect.ClassTag
 
-
+/**
+  * Takes a table of Tensors and outputs the max of all of them.
+  */
 class CMaxTable[T: ClassTag](implicit ev: TensorNumeric[T])
   extends Module[Table, Tensor[T], T]{
 

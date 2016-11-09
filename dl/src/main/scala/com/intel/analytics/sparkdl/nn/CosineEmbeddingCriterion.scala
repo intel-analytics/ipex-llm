@@ -22,6 +22,10 @@ import com.intel.analytics.sparkdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+/**
+  * Creates a criterion that measures the loss given an input x = {x1, x2}, a table of two Tensors, and a Tensor label y with values 1 or -1.
+  * @param margin a number from -1 to 1, 0 to 0.5 is suggested
+ */
 class CosineEmbeddingCriterion[T: ClassTag](margin: Double = 0.0)
  (implicit ev: TensorNumeric[T]) extends Criterion[Table, T]{
   val sizeAverage = true
@@ -35,7 +39,7 @@ class CosineEmbeddingCriterion[T: ClassTag](margin: Double = 0.0)
   @transient
   private var w: Tensor[T] = null
   @transient
-  private val w32: Tensor[T] = null
+  private var w32: Tensor[T] = null
   @transient
   private var _outputs: Tensor[T] = null
   @transient
@@ -52,13 +56,14 @@ class CosineEmbeddingCriterion[T: ClassTag](margin: Double = 0.0)
     if (null == w) w = Tensor[T]()
     if (null == _outputs) _outputs = Tensor[T]()
     if (null == _idx) _idx = Tensor[T]()
+    if (null == w32) w32 = Tensor[T]()
 
     if (input1.dim() == 1) {
       input1 = input1.view(1, input1.nElement())
       input2 = input2.view(1, input2.nElement())
     }
 
-    buffer.resizeAs(input1)cmul(input1, input2)
+    buffer.resizeAs(input1).cmul(input1, input2)
     w1.sum(buffer, 2)
 
     val epsilon = 1e-12

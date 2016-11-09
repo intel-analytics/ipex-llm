@@ -22,7 +22,9 @@ import com.intel.analytics.sparkdl.utils.Table
 
 import scala.reflect.ClassTag
 
-
+/**
+  * Takes a table with two Tensor and returns the component-wise subtraction between them.
+  */
 class CSubTable[T: ClassTag]()(
   implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T]{
 
