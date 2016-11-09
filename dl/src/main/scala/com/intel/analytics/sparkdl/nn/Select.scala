@@ -21,12 +21,17 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * A Simple layer selecting an index of the input tensor in the given dimension
+ * @param dimension the dimension to select
+ * @param index the index of the dimension to be selected
+ */
 class Select[T: ClassTag](
   dimension: Int,
   index: Int
 )(implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
-  def setDimAndIndex(input: Tensor[T]): (Int, Int) = {
+  def getPositiveDimAndIndex(input: Tensor[T]): (Int, Int) = {
     val dim = if (dimension < 0) {
       input.dim() + dimension + 1
     } else {
@@ -42,7 +47,7 @@ class Select[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    val (dim, index) = setDimAndIndex(input)
+    val (dim, index) = getPositiveDimAndIndex(input)
     val output = input.select(dim, index)
     this.output.resizeAs(output)
 
@@ -50,14 +55,12 @@ class Select[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    val (dim, index) = setDimAndIndex(input)
+    val (dim, index) = getPositiveDimAndIndex(input)
     gradInput.resizeAs(input)
     gradInput.zero()
     gradInput.select(dim, index).copy(gradOutput)
     gradInput
   }
 
-  override def toString(): String = {
-    s"nn.Select"
-  }
+  override def toString: String = s"nn.Select"
 }

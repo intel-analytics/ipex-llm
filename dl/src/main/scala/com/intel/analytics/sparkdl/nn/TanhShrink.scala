@@ -21,6 +21,11 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * A simple layer for each element of the input tensor, do the following operation
+ * during the forward process:
+ *    [f(x) = tanh(x) - 1]
+ */
 class TanhShrink[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   private val tanh = new Tanh[T]()
