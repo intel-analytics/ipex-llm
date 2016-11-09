@@ -21,6 +21,12 @@ import com.intel.analytics.sparkdl.utils.{Activities, T, Table}
 
 import scala.reflect.ClassTag
 
+/**
+ * This class is a container for a single module which will be applied
+ * to all input elements. The member module is cloned as necessary to
+ * process all input elements.
+ * @param module
+ */
 class MapTable[T: ClassTag](
   var module: Module[_ <: Activities, _ <: Activities, T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T]  {
