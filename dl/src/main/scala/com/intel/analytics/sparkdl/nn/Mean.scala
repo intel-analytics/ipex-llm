@@ -20,8 +20,16 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * It is a simple layer which applies a mean operation over the given dimension.
+ * When nInputDims is provided, the input will be considered as a batches.
+ * Then the mean operation will be applied in (dimension + 1)
+ * @param dimension the dimension to be applied mean operation
+ * @param nInputDims the number of dimensions of the give input
+ */
 class Mean[T: ClassTag](
   dimension: Int = 1,
   nInputDims: Int = -1)
   (implicit ev: TensorNumeric[T]) extends Sum[T](dimension, nInputDims, true) {
+  override def toString: String = s"nn.Mean"
 }

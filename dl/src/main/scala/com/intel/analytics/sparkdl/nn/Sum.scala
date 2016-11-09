@@ -21,15 +21,23 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * It is a simple layer which applies a sum operation over the given dimension.
+ * When nInputDims is provided, the input will be considered as a batches.
+ * Then the sum operation will be applied in (dimension + 1)
+ * @param dimension the dimension to be applied sum operation
+ * @param nInputDims the number of dimensions of the give input
+ * @param sizeAverage default is false, if it is true, it will return the mean instead
+ */
 class Sum[T: ClassTag](
   dimension: Int = 1,
   nInputDims: Int = -1,
   sizeAverage: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   @transient
-  var _gradOutput: Tensor[T] = null
+  private var _gradOutput: Tensor[T] = null
 
-  def getPositiveDimension(input: Tensor[T]): Int = {
+  private def getPositiveDimension(input: Tensor[T]): Int = {
     var dimension = this.dimension
     if (dimension < 0) {
       dimension = input.dim() + dimension + 1
@@ -60,13 +68,7 @@ class Sum[T: ClassTag](
     size(dimension - 1) = 1
 
     if (!gradOutput.isContiguous()) {
-      if (_gradOutput == null) {
-        _gradOutput = Tensor[T]()
-      }
-      _gradOutput
-        .resizeAs(gradOutput)
-        .copy(gradOutput)
-        .view(size)
+      _gradOutput = gradOutput.clone().view(size)
     } else {
       _gradOutput = gradOutput.view(size)
     }
@@ -78,7 +80,5 @@ class Sum[T: ClassTag](
     gradInput
   }
 
-  override def toString(): String = {
-    s"nn.Tanh"
-  }
+  override def toString: String = s"nn.Sum"
 }
