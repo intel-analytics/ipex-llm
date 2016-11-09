@@ -17,8 +17,6 @@
 
 package com.intel.analytics.sparkdl.utils
 
-import com.intel.analytics.sparkdl.tensor.Tensor
-
 import scala.collection.mutable
 import scala.collection.mutable.Map
 
@@ -180,7 +178,7 @@ class Table private[sparkdl](
   def length(): Int = state.size
 
   /**
-   * Recursively flatten the table to a one dimension table without nested table inside
+   * Recursively flatten the table to a single table containing no nested table inside
    * @return the flatten table
    */
   def flatten(): Table = {
@@ -198,8 +196,8 @@ class Table private[sparkdl](
           val newTable = table.flatten(resultIndex)
           newState ++= newTable.getState()
           resultIndex = newState.size
-        case tensor: Tensor[_] =>
-          newState.put(resultIndex, tensor)
+        case other =>
+          newState.put(resultIndex, other)
       }
       resultIndex += 1
       i += 1
@@ -233,7 +231,7 @@ class Table private[sparkdl](
           val newTable = inverseFlatten(table, resultIndex)
           newState.put(i, new Table(newTable.getState()))
           resultIndex += newTable.getState().size
-        case tensor: Tensor[_] =>
+        case other =>
           newState.put(i, state.get(resultIndex).get)
       }
       i += 1

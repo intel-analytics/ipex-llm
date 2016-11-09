@@ -21,17 +21,30 @@ import com.intel.analytics.sparkdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+/**
+ * This is a table layer which takes an arbitrarily deep table of Tensors
+ * (potentially nested) as input and a table of Tensors without any nested
+ * table will be produced
+ */
 class FlattenTable[T: ClassTag] (implicit ev: TensorNumeric[T])
   extends Module[Table, Table, T] {
-  var inputMap = T()
+  @transient private var inputMap: Table = null
+
+  private def createInputMap(): Unit = {
+    if (inputMap == null) {
+      inputMap = T()
+    }
+  }
 
   override def updateOutput(input: Table): Table = {
+    createInputMap()
     inputMap = input.clone()
     output = input.flatten()
     output
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
+    createInputMap()
     gradInput = gradOutput.inverseFlatten(inputMap)
     gradInput
   }
