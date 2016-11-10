@@ -233,10 +233,10 @@ trait TensorMath[T] {
 
 
   /**
-   * Performs the dot product. The number of elements must match: both Tensors are seen as a 1D
+   * For each elements of the tensor, performs the max operation compared with the given value
    * vector.
    *
-   * @param y
+   * @param value
    * @return
    */
   def cmax(value: T): Tensor[T]
