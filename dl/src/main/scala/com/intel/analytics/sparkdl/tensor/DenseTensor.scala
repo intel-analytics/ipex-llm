@@ -705,13 +705,18 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def max(dim: Int): (Tensor[T], Tensor[T]) = {
     require(dim > 0 && dim <= this.nDimension, "dimension out of range")
+    max(Tensor[T](), Tensor[T](), dim)
+  }
+
+  override def max(values: Tensor[T], indices: Tensor[T], dim: Int): (Tensor[T], Tensor[T]) = {
+    require(dim > 0 && dim <= this.nDimension, "dimension out of range")
     val sizes = this.size() // here slice
     sizes(dim - 1) = 1
-    val values = Tensor[T](sizes)
-    val indices = Tensor[T](sizes)
+    values.resize(sizes)
+    indices.resize(sizes)
+    // TODO: the performance of contiguous tensor should be optimize
     DenseTensorDimApply.dimApply3[T](this, values, indices, dim, (tdata, toffset, tstride,
-    tsize, vdata, voffset, vstride,
-    vsize, idata, ioffset, istride, isize) => {
+      tsize, vdata, voffset, vstride, vsize, idata, ioffset, istride, isize) => {
       var max = tdata(toffset)
       var index = 1
       var i = 0
@@ -727,6 +732,59 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     })
 
     (values, indices)
+  }
+
+  override def min(): T = DenseTensorMath.minAll(this)
+
+  override def min(dim: Int): (Tensor[T], Tensor[T]) = {
+    require(dim > 0 && dim <= this.nDimension, "dimension out of range")
+    min(Tensor[T](), Tensor[T](), dim)
+  }
+
+  override def min(values: Tensor[T], indices: Tensor[T], dim: Int): (Tensor[T], Tensor[T]) = {
+    require(dim > 0 && dim <= this.nDimension, "dimension out of range")
+    val sizes = this.size()
+    sizes(dim - 1) = 1
+    values.resize(sizes)
+    indices.resize(sizes)
+    // TODO: the performance of contiguous tensor should be optimize
+    DenseTensorDimApply.dimApply3[T](this, values, indices, dim, (tdata, toffset, tstride,
+      tsize, vdata, voffset, vstride, vsize, idata, ioffset, istride, isize) => {
+      var min = tdata(toffset)
+      var index = 1
+      var i = 0
+      while (i < tsize) {
+        if (ev.isGreater(min, tdata(toffset + i * tstride))) {
+          index = i + 1
+          min = tdata(toffset + i * tstride)
+        }
+        i += 1
+      }
+      vdata(voffset) = min
+      idata(ioffset) = ev.fromType[Float](index)
+    })
+
+    (values, indices)
+  }
+
+  def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = {
+    require(src.dim() == this.dim(), "Input tensor must have same dimensions as output tensor")
+    require(dim < this.dim(), "Index dimension is out of bounds")
+    require(index.dim() == src.dim(), "Index tensor must have same dimensions as input tensor")
+    val elementsPerRow = index.size(dim)
+    // TODO: the performance of contiguous tensor should be optimize
+    DenseTensorDimApply.dimApply3[T](this, src, index, dim, (tdata, toffset, tstride,
+      tsize, vdata, voffset, vstride, vsize, idata, ioffset, istride, isize) => {
+      var i = 0
+      while (i < elementsPerRow) {
+        val idx = ev.toType[Int](idata(ioffset + i * istride))
+        require(idx >= 1 && idx <= this.size(dim))
+        tdata((idx - 1) * tstride + toffset) = vdata(i * vstride + voffset)
+        i += 1
+      }
+    })
+
+    this
   }
 
   override def add(value: T, y: Tensor[T]): Tensor[T] = DenseTensorMath.cadd(this, this, value, y)
