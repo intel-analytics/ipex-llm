@@ -76,6 +76,16 @@ object Perf {
           failure("Engine name can only be mkl or scala now")
         }
       )
+    opt[String]('d', "distribute")
+      .text("Distribute type. One of constant | random")
+      .action((v, p) => p.copy(distribute = v))
+      .validate(v =>
+        if (v.toLowerCase() == "constant" || v.toLowerCase() == "random") {
+          success
+        } else {
+          failure("Distribute type must be one of constant and random")
+        }
+      )
     help("help").text("Prints this usage text")
   }
 
@@ -101,8 +111,10 @@ object Perf {
       case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
     }
-     input.rand()
-//    input.fill(tn.fromType(0.01))
+    param.distribute match {
+      case "constant" => input.fill(tn.fromType(0.01))
+      case "random"  => input.rand()
+    }
     println(model)
     val criterion = new ClassNLLCriterion[T]()
     val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
@@ -120,11 +132,6 @@ object Perf {
       println(s"Warm up iteration $i: forward ${forwardTime / 1e6}ms, " +
         s"backward ${backwardTime / 1e6}ms, " +
         s"total ${(forwardTime + backwardTime) / 1e6}ms")
-//      if (i == 1) {
-//        param.engine match {
-//          case "mkl" => model.initMkl(0L)
-//        }
-//      }
     }
     model.resetTimes()
     var totalForwardTime = 0L
@@ -165,5 +172,6 @@ case class PerfParams(
   warmUp: Int = 10,
   dataType: String = "float",
   module: String = "alexnet",
-  engine: String = "mkl"
+  engine: String = "mkl",
+  distribute: String = "random"
 )
