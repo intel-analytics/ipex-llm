@@ -231,6 +231,16 @@ trait TensorMath[T] {
    */
   def dot(y: Tensor[T]): T
 
+
+  /**
+   * Performs the dot product. The number of elements must match: both Tensors are seen as a 1D
+   * vector.
+   *
+   * @param y
+   * @return
+   */
+  def cmax(value: T): Tensor[T]
+
   /**
    * Performs the element-wise multiplication of tensor1 by tensor2, multiply the result by the
    * scalar value (1 if not present) and add it to x. The number of elements must match, but sizes

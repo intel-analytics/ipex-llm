@@ -823,6 +823,10 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     sum
   }
 
+  override def cmax(value: T): Tensor[T] = {
+    this.apply1(x => ev.max(x, value))
+  }
+
   override def addcmul(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
     require(tensor1.nElement() == tensor2.nElement() && this.nElement() == tensor1.nElement())
 
