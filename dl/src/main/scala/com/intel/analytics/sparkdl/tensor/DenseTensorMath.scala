@@ -423,6 +423,24 @@ object DenseTensorMath {
     max
   }
 
+  def minAll[@specialized(Float, Double) T](self: DenseTensor[T])(
+    implicit ev: TensorNumeric[T]): T = {
+    var min = ev.fromType[Int](Int.MaxValue)
+    var first = true
+    val func = new TensorFunc2[T] {
+      override def apply(data: Array[T], index: Int): Unit = {
+        if (first) {
+          first = false
+          min = data(index)
+        } else if (ev.isGreater(min, data(index))) {
+          min = data(index)
+        }
+      }
+    }
+    Apply.apply1[T](self, func)
+    min
+  }
+
   def addmm[@specialized(Float, Double) T: ClassTag](r: Tensor[T], beta: T, t: Tensor[T],
     alpha: T, m1: Tensor[T], m2: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {

@@ -152,6 +152,46 @@ trait TensorMath[T] {
   def max(dim: Int): (Tensor[T], Tensor[T])
 
   /**
+   * performs the max operation over the dimension n
+   * @param values
+   * @param indices
+   * @param dim
+   * @return
+   */
+  def max(values: Tensor[T], indices: Tensor[T], dim: Int): (Tensor[T], Tensor[T])
+
+  /**
+   * returns the single minimum element of x
+   * @return
+   */
+  def min(): T
+
+  /**
+   * performs the min operation over the dimension n
+   * @param dim
+   * @return
+   */
+  def min(dim: Int): (Tensor[T], Tensor[T])
+
+  /**
+   * performs the min operation over the dimension n
+   * @param values
+   * @param indices
+   * @param dim
+   * @return
+   */
+  def min(values: Tensor[T], indices: Tensor[T], dim: Int): (Tensor[T], Tensor[T])
+
+  /**
+   * Writes all values from tensor src into this tensor at the specified indices
+   * @param dim
+   * @param index
+   * @param src
+   * @return this
+   */
+  def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T]
+
+  /**
    * This function computes 2 dimensional convolution of a single image
    * with a single kernel (2D output). the dimensions of input and kernel
    * need to be 2, and Input image needs to be bigger than kernel. The
