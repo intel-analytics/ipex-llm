@@ -23,11 +23,16 @@ import com.intel.analytics.sparkdl.utils.{T, Table}
 import scala.reflect.ClassTag
 import scala.util.Random
 
+/**
+ * Creates a criterion that measures the loss given an input x = {x1, x2},
+  * a table of two Tensors, and a label y (1 or -1):
+ * @param margin
+ */
 class L1HingeEmbeddingCriterion[T: ClassTag](margin: Double = 1)
  (implicit ev: TensorNumeric[T]) extends Criterion[Table, T]{
   val gradInput = T()
 
-  def mathSign(t: T): T = {
+  private def mathSign(t: T): T = {
     var res = 0
     if (ev.isGreater(t, ev.fromType(0))) {
       res = 1
