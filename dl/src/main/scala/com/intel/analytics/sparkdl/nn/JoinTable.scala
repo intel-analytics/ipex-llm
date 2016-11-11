@@ -1,0 +1,107 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.intel.analytics.sparkdl.nn
+
+import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.sparkdl.utils.Table
+
+import scala.reflect.ClassTag
+
+/**
+ * It is a table module which that takes a table of Tensors as input and
+ * outputs a Tensor by joining them together along dimension dimension.
+ * @param dimension to be join in this dimension
+ * @param nInputDims specify the number of dimensions that this module will receive
+ *                   If it is more than the dimension of input tensors, the first dimension
+ *                   would be considered as batch size
+ */
+class JoinTable[T: ClassTag] (
+  dimension: Int,
+  nInputDims: Int
+)(implicit ev: TensorNumeric[T])
+  extends Module[Table, Tensor[T], T] {
+  @transient private var size: Array[Int] = null
+
+  private def getPositiveDimension(input: Table): Int = {
+    var dimension = this.dimension
+    val firstInput: Tensor[T] = input(1)
+
+    if (dimension < 0) {
+      dimension = firstInput.dim() + dimension + 1
+    } else if (nInputDims > 0 && firstInput.dim() == (nInputDims + 1)) {
+      dimension += 1
+    }
+    require(firstInput.dim() >= dimension, "dimension exceeds input dimensions")
+    dimension
+  }
+
+  override def updateOutput(input: Table): Tensor[T] = {
+    val dimension = getPositiveDimension(input)
+
+    var i = 1
+    while (i <= input.getState().size) {
+      val currentOutput: Tensor[T] = input(i)
+      if (i == 1) {
+        size = currentOutput.size().clone()
+      } else {
+        size(dimension - 1) += currentOutput.size(dimension)
+      }
+      i += 1
+    }
+    output.resize(size)
+
+    var offset = 1
+    i = 1
+    while (i <= input.getState().size) {
+      val currentOutput: Tensor[T] = input(i)
+      output.narrow(dimension, offset, currentOutput.size(dimension))
+        .copy(currentOutput)
+      offset += currentOutput.size(dimension)
+      i += 1
+    }
+
+    output
+  }
+
+  override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
+    val dimension = getPositiveDimension(input)
+
+    var i = 1
+    while (i <= input.getState().size) {
+      if (!gradInput.contains(i)) {
+        gradInput(i) = Tensor()
+      }
+      gradInput(i).asInstanceOf[Tensor[T]].resizeAs(input(i))
+      i += 1
+    }
+
+    var offset = 1
+    i = 1
+    while (i <= input.getState().size) {
+      val currentOutput: Tensor[T] = input(i)
+      val currentGradInput = gradOutput
+        .narrow(dimension, offset, currentOutput.size(dimension))
+      gradInput(i).asInstanceOf[Tensor[T]].copy(currentGradInput)
+      offset += currentOutput.size(dimension)
+      i += 1
+    }
+    gradInput
+  }
+
+  override def toString: String = s"nn.JoinTable"
+}
