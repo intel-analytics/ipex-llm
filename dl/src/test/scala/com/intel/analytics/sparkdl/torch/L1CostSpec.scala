@@ -32,8 +32,8 @@ class L1CostSpec extends FlatSpec with BeforeAndAfter with Matchers{
 
   "A L1Cost" should "generate correct output and grad" in {
     val layer = new L1Cost[Double]()
-    val input = Tensor[Double](2, 2, 2).apply1(e => Random.nextDouble())
-    val target = Tensor[Double](2, 2, 2).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](2, 2).apply1(e => Random.nextDouble())
+    val target = Tensor[Double](2, 2).apply1(e => Random.nextDouble())
 
     val start = System.nanoTime()
     val output = layer.forward(input, target)

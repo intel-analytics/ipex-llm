@@ -21,6 +21,15 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * adds an L1 penalty to an input (for sparsity).
+ * L1Penalty is an inline module that in its forward propagation copies the input Tensor
+ * directly to the output, and computes an L1 loss of the latent state (input) and stores
+ * it in the module's loss field. During backward propagation: gradInput = gradOutput + gradLoss.
+ * @param l1weight
+ * @param sizeAverage
+ * @param provideOutput
+ */
 class L1Penalty[T: ClassTag](l1weight: Int, sizeAverage: Boolean = false,
  provideOutput: Boolean = true)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 

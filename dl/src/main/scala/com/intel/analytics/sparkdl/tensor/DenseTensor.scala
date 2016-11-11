@@ -1537,13 +1537,19 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     ev.sqrt(res)
   }
 
+  /**
+   * returns a new Tensor with the sign (+/- 1 or 0) of the elements of x.
+   * @return
+   */
   override def sign(): Tensor[T] = {
     val func = new TensorFunc2[T] {
       override def apply(data1: Array[T], offset1: Int): Unit = {
         if (ev.isGreater(data1(offset1), ev.fromType(0))) {
           data1(offset1) = ev.fromType(1)
-        } else {
+        } else if (ev.isGreater(ev.fromType(0), data1(offset1))) {
           data1(offset1) = ev.fromType(-1)
+        } else {
+          data1(offset1) = ev.fromType(0)
         }
       }
     }
