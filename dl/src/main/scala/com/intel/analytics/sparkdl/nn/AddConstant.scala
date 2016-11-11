@@ -21,8 +21,12 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-
-class AddConstant[@specialized(Float, Double) T: ClassTag](
+/**
+ *  adding a constant
+ * @param constant_scalar constant value
+ * @param inplace Can optionally do its operation in-place without using extra state memory
+ */
+class AddConstant[T: ClassTag](
    val constant_scalar: T,
    val inplace: Boolean = false
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
@@ -49,7 +53,7 @@ class AddConstant[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.AddConstant"
+    s"nn.AddConstant ($constant_scalar, $inplace)"
   }
 
 }

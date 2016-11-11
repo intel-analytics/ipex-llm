@@ -23,15 +23,15 @@ import com.intel.analytics.sparkdl.utils.Table
 import scala.reflect.ClassTag
 
 /**
-  * Takes a table of Tensors and outputs the min of all of them.
-  */
+ * Takes a table of Tensors and outputs the min of all of them.
+ */
 class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
   extends Module[Table, Tensor[T], T]{
 
   @transient
-  var minIdx: Tensor[T] = null
+  private var minIdx: Tensor[T] = null
   @transient
-  var mask: Tensor[T] = null
+  private var mask: Tensor[T] = null
 
   override def updateOutput(input: Table): Tensor[T] = {
     if (null == minIdx) minIdx = Tensor[T]()
@@ -47,7 +47,8 @@ class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
       mask.lt(input(i), output)
       minIdx.maskedFill(mask, ev.fromType(i))
 
-      output.maskedCopy(mask, Tensor[T].maskedSelect(mask, input(i)))
+      val maskResult = Tensor[T]()
+      output.maskedCopy(mask, input[Tensor[T]](i).maskedSelect(mask, maskResult))
       i += 1
     }
     output
@@ -62,7 +63,8 @@ class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
       mask.resize(minIdx.size())
       mask.eq(minIdx, ev.fromType(i))
 
-      gradInput.apply[Tensor[T]](i).maskedCopy(mask, Tensor[T].maskedSelect(mask, gradOutput))
+      val maskResult = Tensor[T]()
+      gradInput.apply[Tensor[T]](i).maskedCopy(mask, gradOutput.maskedSelect(mask, maskResult))
 
       i += 1
     }

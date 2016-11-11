@@ -21,14 +21,18 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-
-class AbsCriterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean = true)
+/**
+ * measures the mean absolute value of the element-wise difference between input
+ */
+class AbsCriterion[T: ClassTag](sizeAverage: Boolean = true)
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
-  var buffer = Tensor[T]()
   var gradInput: Tensor[T] = Tensor[T]()
+  @transient
+  private var buffer: Tensor[T] = null
 
   override def updateOutput(input: Tensor[T], target : Tensor[T]): T = {
+    if (null == buffer) buffer = Tensor[T]()
     buffer.resizeAs(input).add(input)
     buffer.mul(input, ev.fromType[Int](-1)).add(target).abs()
 
