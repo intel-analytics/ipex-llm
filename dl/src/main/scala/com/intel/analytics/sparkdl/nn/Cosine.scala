@@ -22,6 +22,14 @@ import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
 
+/**
+  * the cosine similarity of the input to k mean centers
+  * @param inputSize
+  * @param outputSize
+  * @param ev$1
+  * @param ev
+  * @tparam T
+  */
 class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
@@ -50,13 +58,15 @@ class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2, "input must be vector or matrix")
-    _weightNorm = weight.norm(ev.fromType(2), 2).add(ev.fromType(1e-12))
 
     if (null == _weightNorm) _weightNorm = Tensor[T]()
     if (null == _inputNorm) _inputNorm = Tensor[T]()
     if (null == _sum) _sum = Tensor[T]()
     if (null == _weight) _weight = Tensor[T]()
     if (null == _gradOutput) _gradOutput = Tensor[T]()
+
+    weight.norm(_weightNorm, 2, 2)
+    _weightNorm.add(ev.fromType(1e-12))
 
     if (input.dim() == 1) {
       output.resize(outputSize).zero()
@@ -71,7 +81,7 @@ class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
       if (output.nElement() != nElement) output.zero()
       output.addmm(ev.fromType(0), output, ev.fromType(1), input, weight.t())
 
-      _inputNorm = input.norm(ev.fromType(2), 2)
+      input.norm(_inputNorm, 2, 2)
       output.cdiv(_weightNorm.view(1, outputSize).expandAs(output))
       output.cdiv(Tensor[T](_inputNorm.storage(), _inputNorm.storageOffset(),
         _inputNorm.size(), _inputNorm.stride()).expandAs(output))

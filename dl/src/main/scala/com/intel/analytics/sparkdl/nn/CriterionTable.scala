@@ -21,6 +21,10 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+  * Creates a module that wraps a Criterion so that it can accept a table of inputs.
+  * @param criterion Criterion module
+  */
 class CriterionTable[T: ClassTag](val criterion: TensorCriterion[T])
  (implicit ev: TensorNumeric[T]) extends  TensorCriterion[T] {
 
