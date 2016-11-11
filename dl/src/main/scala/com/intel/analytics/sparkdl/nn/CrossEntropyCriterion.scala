@@ -21,11 +21,16 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+  * This criterion combines LogSoftMax and ClassNLLCriterion in one single class.
+  * @param weights A tensor assigning weight to each of the classes
+  */
+
 class CrossEntropyCriterion[T: ClassTag](
    val weights: Tensor[T] = null )(implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{
   private val gradInput: Tensor[T] = Tensor[T]()
-  val lsm = new LogSoftMax[T]()
-  val nll = new ClassNLLCriterion[T](weights)
+  private val lsm = new LogSoftMax[T]()
+  private val nll = new ClassNLLCriterion[T](weights)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     input.squeeze()

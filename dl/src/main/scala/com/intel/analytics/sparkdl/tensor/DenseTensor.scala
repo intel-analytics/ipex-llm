@@ -969,6 +969,17 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   override def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T]): Tensor[T] =
     DenseTensorMath.addr(this, v1, this, v2, t1, t2)
 
+  /**
+    * Performs the outer-product between vec1 (1D Tensor) and vec2 (1D Tensor).
+    * Optional values v1 and v2 are scalars that multiply mat and vec1 [out] vec2 respectively.
+    * In other words,res_ij = (v1 * mat_ij) + (v2 * vec1_i * vec2_j)
+    * @param v1
+    * @param t1
+    * @param v2
+    * @param t2
+    * @param t3
+    * @return
+    */
   override def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T], t3: Tensor[T]): Tensor[T] =
     DenseTensorMath.addr(this, v1, t1, v2, t2, t3)
 
@@ -1350,7 +1361,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def log1p(): Tensor[T] = DenseTensorMath.log1p[T](this, this)
 
-  override def norm(value: T, dim: Int): Tensor[T] = DenseTensorMath.norm(this, value, dim - 1)
+  override def norm(y: Tensor[T], value: Double, dim: Int): Tensor[T] = DenseTensorMath.norm(this, y, value, dim - 1)
 
   override def abs(x: Tensor[T]): Tensor[T] = {
     require(this.nElement() == x.nElement())

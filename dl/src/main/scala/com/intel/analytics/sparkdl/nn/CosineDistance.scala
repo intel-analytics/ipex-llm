@@ -22,38 +22,24 @@ import com.intel.analytics.sparkdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+  * outputs the cosine distance between inputs
+  */
 class CosineDistance[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
 
   @transient
-  var buffer: Tensor[T] = null
+  private var buffer: Tensor[T] = null
   @transient
-  var w1: Tensor[T] = null
+  private var w1: Tensor[T] = null
   @transient
-  var w22: Tensor[T] = null
+  private var w22: Tensor[T] = null
   @transient
-  var w: Tensor[T] = null
+  private var w: Tensor[T] = null
   @transient
-  var w32: Tensor[T] = null
+  private var w32: Tensor[T] = null
   @transient
-  var ones: Tensor[T] = null
-
-  def makeContiguous(input1: Tensor[T], input2: Tensor[T]): (Tensor[T], Tensor[T]) = {
-    var _input1 = Tensor[T]()
-    var _input2 = Tensor[T]()
-
-    if (!input1.isContiguous()) {
-      _input1.resizeAs(input1).copy(input1)
-    } else {
-      _input1 = input1
-    }
-    if (!input2.isContiguous()) {
-      _input2.resizeAs(input2).copy(input2)
-    } else {
-      _input2 = input2
-    }
-    (_input1, _input2)
-  }
+  private var ones: Tensor[T] = null
 
   override def updateOutput(input: Table): Tensor[T] = {
     if (null == buffer) buffer = Tensor[T]()
@@ -63,7 +49,8 @@ class CosineDistance[T: ClassTag](
     if (null == w32) w32 = Tensor[T]()
     if (null == ones) ones = Tensor[T]()
 
-    var (input1, input2) = makeContiguous(input[Tensor[T]](1), input[Tensor[T]](2))
+    var input1 = input[Tensor[T]](1).contiguous()
+    var input2 = input[Tensor[T]](2).contiguous()
     if (input1.dim() == 1) {
       input1 = input1.view(1, input1.nElement())
       input2 = input2.view(1, input2.nElement())
@@ -93,7 +80,8 @@ class CosineDistance[T: ClassTag](
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]) : Table = {
     var no_batch = false
-    var (v1, v2) = makeContiguous(input[Tensor[T]](1), input[Tensor[T]](2))
+    var v1 = input[Tensor[T]](1).contiguous()
+    var v2 = input[Tensor[T]](2).contiguous()
 
     if (v1.dim() == 1) {
       v1 = v1.view(1, v1.nElement())
@@ -105,10 +93,10 @@ class CosineDistance[T: ClassTag](
     if (!gradInput.contains(2)) gradInput.insert(2, Tensor[T])
 
     val gw1 = gradInput[Tensor[T]](1)
-    val gw2 = gradInput[Tensor[T]](2)
+    var gw2 = gradInput[Tensor[T]](2)
 
     gw1.resizeAs(v1).copy(v2)
-    gw2.resizeAs(v1).copy(v1)
+    gw2 = v1.clone()
 
     buffer.resizeAs(w1).cmul(w1, w22)
     gw1.addcmul(ev.fromType(-1), buffer.expandAs(v1), v1)

@@ -604,35 +604,41 @@ object DenseTensorMath {
     result
   }
 
-  def norm[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], value: T, _dim: Int)
+  /**
+    * returns the p-norms of the Tensor x computed over the dimension dim.
+    * @param self
+    * @param value value-norms
+    * @param _dim the dimension dim
+    * @return
+    */
+  def norm[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], result: Tensor[T], value: Double, _dim: Int)
   (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(_dim >= 0 && _dim < self.nDimension, "invalid dimension")
-    val result = new DenseTensor[T]()
     val sizes = self.size()
     sizes(_dim) = 1
-    DenseTensor.resize(result, sizes)
+    result.resize(sizes)
 
     if (value == 0) {
-      DenseTensorDimApply.dimApply2[T](result, self, _dim,
+      DenseTensorDimApply.dimApply2[T](self, result, _dim,
         (rData, rOffset, rStride, rSize, tData, tOffset, tStride, tSize) => {
           var sum = ev.fromType[Int](0)
           var i = 0
-          while (i < tSize) {
-            sum = ev.plus(sum, tData(tOffset + i * tStride))
+          while (i < rSize) {
+            sum = ev.plus(sum, rData(rOffset + i * rStride))
             i += 1
           }
-          rData(rOffset) = sum
+          tData(tOffset) = sum
         })
     } else {
-      DenseTensorDimApply.dimApply2[T](result, self, _dim,
+      DenseTensorDimApply.dimApply2[T](self, result, _dim,
         (rData, rOffset, rStride, rSize, tData, tOffset, tStride, tSize) => {
           var sum = ev.fromType[Int](0)
           var i = 0
-          while (i < tSize) {
-            sum = ev.plus(sum, ev.pow(ev.abs(tData(tOffset + i * tStride)), value))
+          while (i < rSize) {
+            sum = ev.plus(sum, ev.pow(ev.abs(rData(rOffset + i * rStride)), ev.fromType(value)))
             i += 1
           }
-          rData(rOffset) = ev.pow(sum, ev.divide(ev.fromType(1.0), value))
+          tData(tOffset) = ev.pow(sum, ev.fromType(1.0 / value))
         })
     }
     result

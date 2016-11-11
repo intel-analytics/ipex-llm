@@ -34,7 +34,7 @@ class BottleSpec extends FlatSpec with BeforeAndAfter with Matchers{
   "A Bottle Container" should "generate correct output and grad" in {
     val seed = 100
     RNG.setSeed(seed)
-    val module = new Bottle[Tensor[Double], Tensor[Double], Double](new Linear(10, 2), 2, 2)
+    val module = new Bottle[Double](new Linear(10, 2), 2, 2)
     module.add(new Linear(10, 2))
 
     val input = Tensor[Double](4, 5, 10).apply1(_ => Random.nextDouble())
@@ -52,7 +52,6 @@ class BottleSpec extends FlatSpec with BeforeAndAfter with Matchers{
     "outShape = module.outShape\n" +
     "output = module:forward(input)\n" +
     "gradInput = module:backward(input,gradOutput)"
-
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "inShape", "outShape"))
