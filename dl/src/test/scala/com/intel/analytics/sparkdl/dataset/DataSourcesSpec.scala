@@ -82,54 +82,77 @@ class DataSourcesSpec extends FlatSpec with Matchers {
 
   "imagenet data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
-    val pathToImage = PathToRGBImage(256)
     val dataSource = new ImageNetDataSource(Paths.get(processPath(resource.getPath())), looped =
       false)
-    dataSource.total() should be(8)
+    dataSource.total() should be(11)
 
     val labelMap = dataSource.getLabelMap(Paths.get(processPath(resource.getPath())))
     labelMap("n02110063") should be(1)
     labelMap("n04370456") should be(2)
     labelMap("n15075141") should be(3)
+    labelMap("n99999999") should be(4)
 
-    val imageDataSource = dataSource -> pathToImage
+    var pathToImage = PathToRGBImage(-1)
+    var imageDataSource = dataSource -> pathToImage
 
     val img1 = imageDataSource.next()
-    img1.label() should be(1f)
-    (img1.width() == 256 || img1.height() == 256) should be(true)
+    img1.label() should be(4f)
+    img1.content((100 + 100 * 213) * 3 + 2) should be(35 / 255f)
+    img1.content((100 + 100 * 213) * 3 + 1) should be(30 / 255f)
+    img1.content((100 + 100 * 213) * 3) should be(36 / 255f)
     val path1 = java.io.File.createTempFile("UnitTest", "datasource1.jpg").getAbsolutePath
     img1.save(path1)
     println(s"save test image to $path1")
 
     val img2 = imageDataSource.next()
-    img2.label() should be(1f)
-    (img2.width() == 256 || img2.height() == 256) should be(true)
+    img2.label() should be(4f)
+    img2.content((100 + 100 * 556) * 3 + 2) should be(24 / 255f)
+    img2.content((100 + 100 * 556) * 3 + 1) should be(24 / 255f)
+    img2.content((100 + 100 * 556) * 3) should be(24 / 255f)
     val path2 = java.io.File.createTempFile("UnitTest", "datasource2.jpg").getAbsolutePath
     img1.save(path2)
     println(s"save test image to $path2")
 
+    pathToImage = PathToRGBImage(256)
+    imageDataSource = dataSource -> pathToImage
+
     val img3 = imageDataSource.next()
     img3.label() should be(1f)
     (img3.width() == 256 || img3.height() == 256) should be(true)
+    val path3 = java.io.File.createTempFile("UnitTest", "datasource3.jpg").getAbsolutePath
+    img3.save(path3)
+    println(s"save test image to $path3")
 
     val img4 = imageDataSource.next()
-    img4.label() should be(2f)
+    img4.label() should be(1f)
     (img4.width() == 256 || img4.height() == 256) should be(true)
 
     val img5 = imageDataSource.next()
-    img5.label() should be(2f)
+    img5.label() should be(1f)
     (img5.width() == 256 || img5.height() == 256) should be(true)
 
     val img6 = imageDataSource.next()
-    img6.label() should be(3f)
+    img6.label() should be(4f)
     (img6.width() == 256 || img6.height() == 256) should be(true)
 
     val img7 = imageDataSource.next()
-    img7.label() should be(3f)
+    img7.label() should be(2f)
     (img7.width() == 256 || img7.height() == 256) should be(true)
 
     val img8 = imageDataSource.next()
-    img8.label() should be(3f)
+    img8.label() should be(2f)
     (img8.width() == 256 || img8.height() == 256) should be(true)
+
+    val img9 = imageDataSource.next()
+    img9.label() should be(3f)
+    (img9.width() == 256 || img9.height() == 256) should be(true)
+
+    val img10 = imageDataSource.next()
+    img10.label() should be(3f)
+    (img10.width() == 256 || img10.height() == 256) should be(true)
+
+    val img11 = imageDataSource.next()
+    img11.label() should be(3f)
+    (img11.width() == 256 || img11.height() == 256) should be(true)
   }
 }

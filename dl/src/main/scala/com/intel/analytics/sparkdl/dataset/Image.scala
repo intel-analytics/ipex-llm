@@ -153,23 +153,26 @@ object RGBImage {
       val byteArrayOutputStream = new ByteArrayOutputStream
       channel.transferTo(0, channel.size, Channels.newChannel(byteArrayOutputStream))
       val img = ImageIO.read(new ByteArrayInputStream(byteArrayOutputStream.toByteArray))
-      if (img.getAlphaRaster != null) {
-        throw new UnsupportedOperationException("Not support img with alpha channel")
+      var heightAfterScale = 0
+      var widthAfterScale = 0
+      var scaledImage: java.awt.Image = null
+      // no scale
+      if (-1 == scaleTo) {
+        heightAfterScale = img.getHeight
+        widthAfterScale = img.getWidth
+        scaledImage = img
+      } else {
+        if (img.getWidth < img.getHeight) {
+          heightAfterScale = scaleTo * img.getHeight / img.getWidth
+          widthAfterScale = scaleTo
+        } else {
+          heightAfterScale = scaleTo
+          widthAfterScale = scaleTo * img.getWidth / img.getHeight
+        }
+        scaledImage =
+          img.getScaledInstance(widthAfterScale, heightAfterScale, java.awt.Image.SCALE_SMOOTH)
       }
 
-      val heightAfterScale = if (img.getWidth < img.getHeight) {
-        scaleTo * img.getHeight / img.getWidth
-      } else {
-        scaleTo
-      }
-      val widthAfterScale = if (img.getWidth < img.getHeight) {
-        scaleTo
-      } else {
-        scaleTo * img.getWidth / img.getHeight
-      }
-
-      val scaledImage: java.awt.Image =
-        img.getScaledInstance(widthAfterScale, heightAfterScale, java.awt.Image.SCALE_SMOOTH)
       val imageBuff: BufferedImage =
         new BufferedImage(widthAfterScale, heightAfterScale, BufferedImage.TYPE_3BYTE_BGR)
       imageBuff.getGraphics.drawImage(scaledImage, 0, 0, new Color(0, 0, 0), null)
