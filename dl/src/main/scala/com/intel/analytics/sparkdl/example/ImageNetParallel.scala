@@ -19,10 +19,11 @@ package com.intel.analytics.sparkdl.example
 
 import com.intel.analytics.sparkdl.example.ImageNetUtils._
 import com.intel.analytics.sparkdl.example.Utils._
+import com.intel.analytics.sparkdl.models.imagenet.GoogleNet_v2_NoAuxClassifier
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim._
 import com.intel.analytics.sparkdl.optim.SGD
-import com.intel.analytics.sparkdl.optim.SGD.{EpochSchedule, Poly, Regime}
+import com.intel.analytics.sparkdl.optim.SGD.{EpochStep, EpochSchedule, Poly, Regime}
 import com.intel.analytics.sparkdl.ps.{AllReduceParameterManager, OneReduceParameterManager}
 import com.intel.analytics.sparkdl.tensor._
 import com.intel.analytics.sparkdl.utils.T
@@ -98,6 +99,7 @@ object ImageNetParallel {
     val model = netType match {
       case "alexnet" => AlexNet.getModel[Float](classNum)
       case "googlenet" => GoogleNet.getModelCaffe[Float](classNum)
+      case "googlenet_v2" => GoogleNet_v2_NoAuxClassifier[Float](classNum)
     }
     println(model)
 
@@ -105,8 +107,9 @@ object ImageNetParallel {
     val workerConfig = params.workerConfig.clone()
     workerConfig("profile") = true
 
-    driverConfig("learningRateSchedule") = Poly(0.5, 62000)
+    //driverConfig("learningRateSchedule") = Poly(0.5, 62000)
     //driverConfig("learningRateSchedule") = Poly(0.5, 90000)
+    driverConfig("learningRateSchedule") = EpochStep(2, 0.96)
 
     val croppedData = if (cropImage) {
       loadCroppedData(trainFiles, sc, labelsMap, classNum + 0.5).coalesce(partitionNum, true)
