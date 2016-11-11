@@ -23,15 +23,15 @@ import com.intel.analytics.sparkdl.utils.Table
 import scala.reflect.ClassTag
 
 /**
-  * Takes a table of Tensors and outputs the max of all of them.
-  */
+ * Takes a table of Tensors and outputs the max of all of them.
+ */
 class CMaxTable[T: ClassTag](implicit ev: TensorNumeric[T])
   extends Module[Table, Tensor[T], T]{
 
   @transient
-  var maxIdx: Tensor[T] = null
+  private var maxIdx: Tensor[T] = null
   @transient
-  var mask: Tensor[T] = null
+  private var mask: Tensor[T] = null
 
   override def updateOutput(input: Table): Tensor[T] = {
     if (null == maxIdx) maxIdx = Tensor[T]()
@@ -47,7 +47,8 @@ class CMaxTable[T: ClassTag](implicit ev: TensorNumeric[T])
       mask.gt(input(i), output)
       maxIdx.maskedFill(mask, ev.fromType(i))
 
-      output.maskedCopy(mask, Tensor[T].maskedSelect(mask, input(i)))
+      val maskResult = Tensor[T]()
+      output.maskedCopy(mask, input[Tensor[T]](i).maskedSelect(mask, maskResult))
       i += 1
     }
 
@@ -63,7 +64,8 @@ class CMaxTable[T: ClassTag](implicit ev: TensorNumeric[T])
       mask.resize(maxIdx.size())
       mask.eq(maxIdx, ev.fromType(i))
 
-      gradInput[Tensor[T]](i).maskedCopy(mask, Tensor[T].maskedSelect(mask, gradOutput))
+      val maskResult = Tensor[T]()
+      gradInput[Tensor[T]](i).maskedCopy(mask, gradOutput.maskedSelect(mask, maskResult))
 
       i += 1
     }

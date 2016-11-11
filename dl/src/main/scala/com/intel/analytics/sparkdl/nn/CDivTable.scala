@@ -23,8 +23,8 @@ import com.intel.analytics.sparkdl.utils.Table
 import scala.reflect.ClassTag
 
 /**
-  * Takes a table with two Tensor and returns the component-wise division between them.
-  */
+ * Takes a table with two Tensor and returns the component-wise division between them.
+ */
 class CDivTable[T: ClassTag](implicit ev: TensorNumeric[T])
   extends Module[Table, Tensor[T], T]{
 

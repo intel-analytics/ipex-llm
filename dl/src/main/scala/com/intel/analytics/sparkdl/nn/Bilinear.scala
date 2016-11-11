@@ -23,6 +23,15 @@ import com.intel.analytics.sparkdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * a bilinear transformation with sparse inputs,
+  * The input tensor given in forward(input) is a table containing both inputs x_1 and x_2,
+  * which are tensors of size N x inputDimension1 and N x inputDimension2, respectively.
+ * @param inputSize1
+ * @param inputSize2
+ * @param outputSize
+ * @param biasRes  The layer can be trained without biases by setting bias = false. otherwise true
+ */
 class Bilinear[T: ClassTag](inputSize1: Int,
   inputSize2: Int,
   outputSize: Int,
@@ -39,9 +48,9 @@ class Bilinear[T: ClassTag](inputSize1: Int,
   this.gradBias = if (biasRes) Tensor[T](outputSize) else null
 
   @transient
-  var buff2: Tensor[T] = null
+  private var buff2: Tensor[T] = null
   @transient
-  var buff1: Tensor[T] = null
+  private var buff1: Tensor[T] = null
 
   reset()
 

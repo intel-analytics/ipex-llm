@@ -1359,9 +1359,17 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
+  /**
+   * Fills the masked elements of itself with value val
+   *
+   * @param mask
+   * @param value
+   * @return current tensor reference
+   */
   override def maskedFill(mask: Tensor[T], value: T): Tensor[T] = {
     require(this.nElement() == mask.nElement())
 
+    // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc4[T] {
       def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
         require(ev.toType[Int](data2(offset2)) == 1 || ev.toType[Int](data2(offset2)) == 0,
@@ -1375,12 +1383,20 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
+  /**
+   * Copies the elements of tensor into mask locations of itself.
+   *
+   * @param mask
+   * @param y
+   * @return current tensor reference
+   */
   override def maskedCopy(mask: Tensor[T], y: Tensor[T]): Tensor[T] = {
     require(this.nElement() == mask.nElement())
     require(y.isContiguous())
 
     val data3 = y.storage().array()
     var offset = 0
+    // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc4[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
         require(ev.toType[Int](data2(offset2)) == 1 || ev.toType[Int](data2(offset2)) == 0,
@@ -1396,14 +1412,22 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
-  override def maskedSelect(mask: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    require(y.nElement() == mask.nElement())
+  /**
+   * Returns a new Tensor which contains all elements aligned to a 1 in the corresponding mask.
+   *
+   * @param mask
+   * @param res
+   * @return current tensor reference
+   */
+  override def maskedSelect(mask: Tensor[T], res: Tensor[T]): Tensor[T] = {
+    require(this.nElement() == mask.nElement())
     require(ev.isGreater(mask.sum(), ev.fromType(0)))
     val length = mask.sum()
     var offset = 0
-    this.resize(ev.toType[Double](length).toInt)
-    val result = this.storage().array()
+    res.resize(ev.toType[Double](length).toInt)
+    val result = res.storage().array()
 
+    // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc4[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
         require(ev.toType[Int](data2(offset2)) == 1 || ev.toType[Int](data2(offset2)) == 0,
@@ -1414,11 +1438,19 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
         }
       }
     }
-    DenseTensorApply.apply2[T](y, mask, func)
-    this
+    DenseTensorApply.apply2[T](this, mask, func)
+    res
   }
 
+  /**
+   * Implements > operator comparing each element in x with y
+   *
+   * @param x
+   * @param y
+   * @return current tensor reference
+   */
   override def gt(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc6[T] {
       def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
                 data3: Array[T], offset3: Int): Unit = {
@@ -1432,8 +1464,15 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     DenseTensorApply.apply3[T](this, x, y, func)
     this
   }
-
+  /**
+   * mplements < operator comparing each element in x with y
+   *
+   * @param x
+   * @param y
+   * @return current tensor reference
+   */
   override def lt(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc6[T] {
       def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
                 data3: Array[T], offset3: Int): Unit = {
@@ -1448,8 +1487,15 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
-
+  /**
+   * mplements <= operator comparing each element in x with y
+   *
+   * @param x
+   * @param y
+   * @return current tensor reference
+   */
   override def le(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc6[T] {
       def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
                 data3: Array[T], offset3: Int): Unit = {
@@ -1465,6 +1511,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def eq(x: Tensor[T], value: T): Tensor[T] = {
+    // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc4[T] {
       def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
         if (data2(offset1) == value) {

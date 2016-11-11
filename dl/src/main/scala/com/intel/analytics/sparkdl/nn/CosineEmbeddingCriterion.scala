@@ -23,8 +23,9 @@ import com.intel.analytics.sparkdl.utils.{T, Table}
 import scala.reflect.ClassTag
 
 /**
-  * Creates a criterion that measures the loss given an input x = {x1, x2}, a table of two Tensors, and a Tensor label y with values 1 or -1.
-  * @param margin a number from -1 to 1, 0 to 0.5 is suggested
+ * Creates a criterion that measures the loss given an input x = {x1, x2},
+ * a table of two Tensors, and a Tensor label y with values 1 or -1.
+ * @param margin a number from -1 to 1, 0 to 0.5 is suggested
  */
 class CosineEmbeddingCriterion[T: ClassTag](margin: Double = 0.0)
  (implicit ev: TensorNumeric[T]) extends Criterion[Table, T]{

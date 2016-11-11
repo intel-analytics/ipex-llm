@@ -22,14 +22,18 @@ import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
 
-class Add[@specialized(Float, Double) T: ClassTag](inputSize: Int
+/**
+ * adds a bias term to input data ;
+ * @param inputSize size of input data
+ */
+class Add[T: ClassTag](inputSize: Int
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val bias = Tensor[T](inputSize)
+  this.gradBias = Tensor[T](inputSize)
 
   @transient
   var ones : Tensor[T] = null
-  this.gradBias = Tensor[T](inputSize)
 
   reset()
 
