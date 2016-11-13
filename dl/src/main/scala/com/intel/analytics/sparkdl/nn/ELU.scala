@@ -22,17 +22,17 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 /**
-  * Djork-Arné Clevert, Thomas Unterthiner, Sepp Hochreiter
-  * Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
-  *   [http://arxiv.org/pdf/1511.07289.pdf]
-  */
+ * Djork-Arné Clevert, Thomas Unterthiner, Sepp Hochreiter
+ * Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
+ *   [http://arxiv.org/pdf/1511.07289.pdf]
+ */
 class ELU[T: ClassTag](
   alpha: Double = 1.0,
   inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val _alpha = ev.fromType[Double](alpha)
 
-  //Todo: Improve the performance of contiguous tensor
+  // Todo: Improve the performance of contiguous tensor
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     if (inplace) {
       input.apply1(in => {
