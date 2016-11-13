@@ -41,7 +41,7 @@ class LeakyReLU[T: ClassTag](
     inplace = false
   }
 
-  //Todo: performance should be optimized by replacing apply for contiguous input
+  // Todo: performance should be optimized by replacing apply for contiguous input
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     if (inplace) {
       input.apply1(x => {
