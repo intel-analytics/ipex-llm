@@ -36,6 +36,7 @@ class GradientReversal[T: ClassTag](var lambda: Double = 1) (implicit ev: Tensor
 
   def setLambda(lambda: Double): this.type = {
     this.lambda = lambda
+    this
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
