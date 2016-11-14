@@ -22,6 +22,11 @@ import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
 
+/**
+ * Apply SoftSign function to an n-dimensional input Tensor.
+ *
+ * SoftSign function: f_i(x) = x_i / (1+|x_i|)
+ */
 class SoftSign[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   @transient private var temp: Tensor[T] = null
