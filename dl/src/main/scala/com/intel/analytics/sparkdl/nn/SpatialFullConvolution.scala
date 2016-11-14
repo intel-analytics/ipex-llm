@@ -19,24 +19,59 @@ package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor._
-import com.intel.analytics.sparkdl.utils.Activities
+import com.intel.analytics.sparkdl.utils.{Activities, Table}
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
 
-class SpatialFullConvolution[T: ClassTag](
-  val nInputPlane: Int, // The number of expected input planes in the image given into forward()
-  val nOutputPlane: Int, // The number of output planes the convolution layer will produce.
-  val kW: Int, // The kernel width of the convolution
-  val kH: Int, // The kernel height of the convolution
-  val dW: Int = 1, // The step of the convolution in the width dimension.
-  val dH: Int = 1, // The step of the convolution in the height dimension
-  val padW: Int = 0, // The additional zeros added per width to the input planes.
-  val padH: Int = 0, // The additional zeros added per height to the input planes.
-  val adjW: Int = 0, // Extra width to add to the output image.
-  val adjH: Int = 0, // Extra height to add to the output image.
+/**
+ * Apply a 2D full convolution over an input image.
+ *
+ * The input tensor is expected to be a 3D or 4D(with batch) tensor. Note that instead
+ * of setting adjW and adjH, SpatialFullConvolution[Table, T] also accepts a table input
+ * with two tensors: T(convInput, sizeTensor) where convInput is the standard input tensor,
+ * and the size of sizeTensor is used to set the size of the output (will ignore the adjW and
+ * adjH values used to construct the module). This module can be used without a bias by setting
+ * parameter noBias = true while constructing the module.
+ *
+ * If input is a 3D tensor nInputPlane x height x width,
+ * owidth  = (width  - 1) * dW - 2*padW + kW + adjW
+ * oheight = (height - 1) * dH - 2*padH + kH + adjH
+ *
+ * Other frameworks call this operation "In-network Upsampling", "Fractionally-strided convolution",
+ * "Backwards Convolution," "Deconvolution", or "Upconvolution."
+ *
+ * Reference Paper: Long J, Shelhamer E, Darrell T. Fully convolutional networks for semantic
+ * segmentation[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition.
+ * 2015: 3431-3440.
+ *
+ * @param nInputPlane The number of expected input planes in the image given into forward()
+ * @param nOutputPlane The number of output planes the convolution layer will produce.
+ * @param kW The kernel width of the convolution.
+ * @param kH The kernel height of the convolution.
+ * @param dW The step of the convolution in the width dimension. Default is 1.
+ * @param dH The step of the convolution in the height dimension. Default is 1.
+ * @param padW The additional zeros added per width to the input planes. Default is 0.
+ * @param padH The additional zeros added per height to the input planes. Default is 0.
+ * @param adjW Extra width to add to the output image. Default is 0.
+ * @param adjH Extra height to add to the output image. Default is 0.
+ * @param noBias If bias is needed.
+ * @param initMethod Init method, Default, Xavier, Bilinear.
+ */
+class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
+  val nInputPlane: Int,
+  val nOutputPlane: Int,
+  val kW: Int,
+  val kH: Int,
+  val dW: Int = 1,
+  val dH: Int = 1,
+  val padW: Int = 0,
+  val padH: Int = 0,
+  var adjW: Int = 0,
+  var adjH: Int = 0,
+  val noBias: Boolean = false,
   private var initMethod: InitializationMethod = Default
-  )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  )(implicit ev: TensorNumeric[T]) extends Module[A, Tensor[T], T]{
 
   require(adjW <= dW - 1 && adjH <= dH - 1,
     "adjW and adjH must be smaller than dW - 1 and dH - 1 respectively")
@@ -44,12 +79,12 @@ class SpatialFullConvolution[T: ClassTag](
   val weight: Tensor[T] = Tensor[T](nInputPlane, nOutputPlane, kH, kW)
   this.gradWeight = Tensor[T](nInputPlane, nOutputPlane, kH, kW)
 
-  val bias: Tensor[T] = Tensor[T](nOutputPlane)
-  this.gradBias = Tensor[T](nOutputPlane)
-  @transient
-  var columns : Tensor[T] = null
-  @transient
-  var ones : Tensor[T] = null
+  val bias: Tensor[T] = if (noBias) null else Tensor[T](nOutputPlane)
+  this.gradBias = if (noBias) null else Tensor[T](nOutputPlane)
+  @transient private var columns: Tensor[T] = null
+  @transient private var ones: Tensor[T] = null
+  @transient private var zeroScalar: Tensor[T] = null
+
   reset()
 
   private var im2colTime = 0L
@@ -59,18 +94,27 @@ class SpatialFullConvolution[T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
+  def setInitMethod(initMethod: InitializationMethod): this.type = {
+    this.initMethod = initMethod
+    this
+  }
+
   override def reset(): Unit = {
     initMethod match {
       case Default =>
         val stdv = 1.0 / math.sqrt(kW * kH * nInputPlane)
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
+        if (null != bias) {
+          bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
+        }
       case Xavier =>
         val fanIn = nInputPlane * kH * kW
         val fanOut = nOutputPlane * kH * kW
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-        bias.fill(ev.fromType(0))
+        if (null != bias) {
+          bias.fill(ev.fromType(0))
+        }
       case BilinearFiller =>
         require(weight.nDimension() == 4, "weight must be 4 dim")
         require(kH == kW, "Kernel must be square")
@@ -135,26 +179,39 @@ class SpatialFullConvolution[T: ClassTag](
     }
   }
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    shapeCheck(input, null, weight, bias, kH, kW, dH, dW, padH, padW, adjH, adjW)
-    require(input.isContiguous())
+  override def updateOutput(input: A): Tensor[T] = {
+    val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
+      val targetTensor: Tensor[T] = input.toTable()[Tensor[T]](2)
+      val tDims = targetTensor.dim()
+      val tH = targetTensor.size(tDims - 1)
+      val tW = targetTensor.size(tDims)
+      adjW = calculateAdj(tW, kW, padW, dW)
+      adjH = calculateAdj(tH, kH, padH, dH)
+      input.toTable()[Tensor[T]](1)
+    } else {
+      input.toTensor()
+    }
 
-    val isBatch = if (input.nDimension() == 3) {
+
+    shapeCheck(inputTensor, null, weight, bias, kH, kW, dH, dW, padH, padW, adjH, adjW)
+    require(inputTensor.isContiguous())
+
+    val isBatch = if (inputTensor.nDimension() == 3) {
       // Force batch
-      input.resize(1, input.size(1), input.size(2), input.size(3))
+      inputTensor.resize(1, inputTensor.size(1), inputTensor.size(2), inputTensor.size(3))
       false
     } else {
       true
     }
 
-    val inputWidth = input.size(3)
-    val inputHeight = input.size(4)
+    val inputWidth = inputTensor.size(3)
+    val inputHeight = inputTensor.size(4)
 
     val outputHeight = (inputHeight - 1) * dH - 2 * padH + kH + adjH
     val outputWidth = (inputWidth - 1) * dW - 2 * padW + kW + adjW
 
     // Batch size + input planes
-    val batchSize = input.size(1)
+    val batchSize = inputTensor.size(1)
 
     // Resize output
     output.resize(batchSize, nOutputPlane, outputHeight, outputWidth)
@@ -179,10 +236,10 @@ class SpatialFullConvolution[T: ClassTag](
     }
 
     var elt = 1
-    // For each elt in batch, do:
+    // For each element in batch, do:
     while(elt <= batchSize) {
       // Matrix mulitply per output:
-      val input_n = input.select(1, elt)
+      val input_n = inputTensor.select(1, elt)
       val output_n = output.select(1, elt)
 
       // M,N,K are dims of matrix A and B
@@ -250,42 +307,55 @@ class SpatialFullConvolution[T: ClassTag](
     // Resize output
     if(!isBatch) {
       output.resize(nOutputPlane, outputHeight, outputWidth)
-      input.resize(nInputPlane, inputHeight, inputWidth)
+      inputTensor.resize(nInputPlane, inputHeight, inputWidth)
     }
 
     output
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    shapeCheck(input, gradOutput, weight, null, kH, kW, dH, dW, padH, padW, adjH, adjW)
+  override def updateGradInput(input: A, gradOutput: Tensor[T]): A = {
+    val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
+      input.toTable()[Tensor[T]](1)
+    } else {
+      input.toTensor()
+    }
+    val gradInputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
+      if (!gradInput.toTable().contains(1)) {
+        gradInput.toTable()(1) = Tensor[T]()
+      }
+      gradInput.toTable()[Tensor[T]](1)
+    } else {
+      gradInput.toTensor()
+    }
+    shapeCheck(inputTensor, gradOutput, weight, null, kH, kW, dH, dW, padH, padW, adjH, adjW)
 
-    val isBatch = if (input.nDimension() == 3) {
+    val isBatch = if (inputTensor.nDimension() == 3) {
       // Force batch
-      input.resize(1, input.size(1), input.size(2), input.size(3))
+      inputTensor.resize(1, inputTensor.size(1), inputTensor.size(2), inputTensor.size(3))
       gradOutput.resize(1, gradOutput.size(1), gradOutput.size(2), gradOutput.size(3))
       false
     } else {
       true
     }
 
-    val inputWidth = input.size(4)
-    val inputHeight = input.size(3)
+    val inputWidth = inputTensor.size(4)
+    val inputHeight = inputTensor.size(3)
     val outputWidth = (inputWidth - 1) * dW - 2 * padW + kW + adjW
     val outputHeight = (inputHeight - 1) * dH - 2 * padH + kH + adjH
 
     // Batch size + input planes
-    val batchSize = input.size(1)
+    val batchSize = inputTensor.size(1)
 
-    gradInput.resize(batchSize, nInputPlane, inputHeight, inputWidth)
-    gradInput.zero()
+    gradInputTensor.resize(batchSize, nInputPlane, inputHeight, inputWidth)
+    gradInputTensor.zero()
 
     columns.resize(nOutputPlane * kW * kH, inputHeight * inputWidth)
 
     var elt = 1
-    // For each elt in batch, do:
+    // For each element in batch, do:
     while (elt <= batchSize) {
       // Matrix mulitply per sample:
-      val gradInput_n = gradInput.select(1, elt)
+      val gradInput_n = gradInputTensor.select(1, elt)
       val gradOutput_n = gradOutput.select(1, elt)
 
       // Extract columns:
@@ -333,33 +403,55 @@ class SpatialFullConvolution[T: ClassTag](
     // Resize output
     if (!isBatch) {
       gradOutput.resize(nOutputPlane, outputHeight, outputWidth)
-      input.resize(nInputPlane, inputHeight, inputWidth)
-      gradInput.resize(nInputPlane, inputHeight, inputWidth)
+      inputTensor.resize(nInputPlane, inputHeight, inputWidth)
+      gradInputTensor.resize(nInputPlane, inputHeight, inputWidth)
+    }
+
+    if (input.isInstanceOf[Table]) {
+      val input2 = input.toTable()[Tensor[T]](2)
+      if (null == zeroScalar) zeroScalar = input2.clone().zero()
+      ones.resizeAs(input2).fill(ev.fromType[Int](1))
+      val zeroTensor = zeroScalar.view(ones.size()).expandAs(input2)
+      gradInput.toTable()(1) = gradInputTensor
+      gradInput.toTable()(2) = zeroTensor
     }
 
     return gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
-    shapeCheck(input, gradOutput, gradWeight, gradBias, kH, kW, dH, dW, padH, padW, adjH, adjW)
+  override def accGradParameters(input: A, gradOutput: Tensor[T],
+                                 scale: Double = 1.0): Unit = {
+    val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
+      val targetTensor: Tensor[T] = input.toTable()[Tensor[T]](2)
+      val tDims = targetTensor.dim()
+      val tH = targetTensor.size(tDims - 1)
+      val tW = targetTensor.size(tDims)
+      adjW = calculateAdj(tW, kW, padW, dW)
+      adjH = calculateAdj(tH, kH, padH, dH)
+      input.toTable()[Tensor[T]](1)
+    } else {
+      input.toTensor()
+    }
 
-    val isBatch = if (input.nDimension() == 3) {
+    shapeCheck(inputTensor, gradOutput, gradWeight, gradBias,
+      kH, kW, dH, dW, padH, padW, adjH, adjW)
+
+    val isBatch = if (inputTensor.nDimension() == 3) {
       // Force batch
-      input.resize(1, input.size(1), input.size(2), input.size(3))
+      inputTensor.resize(1, inputTensor.size(1), inputTensor.size(2), inputTensor.size(3))
       gradOutput.resize(1, gradOutput.size(1), gradOutput.size(2), gradOutput.size(3))
       false
     } else {
       true
     }
 
-    val inputWidth = input.size(4)
-    val inputHeight = input.size(3)
+    val inputWidth = inputTensor.size(4)
+    val inputHeight = inputTensor.size(3)
     val outputWidth = (inputWidth - 1) * dW - 2 * padW + kW + adjW
     val outputHeight = (inputHeight - 1) * dH - 2 * padH + kH + adjH
 
     // Batch size + input planes
-    val batchSize = input.size(1)
+    val batchSize = inputTensor.size(1)
 
     // Define a buffer of ones, for bias accumulation
     if (ones.nDimension != 2 || ones.size(1) * ones.size(2) < outputHeight * outputWidth) {
@@ -372,10 +464,10 @@ class SpatialFullConvolution[T: ClassTag](
     columns.resize(nOutputPlane * kW * kH, inputHeight * inputWidth)
 
     var elt = 1
-    // For each elt in batch, do:
+    // For each element in batch, do:
     while (elt <= batchSize) {
       // Matrix mulitply per output:
-      val input_n = input.select(1, elt)
+      val input_n = inputTensor.select(1, elt)
       val gradOutput_n = gradOutput.select(1, elt)
 
       // Extract columns:
@@ -442,7 +534,7 @@ class SpatialFullConvolution[T: ClassTag](
     // Resize
     if (!isBatch) {
       gradOutput.resize(nOutputPlane, outputHeight, outputWidth)
-      input.resize(nInputPlane, inputHeight, inputWidth)
+      inputTensor.resize(nInputPlane, inputHeight, inputWidth)
     }
 
   }
@@ -467,10 +559,10 @@ class SpatialFullConvolution[T: ClassTag](
       return false
     }
 
-    if (!obj.isInstanceOf[SpatialFullConvolution[T]]) {
+    if (!obj.isInstanceOf[SpatialFullConvolution[A, T]]) {
       return false
     }
-    val other = obj.asInstanceOf[SpatialFullConvolution[T]]
+    val other = obj.asInstanceOf[SpatialFullConvolution[A, T]]
     if (this.eq(other)) {
       return true
     }
