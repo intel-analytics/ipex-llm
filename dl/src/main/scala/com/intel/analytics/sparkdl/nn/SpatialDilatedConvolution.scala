@@ -23,17 +23,41 @@ import com.intel.analytics.sparkdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
 
+/**
+ * Apply a 2D dilated convolution over an input image.
+ *
+ * The input tensor is expected to be a 3D or 4D(with batch) tensor.
+ *
+ * If input is a 3D tensor nInputPlane x height x width,
+ * owidth  = floor(width + 2 * padW - dilationW * (kW-1) - 1) / dW + 1
+ * oheight = floor(height + 2 * padH - dilationH * (kH-1) - 1) / dH + 1
+ *
+ * Reference Paper: Yu F, Koltun V. Multi-scale context aggregation by dilated convolutions[J].
+ * arXiv preprint arXiv:1511.07122, 2015.
+ *
+ * @param nInputPlane The number of expected input planes in the image given into forward().
+ * @param nOutputPlane The number of output planes the convolution layer will produce.
+ * @param kW The kernel width of the convolution.
+ * @param kH The kernel height of the convolution.
+ * @param dW The step of the convolution in the width dimension. Default is 1.
+ * @param dH The step of the convolution in the height dimension. Default is 1.
+ * @param padW The additional zeros added per width to the input planes. Default is 0.
+ * @param padH The additional zeros added per height to the input planes. Default is 0.
+ * @param dilationW The number of pixels to skip. Default is 1.
+ * @param dilationH The number of pixels to skip. Default is 1.
+ * @param initMethod Init method, Default, Xavier.
+ */
 class SpatialDilatedConvolution[T: ClassTag](
-  val nInputPlane: Int, // The number of expected input planes in the image given into forward()
-  val nOutputPlane: Int, // The number of output planes the convolution layer will produce.
-  val kW: Int, // The kernel width of the convolution
-  val kH: Int, // The kernel height of the convolution
-  val dW: Int = 1, // The step of the convolution in the width dimension.
-  val dH: Int = 1, // The step of the convolution in the height dimension
-  val padW: Int = 0, // The additional zeros added per width to the input planes.
-  val padH: Int = 0, // The additional zeros added per height to the input planes.
-  val dilationW: Int = 1, // The number of pixels to skip
-  val dilationH: Int = 1, // The number of pixels to skip
+  val nInputPlane: Int,
+  val nOutputPlane: Int,
+  val kW: Int,
+  val kH: Int,
+  val dW: Int = 1,
+  val dH: Int = 1,
+  val padW: Int = 0,
+  val padH: Int = 0,
+  val dilationW: Int = 1,
+  val dilationH: Int = 1,
   private var initMethod: InitializationMethod = Default
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
@@ -41,8 +65,8 @@ class SpatialDilatedConvolution[T: ClassTag](
   gradWeight = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
   gradBias = Tensor[T](nOutputPlane)
-  val fInput = Tensor[T]()
-  val fGradInput = Tensor[T]()
+  @transient private var fInput: Tensor[T] = null
+  @transient private var fGradInput: Tensor[T] = null
 
   reset()
 
@@ -52,6 +76,11 @@ class SpatialDilatedConvolution[T: ClassTag](
   def getIm2ColTime(): Double = im2colTime
 
   def getCol2ImgTime(): Double = col2imTime
+
+  def setInitMethod(initMethod: InitializationMethod): this.type = {
+    this.initMethod = initMethod
+    this
+  }
 
   override def reset(): Unit = {
     initMethod match {
@@ -68,7 +97,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     }
   }
 
-  def shapeCheck(
+  private def shapeCheck(
     input: Tensor[T], gradOutput: Tensor[T],
     weight: Tensor[T], bias: Tensor[T],
     kH: Int, kW: Int, dH: Int, dW: Int, padH: Int, padW: Int,
@@ -142,10 +171,16 @@ class SpatialDilatedConvolution[T: ClassTag](
     output.resize(batchSize, nOutputPlane, outputHeight, outputWidth)
     output.zero()
 
+    if (null == fInput) {
+      fInput = Tensor[T]()
+    }
     // Resize temporary columns
     val columns = fInput
     columns.resize(nInputPlane*kW*kH, outputHeight*outputWidth)
 
+    if (null == fGradInput) {
+      fGradInput = Tensor[T]()
+    }
     // Define a buffer of ones, for bias accumulation
     val ones = fGradInput
     if (ones.nDimension != 2 || ones.size(1)*ones.size(2) < outputHeight*outputWidth) {
@@ -154,7 +189,7 @@ class SpatialDilatedConvolution[T: ClassTag](
       ones.fill(ev.fromType[Int](1))
     }
 
-    // For each elt in batch, do:
+    // For each element in batch, do:
     var elt = 1
     while (elt <= batchSize) {
       // Matrix mulitply per output:
@@ -259,7 +294,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     gradColumns.resize(nInputPlane*kW*kH, outputHeight*outputWidth);
     gradColumns.zero()
 
-    // For each elt in batch, do:
+    // For each element in batch, do:
     var elt = 1
     while (elt <= batchSize) {
       // Matrix mulitply per sample:
@@ -350,7 +385,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     val columns = fInput
     columns.resize(nInputPlane*kW*kH, outputHeight*outputWidth)
 
-    // For each elt in batch, do:
+    // For each element in batch, do:
     var elt = 1
     while (elt <= batchSize) {
       // Matrix mulitply per output:
