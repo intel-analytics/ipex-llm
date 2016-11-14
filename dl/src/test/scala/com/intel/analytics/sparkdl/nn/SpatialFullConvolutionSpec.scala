@@ -23,7 +23,8 @@ import org.scalatest.{FlatSpec, Matchers}
 class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
 
   "A SpatialFullConvolution BilinearFiller" should "generate correct parameter" in {
-    val conv = new SpatialFullConvolution[Double](3, 6, 3, 3, 2, 2, 0, 0, 0, 0, BilinearFiller)
+    val conv = new SpatialFullConvolution[Tensor[Double], Double](3, 6, 3, 3, 2, 2,
+      0, 0, 0, 0, false, BilinearFiller)
 
     val caffeWeight = Tensor(Storage(Array(
       0.0625, 0.1875, 0.1875, 0.1875, 0.5625, 0.5625, 0.1875, 0.5625, 0.5625,
@@ -50,7 +51,8 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
   }
 
   "A SpatialFullConvolution BilinearFiller(1, 2, 4, 4)" should "generate correct parameter" in {
-    val conv = new SpatialFullConvolution[Double](1, 2, 4, 4, 2, 2, 0, 0, 0, 0, BilinearFiller)
+    val conv = new SpatialFullConvolution[Tensor[Double], Double](1, 2, 4, 4, 2, 2,
+      0, 0, 0, 0, false, BilinearFiller)
 
     val caffeWeight = Tensor(Storage(Array(
       0.0625, 0.1875, 0.1875, 0.0625,
