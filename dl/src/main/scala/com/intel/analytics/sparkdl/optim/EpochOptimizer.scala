@@ -18,10 +18,12 @@
 package com.intel.analytics.sparkdl.optim
 
 import com.intel.analytics.sparkdl.nn.{Criterion, Module}
+import com.intel.analytics.sparkdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.sparkdl.ps.ParameterManager
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.utils.{T, Table}
+import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
@@ -156,6 +158,7 @@ class GradAggEpochOptimizer[T: ClassTag](
     saveState(pm.getState())
     module
   }
+
 }
 
 class WeightAvgEpochOptimizer[T: ClassTag](
@@ -273,4 +276,5 @@ class WeightAvgEpochOptimizer[T: ClassTag](
     saveState(pm.getState())
     module
   }
+
 }
