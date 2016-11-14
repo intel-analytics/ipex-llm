@@ -22,12 +22,19 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Apply the SoftPlus function to an n-dimensional input tensor.
+ *
+ * SoftPlus function: f_i(x) = 1/beta * log(1 + exp(beta * x_i))
+ *
+ * @param beta Controls sharpness of transfer function
+ */
 class SoftPlus[T: ClassTag](
-    val beta: Double = 1.0 // Beta controls sharpness of transfer function
+    val beta: Double = 1.0
   )( implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   private val threshold = ev.fromType[Double](20.0) // Avoid floating point issues with exp(x), x>20
-  @transient private val betaT = ev.fromType[Double](beta)
+  private val betaT = ev.fromType[Double](beta)
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input)

@@ -22,6 +22,16 @@ import com.intel.analytics.sparkdl.tensor.{DenseTensorApply, Tensor, TensorFunc4
 
 import scala.reflect.ClassTag
 
+/**
+ * Apply the soft shrinkage function element-wise to the input Tensor
+ *
+ * SoftShrinkage operator:
+ *        ⎧ x - lambda, if x >  lambda
+ * f(x) = ⎨ x + lambda, if x < -lambda
+ *        ⎩ 0, otherwise
+ *
+ * @param lamda Default is 0.5.
+ */
 class SoftShrink[T: ClassTag](
     val lamda: Double = 0.5
   )( implicit ev: TensorNumeric[T]) extends TensorModule[T] {
