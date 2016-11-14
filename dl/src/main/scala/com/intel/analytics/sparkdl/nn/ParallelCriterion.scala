@@ -22,7 +22,15 @@ import com.intel.analytics.sparkdl.utils.{Activities, T, Table}
 
 import scala.reflect.ClassTag
 
-class ParallelCriterion[T: ClassTag] (repeatTarget: Boolean = false)
+/**
+ * ParallelCriterion is a weighted sum of other criterions each applied to a different input
+ * and target. Set repeatTarget = true to share the target for criterions.
+ *
+ * Use add(criterion[, weight]) method to add criterion. Where weight is a scalar(default 1).
+ *
+ * @param repeatTarget Whether to share the target for all criterions.
+ */
+class ParallelCriterion[T: ClassTag](val repeatTarget: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends Criterion[Table, T] {
 
   // list of sub criterions
@@ -52,13 +60,13 @@ class ParallelCriterion[T: ClassTag] (repeatTarget: Boolean = false)
   }
 
   override def updateGradInput(input: Table, target: Table): Table = {
-    gradInput = T.recursiveResizeAs[T](gradInput, input).toTable()
-    T.recursiveFill[T](gradInput, 0)
+    gradInput = Utils.recursiveResizeAs[T](gradInput, input).toTable()
+    Utils.recursiveFill[T](gradInput, 0)
     var i = 1
     while (i <= criterions.length()) {
       val currentCriterion = criterions[Criterion[Activities, T]](i)
       val currentTarget: Activities = if (repeatTarget) target else target(i)
-      T.recursiveAdd[T](gradInput(i), weights(i),
+      Utils.recursiveAdd[T](gradInput(i), weights(i),
         currentCriterion.updateGradInput(input(i), currentTarget))
       i += 1
     }
