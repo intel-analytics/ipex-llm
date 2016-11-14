@@ -424,6 +424,9 @@ trait TensorMath[T] {
   // res = v1 * res + v2 * mat1*mat2
   def addmm(v1: T, v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T]
 
+  // res = mat1*mat2
+  def mm(mat1: Tensor[T], mat2: Tensor[T]): Tensor[T]
+
   /**
    * Performs the outer-product between vec1 (1D tensor) and vec2 (1D tensor).
    * Optional values v1 and v2 are scalars that multiply mat and vec1 [out] vec2 respectively.
@@ -480,6 +483,29 @@ trait TensorMath[T] {
 
   // res = res + alpha * (mat * vec2)
   def addmv(alpha: T, mat: Tensor[T], vec2: Tensor[T]): Tensor[T]
+
+  // res = res + (mat * vec2)
+  def mv(mat: Tensor[T], vec2: Tensor[T]): Tensor[T]
+
+  /**
+   * Perform a batch matrix matrix multiplication of matrices and stored in batch1 and batch2
+   * with batch add. batch1 and batch2 must be 3D Tensors each containing the same number of
+   * matrices. If batch1 is a b × n × m Tensor, batch2 a b × m × p Tensor, res will be a
+   * b × n × p Tensor.
+   *
+   * In other words,
+   * res_i = (beta * M_i) + (alpha * batch1_i * batch2_i)
+   */
+  def baddbmm(beta: T, M: Tensor[T], alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T]
+
+  // res_i = (beta * res_i) + (alpha * batch1_i * batch2_i)
+  def baddbmm(beta: T, alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T]
+
+  // res_i = res_i + (alpha * batch1_i * batch2_i)
+  def baddbmm(alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T]
+
+  // res_i = res_i + batch1_i * batch2_i
+  def bmm(batch1: Tensor[T], batch2: Tensor[T]): Tensor[T]
 
   /**
    * Replaces all elements in-place with the elements of x to the power of n

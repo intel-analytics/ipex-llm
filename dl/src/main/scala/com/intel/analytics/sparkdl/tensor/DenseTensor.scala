@@ -1062,6 +1062,9 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   override def addmm(v1: T, v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] =
     DenseTensorMath.addmm(this, v1, this, v2, mat1, mat2)
 
+  override def mm(mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] =
+    DenseTensorMath.addmm(this, ev.fromType[Int](1), this, ev.fromType[Int](1), mat1, mat2)
+
   override def addr(t1: Tensor[T], t2: Tensor[T]): Tensor[T] =
     DenseTensorMath.addr[T](this, ev.fromType[Int](1), this, ev.fromType[Int](1), t1, t2)
 
@@ -1179,6 +1182,21 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def addmv(alpha: T, mat: Tensor[T], vec2: Tensor[T]): Tensor[T] =
     DenseTensorMath.addmv(this, ev.fromType[Int](1), this, alpha, mat, vec2)
+
+  override def mv(mat: Tensor[T], vec2: Tensor[T]): Tensor[T] =
+    DenseTensorMath.addmv(this, ev.fromType[Int](1), this, ev.fromType[Int](1), mat, vec2)
+
+  override def baddbmm(beta: T, M: Tensor[T], alpha: T, batch1: Tensor[T],
+    batch2: Tensor[T]): Tensor[T] = DenseTensorMath.baddbmm(this, beta, M, alpha, batch1, batch2)
+
+  override def baddbmm(beta: T, alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] =
+    DenseTensorMath.baddbmm(this, beta, this, alpha, batch1, batch2)
+
+  override def baddbmm(alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] =
+    DenseTensorMath.baddbmm(this, ev.fromType[Int](1), this, alpha, batch1, batch2)
+
+  override def bmm(batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] =
+    DenseTensorMath.baddbmm(this, ev.fromType[Int](1), this, ev.fromType[Int](1), batch1, batch2)
 
   override def abs(): Tensor[T] = this.apply1(ev.abs(_))
 
