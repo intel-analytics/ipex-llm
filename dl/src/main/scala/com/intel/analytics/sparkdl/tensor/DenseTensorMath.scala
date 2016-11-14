@@ -542,6 +542,46 @@ object DenseTensorMath {
     r
   }
 
+  def baddbmm[@specialized(Float, Double) T: ClassTag]
+  (result: Tensor[T], beta: T, M: Tensor[T], alpha: T, batch1: Tensor[T], batch2: Tensor[T])
+    (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(batch1.dim() == 3, s"expected 3D tensor, got ${batch1.dim()}D")
+    require(batch2.dim() == 3, s"expected 3D tensor, got ${batch2.dim()}D")
+    require(batch1.size(1) == batch2.size(1), "equal number of batches expected, got " +
+      s"${batch1.size(1)}, ${batch2.size(1)}")
+    require(batch1.size(3) == batch2.size(2), s"wrong matrix size, batch1: " +
+      s"${batch1.size(2)}${batch1.size(3)}, batch2: " +
+      s"${batch2.size(2)}${batch2.size(3)}")
+
+    val bs = batch1.size(1)
+    val dim1 = batch1.size(2)
+    val dim2 = batch2.size(3)
+    require(M.size(1) == bs, "output tensor of incorrect size")
+    require(M.size(2) == dim1, "output tensor of incorrect size")
+    require(M.size(3) == dim2, "output tensor of incorrect size")
+
+    if (M != result) {
+      result.resizeAs(M)
+      result.copy(M)
+    }
+
+    var m1 = Tensor[T]()
+    var m2 = Tensor[T]()
+    var resultMatrix = Tensor[T]()
+
+    var batch = 1
+    while (batch <= batch1.size(1)) {
+      m1 = batch1.select(1, batch)
+      m2 = batch2.select(1, batch)
+      resultMatrix = result.select(1, batch)
+
+      addmm(resultMatrix, beta, resultMatrix, alpha, m1, m2)
+      batch += 1
+    }
+
+    result
+  }
+
   def addmv[@specialized(Float, Double) T](r: Tensor[T], beta: T, t: Tensor[T], alpha: T,
     mat: Tensor[T], vec: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(mat.nDimension() == 2 && vec.nDimension() == 1)
