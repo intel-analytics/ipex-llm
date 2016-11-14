@@ -21,6 +21,7 @@ import com.intel.analytics.sparkdl.nn.{Criterion, Module}
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.{File, T, Table}
 import org.apache.spark.Logging
+import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -61,6 +62,8 @@ abstract class DistributedOptimizer[T](
   }
 
   val models = init()
+
+  val evaluateModels : RDD[CachedModel[T]] = models
 }
 
 object DistributedOptimizer {

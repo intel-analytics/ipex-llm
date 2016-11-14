@@ -25,6 +25,7 @@ import com.intel.analytics.sparkdl.ps.ParameterManager
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.utils.{T, Table}
+import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
@@ -175,6 +176,7 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
             tmp = System.nanoTime()
             (0 until subModuleNumber).map(i => Future {
               val localModule = localMTCaches(i).model
+              localModule.training()
               val localCriterion = localMTCaches(i).criterion
               val (inputFloat, targetFloat) = tensorBuffer(i)
               val input = inputFloat.asInstanceOf[Tensor[T]]
@@ -268,5 +270,11 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
     saveState(pm.getState())
     module
   }
+
+  override val evaluateModels =
+    multiThreadModels.mapPartitions(iter => {
+      require(iter.hasNext)
+      Iterator.single(iter.next()(0))
+    })
 }
 

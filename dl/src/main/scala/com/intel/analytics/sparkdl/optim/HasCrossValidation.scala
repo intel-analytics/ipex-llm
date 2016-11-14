@@ -35,7 +35,7 @@ trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable wit
     this
   }
 
-  val models: RDD[CachedModel[T]]
+  val evaluateModels : RDD[CachedModel[T]]
 
   private var testDataSet: Option[DataSet[_, T]] = None
 
@@ -58,8 +58,8 @@ trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable wit
       evalMethods.map(evalM => {
         val evaluationBroadcast = testDataSet.get.getSparkContext().broadcast(evalM._2)
         val (correctSum, totalSum) = testDataSet.get.fetchAll().
-          coalesce(models.partitions.length, false).
-          zipPartitions(models)((data, cacheModelIter) => {
+          coalesce(evaluateModels.partitions.length, false).
+          zipPartitions(evaluateModels)((data, cacheModelIter) => {
             val localModel = cacheModelIter.next().model
             localModel.evaluate()
             val localEvaluation = evaluationBroadcast.value
