@@ -526,7 +526,6 @@ trait TensorMath[T] {
 
   def log1p(): Tensor[T]
 
-
   def abs(x: Tensor[T]): Tensor[T]
 
   /**
@@ -612,4 +611,44 @@ trait TensorMath[T] {
    * @return
    */
   def sign(): Tensor[T]
+
+  def ge(x: Tensor[T], value: Double): Tensor[T]
+
+  /**
+   * Accumulate the elements of tensor into the original tensor by adding to the indices
+   * in the order given in index. The shape of tensor must exactly match the elements indexed
+   * or an error will be thrown.
+   * @param dim
+   * @param index
+   * @param y
+   * @return
+   */
+  def indexAdd(dim: Int, index: Tensor[T], y: Tensor[T]): Tensor[T]
+
+  /**
+   * stores the element-wise maximum of x and y in x.
+   * x.cmax(y) = max(x, y)
+   *
+   * @param y tensor
+   * @return current tensor
+   */
+  def cmax(y: Tensor[T]): Tensor[T]
+
+  /**
+   * stores the element-wise maximum of x and y in z.
+   * z.cmax(x, y) means z = max(x, y)
+   *
+   * @param x tensor
+   * @param y tensor
+   */
+  def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T]
+
+  /**
+   * stores the minima of each element in x and v in x.
+   * x.cmax(v) = max(x, v)
+   *
+   * @param value Double
+   * @return current tensor
+   */
+  def cmax(value: Double): Tensor[T]
 }

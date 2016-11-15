@@ -718,6 +718,34 @@ object DenseTensorMath {
     }
   }
 
+  def cmax[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
+                                         (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
+      "element number doesn't match")
+    // todo:
+    val func = new TensorFunc6[T] {
+      override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
+                         data3: Array[T], offset3: Int): Unit = {
+        data1(offset1) = ev.max(data2(offset2), data3(offset3))
+      }
+    }
+    Apply.apply3[T](self, x, y, func)
+    self
+  }
+
+  def cmax[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], value: Double)
+                                         (implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(self.nElement() == x.nElement(), "element number doesn't match")
+    // todo:
+    val func = new TensorFunc4[T] {
+      override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+        data1(offset1) = ev.max(data2(offset2), ev.fromType(value))
+      }
+    }
+    Apply.apply2[T](self, x, func)
+    self
+  }
+
   val doubleEpsilon = System.getProperty("DoubleTensorEpsilon", "0.0000001").toDouble
   val floatEpsilon = System.getProperty("FloatTensorEpsilon", "0.00001").toDouble
 }
