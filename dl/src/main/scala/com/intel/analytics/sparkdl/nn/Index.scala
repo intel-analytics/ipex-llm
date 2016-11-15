@@ -43,7 +43,7 @@ class Index[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
     if (!gradInput.contains(1)) gradInput.insert(1, Tensor[T])
     if (!gradInput.contains(2)) gradInput.insert(2, Tensor[T])
 
-    gradInput[Tensor[T]](2).resize(index.size()).zero()
+    gradInput[Tensor[T]](2).resizeAs(index).zero()
     gradInput[Tensor[T]](1).resizeAs(t).zero()
     gradInput[Tensor[T]](1).indexAdd(dimension, index, gradOutput)
     gradInput

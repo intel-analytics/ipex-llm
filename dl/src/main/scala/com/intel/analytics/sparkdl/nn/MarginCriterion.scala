@@ -35,6 +35,7 @@ class MarginCriterion[T: ClassTag](margin: Double = 1.0)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     var sum: Double = 0
+    // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc4[T] {
       override def apply(data1: Array[T], index1: Int, data2: Array[T], index2: Int): Unit = {
         val z = margin - ev.toType[Double](ev.times(data1(index1), data2(index2)))
@@ -51,6 +52,7 @@ class MarginCriterion[T: ClassTag](margin: Double = 1.0)
     if (sizeAverage) norm = -1.0 / input.nElement()
     gradInput.resizeAs(input)
 
+    // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc6[T] {
       override def apply (data1: Array[T], offset1: Int, data2: Array[T],
                           offset2: Int, data3: Array[T], offset3: Int): Unit = {

@@ -722,7 +722,7 @@ object DenseTensorMath {
                                          (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
       "element number doesn't match")
-    // todo:
+    // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc6[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
                          data3: Array[T], offset3: Int): Unit = {
@@ -736,7 +736,7 @@ object DenseTensorMath {
   def cmax[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], value: Double)
                                          (implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(self.nElement() == x.nElement(), "element number doesn't match")
-    // todo:
+    // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc4[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
         data1(offset1) = ev.max(data2(offset2), ev.fromType(value))

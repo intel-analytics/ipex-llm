@@ -51,7 +51,6 @@ class MulSpec extends FlatSpec with BeforeAndAfter with Matchers{
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
-    val luaWeight = torchResult("gradWeight").asInstanceOf[Tensor[Double]]
 
     val start = System.nanoTime()
     module.reset()

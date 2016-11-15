@@ -36,11 +36,7 @@ class IndexSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val seed = 100
     RNG.setSeed(seed)
 
-    val input1 = Tensor[Double](3)
-    input1(Array(1)) = 10
-    input1(Array(2)) = 20
-    input1(Array(3)) = 30
-
+    val input1 = Tensor[Double](3).apply1(e => Random.nextDouble())
     val input2 = Tensor[Double](4)
     input2(Array(1)) = 1
     input2(Array(2)) = 2
@@ -89,17 +85,7 @@ class IndexSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val seed = 100
     RNG.setSeed(seed)
 
-    val input1 = Tensor[Double](3, 3)
-    input1(Array(1, 1)) = 10
-    input1(Array(1, 2)) = 20
-    input1(Array(1, 3)) = 30
-    input1(Array(2, 1)) = 100
-    input1(Array(2, 2)) = 200
-    input1(Array(2, 3)) = 300
-    input1(Array(3, 1)) = 1
-    input1(Array(3, 2)) = 2
-    input1(Array(3, 3)) = 3
-
+    val input1 = Tensor[Double](3, 3).apply1(e => Random.nextDouble())
     val input2 = Tensor[Double](4)
     input2(Array(1)) = 1
     input2(Array(2)) = 2
