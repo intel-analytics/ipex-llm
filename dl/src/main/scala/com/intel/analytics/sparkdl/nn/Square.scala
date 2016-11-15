@@ -20,6 +20,9 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Apply an element-wise square operation.
+ */
 class Square[T: ClassTag](implicit ev: TensorNumeric[T]) extends Power[T](2, 1, 0) {
 
   override def toString(): String = {

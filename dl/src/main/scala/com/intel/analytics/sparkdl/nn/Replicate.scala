@@ -21,6 +21,15 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Replicate repeats input $nFeatures times along its $dim dimension.
+ *
+ * Notice: No memory copy, it set the stride along the $dim-th dimension to zero.
+ *
+ * @param nFeatures replicate times.
+ * @param dim dimension to be replicated.
+ * @param nDim specify the number of non-batch dimensions.
+ */
 class Replicate[@specialized(Float, Double) T: ClassTag](
   val nFeatures : Int,
   val dim : Int = 1,
