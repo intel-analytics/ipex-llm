@@ -17,6 +17,7 @@
 
 package com.intel.analytics.sparkdl.optim
 
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -33,10 +34,13 @@ class TableSpec extends FlatSpec with Matchers {
 
   "toString" should "return correct value" in {
     val state = T()
-    state("a") = "1"
-    state("b") = 2
-
-    state.toString() should be("{b: 2, a: 1}")
+    state(1) = Tensor[Double](3, 3).zero()
+    state(2) = T(1 -> "b", 2 -> T(1 -> "d"))
+    print(state.toString)
+    state.toString() should be(" {\n\t2:  {\n\t   " +
+      "\t2:  {\n\t   \t   \t1: d\n\t   \t    }\n\t   \t1: b\n\t    }" +
+      "\n\t1: 0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   " +
+      "[com.intel.analytics.sparkdl.tensor.DenseTensor$mcD$sp of size 3x3]\n }")
   }
 
   "init with data" should "return correct value" in {
