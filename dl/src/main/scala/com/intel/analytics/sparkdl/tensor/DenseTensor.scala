@@ -21,7 +21,7 @@ import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVect
 import com.intel.analytics.sparkdl.mkl.MKL
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
-import com.intel.analytics.sparkdl.utils.Table
+import com.intel.analytics.sparkdl.utils.{File, Table}
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
 
 import scala.collection.mutable.ArrayBuffer
@@ -116,6 +116,15 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       this.size(3) != size3 ||
       this.size(4) != size4) {
       DenseTensor.resize(this, Array(size1, size2, size3, size4))
+    } else {
+      this
+    }
+  }
+
+  override def resize(size1: Int, size2: Int, size3: Int, size4: Int, size5: Int): Tensor[T] = {
+    if (this.nDimension != 5 || this.size(1) != size1 || this.size(2) != size2 ||
+      this.size(3) != size3 || this.size(4) != size4 || this.size(5) != size5) {
+      DenseTensor.resize(this, Array(size1, size2, size3, size4, size5))
     } else {
       this
     }
@@ -318,6 +327,14 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     DenseTensor.rawSet(this, storage, storageOffset - 1,
       if (sizes == null) 0 else sizes.length,
       sizes, strides)
+  }
+
+  override def set(): Tensor[T] = {
+    this.resize(0)
+    if(this._storage != null) {
+      this._storage.resize(0)
+    }
+    this
   }
 
   override def transpose(dim1: Int, dim2: Int): Tensor[T] = {
@@ -1377,6 +1394,11 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       }
       DenseTensorApply.apply2[T](this, x, func)
     }
+    this
+  }
+
+  override def save(path: String, overWrite: Boolean): this.type = {
+    File.save(this, path, overWrite)
     this
   }
 

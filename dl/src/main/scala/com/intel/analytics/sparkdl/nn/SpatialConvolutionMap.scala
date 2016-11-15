@@ -36,10 +36,8 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val nOutputPlane = ev.toType[Int](connTable.select(2, 2).max())
   val weight: Tensor[T] = Tensor[T](connTable.size(1), kH, kW)
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
-  this.gradWeight = Tensor[T](connTable.size(1), kH, kW)
-  this.gradBias = Tensor[T](nOutputPlane)
-  //  val fInput = Tensor()
-  //  val fGradInput = Tensor()
+  val gradWeight: Tensor[T] = Tensor[T]()
+  val gradBias: Tensor[T] = Tensor[T]()
   reset()
 
   override def reset(): Unit = {
@@ -67,6 +65,8 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
       bias(k) = bias.uniform(ev.negative(stdv), stdv)
       k = k + 1
     }
+    setup()
+    zeroGradParameters()
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -191,6 +191,13 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
     gradInput
   }
 
+  override def clearState() : this.type = {
+    super.clearState()
+    gradWeight.set()
+    gradBias.set()
+    this
+  }
+
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
     scale: Double = 1.0): Unit = {
     val dimw = if (input.dim() == 4) 4 else 3
@@ -267,6 +274,12 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
     gradBias.zero()
+  }
+
+  override def setup() : this.type = {
+    gradWeight.resize(connTable.size(1), kH, kW)
+    gradBias.resize(nOutputPlane)
+    this
   }
 }
 

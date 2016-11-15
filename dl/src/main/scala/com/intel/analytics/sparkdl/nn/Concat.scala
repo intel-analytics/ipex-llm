@@ -32,6 +32,7 @@ class Concat[T: ClassTag](val dimension: Int)(
   private var size: Array[Int] = null
   @transient
   private var results: Array[Future[Unit]] = null
+  @transient
   private var gradouts: Array[Tensor[T]] = null
 
   protected var forwardTimeOverhead = 0L

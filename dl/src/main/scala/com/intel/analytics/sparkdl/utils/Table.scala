@@ -177,6 +177,11 @@ class Table private[sparkdl](
 
   def length(): Int = state.size
 
+  def save(path : String, overWrite : Boolean): this.type = {
+    File.save(this, path, overWrite)
+    this
+  }
+
   /**
    * Recursively flatten the table to a single table containing no nested table inside
    * @return the flatten table
@@ -280,5 +285,9 @@ object T {
       table(k) = v
     }
     table
+  }
+
+  def load(path : String) : Table = {
+    File.load(path)
   }
 }
