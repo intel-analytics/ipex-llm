@@ -605,14 +605,14 @@ object DenseTensorMath {
   }
 
   /**
-    * returns the p-norms of the Tensor x computed over the dimension dim.
-    * @param self
-    * @param value value-norms
-    * @param _dim the dimension dim
-    * @return
-    */
-  def norm[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], result: Tensor[T], value: Double, _dim: Int)
-  (implicit ev: TensorNumeric[T]): Tensor[T] = {
+   * returns the p-norms of the Tensor x computed over the dimension dim.
+   * @param self
+   * @param value value-norms
+   * @param _dim the dimension dim
+   * @return
+   */
+  def norm[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], result: Tensor[T],
+   value: Double, _dim: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(_dim >= 0 && _dim < self.nDimension, "invalid dimension")
     val sizes = self.size()
     sizes(_dim) = 1

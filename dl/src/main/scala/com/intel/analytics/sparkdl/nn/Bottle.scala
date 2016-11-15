@@ -23,12 +23,12 @@ import com.intel.analytics.sparkdl.utils.Activities
 import scala.reflect.ClassTag
 
 /**
-  * Bottle allows varying dimensionality input to be forwarded through any module
-  * that accepts input of nInputDim dimensions, and generates output of nOutputDim dimensions.
-  * @param module transform module
-  * @param nInputDim nInputDim dimensions of module
-  * @param nOutputDim1 output of nOutputDim dimensions
-  */
+ * Bottle allows varying dimensionality input to be forwarded through any module
+ * that accepts input of nInputDim dimensions, and generates output of nOutputDim dimensions.
+ * @param module transform module
+ * @param nInputDim nInputDim dimensions of module
+ * @param nOutputDim1 output of nOutputDim dimensions
+ */
 class Bottle[T: ClassTag](module: Module[Tensor[T], Tensor[T], T], nInputDim: Int = 2,
  nOutputDim1: Int = Int.MaxValue)
  (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {

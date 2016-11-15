@@ -23,13 +23,13 @@ import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import scala.reflect.ClassTag
 
 /**
-  * the cosine similarity of the input to k mean centers
-  * @param inputSize
-  * @param outputSize
-  * @param ev$1
-  * @param ev
-  * @tparam T
-  */
+ * the cosine similarity of the input to k mean centers
+ * @param inputSize
+ * @param outputSize
+ * @param ev$1
+ * @param ev
+ * @tparam T
+ */
 class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
