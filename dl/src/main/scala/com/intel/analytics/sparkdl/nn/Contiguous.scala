@@ -22,8 +22,8 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 /**
-  * used to make input, gradOutput both contiguous
-  */
+ * used to make input, gradOutput both contiguous
+ */
 class Contiguous[@specialized(Float, Double) T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 

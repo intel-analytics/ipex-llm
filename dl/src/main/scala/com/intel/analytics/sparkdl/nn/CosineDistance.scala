@@ -23,8 +23,8 @@ import com.intel.analytics.sparkdl.utils.Table
 import scala.reflect.ClassTag
 
 /**
-  * outputs the cosine distance between inputs
-  */
+ * outputs the cosine distance between inputs
+ */
 class CosineDistance[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
 
@@ -93,10 +93,10 @@ class CosineDistance[T: ClassTag](
     if (!gradInput.contains(2)) gradInput.insert(2, Tensor[T])
 
     val gw1 = gradInput[Tensor[T]](1)
-    var gw2 = gradInput[Tensor[T]](2)
+    val gw2 = gradInput[Tensor[T]](2)
 
     gw1.resizeAs(v1).copy(v2)
-    gw2 = v1.clone()
+    gw2.resizeAs(v1).copy(v1)
 
     buffer.resizeAs(w1).cmul(w1, w22)
     gw1.addcmul(ev.fromType(-1), buffer.expandAs(v1), v1)

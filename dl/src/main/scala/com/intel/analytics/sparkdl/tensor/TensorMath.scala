@@ -383,16 +383,16 @@ trait TensorMath[T] {
   def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T]): Tensor[T]
 
   /**
-    * Performs the outer-product between vec1 (1D Tensor) and vec2 (1D Tensor).
-    * Optional values v1 and v2 are scalars that multiply mat and vec1 [out] vec2 respectively.
-    * In other words,res_ij = (v1 * mat_ij) + (v2 * vec1_i * vec2_j)
-    * @param v1
-    * @param t1
-    * @param v2
-    * @param t2
-    * @param t3
-    * @return
-    */
+   * Performs the outer-product between vec1 (1D Tensor) and vec2 (1D Tensor).
+   * Optional values v1 and v2 are scalars that multiply mat and vec1 [out] vec2 respectively.
+   * In other words,res_ij = (v1 * mat_ij) + (v2 * vec1_i * vec2_j)
+   * @param v1
+   * @param t1
+   * @param v2
+   * @param t2
+   * @param t3
+   * @return
+   */
   def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T], t3: Tensor[T]): Tensor[T]
 
   /**
@@ -472,17 +472,17 @@ trait TensorMath[T] {
   def abs(x: Tensor[T]): Tensor[T]
 
   /**
-    * returns the p-norms of the Tensor x computed over the dimension dim.
-    * @param value value-norms
-    * @param dim the dimension dim
-    * @return
-    */
+   * returns the p-norms of the Tensor x computed over the dimension dim.
+   * @param value value-norms
+   * @param dim the dimension dim
+   * @return
+   */
   def norm(y: Tensor[T], value: Double, dim: Int): Tensor[T]
 
   /**
-    * returns the sum of the 2-norms on the Tensor x
-    * @return the sum of the 2-norms
-    */
+   * returns the sum of the 2-norms on the Tensor x
+   * @return the sum of the 2-norms
+   */
   def norm(): T
   /**
    * Implements > operator comparing each element in x with y
