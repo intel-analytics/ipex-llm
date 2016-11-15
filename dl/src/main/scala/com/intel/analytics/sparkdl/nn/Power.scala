@@ -96,4 +96,8 @@ class Power[@specialized(Float, Double) T: ClassTag](
     gradInput
   }
 
+  override def toString(): String = {
+    s"nn.Power($power, $scale, $shift)"
+  }
+
 }
