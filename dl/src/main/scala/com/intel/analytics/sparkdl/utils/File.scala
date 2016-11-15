@@ -167,6 +167,7 @@ object File {
           val result = className match {
             case "torch.FloatTensor" => readFloatTensor(rawData, objects)
             case "torch.DoubleTensor" => readDoubleTensor(rawData, objects)
+            case "torch.LongTensor" => readLongTensor(rawData, objects)
             case "nn.Sequential" => readSequentialModule(rawData, objects)
             case "nn.SpatialConvolutionMM" => readSpatialConvolution(rawData, objects)
             case "nn.SpatialConvolution" => readSpatialConvolution(rawData, objects)
@@ -774,6 +775,37 @@ object File {
 
 
     val storage = readObject(rawData, objects).asInstanceOf[Storage[Float]]
+    Tensor(storage, offset, sizes, strides)
+  }
+
+  // Tensor long
+  private def readLongTensor(rawData: ByteBuffer, objects: Map[Int, Any]): Tensor[Double] = {
+    val nDimension = rawData.getInt()
+    val sizes = new Array[Int](nDimension)
+    val strides = new Array[Int](nDimension)
+    var i = 0
+    while (i < nDimension) {
+      sizes(i) = rawData.getLong.toInt
+      i += 1
+    }
+    i = 0
+    while (i < nDimension) {
+      strides(i) = rawData.getLong.toInt
+      i += 1
+    }
+
+    val offset = rawData.getLong.toInt
+
+
+    val longStorage = readObject(rawData, objects).asInstanceOf[Array[Int]]
+
+    val storageData : Array[Double] = new Array[Double](longStorage.length)
+    i = 0
+    while(i < storageData.length) {
+      storageData(i) = longStorage(i)
+      i += 1
+    }
+    val storage = Storage[Double](storageData)
     Tensor(storage, offset, sizes, strides)
   }
 
