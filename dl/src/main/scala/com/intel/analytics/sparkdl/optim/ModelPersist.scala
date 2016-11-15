@@ -56,9 +56,9 @@ trait ModelPersist[@specialized(Float, Double) T] {
       require(model != null)
 
       if (iter == 0) {
-        File.save(model, path.get, isOverWrite)
+        model.save(path.get, isOverWrite)
       } else if (modelSaveInterval.isDefined && iter % modelSaveInterval.get == 0) {
-        File.save(model, s"${path.get}.$iter", isOverWrite)
+        model.save(s"${path.get}.$iter", isOverWrite)
       }
     }
 

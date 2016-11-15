@@ -223,7 +223,7 @@ class CifarLocal[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNum
   }
 
   def getModel(file: String): Module[Tensor[Double], Tensor[Double], Double] = {
-    val model = File.load[Module[Tensor[Double], Tensor[Double], Double]](file)
+    val model = File.loadTorch[Module[Tensor[Double], Tensor[Double], Double]](file)
 
     model
   }

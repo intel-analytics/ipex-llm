@@ -45,19 +45,19 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
 
   val weight: Tensor[T] = Tensor[T](nGroup, nOutputPlane / nGroup,
     nInputPlane / nGroup, kernelH, kernelW)
-  this.gradWeight = Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup,
-    kernelH, kernelW)
-
-  private var weightMM: Tensor[T] = null
-  private var gradientBiasMT: Tensor[T] = null
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
-  private var gradWeightMM: Tensor[T] = null
-  this.gradBias = Tensor[T](nOutputPlane)
+
+  val gradWeight: Tensor[T] = Tensor[T]()
+  val gradBias: Tensor[T] = Tensor[T]()
+
   val fInput = Tensor[T]()
   val fGradInput = Tensor[T]()
   private val ones = Tensor[T]()
   private val onesBatch = Tensor[T]()
   private val onesBias = Tensor[T]()
+  private var weightMM: Tensor[T] = null
+  private var gradientBiasMT: Tensor[T] = null
+  private var gradWeightMM: Tensor[T] = null
   private val _1x1 = if (kernelH == 1 && kernelW == 1 && strideW == 1 && strideH == 1
     && padH == 0 && padW == 0) {
     true
@@ -94,6 +94,8 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
     }
+    setup()
+    zeroGradParameters()
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -335,6 +337,13 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     gradBias.zero()
   }
 
+  override def setup(): this.type = {
+    gradWeight.resize(nGroup, nOutputPlane / nGroup, nInputPlane / nGroup,
+      kernelH, kernelW)
+    gradBias.resize(nOutputPlane)
+    this
+  }
+
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
   }
@@ -386,14 +395,21 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     hash
   }
 
+  override def clearState() : this.type = {
+    super.clearState()
+    gradWeight.set()
+    gradBias.set()
+    fInput.set()
+    fGradInput.set()
+    ones.set()
+    onesBatch.set()
+    onesBias.set()
+    this
+  }
+
   override def toString(): String = {
     s"nn.SpatialConvolution($nInputPlane -> $nOutputPlane, $kernelW x" +
       s" $kernelH, $strideW, $strideH, $padW, $padH)"
-  }
-
-  override def findModel(paramOffset: Int,
-    indexes: Array[Int]): (Module[Tensor[T], Tensor[T], T], Int, Array[Int]) = {
-    (this, paramOffset - nOutputPlane * nInputPlane * kernelH * kernelW - nOutputPlane, indexes)
   }
 
   private def updateOutputFrame(input: Tensor[T], output: Tensor[T], weight: Tensor[T],

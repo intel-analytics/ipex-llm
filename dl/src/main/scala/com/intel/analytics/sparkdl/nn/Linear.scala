@@ -31,8 +31,9 @@ class Linear[@specialized(Float, Double) T: ClassTag](
   val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
   val bias: Tensor[T] = Tensor[T](outputSize)
   val addBuffer: Tensor[T] = Tensor[T]()
-  this.gradWeight = Tensor[T](outputSize, inputSize)
-  this.gradBias = Tensor[T](outputSize)
+
+  val gradWeight: Tensor[T] = Tensor[T]()
+  val gradBias: Tensor[T] = Tensor[T]()
   reset()
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {
@@ -53,6 +54,8 @@ class Linear[@specialized(Float, Double) T: ClassTag](
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
     }
+    setup()
+    zeroGradParameters()
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -121,6 +124,20 @@ class Linear[@specialized(Float, Double) T: ClassTag](
     gradBias.zero()
   }
 
+  override def setup(): this.type = {
+    gradWeight.resize(outputSize, inputSize)
+    gradBias.resize(outputSize)
+    this
+  }
+
+  override def clearState() : this.type = {
+    super.clearState()
+    gradWeight.set()
+    gradBias.set()
+    addBuffer.set()
+    this
+  }
+
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
   }
@@ -158,10 +175,5 @@ class Linear[@specialized(Float, Double) T: ClassTag](
 
   override def toString(): String = {
     s"nn.Linear($inputSize -> $outputSize)"
-  }
-
-  override def findModel(paramOffset: Int,
-    indexes: Array[Int]): (Module[Tensor[T], Tensor[T], T], Int, Array[Int]) = {
-    (this, paramOffset - outputSize * inputSize - outputSize, indexes)
   }
 }

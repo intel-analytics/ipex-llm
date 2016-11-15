@@ -42,15 +42,13 @@ class Bilinear[T: ClassTag](inputSize1: Int,
     "inputSize1 and inputSize2 and outputSize should be positive integer numbers")
 
   val weight = Tensor[T](outputSize, inputSize1, inputSize2)
-  this.gradWeight = Tensor[T](outputSize, inputSize1, inputSize2)
-
   val bias: Tensor[T] = if (biasRes)Tensor[T](outputSize) else null
-  this.gradBias = if (biasRes) Tensor[T](outputSize) else null
 
-  @transient
-  private var buff2: Tensor[T] = null
-  @transient
-  private var buff1: Tensor[T] = null
+  var buff1: Tensor[T] = Tensor[T]()
+  var buff2: Tensor[T] = Tensor[T]()
+
+  val gradWeight: Tensor[T] = Tensor[T]()
+  val gradBias: Tensor[T] = Tensor[T]()
 
   reset()
 
@@ -58,6 +56,8 @@ class Bilinear[T: ClassTag](inputSize1: Int,
     val stdv = 1.0 / math.sqrt(weight.size(2))
     weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
     if (null != bias ) bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+    setup()
+    zeroGradParameters()
   }
 
   override def updateOutput(input: Table): Tensor[T] = {
@@ -72,7 +72,6 @@ class Bilinear[T: ClassTag](inputSize1: Int,
       "dimensionality of first input and second input is erroneous")
 
     // set up buffer
-    if(null == buff2) buff2 = Tensor[T]()
     buff2.resizeAs(res2)
 
     // compute output scores
@@ -121,7 +120,6 @@ class Bilinear[T: ClassTag](inputSize1: Int,
 
     // do remaing slices of weight tensor
     if(weight.size(1) > 1) {
-      if (null == buff1) buff1 = Tensor[T]()
       buff1.resizeAs(res1)
 
       var k = 2
@@ -166,6 +164,21 @@ class Bilinear[T: ClassTag](inputSize1: Int,
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
     gradBias.zero()
+  }
+
+  override def setup() : this.type = {
+    gradWeight.resize(outputSize, inputSize1, inputSize2)
+    gradBias.resize(outputSize)
+    this
+  }
+
+  override def clearState() : this.type = {
+    super.clearState()
+    gradWeight.set()
+    gradBias.set()
+    buff1.set()
+    buff2.set()
+    this
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {

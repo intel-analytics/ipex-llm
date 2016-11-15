@@ -31,7 +31,7 @@ class SpatialMaxPooling[@specialized(Float, Double) T: ClassTag](
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   var ceil_mode = false
-  var indices = Tensor[T]()
+  val indices = Tensor[T]()
 
   def this(kW: Int, kH: Int)(implicit ev: TensorNumeric[T]) {
     this(kW, kH, kW, kH)
@@ -252,5 +252,11 @@ class SpatialMaxPooling[@specialized(Float, Double) T: ClassTag](
 
   override def toString(): String = {
     s"nn.SpatialMaxPooling($kW, $kH, $dW, $dH, $padW, $padH)"
+  }
+
+  override def clearState(): this.type = {
+    super.clearState()
+    indices.set()
+    this
   }
 }

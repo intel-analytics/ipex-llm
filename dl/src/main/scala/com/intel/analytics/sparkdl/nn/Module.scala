@@ -18,8 +18,8 @@
 package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.utils.Activities
+import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import com.intel.analytics.sparkdl.utils.{File, T, Table, Activities}
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.collection.mutable.ArrayBuffer
@@ -32,12 +32,25 @@ abstract class TensorModule[@specialized(Float, Double) T: ClassTag]
 abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
   @specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
+
   var output: B = Activities[B, T]().asInstanceOf[B]
   var gradInput: A = Activities[A, T]().asInstanceOf[A]
 
-  var gradWeight: Tensor[T] = null
-  var gradBias: Tensor[T] = null
-  var gradient: (Tensor[T], Tensor[T]) = (gradWeight, gradBias)
+  def clearState() : this.type = {
+    if(output.isInstanceOf[Tensor[T]]) {
+      output.asInstanceOf[Tensor[T]].set()
+    }
+
+    if(gradInput.isInstanceOf[Tensor[T]]) {
+      gradInput.asInstanceOf[Tensor[T]].set()
+    }
+
+    this
+  }
+
+  def setup() : this.type = {
+    this
+  }
 
   private var name : String = null
 
@@ -49,12 +62,6 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
   def getName() : String = {
     if (this.name == null) this.getClass.getName else this.name
   }
-
-  // list of sub modules
-  val modules: ArrayBuffer[Module[Activities, Activities, T]]
-    = ArrayBuffer[Module[Activities, Activities, T]]()
-
-  protected var train: Boolean = true
 
   protected var forwardTime = 0L
 
@@ -107,28 +114,14 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
     (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
   }
 
-  /**
-   * @return (Array of weights, Array of grad)
-   */
   def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = null
+
+  protected var train: Boolean = true
 
   def training(): this.type = {
     train = true
     this
   }
-
-  /**
-   * Find a module by given a parameter offset
-   *
-   * @param paramOffset parameter offset in the (weight, grad) vector returned by the
-   *                    getParamter function
-   * @param indexes     ignore it
-   * @return module ref, offset(ignore), indexes from the current module
-   */
-  def findModel(
-    paramOffset: Int,
-    indexes: Array[Int] = Array()):
-  (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
 
   def evaluate(): this.type = {
     train = false
@@ -158,20 +151,30 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
     case that: Module[A, B, T] =>
       (that canEqual this) &&
         output == that.output &&
-        gradInput == that.gradInput &&
-        gradWeight == that.gradWeight &&
-        gradBias == that.gradBias
+        gradInput == that.gradInput
     case _ => false
   }
 
   override def hashCode(): Int = {
     def getHashCode(a: Object): Int = if (a == null) 0 else a.hashCode()
-    val state = Seq(output, gradInput, gradWeight, gradBias, this.getClass)
+    val state = Seq(output, gradInput, this.getClass)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  def save(path : String, overWrite: Boolean = false) : this.type = {
+    this.clearState()
+    File.save(this, path, overWrite)
+    this.setup()
+    this
   }
 }
 
 object Module {
+  def load[A <: Activities: ClassTag, B <: Activities: ClassTag,
+  @specialized(Float, Double) T: ClassTag](path : String) : Module[A, B, T] = {
+    File.load[Module[A, B, T]](path).setup()
+  }
+
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
     val compactedTensor = isCompact(parameters)

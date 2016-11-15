@@ -82,7 +82,7 @@ object File {
    * @tparam T
    * @return
    */
-  def load[T](fileName: String): T = {
+  def loadTorch[T](fileName: String): T = {
     val path = Paths.get(fileName)
     val rawData = ByteBuffer.wrap(Files.readAllBytes(path))
     rawData.order(ByteOrder.LITTLE_ENDIAN)
@@ -97,7 +97,7 @@ object File {
    * @param fileName
    * @param objectType
    */
-  def save(source: Any, fileName: String, objectType: TorchObject): Unit = {
+  def saveTorch(source: Any, fileName: String, objectType: TorchObject): Unit = {
     val capacity = 300
     val path = Paths.get(fileName)
     val buffer = ByteBuffer.allocate(capacity)
@@ -120,12 +120,12 @@ object File {
   }
 
   /**
-   * Load torch object from a Java object file
+   * Load object from a Java object file
    *
    * @param fileName
    * @tparam T
    */
-  def loadObj[T](fileName: String): T = {
+  def load[T](fileName: String): T = {
     val objFile = new ObjectInputStream(new FileInputStream(fileName))
     objFile.readObject().asInstanceOf[T]
   }

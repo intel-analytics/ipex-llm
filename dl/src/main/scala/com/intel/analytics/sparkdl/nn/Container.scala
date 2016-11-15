@@ -29,6 +29,10 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
     B <: Activities : ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Module[A, B, T] {
 
+  // list of sub modules
+  val modules: ArrayBuffer[Module[Activities, Activities, T]]
+  = ArrayBuffer[Module[Activities, Activities, T]]()
+
   def add(module: Module[_ <: Activities, _ <: Activities, T]): this.type = {
     modules += module.asInstanceOf[Module[Activities, Activities, T]]
     this
@@ -80,24 +84,15 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
     (weights.toArray, gradWeights.toArray)
   }
 
-  override def findModel(paramOffset: Int, indexes: Array[Int]):
-    (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = {
-    var offset = paramOffset
-    var result: Module[_ <: Activities, _ <: Activities, T]
-      = this.asInstanceOf[Module[Activities, Activities, T]]
-    var newIndexes = indexes
-    var i = 0
-    modules.foreach(m => {
-      if (result == this) {
-        val r = m.findModel(offset, indexes ++ Array(i))
-        if (r._2 <= 0) {
-          result = r._1
-          newIndexes = r._3
-        }
-        offset = r._2
-        i += 1
-      }
-    })
-    (result, offset, newIndexes)
+  override def clearState() : this.type = {
+    super.clearState()
+    modules.foreach(_.clearState())
+    this
+  }
+
+  override def setup() : this.type = {
+    super.setup()
+    modules.foreach(_.setup())
+    this
   }
 }

@@ -348,7 +348,7 @@ object Cifar {
   }
 
   def getModel(file: String): TensorModule[Double] = {
-    val model = File.load[TensorModule[Double]](file)
+    val model = File.loadTorch[TensorModule[Double]](file)
     model
   }
 

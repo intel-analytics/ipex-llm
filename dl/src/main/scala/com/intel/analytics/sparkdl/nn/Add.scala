@@ -30,16 +30,18 @@ class Add[T: ClassTag](inputSize: Int
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val bias = Tensor[T](inputSize)
-  this.gradBias = Tensor[T](inputSize)
 
-  @transient
-  var ones : Tensor[T] = null
+  val ones : Tensor[T] = Tensor[T]()
+
+  val gradBias : Tensor[T] = Tensor[T]()
 
   reset()
 
   override def reset(): Unit = {
     val stdv = 1 / math.sqrt(bias.size(1))
     bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+    setup()
+    zeroGradParameters()
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -48,7 +50,6 @@ class Add[T: ClassTag](inputSize: Int
       output.add(bias)
     } else {
       val batchSize = input.size(1)
-      if(null == ones) ones = Tensor[T]()
       ones.resize(batchSize)
       ones.fill(ev.fromType[Int](1))
       val biasLocal = bias.view(bias.size.product)
@@ -81,6 +82,19 @@ class Add[T: ClassTag](inputSize: Int
 
   override def zeroGradParameters(): Unit = {
     gradBias.zero()
+  }
+
+  override def setup() : this.type = {
+    super.setup()
+    gradBias.resize(inputSize)
+    this
+  }
+
+  override def clearState() : this.type = {
+    super.clearState()
+    gradBias.set()
+    ones.set()
+    this
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {

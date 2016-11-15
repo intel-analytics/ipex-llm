@@ -77,10 +77,10 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
     "adjW and adjH must be smaller than dW - 1 and dH - 1 respectively")
 
   val weight: Tensor[T] = Tensor[T](nInputPlane, nOutputPlane, kH, kW)
-  this.gradWeight = Tensor[T](nInputPlane, nOutputPlane, kH, kW)
-
   val bias: Tensor[T] = if (noBias) null else Tensor[T](nOutputPlane)
-  this.gradBias = if (noBias) null else Tensor[T](nOutputPlane)
+
+  val gradWeight: Tensor[T] = Tensor[T]()
+  val gradBias: Tensor[T] = Tensor[T]()
   @transient private var columns: Tensor[T] = null
   @transient private var ones: Tensor[T] = null
   @transient private var zeroScalar: Tensor[T] = null
@@ -94,6 +94,8 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
+  reset()
+
   def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
     this
@@ -104,7 +106,7 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
       case Default =>
         val stdv = 1.0 / math.sqrt(kW * kH * nInputPlane)
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        if (null != bias) {
+        if (!noBias) {
           bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
         }
       case Xavier =>
@@ -131,6 +133,8 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
           i += 1
         }
     }
+    setup()
+    zeroGradParameters()
   }
 
   private def calculateAdj(targetSize : Int, ker : Int, pad : Int, stride : Int) : Int = {
@@ -549,6 +553,12 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
     gradBias.zero()
   }
 
+  override def setup(): this.type = {
+    gradWeight.resize(nInputPlane, nOutputPlane, kH, kW)
+    gradBias.resize(nOutputPlane)
+    this
+  }
+
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
   }
@@ -604,14 +614,15 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
     hash
   }
 
+  override def clearState() : this.type = {
+    super.clearState()
+    gradWeight.set()
+    gradBias.set()
+    this
+  }
+
   override def toString(): String = {
     s"nn.SpatialFullConvolution($nInputPlane -> $nOutputPlane, " +
       s"$kW x $kH, $dW, $dH, $padW, $padH, $adjW, $adjH)"
-  }
-
-  override def findModel(
-    paramOffset: Int,
-    indexes: Array[Int]): (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = {
-    (this, paramOffset - nOutputPlane * nInputPlane * kH * kW - nOutputPlane, indexes)
   }
 }
