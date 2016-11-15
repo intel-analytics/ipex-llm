@@ -1017,6 +1017,12 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def cdiv(x: Tensor[T], y: Tensor[T]): Tensor[T] = DenseTensorMath.cdiv(this, x, y)
 
+  override def cmax(y: Tensor[T]): Tensor[T] = DenseTensorMath.cmax(this, this, y)
+
+  override def cmax(value: Double): Tensor[T] = DenseTensorMath.cmax(this, this, value)
+
+  override def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T] = DenseTensorMath.cmax(this, x, y)
+
   override def mul(x: Tensor[T], value: T): Tensor[T] = DenseTensorMath.mul(this, x, value)
 
   override def mul(value: T): Tensor[T] = DenseTensorMath.mul(this, null, value)
@@ -1698,6 +1704,61 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     }
 
     this.set(t.storage(), t.storageOffset(), size, stride)
+  }
+
+  override def ge(x: Tensor[T], value: Double): Tensor[T] = {
+    val func = new TensorFunc4[T] {
+      def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
+        if (ev.toType[Double](data2(offset2)) >= value) {
+          data1(offset1) = ev.fromType(1)
+        } else {
+          data1(offset1) = ev.fromType(0)
+        }
+      }
+    }
+    DenseTensorApply.apply2[T](this, x, func)
+    this
+  }
+
+  /**
+   * Accumulate the elements of tensor into the original tensor by adding to the indices
+   * in the order given in index. The shape of tensor must exactly match the elements indexed
+   * or an error will be thrown.
+   * @param dim
+   * @param index
+   * @param y
+   * @return
+   */
+  override def indexAdd(dim: Int, index: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    require(dim <= y.nDimension(), "Indexing dim is out of bounds of tensor y")
+    require(index.nElement() == y.size(dim),
+      "Number of indices should be equal to source:size(dim)")
+    require(index.nDimension() == 1, "Index is supposed to be a vector")
+    // require(index.isContiguous(), "index should convert to contiguous")
+    // need convert to be Contiguous
+    index.contiguous()
+    val numel = index.nElement()
+    var index_data = index.storage().array()
+    var i = 0
+
+    if (this.nDimension > 1) {
+      var tSlice = Tensor[T]()
+      var sSlice = Tensor[T]()
+
+      while (i < numel) {
+        tSlice = this.select(dim, ev.toType[Double](index_data(i)).toInt)
+        sSlice = y.select(dim, i + 1)
+        tSlice.add(sSlice)
+        i += 1
+      }
+    } else {
+      while (i < numel) {
+        println(index_data(i))
+        val tmp = this.narrow(1, ev.toType[Double](index_data(i)).toInt, 1)
+        tmp.add(y.narrow(1, i, 1)) // ????
+      }
+    }
+    this
   }
 }
 
