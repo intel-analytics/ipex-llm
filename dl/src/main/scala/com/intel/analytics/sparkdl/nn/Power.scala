@@ -22,6 +22,15 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Apply an element-wise power operation with scale and shift.
+ *
+ * f(x) = (shift + scale * x)^power^
+ *
+ * @param power the exponent.
+ * @param scale Default is 1.
+ * @param shift Default is 0.
+ */
 class Power[@specialized(Float, Double) T: ClassTag](
   val power: Double,
   val scale : Double = 1,
