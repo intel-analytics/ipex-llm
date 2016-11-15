@@ -39,15 +39,13 @@ class Mul[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input).copy(input)
-    val tmp = weight.storage().array()
-    output.mul(tmp(0))
+    output.mul(weight.apply(Array(1)))
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(input).zero()
-    val tmp = weight.storage().array()
-    gradInput.add(tmp(0), gradOutput)
+    gradInput.add(weight.apply(Array(1)), gradOutput)
     gradInput
   }
 

@@ -39,20 +39,20 @@ class MarginRankingCriterion[T: ClassTag](margin: Double = 1.0)
   override def updateOutput(input: Table, y: Table): T = {
     // todo: number condition
     val target = y[Tensor[T]](1)
+    val input1 = input[Tensor[T]](1)
+    val input2 = input[Tensor[T]](2)
+
     if (target.nElement() == 1) {
-      val storage = target.storage().array()
-      val tmp1 = (input[Tensor[T]](1)(1) - input[Tensor[T]](2)(1)).storage().array()
-      output = ev.max(ev.fromType(0),
-        ev.plus(ev.times(tmp1(0), ev.negative(storage(0))), ev.fromType(margin)))
+      val v1 = ev.minus(input1.apply(Array(1)), input2.apply(Array(1)))
+      val v2 = ev.negative(target.apply(Array(1)))
+      output = ev.max(ev.fromType(0), ev.plus(ev.times(v1, v2), ev.fromType(margin)))
     } else {
       var _output = Tensor[T]()
-      _output = input[Tensor[T]](1).clone
-      _output.add(ev.fromType(-1), input[Tensor[T]](2)).mul(ev.fromType(-1)).cmul(target)
+      _output = input1.clone
+      _output.add(ev.fromType(-1), input2).mul(ev.fromType(-1)).cmul(target)
       _output.add(ev.fromType(margin))
-
       _output.cmax(0)
       output = _output.sum()
-
       if (sizeAverage) output = ev.divide(output, ev.fromType(target.size(1)))
     }
     output
@@ -63,16 +63,21 @@ class MarginRankingCriterion[T: ClassTag](margin: Double = 1.0)
     if (!gradInput.contains(2)) gradInput.insert(2, Tensor[T](1))
     // todo: number condition
     val target = y[Tensor[T]](1)
+    val input1 = input[Tensor[T]](1)
+    val input2 = input[Tensor[T]](2)
+    val gradInput1 = gradInput[Tensor[T]](1)
+    val gradInput2 = gradInput[Tensor[T]](2)
+
     if (target.nElement() == 1) {
-      val storage = target.storage().array()
-      val tmp1 = (input[Tensor[T]](1)(1) - input[Tensor[T]](2)(1)).storage().array()
-      val dist = ev.toType[Double](tmp1(0)) * ev.toType[Double](ev.negative(storage(0))) + margin
+      val v1 = ev.minus(input1.apply(Array(1)), input2.apply(Array(1)))
+      val v2 = target.apply(Array(1))
+      val dist = ev.toType[Double](v1) * ev.toType[Double](v2) * (-1) + margin
       if (dist < 0) {
-        gradInput[Tensor[T]](1).setValue(1, ev.fromType(0))
-        gradInput[Tensor[T]](2).setValue(1, ev.fromType(0))
+        gradInput1.setValue(1, ev.fromType(0))
+        gradInput2.setValue(1, ev.fromType(0))
       } else {
-        gradInput[Tensor[T]](1).setValue(1, ev.negative(storage(0)))
-        gradInput[Tensor[T]](2).setValue(1, storage(0))
+        gradInput1.setValue(1, ev.negative(v2))
+        gradInput2.setValue(1, v2)
       }
     } else {
       var dist = Tensor[T]()
@@ -84,12 +89,12 @@ class MarginRankingCriterion[T: ClassTag](margin: Double = 1.0)
       mask.resizeAs(input[Tensor[T]](1)).copy(dist)
 
       mask.ge(dist, 0)
-      gradInput[Tensor[T]](1).resizeAs(dist).copy(mask).mul(ev.fromType(-1)).cmul(target)
-      gradInput[Tensor[T]](2).resizeAs(dist).copy(mask).cmul(target)
+      gradInput1.resizeAs(dist).copy(mask).mul(ev.fromType(-1)).cmul(target)
+      gradInput2.resizeAs(dist).copy(mask).cmul(target)
 
       if (sizeAverage) {
-        gradInput[Tensor[T]](1).div(ev.fromType(target.size(1)))
-        gradInput[Tensor[T]](2).div(ev.fromType(target.size(1)))
+        gradInput1.div(ev.fromType(target.size(1)))
+        gradInput2.div(ev.fromType(target.size(1)))
       }
     }
     gradInput
