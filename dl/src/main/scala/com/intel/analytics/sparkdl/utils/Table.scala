@@ -79,10 +79,10 @@ class Table private[sparkdl](
     result
   }
 
-  override def toString(): String = {
+  override def toString: String = {
     s" {\n\t${state.map{case (key: Any, value: Any) =>
-      s"$key: \n\t" + s"$value".split("\n").mkString("\n\t")
-    }.mkString("\n\t")}\n\t}"
+      s"$key: " + s"$value".split("\n").mkString(s"\n\t${key.toString.replaceAll(".", " ")}  ")
+    }.mkString("\n\t")}\n }"
   }
 
   override def equals(obj: Any): Boolean = {
