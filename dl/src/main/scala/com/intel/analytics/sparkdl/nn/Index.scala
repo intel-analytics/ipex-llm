@@ -32,6 +32,7 @@ class Index[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
   override def updateOutput(input: Table): Tensor[T] = {
     val t = input[Tensor[T]](1)
     val index = input[Tensor[T]](2)
+    output.index(dimension, index, t)
     output
   }
 
@@ -44,12 +45,7 @@ class Index[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
 
     gradInput[Tensor[T]](2).resize(index.size()).zero()
     gradInput[Tensor[T]](1).resizeAs(t).zero()
-    // test
-    // gradOutput.select()
-    gradOutput.mul(gradOutput, ev.fromType(100))
-    // done
     gradInput[Tensor[T]](1).indexAdd(dimension, index, gradOutput)
-
     gradInput
   }
 

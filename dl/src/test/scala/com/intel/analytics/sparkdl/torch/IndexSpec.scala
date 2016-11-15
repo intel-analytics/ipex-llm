@@ -23,6 +23,7 @@ import com.intel.analytics.sparkdl.utils.Table
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
+import scala.util.Random
 
 class IndexSpec extends FlatSpec with BeforeAndAfter with Matchers{
   before {
@@ -31,7 +32,7 @@ class IndexSpec extends FlatSpec with BeforeAndAfter with Matchers{
     }
   }
 
-  "A Index " should "generate correct output and grad" in {
+  "A Index " should "generate correct output and grad with one dimension" in {
     val seed = 100
     RNG.setSeed(seed)
 
@@ -45,29 +46,85 @@ class IndexSpec extends FlatSpec with BeforeAndAfter with Matchers{
     input2(Array(2)) = 2
     input2(Array(3)) = 2
     input2(Array(4)) = 3
-    val gradOutput = Tensor[Double](4)
-    gradOutput(Array(1)) = 1
-    gradOutput(Array(2)) = 1
-    gradOutput(Array(3)) = 1
-    gradOutput(Array(4)) = 3
+    val gradOutput = Tensor[Double](4).apply1(e => Random.nextDouble())
 
     val input = new Table()
     input(1.toDouble) = input1
     input(2.toDouble) = input2
 
     val code = "torch.manualSeed(" + seed + ")\n" +
-      "input = {torch.Tensor{10, 20, 30}, torch.LongTensor{1, 2, 2, 3}}\n" +
+      "input = {input1, torch.LongTensor{1, 2, 2, 3}}\n" +
       "module = nn.Index(1)\n" +
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)\n"
 
-    val (luaTime, torchResult) = TH.run(code, Map("gradOutput" -> gradOutput),
+    val (luaTime, torchResult) = TH.run(code, Map("input1" -> input1, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Double, Tensor[Double]]]
 
     val module = new Index[Double](1)
+    val start = System.nanoTime()
+    val output = module.forward(input)
+    val gradInput = module.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    output should be(luaOutput1)
+
+    val luagradInput1 = luaOutput2.get(1.0).getOrElse(null)
+    val luagradInput2 = luaOutput2.get(2.0).getOrElse(null)
+
+    val gradInput1 = gradInput.apply(1.toDouble).asInstanceOf[Tensor[Double]]
+    val gradInput2 = gradInput.apply(2.toDouble).asInstanceOf[Tensor[Double]]
+    gradInput1 should be(luagradInput1)
+    gradInput2 should be(luagradInput2)
+
+    println("Test case : Index, Torch : " + luaTime +
+      " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A Index " should "generate correct output and grad with two dimension" in {
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val input1 = Tensor[Double](3, 3)
+    input1(Array(1, 1)) = 10
+    input1(Array(1, 2)) = 20
+    input1(Array(1, 3)) = 30
+    input1(Array(2, 1)) = 100
+    input1(Array(2, 2)) = 200
+    input1(Array(2, 3)) = 300
+    input1(Array(3, 1)) = 1
+    input1(Array(3, 2)) = 2
+    input1(Array(3, 3)) = 3
+
+    val input2 = Tensor[Double](4)
+    input2(Array(1)) = 1
+    input2(Array(2)) = 2
+    input2(Array(3)) = 3
+    input2(Array(4)) = 1
+
+    val gradOutput = Tensor[Double](3, 4).apply1(e => Random.nextDouble())
+
+    val input = new Table()
+    input(1.toDouble) = input1
+    input(2.toDouble) = input2
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      "input = {input1, torch.LongTensor{1, 2, 3, 1}}\n" +
+      "module = nn.Index(2)\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)\n"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input1" -> input1, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
+
+    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Double, Tensor[Double]]]
+
+    val module = new Index[Double](2)
     val start = System.nanoTime()
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)

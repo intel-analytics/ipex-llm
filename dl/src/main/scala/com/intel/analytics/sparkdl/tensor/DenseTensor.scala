@@ -1477,6 +1477,12 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   /**
+   * Implements >= operator comparing each element in a with b
+   * @param x
+   * @param value
+   * @return
+   */
+  /**
    * Fills the masked elements of itself with value val
    *
    * @param mask
@@ -1707,6 +1713,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def ge(x: Tensor[T], value: Double): Tensor[T] = {
+    // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc4[T] {
       def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
         if (ev.toType[Double](data2(offset2)) >= value) {
@@ -1734,28 +1741,53 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     require(index.nElement() == y.size(dim),
       "Number of indices should be equal to source:size(dim)")
     require(index.nDimension() == 1, "Index is supposed to be a vector")
-    // require(index.isContiguous(), "index should convert to contiguous")
-    // need convert to be Contiguous
+
     index.contiguous()
     val numel = index.nElement()
-    var index_data = index.storage().array()
-    var i = 0
-
+    var i = 1
     if (this.nDimension > 1) {
-      var tSlice = Tensor[T]()
-      var sSlice = Tensor[T]()
-
-      while (i < numel) {
-        tSlice = this.select(dim, ev.toType[Double](index_data(i)).toInt)
-        sSlice = y.select(dim, i + 1)
-        tSlice.add(sSlice)
+      while (i <= numel) {
+        this.select(dim, ev.toType[Double](index.apply(Array(i))).toInt).add(y.select(dim, i))
         i += 1
       }
     } else {
-      while (i < numel) {
-        println(index_data(i))
-        val tmp = this.narrow(1, ev.toType[Double](index_data(i)).toInt, 1)
-        tmp.add(y.narrow(1, i, 1)) // ????
+      while (i <= numel) {
+        this.narrow(1, ev.toType[Double](index.apply(Array(i))).toInt, 1).add(y.narrow(1, i, 1))
+        i += 1
+      }
+    }
+    this
+  }
+
+  /**
+   * create a new Tensor which indexes the original Tensor along dimension dim using the entries
+   * in torch.LongTensor index. The returned Tensor has the same number of dimensions as the
+   * original Tensor.
+   * @param dim
+   * @param index
+   * @param y
+   * @return
+   */
+  override def index(dim: Int, index: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    require(dim <= y.nDimension(), "Indexing dim is out of bounds of tensor y")
+    require(index.nDimension() == 1, "Index is supposed to be a vector")
+    require(y.nDimension() > 0, "Source tensor is empty")
+
+    val numel = index.nElement()
+    var newSize = y.size()
+    newSize(dim - 1) = numel
+    this.resize(newSize)
+
+    var i = 1
+    if (y.nDimension() == 1) {
+      while (i <= numel) {
+        this.narrow(1, i, 1).add(y.narrow(1, ev.toType[Double](index.apply(Array(i))).toInt, 1))
+        i += 1
+      }
+    } else {
+      while (i <= numel) {
+        this.select(dim, i).copy(y.select(dim, ev.toType[Double](index.apply(Array(i))).toInt))
+        i += 1
       }
     }
     this
