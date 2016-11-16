@@ -33,6 +33,7 @@ class JoinTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A JoinTable()" should "generate correct output and grad" in {
     def randomn(): Double = RandomGenerator.RNG.uniform(-10, 10)
     val layer = new JoinTable[Double](2, 2)
+
     val input1 = Tensor[Double](3, 3, 3)
     input1.apply1(x => randomn())
     val input2 = Tensor[Double](3, 3, 3)
