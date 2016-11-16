@@ -17,11 +17,15 @@
 
 package com.intel.analytics.sparkdl.dataset
 
+import java.nio.file.{Path, Paths}
+
 import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import com.intel.analytics.sparkdl.utils.RandomGenerator
 import com.intel.analytics.sparkdl.utils.RandomGenerator.RNG
 import org.scalatest.{FlatSpec, Matchers}
 
 class TransformersSpec extends FlatSpec with Matchers {
+  import Utils._
 
   "Grey Image Cropper" should "crop image correct" in {
     val image = new GreyImage(32, 32)
@@ -423,5 +427,45 @@ class TransformersSpec extends FlatSpec with Matchers {
       i += 1
       e
     })
+  }
+
+  "RGBImage To SeqFile" should "be good" in {
+    val resource = getClass().getClassLoader().getResource("imagenet")
+    val pathToImage = PathToRGBImage(RGBImage.NO_SCALE)
+    val dataSource = new ImageNetDataSource(Paths.get(processPath(resource.getPath())), looped =
+      false)
+
+    RandomGenerator.RNG.setSeed(1000)
+
+    dataSource.shuffle()
+    val tmpFile = Paths.get(java.io.File.createTempFile("UnitTest", "RGBImageToSeqFile").getPath)
+    val seqWriter = RGBImageToSequentialFile(2, tmpFile)
+    val writePipeline = dataSource -> pathToImage -> seqWriter
+    while(writePipeline.hasNext) {
+      println(s"writer file ${writePipeline.next()}")
+    }
+
+    val seqDataSource = new ArrayDataSource[Path](false) {
+      override protected val data: Array[Path] = Array(
+        Paths.get(tmpFile + "_0"),
+        Paths.get(tmpFile + "_1"),
+        Paths.get(tmpFile + "_2"),
+        Paths.get(tmpFile + "_3"),
+        Paths.get(tmpFile + "_4"),
+        Paths.get(tmpFile + "_5")
+      )
+    }
+    dataSource.reset()
+    var count = 0
+    val readPipeline = seqDataSource -> SeqFileToArrayByte() -> ArrayByteToRGBImage()
+    readPipeline.zip(dataSource -> pathToImage).foreach {case (l, r) => {
+      l.label() should be(r.label())
+      l.width() should be(r.width())
+      l.height() should be(r.height())
+      l.content.zip(r.content).foreach(d => d._1 should be(d._2))
+      count += 1
+    }}
+
+    count should be(11)
   }
 }

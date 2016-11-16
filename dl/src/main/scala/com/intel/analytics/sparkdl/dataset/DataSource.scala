@@ -23,17 +23,19 @@ import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.sparkdl.utils.RandomGenerator
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.io.{SequenceFile, Text}
+import org.apache.hadoop.io.SequenceFile.Reader
 import org.apache.spark.rdd.RDD
 
 import scala.collection.Iterator
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 trait DataSource[T] extends Iterator[T] {
   def reset(): Unit
 
   def shuffle(): Unit
-
-  def finished(): Boolean
 
   def total(): Long
 }
@@ -55,8 +57,6 @@ trait LocalDataSource[T] extends DataSource[T] {
       override def hasNext: Boolean = iterator.hasNext
 
       override def total(): Long = preDataSource.total()
-
-      override def finished(): Boolean = preDataSource.finished()
     }
   }
   // scalastyle:on noSpaceBeforeLeftBracket
@@ -71,8 +71,6 @@ trait RDDDataSource[T] extends DataSource[RDD[T]] {
     val _transformer = transformer
     new RDDDataSource[C] {
       override def total(): Long = preDataSource.total()
-
-      override def finished(): Boolean = preDataSource.finished()
 
       override def reset(): Unit = preDataSource.reset()
 
@@ -113,8 +111,6 @@ abstract class ArrayDataSource[T](looped: Boolean) extends LocalDataSource[T] {
     val curIndex = index.getAndIncrement()
     data(if (looped) (curIndex % data.length) else curIndex)
   }
-
-  override def finished(): Boolean = (index.get() >= data.length)
 
   override def hasNext: Boolean = {
     if (looped) {
@@ -187,6 +183,21 @@ class ImageNetDataSource(path: Path, looped: Boolean)
   extends ArrayDataSource[(Float, Path)](looped) with DirectoryAsLabelDataSet {
 
   override val data: Array[(Float, Path)] = loadPaths(path)
+}
+
+class ImageNetSeqDataSource(path : Path, totalSize : Long, looped: Boolean)
+  extends ArrayDataSource[Path](looped) {
+  override protected val data: Array[Path] = findFiles(path)
+
+  override def total() : Long = {
+    totalSize
+  }
+
+  private def findFiles(path : Path) : Array[Path] = {
+    val directoryStream = Files.newDirectoryStream(path)
+    import scala.collection.JavaConverters._
+    directoryStream.asScala.map(_.toAbsolutePath.toString).map(Paths.get(_)).toArray
+  }
 }
 
 trait DirectoryAsLabelDataSet {

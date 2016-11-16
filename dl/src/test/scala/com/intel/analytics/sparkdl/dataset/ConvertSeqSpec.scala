@@ -27,14 +27,7 @@ import org.apache.hadoop.util.ReflectionUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class ConvertSeqSpec extends FlatSpec with Matchers {
-
-  private def processPath(path: String): String = {
-    if (path.contains(":")) {
-      path.substring(1)
-    } else {
-      path
-    }
-  }
+  import Utils._
 
   "convert ImageNet Image " should "correct" in {
     val parallel = 1

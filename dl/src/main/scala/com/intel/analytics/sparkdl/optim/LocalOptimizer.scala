@@ -70,7 +70,7 @@ class LocalOptimizer[T](
         s" Throughput is ${input.size(1).toDouble / (end - start) * 1e9} img / second")
       state("neval") = state[Int]("neval") + 1
 
-      if(data.finished()) {
+      if(count >= data.total()) {
         state("epoch") = state[Int]("epoch") + 1
         data.reset()
         data.shuffle()
@@ -98,8 +98,12 @@ class LocalOptimizer[T](
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
         model.evaluate()
         validationData.reset()
+        var count = 0
         val results = validationData.map { case (input, target) =>
           val output = model.forward(input)
+          println(s"[Validation][Epoch ${state[Int]("epoch")}][Iteration ${state[Int]("neval")}] " +
+            s"$count/${validationData.total()}")
+          count += input.size(1)
           validationMethods.map(validation => {
             validation(output.asInstanceOf[Tensor[T]], target)
           }).toArray
