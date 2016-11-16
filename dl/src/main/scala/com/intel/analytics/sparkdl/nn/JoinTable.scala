@@ -23,8 +23,8 @@ import com.intel.analytics.sparkdl.utils.Table
 import scala.reflect.ClassTag
 
 /**
- * It is a table module which that takes a table of Tensors as input and
- * outputs a Tensor by joining them together along dimension dimension.
+ * It is a table module which takes a table of Tensors as input and
+ * outputs a Tensor by joining them together along the dimension `dimension`.
  * @param dimension to be join in this dimension
  * @param nInputDims specify the number of dimensions that this module will receive
  *                   If it is more than the dimension of input tensors, the first dimension
@@ -35,29 +35,29 @@ class JoinTable[T: ClassTag] (
   nInputDims: Int
 )(implicit ev: TensorNumeric[T])
   extends Module[Table, Tensor[T], T] {
-  @transient private var size: Array[Int] = null
 
   private def getPositiveDimension(input: Table): Int = {
-    var dimension = this.dimension
+    var nDim = this.dimension
     val firstInput: Tensor[T] = input(1)
 
-    if (dimension < 0) {
-      dimension = firstInput.dim() + dimension + 1
+    if (nDim < 0) {
+      nDim = firstInput.dim() + nDim + 1
     } else if (nInputDims > 0 && firstInput.dim() == (nInputDims + 1)) {
-      dimension += 1
+      nDim += 1
     }
     require(firstInput.dim() >= dimension, "dimension exceeds input dimensions")
-    dimension
+    nDim
   }
 
   override def updateOutput(input: Table): Tensor[T] = {
     val dimension = getPositiveDimension(input)
+    var size: Array[Int] = null
 
     var i = 1
-    while (i <= input.getState().size) {
+    while (i <= input.length()) {
       val currentOutput: Tensor[T] = input(i)
       if (i == 1) {
-        size = currentOutput.size().clone()
+        size = currentOutput.size()
       } else {
         size(dimension - 1) += currentOutput.size(dimension)
       }
@@ -67,7 +67,7 @@ class JoinTable[T: ClassTag] (
 
     var offset = 1
     i = 1
-    while (i <= input.getState().size) {
+    while (i <= input.length()) {
       val currentOutput: Tensor[T] = input(i)
       output.narrow(dimension, offset, currentOutput.size(dimension))
         .copy(currentOutput)
@@ -86,7 +86,7 @@ class JoinTable[T: ClassTag] (
       if (!gradInput.contains(i)) {
         gradInput(i) = Tensor()
       }
-      gradInput(i).asInstanceOf[Tensor[T]].resizeAs(input(i))
+      gradInput[Tensor[T]](i).resizeAs(input(i))
       i += 1
     }
 
@@ -96,7 +96,7 @@ class JoinTable[T: ClassTag] (
       val currentOutput: Tensor[T] = input(i)
       val currentGradInput = gradOutput
         .narrow(dimension, offset, currentOutput.size(dimension))
-      gradInput(i).asInstanceOf[Tensor[T]].copy(currentGradInput)
+      gradInput[Tensor[T]](i)copy(currentGradInput)
       offset += currentOutput.size(dimension)
       i += 1
     }
