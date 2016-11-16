@@ -73,6 +73,16 @@ object MultiModelPerf {
             "vgg16 | vgg19 | lenet5 now")
         }
       )
+    opt[String]('d', "distribute")
+      .text("Distribute type. One of constant | random")
+      .action((v, p) => p.copy(distribute = v))
+      .validate(v =>
+        if (v.toLowerCase() == "constant" || v.toLowerCase() == "random") {
+          success
+        } else {
+          failure("Distribute type must be one of constant and random")
+        }
+      )
     help("help").text("Prints this usage text")
   }
 
@@ -112,6 +122,14 @@ object MultiModelPerf {
       }
 
       def reportFailure(t: Throwable) {}
+    }
+
+    for (i <- 0 until param.cores) {
+      val (model, input, criterion, labels) = tests(i)
+      param.distribute match {
+        case "constant" => input.fill(tn.fromType(0.01))
+        case "random"  => input.rand()
+      }
     }
 
     for (i <- 1 to param.warmUp) {
@@ -175,5 +193,6 @@ case class MultiModelPerfParams(
   cores: Int = 28,
   warmUp: Int = 10,
   dataType: String = "float",
-  module: String = "alexnet"
+  module: String = "alexnet",
+  distribute: String = "random"
 )

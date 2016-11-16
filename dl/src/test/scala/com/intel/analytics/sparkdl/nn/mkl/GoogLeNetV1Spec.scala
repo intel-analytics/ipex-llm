@@ -24,6 +24,7 @@ import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /*
@@ -251,6 +252,7 @@ object GoogleNet_v1Dnn {
     output1.add(new ReLU[D](false).setName("loss1/relu_fc"))
     // output1.add(new Dropout[D](0.7).setName("loss1/drop_fc"))
     output1.add(new Linear[D](1024, classNum).setName("loss1/classifier"))
+    output1.add(new Dummy[D]())
     output1.add(new LogSoftMax[D].setName("loss1/loss"))
 
     val feature2 = new Sequential[Tensor[D], Tensor[D], D]
@@ -267,6 +269,7 @@ object GoogleNet_v1Dnn {
     output2.add(new ReLU[D](false).setName("loss2/relu_fc"))
     // output2.add(new Dropout[D](0.7).setName("loss2/drop_fc"))
     output2.add(new Linear[D](1024, classNum).setName("loss2/classifier"))
+    output2.add(new Dummy[D]())
     output2.add(new LogSoftMax[D].setName("loss2/loss"))
 
     val output3 = new Sequential[Tensor[D], Tensor[D], D]
@@ -278,6 +281,7 @@ object GoogleNet_v1Dnn {
     // output3.add(new Dropout[D](0.4).setName("pool5/drop_7x7_s1"))
     output3.add(new View[D](1024).setNumInputDims(3))
     output3.add(new Linear[D](1024, classNum).setInitMethod(Xavier).setName("loss3/classifier"))
+    output3.add(new Dummy[D]())
     output3.add(new LogSoftMax[D].setName("loss3/loss3"))
 
     val split2 = new Concat[D](2)
@@ -423,5 +427,91 @@ class GoogLeNetV1Spec extends FlatSpec with Matchers {
 
     test[Float]()
     // test[Double]()
+  }
+  "An AlexNet forward and backward" should "the same output, gradient as intelcaffe w/ dnn" in {
+//    val caffeCmd = Tools.getCollectCmd()
+//    val modelPath = Tools.getModuleHome() + "mkl2017_googlenet_v1_bdw/train_val.prototxt"
+//
+//    import scala.sys.process._
+//    (caffeCmd, modelPath).productIterator.mkString(" ").!!
+
+    val batchSize = 32
+    val model = GoogleNet_v1Dnn[Float](1000)
+
+    val criterion = new ClassNLLCriterion[Float]()
+    // Attention, labels must be set to 1, or the value from caffe label + 1
+    val labels = Tensor[Float](batchSize).fill(1)
+
+    model.reset()
+    val input = Tools.getTensor[Float]("CPUFwrd_data_input", Array(batchSize, 3, 224, 224))
+
+    val modules = ArrayBuffer[TensorModule[Float]]()
+    Tools.flattenModules(model, modules)
+
+    for (i <- 0 until modules.length) {
+      val para = modules(i).parameters()
+      if (para != null) {
+        for (j <- 0 until para._1.length) {
+          val binName = "CPUFwrd_" + modules(i).getName().replaceAll("/", "_") + "Wght" + j
+          para._1(j).copy(Tools.getTensor[Float](binName, para._1(j).size()))
+        }
+      }
+    }
+
+    val output = model.forward(input)
+    val loss = criterion.forward(output, labels)
+    val lossCaffe = Tools.getTensor[Float]("CPUFwrd_loss3_loss3", Array(1))
+
+    val layerOutput = new Array[Tensor[Float]](modules.length)
+    val layerGradInput = new Array[Tensor[Float]](modules.length)
+    for (i <- 0 until modules.length) {
+      layerOutput(i) = Tools.getTensor[Float]("CPUFwrd_" + modules(i).getName().replaceAll("/", "_"),
+        modules(i).output.size())
+
+//      Tools.cumulativeError(modules(i).output, layerOutput(i), modules(i).getName()) should be (0.0)
+      if (layerOutput(i).nElement() > 0) {
+        val error = Tools.cumulativeError(modules(i).output, layerOutput(i), modules(i).getName())
+        if (error != 0) {
+          val sb = modules(i-1).output
+          val s = modules(i).output
+
+          val cb = layerOutput(i-1)
+          val c = layerOutput(i)
+
+          println("calm down")
+        }
+      }
+    }
+
+    loss should be(lossCaffe.storage().array()(0))
+
+    val gradOutput = criterion.backward(output, labels)
+    val gradInput = model.backward(input, gradOutput)
+    for (i <- modules.length - 1 to 0 by -1) {
+      layerGradInput(i) = Tools.getTensor[Float]("CPUBwrd_" + modules(i).getName().replaceAll("/", "_"),
+        modules(i).gradInput.size())
+
+//      Tools.cumulativeError(modules(i).gradInput, layerOutput(i), modules(i).getName()) should be (0.0)
+      if (layerGradInput(i).nElement() > 0) {
+        if (Tools.cumulativeError(modules(i).gradInput, layerGradInput(i), modules(i).getName()) != 0) {
+          val sb = if (i < modules.length - 1) modules(i + 1).gradInput else null
+          val s = modules(i).gradInput
+
+          val cb = if (i < modules.length - 1) layerGradInput(i + 1) else null
+          val c = layerGradInput(i)
+
+          println("calm down")
+        }
+      }
+    }
+    val firstLayerName = "CPUBwrd_" + modules(0).getName().replaceAll("/", "_")
+    val gradInputCaffe = Tools.getTensor[Float](firstLayerName, gradInput.size())
+    Tools.cumulativeError(gradInput, gradInputCaffe, "gradInput") should be (0.0)
+
+    val para = modules(0).parameters()
+    for (i <- 0 until para._2.length) {
+      val binName = firstLayerName + "Grad" + i
+      val gradCaffe = Tools.getTensor[Float](binName, para._2(i).size())
+    }
   }
 }
