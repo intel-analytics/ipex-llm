@@ -82,8 +82,6 @@ object DummyDataSource extends DataSource[(Tensor[Float], Tensor[Float])] {
 
   override def total(): Long = max
 
-  override def finished(): Boolean = i >= max
-
   override def shuffle(): Unit = {}
 
   override def next(): (Tensor[Float], Tensor[Float]) = {
@@ -129,8 +127,6 @@ object TestDummyDataSource extends DataSource[(Tensor[Float], Tensor[Float])] {
   }
 
   override def total(): Long = max
-
-  override def finished(): Boolean = i >= max
 
   override def shuffle(): Unit = {}
 

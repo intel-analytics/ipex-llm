@@ -142,9 +142,27 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
     }
     this
   }
+
+  def convertToByte(buffer : Array[Byte] = null, scaleTo: Float = 255.0f): Array[Byte] = {
+    val res = if(buffer == null) {
+      new Array[Byte](height() * width() * 3)
+    } else {
+      require(height() * width() <= buffer.length)
+      buffer
+    }
+
+    var i = 0
+    while(i < height() * width() * 3) {
+      res(i) = (data(i) * scaleTo).toByte
+      i += 1
+    }
+    res
+  }
 }
 
 object RGBImage {
+  val NO_SCALE = -1
+
   def readImage(path: Path, scaleTo: Int): Array[Byte] = {
     var fis : FileInputStream = null
     try {
@@ -197,16 +215,5 @@ object RGBImage {
         fis.close()
       }
     }
-  }
-
-  def convertToByte(data : Array[Float], length : Int, width : Int, scaleTo: Float = 255.0f):
-  Array[Byte] = {
-    var i = 0
-    val res = new Array[Byte](length * width * 3)
-    while(i < length * width * 3) {
-      res(i) = (data(i) * scaleTo).toByte
-      i += 1
-    }
-    res
   }
 }

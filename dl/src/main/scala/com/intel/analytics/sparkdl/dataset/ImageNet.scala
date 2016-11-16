@@ -17,7 +17,8 @@
 
 package com.intel.analytics.sparkdl.dataset
 
-import java.nio.file.{Path, Paths}
+import java.nio.file.{Files, Path, Paths}
+import java.util.concurrent.Executors
 
 import com.intel.analytics.sparkdl.models.imagenet.{AlexNet, GoogleNet_v1}
 import com.intel.analytics.sparkdl.nn.{ClassNLLCriterion, Criterion, Module}
@@ -27,12 +28,105 @@ import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.T
 import scopt.OptionParser
 
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future, ExecutionContext}
+
+object ImageNetSeqFileGenerator {
+  case class ImageNetSeqFileGeneratorParams(
+    folder: String = ".",
+    output: String = ".",
+    parallel: Int = 1,
+    blockSize : Int = 12800,
+    train : Boolean = true,
+    validate : Boolean = true
+  )
+
+  private val parser = new OptionParser[ImageNetSeqFileGeneratorParams]("Spark-DL ImageNet " +
+    "Sequence File Generator") {
+    head("Spark-DL ImageNet Sequence File Generator")
+    opt[String]('f', "folder")
+      .text("where you put the ImageNet data")
+      .action((x, c) => c.copy(folder = x))
+    opt[String]('o', "output folder")
+      .text("where you put the generated seq files")
+      .action((x, c) => c.copy(output = x))
+    opt[Int]('p', "parallel")
+      .text("parallel num")
+      .action((x, c) => c.copy(parallel = x))
+    opt[Int]('b', "blockSize")
+      .text("block size")
+      .action((x, c) => c.copy(blockSize = x))
+    opt[Unit]('t', "trainOnly")
+      .text("only generate train data")
+      .action((_, c) => c.copy(validate = false))
+    opt[Unit]('v', "validationOnly")
+      .text("only generate validation data")
+      .action((_, c) => c.copy(train = false))
+  }
+
+  def main(args: Array[String]): Unit = {
+    parser.parse(args, new ImageNetSeqFileGeneratorParams()).map(param => {
+      if(param.train) {
+        // Process train data
+        println("Process train data...")
+        val trainFolderPath = Paths.get(param.folder, "train")
+        require(Files.isDirectory(trainFolderPath),
+          s"${trainFolderPath} is not valid")
+        val trainDataSource = new ImageNetDataSource(trainFolderPath, false)
+        trainDataSource.shuffle()
+        (0 until param.parallel).map(tid => {
+          val workingThread = new Thread(new Runnable {
+            override def run(): Unit = {
+              val pipeline = trainDataSource -> PathToRGBImage(256) ->
+                RGBImageToSequentialFile(param.blockSize, Paths.get(param.output, "train",
+                  s"imagenet-seq-$tid"))
+              while(pipeline.hasNext) {
+                println(s"Generated file ${pipeline.next()}")
+              }
+            }
+          })
+          workingThread.setDaemon(false)
+          workingThread.start()
+          workingThread
+        }).foreach(_.join())
+      }
+
+      if(param.validate) {
+        // Process validation data
+        println("Process validation data...")
+        val validationFolderPath = Paths.get(param.folder, "val")
+        require(Files.isDirectory(validationFolderPath),
+          s"${validationFolderPath} is not valid")
+
+        val validationDataSource = new ImageNetDataSource(validationFolderPath, false)
+        validationDataSource.shuffle()
+        (0 until param.parallel).map(tid => {
+          val workingThread = new Thread(new Runnable {
+            override def run(): Unit = {
+              val pipeline = validationDataSource -> PathToRGBImage(256) ->
+                RGBImageToSequentialFile(param.blockSize, Paths.get(param.output, "val",
+                  s"imagenet-seq-$tid"))
+              while(pipeline.hasNext) {
+                println(s"Generated file ${pipeline.next()}")
+              }
+            }
+          })
+          workingThread.setDaemon(false)
+          workingThread.start()
+          workingThread
+        }).foreach(_.join())
+      }
+    })
+
+    println("Done")
+  }
+}
+
 object ImageNetLocal {
   case class ImageNetLocalParam(
     folder: String = "./",
     net: String = "alexnet",
     cache: String = "./",
-    buffer: Int = 256,
     parallel: Int = 1
   )
   case class Config(
@@ -90,9 +184,6 @@ object ImageNetLocal {
     opt[Int]('p', "parallel")
       .text("parallel num")
       .action((x, c) => c.copy(parallel = x))
-    opt[Int]('b', "buffer")
-      .text("buffer size")
-      .action((x, c) => c.copy(buffer = x))
     opt[String]('n', "net")
       .text("net type : alexnet | googlenetv1")
       .action((x, c) => c.copy(net = x.toLowerCase))
@@ -108,24 +199,25 @@ object ImageNetLocal {
   def main(args: Array[String]) {
     parser.parse(args, new ImageNetLocalParam()).map(param => {
       val config = configs(param.net)
-      val trainDataSource = ImageNetDataSource(Paths.get(param.folder + "/train"),
+      val trainDataSource = new ImageNetSeqDataSource(Paths.get(param.folder, "train"), 1281167,
         looped = true)
-      val validationDataSource = ImageNetDataSource(Paths.get(param.folder + "/val"),
-        looped = false)
-      val pathToImage = PathToRGBImage(256)
+      val validationDataSource = new ImageNetSeqDataSource(Paths.get(param.folder, "val"),
+        50000, looped = false)
+      val fileTransformer = new SeqFileToArrayByte()
+      val arrayToImage = ArrayByteToRGBImage()
       val cropper = RGBImageCropper(cropWidth = config.imageSize, cropHeight = config.imageSize)
       val normalizer = RGBImageNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
-      val multiThreadToTensor = MultiThreadRGBImageToSingleTensor[(Float, Path)](
+      val multiThreadToTensor = MultiThreadRGBImageToSingleTensor[Path](
         width = configs(param.net).imageSize,
         height = configs(param.net).imageSize,
         threadNum = param.parallel,
         batchSize = config.batchSize,
-        transformer = pathToImage + cropper + normalizer
+        transformer = fileTransformer + arrayToImage + cropper + normalizer
       )
 
       val optimizer = new LocalOptimizer[Float](
         data = trainDataSource -> multiThreadToTensor,
-        validationData = validationDataSource -> multiThreadToTensor,
+        validationData = validationDataSource -> (multiThreadToTensor.cloneTransformer()),
         model = config.model,
         criterion = config.criterion,
         optimMethod = config.optimMethod,

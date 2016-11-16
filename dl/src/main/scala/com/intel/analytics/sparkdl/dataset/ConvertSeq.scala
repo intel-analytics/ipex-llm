@@ -83,8 +83,8 @@ class Worker(dataSet: DataSource[RGBImage], parallel: Int) {
       val data = dataSet.next()
       val imageKey = s"${data.label()}-${i}"
       println(s"write ${imageKey}")
-      writer.write(imageKey, RGBImage.convertToByte(data.content, data.width(), data.height()),
-        data.width(), data.height())
+      //writer.write(imageKey, RGBImage.convertToByte(data.content, data.width(), data.height()),
+      //  data.width(), data.height())
       i += 1
     }
     writer.close()
