@@ -54,6 +54,7 @@ class PReLU[T: ClassTag](
   @transient private var results: Array[Future[Unit]] = null
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    require(input.isContiguous(), "input must be contiguous")
     output.resizeAs(input)
 
     if (nOutputPlane == 0) {
@@ -69,16 +70,16 @@ class PReLU[T: ClassTag](
       }
       DenseTensorApply.apply2[T](output, input, func)
     } else {
-      val inputNdim = input.nDimension()
+      require(input.nDimension() <= 4, s"${input.nDimension()}D input not supported")
+      require(input.size((input.nDimension() + 1) % 2 + 1) == nOutputPlane,
+        "wrong number of input planes")
+
       val (bs, ks) = input.nDimension() match {
         case 1 => (1, 1)
         case 2 => (input.size(1), 1)
         case 3 => (1, input.size(2) * input.size(3))
         case 4 => (input.size(1), input.size(3) * input.size(4))
       }
-
-      require(input.size((inputNdim + 1) % 2 + 1) == nOutputPlane,
-        "wrong number of input planes")
 
       val outputArray = output.storage().array()
       val inputArray = input.storage().array()
@@ -125,6 +126,8 @@ class PReLU[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    require(input.isContiguous(), "input must be contiguous")
+    require(gradOutput.isContiguous(), "gradOuput must be contiguous")
     require(input.nElement() == gradOutput.nElement())
     gradInput.resizeAs(input)
 
@@ -142,16 +145,16 @@ class PReLU[T: ClassTag](
       }
       DenseTensorApply.apply3[T](gradInput, gradOutput, input, func)
     } else {
-      val inputNdim = input.nDimension()
+      require(input.nDimension() <= 4, s"${input.nDimension()}D input not supported")
+      require(input.size((input.nDimension() + 1) % 2 + 1) == nOutputPlane,
+        "wrong number of input planes")
+
       val (bs, ks) = input.nDimension() match {
         case 1 => (1, 1)
         case 2 => (input.size(1), 1)
         case 3 => (1, input.size(2) * input.size(3))
         case 4 => (input.size(1), input.size(3) * input.size(4))
       }
-
-      require(input.size((inputNdim + 1) % 2 + 1) == nOutputPlane,
-        "wrong number of input planes")
 
       val inputArray = input.storage().array()
       val gradOutputArray = gradOutput.storage().array()
@@ -202,7 +205,8 @@ class PReLU[T: ClassTag](
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
-
+    require(input.isContiguous(), "input must be contiguous")
+    require(gradOutput.isContiguous(), "gradOuput must be contiguous")
     require(input.nElement() == gradOutput.nElement())
 
     if (nOutputPlane == 0) {
@@ -217,16 +221,15 @@ class PReLU[T: ClassTag](
       DenseTensorApply.apply2[T](input, gradOutput, func)
       gradWeight.add(ev.times(ev.fromType[Double](scale), sum))
     } else {
-      val inputNdim = input.nDimension()
+      require(input.nDimension() <= 4, s"${input.nDimension()}D input not supported")
+      require(input.size((input.nDimension() + 1) % 2 + 1) == nOutputPlane,
+        "wrong number of input planes")
       val (bs, ks) = input.nDimension() match {
         case 1 => (1, 1)
         case 2 => (input.size(1), 1)
         case 3 => (1, input.size(2) * input.size(3))
         case 4 => (input.size(1), input.size(3) * input.size(4))
       }
-
-      require(input.size((inputNdim + 1) % 2 + 1) == nOutputPlane,
-        "wrong number of input planes")
 
       val inputArray = input.storage().array()
       val gradOutputArray = gradOutput.storage().array()
