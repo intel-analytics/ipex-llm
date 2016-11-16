@@ -162,7 +162,7 @@ object Tools {
                      modules: ArrayBuffer[TensorModule[Float]]) : Unit = {
     if (model.modules.length >= 1) {
       for (i <- model.modules) {
-        flattenModules(i.asInstanceOf[TensorModule[Float]], modules)
+        flattenModules(i.asInstanceOf[Module[Tensor[Float], Tensor[Float], Float]], modules)
       }
     } else {
       modules += model.asInstanceOf[TensorModule[Float]]
@@ -204,10 +204,12 @@ class Dummy[@specialized(Float, Double) T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput = gradOutput.apply1(
-      x => ev.fromType[Double]((math floor ev.toType[Double](x)  * 1e5) / 1e5)
-    )
-
+//    gradInput = gradOutput.apply1(
+//      x => ev.fromType[Double]((math floor (ev.toType[Double](x)  * 1e5)) / 1e5)
+//    )
+//
+//    gradInput
+    gradInput = gradOutput
     gradInput
   }
 }
