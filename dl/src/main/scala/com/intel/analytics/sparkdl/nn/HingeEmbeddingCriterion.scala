@@ -47,7 +47,7 @@ class HingeEmbeddingCriterion[T: ClassTag](
 )(implicit ev: TensorNumeric[T])
   extends TensorCriterion[T] {
   @transient private var buffer: Tensor[T] = null
-  var gradInput: Tensor[T] = Tensor[T]()
+  val gradInput: Tensor[T] = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     if (buffer == null) {
@@ -83,7 +83,7 @@ class HingeEmbeddingCriterion[T: ClassTag](
     output
   }
 
-  //Todo: Optimize performance to substitute apply3
+  // Todo: Optimize performance to substitute apply3
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(input).copy(target)
     val func = new TensorFunc6[T] {
