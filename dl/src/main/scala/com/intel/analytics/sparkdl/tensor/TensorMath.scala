@@ -659,13 +659,4 @@ trait TensorMath[T] {
    * @param y tensor
    */
   def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T]
-
-  /**
-   * stores the minima of each element in x and v in x.
-   * x.cmax(v) = max(x, v)
-   *
-   * @param value Double
-   * @return current tensor
-   */
-  def cmax(value: Double): Tensor[T]
 }
