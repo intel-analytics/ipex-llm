@@ -1027,15 +1027,6 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   override def cmax(y: Tensor[T]): Tensor[T] = DenseTensorMath.cmax(this, this, y)
 
   /**
-   * stores the minima of each element in x and v in x.
-   * x.cmax(v) = max(x, v)
-   *
-   * @param value Double
-   * @return current tensor
-   */
-  override def cmax(value: Double): Tensor[T] = DenseTensorMath.cmax(this, this, value)
-
-  /**
    * stores the element-wise maximum of x and y in z.
    * z.cmax(x, y) means z = max(x, y)
    *
@@ -1777,15 +1768,15 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     require(index.nDimension() == 1, "Index is supposed to be a vector")
 
     val indexC = index.contiguous()
-    val numel = indexC.nElement()
+    val numEle = indexC.nElement()
     var i = 1
     if (this.nDimension > 1) {
-      while (i <= numel) {
+      while (i <= numEle) {
         this.select(dim, ev.toType[Double](indexC(Array(i))).toInt).add(y.select(dim, i))
         i += 1
       }
     } else {
-      while (i <= numel) {
+      while (i <= numEle) {
         this.narrow(1, ev.toType[Double](indexC(Array(i))).toInt, 1).add(y.narrow(1, i, 1))
         i += 1
       }
@@ -1808,19 +1799,19 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     require(y.nDimension() > 0, "Source tensor is empty")
     val indexC = index.contiguous()
 
-    val numel = indexC.nElement()
+    val numEle = indexC.nElement()
     val newSize = y.size()
-    newSize(dim - 1) = numel
+    newSize(dim - 1) = numEle
     this.resize(newSize)
 
     var i = 1
     if (y.nDimension() == 1) {
-      while (i <= numel) {
+      while (i <= numEle) {
         this.narrow(1, i, 1).add(y.narrow(1, ev.toType[Double](indexC(Array(i))).toInt, 1))
         i += 1
       }
     } else {
-      while (i <= numel) {
+      while (i <= numEle) {
         this.select(dim, i).copy(y.select(dim, ev.toType[Double](indexC(Array(i))).toInt))
         i += 1
       }

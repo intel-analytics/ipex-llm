@@ -32,9 +32,14 @@ import scala.reflect.ClassTag
  * @param margin
  */
 class MarginRankingCriterion[T: ClassTag]
-(margin: Double = 1.0, sizeAverage: Boolean = true)
+(val margin: Double = 1.0, val sizeAverage: Boolean = true)
  (implicit ev: TensorNumeric[T]) extends Criterion[Table, T] {
-  val gradInput = T()
+
+  private val gradInput = T()
+  @transient
+  var mask: Tensor[T] = null
+  @transient
+  var dist: Tensor[T] = null
 
   override def updateOutput(input: Table, y: Table): T = {
     // todo: number condition
@@ -47,12 +52,12 @@ class MarginRankingCriterion[T: ClassTag]
       val v2 = ev.negative(target(Array(1)))
       output = ev.max(ev.fromType(0), ev.plus(ev.times(v1, v2), ev.fromType(margin)))
     } else {
-      var _output = Tensor[T]()
-      _output = input1.clone
-      _output.add(ev.fromType(-1), input2).mul(ev.fromType(-1)).cmul(target)
-      _output.add(ev.fromType(margin))
-      _output.cmax(0)
-      output = _output.sum()
+      if (null == dist) dist = Tensor[T]()
+      dist.resizeAs(input1).copy(input1)
+      dist.add(ev.fromType(-1), input2).mul(ev.fromType(-1)).cmul(target)
+      dist.add(ev.fromType(margin))
+      dist.cmax(ev.fromType(0))
+      output = dist.sum()
       if (sizeAverage) output = ev.divide(output, ev.fromType(target.size(1)))
     }
     output
@@ -80,12 +85,13 @@ class MarginRankingCriterion[T: ClassTag]
         gradInput2.setValue(1, v2)
       }
     } else {
-      val dist = input[Tensor[T]](1).clone()
+      if (null == mask) mask = Tensor[T]()
+      if (null == dist) dist = Tensor[T]()
+      dist.resizeAs(input1).copy(input1)
       dist.add(ev.fromType(-1), input[Tensor[T]](2))
       dist.mul(ev.fromType(-1)).cmul(target).add(ev.fromType(margin))
 
-      val mask = dist.clone()
-
+      mask.resizeAs(input1).copy(dist)
       mask.ge(dist, 0)
       gradInput1.resizeAs(dist).copy(mask).mul(ev.fromType(-1)).cmul(target)
       gradInput2.resizeAs(dist).copy(mask).cmul(target)
@@ -96,6 +102,23 @@ class MarginRankingCriterion[T: ClassTag]
       }
     }
     gradInput
+  }
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[MarginRankingCriterion[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: MarginRankingCriterion[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        margin == that.margin &&
+        sizeAverage == that.sizeAverage
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), margin, sizeAverage)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 
   override def toString(): String = {

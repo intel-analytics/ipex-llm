@@ -28,22 +28,22 @@ import scala.reflect.ClassTag
  */
 
 class MarginCriterion[T: ClassTag]
- (margin: Double = 1.0, sizeAverage: Boolean = true)
+ (val margin: Double = 1.0, val sizeAverage: Boolean = true)
  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
-  val gradInput = Tensor[T]()
+  private val gradInput = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    var sum: Double = 0
+    var sum: T = ev.fromType(0)
     // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc4[T] {
       override def apply(data1: Array[T], index1: Int, data2: Array[T], index2: Int): Unit = {
-        val z = margin - ev.toType[Double](ev.times(data1(index1), data2(index2)))
-        if (z > 0) sum += z
+        val z = ev.minus(ev.fromType(margin), ev.times(data1(index1), data2(index2)))
+        if (ev.isGreater(z, ev.fromType(0))) sum = ev.plus(sum, z)
       }
     }
     DenseTensorApply.apply2[T](input, target, func)
-    if (sizeAverage) sum = sum / input.nElement()
-    ev.fromType(sum)
+    if (sizeAverage) sum = ev.divide(sum, ev.fromType(input.nElement()))
+    sum
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
@@ -65,5 +65,22 @@ class MarginCriterion[T: ClassTag]
 
   override def toString(): String = {
     s"nn.MarginCriterion($margin)"
+  }
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[MarginCriterion[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: MarginCriterion[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        margin == that.margin &&
+        sizeAverage == that.sizeAverage
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), margin, sizeAverage)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

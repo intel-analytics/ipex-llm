@@ -49,26 +49,21 @@ class Index[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
     gradInput
   }
 
-  override def equals(obj: Any): Boolean = {
-    if (!super.equals(obj)) {
-      return false
-    }
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Index[T]]
 
-    if (!obj.isInstanceOf[Index[T]]) {
-      return false
-    }
-    val other = obj.asInstanceOf[Index[T]]
-    if (this.eq(other)) {
-      return true
-    }
-    true
+  override def equals(other: Any): Boolean = other match {
+    case that: Index[T] =>
+      super.equals(that) &&
+        (that canEqual this)
+    case _ => false
   }
 
   override def hashCode(): Int = {
-    val seed = 100
-    var hash = super.hashCode()
-    hash
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode())
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
+
   override def toString(): String = {
     s"nn.Index($dimension)"
   }

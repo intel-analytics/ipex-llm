@@ -57,17 +57,10 @@ class MarginRankingCriterionSpec extends FlatSpec with BeforeAndAfter with Match
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Double, Tensor[Double]]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Any, Any]]
 
     luaOutput1 should be(output)
-
-    val luagradInput1 = luaOutput2.get(1.0).getOrElse(null)
-    val luagradInput2 = luaOutput2.get(2.0).getOrElse(null)
-
-    val gradInput1 = gradInput.apply(1.toDouble).asInstanceOf[Tensor[Double]]
-    val gradInput2 = gradInput.apply(2.toDouble).asInstanceOf[Tensor[Double]]
-    gradInput1 should be(luagradInput1)
-    gradInput2 should be(luagradInput2)
+    gradInput should equal(new Table(luaOutput2))
 
     println("Test case : MarginRankingCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
@@ -100,17 +93,10 @@ class MarginRankingCriterionSpec extends FlatSpec with BeforeAndAfter with Match
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target1),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Double, Tensor[Double]]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Any, Any]]
 
     luaOutput1 should be(output)
-
-    val luagradInput1 = luaOutput2.get(1.0).getOrElse(null)
-    val luagradInput2 = luaOutput2.get(2.0).getOrElse(null)
-
-    val gradInput1 = gradInput.apply(1.toDouble).asInstanceOf[Tensor[Double]]
-    val gradInput2 = gradInput.apply(2.toDouble).asInstanceOf[Tensor[Double]]
-    gradInput1 should be(luagradInput1)
-    gradInput2 should be(luagradInput2)
+    gradInput should equal(new Table(luaOutput2))
 
     println("Test case : MarginRankingCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")

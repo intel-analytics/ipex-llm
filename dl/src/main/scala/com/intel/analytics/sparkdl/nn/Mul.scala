@@ -33,7 +33,8 @@ class Mul[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   reset()
 
   override def reset(): Unit = {
-    val stdv = 1 / math.sqrt(weight.size(1))
+    // stdv should be 1 / math.sqrt(weight.size(1)), as weight's size(1) is 1, so stdv is 1.0
+    val stdv = 1.0
     weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
   }
 
@@ -61,6 +62,23 @@ class Mul[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Mul[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Mul[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        weight == that.weight &&
+        gradWeight == that.gradWeight
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), weight, gradWeight)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 
   override def toString(): String = {
