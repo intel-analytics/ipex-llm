@@ -53,7 +53,7 @@ class FlattenTable[T: ClassTag] (implicit ev: TensorNumeric[T])
     s"nn.Flatten"
   }
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[FlattenTable[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[FlattenTable[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: FlattenTable[T] =>

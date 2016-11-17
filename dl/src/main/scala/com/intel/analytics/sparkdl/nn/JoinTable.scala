@@ -106,7 +106,7 @@ class JoinTable[T: ClassTag] (
   override def toString: String = s"nn.JoinTable"
 
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[JoinTable[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[JoinTable[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: JoinTable[T] =>
