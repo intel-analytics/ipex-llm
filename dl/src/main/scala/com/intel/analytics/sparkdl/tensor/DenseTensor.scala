@@ -1776,17 +1776,17 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       "Number of indices should be equal to source:size(dim)")
     require(index.nDimension() == 1, "Index is supposed to be a vector")
 
-    index.contiguous()
-    val numel = index.nElement()
+    val indexC = index.contiguous()
+    val numel = indexC.nElement()
     var i = 1
     if (this.nDimension > 1) {
       while (i <= numel) {
-        this.select(dim, ev.toType[Double](index.apply(Array(i))).toInt).add(y.select(dim, i))
+        this.select(dim, ev.toType[Double](indexC(Array(i))).toInt).add(y.select(dim, i))
         i += 1
       }
     } else {
       while (i <= numel) {
-        this.narrow(1, ev.toType[Double](index.apply(Array(i))).toInt, 1).add(y.narrow(1, i, 1))
+        this.narrow(1, ev.toType[Double](indexC(Array(i))).toInt, 1).add(y.narrow(1, i, 1))
         i += 1
       }
     }
@@ -1806,21 +1806,22 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     require(dim <= y.nDimension(), "Indexing dim is out of bounds of tensor y")
     require(index.nDimension() == 1, "Index is supposed to be a vector")
     require(y.nDimension() > 0, "Source tensor is empty")
+    val indexC = index.contiguous()
 
-    val numel = index.nElement()
-    var newSize = y.size()
+    val numel = indexC.nElement()
+    val newSize = y.size()
     newSize(dim - 1) = numel
     this.resize(newSize)
 
     var i = 1
     if (y.nDimension() == 1) {
       while (i <= numel) {
-        this.narrow(1, i, 1).add(y.narrow(1, ev.toType[Double](index.apply(Array(i))).toInt, 1))
+        this.narrow(1, i, 1).add(y.narrow(1, ev.toType[Double](indexC(Array(i))).toInt, 1))
         i += 1
       }
     } else {
       while (i <= numel) {
-        this.select(dim, i).copy(y.select(dim, ev.toType[Double](index.apply(Array(i))).toInt))
+        this.select(dim, i).copy(y.select(dim, ev.toType[Double](indexC(Array(i))).toInt))
         i += 1
       }
     }

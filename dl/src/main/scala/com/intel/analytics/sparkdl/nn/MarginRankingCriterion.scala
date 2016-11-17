@@ -31,9 +31,9 @@ import scala.reflect.ClassTag
  * the second input, and vice-versa for y == -1.
  * @param margin
  */
-class MarginRankingCriterion[T: ClassTag](margin: Double = 1.0)
+class MarginRankingCriterion[T: ClassTag]
+(margin: Double = 1.0, sizeAverage: Boolean = true)
  (implicit ev: TensorNumeric[T]) extends Criterion[Table, T] {
-  val sizeAverage = true
   val gradInput = T()
 
   override def updateOutput(input: Table, y: Table): T = {
@@ -43,8 +43,8 @@ class MarginRankingCriterion[T: ClassTag](margin: Double = 1.0)
     val input2 = input[Tensor[T]](2)
 
     if (target.nElement() == 1) {
-      val v1 = ev.minus(input1.apply(Array(1)), input2.apply(Array(1)))
-      val v2 = ev.negative(target.apply(Array(1)))
+      val v1 = ev.minus(input1(Array(1)), input2(Array(1)))
+      val v2 = ev.negative(target(Array(1)))
       output = ev.max(ev.fromType(0), ev.plus(ev.times(v1, v2), ev.fromType(margin)))
     } else {
       var _output = Tensor[T]()
@@ -69,8 +69,8 @@ class MarginRankingCriterion[T: ClassTag](margin: Double = 1.0)
     val gradInput2 = gradInput[Tensor[T]](2)
 
     if (target.nElement() == 1) {
-      val v1 = ev.minus(input1.apply(Array(1)), input2.apply(Array(1)))
-      val v2 = target.apply(Array(1))
+      val v1 = ev.minus(input1(Array(1)), input2(Array(1)))
+      val v2 = target(Array(1))
       val dist = ev.toType[Double](v1) * ev.toType[Double](v2) * (-1) + margin
       if (dist < 0) {
         gradInput1.setValue(1, ev.fromType(0))
@@ -80,13 +80,11 @@ class MarginRankingCriterion[T: ClassTag](margin: Double = 1.0)
         gradInput2.setValue(1, v2)
       }
     } else {
-      var dist = Tensor[T]()
-      dist = input[Tensor[T]](1).clone()
+      val dist = input[Tensor[T]](1).clone()
       dist.add(ev.fromType(-1), input[Tensor[T]](2))
       dist.mul(ev.fromType(-1)).cmul(target).add(ev.fromType(margin))
 
-      val mask = Tensor[T]()
-      mask.resizeAs(input[Tensor[T]](1)).copy(dist)
+      val mask = dist.clone()
 
       mask.ge(dist, 0)
       gradInput1.resizeAs(dist).copy(mask).mul(ev.fromType(-1)).cmul(target)

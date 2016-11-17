@@ -27,10 +27,9 @@ import scala.reflect.ClassTag
  * @param margin if unspecified, is by default 1.
  */
 
-class MarginCriterion[T: ClassTag](margin: Double = 1.0)
+class MarginCriterion[T: ClassTag]
+ (margin: Double = 1.0, sizeAverage: Boolean = true)
  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
-
-  val sizeAverage = true
   val gradInput = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
@@ -48,8 +47,7 @@ class MarginCriterion[T: ClassTag](margin: Double = 1.0)
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    var norm = -1.0
-    if (sizeAverage) norm = -1.0 / input.nElement()
+    val norm = ev.fromType(if (sizeAverage) -1.0 / input.nElement() else 1.0)
     gradInput.resizeAs(input)
 
     // todo: the performance of contiguous tensor should be optimized
@@ -57,7 +55,7 @@ class MarginCriterion[T: ClassTag](margin: Double = 1.0)
       override def apply (data1: Array[T], offset1: Int, data2: Array[T],
                           offset2: Int, data3: Array[T], offset3: Int): Unit = {
         if (ev.isGreater(ev.fromType(margin), ev.times(data2(offset2), data3(offset3)))) {
-          data1(offset1) = ev.times(ev.fromType(norm), data3(offset3))
+          data1(offset1) = ev.times(norm, data3(offset3))
         }
       }
     }
