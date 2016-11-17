@@ -37,7 +37,8 @@ class ModuleSpec extends FlatSpec with Matchers {
     r4.forward(input2)
 
 
-    r1.hashCode() should equal (r2.hashCode().hashCode())
+    r1.hashCode() should equal (r2.hashCode())
+    r1.hashCode() should not equal null
     r1.hashCode() should not equal log.hashCode()
     r1.hashCode() should equal (r3.hashCode())
     r5.hashCode() should not equal r4.hashCode()
@@ -59,6 +60,8 @@ class ModuleSpec extends FlatSpec with Matchers {
 
 
     r1 should equal (r2)
+    r1 should not equal null
+    r1 should not equal null.asInstanceOf[ReLU[Double]]
     r1 should not equal log
     r1 should not equal mNull
     r1 should equal (r3)
