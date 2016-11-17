@@ -18,19 +18,20 @@ package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
-import scala.util.Random
 
 /**
  * Creates a criterion that measures the loss given an input x = {x1, x2},
   * a table of two Tensors, and a label y (1 or -1):
  * @param margin
  */
-class L1HingeEmbeddingCriterion[T: ClassTag](margin: Double = 1)
+class L1HingeEmbeddingCriterion[T: ClassTag](val margin: Double = 1)
  (implicit ev: TensorNumeric[T]) extends Criterion[Table, T]{
-  val gradInput = T()
+
+  private val gradInput = T()
 
   private def mathSign(t: T): T = {
     var res = 0
@@ -39,38 +40,41 @@ class L1HingeEmbeddingCriterion[T: ClassTag](margin: Double = 1)
     } else if (ev.isGreater(ev.fromType(0), t)) {
       res = -1
     } else {
-      res = 2 * (Random.nextInt(2) + 1) - 3
+      res = 2 * (Math.floor(RNG.uniform(0, 2)).toInt + 1) - 3
     }
     ev.fromType(res)
   }
 
   override def updateOutput(input: Table, target: Table): T = {
-    require(target[Tensor[T]](1).isContiguous())
-    val _output = (input[Tensor[T]](1)-input[Tensor[T]](2)).abs().pow(ev.fromType(1))
-    output = ev.pow(_output.sum(), ev.fromType(1))
-    val targetArr = target[Tensor[T]](1).storage().array()
-    if (targetArr(0) == -1) output = ev.max(ev.fromType(0), ev.minus(ev.fromType(margin), output))
+    val y = target[T](1.0)
+    val input1 = input[Tensor[T]](1)
+    val input2 = input[Tensor[T]](2)
+
+    output = (input1 -input2).abs().sum()
+    if (y.asInstanceOf[Double] == -1) {
+      output = ev.max(ev.fromType(0), ev.minus(ev.fromType(margin), output))
+    }
     output
   }
 
   override def updateGradInput(input: Table, target: Table): Table = {
-    require(target[Tensor[T]](1).isContiguous())
-    val targetArr = target[Tensor[T]](1).storage().array()
-
+    val y = target[T](1)
     if (!gradInput.contains(1)) gradInput.insert(1, Tensor[T])
     if (!gradInput.contains(2)) gradInput.insert(2, Tensor[T])
 
     val gradInput1 = gradInput[Tensor[T]](1)
     val gradInput2 = gradInput[Tensor[T]](2)
+    val input1 = input[Tensor[T]](1)
+    val input2 = input[Tensor[T]](2)
 
-    gradInput1.resizeAs(input[Tensor[T]](1)).copy(input[Tensor[T]](1)).
-      add(ev.fromType(-1), input[Tensor[T]](2))
-    gradInput2.resizeAs(input[Tensor[T]](2))
+    gradInput1.resizeAs(input1).copy(input1)
+    gradInput1.add(ev.fromType(-1), input2)
+    gradInput2.resizeAs(input2)
 
-    val dist = gradInput1.abs().sum()
+    val dist = gradInput1.norm(1)
     gradInput1.apply1(mathSign)
 
-    if (targetArr(0) == -1) {
+    if (y == -1) {
       if (ev.isGreater(dist, ev.fromType(margin))) {
         gradInput1.zero()
       } else {
@@ -83,5 +87,18 @@ class L1HingeEmbeddingCriterion[T: ClassTag](margin: Double = 1)
 
   override def toString(): String = {
     s"nn.L1HingeEmbeddingCriterion ($margin)"
+  }
+
+  override def equals(other: Any): Boolean = other match {
+    case that: L1HingeEmbeddingCriterion[T] =>
+      (that.eq(this)) &&
+        margin == that.margin
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(margin)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

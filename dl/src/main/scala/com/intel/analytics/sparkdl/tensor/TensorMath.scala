@@ -520,7 +520,12 @@ trait TensorMath[T] {
    */
   def maskedSelect(mask: Tensor[T], y: Tensor[T]): Tensor[T]
 
-  def norm(): T
+  /**
+   * returns the sum of the n-norms on the Tensor x
+   * @param value the n-norms
+   * @return
+   */
+  def norm(value: Int): T
 
   /**
    * returns a new Tensor with the sign (+/- 1 or 0) of the elements of x.

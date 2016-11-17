@@ -16,13 +16,14 @@
  */
 package com.intel.analytics.sparkdl.torch
 
-import com.intel.analytics.sparkdl.nn.{L1HingeEmbeddingCriterion}
-import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import com.intel.analytics.sparkdl.nn.L1HingeEmbeddingCriterion
+import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.utils.Table
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
+import scala.util.Random
 
 
 class L1HingeEmbeddingCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers{
@@ -32,21 +33,19 @@ class L1HingeEmbeddingCriterionSpec extends FlatSpec with BeforeAndAfter with Ma
     }
   }
 
-  "A L1HingeEmbeddingCriterion" should "generate correct output and grad with different " +
-    "input tensor" in {
-    val seed = 100
+  "A L1HingeEmbeddingCriterion" should "generate correct output and grad with y == 1 " in {
+    val seed = 2
     RNG.setSeed(seed)
     val module = new L1HingeEmbeddingCriterion[Double](0.6)
 
-    val input1 = Tensor[Double](Storage(Array(1.0, 0.0)))
-    val input2 = Tensor[Double](Storage(Array(0.5, math.sqrt(3) * 0.5)))
-    var input = new Table()
-    input(1.toDouble) = input1
-    input(2.toDouble) = input2
+    val input1 = Tensor[Double](2).apply1(e => Random.nextDouble())
+    val input2 = Tensor[Double](2).apply1(e => Random.nextDouble())
+    val input = new Table()
+    input(1.0) = input1
+    input(2.0) = input2
 
     val target = new Table()
-    val target1 = Tensor[Double](Storage(Array(-1.0)))
-    target(1.toDouble) = target1
+    target(1.0) = 1.0
 
     val start = System.nanoTime()
     val output = module.forward(input, target)
@@ -56,9 +55,8 @@ class L1HingeEmbeddingCriterionSpec extends FlatSpec with BeforeAndAfter with Ma
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.L1HingeEmbeddingCriterion(0.6)\n" +
-      "output = module:forward(input, -1)\n" +
-      "gradInput = module:backward(input, -1)\n"
-
+      "output = module:forward(input, 1)\n" +
+      "gradInput = module:backward(input, 1)\n"
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
@@ -77,21 +75,19 @@ class L1HingeEmbeddingCriterionSpec extends FlatSpec with BeforeAndAfter with Ma
       " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
-  "A L1HingeEmbeddingCriterion" should "generate correct output and grad with same " +
-    "input tensor" in {
-    val seed = 100
+  "A L1HingeEmbeddingCriterion" should "generate correct output and grad with y == -1 " in {
+    val seed = 2
     RNG.setSeed(seed)
     val module = new L1HingeEmbeddingCriterion[Double](0.6)
 
-    val input1 = Tensor[Double](Storage(Array(1.0, 0.8)))
-    val input2 = Tensor[Double](Storage(Array(1.0, 0.6)))
-    var input = new Table()
-    input(1.toDouble) = input1
-    input(2.toDouble) = input2
+    val input1 = Tensor[Double](2).apply1(e => Random.nextDouble())
+    val input2 = Tensor[Double](2).apply1(e => Random.nextDouble())
+    val input = new Table()
+    input(1.0) = input1
+    input(2.0) = input2
 
     val target = new Table()
-    val target1 = Tensor[Double](Storage(Array(-1.0)))
-    target(1.toDouble) = target1
+    target(1.0) = -1.0
 
     val start = System.nanoTime()
     val output = module.forward(input, target)
@@ -101,9 +97,8 @@ class L1HingeEmbeddingCriterionSpec extends FlatSpec with BeforeAndAfter with Ma
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.L1HingeEmbeddingCriterion(0.6)\n" +
-      "output = module:forward(input, -1)\n" +
-      "gradInput = module:backward(input, -1)\n"
-
+      "output = module:forward(input, -1.0)\n" +
+      "gradInput = module:backward(input, -1.0)\n"
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
