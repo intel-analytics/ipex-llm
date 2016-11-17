@@ -31,8 +31,8 @@ import scala.reflect.ClassTag
  *                   would be considered as batch size
  */
 class JoinTable[T: ClassTag] (
-  dimension: Int,
-  nInputDims: Int
+  val dimension: Int,
+  val nInputDims: Int
 )(implicit ev: TensorNumeric[T])
   extends Module[Table, Tensor[T], T] {
 
@@ -104,4 +104,22 @@ class JoinTable[T: ClassTag] (
   }
 
   override def toString: String = s"nn.JoinTable"
+
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[JoinTable[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: JoinTable[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        dimension == that.dimension &&
+        nInputDims == that.nInputDims
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), dimension, nInputDims)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
