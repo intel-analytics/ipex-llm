@@ -27,9 +27,9 @@ import scala.reflect.ClassTag
  * a table of two Tensors, and a Tensor label y with values 1 or -1.
  * @param margin a number from -1 to 1, 0 to 0.5 is suggested
  */
-class CosineEmbeddingCriterion[T: ClassTag](margin: Double = 0.0)
+class CosineEmbeddingCriterion[T: ClassTag]
+ (val margin: Double = 0.0, val sizeAverage: Boolean = true)
  (implicit ev: TensorNumeric[T]) extends Criterion[Table, T]{
-  val sizeAverage = true
   val gradInput = T()
   @transient
   private var buffer: Tensor[T] = null
@@ -163,7 +163,21 @@ class CosineEmbeddingCriterion[T: ClassTag](margin: Double = 0.0)
     gradInput
   }
 
+  override def equals(other: Any): Boolean = other match {
+    case that: CosineEmbeddingCriterion[T] =>
+      (that.eq(this)) &&
+        margin == that.margin &&
+        sizeAverage == that.sizeAverage
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(margin, sizeAverage)
+    state.map(getHashCode).foldLeft(0)((a, b) => 37 * a + b)
+  }
+
   override def toString(): String = {
-    s"nn.CosineEmbeddingCriterion($margin)"
+    s"nn.CosineEmbeddingCriterion($margin, $sizeAverage)"
   }
 }

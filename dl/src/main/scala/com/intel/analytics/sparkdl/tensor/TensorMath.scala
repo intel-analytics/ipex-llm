@@ -473,17 +473,13 @@ trait TensorMath[T] {
 
   /**
    * returns the p-norms of the Tensor x computed over the dimension dim.
-   * @param value value-norms
-   * @param dim the dimension dim
+   * @param y result buffer
+   * @param value
+   * @param dim
    * @return
    */
-  def norm(y: Tensor[T], value: Double, dim: Int): Tensor[T]
+  def norm(y: Tensor[T], value: Int, dim: Int): Tensor[T]
 
-  /**
-   * returns the sum of the 2-norms on the Tensor x
-   * @return the sum of the 2-norms
-   */
-  def norm(): T
   /**
    * Implements > operator comparing each element in x with y
    *

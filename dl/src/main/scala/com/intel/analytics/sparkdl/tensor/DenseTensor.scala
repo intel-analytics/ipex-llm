@@ -1357,7 +1357,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def log1p(): Tensor[T] = DenseTensorMath.log1p[T](this, this)
 
-  override def norm(y: Tensor[T], value: Double, dim: Int): Tensor[T] =
+  override def norm(y: Tensor[T], value: Int, dim: Int): Tensor[T] =
     DenseTensorMath.norm(this, y, value, dim - 1)
 
   override def abs(x: Tensor[T]): Tensor[T] = {
@@ -1374,18 +1374,6 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       DenseTensorApply.apply2[T](this, x, func)
     }
     this
-  }
-
-  override def norm(): T = {
-    var res: T = ev.fromType(0)
-    val func = new TensorFunc2[T] {
-      override def apply(data1: Array[T], offset1: Int): Unit = {
-        res = ev.plus(res, ev.times(data1(offset1), data1(offset1)))
-      }
-    }
-    DenseTensorApply.apply1[T](this, func)
-
-    ev.sqrt(res)
   }
 
   /**

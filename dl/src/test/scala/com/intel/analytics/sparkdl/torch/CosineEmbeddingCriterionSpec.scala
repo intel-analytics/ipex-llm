@@ -41,8 +41,8 @@ class CosineEmbeddingCriterionSpec extends FlatSpec with BeforeAndAfter with Mat
     val input1 = Tensor[Double](5).apply1(e => Random.nextDouble())
     val input2 = Tensor[Double](5).apply1(e => Random.nextDouble())
     val input = new Table()
-    input(1.toDouble) = input1
-    input(2.toDouble) = input2
+    input(1.0) = input1
+    input(2.0) = input2
 
     val target = new Table()
     val target1 = Tensor[Double](Storage(Array(-0.5)))

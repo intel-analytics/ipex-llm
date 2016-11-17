@@ -28,13 +28,16 @@ import scala.reflect.ClassTag
 class CriterionTable[T: ClassTag](val criterion: TensorCriterion[T])
  (implicit ev: TensorNumeric[T]) extends  TensorCriterion[T] {
 
+  @transient
+  var gradInput: Tensor[T] = null
+
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     output = criterion.updateOutput(input, target)
     output
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    var gradInput: Tensor[T] = Tensor[T]()
+    if (null == gradInput) gradInput = Tensor[T]()
     gradInput = criterion.updateGradInput(input, target)
     gradInput
   }
