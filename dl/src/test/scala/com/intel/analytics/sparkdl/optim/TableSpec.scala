@@ -22,6 +22,44 @@ import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 class TableSpec extends FlatSpec with Matchers {
+  "hashcode()" should "behave correctly" in {
+    val input1 = Tensor[Double](3, 3).randn()
+    val input2 = Tensor[Double](3, 3).randn()
+
+    val t1 = T()
+    val t2 = T()
+    val t3 = T(1 -> input1, 2 -> input2)
+    val t4 = T(1 -> input1, 2 -> input2)
+    val t5 = T(1 -> input1)
+    val tNull = null
+    val tensor = Tensor[Double]()
+
+    t1.hashCode() should equal (t2.hashCode().hashCode())
+    t1.hashCode() should not equal t3.hashCode()
+    t3.hashCode() should equal (t4.hashCode())
+    t4.hashCode() should not equal t5.hashCode()
+  }
+
+  "equals()" should "behave correctly" in {
+    val input1 = Tensor[Double](3, 3).randn()
+    val input2 = Tensor[Double](3, 3).randn()
+
+    val t1 = T()
+    val t2 = T()
+    val t3 = T(1 -> input1, 2 -> input2)
+    val t4 = T(1 -> input1, 2 -> input2)
+    val t5 = T(1 -> input1)
+    val tNull = null
+    val tensor = Tensor[Double]()
+
+    t1 should equal (t2)
+    t1 should not equal t3
+    t3 should equal (t4)
+    t4 should not equal t5
+    t4 should not equal tNull
+    t4 should not equal tensor
+  }
+
   "clone" should "work correctly" in {
     val state1 = T()
     state1("a") = "1"

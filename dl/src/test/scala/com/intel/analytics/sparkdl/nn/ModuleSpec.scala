@@ -23,6 +23,47 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.util.Random
 
 class ModuleSpec extends FlatSpec with Matchers {
+  "hashcode()" should "behave correctly" in {
+    val r1 = new ReLU[Double]()
+    val r2 = new ReLU[Double]()
+    val log = new Log[Double]()
+    val r3 = new ReLU[Float]()
+    val r4 = new ReLU[Double]()
+    val r5 = new ReLU[Double]()
+
+    val input1 = Tensor[Double](3, 3).randn()
+    r5.forward(input1)
+    val input2 = Tensor[Double](3, 3).randn()
+    r4.forward(input2)
+
+
+    r1.hashCode() should equal (r2.hashCode().hashCode())
+    r1.hashCode() should not equal log.hashCode()
+    r1.hashCode() should equal (r3.hashCode())
+    r5.hashCode() should not equal r4.hashCode()
+  }
+
+  "equals()" should "behave correctly" in {
+    val r1 = new ReLU[Double]()
+    val r2 = new ReLU[Double]()
+    val log = new Log[Double]()
+    val mNull = null
+    val r3 = new ReLU[Float]()
+    val r4 = new ReLU[Double]()
+    val r5 = new ReLU[Double]()
+
+    val input1 = Tensor[Double](3, 3).randn()
+    r5.forward(input1)
+    val input2 = Tensor[Double](3, 3).randn()
+    r4.forward(input2)
+
+
+    r1 should equal (r2)
+    r1 should not equal log
+    r1 should not equal mNull
+    r1 should equal (r3)
+    r5 should not equal r4
+  }
 
   "getParameter" should "behave correctly" in {
     val module = new Sequential[Tensor[Double], Tensor[Double], Double]

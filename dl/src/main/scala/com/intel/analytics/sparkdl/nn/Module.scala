@@ -148,66 +148,26 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
     this
   }
 
-  override def equals(obj: Any): Boolean = {
-    if (obj == null) {
-      return false
-    }
-    if (!obj.isInstanceOf[Module[_ <: Activities, _ <: Activities, T]]) {
-      return false
-    }
-    val other = obj.asInstanceOf[Module[_ <: Activities, _ <: Activities, T]]
-    if (this.eq(other)) {
-      return true
-    }
-    if (output != other.output) {
-      return false
-    }
-    if (gradInput != other.gradInput) {
-      return false
-    }
-    if (gradWeight == null) {
-      if (other.gradWeight != null) {
-        return false
-      }
-    } else {
-      if (gradWeight != other.gradWeight) {
-        return false
-      }
-    }
-    if (gradBias == null) {
-      if (other.gradBias != null) {
-        return false
-      }
-    } else {
-      if (gradBias != other.gradBias) {
-        return false
-      }
-    }
-
-    true
-  }
-
-  override def hashCode() : Int = {
-    val seed = 37
-    var hash = 1
-    if (output != null) {
-      hash = hash * seed + this.output.hashCode()
-    }
-    if (gradInput != null) {
-      hash = hash * seed + this.gradInput.hashCode()
-    }
-    if (gradWeight != null) {
-      hash = hash * seed + this.gradWeight.hashCode()
-    }
-    if (gradBias != null) {
-      hash = hash * seed + this.gradBias.hashCode()
-    }
-
-    hash
-  }
-
   def cloneModule(): Module[A, B, T] = {
     SerializationUtils.clone(this)
+  }
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[Module[A, B, T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Module[A, B, T] =>
+      (that canEqual this) &&
+        output == that.output &&
+        gradInput == that.gradInput &&
+        gradWeight == that.gradWeight &&
+        gradBias == that.gradBias
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Object): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(output, gradInput, gradWeight, gradBias, this.getClass)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
 
