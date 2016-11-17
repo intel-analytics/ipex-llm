@@ -30,28 +30,44 @@ import scala.reflect.ClassTag
  * @param sizeAverage
  * @param provideOutput
  */
-class L1Penalty[T: ClassTag](l1weight: Int, sizeAverage: Boolean = false,
- provideOutput: Boolean = true)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+class L1Penalty[T: ClassTag]
+ (val l1weight: Int, val sizeAverage: Boolean = false,
+ val provideOutput: Boolean = true)
+ (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   var loss: T = ev.fromType(0)
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     var m: Double = l1weight
-    if (sizeAverage == true) m = m / input.nElement()
-    val tmp = input.abs().sum()
-    loss = ev.times(ev.fromType(m), input.abs().sum())
+    if (sizeAverage) m = m / input.nElement()
+    loss = ev.times(ev.fromType(m), input.norm(1))
     output = input
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     var m: Double = l1weight
-
-    if (sizeAverage == true) m = m / input.nElement()
+    if (sizeAverage) m = m / input.nElement()
     gradInput.resizeAs(input).copy(input).sign().mul(ev.fromType(m))
 
-    if (provideOutput == true) gradInput.add(gradOutput)
+    if (provideOutput) gradInput.add(gradOutput)
     gradInput
+  }
+
+  override def equals(other: Any): Boolean = other match {
+    case that: L1Penalty[T] =>
+      super.equals(that) &&
+        (that.eq(this)) &&
+        l1weight == that.l1weight &&
+        sizeAverage == that.sizeAverage &&
+        provideOutput == that.provideOutput
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), l1weight, sizeAverage, provideOutput)
+    state.map(getHashCode).foldLeft(0)((a, b) => 37 * a + b)
   }
 
   override def toString(): String = {

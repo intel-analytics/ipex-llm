@@ -28,7 +28,7 @@ class L1Cost[T: ClassTag]()
  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    input.abs().sum()
+    input.norm(1)
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {

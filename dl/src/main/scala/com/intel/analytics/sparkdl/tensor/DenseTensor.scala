@@ -1525,16 +1525,21 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
-  override def norm(): T = {
+  /**
+   * returns the sum of the n-norms on the Tensor x
+   * @param value the n-norms
+   * @return
+   */
+  override def norm(value: Int): T = {
+    require(value > 0, "norm value should be greater than 0")
     var res: T = ev.fromType(0)
     val func = new TensorFunc2[T] {
       override def apply(data1: Array[T], offset1: Int): Unit = {
-        res = ev.plus(res, ev.times(data1(offset1), data1(offset1)))
+        res = ev.plus(res, ev.pow(ev.abs(data1(offset1)), ev.fromType(value)))
       }
     }
     DenseTensorApply.apply1[T](this, func)
-
-    ev.sqrt(res)
+    ev.pow(res, ev.fromType(1.0 / value))
   }
 
   /**
