@@ -50,4 +50,20 @@ abstract class Criterion[A <: Activities: ClassTag,
   def cloneCriterion(): Criterion[A, T] = {
     SerializationUtils.clone(this)
   }
+
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[Criterion[A, T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Criterion[A, T] =>
+      (that canEqual this) &&
+        output == that.output
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(output)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
