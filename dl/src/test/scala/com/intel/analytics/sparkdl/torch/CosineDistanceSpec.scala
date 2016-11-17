@@ -40,9 +40,9 @@ class CosineDistanceSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val input2 = Tensor[Double](3).apply1(e => Random.nextDouble())
     val gradOutput = Tensor[Double](1).apply1(e => Random.nextDouble())
 
-    var input = new Table()
-    input(1.toDouble) = input1
-    input(2.toDouble) = input2
+    val input = new Table()
+    input(1.0) = input1
+    input(2.0) = input2
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.CosineDistance()\n" +

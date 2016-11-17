@@ -29,8 +29,10 @@ import scala.reflect.ClassTag
  * @param nInputDim nInputDim dimensions of module
  * @param nOutputDim1 output of nOutputDim dimensions
  */
-class Bottle[T: ClassTag](module: Module[Tensor[T], Tensor[T], T], nInputDim: Int = 2,
- nOutputDim1: Int = Int.MaxValue)
+class Bottle[T: ClassTag](
+  val module: Module[Tensor[T], Tensor[T], T],
+  val nInputDim: Int = 2,
+  val nOutputDim1: Int = Int.MaxValue)
  (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   private val nOutputDim = if (nOutputDim1 == Int.MaxValue) nInputDim else nOutputDim1
@@ -102,5 +104,21 @@ class Bottle[T: ClassTag](module: Module[Tensor[T], Tensor[T], T], nInputDim: In
 
   override def toString(): String = {
     s"nn.Bottle ($module, $nInputDim, $nOutputDim1)"
+  }
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Bottle[T] =>
+      super.equals(that) &&
+        (that.eq(this)) &&
+        module == that.module &&
+        nInputDim == that.nInputDim &&
+        nOutputDim1 == that.nOutputDim1
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), module, nInputDim, nOutputDim1)
+    state.map(getHashCode).foldLeft(0)((a, b) => 37 * a + b)
   }
 }

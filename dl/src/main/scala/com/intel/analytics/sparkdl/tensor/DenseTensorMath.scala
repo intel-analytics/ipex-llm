@@ -612,7 +612,7 @@ object DenseTensorMath {
    * @return
    */
   def norm[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], result: Tensor[T],
-   value: Double, _dim: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+   value: Int, _dim: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(_dim >= 0 && _dim < self.nDimension, "invalid dimension")
     val sizes = self.size()
     sizes(_dim) = 1

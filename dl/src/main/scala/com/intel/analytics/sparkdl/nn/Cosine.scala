@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  * @param ev
  * @tparam T
  */
-class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
+class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
   this.gradWeight = Tensor[T](outputSize, inputSize)
@@ -72,7 +72,7 @@ class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
       output.resize(outputSize).zero()
       output.addmv(ev.fromType(1), weight, input)
 
-      __norm = ev.plus(input.norm(), ev.fromType(1e-12))
+      __norm = ev.plus(input.norm(2), ev.fromType(1e-12))
       output.cdiv(_weightNorm.view(outputSize)).div(__norm)
     } else if (input.dim() == 2) {
       val batchSize = input.size(1)
@@ -172,7 +172,24 @@ class Cosine[T: ClassTag](inputSize : Int, outputSize : Int)(
     (Array(this.weight), Array(this.gradWeight))
   }
 
+
   override def toString(): String = {
     s"nn.Cosine($inputSize, $outputSize)"
+  }
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Cosine[T] =>
+      super.equals(that) &&
+        (that.eq(this)) &&
+        weight == that.weight &&
+        inputSize == that.inputSize &&
+        outputSize == that.outputSize
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), weight, inputSize, outputSize)
+    state.map(getHashCode).foldLeft(0)((a, b) => 37 * a + b)
   }
 }
