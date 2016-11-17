@@ -20,6 +20,42 @@ import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 class MultiLabelSoftMarginCriterionSpec  extends FlatSpec with Matchers {
+  "hashcode()" should "behave correctly" in {
+    val m1 = new MultiLabelSoftMarginCriterion[Double]()
+    val m2 = new MultiLabelSoftMarginCriterion[Double]()
+    val m3 = new MultiLabelSoftMarginCriterion[Double](Tensor[Double](3).randn())
+    val m4 = new MultiLabelSoftMarginCriterion[Double]()
+    val bce = new BCECriterion[Double]()
+    val input = Tensor[Double](3, 3).randn()
+    val target = Tensor[Double](3, 3).randn()
+    m4.forward(input, target)
+
+
+    m1.hashCode() should equal (m2.hashCode())
+    m1.hashCode() should not equal null
+    m1.hashCode() should not equal bce.hashCode()
+    m1.hashCode() should not equal m3.hashCode()
+    m1.hashCode() should not equal m4.hashCode()
+  }
+
+  "equals()" should "behave correctly" in {
+    val m1 = new MultiLabelSoftMarginCriterion[Double]()
+    val m2 = new MultiLabelSoftMarginCriterion[Double]()
+    val m3 = new MultiLabelSoftMarginCriterion[Double](Tensor[Double](3).randn())
+    val m4 = new MultiLabelSoftMarginCriterion[Double]()
+    val bce = new BCECriterion[Double]()
+    val input = Tensor[Double](3, 3).randn()
+    val target = Tensor[Double](3, 3).randn()
+    m4.forward(input, target)
+
+
+    m1 should equal (m2)
+    m1 should not equal null
+    m1 should not equal null.isInstanceOf[MultiLabelSoftMarginCriterion[Double]]
+    m1 should not equal bce
+    m1 should not equal m3
+    m1 should not equal m4
+  }
 
   "MultiLabelSoftMarginCriterio " should "return return right output and gradInput" in {
     val criterion = new MultiLabelSoftMarginCriterion[Double]()
@@ -38,6 +74,5 @@ class MultiLabelSoftMarginCriterionSpec  extends FlatSpec with Matchers {
     gradInput(Array(1)) should be(0.19956255336948944 +- 0.0001)
     gradInput(Array(2)) should be(-0.12584688959851295 +- 0.0001)
     gradInput(Array(3)) should be(-0.11811456459055192 +- 0.0001)
-
   }
 }

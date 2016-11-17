@@ -37,11 +37,11 @@ class MultiLabelSoftMarginCriterion[T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   var gradInput = Tensor[T]()
   var lsm = new Sigmoid[T]()
-  var nll = new BCECriterion[T]()
+  var nll = new BCECriterion[T](weights)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    var _input: Tensor[T] = null
-    var _target: Tensor[T] = null
+    var _input: Tensor[T] = input
+    var _target: Tensor[T] = target
 
     if (input.nElement() != 1) {
       _input = input.clone().squeeze()
@@ -77,4 +77,25 @@ class MultiLabelSoftMarginCriterion[T: ClassTag]
 
     gradInput
   }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[MultiLabelSoftMarginCriterion[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: MultiLabelSoftMarginCriterion[T] =>
+      (that canEqual this) &&
+        gradInput == that.gradInput &&
+        lsm == that.lsm &&
+        nll == that.nll &&
+        weights == that.weights
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(x: Any) = if (x == null) 0 else x.hashCode()
+    val state = Seq(gradInput, lsm, nll, weights)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+
+  override def toString: String = s"MultiLabelSoftMarginCriterion($weights)"
 }
