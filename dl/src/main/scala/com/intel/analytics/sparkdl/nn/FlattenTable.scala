@@ -38,7 +38,7 @@ class FlattenTable[T: ClassTag] (implicit ev: TensorNumeric[T])
 
   override def updateOutput(input: Table): Table = {
     createInputMap()
-    inputMap = input.clone()
+    inputMap = input.clone
     output = input.flatten()
     output
   }
@@ -51,5 +51,21 @@ class FlattenTable[T: ClassTag] (implicit ev: TensorNumeric[T])
 
   override def toString: String = {
     s"nn.Flatten"
+  }
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[FlattenTable[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: FlattenTable[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        inputMap == that.inputMap
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), inputMap)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
