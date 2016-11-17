@@ -99,19 +99,19 @@ class Table private[sparkdl](
     if (this.state.keys.size != other.getState().keys.size) {
       return false
     }
-    this.state.keys.map(key => {
+    this.state.keys.foreach(key => {
       if (this.state(key) != other.getState()(key)) {
         return false
       }
     })
-    return true
+    true
   }
 
   override def hashCode() : Int = {
     val seed = 37
-    var hash = super.hashCode()
+    var hash = 1
 
-    this.state.keys.map(key => {
+    this.state.keys.foreach(key => {
       hash = hash * seed + key.hashCode()
       hash = hash * seed + this.state(key).hashCode()
     })
@@ -267,7 +267,7 @@ object T {
    * @return
    */
   def array(data: Array[Any]): Table = {
-    new Table(data.toArray)
+    new Table(data)
   }
 
   /**
