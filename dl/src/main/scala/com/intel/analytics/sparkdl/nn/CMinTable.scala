@@ -32,10 +32,13 @@ class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
   private var minIdx: Tensor[T] = null
   @transient
   private var mask: Tensor[T] = null
+  @transient
+  private var maskResult: Tensor[T] = null
 
   override def updateOutput(input: Table): Tensor[T] = {
     if (null == minIdx) minIdx = Tensor[T]()
     if (null == mask) mask = Tensor[T]()
+    if (null == maskResult) maskResult = Tensor[T]()
 
     val res1 = input[Tensor[T]](1)
     output.resizeAs(res1).copy(res1)
@@ -47,8 +50,9 @@ class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
       mask.lt(input(i), output)
       minIdx.maskedFill(mask, ev.fromType(i))
 
-      val maskResult = Tensor[T]()
-      output.maskedCopy(mask, input[Tensor[T]](i).maskedSelect(mask, maskResult))
+      if (ev.isGreater(mask.sum(), ev.fromType(0))) {
+        output.maskedCopy(mask, input[Tensor[T]](i).maskedSelect(mask, maskResult))
+      }
       i += 1
     }
     output
@@ -63,13 +67,29 @@ class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
       mask.resize(minIdx.size())
       mask.eq(minIdx, ev.fromType(i))
 
-      val maskResult = Tensor[T]()
-      gradInput.apply[Tensor[T]](i).maskedCopy(mask, gradOutput.maskedSelect(mask, maskResult))
+      if (ev.isGreater(mask.sum(), ev.fromType(0))) {
+        gradInput.apply[Tensor[T]](i).maskedCopy(mask, gradOutput.maskedSelect(mask, maskResult))
+      }
 
       i += 1
     }
 
     gradInput
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[CMaxTable[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: CMinTable[T] =>
+      super.equals(that) &&
+        (that canEqual this)
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode())
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 
   override def toString() : String = {
