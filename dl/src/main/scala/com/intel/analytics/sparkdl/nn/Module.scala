@@ -61,11 +61,11 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
    * @return
    */
   def clearState() : this.type = {
-    if(output.isInstanceOf[Tensor[T]]) {
+    if (output.isInstanceOf[Tensor[T]]) {
       output.asInstanceOf[Tensor[T]].set()
     }
 
-    if(gradInput.isInstanceOf[Tensor[T]]) {
+    if (gradInput.isInstanceOf[Tensor[T]]) {
       gradInput.asInstanceOf[Tensor[T]].set()
     }
 
