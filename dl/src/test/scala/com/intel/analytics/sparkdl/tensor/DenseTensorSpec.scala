@@ -642,4 +642,13 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     tensor(Array(4)) should be(4.0)
   }
 
+  "Reshape" should "works correctly" in {
+    val tensor = Tensor.randperm[Double](20)
+    tensor.resize(2, 10)
+    val shape = tensor.reshape(Array(2, 2, 5)).size()
+    shape(0) should be(2)
+    shape(1) should be(2)
+    shape(2) should be(5)
+  }
+
 }
