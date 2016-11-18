@@ -1507,12 +1507,6 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   /**
-   * Implements >= operator comparing each element in a with b
-   * @param x
-   * @param value
-   * @return
-   */
-  /**
    * Fills the masked elements of itself with value val
    *
    * @param mask
@@ -1717,6 +1711,31 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
         } else {
           data1(offset1) = ev.fromType(0)
         }
+      }
+    }
+    DenseTensorApply.apply1[T](this, func)
+    this
+  }
+
+  /**
+   * y = torch.range(x, y) returns a Tensor of size floor((y - x) / step) + 1 with values from
+   * x to y with step step (default to 1).
+   * @param xmin
+   * @param xmax
+   * @param step
+   * @return
+   */
+  override def range(xmin: Double, xmax: Double, step: Int = 1): Tensor[T] = {
+    require((xmax >= xmin) && (step > 0),
+      "upper bound and larger bound incoherent with step sign")
+    val size = ((xmax-xmin)/ step + 1).toInt
+    if (this.nElement() != size) this.resize(size)
+    var i = 0
+    // TODO: the performance of contiguous tensor should be optimize
+    val func = new TensorFunc2[T] {
+      override def apply(data1: Array[T], offset1: Int): Unit = {
+        data1(offset1) = ev.fromType(xmin + i * step)
+        i += 1
       }
     }
     DenseTensorApply.apply1[T](this, func)
