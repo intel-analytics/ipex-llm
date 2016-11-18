@@ -39,7 +39,7 @@ class ParallelTable[T: ClassTag]
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
     var i = 0
-    while (i < input.getState().size) {
+    while (i < input.length()) {
       gradInput.update(i + 1, modules(i).updateGradInput(input(i + 1), gradOutput(i + 1)))
       i += 1
     }
@@ -49,7 +49,7 @@ class ParallelTable[T: ClassTag]
   override def accGradParameters(input: Table, gradOutput: Table,
     scale: Double = 1.0): Unit = {
     var i = 0
-    while (i < input.getState().size) {
+    while (i < input.length()) {
       modules(i).accGradParameters(input(i + 1), gradOutput(i + 1), scale)
       i += 1
     }
