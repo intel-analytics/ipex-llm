@@ -62,13 +62,28 @@ class SpatialDilatedConvolution[T: ClassTag](
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
-  gradWeight = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
+  val gradWeight = Tensor[T]()
+  val gradBias = Tensor[T]()
+
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
-  gradBias = Tensor[T](nOutputPlane)
   @transient private var fInput: Tensor[T] = null
   @transient private var fGradInput: Tensor[T] = null
 
   reset()
+
+  override def setup(): this.type = {
+    super.setup()
+    gradWeight.resize(nOutputPlane, nInputPlane, kH, kW)
+    gradBias.resize(nOutputPlane)
+    this
+  }
+
+  override def clearState(): this.type = {
+    super.clearState()
+    gradWeight.set()
+    gradBias.set()
+    this
+  }
 
   private var im2colTime = 0L
   private var col2imTime = 0L
@@ -95,6 +110,9 @@ class SpatialDilatedConvolution[T: ClassTag](
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
     }
+
+    setup()
+    zeroGradParameters()
   }
 
   private def shapeCheck(
