@@ -80,7 +80,7 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
   val bias: Tensor[T] = if (noBias) null else Tensor[T](nOutputPlane)
 
   val gradWeight: Tensor[T] = Tensor[T]()
-  val gradBias: Tensor[T] = Tensor[T]()
+  val gradBias: Tensor[T] = if (noBias) null else Tensor[T](nOutputPlane)
   @transient private var columns: Tensor[T] = null
   @transient private var ones: Tensor[T] = null
   @transient private var zeroScalar: Tensor[T] = null
@@ -93,8 +93,6 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
   def getIm2ColTime(): Double = im2colTime
 
   def getCol2ImgTime(): Double = col2imTime
-
-  reset()
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
@@ -550,12 +548,16 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
 
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
-    gradBias.zero()
+    if(!noBias) {
+      gradBias.zero()
+    }
   }
 
   override def setup(): this.type = {
     gradWeight.resize(nInputPlane, nOutputPlane, kH, kW)
-    gradBias.resize(nOutputPlane)
+    if(!noBias) {
+      gradBias.resize(nOutputPlane)
+    }
     this
   }
 
@@ -617,7 +619,9 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
   override def clearState() : this.type = {
     super.clearState()
     gradWeight.set()
-    gradBias.set()
+    if(!noBias) {
+      gradBias.set()
+    }
     this
   }
 
