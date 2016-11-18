@@ -29,12 +29,8 @@ import scala.reflect.ClassTag
  * @param norm the norm of distance
  */
 class PairwiseDistance[@specialized(Float, Double) T: ClassTag](
-  val norm : Int = 0)
+  val norm : Int = 2)
   (implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
-  @transient private var diff: Tensor[T] = null
-  @transient private var outExpand: Tensor[T] = null
-  @transient private var grad: Tensor[T] = null
-  @transient private var ones: Tensor[T] = null
 
   override def updateOutput(input: Table): Tensor[T] = {
     output.resize(1)
@@ -42,12 +38,11 @@ class PairwiseDistance[@specialized(Float, Double) T: ClassTag](
       output.resize(1)
       output.setValue(1, input[Tensor[T]](1).dist(input(2), norm))
     } else if (input[Tensor[T]](1).dim() == 2) {
-      if (this.diff == null) {
-        this.diff = Tensor[T]()
-      }
-      this.diff.resizeAs(input(1))
+      val diff = Tensor[T]()
+      diff
+        .resizeAs(input(1))
+        .zero()
 
-      val diff = this.diff.zero()
       diff.add(input(1), ev.fromType[Int](-1), input(2))
       diff.abs()
 
@@ -104,9 +99,7 @@ class PairwiseDistance[@specialized(Float, Double) T: ClassTag](
     }
 
     if (input[Tensor[T]](1).dim() > 1) {
-      if (outExpand == null) {
-        outExpand = Tensor[T]()
-      }
+      val outExpand = Tensor[T]()
       outExpand
         .resize(output.size(1), 1)
         .copy(output)
@@ -125,12 +118,8 @@ class PairwiseDistance[@specialized(Float, Double) T: ClassTag](
     if (input[Tensor[T]](1).dim() == 1) {
       gradInput[Tensor[T]](1).mul(gradOutput(Array(1)))
     } else {
-      if (grad == null) {
-        grad = Tensor[T]()
-      }
-      if (ones == null) {
-        ones = Tensor[T]()
-      }
+      val grad = Tensor[T]()
+      val ones = Tensor[T]()
 
       grad
         .resizeAs(input[Tensor[T]](1))
@@ -153,5 +142,21 @@ class PairwiseDistance[@specialized(Float, Double) T: ClassTag](
 
   override def toString: String = {
     s"nn.PairwiseDistance"
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[PairwiseDistance[T]]
+
+
+  override def equals(other: Any): Boolean = other match {
+    case that: PairwiseDistance[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        norm == that.norm
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), norm)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
