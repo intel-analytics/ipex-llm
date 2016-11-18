@@ -242,6 +242,14 @@ trait TensorMath[T] {
   def cmax(value: T): Tensor[T]
 
   /**
+   * Performs the p-norm distance calculation between two tensors
+   * @param y the secode Tensor
+   * @param norm the norm of distance
+   * @return
+   */
+  def dist(y: Tensor[T], norm: Int): T
+
+  /**
    * Performs the element-wise multiplication of tensor1 by tensor2, multiply the result by the
    * scalar value (1 if not present) and add it to x. The number of elements must match, but sizes
    * do not matter.
