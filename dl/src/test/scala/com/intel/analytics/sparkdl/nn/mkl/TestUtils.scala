@@ -17,6 +17,7 @@
 
 package com.intel.analytics.sparkdl.nn.mkl
 
+import java.io.{File, PrintWriter}
 import java.nio.{ByteBuffer, ByteOrder}
 import java.nio.channels.FileChannel
 import java.nio.file.{Files, Paths, StandardOpenOption}
@@ -28,6 +29,7 @@ import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.sys.process._
 
 object Tools {
   def error[@specialized(Float, Double) T: ClassTag](tensor1: Tensor[T], tensor2: Tensor[T])(
@@ -102,16 +104,16 @@ object Tools {
    * @brief read "/tmp/<name>.bin" file to Tensor, which is used for comparing
    *        with IntelCaffe with MKL-DNN
    */
-  def getTensor[T : ClassTag](name: String, size: Array[Int],
-                              suffix : String = "")(implicit ev : TensorNumeric[T]): Tensor[T] = {
+  def getTensor[T: ClassTag](name: String, size: Array[Int], suffix: String = "")(
+      implicit ev: TensorNumeric[T]): Tensor[T] = {
     val tensor = Tensor[T]()
     val prefix = "/tmp/" + name + ".bin"
     val file = prefix + (if (!suffix.isEmpty) { "." + suffix } else "")
 
     if (Files.exists(Paths.get(file))) {
       tensor match {
-        case _:Tensor[Float] => setTensorFloat()
-        case _:Tensor[Double] => setTensorDouble()
+        case _: Tensor[Float] => setTensorFloat()
+        case _: Tensor[Double] => setTensorDouble()
       }
 
       def setTensorFloat(): Unit = {
@@ -134,8 +136,7 @@ object Tools {
   }
 
   // TODO delete this method.
-  def getTensorFloat(name: String, size: Array[Int],
-                     suffix : String = ""): Tensor[Float] = {
+  def getTensorFloat(name: String, size: Array[Int], suffix: String = ""): Tensor[Float] = {
     val tensor = Tensor[Float]()
     val file = if (!suffix.isEmpty) {
       "/tmp/" + name + ".bin." + suffix
@@ -150,16 +151,16 @@ object Tools {
     tensor
   }
 
-  def getPidFromString(log : String) : String = {
+  def getPidFromString(log: String): String = {
     val pattern = "SUFFIX WITH PID IS ([0-9]+)\n".r
     (pattern.findFirstIn(log)) match {
       case Some(pattern(v)) => v
-      case None    => throw new NoSuchElementException(s"dont found in ${log}")
+      case None => throw new NoSuchElementException(s"dont found in ${log}")
     }
   }
 
   def flattenModules(model: Module[Tensor[Float], Tensor[Float], Float],
-                     modules: ArrayBuffer[TensorModule[Float]]) : Unit = {
+                     modules: ArrayBuffer[TensorModule[Float]]): Unit = {
     if (model.modules.length >= 1) {
       for (i <- model.modules) {
         flattenModules(i.asInstanceOf[Module[Tensor[Float], Tensor[Float], Float]], modules)
@@ -171,16 +172,49 @@ object Tools {
 
   def getRandTimes(): Int = 3
 
-  def getCaffeHome() : String = "/home/wyz/workspace/caffe.intel/"
-  def getCollectCmd() : String = getCaffeHome() + "build/tools/caffe collect --model"
-  def getModuleHome() : String = "/home/wyz/workspace/performance/models_perf/models/"
+  def getCaffeHome(): String = "/home/wyz/workspace/caffe.intel/"
+  def getCollectCmd(): String = getCaffeHome() + "build/tools/caffe collect --model"
+  def getModuleHome(): String = "/home/wyz/workspace/performance/models_perf/models/"
+}
+
+object CaffeCollect {
+  def hasCaffe(): Boolean = {
+    val caffePath = System.getProperty("caffe_location")
+    val exitValue = if (caffePath != null) s"ls $caffePath".! else "which caffe".!
+    return exitValue == 0
+  }
+
+  def run(prototxt: String): Unit = {
+    def saveToFile(prototxt: String, name: String): String = {
+      val suffix = ".prototxt"
+      val tmpFile = java.io.File.createTempFile(name, ".prototxt")
+      val absolutePath = tmpFile.getAbsolutePath
+      val writer = new PrintWriter(tmpFile)
+      writer.println(prototxt)
+      writer.close()
+      absolutePath
+    }
+
+    def getCaffe(): String = {
+      val caffe = System.getProperty("caffe_location")
+      val cmd = if (caffe != null) caffe else "which caffe".!!.trim
+      cmd
+    }
+
+    val file = saveToFile(prototxt, "UnitTest")
+    val caffe = getCaffe()
+    val cmd = Seq(caffe, "collect", "--model", file)
+    val exitValue = Process(cmd, new File("/tmp")).!
+    assert(exitValue == 0)
+  }
 }
 
 // Just for test, get rid of random.
-class Dropout[@specialized(Float, Double) T: ClassTag]
-( val initP: Double = 0.5,
-  val inplace: Boolean = false,
-  var scale: Boolean = true)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+class Dropout[@specialized(Float, Double) T: ClassTag](
+    val initP: Double = 0.5,
+    val inplace: Boolean = false,
+    var scale: Boolean = true)(implicit ev: TensorNumeric[T])
+    extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     this.output.resizeAs(input).copy(input)
@@ -200,17 +234,14 @@ class Dropout[@specialized(Float, Double) T: ClassTag]
 /*
  * For truncate the float or double
  */
-class Dummy[@specialized(Float, Double) T: ClassTag]
-(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+class Dummy[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T])
+    extends TensorModule[T] {
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-//    gradInput = gradOutput.apply1(
-//      x => ev.fromType[Double]((math floor (ev.toType[Double](x)  * 1e5)) / 1e5)
-//    )
-//
-//    gradInput
-    gradInput = gradOutput
+    gradInput = gradOutput.apply1(
+      x => ev.fromType[Double]((math floor (ev.toType[Double](x) * 1e5)) / 1e5)
+    )
+
     gradInput
   }
 }
-
