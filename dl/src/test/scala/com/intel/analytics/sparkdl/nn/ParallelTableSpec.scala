@@ -21,7 +21,7 @@ import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 class ParallelTableSpec extends FlatSpec with Matchers {
-  "A MapTable" should "generate correct output" in {
+  "A ParallelTabl" should "generate correct output" in {
     val input = T(
       Tensor[Float](10).randn(),
       Tensor[Float](10).randn())
