@@ -902,6 +902,15 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this.apply1(x => ev.max(x, value))
   }
 
+  override def dist(y: Tensor[T], norm: Int): T = {
+    var sum = ev.fromType[Int](0)
+    this.map(y, (a, b) => {
+      sum = ev.plus(sum, ev.pow(ev.abs(ev.minus(b, a)), ev.fromType[Int](norm)))
+      a
+    })
+    ev.pow(sum, ev.divide(ev.fromType[Int](1), ev.fromType[Int](norm)))
+  }
+
   override def addcmul(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
     require(tensor1.nElement() == tensor2.nElement() && this.nElement() == tensor1.nElement())
 
@@ -1048,6 +1057,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
    * Performs the outer-product between vec1 (1D Tensor) and vec2 (1D Tensor).
    * Optional values v1 and v2 are scalars that multiply mat and vec1 [out] vec2 respectively.
    * In other words,res_ij = (v1 * mat_ij) + (v2 * vec1_i * vec2_j)
+   *
    * @param v1
    * @param t1
    * @param v2
@@ -1628,6 +1638,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   /**
    * returns the sum of the n-norms on the Tensor x
+   *
    * @param value the n-norms
    * @return
    */
@@ -1645,6 +1656,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   /**
    * returns a new Tensor with the sign (+/- 1 or 0) of the elements of x.
+   *
    * @return
    */
   override def sign(): Tensor[T] = {

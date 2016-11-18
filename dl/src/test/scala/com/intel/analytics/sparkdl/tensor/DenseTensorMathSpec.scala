@@ -21,6 +21,27 @@ import com.intel.analytics.sparkdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 class DenseTensorMathSpec extends FlatSpec with Matchers {
+  "a.dist(b, 1)" should "be correct" in {
+    val a: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
+    val b: Tensor[Double] = new DenseTensor(Storage(Array(2.0, 3.0, 4.0)))
+
+    a.dist(b, 1) should equal(3)
+  }
+
+  "a.dist(b, 2)" should "be correct" in {
+    val a: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
+    val b: Tensor[Double] = new DenseTensor(Storage(Array(3.0, 4.0, 5.0)))
+
+    a.dist(b, 2) should equal(math.sqrt(12))
+  }
+
+  "a.dist(b, 3)" should "be correct" in {
+    val a: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
+    val b: Tensor[Double] = new DenseTensor(Storage(Array(3.0, 4.0, 5.0)))
+
+    a.dist(b, 3) should equal(math.pow(24, 1.0 / 3))
+  }
+
   "vector + scalar" should "be correct" in {
     val s = 2.0
     val v: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
