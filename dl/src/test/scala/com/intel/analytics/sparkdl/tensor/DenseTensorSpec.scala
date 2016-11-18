@@ -556,14 +556,14 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   }
 
   "BreezeMatrix to Tensor" should "correct" in {
-    val matrix = new BrzDenseMatrix(2, 2, Array(1.0, 2.0, 3.0, 4.0))
+    val matrix = BrzDenseMatrix((1.0, 2.0), (3.0, 4.0))
     val tensor = Tensor(matrix)
     tensor(Array(1, 1)) should be(1.0)
     tensor(Array(1, 2)) should be(2.0)
     tensor(Array(2, 1)) should be(3.0)
     tensor(Array(2, 2)) should be(4.0)
 
-    val matrixTranspose = new BrzDenseMatrix(2, 2, Array(1.0, 2.0, 3.0, 4.0), 0, 2, true)
+    val matrixTranspose = BrzDenseMatrix((1.0, 2.0), (3.0, 4.0)).t
     val tensorTranspose = Tensor(matrixTranspose)
     tensorTranspose(Array(1, 1)) should be(1.0)
     tensorTranspose(Array(1, 2)) should be(3.0)

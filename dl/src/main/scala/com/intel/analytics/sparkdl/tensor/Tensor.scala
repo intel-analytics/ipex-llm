@@ -739,7 +739,7 @@ object Tensor {
   def apply[@specialized(Float, Double) T: ClassTag](matrix: BrzDenseMatrix[T])(
     implicit ev: TensorNumeric[T]): Tensor[T] = apply(Storage(matrix.data),
     matrix.offset + 1, Array(matrix.rows, matrix.cols),
-    if (matrix.isTranspose) Array(1, matrix.majorStride) else Array(matrix.majorStride, 1))
+    if (matrix.isTranspose) Array(matrix.majorStride, 1) else Array(1, matrix.majorStride))
 
   /**
    * create a tensor with a given spark Densematrix. The tensor will have the same size with
