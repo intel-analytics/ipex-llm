@@ -138,7 +138,7 @@ void MKLSum<DType>::firstPass()
 
   dnnError_t status = E_UNIMPLEMENTED;
   status = dnnSumCreate<DType>(&(this->backwardPrim), NULL, numSums, layout,
-                               this->coefficients);
+                               &this->coefficients[0]);
   CHECK_EQ(status, E_SUCCESS);
 
   this->input->createMklLayout(this->backwardPrim, dnnResourceDst);
