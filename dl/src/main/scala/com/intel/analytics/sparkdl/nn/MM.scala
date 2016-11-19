@@ -29,8 +29,8 @@ import scala.reflect.ClassTag
  * @param transB specifying whether or not transpose the second input matrix
  */
 class MM[T: ClassTag](
-  transA: Boolean = false,
-  transB: Boolean = false)
+  val transA: Boolean = false,
+  val transB: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
   gradInput = T(Tensor[T], Tensor[T]())
 
@@ -89,24 +89,20 @@ class MM[T: ClassTag](
     require(gradOutput.dim() == 2 || gradOutput.dim() == 3,
       "arguments must be a 2D or 3D Tensor")
 
-    var hDim, wDim = 0
-    var f: Tensor[T] => Tensor[T] => Tensor[T] => Tensor[T] =
-      t => m1 => m2 => t
-    if (gradOutput.dim() == 2) {
-      require(ma.dim() == 2, "first input tensor must be 2D")
-      require(mb.dim() == 2, "second input tensor must be 2D")
 
-      hDim = 1
-      wDim = 2
-      f = t => m1 => m2 => t.mm(m1, m2)
-    } else {
-      require(ma.dim() == 3, "first input tensor must be 3D")
-      require(mb.dim() == 3, "second input tensor must be 3D")
+    val (hDim, wDim, f): (Int, Int, Tensor[T] => Tensor[T] => Tensor[T] => Tensor[T]) =
+      if (gradOutput.dim() == 2) {
+        require(ma.dim() == 2, "first input tensor must be 2D")
+        require(mb.dim() == 2, "second input tensor must be 2D")
 
-      hDim = 2
-      wDim = 3
-      f = t => m1 => m2 => t.bmm(m1, m2)
-    }
+        (1, 2, t => m1 => m2 => t.mm(m1, m2))
+      } else {
+        require(ma.dim() == 3, "first input tensor must be 3D")
+        require(mb.dim() == 3, "second input tensor must be 3D")
+
+        (2, 3, t => m1 => m2 => t.bmm(m1, m2))
+      }
+
 
     if (transA == transB) {
       ma = ma.transpose(hDim, wDim)
@@ -126,5 +122,23 @@ class MM[T: ClassTag](
     }
 
     gradInput
+  }
+
+  override def toString: String = s"MM()"
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[MM[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: MM[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        transA == that.transA &&
+        transB == that.transB
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), transA, transB)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
