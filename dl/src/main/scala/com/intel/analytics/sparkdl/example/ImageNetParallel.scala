@@ -151,7 +151,7 @@ object ImageNetParallel {
     val optimizer = new BetterGradAggEpochOptimizer[Float](model, criterion,
       // val optimizer = new GradAggEpochOptimizer[Float](model, criterion,
       getOptimMethodFloat(params.masterOptM),
-      pm, dataSets, metrics, driverConfig)
+      pm, dataSets, metrics, 28, driverConfig)
     optimizer.addEvaluation("top1", EvaluateMethods.calcAccuracy)
     optimizer.addEvaluation("top5", EvaluateMethods.calcTop5Accuracy)
     optimizer.setTestDataSet(testDataSets)

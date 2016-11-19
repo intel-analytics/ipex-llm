@@ -31,10 +31,13 @@ object BetterOptimizerSpec {
   val input2: Tensor[Double] = Tensor[Double](Storage[Double](Array(1.0, 0.0, 1.0, 0.0)))
   val output2 = 1.0
   var plusOne = 0.0
+  val subModuleNumber = 4
 }
 
 class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
   with BeforeAndAfterAll {
+
+  import BetterOptimizerSpec.subModuleNumber
 
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
@@ -88,7 +91,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
           i += 1
         }
         (input, target)
-      }, 4, 4 * BetterGradAggEpochOptimizer.subModuleNumber, 1)
+      }, 4, 4 * subModuleNumber, 1)
 
 
     dataSet2 = new ShuffleBatchDataSet[(Int), Double](
@@ -109,8 +112,8 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
           i += 1
         }
         (input, target)
-      }, 4 * BetterGradAggEpochOptimizer.subModuleNumber,
-      4 * BetterGradAggEpochOptimizer.subModuleNumber, 1)
+      }, 4 * subModuleNumber,
+      4 * subModuleNumber, 1)
 
     RandomGenerator.RNG.setSeed(1000)
     mseWeight.fill(0.125)
@@ -128,7 +131,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
   "An Artificial Neural Network with MSE and LBFGS" should "be trained with good result" in {
     val pm = new AllReduceParameterManager[Double](mseWeight, dataSet.partitions())
     val optimizer = new BetterGradAggEpochOptimizer[Double](mseModule, new MSECriterion,
-      new LBFGS, pm, dataSet, new Metrics)
+      new LBFGS, pm, dataSet, new Metrics, subModuleNumber)
     optimizer.setMaxEpoch(5)
     optimizer.optimize()
 
@@ -143,7 +146,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
   it should "be same with grad agg optimizer" in {
     val pm = new OneReduceParameterManager[Double](mseWeight, dataSet.partitions())
     val optimizer = new BetterGradAggEpochOptimizer[Double](mseModule, new MSECriterion,
-      new LBFGS, pm, dataSet, new Metrics)
+      new LBFGS, pm, dataSet, new Metrics, subModuleNumber)
     optimizer.setMaxEpoch(1)
     optimizer.optimize()
 
@@ -167,7 +170,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
   it should "be same with grad agg optimizer with multi stack dataset" in {
     val pm = new OneReduceParameterManager[Double](mseWeight, dataSet.partitions())
     val optimizer = new BetterGradAggEpochOptimizer[Double](mseModule, new MSECriterion,
-      new LBFGS, pm, dataSet, new Metrics)
+      new LBFGS, pm, dataSet, new Metrics, subModuleNumber)
     optimizer.setMaxEpoch(1)
     optimizer.optimize()
 
@@ -191,7 +194,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
   "An Artificial Neural Network with MSE and SGD" should "be trained with good result" in {
     val pm = new AllReduceParameterManager[Double](mseWeight, dataSet.partitions())
     val optimizer = new BetterGradAggEpochOptimizer[Double](mseModule, new MSECriterion,
-      new SGD, pm, dataSet, new Metrics, T("learningRate" -> 20.0))
+      new SGD, pm, dataSet, new Metrics, subModuleNumber, T("learningRate" -> 20.0))
     optimizer.setMaxEpoch(5)
     optimizer.optimize()
 
@@ -206,7 +209,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
   it should "be same with grad agg optimizer" in {
     val pm = new AllReduceParameterManager[Double](mseWeight, dataSet.partitions())
     val optimizer = new BetterGradAggEpochOptimizer[Double](mseModule, new MSECriterion,
-      new SGD, pm, dataSet, new Metrics, T("learningRate" -> 20.0))
+      new SGD, pm, dataSet, new Metrics, subModuleNumber, T("learningRate" -> 20.0))
     optimizer.setMaxEpoch(1)
     optimizer.optimize()
 
@@ -229,7 +232,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
     plusOne = 1.0
     val pm = new AllReduceParameterManager[Double](crnWeight, dataSet.partitions())
     val optimizer = new BetterGradAggEpochOptimizer[Double](crnModule, new ClassNLLCriterion,
-      new LBFGS, pm, dataSet, new Metrics)
+      new LBFGS, pm, dataSet, new Metrics, subModuleNumber)
     optimizer.setMaxEpoch(3)
     optimizer.optimize()
 
@@ -245,7 +248,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
     plusOne = 1.0
     val pm = new AllReduceParameterManager[Double](crnWeight, dataSet.partitions())
     val optimizer = new BetterGradAggEpochOptimizer[Double](crnModule, new ClassNLLCriterion,
-      new LBFGS, pm, dataSet, new Metrics)
+      new LBFGS, pm, dataSet, new Metrics, subModuleNumber)
     optimizer.setMaxEpoch(3)
     optimizer.optimize()
 
@@ -268,7 +271,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
     plusOne = 1.0
     val pm = new AllReduceParameterManager[Double](crnWeight, dataSet.partitions())
     val optimizer = new BetterGradAggEpochOptimizer[Double](crnModule, new ClassNLLCriterion,
-      new SGD, pm, dataSet, new Metrics, T("learningRate" -> 20.0))
+      new SGD, pm, dataSet, new Metrics, subModuleNumber, T("learningRate" -> 20.0))
     optimizer.setMaxEpoch(1)
     optimizer.optimize()
 
@@ -285,7 +288,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
     plusOne = 1.0
     val pm = new AllReduceParameterManager[Double](crnWeight, dataSet.partitions())
     val optimizer = new BetterGradAggEpochOptimizer[Double](crnModule, new ClassNLLCriterion,
-      new SGD, pm, dataSet, new Metrics, T("learningRate" -> 20.0))
+      new SGD, pm, dataSet, new Metrics, subModuleNumber, T("learningRate" -> 20.0))
     optimizer.setMaxEpoch(1)
     optimizer.optimize()
 
