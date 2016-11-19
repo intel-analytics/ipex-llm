@@ -97,7 +97,7 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
     this
   }
 
-  def copyTo(storage: Array[Float], offset: Int) : Unit = {
+  def copyTo(storage: Array[Float], offset: Int): Unit = {
     val frameLength = width() * height()
     require(frameLength * 3 + offset <= storage.length)
     var j = 0
@@ -143,8 +143,8 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
     this
   }
 
-  def convertToByte(buffer : Array[Byte] = null, scaleTo: Float = 255.0f): Array[Byte] = {
-    val res = if(buffer == null) {
+  def convertToByte(buffer: Array[Byte] = null, scaleTo: Float = 255.0f): Array[Byte] = {
+    val res = if (buffer == null) {
       new Array[Byte](height() * width() * 3)
     } else {
       require(height() * width() <= buffer.length)
@@ -152,7 +152,7 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
     }
 
     var i = 0
-    while(i < height() * width() * 3) {
+    while (i < height() * width() * 3) {
       res(i) = (data(i) * scaleTo).toByte
       i += 1
     }
@@ -164,7 +164,7 @@ object RGBImage {
   val NO_SCALE = -1
 
   def readImage(path: Path, scaleTo: Int): Array[Byte] = {
-    var fis : FileInputStream = null
+    var fis: FileInputStream = null
     try {
       fis = new FileInputStream(path.toString)
       val channel = fis.getChannel

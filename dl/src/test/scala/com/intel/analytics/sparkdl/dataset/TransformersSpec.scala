@@ -458,13 +458,13 @@ class TransformersSpec extends FlatSpec with Matchers {
     dataSource.reset()
     var count = 0
     val readPipeline = seqDataSource -> SeqFileToArrayByte() -> ArrayByteToRGBImage()
-    readPipeline.zip(dataSource -> pathToImage).foreach {case (l, r) => {
+    readPipeline.zip(dataSource -> pathToImage).foreach { case (l, r) =>
       l.label() should be(r.label())
       l.width() should be(r.width())
       l.height() should be(r.height())
       l.content.zip(r.content).foreach(d => d._1 should be(d._2))
       count += 1
-    }}
+    }
 
     count should be(11)
   }
