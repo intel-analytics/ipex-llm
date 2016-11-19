@@ -33,8 +33,8 @@ import scala.concurrent.{Await, Future, ExecutionContext}
 import scala.reflect.ClassTag
 
 object BetterGradAggEpochOptimizer {
-  private var lossArray : Array[Double] = null
-  private var recordsArray : Array[Int] = null
+  private var lossArray: Array[Double] = null
+  private var recordsArray: Array[Int] = null
 
   private val maxThread = System.getProperty(
     "com.intel.analytics.sparkdl.optim.BetterGradAggEpochOptimizer.maxThread",
@@ -170,11 +170,11 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
 
             driverMetrics.add("prepare time", System.nanoTime() - tmp)
 
-            if(lossArray == null) {
+            if (lossArray == null) {
               lossArray = new Array[Double](subModuleNumber)
             }
 
-            if(recordsArray == null) {
+            if (recordsArray == null) {
               recordsArray = new Array[Int](subModuleNumber)
             }
 
@@ -212,7 +212,7 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
             val taskSize = gradLength / subModuleNumber
             val extraTask = gradLength % subModuleNumber
 
-            val parallelNum = if(taskSize == 0) extraTask else subModuleNumber
+            val parallelNum = if (taskSize == 0) extraTask else subModuleNumber
             (0 until parallelNum).map(tid => Future {
               val offset = tid * taskSize + math.min(tid, extraTask)
               val length = taskSize + (if (tid < extraTask) 1 else 0)
