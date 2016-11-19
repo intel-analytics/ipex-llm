@@ -95,4 +95,20 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
     modules.foreach(_.setup())
     this
   }
+
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Container[A, B, T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Container[A, B, T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        modules == that.modules
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), modules)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
