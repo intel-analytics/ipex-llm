@@ -21,40 +21,58 @@ import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.utils.T
 
 class ParallelTableSpec extends FlatSpec with Matchers {
-  class ParallelTableSpec extends FlatSpec with Matchers {
-    "hashcode()" should "behave correctly" in {
-      val m1 = new ParallelTable[Double]()
-      val m2 = new ParallelTable[Double]()
-      val m3 = new ParallelTable[Double]()
-      val log = new Log[Double]()
-      com.intel.analytics.sparkdl.tensor.Tensor
-      val input1 = Tensor[Double](3, 3).randn()
-      val input2 = Tensor[Double](3).randn()
-      val input = T(1 -> input1, 2 -> input2)
-      m3.forward(input)
+  "hashcode()" should "behave correctly" in {
+    val log = new Log[Double]()
+    val exp = new Exp[Double]()
+    val m1 = new ParallelTable[Double]()
+    m1.add(log)
+    m1.add(log)
+    val m2 = new ParallelTable[Double]()
+    m2.add(log)
+    m2.add(log)
+    val m3 = new ParallelTable[Double]()
+    m3.add(log)
+    m3.add(exp)
+    val m4 = new ParallelTable[Double]()
+    m4.add(log)
+    m4.add(log)
+    val input1 = Tensor[Double](3, 3).randn()
+    val input2 = Tensor[Double](3).randn()
+    val input = T(1 -> input1, 2 -> input2)
+    m4.forward(input)
 
-      m1.hashCode() should equal(m2.hashCode())
-      m1.hashCode() should not equal null
-      m1.hashCode() should not equal log.hashCode()
-      m1.hashCode() should not equal m3.hashCode()
-    }
+    m1.hashCode() should equal(m2.hashCode())
+    m1.hashCode() should not equal null
+    m1.hashCode() should not equal log.hashCode()
+    m1.hashCode() should not equal m3.hashCode()
+    m1.hashCode() should not equal m4.hashCode()
+  }
 
-    "equals()" should "behave correctly" in {
-      val m1 = new ParallelTable[Double]()
-      val m2 = new ParallelTable[Double]()
-      val m3 = new ParallelTable[Double]()
-      val log = new Log[Double]()
-      com.intel.analytics.sparkdl.tensor.Tensor
-      val input1 = Tensor[Double](3, 3).randn()
-      val input2 = Tensor[Double](3).randn()
-      val input = T(1 -> input1, 2 -> input2)
-      m3.forward(input)
+  "equals()" should "behave correctly" in {
+    val log = new Log[Double]()
+    val exp = new Exp[Double]()
+    val m1 = new ParallelTable[Double]()
+    m1.add(log)
+    m1.add(log)
+    val m2 = new ParallelTable[Double]()
+    m2.add(log)
+    m2.add(log)
+    val m3 = new ParallelTable[Double]()
+    m3.add(log)
+    m3.add(exp)
+    val m4 = new ParallelTable[Double]()
+    m4.add(log)
+    m4.add(log)
+    val input1 = Tensor[Double](3, 3).randn()
+    val input2 = Tensor[Double](3).randn()
+    val input = T(1 -> input1, 2 -> input2)
+    m4.forward(input)
 
-      m1 should equal(m2)
-      m1 should not equal null
-      m1 should not equal log
-      m1 should not equal m3
-    }
+    m1 should equal(m2)
+    m1 should not equal null
+    m1 should not equal log
+    m1 should not equal m3
+    m1 should not equal m4
   }
 
   "A ParallelTable" should "generate correct output" in {
