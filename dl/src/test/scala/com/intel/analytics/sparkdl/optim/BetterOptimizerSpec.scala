@@ -128,7 +128,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
     val pm = new AllReduceParameterManager[Double](mseWeight, dataSet.partitions())
     val optimizer = new BetterGradAggEpochOptimizer[Double](mseModule, new MSECriterion,
       new LBFGS, pm, dataSet, new Metrics)
-    optimizer.setMaxEpoch(1)
+    optimizer.setMaxEpoch(5)
     optimizer.optimize()
 
     mseWeight.copy(pm.getParameter())
@@ -191,7 +191,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
     val pm = new AllReduceParameterManager[Double](mseWeight, dataSet.partitions())
     val optimizer = new BetterGradAggEpochOptimizer[Double](mseModule, new MSECriterion,
       new SGD, pm, dataSet, new Metrics, T("learningRate" -> 20.0))
-    optimizer.setMaxEpoch(1)
+    optimizer.setMaxEpoch(5)
     optimizer.optimize()
 
     mseWeight.copy(pm.getParameter())
