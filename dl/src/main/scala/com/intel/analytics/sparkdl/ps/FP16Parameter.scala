@@ -64,7 +64,8 @@ class FP16Parameter[T: ClassTag](buffer: Array[Byte], bufferOffset: Int, bufferL
   override def bytes(): ByteBuffer = bytes(0, bufferLength / 2)
 
   override def bytes(offset: Int, length: Int): ByteBuffer = {
-    require(offset >= 0 && length > 0 && (offset + length) * 2 <= bufferLength, s"$offset $length $bufferLength")
+    require(offset >= 0 && length > 0 && (offset + length) * 2 <= bufferLength,
+      s"$offset $length $bufferLength")
     if (classTag[T] == classTag[Double]) {
       ByteBuffer.wrap(buffer, offset * 2 + bufferOffset, length * 2)
     } else if (classTag[T] == classTag[Float]) {

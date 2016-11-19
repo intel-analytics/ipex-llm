@@ -38,10 +38,11 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
 
-  import  EpochOptimizerSpec._
+  import EpochOptimizerSpec._
+
   var sc: SparkContext = null
 
-  var dataSet : ShuffleBatchDataSet[(Int), Double] = null
+  var dataSet: ShuffleBatchDataSet[(Int), Double] = null
 
   val (mseModule, mseWeight, mseGradient) = {
     val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
@@ -74,7 +75,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
         target.resize(Array(size))
         var i = 0
         while (i < size) {
-          if(i % 2 == 0) {
+          if (i % 2 == 0) {
             target.setValue(i + 1, output1 + plusOne)
             input.select(1, i + 1).copy(input1)
           } else {

@@ -107,8 +107,8 @@ object ImageNetParallel {
     val workerConfig = params.workerConfig.clone()
     workerConfig("profile") = true
 
-    //driverConfig("learningRateSchedule") = Poly(0.5, 62000)
-    //driverConfig("learningRateSchedule") = Poly(0.5, 90000)
+    // driverConfig("learningRateSchedule") = Poly(0.5, 62000)
+    // driverConfig("learningRateSchedule") = Poly(0.5, 90000)
     driverConfig("learningRateSchedule") = EpochStep(2, 0.96)
 
     val croppedData = if (cropImage) {
@@ -124,7 +124,7 @@ object ImageNetParallel {
     val parameter = model.getParameters()._1
     val metrics = new Metrics
     val dataSets = new MultiThreadShuffleBatchDataSet[(Float, Array[Byte]), Float](croppedData,
-    //val dataSets = new ShuffleBatchDataSet[(Float, Array[Byte]), Float](croppedData,
+      // val dataSets = new ShuffleBatchDataSet[(Float, Array[Byte]), Float](croppedData,
       if (cropImage) toTensorWithoutCrop(mean, std) else toTensor(mean, std),
       params.workerConfig[Int]("stack"), params.workerConfig[Int]("batch"))
     val pm = if (params.pmType == "allreduce") {
@@ -149,7 +149,7 @@ object ImageNetParallel {
       if (cropImage) toTensorWithoutCrop(mean, std) else toTensor(mean, std), 4, 4)
 
     val optimizer = new BetterGradAggEpochOptimizer[Float](model, criterion,
-    //val optimizer = new GradAggEpochOptimizer[Float](model, criterion,
+      // val optimizer = new GradAggEpochOptimizer[Float](model, criterion,
       getOptimMethodFloat(params.masterOptM),
       pm, dataSets, metrics, driverConfig)
     optimizer.addEvaluation("top1", EvaluateMethods.calcAccuracy)

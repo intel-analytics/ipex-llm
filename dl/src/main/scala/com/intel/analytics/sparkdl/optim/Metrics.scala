@@ -28,7 +28,8 @@ class Metrics extends Serializable {
   private val distributeMetricsMap: Map[String, DistributeMetricsEntry] = Map()
 
   def add(name: String, value: Double): this.type = {
-    require(localMetricsMap.contains(name) || aggregateDistributeMetricsMap.contains(name) || distributeMetricsMap.contains(name))
+    require(localMetricsMap.contains(name) || aggregateDistributeMetricsMap.contains(name) ||
+      distributeMetricsMap.contains(name))
     if (localMetricsMap.contains(name)) {
       localMetricsMap(name).value.addAndGet(value)
     }
@@ -61,7 +62,8 @@ class Metrics extends Serializable {
       aggregateDistributeMetricsMap(name).value.setValue(value)
       aggregateDistributeMetricsMap(name).parallel = parallel
     } else {
-      aggregateDistributeMetricsMap(name) = AggregateDistributeMetricsEntry(sc.accumulator(value, name), parallel)
+      aggregateDistributeMetricsMap(name) =
+        AggregateDistributeMetricsEntry(sc.accumulator(value, name), parallel)
     }
     this
   }
@@ -82,7 +84,8 @@ class Metrics extends Serializable {
     if (localMetricsMap.contains(name)) {
       (localMetricsMap(name).value.get(), localMetricsMap(name).parallel)
     } else {
-      (aggregateDistributeMetricsMap(name).value.value, aggregateDistributeMetricsMap(name).parallel)
+      (aggregateDistributeMetricsMap(name).value.value,
+        aggregateDistributeMetricsMap(name).parallel)
     }
   }
 
