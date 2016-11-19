@@ -32,13 +32,14 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future, ExecutionContext}
 
 object ImageNetSeqFileGenerator {
+
   case class ImageNetSeqFileGeneratorParams(
     folder: String = ".",
     output: String = ".",
     parallel: Int = 1,
-    blockSize : Int = 12800,
-    train : Boolean = true,
-    validate : Boolean = true
+    blockSize: Int = 12800,
+    train: Boolean = true,
+    validate: Boolean = true
   )
 
   private val parser = new OptionParser[ImageNetSeqFileGeneratorParams]("Spark-DL ImageNet " +
@@ -66,7 +67,7 @@ object ImageNetSeqFileGenerator {
 
   def main(args: Array[String]): Unit = {
     parser.parse(args, new ImageNetSeqFileGeneratorParams()).map(param => {
-      if(param.train) {
+      if (param.train) {
         // Process train data
         println("Process train data...")
         val trainFolderPath = Paths.get(param.folder, "train")
@@ -80,7 +81,7 @@ object ImageNetSeqFileGenerator {
               val pipeline = trainDataSource -> PathToRGBImage(256) ->
                 RGBImageToSequentialFile(param.blockSize, Paths.get(param.output, "train",
                   s"imagenet-seq-$tid"))
-              while(pipeline.hasNext) {
+              while (pipeline.hasNext) {
                 println(s"Generated file ${pipeline.next()}")
               }
             }
@@ -91,7 +92,7 @@ object ImageNetSeqFileGenerator {
         }).foreach(_.join())
       }
 
-      if(param.validate) {
+      if (param.validate) {
         // Process validation data
         println("Process validation data...")
         val validationFolderPath = Paths.get(param.folder, "val")
@@ -106,7 +107,7 @@ object ImageNetSeqFileGenerator {
               val pipeline = validationDataSource -> PathToRGBImage(256) ->
                 RGBImageToSequentialFile(param.blockSize, Paths.get(param.output, "val",
                   s"imagenet-seq-$tid"))
-              while(pipeline.hasNext) {
+              while (pipeline.hasNext) {
                 println(s"Generated file ${pipeline.next()}")
               }
             }
@@ -123,25 +124,27 @@ object ImageNetSeqFileGenerator {
 }
 
 object ImageNetLocal {
+
   case class ImageNetLocalParam(
     folder: String = "./",
     net: String = "alexnet",
     cache: String = "./",
     parallel: Int = 1
   )
+
   case class Config(
-    model : Module[Tensor[Float], Tensor[Float], Float],
-    criterion : Criterion[Tensor[Float], Float],
-    optimMethod : OptimMethod[Float],
-    imageSize : Int,
-    batchSize : Int,
-    momentum : Double,
-    weightDecay : Double,
-    testTrigger : Trigger,
-    cacheTrigger : Trigger,
-    endWhen : Trigger,
-    learningRate : Double,
-    learningRateSchedule : LearningRateSchedule
+    model: Module[Tensor[Float], Tensor[Float], Float],
+    criterion: Criterion[Tensor[Float], Float],
+    optimMethod: OptimMethod[Float],
+    imageSize: Int,
+    batchSize: Int,
+    momentum: Double,
+    weightDecay: Double,
+    testTrigger: Trigger,
+    cacheTrigger: Trigger,
+    endWhen: Trigger,
+    learningRate: Double,
+    learningRateSchedule: LearningRateSchedule
   )
 
   private val configs = Map(

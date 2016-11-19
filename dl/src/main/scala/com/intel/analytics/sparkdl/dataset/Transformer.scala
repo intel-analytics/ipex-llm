@@ -121,7 +121,7 @@ object RGBImageNormalizer {
   }
 
   def apply(dataSource: LocalDataSource[RGBImage], samples: Int = Int.MaxValue)
-      : RGBImageNormalizer = {
+  : RGBImageNormalizer = {
     var sumR: Double = 0
     var sumG: Double = 0
     var sumB: Double = 0
@@ -226,37 +226,38 @@ class PathToRGBImage(scaleTo: Int) extends Transformer[(Float, Path), RGBImage] 
 }
 
 object SeqFileToArrayByte {
-  def apply() : SeqFileToArrayByte = new SeqFileToArrayByte()
+  def apply(): SeqFileToArrayByte = new SeqFileToArrayByte()
 }
 
-class SeqFileToArrayByte extends Transformer[Path, (Float, Array[Byte])]{
+class SeqFileToArrayByte extends Transformer[Path, (Float, Array[Byte])] {
+
   import org.apache.hadoop.fs.{Path => hPath}
 
   @transient
-  private var key : Text = null
+  private var key: Text = null
 
   @transient
-  private var value : Text = null
+  private var value: Text = null
 
   @transient
-  private var reader : SequenceFile.Reader = null
+  private var reader: SequenceFile.Reader = null
 
   @transient
-  private var oneRecordBuffer : (Float, Array[Byte]) = null
+  private var oneRecordBuffer: (Float, Array[Byte]) = null
 
   override def transform(prev: Iterator[Path]): Iterator[(Float, Array[Byte])] = {
     new Iterator[(Float, Array[Byte])] {
       override def next(): (Float, Array[Byte]) = {
-        if(oneRecordBuffer != null) {
+        if (oneRecordBuffer != null) {
           val res = oneRecordBuffer
           oneRecordBuffer = null
           return res
         }
 
-        if(key == null) {
+        if (key == null) {
           key = new Text()
         }
-        if(value == null) {
+        if (value == null) {
           value = new Text
         }
         if (reader == null || !reader.next(key, value)) {
@@ -273,12 +274,12 @@ class SeqFileToArrayByte extends Transformer[Path, (Float, Array[Byte])]{
       }
 
       override def hasNext: Boolean = {
-        if(oneRecordBuffer != null) {
+        if (oneRecordBuffer != null) {
           true
-        } else if(reader == null) {
+        } else if (reader == null) {
           prev.hasNext
         } else {
-          if(reader.next(key, value)) {
+          if (reader.next(key, value)) {
             oneRecordBuffer = (key.toString.toFloat, value.copyBytes())
             return true
           } else {
@@ -485,12 +486,12 @@ class RGBImageToTensor(batchSize: Int) extends Transformer[RGBImage, (Tensor[Flo
 }
 
 object RGBImageToSequentialFile {
-  def apply(blockSize : Int, baseFileName : Path) : RGBImageToSequentialFile = {
+  def apply(blockSize: Int, baseFileName: Path): RGBImageToSequentialFile = {
     new RGBImageToSequentialFile(blockSize, baseFileName)
   }
 }
 
-class RGBImageToSequentialFile(blockSize : Int, baseFileName : Path) extends
+class RGBImageToSequentialFile(blockSize: Int, baseFileName: Path) extends
   Transformer[RGBImage, String] {
   private val conf: Configuration = new Configuration
   private var index = 0
@@ -507,7 +508,7 @@ class RGBImageToSequentialFile(blockSize : Int, baseFileName : Path) extends
           SequenceFile.Writer.keyClass(classOf[Text]),
           SequenceFile.Writer.valueClass(classOf[Text]))
         var i = 0
-        while(i < blockSize && prev.hasNext) {
+        while (i < blockSize && prev.hasNext) {
           val image = prev.next()
           preBuffer.putInt(image.width())
           preBuffer.putInt(image.height())
@@ -586,7 +587,7 @@ class MultiThreadRGBImageToSingleTensor[A: ClassTag](width: Int, height: Int,
       override def next(): (Tensor[Float], Tensor[Float]) = {
         val count = new AtomicInteger(0)
         (0 until batchSize).map(tid => Future {
-          if(iterators(tid).hasNext) {
+          if (iterators(tid).hasNext) {
             val position = count.getAndIncrement()
             val img = iterators(tid).next()
             img.copyTo(featureData, position * frameLength * 3)
