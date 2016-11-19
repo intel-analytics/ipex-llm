@@ -173,7 +173,7 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
 
             driverMetrics.add("prepare time", System.nanoTime() - tmp)
 
-            //======================Start train models===================================
+            // ======================Start train models===================================
             tmp = System.nanoTime()
             (0 until subModuleNumber).map(i => Future {
               val localModule = localMTCaches(i).model
