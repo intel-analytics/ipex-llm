@@ -412,19 +412,19 @@ trait TensorMath[T] {
    */
   def addmm(v1: T, M: Tensor[T], v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T]
 
-  // res = M + (mat1*mat2)
+  /** res = M + (mat1*mat2) */
   def addmm(M: Tensor[T], mat1: Tensor[T], mat2: Tensor[T]): Tensor[T]
 
-  // res = res + mat1 * mat2
+  /** res = res + mat1 * mat2 */
   def addmm(mat1: Tensor[T], mat2: Tensor[T]): Tensor[T]
 
-  // res = res + v2 * mat1 * mat2
+  /** res = res + v2 * mat1 * mat2 */
   def addmm(v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T]
 
-  // res = v1 * res + v2 * mat1*mat2
+  /** res = v1 * res + v2 * mat1*mat2 */
   def addmm(v1: T, v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T]
 
-  // res = mat1*mat2
+  /** res = mat1*mat2 */
   def mm(mat1: Tensor[T], mat2: Tensor[T]): Tensor[T]
 
   /**
@@ -478,13 +478,13 @@ trait TensorMath[T] {
    */
   def addmv(beta: T, vec1: Tensor[T], alpha: T, mat: Tensor[T], vec2: Tensor[T]): Tensor[T]
 
-  // res = beta * res + alpha * (mat * vec2)
+  /** res = beta * res + alpha * (mat * vec2) */
   def addmv(beta: T, alpha: T, mat: Tensor[T], vec2: Tensor[T]): Tensor[T]
 
-  // res = res + alpha * (mat * vec2)
+  /** res = res + alpha * (mat * vec2) */
   def addmv(alpha: T, mat: Tensor[T], vec2: Tensor[T]): Tensor[T]
 
-  // res = res + (mat * vec2)
+  /** res = res + (mat * vec2) */
   def mv(mat: Tensor[T], vec2: Tensor[T]): Tensor[T]
 
   /**
@@ -498,13 +498,13 @@ trait TensorMath[T] {
    */
   def baddbmm(beta: T, M: Tensor[T], alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T]
 
-  // res_i = (beta * res_i) + (alpha * batch1_i * batch2_i)
+  /** res_i = (beta * res_i) + (alpha * batch1_i * batch2_i) */
   def baddbmm(beta: T, alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T]
 
-  // res_i = res_i + (alpha * batch1_i * batch2_i)
+  /** res_i = res_i + (alpha * batch1_i * batch2_i) */
   def baddbmm(alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T]
 
-  // res_i = res_i + batch1_i * batch2_i
+  /** res_i = res_i + batch1_i * batch2_i */
   def bmm(batch1: Tensor[T], batch2: Tensor[T]): Tensor[T]
 
   /**

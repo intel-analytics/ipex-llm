@@ -579,19 +579,16 @@ object DenseTensorMath {
     require(M.size(3) == dim2, "output tensor of incorrect size")
 
     if (M != result) {
-      result.resizeAs(M)
-      result.copy(M)
+      result
+        .resizeAs(M)
+        .copy(M)
     }
-
-    var m1 = Tensor[T]()
-    var m2 = Tensor[T]()
-    var resultMatrix = Tensor[T]()
 
     var batch = 1
     while (batch <= batch1.size(1)) {
-      m1 = batch1.select(1, batch)
-      m2 = batch2.select(1, batch)
-      resultMatrix = result.select(1, batch)
+      val m1 = batch1.select(1, batch)
+      val m2 = batch2.select(1, batch)
+      val resultMatrix = result.select(1, batch)
 
       addmm(resultMatrix, beta, resultMatrix, alpha, m1, m2)
       batch += 1

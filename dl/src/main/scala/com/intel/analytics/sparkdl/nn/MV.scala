@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
  * producing a mini-batch.
  * @param trans whether make matrix transpose before multiplication
  */
-class MV[T: ClassTag](trans: Boolean = false)
+class MV[T: ClassTag](val trans: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
   gradInput = T(Tensor[T], Tensor[T]())
 
@@ -111,5 +111,22 @@ class MV[T: ClassTag](trans: Boolean = false)
     }
 
     gradInput
+  }
+
+  override def toString: String = s"MV()"
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[MV[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: MV[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        trans == that.trans
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), trans)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
