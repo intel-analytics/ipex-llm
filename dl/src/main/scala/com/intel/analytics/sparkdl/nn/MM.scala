@@ -126,7 +126,7 @@ class MM[T: ClassTag](
 
   override def toString: String = s"MM()"
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[MM[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[MM[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: MM[T] =>

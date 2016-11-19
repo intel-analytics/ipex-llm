@@ -115,7 +115,7 @@ class MV[T: ClassTag](val trans: Boolean = false)
 
   override def toString: String = s"MV()"
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[MV[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[MV[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: MV[T] =>
