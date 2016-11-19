@@ -33,12 +33,8 @@ import scala.concurrent.{Await, Future, ExecutionContext}
 import scala.reflect.ClassTag
 
 object BetterGradAggEpochOptimizer {
-  val subModuleNumber = System.getProperty(
-    "com.intel.analytics.sparkdl.optim.BetterGradAggEpochOptimizer.subModuleNumber",
-    (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
-
-  val lossArray = new Array[Double](subModuleNumber)
-  val recordsArray = new Array[Int](subModuleNumber)
+  private var lossArray : Array[Double] = null
+  private var recordsArray : Array[Int] = null
 
   private val maxThread = System.getProperty(
     "com.intel.analytics.sparkdl.optim.BetterGradAggEpochOptimizer.maxThread",
@@ -66,6 +62,7 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
   pm: ParameterManager[T],
   dataSets: DataSet[_, T] with HasEpoch,
   metrics: Metrics,
+  subModuleNumber: Int,
   config: Table = T())
   (implicit ev: TensorNumeric[T])
   extends EpochOptimizer[T](module, criterion, optm, pm, dataSets, metrics, config) {
@@ -173,6 +170,14 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
 
             driverMetrics.add("prepare time", System.nanoTime() - tmp)
 
+            if(lossArray == null) {
+              lossArray = new Array[Double](subModuleNumber)
+            }
+
+            if(recordsArray == null) {
+              recordsArray = new Array[Int](subModuleNumber)
+            }
+
             // ======================Start train models===================================
             tmp = System.nanoTime()
             (0 until subModuleNumber).map(i => Future {
@@ -207,7 +212,8 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
             val taskSize = gradLength / subModuleNumber
             val extraTask = gradLength % subModuleNumber
 
-            (0 until subModuleNumber).map(tid => Future {
+            val parallelNum = if(taskSize == 0) extraTask else subModuleNumber
+            (0 until parallelNum).map(tid => Future {
               val offset = tid * taskSize + math.min(tid, extraTask)
               val length = taskSize + (if (tid < extraTask) 1 else 0)
               var i = 0
