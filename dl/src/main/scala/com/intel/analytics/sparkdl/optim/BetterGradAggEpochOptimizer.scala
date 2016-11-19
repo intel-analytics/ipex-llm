@@ -56,7 +56,7 @@ object BetterGradAggEpochOptimizer {
     def reportFailure(t: Throwable) {}
   }
 
-  var thread : Thread = null
+  var thread: Thread = null
 }
 
 class BetterGradAggEpochOptimizer[T: ClassTag](
@@ -80,7 +80,8 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
         val localModule = broadcastModule.cloneModule()
         val localCriterion = broadcastCriterion.cloneCriterion()
         val (weights, grads) = localModule.getParameters()
-        CachedModel(localModule, localCriterion, weights, grads, T())}
+        CachedModel(localModule, localCriterion, weights, grads, T())
+      }
       Iterator(test.toArray)
     }).persist()
     models.setName("modelRDD")
@@ -149,7 +150,7 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
 
             val localEV = broadcastEV.value
             tmp = System.nanoTime()
-            if(thread != null) {
+            if (thread != null) {
               thread.join()
               thread = null
             }
@@ -160,7 +161,7 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
             val constructTensorTask = Future {
               val batch = data.next()
               var b = 0
-              while(b < subModuleNumber) {
+              while (b < subModuleNumber) {
                 tensorBuffer(b) = batch.next()
                 b += 1
               }
@@ -193,7 +194,7 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
             tmp = System.nanoTime()
             stackCount += tensorBuffer.size
             var i = 0
-            while(i < lossArray.length) {
+            while (i < lossArray.length) {
               lossSum += lossArray(i)
               recordsNum += recordsArray(i)
               i += 1
@@ -211,7 +212,7 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
               val length = taskSize + (if (tid < extraTask) 1 else 0)
               var i = 0
               while (i < grads.length) {
-                if(i == 0) {
+                if (i == 0) {
                   localCaches.gradient.narrow(1, offset + 1, length)
                     .copy(grads(i).narrow(1, offset + 1, length))
                 } else {
