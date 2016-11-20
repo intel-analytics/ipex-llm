@@ -141,4 +141,13 @@ class MM[T: ClassTag](
     val state = Seq(super.hashCode(), transA, transB)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
+
+  override def clearState(): MM.this.type = {
+    super.clearState()
+
+    gradInput[Tensor[T]](1).set()
+    gradInput[Tensor[T]](2).set()
+
+    this
+  }
 }
