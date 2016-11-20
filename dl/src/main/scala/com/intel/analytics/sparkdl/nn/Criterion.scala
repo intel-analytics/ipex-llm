@@ -57,6 +57,7 @@ abstract class Criterion[A <: Activities: ClassTag,
   override def equals(other: Any): Boolean = other match {
     case that: Criterion[A, T] =>
       (that canEqual this) &&
+        (that.getClass equals this.getClass) &&
         output == that.output
     case _ => false
   }
