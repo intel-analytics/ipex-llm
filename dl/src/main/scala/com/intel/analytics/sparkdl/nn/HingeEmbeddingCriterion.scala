@@ -18,7 +18,6 @@ package com.intel.analytics.sparkdl.nn
 
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
-import com.sun.prism.impl.Disposer.Target
 
 import scala.reflect.ClassTag
 
