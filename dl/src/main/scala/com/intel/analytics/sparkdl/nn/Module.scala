@@ -245,6 +245,7 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
   override def equals(other: Any): Boolean = other match {
     case that: Module[A, B, T] =>
       (that canEqual this) &&
+        (that.getClass equals this.getClass) &&
         output == that.output &&
         gradInput == that.gradInput
     case _ => false
