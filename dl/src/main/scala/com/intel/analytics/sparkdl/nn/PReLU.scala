@@ -40,15 +40,23 @@ class PReLU[T: ClassTag](
   val nOutputPlane: Int = 0)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  val weight: Tensor[T] = if (nOutputPlane == 0) {
-    Tensor[T](1).fill(ev.fromType[Double](0.25))
-  } else {
-    Tensor[T](nOutputPlane).fill(ev.fromType[Double](0.25))
-  }
-  gradWeight = if (nOutputPlane == 0) {
+  val weight = if (nOutputPlane == 0) {
     Tensor[T](1)
   } else {
     Tensor[T](nOutputPlane)
+  }
+  val gradWeight = if (nOutputPlane == 0) {
+    Tensor[T](1)
+  } else {
+    Tensor[T](nOutputPlane)
+  }
+
+  reset()
+
+  override def reset(): Unit = {
+    weight.fill(ev.fromType[Double](0.25))
+    setup()
+    zeroGradParameters()
   }
 
   @transient private var results: Array[Future[Unit]] = null
@@ -58,6 +66,7 @@ class PReLU[T: ClassTag](
     output.resizeAs(input)
 
     if (nOutputPlane == 0) {
+      // todo : the performance of contiguous tensor should be optimize
       val w = weight(Array(1))
       val func = new TensorFunc4[T] {
         override def apply (data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
@@ -132,6 +141,7 @@ class PReLU[T: ClassTag](
     gradInput.resizeAs(input)
 
     if (nOutputPlane == 0) {
+      // todo : the performance of contiguous tensor should be optimize
       val w = weight(Array(1))
       val func = new TensorFunc6[T] {
         override def apply (data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
@@ -210,6 +220,7 @@ class PReLU[T: ClassTag](
     require(input.nElement() == gradOutput.nElement())
 
     if (nOutputPlane == 0) {
+      // todo : the performance of contiguous tensor should be optimize
       var sum = ev.fromType[Int](0)
       val func = new TensorFunc4[T] {
         override def apply (data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
@@ -285,5 +296,33 @@ class PReLU[T: ClassTag](
 
   override def toString(): String = {
     s"nn.PReLU($nOutputPlane)"
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[PReLU[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: PReLU[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        weight == that.weight &&
+        gradWeight == that.gradWeight &&
+        nOutputPlane == that.nOutputPlane
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), weight, gradWeight, nOutputPlane)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def setup() : this.type = {
+    gradWeight.resizeAs(weight)
+    this
+  }
+
+  override def clearState() : this.type = {
+    super.clearState()
+    gradWeight.set()
+    this
   }
 }
