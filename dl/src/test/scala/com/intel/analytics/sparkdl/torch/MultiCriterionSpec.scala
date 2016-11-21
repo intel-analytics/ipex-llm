@@ -17,8 +17,7 @@
 package com.intel.analytics.sparkdl.torch
 
 import com.intel.analytics.sparkdl.nn._
-import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
-import com.intel.analytics.sparkdl.utils.Table
+import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
@@ -71,68 +70,6 @@ class MultiCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers{
   }
 
   "A MultiCriterion Module " should "generate correct output and grad with Table input" in {
-    val module = new MultiCriterion[Table, Double]()
-    val nll = new CosineEmbeddingCriterion[Double]()
-    val nll2 = new L1HingeEmbeddingCriterion[Double]()
-    module.add(nll, 0.5)
-    module.add(nll2)
-/*
-    val input1 = Tensor[Double](5).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](5).apply1(e => Random.nextDouble())
-    val input = new Table()
-    input(1.0) = input1
-    input(2.0) = input2
-
-    val target1 = Tensor[Double](5)
-    target1(Array(1)) = 1
-    target1(Array(2)) = 2
-    target1(Array(3)) = 3
-    target1(Array(4)) = 2
-    target1(Array(5)) = 1
-
-    val target2 = Tensor[Double](5)
-    target2(Array(1)) = 1
-    target2(Array(2)) = 4
-    target2(Array(3)) = 2
-    target2(Array(4)) = 4
-    target2(Array(5)) = 5
-
-    val target = new Table()
-    target(1.0) = target1
-    target(2.0) = target2
-*/
-    val input1 = Tensor[Double](5).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](5).apply1(e => Random.nextDouble())
-    val input = new Table()
-    input(1.0) = input1
-    input(2.0) = input2
-
-    val target = new Table()
-    val target1 = Tensor[Double](Storage(Array(-0.5)))
-    target(1.toDouble) = target1
-
-    val start = System.nanoTime()
-    val output = module.forward(input, target)
-    val gradInput = module.backward(input, target)
-    val end = System.nanoTime()
-    val scalaTime = end - start
-
-    val code = "nll = nn.CosineEmbeddingCriterion()\n" +
-      "nll2 = nn.L1HingeEmbeddingCriterion()\n" +
-      "module = nn.MultiCriterion():add(nll, 0.5):add(nll2)\n" +
-      "output = module:forward(input, target)\n" +
-      "gradInput = module:backward(input, target)\n"
-
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
-      Array("output", "gradInput"))
-
-    val luaOutput1 = torchResult("output").asInstanceOf[Double]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
-
-    luaOutput1 should be(output)
-    luaOutput2 should be(gradInput)
-
-    println("Test case : MultiCriterion, Torch : " + luaTime +
-      " s, Scala : " + scalaTime / 1e9 + " s")
+    // todo: need to check table input
   }
 }
