@@ -16,7 +16,6 @@
  */
 package com.intel.analytics.sparkdl.nn
 
-import com.intel.analytics.sparkdl.tensor.Tensor
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.utils.{Activities, T}
 
@@ -26,9 +25,10 @@ import scala.reflect.ClassTag
 /**
  * a weighted sum of other criterions each applied to the same input and target;
  */
-class MultiCriterion[A <: Activities: ClassTag, T: ClassTag](implicit ev: TensorNumeric[T]) extends Criterion[A, T] {
+class MultiCriterion[A <: Activities: ClassTag, T: ClassTag]
+(implicit ev: TensorNumeric[T]) extends Criterion[A, T] {
 
-  private var gradInput: Activities = null
+  private var gradInput: A = Activities[A, T]().asInstanceOf[A]
   private val weights = new ArrayBuffer[Double]
   private val criterions = T()
 
@@ -47,8 +47,8 @@ class MultiCriterion[A <: Activities: ClassTag, T: ClassTag](implicit ev: Tensor
   }
 
   override def updateGradInput(input: A, target: A): A = {
-    if (null == gradInput) gradInput = if (input.isInstanceOf[Tensor[T]]) Tensor[T]() else T()
-    gradInput = Utils.recursiveResizeAs[T](gradInput, input)
+    gradInput = Utils.recursiveResizeAs[T](gradInput.asInstanceOf[Activities],
+      input).asInstanceOf[A]
     Utils.recursiveFill[T](gradInput, 0)
     var i = 1
     while (i <= criterions.length) {
@@ -56,7 +56,7 @@ class MultiCriterion[A <: Activities: ClassTag, T: ClassTag](implicit ev: Tensor
         criterions[Criterion[A, T]](i).updateGradInput(input, target))
       i += 1
     }
-    gradInput.asInstanceOf[A]
+    gradInput
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[MultiCriterion[A, T]]

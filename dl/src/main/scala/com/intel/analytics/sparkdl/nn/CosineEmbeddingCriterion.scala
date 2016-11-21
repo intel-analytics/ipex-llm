@@ -85,7 +85,8 @@ class CosineEmbeddingCriterion[T: ClassTag]
 
     _idx.resizeAs(_y).eq(_y, ev.fromType(-1))
     if (ev.toType[Double](_idx.sum()) > 0) {
-      _outputs.maskedCopy(_idx, Tensor[T].maskedSelect(_idx, _outputs).add(ev.fromType(-margin)))
+      _outputs.maskedCopy(_idx, Tensor[T].maskedSelect(_idx, _outputs).
+        add(ev.fromType(-margin)).cmax(ev.fromType(0)))
     }
     _idx.resizeAs(_y).eq(_y, ev.fromType(1))
     if (ev.toType[Double](_idx.sum()) > 0) {

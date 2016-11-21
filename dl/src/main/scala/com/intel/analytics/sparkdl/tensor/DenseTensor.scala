@@ -1717,32 +1717,6 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
-  /**
-   * y = torch.range(x, y) returns a Tensor of size floor((y - x) / step) + 1 with values from
-   * x to y with step step (default to 1).
-   * @param xmin
-   * @param xmax
-   * @param step
-   * @return
-   */
-  override def range(xmin: Double, xmax: Double, step: Int = 1): Tensor[T] = {
-    require((xmax >= xmin) && (step > 0),
-      "upper bound and larger bound incoherent with step sign")
-    val size = ((xmax-xmin)/ step + 1).toInt
-    if (this.nElement() != size) this.resize(size)
-    var i = 0
-    // TODO: the performance of contiguous tensor should be optimize
-    val func = new TensorFunc2[T] {
-      override def apply(data1: Array[T], offset1: Int): Unit = {
-        data1(offset1) = ev.fromType(xmin + i * step)
-        i += 1
-      }
-    }
-    DenseTensorApply.apply1[T](this, func)
-    this
-  }
-
-
   override def addSingletonDimension(t: Tensor[T], dim: Int = 1): Tensor[T] = {
     require(dim > 0 && dim <= t.dim() + 1, s"invalid dimension: $dim. " +
       s"Tensor is of ${t.dim()} dimensions.")
