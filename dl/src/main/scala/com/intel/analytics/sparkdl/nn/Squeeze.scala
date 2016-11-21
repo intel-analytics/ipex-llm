@@ -65,4 +65,20 @@ class Squeeze[@specialized(Float, Double) T: ClassTag](
     s"nn.Squeeze(${if (dim != Int.MinValue) dim + ", " else ""}" +
       s"${if (numInputDims != Int.MinValue) numInputDims else ""})"
   }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Squeeze]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Squeeze[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        dim == that.dim &&
+        numInputDims == that.numInputDims
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), dim, numInputDims)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }

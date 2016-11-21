@@ -79,4 +79,20 @@ class Min[@specialized(Float, Double) T: ClassTag](
   override def toString(): String = {
     s"nn.Min($dim${if (numInputDims != Int.MinValue) ", " + numInputDims else ""})"
   }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Min]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Min[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        dim == that.dim &&
+        numInputDims == that.numInputDims
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), dim, numInputDims)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
