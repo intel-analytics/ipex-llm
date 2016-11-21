@@ -67,4 +67,20 @@ class Unsqueeze[T: ClassTag](
   override def toString(): String = {
     s"nn.Unsqueeze($pos${if (numInputDims != Int.MinValue) ", " + numInputDims else ""})"
   }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Unsqueeze]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Unsqueeze[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        pos == that.pos &&
+        numInputDims == that.numInputDims
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), pos, numInputDims)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
