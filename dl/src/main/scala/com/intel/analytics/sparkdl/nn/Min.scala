@@ -32,8 +32,8 @@ class Min[@specialized(Float, Double) T: ClassTag](
   var numInputDims: Int = Int.MinValue
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
 
-  @transient private var values: Tensor[T] = null
-  @transient private var indices: Tensor[T] = null
+  private val values: Tensor[T] = Tensor[T]()
+  private val indices: Tensor[T] = Tensor[T]()
 
   def setNumInputDims(numInputDims: Int): Unit = {
     this.numInputDims = numInputDims
@@ -51,9 +51,6 @@ class Min[@specialized(Float, Double) T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     val dimension = getPositiveDimension(input)
-
-    if (null == values) values = Tensor[T]()
-    if (null == indices) indices = Tensor[T]()
     input.min(values, indices, dimension)
     if (input.dim() > 1) {
       output.set(values.select(dimension, 1))
@@ -80,7 +77,7 @@ class Min[@specialized(Float, Double) T: ClassTag](
     s"nn.Min($dim${if (numInputDims != Int.MinValue) ", " + numInputDims else ""})"
   }
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[Min]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Min[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: Min[T] =>
@@ -94,5 +91,12 @@ class Min[@specialized(Float, Double) T: ClassTag](
   override def hashCode(): Int = {
     val state = Seq(super.hashCode(), dim, numInputDims)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def clearState() : this.type = {
+    super.clearState()
+    values.set()
+    indices.set()
+    this
   }
 }

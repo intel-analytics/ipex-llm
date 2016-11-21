@@ -68,7 +68,7 @@ class Unsqueeze[T: ClassTag](
     s"nn.Unsqueeze($pos${if (numInputDims != Int.MinValue) ", " + numInputDims else ""})"
   }
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[Unsqueeze]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Unsqueeze[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: Unsqueeze[T] =>
