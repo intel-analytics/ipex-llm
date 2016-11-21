@@ -67,7 +67,7 @@ class MarginCriterion[T: ClassTag]
     s"nn.MarginCriterion($margin)"
   }
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[MarginCriterion[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[MarginCriterion[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: MarginCriterion[T] =>

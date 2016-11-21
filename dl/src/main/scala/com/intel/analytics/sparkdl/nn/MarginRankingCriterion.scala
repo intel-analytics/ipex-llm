@@ -104,7 +104,7 @@ class MarginRankingCriterion[T: ClassTag]
     gradInput
   }
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[MarginRankingCriterion[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[MarginRankingCriterion[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: MarginRankingCriterion[T] =>
