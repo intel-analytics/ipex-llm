@@ -36,19 +36,15 @@ class MultiLabelMarginCriterion[T: ClassTag]
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     if (null == isTarget) isTarget = Tensor[T]()
-
-    var nframe: Int = 0
-    var dim: Int = 0
     require(input.nDimension() == 1 || input.nDimension() == 2, "vector or matrix expected")
-    if (input.nDimension() == 1) {
-      nframe = 1
-      dim = input.size(1)
-      require(target.nDimension() == 1 && target.size(1) == dim, "inconsistent target size")
+    val (nframe, dim) = if (input.nDimension() == 1) {
+      require(target.nDimension() == 1 && target.size(1) == input.size(1),
+        "inconsistent target size")
+      (1, input.size(1))
     } else {
-      nframe = input.size(1)
-      dim = input.size(2)
-      require(target.nDimension() == 2 && target.size(1) ==nframe &&
-        target.size(2) == dim, "inconsistent target size")
+      require(target.nDimension() == 2 && target.size(1) == input.size(1) &&
+        target.size(2) == input.size(2), "inconsistent target size")
+      (input.size(1), input.size(2))
     }
     require(ev.isGreaterEq(target.min(), ev.fromType(0)) &&
       ev.isGreaterEq(ev.fromType(dim), target.max()), "target out of range")
@@ -58,6 +54,8 @@ class MultiLabelMarginCriterion[T: ClassTag]
 
     val input_data = _input.storage().array()
     val target_data = _target.storage().array()
+    val input_offset = _input.storageOffset() - 1
+    val target_offset = _target.storageOffset() - 1
 
     isTarget.resizeAs(target).zero()
     val isTarget_data = isTarget.storage().array()
@@ -69,7 +67,7 @@ class MultiLabelMarginCriterion[T: ClassTag]
       var ddt = 0
       var dt = 0
       while (ddt < dim) {
-        val target_idx = ev.toType[Int](target_data(n + ddt)) - 1
+        val target_idx = ev.toType[Int](target_data(n + ddt + target_offset)) - 1
         if(target_idx >= 0) {
           isTarget_data(n + target_idx) = ev.fromType(1)
           ddt += 1
@@ -79,13 +77,14 @@ class MultiLabelMarginCriterion[T: ClassTag]
       }
 
       while (dt < dim) {
-        val  target_idx = ev.toType[Int](target_data(n + dt)) - 1
+        val  target_idx = ev.toType[Int](target_data(n + dt + target_offset)) - 1
         if (target_idx >= 0) {
-          val input_target = input_data(n + target_idx)
+          val input_target = input_data(n + target_idx + input_offset)
           var d = 0
           while (d < dim) {
             if (isTarget_data(n + d) == 0) {
-              val z = ev.plus(ev.minus(ev.fromType(1), input_target), input_data(n + d))
+              val z = ev.plus(ev.minus(ev.fromType(1), input_target),
+                input_data(n + d + input_offset))
               if (ev.isGreater(z, ev.fromType(0))) sum = ev.plus(sum, z)
             }
             d += 1
@@ -105,21 +104,20 @@ class MultiLabelMarginCriterion[T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    var nframe: Int = 0
-    var dim: Int = 0
-    require(input.nDimension() == 1 || input.nDimension() == 2, "vector or matrix expected")
-    if (input.nDimension() == 1) {
-      nframe = 1
-      dim = input.size(1)
-      require(target.nDimension() == 1 && target.size(1) == dim, "inconsistent target size")
-      require(isTarget.nDimension() == 1 && isTarget.size(1) == dim, "inconsistent isTarget size")
-    } else {
-      nframe = input.size(1)
-      dim = input.size(2)
-      require(target.nDimension() == 2 && target.size(1) ==nframe && target.size(2) == dim,
+    require(input.nDimension() == 1 || input.nDimension() == 2,
+      "vector or matrix expected")
+    val (nframe, dim) = if (input.nDimension() == 1) {
+      require(target.nDimension() == 1 && target.size(1) == input.size(1),
         "inconsistent target size")
-      require(isTarget.nDimension() == 2 && isTarget.size(1) ==nframe && isTarget.size(2) == dim,
+      require(isTarget.nDimension() == 1 && isTarget.size(1) == input.size(1),
         "inconsistent isTarget size")
+      (1, input.size(1))
+    } else {
+      require(target.nDimension() == 2 && target.size(1) == input.size(1) &&
+        target.size(2) == input.size(2), "inconsistent target size")
+      require(isTarget.nDimension() == 2 && isTarget.size(1) == input.size(1) &&
+        isTarget.size(2) == input.size(2), "inconsistent isTarget size")
+      (input.size(1), input.size(2))
     }
 
     require(ev.isGreaterEq(target.min(), ev.fromType(0)) &&
@@ -135,6 +133,10 @@ class MultiLabelMarginCriterion[T: ClassTag]
     val target_data = _target.storage().array()
     val isTarget_data = _isTarget.storage().array()
 
+    val input_offset = _input.storageOffset() - 1
+    val target_offset = _target.storageOffset() - 1
+    val isTarget_offset = _isTarget.storageOffset() - 1
+
     val g = ev.fromType(if (sizeAverage)  1.0/(nframe*dim) else 1.0/(dim))
 
     gradInput.resizeAs(input).zero()
@@ -145,13 +147,14 @@ class MultiLabelMarginCriterion[T: ClassTag]
     while (t < nframe) {
       var dt = 0
       while (dt < dim) {
-        val target_idx = ev.toType[Int](target_data(n + dt)) - 1
+        val target_idx = ev.toType[Int](target_data(n + dt + target_offset)) - 1
         if (target_idx >= 0) {
-          val input_target = input_data(n + target_idx)
+          val input_target = input_data(n + target_idx + input_offset)
           var d = 0
           while (d < dim) {
-            if (isTarget_data(n + d) == 0) {
-              val z = ev.plus(ev.minus(ev.fromType(1), input_target), input_data(d + n))
+            if (isTarget_data(n + d + isTarget_offset) == 0) {
+              val z = ev.plus(ev.minus(ev.fromType(1), input_target),
+                input_data(d + n + input_offset))
               if (ev.isGreater(z, ev.fromType(0))) {
                 gradInput_data(target_idx + n) = ev.minus(gradInput_data(target_idx + n), g)
                 gradInput_data(d + n) = ev.plus(gradInput_data(d + n), g)
@@ -176,7 +179,7 @@ class MultiLabelMarginCriterion[T: ClassTag]
     s"nn.MultiLabelMarginCriterion($sizeAverage)"
   }
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[MultiLabelMarginCriterion[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[MultiLabelMarginCriterion[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: MultiLabelMarginCriterion[T] =>

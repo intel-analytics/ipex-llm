@@ -145,12 +145,6 @@ trait TensorMath[T] {
   def max(): T
 
   /**
-   * returns the single smallest element of x
-   * @return
-   */
-  def min(): T
-
-  /**
    * performs the max operation over the dimension n
    * @param dim
    * @return
