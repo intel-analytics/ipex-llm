@@ -703,12 +703,6 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def max(): T = DenseTensorMath.maxAll(this)
 
-  /**
-   * returns the single smallest element of x
-   * @return
-   */
-  override def min(): T = DenseTensorMath.minAll(this)
-
   override def max(dim: Int): (Tensor[T], Tensor[T]) = {
     require(dim > 0 && dim <= this.nDimension, "dimension out of range")
     max(Tensor[T](), Tensor[T](), dim)

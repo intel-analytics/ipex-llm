@@ -59,7 +59,7 @@ class MultiMarginCriterionSpec extends FlatSpec with BeforeAndAfter with Matcher
   }
 
   "A MultiMarginCriterion " should "generate correct output and grad with " +
-    "two dimensions and weight not null" in {
+    "two dimensions and weights not null" in {
     val input = Tensor[Double](3, 2).apply1(e => Random.nextDouble())
     val target = Tensor[Double](3)
     target(Array(1)) = 1
@@ -98,7 +98,7 @@ class MultiMarginCriterionSpec extends FlatSpec with BeforeAndAfter with Matcher
     target(Array(2)) = 1
     target(Array(3)) = 2
 
-    val layer = new MultiMarginCriterion[Double](1, null)
+    val layer = new MultiMarginCriterion[Double](1)
     val start = System.nanoTime()
     val output = layer.forward(input, target)
     val gradInput = layer.backward(input, target)

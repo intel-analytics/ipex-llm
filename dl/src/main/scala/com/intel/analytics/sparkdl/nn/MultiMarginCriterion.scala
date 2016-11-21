@@ -29,10 +29,9 @@ import scala.reflect.ClassTag
  * @param margin
  * @param sizeAverage
  */
-class MultiMarginCriterion[T: ClassTag]
-(val p: Int = 1, val weights: Tensor[T], margin: Double = 1.0, val sizeAverage: Boolean = true)
+class MultiMarginCriterion[T: ClassTag](val p: Int = 1,
+ val weights: Tensor[T] = null, margin: Double = 1.0, val sizeAverage: Boolean = true)
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
-
   require(p == 1 || p == 2, "only p=1 and p=2 supported")
   if (null != weights) {
     require(weights.dim() == 1, "weights input should be 1-D Tensor")
@@ -40,17 +39,14 @@ class MultiMarginCriterion[T: ClassTag]
   var gradInput = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    var nframe: Int = 0
-    var dim: Int = 0
     require(input.nDimension() == 1 || input.nDimension() == 2, "vector or matrix expected")
 
-    if (input.nDimension() == 1) {
-      nframe = 1
-      dim = input.size(1)
+    val (nframe, dim) = if (input.nDimension() == 1) {
+      (1, input.size(1))
     } else {
-      nframe = input.size(1)
-      dim = input.size(2)
-      require(target.nDimension() == 1 && target.size(1) ==nframe, "inconsistent target size")
+      require(target.nDimension() == 1 && target.size(1) == input.size(1),
+        "inconsistent target size")
+      (input.size(1), input.size(2))
     }
 
     require(ev.isGreaterEq(target.min(), ev.fromType(0)) &&
@@ -64,18 +60,23 @@ class MultiMarginCriterion[T: ClassTag]
     val target_data = _target.storage().array()
     val weights_data = if (null != _weights) _weights.storage().array() else null
 
+    val input_offset = _input.storageOffset() - 1
+    val target_offset = _target.storageOffset() - 1
+    val weights_offset = if (null != _weights) _weights.storageOffset() - 1 else 0
+
     var sum: T = ev.fromType(0)
     var t = 0
     var n = 0
     while (t < nframe) {
-      val target_idx = ev.toType[Int](target_data(t)) - 1
-      val input_target = input_data(n + target_idx)
+      val target_idx = ev.toType[Int](target_data(t + target_offset)) - 1
+      val input_target = input_data(n + target_idx + input_offset)
       var d = 0
       while (d < dim) {
-        val z = ev.plus(ev.minus(ev.fromType(margin), input_target), input_data(n + d))
+        val z = ev.plus(ev.minus(ev.fromType(margin), input_target),
+          input_data(n + d + input_offset))
         if ((d != target_idx) && (ev.isGreater(z, ev.fromType(0)))) {
           var h = if (p == 1) z else ev.times(z, z)
-          if (null != weights_data) h = ev.times(h, weights_data(target_idx))
+          if (null != weights_data) h = ev.times(h, weights_data(target_idx + weights_offset))
           sum = ev.plus(sum, h)
         }
         d += 1
@@ -90,18 +91,15 @@ class MultiMarginCriterion[T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    var nframe: Int = 0
-    var dim: Int = 0
-    require(input.nDimension() == 1 || input.nDimension() == 2, "vector or matrix expected")
-    if (input.nDimension() == 1) {
-      nframe = 1
-      dim = input.size(1)
+    require(input.nDimension() == 1 || input.nDimension() == 2,
+      "vector or matrix expected")
+    val (nframe, dim) = if (input.nDimension() == 1) {
+      (1, input.size(1))
     } else {
-      nframe = input.size(1)
-      dim = input.size(2)
-      require(target.nDimension() == 1 && target.size(1) == nframe, "inconsistent target size")
+      require(target.nDimension() == 1 && target.size(1) == input.size(1),
+        "inconsistent target size")
+      (input.size(1), input.size(2))
     }
-
     val g = ev.fromType(if (sizeAverage)  1.0/(nframe*dim) else 1.0/(dim))
 
     val _target = target.contiguous()
@@ -112,14 +110,18 @@ class MultiMarginCriterion[T: ClassTag]
     val target_data = _target.storage().array()
     val weights_data = if (null != _weights) _weights.storage().array() else null
 
+    val input_offset = _input.storageOffset() - 1
+    val target_offset = _target.storageOffset() - 1
+    val weights_offset = if (null != _weights) _weights.storageOffset() - 1 else 0
+
     gradInput.resizeAs(input).zero()
     val gradInput_data = gradInput.storage().array()
 
     var t = 0
     var n = 0
     while (t < nframe) {
-      val target_idx = ev.toType[Int](target_data(t)) - 1
-      val input_target = input_data(n + target_idx)
+      val target_idx = ev.toType[Int](target_data(t + target_offset)) - 1
+      val input_target = input_data(n + target_idx + input_offset)
       var gradInput_target = ev.fromType(0)
 
       var d = 0
@@ -128,7 +130,7 @@ class MultiMarginCriterion[T: ClassTag]
         if (d != target_idx) {
           if (ev.isGreater(z, ev.fromType(0))) {
             var h = if (p == 1) g else ev.times(ev.fromType(2), ev.times(g, z))
-            if (null != weights_data) h = ev.times(h, weights_data(target_idx))
+            if (null != weights_data) h = ev.times(h, weights_data(target_idx + weights_offset))
             gradInput_target = ev.minus(gradInput_target, h)
             gradInput_data(n + d) = h
           } else {
@@ -149,7 +151,7 @@ class MultiMarginCriterion[T: ClassTag]
     s"nn.MultiMarginCriterion($sizeAverage, $weights, $margin)"
   }
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[MultiMarginCriterion[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[MultiMarginCriterion[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: MultiMarginCriterion[T] =>
