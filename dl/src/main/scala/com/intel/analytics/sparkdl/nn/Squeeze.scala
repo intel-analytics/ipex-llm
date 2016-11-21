@@ -66,7 +66,7 @@ class Squeeze[@specialized(Float, Double) T: ClassTag](
       s"${if (numInputDims != Int.MinValue) numInputDims else ""})"
   }
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[Squeeze]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Squeeze[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: Squeeze[T] =>
