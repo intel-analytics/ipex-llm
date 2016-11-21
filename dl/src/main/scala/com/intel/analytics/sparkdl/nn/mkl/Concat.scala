@@ -31,7 +31,8 @@ import com.intel.analytics.sparkdl.utils.Activities
 
 import scala.reflect.ClassTag
 
-class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])  extends Container[Tensor[T], Tensor[T], T] {
+class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])
+  extends Container[Tensor[T], Tensor[T], T] {
 
   private var size: Array[Int] = null
   private var gradouts: Array[Tensor[T]] = null

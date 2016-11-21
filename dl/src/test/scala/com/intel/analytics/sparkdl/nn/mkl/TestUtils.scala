@@ -23,9 +23,10 @@ import java.nio.channels.FileChannel
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.util.NoSuchElementException
 
-import com.intel.analytics.sparkdl.nn.{Module, TensorModule}
+import com.intel.analytics.sparkdl.nn.{Container, Module, TensorModule}
 import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import sun.awt.AWTAccessor.ContainerAccessor
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -161,16 +162,19 @@ object Tools {
 
   def flattenModules(model: Module[Tensor[Float], Tensor[Float], Float],
                      modules: ArrayBuffer[TensorModule[Float]]): Unit = {
-    if (model.modules.length >= 1) {
-      for (i <- model.modules) {
-        flattenModules(i.asInstanceOf[Module[Tensor[Float], Tensor[Float], Float]], modules)
-      }
-    } else {
-      modules += model.asInstanceOf[TensorModule[Float]]
+    model match {
+      case container : Container[Tensor[Float], Tensor[Float], Float] =>
+        if (container.modules.length >= 1) {
+          for (i <- container.modules) {
+            flattenModules(i.asInstanceOf[Module[Tensor[Float], Tensor[Float], Float]], modules)
+          }
+        }
+      case _ =>
+        modules += model.asInstanceOf[TensorModule[Float]]
     }
   }
 
-  def getRandTimes(): Int = 3
+  def getRandTimes(): Int = 10
 
   def getCaffeHome(): String = "/home/wyz/workspace/caffe.intel/"
   def getCollectCmd(): String = getCaffeHome() + "build/tools/caffe collect --model"

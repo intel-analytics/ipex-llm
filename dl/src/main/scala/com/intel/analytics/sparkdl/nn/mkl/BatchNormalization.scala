@@ -48,8 +48,8 @@ class SpatialBatchNormalization[@specialized(Float, Double) T: ClassTag](
 
   val weight: Tensor[T] = if (affine) Tensor[T](nOutput) else null
   val bias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
-  gradWeight = if (affine) Tensor[T](nOutput) else null
-  gradBias = if (affine) Tensor[T](nOutput) else null
+  val gradWeight = if (affine) Tensor[T](nOutput) else null
+  val gradBias = if (affine) Tensor[T](nOutput) else null
 
   val useWeight: Boolean = if (weight != null) true else false
   val useBias: Boolean = if (bias != null) true else false

@@ -85,11 +85,11 @@ class ConcatSpec extends FlatSpec with Matchers {
       outputDnn should be equals (outputBlas)
       gradInputDnn should be equals (gradInputBlas)
 
-      error2Tensor[T](outputDnn, outputBlas) should be(0.0 +- 1e-6)
-      error2Tensor[T](gradInputDnn, gradInputBlas) should be(0.0 +- 1e-6)
+      error2Tensor[T](outputDnn, outputBlas) should be(0.0 +- 2 * 1e-6)
+      error2Tensor[T](gradInputDnn, gradInputBlas) should be(0.0 +- 2 * 1e-6)
     }
 
-    for (i <- 0 until 100) {
+    for (i <- 0 until Tools.getRandTimes()) {
       test[Float]()
       test[Double]()
     }
@@ -144,11 +144,11 @@ class ConcatSpec extends FlatSpec with Matchers {
       outputDnn should be equals (outputBlas)
       gradInputDnn should be equals (gradInputBlas)
 
-      error2Tensor[T](outputDnn, outputBlas) should be(0.0 +- 1e-6)
-      error2Tensor[T](gradInputDnn, gradInputBlas) should be(0.0 +- 1e-6)
+      error2Tensor[T](outputDnn, outputBlas) should be(0.0 +- 2 * 1e-6)
+      error2Tensor[T](gradInputDnn, gradInputBlas) should be(0.0 +- 2 * 1e-6)
     }
 
-    for (i <- 0 until 100) {
+    for (i <- 0 until Tools.getRandTimes()) {
       test[Float]()
       test[Double]()
     }
@@ -220,7 +220,7 @@ class ConcatSpec extends FlatSpec with Matchers {
       error2Tensor[T](gradInputDnn, gradInputBlas) should be(0.0 +- 1e-5)
     }
 
-    for (i <- 0 until 100) {
+    for (i <- 0 until Tools.getRandTimes()) {
       test[Float]()
       test[Double]()
     }
@@ -297,7 +297,7 @@ class ConcatSpec extends FlatSpec with Matchers {
       error2Tensor[T](gradInputDnn, gradInputBlas) should be(0.0 +- 1e-5)
     }
 
-    for (i <- 0 until 100) {
+    for (i <- 0 until Tools.getRandTimes()) {
       test[Float]()
       test[Double]()
     }
@@ -363,7 +363,7 @@ class ConcatSpec extends FlatSpec with Matchers {
       Tools.averageError[T](gradInputDnn1, gradInputDnn2, "gradinput") should be(0.0 +- 1e-6)
     }
 
-    for (i <- 0 until 10) {
+    for (i <- 0 until Tools.getRandTimes()) {
       test[Float]()
       test[Double]()
     }
@@ -429,7 +429,7 @@ class ConcatSpec extends FlatSpec with Matchers {
       Tools.averageError[T](gradInputDnn1, gradInputDnn2, "gradinput") should be(0.0 +- 1e-6)
     }
 
-    for (i <- 0 until 10) {
+    for (i <- 0 until Tools.getRandTimes()) {
       test[Float]()
       test[Double]()
     }
@@ -529,7 +529,7 @@ class ConcatSpec extends FlatSpec with Matchers {
       Tools.averageError[T](gradInputDnn, gradInputBlas, "gradinput") should be(0.0 +- 1e-5)
     }
 
-    for (i <- 0 until 10) {
+    for (i <- 0 until Tools.getRandTimes()) {
       test[Float]()
       test[Double]()
     }
@@ -676,7 +676,7 @@ class ConcatSpec extends FlatSpec with Matchers {
       Tools.averageError[T](gradInputM1, gradInputM2, "gradInput") should be(0.0 +- 1e-5)
     }
 
-    for (i <- 0 until 3) {
+    for (i <- 0 until Tools.getRandTimes()) {
       test[Float]()
       test[Double]()
     }

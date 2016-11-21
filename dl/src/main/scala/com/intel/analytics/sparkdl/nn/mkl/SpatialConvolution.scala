@@ -36,6 +36,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     val padWidth: Int = 0,
     val padHeight: Int = 0,
     val groups: Int = 1,
+    val propagateBack: Boolean = true,
     private var initMethod: InitializationMethod = Default
 )(implicit ev: TensorNumeric[T])
     extends TensorModule[T] {
@@ -46,13 +47,13 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
 
   val weight: Tensor[T] = Tensor[T](groups, nOutputPlane / groups, nInputPlane / groups,
                                     kernelHeight, kernelWidth)
-  this.gradWeight =
+  val gradWeight =
     Tensor[T]().resizeAs(weight)
 //  val weight: Tensor[T] =
 //    Tensor[T](nOutputPlane, nInputPlane, kernelHeight, kernelWidth)
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
   this.gradInput = Tensor[T](nOutputPlane, nInputPlane, kernelHeight, kernelWidth)
-  this.gradBias = Tensor[T](nOutputPlane)
+  val gradBias = Tensor[T](nOutputPlane)
 //  this.gradWeight = Tensor[T](nOutputPlane, nInputPlane, kernelHeight, kernelWidth)
   val fInput = Tensor[T]()
   val fGradInput = Tensor[T]()
@@ -447,13 +448,6 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     s"""mkl.SpatialConvolution($nInputPlane -> $nOutputPlane,
        |$kernelWidth x $kernelHeight, $strideWidth, $strideHeight,
        |$padWidth, $padHeight)""".stripMargin.replaceAll("\n", " ")
-  }
-
-  override def findModel(paramOffset: Int,
-                         indexes: Array[Int]): (Module[Tensor[T], Tensor[T], T], Int, Array[Int]) = {
-    (this,
-     paramOffset - nOutputPlane * nInputPlane * kernelHeight * kernelWidth - nOutputPlane,
-     indexes)
   }
 
   // mkl-dnn's convolution_backward has done updateGradInput and accGradParameters,

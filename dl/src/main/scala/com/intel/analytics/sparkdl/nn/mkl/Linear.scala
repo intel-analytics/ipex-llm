@@ -34,8 +34,8 @@ class Linear[@specialized(Float, Double) T: ClassTag](
   val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
   val bias: Tensor[T] = Tensor[T](outputSize)
   val addBuffer: Tensor[T] = Tensor[T]()
-  this.gradWeight = Tensor[T](outputSize, inputSize)
-  this.gradBias = Tensor[T](outputSize)
+  val gradWeight = Tensor[T](outputSize, inputSize)
+  val gradBias = Tensor[T](outputSize)
 
   private var classPtr = 0L
   private var firstPass = true
@@ -325,11 +325,6 @@ class Linear[@specialized(Float, Double) T: ClassTag](
 
   override def toString(): String = {
     s"mkl.Linear($inputSize -> $outputSize)"
-  }
-
-  override def findModel(paramOffset: Int,
-                         indexes: Array[Int]): (Module[Tensor[T], Tensor[T], T], Int, Array[Int]) = {
-    (this, paramOffset - outputSize * inputSize - outputSize, indexes)
   }
 
 }
