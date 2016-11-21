@@ -23,7 +23,8 @@ import java.util
 import java.util.Collections
 import java.util.concurrent.{Executors, LinkedBlockingQueue}
 
-import com.intel.analytics.sparkdl.example.ImageNetLocal.{ColorJitter, ColorNormalize, Lighting}
+import com.intel.analytics.sparkdl.example.ImageNetLocal.{ColorJitter, ColorNormalize, HorizontalFlip, Lighting}
+
 import scala.util.control.Breaks._
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.tensor.Tensor
@@ -80,6 +81,7 @@ object ImageNetUtils {
         if (!valFlag) {
           ColorJitter.randomOrder(input(i))
           Lighting.lighting(input(i))
+          HorizontalFlip.hflip(input(i))
         }
         ColorNormalize.colorNormalize(input(i))
       }

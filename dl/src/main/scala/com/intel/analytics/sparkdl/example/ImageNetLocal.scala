@@ -294,6 +294,7 @@ object ImageNetLocal {
 
     run(donkey, dataSet, netType, classNum, labelsMap, testInterval,
       donkeyVal, dataSetVal, batchSize, modelPath, modelDepth)
+
   }
 
 
@@ -328,6 +329,22 @@ object ImageNetLocal {
           .cmul(eigval.view(1, 3).expand(Array(3, 3)))
           .sum(2).squeeze
         for (i <- 1 to 3) input(i).add(rgb.storage().array()(i-1))
+      }
+    }
+  }
+  object HorizontalFlip {
+    def hflip(input: Tensor[Float]): Unit = {
+      val prob: Float = 0.5.toFloat
+      if (RNG.uniform(0, 1).toFloat < prob) {
+        val channels = input.size(1)
+        val height = input.size(2)
+        val width: Int = input.size(3)
+        val halfWidth: Int = width >> 1
+        for (i <- 1 to channels; j <- 1 to height; k <- 1 to halfWidth) {
+          val tmp = input(Array(i, j, k))
+          input(Array(i, j, k)) = input(Array(i, j, (width-k+1)))
+          input(Array(i, j, (width-k+1))) = tmp
+        }
       }
     }
   }
