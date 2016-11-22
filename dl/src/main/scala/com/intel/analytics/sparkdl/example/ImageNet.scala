@@ -83,12 +83,12 @@ object ImageNetUtils {
           cropFloat(data, input.size(3), input.size(4), mean, std, features,
             (_i-1) * featureShape.product)
           targets(_i-1) = label
-          if (!valFlag) {
-            ColorJitter.randomOrder(input(_i))
-            Lighting.lighting(input(_i))
-            HorizontalFlip.hflip(input(_i))
-          }
-          ColorNormalize.colorNormalize(input(_i))
+//          if (!valFlag) {
+//            ColorJitter.randomOrder(input(_i))
+//            Lighting.lighting(input(_i))
+//            HorizontalFlip.hflip(input(_i))
+//          }
+//          ColorNormalize.colorNormalize(input(_i))
         }(Engine.getInstance())
       }.foreach(Await.result(_, Duration.Inf))
       //ColorJitter.RandomOrder(input)
