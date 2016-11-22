@@ -496,7 +496,7 @@ class HFlip(threshold : Double) extends Transformer[RGBImage, RGBImage] {
   override def transform(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
     prev.map(img => {
       if(RandomGenerator.RNG.uniform(0, 1) >= threshold) {
-        img.flip()
+        img.hflip()
       } else {
         img
       }

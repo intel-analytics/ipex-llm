@@ -177,7 +177,7 @@ object ImageNetParallel {
       val (label, data) = images(i)
       cropFloat(data, input.size(3), input.size(4), mean, std, features, i * featureSize)
       if(RandomGenerator.RNG.uniform(0, 1) > 0.5) {
-        RGBImage.flip(features, input.size(3), input.size(4))
+        RGBImage.hflip(features, input.size(3), input.size(4))
       }
       targets(i) = label
       i += 1

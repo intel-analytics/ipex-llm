@@ -29,7 +29,7 @@ class ImageSpec extends FlatSpec with Matchers {
       ),
       3, 3, 1)
 
-    image.flip()
+    image.hflip()
     val flippedData = Array[Float](
       7, 8, 9, 4, 5, 6, 1, 2, 3,
       17, 18, 19, 14, 15, 16, 11, 12, 13,
@@ -48,7 +48,7 @@ class ImageSpec extends FlatSpec with Matchers {
       ),
       4, 3, 1)
 
-    image.flip()
+    image.hflip()
     val flippedData = Array[Float](
       10, 11, 12, 7, 8, 9, 4, 5, 6, 1, 2, 3,
       20, 21, 22, 17, 18, 19, 14, 15, 16, 11, 12, 13,
