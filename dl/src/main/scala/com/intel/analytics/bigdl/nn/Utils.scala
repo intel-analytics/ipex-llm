@@ -25,6 +25,39 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect.ClassTag
 
 object Utils {
+  /**
+   * This method recursively keep the shape of the source table `t2` and
+   * set the elements of each tensor to zero, saving the result on the destination
+   * table `t1`
+   * Notice that `t1` and `t2` can only contain tables or tensors
+   * @param t1 is the destination table
+   * @param t2 is the source table
+   * @return
+   */
+  def zeroTableCopy[T : ClassTag](t1: Table, t2: Table)(
+    implicit ev: TensorNumeric[T]): Table = {
+    for ((k, v) <- t2.getState()) {
+      if (v.isInstanceOf[Table]) {
+        t1.update(k, zeroTableCopy(if (t1.contains(k)) t1(k) else T(), t2(k)))
+      } else {
+        require(v.isInstanceOf[Tensor[T]], "Input can only consist of Tensor or Table")
+        val tensorV = v.asInstanceOf[Tensor[T]]
+        if (!t1.contains(k)) {
+          t1.update(k, tensorV.clone().zero())
+        } else {
+          t1[Tensor[T]](k).resizeAs(tensorV)
+          t1[Tensor[T]](k).zero()
+        }
+      }
+    }
+    for ((k, v) <- t1.getState()) {
+      if (!t2.contains(k)) {
+        t1.update(k, null)
+      }
+    }
+
+    t1
+  }
 
   /**
    * Resize table target as table src.
@@ -113,7 +146,7 @@ object Utils {
       require(x.toTable.length() == y.toTable.length(), "x, y should have the same size")
       var i = 1
       while (i <= x.toTable.length()) {
-        recursiveTensorApply2[T](x, y, func)
+        recursiveTensorApply2[T](x.toTable(i), y.toTable(i), func)
         i += 1
       }
     }
