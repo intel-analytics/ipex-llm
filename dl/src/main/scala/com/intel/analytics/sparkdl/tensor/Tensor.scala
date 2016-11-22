@@ -752,4 +752,70 @@ object Tensor {
    */
   def repeatTensor[T](tensor: Tensor[T], sizes: Int*): Tensor[T] =
     tensor.repeatTensor(sizes.toArray)
+
+
+  /**
+    * Horizontally flip an image. Src and dst can be the same tensor.
+    * @param src
+    * @param dst
+    * @return dst
+    */
+  def hflip[@specialized(Float, Double) T: ClassTag](src: Tensor[T], dst: Tensor[T]
+                                                    )(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(src.dim() == 3 && dst.dim() == 3, "only 3D tensor supported")
+    require(src.size().deep == dst.size().deep, "src and dst should have the same size")
+
+    val width = dst.size(3)
+    val height = dst.size(2)
+    val channels = dst.size(1)
+
+    val is = src.stride()
+    val os = dst.stride()
+    val dstArray = dst.storage().array()
+    val srcArray = dst.storage().array()
+    val dstOffset = dst.storageOffset() - 1
+    val srcOffset = src.storageOffset() - 1
+
+    if (dst != src) {
+      // not in-place
+      var k = 0
+      while (k < channels) {
+        var y = 0
+        while (y < height) {
+          var x = 0
+          while (x < width) {
+            dstArray(dstOffset + k*os(0) + y*os(1) + (width-x-1)*os(2)) =
+              srcArray(srcOffset + k*is(0) + y*is(1) + x*is(2))
+            x += 1
+          }
+          y += 1
+        }
+        k += 1
+      }
+    } else {
+      // in-place
+      val halfWidth = width >> 1
+      var k = 0
+      while (k < channels) {
+        var y = 0
+        while (y < height) {
+          var x = 0
+          while (x < halfWidth) {
+            val swap = dstArray(dstOffset + k*is(0) + y*is(1) + (width-x-1)*is(2))
+            dstArray(dstOffset + k*is(0) + y*is(1) + (width-x-1)*is(2)) =
+              srcArray(srcOffset + k*is(0) + y*is(1) + x*is(2))
+            srcArray(srcOffset + k*is(0) + y*is(1) + x*is(2)) = swap
+            x += 1
+          }
+          y += 1
+        }
+        k += 1
+      }
+    }
+
+    dst
+  }
+
+
+
 }

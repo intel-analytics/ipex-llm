@@ -28,7 +28,10 @@ import com.intel.analytics.sparkdl.example.ImageNetLocal.{ColorJitter, ColorNorm
 import scala.util.control.Breaks._
 import com.intel.analytics.sparkdl.utils.RandomGenerator._
 import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.sparkdl.utils.Engine
 
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future}
 import scala.util.Random
 
 object ImageNetUtils {
@@ -73,18 +76,21 @@ object ImageNetUtils {
       var i = 0
       val features = input.storage().array()
       val targets = target.storage().array()
-      seq.foreach { case (label, data) =>
-        cropFloat(data, input.size(3), input.size(4), mean, std, features,
-          i * featureShape.product)
-        targets(i) = label
+      seq.map { case (label, data) =>
         i += 1
-        if (!valFlag) {
-          ColorJitter.randomOrder(input(i))
-          Lighting.lighting(input(i))
-          HorizontalFlip.hflip(input(i))
-        }
-        ColorNormalize.colorNormalize(input(i))
-      }
+        val _i = i
+        Future {
+          cropFloat(data, input.size(3), input.size(4), mean, std, features,
+            (_i-1) * featureShape.product)
+          targets(i) = label
+          if (!valFlag) {
+            ColorJitter.randomOrder(input(_i))
+            Lighting.lighting(input(_i))
+            HorizontalFlip.hflip(input(_i))
+          }
+          ColorNormalize.colorNormalize(input(_i))
+        }(Engine.getInstance())
+      }.foreach(Await.result(_, Duration.Inf))
       //ColorJitter.RandomOrder(input)
       (input, target)
     })
