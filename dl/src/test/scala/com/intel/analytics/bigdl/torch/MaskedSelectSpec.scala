@@ -14,12 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.sparkdl.torch
+package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.sparkdl.nn.MaskedSelect
-import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.utils.RandomGenerator._
-import com.intel.analytics.sparkdl.utils.Table
+import com.intel.analytics.bigdl.nn.MaskedSelect
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Table
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
@@ -33,10 +32,7 @@ class MaskedSelectSpec extends FlatSpec with BeforeAndAfter with Matchers{
   }
 
   "A MaskedSelect Module " should "generate correct output and grad" in {
-    val seed = 100
-    RNG.setSeed(seed)
     val module = new MaskedSelect[Double]()
-
     val input1 = Tensor[Double](2, 2).apply1(e => Random.nextDouble())
     val input2 = Tensor[Double](2, 2)
     input2(Array(1, 1)) = 1
@@ -45,21 +41,16 @@ class MaskedSelectSpec extends FlatSpec with BeforeAndAfter with Matchers{
     input2(Array(2, 2)) = 1
 
     val input = new Table()
-    input(1.toDouble) = input1
-    input(2.toDouble) = input2
+    input(1.0) = input1
+    input(2.0) = input2
 
-    val gradOutput = Tensor[Double](5)
-    gradOutput(Array(1)) = 2
-    gradOutput(Array(2)) = 5
-    gradOutput(Array(3)) = 10
-    gradOutput(Array(4)) = 17
-    gradOutput(Array(5)) = 26
+    val gradOutput = Tensor[Double](5).apply1(e => Random.nextDouble())
 
-    val code = "torch.manualSeed(" + seed + ")\n" +
-      "module = nn.MaskedSelect()\n" +
+    val code = "module = nn.MaskedSelect()\n" +
       "mask = torch.ByteTensor({{1, 0}, {0, 1}})\n" +
       "output = module:forward({input1, mask})\n" +
-      "gradInput = module:backward({input1, mask}, gradOutput)\n"
+      "gradInput = module:backward({input1, mask}, gradOutput)\n" +
+      "gradInput[2] = gradInput[2]:double()"
 
     val (luaTime, torchResult) = TH.run(code, Map("input1" -> input1, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
@@ -73,15 +64,8 @@ class MaskedSelectSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    luaOutput1 should be(output)
-
-    val luagradInput1 = luaOutput2.get(1.0).getOrElse(null)
-    val luagradInput2 = luaOutput2.get(2.0).getOrElse(null)
-
-    val gradInput1 = gradInput.apply(1.toDouble).asInstanceOf[Tensor[Double]]
-    val gradInput2 = gradInput.apply(2.toDouble).asInstanceOf[Tensor[Double]]
-    gradInput1 should be(luagradInput1)
-    // gradInput2 should be(luagradInput2)
+    output should be(luaOutput1)
+    gradInput should equal (new Table(luaOutput2))
 
     println("Test case : MaskedSelect, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")

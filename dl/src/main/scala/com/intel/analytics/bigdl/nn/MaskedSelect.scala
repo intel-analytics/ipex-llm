@@ -14,11 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.sparkdl.nn
-
-import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.utils.Table
+package com.intel.analytics.bigdl.nn
 
 import scala.reflect.ClassTag
 
@@ -73,5 +69,20 @@ class MaskedSelect[T: ClassTag]
 
   override def toString(): String = {
     s"nn.MaskedSelect"
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[MaskedSelect[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: MaskedSelect[T] =>
+      super.equals(that) &&
+        (that canEqual this)
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode())
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
