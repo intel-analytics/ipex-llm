@@ -487,15 +487,15 @@ class RGBImageToTensor(batchSize: Int) extends Transformer[RGBImage, (Tensor[Flo
 }
 
 object HFlip {
-  def apply(threshold : Double) : HFlip = {
+  def apply(threshold: Double): HFlip = {
     new HFlip(threshold)
   }
 }
 
-class HFlip(threshold : Double) extends Transformer[RGBImage, RGBImage] {
+class HFlip(threshold: Double) extends Transformer[RGBImage, RGBImage] {
   override def transform(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
     prev.map(img => {
-      if(RandomGenerator.RNG.uniform(0, 1) >= threshold) {
+      if (RandomGenerator.RNG.uniform(0, 1) >= threshold) {
         img.hflip()
       } else {
         img
