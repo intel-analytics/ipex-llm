@@ -82,7 +82,7 @@ object ImageNetUtils {
         Future {
           cropFloat(data, input.size(3), input.size(4), mean, std, features,
             (_i-1) * featureShape.product)
-          targets(i) = label
+          targets(_i-1) = label
           if (!valFlag) {
             ColorJitter.randomOrder(input(_i))
             Lighting.lighting(input(_i))
