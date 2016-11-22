@@ -148,8 +148,8 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
    *
    * @return
    */
-  def flip(): RGBImage = {
-    RGBImage.flip(data, height(), width())
+  def hflip(): RGBImage = {
+    RGBImage.hflip(data, height(), width())
     this
   }
 
@@ -171,7 +171,7 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
 }
 
 object RGBImage {
-  def flip(data : Array[Float], height : Int, width : Int): Unit = {
+  def hflip(data : Array[Float], height : Int, width : Int): Unit = {
     var y = 0
     while (y < height) {
       var x = 0
