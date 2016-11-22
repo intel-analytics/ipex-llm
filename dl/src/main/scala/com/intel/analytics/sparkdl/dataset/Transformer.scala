@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
 
 import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import com.intel.analytics.sparkdl.utils.RandomGenerator
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.SequenceFile.Reader
@@ -482,6 +483,24 @@ class RGBImageToTensor(batchSize: Int) extends Transformer[RGBImage, (Tensor[Flo
         }
       }
     }
+  }
+}
+
+object HFlip {
+  def apply(threshold : Double) : HFlip = {
+    new HFlip(threshold)
+  }
+}
+
+class HFlip(threshold : Double) extends Transformer[RGBImage, RGBImage] {
+  override def transform(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
+    prev.map(img => {
+      if(RandomGenerator.RNG.uniform(0, 1) >= threshold) {
+        img.flip()
+      } else {
+        img
+      }
+    })
   }
 }
 

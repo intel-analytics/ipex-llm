@@ -17,6 +17,7 @@
 
 package com.intel.analytics.sparkdl.example
 
+import com.intel.analytics.sparkdl.dataset.RGBImage
 import com.intel.analytics.sparkdl.example.ImageNetUtils._
 import com.intel.analytics.sparkdl.example.Utils._
 import com.intel.analytics.sparkdl.models.imagenet.GoogleNet_v2_NoAuxClassifier
@@ -26,7 +27,7 @@ import com.intel.analytics.sparkdl.optim.SGD
 import com.intel.analytics.sparkdl.optim.SGD.{EpochStep, EpochSchedule, Poly, Regime}
 import com.intel.analytics.sparkdl.ps.{AllReduceParameterManager, OneReduceParameterManager}
 import com.intel.analytics.sparkdl.tensor._
-import com.intel.analytics.sparkdl.utils.T
+import com.intel.analytics.sparkdl.utils.{RandomGenerator, T}
 import org.apache.hadoop.io.Text
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.rdd.RDD
@@ -175,6 +176,9 @@ object ImageNetParallel {
     while (i < size) {
       val (label, data) = images(i)
       cropFloat(data, input.size(3), input.size(4), mean, std, features, i * featureSize)
+      if(RandomGenerator.RNG.uniform(0, 1) > 0.5) {
+        RGBImage.flip(features, input.size(3), input.size(4))
+      }
       targets(i) = label
       i += 1
     }

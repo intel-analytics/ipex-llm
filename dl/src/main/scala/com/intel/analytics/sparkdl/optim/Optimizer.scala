@@ -51,16 +51,21 @@ abstract class Optimizer[@specialized(Float, Double) T](
     this
   }
 
+  def overWriteCache() : this.type = {
+    isOverWrite = true
+    this
+  }
+
   protected def saveModel(postfix: String = ""): this.type = {
     if (this.cachePath.isDefined) {
-      File.save(model, s"${cachePath.get}.model$postfix", isOverWrite)
+      model.save(s"${cachePath.get}.model$postfix", isOverWrite)
     }
     this
   }
 
   protected def saveState(state: Table, postfix: String = ""): this.type = {
     if (this.cachePath.isDefined) {
-      File.save(state, s"${cachePath.get}.state$postfix", isOverWrite)
+      state.save(s"${cachePath.get}.state$postfix", isOverWrite)
     }
     this
   }

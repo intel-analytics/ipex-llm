@@ -143,6 +143,16 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
     this
   }
 
+  /**
+   * horizontal flip the image, modify itself
+   *
+   * @return
+   */
+  def flip(): RGBImage = {
+    RGBImage.flip(data, height(), width())
+    this
+  }
+
   def convertToByte(buffer: Array[Byte] = null, scaleTo: Float = 255.0f): Array[Byte] = {
     val res = if (buffer == null) {
       new Array[Byte](height() * width() * 3)
@@ -161,6 +171,29 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
 }
 
 object RGBImage {
+  def flip(data : Array[Float], height : Int, width : Int): Unit = {
+    var y = 0
+    while (y < height) {
+      var x = 0
+      while (x < width / 2) {
+        var swap = 0.0f
+        swap = data((y * width + x) * 3)
+        data((y * width + x) * 3) = data((y * width + width - x - 1) * 3)
+        data((y * width + width - x - 1) * 3) = swap
+
+        swap = data((y * width + x) * 3 + 1)
+        data((y * width + x) * 3 + 1) = data((y * width + width - x - 1) * 3 + 1)
+        data((y * width + width - x - 1) * 3 + 1) = swap
+
+        swap = data((y * width + x) * 3 + 2)
+        data((y * width + x) * 3 + 2) = data((y * width + width - x - 1) * 3 + 2)
+        data((y * width + width - x - 1) * 3 + 2) = swap
+        x += 1
+      }
+      y += 1
+    }
+  }
+
   val NO_SCALE = -1
 
   def readImage(path: Path, scaleTo: Int): Array[Byte] = {

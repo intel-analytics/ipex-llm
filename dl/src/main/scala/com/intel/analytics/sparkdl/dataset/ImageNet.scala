@@ -210,7 +210,16 @@ object ImageNetLocal {
       val arrayToImage = ArrayByteToRGBImage()
       val cropper = RGBImageCropper(cropWidth = config.imageSize, cropHeight = config.imageSize)
       val normalizer = RGBImageNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
-      val multiThreadToTensor = MultiThreadRGBImageToSingleTensor[Path](
+      val flipper = HFlip(0.5)
+      val trainMultiThreadToTensor = MultiThreadRGBImageToSingleTensor[Path](
+        width = configs(param.net).imageSize,
+        height = configs(param.net).imageSize,
+        threadNum = param.parallel,
+        batchSize = config.batchSize,
+        transformer = fileTransformer + arrayToImage + cropper + flipper + normalizer
+      )
+
+      val validationMultiThreadToTensor = MultiThreadRGBImageToSingleTensor[Path](
         width = configs(param.net).imageSize,
         height = configs(param.net).imageSize,
         threadNum = param.parallel,
@@ -219,8 +228,8 @@ object ImageNetLocal {
       )
 
       val optimizer = new LocalOptimizer[Float](
-        data = trainDataSource -> multiThreadToTensor,
-        validationData = validationDataSource -> (multiThreadToTensor.cloneTransformer()),
+        data = trainDataSource -> trainMultiThreadToTensor,
+        validationData = validationDataSource -> validationMultiThreadToTensor,
         model = config.model,
         criterion = config.criterion,
         optimMethod = config.optimMethod,
@@ -237,6 +246,7 @@ object ImageNetLocal {
       optimizer.setValidationTrigger(config.testTrigger)
       optimizer.addValidation(new Top1Accuracy[Float])
       optimizer.addValidation(new Top5Accuracy[Float])
+      optimizer.overWriteCache()
       optimizer.optimize()
     })
   }
