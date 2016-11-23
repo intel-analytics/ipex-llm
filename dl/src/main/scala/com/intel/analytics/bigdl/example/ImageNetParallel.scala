@@ -108,16 +108,16 @@ object ImageNetParallel {
     val workerConfig = params.workerConfig.clone()
     workerConfig("profile") = true
 
-    // driverConfig("learningRateSchedule") = Poly(0.5, 62000)
+    driverConfig("learningRateSchedule") = Poly(0.5, 62000)
     // driverConfig("learningRateSchedule") = Poly(0.5, 90000)
     // driverConfig("learningRateSchedule") = EpochStep(2, 0.96)
-    driverConfig("learningRateSchedule") = EpochSchedule(Array(
+    /* driverConfig("learningRateSchedule") = EpochSchedule(Array(
       Regime(1, 18, T("learningRate" -> 1e-2, "weightDecay" -> 5e-4)),
       Regime(19, 29, T("learningRate" -> 5e-3, "weightDecay" -> 5e-4)),
       Regime(30, 43, T("learningRate" -> 1e-3, "weightDecay" -> 0.0)),
       Regime(44, 52, T("learningRate" -> 5e-4, "weightDecay" -> 0.0)),
       Regime(53, 1000, T("learningRate" -> 1e-4, "weightDecay" -> 0.0))
-    ))
+    ))*/
 
     val croppedData = if (cropImage) {
       loadCroppedData(trainFiles, sc, labelsMap, classNum + 0.5).coalesce(partitionNum, true)

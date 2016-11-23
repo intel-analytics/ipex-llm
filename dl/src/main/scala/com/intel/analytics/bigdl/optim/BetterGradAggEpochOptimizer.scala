@@ -71,9 +71,10 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
 
   private def init() = {
     val broadcast = dataSet.getSparkContext().broadcast((module, criterion))
+    val _subModuleNumber = subModuleNumber
     val models = dataSet.partitions().mapPartitions(_ => {
       val (broadcastModule, broadcastCriterion) = broadcast.value
-      val test = (0 until subModuleNumber).map { _ =>
+      val test = (0 until _subModuleNumber).map { _ =>
         val localModule = broadcastModule.cloneModule()
         val localCriterion = broadcastCriterion.cloneCriterion()
         val (weights, grads) = localModule.getParameters()
@@ -100,6 +101,7 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
     var wallClockTime = 0L
     val epochNum = maxEpoch.getOrElse(20)
     val state = T()
+    val _subModuleNumber = subModuleNumber
     for (i <- 1 to epochNum) {
       logInfo(s"[Epoch $i/$epochNum] Train start")
       val epochStart = System.nanoTime()
@@ -140,7 +142,7 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
             val localCaches = modelIter.next()
             val syncWeightTask = Future {
               weights.next() // Update local weights
-              (0 until subModuleNumber).map(i => Future {
+              (0 until _subModuleNumber).map(i => Future {
                 localMTCaches(i).weight.copy(localCaches.weight)
               }(context)).foreach(Await.result(_, Duration.Inf))
             }(context)
@@ -154,11 +156,11 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
             driverMetrics.add("init gradient time", System.nanoTime() - tmp)
 
             tmp = System.nanoTime()
-            val tensorBuffer = new Array[(Tensor[T], Tensor[T])](subModuleNumber)
+            val tensorBuffer = new Array[(Tensor[T], Tensor[T])](_subModuleNumber)
             val constructTensorTask = Future {
               val batch = data.next()
               var b = 0
-              while (b < subModuleNumber) {
+              while (b < _subModuleNumber) {
                 tensorBuffer(b) = batch.next()
                 b += 1
               }
@@ -171,16 +173,16 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
             driverMetrics.add("prepare time", System.nanoTime() - tmp)
 
             if (lossArray == null) {
-              lossArray = new Array[Double](subModuleNumber)
+              lossArray = new Array[Double](_subModuleNumber)
             }
 
             if (recordsArray == null) {
-              recordsArray = new Array[Int](subModuleNumber)
+              recordsArray = new Array[Int](_subModuleNumber)
             }
 
             // ======================Start train models===================================
             tmp = System.nanoTime()
-            (0 until subModuleNumber).map(i => Future {
+            (0 until _subModuleNumber).map(i => Future {
               val localModule = localMTCaches(i).model
               localModule.training()
               val localCriterion = localMTCaches(i).criterion
@@ -209,10 +211,10 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
             tmp = System.nanoTime()
             val grads = localMTCaches.map(_.gradient)
             val gradLength = grads(0).nElement()
-            val taskSize = gradLength / subModuleNumber
-            val extraTask = gradLength % subModuleNumber
+            val taskSize = gradLength / _subModuleNumber
+            val extraTask = gradLength % _subModuleNumber
 
-            val parallelNum = if (taskSize == 0) extraTask else subModuleNumber
+            val parallelNum = if (taskSize == 0) extraTask else _subModuleNumber
             (0 until parallelNum).map(tid => Future {
               val offset = tid * taskSize + math.min(tid, extraTask)
               val length = taskSize + (if (tid < extraTask) 1 else 0)
@@ -232,7 +234,7 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
 
             thread = new Thread(new Runnable {
               override def run(): Unit = {
-                (0 until subModuleNumber).map(i => Future {
+                (0 until _subModuleNumber).map(i => Future {
                   localMTCaches(i).model.training()
                   localMTCaches(i).model.zeroGradParameters()
                 }(context)).foreach(Await.result(_, Duration.Inf))
@@ -246,7 +248,7 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
         val driverEV = ev
         val optM = optm
         val configDriver = config
-        val driverParNum = partitionNum * subModuleNumber
+        val driverParNum = partitionNum * _subModuleNumber
         pm.sumAndUpdate(resultRDD, (weights, gradients, state) => {
           gradients.div(driverEV.fromType[Int](driverParNum))
           optM.optimize(_ => (driverEV.fromType(lossSum.value / stackCount.value), gradients),
