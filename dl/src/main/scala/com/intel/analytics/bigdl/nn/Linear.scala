@@ -32,8 +32,8 @@ class Linear[@specialized(Float, Double) T: ClassTag](
   val bias: Tensor[T] = Tensor[T](outputSize)
   val addBuffer: Tensor[T] = Tensor[T]()
 
-  val gradWeight: Tensor[T] = Tensor[T]()
-  val gradBias: Tensor[T] = Tensor[T]()
+  val gradWeight: Tensor[T] = Tensor[T](outputSize, inputSize)
+  val gradBias: Tensor[T] = Tensor[T](outputSize)
   reset()
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {
@@ -54,7 +54,6 @@ class Linear[@specialized(Float, Double) T: ClassTag](
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
     }
-    setup()
     zeroGradParameters()
   }
 
@@ -124,16 +123,8 @@ class Linear[@specialized(Float, Double) T: ClassTag](
     gradBias.zero()
   }
 
-  override def setup(): this.type = {
-    gradWeight.resize(outputSize, inputSize)
-    gradBias.resize(outputSize)
-    this
-  }
-
   override def clearState() : this.type = {
     super.clearState()
-    gradWeight.set()
-    gradBias.set()
     addBuffer.set()
     this
   }

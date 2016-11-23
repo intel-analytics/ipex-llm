@@ -48,8 +48,8 @@ class Bilinear[T: ClassTag](inputSize1: Int,
   var buff1: Tensor[T] = Tensor[T]()
   var buff2: Tensor[T] = Tensor[T]()
 
-  val gradWeight: Tensor[T] = Tensor[T]()
-  val gradBias: Tensor[T] = Tensor[T]()
+  val gradWeight: Tensor[T] = Tensor[T](outputSize, inputSize1, inputSize2)
+  val gradBias: Tensor[T] = Tensor[T](outputSize)
 
   reset()
 
@@ -57,7 +57,6 @@ class Bilinear[T: ClassTag](inputSize1: Int,
     val stdv = 1.0 / math.sqrt(weight.size(2))
     weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
     if (null != bias ) bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-    setup()
     zeroGradParameters()
   }
 
@@ -167,16 +166,8 @@ class Bilinear[T: ClassTag](inputSize1: Int,
     gradBias.zero()
   }
 
-  override def setup() : this.type = {
-    gradWeight.resize(outputSize, inputSize1, inputSize2)
-    gradBias.resize(outputSize)
-    this
-  }
-
   override def clearState() : this.type = {
     super.clearState()
-    gradWeight.set()
-    gradBias.set()
     buff1.set()
     buff2.set()
     this

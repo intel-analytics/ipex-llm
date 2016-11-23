@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
 class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
-  val gradWeight = Tensor[T]()
+  val gradWeight = Tensor[T](outputSize, inputSize)
   val weight = Tensor[T](outputSize, inputSize)
 
   @transient
@@ -55,7 +55,6 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   override def reset(): Unit = {
     val stdv = 1 / math.sqrt(weight.size(1))
     weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-    setup()
     zeroGradParameters()
   }
 
@@ -174,19 +173,6 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
   }
-
-  override def setup(): this.type = {
-    super.setup()
-    gradWeight.resize(outputSize, inputSize)
-    this
-  }
-
-  override def clearState(): this.type = {
-    super.clearState()
-    gradWeight.set()
-    this
-  }
-
 
   override def toString(): String = {
     s"nn.Cosine($inputSize, $outputSize)"

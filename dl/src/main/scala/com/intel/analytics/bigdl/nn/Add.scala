@@ -34,14 +34,13 @@ class Add[T: ClassTag](inputSize: Int
 
   val ones : Tensor[T] = Tensor[T]()
 
-  val gradBias : Tensor[T] = Tensor[T]()
+  val gradBias : Tensor[T] = Tensor[T](inputSize)
 
   reset()
 
   override def reset(): Unit = {
     val stdv = 1 / math.sqrt(bias.size(1))
     bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-    setup()
     zeroGradParameters()
   }
 
@@ -85,15 +84,8 @@ class Add[T: ClassTag](inputSize: Int
     gradBias.zero()
   }
 
-  override def setup() : this.type = {
-    super.setup()
-    gradBias.resize(inputSize)
-    this
-  }
-
   override def clearState() : this.type = {
     super.clearState()
-    gradBias.set()
     ones.set()
     this
   }

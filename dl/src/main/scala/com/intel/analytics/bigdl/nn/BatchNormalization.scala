@@ -45,8 +45,8 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   val weight: Tensor[T] = if (affine) Tensor[T](nOutput) else null
   val bias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
 
-  val gradWeight: Tensor[T] = Tensor[T]()
-  val gradBias: Tensor[T] = Tensor[T]()
+  val gradWeight: Tensor[T] = if (affine) Tensor[T](nOutput) else null
+  val gradBias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
 
   @transient
   private var results : Array[Future[_]] = null
@@ -64,7 +64,6 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
 
     runningMean.zero()
     runningVar.fill(ev.fromType[Int](1))
-    setup()
     zeroGradParameters()
   }
 
@@ -566,19 +565,6 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
     gradBias.zero()
-  }
-
-  override def setup(): this.type = {
-    if (affine) gradWeight.resize(nOutput)
-    if (affine) gradBias.resize(nOutput)
-    this
-  }
-
-  override def clearState(): this.type = {
-    super.clearState()
-    gradWeight.set()
-    gradBias.set()
-    this
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
