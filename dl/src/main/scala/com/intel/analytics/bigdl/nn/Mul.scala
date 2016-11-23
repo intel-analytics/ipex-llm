@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
 class Mul[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val weight = Tensor[T](1)
-  val gradWeight = Tensor[T]()
+  val gradWeight = Tensor[T](1)
 
   reset()
 
@@ -36,7 +36,6 @@ class Mul[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
     // stdv should be 1 / math.sqrt(weight.size(1)), as weight's size(1) is 1, so stdv is 1.0
     val stdv = 1.0
     weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-    setup()
     zeroGradParameters()
   }
 
@@ -64,18 +63,6 @@ class Mul[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
-  }
-
-  override def clearState() : this.type = {
-    super.clearState()
-    gradWeight.set()
-    this
-  }
-
-  override def setup() : this.type = {
-    super.setup()
-    gradWeight.resize(1)
-    this
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Mul[T]]

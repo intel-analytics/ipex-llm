@@ -129,6 +129,6 @@ public class MKL {
 
     private static File file(String path) throws IOException {
         String name = new File(path).getName();
-        return createTempFile("jniloader", name);
+        return createTempFile("mklloader", name);
     }
 }

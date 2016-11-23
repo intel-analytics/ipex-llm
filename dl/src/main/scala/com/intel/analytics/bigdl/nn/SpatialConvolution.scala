@@ -47,8 +47,9 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     nInputPlane / nGroup, kernelH, kernelW)
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
 
-  val gradWeight: Tensor[T] = Tensor[T]()
-  val gradBias: Tensor[T] = Tensor[T]()
+  val gradWeight: Tensor[T] = Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup,
+    kernelH, kernelW)
+  val gradBias: Tensor[T] = Tensor[T](nOutputPlane)
 
   val fInput = Tensor[T]()
   val fGradInput = Tensor[T]()
@@ -94,7 +95,6 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
     }
-    setup()
     zeroGradParameters()
   }
 
@@ -337,13 +337,6 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     gradBias.zero()
   }
 
-  override def setup(): this.type = {
-    gradWeight.resize(nGroup, nOutputPlane / nGroup, nInputPlane / nGroup,
-      kernelH, kernelW)
-    gradBias.resize(nOutputPlane)
-    this
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
   }
@@ -397,8 +390,6 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
 
   override def clearState() : this.type = {
     super.clearState()
-    gradWeight.set()
-    gradBias.set()
     fInput.set()
     fGradInput.set()
     ones.set()

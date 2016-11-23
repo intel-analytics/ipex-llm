@@ -28,14 +28,13 @@ class CMul[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val weight: Tensor[T] = Tensor[T](size)
-  val gradWeight : Tensor[T] = Tensor[T]()
+  val gradWeight : Tensor[T] = Tensor[T](size)
 
   reset()
 
   override def reset(): Unit = {
     val stdv = 1.0/math.sqrt(weight.nElement())
     weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-    setup()
     zeroGradParameters()
   }
 
@@ -110,17 +109,6 @@ class CMul[@specialized(Float, Double) T: ClassTag](
 
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
-  }
-
-  override def setup(): this.type = {
-    gradWeight.resize(size)
-    this
-  }
-
-  override def clearState(): this.type = {
-    super.clearState()
-    gradWeight.set()
-    this
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {

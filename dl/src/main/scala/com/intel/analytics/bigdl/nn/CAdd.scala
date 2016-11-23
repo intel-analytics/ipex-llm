@@ -28,14 +28,13 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val bias: Tensor[T] = Tensor[T](size)
-  val gradBias : Tensor[T] = Tensor[T]()
+  val gradBias : Tensor[T] = Tensor[T](size)
 
   reset()
 
   override def reset(): Unit = {
     val stdv = 1.0/math.sqrt(bias.nElement())
     bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-    setup()
     zeroGradParameters()
   }
 
@@ -85,11 +84,6 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
     gradBias.zero()
   }
 
-  override def setup() : this.type = {
-    gradBias.resize(size)
-    this
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.bias), Array(this.gradBias))
   }
@@ -110,12 +104,6 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
     size == other.size &&
       gradBias == other.gradBias &&
       bias == other.bias
-  }
-
-  override def clearState() : this.type = {
-    super.clearState()
-    gradBias.set()
-    this
   }
 
   override def hashCode() : Int = {

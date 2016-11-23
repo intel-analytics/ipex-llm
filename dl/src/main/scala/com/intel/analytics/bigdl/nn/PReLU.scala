@@ -55,7 +55,6 @@ class PReLU[T: ClassTag](
 
   override def reset(): Unit = {
     weight.fill(ev.fromType[Double](0.25))
-    setup()
     zeroGradParameters()
   }
 
@@ -313,16 +312,5 @@ class PReLU[T: ClassTag](
   override def hashCode(): Int = {
     val state = Seq(super.hashCode(), weight, gradWeight, nOutputPlane)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
-  }
-
-  override def setup() : this.type = {
-    gradWeight.resizeAs(weight)
-    this
-  }
-
-  override def clearState() : this.type = {
-    super.clearState()
-    gradWeight.set()
-    this
   }
 }

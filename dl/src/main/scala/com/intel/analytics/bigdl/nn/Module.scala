@@ -74,17 +74,6 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
   }
 
   /**
-   * Init some necessary member, e.g. gradientWeight. Override it if subclass need to do it.
-   *
-   * This method will be call after construction or load from file
- *
-   * @return
-   */
-  def setup() : this.type = {
-    this
-  }
-
-  /**
    * The name of the module
    */
   private var name : String = null
@@ -267,7 +256,6 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
   def save(path : String, overWrite: Boolean = false) : this.type = {
     this.clearState()
     File.save(this, path, overWrite)
-    this.setup()
     this
   }
 }
@@ -275,7 +263,7 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
 object Module {
   def load[A <: Activities: ClassTag, B <: Activities: ClassTag,
   @specialized(Float, Double) T: ClassTag](path : String) : Module[A, B, T] = {
-    File.load[Module[A, B, T]](path).setup()
+    File.load[Module[A, B, T]](path)
   }
 
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(

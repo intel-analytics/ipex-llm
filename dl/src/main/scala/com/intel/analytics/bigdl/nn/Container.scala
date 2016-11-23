@@ -90,13 +90,6 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
     this
   }
 
-  override def setup() : this.type = {
-    super.setup()
-    modules.foreach(_.setup())
-    this
-  }
-
-
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Container[A, B, T]]
 
   override def equals(other: Any): Boolean = other match {
