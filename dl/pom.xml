@@ -3,13 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>sparkdl-parent_0.1</artifactId>
-        <groupId>com.intel.analytics.sparkdl</groupId>
+        <artifactId>bigdl-parent_0.1</artifactId>
+        <groupId>com.intel.analytics.bigdl</groupId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>sparkdl_0.1</artifactId>
+    <artifactId>bigdl_0.1</artifactId>
     <packaging>jar</packaging>
 
     <properties>
@@ -37,7 +37,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.intel.analytics.sparkdl.mkl</groupId>
+            <groupId>com.intel.analytics.bigdl.mkl</groupId>
             <artifactId>mkl-java_0.1</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -109,7 +109,7 @@
                 <configuration>
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                     <junitxml>.</junitxml>
-                    <filereports>spark-dl-test-report.txt</filereports>
+                    <filereports>bigdl-test-report.txt</filereports>
                 </configuration>
                 <executions>
                     <execution>

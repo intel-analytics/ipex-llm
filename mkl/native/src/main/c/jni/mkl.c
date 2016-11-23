@@ -10,7 +10,7 @@ extern "C" {
  * Method:    setNumThreads
  * Signature: (I)V
  */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_setNumThreads
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_setNumThreads
   (JNIEnv * env, jclass cls, jint num_threads) {
   omp_set_num_threads(num_threads);
 }
@@ -21,16 +21,16 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_setNumThreads
  * Method:    getNumThreads
  * Signature: ()I
  */
-JNIEXPORT jint JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_getNumThreads
+JNIEXPORT jint JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_getNumThreads
   (JNIEnv * env, jclass cls) {
   return omp_get_max_threads();
 }
 /*
-  * Class:     com_intel_analytics_sparkdl_mkl_MKL
+  * Class:     com_intel_analytics_bigdl_mkl_MKL
   * Method:    vsAdd
   * Signature: (I[FI[FI[FI)V
   */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsAdd
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsAdd
    (JNIEnv * env, jclass cls, jint n, jfloatArray a, jint aOffset, jfloatArray b,
    jint bOffset, jfloatArray y, jint yOffset) {
    jfloat * jni_a = (*env)->GetPrimitiveArrayCritical(env, a, JNI_FALSE);
@@ -43,11 +43,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsAdd
  }
 
  /*
-  * Class:     com_intel_analytics_sparkdl_mkl_MKL
+  * Class:     com_intel_analytics_bigdl_mkl_MKL
   * Method:    vdAdd
   * Signature: (I[DI[DI[DI)V
   */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdAdd
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdAdd
    (JNIEnv * env, jclass cls, jint n, jdoubleArray a, jint aOffset, jdoubleArray b,
    jint bOffset, jdoubleArray y, jint yOffset) {
 
@@ -63,11 +63,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdAdd
 }
 
  /*
-  * Class:     com_intel_analytics_sparkdl_mkl_MKL
+  * Class:     com_intel_analytics_bigdl_mkl_MKL
   * Method:    vsSub
   * Signature: (I[FI[FI[FI)V
   */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsSub
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsSub
    (JNIEnv * env, jclass cls, jint n, jfloatArray a, jint aOffset, jfloatArray b,
    jint bOffset, jfloatArray y, jint yOffset) {
 
@@ -83,11 +83,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsSub
  }
 
  /*
-  * Class:     com_intel_analytics_sparkdl_mkl_MKL
+  * Class:     com_intel_analytics_bigdl_mkl_MKL
   * Method:    vdSub
   * Signature: (I[DI[DI[DI)V
   */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdSub
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdSub
    (JNIEnv * env, jclass cls, jint n, jdoubleArray a, jint aOffset, jdoubleArray b,
    jint bOffset, jdoubleArray y, jint yOffset) {
 
@@ -103,11 +103,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdSub
 }
 
 /*
-  * Class:     com_intel_analytics_sparkdl_mkl_MKL
+  * Class:     com_intel_analytics_bigdl_mkl_MKL
   * Method:    vsMul
   * Signature: (I[FI[FI[FI)V
   */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsMul
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsMul
    (JNIEnv * env, jclass cls, jint n, jfloatArray a, jint aOffset, jfloatArray b,
    jint bOffset, jfloatArray y, jint yOffset) {
 
@@ -123,11 +123,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsMul
  }
 
  /*
-  * Class:     com_intel_analytics_sparkdl_mkl_MKL
+  * Class:     com_intel_analytics_bigdl_mkl_MKL
   * Method:    vdMul
   * Signature: (I[DI[DI[DI)V
   */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdMul
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdMul
    (JNIEnv * env, jclass cls, jint n, jdoubleArray a, jint aOffset, jdoubleArray b,
    jint bOffset, jdoubleArray y, jint yOffset) {
 
@@ -143,11 +143,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdMul
 }
 
 /*
- * Class:     com_intel_analytics_sparkdl_mkl_MKL
+ * Class:     com_intel_analytics_bigdl_mkl_MKL
  * Method:    vsDiv
  * Signature: (I[FI[FI[FI)V
  */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsDiv
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsDiv
   (JNIEnv * env, jclass cls, jint n, jfloatArray a, jint aOffset, jfloatArray b, jint bOffset,
   jfloatArray y, jint yOffset) {
 
@@ -164,11 +164,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsDiv
  }
 
 /*
- * Class:     com_intel_analytics_sparkdl_mkl_MKL
+ * Class:     com_intel_analytics_bigdl_mkl_MKL
  * Method:    vdDiv
  * Signature: (I[DI[DI[DI)V
  */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdDiv
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdDiv
   (JNIEnv * env, jclass cls, jint n, jfloatArray a, jint aOffset, jfloatArray b, jint bOffset,
   jfloatArray y, jint yOffset) {
 
@@ -185,11 +185,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdDiv
    }
 
 /*
- * Class:     com_intel_analytics_sparkdl_mkl_MKL
+ * Class:     com_intel_analytics_bigdl_mkl_MKL
  * Method:    vsPowx
  * Signature: (I[FIF[FI)V
  */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsPowx
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsPowx
   (JNIEnv * env, jclass cls, jint n, jfloatArray a, jint aOffset, jfloat b, jfloatArray y,
   jint yOffset) {
 
@@ -203,11 +203,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsPowx
 }
 
  /*
-  * Class:     com_intel_analytics_sparkdl_mkl_MKL
+  * Class:     com_intel_analytics_bigdl_mkl_MKL
   * Method:    vdPowx
   * Signature: (I[DID[DI)V
   */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdPowx
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdPowx
    (JNIEnv * env, jclass cls, jint n, jdoubleArray a, jint aOffset, jdouble b, jdoubleArray y,
    jint yOffset) {
 
@@ -221,11 +221,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdPowx
  }
 
 /*
- * Class:     com_intel_analytics_sparkdl_mkl_MKL
+ * Class:     com_intel_analytics_bigdl_mkl_MKL
  * Method:    vsLn
  * Signature: (I[FI[FI)V
  */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsLn
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsLn
   (JNIEnv * env, jclass cls, jint n, jfloatArray a, jint aOffset, jfloatArray y,
   jint yOffset) {
 
@@ -239,11 +239,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsLn
 }
 
  /*
-  * Class:     com_intel_analytics_sparkdl_mkl_MKL
+  * Class:     com_intel_analytics_bigdl_mkl_MKL
   * Method:    vdLn
   * Signature: (I[DI[DI)V
   */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdLn
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdLn
    (JNIEnv * env, jclass cls, jint n, jdoubleArray a, jint aOffset, jdoubleArray y,
    jint yOffset) {
 
@@ -257,11 +257,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdLn
  }
 
  /*
-  * Class:     com_intel_analytics_sparkdl_mkl_MKL
+  * Class:     com_intel_analytics_bigdl_mkl_MKL
   * Method:    vsExp
   * Signature: (I[FI[FI)V
   */
- JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsExp
+ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsExp
    (JNIEnv * env, jclass cls, jint n, jfloatArray a, jint aOffset, jfloatArray y,
    jint yOffset) {
 
@@ -275,11 +275,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdLn
  }
 
   /*
-   * Class:     com_intel_analytics_sparkdl_mkl_MKL
+   * Class:     com_intel_analytics_bigdl_mkl_MKL
    * Method:    vdExp
    * Signature: (I[DI[DI)V
    */
- JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdExp
+ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdExp
     (JNIEnv * env, jclass cls, jint n, jdoubleArray a, jint aOffset, jdoubleArray y,
     jint yOffset) {
 
@@ -293,11 +293,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdLn
   }
 
   /*
-   * Class:     com_intel_analytics_sparkdl_mkl_MKL
+   * Class:     com_intel_analytics_bigdl_mkl_MKL
    * Method:    vsSqrt
    * Signature: (I[FI[FI)V
    */
-  JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsSqrt
+  JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsSqrt
     (JNIEnv * env, jclass cls, jint n, jfloatArray a, jint aOffset, jfloatArray y,
     jint yOffset) {
 
@@ -311,11 +311,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdLn
   }
 
    /*
-    * Class:     com_intel_analytics_sparkdl_mkl_MKL
+    * Class:     com_intel_analytics_bigdl_mkl_MKL
     * Method:    vdSqrt
     * Signature: (I[DI[DI)V
     */
-  JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdSqrt
+  JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdSqrt
      (JNIEnv * env, jclass cls, jint n, jdoubleArray a, jint aOffset, jdoubleArray y,
      jint yOffset) {
 
@@ -329,11 +329,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdLn
    }
 
    /*
-    * Class:     com_intel_analytics_sparkdl_mkl_MKL
+    * Class:     com_intel_analytics_bigdl_mkl_MKL
     * Method:    vsLog1p
     * Signature: (I[FI[FI)V
     */
-   JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsLog1p
+   JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsLog1p
      (JNIEnv * env, jclass cls, jint n, jfloatArray a, jint aOffset, jfloatArray y,
      jint yOffset) {
 
@@ -347,11 +347,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdLn
    }
 
     /*
-     * Class:     com_intel_analytics_sparkdl_mkl_MKL
+     * Class:     com_intel_analytics_bigdl_mkl_MKL
      * Method:    vdLog1p
      * Signature: (I[DI[DI)V
      */
-   JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdLog1p
+   JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdLog1p
       (JNIEnv * env, jclass cls, jint n, jdoubleArray a, jint aOffset, jdoubleArray y,
       jint yOffset) {
 
@@ -365,11 +365,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdLn
     }
 
 /*
-    * Class:     com_intel_analytics_sparkdl_mkl_MKL
+    * Class:     com_intel_analytics_bigdl_mkl_MKL
     * Method:    vsLog1p
     * Signature: (I[FI[FI)V
     */
-   JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdAbs
+   JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdAbs
      (JNIEnv * env, jclass cls, jint n, jdoubleArray a, jint aOffset, jdoubleArray y,
      jint yOffset) {
 
@@ -383,11 +383,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vdLn
    }
 
 /*
- * Class:     com_intel_analytics_sparkdl_mkl_MKL
+ * Class:     com_intel_analytics_bigdl_mkl_MKL
  * Method:    vdDiv
  * Signature: (I[DI[DI[DI)V
  */
-JNIEXPORT void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_vsAbs
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsAbs
   (JNIEnv * env, jclass cls, jint n, jfloatArray a, jint aOffset,
   jfloatArray y, jint yOffset) {
 
