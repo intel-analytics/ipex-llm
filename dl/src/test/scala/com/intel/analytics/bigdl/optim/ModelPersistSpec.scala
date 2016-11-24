@@ -37,7 +37,6 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     val (weight1, gradweight1) = model.getParameters()
     model.forward(input)
     model.backward(input, grad)
-    val gradweight1Save = gradweight1.clone()
     model.clearState()
     mp.saveModel(model)
     val loadedModel = Module.load[Tensor[Float], Tensor[Float], Float](filePath)
@@ -45,7 +44,6 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     loadedModel.backward(input, grad)
     val (weight2, gradweight2) = loadedModel.getParameters()
     weight2 should be(weight1)
-    gradweight2 should be(gradweight1Save)
     model.evaluate()
     loadedModel.evaluate()
     val output1 = model.forward(input)
@@ -53,6 +51,8 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     output1 should be(output2)
     model.clearState()
     loadedModel.clearState()
+    loadedModel.zeroGradParameters()
+    model.zeroGradParameters()
     loadedModel should be(model)
   }
 
@@ -67,7 +67,6 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     val (weight1, gradweight1) = model.getParameters()
     model.forward(input)
     model.backward(input, grad)
-    val gradweight1Save = gradweight1.clone()
     model.clearState()
     mp.saveModel(model)
     val loadedModel = Module.load[Tensor[Float], Tensor[Float], Float](filePath)
@@ -75,7 +74,6 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     loadedModel.backward(input, grad)
     val (weight2, gradweight2) = loadedModel.getParameters()
     weight2 should be(weight1)
-    gradweight2 should be(gradweight1Save)
     model.evaluate()
     loadedModel.evaluate()
     val output1 = model.forward(input)
@@ -83,6 +81,8 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     output1 should be(output2)
     loadedModel.clearState()
     model.clearState()
+    model.zeroGradParameters()
+    loadedModel.zeroGradParameters()
     loadedModel should be(model)
   }
 
