@@ -126,9 +126,9 @@ object ImageNetSeqFileGenerator {
 object ImageNetLocal {
 
   case class ImageNetLocalParam(
-    folder: String = "./",
+    folder: String = ".",
     net: String = "alexnet",
-    cache: String = "./",
+    cache: String = ".",
     parallel: Int = 1
   )
 
@@ -156,7 +156,7 @@ object ImageNetLocal {
       batchSize = 256,
       momentum = 0.9,
       weightDecay = 0.0005,
-      testTrigger = Trigger.severalIteration(1000),
+      testTrigger = Trigger.severalIteration(10000),
       cacheTrigger = Trigger.severalIteration(10000),
       endWhen = Trigger.maxIteration(450000),
       learningRate = 0.01,
