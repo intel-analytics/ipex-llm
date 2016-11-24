@@ -18,7 +18,6 @@
 package com.intel.analytics.bigdl.dataset
 
 import java.nio.file.{Files, Path, Paths}
-import java.util.concurrent.Executors
 
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, GoogleNet_v1}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, Module}
@@ -27,9 +26,6 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import scopt.OptionParser
-
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future, ExecutionContext}
 
 object ImageNetSeqFileGenerator {
 
