@@ -57,8 +57,10 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   private val onesBatch = Tensor[T]()
   private val onesBias = Tensor[T]()
   private var weightMM: Tensor[T] = null
-  private var gradientBiasMT: Tensor[T] = null
+  private val gradientBiasMT: Tensor[T] = Tensor[T]()
   private var gradWeightMM: Tensor[T] = null
+  @transient
+  private var gradWeightMMInBatch: Tensor[T] = null
   private val _1x1 = if (kernelH == 1 && kernelW == 1 && strideW == 1 && strideH == 1
     && padH == 0 && padW == 0) {
     true
@@ -280,10 +282,12 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       }
     } else {
       val batchSize = input.size(1)
-      if (gradWeightMM == null) {
-        gradWeightMM = Tensor[T]().resize(Array(batchSize, nGroup, nOutputPlane / nGroup,
+      if (gradWeightMMInBatch == null) {
+        gradWeightMMInBatch = Tensor[T]().resize(Array(batchSize, nGroup, nOutputPlane / nGroup,
           nInputPlane * kernelH * kernelW / nGroup))
-        gradientBiasMT = Tensor[T]().resize(Array(batchSize, nOutputPlane))
+      }
+      if(gradientBiasMT.nElement() == 0) {
+        gradientBiasMT.resize(Array(batchSize, nOutputPlane))
       }
       if (ones.dim() != 1 || ones.size(1) != gradOutput.size(3) * gradOutput.size(4)) {
         ones.resize(Array(gradOutput.size(3) * gradOutput.size(4))).fill(ev.fromType(1.0))
@@ -302,7 +306,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           while (g < nGroup) {
             calcGradParametersFrame(
               gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
-              gradWeightMM.select(1, _i).select(1, g + 1),
+              gradWeightMMInBatch.select(1, _i).select(1, g + 1),
               gradientBiasMT.select(1, _i).narrow(1, g * nOutputPlane / nGroup + 1,
                 nOutputPlane / nGroup),
               fInputT.select(1, g + 1),
@@ -319,7 +323,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         i += 1
       }
 
-      val gradView = gradWeightMM.view(batchSize,
+      val gradView = gradWeightMMInBatch.view(batchSize,
         nOutputPlane * nInputPlane * kernelH * kernelW / nGroup).t
       val grad = gradWeight.view(nOutputPlane * nInputPlane * kernelH * kernelW / nGroup)
       grad.addmv(ev.fromType(1.0), ev.fromType(1.0), gradView, onesBatch)
@@ -395,6 +399,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     ones.set()
     onesBatch.set()
     onesBias.set()
+    gradientBiasMT.set()
     this
   }
 
