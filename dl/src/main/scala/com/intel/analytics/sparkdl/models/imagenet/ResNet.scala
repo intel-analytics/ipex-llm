@@ -49,10 +49,10 @@ object ResNet {
         m.gradInput = Tensor[T](cache.get(i%2).get, 1, Array(0))
       }
     }*/
-
+    val packageName: String = model.getName().stripSuffix("Sequential")
     model.mapModules(m => {
       val moduleType = m.getClass.getName
-      if (m.gradInput.isInstanceOf[Tensor[T]] && !moduleType.equals("com.intel.analytics.sparkdl.nn.ConcatTable")) {
+      if (m.gradInput.isInstanceOf[Tensor[T]] && !moduleType.equals(packageName + "ConcatTable")) {
         val key = sharingKey(m)
         if (!cache.contains(key)){
           cache.put(key, Storage(Array(ev.fromType[Int](1))))
@@ -63,7 +63,7 @@ object ResNet {
     })
 
     for ((m, i) <- model
-      .findModules("com.intel.analytics.sparkdl.nn.ConcatTable")
+      .findModules(packageName + "ConcatTable")
       .zipWithIndex){
       if (!cache.contains(i % 2)) {
         cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
@@ -76,7 +76,7 @@ object ResNet {
     cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
     cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
     for ((m, i) <- model
-      .findModules("com.intel.analytics.sparkdl.nn.SpatialConvolution")
+      .findModules(packageName + "SpatialConvolution")
       .zipWithIndex){
       val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
       tmpModel.setSharedVar
@@ -88,6 +88,7 @@ object ResNet {
 
   def convInit[@specialized(Float, Double) T: ClassTag](name: String, model: Module[Activities, Activities, T])
                                                        (implicit ev: TensorNumeric[T]): Unit = {
+    println(name)
     for ((m, i) <- model
       .findModules(name)
       .zipWithIndex) {
@@ -111,7 +112,7 @@ object ResNet {
   def lnInit[@specialized(Float, Double) T: ClassTag](name: String, model: Module[Activities, Activities, T])
             (implicit ev: TensorNumeric[T]): Unit = {
     for ((m, i) <- model
-      .findModules("com.intel.analytics.sparkdl.nn.Linear")
+      .findModules(name)
       .zipWithIndex){
       val tmpModel = m.asInstanceOf[Linear[T]]
       tmpModel.bias.apply1(_ => ev.fromType[Float](0))

@@ -95,10 +95,11 @@ object ImageNetLocal {
       case "googlenet-cf" => GoogleNet.getModelCaffe[Float](classNum)
       case "resnet" => {
         val curModel = ResNet[Float](classNum, T("shortcutType" -> ShortcutType.B, "depth" -> modelDepth))
+        val packageName = curModel.getName().stripSuffix("Sequential")
         ResNet.shareGradInput(curModel)
-        ResNet.convInit("com.intel.analytics.sparkdl.nn.SpatialConvolution", curModel)
-        ResNet.bnInit("com.intel.analytics.sparkdl.nn.SpatialBatchNormalization", curModel)
-        ResNet.lnInit("com.intel.analytics.sparkdl.nn.Linear", curModel)
+        ResNet.convInit(packageName + "SpatialConvolution", curModel)
+        ResNet.bnInit(packageName + "SpatialBatchNormalization", curModel)
+        ResNet.lnInit(packageName + "Linear", curModel)
         curModel
       }
       case _ => throw new IllegalArgumentException
