@@ -165,6 +165,7 @@ object ImageNetLocal {
       log("shuffle")
       dataSet.shuffle
       log("shuffle end")
+
       println(s"Epoch[$i] Train")
 
       /*for (regime <- regimes(netType)) {
@@ -174,9 +175,9 @@ object ImageNetLocal {
         }
       }
       */
-      def feval(x: Tensor[Float]): (Float, Tensor[Float]) = {
+   /*   def feval(x: Tensor[Float]): (Float, Tensor[Float]) = {
         (criterion.output, grad)
-      }
+      }*/
       state("learningRate") =  state("learningRate").asInstanceOf[Double] * Math.pow(0.1, math.floor((i-1)/30))
       var j = 0
       var c = 0
@@ -187,7 +188,6 @@ object ImageNetLocal {
         val (input, target) = iter.next()
         val readImgTime = System.nanoTime()
 
-
         val output = model.forward(input).asInstanceOf[Tensor[Float]]
         val loss = criterion.forward(output, target)
 
@@ -196,6 +196,14 @@ object ImageNetLocal {
         model.backward(input, criterion.gradInput)
 
         //sgd.optimize(_ => (loss, grad), weights, state, state)
+        def feval(x: Tensor[Float]): (Float, Tensor[Float]) = {
+          model.forward(input)
+          criterion.forward(model.output.toTensor(), target)
+          model.zeroGradParameters()
+          criterion.backward(model.output.toTensor(), target)
+          model.backward(input, criterion.gradInput)
+          (criterion.output, grad)
+        }
         sgd.optimize(feval, weights, state)
 
         /*
@@ -253,8 +261,8 @@ object ImageNetLocal {
 
         val top1Accuracy = top1Correct.toDouble / dataSetVal.getTotal
         val top5Accuracy = top5Correct.toDouble / dataSetVal.getTotal
-        println(s"[Wall Clock ${wallClockTime / 1e9}s] Top-1 Accuracy is $top1Accuracy")
-        println(s"[Wall Clock ${wallClockTime / 1e9}s] Top-5 Accuracy is $top5Accuracy")
+        println(s"[Wall Clock ${wallClockTime / 1e9}s] Testing: Top-1 Accuracy is $top1Accuracy")
+        println(s"[Wall Clock ${wallClockTime / 1e9}s] Testing: Top-5 Accuracy is $top5Accuracy")
         //println(s"Save model and state to $modelPath-$i")
         //File.save(model, modelPath + s"-$i.model")
         //File.save(state, modelPath + s"-$i.state")

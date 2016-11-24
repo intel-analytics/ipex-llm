@@ -81,7 +81,7 @@ object ImageNetUtils {
         if (!valFlag) {
           ColorJitter.randomOrder(input(i))
           Lighting.lighting(input(i))
-          HorizontalFlip.hflip(input(i))
+          //HorizontalFlip.hflip(input(i))
         }
         ColorNormalize.colorNormalize(input(i))
       }
