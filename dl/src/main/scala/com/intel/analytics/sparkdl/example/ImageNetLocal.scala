@@ -186,12 +186,12 @@ object ImageNetLocal {
         val (input, target) = iter.next()
         val readImgTime = System.nanoTime()
 
-        val output = model.forward(input).asInstanceOf[Tensor[Float]]
-        val loss = criterion.forward(output, target)
+        //val output = model.forward(input).asInstanceOf[Tensor[Float]]
+        //val loss = criterion.forward(output, target)
 
-        model.zeroGradParameters()
-        criterion.backward(output, target)
-        model.backward(input, criterion.gradInput)
+        //model.zeroGradParameters()
+        //criterion.backward(output, target)
+        //model.backward(input, criterion.gradInput)
 
         //sgd.optimize(_ => (loss, grad), weights, state, state)
         def feval(x: Tensor[Float]): (Float, Tensor[Float]) = {
