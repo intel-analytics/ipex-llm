@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.sparkdl.torch
+package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.sparkdl.nn.MixtureTable
-import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.utils.Table
+import com.intel.analytics.bigdl.nn.MixtureTable
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Table
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
@@ -37,10 +37,9 @@ class MixtureTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val expertInput = Tensor[Double](5, 3, 6).apply1(e => Random.nextDouble())
     val expertTable = new Table()
-    expertTable(1.0) = Tensor[Double](5, 6).apply1(e => Random.nextDouble())//expertInput.narrow(2,1,1)
-    expertTable(2.0) = Tensor[Double](5, 6).apply1(e => Random.nextDouble()) //expertInput.narrow(2,2,1)
-    expertTable(3.0) = Tensor[Double](5, 6).apply1(e => Random.nextDouble()) //expertInput.narrow(2,3,1)
-
+    expertTable(1.0) = Tensor[Double](5, 6).apply1(e => Random.nextDouble())
+    expertTable(2.0) = Tensor[Double](5, 6).apply1(e => Random.nextDouble())
+    expertTable(3.0) = Tensor[Double](5, 6).apply1(e => Random.nextDouble())
 
     val input1 = Tensor[Double](5, 3).apply1(e => Random.nextDouble())
     val gradOutput = Tensor[Double](5, 6).apply1(e => Random.nextDouble())
@@ -59,13 +58,12 @@ class MixtureTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
       "output = mse:forward(input)\n" +
       "gradInput = mse:backward(input,gradOutput)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input1" -> input1, "expertTable" -> expertTable, "gradOutput" -> gradOutput),
-      Array("output", "gradInput"))
+    val (luaTime, torchResult) = TH.run(code, Map("input1" -> input1, "expertTable" -> expertTable,
+      "gradOutput" -> gradOutput), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Any, Any]]
 
     output should be (luaOutput1)
-    //gradInput should be (new Table(luaOutput2))
 
     val luagradInput1 = luaOutput2.get(1.0).getOrElse(null)
     val luagradInput2 = luaOutput2.get(2.0).getOrElse(null).asInstanceOf[HashMap[Any, Any]]
