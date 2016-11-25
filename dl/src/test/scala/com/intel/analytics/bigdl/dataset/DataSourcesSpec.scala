@@ -97,7 +97,7 @@ class DataSourcesSpec extends FlatSpec with Matchers {
     var pathToImage = PathToRGBImage(-1)
     var imageDataSource = dataSource -> pathToImage
 
-    val iter = imageDataSource.data()
+    var iter = imageDataSource.data()
     val img1 = iter.next()
     img1.label() should be(4f)
     img1.content((100 + 100 * 213) * 3 + 2) should be(35 / 255f)
@@ -118,6 +118,7 @@ class DataSourcesSpec extends FlatSpec with Matchers {
 
     pathToImage = PathToRGBImage(256)
     imageDataSource = dataSource -> pathToImage
+    iter = imageDataSource.data()
 
     val img3 = iter.next()
     img3.label() should be(1f)
