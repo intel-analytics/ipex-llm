@@ -33,7 +33,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor.rand()
     RNG.setSeed(1000)
     val cropper = new GreyImageCropper(24, 24)
-    val iter = cropper.transform(Iterator.single(image))
+    val iter = cropper.apply(Iterator.single(image))
     val result = iter.next()
 
     result.width() should be(24)
@@ -61,12 +61,10 @@ class TransformersSpec extends FlatSpec with Matchers {
     val std = math.sqrt((1 to 27).map(e => (e - mean) * (e - mean)).sum / 27f).toFloat
     val target = image1.content.map(e => (e - mean) / std)
 
-    val dataSource = new ArrayDataSource[GreyImage](looped = false) {
-      override protected val data: Array[GreyImage] = Array(image1, image2, image3)
-    }
+    val dataSource = new ArrayDataSet[GreyImage](Array(image1, image2, image3), looped = false)
 
     val normalizer = new GreyImageNormalizer(dataSource)
-    val iter = normalizer.transform(Iterator.single(image1))
+    val iter = normalizer.apply(Iterator.single(image1))
     val test = iter.next()
     normalizer.getMean() should be(mean)
     normalizer.getStd() should be(std)
@@ -85,13 +83,12 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new ArrayDataSource[GreyImage](true) {
-      override protected val data: Array[GreyImage] = Array(image1, image2, image3)
-    }
+    val dataSource = new ArrayDataSet[GreyImage](Array(image1, image2, image3), true)
 
     val toTensor = new GreyImageToTensor(2)
     val tensorDataSource = dataSource -> toTensor
-    val (tensorResult1, labelTensor1) = tensorDataSource.next()
+    val iter = tensorDataSource.data()
+    val (tensorResult1, labelTensor1) = iter.next()
     tensorResult1.size(1) should be(2)
     tensorResult1.size(2) should be(32)
     tensorResult1.size(3) should be(32)
@@ -108,7 +105,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       testData1(i + 32 * 32) should be(content2(i))
       i += 1
     }
-    val (tensorResult2, labelTensor2) = tensorDataSource.next()
+    val (tensorResult2, labelTensor2) = iter.next()
     val content3 = image3.content
     tensorResult2.size(1) should be(2)
     tensorResult2.size(2) should be(32)
@@ -131,7 +128,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor.rand()
     RNG.setSeed(1000)
     val cropper = new RGBImageCropper(24, 24)
-    val iter = cropper.transform(Iterator.single(image))
+    val iter = cropper.apply(Iterator.single(image))
     val result = iter.next()
 
     result.width() should be(24)
@@ -183,12 +180,10 @@ class TransformersSpec extends FlatSpec with Matchers {
       r
     })
 
-    val dataSource = new ArrayDataSource[RGBImage](false) {
-      override protected val data: Array[RGBImage] = Array(image1, image2, image3)
-    }
+    val dataSource = new ArrayDataSet[RGBImage](Array(image1, image2, image3), false)
 
     val normalizer = RGBImageNormalizer(dataSource)
-    val iter = normalizer.transform(Iterator.single(image1))
+    val iter = normalizer.apply(Iterator.single(image1))
     val test = iter.next()
     normalizer.getMean() should be((firstFrameMean, secondFrameMean, thirdFrameMean))
     val stds = normalizer.getStd()
@@ -210,13 +205,12 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new ArrayDataSource[RGBImage](true) {
-      override protected val data: Array[RGBImage] = Array(image1, image2, image3)
-    }
+    val dataSource = new ArrayDataSet[RGBImage](Array(image1, image2, image3), true)
 
     val toTensor = new RGBImageToTensor(2)
     val tensorDataSource = dataSource -> toTensor
-    val (tensorResult1, labelTensor1) = tensorDataSource.next()
+    val iter = tensorDataSource.data()
+    val (tensorResult1, labelTensor1) = iter.next()
     tensorResult1.size(1) should be(2)
     tensorResult1.size(2) should be(3)
     tensorResult1.size(3) should be(32)
@@ -264,7 +258,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       e
     })
 
-    val (tensorResult2, labelTensor2) = tensorDataSource.next()
+    val (tensorResult2, labelTensor2) = iter.next()
     val content3 = image3.content
     tensorResult2.size(1) should be(2)
     tensorResult2.size(2) should be(3)
@@ -324,15 +318,14 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new ArrayDataSource[RGBImage](true) {
-      override protected val data: Array[RGBImage] = Array(image1, image2, image3)
-    }
+    val dataSource = new ArrayDataSet[RGBImage](Array(image1, image2, image3), true)
 
     val toTensor = new MultiThreadRGBImageToSingleTensor[RGBImage](
       width = 32, height = 32, threadNum = 2, batchSize = 2, transformer = Identity[RGBImage]
     )
     val tensorDataSource = dataSource -> toTensor
-    val (tensorResult1, labelTensor1) = tensorDataSource.next()
+    val iter = tensorDataSource.data()
+    val (tensorResult1, labelTensor1) = iter.next()
     tensorResult1.size(1) should be(2)
     tensorResult1.size(2) should be(3)
     tensorResult1.size(3) should be(32)
@@ -380,7 +373,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       e
     })
 
-    val (tensorResult2, labelTensor2) = tensorDataSource.next()
+    val (tensorResult2, labelTensor2) = iter.next()
     val content3 = image3.content
     tensorResult2.size(1) should be(2)
     tensorResult2.size(2) should be(3)
@@ -432,7 +425,7 @@ class TransformersSpec extends FlatSpec with Matchers {
   "RGBImage To SeqFile" should "be good" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
     val pathToImage = PathToRGBImage(RGBImage.NO_SCALE)
-    val dataSource = new ImageNetDataSource(Paths.get(processPath(resource.getPath())), looped =
+    val dataSource = ImageNet.PathDataSet(Paths.get(processPath(resource.getPath())), looped =
       false)
 
     RandomGenerator.RNG.setSeed(1000)
@@ -441,24 +434,24 @@ class TransformersSpec extends FlatSpec with Matchers {
     val tmpFile = Paths.get(java.io.File.createTempFile("UnitTest", "RGBImageToSeqFile").getPath)
     val seqWriter = RGBImageToSequentialFile(2, tmpFile)
     val writePipeline = dataSource -> pathToImage -> seqWriter
-    while(writePipeline.hasNext) {
-      println(s"writer file ${writePipeline.next()}")
+    val iter = writePipeline.data()
+    while (writePipeline.finished()) {
+      println(s"writer file ${iter.next()}")
     }
 
-    val seqDataSource = new ArrayDataSource[Path](false) {
-      override protected val data: Array[Path] = Array(
-        Paths.get(tmpFile + "_0"),
-        Paths.get(tmpFile + "_1"),
-        Paths.get(tmpFile + "_2"),
-        Paths.get(tmpFile + "_3"),
-        Paths.get(tmpFile + "_4"),
-        Paths.get(tmpFile + "_5")
-      )
-    }
+    val seqDataSource = new ArrayDataSet[Path](Array(
+      Paths.get(tmpFile + "_0"),
+      Paths.get(tmpFile + "_1"),
+      Paths.get(tmpFile + "_2"),
+      Paths.get(tmpFile + "_3"),
+      Paths.get(tmpFile + "_4"),
+      Paths.get(tmpFile + "_5")
+    ), false)
     dataSource.reset()
     var count = 0
     val readPipeline = seqDataSource -> SeqFileToArrayByte() -> ArrayByteToRGBImage()
-    readPipeline.zip(dataSource -> pathToImage).foreach { case (l, r) =>
+    val readIter = readPipeline.data()
+    readIter.zip((dataSource -> pathToImage).data()).foreach { case (l, r) =>
       l.label() should be(r.label())
       l.width() should be(r.width())
       l.height() should be(r.height())

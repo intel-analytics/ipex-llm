@@ -17,44 +17,36 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.DataSource
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet}
 import com.intel.analytics.bigdl.nn.{Criterion, Module, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Activities, Table}
 
 class LocalOptimizer[T](
-  data: DataSource[(Tensor[T], Tensor[T])],
-  validationData: DataSource[(Tensor[T], Tensor[T])],
+  data: LocalDataSet[(Tensor[T], Tensor[T])],
   model: Module[Tensor[T], Tensor[T], T],
   criterion: Criterion[Tensor[T], T],
   optimMethod: OptimMethod[T],
   state: Table,
   endWhen: Trigger
-) extends Optimizer[T](model, endWhen) {
+) extends Optimizer[T](endWhen) {
 
-  def this(
-    data: DataSource[(Tensor[T], Tensor[T])],
-    model: Module[Tensor[T], Tensor[T], T],
-    criterion: Criterion[Tensor[T], T],
-    optimMethod: OptimMethod[T],
-    state: Table,
-    endWhen: Trigger) = this(data, null, model, criterion, optimMethod, state, endWhen)
-
-  override def optimize(): Module[Tensor[T], Tensor[T], T] = {
+  override def optimize(): Module[Activities, Activities, T] = {
     val (weights, grad) = model.getParameters()
     var wallClockTime = 0L
     var count = 0
 
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
+    val iter = data.data()
     data.reset()
     data.shuffle()
     while (!endWhen(state)) {
       val start = System.nanoTime()
-      val (input, target) = data.next()
+      val (input, target) = iter.next()
       val dataFetchTime = System.nanoTime()
       model.zeroGradParameters()
-      val output = model.forward(input)
+      val output = model.forward(input).toTensor[T]()
       val loss = criterion.forward(output, target)
       val gradOutput = criterion.backward(output, target)
       model.backward(input, gradOutput)
@@ -62,7 +54,7 @@ class LocalOptimizer[T](
       val end = System.nanoTime()
       wallClockTime += end - start
       count += input.size(1)
-      println(s"[Epoch ${state[Int]("epoch")} $count/${data.total()}][Iteration ${
+      println(s"[Epoch ${state[Int]("epoch")} $count/${data.size()}][Iteration ${
         state[Int]("neval")}][Wall Clock ${wallClockTime / 1e9
       }s] loss is $loss, iteration time is ${(end - start) / 1e9}s data " +
         s"fetch time is " +
@@ -70,7 +62,7 @@ class LocalOptimizer[T](
         s" Throughput is ${input.size(1).toDouble / (end - start) * 1e9} img / second")
       state("neval") = state[Int]("neval") + 1
 
-      if(count >= data.total()) {
+      if (count >= data.size()) {
         state("epoch") = state[Int]("epoch") + 1
         data.reset()
         data.shuffle()
@@ -78,44 +70,34 @@ class LocalOptimizer[T](
       }
 
       validate(wallClockTime)
-
-      cacheTrigger.foreach(trigger => {
-        if (trigger(state) && cachePath.isDefined) {
-          println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
-          saveModel(s".${state[Int]("neval")}")
-          saveState(state, s".${state[Int]("neval")}")
-        }
-      })
+      cache(wallClockTime)
     }
     validate(wallClockTime)
+    cache(wallClockTime)
 
-    model
+    model.asInstanceOf[Module[Activities, Activities, T]]
+  }
+
+  private def cache(wallClockTime: Long): Unit = {
+    cacheTrigger.foreach(trigger => {
+      if (trigger(state) && cachePath.isDefined) {
+        println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
+        saveModel(this.model.asInstanceOf[Module[Activities, Activities, T]],
+          s".${state[Int]("neval")}")
+        saveState(state, s".${state[Int]("neval")}")
+      }
+    })
   }
 
   private def validate(wallClockTime: Long): Unit = {
     validationTrigger.foreach(trigger => {
-      if (trigger(state) && validationMethods.length > 0) {
+      if (trigger(state) && validator.isDefined) {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
-        model.evaluate()
-        validationData.reset()
-        var count = 0
-        val results = validationData.map { case (input, target) =>
-          val output = model.forward(input)
-          println(s"[Validation][Epoch ${state[Int]("epoch")}][Iteration ${state[Int]("neval")}] " +
-            s"$count/${validationData.total()}")
-          count += input.size(1)
-          validationMethods.map(validation => {
-            validation(output.asInstanceOf[Tensor[T]], target)
-          }).toArray
-        }.reduce((left, right) => {
-          left.zip(right).map { case (l, r) =>
-            l ++ r
-          }
+        val results = validator.get.validate(
+          this.model.asInstanceOf[Module[Activities, Activities, T]])
+        results.foreach(r => {
+          println(s"${r._1} is ${r._2}")
         })
-        validationMethods.zip(results).foreach {
-          case (validation, result) =>
-            println(s"[Wall Clock ${wallClockTime / 1e9}s] $validation is $result")
-        }
         model.training()
       }
     })

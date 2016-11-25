@@ -292,5 +292,7 @@ class AllReduceParameterManager[T: ClassTag](
     parameter
   }
 
-  override def getState(): Table = T()
+  override def getState(): Table = {
+    buffers.map(_._4).first()
+  }
 }
