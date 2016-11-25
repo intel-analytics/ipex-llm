@@ -202,8 +202,8 @@ object ImageNetLocal {
           model.backward(input, criterion.gradInput)
           (criterion.output, grad)
         }
-        sgd.optimize(feval, weights, state)
-
+        val (loss, _) = sgd.optimize(feval, weights, state)
+        val output = model.output.toTensor()
         /*
         def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
           model.forward(input)
