@@ -68,7 +68,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     _size(dim - 1)
   }
 
-  override def stride(): Array[Int] = _stride.slice(0, this.nDimension)//_stride.clone()
+  override def stride(): Array[Int] = _stride.slice(0, this.nDimension)
 
   override def stride(dim: Int): Int = {
     require(dim > 0 && dim <= this.nDimension,
