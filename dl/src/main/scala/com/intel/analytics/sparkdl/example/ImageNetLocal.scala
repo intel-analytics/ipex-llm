@@ -162,9 +162,7 @@ object ImageNetLocal {
 
     var wallClockTime = 0L
     for (i <- 1 to epochNum) {
-      log("shuffle")
-      dataSet.shuffle
-      log("shuffle end")
+
 
       println(s"Epoch[$i] Train")
 
@@ -268,7 +266,9 @@ object ImageNetLocal {
         //File.save(state, modelPath + s"-$i.state")
       }
 
-
+      log("shuffle")
+      dataSet.shuffle
+      log("shuffle end")
     }
   }
 
