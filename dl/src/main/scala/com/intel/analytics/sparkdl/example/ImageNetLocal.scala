@@ -196,14 +196,14 @@ object ImageNetLocal {
         //sgd.optimize(_ => (loss, grad), weights, state, state)
         def feval(x: Tensor[Float]): (Float, Tensor[Float]) = {
           model.forward(input)
-          criterion.forward(model.output.toTensor(), target)
+          criterion.forward(model.output.asInstanceOf[Tensor[Float]], target)
           model.zeroGradParameters()
-          criterion.backward(model.output.toTensor(), target)
+          criterion.backward(model.output.asInstanceOf[Tensor[Float]], target)
           model.backward(input, criterion.gradInput)
           (criterion.output, grad)
         }
         val (loss, _) = sgd.optimize(feval, weights, state)
-        val output = model.output.toTensor()
+        val output = model.output.asInstanceOf[Tensor[Float]]
         /*
         def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
           model.forward(input)
