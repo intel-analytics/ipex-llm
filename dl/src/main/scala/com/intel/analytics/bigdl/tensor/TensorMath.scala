@@ -687,12 +687,12 @@ trait TensorMath[T] {
   def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
   /**
-   * y = torch.range(x, y) returns a Tensor of size floor((y - x) / step) + 1 with values from
-   * x to y with step step (default to 1).
+   * resize this tensor size to floor((xmax - xmin) / step) + 1 and set values from
+   * xmin to xmax with step (default to 1).
    * @param xmin
    * @param xmax
    * @param step
-   * @return
+   * @return this tensor
    */
   def range(xmin: Double, xmax: Double, step: Int = 1): Tensor[T]
 }

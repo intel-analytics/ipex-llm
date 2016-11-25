@@ -811,4 +811,14 @@ object Tensor {
   def load[T](path : String) : Tensor[T] = {
     File.load[Tensor[T]](path)
   }
+
+  /**
+   * This is equivalent to DenseTensor.range(xmin, xmax, step)
+   * @param xmin
+   * @param xmax
+   * @param step
+   * @return
+   */
+  def range[@specialized(Float, Double) T: ClassTag](xmin: Double, xmax: Double, step: Int = 1)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = DenseTensor.range[T](xmin, xmax, step)
 }
