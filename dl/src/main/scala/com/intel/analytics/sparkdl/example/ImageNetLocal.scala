@@ -194,9 +194,9 @@ object ImageNetLocal {
         model.training()
         val start = System.nanoTime()
 
-        val pathDir = "/disk2/test/torchdata/train"
-        val input = loadTH(pathDir + "/input", c+3).asInstanceOf[Tensor[Float]]
-        val target = loadTH(pathDir + "/label", c+3).asInstanceOf[Tensor[Float]]
+        val pathDir = "/tmp/train"
+        val input = loadTH(pathDir + "/input", c+1).asInstanceOf[Tensor[Float]]
+        val target = loadTH(pathDir + "/label", c+1).asInstanceOf[Tensor[Float]]
 
         //val (input, target) = iter.next()
         val readImgTime = System.nanoTime()
