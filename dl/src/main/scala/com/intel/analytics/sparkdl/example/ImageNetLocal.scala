@@ -202,7 +202,7 @@ object ImageNetLocal {
           model.backward(input, criterion.gradInput)
           (criterion.output, grad)
         }
-        val (loss, _) = sgd.optimize(feval, weights, state)
+        val (_, loss) = sgd.optimize(feval, weights, state)
         val output = model.output.asInstanceOf[Tensor[Float]]
         /*
         def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
@@ -222,7 +222,7 @@ object ImageNetLocal {
         val end = System.nanoTime()
         wallClockTime += end - start
         log(s"Epoch[$i][Iteration $c $j/${dataSet.getTotal}][Wall Clock ${wallClockTime / 1e9}s]" +
-          s" loss is $loss time ${(end - start) / 1e9}s read " +
+          s" loss is ${loss(0)} time ${(end - start) / 1e9}s read " +
           s"time ${(readImgTime - start) / 1e9}s train time ${(end - readImgTime) / 1e9}s." +
           s" Throughput is ${input.size(1).toDouble / (end - start) * 1e9} img / second")
         while (!stageImgs.isEmpty) {
