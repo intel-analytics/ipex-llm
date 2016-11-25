@@ -19,12 +19,14 @@ public class MKL {
     private static File tmpFile = null;
 
     static {
-        isLoaded = true;
         try {
             tmpFile = extract("libjmkl.so");
             System.load(tmpFile.getAbsolutePath());
-        } catch (Throwable e) {
+            isLoaded = true;
+        } catch (Exception e) {
             isLoaded = false;
+            e.printStackTrace();
+            throw new RuntimeException("Failed to load MKL");
         }
     }
 
