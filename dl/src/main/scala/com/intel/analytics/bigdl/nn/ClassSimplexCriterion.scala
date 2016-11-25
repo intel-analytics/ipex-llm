@@ -16,6 +16,8 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.Tensor
 import scala.reflect.ClassTag
 
 /**
@@ -23,32 +25,33 @@ import scala.reflect.ClassTag
  * It learns an embedding per class, where each class' embedding is a
  * point on an (N-1)-dimensional simplex, where N is the number of classes.
  * @param nClasses
- * @param sizeAverage
  */
-class ClassSimplexCriterion[T: ClassTag](val nClasses: Int, val sizeAverage: Boolean = true)
- (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
+class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
+ (implicit ev: TensorNumeric[T]) extends MSECriterion[T] {
 
   require(nClasses > 1, "Required positive integer argument nClasses > 1")
-  val gradInput: Tensor[T] = Tensor[T]()
 
   private val simp = regsplex(nClasses - 1)
   private val simplex = Tensor[T](simp.size(1), nClasses)
   simplex.narrow(2, 1, simp.size(2)).copy(simp)
 
   @transient
-  private var _target: Tensor[T] = null
+  private var targetBuffer: Tensor[T] = null
 
   private def regsplex(n : Int): Tensor[T] = {
     val a = Tensor[T](n + 1, n)
     var k = 1
+    val arr = new Array[Int](2)
     while (k <= n) {
-      if (k == 1) a(Array(k, k)) = ev.fromType(1)
+      arr(0) = k
+      arr(1) = k
+      if (k == 1) a(arr) = ev.one
       if (k > 1) {
         val value1 = a.narrow(1, k, 1).narrow(2, 1, k - 1).norm(2)
-        a(Array(k, k)) = ev.sqrt(ev.minus(ev.fromType(1), ev.times(value1, value1)))
+        a(arr) = ev.sqrt(ev.minus(ev.one, ev.times(value1, value1)))
       }
-      var c = ev.minus(ev.times(a(Array(k, k)), a(Array(k, k))), ev.fromType(1))
-      c = ev.divide(ev.minus(c, ev.fromType(1.0 / n)), a(Array(k, k)))
+      var c = ev.minus(ev.times(a(arr), a(arr)), ev.one)
+      c = ev.divide(ev.minus(c, ev.fromType(1.0 / n)), a(arr))
       a.narrow(1, k + 1, n - k + 1).narrow(2, k, 1).fill(c)
       k += 1
     }
@@ -57,41 +60,32 @@ class ClassSimplexCriterion[T: ClassTag](val nClasses: Int, val sizeAverage: Boo
 
   private def transformTarget(target: Tensor[T]): Unit = {
     require(target.dim() == 1, "1D tensors only!")
-    if (null == _target) _target = Tensor[T](nClasses)
+    if (null == targetBuffer) targetBuffer = Tensor[T](nClasses)
 
-    _target.resize(target.size(1), nClasses)
+    targetBuffer.resize(target.size(1), nClasses)
     var i = 1
     while (i <= target.size(1)) {
-      _target(i).copy(simplex(ev.toType[Int](target(Array(i)))))
+      targetBuffer(i).copy(simplex(ev.toType[Int](target(Array(i)))))
       i += 1
     }
   }
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     transformTarget(target)
-    require(input.nElement() == _target.nElement(), "element wrong")
-
-    output = ev.fromType(0)
-    input.map(_target, (a, b) => {
-      output = ev.plus(output, ev.times(ev.minus(a, b), ev.minus(a, b)))
-      a
-    })
-    if (sizeAverage) output = ev.divide(output, ev.fromType[Int](input.nElement()))
-
+    require(input.nElement() == targetBuffer.nElement(), "element number wrong")
+    output = super.updateOutput(input, targetBuffer)
     output
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.nElement() == _target.nElement())
+    require(input.nElement() == targetBuffer.nElement())
 
-    gradInput.resizeAs(input).copy(input)
-    val norm = if (sizeAverage) 2.0 / input.nElement() else 2
-    gradInput.map(_target, (a, b) => ev.times(ev.fromType(norm), ev.minus(a, b)))
+    gradInput = super.updateGradInput(input, targetBuffer)
     gradInput
   }
 
   override def toString(): String = {
-    s"nn.ClassSimplexCriterion($nClasses, $sizeAverage)"
+    s"nn.ClassSimplexCriterion($nClasses)"
   }
 
 
@@ -101,14 +95,13 @@ class ClassSimplexCriterion[T: ClassTag](val nClasses: Int, val sizeAverage: Boo
     case that: ClassSimplexCriterion[T] =>
       super.equals(that) &&
         (that canEqual this) &&
-        nClasses == that.nClasses &&
-        sizeAverage == that.sizeAverage
+        nClasses == that.nClasses
     case _ => false
   }
 
   override def hashCode(): Int = {
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
-    val state = Seq(super.hashCode(), nClasses, sizeAverage)
+    val state = Seq(super.hashCode(), nClasses)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

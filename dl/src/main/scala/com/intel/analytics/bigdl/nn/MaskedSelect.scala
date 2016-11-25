@@ -16,6 +16,10 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
+
 import scala.reflect.ClassTag
 
 
@@ -27,44 +31,44 @@ import scala.reflect.ClassTag
 class MaskedSelect[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T]{
 
-  @transient
-  private var _maskIndices: Tensor[T] = null
-  @transient
-  private var _maskIndexBuffer: Tensor[T] = null
-  @transient
-  private var _gradBuffer: Tensor[T] = null
-  @transient
-  private var _gradMask: Tensor[T] = null
+  private val maskIndices = Tensor[T]()
+  private val maskIndexBuffer = Tensor[T]()
+  private val gradBuffer = Tensor[T]()
+  private val gradMask = Tensor[T]()
 
   override def updateOutput(input: Table): Tensor[T] = {
-    val _input = input[Tensor[T]](1)
+    val inputTensor = input[Tensor[T]](1)
     val mask = input[Tensor[T]](2)
-    if (ev.toType[Double](mask.sum()) > 0) _input.maskedSelect(mask, output)
+    if (ev.toType[Double](mask.sum()) > 0) inputTensor.maskedSelect(mask, output)
     output
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    val _input = input[Tensor[T]](1)
+    val inputTensor = input[Tensor[T]](1)
     val mask = input[Tensor[T]](2)
 
     // ignore CudaTensor
-    if (null == _maskIndices) _maskIndices = Tensor[T]()
-    if (null == _maskIndexBuffer) _maskIndexBuffer = Tensor[T]()
-    if (null == _gradBuffer) _gradBuffer = Tensor[T]()
-    if (null == _gradMask) _gradMask = Tensor[T]()
+    maskIndexBuffer.range(1, mask.nElement())
+    maskIndexBuffer.resizeAs(mask)
 
-    _maskIndexBuffer.range(1, mask.nElement())
-    _maskIndexBuffer.resizeAs(mask)
+    if (ev.toType[Double](mask.sum()) > 0) maskIndexBuffer.maskedSelect(mask, maskIndices)
 
-    if (ev.toType[Double](mask.sum()) > 0) _maskIndexBuffer.maskedSelect(mask, _maskIndices)
+    gradBuffer.resize(inputTensor.nElement()).zero()
+    gradBuffer.scatter(1, maskIndices, gradOutput)
+    gradBuffer.resizeAs(inputTensor)
 
-    _gradBuffer.resize(_input.nElement()).zero()
-    _gradBuffer.scatter(1, _maskIndices, gradOutput)
-    _gradBuffer.resizeAs(_input)
-
-    gradInput.insert(1, _gradBuffer)
-    gradInput.insert(2, _gradMask.resizeAs(mask).zero())
+    gradInput.insert(1, gradBuffer)
+    gradInput.insert(2, gradMask.resizeAs(mask).zero())
     gradInput
+  }
+
+  override def clearState() : this.type = {
+    super.clearState()
+    maskIndices.set()
+    maskIndexBuffer.set()
+    gradBuffer.set()
+    gradMask.set()
+    this
   }
 
   override def toString(): String = {
