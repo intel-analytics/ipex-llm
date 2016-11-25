@@ -17,7 +17,6 @@
 
 package com.intel.analytics.bigdl.models
 
-import com.github.fommil.netlib.{BLAS, NativeSystemBLAS}
 import com.intel.analytics.bigdl.models.imagenet._
 import com.intel.analytics.bigdl.models.mnist.LeNet5
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
@@ -66,6 +65,16 @@ object Perf {
             "vgg16 | vgg19 | lenet5 now")
         }
       )
+    opt[String]('d', "inputdata")
+      .text("Input data type. One of constant | random")
+      .action((v, p) => p.copy(inputData = v))
+      .validate(v =>
+        if (v.toLowerCase() == "constant" || v.toLowerCase() == "random") {
+          success
+        } else {
+          failure("Input data type must be one of constant and random")
+        }
+      )
     help("help").text("Prints this usage text")
   }
 
@@ -89,12 +98,14 @@ object Perf {
       case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
     }
-    input.rand()
+    param.inputData match {
+      case "constant" => input.fill(tn.fromType(0.01))
+      case "random" => input.rand()
+    }
     println(model)
     val criterion = new ClassNLLCriterion[T]()
     val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
 
-    require(BLAS.getInstance().isInstanceOf[NativeSystemBLAS])
     for (i <- 1 to param.warmUp) {
       var time = System.nanoTime()
       val output = model.forward(input)
@@ -146,5 +157,7 @@ case class PerfParams(
   iteration: Int = 50,
   warmUp: Int = 10,
   dataType: String = "float",
-  module: String = "alexnet"
+  module: String = "alexnet",
+  inputData: String = "random"
+
 )

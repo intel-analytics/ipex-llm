@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.models
 
 import java.util.concurrent.Executors
 
-import com.github.fommil.netlib.{BLAS, NativeSystemBLAS}
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, AlexNet_OWT, GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -73,6 +72,16 @@ object MultiModelPerf {
             "vgg16 | vgg19 | lenet5 now")
         }
       )
+    opt[String]('d', "inputData")
+      .text("InputData type. One of constant | random")
+      .action((v, p) => p.copy(inputData = v))
+      .validate(v =>
+        if (v.toLowerCase() == "constant" || v.toLowerCase() == "random") {
+          success
+        } else {
+          failure("InputData type must be one of constant and random")
+        }
+      )
     help("help").text("Prints this usage text")
   }
 
@@ -97,7 +106,6 @@ object MultiModelPerf {
       case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
         new ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
     })
-    require(BLAS.getInstance().isInstanceOf[NativeSystemBLAS])
 
     val grads = tests.map(_._1.getParameters()._2).toArray
     val gradLength = grads(0).nElement()
@@ -113,7 +121,13 @@ object MultiModelPerf {
 
       def reportFailure(t: Throwable) {}
     }
-
+        for (i <- 0 until param.cores) {
+            val (model, input, criterion, labels) = tests(i)
+            param.inputData match {
+              case "constant" => input.fill(tn.fromType(0.01))
+              case "random" => input.rand()
+            }
+          }
     for (i <- 1 to param.warmUp) {
       val time = System.nanoTime()
       (0 until param.cores).map(j => Future {
@@ -175,5 +189,6 @@ case class MultiModelPerfParams(
   cores: Int = 28,
   warmUp: Int = 10,
   dataType: String = "float",
-  module: String = "alexnet"
+  module: String = "alexnet",
+  inputData: String = "random"
 )
