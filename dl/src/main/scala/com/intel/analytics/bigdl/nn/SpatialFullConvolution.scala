@@ -251,7 +251,7 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
 
       // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
       DenseTensorBLAS.gemm[T](
-        "N", "T",
+        'N', 'T',
         n, m, k,
         ev.fromType[Int](1),
         input_n.storage().array(), input_n.storageOffset() - 1, n,
@@ -293,7 +293,7 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
       // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
       if(null != bias) {
         DenseTensorBLAS.gemm[T](
-          "T", "N",
+          'T', 'N',
           n, m, k,
           ev.fromType[Int](1),
           ones.storage().array(), ones.storageOffset() - 1, k,
@@ -390,7 +390,7 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
 
       // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
       DenseTensorBLAS.gemm[T](
-        "N", "N",
+        'N', 'N',
         n, m, k,
         ev.fromType[Int](1),
         columns.storage().array(), columns.storageOffset() - 1, n,
@@ -502,7 +502,7 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
 
       // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
       DenseTensorBLAS.gemm[T](
-        "T", "N",
+        'T', 'N',
         n, m, k,
         ev.fromType[Double](scale),
         columns.storage().array(), columns.storageOffset() - 1, k,
@@ -520,7 +520,7 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
       // Do GEMV (note: this is a bit confusing because gemv assumes column-major matrices)
       if (null != gradBias) {
         ev.gemv(
-          "T",
+          'T',
           k, m,
           ev.fromType[Double](scale),
           gradOutput_n.storage().array(), gradOutput_n.storageOffset() - 1, k,

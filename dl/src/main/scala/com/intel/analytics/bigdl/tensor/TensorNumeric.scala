@@ -65,11 +65,11 @@ object TensorNumericMath {
 
     def randn(): T
 
-    def gemm(transa: String, transb: String, m: Int, n: Int, k: Int, alpha: T, a: Array[T],
+    def gemm(transa: Char, transb: Char, m: Int, n: Int, k: Int, alpha: T, a: Array[T],
       aOffset: Int, lda: Int, b: Array[T], bOffset: Int, ldb: Int,
       beta: T, c: Array[T], cOffset: Int, ldc: Int)
 
-    def gemv(trans: String, m: Int, n: Int, alpha: T, a: Array[T], aoffset: Int, lda: Int,
+    def gemv(trans: Char, m: Int, n: Int, alpha: T, a: Array[T], aoffset: Int, lda: Int,
       x: Array[T], xOffset: Int, incx: Int, beta: T, y: Array[T], yOffset: Int, incy: Int)
 
     def axpy(n: Int, da: T, dx: Array[T], _dx_offset: Int, incx: Int, dy: Array[T],
@@ -175,34 +175,37 @@ object TensorNumericMath {
 
       def randn(): Float = RNG.normal(0, 1).toFloat
 
-      def gemm(transa: String, transb: String, m: Int, n: Int, k: Int, alpha: Float,
+      def gemm(transa: Char, transb: Char, m: Int, n: Int, k: Int, alpha: Float,
         a: Array[Float], aOffset: Int, lda: Int, b: Array[Float], bOffset: Int, ldb: Int,
         beta: Float, c: Array[Float], cOffset: Int, ldc: Int): Unit = {
-        DenseTensorBLAS.getTensorBLAS.sgemm(transa, transb, m, n, k, alpha, a, aOffset, lda, b,
-          bOffset, ldb, beta, c, cOffset, ldc)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vsgemm(transa, transb, m, n, k, alpha, a, aOffset, lda, b, bOffset,
+          ldb, beta, c, cOffset, ldc)
       }
 
-      def gemv(trans: String, m: Int, n: Int, alpha: Float, a: Array[Float], aoffset: Int, lda: Int,
+      def gemv(trans: Char, m: Int, n: Int, alpha: Float, a: Array[Float], aoffset: Int, lda: Int,
         x: Array[Float], xOffset: Int, incx: Int, beta: Float, y: Array[Float], yOffset: Int,
         incy: Int): Unit = {
-        DenseTensorBLAS.getTensorBLAS.sgemv(trans, m, n, alpha, a, aoffset, lda, x, xOffset,
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vsgemv(trans, m, n, alpha, a, aoffset, lda, x, xOffset,
           incx, beta, y, yOffset, incy)
       }
 
       def axpy(n: Int, da: Float, dx: Array[Float], _dx_offset: Int, incx: Int, dy: Array[Float],
         _dy_offset: Int, incy: Int): Unit = {
-        DenseTensorBLAS.getTensorBLAS.saxpy(n, da, dx, _dx_offset, incx, dy, _dy_offset, incy)
-      }
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vsaxpy(n, da, dx, _dx_offset, incx, dy, _dy_offset, incy)      }
 
       def dot(n: Int, dx: Array[Float], _dx_offset: Int, incx: Int, dy: Array[Float],
         _dy_offset: Int, incy: Int): Float = {
-        DenseTensorBLAS.getTensorBLAS.sdot(n, dx, _dx_offset, incx, dy, _dy_offset, incy)
-      }
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vsdot(n, dx, _dx_offset, incx, dy, _dy_offset, incy)      }
 
       def ger(m: Int, n: Int, alpha: Float, x: Array[Float], _x_offset: Int, incx: Int,
         y: Array[Float], _y_offset: Int,
         incy: Int, a: Array[Float], _a_offset: Int, lda: Int): Unit = {
-        DenseTensorBLAS.getTensorBLAS.sger(m, n, alpha, x, _x_offset, incx, y, _y_offset,
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vsger(m, n, alpha, x, _x_offset, incx, y, _y_offset,
           incy, a, _a_offset, lda)
       }
 
@@ -221,42 +224,43 @@ object TensorNumericMath {
 
       override def vPowx(n: Int, a: Array[Float], aOffset: Int, b: Float, y: Array[Float],
         yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsPowx(n, a, aOffset, b, y, yOffset)
       }
 
       override def vLn(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsLn(n, a, aOffset, y, yOffset)
       }
 
       override def vExp(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsExp(n, a, aOffset, y, yOffset)
       }
 
       override def vSqrt(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsSqrt(n, a, aOffset, y, yOffset)
       }
 
       override def vAbs(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsAbs(n, a, aOffset, y, yOffset)
       }
 
       override def vLog1p(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsLog1p(n, a, aOffset, y, yOffset)
       }
 
       override def scal(n: Int, sa: Float, sx: Array[Float], offset: Int, incx: Int): Unit = {
-        DenseTensorBLAS.getTensorBLAS.sscal(n, sa, sx, offset, incx)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vsscal(n, sa, sx, offset, incx)
       }
 
       override def inv(v: Float): Float = 1 / v
@@ -279,13 +283,13 @@ object TensorNumericMath {
 
       override def vAdd(n: Int, a: Array[Float], aOffset: Int, b: Array[Float], bOffset: Int,
         y: Array[Float], yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsAdd(n, a, aOffset, b, bOffset, y, yOffset)
       }
 
       override def vSub(n: Int, a: Array[Float], aOffset: Int, b: Array[Float], bOffset: Int,
         y: Array[Float], yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsSub(n, a, aOffset, b, bOffset, y, yOffset)
       }
 
@@ -361,38 +365,40 @@ object TensorNumericMath {
 
       def randn(): Double = RNG.normal(0, 1)
 
-      def gemm(transa: String, transb: String, m: Int, n: Int, k: Int, alpha: Double,
+      def gemm(transa: Char, transb: Char, m: Int, n: Int, k: Int, alpha: Double,
         a: Array[Double], aOffset: Int, lda: Int, b: Array[Double], bOffset: Int, ldb: Int,
         beta: Double, c: Array[Double], cOffset: Int, ldc: Int): Unit = {
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
 
-        DenseTensorBLAS.getTensorBLAS.dgemm(transa, transb, m, n, k, alpha, a, aOffset, lda, b,
+        MKL.vdgemm(transa, transb, m, n, k, alpha, a, aOffset, lda, b,
           bOffset, ldb, beta, c, cOffset, ldc)
       }
 
-      def gemv(trans: String, m: Int, n: Int, alpha: Double, a: Array[Double], aoffset: Int,
+      def gemv(trans: Char, m: Int, n: Int, alpha: Double, a: Array[Double], aoffset: Int,
         lda: Int, x: Array[Double], xOffset: Int, incx: Int, beta: Double, y: Array[Double],
         yOffset: Int, incy: Int): Unit = {
-
-        DenseTensorBLAS.getTensorBLAS.dgemv(trans, m, n, alpha, a, aoffset, lda, x, xOffset, incx,
-          beta, y, yOffset, incy)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vdgemv(trans, m, n, alpha, a, aoffset, lda, x, xOffset,
+          incx, beta, y, yOffset, incy)
       }
 
       def axpy(n: Int, da: Double, dx: Array[Double], _dx_offset: Int, incx: Int,
         dy: Array[Double], _dy_offset: Int, incy: Int): Unit = {
-
-        DenseTensorBLAS.getTensorBLAS.daxpy(n, da, dx, _dx_offset, incx, dy, _dy_offset, incy)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vdaxpy(n, da, dx, _dx_offset, incx, dy, _dy_offset, incy)
       }
 
       def dot(n: Int, dx: Array[Double], _dx_offset: Int, incx: Int, dy: Array[Double],
         _dy_offset: Int, incy: Int): Double = {
-        DenseTensorBLAS.getTensorBLAS.ddot(n, dx, _dx_offset, incx, dy, _dy_offset, incy)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vddot(n, dx, _dx_offset, incx, dy, _dy_offset, incy)
       }
 
       def ger(m: Int, n: Int, alpha: Double, x: Array[Double], _x_offset: Int, incx: Int,
         y: Array[Double], _y_offset: Int,
         incy: Int, a: Array[Double], _a_offset: Int, lda: Int): Unit = {
-
-        DenseTensorBLAS.getTensorBLAS.dger(m, n, alpha, x, _x_offset, incx, y, _y_offset,
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vdger(m, n, alpha, x, _x_offset, incx, y, _y_offset,
           incy, a, _a_offset, lda)
       }
 
@@ -411,42 +417,43 @@ object TensorNumericMath {
 
       override def vPowx(n: Int, a: Array[Double], aOffset: Int, b: Double, y: Array[Double],
         yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdPowx(n, a, aOffset, b, y, yOffset)
       }
 
       override def vLn(n: Int, a: Array[Double], aOffset: Int, y: Array[Double],
                        yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdLn(n, a, aOffset, y, yOffset)
       }
 
       override def vExp(n: Int, a: Array[Double], aOffset: Int, y: Array[Double],
                         yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdExp(n, a, aOffset, y, yOffset)
       }
 
       override def vSqrt(n: Int, a: Array[Double], aOffset: Int, y: Array[Double],
                          yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdSqrt(n, a, aOffset, y, yOffset)
       }
 
       override def vAbs(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdAbs(n, a, aOffset, y, yOffset)
       }
 
       override def vLog1p(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdLog1p(n, a, aOffset, y, yOffset)
       }
 
       override def scal(n: Int, sa: Double, sx: Array[Double], offset: Int, incx: Int): Unit = {
-        DenseTensorBLAS.getTensorBLAS.dscal(n, sa, sx, offset, incx)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        MKL.vdscal(n, sa, sx, offset, incx)
       }
 
       override def inv(v: Double): Double = 1 / v
@@ -469,13 +476,13 @@ object TensorNumericMath {
 
       override def vAdd(n: Int, a: Array[Double], aOffset: Int, b: Array[Double], bOffset: Int,
         y: Array[Double], yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdAdd(n, a, aOffset, b, bOffset, y, yOffset)
       }
 
       override def vSub(n: Int, a: Array[Double], aOffset: Int, b: Array[Double], bOffset: Int,
         y: Array[Double], yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded)
+        require(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdSub(n, a, aOffset, b, bOffset, y, yOffset)
       }
 

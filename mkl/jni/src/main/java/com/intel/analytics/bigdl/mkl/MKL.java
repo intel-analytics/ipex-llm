@@ -101,6 +101,44 @@ public class MKL {
 
     public native static void vdAbs(int n, double[] a, int aOffset, double[] y, int yOffset);
 
+    public native static void vsgemm(char transa, char transb, int m, int n, int k, float alpha,
+                                     float[] a, int aOffset, int lda, float[] b, int bOffset, int ldb,
+                                     float beta, float[] c,int cOffset, int ldc);
+
+    public native static void vdgemm(char transa, char transb, int m, int n, int k, double alpha,
+                                     double[] a, int aOffset, int lda, double[] b, int bOffset, int ldb,
+                                     double beta, double[] c,int cOffset, int ldc);
+
+    public native static void vsgemv(char trans, int m, int n, float alpha, float[] a, int aOffset,
+                                     int lda, float[] x, int xOffest, int incx, float beta, float[] y,
+                                     int yOffest,int incy);
+
+    public native static void vdgemv(char trans, int m, int n, double alpha, double[] a, int aOffset,
+                                     int lda, double[] x, int xOffest, int incx, double beta, double[] y,
+                                     int yOffest,int incy);
+
+    public native static void vsaxpy(int n, float da, float[] dx, int dxOffest, int incx, float[] dy,
+                                     int dyOffset, int incy);
+
+    public native static void vdaxpy(int n, double da, double[] dx, int dxOffest, int incx, double[] dy,
+                                     int dyOffset, int incy);
+
+    public native static float vsdot(int n, float[] dx, int dxOffset, int incx, float[]dy, int dyOffset,
+                                     int incy);
+
+    public native static double vddot(int n, double[] dx, int dxOffset, int incx, double[]dy, int dyOffset,
+                                      int incy);
+
+    public native static void vsger(int m, int n, float alpha, float[] x, int xOffset, int incx,
+                                    float[] y, int yOffset, int incy, float[] a, int aOffset, int lda);
+
+    public native static void vdger(int m, int n, double alpha, double[] x, int xOffset, int incx,
+                                    double[] y, int yOffset, int incy, double[] a, int aOffset, int lda);
+
+    public native static void vsscal(int n, float sa, float[] sx, int offset, int incx);
+
+    public native static void vdscal(int n, double sa, double[] sx, int offset, int incx);
+    
     /**
      * Get the worker pool size of current JVM thread. Note different JVM thread has separated MKL worker pool.
      * @return

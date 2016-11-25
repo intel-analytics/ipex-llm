@@ -413,6 +413,63 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     })
   }
 
+  "addr transpose" should "return correct value" in {
+    val v1: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
+    val v2: Tensor[Double] = new DenseTensor(Storage(Array(2.0, 0.0, -1.0)))
+    val tensor: Tensor[Double] = new DenseTensor(3, 3)
+    tensor(Array(1, 1)) = 1
+    tensor(Array(1, 2)) = 2
+    tensor(Array(1, 3)) = 2
+    tensor(Array(2, 1)) = 3
+    tensor(Array(2, 2)) = 4
+    tensor(Array(2, 3)) = 4
+    tensor(Array(3, 1)) = 5
+    tensor(Array(3, 2)) = 6
+    tensor(Array(3, 3)) = 6
+    val mat: Tensor[Double] = tensor.t
+    val r = Tensor[Double]()
+    r.resize(Array(3, 3))
+    r.addr(1.0, mat, 1.0, v1, v2)
+    val expect_r = new DenseTensor(Storage(Array(3.0, 3.0, 4.0,
+      6.0, 4.0, 4.0,
+      8.0, 4.0, 3.0)), 1, Array(3, 3))
+    r should be (expect_r)
+  }
+
+  "addr" should "return correct value" in {
+    val v1: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
+    val v2: Tensor[Double] = new DenseTensor(Storage(Array(2.0, 0.0, -1.0)))
+    val r = Tensor[Double]()
+    r.resize(Array(3, 3))
+    r.addr(v1, v2)
+    r should be (new DenseTensor[Double](Storage(Array(2.0, 0.0, -1.0,
+      4.0, 0.0, -2.0,
+      6.0, 0.0, -3.0)), 1, Array(3, 3)))
+  }
+
+  "addr noncontiguous" should "return correct value" in {
+    val v1: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
+    val v2: Tensor[Double] = new DenseTensor(Storage(Array(2.0, 0.0, -1.0)))
+    val tensor: Tensor[Double] = new DenseTensor(3, 3, 2)
+    tensor(Array(1, 1, 1)) = 1
+    tensor(Array(1, 2, 1)) = 2
+    tensor(Array(1, 3, 1)) = 2
+    tensor(Array(2, 1, 1)) = 3
+    tensor(Array(2, 2, 1)) = 4
+    tensor(Array(2, 3, 1)) = 4
+    tensor(Array(3, 1, 1)) = 5
+    tensor(Array(3, 2, 1)) = 6
+    tensor(Array(3, 3, 1)) = 6
+    val mat: Tensor[Double] = tensor(T(T(), T(), 1)).t
+
+    val r = Tensor[Double]()
+    r.resize(Array(3, 3))
+    r.addr(1, mat, 1, v1, v2)
+    r should be (new DenseTensor[Double](Storage(Array(3.0, 3.0, 4.0,
+      6.0, 4.0, 4.0,
+      8.0, 4.0, 3.0)), 1, Array(3, 3)))
+  }
+
   "uniform" should "return correct value" in {
     val t = Tensor[Double]()
     for (i <- 0 to 1000) {
@@ -658,116 +715,114 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
   }
 
   "gemm(N, N)" should "return correct value" in {
-      val matrixA = Tensor[Float](2, 3)
-      val matrixB = Tensor[Float](3, 2)
+    val matrixA = Tensor[Float](2, 3)
+    val matrixB = Tensor[Float](3, 2)
 
-      var i = 0
-      matrixA.apply1(_ => {
-        i = i + 1;
-        i
-      })
-      matrixB.copy(matrixA)
+    var i = 0
+    matrixA.apply1(_ => {
+      i = i + 1;
+      i
+    })
+    matrixB.copy(matrixA)
 
-      val matrixC = Tensor[Float](2, 2)
+    val matrixC = Tensor[Float](2, 2)
 
-      DenseTensorBLAS.gemm[Float](
-        "N", "N",
-        2, 2, 3,
-        1,
-        matrixA.storage().array(), matrixA.storageOffset() - 1, 2,
-        matrixB.storage().array(), matrixB.storageOffset() - 1, 3,
-        0,
-        matrixC.storage().array(), matrixC.storageOffset() - 1, 2
-      )
+    DenseTensorBLAS.gemm[Float](
+      'N', 'N',
+      2, 2, 3,
+      1,
+      matrixA.storage().array(), matrixA.storageOffset() - 1, 2,
+      matrixB.storage().array(), matrixB.storageOffset() - 1, 3,
+      0,
+      matrixC.storage().array(), matrixC.storageOffset() - 1, 2
+    )
 
-      val result = Tensor[Float](Storage(Array[Float](22, 28, 49, 64)), 1, Array(2, 2))
+    val result = Tensor[Float](Storage(Array[Float](22, 28, 49, 64)), 1, Array(2, 2))
 
-      matrixC should be (result)
-    }
+    matrixC should be (result)
+  }
 
   "gemm(N, T)" should "return correct value" in {
-      val matrixA = Tensor[Float](2, 3)
-      val matrixB = Tensor[Float](2, 3)
+    val matrixA = Tensor[Float](2, 3)
+    val matrixB = Tensor[Float](2, 3)
 
-      var i = 0
-      matrixA.apply1(_ => {
-        i = i + 1;
-        i
-      })
-      matrixB.copy(matrixA)
+    var i = 0
+    matrixA.apply1(_ => {
+      i = i + 1;
+      i
+    })
+    matrixB.copy(matrixA)
 
-      val matrixC = Tensor[Float](2, 2)
+    val matrixC = Tensor[Float](2, 2)
 
-      DenseTensorBLAS.gemm[Float](
-        "N", "T",
-        2, 2, 3,
-        1,
-        matrixA.storage().array(), matrixA.storageOffset() - 1, 2,
-        matrixB.storage().array(), matrixB.storageOffset() - 1, 2,
-        0,
-        matrixC.storage().array(), matrixC.storageOffset() - 1, 2
-      )
+    DenseTensorBLAS.gemm[Float](
+      'N', 'T',
+      2, 2, 3,
+      1,
+      matrixA.storage().array(), matrixA.storageOffset() - 1, 2,
+      matrixB.storage().array(), matrixB.storageOffset() - 1, 2,
+      0,
+      matrixC.storage().array(), matrixC.storageOffset() - 1, 2
+    )
 
-      val result = Tensor[Float](Storage(Array[Float](35, 44, 44, 56)), 1, Array(2, 2))
-
-      matrixC should be (result)
-    }
+    val result = Tensor[Float](Storage(Array[Float](35, 44, 44, 56)), 1, Array(2, 2))
+    matrixC should be (result)
+  }
 
   "gemm(T, N)" should "return correct value" in {
-      val matrixA = Tensor[Float](3, 2)
-      val matrixB = Tensor[Float](3, 2)
+    val matrixA = Tensor[Float](3, 2)
+    val matrixB = Tensor[Float](3, 2)
 
-      var i = 0
-      matrixA.apply1(_ => {
-        i = i + 1;
-        i
-      })
-      matrixB.copy(matrixA)
+    var i = 0
+    matrixA.apply1(_ => {
+      i = i + 1;
+      i
+    })
+    matrixB.copy(matrixA)
 
-      val matrixC = Tensor[Float](2, 2)
+    val matrixC = Tensor[Float](2, 2)
 
-      DenseTensorBLAS.gemm[Float](
-        "T", "N",
-        2, 2, 3,
-        1,
-        matrixA.storage().array(), matrixA.storageOffset() - 1, 3,
-        matrixB.storage().array(), matrixB.storageOffset() - 1, 3,
-        0,
-        matrixC.storage().array(), matrixC.storageOffset() - 1, 2
-      )
+    DenseTensorBLAS.gemm[Float](
+      't', 'n',
+      2, 2, 3,
+      1,
+      matrixA.storage().array(), matrixA.storageOffset() - 1, 3,
+      matrixB.storage().array(), matrixB.storageOffset() - 1, 3,
+      0,
+      matrixC.storage().array(), matrixC.storageOffset() - 1, 2
+    )
 
-      val result = Tensor[Float](Storage(Array[Float](14, 32, 32, 77)), 1, Array(2, 2))
-
-      matrixC should be (result)
-    }
+    val result = Tensor[Float](Storage(Array[Float](14, 32, 32, 77)), 1, Array(2, 2))
+    matrixC should be (result)
+  }
 
   "gemm(T, T)" should "return correct value" in {
-      val matrixA = Tensor[Float](3, 2)
-      val matrixB = Tensor[Float](2, 3)
+    val matrixA = Tensor[Float](3, 2)
+    val matrixB = Tensor[Float](2, 3)
 
-      var i = 0
-      matrixA.apply1(_ => {
-        i = i + 1;
-        i
-      })
-      matrixB.copy(matrixA)
+    var i = 0
+    matrixA.apply1(_ => {
+      i = i + 1;
+      i
+    })
+    matrixB.copy(matrixA)
 
-      val matrixC = Tensor[Float](2, 2)
+    val matrixC = Tensor[Float](2, 2)
 
-      DenseTensorBLAS.gemm[Float](
-        "T", "T",
-        2, 2, 3,
-        1,
-        matrixA.storage().array(), matrixA.storageOffset() - 1, 3,
-        matrixB.storage().array(), matrixB.storageOffset() - 1, 2,
-        0,
-        matrixC.storage().array(), matrixC.storageOffset() - 1, 2
-      )
+    DenseTensorBLAS.gemm[Float](
+      'T', 'T',
+      2, 2, 3,
+      1,
+      matrixA.storage().array(), matrixA.storageOffset() - 1, 3,
+      matrixB.storage().array(), matrixB.storageOffset() - 1, 2,
+      0,
+      matrixC.storage().array(), matrixC.storageOffset() - 1, 2
+    )
 
-      val result = Tensor[Float](Storage(Array[Float](22, 49, 28, 64)), 1, Array(2, 2))
+    val result = Tensor[Float](Storage(Array[Float](22, 49, 28, 64)), 1, Array(2, 2))
 
-      matrixC should be (result)
-    }
+    matrixC should be (result)
+  }
 
   "cdiv" should "return right result" in {
     val x = Tensor[Float](2, 2).fill(1f)
@@ -880,4 +935,5 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     x should be (Tensor(Storage(Array(2f, 2f, 2f, 2f)), 1, Array(2, 2)))
     y should be (Tensor(Storage(Array(2f + 2, 2f + 4, 2f + 6, 2f + 8)), 1, Array(2, 2)))
   }
+
 }

@@ -462,56 +462,56 @@ object DenseTensorMath {
     var _r: Tensor[T] = null
     var _m1: Tensor[T] = m1
     var _m2: Tensor[T] = m2
-    var transpose_r = ""
+    var transpose_r = ' '
     if (r.stride(1) == 1 && r.stride(2) != 0) {
-      transpose_r = "n"
+      transpose_r = 'n'
       _r = r
     } else if (r.stride(2) == 1 && r.stride(1) != 0) {
       val swap = _m2
       _m2 = _m1
       _m1 = swap
-      transpose_r = "t"
+      transpose_r = 't'
       _r = r
     } else {
-      transpose_r = "n"
+      transpose_r = 'n'
       _r = new DenseTensor[T](r.size(2), r.size(1))
       _r.copy(r)
       _r = _r.transpose(1, 2)
     }
 
-    val index1 = if (transpose_r == "n") 1 else 2
-    val index2 = if (transpose_r == "n") 2 else 1
-    var transpose_m1 = ""
+    val index1 = if (transpose_r == 'n') 1 else 2
+    val index2 = if (transpose_r == 'n') 2 else 1
+    var transpose_m1 = ' '
     var __m1: Tensor[T] = null
     if (_m1.stride(index1) == 1 && _m1.stride(index2) != 0) {
-      transpose_m1 = "n"
+      transpose_m1 = 'n'
       __m1 = _m1
     } else if (_m1.stride(index2) == 1 && _m1.stride(index1) != 0) {
-      transpose_m1 = "t"
+      transpose_m1 = 't'
       __m1 = _m1
     } else {
-      transpose_m1 = if (transpose_r == "n") "t" else "n"
+      transpose_m1 = if (transpose_r == 'n') 't' else 'n'
       __m1 = _m1.contiguous()
     }
 
-    var transpose_m2 = ""
+    var transpose_m2 = ' '
     var __m2: Tensor[T] = null
     if (_m2.stride(index1) == 1 && _m2.stride(index2) != 0) {
-      transpose_m2 = "n"
+      transpose_m2 = 'n'
       __m2 = _m2
     } else if (_m2.stride(index2) == 1 && _m2.stride(index1) != 0) {
-      transpose_m2 = "t"
+      transpose_m2 = 't'
       __m2 = _m2
     } else {
-      transpose_m2 = if (transpose_r == "n") "t" else "n"
+      transpose_m2 = if (transpose_r == 'n') 't' else 'n'
       __m2 = _m2.contiguous()
     }
 
     DenseTensorBLAS.gemm[T](transpose_m1, transpose_m2, _r.size(index1), _r.size(index2),
       __m1.size(index2), alpha, __m1.storage().array(), __m1.storageOffset() - 1,
-      if (transpose_m1 == "n") __m1.stride(index2) else __m1.stride(index1),
+      if (transpose_m1 == 'n') __m1.stride(index2) else __m1.stride(index1),
       __m2.storage().array(), __m2.storageOffset() - 1,
-      if (transpose_m2 == "n") __m2.stride(index2) else __m2.stride(index1),
+      if (transpose_m2 == 'n') __m2.stride(index2) else __m2.stride(index1),
       beta,
       _r.storage().array(), _r.storageOffset() - 1,
       _r.stride(index2)
@@ -609,17 +609,17 @@ object DenseTensorMath {
     }
 
     if (mat.stride(1) == 1) {
-      ev.gemv("N", mat.size(1), mat.size(2), alpha, mat.storage().array(), mat.storageOffset() - 1,
+      ev.gemv('N', mat.size(1), mat.size(2), alpha, mat.storage().array(), mat.storageOffset() - 1,
         mat.stride(2), vec.storage().array(), vec.storageOffset() - 1, vec.stride(1), beta,
         r.storage().array(),
         r.storageOffset() - 1, r.stride(1))
     } else if (mat.stride(2) == 1) {
-      ev.gemv("T", mat.size(2), mat.size(1), alpha, mat.storage().array(), mat.storageOffset() - 1,
+      ev.gemv('T', mat.size(2), mat.size(1), alpha, mat.storage().array(), mat.storageOffset() - 1,
         mat.stride(1), vec.storage().array(), vec.storageOffset() - 1, vec.stride(1), beta,
         r.storage().array(), r.storageOffset() - 1, r.stride(1))
     } else {
       val cmat = mat.contiguous()
-      ev.gemv("T", cmat.size(2), cmat.size(1), alpha, cmat.storage().array(),
+      ev.gemv('T', cmat.size(2), cmat.size(1), alpha, cmat.storage().array(),
         cmat.storageOffset() - 1, cmat.stride(1), vec.storage().array(), vec.storageOffset() - 1,
         vec.stride(1), beta, r.storage().array(), r.storageOffset() - 1, r.stride(1))
     }
