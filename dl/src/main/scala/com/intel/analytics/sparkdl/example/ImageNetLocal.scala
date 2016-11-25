@@ -194,11 +194,11 @@ object ImageNetLocal {
         model.training()
         val start = System.nanoTime()
 
-        val pathDir = "/tmp/train"
-        val input = loadTH(pathDir + "/input", c+1).asInstanceOf[Tensor[Float]]
-        val target = loadTH(pathDir + "/label", c+1).asInstanceOf[Tensor[Float]]
-
-        //val (input, target) = iter.next()
+        //val pathDir = "/tmp/train"
+        //val input = loadTH(pathDir + "/input", c+388).asInstanceOf[Tensor[Float]]
+        //val target = loadTH(pathDir + "/label", c+388).asInstanceOf[Tensor[Float]]
+        //println(c+388)
+        val (input, target) = iter.next()
         val readImgTime = System.nanoTime()
         model.zeroGradParameters()
         val output = model.forward(input).asInstanceOf[Tensor[Float]]
@@ -261,10 +261,10 @@ object ImageNetLocal {
         var k = 0
         var c = 0
         while (k < dataSetVal.getTotal) {
-          val pathDir = "/disk2/test/torchdata/test"
-          val input = loadTH(pathDir + "/input", c+1).asInstanceOf[Tensor[Float]]
-          val target = loadTH(pathDir + "/label", c+1).asInstanceOf[Tensor[Float]]
-          //val (input, target) = iterVal.next()
+          //val pathDir = "/disk2/test/torchdata/test"
+          //val input = loadTH(pathDir + "/input", c+1).asInstanceOf[Tensor[Float]]
+          //val target = loadTH(pathDir + "/label", c+1).asInstanceOf[Tensor[Float]]
+          val (input, target) = iterVal.next()
           val output = model.forward(input).asInstanceOf[Tensor[Float]]
           top1Correct += EvaluateMethods.calcAccuracy(output, target)._1
           top5Correct += EvaluateMethods.calcTop5Accuracy(output, target)._1
