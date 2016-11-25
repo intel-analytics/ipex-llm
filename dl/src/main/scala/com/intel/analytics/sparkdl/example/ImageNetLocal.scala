@@ -180,10 +180,25 @@ object ImageNetLocal {
       var j = 0
       var c = 0
 
+      def loadTH(pathDir: String, iteration: Int): (Any) = {
+        val suffix = ".t7"
+        //val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
+        //val absolutePath = tmpFile.getAbsolutePath
+        //val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
+        val subPath = pathDir + "/iteration-" + iteration.toString
+        val tmp: Any = File.load(subPath + suffix)
+        tmp
+      }
+
       while (j < dataSet.getTotal) {
         model.training()
         val start = System.nanoTime()
-        val (input, target) = iter.next()
+
+        val pathDir = "/disk2/test/torchdata/train"
+        val input = loadTH(pathDir + "/input", c+1).asInstanceOf[Tensor[Float]]
+        val target = loadTH(pathDir + "/label", c+1).asInstanceOf[Tensor[Float]]
+
+        //val (input, target) = iter.next()
         val readImgTime = System.nanoTime()
         model.zeroGradParameters()
         val output = model.forward(input).asInstanceOf[Tensor[Float]]
@@ -244,8 +259,12 @@ object ImageNetLocal {
         var top1Correct = 0
         var top5Correct = 0
         var k = 0
+        var c = 0
         while (k < dataSetVal.getTotal) {
-          val (input, target) = iterVal.next()
+          val pathDir = "/disk2/test/torchdata/test"
+          val input = loadTH(pathDir + "/input", c+1).asInstanceOf[Tensor[Float]]
+          val target = loadTH(pathDir + "/label", c+1).asInstanceOf[Tensor[Float]]
+          //val (input, target) = iterVal.next()
           val output = model.forward(input).asInstanceOf[Tensor[Float]]
           top1Correct += EvaluateMethods.calcAccuracy(output, target)._1
           top5Correct += EvaluateMethods.calcTop5Accuracy(output, target)._1
@@ -253,6 +272,7 @@ object ImageNetLocal {
             dataSetVal.post(stageImgsVal.poll())
           }
           k += input.size(1)
+          c += 1
         }
 
         val top1Accuracy = top1Correct.toDouble / dataSetVal.getTotal
