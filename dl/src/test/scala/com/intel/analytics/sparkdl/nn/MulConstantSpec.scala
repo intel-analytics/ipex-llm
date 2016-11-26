@@ -1,5 +1,6 @@
 package com.intel.analytics.sparkdl.nn
 
+import com.intel.analytics.bigdl.nn.MulConstant
 import com.intel.analytics.sparkdl.tensor.Tensor
 import org.scalatest.FlatSpec
 

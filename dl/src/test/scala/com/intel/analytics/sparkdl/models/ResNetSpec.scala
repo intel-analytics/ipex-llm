@@ -16,7 +16,7 @@
  */
 
 package com.intel.analytics.sparkdl.models
-import com.intel.analytics.sparkdl.models.imagenet.ResNet
+import com.intel.analytics.bigdl.models.ResNet
 import com.intel.analytics.sparkdl.models.imagenet.ResNet.ShortcutType
 import com.intel.analytics.sparkdl.nn._
 import com.intel.analytics.sparkdl.optim.SGD
