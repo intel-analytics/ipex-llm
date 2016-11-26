@@ -1,8 +1,8 @@
-package com.intel.analytics.sparkdl.nn
+package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.sparkdl.optim.SGD
-import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.utils.T
+import com.intel.analytics.bigdl.optim.SGD
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.math._

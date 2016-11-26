@@ -23,16 +23,9 @@ import java.util
 import java.util.Collections
 import java.util.concurrent.{Executors, LinkedBlockingQueue}
 
-<<<<<<< HEAD:dl/src/main/scala/com/intel/analytics/sparkdl/example/ImageNet.scala
-import com.intel.analytics.sparkdl.example.ImageNetLocal.{ColorJitter, ColorNormalize, HorizontalFlip, Lighting}
-
-import scala.util.control.Breaks._
-import com.intel.analytics.sparkdl.utils.RandomGenerator._
-import com.intel.analytics.sparkdl.tensor.Tensor
-=======
+import com.intel.analytics.bigdl.example.ImageNetLocal.{ColorJitter, ColorNormalize, Lighting}
 import com.intel.analytics.bigdl.tensor.Tensor
->>>>>>> master:dl/src/main/scala/com/intel/analytics/bigdl/example/ImageNet.scala
-
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import scala.util.Random
 
 object ImageNetUtils {
@@ -121,7 +114,7 @@ object ImageNetUtils {
     }
   }
 
-  def randomSizedCrop(width: Int, height: Int)(cropWidth: Int, cropHeight: Int): (Int, Int) = {
+/*  def randomSizedCrop(width: Int, height: Int)(cropWidth: Int, cropHeight: Int): (Int, Int) = {
     val area = width * height
     val r = scala.util.Random
     var y1 = r.nextInt((height - cropHeight)/2)
@@ -145,7 +138,7 @@ object ImageNetUtils {
       }
     }
     (x1, y1)
-  }
+  }*/
 
   def cropFloat(rawData: Array[Byte], cropWidth: Int, cropHeight: Int,
     mean: (Float, Float, Float), std: (Float, Float, Float), result: Array[Float],

@@ -1,6 +1,6 @@
-package com.intel.analytics.sparkdl.nn
+package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 /**

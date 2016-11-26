@@ -22,10 +22,12 @@ import java.util
 
 import com.intel.analytics.bigdl.models.ResNet
 import com.intel.analytics.bigdl.models.ResNet.ShortcutType
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
 import com.intel.analytics.bigdl.optim.{EvaluateMethods, SGD}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{File, T}
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -92,11 +94,10 @@ object ImageNetLocal {
       case "googlenet-cf" => GoogleNet.getModelCaffe[Float](classNum)
       case "resnet" => {
         val curModel = ResNet[Float](classNum, T("shortcutType" -> ShortcutType.B, "depth" -> modelDepth))
-        val packageName = curModel.getName().stripSuffix("Sequential")
         ResNet.shareGradInput(curModel)
-        ResNet.convInit(packageName + "SpatialConvolution", curModel)
-        ResNet.bnInit(packageName + "SpatialBatchNormalization", curModel)
-        ResNet.lnInit(packageName + "Linear", curModel)
+        ResNet.convInit(curModel)
+        ResNet.bnInit(curModel)
+        ResNet.lnInit(curModel)
         curModel
       }
       case _ => throw new IllegalArgumentException

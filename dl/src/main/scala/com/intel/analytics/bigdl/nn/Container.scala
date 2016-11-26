@@ -71,20 +71,20 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
     * @param indexes     ignore it
     * @return module ref, offset(ignore), indexes from the current module
     */
-  override def findModel(
+  def findModel(
                  paramOffset: Int,
                  indexes: Array[Int] = Array()):
   (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
 
-  override def mapModules(f: Module[_ <: Activities, _ <: Activities, T] => Unit): Unit = {
+  def mapModules(f: Module[_ <: Activities, _ <: Activities, T] => Unit): Unit = {
     f(this)
 
     if (modules != null) {
-      modules.foreach(_.mapModules(f))
+      modules.foreach(_.asInstanceOf[Sequential[_<:Activities, _<:Activities, T]].mapModules(f))
     }
   }
 
-  override def findModules(name: String): ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]] = {
+  def findModules(name: String): ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]] = {
     def matchName(module: Module[_ <: Activities, _ <: Activities, T]) =
       module.getClass.getName.equals(name)
 
@@ -93,7 +93,7 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
     if (matchName(this)) nodes.append(this)
     if (modules != null) {
       modules.foreach(m => {
-        val tempNodes = m.findModules(name)
+        val tempNodes = m.asInstanceOf[Sequential[_<:Activities, _<:Activities, T]].findModules(name)
         nodes ++= tempNodes
       })
     }

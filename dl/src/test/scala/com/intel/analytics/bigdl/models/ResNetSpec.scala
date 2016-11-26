@@ -15,21 +15,19 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.sparkdl.models
-import com.intel.analytics.bigdl.models.ResNet
-import com.intel.analytics.sparkdl.models.imagenet.ResNet.ShortcutType
-import com.intel.analytics.sparkdl.nn._
-import com.intel.analytics.sparkdl.optim.SGD
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor._
-import com.intel.analytics.sparkdl.torch.TH
-import com.intel.analytics.sparkdl.utils.RandomGenerator._
-import com.intel.analytics.sparkdl.utils.{Engine, T}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+package com.intel.analytics.bigdl.models
 
-import scala.collection.{immutable, mutable}
+import com.intel.analytics.bigdl.models.ResNet.ShortcutType
+import com.intel.analytics.bigdl.optim.SGD
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.torch.TH
+import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.nn._
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+
+import scala.collection.immutable
 import scala.math._
-import scala.reflect.ClassTag
 import scala.util.Random
 
 class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
