@@ -29,7 +29,7 @@ import org.apache.hadoop.io.SequenceFile.Reader
 import org.apache.spark.{Partition, SparkContext}
 import org.apache.spark.rdd.RDD
 
-import scala.reflect.ClassTag
+import scala.reflect._
 
 /**
  * Represent a set of data, which can be used for training or validation
@@ -60,14 +60,6 @@ trait DataSet[D] {
    * @return
    */
   def size(): Long
-
-  /**
-   * Check whether all data in the data set have been processed. For a looped data set, it will
-   * always be false.
-   *
-   * @return
-   */
-  def finished(): Boolean
 }
 
 /**
@@ -95,8 +87,6 @@ trait LocalDataSet[T] extends DataSet[Iterator[T]] {
       override def size(): Long = preDataSource.size()
 
       override def data(): Iterator[C] = transformer.apply(preDataSource.data())
-
-      override def finished(): Boolean = preDataSource.finished()
     }
   }
   // scalastyle:on noSpaceBeforeLeftBracket
@@ -108,7 +98,11 @@ trait RDDDataSet[T] extends DataSet[RDD[T]] {
   // scalastyle:off noSpaceBeforeLeftBracket
   def ->[C: ClassTag](transformer: Transformer[T, C]): RDDDataSet[C] = {
     val preDataSource = this
-    val _transformer = transformer
+
+    val transformFunc: Iterator[T] => Iterator[C] = (d => {
+      transformer(d)
+    })
+
     new RDDDataSet[C] {
       override def size(): Long = preDataSource.size()
 
@@ -116,9 +110,7 @@ trait RDDDataSet[T] extends DataSet[RDD[T]] {
 
       override def shuffle(): Unit = preDataSource.shuffle()
 
-      override def data(): RDD[C] = preDataSource.data().mapPartitions(_transformer(_))
-
-      override def finished(): Boolean = preDataSource.finished()
+      override def data(): RDD[C] = preDataSource.data().mapPartitions(transformFunc)
 
       override def partitions(): RDD[_] = preDataSource.partitions()
     }
@@ -132,6 +124,8 @@ trait RDDDataSet[T] extends DataSet[RDD[T]] {
 class CachedRDDDataSet[T: ClassTag](buffer: RDD[Array[T]], looped: Boolean)
   extends RDDDataSet[T] {
 
+  override def reset(): Unit = {}
+
   protected val count: Long = buffer.mapPartitions(iter => {
     require(iter.hasNext)
     val array = iter.next()
@@ -140,7 +134,7 @@ class CachedRDDDataSet[T: ClassTag](buffer: RDD[Array[T]], looped: Boolean)
   }).reduce(_ + _)
 
   protected var indexes: RDD[Array[Int]] = buffer.mapPartitions(iter => {
-    Iterator.single(RandomGenerator.shuffle((1 to iter.next().length).toArray))
+    Iterator.single(RandomGenerator.shuffle((0 until iter.next().length).toArray))
   }).setName("shuffled index").cache()
 
   override def data(): RDD[T] = {
@@ -154,24 +148,24 @@ class CachedRDDDataSet[T: ClassTag](buffer: RDD[Array[T]], looped: Boolean)
         0
       }
       new Iterator[T] {
-        private var _offset = new AtomicInteger(offset)
+        private val _offset = new AtomicInteger(offset)
 
         override def hasNext: Boolean = {
           if (_looped) true else _offset.get() < localData.length
         }
 
         override def next(): T = {
-          localData(indexes(_offset.getAndIncrement()))
+          if (_looped) {
+            localData(indexes(_offset.getAndIncrement() % localData.length))
+          } else {
+            localData(indexes(_offset.getAndIncrement()))
+          }
         }
       }
     })
   }
 
-  override def finished(): Boolean = false
-
   override def size(): Long = count
-
-  override def reset(): Unit = {}
 
   override def shuffle(): Unit = {
     indexes.unpersist()
@@ -220,7 +214,13 @@ class ArrayDataSet[T](buffer: Array[T], looped: Boolean) extends LocalDataSet[T]
   protected val index = new AtomicInteger()
 
   private val iterator: Iterator[T] = new Iterator[T] {
-    override def hasNext: Boolean = finished()
+    override def hasNext: Boolean = {
+      if (looped) {
+        true
+      } else {
+        index.get() < buffer.length
+      }
+    }
 
     override def next(): T = {
       val curIndex = index.getAndIncrement()
@@ -239,14 +239,6 @@ class ArrayDataSet[T](buffer: Array[T], looped: Boolean) extends LocalDataSet[T]
   }
 
   override def data(): Iterator[T] = iterator
-
-  override def finished(): Boolean = {
-    if (looped) {
-      true
-    } else {
-      index.get() < buffer.length
-    }
-  }
 
   override def size(): Long = buffer.length
 }
@@ -329,8 +321,8 @@ object Cifar {
     new ArrayDataSet[(Float, Array[Byte])](buffer, looped)
   }
 
-  def RDDDataSet(path: Path, looped: Boolean, scaleTo: Int = 32, sc: SparkContext,
-    partitionNum: Int): RDDDataSet[(Float, Array[Byte])] = {
+  def RDDDataSet(path: Path, looped: Boolean, sc: SparkContext,
+    partitionNum: Int, scaleTo: Int = 32): RDDDataSet[(Float, Array[Byte])] = {
     val paths = readPaths(path)
     val buffer: Array[(Float, Array[Byte])] = {
       paths.map(imageFile => {
@@ -381,7 +373,8 @@ object ImageNet {
   private def findFiles(path : Path) : Array[Path] = {
     val directoryStream = Files.newDirectoryStream(path)
     import scala.collection.JavaConverters._
-    directoryStream.asScala.map(_.toAbsolutePath.toString).map(Paths.get(_)).toArray
+    directoryStream.asScala.map(_.toAbsolutePath.toString)
+      .filter(_.endsWith(".seq")).map(Paths.get(_)).toArray.sortWith(_.toString < _.toString)
   }
 
   def RDDSeqDataSet(url: String, sc: SparkContext, classNum: Int, looped: Boolean,

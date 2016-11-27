@@ -82,7 +82,7 @@ object ImageNetSeqFileGenerator {
                 RGBImageToSequentialFile(param.blockSize, Paths.get(param.output, "train",
                   s"imagenet-seq-$tid"))
               val iter = pipeline.data()
-              while (pipeline.finished()) {
+              while (iter.hasNext) {
                 println(s"Generated file ${iter.next()}")
               }
             }
@@ -109,7 +109,7 @@ object ImageNetSeqFileGenerator {
                 RGBImageToSequentialFile(param.blockSize, Paths.get(param.output, "val",
                   s"imagenet-seq-$tid"))
               val iter = pipeline.data()
-              while (pipeline.finished()) {
+              while (iter.hasNext) {
                 println(s"Generated file ${iter.next()}")
               }
             }

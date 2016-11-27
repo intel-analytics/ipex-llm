@@ -23,19 +23,19 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Activities, RandomGenerator, T}
 import org.scalatest.{FlatSpec, Matchers}
 
-object DummyDataSet$ extends LocalDataSet[(Tensor[Float], Tensor[Float])] {
+object DummyDataSet extends LocalDataSet[(Tensor[Float], Tensor[Float])] {
   var i = 0
   val max = 10
   var isCrossEntropy = true
 
   def crossEntropy: LocalDataSet[(Tensor[Float], Tensor[Float])] = {
     isCrossEntropy = true
-    DummyDataSet$
+    DummyDataSet
   }
 
   def mse: LocalDataSet[(Tensor[Float], Tensor[Float])] = {
     isCrossEntropy = false
-    DummyDataSet$
+    DummyDataSet
   }
 
   private val feature = Tensor[Float](
@@ -94,60 +94,6 @@ object DummyDataSet$ extends LocalDataSet[(Tensor[Float], Tensor[Float])] {
   }
 
   override def data(): Iterator[(Tensor[Float], Tensor[Float])] = iter
-
-  override def finished(): Boolean = false
-}
-
-object TestDummyDataSet$ extends LocalDataSet[(Tensor[Float], Tensor[Float])] {
-  var i = 0
-  val _max = 10
-
-  private val feature = Tensor[Float](
-    Storage[Float](
-      Array[Float](
-        0, 1, 0, 1,
-        1, 0, 1, 0,
-        0, 1, 0, 1,
-        1, 0, 1, 0
-      )
-    ),
-    storageOffset = 1,
-    size = Array(4, 4)
-  )
-
-  private val labelCrossEntropy = Tensor[Float](
-    Storage[Float](
-      Array[Float](
-        1,
-        2,
-        1,
-        2
-      )
-    ),
-    storageOffset = 1,
-    size = Array(4)
-  )
-
-  override def reset(): Unit = {
-    i = 0
-  }
-
-  override def size(): Long = _max
-
-  override def shuffle(): Unit = {}
-
-  val iter = new Iterator[(Tensor[Float], Tensor[Float])] {
-    override def hasNext: Boolean = (i < _max)
-
-    override def next(): (Tensor[Float], Tensor[Float]) = {
-      i += 1
-      (feature, labelCrossEntropy)
-    }
-  }
-
-  override def data(): Iterator[(Tensor[Float], Tensor[Float])] = iter
-
-  override def finished(): Boolean = i >= _max
 }
 
 class LocalOptimizerSpec extends FlatSpec with Matchers {
@@ -157,7 +103,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
     val optimizer = new LocalOptimizer[Float](
-      DummyDataSet$.crossEntropy,
+      DummyDataSet.crossEntropy,
       mlp,
       new ClassNLLCriterion[Float],
       new SGD[Float](),
@@ -184,7 +130,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     mlp.add(new Sigmoid)
 
     val optimizer = new LocalOptimizer[Float](
-      DummyDataSet$.mse,
+      DummyDataSet.mse,
       mlp,
       new MSECriterion[Float],
       new SGD[Float](),
@@ -209,7 +155,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     mlp.add(new LogSoftMax)
 
     val optimizer = new LocalOptimizer[Float](
-      DummyDataSet$.crossEntropy,
+      DummyDataSet.crossEntropy,
       mlp,
       new ClassNLLCriterion[Float],
       new LBFGS[Float](),
@@ -238,7 +184,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     weight.fill(0.125f)
 
     val optimizer = new LocalOptimizer[Float](
-      DummyDataSet$.mse,
+      DummyDataSet.mse,
       mlp,
       new MSECriterion[Float],
       new LBFGS[Float](),

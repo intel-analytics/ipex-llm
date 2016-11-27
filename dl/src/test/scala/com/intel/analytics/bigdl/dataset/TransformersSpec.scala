@@ -435,7 +435,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val seqWriter = RGBImageToSequentialFile(2, tmpFile)
     val writePipeline = dataSource -> pathToImage -> seqWriter
     val iter = writePipeline.data()
-    while (writePipeline.finished()) {
+    while (iter.hasNext) {
       println(s"writer file ${iter.next()}")
     }
 

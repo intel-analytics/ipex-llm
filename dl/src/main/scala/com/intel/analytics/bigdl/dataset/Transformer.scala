@@ -199,25 +199,26 @@ class ArrayByteToGreyImage(row: Int, col: Int)
 }
 
 object ArrayByteToRGBImage {
-  def apply(scale: Float = 255.0f): ArrayByteToRGBImage = new ArrayByteToRGBImage(scale)
+  def apply(normalize: Float = 255f): ArrayByteToRGBImage = new ArrayByteToRGBImage(normalize)
 }
 
-class ArrayByteToRGBImage(scale: Float)
+class ArrayByteToRGBImage(normalize: Float)
   extends Transformer[(Float, Array[Byte]), RGBImage] {
   private val buffer = new RGBImage()
 
   override def apply(prev: Iterator[(Float, Array[Byte])]): Iterator[RGBImage] = {
     prev.map(rawData => {
-      buffer.copy(rawData._2, scale).setLabel(rawData._1)
+      buffer.copy(rawData._2, normalize).setLabel(rawData._1)
     })
   }
 }
 
 object PathToRGBImage {
-  def apply(scaleTo: Int): PathToRGBImage = new PathToRGBImage(scaleTo)
+  def apply(scaleTo: Int = RGBImage.NO_SCALE, normalize: Float = 255f): PathToRGBImage
+  = new PathToRGBImage(scaleTo, normalize)
 }
 
-class PathToRGBImage(scaleTo: Int) extends Transformer[(Float, Path), RGBImage] {
+class PathToRGBImage(scaleTo: Int, normalize: Float) extends Transformer[(Float, Path), RGBImage] {
   Class.forName("javax.imageio.ImageIO")
   Class.forName("java.awt.color.ICC_ColorSpace")
   Class.forName("sun.java2d.cmm.lcms.LCMS")
@@ -229,7 +230,7 @@ class PathToRGBImage(scaleTo: Int) extends Transformer[(Float, Path), RGBImage] 
     prev.map(data => {
       val imgData = RGBImage.readImage(data._2, scaleTo)
       val label = data._1
-      buffer.copy(imgData).setLabel(label)
+      buffer.copy(imgData, normalize).setLabel(label)
     })
   }
 }
@@ -530,7 +531,7 @@ class RGBImageToSequentialFile(blockSize: Int, baseFileName: Path) extends
       override def hasNext: Boolean = prev.hasNext
 
       override def next(): String = {
-        val fileName = baseFileName + s"_$index"
+        val fileName = baseFileName + s"_$index.seq"
         val path = new hadoopPath(fileName)
         val writer = SequenceFile.createWriter(conf, SequenceFile.Writer.file(path),
           SequenceFile.Writer.keyClass(classOf[Text]),

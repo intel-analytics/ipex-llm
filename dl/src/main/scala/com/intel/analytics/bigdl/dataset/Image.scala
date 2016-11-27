@@ -81,7 +81,7 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
   def this(_width: Int, _height: Int) =
     this(new Array[Float](_width * _height * 3), _width, _height, 0.0f)
 
-  def copy(rawData: Array[Byte], scale: Float = 255.0f): this.type = {
+  def copy(rawData: Array[Byte], normalize: Float = 255.0f): this.type = {
     val buffer = ByteBuffer.wrap(rawData)
     _width = buffer.getInt
     _height = buffer.getInt
@@ -91,7 +91,7 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
     }
     var i = 0
     while (i < _width * _height * 3) {
-      data(i) = (rawData(i + 8) & 0xff) / scale
+      data(i) = (rawData(i + 8) & 0xff) / normalize
       i += 1
     }
     this
@@ -167,6 +167,10 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
       i += 1
     }
     res
+  }
+
+  override def clone(): RGBImage = {
+    new RGBImage().copy(this)
   }
 }
 

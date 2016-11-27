@@ -97,13 +97,14 @@ class RDDOptimizer[T: ClassTag](
   val multiThreadModels = initThreadModules()
 
   private def initWorkerModules() = {
-    val broadcast = sc.broadcast((module, criterion))
+    val broadcast = sc.broadcast((module, criterion, state))
     val models = dataSet.partitions().mapPartitions(_ => {
-      val (broadcastModule, broadcastCriterion) = broadcast.value
+      val (broadcastModule, broadcastCriterion, broadcastState) = broadcast.value
       val localModule = broadcastModule.cloneModule()
       val localCriterion = broadcastCriterion.cloneCriterion()
+      val localState = broadcastState.clone()
       val (weights, grads) = localModule.getParameters()
-      Iterator.single(CachedModel(localModule, localCriterion, weights, grads, T()))
+      Iterator.single(CachedModel(localModule, localCriterion, weights, grads, localState))
     }).persist()
     models.setName("Worker Model RDD")
     logInfo("Cache worker models...")
@@ -120,20 +121,20 @@ class RDDOptimizer[T: ClassTag](
     val broadcastEV = sc.broadcast(ev)
     val partitionNum = dataSet.partitions().partitions.length
     var wallClockTime = 0L
-    var epoch = state.get[Int]("epoch").getOrElse(1)
-    var iter = state.get[Int]("neval").getOrElse(1)
+    val driverState = T("epoch" -> state.get[Int]("epoch").getOrElse(1),
+      "neval" -> state.get[Int]("neval").getOrElse(1))
     val _subModuleNumber = subModuleNumber
     var accumulateCount = 0
-    val shufflebefore = System.nanoTime()
+    val shuffleBefore = System.nanoTime()
     logInfo(s"config $state")
     logInfo(s"Shuffle data")
     dataSet.shuffle()
     val shuffleEnd = System.nanoTime()
-    logInfo(s"Shuffle data complete. Takes ${(shuffleEnd - shufflebefore) / 1e9}s")
+    logInfo(s"Shuffle data complete. Takes ${(shuffleEnd - shuffleBefore) / 1e9}s")
     var epochStart = System.nanoTime()
-    while (endWhen(state)) {
-      val _header = header(epoch, accumulateCount, dataSet.size(), iter,
-        wallClockTime)
+    while (!endWhen(driverState)) {
+      val _header = header(driverState[Int]("epoch"), accumulateCount, dataSet.size(),
+        driverState[Int]("neval"), wallClockTime)
       val lossSum = sc.accumulator(0.0, "loss sum")
       val recordsNum = sc.accumulator(0, "record number")
       val stackCount = sc.accumulator(0, "stack count")
@@ -206,9 +207,7 @@ class RDDOptimizer[T: ClassTag](
             val localModule = localMTCaches(i).model
             localModule.training()
             val localCriterion = localMTCaches(i).criterion
-            val (inputFloat, targetFloat) = tensorBuffer(i)
-            val input = inputFloat.asInstanceOf[Tensor[T]]
-            val target = targetFloat.asInstanceOf[Tensor[T]]
+            val (input, target) = tensorBuffer(i)
             val output = localModule.forward(input)
             lossArray(i) = localEV.toType[Double](localCriterion.forward(output, target))
             val errors = localCriterion.backward(output, target)
@@ -270,8 +269,8 @@ class RDDOptimizer[T: ClassTag](
       val driverParNum = partitionNum * _subModuleNumber
       pm.sumAndUpdate(resultRDD, (weights, gradients, state) => {
         gradients.div(driverEV.fromType[Int](driverParNum))
-        state("neval") = iter
-        state("epoch") = epoch
+        state("neval") = driverState[Int]("neval")
+        state("epoch") = driverState[Int]("epoch")
         optM.optimize(_ => (driverEV.fromType(lossSum.value / stackCount.value), gradients),
           weights, state, state)
       })
@@ -285,30 +284,29 @@ class RDDOptimizer[T: ClassTag](
         }. " +
         s"Calculate time is ${(reduceBefore - start) / 1e9}seconds. ")
       logInfo("\n" + metrics.summary())
-      iter += 1
+      driverState("neval") = driverState[Int]("neval") + 1
       if (accumulateCount >= dataSet.size()) {
         val epochEnd = System.nanoTime()
         wallClockTime = wallClockTime + epochEnd - epochStart
         epochStart = System.nanoTime()
         logInfo(s"${_header} Epoch finished. Wall clock time is ${wallClockTime / 1e6}ms")
 
-        epoch += 1
+        driverState("epoch") = driverState[Int]("epoch") + 1
         dataSet.reset()
         dataSet.shuffle()
         accumulateCount = 0
       }
 
-      validate(wallClockTime, iter, epoch)
-      cache(wallClockTime, iter, epoch)
+      validate(wallClockTime, driverState)
+      cache(wallClockTime, driverState)
     }
-    validate(wallClockTime, iter, epoch)
-    cache(wallClockTime, iter, epoch)
+    validate(wallClockTime, driverState)
+    cache(wallClockTime, driverState)
 
     module.asInstanceOf[Module[Activities, Activities, T]]
   }
 
-  private def cache(wallClockTime: Long, iter: Int, epoch: Int): Unit = {
-    val state = T("neval" -> iter, "epoch" -> epoch)
+  private def cache(wallClockTime: Long, state: Table): Unit = {
     cacheTrigger.foreach(trigger => {
       if (trigger(state) && cachePath.isDefined) {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
@@ -319,8 +317,7 @@ class RDDOptimizer[T: ClassTag](
     })
   }
 
-  private def validate(wallClockTime: Long, iter: Int, epoch: Int): Unit = {
-    val state = T("neval" -> iter, "epoch" -> epoch)
+  private def validate(wallClockTime: Long, state: Table): Unit = {
     validationTrigger.foreach(trigger => {
       if (trigger(state) && validator.isDefined) {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")

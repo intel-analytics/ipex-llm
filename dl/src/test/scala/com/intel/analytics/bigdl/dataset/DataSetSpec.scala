@@ -20,9 +20,22 @@ package com.intel.analytics.bigdl.dataset
 import java.io.File
 import java.nio.file.Paths
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.apache.spark.SparkContext
+import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FlatSpec, Matchers}
 
-class DataSourcesSpec extends FlatSpec with Matchers {
+class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
+  var sc: SparkContext = null
+
+  before {
+    sc = new SparkContext("local[1]", "DataSetSpec")
+  }
+
+  after {
+    if (sc != null) {
+      sc.stop()
+    }
+  }
+
   private def processPath(path: String): String = {
     if (path.contains(":")) {
       path.substring(1)
@@ -44,6 +57,23 @@ class DataSourcesSpec extends FlatSpec with Matchers {
     iter.map(_._1).min should be(1.0f)
     dataSource.reset()
     iter.map(_._1).max should be(10.0f)
+  }
+
+  "mnist rdd data source" should "load image correct" in {
+    val resource = getClass().getClassLoader().getResource("mnist")
+
+    val dataSource = MNIST.RDDDataSet(
+      Paths.get(processPath(resource.getPath()) + File.separator, "t10k-images.idx3-ubyte"),
+      Paths.get(processPath(resource.getPath()) + File.separator, "t10k-labels.idx1-ubyte"),
+      looped = false,
+      sc,
+      4
+    )
+    dataSource.size() should be(10000)
+    val rdd = dataSource.data()
+    rdd.map(_._1).min should be(1.0f)
+    dataSource.reset()
+    rdd.map(_._1).max should be(10.0f)
   }
 
   "cifar data source" should "load image correct" in {
@@ -82,6 +112,38 @@ class DataSourcesSpec extends FlatSpec with Matchers {
     img7.label() should be(1f)
   }
 
+  "cifar rdd data source" should "load image correct" in {
+    val resource = getClass().getClassLoader().getResource("cifar")
+    val dataSource = Cifar.RDDDataSet(Paths.get(processPath(resource.getPath())),
+      false, sc, 4)
+    val imgDataSource = (dataSource -> ArrayByteToRGBImage(255.0f))
+    dataSource.size() should be(7)
+    val labelMap = DirectoryAsLabel.readLabels(Paths.get(processPath(resource.getPath())))
+    labelMap("airplane") should be(1)
+    labelMap("deer") should be(2)
+
+    imgDataSource.size() should be(7)
+    val rdd = imgDataSource.data()
+    rdd.filter(_.label() == 1f).count() should be(3)
+    rdd.filter(_.label() == 2f).count() should be(4)
+    val images = rdd.filter(_.label() == 1f).sortBy(_.content(0)).collect()
+    val img1 = images(1)
+    img1.label() should be(1f)
+    img1.content(2) should be(234 / 255f)
+    img1.content(1) should be(125 / 255f)
+    img1.content(0) should be(59 / 255f)
+    img1.content((22 + 4 * 32) * 3 + 2) should be(253 / 255f)
+    img1.content((22 + 4 * 32) * 3 + 1) should be(148 / 255f)
+    img1.content((22 + 4 * 32) * 3) should be(31 / 255f)
+
+    val images2 = rdd.filter(_.label() == 2).sortBy(_.content(0)).collect()
+    val img4 = images2(0)
+    img4.label() should be(2f)
+    img4.content((9 + 8 * 32) * 3 + 2) should be(40 / 255f)
+    img4.content((9 + 8 * 32) * 3 + 1) should be(51 / 255f)
+    img4.content((9 + 8 * 32) * 3) should be(37 / 255f)
+  }
+
   "imagenet data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
     val dataSource = ImageNet.PathDataSet(Paths.get(processPath(resource.getPath())), looped =
@@ -94,7 +156,7 @@ class DataSourcesSpec extends FlatSpec with Matchers {
     labelMap("n15075141") should be(3)
     labelMap("n99999999") should be(4)
 
-    var pathToImage = PathToRGBImage(-1)
+    var pathToImage = PathToRGBImage(RGBImage.NO_SCALE)
     var imageDataSource = dataSource -> pathToImage
 
     var iter = imageDataSource.data()
@@ -158,5 +220,80 @@ class DataSourcesSpec extends FlatSpec with Matchers {
     val img11 = iter.next()
     img11.label() should be(3f)
     (img11.width() == 256 || img11.height() == 256) should be(true)
+  }
+
+  "imagenet seq data source" should "load image correct" in {
+    val resource = getClass().getClassLoader().getResource("imagenet")
+    val tmpFile = java.io.File.createTempFile("UnitTest", System.nanoTime().toString)
+    require(tmpFile.delete())
+    require(tmpFile.mkdir())
+
+    // Convert the test imagenet files to seq files
+    val files = (ImageNet.PathDataSet(Paths.get(processPath(resource.getPath())), looped = false)
+      -> PathToRGBImage(RGBImage.NO_SCALE)
+      -> RGBImageToSequentialFile(2, Paths.get(tmpFile.getAbsolutePath(), "imagenet"))
+      ).data().map(s => {
+      println(s); s
+    }).toArray
+
+    files.length should be(6)
+
+    val imageIter = (ImageNet.LocalSeqDataSet(Paths.get(tmpFile.getAbsolutePath()), 11, false)
+      -> SeqFileToArrayByte() -> ArrayByteToRGBImage()).data()
+
+    val img = imageIter.next()
+    img.label() should be(4f)
+    img.content((100 + 100 * 213) * 3 + 2) should be(35 / 255f)
+    img.content((100 + 100 * 213) * 3 + 1) should be(30 / 255f)
+    img.content((100 + 100 * 213) * 3) should be(36 / 255f)
+    imageIter.next()
+    img.label() should be(4f)
+    img.content((100 + 100 * 556) * 3 + 2) should be(24 / 255f)
+    img.content((100 + 100 * 556) * 3 + 1) should be(24 / 255f)
+    img.content((100 + 100 * 556) * 3) should be(24 / 255f)
+    imageIter.next()
+    imageIter.next()
+    imageIter.next()
+    imageIter.next()
+    imageIter.next()
+    imageIter.next()
+    imageIter.next()
+    imageIter.next()
+    imageIter.next()
+    imageIter.hasNext should be(false)
+  }
+
+  "imagenet rdd seq data source" should "load image correct" in {
+    val resource = getClass().getClassLoader().getResource("imagenet")
+    val tmpFile = java.io.File.createTempFile("UnitTest", System.nanoTime().toString)
+    require(tmpFile.delete())
+    require(tmpFile.mkdir())
+
+    // Convert the test imagenet files to seq files
+    val files = (ImageNet.PathDataSet(Paths.get(processPath(resource.getPath())), looped = false)
+      -> PathToRGBImage(RGBImage.NO_SCALE)
+      -> RGBImageToSequentialFile(2, Paths.get(tmpFile.getAbsolutePath(), "imagenet"))
+      ).data().map(s => {
+      println(s); s
+    }).toArray
+
+    files.length should be(6)
+
+    val imageDS = (ImageNet.RDDSeqDataSet(tmpFile.getAbsolutePath().toString, sc, 1000, false, 4)
+      -> ArrayByteToRGBImage())
+    imageDS.size() should be(11)
+    val images = imageDS.data().filter(_.label() == 4f).map(_.clone()).collect()
+    images.length should be(3)
+
+    val img1 = images(2)
+    img1.label() should be(4f)
+    img1.content((100 + 100 * 213) * 3 + 2) should be(35 / 255f)
+    img1.content((100 + 100 * 213) * 3 + 1) should be(30 / 255f)
+    img1.content((100 + 100 * 213) * 3) should be(36 / 255f)
+    val img2 = images(1)
+    img2.label() should be(4f)
+    img2.content((100 + 100 * 556) * 3 + 2) should be(24 / 255f)
+    img2.content((100 + 100 * 556) * 3 + 1) should be(24 / 255f)
+    img2.content((100 + 100 * 556) * 3) should be(24 / 255f)
   }
 }
