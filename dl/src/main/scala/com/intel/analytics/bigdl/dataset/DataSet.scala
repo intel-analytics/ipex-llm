@@ -77,7 +77,7 @@ trait LocalDataSet[T] extends DataSet[Iterator[T]] {
    * @tparam C
    * @return
    */
-  def ->[C](transformer: Transformer[T, C]): LocalDataSet[C] = {
+  def -> [C](transformer: Transformer[T, C]): LocalDataSet[C] = {
     val preDataSource = this
     new LocalDataSet[C] {
       override def reset(): Unit = preDataSource.reset
@@ -89,6 +89,7 @@ trait LocalDataSet[T] extends DataSet[Iterator[T]] {
       override def data(): Iterator[C] = transformer.apply(preDataSource.data())
     }
   }
+
   // scalastyle:on noSpaceBeforeLeftBracket
   // scalastyle:on methodName
 }
@@ -96,7 +97,7 @@ trait LocalDataSet[T] extends DataSet[Iterator[T]] {
 trait RDDDataSet[T] extends DataSet[RDD[T]] {
   // scalastyle:off methodName
   // scalastyle:off noSpaceBeforeLeftBracket
-  def ->[C: ClassTag](transformer: Transformer[T, C]): RDDDataSet[C] = {
+  def -> [C: ClassTag](transformer: Transformer[T, C]): RDDDataSet[C] = {
     val preDataSource = this
 
     val transformFunc: Iterator[T] => Iterator[C] = (d => {
@@ -115,6 +116,7 @@ trait RDDDataSet[T] extends DataSet[RDD[T]] {
       override def partitions(): RDD[_] = preDataSource.partitions()
     }
   }
+
   // scalastyle:on noSpaceBeforeLeftBracket
   // scalastyle:on methodName
 
@@ -284,6 +286,7 @@ object MNIST {
     result
   }
 
+  // scalastyle:off methodName
   def LocalDataSet(imagesFile: Path, labelsFile: Path, looped: Boolean)
   : LocalDataSet[(Float, Array[Byte])] = {
     val buffer = load(imagesFile, labelsFile)
@@ -295,6 +298,7 @@ object MNIST {
     val buffer = load(imagesFile, labelsFile)
     CachedRDDDataSet(buffer, sc, partitionNum, looped)
   }
+  // scalastyle:on methodName
 }
 
 /**
@@ -310,6 +314,7 @@ object Cifar {
   Class.forName("sun.java2d.cmm.lcms.LCMS")
   ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
+  // scalastyle:off methodName
   def LocalDataSet(path: Path, looped: Boolean, scaleTo: Int = 32)
   : LocalDataSet[(Float, Array[Byte])] = {
     val paths = readPaths(path)
@@ -331,12 +336,14 @@ object Cifar {
     }
     CachedRDDDataSet(buffer, sc, partitionNum, looped)
   }
+  // scalastyle:on methodName
 }
 
 /**
  * ImageNet2012 DataSet
  */
 object ImageNet {
+  // scalastyle:off methodName
   /**
    * This dataset will manage imagenet2012 files. You can download the data
    * from http://www.image-net.org/
@@ -370,7 +377,7 @@ object ImageNet {
     }
   }
 
-  private def findFiles(path : Path) : Array[Path] = {
+  private def findFiles(path: Path): Array[Path] = {
     val directoryStream = Files.newDirectoryStream(path)
     import scala.collection.JavaConverters._
     directoryStream.asScala.map(_.toAbsolutePath.toString)
@@ -385,6 +392,7 @@ object ImageNet {
 
     CachedRDDDataSet[(Float, Array[Byte])](rawData, partitionNum, looped)
   }
+  // scalastyle:on methodName
 }
 
 /**

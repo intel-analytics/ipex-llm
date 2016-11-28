@@ -440,12 +440,12 @@ class TransformersSpec extends FlatSpec with Matchers {
     }
 
     val seqDataSource = new ArrayDataSet[Path](Array(
-      Paths.get(tmpFile + "_0"),
-      Paths.get(tmpFile + "_1"),
-      Paths.get(tmpFile + "_2"),
-      Paths.get(tmpFile + "_3"),
-      Paths.get(tmpFile + "_4"),
-      Paths.get(tmpFile + "_5")
+      Paths.get(tmpFile + "_0.seq"),
+      Paths.get(tmpFile + "_1.seq"),
+      Paths.get(tmpFile + "_2.seq"),
+      Paths.get(tmpFile + "_3.seq"),
+      Paths.get(tmpFile + "_4.seq"),
+      Paths.get(tmpFile + "_5.seq")
     ), false)
     dataSource.reset()
     var count = 0
