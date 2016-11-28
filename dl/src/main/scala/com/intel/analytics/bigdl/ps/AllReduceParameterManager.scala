@@ -62,7 +62,7 @@ object AllReduceParameterManager {
 }
 
 class AllReduceParameterManager[T: ClassTag](
-  parameter: Tensor[T], dataset: RDD[_], metrics: Metrics = new Metrics()
+  parameter: Tensor[T], dataset: RDD[_], metrics: Metrics = new Metrics(), state: Table = T()
 )(implicit ev: TensorNumeric[T]) extends ParameterManager[T] with Logging {
 
   import AllReduceParameterManager._
@@ -83,7 +83,7 @@ class AllReduceParameterManager[T: ClassTag](
   val extraSize = parameterLength % partitionNum
 
   private def init() = {
-    val broadcastParameter = dataset.sparkContext.broadcast(parameter)
+    val broadcastParameter = dataset.sparkContext.broadcast(parameter, state)
     val _classTag = classTag[T]
     val _ev = ev
     val _parameterLength = parameterLength
@@ -91,7 +91,7 @@ class AllReduceParameterManager[T: ClassTag](
     val _taskSize = taskSize
     val _extraSize = extraSize
     buffers = dataset.mapPartitions(iter => {
-      val taskParameter = broadcastParameter.value
+      val (taskParameter, taskState) = broadcastParameter.value
       val paramBuffer = new FP16SplitsParameter[T](_parameterLength,
         _partitionNum)(_classTag).asInstanceOf[Parameter[T]]
       val pid = TaskContext.getPartitionId()
@@ -100,7 +100,7 @@ class AllReduceParameterManager[T: ClassTag](
       val localWeight = Tensor[T](length)(_classTag, _ev).copy(taskParameter.narrow(1,
         start + 1, length))
       val localGradient = Tensor[T](length)(_classTag, _ev)
-      val localState = T()
+      val localState = taskState.clone()
       val fp16param = new FP16Parameter[T](length)(_classTag)
       fp16param.copyFrom(0, taskParameter, start, length)
       val blockId = getWeightBlockId(pid)
@@ -292,5 +292,7 @@ class AllReduceParameterManager[T: ClassTag](
     parameter
   }
 
-  override def getState(): Table = T()
+  override def getState(): Table = {
+    buffers.map(_._4).first()
+  }
 }

@@ -17,12 +17,13 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import com.intel.analytics.bigdl.example.MNIST
+import java.nio.file.Paths
+
 import com.intel.analytics.bigdl.models.mnist.{LeNet5, MLP, SimpleCNN}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, Module, TensorModule}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
+import com.intel.analytics.bigdl.utils.{Activities, RandomGenerator, T}
 import scopt.OptionParser
 
 /**
@@ -78,28 +79,27 @@ object MNISTLocal {
   def main(args: Array[String]) {
     parser.parse(args, new MNISTLocalParams()).map(param => {
       RandomGenerator.RNG.setSeed(1000)
-      val trainData = param.folder + "/train-images.idx3-ubyte"
-      val trainDLabel = param.folder + "/train-labels.idx1-ubyte"
-      val validationData = param.folder + "/t10k-images.idx3-ubyte"
-      val validationLabel = param.folder + "/t10k-labels.idx1-ubyte"
+      val trainData = Paths.get(param.folder, "/train-images.idx3-ubyte")
+      val trainDLabel = Paths.get(param.folder, "/train-labels.idx1-ubyte")
+      val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
+      val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
 
-      val trainDataSource = new MNISTDataSource(trainData, trainDLabel, looped = true)
-      val validationDataSource = new MNISTDataSource(validationData, validationLabel, looped =
-        false)
+      val trainDataSource = MNIST.LocalDataSet(trainData, trainDLabel, true)
+      val validationDataSource = MNIST.LocalDataSet(validationData, validationLabel, false)
       val arrayByteToImage = ArrayByteToGreyImage(28, 28)
       val normalizer = new GreyImageNormalizer(trainDataSource -> arrayByteToImage)
       val toTensor = new GreyImageToTensor(configs(param.net).batchSize)
+      val validator = new LocalValidator[Float](Array(new Top1Accuracy[Float]),
+        validationDataSource -> arrayByteToImage -> normalizer -> toTensor)
       val optimizer = new LocalOptimizer[Float](
         data = trainDataSource -> arrayByteToImage -> normalizer -> toTensor,
-        validationData = validationDataSource -> arrayByteToImage -> normalizer -> toTensor,
         model = configs(param.net).model,
         criterion = configs(param.net).criterion,
         optimMethod = configs(param.net).optimMethod,
         state = T("learningRate" -> configs(param.net).learningRate),
         endWhen = Trigger.maxEpoch(configs(param.net).maxEpoch)
       )
-      optimizer.setValidationTrigger(Trigger.everyEpoch)
-      optimizer.addValidation(new Top1Accuracy[Float])
+      optimizer.setValidation(Trigger.everyEpoch, validator)
       optimizer.optimize()
     })
   }

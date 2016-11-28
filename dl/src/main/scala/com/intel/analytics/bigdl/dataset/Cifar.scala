@@ -20,10 +20,10 @@ package com.intel.analytics.bigdl.dataset
 import java.nio.file.{Files, Path, Paths}
 
 import com.intel.analytics.bigdl.models.cifar.VggLike
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.optim.SGD.EpochStep
-import com.intel.analytics.bigdl.optim.{LocalOptimizer, SGD, Top1Accuracy, Trigger}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.utils.{Activities, T}
 import scopt.OptionParser
 
 object Cifar10Local {
@@ -41,16 +41,17 @@ object Cifar10Local {
 
   def main(args: Array[String]) {
     parser.parse(args, new Cifar10LocalParam()).map(param => {
-      val trainDataSource = new CifarDataSource(Paths.get(param.folder + "/train"), looped = true)
-      val validationDataSource = new CifarDataSource(Paths.get(param.folder + "/val"),
+      val trainDataSource = Cifar.LocalDataSet(Paths.get(param.folder + "/train"), looped = true)
+      val validationDataSource = Cifar.LocalDataSet(Paths.get(param.folder + "/val"),
         looped = false)
       val arrayToImage = ArrayByteToRGBImage()
       val normalizer = RGBImageNormalizer(trainDataSource -> arrayToImage)
       val toTensor = new RGBImageToTensor(batchSize = 128)
 
+      val validator = new LocalValidator[Float](Array(new Top1Accuracy[Float]),
+        validationDataSource -> arrayToImage -> normalizer -> toTensor)
       val optimizer = new LocalOptimizer[Float](
         data = trainDataSource -> arrayToImage -> normalizer -> toTensor,
-        validationData = validationDataSource -> arrayToImage -> normalizer -> toTensor,
         model = VggLike[Float](classNum = 10),
         criterion = new ClassNLLCriterion[Float](),
         optimMethod = new SGD[Float](),
@@ -63,8 +64,7 @@ object Cifar10Local {
         ),
         endWhen = Trigger.maxEpoch(90)
       )
-      optimizer.setValidationTrigger(Trigger.everyEpoch)
-      optimizer.addValidation(new Top1Accuracy[Float])
+      optimizer.setValidation(Trigger.everyEpoch, validator)
 
       optimizer.optimize()
     })

@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 trait ValidationMethod[T] {
   def apply(output: Tensor[T], target: Tensor[T]): ValidationResult
 
-  def format(): String
+  protected def format(): String
 
   override def toString(): String = format()
 }
@@ -30,7 +30,7 @@ trait ValidationMethod[T] {
 trait ValidationResult {
 
   // scalastyle:off methodName
-  def ++(other: ValidationResult): ValidationResult
+  def +(other: ValidationResult): ValidationResult
 
   // scalastyle:on methodName
 
@@ -43,7 +43,7 @@ class AccuracyResult(private var correct: Int, private var count: Int)
   extends ValidationResult {
 
   // scalastyle:off methodName
-  override def ++(other: ValidationResult): ValidationResult = {
+  override def +(other: ValidationResult): ValidationResult = {
     val otherResult = other.asInstanceOf[AccuracyResult]
     this.correct += otherResult.correct
     this.count += otherResult.count

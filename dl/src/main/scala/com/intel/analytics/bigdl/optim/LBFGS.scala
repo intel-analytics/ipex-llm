@@ -271,4 +271,17 @@ class LBFGS[@specialized(Float, Double) T: ClassTag](
       println(s"<optim.lbfgs> $msg")
     }
   }
+
+  override def clearHistory(state: Table): Table = {
+    state.delete("dir_bufs")
+    state.delete("d")
+    state.delete("t")
+    state.delete("Hdiag")
+    state.delete("old_dirs")
+    state.delete("old_stps")
+    state.delete("g_old")
+    state.delete("f_old")
+    state.delete("ro")
+    state.delete("al")
+  }
 }

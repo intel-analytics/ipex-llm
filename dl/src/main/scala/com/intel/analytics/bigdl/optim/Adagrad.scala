@@ -71,4 +71,9 @@ class Adagrad[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeri
 
     (parameter, Array(fx))
   }
+
+  override def clearHistory(state: Table): Table = {
+    state.delete("paramVariance")
+    state.delete("paramStd")
+  }
 }

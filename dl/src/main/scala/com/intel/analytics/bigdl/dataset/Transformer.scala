@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dataset
 
 
+import java.awt.color.ColorSpace
 import java.nio.ByteBuffer
 
 import org.apache.hadoop.fs.{Path => hadoopPath}
@@ -37,7 +38,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect.ClassTag
 
 trait Transformer[A, B] extends Serializable {
-  def transform(prev: Iterator[A]): Iterator[B]
+  def apply(prev: Iterator[A]): Iterator[B]
 
   // scalastyle:off methodName
   def +[C](other: Transformer[B, C]): Transformer[A, C] = {
@@ -53,12 +54,12 @@ trait Transformer[A, B] extends Serializable {
 
 class CombineTransformer[A, B, C](first: Transformer[A, B], last: Transformer[B, C])
   extends Transformer[A, C] {
-  override def transform(prev: Iterator[A]): Iterator[C] = {
-    last.transform(first.transform(prev))
+  override def apply(prev: Iterator[A]): Iterator[C] = {
+    last(first(prev))
   }
 }
 
-class GreyImageNormalizer(dataSource: DataSource[GreyImage], samples: Int = Int.MaxValue)
+class GreyImageNormalizer(dataSource: LocalDataSet[GreyImage], samples: Int = Int.MaxValue)
   extends Transformer[GreyImage, GreyImage] {
 
   private var mean: Double = 0
@@ -75,9 +76,10 @@ class GreyImageNormalizer(dataSource: DataSource[GreyImage], samples: Int = Int.
     var total: Int = 0
     dataSource.shuffle()
     dataSource.reset()
+    val iter = dataSource.data()
     var i = 0
-    while (i < math.min(samples, dataSource.total())) {
-      val img = dataSource.next()
+    while (i < math.min(samples, dataSource.size())) {
+      val img = iter.next()
       img.content.foreach(e => {
         sum += e
         total += 1
@@ -90,8 +92,8 @@ class GreyImageNormalizer(dataSource: DataSource[GreyImage], samples: Int = Int.
     sum = 0
     i = 0
     dataSource.reset()
-    while (i < math.min(samples, dataSource.total())) {
-      val img = dataSource.next()
+    while (i < math.min(samples, dataSource.size())) {
+      val img = iter.next()
       img.content.foreach(e => {
         val diff = e - mean
         sum += diff * diff
@@ -101,7 +103,7 @@ class GreyImageNormalizer(dataSource: DataSource[GreyImage], samples: Int = Int.
     std = math.sqrt(sum / total).toFloat
   }
 
-  override def transform(prev: Iterator[GreyImage]): Iterator[GreyImage] = {
+  override def apply(prev: Iterator[GreyImage]): Iterator[GreyImage] = {
     prev.map(img => {
       var i = 0
       val content = img.content
@@ -121,7 +123,7 @@ object RGBImageNormalizer {
     new RGBImageNormalizer(meanR, meanG, meanB, stdR, stdG, stdB)
   }
 
-  def apply(dataSource: LocalDataSource[RGBImage], samples: Int = Int.MaxValue)
+  def apply(dataSource: LocalDataSet[RGBImage], samples: Int = Int.MaxValue)
   : RGBImageNormalizer = {
     var sumR: Double = 0
     var sumG: Double = 0
@@ -129,10 +131,11 @@ object RGBImageNormalizer {
     var total: Long = 0
     dataSource.shuffle()
     dataSource.reset()
-    val totalCount = if (samples < 0) dataSource.total() else samples
+    val iter = dataSource.data()
+    val totalCount = if (samples < 0) dataSource.size() else samples
     var i = 0
-    while (i < math.min(samples, dataSource.total())) {
-      val content = dataSource.next().content
+    while (i < math.min(samples, dataSource.size())) {
+      val content = iter.next().content
       require(content.length % 3 == 0)
       var j = 0
       while (j < content.length) {
@@ -155,8 +158,8 @@ object RGBImageNormalizer {
     sumB = 0
     i = 0
     dataSource.reset()
-    while (i < math.min(samples, dataSource.total())) {
-      val content = dataSource.next().content
+    while (i < math.min(samples, dataSource.size())) {
+      val content = iter.next().content
       var j = 0
       while (j < content.length) {
         val diffR = content(j + 2) - meanR
@@ -186,7 +189,7 @@ class ArrayByteToGreyImage(row: Int, col: Int)
   extends Transformer[(Float, Array[Byte]), GreyImage] {
   private val buffer = new GreyImage(row, col)
 
-  override def transform(prev: Iterator[(Float, Array[Byte])]): Iterator[GreyImage] = {
+  override def apply(prev: Iterator[(Float, Array[Byte])]): Iterator[GreyImage] = {
     prev.map(rawData => {
       require(row * col == rawData._2.length)
       require(rawData._1 >= 1)
@@ -196,32 +199,38 @@ class ArrayByteToGreyImage(row: Int, col: Int)
 }
 
 object ArrayByteToRGBImage {
-  def apply(scale: Float = 255.0f): ArrayByteToRGBImage = new ArrayByteToRGBImage(scale)
+  def apply(normalize: Float = 255f): ArrayByteToRGBImage = new ArrayByteToRGBImage(normalize)
 }
 
-class ArrayByteToRGBImage(scale: Float)
+class ArrayByteToRGBImage(normalize: Float)
   extends Transformer[(Float, Array[Byte]), RGBImage] {
   private val buffer = new RGBImage()
 
-  override def transform(prev: Iterator[(Float, Array[Byte])]): Iterator[RGBImage] = {
+  override def apply(prev: Iterator[(Float, Array[Byte])]): Iterator[RGBImage] = {
     prev.map(rawData => {
-      buffer.copy(rawData._2, scale).setLabel(rawData._1)
+      buffer.copy(rawData._2, normalize).setLabel(rawData._1)
     })
   }
 }
 
 object PathToRGBImage {
-  def apply(scaleTo: Int): PathToRGBImage = new PathToRGBImage(scaleTo)
+  def apply(scaleTo: Int = RGBImage.NO_SCALE, normalize: Float = 255f): PathToRGBImage
+  = new PathToRGBImage(scaleTo, normalize)
 }
 
-class PathToRGBImage(scaleTo: Int) extends Transformer[(Float, Path), RGBImage] {
+class PathToRGBImage(scaleTo: Int, normalize: Float) extends Transformer[(Float, Path), RGBImage] {
+  Class.forName("javax.imageio.ImageIO")
+  Class.forName("java.awt.color.ICC_ColorSpace")
+  Class.forName("sun.java2d.cmm.lcms.LCMS")
+  ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
+
   private val buffer = new RGBImage()
 
-  override def transform(prev: Iterator[(Float, Path)]): Iterator[RGBImage] = {
+  override def apply(prev: Iterator[(Float, Path)]): Iterator[RGBImage] = {
     prev.map(data => {
       val imgData = RGBImage.readImage(data._2, scaleTo)
       val label = data._1
-      buffer.copy(imgData).setLabel(label)
+      buffer.copy(imgData, normalize).setLabel(label)
     })
   }
 }
@@ -233,6 +242,7 @@ object SeqFileToArrayByte {
 class SeqFileToArrayByte extends Transformer[Path, (Float, Array[Byte])] {
 
   import org.apache.hadoop.fs.{Path => hPath}
+
 
   @transient
   private var key: Text = null
@@ -246,7 +256,7 @@ class SeqFileToArrayByte extends Transformer[Path, (Float, Array[Byte])] {
   @transient
   private var oneRecordBuffer: (Float, Array[Byte]) = null
 
-  override def transform(prev: Iterator[Path]): Iterator[(Float, Array[Byte])] = {
+  override def apply(prev: Iterator[Path]): Iterator[(Float, Array[Byte])] = {
     new Iterator[(Float, Array[Byte])] {
       override def next(): (Float, Array[Byte]) = {
         if (oneRecordBuffer != null) {
@@ -300,7 +310,7 @@ class RGBImageNormalizer(meanR: Double, meanG: Double, meanB: Double,
 
   def getStd(): (Double, Double, Double) = (stdB, stdG, stdR)
 
-  override def transform(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
+  override def apply(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
     prev.map(img => {
       val content = img.content
       require(content.length % 3 == 0)
@@ -323,7 +333,7 @@ class GreyImageCropper(cropWidth: Int, cropHeight: Int)
 
   private val buffer = new GreyImage(cropWidth, cropHeight)
 
-  override def transform(prev: Iterator[GreyImage]): Iterator[GreyImage] = {
+  override def apply(prev: Iterator[GreyImage]): Iterator[GreyImage] = {
     prev.map(img => {
       val width = img.width()
       val height = img.height()
@@ -357,7 +367,7 @@ class RGBImageCropper(cropWidth: Int, cropHeight: Int)
 
   private val buffer = new RGBImage(cropWidth, cropHeight)
 
-  override def transform(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
+  override def apply(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
     prev.map(img => {
       val width = img.width()
       val height = img.height()
@@ -395,7 +405,7 @@ class GreyImageToTensor(batchSize: Int) extends Transformer[GreyImage, (Tensor[F
     }
   }
 
-  override def transform(prev: Iterator[GreyImage]): Iterator[(Tensor[Float], Tensor[Float])] = {
+  override def apply(prev: Iterator[GreyImage]): Iterator[(Tensor[Float], Tensor[Float])] = {
     new Iterator[(Tensor[Float], Tensor[Float])] {
       private val featureTensor: Tensor[Float] = Tensor[Float]()
       private val labelTensor: Tensor[Float] = Tensor[Float]()
@@ -443,7 +453,7 @@ object RGBImageToTensor {
 class RGBImageToTensor(batchSize: Int) extends Transformer[RGBImage, (Tensor[Float],
   Tensor[Float])] {
 
-  override def transform(prev: Iterator[RGBImage]): Iterator[(Tensor[Float], Tensor[Float])] = {
+  override def apply(prev: Iterator[RGBImage]): Iterator[(Tensor[Float], Tensor[Float])] = {
     new Iterator[(Tensor[Float], Tensor[Float])] {
       private val featureTensor: Tensor[Float] = Tensor[Float]()
       private val labelTensor: Tensor[Float] = Tensor[Float]()
@@ -493,7 +503,7 @@ object HFlip {
 }
 
 class HFlip(threshold: Double) extends Transformer[RGBImage, RGBImage] {
-  override def transform(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
+  override def apply(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
     prev.map(img => {
       if (RandomGenerator.RNG.uniform(0, 1) >= threshold) {
         img.hflip()
@@ -516,12 +526,12 @@ class RGBImageToSequentialFile(blockSize: Int, baseFileName: Path) extends
   private var index = 0
   private val preBuffer: ByteBuffer = ByteBuffer.allocate(4 * 2)
 
-  override def transform(prev: Iterator[RGBImage]): Iterator[String] = {
+  override def apply(prev: Iterator[RGBImage]): Iterator[String] = {
     new Iterator[String] {
       override def hasNext: Boolean = prev.hasNext
 
       override def next(): String = {
-        val fileName = baseFileName + s"_$index"
+        val fileName = baseFileName + s"_$index.seq"
         val path = new hadoopPath(fileName)
         val writer = SequenceFile.createWriter(conf, SequenceFile.Writer.file(path),
           SequenceFile.Writer.keyClass(classOf[Text]),
@@ -595,8 +605,8 @@ class MultiThreadRGBImageToSingleTensor[A: ClassTag](width: Int, height: Int,
   }
 
 
-  override def transform(prev: Iterator[A]): Iterator[(Tensor[Float], Tensor[Float])] = {
-    val iterators = transformers.map(_.transform(prev))
+  override def apply(prev: Iterator[A]): Iterator[(Tensor[Float], Tensor[Float])] = {
+    val iterators = transformers.map(_.apply(prev))
 
     new Iterator[(Tensor[Float], Tensor[Float])] {
       override def hasNext: Boolean = {
@@ -632,7 +642,7 @@ object Identity {
 }
 
 class Identity[A] extends Transformer[A, A] {
-  override def transform(prev: Iterator[A]): Iterator[A] = {
+  override def apply(prev: Iterator[A]): Iterator[A] = {
     prev
   }
 }

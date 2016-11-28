@@ -25,11 +25,11 @@ import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, Module}
 import com.intel.analytics.bigdl.optim.SGD.LearningRateSchedule
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{Activities, T}
 import scopt.OptionParser
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 object ImageNetSeqFileGenerator {
 
@@ -73,7 +73,7 @@ object ImageNetSeqFileGenerator {
         val trainFolderPath = Paths.get(param.folder, "train")
         require(Files.isDirectory(trainFolderPath),
           s"${trainFolderPath} is not valid")
-        val trainDataSource = new ImageNetDataSource(trainFolderPath, false)
+        val trainDataSource = ImageNet.PathDataSet(trainFolderPath, false)
         trainDataSource.shuffle()
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
@@ -81,8 +81,9 @@ object ImageNetSeqFileGenerator {
               val pipeline = trainDataSource -> PathToRGBImage(256) ->
                 RGBImageToSequentialFile(param.blockSize, Paths.get(param.output, "train",
                   s"imagenet-seq-$tid"))
-              while (pipeline.hasNext) {
-                println(s"Generated file ${pipeline.next()}")
+              val iter = pipeline.data()
+              while (iter.hasNext) {
+                println(s"Generated file ${iter.next()}")
               }
             }
           })
@@ -99,7 +100,7 @@ object ImageNetSeqFileGenerator {
         require(Files.isDirectory(validationFolderPath),
           s"${validationFolderPath} is not valid")
 
-        val validationDataSource = new ImageNetDataSource(validationFolderPath, false)
+        val validationDataSource = ImageNet.PathDataSet(validationFolderPath, false)
         validationDataSource.shuffle()
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
@@ -107,8 +108,9 @@ object ImageNetSeqFileGenerator {
               val pipeline = validationDataSource -> PathToRGBImage(256) ->
                 RGBImageToSequentialFile(param.blockSize, Paths.get(param.output, "val",
                   s"imagenet-seq-$tid"))
-              while (pipeline.hasNext) {
-                println(s"Generated file ${pipeline.next()}")
+              val iter = pipeline.data()
+              while (iter.hasNext) {
+                println(s"Generated file ${iter.next()}")
               }
             }
           })
@@ -202,9 +204,9 @@ object ImageNetLocal {
   def main(args: Array[String]) {
     parser.parse(args, new ImageNetLocalParam()).map(param => {
       val config = configs(param.net)
-      val trainDataSource = new ImageNetSeqDataSource(Paths.get(param.folder, "train"), 1281167,
-        looped = true)
-      val validationDataSource = new ImageNetSeqDataSource(Paths.get(param.folder, "val"),
+      val trainDataSource = ImageNet.LocalSeqDataSet(Paths.get(param.folder, "train"),
+        1281167, looped = true)
+      val validationDataSource = ImageNet.LocalSeqDataSet(Paths.get(param.folder, "val"),
         50000, looped = false)
       val fileTransformer = new SeqFileToArrayByte()
       val arrayToImage = ArrayByteToRGBImage()
@@ -227,9 +229,12 @@ object ImageNetLocal {
         transformer = fileTransformer + arrayToImage + cropper + normalizer
       )
 
+      val validator = new LocalValidator[Float](
+        Array(new Top1Accuracy[Float], new Top5Accuracy[Float]),
+        validationDataSource -> validationMultiThreadToTensor
+      )
       val optimizer = new LocalOptimizer[Float](
         data = trainDataSource -> trainMultiThreadToTensor,
-        validationData = validationDataSource -> validationMultiThreadToTensor,
         model = config.model,
         criterion = config.criterion,
         optimMethod = config.optimMethod,
@@ -243,9 +248,7 @@ object ImageNetLocal {
         endWhen = config.endWhen
       )
       optimizer.setCache(param.cache + "/" + param.net, config.cacheTrigger)
-      optimizer.setValidationTrigger(config.testTrigger)
-      optimizer.addValidation(new Top1Accuracy[Float])
-      optimizer.addValidation(new Top5Accuracy[Float])
+      optimizer.setValidation(config.testTrigger, validator)
       optimizer.overWriteCache()
       optimizer.optimize()
     })
