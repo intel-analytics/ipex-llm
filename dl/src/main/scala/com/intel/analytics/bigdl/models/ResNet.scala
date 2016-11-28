@@ -35,7 +35,7 @@ object ResNet {
 
     val cache = mutable.Map[Any, Storage[T]]()
     val packageName: String = model.getName().stripSuffix("Sequential")
-    model.asInstanceOf[Sequential[Activities,Activities,T]].mapModules(m => {
+    model.mapModules(m => {
       val moduleType = m.getClass.getName
       if (m.gradInput.isInstanceOf[Tensor[T]] && !moduleType.equals(packageName + "ConcatTable")) {
         val key = sharingKey(m)
@@ -57,7 +57,7 @@ object ResNet {
       tmpModel.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
     }
 
-    cache.put("gradWeightMM", Storage(Array(ev.fromType[Int](1))))
+    //cache.put("gradWeightMM", Storage(Array(ev.fromType[Int](1))))
     cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
     cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
     for ((m, i) <- model.asInstanceOf[Sequential[Activities,Activities,T]]
@@ -65,7 +65,7 @@ object ResNet {
       .zipWithIndex){
       val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
       tmpModel.setSharedVar
-      tmpModel.setGradWeightMM(Tensor[T](cache.get("gradWeightMM").get))
+      //tmpModel.setGradWeightMM(Tensor[T](cache.get("gradWeightMM").get))
       tmpModel.fInput = Tensor[T](cache.get("fInput").get)
       tmpModel.fGradInput = Tensor[T](cache.get("fGradInput").get)
     }
@@ -75,7 +75,7 @@ object ResNet {
                                                        (implicit ev: TensorNumeric[T]): Unit = {
     val packageName: String = model.getName().stripSuffix("Sequential")
     val name = packageName + "SpatialConvolution"
-    for ((m, i) <- model.asInstanceOf[Sequential[Activities,Activities,T]]
+    for ((m, i) <- model
       .findModules(name)
       .zipWithIndex) {
       val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
@@ -89,7 +89,7 @@ object ResNet {
                                                      (implicit ev: TensorNumeric[T]): Unit = {
     val packageName: String = model.getName().stripSuffix("Sequential")
     val name = packageName + "SpatialBatchNormalization"
-    for ((m, i) <- model.asInstanceOf[Sequential[Activities,Activities,T]]
+    for ((m, i) <- model
       .findModules(name)
       .zipWithIndex) {
       val tmpModel = m.asInstanceOf[SpatialBatchNormalization[T]]
@@ -101,7 +101,7 @@ object ResNet {
             (implicit ev: TensorNumeric[T]): Unit = {
     val packageName: String = model.getName().stripSuffix("Sequential")
     val name = packageName + "Linear"
-    for ((m, i) <- model.asInstanceOf[Sequential[Activities,Activities,T]]
+    for ((m, i) <- model
       .findModules(name)
       .zipWithIndex){
       val tmpModel = m.asInstanceOf[Linear[T]]

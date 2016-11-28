@@ -21,11 +21,12 @@ import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Activities, Table}
+import com.intel.analytics.bigdl._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-private[nn] abstract class Container[A <: Activities : ClassTag,
+abstract class Container[A <: Activities : ClassTag,
     B <: Activities : ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Module[A, B, T] {
 
@@ -71,20 +72,20 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
     * @param indexes     ignore it
     * @return module ref, offset(ignore), indexes from the current module
     */
-  def findModel(
+  override def findModel(
                  paramOffset: Int,
                  indexes: Array[Int] = Array()):
   (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
 
-  def mapModules(f: Module[_ <: Activities, _ <: Activities, T] => Unit): Unit = {
+  override def mapModules(f: Module[_ <: Activities, _ <: Activities, T] => Unit): Unit = {
     f(this)
 
     if (modules != null) {
-      modules.foreach(_.asInstanceOf[Sequential[_<:Activities, _<:Activities, T]].mapModules(f))
+      modules.foreach(_.mapModules(f))
     }
   }
 
-  def findModules(name: String): ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]] = {
+  override def findModules(name: String): ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]] = {
     def matchName(module: Module[_ <: Activities, _ <: Activities, T]) =
       module.getClass.getName.equals(name)
 
@@ -92,9 +93,13 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
 
     if (matchName(this)) nodes.append(this)
     if (modules != null) {
-      modules.foreach(m => {
-        val tempNodes = m.asInstanceOf[Sequential[_<:Activities, _<:Activities, T]].findModules(name)
-        nodes ++= tempNodes
+      modules
+        .foreach(m => {
+          if (matchName(m)) nodes.append(m)
+          else if (m.isInstanceOf[Container[_ <: Activities, _ <: Activities, T]]) {
+            val tempNodes = m.findModules(name)
+            nodes ++= tempNodes
+          }
       })
     }
 
