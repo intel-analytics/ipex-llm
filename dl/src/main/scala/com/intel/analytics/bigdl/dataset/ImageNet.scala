@@ -20,16 +20,18 @@ package com.intel.analytics.bigdl.dataset
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.Executors
 
+import com.intel.analytics.bigdl.models.ResNet
+import com.intel.analytics.bigdl.models.ResNet.ShortcutType
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, GoogleNet_v1}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, Module}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.optim.SGD.LearningRateSchedule
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{Activities, T}
 import scopt.OptionParser
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 object ImageNetSeqFileGenerator {
 
@@ -127,8 +129,9 @@ object ImageNetLocal {
 
   case class ImageNetLocalParam(
     folder: String = ".",
-    net: String = "alexnet",
+    net: String = "resnet",
     cache: String = ".",
+    optnet: Boolean = false,
     parallel: Int = 1
   )
 
@@ -173,7 +176,21 @@ object ImageNetLocal {
       cacheTrigger = Trigger.severalIteration(40000),
       endWhen = Trigger.maxIteration(2400000),
       learningRate = 0.01,
-      learningRateSchedule = SGD.Poly(0.5, 2400000))
+      learningRateSchedule = SGD.Poly(0.5, 2400000)),
+    "resnet" -> Config(
+      ResNet[Float](classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
+        .asInstanceOf[Module[Tensor[Float], Tensor[Float], Float]],
+      new CrossEntropyCriterion[Float](),
+      new SGD[Float](),
+      imageSize = 224,
+      batchSize = 64,
+      momentum = 0.9,
+      weightDecay = 1e-4,
+      testTrigger = Trigger.severalIteration(391),
+      cacheTrigger = Trigger.severalIteration(3910),
+      endWhen = Trigger.maxIteration(391*90),
+      learningRate = 0.1,
+      learningRateSchedule = SGD.EpochDecay())
   )
 
   private val parser = new OptionParser[ImageNetLocalParam]("Spark-DL ImageNet Local Example") {
@@ -187,14 +204,17 @@ object ImageNetLocal {
     opt[Int]('p', "parallel")
       .text("parallel num")
       .action((x, c) => c.copy(parallel = x))
+    opt[Boolean]("optnet")
+      .text("share several tensors to reduce memory usage")
+      .action((x, c) => c.copy(optnet = x))
     opt[String]('n', "net")
-      .text("net type : alexnet | googlenetv1")
+      .text("net type : alexnet | googlenetv1 | resnet")
       .action((x, c) => c.copy(net = x.toLowerCase))
       .validate(v =>
-        if (Set("alexnet", "googlenetv1").contains(v.toLowerCase())) {
+        if (Set("alexnet", "googlenetv1", "resnet").contains(v.toLowerCase())) {
           success
         } else {
-          failure("Net type can only be alexnet | googlenetv1 in this example")
+          failure("Net type can only be alexnet | googlenetv1 |resnet in this example")
         }
       )
   }
@@ -210,22 +230,47 @@ object ImageNetLocal {
       val arrayToImage = ArrayByteToRGBImage()
       val cropper = RGBImageCropper(cropWidth = config.imageSize, cropHeight = config.imageSize)
       val normalizer = RGBImageNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
+      val colorJitter = ColorJitter()
+      val lighting = Lighting()
       val flipper = HFlip(0.5)
-      val trainMultiThreadToTensor = MultiThreadRGBImageToSingleTensor[Path](
-        width = configs(param.net).imageSize,
-        height = configs(param.net).imageSize,
-        threadNum = param.parallel,
-        batchSize = config.batchSize,
-        transformer = fileTransformer + arrayToImage + cropper + flipper + normalizer
-      )
 
-      val validationMultiThreadToTensor = MultiThreadRGBImageToSingleTensor[Path](
-        width = configs(param.net).imageSize,
-        height = configs(param.net).imageSize,
-        threadNum = param.parallel,
-        batchSize = config.batchSize,
-        transformer = fileTransformer + arrayToImage + cropper + normalizer
-      )
+      if (param.net.equals("resnet")) {
+        ResNet.convInit(config.model)
+        ResNet.bnInit(config.model)
+        ResNet.lnInit(config.model)
+      }
+      if (param.optnet) {
+        ResNet.shareGradInput(config.model)
+      }
+
+      val trainMultiThreadToTensor = param.net match {
+        case "resnet" => MultiThreadRGBImageToSingleTensor[Path](
+          width = configs(param.net).imageSize,
+          height = configs(param.net).imageSize,
+          threadNum = param.parallel,
+          batchSize = config.batchSize,
+          transformer = fileTransformer + arrayToImage + cropper + colorJitter + lighting + normalizer + flipper)
+        case _ => MultiThreadRGBImageToSingleTensor[Path](
+          width = configs(param.net).imageSize,
+          height = configs(param.net).imageSize,
+          threadNum = param.parallel,
+          batchSize = config.batchSize,
+          transformer = fileTransformer + arrayToImage + cropper + flipper + normalizer)
+      }
+
+      val validationMultiThreadToTensor = param.net match {
+        case "resnet" => MultiThreadRGBImageToSingleTensor[Path] (
+          width = configs (param.net).imageSize,
+          height = configs (param.net).imageSize,
+          threadNum = param.parallel,
+          batchSize = config.batchSize,
+          transformer = fileTransformer + arrayToImage + normalizer + cropper)
+        case _ => MultiThreadRGBImageToSingleTensor[Path] (
+          width = configs (param.net).imageSize,
+          height = configs (param.net).imageSize,
+          threadNum = param.parallel,
+          batchSize = config.batchSize,
+          transformer = fileTransformer + arrayToImage + cropper + normalizer)}
 
       val optimizer = new LocalOptimizer[Float](
         data = trainDataSource -> trainMultiThreadToTensor,
@@ -237,7 +282,7 @@ object ImageNetLocal {
           "learningRate" -> config.learningRate,
           "weightDecay" -> config.weightDecay,
           "momentum" -> config.momentum,
-          "dampening" -> 0.0,
+          "dampening" -> config.momentum,
           "learningRateSchedule" -> config.learningRateSchedule
         ),
         endWhen = config.endWhen

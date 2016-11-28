@@ -29,8 +29,9 @@ import scala.reflect.ClassTag
 
 
 object ResNet {
-  def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[Activities, Activities, T])
+  def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[Tensor[T], Tensor[T], T])
                                                              (implicit ev: TensorNumeric[T]): Unit = {
+    //def sharingKey(m: Module[Tensor[T], Tensor[T], T]) = m.getClass.getName
     def sharingKey(m: Module[_ <: Activities, _ <: Activities, T]) = m.getClass.getName
 
     val cache = mutable.Map[Any, Storage[T]]()
@@ -47,7 +48,7 @@ object ResNet {
       }
     })
 
-    for ((m, i) <- model.asInstanceOf[Sequential[Activities,Activities,T]]
+    for ((m, i) <- model.asInstanceOf[Sequential[Tensor[T],Tensor[T],T]]
       .findModules(packageName + "ConcatTable")
       .zipWithIndex){
       if (!cache.contains(i % 2)) {
@@ -71,7 +72,7 @@ object ResNet {
     }
   }
 
-  def convInit[@specialized(Float, Double) T: ClassTag](model: Module[Activities, Activities, T])
+  def convInit[@specialized(Float, Double) T: ClassTag](model: Module[Tensor[T], Tensor[T], T])
                                                        (implicit ev: TensorNumeric[T]): Unit = {
     val packageName: String = model.getName().stripSuffix("Sequential")
     val name = packageName + "SpatialConvolution"
@@ -85,7 +86,7 @@ object ResNet {
     }
   }
 
-  def bnInit[@specialized(Float, Double) T: ClassTag](model: Module[Activities, Activities, T])
+  def bnInit[@specialized(Float, Double) T: ClassTag](model: Module[Tensor[T], Tensor[T], T])
                                                      (implicit ev: TensorNumeric[T]): Unit = {
     val packageName: String = model.getName().stripSuffix("Sequential")
     val name = packageName + "SpatialBatchNormalization"
@@ -97,7 +98,7 @@ object ResNet {
       tmpModel.bias.apply1(_ => ev.fromType[Float](0.0f))
     }
   }
-  def lnInit[@specialized(Float, Double) T: ClassTag](model: Module[Activities, Activities, T])
+  def lnInit[@specialized(Float, Double) T: ClassTag](model: Module[Tensor[T], Tensor[T], T])
             (implicit ev: TensorNumeric[T]): Unit = {
     val packageName: String = model.getName().stripSuffix("Sequential")
     val name = packageName + "Linear"

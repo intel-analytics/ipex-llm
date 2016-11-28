@@ -22,7 +22,7 @@ import java.util
 
 import com.intel.analytics.bigdl.models.ResNet
 import com.intel.analytics.bigdl.models.ResNet.ShortcutType
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.optim.{EvaluateMethods, SGD}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -94,6 +94,7 @@ object ImageNetLocal {
       case "googlenet-cf" => GoogleNet.getModelCaffe[Float](classNum)
       case "resnet" => {
         val curModel = ResNet[Float](classNum, T("shortcutType" -> ShortcutType.B, "depth" -> modelDepth))
+          .asInstanceOf[Module[Tensor[Float], Tensor[Float], Float]]
         ResNet.shareGradInput(curModel)
         ResNet.convInit(curModel)
         ResNet.bnInit(curModel)

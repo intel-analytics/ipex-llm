@@ -109,6 +109,7 @@ object MultiModelPerf {
         new ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
       case "resnet" => {
         val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
+          .asInstanceOf[Module[Tensor[T], Tensor[T], T]]
         ResNet.shareGradInput(curModel)
         ResNet.convInit(curModel)
         ResNet.bnInit(curModel)

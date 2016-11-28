@@ -103,6 +103,7 @@ object Perf {
       case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
       case "resnet" => {
         val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
+          .asInstanceOf[Module[Tensor[T], Tensor[T], T]]
         ResNet.shareGradInput(curModel)
         ResNet.convInit(curModel)
         ResNet.bnInit(curModel)
