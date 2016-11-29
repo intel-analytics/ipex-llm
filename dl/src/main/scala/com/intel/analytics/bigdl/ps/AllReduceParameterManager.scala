@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.{StorageLevel, TaskResultBlockId}
-import org.apache.spark.{Logging, SparkContext, SparkEnv, TaskContext}
+import org.apache.spark.{SparkContext, SparkEnv, TaskContext}
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
@@ -63,7 +63,7 @@ object AllReduceParameterManager {
 
 class AllReduceParameterManager[T: ClassTag](
   parameter: Tensor[T], dataset: RDD[_], metrics: Metrics = new Metrics()
-)(implicit ev: TensorNumeric[T]) extends ParameterManager[T] with Logging {
+)(implicit ev: TensorNumeric[T]) extends ParameterManager[T] {
 
   import AllReduceParameterManager._
 
