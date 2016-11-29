@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.ps.ParameterManager
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -38,7 +37,6 @@ abstract class EpochOptimizer[T: ClassTag](
   config: Table = T()) extends DistributedOptimizer[T](module, criterion, dataSets) {
 
   protected var maxEpoch: Option[Int] = None
-  protected val logger = Logger.getLogger(getClass);
 
   def setMaxEpoch(maxEpoch: Int): this.type = {
     if (maxEpoch > 0) {
