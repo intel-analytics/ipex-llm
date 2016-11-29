@@ -74,7 +74,6 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
     config: Table = T())
   (implicit ev: TensorNumeric[T])
   extends EpochOptimizer[T](module, criterion, optm, pm, dataSets, metrics, config) {
-
   import DropSlowModuleGradAggEpochOptimizer._
 
   private def init() = {
@@ -150,7 +149,6 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
           multiThreadModels, true)(
           (data, modelIter, weights, multiThreadModuleIter) => {
             var tmp = System.nanoTime()
-
             val localMTCaches = multiThreadModuleIter.next()
             val localCaches = modelIter.next()
             val syncWeightTask = Future {
@@ -236,8 +234,8 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
             driverMetrics.add("computing time for each node", computingTime)
 
             val finishedThreads = threads.asScala.filter(!_.isCancelled).map(_.get())
-            driverMetrics.add("dropped modules", subModuleNumber-finishedThreads.size)
 
+            driverMetrics.add("dropped modules", subModuleNumber-finishedThreads.size)
               stackCount += finishedThreads.size
               finishedThreads.foreach{index =>
                 lossSum += lossArray(index)
@@ -282,7 +280,6 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
         val driverEV = ev
         val optM = optm
         val configDriver = config
-
         pm.sumAndUpdate(resultRDD, (weights, gradients, state) => {
           optM.optimize(_ => (driverEV.fromType(lossSum.value / stackCount.value), gradients),
             weights, configDriver, state)
@@ -308,9 +305,10 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
             val k = (dropModulePercent*100*idealSubModulesNum).toInt
             threshold = Util.kthLargest(Util.moduleTimeList, 0, Util.moduleTimeList.length-1, k)
             logger.info("threshold: " + threshold)
+
             // clear moduleTimeList in each node
             models.mapPartitions { iter =>
-              Util.moduleTimeList = new Array[Long](subModuleNumber*16*100)
+              Util.moduleTimeList = new Array[Long](subModuleNumber * 16 * 100)
               Iterator.empty
             }.count()
           }
