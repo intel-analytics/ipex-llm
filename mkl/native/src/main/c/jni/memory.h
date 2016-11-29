@@ -178,8 +178,6 @@ MKLData<DType>::~MKLData()
 
   dnnDelete<DType>(mklToUsr);
   dnnDelete<DType>(usrToMkl);
-
-  //LOG(DBG) << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 }
 
 template <typename DType>
@@ -250,15 +248,20 @@ void MKLData<DType>::createConversion(bool doNotCreateConversion)
       // else { dnnReleaseBuffer<DType>(dataMkl); allocate(); }
 
       if (!doNotCreateConversion) {
+        dnnError_t status = E_UNIMPLEMENTED;
+
         if (mklToUsr) {
-          dnnDelete<DType>(mklToUsr);
+          status = dnnDelete<DType>(mklToUsr);
+          CHECK_EQ(status, E_SUCCESS);
           mklToUsr = NULL;
         }
+
         if (usrToMkl) {
-          dnnDelete<DType>(usrToMkl);
+          status = dnnDelete<DType>(usrToMkl);
+          CHECK_EQ(status, E_SUCCESS);
           usrToMkl = NULL;
         }
-        dnnError_t status;
+
         status = dnnConversionCreate<DType>(&mklToUsr, layoutMkl, layoutUsr);
         CHECK_EQ(status, E_SUCCESS);
 
@@ -285,7 +288,9 @@ template <typename DType>
 void MKLData<DType>::allocate()
 {
   dnnError_t status;
-  status = dnnAllocateBuffer<DType>(&dataMkl, layoutMkl);
+
+  status = dnnAllocateBuffer<DType>(reinterpret_cast<void**>(&dataMkl),
+                                    layoutMkl);
   CHECK_EQ(status, E_SUCCESS);
 
   size_t size = dnnLayoutGetMemorySize<DType>(layoutMkl);

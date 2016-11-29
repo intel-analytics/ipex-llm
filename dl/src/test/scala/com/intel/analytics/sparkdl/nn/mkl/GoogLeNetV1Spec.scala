@@ -172,7 +172,7 @@ class GoogLeNetV1Spec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "An GoogLeNet_V1 " should "the same output, gradient as intelcaffe w/ dnn" in {
-    val batchSize = 4
+    val batchSize = 32
     val googlenet_v1 = s"""
 name: "GoogleNet"
 force_backward: true

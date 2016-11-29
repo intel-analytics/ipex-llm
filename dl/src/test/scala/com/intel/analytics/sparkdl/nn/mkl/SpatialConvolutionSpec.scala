@@ -31,7 +31,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
   val cmd1 = "test_convolution "
 
   val testCases = List(
-    TestCase(512, 512, 3, 3, 1, 1, 1, 1, 1, 2, 2, 32),
+    TestCase(512, 512, 3, 3, 1, 1, 1, 1, 1, 2, 2, 2048),
 
     // AlexNet
     TestCase(3, 96, 11, 11, 4, 4, 0, 0, 1, 227, 227, 32),
@@ -138,10 +138,6 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     TestCase(128, 128, 3, 3, 1, 1, 1, 1, 1, 16, 16, 128)
   )
 
-//  val tmp = List(
-//    TestCase(512, 512, 3, 3, 1, 1, 1, 1, 1, 2, 2, 32)
-//  )
-
   for (test <- testCases) {
     "A SpatialConvolution" should s"with parameters " +
                                   s"${test.nInputPlane}, ${test.nOutputPlane}, ${test.kW}, ${test.kH}" +
@@ -172,13 +168,15 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       model.bias.set(bias)
 
       model.forward(input)
+      model.forward(input)
 
       val output = Tools.getTensor[Float]("output", model.output.size(), pid)
 
-      val gradOutput = Tools.getTensor[Float]("gradOutput", output.size(), pid)
+      val gradOutput = Tools.getTensor[Float]("gradOutput", model.output.size(), pid)
       val gradInput = Tools.getTensor[Float]("gradInput", input.size(), pid)
 
       model.zeroGradParameters()
+      model.backward(input, gradOutput)
       model.backward(input, gradOutput)
 
       val gradWeight = Tools.getTensor[Float]("gradWeight", weights.size(), pid)

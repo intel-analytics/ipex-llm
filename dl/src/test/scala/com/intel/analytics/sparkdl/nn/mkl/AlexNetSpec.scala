@@ -66,7 +66,7 @@ object AlexNet {
 
 class AlexNetSpec extends FlatSpec with Matchers {
   "An AlexNet forward and backward" should "the same output, gradient as intelcaffe w/ dnn" in {
-    val batchSize = 128
+    val batchSize = 32
     val alexnet = s"""
 name: "AlexNet"
 force_backward: true

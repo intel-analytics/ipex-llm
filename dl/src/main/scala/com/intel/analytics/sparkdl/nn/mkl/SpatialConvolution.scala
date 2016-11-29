@@ -40,23 +40,16 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     private var initMethod: InitializationMethod = Default
 )(implicit ev: TensorNumeric[T])
     extends TensorModule[T] {
-  // TODO It should be re-factor.
-  //      Because the nn.SpatialConvolution support this, just for adopting it.
+
   require(nInputPlane % groups == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % groups == 0, "Number of output channels should be multiples of group.")
 
-  val weight: Tensor[T] = Tensor[T](groups, nOutputPlane / groups, nInputPlane / groups,
-                                    kernelHeight, kernelWidth)
-  val gradWeight =
-    Tensor[T]().resizeAs(weight)
-//  val weight: Tensor[T] =
-//    Tensor[T](nOutputPlane, nInputPlane, kernelHeight, kernelWidth)
-  val bias: Tensor[T] = Tensor[T](nOutputPlane)
-  this.gradInput = Tensor[T](nOutputPlane, nInputPlane, kernelHeight, kernelWidth)
-  val gradBias = Tensor[T](nOutputPlane)
-//  this.gradWeight = Tensor[T](nOutputPlane, nInputPlane, kernelHeight, kernelWidth)
-  val fInput = Tensor[T]()
-  val fGradInput = Tensor[T]()
+  val weight: Tensor[T] =
+    Tensor[T](groups, nOutputPlane / groups, nInputPlane / groups, kernelHeight, kernelWidth)
+  var gradWeight = Tensor[T]().resizeAs(weight)
+  var bias: Tensor[T] = Tensor[T](nOutputPlane)
+  var gradBias = Tensor[T](nOutputPlane)
+
   reset()
 
   private var im2colTime = 0L
@@ -64,7 +57,6 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
 
   var classPtr = 0L
   private var firstPass = true
-
   private var useOpenMp = true
 
   override def getClassPtr(): Long = classPtr
