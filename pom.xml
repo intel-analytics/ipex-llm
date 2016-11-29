@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.intel.analytics.sparkdl</groupId>
-    <artifactId>sparkdl-parent_0.1</artifactId>
+    <groupId>com.intel.analytics.bigdl</groupId>
+    <artifactId>bigdl-parent_0.1</artifactId>
     <packaging>pom</packaging>
     <version>0.1.0-SNAPSHOT</version>
 
@@ -149,7 +149,6 @@
         <commons-codec.version>1.9</commons-codec.version>
         <commons-io.version>2.4</commons-io.version>
         <commons-lang.version>2.6</commons-lang.version>
-        <commons-logging.version>1.2</commons-logging.version>
         <commons-math.version>2.2</commons-math.version>
         <collections.version>3.2.1</collections.version>
 
@@ -164,10 +163,15 @@
     </modules>
     <distributionManagement>
         <repository>
+            <id>arda.nexus.releases</id>
+            <name>arda's nexus</name>
+            <url>http://10.239.45.219:8081/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
             <id>arda.nexus.snapshots</id>
             <name>arda's nexus</name>
             <url>http://10.239.45.219:8081/content/repositories/snapshots/</url>
-        </repository>
+        </snapshotRepository>
     </distributionManagement>
 
     <dependencyManagement>

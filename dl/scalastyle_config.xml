@@ -148,8 +148,8 @@ You can also disable only one rule, by specifying its rule id, as specified in:
             <parameter name="groups">java,scala,3rdParty,spark</parameter>
             <parameter name="group.java">javax?\..*</parameter>
             <parameter name="group.scala">scala\..*</parameter>
-            <parameter name="group.3rdParty">(?!com\.intel\.analytics\.sparkdl\.).*</parameter>
-            <parameter name="group.spark-dl">com\.intel\.analytics\.sparkdl\..*</parameter>
+            <parameter name="group.3rdParty">(?!com\.intel\.analytics\.bigdl\.).*</parameter>
+            <parameter name="group.bigdl">com\.intel\.analytics\.bigdl\..*</parameter>
         </parameters>
     </check>
 
@@ -183,7 +183,7 @@ You can also disable only one rule, by specifying its rule id, as specified in:
 
     <check level="error" class="org.scalastyle.scalariform.DeprecatedJavaChecker" enabled="true"></check>
 
-    <check level="error" class="org.scalastyle.scalariform.NoWhitespaceBeforeLeftBracketChecker" enabled="true"></check>
+    <check customId="noSpaceBeforeLeftBracket" level="error" class="org.scalastyle.scalariform.NoWhitespaceBeforeLeftBracketChecker" enabled="true"></check>
     <check level="error" class="org.scalastyle.scalariform.NoWhitespaceAfterLeftBracketChecker" enabled="true"></check>
 
     <check customId="methodName" level="error" class="org.scalastyle.scalariform.MethodNamesChecker" enabled="true">
