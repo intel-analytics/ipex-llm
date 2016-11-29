@@ -32,16 +32,16 @@ object Util {
 
     if (pos-l > k-1) return kthLargest(arr, l, pos-1, k)
 
-    kthLargest(arr, pos+1, r, k-pos+l-1)
+    kthLargest(arr, pos + 1, r, k - pos + l - 1)
   }
 
-  def swap(arr: Array[Long], i: Int, j: Int) = {
+  def swap(arr: Array[Long], i: Int, j: Int): Unit = {
     val temp = arr(i)
     arr(i) = arr(j)
     arr(j) = temp
   }
 
-  private def partition(arr:Array[Long], l: Int, r: Int): Int = {
+  private def partition(arr: Array[Long], l: Int, r: Int): Int = {
     val x = arr(r)
     var i = l
     for (j <- l to (r - 1)) {
@@ -55,7 +55,7 @@ object Util {
   }
 
   private def randomPartition(arr: Array[Long], l: Int, r: Int): Int = {
-    val n = r-l+1;
+    val n = r - l + 1;
     val pivot = ((Math.random()) % n).toInt;
     swap(arr, l + pivot, r);
     partition(arr, l, r);

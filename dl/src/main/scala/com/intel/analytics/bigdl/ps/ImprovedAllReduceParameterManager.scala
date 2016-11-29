@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.ps
 
 import java.util.concurrent.{Callable, Executors, TimeUnit}
 
-import collection.JavaConversions._
+import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.optim.{DropSlowModuleGradAggEpochOptimizer, Metrics}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -146,8 +146,8 @@ class ImprovedAllReduceParameterManager[T: ClassTag](
             Parameter(localBuffer)(_classTag).copyTo(0, localParameter, start, length)
             pid
           }
-        }}) 
-      pool.invokeAll(swThreads)
+        }})
+      pool.invokeAll(swThreads.asJava)
 
       val weightSync = System.nanoTime() - before
       _metrics.add("worker sync weight average", weightSync)
@@ -198,7 +198,8 @@ class ImprovedAllReduceParameterManager[T: ClassTag](
         pid += 1
       }
       _metrics.add("worker put result", System.nanoTime() - before)
-      _metrics.add("task1 avg time", System.nanoTime() - ImprovedAllReduceParameterManager.task1InnerTime)
+      _metrics.add("task1 avg time",
+        System.nanoTime() - ImprovedAllReduceParameterManager.task1InnerTime)
       _metrics.add("task1 time from worker", System.nanoTime() -
         ImprovedAllReduceParameterManager.task1InnerTime)
       Iterator.empty
@@ -206,8 +207,8 @@ class ImprovedAllReduceParameterManager[T: ClassTag](
     metrics.set("task1 time from driver", System.nanoTime() - task1Before)
 
     val task2Before = System.nanoTime()
-    metrics.set("gradient sync average", 0.0, sc, partitionNum)    
-    metrics.set("gradient sync for each node", mutable.ArrayBuffer[Double](), sc)    
+    metrics.set("gradient sync average", 0.0, sc, partitionNum)
+    metrics.set("gradient sync for each node", mutable.ArrayBuffer[Double](), sc)
     metrics.set("gradient reduce", 0.0, sc, partitionNum)
     metrics.set("worker gradient extract", 0.0, sc, partitionNum)
     metrics.set("worker fetch broadcast values", 0.0, sc, partitionNum)
@@ -225,22 +226,23 @@ class ImprovedAllReduceParameterManager[T: ClassTag](
       val newParams = new Array[Parameter[T]](_partitionNum)
       val sgThreads = (0 until _partitionNum).map(pid => {
         new Callable[Int] {
-          override def call(): Int = {            
+          override def call(): Int = {
             val blockId = getGradientBlockId(pid, curPid)
-            newParams(pid) = Parameter[T](bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId)
+            newParams(pid) = Parameter[T](bm.getLocalBytes(blockId)
+              .getOrElse(bm.getRemoteBytes(blockId)
               .getOrElse(
                 throw new IllegalArgumentException(s"Can't get the block(${blockId})")
-              )))(_classTag)     
+              )))(_classTag)
             pid
           }
         }})
-      pool.invokeAll(sgThreads)    
-       
+      pool.invokeAll(sgThreads.asJava)
+
       val syncGradient = System.nanoTime() - before
       _metrics.add("gradient sync average", syncGradient)
       _metrics.add("gradient sync for each node", syncGradient)
 
-      before = System.nanoTime()      
+      before = System.nanoTime()
       val length = _taskSize + (if (curPid < _extraSize) 1 else 0)
       val innerTaskSize = length / poolSize
       val innerExtraSize = length % poolSize

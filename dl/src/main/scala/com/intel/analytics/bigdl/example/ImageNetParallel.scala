@@ -101,7 +101,7 @@ object ImageNetParallel {
       case "alexnet" => AlexNet.getModel[Float](classNum)
       case "googlenet" => GoogleNet.getModelCaffe[Float](classNum)
       case "googlenet_v2" => GoogleNet_v2_NoAuxClassifier[Float](classNum)
-      case "googlenet_v1" => GoogleNet_v1[Float](classNum)      
+      case "googlenet_v1" => GoogleNet_v1[Float](classNum)
     }
     println(model)
 
@@ -154,7 +154,7 @@ object ImageNetParallel {
       new AllReduceParameterManager[Float](parameter, dataSets.partitions(), metrics)
     } else if (params.pmType == "onereduce") {
       new OneReduceParameterManager[Float](parameter, dataSets.partitions(), metrics)
-    }  else if (params.pmType == "improvedallreduce") {
+    } else if (params.pmType == "improvedallreduce") {
       new ImprovedAllReduceParameterManager[Float](parameter, dataSets.partitions(), metrics)
     } else {
       throw new IllegalArgumentException()
@@ -180,14 +180,14 @@ object ImageNetParallel {
       new BetterGradAggEpochOptimizer[Float](model, criterion,
         getOptimMethodFloat(params.masterOptM),
         pm, dataSets, metrics, 28, driverConfig)
-    } else if(params.epochOptimizerType == "dropslowmodulegradaggepochoptimizer") {
+    } else if (params.epochOptimizerType == "dropslowmodulegradaggepochoptimizer") {
       new DropSlowModuleGradAggEpochOptimizer[Float](model, criterion,
         getOptimMethodFloat(params.masterOptM),
         pm, dataSets, metrics, driverConfig)
     } else {
       throw new IllegalArgumentException()
     }
-    
+
     optimizer.addEvaluation("top1", EvaluateMethods.calcAccuracy)
     optimizer.addEvaluation("top5", EvaluateMethods.calcTop5Accuracy)
     optimizer.setTestDataSet(testDataSets)
