@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.{Criterion, Module}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{File, T, Table}
 import org.apache.spark.rdd.RDD
+import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -66,6 +67,8 @@ abstract class DistributedOptimizer[T](
 }
 
 object DistributedOptimizer {
+
+  private val logger = Logger.getLogger(getClass)
 
   /**
    * Represent a cached module and its cost function
