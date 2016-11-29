@@ -28,16 +28,16 @@ class TransformersSpec extends FlatSpec with Matchers {
   import Utils._
 
   "Grey Image Cropper" should "crop image correct" in {
-    val image = new GreyImage(32, 32)
+    val image = new Image(32, 32, 1)
     val tensor = Tensor[Float](Storage[Float](image.content), 1, Array(32, 32))
     tensor.rand()
     RNG.setSeed(1000)
-    val cropper = new GreyImageCropper(24, 24)
+    val cropper = new ImageCropper(24, 24, 1)
     val iter = cropper.transform(Iterator.single(image))
     val result = iter.next()
 
-    result.width() should be(24)
-    result.width() should be(24)
+    result.width should be(24)
+    result.width should be(24)
 
     val originContent = image.content
     val resultContent = result.content
@@ -53,31 +53,30 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "Grey Image Normalizer" should "normalize image correctly" in {
-    val image1 = new GreyImage((1 to 9).map(_.toFloat).toArray, 3, 3, 0)
-    val image2 = new GreyImage((10 to 18).map(_.toFloat).toArray, 3, 3, 0)
-    val image3 = new GreyImage((19 to 27).map(_.toFloat).toArray, 3, 3, 0)
+    val image1 = new Image((1 to 9).map(_.toFloat).toArray, new ImageMetadata(3, 3, 1), 0)
+    val image2 = new Image((10 to 18).map(_.toFloat).toArray, new ImageMetadata(3, 3, 1), 0)
+    val image3 = new Image((19 to 27).map(_.toFloat).toArray, new ImageMetadata(3, 3, 1), 0)
 
-    val mean = (1 to 27).sum.toFloat / 27
-    val std = math.sqrt((1 to 27).map(e => (e - mean) * (e - mean)).sum / 27f).toFloat
+    val mean = (1 to 27).sum.toDouble / 27
+    val std = math.sqrt((1 to 27).map(e => (e - mean) * (e - mean)).sum / 27f)
     val target = image1.content.map(e => (e - mean) / std)
 
-    val dataSource = new ArrayDataSource[GreyImage](looped = false) {
-      override protected val data: Array[GreyImage] = Array(image1, image2, image3)
-    }
+    val dataSource = new ArrayDataSource[Image](looped = false) {
+      override protected val data: Array[Image] = Array(image1, image2, image3) }
 
-    val normalizer = new GreyImageNormalizer(dataSource)
+    val normalizer = new ImageNormalizer(dataSource)
     val iter = normalizer.transform(Iterator.single(image1))
     val test = iter.next()
-    normalizer.getMean() should be(mean)
-    normalizer.getStd() should be(std)
+    normalizer.getMean(0) should be(mean)
+    normalizer.getStd(0) should be(std)
 
-    test.content.zip(target).foreach { case (a, b) => a should be(b) }
+    test.content.zip(target).foreach { case (a, b) => a should be(b.toFloat) }
   }
 
   "Grey Image toTensor" should "convert correctly" in {
-    val image1 = new GreyImage(32, 32)
-    val image2 = new GreyImage(32, 32)
-    val image3 = new GreyImage(32, 32)
+    val image1 = new Image(32, 32, 1)
+    val image2 = new Image(32, 32, 1)
+    val image3 = new Image(32, 32, 1)
     val tensor1 = Tensor[Float](Storage[Float](image1.content), 1, Array(32, 32))
     val tensor2 = Tensor[Float](Storage[Float](image2.content), 1, Array(32, 32))
     val tensor3 = Tensor[Float](Storage[Float](image3.content), 1, Array(32, 32))
@@ -85,11 +84,11 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new ArrayDataSource[GreyImage](true) {
-      override protected val data: Array[GreyImage] = Array(image1, image2, image3)
+    val dataSource = new ArrayDataSource[Image](true) {
+      override protected val data: Array[Image] = Array(image1, image2, image3)
     }
 
-    val toTensor = new GreyImageToTensor(2)
+    val toTensor = new ImageToTensor(2)
     val tensorDataSource = dataSource -> toTensor
     val (tensorResult1, labelTensor1) = tensorDataSource.next()
     tensorResult1.size(1) should be(2)
@@ -126,16 +125,16 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "RGB Image Cropper" should "crop image correct" in {
-    val image = new RGBImage(32, 32)
+    val image = new Image(32, 32, 3)
     val tensor = Tensor[Float](Storage[Float](image.content), 1, Array(3, 32, 32))
     tensor.rand()
     RNG.setSeed(1000)
-    val cropper = new RGBImageCropper(24, 24)
+    val cropper = new ImageCropper(24, 24, 3)
     val iter = cropper.transform(Iterator.single(image))
     val result = iter.next()
 
-    result.width() should be(24)
-    result.width() should be(24)
+    result.width should be(24)
+    result.width should be(24)
 
     val originContent = image.content
     val resultContent = result.content
@@ -156,9 +155,9 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "RGB Image Normalizer" should "normalize image correctly" in {
-    val image1 = new RGBImage((1 to 27).map(_.toFloat).toArray, 3, 3, 0)
-    val image2 = new RGBImage((2 to 28).map(_.toFloat).toArray, 3, 3, 0)
-    val image3 = new RGBImage((3 to 29).map(_.toFloat).toArray, 3, 3, 0)
+    val image1 = new Image((1 to 27).map(_.toFloat).toArray, new ImageMetadata(3, 3, 3), 0)
+    val image2 = new Image((2 to 28).map(_.toFloat).toArray, new ImageMetadata(3, 3, 3), 0)
+    val image3 = new Image((3 to 29).map(_.toFloat).toArray, new ImageMetadata(3, 3, 3), 0)
 
     val firstFrameMean = (1 to 27).sum.toFloat / 27
     val firstFrameStd = math.sqrt((1 to 27).map(e => (e - firstFrameMean) * (e - firstFrameMean))
@@ -183,26 +182,26 @@ class TransformersSpec extends FlatSpec with Matchers {
       r
     })
 
-    val dataSource = new ArrayDataSource[RGBImage](false) {
-      override protected val data: Array[RGBImage] = Array(image1, image2, image3)
+    val dataSource = new ArrayDataSource[Image](false) {
+      override protected val data: Array[Image] = Array(image1, image2, image3)
     }
 
-    val normalizer = RGBImageNormalizer(dataSource)
+    val normalizer = new ImageNormalizer(dataSource)
     val iter = normalizer.transform(Iterator.single(image1))
     val test = iter.next()
-    normalizer.getMean() should be((firstFrameMean, secondFrameMean, thirdFrameMean))
-    val stds = normalizer.getStd()
-    stds._1 should be(firstFrameStd.toDouble +- 1e-6)
-    stds._2 should be(secondFrameStd.toDouble +- 1e-6)
-    stds._3 should be(thirdFrameStd.toDouble +- 1e-6)
+    normalizer.getMean should be(Array(firstFrameMean, secondFrameMean, thirdFrameMean))
+    val stds = normalizer.getStd
+    stds(0) should be(firstFrameStd.toDouble +- 1e-6)
+    stds(1) should be(secondFrameStd.toDouble +- 1e-6)
+    stds(2) should be(thirdFrameStd.toDouble +- 1e-6)
 
     test.content.zip(target).foreach { case (a, b) => a should be(b +- 1e-6f) }
   }
 
   "RGB Image toTensor" should "convert correctly" in {
-    val image1 = new RGBImage(32, 32)
-    val image2 = new RGBImage(32, 32)
-    val image3 = new RGBImage(32, 32)
+    val image1 = new Image(32, 32, 3)
+    val image2 = new Image(32, 32, 3)
+    val image3 = new Image(32, 32, 3)
     val tensor1 = Tensor[Float](Storage[Float](image1.content), 1, Array(3, 32, 32))
     val tensor2 = Tensor[Float](Storage[Float](image2.content), 1, Array(3, 32, 32))
     val tensor3 = Tensor[Float](Storage[Float](image3.content), 1, Array(3, 32, 32))
@@ -210,11 +209,11 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new ArrayDataSource[RGBImage](true) {
-      override protected val data: Array[RGBImage] = Array(image1, image2, image3)
+    val dataSource = new ArrayDataSource[Image](true) {
+      override protected val data: Array[Image] = Array(image1, image2, image3)
     }
 
-    val toTensor = new RGBImageToTensor(2)
+    val toTensor = new ImageToTensor(2)
     val tensorDataSource = dataSource -> toTensor
     val (tensorResult1, labelTensor1) = tensorDataSource.next()
     tensorResult1.size(1) should be(2)
@@ -314,9 +313,9 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "Multi thread RGB Image toTensor" should "convert correctly" in {
-    val image1 = new RGBImage(32, 32)
-    val image2 = new RGBImage(32, 32)
-    val image3 = new RGBImage(32, 32)
+    val image1 = new Image(32, 32, 3)
+    val image2 = new Image(32, 32, 3)
+    val image3 = new Image(32, 32, 3)
     val tensor1 = Tensor[Float](Storage[Float](image1.content), 1, Array(3, 32, 32))
     val tensor2 = Tensor[Float](Storage[Float](image2.content), 1, Array(3, 32, 32))
     val tensor3 = Tensor[Float](Storage[Float](image3.content), 1, Array(3, 32, 32))
@@ -324,12 +323,13 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new ArrayDataSource[RGBImage](true) {
-      override protected val data: Array[RGBImage] = Array(image1, image2, image3)
+    val dataSource = new ArrayDataSource[Image](true) {
+      override protected val data: Array[Image] = Array(image1, image2, image3)
     }
 
-    val toTensor = new MultiThreadRGBImageToSingleTensor[RGBImage](
-      width = 32, height = 32, threadNum = 2, batchSize = 2, transformer = Identity[RGBImage]
+    val toTensor = new MultiThreadImageToSingleTensor[Image](
+      width = 32, height = 32, numChannels = 3,
+      threadNum = 2, batchSize = 2, transformer = Identity[Image]()
     )
     val tensorDataSource = dataSource -> toTensor
     val (tensorResult1, labelTensor1) = tensorDataSource.next()
@@ -429,17 +429,17 @@ class TransformersSpec extends FlatSpec with Matchers {
     })
   }
 
-  "RGBImage To SeqFile" should "be good" in {
+  "Image To SeqFile" should "be good" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
-    val pathToImage = PathToRGBImage(RGBImage.NO_SCALE)
+    val pathToImage = PathToRGBImage(ImageUtils.NO_SCALE)
     val dataSource = new ImageNetDataSource(Paths.get(processPath(resource.getPath())), looped =
       false)
 
     RandomGenerator.RNG.setSeed(1000)
 
     dataSource.shuffle()
-    val tmpFile = Paths.get(java.io.File.createTempFile("UnitTest", "RGBImageToSeqFile").getPath)
-    val seqWriter = RGBImageToSequentialFile(2, tmpFile)
+    val tmpFile = Paths.get(java.io.File.createTempFile("UnitTest", "ImageToSeqFile").getPath)
+    val seqWriter = new ImageToSequentialFile(2, tmpFile)
     val writePipeline = dataSource -> pathToImage -> seqWriter
     while(writePipeline.hasNext) {
       println(s"writer file ${writePipeline.next()}")
@@ -459,9 +459,9 @@ class TransformersSpec extends FlatSpec with Matchers {
     var count = 0
     val readPipeline = seqDataSource -> SeqFileToArrayByte() -> ArrayByteToRGBImage()
     readPipeline.zip(dataSource -> pathToImage).foreach { case (l, r) =>
-      l.label() should be(r.label())
-      l.width() should be(r.width())
-      l.height() should be(r.height())
+      l.label should be(r.label)
+      l.width should be(r.width)
+      l.height should be(r.height)
       l.content.zip(r.content).foreach(d => d._1 should be(d._2))
       count += 1
     }

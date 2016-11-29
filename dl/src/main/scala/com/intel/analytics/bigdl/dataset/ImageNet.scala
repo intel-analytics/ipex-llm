@@ -79,7 +79,7 @@ object ImageNetSeqFileGenerator {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
               val pipeline = trainDataSource -> PathToRGBImage(256) ->
-                RGBImageToSequentialFile(param.blockSize, Paths.get(param.output, "train",
+                new ImageToSequentialFile(param.blockSize, Paths.get(param.output, "train",
                   s"imagenet-seq-$tid"))
               while (pipeline.hasNext) {
                 println(s"Generated file ${pipeline.next()}")
@@ -105,7 +105,7 @@ object ImageNetSeqFileGenerator {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
               val pipeline = validationDataSource -> PathToRGBImage(256) ->
-                RGBImageToSequentialFile(param.blockSize, Paths.get(param.output, "val",
+                new ImageToSequentialFile(param.blockSize, Paths.get(param.output, "val",
                   s"imagenet-seq-$tid"))
               while (pipeline.hasNext) {
                 println(s"Generated file ${pipeline.next()}")
@@ -208,20 +208,22 @@ object ImageNetLocal {
         50000, looped = false)
       val fileTransformer = new SeqFileToArrayByte()
       val arrayToImage = ArrayByteToRGBImage()
-      val cropper = RGBImageCropper(cropWidth = config.imageSize, cropHeight = config.imageSize)
-      val normalizer = RGBImageNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
-      val flipper = HFlip(0.5)
-      val trainMultiThreadToTensor = MultiThreadRGBImageToSingleTensor[Path](
+      val cropper = new ImageCropper(config.imageSize, config.imageSize, 3)
+      val normalizer = new ImageNormalizer(Array(0.485, 0.456, 0.406), Array(0.229, 0.224, 0.225))
+      val flipper = new HFlip(0.5)
+      val trainMultiThreadToTensor = new MultiThreadImageToSingleTensor[Path](
         width = configs(param.net).imageSize,
         height = configs(param.net).imageSize,
+        numChannels = 3,
         threadNum = param.parallel,
         batchSize = config.batchSize,
         transformer = fileTransformer + arrayToImage + cropper + flipper + normalizer
       )
 
-      val validationMultiThreadToTensor = MultiThreadRGBImageToSingleTensor[Path](
+      val validationMultiThreadToTensor = new MultiThreadImageToSingleTensor[Path](
         width = configs(param.net).imageSize,
         height = configs(param.net).imageSize,
+        numChannels = 3,
         threadNum = param.parallel,
         batchSize = config.batchSize,
         transformer = fileTransformer + arrayToImage + cropper + normalizer
