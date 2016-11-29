@@ -4,27 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>mkl-parent_0.1</artifactId>
-        <groupId>com.intel.analytics.sparkdl</groupId>
+        <groupId>com.intel.analytics.bigdl</groupId>
         <version>0.1.0-dnn-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.intel.analytics.sparkdl.mkl</groupId>
+    <groupId>com.intel.analytics.bigdl.mkl</groupId>
     <artifactId>mkl-java_0.1</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
-        <dependency>
-            <groupId>com.github.fommil</groupId>
-            <artifactId>jniloader</artifactId>
-            <version>1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.fommil.netlib</groupId>
-            <artifactId>all</artifactId>
-            <version>1.1.2</version>
-            <type>pom</type>
-        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -58,7 +47,7 @@
                                 <configuration>
                                     <artifactItems>
                                         <artifactItem>
-                                            <groupId>com.intel.analytics.sparkdl.mkl</groupId>
+                                            <groupId>com.intel.analytics.bigdl.mkl</groupId>
                                             <artifactId>mkl-native_0.1</artifactId>
                                             <version>0.1.0-dnn-SNAPSHOT</version>
                                             <type>so</type>

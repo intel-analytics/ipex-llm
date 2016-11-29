@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.intel.analytics.sparkdl</groupId>
-    <artifactId>sparkdl-parent_0.1</artifactId>
+    <groupId>com.intel.analytics.bigdl</groupId>
+    <artifactId>bigdl-parent_0.1</artifactId>
     <packaging>pom</packaging>
     <version>0.1.0-dnn-SNAPSHOT</version>
 
