@@ -26,9 +26,13 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
 
+object HasCrossValidation{
+  val logger = Logger.getLogger(getClass)
+}
+
 trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable{
+  import HasCrossValidation._
   private var testInterval: Int = 1
-  @transient lazy val logger = Logger.getLogger(getClass);
 
   def setTestInterval(testInterval: Int): this.type = {
     require(testInterval > 0)

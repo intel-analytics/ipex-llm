@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.ps.ParameterManager
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
+import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -46,6 +47,10 @@ abstract class EpochOptimizer[T: ClassTag](
   }
 }
 
+object GradAggEpochOptimizer{
+  val logger = Logger.getLogger(getClass)
+}
+
 class GradAggEpochOptimizer[T: ClassTag](
   @transient module: Module[Tensor[T], Tensor[T], T],
   criterion: Criterion[Tensor[T], T],
@@ -56,6 +61,8 @@ class GradAggEpochOptimizer[T: ClassTag](
   config: Table = T())
   (implicit ev: TensorNumeric[T])
   extends EpochOptimizer[T](module, criterion, optm, pm, dataSets, metrics, config) {
+
+  import GradAggEpochOptimizer._
 
   override def optimize(): Module[Tensor[T], Tensor[T], T] = {
     // don't send whole Optimizer in closure
@@ -162,12 +169,17 @@ class GradAggEpochOptimizer[T: ClassTag](
 
 }
 
+object WeightAvgEpochOptimizer{
+  val logger = Logger.getLogger(getClass)
+}
 class WeightAvgEpochOptimizer[T: ClassTag](
   @transient module: Module[Tensor[T], Tensor[T], T],
   criterion: Criterion[Tensor[T], T], optm: OptimMethod[T],
   pm: ParameterManager[T], dataSets: DataSet[_, T] with HasEpoch,
   metrics: Metrics, config: Table = T())(implicit ev: TensorNumeric[T])
   extends EpochOptimizer[T](module, criterion, optm, pm, dataSets, metrics, config) {
+
+  import WeightAvgEpochOptimizer._
 
   override def optimize(): Module[Tensor[T], Tensor[T], T] = {
     // don't send whole Optimizer in closure
