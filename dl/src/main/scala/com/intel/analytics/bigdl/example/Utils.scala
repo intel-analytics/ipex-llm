@@ -41,7 +41,8 @@ object Utils {
     labelsFile: String = "./labels",
     dataType: String = "float",
     crop: Boolean = false,
-    pmType : String = "onereduce"
+    pmType : String = "onereduce",
+    epochOptimizerType : String = "bettergradaggepochoptimizer"
   )
 
   val defaultParams = Params()
@@ -187,6 +188,9 @@ object Utils {
       opt[String]("pmType")
         .text("parameter aggregation type : onreduce | allreduce")
         .action((x, c) => c.copy(pmType = x.toLowerCase))
+      opt[String]("epochOptimizerType")
+        .text(s"epochOptimizer typer, default: ${defaultParams.epochOptimizerType}")
+        .action((x, c) => c.copy(epochOptimizerType = x.toLowerCase))
     }
   }
 
