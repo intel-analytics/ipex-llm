@@ -20,7 +20,6 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.nn.{Criterion, Module}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{File, T, Table}
-import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
@@ -43,7 +42,6 @@ abstract class DistributedOptimizer[T](
   import DistributedOptimizer._
 
   def optimize(): Module[Tensor[T], Tensor[T], T]
-  private val logger = Logger.getLogger(getClass);
 
   // We pre-create models on each partition of the data set
   private def init() = {
