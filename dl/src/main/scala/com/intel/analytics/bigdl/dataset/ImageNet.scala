@@ -222,12 +222,15 @@ object ImageNetLocal {
   def main(args: Array[String]) {
     parser.parse(args, new ImageNetLocalParam()).map(param => {
       val config = configs(param.net)
-      val trainDataSource = new ImageNetSeqDataSource(Paths.get(param.folder, "train"), 1281167,
-        looped = true)
-      val validationDataSource = new ImageNetSeqDataSource(Paths.get(param.folder, "val"),
-        50000, looped = false)
-      val fileTransformer = new SeqFileToArrayByte()
-      val arrayToImage = ArrayByteToRGBImage()
+      //val trainDataSource = new ImageNetSeqDataSource(Paths.get(param.folder, "train"), 1281167,
+      //  looped = true)
+      //val validationDataSource = new ImageNetSeqDataSource(Paths.get(param.folder, "val"),
+      //  50000, looped = false)
+      val trainDataSource = ImageNetDataSource(Paths.get(param.folder + "/train"), looped = true)
+      val validationDataSource = ImageNetDataSource(Paths.get(param.folder + "/val"), looped = false)
+      //val fileTransformer = new SeqFileToArrayByte()
+      val fileScaleTransformer = new PathToRGBImage(256)
+      //val arrayToImage = ArrayByteToRGBImage()
       val cropper = RGBImageCropper(cropWidth = config.imageSize, cropHeight = config.imageSize)
       val normalizer = RGBImageNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
       val colorJitter = ColorJitter()
@@ -244,33 +247,36 @@ object ImageNetLocal {
       }
 
       val trainMultiThreadToTensor = param.net match {
-        case "resnet" => MultiThreadRGBImageToSingleTensor[Path](
+        case "resnet" => MultiThreadRGBImageToSingleTensor[(Float, Path)](
           width = configs(param.net).imageSize,
           height = configs(param.net).imageSize,
           threadNum = param.parallel,
           batchSize = config.batchSize,
-          transformer = fileTransformer + arrayToImage + cropper + colorJitter + lighting + normalizer + flipper)
-        case _ => MultiThreadRGBImageToSingleTensor[Path](
+          transformer = fileScaleTransformer + cropper + colorJitter + lighting + normalizer + flipper)
+          //transformer = fileTransformer + arrayToImage + cropper + colorJitter + lighting + normalizer + flipper)
+        case _ => MultiThreadRGBImageToSingleTensor[(Float, Path)](
           width = configs(param.net).imageSize,
           height = configs(param.net).imageSize,
           threadNum = param.parallel,
           batchSize = config.batchSize,
-          transformer = fileTransformer + arrayToImage + cropper + flipper + normalizer)
+          transformer = fileScaleTransformer + cropper + normalizer + flipper)
+          //transformer = fileTransformer + arrayToImage + cropper + flipper + normalizer)
       }
 
       val validationMultiThreadToTensor = param.net match {
-        case "resnet" => MultiThreadRGBImageToSingleTensor[Path] (
+        case "resnet" => MultiThreadRGBImageToSingleTensor[(Float, Path)] (
           width = configs (param.net).imageSize,
           height = configs (param.net).imageSize,
           threadNum = param.parallel,
           batchSize = config.batchSize,
-          transformer = fileTransformer + arrayToImage + normalizer + cropper)
-        case _ => MultiThreadRGBImageToSingleTensor[Path] (
+          transformer = fileScaleTransformer + normalizer + cropper)
+        //transformer = fileTransformer + arrayToImage + normalizer + cropper)
+        case _ => MultiThreadRGBImageToSingleTensor[(Float, Path)] (
           width = configs (param.net).imageSize,
           height = configs (param.net).imageSize,
           threadNum = param.parallel,
           batchSize = config.batchSize,
-          transformer = fileTransformer + arrayToImage + cropper + normalizer)}
+          transformer = fileScaleTransformer + normalizer + cropper)}
 
       val optimizer = new LocalOptimizer[Float](
         data = trainDataSource -> trainMultiThreadToTensor,
