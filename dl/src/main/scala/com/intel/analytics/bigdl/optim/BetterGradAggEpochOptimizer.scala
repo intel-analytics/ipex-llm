@@ -269,7 +269,8 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
       }
       val epochEnd = System.nanoTime()
       wallClockTime = wallClockTime + epochEnd - epochStart
-      logger.info(s"[Epoch $i/$epochNum] Epoch finished. Wall clock time is ${wallClockTime / 1e6}ms")
+      logger.info(s"[Epoch $i/$epochNum] Epoch finished." +
+        s" Wall clock time is ${wallClockTime / 1e6}ms")
       saveModel(module, i)
       saveState(pm.getState(), i)
       test(module, i)
