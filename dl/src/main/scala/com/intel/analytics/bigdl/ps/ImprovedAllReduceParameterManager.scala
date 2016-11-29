@@ -156,6 +156,7 @@ class ImprovedAllReduceParameterManager[T: ClassTag](
             pid
           }
         }})
+
       syncPool.invokeAll(swThreads.asJava)
 
       val weightSync = System.nanoTime() - before
@@ -207,6 +208,7 @@ class ImprovedAllReduceParameterManager[T: ClassTag](
         pid += 1
       }
       _metrics.add("worker put result", System.nanoTime() - before)
+
       _metrics.add("task1 avg time", System.nanoTime() - task1InnerTime)
       _metrics.add("task1 time from worker", System.nanoTime() -
         ImprovedAllReduceParameterManager.task1InnerTime)
