@@ -17,8 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
-
+import java.util.concurrent.{TimeUnit, ThreadPoolExecutor, LinkedBlockingQueue}
 import com.intel.analytics.bigdl.nn.{Criterion, Module}
 import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.bigdl.ps.ParameterManager
@@ -30,7 +29,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{Await, Future, ExecutionContext}
 import scala.reflect.ClassTag
 
 object BetterGradAggEpochOptimizer {

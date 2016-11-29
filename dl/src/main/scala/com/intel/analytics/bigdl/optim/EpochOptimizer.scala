@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.bigdl.ps.ParameterManager
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Engine._
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
