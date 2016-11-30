@@ -35,7 +35,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect.ClassTag
 
-abstract class Transformer[A, B] extends Serializable {
+trait Transformer[A, B] extends Serializable {
   def transform(prev: Iterator[A]): Iterator[B]
 
   // scalastyle:off methodName
