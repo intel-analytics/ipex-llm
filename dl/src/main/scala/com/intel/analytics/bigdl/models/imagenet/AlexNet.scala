@@ -24,8 +24,15 @@ import com.intel.analytics.bigdl.utils.Activities
 
 import scala.reflect.ClassTag
 
+import com.intel.analytics.bigdl.nn.mkl.ReLU
+import com.intel.analytics.bigdl.nn.mkl.SpatialCrossMapLRN
+import com.intel.analytics.bigdl.nn.mkl.Linear
+import com.intel.analytics.bigdl.nn.mkl.SpatialConvolution
+import com.intel.analytics.bigdl.nn.mkl.SpatialMaxPooling
+
 /**
- * This is AlexNet that was presented in the One Weird Trick paper. http://arxiv.org/abs/1404.5997
+ * @brief This is AlexNet that was presented in the One Weird Trick paper.
+  *       http://arxiv.org/abs/1404.5997
  */
 object AlexNet_OWT {
   def apply[T: ClassTag](classNum: Int, hasDropout : Boolean = true, firstLayerPropagateBack :
@@ -33,8 +40,8 @@ object AlexNet_OWT {
     (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
 
     val model = new Sequential[Tensor[T], Tensor[T], T]()
-    model.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2, 1, firstLayerPropagateBack)
-      .setName("conv1"))
+    model.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2).setName("conv1")
+                .setNeedComputeBack(false))
     model.add(new ReLU[T](true).setName("relu1"))
     model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool1"))
     model.add(new SpatialConvolution[T](64, 192, 5, 5, 1, 1, 2, 2).setName("conv2"))
@@ -61,13 +68,14 @@ object AlexNet_OWT {
 }
 
 /**
- * ILSVRC2012 winner
+ * @brief ILSVRC2012 winner
  */
 object AlexNet {
   def apply[T: ClassTag](classNum: Int)
     (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
     val model = new Sequential[Tensor[T], Tensor[T], T]()
-    model.add(new SpatialConvolution[T](3, 96, 11, 11, 4, 4, 0, 0, 1, false).setName("conv1"))
+    model.add(new SpatialConvolution[T](3, 96, 11, 11, 4, 4).setName("conv1")
+                .setNeedComputeBack(false))
     model.add(new ReLU[T](true).setName("relu1"))
     model.add(new SpatialCrossMapLRN[T](5, 0.0001, 0.75).setName("norm1"))
     model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool1"))

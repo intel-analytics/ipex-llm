@@ -53,6 +53,9 @@ class Linear[@specialized(Float, Double) T: ClassTag](
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
+      case Constant =>
+        weight.apply1(_ => ev.fromType[Double](0.1))
+        bias.fill(ev.fromType(0))
     }
     zeroGradParameters()
   }

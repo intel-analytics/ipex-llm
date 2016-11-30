@@ -17,12 +17,22 @@
 
 package com.intel.analytics.bigdl.models.imagenet
 
+import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
+
+import com.intel.analytics.bigdl.nn.mkl.Linear
+import com.intel.analytics.bigdl.nn.mkl.SpatialBatchNormalization
+import com.intel.analytics.bigdl.nn.mkl.ReLU
+import com.intel.analytics.bigdl.nn.mkl.SpatialCrossMapLRN
+import com.intel.analytics.bigdl.nn.mkl.SpatialAveragePooling
+import com.intel.analytics.bigdl.nn.mkl.SpatialConvolution
+import com.intel.analytics.bigdl.nn.mkl.SpatialMaxPooling
+import com.intel.analytics.bigdl.nn.mkl.Concat
 
 object GoogleNet_v1 {
   private def inception[D: ClassTag](inputSize: Int, config: Table, namePrefix : String)(
@@ -61,8 +71,8 @@ object GoogleNet_v1 {
   def apply[D: ClassTag](classNum: Int)
     (implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
     val feature1 = new Sequential[Tensor[D], Tensor[D], D]
-    feature1.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3, 1, false).setInitMethod(Xavier)
-      .setName("conv1/7x7_s2"))
+    feature1.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3).setInitMethod(Xavier)
+      .setName("conv1/7x7_s2").setNeedComputeBack(false))
     feature1.add(new ReLU[D](true).setName("conv1/relu_7x7"))
     feature1.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil().setName("pool1/3x3_s2"))
     feature1.add(new SpatialCrossMapLRN[D](5, 0.0001, 0.75).setName("pool1/norm1"))
@@ -262,8 +272,8 @@ object GoogleNet_v2 {
   def apply[D: ClassTag](classNum: Int)
     (implicit ev: TensorNumeric[D]): Module[Tensor[D], Tensor[D], D] = {
     val features1 = new Sequential[Tensor[D], Tensor[D], D]
-    features1.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3, 1, false)
-      .setName("conv1/7x7_s2"))
+    features1.add(new SpatialConvolution[D](3, 64, 7, 7, 2, 2, 3, 3).setName("conv1/7x7_s2")
+      .setNeedComputeBack(false))
     features1.add(new SpatialBatchNormalization(64, 1e-3).setName("conv1/7x7_s2/bn"))
     features1.add(new ReLU[D](true).setName("conv1/7x7_s2/bn/sc/relu"))
     features1.add(new SpatialMaxPooling[D](3, 3, 2, 2).ceil().setName("pool1/3x3_s2"))

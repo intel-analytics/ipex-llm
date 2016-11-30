@@ -25,14 +25,24 @@ import scala.reflect.ClassTag
 class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends Container[A, B, T] {
 
+  var classPtr = 0L
   override def updateOutput(input: A): B = {
     var i = 0
     var result = input.asInstanceOf[Activities]
+
+    var prev = getPrevPtr()
     while (i < modules.length) {
+      if (initForward) {
+        modules(i).setPrevPtr(prev)
+      }
       result = modules(i).forward(result)
+      if (initForward) {
+        prev = modules(i).getOutputPtr()
+      }
       i += 1
     }
 
+    initForward = false
     this.output = result.asInstanceOf[B]
     output
   }
@@ -40,10 +50,21 @@ class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: Clas
   override def updateGradInput(input: A, nextError: B): A = {
     var i = modules.length - 1
     var error = nextError.asInstanceOf[Activities]
+    var next = getNextPtr()
     while (i > 0) {
+      if (initBackward) {
+        modules(i).setNextPtr(next)
+      }
       val input = modules(i - 1).output
       error = modules(i).backward(input, error)
+      if (initBackward) {
+        next = modules(i).getInputPtr()
+      }
       i -= 1
+    }
+    if (initBackward) {
+      modules(0).setNextPtr(next)
+      initBackward = false
     }
     error = modules(0).backward(input.asInstanceOf[Activities], error)
 
@@ -111,6 +132,38 @@ class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: Clas
       }$line}"
   }
 
+  override def initMkl(prevPtr : Long) : Unit = {
+    println("I WANT TO SET THE PREV LAYOUT IN SEQUENTIAL")
+    if (modules.length > 0) {
+//      if (prevPtr != modules(0).getInputPtr())
+//        modules(0).initMkl(prevPtr)
+
+      var prev = prevPtr
+      for (i <- 0 until modules.length) {
+        modules(i).initMkl(prev)
+        prev = modules(i).getOutputPtr()
+        // println(modules(i))
+      }
+    }
+  }
+
+  override def getClassPtr() : Long = {
+    if (modules.length >= 1) {
+      modules(0).getClassPtr()
+    } else { 0L } // If there isn't a Module in Sequential, it will return 0L.
+  }
+
+  override def getInputPtr(): Long = {
+    if (modules.length > 0) {
+      modules(0).getInputPtr()
+    } else { 0L }
+  }
+
+  override def getOutputPtr(): Long = {
+    if (modules.length > 0) {
+      modules(modules.length - 1).getOutputPtr()
+    } else { 0L }
+  }
 }
 
 

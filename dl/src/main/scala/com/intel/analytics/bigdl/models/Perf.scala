@@ -65,6 +65,16 @@ object Perf {
             "vgg16 | vgg19 | lenet5 now")
         }
       )
+    opt[String]('e', "engine")
+      .text("Engine name. It can be mkl | scala")
+      .action((v, p) => p.copy(engine = v))
+      .validate(v =>
+        if (v.toLowerCase() == "mkl" || v.toLowerCase() == "scala") {
+          success
+        } else {
+          failure("Engine name can only be mkl or scala now")
+        }
+      )
     opt[String]('d', "inputdata")
       .text("Input data type. One of constant | random")
       .action((v, p) => p.copy(inputData = v))
@@ -89,6 +99,8 @@ object Perf {
   }
 
   def performance[T: ClassTag](param: PerfParams)(implicit tn: TensorNumeric[T]): Unit = {
+    import com.intel.analytics.bigdl.utils.Engine
+    Engine.setCoreNum(2)
     val (model, input) = param.module match {
       case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 227, 227))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor[T](param.batchSize, 3, 224, 224))
@@ -158,6 +170,6 @@ case class PerfParams(
   warmUp: Int = 10,
   dataType: String = "float",
   module: String = "alexnet",
+  engine: String = "mkl",
   inputData: String = "random"
-
 )

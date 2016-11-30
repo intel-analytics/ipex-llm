@@ -121,13 +121,15 @@ object MultiModelPerf {
 
       def reportFailure(t: Throwable) {}
     }
-        for (i <- 0 until param.cores) {
-            val (model, input, criterion, labels) = tests(i)
-            param.inputData match {
-              case "constant" => input.fill(tn.fromType(0.01))
-              case "random" => input.rand()
-            }
-          }
+
+    for (i <- 0 until param.cores) {
+      val (model, input, criterion, labels) = tests(i)
+      param.inputData match {
+        case "constant" => input.fill(tn.fromType(0.01))
+        case "random" => input.rand()
+      }
+    }
+
     for (i <- 1 to param.warmUp) {
       val time = System.nanoTime()
       (0 until param.cores).map(j => Future {
