@@ -60,6 +60,7 @@ object DropSlowModuleGradAggEpochOptimizer {
   }
 
   var thread : Thread = null
+
   var weightSyncTime = 0L
 }
 
@@ -73,7 +74,9 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
     config: Table = T())
   (implicit ev: TensorNumeric[T])
   extends EpochOptimizer[T](module, criterion, optm, pm, dataSets, metrics, config) {
+
   import DropSlowModuleGradAggEpochOptimizer._
+
   private def init() = {
     val broadcast = dataSet.getSparkContext().broadcast((module, criterion))
     val models = dataSet.partitions().mapPartitions(_ => {
@@ -108,6 +111,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
     var threshold = 0L
     val dropModulePercent = 0.04
     var iteration = 0
+    val idealSubModulesNum = partitionNum * subModuleNumber
 
     for (i <- 1 to epochNum) {
       logger.info(s"[Epoch $i/$epochNum] Train start")
@@ -125,12 +129,11 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
       }s")
       config("epoch") = i
 
-      val driverParNum = partitionNum * subModuleNumber
       while (!dataSets.epochFinished()) {
         val lossSum = sc.accumulator(0.0, "loss sum")
         val recordsNum = sc.accumulator(0, "record number")
         val stackCount = sc.accumulator(0, "stack count")
-        val dropModulesPerIter = sc.accumulator(0, "dropped modules")
+        metrics.set("dropped modules", 0.0, sc, 1)
         metrics.set("computing time for each node", mutable.ArrayBuffer[Double](), sc)
         metrics.set("init gradient time", 0.0, sc, partitionNum)
         metrics.set("construct tensor time", 0.0, sc, partitionNum)
@@ -147,6 +150,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
           multiThreadModels, true)(
           (data, modelIter, weights, multiThreadModuleIter) => {
             var tmp = System.nanoTime()
+
             val localMTCaches = multiThreadModuleIter.next()
             val localCaches = modelIter.next()
             val syncWeightTask = Future {
@@ -232,14 +236,13 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
             driverMetrics.add("computing time for each node", computingTime)
 
             val finishedThreads = threads.asScala.filter(!_.isCancelled).map(_.get())
-            dropModulesPerIter += (subModuleNumber-finishedThreads.size)
-//              tmp = System.nanoTime()
+            driverMetrics.add("dropped modules", subModuleNumber-finishedThreads.size)
+
               stackCount += finishedThreads.size
               finishedThreads.foreach{index =>
                 lossSum += lossArray(index)
                 recordsNum += recordsArray(index)
               }
-//              driverMetrics.add("statics time", System.nanoTime() - tmp)
 
               tmp = System.nanoTime()
               val grads = localMTCaches.map(_.gradient)
@@ -280,16 +283,12 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
         val optM = optm
         val configDriver = config
 
-        if(dropModulesPerIter.value > driverParNum*0.5) {
-          logger.info("Warning!!! Ignore this iteration as more thean half module is dropped!!" +
-            " Dropped module: " + dropModulesPerIter.value)
-        } else {
-          pm.sumAndUpdate(resultRDD, (weights, gradients, state) => {
-            gradients.div(driverEV.fromType[Int](driverParNum))
-            optM.optimize(_ => (driverEV.fromType(lossSum.value / stackCount.value), gradients),
-              weights, configDriver, state)
-          })
+        pm.sumAndUpdate(resultRDD, (weights, gradients, state) => {
+          optM.optimize(_ => (driverEV.fromType(lossSum.value / stackCount.value), gradients),
+            weights, configDriver, state)
+        })
 
+        if(metrics.get("dropped modules")._1 < idealSubModulesNum * 0.5) {
           accumulateCount += recordsNum.value
           val end = System.nanoTime()
           logger.info(s"[Epoch $i/$epochNum $accumulateCount/${dataSets.total()}] Train ${
@@ -300,26 +299,23 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
             }. " +
             s"Calculate time is ${(reduceBefore - start) / 1e9}seconds. ")
           logger.info("\n" + metrics.summary())
-          logger.info("\n dropModule: " + dropModulesPerIter.value)
 
           // compute threshold
-          if (iteration % 100 == 99 && iteration >= 299) {
-            Util.moduleTimeList = models.mapPartitions { iter =>
+          if(iteration%100==99 && iteration>=299) {
+            Util.moduleTimeList = models.mapPartitions{ iter =>
               Util.moduleTimeList.iterator
             }.collect()
-            println("size: " + Util.moduleTimeList.filter(_ != 0).length)
-            val k = (dropModulePercent * 100 * partitionNum * subModuleNumber).toInt
-            threshold = Util.kthLargest(Util.moduleTimeList, 0, Util.moduleTimeList.length - 1, k)
-            println("threshold: " + threshold)
-            //            Util.moduleTimeList = null
+            val k = (dropModulePercent*100*idealSubModulesNum).toInt
+            threshold = Util.kthLargest(Util.moduleTimeList, 0, Util.moduleTimeList.length-1, k)
+            logger.info("threshold: " + threshold)
             // clear moduleTimeList in each node
             models.mapPartitions { iter =>
-              Util.moduleTimeList = new Array[Long](subModuleNumber * 16 * 100)
+              Util.moduleTimeList = new Array[Long](subModuleNumber*16*100)
               Iterator.empty
             }.count()
           }
+          iteration += 1
         }
-        iteration += 1
       }
       val epochEnd = System.nanoTime()
       wallClockTime = wallClockTime + epochEnd - epochStart
