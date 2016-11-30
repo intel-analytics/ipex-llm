@@ -158,7 +158,7 @@
     </properties>
 
     <modules>
-        <module>mkl</module>
+        <module>native</module>
         <module>dl</module>
     </modules>
     <distributionManagement>
