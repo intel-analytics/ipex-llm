@@ -11,83 +11,66 @@
 
     <groupId>com.intel.analytics.bigdl.native</groupId>
     <artifactId>mkl-native_0.1</artifactId>
-    <packaging>${packaging.type}</packaging>
+    <packaging>so</packaging>
 
-    <profiles>
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <packaging.type>jar</packaging.type>
-            </properties>
-        </profile>
-        <profile>
-            <id>mkl</id>
-            <properties>
-                <packaging.type>so</packaging.type>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>native-maven-plugin</artifactId>
-                        <version>1.0-alpha-8</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <compilerProvider>generic-classic</compilerProvider>
-                            <compilerExecutable>icc</compilerExecutable>
-                            <linkerExecutable>icc</linkerExecutable>
-                            <sources>
-                                <source>
-                                    <directory>${basedir}/src/main/c/jni</directory>
-                                    <fileNames>
-                                        <fileName>mkl.c</fileName>
-                                    </fileNames>
-                                </source>
-                            </sources>
-                            <compilerStartOptions>
-                                <compilerStartOption>-I ${JAVA_HOME}/include/</compilerStartOption>
-                                <compilerStartOption>-I ${JAVA_HOME}/include/linux/</compilerStartOption>
-                            </compilerStartOptions>
-                            <compilerEndOptions>
-                                <compilerEndOption>-lpthread</compilerEndOption>
-                                <compilerEndOption>-lm</compilerEndOption>
-                                <compilerEndOption>-shared</compilerEndOption>
-                                <compilerEndOption>-liomp5</compilerEndOption>
-                                <compilerEndOption>-lc</compilerEndOption>
-                                <compilerEndOption>-fPIC</compilerEndOption>
-                                <compilerEndOption>-qopenmp</compilerEndOption>
-                                <compilerEndOption>-Wall</compilerEndOption>
-                                <compilerEndOption>-std=c99</compilerEndOption>
-                            </compilerEndOptions>
-                            <linkerStartOptions>
-                                <linkerStartOption>-I ${JAVA_HOME}/include/</linkerStartOption>
-                                <linkerStartOption>-I ${JAVA_HOME}/include/linux/</linkerStartOption>
-                                <linkerStartOption>-lpthread</linkerStartOption>
-                                <linkerStartOption>-ldl</linkerStartOption>
-                                <linkerStartOption>-liomp5</linkerStartOption>
-                                <linkerStartOption>-shared</linkerStartOption>
-                                <linkerStartOption>-mkl=parallel</linkerStartOption>
-                                <linkerStartOption>-static-intel</linkerStartOption>
-                                <linkerStartOption>-qopenmp</linkerStartOption>
-                            </linkerStartOptions>
-                            <linkerMiddleOptions>
-                                <linkerMiddleOption>-lm</linkerMiddleOption>
-                            </linkerMiddleOptions>
-                            <linkerEndOptions>
-                                <linkerEndOption>-fPIC</linkerEndOption>
-                                <linkerEndOption>-Wall</linkerEndOption>
-                            </linkerEndOptions>
-                            <linkerFinalName>${pom.artifactId}</linkerFinalName>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <version>1.0-alpha-8</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <compilerProvider>generic-classic</compilerProvider>
+                    <compilerExecutable>icc</compilerExecutable>
+                    <linkerExecutable>icc</linkerExecutable>
+                    <sources>
+                        <source>
+                            <directory>${basedir}/src/main/c/jni</directory>
+                            <fileNames>
+                                <fileName>mkl.c</fileName>
+                            </fileNames>
+                        </source>
+                    </sources>
+                    <compilerStartOptions>
+                        <compilerStartOption>-I ${JAVA_HOME}/include/</compilerStartOption>
+                        <compilerStartOption>-I ${JAVA_HOME}/include/linux/</compilerStartOption>
+                    </compilerStartOptions>
+                    <compilerEndOptions>
+                        <compilerEndOption>-lpthread</compilerEndOption>
+                        <compilerEndOption>-lm</compilerEndOption>
+                        <compilerEndOption>-shared</compilerEndOption>
+                        <compilerEndOption>-liomp5</compilerEndOption>
+                        <compilerEndOption>-lc</compilerEndOption>
+                        <compilerEndOption>-fPIC</compilerEndOption>
+                        <compilerEndOption>-qopenmp</compilerEndOption>
+                        <compilerEndOption>-Wall</compilerEndOption>
+                        <compilerEndOption>-std=c99</compilerEndOption>
+                    </compilerEndOptions>
+                    <linkerStartOptions>
+                        <linkerStartOption>-I ${JAVA_HOME}/include/</linkerStartOption>
+                        <linkerStartOption>-I ${JAVA_HOME}/include/linux/</linkerStartOption>
+                        <linkerStartOption>-lpthread</linkerStartOption>
+                        <linkerStartOption>-ldl</linkerStartOption>
+                        <linkerStartOption>-liomp5</linkerStartOption>
+                        <linkerStartOption>-shared</linkerStartOption>
+                        <linkerStartOption>-mkl=parallel</linkerStartOption>
+                        <linkerStartOption>-static-intel</linkerStartOption>
+                        <linkerStartOption>-qopenmp</linkerStartOption>
+                    </linkerStartOptions>
+                    <linkerMiddleOptions>
+                        <linkerMiddleOption>-lm</linkerMiddleOption>
+                    </linkerMiddleOptions>
+                    <linkerEndOptions>
+                        <linkerEndOption>-fPIC</linkerEndOption>
+                        <linkerEndOption>-Wall</linkerEndOption>
+                    </linkerEndOptions>
+                    <linkerFinalName>${pom.artifactId}</linkerFinalName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
