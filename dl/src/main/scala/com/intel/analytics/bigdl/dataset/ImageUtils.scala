@@ -296,7 +296,7 @@ object ImageUtils {
 
   final val NO_SCALE = -1
 
-  def readRGBImage(path: Path, scaleTo: Int = 1): Array[Byte] = {
+  def readBGRImage(path: Path, scaleTo: Int = 1): Array[Byte] = {
     var fis: FileInputStream = null
     try {
       fis = new FileInputStream(path.toString)
