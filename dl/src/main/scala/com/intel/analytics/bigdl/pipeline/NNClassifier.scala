@@ -19,7 +19,7 @@ package org.apache.spark.ml
 
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, Module}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.ps.{OneReduceParameterManager, ParameterManager}
+import com.intel.analytics.bigdl.parameters.{OneReduceParameterManager, ParameterManager}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{T, Table}

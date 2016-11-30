@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.example.Utils._
 import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.optim.{GradAggEpochOptimizer, Metrics, ShuffleBatchDataSet}
-import com.intel.analytics.bigdl.ps.{AllReduceParameterManager, OneReduceParameterManager}
+import com.intel.analytics.bigdl.parameters.{AllReduceParameterManager, OneReduceParameterManager}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 

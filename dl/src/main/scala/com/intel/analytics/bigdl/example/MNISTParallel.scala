@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.example.MNIST._
 import com.intel.analytics.bigdl.example.Utils._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.ps.OneReduceParameterManager
+import com.intel.analytics.bigdl.parameters.OneReduceParameterManager
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}

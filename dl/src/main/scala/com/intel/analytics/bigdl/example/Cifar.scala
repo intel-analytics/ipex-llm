@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.example
 import com.intel.analytics.bigdl.example.Utils._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.ps.{OneReduceParameterManager, ParameterManager}
+import com.intel.analytics.bigdl.parameters.{OneReduceParameterManager, ParameterManager}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{File, Table}
