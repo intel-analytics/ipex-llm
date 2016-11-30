@@ -468,4 +468,33 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     count should be(11)
   }
+
+  "Image Scale" should "be good" in {
+    val resource = getClass.getClassLoader.getResource("imagenet/n02110063/n02110063_8651.JPEG")
+
+    val pipeline = PathToRGBImage(ImageUtils.NO_SCALE) + new Scaler(10, 10) + new ImageToTensor(1)
+    val result = pipeline
+      .transform(Iterator.single((1f, Paths.get(resource.toURI))))
+      .next()._1
+      .squeeze(1)
+      .select(1, 3)
+      .apply1(x => (math.round(x * 1e4) / 1e4).toFloat)
+
+    val expectedResult = Tensor[Float](Storage[Float](Array(
+      0.5062,  0.6190,  0.6759,  0.7176,  0.6846,  0.7291,  0.6203,  0.5416,  0.5553, 0.7444,
+      0.4792,  0.5666,  0.6313,  0.6368,  0.6376,  0.6409,  0.6625,  0.6457,  0.5728, 0.6074,
+      0.4225,  0.4470,  0.4751,  0.5300,  0.4738,  0.5751,  0.5106,  0.4560,  0.4431, 0.5500,
+      0.3956,  0.4207,  0.4562,  0.4363,  0.5239,  0.4287,  0.4321,  0.4251,  0.3823, 0.5441,
+      0.3220,  0.3916,  0.4142,  0.4951,  0.5896,  0.3535,  0.4421,  0.3874,  0.3854, 0.5378,
+      0.3219,  0.3241,  0.3761,  0.5862,  0.7083,  0.3330,  0.4273,  0.3212,  0.3133, 0.5264,
+      0.3387,  0.3886,  0.3442,  0.3904,  0.4745,  0.3621,  0.3009,  0.3430,  0.3038, 0.5246,
+      0.2814,  0.3035,  0.2811,  0.3044,  0.3591,  0.3408,  0.3287,  0.3289,  0.2626, 0.5330,
+      0.2196,  0.2654,  0.3217,  0.3371,  0.2965,  0.3224,  0.3523,  0.3654,  0.3171, 0.5165,
+      0.7287,  0.5968,  0.5986,  0.5924,  0.5957,  0.5988,  0.6000,  0.5914,  0.5844, 0.7317
+    ).map(x => x.toFloat)),
+      1, Array(10, 10))
+
+
+    expectedResult should equal (result)
+  }
 }

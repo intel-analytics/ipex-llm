@@ -29,7 +29,7 @@ class ImageSpec extends FlatSpec with Matchers {
       ),
       new ImageMetadata(3, 3, 3), 1)
 
-    ImageUtils.hflip(image)
+    ImageUtils.hFlip(image)
     val flippedData = Array[Float](
       7, 8, 9, 4, 5, 6, 1, 2, 3,
       17, 18, 19, 14, 15, 16, 11, 12, 13,
@@ -48,7 +48,7 @@ class ImageSpec extends FlatSpec with Matchers {
       ),
       ImageMetadata(4, 3, 3), 1)
 
-    ImageUtils.hflip(image)
+    ImageUtils.hFlip(image)
     val flippedData = Array[Float](
       10, 11, 12, 7, 8, 9, 4, 5, 6, 1, 2, 3,
       20, 21, 22, 17, 18, 19, 14, 15, 16, 11, 12, 13,
@@ -56,5 +56,33 @@ class ImageSpec extends FlatSpec with Matchers {
     )
 
     image.content should be(flippedData)
+  }
+
+  "image get()" should "work correctly" in {
+    val image = new Image(
+      Array[Float](
+        1, 2, 3, 4, 5, 6, 7, 8, 9,
+        11, 12, 13, 14, 15, 16, 17, 18, 19,
+        21, 22, 23, 24, 25, 26, 27, 28, 29
+      ),
+      new ImageMetadata(3, 3, 3), 1)
+
+    val height = image.height
+    val width = image.width
+    val numChannels = image.numChannels
+    val data = image.content
+    var y = 0
+    while (y < image.height) {
+      var x = 0
+      while (x < image.width / 2) {
+        var c = 0
+        while (c < image.numChannels) {
+          data((y * width + x) * numChannels + c) should be (image.get(x, y, c))
+          c += 1
+        }
+        x += 1
+      }
+      y += 1
+    }
   }
 }

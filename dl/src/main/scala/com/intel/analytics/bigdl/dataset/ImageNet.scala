@@ -252,5 +252,4 @@ object ImageNetLocal {
       optimizer.optimize()
     })
   }
-
 }

@@ -27,7 +27,249 @@ import javax.imageio.ImageIO
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 object ImageUtils {
-  def hflip(image: Image): Image = {
+  /**
+   * This method compress or expend the image to a specific size
+   *
+   * @param src the source image
+   * @param width the width of an image to be converted
+   * @param height the height of an image to be converted
+   * @return the rescaled image
+   */
+  def scale(src: Image, width: Int, height: Int): Image = {
+    val dstWidth = width.max(1)
+    val dstHeight = height.max(1)
+    val dst = new Image(
+      new Array[Float](dstHeight * dstWidth * src.numChannels),
+      ImageMetadata(dstWidth, dstHeight, src.numChannels))
+
+    val srcHeight = src.height
+
+    val channelNum = src.metadata.numChannels
+    val tmp = new Image(
+      new Array[Float](src.height * dstWidth * src.metadata.numChannels),
+      ImageMetadata(dstWidth, src.height, src.numChannels))
+
+    (0 until channelNum).foreach(k => {
+      // Compress/expend rows first
+      (0 until srcHeight).foreach(j => {
+        linearScale(src, tmp, 2, j, k)
+      })
+
+      // then Columns
+      (0 until dstWidth).foreach(i => {
+        linearScale(tmp, dst, 1, i, k)
+      })
+    })
+
+    dst
+  }
+
+  /**
+   * Linear Scale the image on the selected channel along the selected dimension
+   *
+   * @param src the source image
+   * @param dst the destination image
+   * @param dim If dim == 1, then scale height. if dim == 2, then scale width
+   * @param idx the index of the selected dimension
+   * @param cdx the index of the selected channel
+   */
+  def linearScale(
+    src: Image,
+    dst: Image,
+    dim: Int,
+    idx: Int,
+    cdx: Int): Unit = {
+    var srcLength = 0
+    var dstLength = 0
+
+    if (dim == 1) {
+      srcLength = src.height
+      dstLength = dst.height
+    } else if (dim == 2) {
+      srcLength = src.width
+      dstLength = dst.width
+    }
+
+    require(dim == 1 || dim == 2, "dim must be 1 or 2")
+
+    def put(src: Image, i: Int, j: Int, channelIdx: Int, newVal: Float): Unit = {
+      if (dim == 1) {
+        src.put(j, i, channelIdx, newVal)
+      } else {
+        src.put(i, j, channelIdx, newVal)
+      }
+    }
+
+    def get(src: Image, i: Int, j: Int, channelIdx: Int): Float = {
+      if (dim == 1) {
+        src.get(j, i, channelIdx)
+      } else {
+        src.get(i, j, channelIdx)
+      }
+    }
+
+    if (dstLength > srcLength) {
+      val scale = (srcLength - 1).toFloat / (dstLength - 1)
+
+      if (srcLength == 1) for (di <- 0 until dstLength - 1) {
+        put(dst, idx, di, cdx, get(src, idx, 0, cdx))
+      } else for (di <- 0 until dstLength - 1) {
+        var si_f = di * scale
+        val si_i = si_f.toInt
+        si_f -= si_i
+
+        put(dst, idx, di, cdx, fromIntermediate(
+          (1 - si_f) * get(src, idx, si_i, cdx)) +
+          si_f * get(src, idx, si_i + 1, cdx)
+        )
+      }
+
+      put(dst, idx, dstLength - 1, cdx, get(src, idx, srcLength - 1, cdx))
+    } else if (dstLength < srcLength) {
+      val scale = srcLength.toFloat / dstLength
+      var si0_f = 0f
+      var si0_i = 0
+
+      for (di <- 0 until dstLength) {
+        var si1_f = (di + 1) * scale
+        val si1_i = si1_f.toInt
+        si1_f -= si1_i
+        var acc = (1 - si0_f) * get(src, idx, si0_i, cdx)
+        var n = 1 - si0_f
+
+        for (si <- (si0_i + 1) until si1_i) {
+          acc += get(src, idx, si, cdx)
+          n += 1
+        }
+        if (si1_i < srcLength) {
+          acc += si1_f * get(src, idx, si1_i, cdx)
+          n += si1_f
+        }
+
+        put(dst, idx, di, cdx, fromIntermediate(acc / n))
+        si0_i = si1_i
+        si0_f = si1_f
+      }
+    } else {
+      for (di <- 0 until dstLength)
+        put(dst, idx, di, cdx, get(src, idx, di, cdx))
+    }
+
+    def fromIntermediate(x: Float): Float = {
+      val result: Float = x + 0.5f
+      if (result <= 0) return 0
+      if (result >= 255) return 255
+
+      x
+    }
+  }
+
+//  private def linearScaleRow(src: Image, dst: Image, row: Int, cdx: Int): Unit = {
+//    val srcWidth = src.width
+//    val dstWidth = dst.width
+//
+//    if (dstWidth > srcWidth) {
+//      val scale = (srcWidth - 1).toFloat / (dstWidth - 1)
+//
+//      if (srcWidth == 1) for (di <- 0 until dstWidth - 1) {
+//        dst.put(row, di, cdx, src.get(row, 0, cdx))
+//      } else for (di <- 0 until dstWidth - 1) {
+//        var si_f = di * scale
+//        val si_i = si_f.toInt
+//        si_f -= si_i
+//
+//        dst.put(row, di, cdx, fromIntermediate(
+//          (1 - si_f) * src.get(row, si_i, cdx)) +
+//          si_f * src.get(row, si_i + 1, cdx)
+//        )
+//      }
+//
+//      dst.put(row, dstWidth - 1, cdx, src.get(row, srcWidth - 1, cdx))
+//    } else if (dstWidth < srcWidth) {
+//      val scale = srcWidth.toFloat / dstWidth
+//      var si0_f = 0f
+//      var si0_i = 0
+//
+//      for (di <- 0 until dstWidth) {
+//        var si1_f = (di + 1) * scale
+//        val si1_i = si1_f.toInt
+//        si1_f -= si1_i
+//        var acc = (1 - si0_f) * src.get(row, si0_i, cdx)
+//        var n = 1 - si0_f
+//
+//        for (si <- (si0_i + 1) until si1_i) {
+//          acc += src.get(row, si, cdx)
+//          n += 1
+//        }
+//        if (si1_i < srcWidth) {
+//          acc += si1_f * src.get(row, si1_i, cdx)
+//          n += si1_f
+//        }
+//
+//        dst.put(row, di, cdx, fromIntermediate(acc / n))
+//        si0_i = si1_i
+//        si0_f = si1_f
+//      }
+//    } else {
+//      for (di <- 0 until dstWidth)
+//        dst.put(row, di, cdx, src.get(row, di, cdx))
+//    }
+//  }
+//
+//
+//  private def linearScaleCol(src: Image, dst: Image, col: Int, cdx: Int): Unit = {
+//    val srcHeight = src.height
+//    val dstHeight = dst.height
+//
+//    if (dstHeight > srcHeight) {
+//      val scale = (srcHeight - 1).toFloat / (dstHeight - 1)
+//
+//      if (srcHeight == 1) for (di <- 0 until dstHeight - 1) {
+//        dst.put(di, col, cdx, src.get(0, col, cdx))
+//      } else for (di <- 0 until dstHeight - 1) {
+//        var si_f = di * scale
+//        val si_i = si_f.toInt
+//        si_f -= si_i
+//
+//        dst.put(di, col, cdx, fromIntermediate(
+//          (1 - si_f) * src.get(si_i, col, cdx)) +
+//          si_f * src.get(si_i + 1, col, cdx)
+//        )
+//      }
+//
+//      dst.put(dstHeight - 1, col, cdx, src.get(srcHeight - 1, col, cdx))
+//    } else if (dstHeight < srcHeight) {
+//      val scale = srcHeight.toFloat / dstHeight
+//      var si0_f = 0f
+//      var si0_i = 0
+//
+//      for (di <- 0 until dstHeight) {
+//        var si1_f = (di + 1) * scale
+//        val si1_i = si1_f.toInt
+//        si1_f -= si1_i
+//
+//        var acc = (1 - si0_f) * src.get(si0_i, col, cdx)
+//        var n = 1 - si0_f
+//        for (si <- (si0_i + 1) until si1_i) {
+//          acc += src.get(si, col, cdx)
+//          n += 1
+//        }
+//        if (si1_i < srcHeight) {
+//          acc += si1_f * src.get(si1_i, col, cdx)
+//          n += si1_f
+//        }
+//
+//        dst.put(di, col, cdx, fromIntermediate(acc / n))
+//        si0_i = si1_i
+//        si0_f = si1_f
+//      }
+//    } else {
+//      for (di <- 0 until dstHeight)
+//        dst.put(di, col, cdx, src.get(di, col, cdx))
+//    }
+//  }
+
+  def hFlip(image: Image): Image = {
     hflip(image.data, image.height, image.width, image.numChannels)
     image
   }
@@ -52,9 +294,9 @@ object ImageUtils {
     }
   }
 
-  val NO_SCALE = -1
+  final val NO_SCALE = -1
 
-  def readRGBImage(path: Path, scaleTo: Int): Array[Byte] = {
+  def readRGBImage(path: Path, scaleTo: Int = 1): Array[Byte] = {
     var fis: FileInputStream = null
     try {
       fis = new FileInputStream(path.toString)
@@ -66,7 +308,7 @@ object ImageUtils {
       var widthAfterScale = 0
       var scaledImage: java.awt.Image = null
       // no scale
-      if (-1 == scaleTo) {
+      if (NO_SCALE == scaleTo) {
         heightAfterScale = img.getHeight
         widthAfterScale = img.getWidth
         scaledImage = img
