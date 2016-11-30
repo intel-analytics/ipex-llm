@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.sparkdl.nn.mkl
+package com.intel.analytics.bigdl.nn.mkl
 
 import java.io.{File, PrintWriter}
 import java.nio.{ByteBuffer, ByteOrder}
@@ -23,9 +23,9 @@ import java.nio.channels.FileChannel
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.util.NoSuchElementException
 
-import com.intel.analytics.sparkdl.nn.{Container, Module, TensorModule}
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.nn.{Container, Module, TensorModule}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import sun.awt.AWTAccessor.ContainerAccessor
 
 import scala.collection.mutable.ArrayBuffer

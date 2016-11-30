@@ -359,7 +359,7 @@ void JNIPoolingUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
 // Macro
 #define PoolingInit(DType, JType, JArrayType)                                 \
   JNIEXPORT                                                                   \
-  jlong JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_PoolingInit##DType(  \
+  jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_PoolingInit##DType(  \
       JNIEnv *env, jclass thisClass, jint inputNumber, jint inputChannel,     \
       jint inputHeight, jint inputWidth, jint kernelHeight, jint kernelWidth, \
       jint strideHeight, jint strideWidth, jint padHeight, jint padWidth,     \
@@ -374,7 +374,7 @@ void JNIPoolingUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
 
 #define PoolingForward(DType, JType, JArrayType)                               \
   JNIEXPORT                                                                    \
-  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_PoolingForward##DType( \
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_PoolingForward##DType( \
       JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,       \
       JArrayType output, jint outputOffset, long classPtr)                     \
   {                                                                            \
@@ -385,7 +385,7 @@ void JNIPoolingUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
 #define PoolingBackward(DType, JType, JArrayType)                             \
   JNIEXPORT                                                                   \
   void JNICALL                                                                \
-      Java_com_intel_analytics_sparkdl_mkl_MKL_PoolingBackward##DType(        \
+      Java_com_intel_analytics_bigdl_mkl_MKL_PoolingBackward##DType(        \
           JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,  \
           JArrayType outputDiff, jint outputDiffOffset, JArrayType inputDiff, \
           jint inputDiffOffset, long classPtr)                                \

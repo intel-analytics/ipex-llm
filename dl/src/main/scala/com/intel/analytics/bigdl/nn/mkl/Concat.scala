@@ -21,13 +21,13 @@
  *            ReLU and SpatialConvolution.
  */
 
-package com.intel.analytics.sparkdl.nn.mkl
+package com.intel.analytics.bigdl.nn.mkl
 
-import com.intel.analytics.sparkdl.nn.{Container, Module}
-import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.mkl.MKL
-import com.intel.analytics.sparkdl.utils.Activities
+import com.intel.analytics.bigdl.nn.{Container, Module}
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.mkl.MKL
+import com.intel.analytics.bigdl.utils.Activities
 
 import scala.reflect.ClassTag
 

@@ -24,11 +24,11 @@ import com.intel.analytics.bigdl.utils.Activities
 
 import scala.reflect.ClassTag
 
-import com.intel.analytics.sparkdl.nn.mkl.ReLU
-import com.intel.analytics.sparkdl.nn.mkl.SpatialCrossMapLRN
-import com.intel.analytics.sparkdl.nn.mkl.Linear
-import com.intel.analytics.sparkdl.nn.mkl.SpatialConvolution
-import com.intel.analytics.sparkdl.nn.mkl.SpatialMaxPooling
+import com.intel.analytics.bigdl.nn.mkl.ReLU
+import com.intel.analytics.bigdl.nn.mkl.SpatialCrossMapLRN
+import com.intel.analytics.bigdl.nn.mkl.Linear
+import com.intel.analytics.bigdl.nn.mkl.SpatialConvolution
+import com.intel.analytics.bigdl.nn.mkl.SpatialMaxPooling
 
 /**
  * @brief This is AlexNet that was presented in the One Weird Trick paper.
@@ -63,7 +63,6 @@ object AlexNet_OWT {
     if (hasDropout) model.add(new Dropout[T](0.5).setName("drop7"))
     model.add(new Linear[T](4096, classNum).setName("fc8"))
     model.add(new LogSoftMax[T])
-    println(model)
     model
   }
 }
@@ -100,7 +99,6 @@ object AlexNet {
     model.add(new Dropout[T](0.5).setName("drop7"))
     model.add(new Linear[T](4096, classNum).setName("fc8"))
     model.add(new LogSoftMax[T].setName("loss"))
-    println(model)
     model
   }
 }

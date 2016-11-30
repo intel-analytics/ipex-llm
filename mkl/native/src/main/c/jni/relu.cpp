@@ -257,7 +257,7 @@ void JNIReLUUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
 // Macro
 #define ReLUInit(DType, JType, JArrayType)                                \
   JNIEXPORT                                                               \
-  jlong JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_ReLUInit##DType( \
+  jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_ReLUInit##DType( \
       JNIEnv *env, jclass thisClass, jint inputNumber, jint inputChannel, \
       jint inputHeight, jint inputWidth, jint dimension, jstring name)                  \
   {                                                                       \
@@ -268,7 +268,7 @@ void JNIReLUUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
 
 #define ReLUForward(DType, JType, JArrayType)                                  \
   JNIEXPORT                                                                    \
-  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_ReLUForward##DType(    \
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_ReLUForward##DType(    \
       JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,       \
       JArrayType output, jint outputOffset, long classPtr)                     \
   {                                                                            \
@@ -278,7 +278,7 @@ void JNIReLUUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
 
 #define ReLUBackward(DType, JType, JArrayType)                               \
   JNIEXPORT                                                                  \
-  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_ReLUBackward##DType( \
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_ReLUBackward##DType( \
       JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,     \
       JArrayType outputDiff, jint outputDiffOffset, JArrayType inputDiff,    \
       jint inputDiffOffset, long classPtr)                                   \

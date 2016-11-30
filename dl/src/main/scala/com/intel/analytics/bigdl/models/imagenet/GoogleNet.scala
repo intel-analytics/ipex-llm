@@ -25,14 +25,14 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
-import com.intel.analytics.sparkdl.nn.mkl.Linear
-import com.intel.analytics.sparkdl.nn.mkl.SpatialBatchNormalization
-import com.intel.analytics.sparkdl.nn.mkl.ReLU
-import com.intel.analytics.sparkdl.nn.mkl.SpatialCrossMapLRN
-import com.intel.analytics.sparkdl.nn.mkl.SpatialAveragePooling
-import com.intel.analytics.sparkdl.nn.mkl.SpatialConvolution
-import com.intel.analytics.sparkdl.nn.mkl.SpatialMaxPooling
-import com.intel.analytics.sparkdl.nn.mkl.Concat
+import com.intel.analytics.bigdl.nn.mkl.Linear
+import com.intel.analytics.bigdl.nn.mkl.SpatialBatchNormalization
+import com.intel.analytics.bigdl.nn.mkl.ReLU
+import com.intel.analytics.bigdl.nn.mkl.SpatialCrossMapLRN
+import com.intel.analytics.bigdl.nn.mkl.SpatialAveragePooling
+import com.intel.analytics.bigdl.nn.mkl.SpatialConvolution
+import com.intel.analytics.bigdl.nn.mkl.SpatialMaxPooling
+import com.intel.analytics.bigdl.nn.mkl.Concat
 
 object GoogleNet_v1 {
   private def inception[D: ClassTag](inputSize: Int, config: Table, namePrefix : String)(

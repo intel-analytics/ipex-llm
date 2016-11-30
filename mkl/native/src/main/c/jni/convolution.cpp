@@ -550,7 +550,7 @@ void JNIConvolutionUpdateGradBias(JNIEnv *env, jclass thisClass,
 #define ConvolutionInit(DType, JType, JArrayType)                             \
   JNIEXPORT                                                                   \
   jlong JNICALL                                                               \
-      Java_com_intel_analytics_sparkdl_mkl_MKL_ConvolutionInit##DType(        \
+      Java_com_intel_analytics_bigdl_mkl_MKL_ConvolutionInit##DType(        \
           JNIEnv *env, jclass thisClass, jint inputNumber, jint inputChannel, \
           jint inputHeight, jint inputWidth, jint kernelNumber,               \
           jint kernelChannel, jint kernelHeight, jint kernelWidth,            \
@@ -566,7 +566,7 @@ void JNIConvolutionUpdateGradBias(JNIEnv *env, jclass thisClass,
 #define ConvolutionForward(DType, JType, JArrayType)                          \
   JNIEXPORT                                                                   \
   void JNICALL                                                                \
-      Java_com_intel_analytics_sparkdl_mkl_MKL_ConvolutionForward##DType(     \
+      Java_com_intel_analytics_bigdl_mkl_MKL_ConvolutionForward##DType(     \
           JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,  \
           JArrayType output, jint outputOffset, JArrayType kernel,            \
           jint kernelOffset, JArrayType bias, jint biasOffset, long classPtr) \
@@ -579,7 +579,7 @@ void JNIConvolutionUpdateGradBias(JNIEnv *env, jclass thisClass,
 #define ConvolutionBackwardData(DType, JType, JArrayType)                      \
   JNIEXPORT                                                                    \
   void JNICALL                                                                 \
-      Java_com_intel_analytics_sparkdl_mkl_MKL_ConvolutionBackwardData##DType( \
+      Java_com_intel_analytics_bigdl_mkl_MKL_ConvolutionBackwardData##DType( \
           JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,   \
           JArrayType outputDiff, jint outputDiffOffset, JArrayType inputDiff,  \
           jint inputDiffOffset, JArrayType kernel, jint kernelOffset,          \
@@ -594,7 +594,7 @@ void JNIConvolutionUpdateGradBias(JNIEnv *env, jclass thisClass,
 #define ConvolutionBackwardKernel(DType, JType, JArrayType)                      \
   JNIEXPORT                                                                      \
   void JNICALL                                                                   \
-      Java_com_intel_analytics_sparkdl_mkl_MKL_ConvolutionBackwardKernel##DType( \
+      Java_com_intel_analytics_bigdl_mkl_MKL_ConvolutionBackwardKernel##DType( \
           JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,     \
           JArrayType outputDiff, jint outputDiffOffset, JArrayType kernelDiff,   \
           jint kernelDiffOffset, JArrayType kernel, jint kernelOffset,           \
@@ -609,7 +609,7 @@ void JNIConvolutionUpdateGradBias(JNIEnv *env, jclass thisClass,
 #define ConvolutionBackwardBias(DType, JType, JArrayType)                      \
   JNIEXPORT                                                                    \
   void JNICALL                                                                 \
-      Java_com_intel_analytics_sparkdl_mkl_MKL_ConvolutionBackwardBias##DType( \
+      Java_com_intel_analytics_bigdl_mkl_MKL_ConvolutionBackwardBias##DType( \
           JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,   \
           JArrayType outputDiff, jint outputDiffOffset, JArrayType biasDiff,   \
           jint biasDiffOffset, JArrayType kernel, jint kernelOffset,           \

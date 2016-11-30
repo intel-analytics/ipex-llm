@@ -409,20 +409,20 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsgemm
    jint k, jfloat alpha, jfloatArray a, jint aOffset, jint lda, jfloatArray b,
    jint bOffset, jint ldb, jfloat beta, jfloatArray c, jint cOffset, jint ldc) {
 
-   jfloat * jni_a = (*env)->GetPrimitiveArrayCritical(env, a, JNI_FALSE);
-   jfloat * jni_b = (*env)->GetPrimitiveArrayCritical(env, b, JNI_FALSE);
-   jfloat * jni_c = (*env)->GetPrimitiveArrayCritical(env, c, JNI_FALSE);
+   jfloat * jni_a = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(a, JNI_FALSE));
+   jfloat * jni_b = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(b, JNI_FALSE));
+   jfloat * jni_c = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(c, JNI_FALSE));
 
-   int jni_transa,jni_transb;
+   CBLAS_TRANSPOSE jni_transa,jni_transb;
    if(transa == 't' || transa == 'T') jni_transa = CblasTrans; else jni_transa = CblasNoTrans;
    if(transb == 't' || transb == 'T') jni_transb = CblasTrans; else jni_transb = CblasNoTrans;
 
    cblas_sgemm(CblasColMajor, jni_transa, jni_transb, m, n, k, alpha, jni_a + aOffset, lda,
    jni_b + bOffset, ldb, beta, jni_c + cOffset, ldc);
 
-   (*env)->ReleasePrimitiveArrayCritical(env, a, jni_a, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, b, jni_b, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, c, jni_c, 0);
+   env->ReleasePrimitiveArrayCritical(a, jni_a, 0);
+   env->ReleasePrimitiveArrayCritical(b, jni_b, 0);
+   env->ReleasePrimitiveArrayCritical(c, jni_c, 0);
 }
 
     /*
@@ -435,19 +435,19 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdgemm
   jint k, jdouble alpha, jdoubleArray a, jint aOffset, jint lda, jdoubleArray b,
   jint bOffset, jint ldb, jdouble beta, jdoubleArray c, jint cOffset, jint ldc) {
 
-  jdouble * jni_a = (*env)->GetPrimitiveArrayCritical(env, a, JNI_FALSE);
-  jdouble * jni_b = (*env)->GetPrimitiveArrayCritical(env, b, JNI_FALSE);
-  jdouble * jni_c = (*env)->GetPrimitiveArrayCritical(env, c, JNI_FALSE);
+  jdouble * jni_a = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(a, JNI_FALSE));
+  jdouble * jni_b = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(b, JNI_FALSE));
+  jdouble * jni_c = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(c, JNI_FALSE));
 
-  int jni_transa,jni_transb;
+  CBLAS_TRANSPOSE jni_transa,jni_transb;
   if(transa == 't' || transa == 'T') jni_transa = CblasTrans; else jni_transa = CblasNoTrans;
   if(transb == 't' || transb == 'T') jni_transb = CblasTrans; else jni_transb = CblasNoTrans;
   cblas_dgemm(CblasColMajor, jni_transa, jni_transb, m, n, k, alpha, jni_a + aOffset, lda,
   jni_b + bOffset, ldb, beta, jni_c + cOffset, ldc);
 
-  (*env)->ReleasePrimitiveArrayCritical(env, a, jni_a, 0);
-  (*env)->ReleasePrimitiveArrayCritical(env, b, jni_b, 0);
-  (*env)->ReleasePrimitiveArrayCritical(env, c, jni_c, 0);
+  env->ReleasePrimitiveArrayCritical(a, jni_a, 0);
+  env->ReleasePrimitiveArrayCritical(b, jni_b, 0);
+  env->ReleasePrimitiveArrayCritical(c, jni_c, 0);
 }
 
    /*
@@ -460,18 +460,18 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsgemv
    jfloat alpha, jfloatArray a, jint aOffset, jint lda, jfloatArray x,
    jint xOffset, jint incx, jfloat beta, jfloatArray y, jint yOffset, jint incy) {
 
-   jfloat * jni_a = (*env)->GetPrimitiveArrayCritical(env, a, JNI_FALSE);
-   jfloat * jni_x = (*env)->GetPrimitiveArrayCritical(env, x, JNI_FALSE);
-   jfloat * jni_y = (*env)->GetPrimitiveArrayCritical(env, y, JNI_FALSE);
+   jfloat * jni_a = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(a, JNI_FALSE));
+   jfloat * jni_x = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(x, JNI_FALSE));
+   jfloat * jni_y = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(y, JNI_FALSE));
 
-   int jni_trans;
+   CBLAS_TRANSPOSE jni_trans;
    if(trans == 't' || trans == 'T') jni_trans = CblasTrans; else jni_trans = CblasNoTrans;
    cblas_sgemv(CblasColMajor, jni_trans, m, n, alpha, jni_a + aOffset, lda, jni_x + xOffset, incx,
      beta, jni_y + yOffset, incy);
 
-   (*env)->ReleasePrimitiveArrayCritical(env, a, jni_a, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, x, jni_x, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, y, jni_y, 0);
+   env->ReleasePrimitiveArrayCritical(a, jni_a, 0);
+   env->ReleasePrimitiveArrayCritical(x, jni_x, 0);
+   env->ReleasePrimitiveArrayCritical(y, jni_y, 0);
 }
 
     /*
@@ -484,18 +484,18 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdgemv
    jdouble alpha, jdoubleArray a, jint aOffset, jint lda, jdoubleArray x,
    jint xOffset, jint incx, jdouble beta, jdoubleArray y, jint yOffset, jint incy) {
 
-   jdouble * jni_a = (*env)->GetPrimitiveArrayCritical(env, a, JNI_FALSE);
-   jdouble * jni_x = (*env)->GetPrimitiveArrayCritical(env, x, JNI_FALSE);
-   jdouble * jni_y = (*env)->GetPrimitiveArrayCritical(env, y, JNI_FALSE);
+   jdouble * jni_a = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(a, JNI_FALSE));
+   jdouble * jni_x = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(x, JNI_FALSE));
+   jdouble * jni_y = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(y, JNI_FALSE));
 
-   int jni_trans;
+   CBLAS_TRANSPOSE jni_trans;
    if(trans == 't' || trans == 'T') jni_trans = CblasTrans; else jni_trans = CblasNoTrans;
    cblas_dgemv(CblasColMajor, jni_trans, m, n, alpha, jni_a + aOffset, lda, jni_x + xOffset, incx,
       beta, jni_y + yOffset, incy);
 
-   (*env)->ReleasePrimitiveArrayCritical(env, a, jni_a, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, x, jni_x, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, y, jni_y, 0);
+   env->ReleasePrimitiveArrayCritical(a, jni_a, 0);
+   env->ReleasePrimitiveArrayCritical(x, jni_x, 0);
+   env->ReleasePrimitiveArrayCritical(y, jni_y, 0);
 }
 
  /*
@@ -506,13 +506,13 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdgemv
 JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsaxpy
    (JNIEnv * env, jclass cls, jint n, jfloat a, jfloatArray x, jint xOffset, jint incx,
    jfloatArray y, jint yOffset, jint incy) {
-   jfloat * jni_x = (*env)->GetPrimitiveArrayCritical(env, x, JNI_FALSE);
-   jfloat * jni_y = (*env)->GetPrimitiveArrayCritical(env, y, JNI_FALSE);
+   jfloat * jni_x = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(x, JNI_FALSE));
+   jfloat * jni_y = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(y, JNI_FALSE));
 
    cblas_saxpy(n, a, jni_x + xOffset, incx, jni_y + yOffset, incy);
 
-   (*env)->ReleasePrimitiveArrayCritical(env, y, jni_y, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, x, jni_x, 0);
+   env->ReleasePrimitiveArrayCritical(y, jni_y, 0);
+   env->ReleasePrimitiveArrayCritical(x, jni_x, 0);
 }
 
  /*
@@ -523,13 +523,13 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsaxpy
 JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdaxpy
    (JNIEnv * env, jclass cls, jint n, jdouble a, jdoubleArray x, jint xOffset, jint incx,
    jdoubleArray y, jint yOffset, jint incy) {
-   jdouble * jni_x = (*env)->GetPrimitiveArrayCritical(env, x, JNI_FALSE);
-   jdouble * jni_y = (*env)->GetPrimitiveArrayCritical(env, y, JNI_FALSE);
+   jdouble * jni_x = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(x, JNI_FALSE));
+   jdouble * jni_y = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(y, JNI_FALSE));
 
    cblas_daxpy(n, a, jni_x + xOffset, incx, jni_y + yOffset, incy);
 
-   (*env)->ReleasePrimitiveArrayCritical(env, y, jni_y, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, x, jni_x, 0);
+   env->ReleasePrimitiveArrayCritical(y, jni_y, 0);
+   env->ReleasePrimitiveArrayCritical(x, jni_x, 0);
 }
 
  /*
@@ -540,13 +540,13 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdaxpy
 JNIEXPORT float JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsdot
    (JNIEnv * env, jclass cls, jint n, jfloatArray x, jint xOffset, jint incx,
    jfloatArray y, jint yOffset, jint incy) {
-   jfloat * jni_x = (*env)->GetPrimitiveArrayCritical(env, x, JNI_FALSE);
-   jfloat * jni_y = (*env)->GetPrimitiveArrayCritical(env, y, JNI_FALSE);
+   jfloat * jni_x = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(x, JNI_FALSE));
+   jfloat * jni_y = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(y, JNI_FALSE));
 
    float res = cblas_sdot(n, jni_x + xOffset, incx, jni_y + yOffset, incy);
 
-   (*env)->ReleasePrimitiveArrayCritical(env, y, jni_y, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, x, jni_x, 0);
+   env->ReleasePrimitiveArrayCritical(y, jni_y, 0);
+   env->ReleasePrimitiveArrayCritical(x, jni_x, 0);
    return res;
  }
 
@@ -559,13 +559,13 @@ JNIEXPORT double JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vddot
    (JNIEnv * env, jclass cls, jint n, jdoubleArray x, jint xOffset, jint incx,
    jdoubleArray y, jint yOffset, jint incy) {
 
-   jdouble * jni_x = (*env)->GetPrimitiveArrayCritical(env, x, JNI_FALSE);
-   jdouble * jni_y = (*env)->GetPrimitiveArrayCritical(env, y, JNI_FALSE);
+   jdouble * jni_x = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(x, JNI_FALSE));
+   jdouble * jni_y = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(y, JNI_FALSE));
 
    double res = cblas_ddot(n, jni_x + xOffset, incx, jni_y + yOffset, incy);
 
-   (*env)->ReleasePrimitiveArrayCritical(env, y, jni_y, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, x, jni_x, 0);
+   env->ReleasePrimitiveArrayCritical(y, jni_y, 0);
+   env->ReleasePrimitiveArrayCritical(x, jni_x, 0);
    return res;
 }
 
@@ -577,15 +577,15 @@ JNIEXPORT double JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vddot
 JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsger
    (JNIEnv * env, jclass cls, jint m, jint n, jfloat alpha, jfloatArray x, jint xOffset,
    jint incx, jfloatArray y, jint yOffset, jint incy, jfloatArray a, jint aOffset, jint lda) {
-   jfloat * jni_x = (*env)->GetPrimitiveArrayCritical(env, x, JNI_FALSE);
-   jfloat * jni_y = (*env)->GetPrimitiveArrayCritical(env, y, JNI_FALSE);
-   jfloat * jni_a = (*env)->GetPrimitiveArrayCritical(env, a, JNI_FALSE);
+   jfloat * jni_x = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(x, JNI_FALSE));
+   jfloat * jni_y = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(y, JNI_FALSE));
+   jfloat * jni_a = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(a, JNI_FALSE));
 
    cblas_sger(CblasColMajor, m, n, alpha, jni_x + xOffset, incx, jni_y + yOffset, incy, jni_a + aOffset, lda);
 
-   (*env)->ReleasePrimitiveArrayCritical(env, a, jni_a, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, y, jni_y, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, x, jni_x, 0);
+   env->ReleasePrimitiveArrayCritical(a, jni_a, 0);
+   env->ReleasePrimitiveArrayCritical(y, jni_y, 0);
+   env->ReleasePrimitiveArrayCritical(x, jni_x, 0);
 }
 
  /*
@@ -597,15 +597,15 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdger
    (JNIEnv * env, jclass cls, jint m, jint n, jdouble alpha, jdoubleArray x, jint xOffset,
    jint incx, jdoubleArray y, jint yOffset, jint incy, jdoubleArray a, jint aOffset, jint lda) {
 
-   jdouble * jni_x = (*env)->GetPrimitiveArrayCritical(env, x, JNI_FALSE);
-   jdouble * jni_y = (*env)->GetPrimitiveArrayCritical(env, y, JNI_FALSE);
-   jdouble * jni_a = (*env)->GetPrimitiveArrayCritical(env, a, JNI_FALSE);
+   jdouble * jni_x = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(x, JNI_FALSE));
+   jdouble * jni_y = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(y, JNI_FALSE));
+   jdouble * jni_a = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(a, JNI_FALSE));
 
    cblas_dger(CblasColMajor, m, n, alpha, jni_x + xOffset, incx, jni_y + yOffset, incy, jni_a + aOffset, lda);
 
-   (*env)->ReleasePrimitiveArrayCritical(env, a, jni_a, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, y, jni_y, 0);
-   (*env)->ReleasePrimitiveArrayCritical(env, x, jni_x, 0);
+   env->ReleasePrimitiveArrayCritical(a, jni_a, 0);
+   env->ReleasePrimitiveArrayCritical(y, jni_y, 0);
+   env->ReleasePrimitiveArrayCritical(x, jni_x, 0);
 }
 
  /*
@@ -615,11 +615,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdger
   */
 JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsscal
    (JNIEnv * env, jclass cls, jint n, jfloat a, jfloatArray x, jint xOffset, jint incx) {
-   jfloat * jni_x = (*env)->GetPrimitiveArrayCritical(env, x, JNI_FALSE);
+   jfloat * jni_x = reinterpret_cast<jfloat*>(env->GetPrimitiveArrayCritical(x, JNI_FALSE));
 
    cblas_sscal(n, a, jni_x + xOffset, incx);
 
-   (*env)->ReleasePrimitiveArrayCritical(env, x, jni_x, 0);
+   env->ReleasePrimitiveArrayCritical(x, jni_x, 0);
 }
 
  /*
@@ -630,11 +630,11 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vsscal
 JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_vdscal
    (JNIEnv * env, jclass cls, jint n, jdouble a, jdoubleArray x, jint xOffset, jint incx) {
 
-   jdouble * jni_x = (*env)->GetPrimitiveArrayCritical(env, x, JNI_FALSE);
+   jdouble * jni_x = reinterpret_cast<jdouble*>(env->GetPrimitiveArrayCritical(x, JNI_FALSE));
 
    cblas_dscal(n, a, jni_x + xOffset, incx);
 
-   (*env)->ReleasePrimitiveArrayCritical(env, x, jni_x, 0);
+   env->ReleasePrimitiveArrayCritical(x, jni_x, 0);
 }
 
 #ifdef __cplusplus

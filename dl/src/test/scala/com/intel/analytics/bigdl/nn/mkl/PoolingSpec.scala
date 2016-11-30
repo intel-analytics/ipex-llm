@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.sparkdl.nn.mkl
+package com.intel.analytics.bigdl.nn.mkl
 
-import com.intel.analytics.sparkdl.nn
-import com.intel.analytics.sparkdl.nn._
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 import scala.sys.process._
 

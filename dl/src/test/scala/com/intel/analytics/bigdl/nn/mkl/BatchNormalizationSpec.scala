@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.sparkdl.nn.mkl
+package com.intel.analytics.bigdl.nn.mkl
 
-import com.intel.analytics.sparkdl.nn
+import com.intel.analytics.bigdl.nn
 import org.scalatest.{FlatSpec, Matchers}
 
 class BatchNormalizationSpec extends FlatSpec with Matchers {

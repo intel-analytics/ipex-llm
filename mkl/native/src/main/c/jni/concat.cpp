@@ -359,7 +359,7 @@ void JNIConcatSetNext(JNIEnv *env, jclass thisClass, long prev, int index,
 // Macro
 #define ConcatInit(DType, JType, JArrayType)                                \
   JNIEXPORT                                                                 \
-  jlong JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_ConcatInit##DType( \
+  jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_ConcatInit##DType( \
       JNIEnv *env, jclass thisClass, jint numConcats, jint dimension,       \
       jintArray size)                                                       \
   {                                                                         \
@@ -369,7 +369,7 @@ void JNIConcatSetNext(JNIEnv *env, jclass thisClass, long prev, int index,
 
 #define ConcatForward(DType, JType, JArrayType)                               \
   JNIEXPORT                                                                   \
-  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_ConcatForward##DType( \
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_ConcatForward##DType( \
       JNIEnv *env, jclass thisClass, jobjectArray input,                      \
       jintArray inputOffset, JArrayType output, jint outputOffset,            \
       long classPtr)                                                          \
@@ -380,7 +380,7 @@ void JNIConcatSetNext(JNIEnv *env, jclass thisClass, long prev, int index,
 
 #define ConcatBackward(DType, JType, JArrayType)                               \
   JNIEXPORT                                                                    \
-  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_ConcatBackward##DType( \
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_ConcatBackward##DType( \
       JNIEnv *env, jclass thisClass, jobjectArray inputDiff,                   \
       jintArray inputDiffOffset, JArrayType outputDiff, jint outputDiffOffset, \
       long classPtr)                                                           \
@@ -392,7 +392,7 @@ void JNIConcatSetNext(JNIEnv *env, jclass thisClass, long prev, int index,
 
 #define ConcatPrev(DType, JType, JArrayType) \
   JNIEXPORT \
-  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetConcatPrev##DType( \
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_SetConcatPrev##DType( \
       JNIEnv *env, jclass thisClass, jlong prev, jint index, jlong curr) \
   { \
     JNIConcatSetPrev<JArrayType, JType>(env, thisClass, prev, index, curr);\
@@ -400,7 +400,7 @@ void JNIConcatSetNext(JNIEnv *env, jclass thisClass, long prev, int index,
 
 #define ConcatNext(DType, JType, JArrayType) \
   JNIEXPORT \
-  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetConcatNext##DType( \
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_SetConcatNext##DType( \
       JNIEnv *env, jclass thisClass, jlong prev, jint index, jlong curr) \
   { \
     JNIConcatSetNext<JArrayType, JType>(env, thisClass, prev, index, curr);\

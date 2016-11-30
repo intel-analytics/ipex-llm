@@ -333,7 +333,7 @@ void JNISumSetNext(JNIEnv *env, jclass thisClass, long next, int index,
 // Macro
 #define SumInit(DType, JType, JArrayType)                                    \
   JNIEXPORT                                                                  \
-  jlong JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SumInit##DType(     \
+  jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_SumInit##DType(     \
       JNIEnv *env, jclass thisClass, jint numSums, jint dimension,           \
       jintArray size)                                                        \
   {                                                                          \
@@ -343,7 +343,7 @@ void JNISumSetNext(JNIEnv *env, jclass thisClass, long next, int index,
 
 #define SumForward(DType, JType, JArrayType)                                  \
   JNIEXPORT                                                                   \
-  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SumForward##DType(    \
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_SumForward##DType(    \
       JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,       \
       jobjectArray output, jintArray outputOffset, long classPtr)             \
   {                                                                           \
@@ -353,7 +353,7 @@ void JNISumSetNext(JNIEnv *env, jclass thisClass, long next, int index,
 
 #define SumBackward(DType, JType, JArrayType)                               \
   JNIEXPORT                                                                 \
-  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SumBackward##DType( \
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_SumBackward##DType( \
       JNIEnv *env, jclass thisClass, JArrayType inputDiff,                   \
       jint inputDiffOffset, jobjectArray outputDiff,                        \
       jintArray outputDiffOffset, long classPtr)                            \
@@ -365,7 +365,7 @@ void JNISumSetNext(JNIEnv *env, jclass thisClass, long next, int index,
 
 #define SumNext(DType, JType, JArrayType) \
   JNIEXPORT \
-  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetSumNext##DType( \
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_SetSumNext##DType( \
       JNIEnv *env, jclass thisClass, jlong next, jint index, jlong curr) \
   { \
     JNISumSetNext<JArrayType, JType>(env, thisClass, next, index, curr);\
@@ -388,7 +388,7 @@ SumBackward(Float, jfloat, jfloatArray);
 SumNext(Float, jfloat, jfloatArray);
 
 JNIEXPORT
-void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetIPrevFloat(
+void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_SetIPrevFloat(
     JNIEnv *env, jclass thisClass, long prev, int index, long curr)
 {
   MKLSum<float> *ptr = reinterpret_cast<MKLSum<float> *>(prev);
@@ -396,7 +396,7 @@ void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetIPrevFloat(
 }
 
 JNIEXPORT
-void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_SetIPrevDouble(
+void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_SetIPrevDouble(
     JNIEnv *env, jclass thisClass, long prev, int index, long curr)
 {
   MKLSum<double> *ptr = reinterpret_cast<MKLSum<double> *>(prev);

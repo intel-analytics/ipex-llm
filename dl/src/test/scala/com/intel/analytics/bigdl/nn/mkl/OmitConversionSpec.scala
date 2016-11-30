@@ -15,15 +15,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.sparkdl.nn.mkl
+package com.intel.analytics.bigdl.nn.mkl
 
-import com.intel.analytics.sparkdl.nn
-import com.intel.analytics.sparkdl.nn.{Constant, Default, Module, Xavier}
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn.{Constant, Default, Module, Xavier}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
-import com.intel.analytics.sparkdl.utils.RandomGenerator._
-import com.intel.analytics.sparkdl.utils.Table
+import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.Table
 import org.apache.spark.sql.catalyst.expressions.Concat
 
 import scala.reflect.ClassTag

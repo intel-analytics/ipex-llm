@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.sparkdl.nn.mkl
+package com.intel.analytics.bigdl.nn.mkl
 
-import com.intel.analytics.sparkdl.mkl.MKL
-import com.intel.analytics.sparkdl.nn.{Module, TensorModule}
-import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.mkl.MKL
+import com.intel.analytics.bigdl.nn.{Module, TensorModule}
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.language.implicitConversions
 import scala.reflect.ClassTag

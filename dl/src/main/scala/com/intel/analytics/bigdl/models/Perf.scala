@@ -99,7 +99,7 @@ object Perf {
   }
 
   def performance[T: ClassTag](param: PerfParams)(implicit tn: TensorNumeric[T]): Unit = {
-    import com.intel.analytics.sparkdl.utils.Engine
+    import com.intel.analytics.bigdl.utils.Engine
     Engine.setCoreNum(2)
     val (model, input) = param.module match {
       case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 227, 227))

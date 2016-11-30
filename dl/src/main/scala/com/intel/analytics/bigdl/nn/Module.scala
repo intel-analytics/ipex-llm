@@ -25,7 +25,7 @@ import org.apache.commons.lang3.SerializationUtils
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
-import com.intel.analytics.sparkdl.mkl.MKL
+import com.intel.analytics.bigdl.mkl.MKL
 
 
 abstract class TensorModule[@specialized(Float, Double) T: ClassTag]

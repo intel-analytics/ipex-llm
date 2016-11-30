@@ -25,13 +25,13 @@
  *    1e-4 ~ 1e-5 for gradInput after 10 iterations.
  */
 
-package com.intel.analytics.sparkdl.nn.mkl
+package com.intel.analytics.bigdl.nn.mkl
 
-import com.intel.analytics.sparkdl.nn
-import com.intel.analytics.sparkdl.nn._
-import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.utils.{T, Table}
+import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.reflect.ClassTag

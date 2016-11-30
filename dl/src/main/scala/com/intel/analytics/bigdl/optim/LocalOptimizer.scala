@@ -45,6 +45,8 @@ class LocalOptimizer[T](
     var wallClockTime = 0L
     var count = 0
 
+    println(model)
+
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     data.reset()

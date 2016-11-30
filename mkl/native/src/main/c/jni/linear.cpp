@@ -428,7 +428,7 @@ void JNILinearUpdateGradBias(JNIEnv *env, jclass thisClass, ArrayType input,
 // Macro
 #define LinearInit(DType, JType, JArrayType)                                \
   JNIEXPORT                                                                 \
-  jlong JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_LinearInit##DType( \
+  jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_LinearInit##DType( \
       JNIEnv *env, jclass thisClass, jint inputHeight, jint inputWidth,     \
       jint outputChannel, jint kernelHeight, jint kernelWidth, jstring name)              \
   {                                                                         \
@@ -439,7 +439,7 @@ void JNILinearUpdateGradBias(JNIEnv *env, jclass thisClass, ArrayType input,
 
 #define LinearForward(DType, JType, JArrayType)                               \
   JNIEXPORT                                                                   \
-  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_LinearForward##DType( \
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_LinearForward##DType( \
       JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,      \
       JArrayType output, jint outputOffset, JArrayType kernel,                \
       jint kernelOffset, JArrayType bias, jint biasOffset, long classPtr)     \
@@ -452,7 +452,7 @@ void JNILinearUpdateGradBias(JNIEnv *env, jclass thisClass, ArrayType input,
 #define LinearBackwardData(DType, JType, JArrayType)                          \
   JNIEXPORT                                                                   \
   void JNICALL                                                                \
-      Java_com_intel_analytics_sparkdl_mkl_MKL_LinearBackwardData##DType(     \
+      Java_com_intel_analytics_bigdl_mkl_MKL_LinearBackwardData##DType(     \
           JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,  \
           JArrayType outputDiff, jint outputDiffOffset, JArrayType inputDiff, \
           jint inputDiffOffset, JArrayType kernel, jint kernelOffset,         \
@@ -467,7 +467,7 @@ void JNILinearUpdateGradBias(JNIEnv *env, jclass thisClass, ArrayType input,
 #define LinearBackwardKernel(DType, JType, JArrayType)                         \
   JNIEXPORT                                                                    \
   void JNICALL                                                                 \
-      Java_com_intel_analytics_sparkdl_mkl_MKL_LinearBackwardKernel##DType(    \
+      Java_com_intel_analytics_bigdl_mkl_MKL_LinearBackwardKernel##DType(    \
           JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,   \
           JArrayType outputDiff, jint outputDiffOffset, JArrayType kernelDiff, \
           jint kernelDiffOffset, JArrayType kernel, jint kernelOffset,         \
@@ -482,7 +482,7 @@ void JNILinearUpdateGradBias(JNIEnv *env, jclass thisClass, ArrayType input,
 #define LinearBackwardBias(DType, JType, JArrayType)                         \
   JNIEXPORT                                                                  \
   void JNICALL                                                               \
-      Java_com_intel_analytics_sparkdl_mkl_MKL_LinearBackwardBias##DType(    \
+      Java_com_intel_analytics_bigdl_mkl_MKL_LinearBackwardBias##DType(    \
           JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset, \
           JArrayType outputDiff, jint outputDiffOffset, JArrayType biasDiff, \
           jint biasDiffOffset, JArrayType kernel, jint kernelOffset,         \

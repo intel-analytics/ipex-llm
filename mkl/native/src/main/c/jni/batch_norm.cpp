@@ -397,7 +397,7 @@ void JNIBatchNormUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
 // Macro
 #define BatchNormInit(DType, JType, JArrayType)                                \
   JNIEXPORT                                                                    \
-  jlong JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_BatchNormInit##DType( \
+  jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_BatchNormInit##DType( \
       JNIEnv *env, jclass thisClass, jint inputNumber, jint inputChannel,      \
       jint inputHeight, jint inputWidth, JType eps, jint useKernel,          \
       jint useBias, jint dimension, jstring name)                                            \
@@ -410,7 +410,7 @@ void JNIBatchNormUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
 #define BatchNormForward(DType, JType, JArrayType)                            \
   JNIEXPORT                                                                   \
   void JNICALL                                                                \
-      Java_com_intel_analytics_sparkdl_mkl_MKL_BatchNormForward##DType(       \
+      Java_com_intel_analytics_bigdl_mkl_MKL_BatchNormForward##DType(       \
           JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,  \
           JArrayType output, jint outputOffset, JArrayType kernel,            \
           jint kernelOffset, JArrayType bias, jint biasOffset, long classPtr) \
@@ -423,7 +423,7 @@ void JNIBatchNormUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
 #define BatchNormBackward(DType, JType, JArrayType)                           \
   JNIEXPORT                                                                   \
   void JNICALL                                                                \
-      Java_com_intel_analytics_sparkdl_mkl_MKL_BatchNormBackward##DType(      \
+      Java_com_intel_analytics_bigdl_mkl_MKL_BatchNormBackward##DType(      \
           JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,  \
           JArrayType outputDiff, jint outputDiffOffset, JArrayType inputDiff, \
           jint inputDiffOffset, JArrayType kernelDiff, jint kernelDiffOffset, \

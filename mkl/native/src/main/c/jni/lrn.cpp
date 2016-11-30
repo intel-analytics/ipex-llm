@@ -277,7 +277,7 @@ void JNILRNUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
 // Macro
 #define LRNInit(DType, JType, JArrayType)                                    \
   JNIEXPORT                                                                  \
-  jlong JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_LRNInit##DType(     \
+  jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_LRNInit##DType(     \
       JNIEnv *env, jclass thisClass, jint inputNumber, jint inputChannel,    \
       jint inputHeight, jint inputWidth, jint size, JType alpha, JType beta, \
       JType k, jint dimension)                                               \
@@ -289,7 +289,7 @@ void JNILRNUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
 
 #define LRNForward(DType, JType, JArrayType)                                  \
   JNIEXPORT                                                                   \
-  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_LRNForward##DType(    \
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_LRNForward##DType(    \
       JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,      \
       JArrayType output, jint outputOffset, long classPtr)                    \
   {                                                                           \
@@ -299,7 +299,7 @@ void JNILRNUpdateGradInput(JNIEnv *env, jclass thisClass, ArrayType input,
 
 #define LRNBackward(DType, JType, JArrayType)                               \
   JNIEXPORT                                                                 \
-  void JNICALL Java_com_intel_analytics_sparkdl_mkl_MKL_LRNBackward##DType( \
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_LRNBackward##DType( \
       JNIEnv *env, jclass thisClass, JArrayType input, jint inputOffset,    \
       JArrayType outputDiff, jint outputDiffOffset, JArrayType inputDiff,   \
       jint inputDiffOffset, long classPtr)                                  \

@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.sparkdl.nn.mkl
+package com.intel.analytics.bigdl.nn.mkl
 
-import com.intel.analytics.sparkdl.models._
+import com.intel.analytics.bigdl.models._
 import org.scalatest.{FlatSpec, Matchers}
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator
 
 class LinearSpec  extends FlatSpec with Matchers {
 
@@ -30,7 +30,7 @@ class LinearSpec  extends FlatSpec with Matchers {
     val outputN = 10
 
     val linear = new Linear[Double](inputN, outputN)
-    val blasLinear = new com.intel.analytics.sparkdl.nn.Linear[Double](inputN, outputN)
+    val blasLinear = new com.intel.analytics.bigdl.nn.Linear[Double](inputN, outputN)
 
     val input = Tensor[Double](5, inputN).rand()
     val gradOutput = Tensor[Double](5, outputN).rand()
