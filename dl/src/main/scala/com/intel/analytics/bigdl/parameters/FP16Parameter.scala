@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ps
+package com.intel.analytics.bigdl.parameters
 
 import java.nio.ByteBuffer
 
@@ -166,8 +166,8 @@ object FP16Parameter {
     l
   }
 
-  private[ps] def toFP16(src: Array[Float], srcOffset: Int, tgt: Array[Byte],
-    tgtOffset: Int, length: Int): Array[Byte] = {
+  private[parameters] def toFP16(src: Array[Float], srcOffset: Int, tgt: Array[Byte],
+                                 tgtOffset: Int, length: Int): Array[Byte] = {
     require(srcOffset + length <= src.length)
     require(tgtOffset + length * 2 <= tgt.length)
 
@@ -190,8 +190,8 @@ object FP16Parameter {
   }
 
 
-  private[ps] def toFP16(src: Array[Double], srcOffset: Int, tgt: Array[Byte],
-    tgtOffset: Int, length: Int): Array[Byte] = {
+  private[parameters] def toFP16(src: Array[Double], srcOffset: Int, tgt: Array[Byte],
+                                 tgtOffset: Int, length: Int): Array[Byte] = {
     require(srcOffset + length <= src.length)
     require(tgtOffset + length * 2 <= tgt.length)
 
@@ -213,8 +213,8 @@ object FP16Parameter {
     tgt
   }
 
-  private[ps] def fromFP16(fp16: Array[Byte], fp16Offset: Int, fp16Length: Int,
-    target: Array[Float], targetOffset: Int): Unit = {
+  private[parameters] def fromFP16(fp16: Array[Byte], fp16Offset: Int, fp16Length: Int,
+                                   target: Array[Float], targetOffset: Int): Unit = {
     require(fp16Length % 2 == 0)
     require(fp16Length + fp16Offset <= fp16.length)
     require(fp16Length / 2 + targetOffset <= target.length)
@@ -234,8 +234,8 @@ object FP16Parameter {
     }(Engine.getInstance())).map(Await.result(_, Duration.Inf))
   }
 
-  private[ps] def fromFP16(fp16: Array[Byte], fp16Offset: Int, fp16Length: Int,
-    target: Array[Double], targetOffset: Int): Unit = {
+  private[parameters] def fromFP16(fp16: Array[Byte], fp16Offset: Int, fp16Length: Int,
+                                   target: Array[Double], targetOffset: Int): Unit = {
     require(fp16Length % 2 == 0)
     require(fp16Length + fp16Offset <= fp16.length)
     require(fp16Length / 2 + targetOffset <= target.length)
