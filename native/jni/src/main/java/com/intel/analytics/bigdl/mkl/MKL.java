@@ -27,6 +27,7 @@ public class MKL {
         } catch (Exception e) {
             isLoaded = false;
             e.printStackTrace();
+            // TODO: Add an argument for user, continuing to run even if MKL load failed.
             throw new RuntimeException("Failed to load MKL");
         }
     }
