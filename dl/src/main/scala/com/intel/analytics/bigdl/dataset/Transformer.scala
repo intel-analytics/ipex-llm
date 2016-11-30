@@ -113,7 +113,7 @@ class PathToImage(numChannels: Int, scaleTo: Int) extends Transformer[(Float, Pa
 
   override def transform(x: Iterator[(Float, Path)]): Iterator[Image] = {
     x.map(data => {
-      val imgData = ImageUtils.readRGBImage(data._2, scaleTo)
+      val imgData = ImageUtils.readBGRImage(data._2, scaleTo)
       val label = data._1
       buffer.copy(imgData, numChannels).setLabel(label)
     })
