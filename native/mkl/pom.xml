@@ -3,13 +3,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>mkl-parent_0.1</artifactId>
+        <artifactId>native-parent_0.1</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.intel.analytics.bigdl.mkl</groupId>
+    <groupId>com.intel.analytics.bigdl.native</groupId>
     <artifactId>mkl-native_0.1</artifactId>
     <packaging>${packaging.type}</packaging>
 
@@ -51,7 +51,6 @@
                                 </source>
                             </sources>
                             <compilerStartOptions>
-                                <compilerStartOption>-I ${MKLROOT}/include/</compilerStartOption>
                                 <compilerStartOption>-I ${JAVA_HOME}/include/</compilerStartOption>
                                 <compilerStartOption>-I ${JAVA_HOME}/include/linux/</compilerStartOption>
                             </compilerStartOptions>
@@ -62,29 +61,29 @@
                                 <compilerEndOption>-liomp5</compilerEndOption>
                                 <compilerEndOption>-lc</compilerEndOption>
                                 <compilerEndOption>-fPIC</compilerEndOption>
-                                <compilerEndOption>-fopenmp</compilerEndOption>
+                                <compilerEndOption>-qopenmp</compilerEndOption>
                                 <compilerEndOption>-Wall</compilerEndOption>
                                 <compilerEndOption>-std=c99</compilerEndOption>
                             </compilerEndOptions>
                             <linkerStartOptions>
                                 <linkerStartOption>-I ${JAVA_HOME}/include/</linkerStartOption>
                                 <linkerStartOption>-I ${JAVA_HOME}/include/linux/</linkerStartOption>
+                                <linkerStartOption>-lpthread</linkerStartOption>
+                                <linkerStartOption>-ldl</linkerStartOption>
+                                <linkerStartOption>-liomp5</linkerStartOption>
+                                <linkerStartOption>-shared</linkerStartOption>
+                                <linkerStartOption>-mkl=parallel</linkerStartOption>
+                                <linkerStartOption>-static-intel</linkerStartOption>
+                                <linkerStartOption>-qopenmp</linkerStartOption>
                             </linkerStartOptions>
                             <linkerMiddleOptions>
-                                <linkerMiddleOption>-lpthread</linkerMiddleOption>
                                 <linkerMiddleOption>-lm</linkerMiddleOption>
-                                <linkerMiddleOption>-lrt</linkerMiddleOption>
                             </linkerMiddleOptions>
                             <linkerEndOptions>
-                                <linkerEndOption>-shared</linkerEndOption>
-                                <linkerEndOption>-static-intel</linkerEndOption>
-                                <linkerEndOption>-lc</linkerEndOption>
                                 <linkerEndOption>-fPIC</linkerEndOption>
                                 <linkerEndOption>-Wall</linkerEndOption>
-                                <linkerEndOption>-liomp5</linkerEndOption>
-                                <linkerEndOption>-lmkl_rt</linkerEndOption>
                             </linkerEndOptions>
-                            <linkerFinalName>mkl-native_0.1</linkerFinalName>
+                            <linkerFinalName>${pom.artifactId}</linkerFinalName>
                         </configuration>
                     </plugin>
                 </plugins>

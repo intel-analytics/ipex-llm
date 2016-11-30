@@ -1,9 +1,6 @@
 package com.intel.analytics.bigdl.mkl;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
@@ -20,8 +17,12 @@ public class MKL {
 
     static {
         try {
+            tmpFile = extract("libiomp5.so");
+            System.load(tmpFile.getAbsolutePath());
+            tmpFile.delete(); // delete so temp file after loaded
             tmpFile = extract("libjmkl.so");
             System.load(tmpFile.getAbsolutePath());
+            tmpFile.delete(); // delete so temp file after loaded
             isLoaded = true;
         } catch (Exception e) {
             isLoaded = false;
@@ -156,19 +157,15 @@ public class MKL {
             }
 
             InputStream in = MKL.class.getResourceAsStream("/" + path);
-            File file = file(path);
+            File file = createTempFile("dlNativeLoader", path);
 
             ReadableByteChannel src = newChannel(in);
             FileChannel dest = new FileOutputStream(file).getChannel();
             dest.transferFrom(src, 0, Long.MAX_VALUE);
             return file;
         } catch (Throwable e) {
-            throw new Error("Can't extract so file");
+            throw new Error("Can't extract so file to /tmp dir");
         }
     }
 
-    private static File file(String path) throws IOException {
-        String name = new File(path).getName();
-        return createTempFile("mklloader", name);
-    }
 }
