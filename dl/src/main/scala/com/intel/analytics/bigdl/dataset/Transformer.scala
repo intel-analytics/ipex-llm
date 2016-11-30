@@ -57,11 +57,24 @@ class CombineTransformer[A, B, C](first: Transformer[A, B], last: Transformer[B,
   }
 }
 
+/**
+ * This class compress or expend the image to a specific size
+ * @param width the width of an image to be converted
+ * @param height the height of an image to be converted
+ */
+class Scaler(width: Int, height: Int) extends Transformer[Image, Image] {
+  override def transform(prev: Iterator[Image]): Iterator[Image] = {
+    prev.map(img => {
+      ImageUtils.scale(img, width, height)
+    })
+  }
+}
+
 class HFlip(threshold: Double) extends Transformer[Image, Image] {
   override def transform(prev: Iterator[Image]): Iterator[Image] = {
     prev.map(img => {
       if (RandomGenerator.RNG.uniform(0, 1) >= threshold) {
-        ImageUtils.hflip(img)
+        ImageUtils.hFlip(img)
       } else {
         img
       }
@@ -81,6 +94,12 @@ class ImageCropper(cropWidth: Int, cropHeight: Int, numChannels: Int)
   }
 }
 
+case class Identity[A: ClassTag]() extends Transformer[A, A] {
+  override def transform(prev: Iterator[A]): Iterator[A] = {
+    prev
+  }
+}
+
 object PathToGreyImage {
   def apply(scaleTo: Int): PathToImage = new PathToImage(1, scaleTo)
 }
@@ -96,7 +115,26 @@ class PathToImage(numChannels: Int, scaleTo: Int) extends Transformer[(Float, Pa
     x.map(data => {
       val imgData = ImageUtils.readRGBImage(data._2, scaleTo)
       val label = data._1
-      buffer.copy(imgData, 3).setLabel(label)
+      buffer.copy(imgData, numChannels).setLabel(label)
+    })
+  }
+}
+
+object ArrayByteToGreyImage {
+  def apply(scale: Float = 1.0f): ArrayByteToImage = new ArrayByteToImage(1, scale)
+}
+
+object ArrayByteToRGBImage {
+  def apply(scale: Float = 255.0f): ArrayByteToImage = new ArrayByteToImage(3, scale)
+}
+
+class ArrayByteToImage(numChannels: Int, scale: Float)
+  extends Transformer[(Float, Array[Byte]), Image] {
+  private val buffer = new Image(0, 0, 0)
+
+  override def transform(prev: Iterator[(Float, Array[Byte])]): Iterator[Image] = {
+    prev.map(rawData => {
+      buffer.copy(rawData._2, numChannels, scale).setLabel(rawData._1)
     })
   }
 }
@@ -180,25 +218,6 @@ class ImageNormalizer(
       println()
       val stds = sums.map(sum => math.sqrt(sum / total))
       (means, stds)
-  }
-}
-
-object ArrayByteToGreyImage {
-  def apply(scale: Float = 1.0f): ArrayByteToImage = new ArrayByteToImage(1, scale)
-}
-
-object ArrayByteToRGBImage {
-  def apply(scale: Float = 255.0f): ArrayByteToImage = new ArrayByteToImage(3, scale)
-}
-
-class ArrayByteToImage(numChannels: Int, scale: Float)
-  extends Transformer[(Float, Array[Byte]), Image] {
-  private val buffer = new Image(0, 0, 0)
-
-  override def transform(prev: Iterator[(Float, Array[Byte])]): Iterator[Image] = {
-    prev.map(rawData => {
-      buffer.copy(rawData._2, numChannels, scale).setLabel(rawData._1)
-    })
   }
 }
 
@@ -431,8 +450,3 @@ class MultiThreadImageToSingleTensor[A: ClassTag](
   }
 }
 
-case class Identity[A: ClassTag]() extends Transformer[A, A] {
-  override def transform(prev: Iterator[A]): Iterator[A] = {
-    prev
-  }
-}

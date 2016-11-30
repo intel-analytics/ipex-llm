@@ -66,8 +66,8 @@ class Image(
 
   def getLength: Int = metadata.numChannels * metadata.height * metadata.width
 
-  def imageToVectorCoords(x: Int, y: Int, c: Int): Int = {
-    y + x * metadata.width + c * metadata.width * metadata.height
+  def imageToVectorCoords(row: Int, col: Int, c: Int): Int = {
+    (row * width + col) * numChannels + c
   }
 
   def copy(rawData: Array[Byte], numChannels: Int, scale: Float = 255.0f): this.type = {
