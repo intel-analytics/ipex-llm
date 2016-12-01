@@ -205,7 +205,7 @@ object ImageNetLocal {
       val fileTransformer = new SeqFileToArrayByte()
       val arrayToImage = ArrayByteToRGBImage()
       val cropper = new ImageCropper(config.imageSize, config.imageSize, 3)
-      val normalizer = new ImageNormalizer(Array(0.485, 0.456, 0.406), Array(0.229, 0.224, 0.225))
+      val normalizer = new ImageNormalizer(Array(0,406, 0.456, 0.485), Array(0.225, 0.224, 0.229))
       val flipper = new HFlip(0.5)
       val trainMultiThreadToTensor = new MultiThreadImageToSingleTensor[Path](
         width = configs(param.net).imageSize,

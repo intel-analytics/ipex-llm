@@ -85,10 +85,9 @@ class HFlip(threshold: Double) extends Transformer[LabeledImage, LabeledImage] {
 
 class ImageCropper(cropWidth: Int, cropHeight: Int, numChannels: Int)
   extends Transformer[LabeledImage, LabeledImage] {
+  val buffer = new LabeledImage(cropWidth, cropHeight, numChannels)
 
   override def transform(prev: Iterator[LabeledImage]): Iterator[LabeledImage] = {
-    val buffer = new LabeledImage(cropWidth, cropHeight, numChannels)
-
     prev.map(img => {
       ImageUtils.crop(img, cropWidth, cropHeight, buffer)
     })
@@ -101,16 +100,12 @@ case class Identity[A: ClassTag]() extends Transformer[A, A] {
   }
 }
 
-object PathToGreyImage {
-  def apply(scaleTo: Int): PathToImage = new PathToImage(1, scaleTo)
-}
-
 object PathToRGBImage {
   def apply(scaleTo: Int): PathToImage = new PathToImage(3, scaleTo)
 }
 
 class PathToImage(numChannels: Int, scaleTo: Int) extends Transformer[(Float, Path), LabeledImage] {
-  private val buffer = new LabeledImage(0, 0, numChannels)
+  private val buffer = new LabeledImage(0, 0, 0)
 
   override def transform(x: Iterator[(Float, Path)]): Iterator[LabeledImage] = {
     x.map(data => {
@@ -328,7 +323,7 @@ class ImageToTensor(batchSize: Int) extends Transformer[LabeledImage, (Tensor[Fl
               storageOffset = 1, sizes = Array(i))
           }
 
-          (featureTensor, labelTensor)
+          (featureTensor.squeeze(2), labelTensor)
         } else {
           null
         }
@@ -433,7 +428,7 @@ class MultiThreadImageToSingleTensor[A: ClassTag](
           if (iterators(tid).hasNext) {
             val position = count.getAndIncrement()
             val img = iterators(tid).next()
-            img.copyTo(featureData, position * frameLength * img.nChannels)
+            img.copyTo(featureData, position * frameLength * numChannels)
             labelData(position) = img.label
           }
         }(getPool)).foreach(Await.result(_, Duration.Inf))
