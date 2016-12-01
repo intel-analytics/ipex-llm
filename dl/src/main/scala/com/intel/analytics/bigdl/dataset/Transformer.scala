@@ -361,30 +361,33 @@ class RGBImageRandomCropper(cropHeight: Int, cropWidth: Int, padding: Int)
 
   override def transform(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
     prev.map(img => {
-      if (padding > 0) {
-        val widthTmp = img.width()
-        val heightTmp = img.height()
-        val sourceTmp = img.content
-        val padWidth = widthTmp + 2*padding
-        val padHeight = heightTmp + 2*padding
-        val temp = new RGBImage(padWidth, padHeight)
-        val tempBuffer = temp.content
-        val startIndex = (padding+1 + (padding+1)*padWidth)*3
-        val frameLength = widthTmp * heightTmp
-        var i = 0
-        while (i < frameLength) {
-          tempBuffer(startIndex + ((i/widthTmp)*padWidth + (i%widthTmp))*3 + 2) = sourceTmp(i*3+2)
-          tempBuffer(startIndex + ((i/widthTmp)*padWidth + (i%widthTmp))*3 + 1) = sourceTmp(i*3+1)
-          tempBuffer(startIndex + ((i/widthTmp)*padWidth + (i%widthTmp))*3) = sourceTmp(i*3)
-          i += 1
+      val curImg = padding > 0 match {
+        case true => {
+          val widthTmp = img.width()
+          val heightTmp = img.height()
+          val sourceTmp = img.content
+          val padWidth = widthTmp + 2 * padding
+          val padHeight = heightTmp + 2 * padding
+          val temp = new RGBImage(padWidth, padHeight)
+          val tempBuffer = temp.content
+          val startIndex = (padding + 1 + (padding + 1) * padWidth) * 3
+          val frameLength = widthTmp * heightTmp
+          var i = 0
+          while (i < frameLength) {
+            tempBuffer(startIndex + ((i / widthTmp) * padWidth + (i % widthTmp)) * 3 + 2) = sourceTmp(i * 3 + 2)
+            tempBuffer(startIndex + ((i / widthTmp) * padWidth + (i % widthTmp)) * 3 + 1) = sourceTmp(i * 3 + 1)
+            tempBuffer(startIndex + ((i / widthTmp) * padWidth + (i % widthTmp)) * 3) = sourceTmp(i * 3)
+            i += 1
+          }
+          temp.setLabel(img.label())
+          temp
         }
-        temp.setLabel(img.label())
-        //img.copy(temp)
+        case _ => img
       }
 
-      val width = img.width()
-      val height = img.height()
-      val source = img.content
+      val width = curImg.width()
+      val height = curImg.height()
+      val source = curImg.content
 
       val startW = RNG.uniform(0, width - cropWidth).toInt
       val startH = RNG.uniform(0, height - cropHeight).toInt
@@ -402,7 +405,7 @@ class RGBImageRandomCropper(cropHeight: Int, cropWidth: Int, padding: Int)
           source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3)
         i += 1
       }
-      buffer.setLabel(img.label())
+      buffer.setLabel(curImg.label())
     })
   }
 }

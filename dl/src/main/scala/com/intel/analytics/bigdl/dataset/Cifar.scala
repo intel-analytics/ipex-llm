@@ -61,7 +61,7 @@ object Cifar10Local {
       learningRate = 0.1),
       //learningRateSchedule = SGD.Step(100000, 0.1)),
     "resnet" -> Config(
-      ResNet[Float](classNum = 10, T("shortcutType" -> ShortcutType.B, "depth" -> 20, "dataset" -> DatasetType.CIFAR10))
+      ResNet[Float](classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20, "dataset" -> DatasetType.CIFAR10))
         .asInstanceOf[Module[Tensor[Float], Tensor[Float], Float]],
       new CrossEntropyCriterion[Float](),
       new SGD[Float](),
@@ -101,11 +101,11 @@ object Cifar10Local {
         looped = false)
 
       //val cropper = RGBImageCropper(cropWidth = config.imageSize, cropHeight = config.imageSize)
-      val randomCropper = RGBImageRandomCropper(cropWidth = config.imageSize, cropHeight = config.imageSize, padding = 4)
+      val randomCropper = RGBImageRandomCropper(cropWidth = config.imageSize, cropHeight = config.imageSize, padding = 0)
       val flipper = HFlip(0.5)
 
       val arrayToImage = ArrayByteToRGBImage()
-      val normalizer = RGBImageNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7)
+      val normalizer = RGBImageNormalizer(trainDataSource -> arrayToImage) //125.3, 123.0, 113.9, 63.0, 62.1, 66.7)
       val toTensor = new RGBImageToTensor(batchSize = 128)
 
       val optimizer = new LocalOptimizer[Float](
@@ -121,7 +121,7 @@ object Cifar10Local {
           "weightDecay" -> config.weightDecay, //0.0005,
           "momentum" -> config.momentum, //0.9,
           "dampening" -> config.momentum, //0.0,
-          "learningRateSchedule" -> EpochDecay() //EpochStep(25, 0.5)
+          "learningRateSchedule" -> EpochDecay(DatasetType.CIFAR10) //EpochStep(25, 0.5)
         ),
         endWhen = Trigger.maxEpoch(90)
       )

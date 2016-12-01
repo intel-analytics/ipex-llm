@@ -21,13 +21,14 @@ import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.Executors
 
 import com.intel.analytics.bigdl.models.ResNet
-import com.intel.analytics.bigdl.models.ResNet.ShortcutType
+import com.intel.analytics.bigdl.models.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, GoogleNet_v1}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.optim.SGD.LearningRateSchedule
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Activities, T}
+import com.sun.prism.PixelFormat.DataType
 import scopt.OptionParser
 
 import scala.concurrent.duration.Duration
@@ -190,7 +191,7 @@ object ImageNetLocal {
       cacheTrigger = Trigger.severalIteration(3910),
       endWhen = Trigger.maxIteration(391*90),
       learningRate = 0.1,
-      learningRateSchedule = SGD.EpochDecay())
+      learningRateSchedule = SGD.EpochDecay(DatasetType.ImageNet))
   )
 
   private val parser = new OptionParser[ImageNetLocalParam]("Spark-DL ImageNet Local Example") {
