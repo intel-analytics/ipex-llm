@@ -37,37 +37,7 @@ import org.apache.log4j.Logger
 object ImprovedAllReduceParameterManager {
   var task1InnerTime: Long = 0L
 
-  private val logger = Logger.getLogger(getClass);
-
-  private val poolSize: Int = System.getProperty(
-    "com.intel.analytics.bigdl.ps.AllReduceParameterManager.poolSize",
-    (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
-
-  private val syncPoolSize: Int = System.getProperty(
-    "com.intel.analytics.bigdl.ps.AllReduceParameterManager.syncPoolSize",
-    4.toString()).toInt
-
-  private val maxClusterSize = System.getProperty(
-    "com.intel.analytics.bigdl.ps.AllReduceParameterManager.maxClusterSize", "10000").toInt
-
-  val syncPool = Executors.newFixedThreadPool(syncPoolSize)
-  private val context = new ExecutionContext {
-    val threadPool = Executors.newFixedThreadPool(poolSize)
-
-    def execute(runnable: Runnable) {
-      threadPool.submit(runnable)
-    }
-
-    def reportFailure(t: Throwable) {}
-  }
-
-  private def getWeightBlockId(pid : Int): TaskResultBlockId = {
-    TaskResultBlockId(maxClusterSize + pid)
-  }
-
-  private def getGradientBlockId(pidFrom : Int, pidTo : Int): TaskResultBlockId = {
-    TaskResultBlockId(pidTo + pidFrom * maxClusterSize * 10)
-  }
+  private val logger = Logger.getLogger(getClass)
 }
 
 class ImprovedAllReduceParameterManager[T: ClassTag](
@@ -95,7 +65,7 @@ class ImprovedAllReduceParameterManager[T: ClassTag](
   }
 
   override def sumAndUpdate(parameters: RDD[Tensor[T]],
-    update: (Tensor[T], Tensor[T], Table) => Unit): Unit = {
+    update: (Tensor[T], Tensor[T], Table) => Unit): Unit = {    
   }
 
   override def getParameter(): Tensor[T] = {
