@@ -19,6 +19,8 @@ package com.intel.analytics.bigdl.parameters
 
 import java.util.concurrent.{Callable, Executors, TimeUnit}
 
+import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
+
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.optim.{DropSlowModuleGradAggEpochOptimizer, Metrics}
 import com.intel.analytics.bigdl.tensor.Tensor

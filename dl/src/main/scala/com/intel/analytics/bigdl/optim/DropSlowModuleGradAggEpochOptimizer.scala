@@ -33,6 +33,7 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 import org.apache.log4j.Logger
+import org.apache.spark.rdd.RDD
 
 object DropSlowModuleGradAggEpochOptimizer {
   val subModuleNumber = System.getProperty(
@@ -59,9 +60,7 @@ object DropSlowModuleGradAggEpochOptimizer {
     def reportFailure(t: Throwable) {}
   }
 
-  var thread : Thread = null
-
-  var weightSyncTime = 0L
+  var weightSyncTime = 0L  
 }
 
 class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
@@ -145,7 +144,8 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
         val start = System.nanoTime()
         val resultRDD = dataSets.fetch().zipPartitions(
           models,
-          pm.sync(models.mapPartitions(iter => Iterator.single(iter.next().weight))),
+          pm.syncAndinitG(models.mapPartitions(iter => 
+            Iterator.single(iter.next().weight)), multiThreadModels),
           multiThreadModels, true)(
           (data, modelIter, weights, multiThreadModuleIter) => {
             var tmp = System.nanoTime()
@@ -159,14 +159,6 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
             }(context)
 
             val localEV = broadcastEV.value
-            tmp = System.nanoTime()
-            if(thread != null) {
-              thread.join()
-              thread = null
-            }
-
-            driverMetrics.add("init gradient time", System.nanoTime() - tmp)
-
             tmp = System.nanoTime()
             val tensorBuffer = new Array[(Tensor[T], Tensor[T])](subModuleNumber)
             val constructTensorTask = Future {
@@ -263,16 +255,6 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
               } else {
                 localCaches.model.zeroGradParameters()
               }
-
-            thread = new Thread(new Runnable {
-              override def run(): Unit = {
-                (0 until subModuleNumber).map(i => Future {
-                  localMTCaches(i).model.training()
-                  localMTCaches(i).model.zeroGradParameters()
-                }(context)).foreach(Await.result(_, Duration.Inf))
-              }
-            })
-            thread.start()
 
             Iterator.single(localCaches.gradient)
           })
