@@ -379,7 +379,7 @@ class RGBImageRandomCropper(cropHeight: Int, cropWidth: Int, padding: Int)
           i += 1
         }
         temp.setLabel(img.label())
-        img.copy(temp)
+        //img.copy(temp)
       }
 
       val width = img.width()
