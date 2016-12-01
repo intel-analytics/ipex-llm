@@ -74,7 +74,7 @@ class ImageSpec extends FlatSpec with Matchers {
       while (x < image.width / 2) {
         var c = 0
         while (c < image.nChannels) {
-          data((y * width + x) * numChannels + c) should be (image.get(x, y, c))
+          data((y * width + x) * numChannels + c) should be (image.get(y, x, c))
           c += 1
         }
         x += 1
