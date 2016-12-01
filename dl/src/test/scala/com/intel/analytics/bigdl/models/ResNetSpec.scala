@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.models
 
-import com.intel.analytics.bigdl.models.ResNet.ShortcutType
+import com.intel.analytics.bigdl.models.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.torch.TH
@@ -58,7 +58,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val seed = modelSeed
     RNG.setSeed(seed)
-    val model = ResNet[Double](classNum, T("shortcutType" -> ShortcutType.B, "depth"->depth))
+    val model = ResNet[Double](classNum, T("shortcutType" -> ShortcutType.B, "depth"->depth, "dataset" -> DatasetType.ImageNet))
     model.zeroGradParameters()
 
 

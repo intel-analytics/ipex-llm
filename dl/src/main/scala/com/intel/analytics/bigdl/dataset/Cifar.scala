@@ -19,47 +19,109 @@ package com.intel.analytics.bigdl.dataset
 
 import java.nio.file.{Files, Path, Paths}
 
+import com.intel.analytics.bigdl.dataset.ImageNetLocal.Config
+import com.intel.analytics.bigdl.models.ResNet
+import com.intel.analytics.bigdl.models.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.models.cifar.VggLike
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
-import com.intel.analytics.bigdl.optim.SGD.EpochStep
-import com.intel.analytics.bigdl.optim.{LocalOptimizer, SGD, Top1Accuracy, Trigger}
+import com.intel.analytics.bigdl.models.imagenet.{AlexNet, GoogleNet_v1}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, CrossEntropyCriterion, Module}
+import com.intel.analytics.bigdl.optim.SGD.{EpochDecay, EpochStep, LearningRateSchedule}
+import com.intel.analytics.bigdl.optim.{SGD, _}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import scopt.OptionParser
 
 object Cifar10Local {
   case class Cifar10LocalParam(
-    folder: String = "./",
-    net: String = "vgg"
+    folder: String = "/home/ywan/Documents/data/Cifar-10",
+    net: String = "resnet",
+    optnet: Boolean = true
   )
+
+  case class Config(
+    model: Module[Tensor[Float], Tensor[Float], Float],
+    criterion: Criterion[Tensor[Float], Float],
+    optimMethod: OptimMethod[Float],
+    imageSize: Int,
+    momentum: Double,
+    weightDecay: Double,
+    endWhen: Trigger,
+    learningRate: Double)
+  //  learningRateSchedule: LearningRateSchedule)
+
+  private val configs = Map(
+    "vgg" -> Config(
+      VggLike[Float](classNum = 10),
+      new ClassNLLCriterion[Float](),
+      new SGD[Float](),
+      imageSize = 32,
+      momentum = 0.9,
+      weightDecay = 0.0005,
+      endWhen = Trigger.maxEpoch(90),
+      learningRate = 0.1),
+      //learningRateSchedule = SGD.Step(100000, 0.1)),
+    "resnet" -> Config(
+      ResNet[Float](classNum = 10, T("shortcutType" -> ShortcutType.B, "depth" -> 20, "dataset" -> DatasetType.CIFAR10))
+        .asInstanceOf[Module[Tensor[Float], Tensor[Float], Float]],
+      new CrossEntropyCriterion[Float](),
+      new SGD[Float](),
+      imageSize = 32,
+      momentum = 0.9,
+      weightDecay = 0.0005,
+      endWhen = Trigger.maxEpoch(90),
+      learningRate = 0.1))
+    //  learningRateSchedule = SGD.EpochDecay())
+  //)
 
   private val parser = new OptionParser[Cifar10LocalParam]("Spark-DL Cifar10 Local Example") {
     head("Spark-DL Cifar10 Local Example")
     opt[String]('f', "folder")
       .text("where you put the Cifar10 data")
       .action((x, c) => c.copy(folder = x))
+    opt[Boolean]("optnet")
+      .text("share several tensors to reduce memory usage")
+      .action((x, c) => c.copy(optnet = x))
+    opt[String]('n', "net")
+      .text("net type : vgg | resnet")
+      .action((x, c) => c.copy(net = x.toLowerCase))
+      .validate(v =>
+        if (Set("vgg", "resnet").contains(v.toLowerCase())) {
+          success
+        } else {
+          failure("Net type can only be vgg |resnet in this example")
+        }
+      )
   }
 
   def main(args: Array[String]) {
     parser.parse(args, new Cifar10LocalParam()).map(param => {
+      val config = configs(param.net)
       val trainDataSource = new CifarDataSource(Paths.get(param.folder + "/train"), looped = true)
       val validationDataSource = new CifarDataSource(Paths.get(param.folder + "/val"),
         looped = false)
+
+      //val cropper = RGBImageCropper(cropWidth = config.imageSize, cropHeight = config.imageSize)
+      val randomCropper = RGBImageRandomCropper(cropWidth = config.imageSize, cropHeight = config.imageSize, padding = 4)
+      val flipper = HFlip(0.5)
+
       val arrayToImage = ArrayByteToRGBImage()
-      val normalizer = RGBImageNormalizer(trainDataSource -> arrayToImage)
+      val normalizer = RGBImageNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7)
       val toTensor = new RGBImageToTensor(batchSize = 128)
 
       val optimizer = new LocalOptimizer[Float](
-        data = trainDataSource -> arrayToImage -> normalizer -> toTensor,
+        //data = trainDataSource -> arrayToImage -> normalizer -> toTensor,
+        //validationData = validationDataSource -> arrayToImage -> normalizer -> toTensor,
+        data = trainDataSource -> arrayToImage -> normalizer -> flipper -> randomCropper -> toTensor,
         validationData = validationDataSource -> arrayToImage -> normalizer -> toTensor,
-        model = VggLike[Float](classNum = 10),
-        criterion = new ClassNLLCriterion[Float](),
-        optimMethod = new SGD[Float](),
+        model = config.model, //VggLike[Float](classNum = 10),
+        criterion = config.criterion, //new ClassNLLCriterion[Float](),
+        optimMethod = config.optimMethod, //new SGD[Float](),
         state = T(
-          "learningRate" -> 0.01,
-          "weightDecay" -> 0.0005,
-          "momentum" -> 0.9,
-          "dampening" -> 0.0,
-          "learningRateSchedule" -> EpochStep(25, 0.5)
+          "learningRate" -> config.learningRate, //0.01,
+          "weightDecay" -> config.weightDecay, //0.0005,
+          "momentum" -> config.momentum, //0.9,
+          "dampening" -> config.momentum, //0.0,
+          "learningRateSchedule" -> EpochDecay() //EpochStep(25, 0.5)
         ),
         endWhen = Trigger.maxEpoch(90)
       )

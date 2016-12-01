@@ -348,6 +348,65 @@ class GreyImageCropper(cropWidth: Int, cropHeight: Int)
   }
 }
 
+object RGBImageRandomCropper {
+  def apply(cropWidth: Int, cropHeight: Int, padding: Int): RGBImageRandomCropper =
+    new RGBImageRandomCropper(cropHeight, cropWidth, padding)
+}
+
+class RGBImageRandomCropper(cropHeight: Int, cropWidth: Int, padding: Int)
+  extends Transformer[RGBImage, RGBImage] {
+  import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+
+  private val buffer = new RGBImage(cropWidth, cropHeight)
+
+  override def transform(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
+    prev.map(img => {
+      if (padding > 0) {
+        val widthTmp = img.width()
+        val heightTmp = img.height()
+        val sourceTmp = img.content
+        val padWidth = widthTmp + 2*padding
+        val padHeight = heightTmp + 2*padding
+        val temp = new RGBImage(padWidth, padHeight)
+        val tempBuffer = temp.content
+        val startIndex = (padding+1 + (padding+1)*padWidth)*3
+        val frameLength = widthTmp * heightTmp
+        var i = 0
+        while (i < frameLength) {
+          tempBuffer(startIndex + ((i/widthTmp)*padWidth + (i%widthTmp))*3 + 2) = sourceTmp(i*3+2)
+          tempBuffer(startIndex + ((i/widthTmp)*padWidth + (i%widthTmp))*3 + 1) = sourceTmp(i*3+1)
+          tempBuffer(startIndex + ((i/widthTmp)*padWidth + (i%widthTmp))*3) = sourceTmp(i*3)
+          i += 1
+        }
+        temp.setLabel(img.label())
+        img.copy(temp)
+      }
+
+      val width = img.width()
+      val height = img.height()
+      val source = img.content
+
+      val startW = RNG.uniform(0, width - cropWidth).toInt
+      val startH = RNG.uniform(0, height - cropHeight).toInt
+      val startIndex = (startW + startH * width) * 3
+      val frameLength = cropWidth * cropHeight
+
+      val target = buffer.content
+      var i = 0
+      while (i < frameLength) {
+        target(i * 3 + 2) =
+          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3 + 2)
+        target(i * 3 + 1) =
+          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3 + 1)
+        target(i * 3) =
+          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3)
+        i += 1
+      }
+      buffer.setLabel(img.label())
+    })
+  }
+}
+
 object RGBImageCropper {
   def apply(cropWidth: Int, cropHeight: Int): RGBImageCropper =
     new RGBImageCropper(cropWidth, cropHeight)

@@ -115,6 +115,8 @@ object ResNet {
     val depth = opt.get("depth").getOrElse(18)
     val shortCutType = opt.get("shortcutType")
     val shortcutType = shortCutType.getOrElse(ShortcutType.B).asInstanceOf[ShortcutType]
+    val dataSet = opt.get("dataset")
+    val dataset = dataSet.getOrElse(DatasetType.CIFAR10).asInstanceOf[DatasetType]
 
     def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[Activities, Activities, T] = {
       val useConv = shortcutType == ShortcutType.C || (shortcutType == ShortcutType.B && nInputPlane != nOutputPlane)
@@ -184,39 +186,63 @@ object ResNet {
       s
     }
 
-
-    val cfg = Map(
-      18  -> ((2, 2, 2, 2), 512, basicBlock:(Int, Int) => Module[Activities, Activities, T]),
-      34  -> ((3, 4, 6, 3), 512, basicBlock:(Int, Int) => Module[Activities, Activities, T]),
-      50  -> ((3, 4, 6, 3), 2048, bottleneck:(Int, Int) => Module[Activities, Activities, T]),
-      101 -> ((3, 4, 23, 3), 2048, bottleneck:(Int, Int) => Module[Activities, Activities, T]),
-      152 -> ((3, 8, 36, 3), 2048, bottleneck:(Int, Int) => Module[Activities, Activities, T]),
-      200 -> ((3, 24, 36, 3), 2048, bottleneck:(Int, Int) => Module[Activities, Activities, T])
-    )
-
-    assert(cfg.keySet.contains(depth))
-
-    val (loopConfig, nFeatures, block) = cfg.get(depth).get
-    iChannels = 64
-    println(" | ResNet-" + depth + " ImageNet")
-
-    //-- The ResNet ImageNet Model
     val model = new Sequential[Activities, Activities, T]()
-    model.add(new SpatialConvolution[T](3, 64, 7, 7, 2, 2, 3, 3))
-      .add(new SpatialBatchNormalization[T](64))
-      .add(new ReLU[T](true))
-      .add(new SpatialMaxPooling[T](3, 3, 2, 2, 1, 1))
-      .add(layer(block, 64, loopConfig._1))
-      .add(layer(block, 128, loopConfig._2, 2))
-      .add(layer(block, 256, loopConfig._3, 2))
-      .add(layer(block, 512, loopConfig._4, 2))
-      .add(new SpatialAveragePooling[T](7, 7, 1, 1))
-      .add(new View[T](nFeatures).setNumInputDims(3))
-      .add(new Linear[T](nFeatures, classNum))
 
+    if (dataset == DatasetType.ImageNet) {
+      val cfg = Map(
+        18 -> ((2, 2, 2, 2), 512, basicBlock: (Int, Int) => Module[Activities, Activities, T]),
+        34 -> ((3, 4, 6, 3), 512, basicBlock: (Int, Int) => Module[Activities, Activities, T]),
+        50 -> ((3, 4, 6, 3), 2048, bottleneck: (Int, Int) => Module[Activities, Activities, T]),
+        101 -> ((3, 4, 23, 3), 2048, bottleneck: (Int, Int) => Module[Activities, Activities, T]),
+        152 -> ((3, 8, 36, 3), 2048, bottleneck: (Int, Int) => Module[Activities, Activities, T]),
+        200 -> ((3, 24, 36, 3), 2048, bottleneck: (Int, Int) => Module[Activities, Activities, T])
+      )
+
+      assert(cfg.keySet.contains(depth))
+
+      val (loopConfig, nFeatures, block) = cfg.get(depth).get
+      iChannels = 64
+      println(" | ResNet-" + depth + " ImageNet")
+
+      //-- The ResNet ImageNet Model
+
+      model.add(new SpatialConvolution[T](3, 64, 7, 7, 2, 2, 3, 3))
+        .add(new SpatialBatchNormalization[T](64))
+        .add(new ReLU[T](true))
+        .add(new SpatialMaxPooling[T](3, 3, 2, 2, 1, 1))
+        .add(layer(block, 64, loopConfig._1))
+        .add(layer(block, 128, loopConfig._2, 2))
+        .add(layer(block, 256, loopConfig._3, 2))
+        .add(layer(block, 512, loopConfig._4, 2))
+        .add(new SpatialAveragePooling[T](7, 7, 1, 1))
+        .add(new View[T](nFeatures).setNumInputDims(3))
+        .add(new Linear[T](nFeatures, classNum))
+    } else if (dataset == DatasetType.CIFAR10) {
+      assert((depth-2)%6 == 0, "depth should be one of 20, 32, 44, 56, 110, 1202")
+      val n = (depth-2)/6
+      iChannels = 16
+      println(" | ResNet-" + depth + " CIFAR-10")
+
+      model.add(new SpatialConvolution[T](3, 16, 3, 3, 1, 1, 1, 1))
+      model.add(new SpatialBatchNormalization[T](16))
+      model.add(new ReLU[T](true))
+      model.add(layer(basicBlock, 16, n))
+      model.add(layer(basicBlock, 32, n, 2))
+      model.add(layer(basicBlock, 64, n, 2))
+      model.add(new SpatialAveragePooling[T](8, 8, 1, 1))
+      model.add(new View[T](64).setNumInputDims(3))
+      model.add(new Linear[T](64, 10))
+    } else {
+      sys.error("invalid dataset: " + dataset)
+    }
     model
   }
 
+  sealed abstract class DatasetType(typeId: Int)
+  object DatasetType {
+    case object CIFAR10 extends DatasetType(0)
+    case object ImageNet extends DatasetType(1)
+  }
   sealed abstract class ShortcutType(typeId: Int)
 
   object ShortcutType{
