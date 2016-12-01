@@ -92,8 +92,9 @@ class TransformersSpec extends FlatSpec with Matchers {
     val tensorDataSource = dataSource -> toTensor
     val (tensorResult1, labelTensor1) = tensorDataSource.next()
     tensorResult1.size(1) should be(2)
-    tensorResult1.size(2) should be(32)
+    tensorResult1.size(2) should be(1)
     tensorResult1.size(3) should be(32)
+    tensorResult1.size(4) should be(32)
     val testData1 = tensorResult1.storage().array()
     val content1 = image1.content
     var i = 0
@@ -109,9 +110,10 @@ class TransformersSpec extends FlatSpec with Matchers {
     }
     val (tensorResult2, labelTensor2) = tensorDataSource.next()
     val content3 = image3.content
-    tensorResult2.size(1) should be(2)
-    tensorResult2.size(2) should be(32)
-    tensorResult2.size(3) should be(32)
+    tensorResult1.size(1) should be(2)
+    tensorResult1.size(2) should be(1)
+    tensorResult1.size(3) should be(32)
+    tensorResult1.size(4) should be(32)
     i = 0
     while (i < content3.length) {
       testData1(i) should be(content3(i))

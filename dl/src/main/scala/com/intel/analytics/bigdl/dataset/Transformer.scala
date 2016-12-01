@@ -328,7 +328,7 @@ class ImageToTensor(batchSize: Int) extends Transformer[LabeledImage, (Tensor[Fl
               storageOffset = 1, sizes = Array(i))
           }
 
-          (featureTensor.squeeze(2), labelTensor)
+          (featureTensor, labelTensor)
         } else {
           null
         }
