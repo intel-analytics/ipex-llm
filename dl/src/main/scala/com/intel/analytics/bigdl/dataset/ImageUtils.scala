@@ -277,7 +277,7 @@ object ImageUtils {
     }
 
     var i = 0
-    while (i < image.height * image.width * image.nChannels)) {
+    while (i < image.height * image.width * image.nChannels) {
       res(i) = (image.content(i) * scaleTo).toByte
       i += 1
     }
