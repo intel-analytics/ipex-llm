@@ -926,6 +926,7 @@ object File {
     rawData: ByteBuffer, objects: Map[Int, Any]): SpatialConvolutionMap[Double] = {
 
     val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
+
     val padH = elements.get("padH").getOrElse(null).asInstanceOf[Double].toInt
     val padW = elements.get("padW").getOrElse(null).asInstanceOf[Double].toInt
     val dH = elements.get("dH").getOrElse(null).asInstanceOf[Double].toInt
@@ -935,19 +936,20 @@ object File {
     val connTable = elements.get("connTable").getOrElse(null).asInstanceOf[Tensor[Double]]
     val gradBias = elements.get("gradBias").getOrElse(null).asInstanceOf[Tensor[Double]]
     val weight = elements.get("weight").getOrElse(null).asInstanceOf[Tensor[Double]]
-    //    val finput = elements.get("finput").asInstanceOf[Tensor[Double]]
+    val finput = elements.get("finput").asInstanceOf[Tensor[Double]]
     val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
     val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
     val bias = elements.get("bias").getOrElse(null).asInstanceOf[Tensor[Double]]
     val gradWeight = elements.get("gradWeight").getOrElse(null).asInstanceOf[Tensor[Double]]
-    //    val fgradInput = elements.get("fgradInput").asInstanceOf[Tensor[Double]]
+    val fgradInput = elements.get("fgradInput").asInstanceOf[Tensor[Double]]
+
     val result = new SpatialConvolutionMap[Double](connTable, kW, kH, dW, dH, padW, padH)
     result.gradBias.resizeAs(gradBias)
     result.gradBias.copy(gradBias)
     result.weight.resizeAs(weight)
     result.weight.copy(weight)
-    //    result.fInput.resizeAs(finput)
-    //    result.fInput.copy(finput)
+    result.fInput.resizeAs(finput)
+    result.fInput.copy(finput)
     result.output.resizeAs(output)
     result.output.copy(output)
     result.gradInput.resizeAs(gradInput)
@@ -956,8 +958,8 @@ object File {
     result.bias.copy(bias)
     result.gradWeight.resizeAs(gradWeight)
     result.gradWeight.copy(gradWeight)
-    //    result.fGradInput.resizeAs(fgradInput)
-    //    result.fGradInput.copy(fgradInput)
+    result.fGradInput.resizeAs(fgradInput)
+    result.fGradInput.copy(fgradInput)
     result
   }
 

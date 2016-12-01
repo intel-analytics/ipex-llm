@@ -24,8 +24,11 @@ import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Executors, ThreadFactory}
 
+
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.SequenceFile.Reader
@@ -35,6 +38,7 @@ import scala.collection.Iterator
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect.ClassTag
+import scala.util.Random
 
 trait Transformer[A, B] extends Serializable {
   def transform(prev: Iterator[A]): Iterator[B]
@@ -265,7 +269,6 @@ class SeqFileToArrayByte extends Transformer[Path, (Float, Array[Byte])] {
           if (reader != null) {
             reader.close()
           }
-
           reader = new SequenceFile.Reader(new Configuration,
             Reader.file(new hPath(prev.next().toAbsolutePath.toString)))
           reader.next(key, value)
@@ -341,6 +344,68 @@ class GreyImageCropper(cropWidth: Int, cropHeight: Int)
       }
 
       buffer.setLabel(img.label())
+    })
+  }
+}
+
+object RGBImageRandomCropper {
+  def apply(cropWidth: Int, cropHeight: Int, padding: Int): RGBImageRandomCropper =
+    new RGBImageRandomCropper(cropHeight, cropWidth, padding)
+}
+
+class RGBImageRandomCropper(cropHeight: Int, cropWidth: Int, padding: Int)
+  extends Transformer[RGBImage, RGBImage] {
+  import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+
+  private val buffer = new RGBImage(cropWidth, cropHeight)
+
+  override def transform(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
+    prev.map(img => {
+      val curImg = padding > 0 match {
+        case true => {
+          val widthTmp = img.width()
+          val heightTmp = img.height()
+          val sourceTmp = img.content
+          val padWidth = widthTmp + 2 * padding
+          val padHeight = heightTmp + 2 * padding
+          val temp = new RGBImage(padWidth, padHeight)
+          val tempBuffer = temp.content
+          val startIndex = (padding + 1 + (padding + 1) * padWidth) * 3
+          val frameLength = widthTmp * heightTmp
+          var i = 0
+          while (i < frameLength) {
+            tempBuffer(startIndex + ((i / widthTmp) * padWidth + (i % widthTmp)) * 3 + 2) = sourceTmp(i * 3 + 2)
+            tempBuffer(startIndex + ((i / widthTmp) * padWidth + (i % widthTmp)) * 3 + 1) = sourceTmp(i * 3 + 1)
+            tempBuffer(startIndex + ((i / widthTmp) * padWidth + (i % widthTmp)) * 3) = sourceTmp(i * 3)
+            i += 1
+          }
+          temp.setLabel(img.label())
+          temp
+        }
+        case _ => img
+      }
+
+      val width = curImg.width()
+      val height = curImg.height()
+      val source = curImg.content
+
+      val startW = RNG.uniform(0, width - cropWidth).toInt
+      val startH = RNG.uniform(0, height - cropHeight).toInt
+      val startIndex = (startW + startH * width) * 3
+      val frameLength = cropWidth * cropHeight
+
+      val target = buffer.content
+      var i = 0
+      while (i < frameLength) {
+        target(i * 3 + 2) =
+          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3 + 2)
+        target(i * 3 + 1) =
+          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3 + 1)
+        target(i * 3) =
+          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3)
+        i += 1
+      }
+      buffer.setLabel(curImg.label())
     })
   }
 }
@@ -483,6 +548,112 @@ class RGBImageToTensor(batchSize: Int) extends Transformer[RGBImage, (Tensor[Flo
         }
       }
     }
+  }
+}
+
+object ColorJitter {
+  def apply(): ColorJitter = {
+    new ColorJitter()
+  }
+}
+class ColorJitter extends Transformer[RGBImage, RGBImage] {
+  val bcsParameters = Map("brightness" -> 0.4f, "contrast" -> 0.4f, "saturation" -> 0.4f)
+
+  def grayScale(dst: Array[Float], img: Array[Float]): Array[Float] = {
+    var i = 0
+    while (i < img.length) {
+      dst(i) = img(i)*0.299f + img(i+1)*0.587f + img(i+2)*0.114f
+      dst(i+1) = dst(i)
+      dst(i+2) = dst(i)
+      i += 3
+    }
+    dst
+  }
+
+  def blend(img1: Array[Float], img2: Array[Float], alpha: Float) =
+    (img1 zip img2) map {case (a,b) => a + (1-alpha)*b }
+
+  def saturation(variance: Float)(input: Array[Float]) = {
+    val gs = new Array[Float](input.length)
+    grayScale(gs, input)
+    val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
+    blend(input, gs, alpha)
+    input
+  }
+
+  def brightness(variance: Float)(input: Array[Float])= {
+    val gs = new Array[Float](input.length)
+    val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
+    blend(input, gs, alpha)
+    input
+  }
+
+  def contrast(variance: Float)(input: Array[Float]) = {
+    val gs = new Array[Float](input.length)
+    grayScale(gs, input)
+    val mean = gs.sum / gs.length
+    gs.foreach( _ => mean)
+    val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
+    blend(input, gs, alpha)
+    input
+  }
+
+  val ts = Map(
+    "brightness" -> {brightness(bcsParameters.get("brightness").get)(_)},
+    "contrast"   -> {contrast(bcsParameters.get("contrast").get)(_)},
+    "saturation" -> {saturation(bcsParameters.get("saturation").get)(_)}
+  )
+
+  def randomOrder(input: Array[Float]): Unit = {
+    val randOrder = Random.shuffle(List("brightness", "contrast", "saturation"))
+    randOrder.map( x => ts(x))
+  }
+
+  override def transform(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
+    prev.map(img => {
+      val content = img.content
+      require(content.length % 3 == 0)
+      randomOrder(content)
+      img
+    })
+  }
+}
+
+object Lighting {
+  def apply(): Lighting = {
+    new Lighting()
+  }
+}
+
+class Lighting extends Transformer[RGBImage, RGBImage] {
+  val alphastd = 0.1f
+  val eigval = Tensor[Float](Storage(Array( 0.2175f, 0.0188f, 0.0045f )), 1, Array(3))
+  val eigvec = Tensor[Float](Storage(Array( -0.5675f,  0.7192f,  0.4009f,
+    -0.5808f, -0.0045f, -0.8140f,
+    -0.5836f, -0.6948f,  0.4203f)), 1, Array(3, 3))
+
+  def lighting(input: Array[Float]): Unit = {
+    if (alphastd != 0) {
+      val alpha = Tensor[Float](3).apply1(_ => RNG.uniform(0, alphastd).toFloat)
+      val rgb = eigvec.clone
+        .cmul(alpha.view(1, 3).expand(Array(3, 3)))
+        .cmul(eigval.view(1, 3).expand(Array(3, 3)))
+        .sum(2).squeeze
+      var i = 0
+      while (i < input.length) {
+        input(i) = input(i) + rgb.storage().array()(0)
+        input(i+1) = input(i+1) + rgb.storage().array()(1)
+        input(i+2) = input(i+2) + rgb.storage().array()(2)
+        i += 3
+      }
+    }
+  }
+
+  override def transform(prev: Iterator[RGBImage]): Iterator[RGBImage] = {
+    prev.map(img => {
+      lighting(img.content)
+      img
+    })
   }
 }
 

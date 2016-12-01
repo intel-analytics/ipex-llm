@@ -17,25 +17,38 @@
 
 package com.intel.analytics.bigdl.nn
 
-
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Activities
+import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
-class Identity[@specialized(Float, Double) T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Module[Activities, Activities, T] {
+class MulConstant[@specialized(Float, Double) T: ClassTag](
+  constantScalar:T,
+  ip: Boolean = false)
+  (implicit ev: TensorNumeric[T]) extends Module[Tensor[T], Tensor[T], T] {
 
-  override def updateOutput(input: Activities): Activities = {
-    output = input
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    if (ip) {
+      input.mul(constantScalar)
+      output.set(input)
+    } else {
+      output.resizeAs(input)
+            .copy(input)
+            .mul(constantScalar)
+    }
     output
   }
 
-
-  override def updateGradInput(input: Activities,
-    gradOutput: Activities): Activities = {
-
-    gradInput = gradOutput
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    if (ip) {
+      gradOutput.mul(constantScalar)
+      gradInput.set(gradOutput)
+      input.div(constantScalar)
+    } else {
+      gradInput = gradInput.resizeAs(gradOutput)
+        .copy(gradOutput)
+        .mul(constantScalar)
+    }
     gradInput
   }
 }

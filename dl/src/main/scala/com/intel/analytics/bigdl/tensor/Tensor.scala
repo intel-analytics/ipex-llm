@@ -808,7 +808,9 @@ object Tensor {
   def repeatTensor[T](tensor: Tensor[T], sizes: Int*): Tensor[T] =
     tensor.repeatTensor(sizes.toArray)
 
+
   def load[T](path : String) : Tensor[T] = {
     File.load[Tensor[T]](path)
   }
+
 }

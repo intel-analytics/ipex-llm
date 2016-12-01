@@ -25,8 +25,9 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
+class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter  {
   var sc: SparkContext = null
 
   after {
@@ -34,6 +35,7 @@ class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       sc.stop()
     }
   }
+
 
   "accuracy on 2d tensor" should "be correct" in {
     val output = Tensor(Storage(Array[Double](

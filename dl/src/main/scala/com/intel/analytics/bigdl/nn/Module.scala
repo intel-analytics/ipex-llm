@@ -19,8 +19,9 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{File, T, Table, Activities}
+import com.intel.analytics.bigdl.utils.{Activities, File, T, Table}
 import org.apache.commons.lang3.SerializationUtils
+
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -50,7 +51,6 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
    * The cached gradient of activities. So we don't compute it again when need it
    */
   var gradInput: A = Activities[A, T]().asInstanceOf[A]
-
 
   /**
    * Clear cached activities to save storage space or network bandwidth. Note that we use
@@ -213,6 +213,25 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
     train = true
     this
   }
+
+  /**
+   * Find a module by given a parameter offset
+   *
+   * @param paramOffset parameter offset in the (weight, grad) vector returned by the
+   *                    getParamter function
+   * @param indexes     ignore it
+   * @return module ref, offset(ignore), indexes from the current module
+   */
+  def findModel(
+    paramOffset: Int,
+    indexes: Array[Int] = Array()):
+  (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
+
+  def mapModules(f: Module[_ <: Activities, _ <: Activities, T] => Unit): Unit = {}
+
+  def findModules(name: String): ArrayBuffer[Module[_ <:Activities, _ <:Activities, T]]
+    = {new ArrayBuffer[Module[_ <:Activities, _ <:Activities, T]]()}
+
 
   def evaluate(): this.type = {
     train = false

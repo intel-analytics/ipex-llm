@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+
 package com.intel.analytics.bigdl.models
 
 import com.intel.analytics.bigdl.models.imagenet.AlexNet_OWT
@@ -23,14 +24,16 @@ import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
 import scala.util.Random
 
 class AlexNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
+
   "AlexNet float" should "generate correct output" in {
+    Engine.setCoreNum(4)
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -189,6 +192,7 @@ gradInput = model.gradInput
   }
 
   "AlexNet" should "generate correct output" in {
+    Engine.setCoreNum(4)
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -225,34 +229,41 @@ classifier:add(nn.ReLU())
 classifier:add(nn.Linear(4096, nClasses))
 classifier:add(nn.LogSoftMax())
 model = nn.Sequential():add(feature):add(classifier)
-local parameters, gradParameters = model:getParameters()
+
+
+
 model:zeroGradParameters()
-parameters_initial = parameters : clone()
-gradParameters_initial = gradParameters : clone()
-local criterion =  nn.ClassNLLCriterion()
-state = {
-  learningRate = 1e-2,
-  momentum = 0.9,
-  dampening = 0.0,
-  weightDecay = 5e-4
-}
-feval = function(x)
-model:zeroGradParameters()
-model_initial = model : clone()
-local output1 = model:forward(input)
-local err1 = criterion:forward(output1, labels)
-local gradOutput1 = criterion:backward(output1, labels)
-model:backward(input, gradOutput1)
-return err1, gradParameters
-end
-for i = 1,5,1 do
-  optim.sgd(feval, parameters, state)
-end
-local output = model:forward(input)
-local err = criterion:forward(output, labels)
-local gradOutput = criterion:backward(output, labels)
---local stateDfdx = state.dfdx
-gradInput = model:backward(input, gradOutput)
+         local parameters, gradParameters = model:getParameters()
+                        parameters_initial = parameters : clone()
+                        gradParameters_initial = gradParameters : clone()
+
+                        local criterion =  nn.ClassNLLCriterion()
+                        --local criterion = nn.CrossEntropyCriterion()
+                        state = {
+                          learningRate = 1e-2,
+                          momentum = 0.9,
+                          dampening = 0.0,
+                          weightDecay = 5e-4
+                        }
+
+                 feval = function(x)
+                      model:forward(input)
+                      criterion:forward(model.output, labels)
+                      model:zeroGradParameters()
+                      criterion:backward(model.output, labels)
+                      model:backward(input, criterion.gradInput)
+                      return criterion.output, gradParameters
+                   end
+
+                     for i = 1, 5, 1 do
+                      w, err = optim.sgd(feval, parameters, state)
+                     end
+
+                        output=model.output
+                        gradOutput=criterion.gradInput
+                        err = criterion.output
+                        gradInput = model.gradInput
+
       """
 
     TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
@@ -275,37 +286,42 @@ gradInput = model:backward(input, gradOutput)
       "dampening" -> 0.0)
     val sgd = new SGD[Double]
 
-    for (i <- 1 to 5) {
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      model.forward(input)
+      criterion.forward(model.output, labels)
       model.zeroGradParameters()
-      val outputTest = model.forward(input)
-      val loss = criterion.forward(outputTest, labels)
-      val gradOutputTest = criterion.backward(outputTest, labels)
-      model.backward(input, gradOutputTest)
-      sgd.optimize(_ => (loss, grad), weights, state, state)
+      criterion.backward(model.output, labels)
+      model.backward(input, criterion.gradInput)
+      (criterion.output, grad)
+    }
+    for (i <- 1 to 5) {
+      sgd.optimize(feval, weights, state)
     }
 
-    model.zeroGradParameters()
-    val outputTest = model.forward(input)
+
+    val outputTest = model.output //.forward(input)
     val output = TH.map("output").asInstanceOf[Tensor[Double]]
     outputTest should be(output)
 
-    val errTest = criterion.forward(outputTest, labels)
+    val errTest = criterion.output //.forward(outputTest, labels)
     val err = TH.map("err").asInstanceOf[Double]
     errTest should be(err)
 
-    val gradOutputTest = criterion.backward(outputTest, labels)
+    val gradOutputTest = criterion.gradInput //.backward(outputTest, labels)
     val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
     gradOutputTest should be(gradOutput)
 
-    val gradInput = model.backward(input, gradOutputTest)
+    val gradInput = model.gradInput //.backward(input, gradOutputTest)
     val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
+
 
     var gradInputAbs = 0.0
     gradInput.map(gradInputTorch, (v1, v2) => {
       gradInputAbs += abs(v1 - v2)
       v1
     })
-    // println(s"outputAbs:$gradInputAbs")
+    println(s"outputAbs:$gradInputAbs")
     // (gradInputAbs < 1E-16) should be
+
   }
 }

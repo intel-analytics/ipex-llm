@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.utils.Engine
 
 class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
-  private val gradInput: Tensor[T] = Tensor[T]()
+  val gradInput: Tensor[T] = Tensor[T]()
   private var total_weight = ev.fromType[Int](0)
   if (weights != null) require(weights.dim() == 1, "weights input should be 1-D Tensor")
 

@@ -21,21 +21,25 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
-import scala.reflect.ClassTag
+import scala.reflect._
 
 class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
 
+  gradInput = T()
+
   override def updateOutput(input: Table): Tensor[T] = {
     if (inplace) {
-      output = input[Tensor[T]](1)
+      output.set(input[Tensor[T]](1))
+      //output = input[Tensor[T]](1)
     } else {
-      val input1 = input[Tensor[T]](1)
+      output.resizeAs(input[Tensor[T]](1)).copy(input[Tensor[T]](1))
+     /* val input1 = input[Tensor[T]](1)
       if (null == output) {
         output = input1.clone()
       } else {
         output.resizeAs(input1).copy(input1)
-      }
+      }*/
     }
 
     var i = 2
@@ -50,22 +54,31 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]) : Table = {
     var i = 1
     while (i <= input.length()) {
+      if (i > gradInput.length) gradInput.insert(i, Tensor[T]().resizeAs(input(1)))
       if (inplace) {
-        gradInput(i) = gradOutput
+        gradInput[Tensor[T]](i).set(gradOutput) // = gradOutput
       } else {
-        if (gradInput.contains(i)) {
-          gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
-        } else {
-          gradInput.insert(i, gradOutput.clone())
-        }
+//        if (gradInput.contains(i)) {
+//          gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
+        gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
       }
       i += 1
     }
-
+    i = input.length + 1
+    while (i <= gradInput.length) {
+      gradInput.remove(i)
+    }
     gradInput
   }
 
   override def toString() : String = {
     "nn.CAddTable"
+  }
+}
+
+object Test {
+  def main(args: Array[String]): Unit = {
+    val a = T()
+    a.update(1, Tensor[Double]())
   }
 }
