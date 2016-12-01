@@ -74,6 +74,7 @@ class LabeledImage(
     val buffer = ByteBuffer.wrap(rawData)
     _width = buffer.getInt
     _height = buffer.getInt
+    _nChannels = numChannels
     require(rawData.length == 8 + width * height * numChannels)
     if (data.length < height * width * numChannels) {
       data = new Array[Float](width * height * numChannels)

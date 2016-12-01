@@ -270,14 +270,14 @@ object ImageUtils {
     buffer: Array[Byte] = null,
     scaleTo: Float = 255.0f): Array[Byte] = {
     val res = if (buffer == null) {
-      new Array[Byte](image.height * image.width * 3)
+      new Array[Byte](image.height * image.width * image.nChannels)
     } else {
       require(image.height * image.width <= buffer.length)
       buffer
     }
 
     var i = 0
-    while (i < image.height * image.width * 3) {
+    while (i < image.height * image.width * image.nChannels) {
       res(i) = (image.content(i) * scaleTo).toByte
       i += 1
     }
@@ -321,7 +321,7 @@ object ImageUtils {
     means: Array[Double],
     stds: Array[Double]): LabeledImage = {
     val content = img.content
-    require(content.length % 3 == 0)
+    require(content.length % img.nChannels == 0)
     var i = 0
     while (i < content.length) {
       var c = 0
