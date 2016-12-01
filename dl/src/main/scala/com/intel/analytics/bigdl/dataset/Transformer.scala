@@ -59,19 +59,20 @@ class CombineTransformer[A, B, C](first: Transformer[A, B], last: Transformer[B,
 
 /**
  * This class compress or expend the image to a specific size
+ *
  * @param width the width of an image to be converted
  * @param height the height of an image to be converted
  */
-class Scaler(width: Int, height: Int) extends Transformer[Image, Image] {
-  override def transform(prev: Iterator[Image]): Iterator[Image] = {
+class Scaler(width: Int, height: Int) extends Transformer[LabeledImage, LabeledImage] {
+  override def transform(prev: Iterator[LabeledImage]): Iterator[LabeledImage] = {
     prev.map(img => {
       ImageUtils.scale(img, width, height)
     })
   }
 }
 
-class HFlip(threshold: Double) extends Transformer[Image, Image] {
-  override def transform(prev: Iterator[Image]): Iterator[Image] = {
+class HFlip(threshold: Double) extends Transformer[LabeledImage, LabeledImage] {
+  override def transform(prev: Iterator[LabeledImage]): Iterator[LabeledImage] = {
     prev.map(img => {
       if (RandomGenerator.RNG.uniform(0, 1) >= threshold) {
         ImageUtils.hFlip(img)
@@ -83,10 +84,10 @@ class HFlip(threshold: Double) extends Transformer[Image, Image] {
 }
 
 class ImageCropper(cropWidth: Int, cropHeight: Int, numChannels: Int)
-  extends Transformer[Image, Image] {
+  extends Transformer[LabeledImage, LabeledImage] {
 
-  override def transform(prev: Iterator[Image]): Iterator[Image] = {
-    val buffer = new Image(cropWidth, cropHeight, numChannels)
+  override def transform(prev: Iterator[LabeledImage]): Iterator[LabeledImage] = {
+    val buffer = new LabeledImage(cropWidth, cropHeight, numChannels)
 
     prev.map(img => {
       ImageUtils.crop(img, cropWidth, cropHeight, buffer)
@@ -108,10 +109,10 @@ object PathToRGBImage {
   def apply(scaleTo: Int): PathToImage = new PathToImage(3, scaleTo)
 }
 
-class PathToImage(numChannels: Int, scaleTo: Int) extends Transformer[(Float, Path), Image] {
-  private val buffer = new Image(0, 0, numChannels)
+class PathToImage(numChannels: Int, scaleTo: Int) extends Transformer[(Float, Path), LabeledImage] {
+  private val buffer = new LabeledImage(0, 0, numChannels)
 
-  override def transform(x: Iterator[(Float, Path)]): Iterator[Image] = {
+  override def transform(x: Iterator[(Float, Path)]): Iterator[LabeledImage] = {
     x.map(data => {
       val imgData = ImageUtils.readBGRImage(data._2, scaleTo)
       val label = data._1
@@ -129,10 +130,10 @@ object ArrayByteToRGBImage {
 }
 
 class ArrayByteToImage(numChannels: Int, scale: Float)
-  extends Transformer[(Float, Array[Byte]), Image] {
-  private val buffer = new Image(0, 0, 0)
+  extends Transformer[(Float, Array[Byte]), LabeledImage] {
+  private val buffer = new LabeledImage(0, 0, 0)
 
-  override def transform(prev: Iterator[(Float, Array[Byte])]): Iterator[Image] = {
+  override def transform(prev: Iterator[(Float, Array[Byte])]): Iterator[LabeledImage] = {
     prev.map(rawData => {
       buffer.copy(rawData._2, numChannels, scale).setLabel(rawData._1)
     })
@@ -142,10 +143,10 @@ class ArrayByteToImage(numChannels: Int, scale: Float)
 class ImageNormalizer(
   var means: Array[Double],
   var stds: Array[Double])
-  extends Transformer[Image, Image] {
+  extends Transformer[LabeledImage, LabeledImage] {
 
   def this(
-    dataSource: LocalDataSource[Image],
+    dataSource: LocalDataSource[LabeledImage],
     samples: Int = Int.MaxValue) = {
     this(null, null)
     val p = getMeansAndStds(dataSource, samples)
@@ -157,14 +158,14 @@ class ImageNormalizer(
 
   def getStd: Array[Double] = stds
 
-  override def transform(prev: Iterator[Image]): Iterator[Image] = {
+  override def transform(prev: Iterator[LabeledImage]): Iterator[LabeledImage] = {
     prev.map(img => {
      ImageUtils.normalize(img, means, stds)
     })
   }
 
   def getMeansAndStds(
-    dataSource: LocalDataSource[Image],
+    dataSource: LocalDataSource[LabeledImage],
     samples: Int = Int.MaxValue): (Array[Double], Array[Double]) = {
       var sums: Array[Double] = null
       var total: Long = 0
@@ -175,19 +176,19 @@ class ImageNormalizer(
       while (i < math.min(samples, dataSource.total())) {
         val img = dataSource.next()
         if (sums == null) {
-          sums = new Array(img.numChannels)
+          sums = new Array(img.nChannels)
         }
         val content = img.content
-        require(content.length % img.numChannels == 0)
+        require(content.length % img.nChannels == 0)
         var j = 0
         while (j < content.length) {
           var c = 0
-          while (c < img.numChannels) {
+          while (c < img.nChannels) {
             sums(c) += content(j + c)
             c += 1
           }
           total += 1
-          j += img.numChannels
+          j += img.nChannels
         }
         i += 1
         print(s"Mean: $i / $totalCount \r")
@@ -205,12 +206,12 @@ class ImageNormalizer(
         var j = 0
         while (j < content.length) {
           var c = 0
-          while (c < img.numChannels) {
+          while (c < img.nChannels) {
             val diff = content(j + c) - means(c)
             sums(c) += diff * diff
             c += 1
           }
-          j += img.numChannels
+          j += img.nChannels
         }
         print(s"Std: $i / $totalCount \r")
         i += 1
@@ -288,10 +289,10 @@ class SeqFileToArrayByte extends Transformer[Path, (Float, Array[Byte])] {
 }
 
 
-class ImageToTensor(batchSize: Int) extends Transformer[Image, (Tensor[Float],
+class ImageToTensor(batchSize: Int) extends Transformer[LabeledImage, (Tensor[Float],
   Tensor[Float])] {
 
-  override def transform(prev: Iterator[Image]): Iterator[(Tensor[Float], Tensor[Float])] =
+  override def transform(prev: Iterator[LabeledImage]): Iterator[(Tensor[Float], Tensor[Float])] =
     new Iterator[(Tensor[Float], Tensor[Float])] {
       private val featureTensor: Tensor[Float] = Tensor[Float]()
       private val labelTensor: Tensor[Float] = Tensor[Float]()
@@ -309,13 +310,13 @@ class ImageToTensor(batchSize: Int) extends Transformer[Image, (Tensor[Float],
           while (i < batchSize && prev.hasNext) {
             val img = prev.next()
             if (featureData == null) {
-              featureData = new Array[Float](batchSize * img.numChannels * img.height * img.width)
+              featureData = new Array[Float](batchSize * img.nChannels * img.height * img.width)
               labelData = new Array[Float](batchSize)
               height = img.height
               width = img.width
-              numChannels = img.numChannels
+              numChannels = img.nChannels
             }
-            img.copyTo(featureData, i * img.width * img.height * img.numChannels)
+            img.copyTo(featureData, i * img.width * img.height * img.nChannels)
             labelData(i) = img.label
             i += 1
           }
@@ -336,12 +337,12 @@ class ImageToTensor(batchSize: Int) extends Transformer[Image, (Tensor[Float],
 }
 
 class ImageToSequentialFile(blockSize: Int, baseFileName: Path) extends
-  Transformer[Image, String] {
+  Transformer[LabeledImage, String] {
   private val conf: Configuration = new Configuration
   private var index = 0
   private val preBuffer: ByteBuffer = ByteBuffer.allocate(4 * 2)
 
-  override def transform(prev: Iterator[Image]): Iterator[String] = {
+  override def transform(prev: Iterator[LabeledImage]): Iterator[String] = {
     new Iterator[String] {
       override def hasNext: Boolean = prev.hasNext
 
@@ -379,7 +380,7 @@ class MultiThreadImageToSingleTensor[A: ClassTag](
   numChannels: Int,
   threadNum: Int,
   batchSize: Int,
-  transformer: Transformer[A, Image])
+  transformer: Transformer[A, LabeledImage])
   extends Transformer[A, (Tensor[Float], Tensor[Float])] {
 
   private val transformers = (1 to batchSize).map(_ => transformer.cloneTransformer()).toArray
@@ -432,7 +433,7 @@ class MultiThreadImageToSingleTensor[A: ClassTag](
           if (iterators(tid).hasNext) {
             val position = count.getAndIncrement()
             val img = iterators(tid).next()
-            img.copyTo(featureData, position * frameLength * img.numChannels)
+            img.copyTo(featureData, position * frameLength * img.nChannels)
             labelData(position) = img.label
           }
         }(getPool)).foreach(Await.result(_, Duration.Inf))

@@ -19,17 +19,17 @@ package com.intel.analytics.bigdl.dataset
 
 import java.nio.ByteBuffer
 
-case class ImageMetadata(var width: Int, var height: Int, var numChannels: Int)
-
-class Image(
-  var data: Array[Float],
-  var metadata: ImageMetadata,
-  var label: Float = 0
+class LabeledImage(
+  private var data: Array[Float],
+  private var _width: Int,
+  private var _height: Int,
+  private var _nChannels: Int,
+  private var _label: Float = 0
 ) extends Serializable {
 
   def this(width: Int, height: Int, numChannels: Int) =
     this(new Array[Float](width * height * numChannels),
-      new ImageMetadata(width, height, numChannels))
+      width, height, numChannels)
 
   /**
    * Get the pixel value at (row, col, channelIdx).  Channels are indexed as
@@ -44,72 +44,72 @@ class Image(
   /**
    * Put a pixel value at (row, col, channelIdx).
    */
-  def put(row: Int, col: Int, channelIdx: Int, newVal: Float): this.type = {
+  def update(row: Int, col: Int, channelIdx: Int, newVal: Float): this.type = {
     data(imageToVectorCoords(row, col, channelIdx)) = newVal
     this
   }
 
   def content: Array[Float] = data
 
-  def getLabel: Float = label
+  def label: Float = _label
 
   def setLabel(label: Float): this.type = {
-    this.label = label
+    this._label = label
     this
   }
 
-  def width: Int = metadata.width
+  def width: Int = _width
 
-  def height: Int = metadata.height
+  def height: Int = _height
 
-  def numChannels: Int = metadata.numChannels
+  def nChannels: Int = _nChannels
 
-  def getLength: Int = metadata.numChannels * metadata.height * metadata.width
+  def length: Int = _nChannels * _height * _width
 
-  def imageToVectorCoords(row: Int, col: Int, c: Int): Int = {
-    (row * width + col) * numChannels + c
+  @inline def imageToVectorCoords(row: Int, col: Int, c: Int): Int = {
+    (row * width + col) * nChannels + c
   }
 
-  def copy(rawData: Array[Byte], numChannels: Int, scale: Float = 255.0f): this.type = {
+  def copy(rawData: Array[Byte], numChannels: Int, normalize: Float = 255.0f): this.type = {
     val buffer = ByteBuffer.wrap(rawData)
-    metadata.width = buffer.getInt
-    metadata.height = buffer.getInt
+    _width = buffer.getInt
+    _height = buffer.getInt
     require(rawData.length == 8 + width * height * numChannels)
     if (data.length < height * width * numChannels) {
       data = new Array[Float](width * height * numChannels)
     }
     var i = 0
     while (i < height * width * numChannels) {
-      data(i) = (rawData(i + 8) & 0xff) / scale
+      data(i) = (rawData(i + 8) & 0xff) / normalize
       i += 1
     }
     this
   }
 
   def copyTo(storage: Array[Float], offset: Int): Unit = {
-    require(getLength + offset <= storage.length)
+    require(length + offset <= storage.length)
     var i = 0
-    while (i < numChannels) {
+    while (i < nChannels) {
       var j = 0
       while (j < width * height) {
-        storage(offset + j + width * height * i) = content(j * numChannels + i)
+        storage(offset + j + width * height * i) = content(j * nChannels + i)
         j += 1
       }
       i +=  1
     }
   }
 
-  def copy(other: Image): Image = {
-    metadata.height = other.height
-    metadata.width = other.width
-    metadata.numChannels = other.numChannels
-    this.label = other.label
-    if (this.data.length < getLength) {
-      this.data = new Array[Float](getLength)
+  def copy(other: LabeledImage): LabeledImage = {
+    _height = other.height
+    _width = other.width
+    _nChannels = other.nChannels
+    this._label = other.label
+    if (this.data.length < length) {
+      this.data = new Array[Float](length)
     }
 
     var i = 0
-    while (i < getLength) {
+    while (i < length) {
       this.data(i) = other.data(i)
       i += 1
     }

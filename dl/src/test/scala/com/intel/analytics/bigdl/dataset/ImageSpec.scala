@@ -21,13 +21,12 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class ImageSpec extends FlatSpec with Matchers {
   "image with odd width" should "flip good" in {
-    val image = new Image(
+    val image = new LabeledImage(
       Array[Float](
         1, 2, 3, 4, 5, 6, 7, 8, 9,
         11, 12, 13, 14, 15, 16, 17, 18, 19,
         21, 22, 23, 24, 25, 26, 27, 28, 29
-      ),
-      new ImageMetadata(3, 3, 3), 1)
+      ), 3, 3, 3, 1)
 
     ImageUtils.hFlip(image)
     val flippedData = Array[Float](
@@ -40,13 +39,12 @@ class ImageSpec extends FlatSpec with Matchers {
   }
 
   "image with even width" should "flip good" in {
-    val image = new Image(
+    val image = new LabeledImage(
       Array[Float](
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
         11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
         21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
-      ),
-      ImageMetadata(4, 3, 3), 1)
+      ), 4, 3, 3, 1)
 
     ImageUtils.hFlip(image)
     val flippedData = Array[Float](
@@ -59,24 +57,23 @@ class ImageSpec extends FlatSpec with Matchers {
   }
 
   "image get()" should "work correctly" in {
-    val image = new Image(
+    val image = new LabeledImage(
       Array[Float](
         1, 2, 3, 4, 5, 6, 7, 8, 9,
         11, 12, 13, 14, 15, 16, 17, 18, 19,
         21, 22, 23, 24, 25, 26, 27, 28, 29
-      ),
-      new ImageMetadata(3, 3, 3), 1)
+      ), 3, 3, 3, 1)
 
     val height = image.height
     val width = image.width
-    val numChannels = image.numChannels
+    val numChannels = image.nChannels
     val data = image.content
     var y = 0
     while (y < image.height) {
       var x = 0
       while (x < image.width / 2) {
         var c = 0
-        while (c < image.numChannels) {
+        while (c < image.nChannels) {
           data((y * width + x) * numChannels + c) should be (image.get(x, y, c))
           c += 1
         }
