@@ -28,7 +28,7 @@ class TransformersSpec extends FlatSpec with Matchers {
   import Utils._
 
   "Grey Image Cropper" should "crop image correct" in {
-    val image = new Image(32, 32, 1)
+    val image = new LabeledImage(32, 32, 1)
     val tensor = Tensor[Float](Storage[Float](image.content), 1, Array(32, 32))
     tensor.rand()
     RNG.setSeed(1000)
@@ -53,16 +53,16 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "Grey Image Normalizer" should "normalize image correctly" in {
-    val image1 = new Image((1 to 9).map(_.toFloat).toArray, new ImageMetadata(3, 3, 1), 0)
-    val image2 = new Image((10 to 18).map(_.toFloat).toArray, new ImageMetadata(3, 3, 1), 0)
-    val image3 = new Image((19 to 27).map(_.toFloat).toArray, new ImageMetadata(3, 3, 1), 0)
+    val image1 = new LabeledImage((1 to 9).map(_.toFloat).toArray, 3, 3, 1, 0)
+    val image2 = new LabeledImage((10 to 18).map(_.toFloat).toArray, 3, 3, 1, 0)
+    val image3 = new LabeledImage((19 to 27).map(_.toFloat).toArray, 3, 3, 1, 0)
 
     val mean = (1 to 27).sum.toDouble / 27
     val std = math.sqrt((1 to 27).map(e => (e - mean) * (e - mean)).sum / 27f)
     val target = image1.content.map(e => (e - mean) / std)
 
-    val dataSource = new ArrayDataSource[Image](looped = false) {
-      override protected val data: Array[Image] = Array(image1, image2, image3) }
+    val dataSource = new ArrayDataSource[LabeledImage](looped = false) {
+      override protected val data: Array[LabeledImage] = Array(image1, image2, image3) }
 
     val normalizer = new ImageNormalizer(dataSource)
     val iter = normalizer.transform(Iterator.single(image1))
@@ -74,9 +74,9 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "Grey Image toTensor" should "convert correctly" in {
-    val image1 = new Image(32, 32, 1)
-    val image2 = new Image(32, 32, 1)
-    val image3 = new Image(32, 32, 1)
+    val image1 = new LabeledImage(32, 32, 1)
+    val image2 = new LabeledImage(32, 32, 1)
+    val image3 = new LabeledImage(32, 32, 1)
     val tensor1 = Tensor[Float](Storage[Float](image1.content), 1, Array(32, 32))
     val tensor2 = Tensor[Float](Storage[Float](image2.content), 1, Array(32, 32))
     val tensor3 = Tensor[Float](Storage[Float](image3.content), 1, Array(32, 32))
@@ -84,8 +84,8 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new ArrayDataSource[Image](true) {
-      override protected val data: Array[Image] = Array(image1, image2, image3)
+    val dataSource = new ArrayDataSource[LabeledImage](true) {
+      override protected val data: Array[LabeledImage] = Array(image1, image2, image3)
     }
 
     val toTensor = new ImageToTensor(2)
@@ -125,7 +125,7 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "RGB Image Cropper" should "crop image correct" in {
-    val image = new Image(32, 32, 3)
+    val image = new LabeledImage(32, 32, 3)
     val tensor = Tensor[Float](Storage[Float](image.content), 1, Array(3, 32, 32))
     tensor.rand()
     RNG.setSeed(1000)
@@ -155,9 +155,9 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "RGB Image Normalizer" should "normalize image correctly" in {
-    val image1 = new Image((1 to 27).map(_.toFloat).toArray, new ImageMetadata(3, 3, 3), 0)
-    val image2 = new Image((2 to 28).map(_.toFloat).toArray, new ImageMetadata(3, 3, 3), 0)
-    val image3 = new Image((3 to 29).map(_.toFloat).toArray, new ImageMetadata(3, 3, 3), 0)
+    val image1 = new LabeledImage((1 to 27).map(_.toFloat).toArray, 3, 3, 3, 0)
+    val image2 = new LabeledImage((2 to 28).map(_.toFloat).toArray, 3, 3, 3, 0)
+    val image3 = new LabeledImage((3 to 29).map(_.toFloat).toArray, 3, 3, 3, 0)
 
     val firstFrameMean = (1 to 27).sum.toFloat / 27
     val firstFrameStd = math.sqrt((1 to 27).map(e => (e - firstFrameMean) * (e - firstFrameMean))
@@ -182,8 +182,8 @@ class TransformersSpec extends FlatSpec with Matchers {
       r
     })
 
-    val dataSource = new ArrayDataSource[Image](false) {
-      override protected val data: Array[Image] = Array(image1, image2, image3)
+    val dataSource = new ArrayDataSource[LabeledImage](false) {
+      override protected val data: Array[LabeledImage] = Array(image1, image2, image3)
     }
 
     val normalizer = new ImageNormalizer(dataSource)
@@ -199,9 +199,9 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "RGB Image toTensor" should "convert correctly" in {
-    val image1 = new Image(32, 32, 3)
-    val image2 = new Image(32, 32, 3)
-    val image3 = new Image(32, 32, 3)
+    val image1 = new LabeledImage(32, 32, 3)
+    val image2 = new LabeledImage(32, 32, 3)
+    val image3 = new LabeledImage(32, 32, 3)
     val tensor1 = Tensor[Float](Storage[Float](image1.content), 1, Array(3, 32, 32))
     val tensor2 = Tensor[Float](Storage[Float](image2.content), 1, Array(3, 32, 32))
     val tensor3 = Tensor[Float](Storage[Float](image3.content), 1, Array(3, 32, 32))
@@ -209,8 +209,8 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new ArrayDataSource[Image](true) {
-      override protected val data: Array[Image] = Array(image1, image2, image3)
+    val dataSource = new ArrayDataSource[LabeledImage](true) {
+      override protected val data: Array[LabeledImage] = Array(image1, image2, image3)
     }
 
     val toTensor = new ImageToTensor(2)
@@ -313,9 +313,9 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "Multi thread RGB Image toTensor" should "convert correctly" in {
-    val image1 = new Image(32, 32, 3)
-    val image2 = new Image(32, 32, 3)
-    val image3 = new Image(32, 32, 3)
+    val image1 = new LabeledImage(32, 32, 3)
+    val image2 = new LabeledImage(32, 32, 3)
+    val image3 = new LabeledImage(32, 32, 3)
     val tensor1 = Tensor[Float](Storage[Float](image1.content), 1, Array(3, 32, 32))
     val tensor2 = Tensor[Float](Storage[Float](image2.content), 1, Array(3, 32, 32))
     val tensor3 = Tensor[Float](Storage[Float](image3.content), 1, Array(3, 32, 32))
@@ -323,13 +323,13 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new ArrayDataSource[Image](true) {
-      override protected val data: Array[Image] = Array(image1, image2, image3)
+    val dataSource = new ArrayDataSource[LabeledImage](true) {
+      override protected val data: Array[LabeledImage] = Array(image1, image2, image3)
     }
 
-    val toTensor = new MultiThreadImageToSingleTensor[Image](
+    val toTensor = new MultiThreadImageToSingleTensor[LabeledImage](
       width = 32, height = 32, numChannels = 3,
-      threadNum = 2, batchSize = 2, transformer = Identity[Image]()
+      threadNum = 2, batchSize = 2, transformer = Identity[LabeledImage]()
     )
     val tensorDataSource = dataSource -> toTensor
     val (tensorResult1, labelTensor1) = tensorDataSource.next()

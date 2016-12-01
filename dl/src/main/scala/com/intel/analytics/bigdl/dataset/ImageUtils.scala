@@ -35,19 +35,19 @@ object ImageUtils {
    * @param height the height of an image to be converted
    * @return the rescaled image
    */
-  def scale(src: Image, width: Int, height: Int): Image = {
+  def scale(src: LabeledImage, width: Int, height: Int): LabeledImage = {
     val dstWidth = width.max(1)
     val dstHeight = height.max(1)
-    val dst = new Image(
-      new Array[Float](dstHeight * dstWidth * src.numChannels),
-      ImageMetadata(dstWidth, dstHeight, src.numChannels))
+    val dst = new LabeledImage(
+      new Array[Float](dstHeight * dstWidth * src.nChannels),
+      dstWidth, dstHeight, src.nChannels)
 
     val srcHeight = src.height
 
-    val channelNum = src.metadata.numChannels
-    val tmp = new Image(
-      new Array[Float](src.height * dstWidth * src.metadata.numChannels),
-      ImageMetadata(dstWidth, src.height, src.numChannels))
+    val channelNum = src.nChannels
+    val tmp = new LabeledImage(
+      new Array[Float](src.height * dstWidth * src.nChannels),
+      dstWidth, src.height, src.nChannels)
 
     (0 until channelNum).foreach(k => {
       // Compress/expend rows first
@@ -74,8 +74,8 @@ object ImageUtils {
    * @param cdx the index of the selected channel
    */
   def linearScale(
-    src: Image,
-    dst: Image,
+    src: LabeledImage,
+    dst: LabeledImage,
     dim: Int,
     idx: Int,
     cdx: Int): Unit = {
@@ -92,15 +92,15 @@ object ImageUtils {
 
     require(dim == 1 || dim == 2, "dim must be 1 or 2")
 
-    def put(src: Image, i: Int, j: Int, channelIdx: Int, newVal: Float): Unit = {
+    def put(src: LabeledImage, i: Int, j: Int, channelIdx: Int, newVal: Float): Unit = {
       if (dim == 1) {
-        src.put(j, i, channelIdx, newVal)
+        src.update(j, i, channelIdx, newVal)
       } else {
-        src.put(i, j, channelIdx, newVal)
+        src.update(i, j, channelIdx, newVal)
       }
     }
 
-    def get(src: Image, i: Int, j: Int, channelIdx: Int): Float = {
+    def get(src: LabeledImage, i: Int, j: Int, channelIdx: Int): Float = {
       if (dim == 1) {
         src.get(j, i, channelIdx)
       } else {
@@ -164,8 +164,8 @@ object ImageUtils {
     }
   }
 
-  def hFlip(image: Image): Image = {
-    hflip(image.data, image.height, image.width, image.numChannels)
+  def hFlip(image: LabeledImage): LabeledImage = {
+    hflip(image.content, image.height, image.width, image.nChannels)
     image
   }
 
@@ -245,8 +245,8 @@ object ImageUtils {
     }
   }
 
-  def saveRGB(img: Image, path: String, scale: Float = 255.0f): Unit = {
-    require(img.numChannels == 3, "RGB Image should have three channels")
+  def saveRGB(img: LabeledImage, path: String, scale: Float = 255.0f): Unit = {
+    require(img.nChannels == 3, "RGB Image should have three channels")
     val image = new BufferedImage(
       img.width, img.height, BufferedImage.TYPE_INT_BGR)
     var y = 0
@@ -266,7 +266,7 @@ object ImageUtils {
   }
 
   def convertToByte(
-    image: Image,
+    image: LabeledImage,
     buffer: Array[Byte] = null,
     scaleTo: Float = 255.0f): Array[Byte] = {
     val res = if (buffer == null) {
@@ -278,21 +278,25 @@ object ImageUtils {
 
     var i = 0
     while (i < image.height * image.width * 3) {
-      res(i) = (image.data(i) * scaleTo).toByte
+      res(i) = (image.content(i) * scaleTo).toByte
       i += 1
     }
     res
   }
 
-  def crop(img: Image, cropWidth: Int, cropHeight: Int): Image = {
-    val image = new Image(0, 0, 0)
+  def crop(img: LabeledImage, cropWidth: Int, cropHeight: Int): LabeledImage = {
+    val image = new LabeledImage(0, 0, 0)
     crop(image, cropWidth, cropHeight, image)
   }
 
-  def crop(img: Image, cropWidth: Int, cropHeight: Int, buffer: Image): Image = {
+  def crop(
+    img: LabeledImage,
+    cropWidth: Int,
+    cropHeight: Int,
+    buffer: LabeledImage): LabeledImage = {
     val width = img.width
     val height = img.height
-    val numChannels = img.numChannels
+    val numChannels = img.nChannels
     val startW = RNG.uniform(0, width - cropWidth).toInt
     val startH = RNG.uniform(0, height - cropHeight).toInt
     val startIndex = (startW + startH * width) * numChannels
@@ -313,19 +317,19 @@ object ImageUtils {
   }
 
   def normalize(
-    img: Image,
+    img: LabeledImage,
     means: Array[Double],
-    stds: Array[Double]): Image = {
+    stds: Array[Double]): LabeledImage = {
     val content = img.content
     require(content.length % 3 == 0)
     var i = 0
     while (i < content.length) {
       var c = 0
-      while (c < img.numChannels) {
+      while (c < img.nChannels) {
         content(i + c) = ((content(i + c) - means(c)) / stds(c)).toFloat
         c += 1
       }
-      i += img.numChannels
+      i += img.nChannels
     }
     img
   }
