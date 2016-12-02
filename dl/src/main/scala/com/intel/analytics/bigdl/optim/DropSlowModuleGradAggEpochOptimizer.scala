@@ -195,11 +195,11 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
                     localModule.backward(input, errors)
                     recordsArray(i) = target.size(1)
                     Util.moduleTimeList(i + pre) = System.nanoTime() - start + weightSyncTime
-                    i  
+                    i
                   } catch {
                     case e: Exception => logger.info(e.toString)
                       -1
-                  }                  
+                  }
                 }
               })
 
@@ -212,7 +212,8 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
             driverMetrics.add("computing time average", computingTime)
             driverMetrics.add("computing time for each node", computingTime)
 
-            val finishedThreads = threads.asScala.filter(!_.isCancelled).map(_.get()).filter(_ != -1)            
+            val finishedThreads = threads.asScala.filter(!_.isCancelled)
+              .map(_.get()).filter(_ != -1)
             driverMetrics.add("dropped modules", subModuleNumber-finishedThreads.size)
               stackCount += finishedThreads.size
               finishedThreads.foreach{index =>
