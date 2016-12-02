@@ -31,7 +31,7 @@ trait ParameterManager[T] extends Serializable {
   def sync(parameters: RDD[Tensor[T]]): RDD[Tensor[T]]
 
   def syncAndinitG(parameters: RDD[Tensor[T]], mulitleModels: RDD[Array[CachedModel[T]]]):
-    RDD[Tensor[T]]  = ???
+    RDD[Tensor[T]] = ???
 
   def sumAndUpdate(parameters: RDD[Tensor[T]],
     update: (Tensor[T], Tensor[T], Table) => Unit): Unit
