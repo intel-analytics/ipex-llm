@@ -85,12 +85,32 @@ class HFlip(threshold: Double) extends Transformer[LabeledImage, LabeledImage] {
 
 class ImageCropper(cropWidth: Int, cropHeight: Int, numChannels: Int)
   extends Transformer[LabeledImage, LabeledImage] {
+  val buffer = new LabeledImage(cropWidth, cropHeight, numChannels)
+
+  import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
   override def transform(prev: Iterator[LabeledImage]): Iterator[LabeledImage] = {
-    val buffer = new LabeledImage(cropWidth, cropHeight, numChannels)
-
     prev.map(img => {
-      ImageUtils.crop(img, cropWidth, cropHeight, buffer)
+      val width = img.width
+      val height = img.height
+      val numChannels = img.nChannels
+      val startW = RNG.uniform(0, width - cropWidth).toInt
+      val startH = RNG.uniform(0, height - cropHeight).toInt
+      val startIndex = (startW + startH * width) * numChannels
+      val frameLength = cropWidth * cropHeight
+      val source = img.content
+      val target = buffer.content
+      var i = 0
+      while (i < frameLength) {
+        var j = 0
+        while (j < numChannels) {
+          target(i * numChannels + j) =
+            source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * numChannels + j)
+          j += 1
+        }
+        i += 1
+      }
+      buffer.setLabel(img.label)
     })
   }
 }
@@ -139,6 +159,94 @@ class ArrayByteToImage(numChannels: Int, scale: Float)
     })
   }
 }
+//
+//object RGBImageNormalizer {
+//  def apply(meanR: Double, meanG: Double, meanB: Double,
+//    stdR: Double, stdG: Double, stdB: Double): RGBImageNormalizer = {
+//
+//    new RGBImageNormalizer(meanR, meanG, meanB, stdR, stdG, stdB)
+//  }
+//
+//  def apply(dataSource: LocalDataSource[LabeledImage], samples: Int = Int.MaxValue)
+//  : RGBImageNormalizer = {
+//    var sumR: Double = 0
+//    var sumG: Double = 0
+//    var sumB: Double = 0
+//    var total: Long = 0
+//    dataSource.shuffle()
+//    dataSource.reset()
+//    val totalCount = if (samples < 0) dataSource.total() else samples
+//    var i = 0
+//    while (i < math.min(samples, dataSource.total())) {
+//      val content = dataSource.next().content
+//      require(content.length % 3 == 0)
+//      var j = 0
+//      while (j < content.length) {
+//        sumR += content(j + 2)
+//        sumG += content(j + 1)
+//        sumB += content(j + 0)
+//        total += 1
+//        j += 3
+//      }
+//      i += 1
+//      print(s"Mean: $i / $totalCount \r")
+//    }
+//    println()
+//    require(total > 0)
+//    val meanR = sumR / total
+//    val meanG = sumG / total
+//    val meanB = sumB / total
+//    sumR = 0
+//    sumG = 0
+//    sumB = 0
+//    i = 0
+//    dataSource.reset()
+//    while (i < math.min(samples, dataSource.total())) {
+//      val content = dataSource.next().content
+//      var j = 0
+//      while (j < content.length) {
+//        val diffR = content(j + 2) - meanR
+//        val diffG = content(j + 1) - meanG
+//        val diffB = content(j + 0) - meanB
+//        sumR += diffR * diffR
+//        sumG += diffG * diffG
+//        sumB += diffB * diffB
+//        j += 3
+//      }
+//      print(s"Std: $i / $totalCount \r")
+//      i += 1
+//    }
+//    println()
+//    val stdR = math.sqrt(sumR / total)
+//    val stdG = math.sqrt(sumG / total)
+//    val stdB = math.sqrt(sumB / total)
+//    new RGBImageNormalizer(meanR, meanG, meanB, stdR, stdG, stdB)
+//  }
+//}
+//
+//class RGBImageNormalizer(meanR: Double, meanG: Double, meanB: Double,
+//  stdR: Double, stdG: Double, stdB: Double)
+//  extends Transformer[LabeledImage, LabeledImage] {
+//
+//  def getMean(): (Double, Double, Double) = (meanB, meanG, meanR)
+//
+//  def getStd(): (Double, Double, Double) = (stdB, stdG, stdR)
+//
+//  override def transform(prev: Iterator[LabeledImage]): Iterator[LabeledImage] = {
+//    prev.map(img => {
+//      val content = img.content
+//      require(content.length % 3 == 0)
+//      var i = 0
+//      while (i < content.length) {
+//        content(i + 2) = ((content(i + 2) - meanR) / stdR).toFloat
+//        content(i + 1) = ((content(i + 1) - meanG) / stdG).toFloat
+//        content(i + 0) = ((content(i + 0) - meanB) / stdB).toFloat
+//        i += 3
+//      }
+//      img
+//    })
+//  }
+//}
 
 class ImageNormalizer(
   var means: Array[Double],
@@ -433,7 +541,7 @@ class MultiThreadImageToSingleTensor[A: ClassTag](
           if (iterators(tid).hasNext) {
             val position = count.getAndIncrement()
             val img = iterators(tid).next()
-            img.copyTo(featureData, position * frameLength * img.nChannels)
+            img.copyTo(featureData, position * frameLength * numChannels)
             labelData(position) = img.label
           }
         }(getPool)).foreach(Await.result(_, Duration.Inf))

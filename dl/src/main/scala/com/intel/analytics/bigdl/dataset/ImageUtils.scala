@@ -284,38 +284,6 @@ object ImageUtils {
     res
   }
 
-  def crop(img: LabeledImage, cropWidth: Int, cropHeight: Int): LabeledImage = {
-    val image = new LabeledImage(0, 0, 0)
-    crop(image, cropWidth, cropHeight, image)
-  }
-
-  def crop(
-    img: LabeledImage,
-    cropWidth: Int,
-    cropHeight: Int,
-    buffer: LabeledImage): LabeledImage = {
-    val width = img.width
-    val height = img.height
-    val numChannels = img.nChannels
-    val startW = RNG.uniform(0, width - cropWidth).toInt
-    val startH = RNG.uniform(0, height - cropHeight).toInt
-    val startIndex = (startW + startH * width) * numChannels
-    val frameLength = cropWidth * cropHeight
-    val source = img.content
-    val target = buffer.content
-    var i = 0
-    while (i < frameLength) {
-      var j = 0
-      while (j < numChannels) {
-        target(i * numChannels + j) =
-          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * numChannels + j)
-        j += 1
-      }
-      i += 1
-    }
-    buffer.setLabel(img.label)
-  }
-
   def normalize(
     img: LabeledImage,
     means: Array[Double],
