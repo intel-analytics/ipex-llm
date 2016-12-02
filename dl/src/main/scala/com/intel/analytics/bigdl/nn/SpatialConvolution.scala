@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import com.intel.analytics.bigdl.utils.{Engine, EngineType, MklBlas, RandomGenerator}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.concurrent.duration.Duration

@@ -44,6 +44,8 @@ object Engine{
 
   private var engine: ExecutionContext = null
 
+  private var engineType: EngineType = _
+
   def setCoreNum(size: Int): Unit = {
     require(size > 0)
     if (size != poolSize) {

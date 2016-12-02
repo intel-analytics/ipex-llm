@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{File, T, Table, Activities}
+import com.intel.analytics.bigdl.utils._
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.collection.mutable.ArrayBuffer
@@ -232,7 +232,15 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
     this
   }
 
-//  def setEngineType
+  var engineType: EngineType = MklBlas
+
+  /**
+   * set execution engine type, MklBlas or MklDnn
+   */
+  def setEngineType(engineType: EngineType): this.type = {
+    this.engineType = engineType
+    this
+  }
 
   def cloneModule(): Module[A, B, T] = {
     SerializationUtils.clone(this)
