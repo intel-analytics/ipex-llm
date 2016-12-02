@@ -36,3 +36,10 @@ class ReLU6[T: ClassTag](inplace: Boolean = false)
     s"nn.ReLU6"
   }
 }
+
+object ReLU6 {
+  def apply[@specialized(Float, Double) T: ClassTag](inplace: Boolean = false)
+                                                    (implicit ev: TensorNumeric[T]) : ReLU6[T] = {
+    new ReLU6[T]()
+  }
+}

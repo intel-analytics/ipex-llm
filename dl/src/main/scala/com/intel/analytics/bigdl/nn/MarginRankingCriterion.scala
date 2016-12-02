@@ -126,3 +126,10 @@ class MarginRankingCriterion[T: ClassTag]
     s"nn.MarginRankingCriterion($margin)"
   }
 }
+
+object MarginRankingCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](margin: Double = 1.0, sizeAverage: Boolean = true)
+                                                    (implicit ev: TensorNumeric[T]) : MarginRankingCriterion[T] = {
+    new MarginRankingCriterion[T](margin, sizeAverage)
+  }
+}

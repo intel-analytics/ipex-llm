@@ -29,3 +29,10 @@ class Sqrt[T: ClassTag](implicit ev: TensorNumeric[T]) extends Power[T](0.5, 1, 
     s"nn.Sqrt"
   }
 }
+
+object Sqrt {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+                                                    (implicit ev: TensorNumeric[T]) : Sqrt[T] = {
+    new Sqrt[T]()
+  }
+}

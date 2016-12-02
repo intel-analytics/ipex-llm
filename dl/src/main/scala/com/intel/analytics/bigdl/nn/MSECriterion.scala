@@ -49,3 +49,10 @@ class MSECriterion[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorCri
   }
 
 }
+
+object MSECriterion {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+                                                    (implicit ev: TensorNumeric[T]) : MSECriterion[T] = {
+    new MSECriterion[T]()
+  }
+}

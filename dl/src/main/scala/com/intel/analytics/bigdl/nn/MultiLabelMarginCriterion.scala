@@ -196,3 +196,10 @@ class MultiLabelMarginCriterion[T: ClassTag]
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object MultiLabelMarginCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean = true)
+                                                    (implicit ev: TensorNumeric[T]) : MultiLabelMarginCriterion[T] = {
+    new MultiLabelMarginCriterion[T](sizeAverage)
+  }
+}

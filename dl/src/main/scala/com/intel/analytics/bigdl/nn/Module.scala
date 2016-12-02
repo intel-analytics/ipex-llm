@@ -232,6 +232,8 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
     this
   }
 
+//  def setEngineType
+
   def cloneModule(): Module[A, B, T] = {
     SerializationUtils.clone(this)
   }

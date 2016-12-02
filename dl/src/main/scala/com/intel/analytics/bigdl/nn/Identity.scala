@@ -37,3 +37,10 @@ class Identity[@specialized(Float, Double) T: ClassTag]()
     gradInput
   }
 }
+
+object Identity {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+                                                    (implicit ev: TensorNumeric[T]) : Identity[T] = {
+    new Identity[T]()
+  }
+}

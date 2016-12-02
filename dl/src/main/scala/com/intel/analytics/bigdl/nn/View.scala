@@ -119,3 +119,10 @@ class View[@specialized(Float, Double) T: ClassTag](sizes: Array[Int])(
     s"nn.View(${sizes.mkString("x")})"
   }
 }
+
+object View {
+  def apply[@specialized(Float, Double) T: ClassTag](sizes: Array[Int])
+                                                    (implicit ev: TensorNumeric[T]) : View[T] = {
+    new View[T](sizes)
+  }
+}

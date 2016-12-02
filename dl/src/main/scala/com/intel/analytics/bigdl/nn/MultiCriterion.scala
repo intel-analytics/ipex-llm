@@ -79,3 +79,10 @@ class MultiCriterion[A <: Activities: ClassTag, T: ClassTag]
     s"nn.MultiCriterion"
   }
 }
+
+object MultiCriterion {
+  def apply[A <: Activities: ClassTag, @specialized(Float, Double) T: ClassTag]()
+                                                    (implicit ev: TensorNumeric[T]) : MultiCriterion[A, T] = {
+    new MultiCriterion[A, T]()
+  }
+}

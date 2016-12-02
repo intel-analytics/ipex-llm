@@ -58,3 +58,10 @@ class SoftSign[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModul
     s"nn.SoftSign"
   }
 }
+
+object SoftSign {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+                                                    (implicit ev: TensorNumeric[T]) : SoftSign[T] = {
+    new SoftSign[T]()
+  }
+}

@@ -75,3 +75,10 @@ class SmoothL1Criterion[T: ClassTag](sizeAverage: Boolean = true)
     gradInput
   }
 }
+
+object SmoothL1Criterion {
+  def apply[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean = true)
+                                                    (implicit ev: TensorNumeric[T]) : SmoothL1Criterion[T] = {
+    new SmoothL1Criterion[T](sizeAverage)
+  }
+}

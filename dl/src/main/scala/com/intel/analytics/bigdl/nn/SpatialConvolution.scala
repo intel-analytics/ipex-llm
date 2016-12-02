@@ -561,3 +561,20 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     }
   }
 }
+
+object SpatialConvolution {
+  def apply[@specialized(Float, Double) T: ClassTag](nInputPlane: Int,
+  nOutputPlane: Int,
+  kernelW: Int,
+  kernelH: Int,
+  strideW: Int = 1,
+  strideH: Int = 1,
+  padW: Int = 0,
+  padH: Int = 0,
+  nGroup: Int = 1,
+  propagateBack: Boolean = true,
+  initMethod: InitializationMethod = Default)
+                                                    (implicit ev: TensorNumeric[T]) : SpatialConvolution[T] = {
+    new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH, strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)
+  }
+}

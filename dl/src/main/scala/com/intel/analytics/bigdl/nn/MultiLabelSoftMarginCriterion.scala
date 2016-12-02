@@ -99,3 +99,10 @@ class MultiLabelSoftMarginCriterion[T: ClassTag]
 
   override def toString: String = s"MultiLabelSoftMarginCriterion($weights)"
 }
+
+object MultiLabelSoftMarginCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boolean = true)
+                                                    (implicit ev: TensorNumeric[T]) : MultiLabelSoftMarginCriterion[T] = {
+    new MultiLabelSoftMarginCriterion[T](weights, sizeAverage)
+  }
+}

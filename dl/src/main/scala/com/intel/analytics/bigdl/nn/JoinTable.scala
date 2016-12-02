@@ -124,3 +124,11 @@ class JoinTable[T: ClassTag] (
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object JoinTable {
+  def apply[@specialized(Float, Double) T: ClassTag](dimension: Int,
+  nInputDims: Int)
+                                                    (implicit ev: TensorNumeric[T]) : JoinTable[T] = {
+    new JoinTable[T](dimension, nInputDims)
+  }
+}

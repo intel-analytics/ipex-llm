@@ -98,3 +98,11 @@ class LeakyReLU[T: ClassTag](
     s"nn.LeakyReLU"
   }
 }
+
+object LeakyReLU {
+  def apply[@specialized(Float, Double) T: ClassTag](negval: Double = 0.01,
+  inplace: Boolean = false)
+                                                    (implicit ev: TensorNumeric[T]) : LeakyReLU[T] = {
+    new LeakyReLU[T](negval, inplace)
+  }
+}

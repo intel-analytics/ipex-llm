@@ -74,3 +74,10 @@ class ParallelCriterion[T: ClassTag](val repeatTarget: Boolean = false)
     gradInput
   }
 }
+
+object ParallelCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](repeatTarget: Boolean = false)
+                                                    (implicit ev: TensorNumeric[T]) : ParallelCriterion[T] = {
+    new ParallelCriterion[T](repeatTarget)
+  }
+}

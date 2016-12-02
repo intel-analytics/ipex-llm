@@ -81,3 +81,12 @@ class Replicate[@specialized(Float, Double) T: ClassTag](
     s"nn.Replicate($nFeatures, $dim${if (nDim != Int.MaxValue) ", " + nDim else ""})"
   }
 }
+
+object Replicate {
+  def apply[@specialized(Float, Double) T: ClassTag](nFeatures : Int,
+  dim : Int = 1,
+  nDim : Int = Int.MaxValue)
+                                                    (implicit ev: TensorNumeric[T]) : Replicate[T] = {
+    new Replicate[T](nFeatures, dim, nDim)
+  }
+}

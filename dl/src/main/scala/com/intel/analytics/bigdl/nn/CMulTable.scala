@@ -56,3 +56,10 @@ class CMulTable[T: ClassTag]()(
     "nn.CMulTable"
   }
 }
+
+object CMulTable {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+                                                    (implicit ev: TensorNumeric[T]) : CMulTable[T] = {
+    new CMulTable[T]()
+  }
+}

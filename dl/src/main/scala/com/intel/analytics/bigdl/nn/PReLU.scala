@@ -314,3 +314,10 @@ class PReLU[T: ClassTag](
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object PReLU {
+  def apply[@specialized(Float, Double) T: ClassTag](nOutputPlane: Int = 0)
+                                                    (implicit ev: TensorNumeric[T]) : PReLU[T] = {
+    new PReLU[T](nOutputPlane)
+  }
+}

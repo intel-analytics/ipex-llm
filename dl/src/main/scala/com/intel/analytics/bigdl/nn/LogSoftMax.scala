@@ -121,6 +121,11 @@ class LogSoftMax[@specialized(Float, Double) T: ClassTag](
 }
 
 object LogSoftMax {
+
+  def apply[@specialized(Float, Double) T: ClassTag]()
+                                                    (implicit ev: TensorNumeric[T]) : LogSoftMax[T] = {
+    new LogSoftMax[T]()
+  }
   private val A0 = 1.0
   private val A1 = 0.125
   private val A2 = 0.0078125
