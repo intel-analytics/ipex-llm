@@ -205,8 +205,8 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
       true
     }
 
-    val inputWidth = inputTensor.size(3)
-    val inputHeight = inputTensor.size(4)
+    val inputHeight = inputTensor.size(3)
+    val inputWidth = inputTensor.size(4)
 
     val outputHeight = (inputHeight - 1) * dH - 2 * padH + kH + adjH
     val outputWidth = (inputWidth - 1) * dW - 2 * padW + kW + adjW
