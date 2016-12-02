@@ -312,4 +312,24 @@ gradInput = model.gradInput
     }
     assert(abss < 2e-2)
   }
+
+  "AlexNet-OWT model in batch mode" should "be good in gradient check" in {
+    val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
+    val model = AlexNet_OWT[Double](1000, false, true)
+    model.zeroGradParameters()
+
+    val checker = new GradientChecker(1e-3)
+    checker.checkLayer(model, input, 1e-2) should be(true)
+    checker.checkWeight(model, input, 1e-2) should be(true)
+  }
+
+  "AlexNet model in batch mode" should "be good in graident check" in {
+    val input = Tensor[Double](8, 3, 227, 227).apply1(e => Random.nextDouble())
+    val model = AlexNet[Double](1000)
+    model.zeroGradParameters()
+
+    val checker = new GradientChecker(1e-3)
+    checker.checkLayer(model, input, 1e-2) should be(true)
+    checker.checkWeight(model, input, 1e-2) should be(true)
+  }
 }
