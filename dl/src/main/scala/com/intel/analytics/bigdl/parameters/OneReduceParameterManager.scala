@@ -54,7 +54,7 @@ class OneReduceParameterManager[T: ClassTag](
   private val sc: SparkContext = dataset.sparkContext
 
   @transient
-  private val globalBuffer: Parameter[T] = Parameter(parameter)
+  private val globalBuffer: Parameter[T] = SerializerInstance.serialize(parameter)
 
   override def sync(parameters: RDD[Tensor[T]]): RDD[Tensor[T]] = {
     var before = System.nanoTime()
@@ -112,7 +112,7 @@ class OneReduceParameterManager[T: ClassTag](
     val sparkEnv = SparkEnv.get
     before = System.nanoTime()
     val collectedParameters = blockids.map(blockId => Future[Parameter[T]] {
-      val result = Parameter[T](sparkEnv.blockManager.getRemoteBytes(blockId).get)
+      val result = SerializerInstance.serialize(sparkEnv.blockManager.getRemoteBytes(blockId).get)
       sparkEnv.blockManager.master.removeBlock(blockId)
       result
     }(Engine.getInstance())).map(Await.result(_, Duration.Inf))

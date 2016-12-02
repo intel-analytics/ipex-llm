@@ -139,7 +139,8 @@ class AllReduceParameterManager[T: ClassTag](
           val start = pid * _taskSize + math.min(pid, _extraSize)
           val length = _taskSize + (if (pid < _extraSize) 1 else 0)
           require(localBuffer.array().length == length * 2)
-          Parameter(localBuffer)(_classTag).copyTo(0, localParameter, start, length)
+          SerializerInstance.serialize(localBuffer)(_classTag)
+            .copyTo(0, localParameter, start, length)
         }(context)
       }).map(Await.result(_, Duration.Inf))
 
@@ -220,7 +221,8 @@ class AllReduceParameterManager[T: ClassTag](
           val start = pid * _taskSize + math.min(pid, _extraSize)
           val length = _taskSize + (if (pid < _extraSize) 1 else 0)
           val blockId = getGradientBlockId(pid, curPid)
-          Parameter[T](bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId)
+          SerializerInstance.serialize(
+            bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId)
             .getOrElse(
               throw new IllegalArgumentException(s"Can't get the block(${blockId})")
             )))(_classTag)
@@ -260,7 +262,7 @@ class AllReduceParameterManager[T: ClassTag](
       SparkEnv.get.blockManager.removeBlock(blockId)
       SparkEnv.get.blockManager.putBytes(
         blockId,
-        Parameter[T](localParam)(_classTag).bytes(), StorageLevel.MEMORY_ONLY_SER)
+        SerializerInstance.serialize(localParam)(_classTag).bytes(), StorageLevel.MEMORY_ONLY_SER)
       _metrics.add("worker serialize weight", System.nanoTime() - before)
       _metrics.add("task2 time from worker", System.nanoTime() - task2InnerBefore)
       Iterator.empty

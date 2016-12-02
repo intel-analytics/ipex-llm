@@ -63,9 +63,3 @@ abstract trait Parameter[T] extends Serializable {
 
   def copyFrom(tensor: Tensor[T]): this.type
 }
-
-object Parameter {
-  def apply[T: ClassTag](t: Tensor[T]): Parameter[T] = new FP16Parameter(t)
-
-  def apply[T: ClassTag](b: ByteBuffer): Parameter[T] = new FP16Parameter(b)
-}
