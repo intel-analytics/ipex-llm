@@ -178,43 +178,30 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
 
             // ======================Start train models===================================
             tmp = System.nanoTime()
-            val computeThreads = if (iteration<200) {
-              (0 until subModuleNumber).map(i => new Callable[Int] {
-                def call(): Int = {
-                  val localModule = localMTCaches(i).model
-                  val localCriterion = localMTCaches(i).criterion
-                  val (inputFloat, targetFloat) = tensorBuffer(i)
-                  val input = inputFloat.asInstanceOf[Tensor[T]]
-                  val target = targetFloat.asInstanceOf[Tensor[T]]
-                  val output = localModule.forward(input)
-                  lossArray(i) = localEV.toType[Double](localCriterion.forward(output, target))
-                  val errors = localCriterion.backward(output, target)
-                  localModule.backward(input, errors)
-                  recordsArray(i) = target.size(1)
-                  i
-                }})
-            } else {
               val pid = TaskContext.getPartitionId()
               val pre = (iteration%100)*partitionNum*subModuleNumber + pid*subModuleNumber
-              val tasks = (0 until subModuleNumber).map(i => new Callable[Int] {
+              val computeThreads = (0 until subModuleNumber).map(i => new Callable[Int] {
                 def call(): Int = {
-                  val start = System.nanoTime()
-                  val localModule = localMTCaches(i).model
-                  val localCriterion = localMTCaches(i).criterion
-                  val (inputFloat, targetFloat) = tensorBuffer(i)
-                  val input = inputFloat.asInstanceOf[Tensor[T]]
-                  val target = targetFloat.asInstanceOf[Tensor[T]]
-                  val output = localModule.forward(input)
-                  lossArray(i) = localEV.toType[Double](localCriterion.forward(output, target))
-                  val errors = localCriterion.backward(output, target)
-                  localModule.backward(input, errors)
-                  recordsArray(i) = target.size(1)
-                  Util.moduleTimeList(i + pre) = System.nanoTime() - start + weightSyncTime
-                  i
+                  try {
+                    val start = System.nanoTime()
+                    val localModule = localMTCaches(i).model
+                    val localCriterion = localMTCaches(i).criterion
+                    val (inputFloat, targetFloat) = tensorBuffer(i)
+                    val input = inputFloat.asInstanceOf[Tensor[T]]
+                    val target = targetFloat.asInstanceOf[Tensor[T]]
+                    val output = localModule.forward(input)
+                    lossArray(i) = localEV.toType[Double](localCriterion.forward(output, target))
+                    val errors = localCriterion.backward(output, target)
+                    localModule.backward(input, errors)
+                    recordsArray(i) = target.size(1)
+                    Util.moduleTimeList(i + pre) = System.nanoTime() - start + weightSyncTime
+                    i  
+                  } catch {
+                    case e: Exception => logger.info(e.toString)
+                      -1
+                  }                  
                 }
               })
-              tasks
-            }
 
             if(iteration > 299) {
               timeout = ((threshold-weightSyncTime)/1e6).toLong
@@ -225,8 +212,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
             driverMetrics.add("computing time average", computingTime)
             driverMetrics.add("computing time for each node", computingTime)
 
-            val finishedThreads = threads.asScala.filter(!_.isCancelled).map(_.get())
-
+            val finishedThreads = threads.asScala.filter(!_.isCancelled).map(_.get()).filter(_ != -1)            
             driverMetrics.add("dropped modules", subModuleNumber-finishedThreads.size)
               stackCount += finishedThreads.size
               finishedThreads.foreach{index =>
