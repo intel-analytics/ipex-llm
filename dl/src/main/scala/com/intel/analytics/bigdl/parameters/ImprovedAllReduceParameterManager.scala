@@ -67,7 +67,7 @@ class ImprovedAllReduceParameterManager[T: ClassTag](
   }
 
   override def sumAndUpdate(parameters: RDD[Tensor[T]],
-    update: (Tensor[T], Tensor[T], Table) => Unit): Unit = {    
+    update: (Tensor[T], Tensor[T], Table) => Unit): Unit = {
   }
 
   override def getParameter(): Tensor[T] = {

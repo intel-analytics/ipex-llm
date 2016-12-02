@@ -60,7 +60,7 @@ object DropSlowModuleGradAggEpochOptimizer {
     def reportFailure(t: Throwable) {}
   }
 
-  var weightSyncTime = 0L  
+  var weightSyncTime = 0L
 }
 
 class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
@@ -144,7 +144,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
         val start = System.nanoTime()
         val resultRDD = dataSets.fetch().zipPartitions(
           models,
-          pm.syncAndinitG(models.mapPartitions(iter => 
+          pm.syncAndinitG(models.mapPartitions(iter =>
             Iterator.single(iter.next().weight)), multiThreadModels),
           multiThreadModels, true)(
           (data, modelIter, weights, multiThreadModuleIter) => {
