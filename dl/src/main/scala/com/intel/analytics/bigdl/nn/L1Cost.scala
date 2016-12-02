@@ -39,3 +39,10 @@ class L1Cost[T: ClassTag]()
     s"nn.L1Cost"
   }
 }
+
+object L1Cost {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+                                                    (implicit ev: TensorNumeric[T]) : L1Cost[T] = {
+    new L1Cost[T]()
+  }
+}

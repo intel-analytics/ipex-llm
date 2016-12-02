@@ -216,3 +216,12 @@ class HardTanh[T: ClassTag](
     s"nn.HardTanh"
   }
 }
+
+object HardTanh {
+  def apply[@specialized(Float, Double) T: ClassTag](minValue: Double = -1,
+  maxValue: Double = 1,
+  inplace: Boolean = false)
+                                                    (implicit ev: TensorNumeric[T]) : HardTanh[T] = {
+    new HardTanh[T](minValue, maxValue, inplace)
+  }
+}

@@ -181,3 +181,13 @@ class Bilinear[T: ClassTag](inputSize1: Int,
     s"nn.Bilinear($inputSize1, $inputSize2, $outputSize, $biasRes)"
   }
 }
+
+object Bilinear {
+  def apply[@specialized(Float, Double) T: ClassTag](inputSize1: Int,
+                                                     inputSize2: Int,
+                                                     outputSize: Int,
+                                                     biasRes: Boolean = true)
+                                                    (implicit ev: TensorNumeric[T]) : Bilinear[T] = {
+    new Bilinear[T](inputSize1, inputSize2, outputSize, biasRes)
+  }
+}

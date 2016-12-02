@@ -120,3 +120,10 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
     s"nn.CAdd(${java.util.Arrays.toString(size)})"
   }
 }
+
+object CAdd {
+  def apply[@specialized(Float, Double) T: ClassTag](size: Array[Int])
+                                                    (implicit ev: TensorNumeric[T]) : CAdd[T] = {
+    new CAdd[T](size)
+  }
+}

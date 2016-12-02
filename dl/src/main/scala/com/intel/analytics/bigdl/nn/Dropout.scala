@@ -181,3 +181,10 @@ class Dropout[@specialized(Float, Double) T: ClassTag](
     s"nn.Dropout($p)"
   }
 }
+
+object Dropout {
+  def apply[@specialized(Float, Double) T: ClassTag](initP: Double = 0.5, inplace: Boolean = false, scale: Boolean = true)
+                                                    (implicit ev: TensorNumeric[T]) : Dropout[T] = {
+    new Dropout[T](initP, inplace, scale)
+  }
+}

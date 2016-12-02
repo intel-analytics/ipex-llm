@@ -81,3 +81,10 @@ class NarrowTable[T: ClassTag](val offset: Int, val length: Int = 1)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object NarrowTable {
+  def apply[@specialized(Float, Double) T: ClassTag](offset: Int, length: Int = 1)
+                                                    (implicit ev: TensorNumeric[T]) : NarrowTable[T] = {
+    new NarrowTable[T](offset, length)
+  }
+}

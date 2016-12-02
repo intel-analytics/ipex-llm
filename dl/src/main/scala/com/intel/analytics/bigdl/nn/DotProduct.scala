@@ -89,3 +89,10 @@ class DotProduct[T: ClassTag] (implicit ev: TensorNumeric[T])
     s"nn.DotProduct"
   }
 }
+
+object DotProduct {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+                                                    (implicit ev: TensorNumeric[T]) : DotProduct[T] = {
+    new DotProduct[T]()
+  }
+}

@@ -168,3 +168,12 @@ class Linear[@specialized(Float, Double) T: ClassTag](
     s"nn.Linear($inputSize -> $outputSize)"
   }
 }
+
+object Linear {
+  def apply[@specialized(Float, Double) T: ClassTag](inputSize: Int,
+                                                     outputSize: Int,
+  initMethod: InitializationMethod = Default)
+                                                    (implicit ev: TensorNumeric[T]) : Linear[T] = {
+    new Linear[T](inputSize, outputSize, initMethod)
+  }
+}

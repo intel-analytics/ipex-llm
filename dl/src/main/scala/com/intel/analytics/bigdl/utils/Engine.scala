@@ -24,6 +24,13 @@ import org.apache.log4j.Logger
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
+sealed trait EngineType
+
+case object MklBlas extends EngineType
+
+case object MklDnn extends EngineType
+
+
 /**
  * Provide appropriated thread pool based on user provided parallelism
  */

@@ -194,3 +194,10 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
     state.map(getHashCode).foldLeft(0)((a, b) => 37 * a + b)
   }
 }
+
+object Cosine {
+  def apply[@specialized(Float, Double) T: ClassTag](inputSize : Int, outputSize : Int)
+                                                    (implicit ev: TensorNumeric[T]) : Cosine[T] = {
+    new Cosine[T](inputSize, outputSize)
+  }
+}

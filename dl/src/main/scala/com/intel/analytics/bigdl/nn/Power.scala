@@ -101,3 +101,12 @@ class Power[@specialized(Float, Double) T: ClassTag](
   }
 
 }
+
+object Power {
+  def apply[@specialized(Float, Double) T: ClassTag](power: Double,
+  scale : Double = 1,
+  shift : Double = 0)
+                                                    (implicit ev: TensorNumeric[T]) : Power[T] = {
+    new Power[T](power, scale, shift)
+  }
+}

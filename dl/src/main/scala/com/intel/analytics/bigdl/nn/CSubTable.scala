@@ -47,3 +47,10 @@ class CSubTable[T: ClassTag]()(
     s"nn.CSubTable"
   }
 }
+
+object CSubTable {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+                                                    (implicit ev: TensorNumeric[T]) : CSubTable[T] = {
+    new CSubTable[T]()
+  }
+}

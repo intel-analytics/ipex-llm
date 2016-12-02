@@ -612,3 +612,22 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
       s"$kW x $kH, $dW, $dH, $padW, $padH, $adjW, $adjH)"
   }
 }
+
+object SpatialFullConvolution {
+  def apply[A <: Activities : ClassTag, @specialized(Float, Double) T: ClassTag](
+     nInputPlane: Int,
+     nOutputPlane: Int,
+     kW: Int,
+     kH: Int,
+     dW: Int = 1,
+     dH: Int = 1,
+     padW: Int = 0,
+     padH: Int = 0,
+     adjW: Int = 0,
+     adjH: Int = 0,
+     noBias: Boolean = false,
+     initMethod: InitializationMethod = Default)
+                                                    (implicit ev: TensorNumeric[T]) : SpatialFullConvolution[A, T] = {
+    new SpatialFullConvolution[A, T](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH, adjW, adjH, noBias, initMethod)
+  }
+}

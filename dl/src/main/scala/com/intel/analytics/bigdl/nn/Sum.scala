@@ -83,3 +83,12 @@ class Sum[T: ClassTag](
 
   override def toString: String = s"nn.Sum"
 }
+
+object Sum {
+  def apply[@specialized(Float, Double) T: ClassTag](dimension: Int = 1,
+                                                     nInputDims: Int = -1,
+                                                     sizeAverage: Boolean = false)
+                                                    (implicit ev: TensorNumeric[T]) : Sum[T] = {
+    new Sum[T](dimension, nInputDims, sizeAverage)
+  }
+}

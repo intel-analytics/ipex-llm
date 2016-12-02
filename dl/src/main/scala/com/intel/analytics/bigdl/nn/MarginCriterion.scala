@@ -85,3 +85,10 @@ class MarginCriterion[T: ClassTag]
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object MarginCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](margin: Double = 1.0, sizeAverage: Boolean = true)
+                                                    (implicit ev: TensorNumeric[T]) : MarginCriterion[T] = {
+    new MarginCriterion[T](margin, sizeAverage)
+  }
+}

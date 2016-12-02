@@ -529,3 +529,22 @@ class SpatialDilatedConvolution[T: ClassTag](
       s"$kW x $kH, $dW, $dH, $padW, $padH, $dilationH, $dilationW)"
   }
 }
+
+object SpatialDilatedConvolution {
+  def apply[@specialized(Float, Double) T: ClassTag](
+     nInputPlane: Int,
+     nOutputPlane: Int,
+     kW: Int,
+     kH: Int,
+     dW: Int = 1,
+     dH: Int = 1,
+     padW: Int = 0,
+     padH: Int = 0,
+     dilationW: Int = 1,
+     dilationH: Int = 1,
+     initMethod: InitializationMethod = Default
+                                                    )
+                                                    (implicit ev: TensorNumeric[T]) : SpatialDilatedConvolution[T] = {
+    new SpatialDilatedConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH, dilationW, dilationH, initMethod)
+  }
+}

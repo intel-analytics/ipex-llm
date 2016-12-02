@@ -121,3 +121,10 @@ class CosineDistance[T: ClassTag](
     s"nn.CosineDistance"
   }
 }
+
+object CosineDistance {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+                                                    (implicit ev: TensorNumeric[T]) : CosineDistance[T] = {
+    new CosineDistance[T]()
+  }
+}
