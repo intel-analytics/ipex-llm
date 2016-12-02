@@ -21,20 +21,19 @@ import java.util.concurrent.Executors
 
 import com.intel.analytics.bigdl.mkl.MKL
 import org.apache.log4j.Logger
-import org.apache.spark.Logging
-
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
 /**
  * Provide appropriated thread pool based on user provided parallelism
  */
-object Engine extends Logging {
+object Engine{
   /**
    * Work load parallelism
    */
   private var poolSize: Int = System.getProperty("dl.engine.cores",
     (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
+  private val logger = Logger.getLogger(getClass);
 
   private var engine: ExecutionContext = null
 
@@ -91,7 +90,7 @@ object Engine extends Logging {
           results(i) = Future {
             MKL.setNumThreads(1)
             val tid = Thread.currentThread().getId()
-            logInfo(s"Set mkl threads to 1 on thread $tid")
+            logger.info(s"Set mkl threads to 1 on thread $tid")
           }(context)
         }
         for (i <- 0 until coresNum) {

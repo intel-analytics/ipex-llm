@@ -171,7 +171,7 @@ class CifarDataSource(path: Path, looped: Boolean, scaleTo: Int = 32)
   private val paths = loadPaths(path)
 
   override protected val data: Array[(Float, Array[Byte])] = paths.map(imageFile => {
-    (imageFile._1, RGBImage.readImage(imageFile._2, scaleTo))
+    (imageFile._1, ImageUtils.readBGRImage(imageFile._2, scaleTo))
   })
 }
 

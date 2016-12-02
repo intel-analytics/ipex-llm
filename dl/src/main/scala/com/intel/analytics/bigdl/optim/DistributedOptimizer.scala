@@ -20,8 +20,8 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.nn.{Criterion, Module}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{File, T, Table}
-import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
+import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -37,7 +37,7 @@ import scala.reflect.ClassTag
 abstract class DistributedOptimizer[T](
   val module: Module[Tensor[T], Tensor[T], T],
   val criterion: Criterion[Tensor[T], T],
-  val dataSet: DataSet[_, T]) extends Serializable with Logging
+  val dataSet: DataSet[_, T]) extends Serializable
   with HasCrossValidation[T] with ModelPersist[T] {
 
   import DistributedOptimizer._
@@ -55,9 +55,9 @@ abstract class DistributedOptimizer[T](
       Iterator.single(CachedModel(localModule, localCriterion, weights, grads, T()))
     }).persist()
     models.setName("modelRDD")
-    logInfo("Cache models...")
+    logger.info("Cache models...")
     models.count()
-    logInfo("Cache models... done")
+    logger.info("Cache models... done")
     models
   }
 
@@ -67,6 +67,8 @@ abstract class DistributedOptimizer[T](
 }
 
 object DistributedOptimizer {
+
+  private val logger = Logger.getLogger(getClass)
 
   /**
    * Represent a cached module and its cost function

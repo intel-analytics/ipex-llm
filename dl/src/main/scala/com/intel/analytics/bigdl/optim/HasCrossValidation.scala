@@ -21,12 +21,17 @@ import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Activities
-import org.apache.spark.Logging
+import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
 
-trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable with Logging {
+object HasCrossValidation{
+  val logger = Logger.getLogger(getClass)
+}
+
+trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable{
+  import HasCrossValidation._
   private var testInterval: Int = 1
 
   def setTestInterval(testInterval: Int): this.type = {
@@ -71,15 +76,15 @@ trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable wit
 
         val accuracy = correctSum.toDouble / totalSum
         if (wallClockNanoTime.isDefined) {
-          logInfo(s"[Wall Clock ${wallClockNanoTime.get.toDouble / 1e9}s}] ${
+          logger.info(s"[Wall Clock ${wallClockNanoTime.get.toDouble / 1e9}s}] ${
             evalM._1
           } correct is $correctSum total is $totalSum")
-          logInfo(s"[Wall Clock ${wallClockNanoTime.get.toDouble / 1e9}s}] ${
+          logger.info(s"[Wall Clock ${wallClockNanoTime.get.toDouble / 1e9}s}] ${
             evalM._1
           } accuracy is $accuracy")
         } else {
-          logInfo(s"${evalM._1} correct is $correctSum total is $totalSum")
-          logInfo(s"${evalM._1} cross validation result is $accuracy")
+          logger.info(s"${evalM._1} correct is $correctSum total is $totalSum")
+          logger.info(s"${evalM._1} cross validation result is $accuracy")
         }
         accuracy
       }).toArray

@@ -18,13 +18,13 @@
 package com.intel.analytics.bigdl.optim
 
 import java.util.concurrent.{TimeUnit, ThreadPoolExecutor, LinkedBlockingQueue}
-
 import com.intel.analytics.bigdl.nn.{Criterion, Module}
 import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.bigdl.ps.ParameterManager
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
+import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
 object BetterGradAggEpochOptimizer {
   private var lossArray: Array[Double] = null
   private var recordsArray: Array[Int] = null
-
+  private val logger = Logger.getLogger(getClass);
   private val maxThread = System.getProperty(
     "com.intel.analytics.bigdl.optim.BetterGradAggEpochOptimizer.maxThread",
     (Runtime.getRuntime().availableProcessors() * 50 / 2).toString()).toInt
@@ -83,9 +83,9 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
       Iterator(test.toArray)
     }).persist()
     models.setName("modelRDD")
-    logInfo("Cache models...")
+    logger.info("Cache models...")
     models.count()
-    logInfo("Cache models... done")
+    logger.info("Cache models... done")
     models
   }
 
@@ -103,16 +103,16 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
     val state = T()
     val _subModuleNumber = subModuleNumber
     for (i <- 1 to epochNum) {
-      logInfo(s"[Epoch $i/$epochNum] Train start")
+      logger.info(s"[Epoch $i/$epochNum] Train start")
       val epochStart = System.nanoTime()
 
-      logInfo("config" + config)
+      logger.info("config" + config)
 
-      logInfo(s"[Epoch $i/$epochNum] Shuffle data")
+      logger.info(s"[Epoch $i/$epochNum] Shuffle data")
       dataSets.reset()
       val shuffleEnd = System.nanoTime()
       var accumulateCount = 0
-      logInfo(s"[Epoch $i/$epochNum] Shuffle data complete. Takes ${
+      logger.info(s"[Epoch $i/$epochNum] Shuffle data complete. Takes ${
         (shuffleEnd -
           epochStart) / 1e9
       }s")
@@ -258,18 +258,19 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
 
         accumulateCount += recordsNum.value
         val end = System.nanoTime()
-        logInfo(s"[Epoch $i/$epochNum $accumulateCount/${dataSets.total()}] Train ${
+        logger.info(s"[Epoch $i/$epochNum $accumulateCount/${dataSets.total()}] Train ${
           recordsNum.value
         } in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${recordsNum.value / ((end - start) / 1e9)} records/second. Loss is ${
             lossSum.value / stackCount.value
           }. " +
           s"Calculate time is ${(reduceBefore - start) / 1e9}seconds. ")
-        logInfo("\n" + metrics.summary())
+        logger.info("\n" + metrics.summary())
       }
       val epochEnd = System.nanoTime()
       wallClockTime = wallClockTime + epochEnd - epochStart
-      logInfo(s"[Epoch $i/$epochNum] Epoch finished. Wall clock time is ${wallClockTime / 1e6}ms")
+      logger.info(s"[Epoch $i/$epochNum] Epoch finished." +
+        s" Wall clock time is ${wallClockTime / 1e6}ms")
       saveModel(module, i)
       saveState(pm.getState(), i)
       test(module, i)

@@ -17,22 +17,23 @@
 
 package com.intel.analytics.bigdl.ps
 
-import java.util.concurrent.Executors
+import java.util.concurrent.{Callable, Executors, TimeUnit}
 
-import com.intel.analytics.bigdl.optim.Metrics
+import scala.collection.JavaConverters._
+import com.intel.analytics.bigdl.optim.{DropSlowModuleGradAggEpochOptimizer, Metrics}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.{StorageLevel, TaskResultBlockId}
-import org.apache.spark.{SparkContext, SparkEnv, TaskContext}
+import org.apache.spark.{Logging, SparkContext, SparkEnv, TaskContext}
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ExecutionContext, Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect._
 
-object AllReduceParameterManager {
+object ImprovedAllReduceParameterManager {
   var task1InnerTime: Long = 0L
 
   private val poolSize: Int = System.getProperty(
@@ -42,6 +43,7 @@ object AllReduceParameterManager {
   private val maxClusterSize = System.getProperty(
     "com.intel.analytics.bigdl.ps.AllReduceParameterManager.maxClusterSize", "10000").toInt
 
+  val pool = Executors.newFixedThreadPool(8)
   private val context = new ExecutionContext {
     val threadPool = Executors.newFixedThreadPool(poolSize)
 
@@ -61,11 +63,11 @@ object AllReduceParameterManager {
   }
 }
 
-class AllReduceParameterManager[T: ClassTag](
+class ImprovedAllReduceParameterManager[T: ClassTag](
   parameter: Tensor[T], dataset: RDD[_], metrics: Metrics = new Metrics()
-)(implicit ev: TensorNumeric[T]) extends ParameterManager[T] {
+)(implicit ev: TensorNumeric[T]) extends ParameterManager[T] with Logging {
 
-  import AllReduceParameterManager._
+  import ImprovedAllReduceParameterManager._
 
   @transient
   private val sc: SparkContext = dataset.sparkContext
@@ -124,7 +126,7 @@ class AllReduceParameterManager[T: ClassTag](
     metrics.set("sync weight for each node", mutable.ArrayBuffer[Double](), sc)
     parameters.mapPartitions(paramIter => {
       var before = System.nanoTime()
-      AllReduceParameterManager.task1InnerTime = System.nanoTime()
+      ImprovedAllReduceParameterManager.task1InnerTime = System.nanoTime()
       _metrics.add("worker fetch split table", System.nanoTime() - before)
       require(paramIter.hasNext)
       val localParameter = paramIter.next()
@@ -132,20 +134,25 @@ class AllReduceParameterManager[T: ClassTag](
 
       before = System.nanoTime()
       val bm = SparkEnv.get.blockManager
-      (0 until _partitionNum).map(pid => {
-        Future {
-          val blockId = getWeightBlockId(pid)
-          val localBuffer = bm.getRemoteBytes(blockId).get
-          val start = pid * _taskSize + math.min(pid, _extraSize)
-          val length = _taskSize + (if (pid < _extraSize) 1 else 0)
-          require(localBuffer.array().length == length * 2)
-          Parameter(localBuffer)(_classTag).copyTo(0, localParameter, start, length)
-        }(context)
-      }).map(Await.result(_, Duration.Inf))
+
+      val swThreads = (0 until _partitionNum).map(pid => {
+        new Callable[Int] {
+          override def call(): Int = {
+            val blockId = getWeightBlockId(pid)
+            val localBuffer = bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId).get)
+            val start = pid * _taskSize + math.min(pid, _extraSize)
+            val length = _taskSize + (if (pid < _extraSize) 1 else 0)
+            require(localBuffer.array().length == length * 2)
+            Parameter(localBuffer)(_classTag).copyTo(0, localParameter, start, length)
+            pid
+          }
+        }})
+      pool.invokeAll(swThreads.asJava)
 
       val weightSync = System.nanoTime() - before
       _metrics.add("worker sync weight average", weightSync)
       _metrics.add("sync weight for each node", weightSync)
+      DropSlowModuleGradAggEpochOptimizer.weightSyncTime = weightSync
       Iterator.single(localParameter)
     })
   }
@@ -191,9 +198,10 @@ class AllReduceParameterManager[T: ClassTag](
         pid += 1
       }
       _metrics.add("worker put result", System.nanoTime() - before)
-      _metrics.add("task1 avg time", System.nanoTime() - AllReduceParameterManager.task1InnerTime)
+      _metrics.add("task1 avg time",
+        System.nanoTime() - ImprovedAllReduceParameterManager.task1InnerTime)
       _metrics.add("task1 time from worker", System.nanoTime() -
-        AllReduceParameterManager.task1InnerTime)
+        ImprovedAllReduceParameterManager.task1InnerTime)
       Iterator.empty
     }).count()
     metrics.set("task1 time from driver", System.nanoTime() - task1Before)
@@ -215,23 +223,26 @@ class AllReduceParameterManager[T: ClassTag](
       before = System.nanoTime()
       val curPid = TaskContext.getPartitionId()
       val bm = SparkEnv.get.blockManager
-      val newParams = (0 until _partitionNum).map(pid => {
-        Future {
-          val start = pid * _taskSize + math.min(pid, _extraSize)
-          val length = _taskSize + (if (pid < _extraSize) 1 else 0)
-          val blockId = getGradientBlockId(pid, curPid)
-          Parameter[T](bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId)
-            .getOrElse(
-              throw new IllegalArgumentException(s"Can't get the block(${blockId})")
-            )))(_classTag)
-        }(context)
-      }).map(Await.result(_, Duration.Inf))
+      val newParams = new Array[Parameter[T]](_partitionNum)
+      val sgThreads = (0 until _partitionNum).map(pid => {
+        new Callable[Int] {
+          override def call(): Int = {
+            val blockId = getGradientBlockId(pid, curPid)
+            newParams(pid) = Parameter[T](bm.getLocalBytes(blockId)
+              .getOrElse(bm.getRemoteBytes(blockId)
+              .getOrElse(
+                throw new IllegalArgumentException(s"Can't get the block(${blockId})")
+              )))(_classTag)
+            pid
+          }
+        }})
+      pool.invokeAll(sgThreads.asJava)
+
       val syncGradient = System.nanoTime() - before
       _metrics.add("gradient sync average", syncGradient)
       _metrics.add("gradient sync for each node", syncGradient)
 
       before = System.nanoTime()
-      val start = curPid * _taskSize + math.min(curPid, _extraSize)
       val length = _taskSize + (if (curPid < _extraSize) 1 else 0)
       val innerTaskSize = length / poolSize
       val innerExtraSize = length % poolSize
