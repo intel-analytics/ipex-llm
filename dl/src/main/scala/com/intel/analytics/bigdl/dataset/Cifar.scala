@@ -101,7 +101,7 @@ object Cifar10Local {
         looped = false)
 
       //val cropper = RGBImageCropper(cropWidth = config.imageSize, cropHeight = config.imageSize)
-      val randomCropper = RGBImageRandomCropper(cropWidth = config.imageSize, cropHeight = config.imageSize, padding = 0)
+      val randomCropper = RGBImageRandomCropper(cropWidth = config.imageSize, cropHeight = config.imageSize, padding = 4)
       val flipper = HFlip(0.5)
 
       val arrayToImage = ArrayByteToRGBImage()
