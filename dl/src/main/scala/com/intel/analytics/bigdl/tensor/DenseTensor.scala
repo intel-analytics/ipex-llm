@@ -36,6 +36,8 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   var nDimension: Int)(implicit ev: TensorNumeric[T])
   extends Tensor[T] {
 
+  override def isMklTensor() = false
+
   override def storage(): Storage[T] = _storage
 
   override def storageOffset(): Int = _storageOffset + 1

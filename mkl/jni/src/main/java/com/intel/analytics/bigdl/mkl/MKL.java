@@ -389,4 +389,6 @@ public class MKL {
     // OpenMP manager
     public native static void SetUseOpenMpFloat(long ptr, int value);
     public native static void SetUseOpenMpDouble(long ptr, int value);
+
+    public native static long getMklVersion();
 }

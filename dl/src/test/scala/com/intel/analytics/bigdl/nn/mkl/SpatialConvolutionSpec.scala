@@ -31,7 +31,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
   val cmd1 = "test_convolution "
 
   val testCases = List(
-    TestCase(512, 512, 3, 3, 1, 1, 1, 1, 1, 2, 2, 2048),
+    // TestCase(512, 512, 3, 3, 1, 1, 1, 1, 1, 2, 2, 2048),
 
     // AlexNet
     TestCase(3, 96, 11, 11, 4, 4, 0, 0, 1, 227, 227, 32),
@@ -143,10 +143,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
                                   s"${test.nInputPlane}, ${test.nOutputPlane}, ${test.kW}, ${test.kH}" +
                                   ", " + s"${test.dW}, ${test.dH}, ${test.padW}, ${test.padH}" +
                                   ", " + s"${test.inputWidth}, ${test.inputHeight}, ${test.group}" in {
-      val model = new SpatialConvolution[Float](test.nInputPlane, test.nOutputPlane,
+      val model = new Conv[Float](test.nInputPlane, test.nOutputPlane,
                                                 test.kW, test.kH, test.dW, test.dH,
                                                 test.padW, test.padH, test.group)
-        .setUseOpenMp(false)
+//        .setUseOpenMp(false)
 
       val cmd = (cmd1, test.batchSize, test.nInputPlane, test.inputHeight, test.inputWidth,
                 test.kH, test.kW, test.dH, test.dW, test.padH, test.padW, test.group,
@@ -168,21 +168,23 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       model.bias.set(bias)
 
       model.forward(input)
-      model.forward(input)
 
       val output = Tools.getTensor[Float]("output", model.output.size(), pid)
+      Tools.cumulativeError(model.output, output, "output") should be(0.0)
+
+      model.forward(input)
+      Tools.cumulativeError(model.output, output, "output") should be(0.0)
+
 
       val gradOutput = Tools.getTensor[Float]("gradOutput", model.output.size(), pid)
       val gradInput = Tools.getTensor[Float]("gradInput", input.size(), pid)
+      val gradWeight = Tools.getTensor[Float]("gradWeight", weights.size(), pid)
+      val gradBias = Tools.getTensor[Float]("gradBias", bias.size(), pid)
 
       model.zeroGradParameters()
       model.backward(input, gradOutput)
       model.backward(input, gradOutput)
 
-      val gradWeight = Tools.getTensor[Float]("gradWeight", weights.size(), pid)
-      val gradBias = Tools.getTensor[Float]("gradBias", bias.size(), pid)
-
-      Tools.cumulativeError(model.output, output, "output") should be(0.0)
       Tools.cumulativeError(model.gradInput, gradInput, "gradient input") should be(0.0)
       Tools.cumulativeError(model.gradWeight, gradWeight, "gradWeight") should be(0.0)
       Tools.cumulativeError(model.gradBias, gradBias, "gradBias") should be(0.0)

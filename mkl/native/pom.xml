@@ -46,6 +46,8 @@
                                 <source>
                                     <directory>${basedir}/src/main/c/jni</directory>
                                     <fileNames>
+                                        <fileName>conv.cpp</fileName>
+                                        <fileName>layout.cpp</fileName>
                                         <fileName>omp_threads.cpp</fileName>
                                         <fileName>layer.cpp</fileName>
                                         <fileName>batch_norm.cpp</fileName>

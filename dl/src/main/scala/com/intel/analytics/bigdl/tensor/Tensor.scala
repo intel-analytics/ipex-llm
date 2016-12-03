@@ -595,6 +595,8 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activities {
    * @return
    */
   def save(path : String, overWrite : Boolean = false) : this.type
+
+  def isMklTensor() : Boolean
 }
 
 sealed trait TensorDataType
