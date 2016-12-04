@@ -388,7 +388,7 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends DenseTenso
 
   override def min(values: Tensor[T], indices: Tensor[T], dim: Int): (Tensor[T], Tensor[T]) = returnTuple()
 
-  def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = returnTensor()
+  override def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = returnTensor()
 
   override def add(value: T, y: Tensor[T]): Tensor[T] = returnTensor()
 
