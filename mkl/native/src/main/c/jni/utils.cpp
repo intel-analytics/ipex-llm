@@ -3,6 +3,10 @@
 #include <cmath>
 #include <iostream>
 
+#include <mkl_service.h>
+
+#include "com_intel_analytics_bigdl_mkl_MKL.h"
+
 #if 0
 int computeOut(int input, int pad, int kernel, int stride)
 {
@@ -45,3 +49,19 @@ int main()
   return 0;
 }
 #endif
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MKL
+ * Method:    getMklVersion
+ * Signature: ()J
+ */
+JNIEXPORT
+  jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_getMklVersion
+(JNIEnv *env, jclass cls)
+{
+  MKLVersion v;
+  mkl_get_version(&v);
+  int build = atoi(v.Build);
+
+  return build;
+}
