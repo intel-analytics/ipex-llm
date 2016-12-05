@@ -37,9 +37,13 @@ import org.apache.spark.rdd.RDD
 
 object DropSlowModuleGradAggEpochOptimizer {
   val subModuleNumber = System.getProperty(
-    "com.intel.analytics.bigdl.optim.BetterGradAggEpochOptimizer.subModuleNumber",
+    "bigdl.optim.BetterGradAggEpochOptimizer.subModuleNumber",
     (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
 
+  val dropModulePercentage = System.getProperty(
+    "bigdl.optim.dropModulePercentage", "0.04").toDouble
+  require(dropModulePercentage>=0 && dropModulePercentage<0.5)
+  
   val lossArray = new Array[Double](subModuleNumber)
   val recordsArray = new Array[Int](subModuleNumber)
   private val logger = Logger.getLogger(getClass);
@@ -77,13 +81,16 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
 
   private def init() = {
     val broadcast = dataSet.getSparkContext().broadcast((module, criterion))
-    val models = dataSet.partitions().mapPartitions(_ => {
+    val _computeThresholdBatchsize = computeThresholdBatchsize
+    val models = dataSet.partitions().mapPartitions(i => {
       val (broadcastModule, broadcastCriterion) = broadcast.value
-      val test = (0 until subModuleNumber).map { _ =>
+      val test = (0 until subModuleNumber).map { i =>
         val localModule = broadcastModule.cloneModule()
         val localCriterion = broadcastCriterion.cloneCriterion()
         val (weights, grads) = localModule.getParameters()
-        CachedModel(localModule, localCriterion, weights, grads, T())}
+        if(i == 0) CachedModel(localModule, localCriterion, weights, grads, T(),
+          new Array[Long](subModuleNumber*_computeThresholdBatchsize))
+        else CachedModel(localModule, localCriterion, weights, grads, T())}
       Iterator(test.toArray)
     }).persist()
     models.setName("modelRDD")
@@ -93,9 +100,9 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
     models
   }
 
+  private val computeThresholdBatchsize = 100
   val multiThreadModels = init()
-
-
+  
   override def optimize(): Module[Tensor[T], Tensor[T], T] = {
     // don't send whole Optimizer in closure
     val broadcastEV = dataSets.getSparkContext().broadcast(ev)
@@ -103,13 +110,14 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
     val sc = dataSets.getSparkContext()
     val partitionNum = dataSets.getPartitionNum()
     var wallClockTime = 0L
-    val epochNum = maxEpoch.getOrElse(20)
-    val state = T()
+    val epochNum = maxEpoch.getOrElse(20)    
     var timeout = Long.MaxValue
-    var threshold = 0L
-    val dropModulePercent = 0.04
+    var threshold = 0L    
     var iteration = 0
-    val idealSubModulesNum = partitionNum * subModuleNumber
+    val idealSubModulesNum = partitionNum * subModuleNumber    
+    val _moduleTimeIgnoredNum = 200
+    val _computeThresholdBatchsize = 100
+    var _moduleTimeList: Array[Long] = null
 
     for (i <- 1 to epochNum) {
       logger.info(s"[Epoch $i/$epochNum] Train start")
@@ -178,8 +186,8 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
 
             // ======================Start train models===================================
             tmp = System.nanoTime()
-              val pid = TaskContext.getPartitionId()
-              val pre = (iteration%100)*partitionNum*subModuleNumber + pid*subModuleNumber
+            val moduleTimeList = localMTCaches(0).moduleTimeList
+              val pre = (iteration%_computeThresholdBatchsize)*subModuleNumber
               val computeThreads = (0 until subModuleNumber).map(i => new Callable[Int] {
                 def call(): Int = {
                   try {
@@ -194,16 +202,16 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
                     val errors = localCriterion.backward(output, target)
                     localModule.backward(input, errors)
                     recordsArray(i) = target.size(1)
-                    Util.moduleTimeList(i + pre) = System.nanoTime() - start + weightSyncTime
+                    moduleTimeList(i + pre) = System.nanoTime() - start + weightSyncTime
                     i
                   } catch {
-                    case e: Exception => logger.info(e.toString)
+                    case e: Exception => e.printStackTrace()
                       -1
                   }
                 }
               })
 
-            if(iteration > 299) {
+            if(iteration > _moduleTimeIgnoredNum+_computeThresholdBatchsize-1) {
               timeout = ((threshold-weightSyncTime)/1e6).toLong
             }
             val threads = pool.invokeAll(computeThreads.asJava, timeout, TimeUnit.MILLISECONDS)
@@ -267,17 +275,18 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
           logger.info("\n" + metrics.summary())
 
           // compute threshold
-          if(iteration%100==99 && iteration>=299) {
-            Util.moduleTimeList = models.mapPartitions{ iter =>
-              Util.moduleTimeList.iterator
+          if(iteration%_computeThresholdBatchsize==_computeThresholdBatchsize-1 &&
+            iteration>=(_computeThresholdBatchsize+_moduleTimeIgnoredNum-1)) {            
+            _moduleTimeList = multiThreadModels.mapPartitions{ iter =>
+              iter.next().apply(0).moduleTimeList.iterator
             }.collect()
-            val k = (dropModulePercent*100*idealSubModulesNum).toInt
-            threshold = Util.kthLargest(Util.moduleTimeList, 0, Util.moduleTimeList.length-1, k)
+            val k = (dropModulePercentage*_computeThresholdBatchsize*idealSubModulesNum).toInt
+            threshold = Util.kthLargest(_moduleTimeList, 0, _moduleTimeList.length-1, k)
             logger.info("threshold: " + threshold)
 
             // clear moduleTimeList in each node
-            models.mapPartitions { iter =>
-              Util.moduleTimeList = new Array[Long](subModuleNumber * 16 * 100)
+            multiThreadModels.mapPartitions { iter =>
+              iter.next.apply(0).moduleTimeList = new Array[Long](subModuleNumber*_computeThresholdBatchsize)
               Iterator.empty
             }.count()
           }
