@@ -76,8 +76,8 @@ class ParallelCriterion[T: ClassTag](val repeatTarget: Boolean = false)
 }
 
 object ParallelCriterion {
-  def apply[@specialized(Float, Double) T: ClassTag](repeatTarget: Boolean = false)
-                                                    (implicit ev: TensorNumeric[T]) : ParallelCriterion[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      repeatTarget: Boolean = false)(implicit ev: TensorNumeric[T]) : ParallelCriterion[T] = {
     new ParallelCriterion[T](repeatTarget)
   }
 }

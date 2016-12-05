@@ -100,7 +100,7 @@ class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
 
 object CMinTable {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : CMinTable[T] = {
+      (implicit ev: TensorNumeric[T]) : CMinTable[T] = {
     new CMinTable[T]()
   }
 }

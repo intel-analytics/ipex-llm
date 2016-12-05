@@ -67,9 +67,9 @@ class Select[T: ClassTag](
 }
 
 object Select {
-  def apply[@specialized(Float, Double) T: ClassTag](dimension: Int,
-                                                     index: Int)
-                                                    (implicit ev: TensorNumeric[T]) : Select[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dimension: Int,
+      index: Int)(implicit ev: TensorNumeric[T]) : Select[T] = {
     new Select[T](dimension, index)
   }
 }

@@ -85,9 +85,9 @@ class Squeeze[@specialized(Float, Double) T: ClassTag](
 }
 
 object Squeeze {
-  def apply[@specialized(Float, Double) T: ClassTag](dim : Int = Int.MinValue,
-  numInputDims: Int = Int.MinValue)
-                                                    (implicit ev: TensorNumeric[T]) : Squeeze[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dim : Int = Int.MinValue,
+      numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Squeeze[T] = {
     new Squeeze[T](dim, numInputDims)
   }
 }

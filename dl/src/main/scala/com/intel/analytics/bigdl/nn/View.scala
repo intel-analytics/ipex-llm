@@ -121,8 +121,8 @@ class View[@specialized(Float, Double) T: ClassTag](sizes: Array[Int])(
 }
 
 object View {
-  def apply[@specialized(Float, Double) T: ClassTag](sizes: Array[Int])
-                                                    (implicit ev: TensorNumeric[T]) : View[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      sizes: Array[Int])(implicit ev: TensorNumeric[T]) : View[T] = {
     new View[T](sizes)
   }
 }

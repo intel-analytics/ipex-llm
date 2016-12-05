@@ -49,7 +49,7 @@ class TanhShrink[T: ClassTag](
 
 object TanhShrink {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : TanhShrink[T] = {
+      (implicit ev: TensorNumeric[T]) : TanhShrink[T] = {
     new TanhShrink[T]()
   }
 }

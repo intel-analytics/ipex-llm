@@ -87,8 +87,9 @@ class MarginCriterion[T: ClassTag]
 }
 
 object MarginCriterion {
-  def apply[@specialized(Float, Double) T: ClassTag](margin: Double = 1.0, sizeAverage: Boolean = true)
-                                                    (implicit ev: TensorNumeric[T]) : MarginCriterion[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      margin: Double = 1.0,
+      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : MarginCriterion[T] = {
     new MarginCriterion[T](margin, sizeAverage)
   }
 }

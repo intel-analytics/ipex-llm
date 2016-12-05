@@ -51,7 +51,7 @@ class Echo[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[
 
 object Echo {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : Echo[T] = {
+      (implicit ev: TensorNumeric[T]) : Echo[T] = {
     new Echo[T]()
   }
 }

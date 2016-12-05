@@ -49,8 +49,8 @@ class CriterionTable[T: ClassTag](val criterion: TensorCriterion[T])
 }
 
 object CriterionTable {
-  def apply[@specialized(Float, Double) T: ClassTag](criterion: TensorCriterion[T])
-                                                    (implicit ev: TensorNumeric[T]) : CriterionTable[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      criterion: TensorCriterion[T])(implicit ev: TensorNumeric[T]) : CriterionTable[T] = {
     new CriterionTable[T](criterion)
   }
 }

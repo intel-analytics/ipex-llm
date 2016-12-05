@@ -113,8 +113,9 @@ class MapTable[T: ClassTag](
 }
 
 object MapTable {
-  def apply[@specialized(Float, Double) T: ClassTag](module: Module[_ <: Activities, _ <: Activities, T] = null)
-                                                    (implicit ev: TensorNumeric[T]) : MapTable[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      module: Module[_ <: Activities, _ <: Activities, T] = null
+  )(implicit ev: TensorNumeric[T]) : MapTable[T] = {
     new MapTable[T](module)
   }
 }

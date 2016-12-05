@@ -30,6 +30,8 @@ case object MklBlas extends EngineType
 
 case object MklDnn extends EngineType
 
+case object Mixed extends EngineType
+
 
 /**
  * Provide appropriated thread pool based on user provided parallelism
@@ -44,7 +46,15 @@ object Engine{
 
   private var engine: ExecutionContext = null
 
-  private var engineType: EngineType = _
+  private var engineType: EngineType = MklBlas
+
+  def setEngineType(engineType: EngineType) : Unit = {
+    this.engineType = engineType
+  }
+
+  def getEngineType() : EngineType = {
+    this.engineType
+  }
 
   def setCoreNum(size: Int): Unit = {
     require(size > 0)

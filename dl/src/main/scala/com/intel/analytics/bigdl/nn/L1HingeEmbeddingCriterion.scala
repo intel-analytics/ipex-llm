@@ -105,8 +105,8 @@ class L1HingeEmbeddingCriterion[T: ClassTag](val margin: Double = 1)
 }
 
 object L1HingeEmbeddingCriterion {
-  def apply[@specialized(Float, Double) T: ClassTag](margin: Double = 1)
-                                                    (implicit ev: TensorNumeric[T]) : L1HingeEmbeddingCriterion[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      margin: Double = 1)(implicit ev: TensorNumeric[T]) : L1HingeEmbeddingCriterion[T] = {
     new L1HingeEmbeddingCriterion[T](margin)
   }
 }

@@ -145,10 +145,10 @@ class RReLU[T: ClassTag](
 }
 
 object RReLU {
-  def apply[@specialized(Float, Double) T: ClassTag](lower: Double = 1.0/8,
-                                                     upper: Double = 1.0/3,
-                                                     inplace: Boolean = false)
-                                                    (implicit ev: TensorNumeric[T]) : RReLU[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      lower: Double = 1.0/8,
+      upper: Double = 1.0/3,
+      inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : RReLU[T] = {
     new RReLU[T](lower, upper, inplace)
   }
 }

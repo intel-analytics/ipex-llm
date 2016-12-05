@@ -170,10 +170,10 @@ class Linear[@specialized(Float, Double) T: ClassTag](
 }
 
 object Linear {
-  def apply[@specialized(Float, Double) T: ClassTag](inputSize: Int,
-                                                     outputSize: Int,
-  initMethod: InitializationMethod = Default)
-                                                    (implicit ev: TensorNumeric[T]) : Linear[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      inputSize: Int,
+      outputSize: Int,
+      initMethod: InitializationMethod = Default)(implicit ev: TensorNumeric[T]) : Linear[T] = {
     new Linear[T](inputSize, outputSize, initMethod)
   }
 }

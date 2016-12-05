@@ -232,14 +232,13 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
     this
   }
 
-  var engineType: EngineType = MklBlas
+  var engineType: EngineType = Engine.getEngineType()
 
   /**
-   * set execution engine type, MklBlas or MklDnn
+   * get execution engine type
    */
-  def setEngineType(engineType: EngineType): this.type = {
-    this.engineType = engineType
-    this
+  def getEngineType(): EngineType = {
+    engineType
   }
 
   def cloneModule(): Module[A, B, T] = {

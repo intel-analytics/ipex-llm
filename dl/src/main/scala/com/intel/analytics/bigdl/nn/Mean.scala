@@ -36,9 +36,9 @@ class Mean[T: ClassTag](
 }
 
 object Mean {
-  def apply[@specialized(Float, Double) T: ClassTag](dimension: Int = 1,
-                                                     nInputDims: Int = -1)
-                                                    (implicit ev: TensorNumeric[T]) : Mean[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dimension: Int = 1,
+      nInputDims: Int = -1)(implicit ev: TensorNumeric[T]) : Mean[T] = {
     new Mean[T](dimension, nInputDims)
   }
 }

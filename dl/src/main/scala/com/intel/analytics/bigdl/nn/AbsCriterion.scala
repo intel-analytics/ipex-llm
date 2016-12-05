@@ -66,7 +66,8 @@ class AbsCriterion[T: ClassTag](sizeAverage: Boolean = true)
 }
 
 object AbsCriterion {
-  def apply[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : AbsCriterion[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : AbsCriterion[T] = {
     new AbsCriterion[T](sizeAverage)
   }
 }

@@ -172,9 +172,11 @@ class MultiMarginCriterion[T: ClassTag](val p: Int = 1,
 }
 
 object MultiMarginCriterion {
-  def apply[@specialized(Float, Double) T: ClassTag](p: Int = 1,
-  weights: Tensor[T] = null, margin: Double = 1.0, sizeAverage: Boolean = true)
-                                                    (implicit ev: TensorNumeric[T]) : MultiMarginCriterion[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      p: Int = 1,
+      weights: Tensor[T] = null,
+      margin: Double = 1.0,
+      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : MultiMarginCriterion[T] = {
     new MultiMarginCriterion[T](p, weights, margin, sizeAverage)
   }
 }

@@ -29,8 +29,8 @@ class ReLU[T: ClassTag](ip: Boolean = false)(
 }
 
 object ReLU {
-  def apply[@specialized(Float, Double) T: ClassTag](ip: Boolean = false)
-                                                    (implicit ev: TensorNumeric[T]) : ReLU[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      ip: Boolean = false)(implicit ev: TensorNumeric[T]) : ReLU[T] = {
     new ReLU[T](ip)
   }
 }

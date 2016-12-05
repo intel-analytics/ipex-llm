@@ -83,8 +83,9 @@ class NarrowTable[T: ClassTag](val offset: Int, val length: Int = 1)
 }
 
 object NarrowTable {
-  def apply[@specialized(Float, Double) T: ClassTag](offset: Int, length: Int = 1)
-                                                    (implicit ev: TensorNumeric[T]) : NarrowTable[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      offset: Int,
+      length: Int = 1)(implicit ev: TensorNumeric[T]) : NarrowTable[T] = {
     new NarrowTable[T](offset, length)
   }
 }

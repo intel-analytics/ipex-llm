@@ -72,7 +72,7 @@ class FlattenTable[T: ClassTag] (implicit ev: TensorNumeric[T])
 
 object FlattenTable {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : FlattenTable[T] = {
+      (implicit ev: TensorNumeric[T]) : FlattenTable[T] = {
     new FlattenTable[T]()
   }
 }

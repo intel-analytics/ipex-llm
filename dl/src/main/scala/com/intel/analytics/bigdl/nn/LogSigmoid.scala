@@ -77,7 +77,7 @@ class LogSigmoid[T: ClassTag] (implicit ev: TensorNumeric[T])
 
 object LogSigmoid {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : LogSigmoid[T] = {
+      (implicit ev: TensorNumeric[T]) : LogSigmoid[T] = {
     new LogSigmoid[T]()
   }
 }

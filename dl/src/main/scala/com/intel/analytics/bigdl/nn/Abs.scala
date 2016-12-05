@@ -59,7 +59,7 @@ class Abs[T: ClassTag]
 
 object Abs {
   def apply[@specialized(Float, Double) T: ClassTag]()
-    (implicit ev: TensorNumeric[T]) : Abs[T] = {
+      (implicit ev: TensorNumeric[T]) : Abs[T] = {
     new Abs[T]()
   }
 }

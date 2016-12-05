@@ -64,7 +64,7 @@ class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule
 object SoftMax{
 
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : SoftMax[T] = {
+      (implicit ev: TensorNumeric[T]) : SoftMax[T] = {
     new SoftMax[T]()
   }
   // Notice: SoftMin will call this function

@@ -44,7 +44,7 @@ class Contiguous[@specialized(Float, Double) T: ClassTag]
 
 object Contiguous {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : Contiguous[T] = {
+      (implicit ev: TensorNumeric[T]) : Contiguous[T] = {
     new Contiguous[T]()
   }
 }

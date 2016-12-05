@@ -88,8 +88,9 @@ class BCECriterion[T: ClassTag](var weights: Tensor[T] = null, sizeAverage: Bool
 
 
 object BCECriterion {
-  def apply[@specialized(Float, Double) T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boolean = true)
-                                                    (implicit ev: TensorNumeric[T]) : BCECriterion[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    weights: Tensor[T] = null,
+    sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : BCECriterion[T] = {
     new BCECriterion[T](weights, sizeAverage)
   }
 }

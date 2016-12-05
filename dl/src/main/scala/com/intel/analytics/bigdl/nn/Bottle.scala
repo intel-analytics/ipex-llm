@@ -125,10 +125,10 @@ class Bottle[T: ClassTag](
 }
 
 object Bottle {
-  def apply[@specialized(Float, Double) T: ClassTag](module: Module[Tensor[T], Tensor[T], T],
-  nInputDim: Int = 2,
-  nOutputDim1: Int = Int.MaxValue)
-                                                    (implicit ev: TensorNumeric[T]) : Bottle[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    module: Module[Tensor[T], Tensor[T], T],
+    nInputDim: Int = 2,
+    nOutputDim1: Int = Int.MaxValue)(implicit ev: TensorNumeric[T]) : Bottle[T] = {
     new Bottle[T](module, nInputDim, nOutputDim1)
   }
 }

@@ -71,8 +71,8 @@ class Index[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
 }
 
 object Index {
-  def apply[@specialized(Float, Double) T: ClassTag](dimension: Int)
-                                                    (implicit ev: TensorNumeric[T]) : Index[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dimension: Int)(implicit ev: TensorNumeric[T]) : Index[T] = {
     new Index[T](dimension)
   }
 }
