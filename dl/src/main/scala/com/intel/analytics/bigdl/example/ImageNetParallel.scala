@@ -17,13 +17,14 @@
 
 package com.intel.analytics.bigdl.example
 
-import com.intel.analytics.bigdl.dataset.ImageUtils
+import com.intel.analytics.bigdl.dataset.RGBImage
 import com.intel.analytics.bigdl.example.ImageNetUtils._
 import com.intel.analytics.bigdl.example.Utils._
 import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2_NoAuxClassifier}
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim.SGD.{EpochSchedule, Poly, Regime}
 import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.optim.SGD
+import com.intel.analytics.bigdl.optim.SGD.{EpochSchedule, EpochStep, Poly, Regime}
 import com.intel.analytics.bigdl.ps.{AllReduceParameterManager, ImprovedAllReduceParameterManager, OneReduceParameterManager}
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
@@ -211,7 +212,7 @@ object ImageNetParallel {
       val (label, data) = images(i)
       cropFloat(data, input.size(3), input.size(4), mean, std, features, i * featureSize)
       if(RandomGenerator.RNG.uniform(0, 1) > 0.5) {
-        ImageUtils.hflip(features, input.size(3), input.size(4), 3)
+        RGBImage.hflip(features, input.size(3), input.size(4))
       }
       targets(i) = label
       i += 1

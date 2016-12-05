@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset
 
+import com.intel.analytics.bigdl.example.MNIST
 import com.intel.analytics.bigdl.models.mnist.{LeNet5, MLP, SimpleCNN}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, Module, TensorModule}
 import com.intel.analytics.bigdl.optim._
@@ -85,9 +86,9 @@ object MNISTLocal {
       val trainDataSource = new MNISTDataSource(trainData, trainDLabel, looped = true)
       val validationDataSource = new MNISTDataSource(validationData, validationLabel, looped =
         false)
-      val arrayByteToImage = ArrayByteToGreyImage()
-      val normalizer = new ImageNormalizer(trainDataSource -> arrayByteToImage)
-      val toTensor = new ImageToTensor(configs(param.net).batchSize)
+      val arrayByteToImage = ArrayByteToGreyImage(28, 28)
+      val normalizer = new GreyImageNormalizer(trainDataSource -> arrayByteToImage)
+      val toTensor = new GreyImageToTensor(configs(param.net).batchSize)
       val optimizer = new LocalOptimizer[Float](
         data = trainDataSource -> arrayByteToImage -> normalizer -> toTensor,
         validationData = validationDataSource -> arrayByteToImage -> normalizer -> toTensor,

@@ -45,8 +45,8 @@ object Cifar10Local {
       val validationDataSource = new CifarDataSource(Paths.get(param.folder + "/val"),
         looped = false)
       val arrayToImage = ArrayByteToRGBImage()
-      val normalizer = new ImageNormalizer(trainDataSource -> arrayToImage)
-      val toTensor = new ImageToTensor(batchSize = 128)
+      val normalizer = RGBImageNormalizer(trainDataSource -> arrayToImage)
+      val toTensor = new RGBImageToTensor(batchSize = 128)
 
       val optimizer = new LocalOptimizer[Float](
         data = trainDataSource -> arrayToImage -> normalizer -> toTensor,
