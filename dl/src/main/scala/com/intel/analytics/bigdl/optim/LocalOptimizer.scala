@@ -54,8 +54,11 @@ class LocalOptimizer[T](
 
     while (count < data.total()) {
       val (input, target) = data.next()
-      val tmpPathInput = "./data_batch_input_" + iBatch.toString + ".t7"
-      val tmpPathLabel = "./data_batch_label_" + iBatch.toString + ".t7"
+      val suffix = ".t7"
+      val tmpInput = java.io.File.createTempFile("torchdata/data_batch_input_" + iBatch.toString, suffix)
+      val tmpLabel = java.io.File.createTempFile("torchdata/data_batch_label_" + iBatch.toString, suffix)
+      val tmpPathInput = tmpInput.getAbsolutePath
+      val tmpPathLabel = tmpLabel.getAbsolutePath
       File.saveTorch(input, tmpPathInput, TYPE_FLOAT_TENSOR)
       File.saveTorch(target, tmpPathLabel, TYPE_FLOAT_TENSOR)
       println(s"save to file ${tmpPathInput}")
@@ -68,11 +71,11 @@ class LocalOptimizer[T](
     count = 0
     iBatch = 1
     validationData.map { case (input, target) =>
-      val output = model.forward(input)
-      println(s"[Validation][Epoch ${state[Int]("epoch")}][Iteration ${state[Int]("neval")}] " +
-        s"$count/${validationData.total()}")
-      val tmpPathInput = "./data_test_batch_input_" + iBatch.toString + ".t7"
-      val tmpPathLabel = "./data_test_batch_label_" + iBatch.toString + ".t7"
+      val suffix = ".t7"
+      val tmpInput = java.io.File.createTempFile("torchdata/data_test_batch_input_" + iBatch.toString, suffix)
+      val tmpLabel = java.io.File.createTempFile("torchdata/data_test_batch_label_" + iBatch.toString, suffix)
+      val tmpPathInput = tmpInput.getAbsolutePath
+      val tmpPathLabel = tmpLabel.getAbsolutePath
       File.saveTorch(input, tmpPathInput, TYPE_FLOAT_TENSOR)
       File.saveTorch(target, tmpPathLabel, TYPE_FLOAT_TENSOR)
       println(s"save test to file ${tmpPathInput}")
