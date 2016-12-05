@@ -82,6 +82,6 @@ object DistributedOptimizer {
    */
   case class CachedModel[T](model: Module[Tensor[T], Tensor[T], T],
     criterion: Criterion[Tensor[T], T], weight: Tensor[T],
-    gradient: Tensor[T], state: Table)
+    gradient: Tensor[T], state: Table, var moduleTimeList: Array[Long] = null)
 
 }
