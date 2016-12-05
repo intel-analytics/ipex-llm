@@ -20,7 +20,8 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.dataset.DataSource
 import com.intel.analytics.bigdl.nn.{Criterion, Module, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Activities, Table}
+import com.intel.analytics.bigdl.utils.TorchObject.TYPE_FLOAT_TENSOR
+import com.intel.analytics.bigdl.utils.{Activities, File, Table}
 
 class LocalOptimizer[T](
   data: DataSource[(Tensor[T], Tensor[T])],
@@ -44,11 +45,42 @@ class LocalOptimizer[T](
     val (weights, grad) = model.getParameters()
     var wallClockTime = 0L
     var count = 0
+    var iBatch = 1
 
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     data.reset()
     data.shuffle()
+
+    while (count < data.total()) {
+      val (input, target) = data.next()
+      val tmpPathInput = "./data_batch_input_" + iBatch.toString + ".t7"
+      val tmpPathLabel = "./data_batch_label_" + iBatch.toString + ".t7"
+      File.saveTorch(input, tmpPathInput, TYPE_FLOAT_TENSOR)
+      File.saveTorch(target, tmpPathLabel, TYPE_FLOAT_TENSOR)
+      println(s"save to file ${tmpPathInput}")
+      iBatch += 1
+      count += input.size(1)
+    }
+
+
+    validationData.reset()
+    count = 0
+    iBatch = 1
+    validationData.map { case (input, target) =>
+      val output = model.forward(input)
+      println(s"[Validation][Epoch ${state[Int]("epoch")}][Iteration ${state[Int]("neval")}] " +
+        s"$count/${validationData.total()}")
+      val tmpPathInput = "./data_test_batch_input_" + iBatch.toString + ".t7"
+      val tmpPathLabel = "./data_test_batch_label_" + iBatch.toString + ".t7"
+      File.saveTorch(input, tmpPathInput, TYPE_FLOAT_TENSOR)
+      File.saveTorch(target, tmpPathLabel, TYPE_FLOAT_TENSOR)
+      println(s"save test to file ${tmpPathInput}")
+      iBatch += 1
+      count += input.size(1)
+    }
+
+    count = 0
     while (!endWhen(state)) {
       val start = System.nanoTime()
       val (input, target) = data.next()
