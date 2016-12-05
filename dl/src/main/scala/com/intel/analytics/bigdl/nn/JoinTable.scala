@@ -126,9 +126,9 @@ class JoinTable[T: ClassTag] (
 }
 
 object JoinTable {
-  def apply[@specialized(Float, Double) T: ClassTag](dimension: Int,
-  nInputDims: Int)
-                                                    (implicit ev: TensorNumeric[T]) : JoinTable[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dimension: Int,
+      nInputDims: Int)(implicit ev: TensorNumeric[T]) : JoinTable[T] = {
     new JoinTable[T](dimension, nInputDims)
   }
 }

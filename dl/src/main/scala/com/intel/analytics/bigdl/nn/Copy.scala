@@ -44,7 +44,7 @@ class Copy[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[
 
 object Copy {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : Copy[T] = {
+      (implicit ev: TensorNumeric[T]) : Copy[T] = {
     new Copy[T]()
   }
 }

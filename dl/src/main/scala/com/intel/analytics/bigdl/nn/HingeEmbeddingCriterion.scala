@@ -110,9 +110,9 @@ class HingeEmbeddingCriterion[T: ClassTag](
 }
 
 object HingeEmbeddingCriterion {
-  def apply[@specialized(Float, Double) T: ClassTag](margin: Double = 1,
-                                                       sizeAverage: Boolean = true)
-                                                    (implicit ev: TensorNumeric[T]) : HingeEmbeddingCriterion[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      margin: Double = 1,
+      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : HingeEmbeddingCriterion[T] = {
     new HingeEmbeddingCriterion[T](margin, sizeAverage)
   }
 }

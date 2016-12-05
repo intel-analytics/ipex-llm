@@ -39,7 +39,7 @@ class Exp[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T
 
 object Exp {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : Exp[T] = {
+      (implicit ev: TensorNumeric[T]) : Exp[T] = {
     new Exp[T]()
   }
 }

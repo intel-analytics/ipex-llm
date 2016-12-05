@@ -33,8 +33,11 @@ class SpatialBatchNormalization[T: ClassTag](
 }
 
 object SpatialBatchNormalization {
-  def apply[@specialized(Float, Double) T: ClassTag](nOutput: Int, eps: Double = 1e-5, momentum: Double = 0.1, affine: Boolean = true)
-                                                    (implicit ev: TensorNumeric[T]) : SpatialBatchNormalization[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      nOutput: Int,
+      eps: Double = 1e-5,
+      momentum: Double = 0.1,
+      affine: Boolean = true)(implicit ev: TensorNumeric[T]) : SpatialBatchNormalization[T] = {
     new SpatialBatchNormalization[T](nOutput, eps, momentum, affine)
   }
 }

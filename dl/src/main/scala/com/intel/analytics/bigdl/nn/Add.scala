@@ -100,7 +100,8 @@ class Add[T: ClassTag](inputSize: Int
 }
 
 object Add {
-  def apply[@specialized(Float, Double) T: ClassTag](inputSize: Int)(implicit ev: TensorNumeric[T]) : Add[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    inputSize: Int)(implicit ev: TensorNumeric[T]) : Add[T] = {
     new Add[T](inputSize)
   }
 }

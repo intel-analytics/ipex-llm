@@ -32,7 +32,7 @@ class Square[T: ClassTag](implicit ev: TensorNumeric[T]) extends Power[T](2, 1, 
 
 object Square {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : Square[T] = {
+      (implicit ev: TensorNumeric[T]) : Square[T] = {
     new Square[T]()
   }
 }

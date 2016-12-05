@@ -47,7 +47,7 @@ class Log[T: ClassTag] (implicit ev: TensorNumeric[T])
 
 object Log {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : Log[T] = {
+      (implicit ev: TensorNumeric[T]) : Log[T] = {
     new Log[T]()
   }
 }

@@ -82,7 +82,7 @@ class MultiCriterion[A <: Activities: ClassTag, T: ClassTag]
 
 object MultiCriterion {
   def apply[A <: Activities: ClassTag, @specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : MultiCriterion[A, T] = {
+      (implicit ev: TensorNumeric[T]) : MultiCriterion[A, T] = {
     new MultiCriterion[A, T]()
   }
 }

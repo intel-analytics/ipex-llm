@@ -85,10 +85,10 @@ class Sum[T: ClassTag](
 }
 
 object Sum {
-  def apply[@specialized(Float, Double) T: ClassTag](dimension: Int = 1,
-                                                     nInputDims: Int = -1,
-                                                     sizeAverage: Boolean = false)
-                                                    (implicit ev: TensorNumeric[T]) : Sum[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dimension: Int = 1,
+      nInputDims: Int = -1,
+      sizeAverage: Boolean = false)(implicit ev: TensorNumeric[T]) : Sum[T] = {
     new Sum[T](dimension, nInputDims, sizeAverage)
   }
 }

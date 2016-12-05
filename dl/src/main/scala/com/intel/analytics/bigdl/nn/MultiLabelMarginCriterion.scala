@@ -198,8 +198,8 @@ class MultiLabelMarginCriterion[T: ClassTag]
 }
 
 object MultiLabelMarginCriterion {
-  def apply[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean = true)
-                                                    (implicit ev: TensorNumeric[T]) : MultiLabelMarginCriterion[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : MultiLabelMarginCriterion[T] = {
     new MultiLabelMarginCriterion[T](sizeAverage)
   }
 }

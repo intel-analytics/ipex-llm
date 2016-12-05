@@ -57,7 +57,7 @@ class CDivTable[T: ClassTag](implicit ev: TensorNumeric[T])
 
 object CDivTable {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : CDivTable[T] = {
+      (implicit ev: TensorNumeric[T]) : CDivTable[T] = {
     new CDivTable[T]()
   }
 }

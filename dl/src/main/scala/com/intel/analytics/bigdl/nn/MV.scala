@@ -142,8 +142,8 @@ class MV[T: ClassTag](val trans: Boolean = false)
 }
 
 object MV {
-  def apply[@specialized(Float, Double) T: ClassTag](trans: Boolean = false)
-                                                    (implicit ev: TensorNumeric[T]) : MV[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      trans: Boolean = false)(implicit ev: TensorNumeric[T]) : MV[T] = {
     new MV[T](trans)
   }
 }

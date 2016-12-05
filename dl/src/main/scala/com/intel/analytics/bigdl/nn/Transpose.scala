@@ -55,8 +55,8 @@ class Transpose[@specialized(Float, Double) T: ClassTag](
 }
 
 object Transpose {
-  def apply[@specialized(Float, Double) T: ClassTag](permutations: Array[(Int, Int)])
-                                                    (implicit ev: TensorNumeric[T]) : Transpose[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      permutations: Array[(Int, Int)])(implicit ev: TensorNumeric[T]) : Transpose[T] = {
     new Transpose[T](permutations)
   }
 }

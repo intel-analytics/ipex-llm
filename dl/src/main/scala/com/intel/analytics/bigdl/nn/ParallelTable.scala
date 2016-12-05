@@ -84,7 +84,7 @@ class ParallelTable[T: ClassTag]
 
 object ParallelTable {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : ParallelTable[T] = {
+      (implicit ev: TensorNumeric[T]) : ParallelTable[T] = {
     new ParallelTable[T]()
   }
 }

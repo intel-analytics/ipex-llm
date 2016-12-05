@@ -149,8 +149,8 @@ class CMul[@specialized(Float, Double) T: ClassTag](
 }
 
 object CMul {
-  def apply[@specialized(Float, Double) T: ClassTag](size: Array[Int])
-                                                    (implicit ev: TensorNumeric[T]) : CMul[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      size: Array[Int])(implicit ev: TensorNumeric[T]) : CMul[T] = {
     new CMul[T](size)
   }
 }

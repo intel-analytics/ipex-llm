@@ -42,7 +42,7 @@ class L1Cost[T: ClassTag]()
 
 object L1Cost {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : L1Cost[T] = {
+      (implicit ev: TensorNumeric[T]) : L1Cost[T] = {
     new L1Cost[T]()
   }
 }

@@ -196,8 +196,9 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
 }
 
 object Cosine {
-  def apply[@specialized(Float, Double) T: ClassTag](inputSize : Int, outputSize : Int)
-                                                    (implicit ev: TensorNumeric[T]) : Cosine[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      inputSize : Int,
+      outputSize : Int)(implicit ev: TensorNumeric[T]) : Cosine[T] = {
     new Cosine[T](inputSize, outputSize)
   }
 }

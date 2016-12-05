@@ -98,7 +98,7 @@ class CMaxTable[T: ClassTag](implicit ev: TensorNumeric[T])
 
 object CMaxTable {
   def apply[@specialized(Float, Double) T: ClassTag]()
-                                                    (implicit ev: TensorNumeric[T]) : CMaxTable[T] = {
+      (implicit ev: TensorNumeric[T]) : CMaxTable[T] = {
     new CMaxTable[T]()
   }
 }

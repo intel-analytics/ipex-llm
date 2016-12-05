@@ -87,9 +87,9 @@ class ELU[T: ClassTag](
 }
 
 object ELU {
-  def apply[@specialized(Float, Double) T: ClassTag](alpha: Double = 1.0,
-                                                     inplace: Boolean = false)
-                                                    (implicit ev: TensorNumeric[T]) : ELU[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      alpha: Double = 1.0,
+      inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : ELU[T] = {
     new ELU[T](alpha, inplace)
   }
 }

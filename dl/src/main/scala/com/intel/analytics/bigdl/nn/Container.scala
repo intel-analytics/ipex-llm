@@ -17,10 +17,9 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{Activities, EngineType, Mixed, Table}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Activities, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -60,6 +59,14 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
     train = false
     modules.foreach(_.evaluate())
     this
+  }
+
+  override def getEngineType(): EngineType = {
+    var mixed = false
+    modules.foreach{module =>
+      if (engineType != module.getEngineType()) mixed = true
+    }
+    if (mixed) Mixed else engineType
   }
 
   override def getTimes():

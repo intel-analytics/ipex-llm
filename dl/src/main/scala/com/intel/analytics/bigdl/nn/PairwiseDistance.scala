@@ -163,8 +163,8 @@ class PairwiseDistance[@specialized(Float, Double) T: ClassTag](
 }
 
 object PairwiseDistance {
-  def apply[@specialized(Float, Double) T: ClassTag](norm : Int = 2)
-                                                    (implicit ev: TensorNumeric[T]) : PairwiseDistance[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      norm : Int = 2)(implicit ev: TensorNumeric[T]) : PairwiseDistance[T] = {
     new PairwiseDistance[T](norm)
   }
 }

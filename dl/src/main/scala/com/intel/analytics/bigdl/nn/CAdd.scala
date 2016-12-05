@@ -122,8 +122,9 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
 }
 
 object CAdd {
-  def apply[@specialized(Float, Double) T: ClassTag](size: Array[Int])
-                                                    (implicit ev: TensorNumeric[T]) : CAdd[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    size: Array[Int]
+  )(implicit ev: TensorNumeric[T]) : CAdd[T] = {
     new CAdd[T](size)
   }
 }

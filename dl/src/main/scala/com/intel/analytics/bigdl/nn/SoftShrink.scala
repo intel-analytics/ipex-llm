@@ -78,8 +78,8 @@ class SoftShrink[T: ClassTag](
 }
 
 object SoftShrink {
-  def apply[@specialized(Float, Double) T: ClassTag](lamda: Double = 0.5)
-                                                    (implicit ev: TensorNumeric[T]) : SoftShrink[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      lamda: Double = 0.5)(implicit ev: TensorNumeric[T]) : SoftShrink[T] = {
     new SoftShrink[T](lamda)
   }
 }

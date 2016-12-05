@@ -316,8 +316,8 @@ class PReLU[T: ClassTag](
 }
 
 object PReLU {
-  def apply[@specialized(Float, Double) T: ClassTag](nOutputPlane: Int = 0)
-                                                    (implicit ev: TensorNumeric[T]) : PReLU[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      nOutputPlane: Int = 0)(implicit ev: TensorNumeric[T]) : PReLU[T] = {
     new PReLU[T](nOutputPlane)
   }
 }

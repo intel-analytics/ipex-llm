@@ -104,9 +104,9 @@ class Max[@specialized(Float, Double) T: ClassTag](
 }
 
 object Max {
-  def apply[@specialized(Float, Double) T: ClassTag](dim : Int = 1,
-  numInputDims: Int = Int.MinValue)
-                                                    (implicit ev: TensorNumeric[T]) : Max[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dim : Int = 1,
+      numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Max[T] = {
     new Max[T](dim, numInputDims)
   }
 }
