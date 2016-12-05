@@ -87,12 +87,12 @@ class LocalOptimizer[T](
     val tmpTestLabel = java.io.File.createTempFile("torchdata/data_test_batch_label", suffix)
     val tmpTestPathInput = tmpTestInput.getAbsolutePath
     val tmpTestPathLabel = tmpTestLabel.getAbsolutePath
-    File.saveTorch(trainDataInput, tmpTestPathInput, TYPE_FLOAT_TENSOR)
-    File.saveTorch(trainDataLabel, tmpTestPathLabel, TYPE_FLOAT_TENSOR)
+    File.saveTorch(testDataInput, tmpTestPathInput, TYPE_FLOAT_TENSOR)
+    File.saveTorch(testDataLabel, tmpTestPathLabel, TYPE_FLOAT_TENSOR)
     println(s"save to file ${tmpTestPathInput}")
 
 
-    
+
     count = 0
     while (!endWhen(state)) {
       val start = System.nanoTime()
