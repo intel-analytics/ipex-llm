@@ -52,38 +52,47 @@ class LocalOptimizer[T](
     data.reset()
     data.shuffle()
 
+
+
+    val trainDataInput = Tensor[Float](50000, 3, 32, 32)
+    val trainDataLabel = Tensor[Float](50000, 1)
     while (count < data.total()) {
       val (input, target) = data.next()
-      val suffix = ".t7"
-      val tmpInput = java.io.File.createTempFile("torchdata/data_batch_input_" + iBatch.toString, suffix)
-      val tmpLabel = java.io.File.createTempFile("torchdata/data_batch_label_" + iBatch.toString, suffix)
-      val tmpPathInput = tmpInput.getAbsolutePath
-      val tmpPathLabel = tmpLabel.getAbsolutePath
-      File.saveTorch(input, tmpPathInput, TYPE_FLOAT_TENSOR)
-      File.saveTorch(target, tmpPathLabel, TYPE_FLOAT_TENSOR)
-      println(s"save to file ${tmpPathInput}")
-      iBatch += 1
+      trainDataInput.narrow(1, count, 100).copy(input.asInstanceOf[Tensor[Float]])
+      trainDataLabel.narrow(1, count, 100).copy(target.asInstanceOf[Tensor[Float]])
       count += input.size(1)
     }
 
+    val suffix = ".t7"
+    val tmpInput = java.io.File.createTempFile("torchdata/data_batch_input", suffix)
+    val tmpLabel = java.io.File.createTempFile("torchdata/data_batch_label", suffix)
+    val tmpPathInput = tmpInput.getAbsolutePath
+    val tmpPathLabel = tmpLabel.getAbsolutePath
+    File.saveTorch(trainDataInput, tmpPathInput, TYPE_FLOAT_TENSOR)
+    File.saveTorch(trainDataLabel, tmpPathLabel, TYPE_FLOAT_TENSOR)
+    println(s"save to file ${tmpPathInput}")
 
-    validationData.reset()
+
     count = 0
-    iBatch = 1
+    val testDataInput = Tensor[Float](10000, 3, 32, 32)
+    val testDataLabel = Tensor[Float](10000, 1)
     while (count < validationData.total()) {
       val (input, target) = validationData.next()
-      val suffix = ".t7"
-      val tmpInput = java.io.File.createTempFile("torchdata/data_test_batch_input_" + iBatch.toString, suffix)
-      val tmpLabel = java.io.File.createTempFile("torchdata/data_test_batch_label_" + iBatch.toString, suffix)
-      val tmpPathInput = tmpInput.getAbsolutePath
-      val tmpPathLabel = tmpLabel.getAbsolutePath
-      File.saveTorch(input, tmpPathInput, TYPE_FLOAT_TENSOR)
-      File.saveTorch(target, tmpPathLabel, TYPE_FLOAT_TENSOR)
-      println(s"save to file ${tmpPathInput}")
-      iBatch += 1
+      testDataInput.narrow(1, count, 100).copy(input.asInstanceOf[Tensor[Float]])
+      testDataLabel.narrow(1, count, 100).copy(target.asInstanceOf[Tensor[Float]])
       count += input.size(1)
     }
 
+    val tmpTestInput = java.io.File.createTempFile("torchdata/data_test_batch_input", suffix)
+    val tmpTestLabel = java.io.File.createTempFile("torchdata/data_test_batch_label", suffix)
+    val tmpTestPathInput = tmpTestInput.getAbsolutePath
+    val tmpTestPathLabel = tmpTestLabel.getAbsolutePath
+    File.saveTorch(trainDataInput, tmpTestPathInput, TYPE_FLOAT_TENSOR)
+    File.saveTorch(trainDataLabel, tmpTestPathLabel, TYPE_FLOAT_TENSOR)
+    println(s"save to file ${tmpTestPathInput}")
+
+
+    
     count = 0
     while (!endWhen(state)) {
       val start = System.nanoTime()

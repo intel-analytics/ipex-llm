@@ -106,7 +106,7 @@ object Cifar10Local {
 
       val arrayToImage = ArrayByteToRGBImage()
       val normalizer = RGBImageNormalizer(trainDataSource -> arrayToImage) //125.3, 123.0, 113.9, 63.0, 62.1, 66.7)
-      val toTensor = new RGBImageToTensor(batchSize = 10000)
+      val toTensor = new RGBImageToTensor(batchSize = 100)
 
       val optimizer = new LocalOptimizer[Float](
         //data = trainDataSource -> arrayToImage -> normalizer -> toTensor,
