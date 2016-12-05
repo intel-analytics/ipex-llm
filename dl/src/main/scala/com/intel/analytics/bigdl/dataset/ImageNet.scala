@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.dataset
 
 import java.nio.file.{Files, Path, Paths}
+import java.util.concurrent.Executors
 
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, GoogleNet_v1}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, Module}
@@ -26,6 +27,9 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import scopt.OptionParser
+
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, Future, ExecutionContext}
 
 object ImageNetSeqFileGenerator {
 
@@ -75,7 +79,7 @@ object ImageNetSeqFileGenerator {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
               val pipeline = trainDataSource -> PathToRGBImage(256) ->
-                new ImageToSequentialFile(param.blockSize, Paths.get(param.output, "train",
+                RGBImageToSequentialFile(param.blockSize, Paths.get(param.output, "train",
                   s"imagenet-seq-$tid"))
               while (pipeline.hasNext) {
                 println(s"Generated file ${pipeline.next()}")
@@ -101,7 +105,7 @@ object ImageNetSeqFileGenerator {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
               val pipeline = validationDataSource -> PathToRGBImage(256) ->
-                new ImageToSequentialFile(param.blockSize, Paths.get(param.output, "val",
+                RGBImageToSequentialFile(param.blockSize, Paths.get(param.output, "val",
                   s"imagenet-seq-$tid"))
               while (pipeline.hasNext) {
                 println(s"Generated file ${pipeline.next()}")
@@ -204,22 +208,20 @@ object ImageNetLocal {
         50000, looped = false)
       val fileTransformer = new SeqFileToArrayByte()
       val arrayToImage = ArrayByteToRGBImage()
-      val cropper = new ImageCropper(config.imageSize, config.imageSize, 3)
-      val normalizer = new ImageNormalizer(Array(0,406, 0.456, 0.485), Array(0.225, 0.224, 0.229))
-      val flipper = new HFlip(0.5)
-      val trainMultiThreadToTensor = new MultiThreadImageToSingleTensor[Path](
+      val cropper = RGBImageCropper(cropWidth = config.imageSize, cropHeight = config.imageSize)
+      val normalizer = RGBImageNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
+      val flipper = HFlip(0.5)
+      val trainMultiThreadToTensor = MultiThreadRGBImageToSingleTensor[Path](
         width = configs(param.net).imageSize,
         height = configs(param.net).imageSize,
-        numChannels = 3,
         threadNum = param.parallel,
         batchSize = config.batchSize,
         transformer = fileTransformer + arrayToImage + cropper + flipper + normalizer
       )
 
-      val validationMultiThreadToTensor = new MultiThreadImageToSingleTensor[Path](
+      val validationMultiThreadToTensor = MultiThreadRGBImageToSingleTensor[Path](
         width = configs(param.net).imageSize,
         height = configs(param.net).imageSize,
-        numChannels = 3,
         threadNum = param.parallel,
         batchSize = config.batchSize,
         transformer = fileTransformer + arrayToImage + cropper + normalizer
@@ -248,4 +250,5 @@ object ImageNetLocal {
       optimizer.optimize()
     })
   }
+
 }
