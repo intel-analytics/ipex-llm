@@ -192,6 +192,16 @@ trait TensorMath[T] {
   def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T]
 
   /**
+   * change this tensor with values from the original tensor by gathering a number of values
+   * from each "row", where the rows are along the dimension dim.
+   * @param dim
+   * @param index
+   * @param src
+   * @return this
+   */
+  def gather(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T]
+
+  /**
    * This function computes 2 dimensional convolution of a single image
    * with a single kernel (2D output). the dimensions of input and kernel
    * need to be 2, and Input image needs to be bigger than kernel. The
