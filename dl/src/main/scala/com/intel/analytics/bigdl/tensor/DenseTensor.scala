@@ -787,6 +787,26 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
+  def gather(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = {
+    require(src.dim() == this.dim(), "Input tensor must have same dimensions as output tensor")
+    require(dim <= this.dim(), "Index dimension is out of bounds")
+    require(index.dim() == src.dim(), "Index tensor must have same dimensions as input tensor")
+    val elementsPerRow = index.size(dim)
+    // TODO: the performance of contiguous tensor should be optimize
+    DenseTensorDimApply.dimApply3[T](this, src, index, dim, (tdata, toffset, tstride,
+       tsize, vdata, voffset, vstride, vsize, idata, ioffset, istride, isize) => {
+      var i = 0
+      while (i < elementsPerRow) {
+        val idx = ev.toType[Int](idata(ioffset + i * istride))
+        require(idx >= 1 && idx <= src.size(dim), "invalid index in gather")
+        tdata(i * tstride + toffset) = vdata((idx - 1) * vstride + voffset)
+        i += 1
+      }
+    })
+
+    this
+  }
+
   override def add(value: T, y: Tensor[T]): Tensor[T] = DenseTensorMath.cadd(this, this, value, y)
 
   override def add(x: Tensor[T]): Tensor[T] = {
