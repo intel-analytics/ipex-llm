@@ -363,6 +363,60 @@ class GreyImageToTensor(batchSize: Int) extends Transformer[GreyImage, (Tensor[F
   }
 }
 
+class GreyImageToAETensor(batchSize: Int) extends Transformer[GreyImage, (Tensor[Float],
+  Tensor[Float])] {
+
+  private def copyImage(img: GreyImage, storage: Array[Float], offset: Int): Unit = {
+    val content = img.content
+    val frameLength = img.width() * img.height()
+    var j = 0
+    while (j < frameLength) {
+      storage(offset + j) = content(j)
+      j += 1
+    }
+  }
+
+  override def transform(prev: Iterator[GreyImage]): Iterator[(Tensor[Float], Tensor[Float])] = {
+    new Iterator[(Tensor[Float], Tensor[Float])] {
+      private val featureTensor: Tensor[Float] = Tensor[Float]()
+      private val labelTensor: Tensor[Float] = Tensor[Float]()
+      private var featureData: Array[Float] = null
+      private var labelData: Array[Float] = null
+      private var width = 0
+      private var height = 0
+
+      override def hasNext: Boolean = prev.hasNext
+
+      override def next(): (Tensor[Float], Tensor[Float]) = {
+        if (prev.hasNext) {
+          var i = 0
+          while (i < batchSize && prev.hasNext) {
+            val img = prev.next()
+            if (featureData == null) {
+              featureData = new Array[Float](batchSize * img.height() * img.width())
+              labelData = new Array[Float](batchSize * img.height() * img.width())
+              height = img.height()
+              width = img.width()
+            }
+            copyImage(img, featureData, i * img.width() * img.height())
+            labelData(i) = img.label()
+            i += 1
+          }
+          if (labelTensor.nElement() != batchSize) {
+            featureTensor.set(Storage[Float](featureData),
+              storageOffset = 1, sizes = Array(batchSize, height * width))
+            labelTensor.set(Storage[Float](featureData),
+              storageOffset = 1, sizes = Array(batchSize, height * width))
+          }
+          (featureTensor, labelTensor)
+        } else {
+          null
+        }
+      }
+    }
+  }
+}
+
 object RGBImageToTensor {
   def apply(batchSize: Int): RGBImageToTensor = new RGBImageToTensor(batchSize)
 }
