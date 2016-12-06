@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{Sequential, SpatialConvolution}
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}

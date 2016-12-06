@@ -26,7 +26,9 @@ import scala.util.Random
 
 class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
 
-  private val maxNum = 2000 //5000
+  private val maxNum = 1000
+  // add status
+  val status = System.getProperty("checkAllGradient").asInstanceOf[Int]
 
   def checkLayer[T: ClassTag](
     layer: Module[T],
@@ -44,7 +46,6 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
     var j = 1
     var i = 1
 
-    status = 1
     val length = if (status == 1) math.min(maxNum, input.nElement()) else input.nElement()
     while (j <= length) {
       i = if (status == 1) Random.nextInt(input.nElement()) + 1 else j
@@ -59,10 +60,12 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
 
       val errDiff = math.abs(estimatedGradient - ev.toType[Double](computedGrad.valueAt(i)))
       if (errDiff > epsilon) {
-        println(errDiff + " " + estimatedGradient + " " + computedGrad.valueAt(i) )
+        println("input : greaterVal " + i + ":" + errDiff + " " +
+          estimatedGradient + " " + computedGrad.valueAt(i))
       }
       result = result & (errDiff < epsilon)
       perturbation.setValue(i, curValue)
+
       j += 1
     }
 
@@ -78,10 +81,12 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
     // add status
     var status = System.getProperty("checkAllGradient").asInstanceOf[Int]
 
+    var (weights, gradWeights) = layer.getParameters()
     val gradOutput = lossAndGradient(layer.forward(input))._2
     val computedGrad = layer.backward(input, gradOutput)
 
-    val (weights, gradWeights) = layer.getParameters()
+    weights = layer.getParameters()._1
+    gradWeights = layer.getParameters()._2
     gradWeights.resize(Array(gradWeights.nElement()))
 
     val perturbation = Tensor[T]()
@@ -91,11 +96,9 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
     var j = 1
     var i = 1
 
-    status = 1
     val length = if (status == 1) math.min(maxNum, weights.nElement()) else weights.nElement()
-
     while (j <= length) {
-      i = 4606088 //if (status == 1) Random.nextInt(weights.nElement()) + 1 else j
+      i = if (status == 1) Random.nextInt(weights.nElement()) + 1 else j
       val curValue = perturbation.valueAt(i)
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) + stepSize))
       val positiveLoss = lossAndGradient(layer.forward(input))._1
@@ -105,7 +108,8 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
 
       val errDiff = math.abs(estimatedGradient - ev.toType[Double](gradWeights.valueAt(i)))
       if (errDiff > epsilon) {
-        println(errDiff + " " + estimatedGradient + " " + gradWeights.valueAt(i) )
+        println("weight : greaterVal " + i + ":" + errDiff + " " +
+          estimatedGradient + " " + gradWeights.valueAt(i))
       }
       result = result & (errDiff < epsilon)
       perturbation.setValue(i, curValue)

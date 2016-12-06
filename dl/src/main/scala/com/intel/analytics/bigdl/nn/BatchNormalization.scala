@@ -77,8 +77,9 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   }
 
   @inline
-  def setInit(): Unit ={
+  def setInit(): this.type = {
     needInit = true
+    this
   }
 
   @inline
