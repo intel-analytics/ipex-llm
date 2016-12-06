@@ -15,29 +15,27 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.mnist
+package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.{LogSoftMax, _}
+import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{Engine, Mixed, MklBlas, MklDnn}
+import org.scalatest.{FlatSpec, Matchers}
 
-import scala.reflect.ClassTag
+class EngineTypeSpec extends FlatSpec with Matchers {
+  "Module.getEngineType" should "return right type" in {
+    Engine.setEngineType(MklBlas)
+    val model = GoogleNet_v2[Float](1000)
+    model.getEngineType() should be (MklBlas)
 
-object MLP {
-  val rowN = 28
-  val colN = 28
-  val featureSize = rowN * colN
-  val classNum = 10
+    Engine.setEngineType(MklDnn)
+    val model2 = GoogleNet_v1[Float](1000)
+    model2.getEngineType() should be (MklDnn)
 
-  def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val mlp = Sequential[Tensor[T], Tensor[T], T]
-    val nHidden = featureSize / 2
-    mlp.add(Reshape(Array(featureSize)))
-    mlp.add(Linear(featureSize, nHidden))
-    mlp.add(Tanh())
-    mlp.add(Linear(nHidden, classNum))
-    mlp.add(LogSoftMax())
-    mlp
+    val model3 = Sequential[Tensor[Float], Tensor[Float], Float]
+    model3.add(model)
+    model3.add(model2)
+    model3.getEngineType() should be (Mixed)
+    println(model3.getEngineType())
   }
 }
