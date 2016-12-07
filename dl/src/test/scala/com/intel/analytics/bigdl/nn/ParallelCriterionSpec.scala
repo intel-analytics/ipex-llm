@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 class ParallelCriterionSpec extends FlatSpec with Matchers {
-  "A ParallelCriterion" should "generate correct output" in {
+  "A ParallelCriterion" should "generate correct output with type Double" in {
     val pc = new ParallelCriterion[Double]()
 
     val input = T(Tensor[Double](2, 10), Tensor[Double](2, 10))
@@ -32,6 +32,22 @@ class ParallelCriterionSpec extends FlatSpec with Matchers {
     val target = T(Tensor[Double](Storage(Array(1.0, 8.0))), Tensor[Double](2, 10).fill(1.0))
     val nll = new ClassNLLCriterion[Double]()
     val mse = new MSECriterion[Double]()
+    pc.add(nll, 0.5).add(mse)
+    val output = pc.forward(input, target)
+    val gradInput = pc.backward(input, target)
+    output should be (100.75)
+  }
+
+  "A ParallelCriterion" should "generate correct output with type Float" in {
+    val pc = new ParallelCriterion[Float]()
+
+    val input = T(Tensor[Float](2, 10), Tensor[Float](2, 10))
+    var i = 0
+    input[Tensor[Float]](1).apply1(_ => {i += 1; i})
+    input[Tensor[Float]](2).apply1(_ => {i -= 1; i})
+    val target = T(Tensor[Float](Storage(Array(1.0f, 8.0f))), Tensor[Float](2, 10).fill(1.0f))
+    val nll = new ClassNLLCriterion[Float]()
+    val mse = new MSECriterion[Float]()
     pc.add(nll, 0.5).add(mse)
     val output = pc.forward(input, target)
     val gradInput = pc.backward(input, target)
