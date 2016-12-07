@@ -232,7 +232,7 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
     this
   }
 
-  var engineType: EngineType = Engine.getEngineType()
+  private val engineType: EngineType = Engine.getEngineType()
 
   /**
    * get execution engine type
