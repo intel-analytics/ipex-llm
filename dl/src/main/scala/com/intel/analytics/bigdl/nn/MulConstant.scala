@@ -77,3 +77,11 @@ class MulConstant[@specialized(Float, Double) T: ClassTag](
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object MulConstant {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      scalar : T,
+      inplace : Boolean = false)(implicit ev: TensorNumeric[T]) : MulConstant[T] = {
+    new MulConstant[T](scalar, inplace)
+  }
+}

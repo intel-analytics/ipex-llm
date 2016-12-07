@@ -105,3 +105,10 @@ class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object ClassSimplexCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      nClasses: Int)(implicit ev: TensorNumeric[T]) : ClassSimplexCriterion[T] = {
+    new ClassSimplexCriterion[T](nClasses)
+  }
+}
