@@ -62,7 +62,7 @@ object MNISTLocal {
 
     val module = getModule(params.net)
     val optm = getOptimMethod(params.masterOptM)
-    val critrion = new ClassNLLCriterion[Double]()
+    val critrion = ClassNLLCriterion[Double]()
     val (w, g) = module.getParameters()
     var e = 0
     val config = params.masterConfig.clone()

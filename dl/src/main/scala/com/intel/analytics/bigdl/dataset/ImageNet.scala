@@ -150,7 +150,7 @@ object ImageNetLocal {
   private val configs = Map(
     "alexnet" -> Config(
       AlexNet[Float](classNum = 1000),
-      new ClassNLLCriterion[Float](),
+      ClassNLLCriterion[Float](),
       new SGD[Float](),
       imageSize = 227,
       batchSize = 256,
@@ -163,7 +163,7 @@ object ImageNetLocal {
       learningRateSchedule = SGD.Step(100000, 0.1)),
     "googlenetv1" -> Config(
       GoogleNet_v1[Float](classNum = 1000),
-      new ClassNLLCriterion[Float](),
+      ClassNLLCriterion[Float](),
       new SGD[Float](),
       imageSize = 224,
       batchSize = 32,

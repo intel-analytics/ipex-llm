@@ -98,13 +98,13 @@ object MultiModelPerf {
   def performance[T: ClassTag](param: MultiModelPerfParams)(implicit tn: TensorNumeric[T]): Unit = {
     val tests = (1 to param.cores).map(_ => param.module match {
       case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 227, 227).rand(),
-        new ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
+        ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
-        new ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
+        ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
       case "googlenet_v1" => (GoogleNet_v1(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
-        new ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
+        ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
       case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
-        new ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
+        ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
     })
 
     val grads = tests.map(_._1.getParameters()._2).toArray

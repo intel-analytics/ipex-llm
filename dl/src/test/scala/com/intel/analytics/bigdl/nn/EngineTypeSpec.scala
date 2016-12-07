@@ -18,24 +18,17 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, Mixed, MklBlas, MklDnn}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
 import org.scalatest.{FlatSpec, Matchers}
 
 class EngineTypeSpec extends FlatSpec with Matchers {
   "Module.getEngineType" should "return right type" in {
     Engine.setEngineType(MklBlas)
     val model = GoogleNet_v2[Float](1000)
-    model.getEngineType() should be (MklBlas)
+    model.checkEngineType()
 
     Engine.setEngineType(MklDnn)
     val model2 = GoogleNet_v1[Float](1000)
-    model2.getEngineType() should be (MklDnn)
-
-    val model3 = Sequential[Tensor[Float], Tensor[Float], Float]
-    model3.add(model)
-    model3.add(model2)
-    model3.getEngineType() should be (Mixed)
-    println(model3.getEngineType())
+    model2.checkEngineType()
   }
 }

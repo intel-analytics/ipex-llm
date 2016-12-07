@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.utils.{Activities, EngineType, Mixed, Table}
+import com.intel.analytics.bigdl.utils.Activities
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -61,12 +61,9 @@ private[nn] abstract class Container[A <: Activities : ClassTag,
     this
   }
 
-  override def getEngineType(): EngineType = {
-    var mixed = false
-    modules.foreach{module =>
-      if (engineType != module.getEngineType()) mixed = true
-    }
-    if (mixed) Mixed else engineType
+  override def checkEngineType(): this.type = {
+    modules.foreach(_.checkEngineType())
+    this
   }
 
   override def getTimes():

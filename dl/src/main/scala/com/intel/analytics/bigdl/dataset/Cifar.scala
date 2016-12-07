@@ -52,7 +52,7 @@ object Cifar10Local {
         data = trainDataSource -> arrayToImage -> normalizer -> toTensor,
         validationData = validationDataSource -> arrayToImage -> normalizer -> toTensor,
         model = VggLike[Float](classNum = 10),
-        criterion = new ClassNLLCriterion[Float](),
+        criterion = ClassNLLCriterion[Float](),
         optimMethod = new SGD[Float](),
         state = T(
           "learningRate" -> 0.01,

@@ -30,9 +30,6 @@ case object MklBlas extends EngineType
 
 case object MklDnn extends EngineType
 
-case object Mixed extends EngineType
-
-
 /**
  * Provide appropriated thread pool based on user provided parallelism
  */

@@ -82,10 +82,10 @@ object MNISTParallel {
     val testDataSets = new ShuffleBatchDataSet[Array[Byte], Double](testRDD,
       toTensor(mean, std), 10, 40, params.workerConfig[Int]("batchnum"))
     val optimizer = if (params.distribute == "parallel") {
-      new WeightAvgEpochOptimizer[Double](model, new ClassNLLCriterion(),
+      new WeightAvgEpochOptimizer[Double](model, ClassNLLCriterion(),
         getOptimMethod(params.masterOptM), pm, dataSets, metrics, driverConfig)
     } else if (params.distribute == "serial") {
-      new GradAggEpochOptimizer[Double](model, new ClassNLLCriterion(),
+      new GradAggEpochOptimizer[Double](model, ClassNLLCriterion(),
         getOptimMethod(params.masterOptM), pm, dataSets, metrics, driverConfig)
     } else {
       throw new IllegalArgumentException
