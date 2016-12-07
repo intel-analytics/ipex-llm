@@ -39,13 +39,28 @@ object Engine{
    */
   private var poolSize: Int = System.getProperty("dl.engine.cores",
     (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
-  private val logger = Logger.getLogger(getClass);
+  private val logger = Logger.getLogger(getClass)
 
   private var engine: ExecutionContext = null
 
-  private var engineType: EngineType = MklBlas
+  /**
+   * Default engine is MklBlas
+   */
+  private var engineType: EngineType = {
+    val dlEngineType = System.getProperty("DL_ENGINE_TYPE", "MklBlas")
+    if (dlEngineType.toLowerCase == "mklblas") {
+      MklBlas
+    } else if (dlEngineType.toLowerCase == "mkldnn") {
+      MklDnn
+    } else {
+      throw new Error(s"Unkown DL_ENGINE_TYPE = $dlEngineType, Please use MklBlas or MklDnn")
+    }
+  }
 
-  def setEngineType(engineType: EngineType) : Unit = {
+  /**
+   * Notice: Please use property DL_ENGINE_TYPE to set engineType.
+   */
+  private[bigdl] def setEngineType(engineType: EngineType) : Unit = {
     this.engineType = engineType
   }
 
