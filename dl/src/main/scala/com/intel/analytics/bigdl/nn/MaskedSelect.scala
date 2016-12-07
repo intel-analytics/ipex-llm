@@ -90,3 +90,10 @@ class MaskedSelect[T: ClassTag]
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object MaskedSelect {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : MaskedSelect[T] = {
+    new MaskedSelect[T]()
+  }
+}
