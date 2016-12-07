@@ -17,188 +17,253 @@
 
 package com.intel.analytics.bigdl.models
 
+import com.intel.analytics.bigdl.models.mnist.{LeNet5, SimpleCNN}
 import com.intel.analytics.bigdl.nn.GradientChecker
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import scala.util.Random
+
 class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
+
+  private val checkModel = true
 
   "GoogleNet_v1 model in batch mode" should "be good in gradient check for input" in {
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => RNG.uniform(0, 1))
+    val start = System.nanoTime()
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
     val model = GoogleNet_v1[Double](1000)
     model.zeroGradParameters()
 
-    val checker = new GradientChecker(1e-4)
+    val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkLayer(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
 
   "GoogleNet_v1 model in batch mode" should "be good in gradient check for weight" in {
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => RNG.uniform(0, 1))
+    val start = System.nanoTime()
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
     val model = GoogleNet_v1[Double](1000)
     model.zeroGradParameters()
 
-    val checker = new GradientChecker(1e-4)
+    val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkWeight(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
 
   "GoogleNet_v2 model in batch mode" should "be good in gradient check for input" in {
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => RNG.uniform(0, 1))
+    val start = System.nanoTime()
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
     val model = GoogleNet_v2[Double](1000)
     model.zeroGradParameters()
 
-    val checker = new GradientChecker(1e-4)
+    val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkLayer(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
 
   "GoogleNet_v2 model in batch mode" should "be good in gradient check for weight" in {
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => RNG.uniform(0, 1))
-    val model = GoogleNet_v2[Double](1000)
+    val start = System.nanoTime()
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
+    val model = GoogleNet_v2.applyNoBn[Double](1000)
     model.zeroGradParameters()
 
-    val checker = new GradientChecker(1e-4)
+    val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkWeight(model, input, 1e-2) should be(true)
-  }
-
-  "GoogleNet_v2_NoAuxClassifier model in batch mode" should "be good in " +
-    "gradient check for input" in {
-    val seed = 100
-    RNG.setSeed(seed)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => RNG.uniform(0, 1))
-    val model = GoogleNet_v2_NoAuxClassifier[Double](1000)
-    model.zeroGradParameters()
-
-    val checker = new GradientChecker(1e-4)
-    checker.checkLayer(model, input, 1e-2) should be(true)
-  }
-
-  "GoogleNet_v2_NoAuxClassifier model in batch mode" should "be good in " +
-    "gradient check for weight" in {
-    val seed = 100
-    RNG.setSeed(seed)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => RNG.uniform(0, 1))
-    val model = GoogleNet_v2_NoAuxClassifier[Double](1000)
-    model.zeroGradParameters()
-
-    val checker = new GradientChecker(1e-4)
-    checker.checkWeight(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
 
   "GoogleNet model in batch mode" should "be good in gradient check for input" in {
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => RNG.uniform(0, 1))
+    val start = System.nanoTime()
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
     val model = GoogleNet.getModel[Double](1000, "googlenet")
     model.zeroGradParameters()
 
-    val checker = new GradientChecker(1e-4)
+    val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkLayer(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
 
   "GoogleNet model in batch mode" should "be good in gradient check for weight" in {
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => RNG.uniform(0, 1))
+    val start = System.nanoTime()
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
     val model = GoogleNet.getModel[Double](1000, "googlenet")
     model.zeroGradParameters()
 
-    val checker = new GradientChecker(1e-4)
+    val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkWeight(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
 
   "GoogleNet+bn model in batch mode" should "be good in gradient check for input" in {
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => RNG.uniform(0, 1))
+    val start = System.nanoTime()
+    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
     val model = GoogleNet.getModel[Double](1000, "googlenet-bn")
     model.zeroGradParameters()
 
-    val checker = new GradientChecker(1e-4)
+    val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkLayer(model, input, 1e-2) should be(true)
-  }
-
-  "GoogleNet+bn model in batch mode" should "be good in gradient check for weight" in {
-    val seed = 100
-    RNG.setSeed(seed)
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => RNG.uniform(0, 1))
-    val model = GoogleNet.getModel[Double](1000, "googlenet-bn")
-    model.zeroGradParameters()
-
-    val checker = new GradientChecker(1e-4)
-    checker.checkWeight(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
 
   "AlexNet-OWT model in batch mode" should "be good in gradient check for input" in {
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](8, 3, 224, 224).apply1(e => RNG.uniform(0, 1))
+    val start = System.nanoTime()
+    val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
     val model = AlexNet_OWT[Double](1000, false, true)
     model.zeroGradParameters()
 
-    val checker = new GradientChecker(1e-3)
+    val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkLayer(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
 
   "AlexNet-OWT model in batch mode" should "be good in gradient check for weight" in {
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](8, 3, 224, 224).apply1(e => RNG.uniform(0, 1))
+    val start = System.nanoTime()
+    val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
     val model = AlexNet_OWT[Double](1000, false, true)
     model.zeroGradParameters()
 
-    val checker = new GradientChecker(1e-4)
+    val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkWeight(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
 
   "AlexNet model in batch mode" should "be good in graident check for input" in {
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](8, 3, 227, 227).apply1(e => RNG.uniform(0, 1))
+    val start = System.nanoTime()
+    val input = Tensor[Double](8, 3, 227, 227).apply1(e => Random.nextDouble())
     val model = AlexNet[Double](1000)
     model.zeroGradParameters()
 
-    val checker = new GradientChecker(1e-3)
+    val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkLayer(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
 
   "AlexNet model in batch mode" should "be good in graident check for weight" in {
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](8, 3, 227, 227).apply1(e => RNG.uniform(0, 1))
+    val start = System.nanoTime()
+    val input = Tensor[Double](8, 3, 227, 227).apply1(e => Random.nextDouble())
     val model = AlexNet[Double](1000)
     model.zeroGradParameters()
 
-    val checker = new GradientChecker(1e-3)
+    val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkWeight(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
 
   "VggLike model in batch mode" should "be good in gradient check for input" in {
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](8, 3, 32, 32).apply1(e => RNG.uniform(0, 1))
+    val start = System.nanoTime()
+    val input = Tensor[Double](8, 3, 32, 32).apply1(e => Random.nextDouble())
     val model = VggLike[Double](10)
     model.zeroGradParameters()
 
-    val checker = new GradientChecker(1e-4)
+    val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkLayer(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
 
   "VggLike model in batch mode" should "be good in gradient check for weight" in {
     val seed = 100
     RNG.setSeed(seed)
-    val input = Tensor[Double](8, 3, 32, 32).apply1(e => RNG.uniform(0, 1))
+    val start = System.nanoTime()
+    val input = Tensor[Double](8, 3, 32, 32).apply1(e => Random.nextDouble())
     val model = VggLike[Double](10)
     model.zeroGradParameters()
 
-    val checker = new GradientChecker(1e-4)
+    val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkWeight(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
+  }
+
+  "LeNet model in batch mode" should "be good in gradient check for input" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val start = System.nanoTime()
+    val input = Tensor[Double](8, 1, 28, 28).apply1(e => Random.nextDouble())
+    val model = LeNet5[Double](10)
+    model.zeroGradParameters()
+
+    val checker = new GradientChecker(1e-4).setType(checkModel)
+    checker.checkLayer(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
+  }
+
+  "LeNet model in batch mode" should "be good in gradient check for weight" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val start = System.nanoTime()
+    val input = Tensor[Double](8, 1, 28, 28).apply1(e => Random.nextDouble())
+    val model = LeNet5[Double](10)
+    model.zeroGradParameters()
+
+    val checker = new GradientChecker(1e-4).setType(checkModel)
+    checker.checkWeight(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
+  }
+
+  "CNN model in batch mode" should "be good in gradient check for input" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val start = System.nanoTime()
+    val input = Tensor[Double](8, 1, 28, 28).apply1(e => Random.nextDouble())
+    val model = SimpleCNN[Double](10)
+    model.zeroGradParameters()
+
+    val checker = new GradientChecker(1e-4).setType(checkModel)
+    checker.checkLayer(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
+  }
+
+  "CNN model in batch mode" should "be good in gradient check for weight" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val start = System.nanoTime()
+    val input = Tensor[Double](8, 1, 28, 28).apply1(e => Random.nextDouble())
+    val model = SimpleCNN[Double](10)
+    model.zeroGradParameters()
+
+    val checker = new GradientChecker(1e-4).setType(checkModel)
+    checker.checkWeight(model, input, 1e-2) should be(true)
+    val scalaTime = System.nanoTime() - start
+    println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
 }

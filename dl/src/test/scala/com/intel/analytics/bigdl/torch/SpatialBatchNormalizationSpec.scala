@@ -18,10 +18,12 @@
 package com.intel.analytics.bigdl.torch
 
 import breeze.numerics.abs
-import com.intel.analytics.bigdl.nn.SpatialBatchNormalization
+import com.intel.analytics.bigdl.nn.{GradientChecker, SpatialBatchNormalization}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+
+import scala.util.Random
 
 
 class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -197,6 +199,28 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
       v1
     })
 
+  }
+
+  "SpatialBatchNormalization module in batch mode" should "be good in gradient check " +
+    "for input" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val sbn = new SpatialBatchNormalization[Double](3, 1e-3)
+    val input = Tensor[Double](16, 3, 4, 4).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-3)
+    checker.checkLayer(sbn, input, 1e-3) should be(true)
+  }
+
+  "SpatialBatchNormalization module in batch mode" should "be good in gradient check " +
+    "for weight" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val sbn = new SpatialBatchNormalization[Double](3, 1e-3)
+    val input = Tensor[Double](16, 3, 4, 4).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-3)
+    checker.checkWeight(sbn, input, 1e-3) should be(true)
   }
 
 }

@@ -77,8 +77,8 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   }
 
   @inline
-  def setInit(): this.type = {
-    needInit = true
+  def setInit(status: Boolean = true): this.type = {
+    needInit = status
     this
   }
 
@@ -193,9 +193,9 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
 
         if (needInit) {
           mean = 0
-          invstd = 1
-          saveMean.zero()
-          saveStd.zero().fill(ev.one)
+          invstd = 0.0001
+          saveMean.zero().fill(ev.fromType(mean))
+          saveStd.zero().fill(ev.fromType(invstd))
         }
         val w = if (null != weight) ev.toType[Double](weight.valueAt(_f)) else 1.0
         val b = if (null != bias) ev.toType[Double](bias.valueAt(_f)) else 0.0
@@ -259,6 +259,13 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
         } else {
           mean = ev.toType[Float](runningMean.valueAt(_f))
           invstd = 1 / Math.sqrt(ev.toType[Double](runningVar.valueAt(_f)) + eps).toFloat
+        }
+
+        if (needInit) {
+          mean = 0
+          invstd = 0.0001f
+          saveMean.zero().fill(ev.fromType(mean))
+          saveStd.zero().fill(ev.fromType(invstd))
         }
 
         val w = if (null != weight) ev.toType[Float](weight.valueAt(_f)) else 1.0f

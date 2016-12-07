@@ -17,10 +17,12 @@
 
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.{Linear, MSECriterion}
+import com.intel.analytics.bigdl.nn.{GradientChecker, Linear, MSECriterion}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+
+import scala.util.Random
 
 class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
@@ -161,5 +163,25 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
     luaBias should be(bias)
 
     println("Test case : Linear, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "Linear module" should "be good in gradient check for input" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val linear = new Linear[Double](5, 2)
+    val input = Tensor[Double](3, 5).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-4)
+    checker.checkLayer(linear, input, 1e-3) should be(true)
+  }
+
+  "Linear module" should "be good in gradient check for weight" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val linear = new Linear[Double](5, 2)
+    val input = Tensor[Double](3, 5).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-4)
+    checker.checkWeight(linear, input, 1e-3) should be(true)
   }
 }

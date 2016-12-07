@@ -122,4 +122,24 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers 
     output should be equals luaOutput
 
   }
+
+  "A SpatialConvolution" should "be good in gradient check for input" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val layer = new SpatialConvolution[Double](3, 6, 5, 5, 1, 1, 0, 0)
+    val input = Tensor[Double](3, 32, 32).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-3)
+    checker.checkLayer(layer, input, 1e-3) should be(true)
+  }
+
+  "A SpatialConvolution" should "be good in gradient check for weight" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val layer = new SpatialConvolution[Double](3, 6, 5, 5, 1, 1, 0, 0)
+    val input = Tensor[Double](3, 32, 32).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-3)
+    checker.checkWeight(layer, input, 1e-3) should be(true)
+  }
 }
