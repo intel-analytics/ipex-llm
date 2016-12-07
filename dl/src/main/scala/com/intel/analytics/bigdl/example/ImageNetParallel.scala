@@ -96,7 +96,7 @@ object ImageNetParallel {
     val std = (varR, varG, varB)
     println(s"varR is $varR varG is $varG varB is $varB")
 
-    val criterion = new ClassNLLCriterion[Float]()
+    val criterion = ClassNLLCriterion[Float]()
     val model = netType match {
       case "alexnet" => AlexNet.getModel[Float](classNum)
       case "googlenet" => GoogleNet.getModelCaffe[Float](classNum)

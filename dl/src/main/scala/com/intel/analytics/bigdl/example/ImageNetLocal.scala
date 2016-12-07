@@ -88,7 +88,7 @@ object ImageNetLocal {
     val (weights, grad) = model.getParameters()
     println(s"modelsize ${weights.nElement()}")
     println(model)
-    val criterion = new ClassNLLCriterion[Float]()
+    val criterion = ClassNLLCriterion[Float]()
     val epochNum = 90
     val featureShape = Array(3, 224, 224)
     val targetShape = Array(1)

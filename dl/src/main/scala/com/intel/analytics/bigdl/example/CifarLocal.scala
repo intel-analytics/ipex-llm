@@ -93,7 +93,7 @@ class CifarLocal[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNum
 
 
     val module = Cifar.getModel[T](10, netType)
-    val criterion = new ClassNLLCriterion[T]()
+    val criterion = ClassNLLCriterion[T]()
     val optm = new SGD[T]()
     //    val optm = new Adagrad()
     val config = T("learningRate" -> learningRate, "weightDecay" -> weightDecay,

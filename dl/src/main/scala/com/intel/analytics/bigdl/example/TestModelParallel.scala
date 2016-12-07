@@ -60,7 +60,7 @@ object TestModelParallel {
     val trainData = sc.parallelize(1 to params.partitionNum * 10000, params.partitionNum).cache()
     trainData.count()
     println("done")
-    val criterion = new ClassNLLCriterion[Float]()
+    val criterion = ClassNLLCriterion[Float]()
     val (model, size) = netType match {
       case "googlenet_v1" => (GoogleNet_v1[Float](classNum), 224)
       case "googlenet_v2" => (GoogleNet_v2[Float](classNum), 224)

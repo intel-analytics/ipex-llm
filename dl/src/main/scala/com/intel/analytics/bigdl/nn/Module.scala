@@ -237,8 +237,11 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
   /**
    * get execution engine type
    */
-  def getEngineType(): EngineType = {
-    engineType
+  def checkEngineType(): this.type = {
+    if (engineType != Engine.getEngineType()) {
+      throw new Error("Module's EngineType doesn't march global EngineType")
+    }
+    this
   }
 
   def cloneModule(): Module[A, B, T] = {
