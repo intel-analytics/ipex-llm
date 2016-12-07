@@ -16,8 +16,6 @@
  */
 package com.intel.analytics.bigdl.torch
 
-
-
 import com.intel.analytics.bigdl.nn.Bilinear
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._

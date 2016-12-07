@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4}
 
@@ -28,10 +29,8 @@ import scala.reflect.ClassTag
 class DistKLDivCriterion[T: ClassTag](sizeAverage: Boolean = true)
  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
-  val gradInput = Tensor[T]()
-
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require((input.dim() == target.dim()) && (input.size().canEqual(target.size())),
+    require((input.dim() == target.dim()) && (input.isSameSizeAs(target)),
       "input and target should have the same size")
 
     var sum: T = ev.zero
@@ -50,7 +49,7 @@ class DistKLDivCriterion[T: ClassTag](sizeAverage: Boolean = true)
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require((input.dim() == target.dim()) && (input.size().canEqual(target.size())),
+    require((input.dim() == target.dim()) && (input.isSameSizeAs(target)),
       "input and target should have the same size")
 
     val norm = ev.fromType(if (sizeAverage) -1.0 / input.nElement() else -1.0)
@@ -84,5 +83,12 @@ class DistKLDivCriterion[T: ClassTag](sizeAverage: Boolean = true)
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(super.hashCode(), gradInput)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+object DistKLDivCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean = true)
+    (implicit ev: TensorNumeric[T]): DistKLDivCriterion[T] = {
+    new DistKLDivCriterion[T](sizeAverage)
   }
 }
