@@ -26,7 +26,6 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.TensorNumericDouble
 
 object MNIST {
-  val numeric = TensorNumericDouble
   val rowN = 28
   val colN = 28
   val featureSize = rowN * colN

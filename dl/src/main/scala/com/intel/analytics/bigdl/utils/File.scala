@@ -1181,14 +1181,12 @@ object File {
     val modules = elements.get("modules").getOrElse(null).asInstanceOf[Map[Any, Any]]
     val result = new Sequential[Double]()
     if (null != output) {
-      result.output
-        .toTensor[Double].resizeAs(output).copy(output)
+      result.output = Tensor[Double].resizeAs(output).copy(output)
     }
     if (elements.contains("gradInput")) {
       val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
       if (null != gradInput) {
-        result.gradInput
-          .toTensor[Double].resizeAs(gradInput).copy(gradInput)
+        result.gradInput = Tensor[Double].resizeAs(gradInput).copy(gradInput)
       }
     }
 
