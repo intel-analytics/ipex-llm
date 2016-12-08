@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.utils
 
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{Executors, ThreadFactory}
+import java.util.concurrent.{ConcurrentLinkedQueue, Executors, ThreadFactory}
 
 import com.intel.analytics.bigdl.mkl.MKL
 import org.apache.log4j.Logger
@@ -44,15 +44,27 @@ object Engine{
 
   private val singletonCounter : AtomicInteger = new AtomicInteger(0)
 
+  private var doCheckSingleton = true
+
+  def disableCheckSingleton() : Unit = doCheckSingleton = false
+
+  def enableCheckSingleto() : Unit = doCheckSingleton = true
+
   def checkSingleton() : Boolean = {
+    if(!doCheckSingleton) return true
+
     val count = singletonCounter.incrementAndGet()
     (count == 1)
   }
 
-  private val waitQueue : ArrayBuffer[Future[_]] = new ArrayBuffer[Future[_]]()
-
   private val maxPoolSize: Int =
-    System.getProperty("com.intel.analytics.bigdl.utils.Engine.maxPoolSize", "1400").toInt
+    System.getProperty("com.intel.analytics.bigdl.utils.Engine.maxPoolSize", "140").toInt
+
+  private val queuePointer = new AtomicInteger(0)
+  private val maxQueueSize: Int =
+    System.getProperty("com.intel.analytics.bigdl.utils.Engine.maxQueueSize", "500").toInt
+
+  private val waitQueue : Array[Future[_]] = new Array[Future[_]](maxQueueSize)
 
   private val threadPool : ThreadLocal[ExecutionContext] = new ThreadLocal[ExecutionContext]
 
@@ -106,14 +118,23 @@ object Engine{
   }
 
   def invoke(tasks: Seq[() => _]) : Unit = {
-    waitQueue ++= tasks.map(task => Future {
+    tasks.map(task => Future {
       task()
-    }(getThreadPool))
+    }(getThreadPool)).foreach(f => {
+      val i = queuePointer.getAndIncrement()
+      require(i < maxQueueSize, "Queue is full. Please consider increase waiting queue size")
+      waitQueue(i) = f
+    })
   }
 
-  def wait(timeout : Duration = Duration.Inf) : Unit = {
-    waitQueue.foreach(Await.result(_, timeout))
-    waitQueue.clear()
+  def sync(timeout : Duration = Duration.Inf) : Unit = {
+    val length = queuePointer.get()
+    var i = 0
+    while(i < length) {
+      Await.result(waitQueue(i), timeout)
+      i += 1
+    }
+    queuePointer.set(0)
   }
 
   /**
