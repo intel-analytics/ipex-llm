@@ -19,18 +19,18 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.tensor.Tensor
 
-trait ValidationMethod[T] {
+trait ValidationMethod[T] extends Serializable {
   def apply(output: Tensor[T], target: Tensor[T]): ValidationResult
 
-  def format(): String
+  protected def format(): String
 
   override def toString(): String = format()
 }
 
-trait ValidationResult {
+trait ValidationResult extends Serializable {
 
   // scalastyle:off methodName
-  def ++(other: ValidationResult): ValidationResult
+  def +(other: ValidationResult): ValidationResult
 
   // scalastyle:on methodName
 
@@ -43,7 +43,7 @@ class AccuracyResult(private var correct: Int, private var count: Int)
   extends ValidationResult {
 
   // scalastyle:off methodName
-  override def ++(other: ValidationResult): ValidationResult = {
+  override def +(other: ValidationResult): ValidationResult = {
     val otherResult = other.asInstanceOf[AccuracyResult]
     this.correct += otherResult.correct
     this.count += otherResult.count

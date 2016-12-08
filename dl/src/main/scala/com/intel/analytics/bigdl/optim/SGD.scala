@@ -92,6 +92,12 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
 
     (x, Array(fx))
   }
+
+  override def clearHistory(state: Table): Table = {
+    state.delete("decayParameters")
+    state.delete("dfdx")
+    state.delete("deltaParameters")
+  }
 }
 
 object SGD {

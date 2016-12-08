@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models
+package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.models.imagenet._
 import com.intel.analytics.bigdl.models.mnist.LeNet5
@@ -108,7 +108,7 @@ object Perf {
 
     for (i <- 1 to param.warmUp) {
       var time = System.nanoTime()
-      val output = model.forward(input).toTensor[T]
+      val output = model.forward(input)
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       time = System.nanoTime()
@@ -124,7 +124,7 @@ object Perf {
     var totalBackwardTime = 0L
     for (i <- 1 to param.iteration) {
       var time = System.nanoTime()
-      val output = model.forward(input).toTensor[T]
+      val output = model.forward(input)
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       totalForwardTime += forwardTime

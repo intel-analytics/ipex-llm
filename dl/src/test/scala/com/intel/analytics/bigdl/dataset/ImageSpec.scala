@@ -17,11 +17,12 @@
 
 package com.intel.analytics.bigdl.dataset
 
+import com.intel.analytics.bigdl.dataset.image.LabeledRGBImage
 import org.scalatest.{FlatSpec, Matchers}
 
 class ImageSpec extends FlatSpec with Matchers {
   "image with odd width" should "flip good" in {
-    val image = new RGBImage(
+    val image = new LabeledRGBImage(
       Array[Float](
         1, 2, 3, 4, 5, 6, 7, 8, 9,
         11, 12, 13, 14, 15, 16, 17, 18, 19,
@@ -40,7 +41,7 @@ class ImageSpec extends FlatSpec with Matchers {
   }
 
   "image with even width" should "flip good" in {
-    val image = new RGBImage(
+    val image = new LabeledRGBImage(
       Array[Float](
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
         11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,

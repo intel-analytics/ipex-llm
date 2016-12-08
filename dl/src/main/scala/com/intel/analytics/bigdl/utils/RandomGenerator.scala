@@ -34,6 +34,19 @@ object RandomGenerator {
     generators.get()
   }
   // scalastyle:on methodName
+
+  def shuffle[T](data: Array[T]): Array[T] = {
+    var i = 0
+    val length = data.length
+    while (i < length) {
+      val exchange = RNG.uniform(0, length - i).toInt + i
+      val tmp = data(exchange)
+      data(exchange) = data(i)
+      data(i) = tmp
+      i += 1
+    }
+    data
+  }
 }
 
 class RandomGenerator() {

@@ -17,10 +17,14 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.{Executors, ThreadFactory}
 
 import com.intel.analytics.bigdl.mkl.MKL
 import org.apache.log4j.Logger
+import org.apache.spark.Logging
+
+import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
@@ -34,14 +38,83 @@ case object MklDnn extends EngineType
  * Provide appropriated thread pool based on user provided parallelism
  */
 object Engine{
-  /**
-   * Work load parallelism
-   */
-  private var poolSize: Int = System.getProperty("dl.engine.cores",
-    (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
   private val logger = Logger.getLogger(getClass)
 
   private var engine: ExecutionContext = null
+
+  private val singletonCounter : AtomicInteger = new AtomicInteger(0)
+
+  def checkSingleton() : Boolean = {
+    val count = singletonCounter.incrementAndGet()
+    (count == 1)
+  }
+
+  private val waitQueue : ArrayBuffer[Future[_]] = new ArrayBuffer[Future[_]]()
+
+  private val maxPoolSize: Int =
+    System.getProperty("com.intel.analytics.bigdl.utils.Engine.maxPoolSize", "1400").toInt
+
+  private val threadPool : ThreadLocal[ExecutionContext] = new ThreadLocal[ExecutionContext]
+
+  private def spawnThreadPool() : ExecutionContext = {
+    new ExecutionContext {
+      val pool = Executors.newFixedThreadPool(maxPoolSize, new ThreadFactory {
+        override def newThread(r: Runnable): Thread = {
+          val t = Executors.defaultThreadFactory().newThread(r)
+          t.setDaemon(true)
+          t
+        }
+      })
+
+      def execute(runnable: Runnable) {
+        pool.submit(runnable)
+      }
+
+      def reportFailure(t: Throwable) {}
+    }
+  }
+
+  private def getThreadPool(): ExecutionContext = {
+    var pool = threadPool.get()
+    if(pool == null) {
+      pool = spawnThreadPool()
+      threadPool.set(pool)
+    }
+    pool
+  }
+
+  if(Engine.engineType == MklBlas) {
+    require(System.getenv("OMP_NUM_THREADS") == "1", "Under MKL_BLAS mode. Please set env " +
+      "variable OMP_NUM_THREADS to 1")
+    require(System.getenv("OMP_WAIT_POLICY") == "passive", "Under MKL_BLAS mode. Please set " +
+      "env variable OMP_WAIT_POLICY to passive")
+    require(System.getenv("KMP_BLOCKTIME") == "0", "Under MKL_BLAS mode. Please set " +
+      "env variable KMP_BLOCKTIME to 0")
+  } else if(Engine.engineType == MklDnn){
+    require(System.getenv("OMP_NUM_THREADS") == "", "Under MKL_DNN mode. Please unset env " +
+      "variable OMP_NUM_THREADS")
+    require(System.getenv("OMP_WAIT_POLICY") == "", "Under MKL_DNN mode. Please unset " +
+      "env variable OMP_WAIT_POLICY")
+    require(System.getenv("KMP_BLOCKTIME") == "", "Under MKL_DNN mode. Please unset " +
+      "env variable KMP_BLOCKTIME")
+  }
+
+  def invokeAndWait[T](tasks: Seq[() => T], timeout : Duration = Duration.Inf) : Seq[T] = {
+    tasks.map(task => Future {
+      task()
+    }(getThreadPool)).map(future => Await.result(future, timeout))
+  }
+
+  def invoke(tasks: Seq[() => _]) : Unit = {
+    waitQueue ++= tasks.map(task => Future {
+      task()
+    }(getThreadPool))
+  }
+
+  def wait(timeout : Duration = Duration.Inf) : Unit = {
+    waitQueue.foreach(Await.result(_, timeout))
+    waitQueue.clear()
+  }
 
   /**
    * Default engine is MklBlas
@@ -67,6 +140,14 @@ object Engine{
   def getEngineType() : EngineType = {
     this.engineType
   }
+
+  // =========== below is old code, will be removed after refactor===================
+  /**
+   * Work load parallelism
+   */
+  private var poolSize: Int = System.getProperty("dl.engine.cores",
+    (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
+
 
   def setCoreNum(size: Int): Unit = {
     require(size > 0)
@@ -107,7 +188,13 @@ object Engine{
       singleThreadEngine
     } else {
       val context = new ExecutionContext {
-        val threadPool = Executors.newFixedThreadPool(coresNum)
+        val threadPool = Executors.newFixedThreadPool(coresNum, new ThreadFactory {
+          override def newThread(r: Runnable): Thread = {
+            val t = Executors.defaultThreadFactory().newThread(r)
+            t.setDaemon(true)
+            t
+          }
+        })
 
         def execute(runnable: Runnable) {
           threadPool.submit(runnable)
