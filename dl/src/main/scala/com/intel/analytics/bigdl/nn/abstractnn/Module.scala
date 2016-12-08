@@ -42,12 +42,12 @@ abstract class Module[A <: Activity: ClassTag, B <: Activity: ClassTag,
   /**
    * The cached output. So we don't compute it again when need it
    */
-  private[bigdl] var output: B = Activity[B, T]()
+  var output: B = Activity[B, T]()
 
   /**
    * The cached gradient of activities. So we don't compute it again when need it
    */
-  private[bigdl] var gradInput: A = Activity[A, T]()
+  var gradInput: A = Activity[A, T]()
 
 
   /**
