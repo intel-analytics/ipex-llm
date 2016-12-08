@@ -19,9 +19,9 @@ package com.intel.analytics.bigdl.models.lenet
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.{Criterion, ClassNLLCriterion}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, T}
+import com.intel.analytics.bigdl.utils.{Activities, Engine, MklBlas, T}
 import org.apache.spark.{SparkConf, SparkContext}
 
 object Train {
@@ -38,18 +38,18 @@ object Train {
         import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
         val optimizer = new LocalOptimizer[Float](
-          dataset = trainDataSet,
           model = LeNet5(classNum = 10),
-          criterion = new ClassNLLCriterion[Float](),
-          optimMethod = new SGD[Float](),
-          coreNumber = param.coreNumber,
-          state = T("learningRate" -> 0.05),
-          endWhen = Trigger.maxEpoch(10)
+          dataset = trainDataSet,
+          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]],
+          coreNumber = param.coreNumber
         )
 
         val validateDataSet = DataSet.localDataSet(validationData, validationLabel, false, 10)
-        optimizer.setValidation(Trigger.everyEpoch, validateDataSet, Array(new Top1Accuracy[Float]))
-        optimizer.optimize()
+        optimizer
+          .setValidation(Trigger.everyEpoch, validateDataSet, Array(new Top1Accuracy[Float]))
+          .setState(T("learningRate" -> 0.05))
+          .setEndWhen(Trigger.maxEpoch(10))
+          .optimize()
       })
     }
   }
@@ -80,20 +80,19 @@ object Train {
         import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
         val optimizer = new DistriOptimizer[Float](
-          dataset = trainDataSet,
           model = LeNet5(classNum = 10),
-          criterion = new ClassNLLCriterion[Float](),
-          optimMethod = new SGD[Float](),
+          dataset = trainDataSet,
+          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]],
           nodeNumber = param.nodesNumber,
-          coresPerNode = param.coreNumberPerNode,
-          state = T("learningRate" -> 0.05),
-          endWhen = Trigger.maxEpoch(10)
+          coresPerNode = param.coreNumberPerNode
         )
-
         val validateDataSet = DataSet.distributedDataSet(validationData, validationLabel, false,
           sc, param.nodesNumber, 10)
-        optimizer.setValidation(Trigger.everyEpoch, validateDataSet, Array(new Top1Accuracy[Float]))
-        optimizer.optimize()
+        optimizer
+          .setValidation(Trigger.everyEpoch, validateDataSet, Array(new Top1Accuracy[Float]))
+          .setState(T("learningRate" -> 0.05))
+          .setEndWhen(Trigger.maxEpoch(10))
+          .optimize()
       })
     }
   }

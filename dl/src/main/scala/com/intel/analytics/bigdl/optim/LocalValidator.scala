@@ -22,8 +22,8 @@ import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Activities, Engine, MklBlas, MklDnn}
 
-class LocalPredictor[T](model: Module[Activities, Activities, T], coreNumber: Int)
-  extends Predictor[T, Iterator[(Tensor[T], Tensor[T])]](model) {
+class LocalValidator[T](model: Module[Activities, Activities, T], coreNumber: Int)
+  extends Validator[T, Iterator[(Tensor[T], Tensor[T])]](model) {
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber

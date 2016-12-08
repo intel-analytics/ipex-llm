@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.{Activities}
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, DataSet => DataSource}
 import com.intel.analytics.bigdl.tensor.Tensor
 
-abstract class Predictor[T, DS](
+abstract class Validator[T, DS](
   model: Module[Activities, Activities, T]
 ) {
   def test(dataSet : DataSource[DS],

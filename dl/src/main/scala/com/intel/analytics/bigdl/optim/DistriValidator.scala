@@ -23,11 +23,11 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Activities, Engine, MklBlas, MklDnn}
 import org.apache.spark.rdd.RDD
 
-class DistriPredictor[T](
+class DistriValidator[T](
   model: Module[Activities, Activities, T],
   nodeNumber: Int,
   coresPerNode: Int
-)extends Predictor[T, RDD[(Tensor[T], Tensor[T])]](model) {
+)extends Validator[T, RDD[(Tensor[T], Tensor[T])]](model) {
 
   override def test(
     dataSet: DataSource[RDD[(Tensor[T], Tensor[T])]],
