@@ -58,6 +58,7 @@ object ImageNetParallel {
     val optType = params.masterOptM
     val netType = params.net
     val classNum = params.classNum
+
     val conf = new SparkConf().setAppName(s"ImageNet class[Float]: ${params.classNum} " +
       s"Parallelism: ${params.parallelism.toString}, partition : ${params.partitionNum}, " +
       s"masterConfig: ${params.masterConfig}, workerConfig: ${params.workerConfig}")
@@ -191,7 +192,8 @@ object ImageNetParallel {
     optimizer.addEvaluation("top1", EvaluateMethods.calcAccuracy)
     optimizer.addEvaluation("top5", EvaluateMethods.calcTop5Accuracy)
     optimizer.setTestDataSet(testDataSets)
-    optimizer.setMaxEpoch(100)
+    println("epoch: " + driverConfig("epochNum"))
+    optimizer.setMaxEpoch(driverConfig("epochNum"))
 
     conf.set("spark.task.cpus", params.parallelism.toString)
     optimizer.optimize()
