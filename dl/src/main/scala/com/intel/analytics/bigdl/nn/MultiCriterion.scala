@@ -47,7 +47,7 @@ class MultiCriterion[T: ClassTag]
   }
 
   override def updateGradInput(input: Activity, target: Activity): Activity = {
-    gradInput = Utils.recursiveResizeAs[T](gradInput.asInstanceOf[Activity],
+    gradInput = Utils.recursiveResizeAs[T](gradInput,
       input)
     Utils.recursiveFill[T](gradInput, 0)
     var i = 1

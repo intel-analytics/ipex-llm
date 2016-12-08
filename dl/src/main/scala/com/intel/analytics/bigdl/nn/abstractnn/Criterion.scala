@@ -30,7 +30,7 @@ abstract class TensorCriterion[@specialized(Float, Double) T: ClassTag]
 abstract class Criterion[A <: Activity: ClassTag,
 @specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
-  @transient var gradInput: A = _
+  @transient var gradInput: A = Activity[A, T]()
   var output: T = ev.fromType[Int](0)
 
   private[nn] def allocateAs[D <: Activity](dest: D): D = dest match {
@@ -40,9 +40,6 @@ abstract class Criterion[A <: Activity: ClassTag,
   }
 
   def forward(input: A, target: A): T = {
-    if (gradInput == null) {
-      gradInput = allocateAs[A](input)
-    }
     updateOutput(input, target)
   }
 
