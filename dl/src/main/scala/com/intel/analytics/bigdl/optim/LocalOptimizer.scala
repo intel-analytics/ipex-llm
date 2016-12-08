@@ -61,8 +61,8 @@ class LocalOptimizer[T](
     val testDataLabel = Tensor[Float](10000, 1)
     while (count < validationData.total()) {
       val (input, target) = validationData.next()
-      testDataInput.narrow(1, count+1, 100).copy(input.asInstanceOf[Tensor[Float]])
-      testDataLabel.narrow(1, count+1, 100).copy(target.asInstanceOf[Tensor[Float]])
+      testDataInput.narrow(1, count+1, input.size(1)).copy(input.asInstanceOf[Tensor[Float]])
+      testDataLabel.narrow(1, count+1, input.size(1)).copy(target.asInstanceOf[Tensor[Float]])
       count += input.size(1)
     }
 
@@ -82,7 +82,7 @@ class LocalOptimizer[T](
       val start = System.nanoTime()
       val (input, target) = data.next()
       trainDataInput.narrow(1, count+1, input.size(1)).copy(input.asInstanceOf[Tensor[Float]])
-      trainDataLabel.narrow(1, count+1, target.size(1)).copy(target.asInstanceOf[Tensor[Float]])
+      trainDataLabel.narrow(1, count+1, input.size(1)).copy(target.asInstanceOf[Tensor[Float]])
 
       val dataFetchTime = System.nanoTime()
       model.zeroGradParameters()

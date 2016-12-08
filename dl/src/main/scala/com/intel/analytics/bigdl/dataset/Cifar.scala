@@ -106,7 +106,7 @@ object Cifar10Local {
 
       val arrayToImage = ArrayByteToRGBImage()
       val normalizer = RGBImageNormalizer(trainDataSource -> arrayToImage) //125.3, 123.0, 113.9, 63.0, 62.1, 66.7)
-      val toTensor = new RGBImageToTensor(batchSize = 128)
+      val toTensor = new RGBImageToTensor(batchSize = 100)
 
 
       if (param.net.equals("resnet")) {
