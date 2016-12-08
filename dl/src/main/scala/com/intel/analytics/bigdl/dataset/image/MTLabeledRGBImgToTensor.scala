@@ -61,8 +61,9 @@ class MTLabeledRGBImgToTensor[A: ClassTag](width: Int, height: Int,
 
       override def next(): (Tensor[Float], Tensor[Float]) = {
         val count = new AtomicInteger(0)
-        Engine.invokeAndWait((0 until threadNum).map(tid => () => {
+        val batch = Engine.invokeAndWait((0 until threadNum).map(tid => () => {
           var position = 0
+          var record = 0
           while (iterators(tid).hasNext && {
             position = getPosition(count)
             position != -1
@@ -70,14 +71,16 @@ class MTLabeledRGBImgToTensor[A: ClassTag](width: Int, height: Int,
             val img = iterators(tid).next()
             img.copyTo(featureData, position * frameLength * 3)
             labelData(position) = img.label()
+            record += 1
           }
-        }))
+          record
+        })).sum
 
-        if (labelTensor.nElement() != count.get()) {
+        if (labelTensor.nElement() != batch) {
           featureTensor.set(Storage[Float](featureData),
-            storageOffset = 1, sizes = Array(count.get(), 3, height, width))
+            storageOffset = 1, sizes = Array(batch, 3, height, width))
           labelTensor.set(Storage[Float](labelData),
-            storageOffset = 1, sizes = Array(count.get()))
+            storageOffset = 1, sizes = Array(batch))
         }
 
         (featureTensor, labelTensor)

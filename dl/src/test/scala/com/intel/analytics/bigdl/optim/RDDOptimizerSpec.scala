@@ -95,6 +95,8 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val rdd = sc.parallelize(1 to (256 * 8), 8).map(prepareData)
 
+    Engine.disableCheckSingleton()
+
     dataSet = new DistributedDataSet[(Tensor[Double], Tensor[Double])] {
       override def originRDD(): RDD[_] = rdd
 

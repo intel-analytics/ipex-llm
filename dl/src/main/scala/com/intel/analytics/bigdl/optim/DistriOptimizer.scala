@@ -201,7 +201,7 @@ class DistriOptimizer[T: ClassTag](
               b += 1
             }
           }))
-          Engine.wait()
+          Engine.sync()
           driverMetrics.add("prepare time", System.nanoTime() - time)
 
           if (lossArray == null || lossArray.length < _subModelNumber) {
