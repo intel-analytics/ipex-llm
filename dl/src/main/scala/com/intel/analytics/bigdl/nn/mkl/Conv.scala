@@ -17,6 +17,8 @@
 
 package com.intel.analytics.bigdl.nn.mkl
 
+import java.awt.Dimension
+
 import com.intel.analytics.bigdl.mkl.{MKL, MklDnnDouble, MklDnnFloat}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -43,43 +45,47 @@ class Conv[@specialized(Float, Double) T: ClassTag](
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
-  var inputMkl = new MklTensor[T]()
-  var gradOutputMkl = new MklTensor[T]()
+  val weight = new MklTensor[T]()
+  val bias = new MklTensor[T]()
 
-  val weight: MklTensor[T] = new MklTensor[T]().resize(nGroup, nOutputPlane / nGroup,
-    nInputPlane / nGroup, kH, kW).asInstanceOf[MklTensor[T]]
-  val bias = new MklTensor[T]().resize(nOutputPlane).asInstanceOf[MklTensor[T]]
+  val gradWeight = Tensor()
+  val gradBias = Tensor()
 
-  val gradWeight = new MklTensor[T]().resizeAs(weight).asInstanceOf[MklTensor[T]]
-  val gradBias = new MklTensor[T]().resizeAs(bias).asInstanceOf[MklTensor[T]]
+  class ConvRef extends Ref {
+    var weight = new MklTensor[T]()
+    var bias = new MklTensor[T]()
 
-  var outputMkl = new MklTensor[T]()
-  var gradInputMkl = new MklTensor[T]()
+    var gradWeight = new MklTensor[T]()
+    var gradBias = new MklTensor[T]()
+  }
 
-  val backWeight: MklTensor[T] = new MklTensor[T]().resizeAs(weight)
-    .set(weight)
-    .asInstanceOf[MklTensor[T]]
+  val refs = new ConvRef
 
-  var gradOutputWeight = new MklTensor[T]()
-  var gradOutputBias = new MklTensor[T]()
+  val gradWeightMkl = new MklTensor[T]()
+  val gradBiasMkl = new MklTensor[T]()
+
+  val weightInBackData: MklTensor[T] = new MklTensor[T]()
+
+  var gradOutputInBackWeight = new MklTensor[T]()
+  var gradOutputInBackBias = new MklTensor[T]()
 
   var backWeightPrim = 0L
   var backBiasPrim = 0L
 
-  val weightSize = new Array[Long](5)
-  val weightStrides = new Array[Long](5)
-
-  val biasSize = new Array[Long](1)
-  val biasStrides = new Array[Long](1)
-
-  val strides = Array[Long](dW, dH)
-  val pads = Array[Int](-padW, -padH)
-  var dimension = 0
-  var kernelDim = 0
-
-  var firstPassBackWeight = true
+  var firstPassBackParam = true
 
   private def initLayerAttributes(input: Tensor[T]): Unit = {
+    val weightSize = new Array[Long](5)
+    val weightStrides = new Array[Long](5)
+
+    val biasSize = new Array[Long](1)
+    val biasStrides = new Array[Long](1)
+
+    val strides = Array[Long](dW, dH)
+    val pads = Array[Int](-padW, -padH)
+    var dimension = 0
+    var kernelDim = 0
+
     dimension = input.dim()
 
     inputSize(0) = input.size(input.dim()) // width
@@ -125,15 +131,37 @@ class Conv[@specialized(Float, Double) T: ClassTag](
     computeStrides(inputSize, inputStrides)
     computeStrides(outputSize, outputStrides)
     computeStrides(weightSize, weightStrides)
+
+    inputMkl.resizeAs(input)
+    gradInputMkl.resizeAs(input)
+
+    bias.resize(biasSize.map(_.toInt), biasStrides.reverse.map(_.toInt))
+    weight.resize(weightSize.reverse.map(_.toInt), weightStrides.reverse.map(_.toInt))
+    gradBias.resizeAs(bias)
+    gradWeight.resizeAs(weight)
+    gradBiasMkl.resizeAs(bias)
+    gradWeightMkl.resizeAs(weight)
+    weightInBackData.resizeAs(weight)
+
+    outputMkl.resize(outputSize.reverse.map(_.toInt), outputStrides.reverse.map(_.toInt))
+    gradOutputMkl.resizeAs(outputMkl)
+    gradOutputInBackBias.resizeAs(gradOutputMkl)
+    gradOutputInBackWeight.resizeAs(gradOutputMkl)
+
+    initForward(dimension, kernelDim, weightSize, weightStrides,
+      strides, pads, biasSize, biasStrides)
+    initBackwardData(dimension, kernelDim, weightSize, weightStrides,
+      strides, pads, biasSize, biasStrides)
+    initBackwardWeight(dimension, kernelDim, weightSize, weightStrides,
+      strides, pads, biasSize, biasStrides)
+    initBackwardBias(dimension, biasSize, biasStrides)
   }
 
-  private def initForward(input: Tensor[T], output: Tensor[T]): Unit = {
-    initLayerAttributes(input)
-    output.resize(outputSize.reverse.map(_.toInt))
-
+  private def initForward(dimension: Int, kernelDim: Int,
+                          weightSize: Array[Long], weightStrides: Array[Long],
+                          strides: Array[Long], pads: Array[Int],
+                          biasSize: Array[Long], biasStrides: Array[Long]): Unit = {
     ev.getType() match {
-      case "Double" =>
-        this.forwardPrim = MklDnnDouble.convolutionCreateForward()
       case "Float" =>
         this.forwardPrim = MklDnnFloat.convolutionCreateForward(1,
                                                                 nGroup,
@@ -144,32 +172,26 @@ class Conv[@specialized(Float, Double) T: ClassTag](
                                                                 strides,
                                                                 pads,
                                                                 Border.dnnBorderZeros)
+        require(this.forwardPrim != 0, "create convolution primitive failed.")
+      case _ =>
+        throw new UnsupportedOperationException(s"Only Float supported")
     }
 
-    input.asInstanceOf[MklTensor[T]].createUsrLayout(dimension, inputSize, inputStrides)
-    input.asInstanceOf[MklTensor[T]].createMklLayout(forwardPrim, ResourceType.dnnResourceSrc)
-
-    output.asInstanceOf[MklTensor[T]].createUsrLayout(dimension, outputSize, outputStrides)
-    output.asInstanceOf[MklTensor[T]].createMklLayout(forwardPrim, ResourceType.dnnResourceDst)
-
-    weight.asInstanceOf[MklTensor[T]].createUsrLayout(kernelDim, weightSize, weightStrides)
-    weight.asInstanceOf[MklTensor[T]].createMklLayout(forwardPrim, ResourceType.dnnResourceFilter)
-
-    bias.asInstanceOf[MklTensor[T]].createUsrLayout(1, biasSize, biasStrides)
-    bias.asInstanceOf[MklTensor[T]].createMklLayout(forwardPrim, ResourceType.dnnResourceBias)
+    inputMkl.createConversion(dimension, inputSize, inputStrides, forwardPrim,
+      ResourceType.dnnResourceSrc, MklRWType.READ)
+    weight.createConversion(kernelDim, weightSize, weightStrides, forwardPrim,
+      ResourceType.dnnResourceFilter, MklRWType.READ)
+    bias.createConversion(1, biasSize, biasStrides, forwardPrim,
+      ResourceType.dnnResourceBias, MklRWType.READ)
+    outputMkl.createConversion(dimension, outputSize, outputStrides, forwardPrim,
+      ResourceType.dnnResourceDst, MklRWType.WRITE)
   }
 
-  private def initBackward(input: MklTensor[T],
-                           gradOutput: MklTensor[T],
-                           gradInput: MklTensor[T]): Unit = {
-    initLayerAttributes(input)
-    gradInput.resize(inputSize.reverse.map(_.toInt))
-
+  private def initBackwardData(dimension: Int, kernelDim: Int,
+                               weightSize: Array[Long], weightStrides: Array[Long],
+                               strides: Array[Long], pads: Array[Int],
+                               biasSize: Array[Long], biasStrides: Array[Long]): Unit = {
     ev.getType() match {
-      case "Double" =>
-        this.backwardPrim = MklDnnDouble.convolutionCreateBackwardData()
-        this.backWeightPrim = MklDnnDouble.convolutionCreateBackwardKernel()
-        this.backBiasPrim = MklDnnDouble.convolutionCreateBackwardBias()
       case "Float" =>
         this.backwardPrim = MklDnnFloat.convolutionCreateBackwardData(
           Algorithm.dnnAlgorithmConvolutionDirect,
@@ -182,27 +204,23 @@ class Conv[@specialized(Float, Double) T: ClassTag](
           pads,
           Border.dnnBorderZeros)
         require(this.backwardPrim != 0, "create convolution primitive failed.")
+      case _ =>
+        throw new UnsupportedOperationException(s"Only Float supported")
     }
 
-    gradOutput.createUsrLayout(dimension, outputSize, outputStrides)
-    gradOutput.createMklLayout(backwardPrim, ResourceType.dnnResourceDiffDst)
-
-    gradInput.createUsrLayout(dimension, inputSize, inputStrides)
-    gradInput.createMklLayout(backwardPrim, ResourceType.dnnResourceDiffSrc)
-
-    backWeight.createUsrLayout(kernelDim, weightSize, weightStrides)
-    backWeight.createMklLayout(backwardPrim, ResourceType.dnnResourceFilter)
+    gradOutputMkl.createConversion(dimension, outputSize, outputStrides, backwardPrim,
+      ResourceType.dnnResourceDiffDst, MklRWType.READ)
+    weightInBackData.createConversion(kernelDim, weightSize, weightStrides,
+      backwardPrim, ResourceType.dnnResourceFilter, MklRWType.READ)
+    gradInputMkl.createConversion(dimension, inputSize, inputStrides, backwardPrim,
+      ResourceType.dnnResourceDiffSrc, MklRWType.WRITE)
   }
 
-  def initBackWeight(input: MklTensor[T], gradOutput: MklTensor[T]): Unit = {
-    initLayerAttributes(input)
-    gradWeight.resizeAs(weight)
-
+  def initBackwardWeight(dimension: Int, kernelDim: Int,
+                     weightSize: Array[Long], weightStrides: Array[Long],
+                     strides: Array[Long], pads: Array[Int],
+                     biasSize: Array[Long], biasStrides: Array[Long]): Unit = {
     ev.getType() match {
-      case "Double" =>
-        this.backwardPrim = MklDnnDouble.convolutionCreateBackwardData()
-        this.backWeightPrim = MklDnnDouble.convolutionCreateBackwardKernel()
-        this.backBiasPrim = MklDnnDouble.convolutionCreateBackwardBias()
       case "Float" =>
         this.backWeightPrim = MklDnnFloat.convolutionCreateBackwardKernel(
           Algorithm.dnnAlgorithmConvolutionDirect,
@@ -214,28 +232,20 @@ class Conv[@specialized(Float, Double) T: ClassTag](
           strides,
           pads,
           Border.dnnBorderZeros)
-        require(this.backwardPrim != 0, "create convolution primitive failed.")
+        require(this.backWeightPrim != 0, "create convolution primitive failed.")
+      case _ =>
+        throw new UnsupportedOperationException(s"Only Float supported")
     }
 
-    gradOutput.createUsrLayout(dimension, outputSize, outputStrides)
-    gradOutput.createMklLayout(backWeightPrim, ResourceType.dnnResourceDiffDst)
-
-//    input.createUsrLayout(dimension, inputSize, inputStrides)
-//    input.createMklLayout(backWeightPrim, ResourceType.dnnResourceSrc)
-
-    gradWeight.createUsrLayout(kernelDim, weightSize, weightStrides)
-    gradWeight.createMklLayout(backWeightPrim, ResourceType.dnnResourceDiffFilter)
+    gradOutputInBackWeight.createConversion(dimension, outputSize, outputStrides, backWeightPrim,
+      ResourceType.dnnResourceDiffDst, MklRWType.READ)
+//    gradWeight.createInterLayout(backWeightPrim, ResourceType.dnnResourceDiffFilter)
+    gradWeightMkl.createConversion(kernelDim, weightSize, weightStrides, backWeightPrim,
+      ResourceType.dnnResourceDiffFilter, MklRWType.WRITE)
   }
 
-  def initBackBias(input: MklTensor[T], gradOutput: MklTensor[T]): Unit = {
-    initLayerAttributes(input)
-    gradBias.resizeAs(bias)
-
+  def initBackwardBias(dimension: Int, biasSize: Array[Long], biasStrides: Array[Long]): Unit = {
     ev.getType() match {
-      case "Double" =>
-        this.backwardPrim = MklDnnDouble.convolutionCreateBackwardData()
-        this.backBiasPrim = MklDnnDouble.convolutionCreateBackwardKernel()
-        this.backBiasPrim = MklDnnDouble.convolutionCreateBackwardBias()
       case "Float" =>
         this.backBiasPrim = MklDnnFloat.convolutionCreateBackwardBias(
           Algorithm.dnnAlgorithmConvolutionDirect,
@@ -243,86 +253,82 @@ class Conv[@specialized(Float, Double) T: ClassTag](
           4,
           outputSize)
         require(this.backBiasPrim != 0, "create convolution primitive failed.")
+      case _ =>
+        throw new UnsupportedOperationException(s"Only Float supported")
     }
 
-    gradOutput.createUsrLayout(dimension, outputSize, outputStrides)
-    gradOutput.createMklLayout(backBiasPrim, ResourceType.dnnResourceDiffDst)
+    gradOutputInBackBias.createConversion(dimension, outputSize, outputStrides, backBiasPrim,
+      ResourceType.dnnResourceDiffDst, MklRWType.READ)
+//    gradBias.createInterLayout(backBiasPrim, ResourceType.dnnResourceDiffBias)
+    gradBiasMkl.createConversion(1, biasSize, biasStrides, backBiasPrim,
+      ResourceType.dnnResourceDiffBias, MklRWType.WRITE)
+  }
 
-    gradBias.createUsrLayout(1, biasSize, biasStrides)
-    gradBias.createMklLayout(backBiasPrim, ResourceType.dnnResourceDiffBias)
+  override def convertToMklDnn(input: Tensor[T]): Unit = {
+    initLayerAttributes(input)
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     if (input.isMklTensor()) {
       inputMkl = input.asInstanceOf[MklTensor[T]]
-    } else {
-      inputMkl.resizeAs(input).set(input)
     }
 
-    if (firstPassForward) {
-      initForward(inputMkl, outputMkl)
-      firstPassForward = false
-    }
-
-    inputMkl.convert(toMkl = true)
-    weight.asInstanceOf[MklTensor[T]].convert(toMkl = true)
-    bias.asInstanceOf[MklTensor[T]].convert(toMkl = true)
+//    inputMkl.set(input)
 
     ev.getType() match {
-      case "Double" =>
-        MklDnnDouble.convolutionForwardExecute(
-          )
       case "Float" =>
         MklDnnFloat.convolutionForwardExecute(
-          inputMkl.storageMkl.array().asInstanceOf[Array[Float]],
-          weight.asInstanceOf[MklTensor[T]].storageMkl.array().asInstanceOf[Array[Float]],
-          bias.asInstanceOf[MklTensor[T]].storageMkl.array().asInstanceOf[Array[Float]],
-          outputMkl.storageMkl.array().asInstanceOf[Array[Float]],
+          inputMkl.getConvertedStorage(input).array().asInstanceOf[Array[Float]],
+          weight.storage.array().asInstanceOf[Array[Float]],
+          bias.storage.array().asInstanceOf[Array[Float]],
+          outputMkl.getStroage().array().asInstanceOf[Array[Float]],
           forwardPrim
         )
       case _ =>
         throw new UnsupportedOperationException(s"Only Float supported")
     }
 
-    if (this.getNextPtr() == 0) {
-      this.outputMkl.convert(toMkl = false)
+    if (this.getNextPtr() != 0) {
+      this.output = outputMkl
+    } else {
+      outputMkl.backToUsr(output, ConvertType.INTERNALTOUSR)
     }
 
-    this.output = outputMkl
     this.output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     if (gradOutput.isMklTensor()) {
       gradOutputMkl = gradOutput.asInstanceOf[MklTensor[T]]
-    } else {
-      gradOutputMkl.resizeAs(gradOutput).set(gradOutput)
     }
 
-    if (firstPassBackward) {
-      initBackward(inputMkl, gradOutputMkl, gradInputMkl)
-      firstPassBackward_=(false)
-    }
+    val tmp = Tensor().resizeAs(weight)
+    tmp.storage().set(weight.getUsrStorage())
 
-    gradOutputMkl.convert(toMkl = true)
-    backWeight.set(weight)
-    backWeight.convert(toMkl = true)
-
+//    MklTensor.convert(weight.usrStorage, weight.usrOffset - 1,
+//      weightInBackData.storage(), weightInBackData.usrToMkl, toMkl = true)
+//    weightInBackData.set(weight)
     ev.getType() match {
-      case "Double" => MklDnnDouble.convolutionBackwardExecute()
       case "Float" =>
         MklDnnFloat.convolutionBackwardDataExecute(
-          gradInputMkl.storageMkl.array().asInstanceOf[Array[Float]],
-          gradOutputMkl.storageMkl.array().asInstanceOf[Array[Float]],
-          backWeight.storageMkl.array().asInstanceOf[Array[Float]],
+          gradInputMkl.getStroage().array().asInstanceOf[Array[Float]],
+          gradOutputMkl.getConvertedStorage(gradOutput).array().asInstanceOf[Array[Float]],
+          weightInBackData.getConvertedStorage(tmp).array().asInstanceOf[Array[Float]],
           backwardPrim)
     }
 
-    if (this.getPrevPtr() == 0) {
-      this.gradInputMkl.convert(toMkl = false)
+    if (this.getPrevPtr() != 0) {
+      this.gradInput = this.gradInputMkl
+    } else {
+      gradInputMkl.backToUsr(this.gradInput, ConvertType.INTERNALTOUSR)
     }
 
-    this.gradInput = this.gradInputMkl
+    val weightTmp = Tensor[T]().resizeAs(weight)
+    weight.backToUsr(weightTmp, ConvertType.MKLTOUSR)
+
+    val gradOutputTmp = Tensor[T]().resizeAs(gradOutput)
+    gradOutputMkl.backToUsr(gradOutputTmp, ConvertType.MKLTOUSR)
+
     this.gradInput
   }
 
@@ -330,48 +336,31 @@ class Conv[@specialized(Float, Double) T: ClassTag](
                                  gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
     if (gradOutput.isMklTensor()) {
-      gradOutputWeight = gradOutput.asInstanceOf[MklTensor[T]]
-      gradOutputBias = gradOutput.asInstanceOf[MklTensor[T]]
-    } else {
-      gradOutputWeight.resizeAs(gradOutput).set(gradOutput)
-      gradOutputBias.resizeAs(gradOutput).set(gradOutput)
+      gradOutputInBackWeight = gradOutput.asInstanceOf[MklTensor[T]]
+      gradOutputInBackBias = gradOutput.asInstanceOf[MklTensor[T]]
     }
 
     if (input.isMklTensor()) {
       inputMkl = input.asInstanceOf[MklTensor[T]]
-    } else {
-      inputMkl.resizeAs(input).set(input)
     }
 
-    if (firstPassBackWeight) {
-      initBackWeight(inputMkl, gradOutputWeight)
-      initBackBias(inputMkl, gradOutputBias)
-      firstPassBackWeight = false
-    }
-
-    gradOutputWeight.convert(toMkl = true)
-    gradOutputBias.convert(toMkl = true)
-    inputMkl.convert(toMkl = true)
     ev.getType() match {
-      case "Double" => MklDnnDouble.convolutionCreateBackwardKernel()
-        MklDnnDouble.convolutionCreateBackwardBias()
-      case "Float" => MklDnnFloat.convolutionBackwardKernelExecute(
-        inputMkl.storageMkl.array().asInstanceOf[Array[Float]],
-        gradOutputWeight.storageMkl.array().asInstanceOf[Array[Float]],
-        gradWeight.storageMkl.array().asInstanceOf[Array[Float]],
-        backWeightPrim
-      )
+      case "Float" =>
+        MklDnnFloat.convolutionBackwardKernelExecute(
+          inputMkl.getConvertedStorage(input).array().asInstanceOf[Array[Float]],
+          gradOutputInBackWeight.getConvertedStorage(gradOutput).array().asInstanceOf[Array[Float]],
+          gradWeightMkl.getStroage().array().asInstanceOf[Array[Float]],
+          backWeightPrim
+        )
         MklDnnFloat.convolutionBackwardBiasExecute(
-          gradOutputBias.storageMkl.array().asInstanceOf[Array[Float]],
-          gradBias.storageMkl.array().asInstanceOf[Array[Float]],
+          gradOutputInBackBias.getConvertedStorage(gradOutput).array().asInstanceOf[Array[Float]],
+          gradBiasMkl.getStroage().array().asInstanceOf[Array[Float]],
           backBiasPrim
         )
     }
 
-    gradWeight.convert(toMkl = false)
-    gradBias.convert(toMkl = false)
-
-    println("")
+    gradWeightMkl.backToUsr(gradWeight, ConvertType.INTERNALTOUSR)
+    gradBiasMkl.backToUsr(gradBias, ConvertType.INTERNALTOUSR)
   }
 
   override def updateParameters(learningRate: T): Unit = {}

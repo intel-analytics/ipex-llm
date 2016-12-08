@@ -339,6 +339,8 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
       }
     }
   }
+
+  def convertToMklDnn(input: Tensor[T]): Unit ={}
 }
 
 object Module {

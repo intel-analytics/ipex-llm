@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.nn.mkl
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.MklTensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.language.implicitConversions
@@ -48,6 +49,18 @@ abstract class MklModule[@specialized(Float, Double) T: ClassTag](implicit ev: T
   val outputSize = new Array[Long](4)
   val inputStrides = new Array[Long](4)
   val outputStrides = new Array[Long](4)
+
+  var inputMkl = new MklTensor[T]()
+  var outputMkl = new MklTensor[T]()
+  var gradOutputMkl = new MklTensor[T]()
+  var gradInputMkl = new MklTensor[T]()
+
+  trait Ref {
+    var input = new MklTensor[T]()
+    var output = new MklTensor[T]()
+    var gradOutput = new MklTensor[T]()
+    var gradInput = new MklTensor[T]()
+  }
 
   implicit def bool2int(b: Boolean) = if (b) 1 else 0
 }
@@ -92,4 +105,24 @@ object Algorithm {
   val dnnAlgorithmPoolingMax       = 3 // Maximum pooling
   val dnnAlgorithmPoolingMin       = 4 // Minimum pooling
   val dnnAlgorithmPoolingAvg       = 5 // Average pooling
+}
+
+object DataSize {
+  val FLOAT  = 4
+  val INT    = 4
+  val DOUBLE = 8
+}
+
+object MklRWType {
+  val READ = 0
+  val WRITE = 1
+}
+
+object ConvertType {
+  val INTERNALTOUSR = 0
+  val INTERNALTOMKL = 1
+  val MKLTOUSR = 2
+  val USRTOMKL = 3
+  val MKL = 4
+  val USR = 5
 }

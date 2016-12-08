@@ -16,14 +16,6 @@ JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_layoutCre
   size_t *jSize    = (size_t*)(env->GetPrimitiveArrayCritical(size, 0));
   size_t *jStrides = (size_t*)(env->GetPrimitiveArrayCritical(strides, 0));
 
-  for (int i = 0; i < dimension; i++) {
-    LOG(INFO) << "size[" << i << "] = " << jSize[i];
-  }
-
-  for (int i = 0; i < dimension; i++) {
-    LOG(INFO) << "strides[" << i << "] = " << jStrides[i];
-  }
-
   dnnError_t status  = E_UNIMPLEMENTED;
   dnnLayout_t layout = NULL;
 
@@ -95,17 +87,11 @@ JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_conversio
   dnnLayout_t jLayout1 = (dnnLayout_t)layout1;
   dnnLayout_t jLayout2 = (dnnLayout_t)layout2;
 
-  LOG(INFO) << jLayout1;
-  LOG(INFO) << jLayout2;
-
   dnnPrimitive_t primitive = NULL;
   dnnError_t status        = E_UNIMPLEMENTED;
 
   status = dnnConversionCreate_F32(&primitive, jLayout1, jLayout2);
   CHECK_EQ(status, E_SUCCESS);
-
-  LOG(INFO) << status;
-  LOG(INFO) << primitive;
 
   return (jlong)primitive;
 }
@@ -123,9 +109,6 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_conversion
 
   jfloat* jUsr = (jfloat*)(env->GetPrimitiveArrayCritical(usr, 0));
   jfloat* jMkl = (jfloat*)(env->GetPrimitiveArrayCritical(mkl, 0));
-
-  LOG(INFO) << jMkl;
-  LOG(INFO) << jUsr;
 
   void *resources[dnnResourceNumber];
 

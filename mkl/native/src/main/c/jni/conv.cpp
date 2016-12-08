@@ -29,16 +29,10 @@ JNIEXPORT
   size_t *jStrides    = (size_t*)(env->GetPrimitiveArrayCritical(strides, 0));
   jint *jPads       = (jint*)(env->GetPrimitiveArrayCritical(pads, 0));
 
-  LOG(INFO) << "0";
   dnnAlgorithm_t jAlgorithm = (dnnAlgorithm_t)algorithm;
   dnnBorder_t jBorderType   = (dnnBorder_t)boderType;
   dnnPrimitive_t primitive  = NULL;
   dnnError_t status         = E_UNIMPLEMENTED;
-
-  LOG(INFO) << jPads[0];
-  LOG(INFO) << jPads[1];
-
-  LOG(INFO) << "A";
 
   status = dnnGroupsConvolutionCreateForwardBias_F32(
     &primitive,
@@ -53,14 +47,12 @@ JNIEXPORT
     jPads,
     dnnBorderZeros);
   CHECK_EQ(status, E_SUCCESS);
-  LOG(INFO) << "B";
 
   env->ReleasePrimitiveArrayCritical(inputSize , jInputSize , 0);
   env->ReleasePrimitiveArrayCritical(outputSize, jOutputSize, 0);
   env->ReleasePrimitiveArrayCritical(weightSize, jWeightSize, 0);
   env->ReleasePrimitiveArrayCritical(strides   , jStrides   , 0);
   env->ReleasePrimitiveArrayCritical(pads      , jPads      , 0);
-  LOG(INFO) << "C";
 
   return (jlong)primitive;
 }
@@ -95,10 +87,8 @@ void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_convolutionForwardEx
   resources[dnnResourceSrc]    = (void*)jInput;
   resources[dnnResourceDst]    = (void*)jOutput;
 
-  LOG(INFO) << "START";
   status = dnnExecute_F32(jPrimitive, resources);
   CHECK_EQ(status, E_SUCCESS);
-  LOG(INFO) << "END";
 
   env->ReleasePrimitiveArrayCritical(input , jInput , 0);
   env->ReleasePrimitiveArrayCritical(weight, jWeight, 0);
@@ -131,36 +121,10 @@ JNIEXPORT
   size_t *jStrides    = (size_t*)(env->GetPrimitiveArrayCritical(strides, 0));
   jint   *jPads       = (jint*)(env->GetPrimitiveArrayCritical(pads, 0));
 
-  LOG(INFO) << "0";
   dnnAlgorithm_t jAlgorithm = (dnnAlgorithm_t)algorithm;
   dnnBorder_t jBorderType   = (dnnBorder_t)boderType;
   dnnPrimitive_t primitive  = NULL;
   dnnError_t status         = E_UNIMPLEMENTED;
-
-  LOG(INFO) << jPads[0];
-  LOG(INFO) << jPads[1];
-
-  LOG(INFO) << "A";
-
-  for (int i = 0; i < dim; i++) {
-    LOG(INFO) << "inputSize[" << i << "] = " << jInputSize[i];
-  }
-  for (int i = 0; i < dim; i++) {
-    LOG(INFO) << "outputSize[" << i << "] = " << jOutputSize[i];
-  }
-  for (int i = 0; i < 5; i++) {
-    LOG(INFO) << "kernelSize[" << i << "] = " << jWeightSize[i];
-  }
-  for (int i = 0; i < 2; i++) {
-    LOG(INFO) << "stride[" << i << "] = " << jStrides[i];
-  }
-  for (int i = 0; i < 2; i++) {
-    LOG(INFO) << "pad[" << i << "] = " << jPads[i];
-  }
-  LOG(INFO) << "dnnAlgorithmConvolutionDirect = " << jAlgorithm;
-  LOG(INFO) << "groups = " << groups;
-  LOG(INFO) << "dimension = " << dim;
-  LOG(INFO) << "dnnBorderZeros = " << jBorderType;
 
   status = dnnGroupsConvolutionCreateBackwardData_F32(
     &primitive,
@@ -175,14 +139,12 @@ JNIEXPORT
     jPads,
     jBorderType);
   CHECK_EQ(status, E_SUCCESS);
-  LOG(INFO) << "B";
 
   env->ReleasePrimitiveArrayCritical(inputSize , jInputSize , 0);
   env->ReleasePrimitiveArrayCritical(outputSize, jOutputSize, 0);
   env->ReleasePrimitiveArrayCritical(weightSize, jWeightSize, 0);
   env->ReleasePrimitiveArrayCritical(strides   , jStrides   , 0);
   env->ReleasePrimitiveArrayCritical(pads      , jPads      , 0);
-  LOG(INFO) << "C";
 
   return (jlong)primitive;
 }
@@ -246,36 +208,10 @@ jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_convolutionCreateBa
   size_t *jStrides    = (size_t*)(env->GetPrimitiveArrayCritical(strides, 0));
   jint   *jPads       = (jint*)(env->GetPrimitiveArrayCritical(pads, 0));
 
-  LOG(INFO) << "0";
   dnnAlgorithm_t jAlgorithm = (dnnAlgorithm_t)algorithm;
   dnnBorder_t jBorderType   = (dnnBorder_t)boderType;
   dnnPrimitive_t primitive  = NULL;
   dnnError_t status         = E_UNIMPLEMENTED;
-
-  LOG(INFO) << jPads[0];
-  LOG(INFO) << jPads[1];
-
-  LOG(INFO) << "A";
-
-  for (int i = 0; i < dim; i++) {
-    LOG(INFO) << "inputSize[" << i << "] = " << jInputSize[i];
-  }
-  for (int i = 0; i < dim; i++) {
-    LOG(INFO) << "outputSize[" << i << "] = " << jOutputSize[i];
-  }
-  for (int i = 0; i < 5; i++) {
-    LOG(INFO) << "kernelSize[" << i << "] = " << jWeightSize[i];
-  }
-  for (int i = 0; i < 2; i++) {
-    LOG(INFO) << "stride[" << i << "] = " << jStrides[i];
-  }
-  for (int i = 0; i < 2; i++) {
-    LOG(INFO) << "pad[" << i << "] = " << jPads[i];
-  }
-  LOG(INFO) << "dnnAlgorithmConvolutionDirect = " << jAlgorithm;
-  LOG(INFO) << "groups = " << groups;
-  LOG(INFO) << "dimension = " << dim;
-  LOG(INFO) << "dnnBorderZeros = " << jBorderType;
 
   status = dnnGroupsConvolutionCreateBackwardFilter_F32(
     &primitive,
@@ -290,14 +226,12 @@ jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_convolutionCreateBa
     jPads,
     jBorderType);
   CHECK_EQ(status, E_SUCCESS);
-  LOG(INFO) << "B";
 
   env->ReleasePrimitiveArrayCritical(inputSize , jInputSize , 0);
   env->ReleasePrimitiveArrayCritical(outputSize, jOutputSize, 0);
   env->ReleasePrimitiveArrayCritical(weightSize, jWeightSize, 0);
   env->ReleasePrimitiveArrayCritical(strides   , jStrides   , 0);
   env->ReleasePrimitiveArrayCritical(pads      , jPads      , 0);
-  LOG(INFO) << "C";
 
   return (jlong)primitive;
 }
