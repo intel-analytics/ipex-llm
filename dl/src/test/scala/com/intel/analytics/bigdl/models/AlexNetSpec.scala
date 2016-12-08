@@ -143,10 +143,10 @@ gradInput = model.gradInput
 
     model.zeroGradParameters()
     val output = TH.map("output").asInstanceOf[Tensor[Double]]
-    val outputTest = model.forward(floatInput).toTensor[Double]
+    val outputTest = model.forward(floatInput).toTensor[Float]
     var abss = 0.0
-    for (i <- 0 until outputTest.toTensor[Double].nElement()) {
-      val tmp = abs(outputTest.toTensor[Double].storage().array()(i) - output.storage().array()(i))
+    for (i <- 0 until outputTest.nElement()) {
+      val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i))
       abss += tmp
     }
     assert(abss < 1e-2)
@@ -157,7 +157,7 @@ gradInput = model.gradInput
     println(s"${abs(errTest - err)}")
     assert(abs(errTest - err) < 1e-6)
 
-    val gradOutputTest = criterion.backward(outputTest, floatLabel).toTensor[Double]
+    val gradOutputTest = criterion.backward(outputTest, floatLabel).toTensor[Float]
     val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
     abss = 0.0
     for (i <- 0 until gradOutputTest.nElement()) {
@@ -167,7 +167,7 @@ gradInput = model.gradInput
     assert(abss == 0.0)
     println(s"gradOutputTestAbs:$abss")
 
-    val gradInput = model.backward(floatInput, gradOutputTest).toTensor[Double]
+    val gradInput = model.backward(floatInput, gradOutputTest).toTensor[Float]
     val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
 
     abss = 0.0

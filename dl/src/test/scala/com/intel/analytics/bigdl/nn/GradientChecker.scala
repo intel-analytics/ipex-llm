@@ -42,9 +42,9 @@ class GradientChecker(stepSize: Double, threshold: Double) {
     while (i <= input.nElement()) {
       val curValue = perturbation.valueAt(i)
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) + stepSize))
-      val positiveLoss = lossAndGradient(layer.updateOutput(input).toTensor[Double])._1
+      val positiveLoss = lossAndGradient(layer.updateOutput(input).toTensor[T])._1
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) - stepSize))
-      val negativeLoss = lossAndGradient(layer.updateOutput(input).toTensor[Double])._1
+      val negativeLoss = lossAndGradient(layer.updateOutput(input).toTensor[T])._1
       val estimatedGradient = (positiveLoss - negativeLoss) / stepSize / 2.0
 
       result = result & (math.abs(estimatedGradient -
