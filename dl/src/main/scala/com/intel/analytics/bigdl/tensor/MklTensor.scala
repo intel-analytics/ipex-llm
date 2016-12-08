@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.tensor
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
 import com.intel.analytics.bigdl.mkl.{MklDnnDouble, MklDnnFloat}
-import com.intel.analytics.bigdl.nn.mkl.{DataSize, MklRWType, ConvertType}
+import com.intel.analytics.bigdl.nn.mkl.{MklDataSize, MklLayout}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
@@ -31,32 +31,196 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
 
   override def isMklTensor(): Boolean = true
 
-  var interStorage = Storage[T]()
-  var _storage = Storage[T]()
+  private[this] var _interStorage = Storage[T]()
+  private[this] var _mklStorage = Storage[T]()
+  private[this] var _usrStorage = Storage[T]()
 
-  var usrStorage = Storage[T]() // contain dense tensor
-  var usrOffset = 0
+  private[this] var _usrStorageOffset: Int = 1
 
-  def setUsrStorage(storage: Storage[T]): Unit = {
-    usrStorage = storage
-  }
+  private[this] var _layoutUsr: Long = 0L // usr layout ptr
+  private[this] var _layoutMkl: Long = 0L
+  private[this] var _layoutInternal: Long = 0L // the mkl layout of previous layer or next layer
 
-  def getUsrStorage(): Storage[T] = {
-    usrStorage
-  }
+  private[this] var _mklToUsr: Long = 0L // convert mkl layout mem to scala layout mem
+  private[this] var _usrToMkl: Long = 0L // convert scala layout mem to mkl layout mem
+
+  private[this] var _internalToMkl: Long = 0L
 
   var _size = Array[Int]()
   var _stride = Array[Int]()
 
   var nDimension: Int = 0
 
-  def storage(): Storage[T] = _storage
+  /**
+    *
+    * @param other
+    * @return current mkl tensor
+    */
+  override def set(other: Tensor[T]): Tensor[T] = {
+    if (other.isMklTensor()) {
+      val currLayout = this.layoutMkl
+      val otherLayout = other.asInstanceOf[MklTensor[T]].layoutMkl
+      val isSame = MklDnnFloat.layoutCompare(currLayout, otherLayout)
 
-  def storage_=(value: Storage[T]): Unit = {
-    _storage = value
+      if (isSame != 1 && internalToMkl == 0) { // TODO internalToMkl primitive only set once
+        internalToMkl_=(createOne(otherLayout, currLayout, isSame, internalToMkl))
+        interStorage_=(other.asInstanceOf[MklTensor[T]].mklStorage())
+      } else {
+        mklStorage_=(other.asInstanceOf[MklTensor[T]].mklStorage())
+      }
+    } else {
+      usrStorage_=(other.storage())
+      usrStorageOffset_=(other.storageOffset())
+    }
+    this
   }
 
-  override def storageOffset(): Int = 0
+  def createUsrLayout(dimension: Int, size: Array[Long], strides: Array[Long]): Unit = {
+    ev.getType() match {
+      case "Float" =>
+        if (layoutUsr == 0) { // TODO if not equal to 0, we will delete and re-create.
+          layoutUsr_=(MklDnnFloat.layoutCreate(dimension, size, strides))
+        }
+      case _ =>
+        throw new UnsupportedOperationException(s"Only Float supported")
+    }
+  }
+
+  def createMklLayout(primitive: Long, resType: Int): Unit = {
+    if (primitive != 0) {
+      ev.getType() match {
+        case "Float" =>
+          layoutMkl_=(MklDnnFloat.layoutCreateFromPrimitive(primitive, resType))
+        case _ =>
+          throw new UnsupportedOperationException(s"Only Float supported")
+      }
+    }
+    require(layoutMkl != 0, s"create mkl layout failed.")
+
+    mklStorage().resize(MklDnnFloat.layoutGetMemorySize(layoutMkl) / MklDataSize.FLOAT)
+    // TODO we should replace the println to standard log
+    println(s"resize mkl storage " +
+      s"${MklDnnFloat.layoutGetMemorySize(layoutMkl) / MklDataSize.FLOAT} bytes")
+  }
+
+  /**
+   * check whether conversion prim has been created, and create a new one as return
+   * @param src src layout
+   * @param dst dst layout
+   * @param same the layouts are same or not
+   * @param prim old conversion primitive
+   * @return a new primitive, if the layouts are same, return 0
+   */
+  private[this] def createOne(src: Long, dst: Long, same: Int, prim: Long): Long = {
+    import scala.language.implicitConversions
+    implicit def bool2int(b: Boolean) = if (b) 1 else 0
+
+    val ret = if (src != 0 && dst != 0 && same != 1) {
+      ev.getType() match {
+        case "Float" =>
+
+          if (prim != 0) {
+            MklDnnFloat.deletePrimitive(prim)
+          }
+
+          val conversion = MklDnnFloat.conversionCreate(src, dst)
+          require(conversion != 0, "create mkl dnn conversion (mkl -> usr) failed.")
+          conversion
+        case _ =>
+          throw new UnsupportedOperationException(s"Only Float supported")
+      }
+    } else {
+      0L
+    }
+
+    ret
+  }
+
+  def createConversion(): Unit = {
+    // be care of MklDnnFloat.layoutCompare return value, if two layout are same,
+    // it will return 1
+    val usrSameMkl = ev.getType() match {
+      case "Float" => MklDnnFloat.layoutCompare(layoutUsr, layoutMkl)
+      case _ =>
+        throw new UnsupportedOperationException(s"Only Float supported")
+    }
+
+    // if usrToMkl or mklToUsr has been created, we should delete it first
+    usrToMkl_=(createOne(layoutUsr, layoutMkl, usrSameMkl, usrToMkl))
+    mklToUsr_=(createOne(layoutMkl, layoutUsr, usrSameMkl, mklToUsr))
+  }
+
+  def createConversion(layout: MklLayout,
+                       primitive: Long,
+                       resType: Int): Unit = {
+    createUsrLayout(layout.dimension, layout.size, layout.strides)
+    createMklLayout(primitive, resType)
+    createConversion()
+  }
+
+  /**
+   * if current tensor has an internal tensor, it will ignores the dense tensor
+   *
+   * @return the mkl storage
+   */
+  def getConvertedStorage(): Storage[T] = {
+    import scala.language.implicitConversions
+    implicit def bool2int(b: Boolean) = if (b) 1 else 0
+
+    // 1. if internal storage exists, check the internal layout, then convert it to mkl storage
+    // 2. otherwise convert usr storage to mkl storage
+
+    // internal storage layout is same as mkl storage layout
+    if (internalToMkl == 0 && interStorage.length() > 0) {
+      mklStorage_=(interStorage)
+    } else {
+      val (srcStorage, offset, primitive) = if (internalToMkl != 0) {
+        (interStorage, 0, internalToMkl)
+      } else {
+        (usrStorage, usrStorageOffset -1, usrToMkl)
+      }
+      val dstStorage = this.mklStorage()
+
+      if (primitive != 0) { // the layouts of two are different
+        ev.getType() match {
+          case "Float" =>
+            MklDnnFloat.conversionExecuteToMkl(
+              srcStorage.array().asInstanceOf[Array[Float]],
+              offset,
+              dstStorage.array().asInstanceOf[Array[Float]],
+              primitive
+            )
+          case _ =>
+            throw new UnsupportedOperationException(s"Only Float supported")
+        }
+      } else { // if the layouts is same, set the storage to usr/internal storage directly
+        mklStorage().set(srcStorage)
+      }
+    }
+
+    this.mklStorage()
+  }
+
+  def getStroage(): Storage[T] = {
+    this.interStorage
+  }
+
+  def backToUsr(usr: Tensor[T]): Unit = {
+    // resize the storage here
+    usr.resizeAs(this)
+
+    if (mklToUsr != 0) {
+      MklDnnFloat.conversionExecuteToUsr(
+        usr.storage().array().asInstanceOf[Array[Float]],
+        usr.storageOffset() - 1,
+        mklStorage().array().asInstanceOf[Array[Float]],
+        mklToUsr)
+    } else {
+      usr.storage().set(mklStorage())
+    }
+  }
+
+  override def storageOffset(): Int = 1
 
   override def dim(): Int = returnInt()
 
@@ -78,7 +242,7 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
 
   override def size(dim: Int): Int = {
     require(dim > 0 && dim <= this.nDimension,
-            s"dimension ${dim} out of range of ${this.nDimension}D tensor")
+      s"dimension ${dim} out of range of ${this.nDimension}D tensor")
     _size(dim - 1)
   }
 
@@ -86,239 +250,36 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
 
   override def stride(dim: Int): Int = {
     require(dim > 0 && dim <= this.nDimension,
-            s"dimension ${dim} out of range of ${this.nDimension}D tensor")
+      s"dimension ${dim} out of range of ${this.nDimension}D tensor")
     _stride(dim - 1)
   }
 
-  /**
-    * Convert input tensor to mkl tensor, which statisfied
-    *
-    * And the set must be out
-    * @param other the given tensor
-    * @return current tensor
-    */
-  override def set(other: Tensor[T]): Tensor[T] = {
-    if (other.isMklTensor()) {
-      val currLayout = this.getLayoutMkl()
-      val otherLayout = other.asInstanceOf[MklTensor[T]].getLayoutMkl()
-      val isSame = MklDnnFloat.layoutCompare(currLayout, otherLayout)
-
-      if (isSame != 1) {
-        createOne(otherLayout, currLayout, isSame, internalToMkl)
-        interStorage = other.storage()
-      } else {
-        storage_=(other.storage())
-      }
-    } else {
-      getConvertedStorage(other)
-      setUsrStorage(other.storage())
-      usrOffset = other.storageOffset()
-    }
+  override def resizeAs(src: Tensor[_]): Tensor[T] = {
+    this._size = new Array[Int](src.size().length)
+    Array.copy(src.size(), 0, _size, 0, src.size().length)
+    this._stride = new Array[Int](src.stride().length)
+    Array.copy(src.stride(), 0, _stride, 0, src.stride().length)
+    this.nDimension = src.nDimension()
     this
   }
 
-  private[this] var _layoutUsr: Long = 0L // usr layout ptr
-  private[this] var _layoutMkl: Long = 0L
-  private[this] var _layoutInternal: Long = 0L
-
-  private[this] var _mklToUsr: Long = 0L // convert mkl layout mem to scala layout mem
-  private[this] var _usrToMkl: Long = 0L // convert scala layout mem to mkl layout mem
-
-  private[this] var _internalToMkl: Long = 0L
-  private[this] var _internalToUsr: Long = 0L
-
-  def createUsrLayout(dimension: Int, size: Array[Long], strides: Array[Long]): Unit = {
-    ev.getType() match {
-      case "Float" =>
-        if (layoutUsr == 0) { // TODO if not equal to 0, we will delete and re-create.
-          layoutUsr_=(MklDnnFloat.layoutCreate(dimension, size, strides))
-        }
-      case _ =>
-        throw new UnsupportedOperationException(s"Only Float supported")
-    }
+  override def resize(sizes: Array[Int], strides: Array[Int]): Tensor[T] = {
+    this._size = new Array[Int](sizes.length)
+    Array.copy(sizes, 0, _size, 0, sizes.length)
+    this._stride = new Array[Int](strides.length)
+    Array.copy(strides, 0, _stride, 0, strides.length)
+    this.nDimension = sizes.length
+    this
   }
 
-  private[this] def createLayoutFromPrim(primitive: Long, resType: Int): Long = {
-    val layout = if (primitive != 0) {
-      ev.getType() match {
-        case "Float" =>
-          MklDnnFloat.layoutCreateFromPrimitive(primitive, resType)
-        case _ =>
-          throw new UnsupportedOperationException(s"Only Float supported")
-      }
-    } else {
-      0L
-    }
-    layout
-  }
-
-  def createMklLayout(primitive: Long, resType: Int): Unit = {
-    layoutMkl_=(createLayoutFromPrim(primitive, resType))
-    require(layoutMkl != 0, s"create mkl layout failed.")
-
-    storage().resize(MklDnnFloat.layoutGetMemorySize(layoutMkl) / DataSize.FLOAT)
-    // TODO we should replace the println to standard log
-    println(s"resize mkl storage " +
-      s"${MklDnnFloat.layoutGetMemorySize(layoutMkl) / DataSize.FLOAT} bytes")
-  }
-
-  def createInterLayout(primitive: Long, resType: Int): Unit = {
-    layoutInternal_=(createLayoutFromPrim(primitive, resType))
-    require(layoutInternal != 0, s"create internal layout failed.")
-
-    interStorage.resize(MklDnnFloat.layoutGetMemorySize(layoutInternal) / DataSize.FLOAT)
-    println(s"resize internal storage " +
-      s"${MklDnnFloat.layoutGetMemorySize(layoutInternal) / DataSize.FLOAT} bytes")
-  }
-
-  def getLayoutMkl(): Long = {
-    layoutMkl
-  }
-
-  def getLayoutUsr(): Long = {
-    layoutUsr
-  }
-
-  private[this] def createOne(src: Long, dst: Long, same: Int, prim: Long): Long = {
-    import scala.language.implicitConversions
-    implicit def bool2int(b: Boolean) = if (b) 1 else 0
-
-    val ret = if (src != 0 && dst != 0 && same != 1) {
-      ev.getType() match {
-        case "Float" =>
-          if (prim != 0) {
-            MklDnnFloat.deletePrimitive(prim)
-          }
-          val ret = MklDnnFloat.conversionCreate(src, dst)
-          require(ret != 0, "create mkl dnn conversion (mkl -> usr) failed.")
-          ret
-        case _ =>
-          throw new UnsupportedOperationException(s"Only Float supported")
-      }
-    } else {
-      0L
-    }
-
-    ret
-  }
-
-  def createConversion(rwType: Int): Unit = {
-    val usrSameMkl = ev.getType() match {
-      case "Float" => MklDnnFloat.layoutCompare(layoutUsr, layoutMkl)
-      case _ =>
-        throw new UnsupportedOperationException(s"Only Float supported")
-    }
-
-    usrToMkl_=(createOne(layoutUsr, layoutMkl, usrSameMkl, usrToMkl))
-    if (rwType == MklRWType.READ) {
-      mklToUsr_=(createOne(layoutMkl, layoutUsr, usrSameMkl, mklToUsr))
-      // be care of MklDnnFloat.layoutCompare return value, if two layout are same,
-      // it will return 1
-      val interSameMkl = ev.getType() match {
-        case "Float" => if (layoutInternal != 0) {
-          MklDnnFloat.layoutCompare(layoutMkl, layoutInternal)
-        } else {
-          1 // assume the layout internal is same as layout mkl, so it will not create primitive
-        }
-        case _ =>
-          throw new UnsupportedOperationException(s"Only Float supported")
-      }
-
-      internalToMkl_=(createOne(layoutInternal, layoutMkl, interSameMkl, internalToMkl))
-    } else {
-      val interSameUsr = ev.getType() match {
-        case "Float" => if (layoutInternal != 0) {
-          MklDnnFloat.layoutCompare(layoutUsr, layoutInternal)
-        } else {
-          1 // assume the layout internal is same as layout mkl, so it will not create primitive
-        }
-        case _ =>
-          throw new UnsupportedOperationException(s"Only Float supported")
-      }
-      internalToUsr_=(createOne(layoutInternal, layoutUsr, interSameUsr, internalToUsr))
-    }
-  }
-
-  def createConversion(dimension: Int,
-                       size: Array[Long],
-                       strides: Array[Long],
-                       primitive: Long,
-                       resType: Int, rwType: Int): Unit = {
-    createUsrLayout(dimension, size, strides)
-    if (rwType == MklRWType.READ) {
-      createMklLayout(primitive, resType)
-    } else {
-      createInterLayout(primitive, resType)
-    }
-    createConversion(rwType)
-  }
-
-  /**
-   * convert between dense tensor and mkl tensor.
-   *
-   * Note: if current tensor has an internal tensor, it will ignores the dense tensor
-   * @param dense dense tensor
-   * @param toMkl it will convert dense to mkl if toMkl = true
-   * @return the mkl storage
-   */
-  def getConvertedStorage(dense: Tensor[T], toMkl: Boolean = false): Storage[T] = {
-    import scala.language.implicitConversions
-    implicit def bool2int(b: Boolean) = if (b) 1 else 0
-
-    // 1. if internal exist, check the internal layout and converted from internal storage
-    // 2. else if converted from usr storage
-    if (internalToMkl == 0 && interStorage.length() > 0) {
-      storage_=(interStorage)
-    } else {
-      val (srcStorage, offset, primitive) = if (internalToMkl != 0) {
-        (interStorage, 0, internalToMkl)
-      } else {
-        (dense.storage(), dense.storageOffset() -1, usrToMkl)
-      }
-      val dstStorage = this.storage()
-
-      if (primitive != 0) {
-        ev.getType() match {
-          case "Float" =>
-            MklDnnFloat.conversionExecuteToMkl(
-              srcStorage.array().asInstanceOf[Array[Float]],
-              offset,
-              dstStorage.array().asInstanceOf[Array[Float]],
-              primitive
-            )
-          case _ =>
-            throw new UnsupportedOperationException(s"Only Float supported")
-        }
-      } else {
-        storage().set(srcStorage)
+  override def apply1(func: T => T): Tensor[T] = {
+    val func2 = new TensorFunc2[T] {
+      override def apply(data: Array[T], index: Int): Unit = {
+        data(index) = func(data(index))
       }
     }
-
-    this.storage()
-  }
-
-  def getStroage(): Storage[T] = {
-    this.interStorage
-  }
-
-  def backToUsr(usr: Tensor[T], convertType: Int): Unit = {
-    usr.resizeAs(this)
-
-    val (primitive, mklStorage) = convertType match {
-      case ConvertType.INTERNALTOUSR => (internalToUsr, interStorage)
-      case ConvertType.MKLTOUSR => (mklToUsr, storage())
-      case _ => throw new UnsupportedOperationException(s"unknown conversion type")
-    }
-
-    if (primitive != 0) {
-      MklDnnFloat.conversionExecuteToUsr(
-        usr.storage().array().asInstanceOf[Array[Float]],
-        usr.storageOffset() - 1,
-        mklStorage.array().asInstanceOf[Array[Float]],
-        primitive)
-    } else {
-      usr.storage().set(mklStorage)
-    }
+    DenseTensorApply.apply1[T](this, func2)
+    this
   }
 
   // {{ getter && setter
@@ -353,9 +314,36 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
     _usrToMkl = value
   }
 
-  def internalToUsr: Long = _internalToUsr
-  def internalToUsr_=(value: Long): Unit = {
-    _internalToUsr = value
+  def interStorage: Storage[T] = _interStorage
+  def interStorage_=(value: Storage[T]): Unit = {
+    _interStorage = value
+  }
+
+  def usrStorage: Storage[T] = _usrStorage
+  def usrStorage_=(value: Storage[T]): Unit = {
+    _usrStorage = value
+  }
+
+  def usrStorageOffset: Int = _usrStorageOffset
+  def usrStorageOffset_=(value: Int): Unit = {
+    _usrStorageOffset = value
+  }
+
+  def mklStorage(): Storage[T] = _mklStorage
+  def mklStorage_=(value: Storage[T]): Unit = {
+    _mklStorage = value
+  }
+
+  /**
+   * the storage will convert the storage to dense tensor defaultly.
+   * @return storage
+   */
+  def storage: Storage[T] = {
+    backToUsr(this)
+    _usrStorage
+  }
+  def storage_=(value: Storage[T]): Unit = {
+    _usrStorage = value
   }
 
   // }} ---------------------------------------------
@@ -379,7 +367,7 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
 
   def returnT(): T = {
     require(false, "MklTensor unsupported method")
-    this._storage(0)
+    ev.fromType(0)
   }
 
   def returnUnit(): Unit = {
@@ -414,24 +402,6 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
   override def squeeze(): Tensor[T] = returnTensor()
 
   override def squeeze(dim: Int): Tensor[T] = returnTensor()
-
-  override def resizeAs(src: Tensor[_]): Tensor[T] = {
-    this._size = new Array[Int](src.size().length)
-    Array.copy(src.size(), 0, _size, 0, src.size().length)
-    this._stride = new Array[Int](src.stride().length)
-    Array.copy(src.stride(), 0, _stride, 0, src.stride().length)
-    this.nDimension = src.nDimension()
-    this
-  }
-
-  override def resize(sizes: Array[Int], strides: Array[Int]): Tensor[T] = {
-    this._size = new Array[Int](sizes.length)
-    Array.copy(sizes, 0, _size, 0, sizes.length)
-    this._stride = new Array[Int](strides.length)
-    Array.copy(strides, 0, _stride, 0, strides.length)
-    this.nDimension = sizes.length
-    this
-  }
 
   override def resize(size1: Int): Tensor[T] = returnTensor()
 
@@ -476,8 +446,6 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
   override def copy(other: Tensor[T]): Tensor[T] = returnTensor()
 
   override def narrow(dim: Int, index: Int, size: Int): Tensor[T] = returnTensor()
-
-  override def apply1(func: T => T): Tensor[T] = returnTensor()
 
   override def map(other: Tensor[T], func: (T, T) => T): Tensor[T] = returnTensor()
 

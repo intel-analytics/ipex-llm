@@ -29,6 +29,9 @@ abstract class MklModule[@specialized(Float, Double) T: ClassTag](implicit ev: T
   var forwardPrim = 0L
   var backwardPrim = 0L
 
+  val forward = new MklPrimitive
+  val backward = new MklPrimitive
+
   private[this] var _firstPassForward: Boolean = true
 
   def firstPassForward: Boolean = _firstPassForward
@@ -45,10 +48,10 @@ abstract class MklModule[@specialized(Float, Double) T: ClassTag](implicit ev: T
     _firstPassBackward = value
   }
 
-  val inputSize = new Array[Long](4)
-  val outputSize = new Array[Long](4)
-  val inputStrides = new Array[Long](4)
-  val outputStrides = new Array[Long](4)
+//  val inputSize = new Array[Long](4)
+//  val outputSize = new Array[Long](4)
+//  val inputStrides = new Array[Long](4)
+//  val outputStrides = new Array[Long](4)
 
   var inputMkl = new MklTensor[T]()
   var outputMkl = new MklTensor[T]()
@@ -62,7 +65,44 @@ abstract class MklModule[@specialized(Float, Double) T: ClassTag](implicit ev: T
     var gradInput = new MklTensor[T]()
   }
 
+  trait Primitive {
+    var forward = 0L
+    var backward = 0L
+  }
+
   implicit def bool2int(b: Boolean) = if (b) 1 else 0
+}
+
+/**
+ * create a mkl layout decription
+ * @param dim the dimension of layout, sometimes the dimension is not the same as eles length
+ * @param eles the size of tensor. Order: width, height, channels, number.
+ */
+class MklLayout(dim: Int, eles: Array[Long]) {
+
+  def computeStrides(size: Array[Long]): Array[Long] = {
+    val stride = new Array[Long](size.length)
+    stride(0) = 1
+    for (i <- 1 until size.length) {
+      stride(i) = size(i - 1) * stride(i - 1)
+    }
+
+    stride
+  }
+
+  val size = eles.clone()
+  val strides = computeStrides(eles)
+  val dimension = dim
+}
+
+class MklPrimitive {
+  private[this] var _primitive: Long = 0L
+
+  def primitive: Long = _primitive
+
+  def primitive_=(value: Long): Unit = {
+    _primitive = value
+  }
 }
 
 object ResourceType {
@@ -107,22 +147,8 @@ object Algorithm {
   val dnnAlgorithmPoolingAvg       = 5 // Average pooling
 }
 
-object DataSize {
+object MklDataSize {
   val FLOAT  = 4
   val INT    = 4
   val DOUBLE = 8
-}
-
-object MklRWType {
-  val READ = 0
-  val WRITE = 1
-}
-
-object ConvertType {
-  val INTERNALTOUSR = 0
-  val INTERNALTOMKL = 1
-  val MKLTOUSR = 2
-  val USRTOMKL = 3
-  val MKL = 4
-  val USR = 5
 }

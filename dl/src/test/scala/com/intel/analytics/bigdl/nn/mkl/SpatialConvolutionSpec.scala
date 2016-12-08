@@ -138,23 +138,14 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     TestCase(128, 128, 3, 3, 1, 1, 1, 1, 1, 16, 16, 128)
   )
 
-  val tmp = List(
-//    TestCase(3, 64, 3, 3, 1, 1, 1, 1, 1, 32, 32, 128)
-    TestCase(64, 64, 3, 3, 1, 1, 1, 1, 1, 32, 32, 128),
-    TestCase(64, 128, 3, 3, 1, 1, 1, 1, 1, 16, 16, 128),
-    TestCase(192, 320, 3, 3, 1, 1, 1, 1, 1, 7, 7, 32),
-    TestCase(128, 128, 3, 3, 1, 1, 1, 1, 1, 16, 16, 128)
-  )
-
-  for (test <- tmp) {
+  for (test <- testCases) {
     "A SpatialConvolution" should s"with parameters " +
                                   s"${test.nInputPlane}, ${test.nOutputPlane}, ${test.kW}, ${test.kH}" +
                                   ", " + s"${test.dW}, ${test.dH}, ${test.padW}, ${test.padH}" +
                                   ", " + s"${test.inputWidth}, ${test.inputHeight}, ${test.group}" in {
       val model = new Conv[Float](test.nInputPlane, test.nOutputPlane,
-                                                test.kW, test.kH, test.dW, test.dH,
-                                                test.padW, test.padH, test.group)
-//        .setUseOpenMp(false)
+        test.kW, test.kH, test.dW, test.dH,
+        test.padW, test.padH, test.group)
 
       val cmd = (cmd1, test.batchSize, test.nInputPlane, test.inputHeight, test.inputWidth,
                 test.kH, test.kW, test.dH, test.dW, test.padH, test.padW, test.group,
@@ -179,8 +170,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
       model.forward(input)
       model.forward(input)
-      val output = Tools.getTensor[Float]("output", model.output.size(), pid)
 
+      val output = Tools.getTensor[Float]("output", model.output.size(), pid)
       Tools.cumulativeError(model.output, output, "output") should be(0.0)
 
 
@@ -191,9 +182,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
       model.zeroGradParameters()
       model.backward(input, gradOutput)
-//      model.backward(input, gradOutput)
+      model.backward(input, gradOutput)
 
-      Tools.cumulativeError(model.output, output, "output") should be(0.0)
       Tools.cumulativeError(model.gradWeight, gradWeight, "gradWeight") should be(0.0)
       Tools.cumulativeError(model.gradBias, gradBias, "gradBias") should be(0.0)
       Tools.cumulativeError(model.gradInput, gradInput, "gradient input") should be(0.0)
