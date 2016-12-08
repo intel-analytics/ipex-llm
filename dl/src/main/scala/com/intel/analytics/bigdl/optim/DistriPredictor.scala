@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Activities, Engine, MKL_BLAS, MKL_DNN}
+import com.intel.analytics.bigdl.utils.{Activities, Engine, MklBlas, MklDnn}
 import org.apache.spark.rdd.RDD
 
 class DistriPredictor[T](
@@ -35,9 +35,9 @@ class DistriPredictor[T](
   : Array[ValidationResult] = {
     val rdd = dataSet.data()
     val broadcastModel = rdd.sparkContext.broadcast(model.evaluate())
-    val _subModelNumber = Engine.backend match {
-      case MKL_BLAS() => coresPerNode
-      case MKL_DNN() => 1
+    val _subModelNumber = Engine.getEngineType match {
+      case MklBlas => coresPerNode
+      case MklDnn => 1
     }
     rdd.mapPartitions(dataIter => {
       val localModel = broadcastModel.value

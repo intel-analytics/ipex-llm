@@ -21,7 +21,7 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, MKL_BLAS, T}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, T}
 import org.apache.spark.{SparkConf, SparkContext}
 
 object Train {
@@ -39,7 +39,7 @@ object Train {
 
         val optimizer = new LocalOptimizer[Float](
           dataset = trainDataSet,
-          model = LeNet5[Float](classNum = 10),
+          model = LeNet5(classNum = 10),
           criterion = new ClassNLLCriterion[Float](),
           optimMethod = new SGD[Float](),
           coreNumber = param.coreNumber,
@@ -65,7 +65,7 @@ object Train {
 
         val conf = new SparkConf().setAppName("Train Lenet")
         conf.setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
-        if(Engine.backend == MKL_BLAS) {
+        if(Engine.getEngineType == MklBlas) {
           conf.setExecutorEnv("KMP_BLOCKTIME", "0")
           conf.setExecutorEnv("OMP_WAIT_POLICY", "passive")
           conf.setExecutorEnv("OMP_NUM_THREADS", "1")
@@ -81,7 +81,7 @@ object Train {
 
         val optimizer = new DistriOptimizer[Float](
           dataset = trainDataSet,
-          model = LeNet5[Float](classNum = 10),
+          model = LeNet5(classNum = 10),
           criterion = new ClassNLLCriterion[Float](),
           optimMethod = new SGD[Float](),
           nodeNumber = param.nodesNumber,

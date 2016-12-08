@@ -44,9 +44,9 @@ class LocalOptimizer[T](
 
   val (weights, grad) = model.getParameters()
 
-  private val subModelNumber = Engine.backend match {
-    case MKL_BLAS() => coreNumber
-    case MKL_DNN() => 1
+  private val subModelNumber = Engine.getEngineType match {
+    case MklBlas => coreNumber
+    case MklDnn => 1
   }
 
   private val workingModels = (1 to subModelNumber).map(_ => model.cloneModule()).toArray
