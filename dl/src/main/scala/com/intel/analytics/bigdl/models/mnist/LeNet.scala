@@ -27,19 +27,19 @@ import scala.reflect.ClassTag
 object LeNet5 {
   def apply[T: ClassTag](classNum: Int)
     (implicit ev: TensorNumeric[T]): Module[T] = {
-    val model = Sequential[T]()
-    model.add(Reshape[T](Array(1, 28, 28)))
-    model.add(SpatialConvolution[T](1, 6, 5, 5))
-    model.add(Tanh[T]())
-    model.add(SpatialMaxPooling[T](2, 2, 2, 2))
-    model.add(Tanh[T]())
-    model.add(SpatialConvolution[T](6, 12, 5, 5))
-    model.add(SpatialMaxPooling[T](2, 2, 2, 2))
-    model.add(Reshape[T](Array(12 * 4 * 4)))
-    model.add(Linear[T](12 * 4 * 4, 100))
-    model.add(Tanh[T]())
-    model.add(Linear[T](100, classNum))
-    model.add(LogSoftMax[T]())
+    val model = Sequential()
+    model.add(Reshape(Array(1, 28, 28)))
+    model.add(SpatialConvolution(1, 6, 5, 5))
+    model.add(Tanh())
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+    model.add(Tanh())
+    model.add(SpatialConvolution(6, 12, 5, 5))
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+    model.add(Reshape(Array(12 * 4 * 4)))
+    model.add(Linear(12 * 4 * 4, 100))
+    model.add(Tanh())
+    model.add(Linear(100, classNum))
+    model.add(LogSoftMax())
     model
   }
 }

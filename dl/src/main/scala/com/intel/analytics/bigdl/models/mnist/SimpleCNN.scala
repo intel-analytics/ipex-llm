@@ -31,7 +31,7 @@ object SimpleCNN {
 
   def apply[T: ClassTag](classNum: Int)
     (implicit ev: TensorNumeric[T]): Module[T] = {
-    val model = Sequential[T]()
+    val model = Sequential()
     model.add(Reshape(Array(1, rowN, colN)))
     model.add(SpatialConvolution(1, 32, 5, 5))
     model.add(Tanh())

@@ -23,8 +23,10 @@ import java.nio.file.{Files, Paths}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.TensorNumericDouble
 
 object MNIST {
+  val numeric = TensorNumericDouble
   val rowN = 28
   val colN = 28
   val featureSize = rowN * colN
@@ -53,7 +55,7 @@ object MNIST {
   def getModule(netType: String)(): Module[Double] = {
     netType.toLowerCase match {
       case "ann" =>
-        val mlp = Sequential[Double]
+        val mlp = Sequential()
         val nhiddens = featureSize / 2
         mlp.add(Reshape(Array(featureSize)))
         mlp.add(Linear(featureSize, nhiddens))
@@ -62,13 +64,13 @@ object MNIST {
         mlp.add(LogSoftMax())
         mlp
       case "linear" =>
-        val mlp = Sequential[Double]
+        val mlp = Sequential()
         mlp.add(Reshape(Array(featureSize)))
         mlp.add(Linear(featureSize, classNum))
         mlp.add(LogSoftMax())
         mlp
       case "cnn" =>
-        val model = Sequential[Double]()
+        val model = Sequential()
         model.add(Reshape(Array(1, rowN, colN)))
         model.add(SpatialConvolution(1, 32, 5, 5))
         model.add(Tanh())
@@ -86,7 +88,7 @@ object MNIST {
         model.add(LogSoftMax())
         model
       case "lenet" =>
-        val model = Sequential[Double]()
+        val model = Sequential()
         model.add(Reshape(Array(1, rowN, colN)))
         model.add(SpatialConvolution(1, 6, 5, 5))
         model.add(Tanh())
