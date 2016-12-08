@@ -71,7 +71,7 @@ class AllReduceParameterManager[T: ClassTag](
   private val sc: SparkContext = dataset.sparkContext
 
   @transient
-  private var buffers: RDD[(Parameter[T], Tensor[T], Tensor[T], Table)] = null
+  private var buffers: RDD[(CompressedTensor[T], Tensor[T], Tensor[T], Table)] = null
 
   val parameterLength = parameter.nElement()
 
@@ -92,8 +92,8 @@ class AllReduceParameterManager[T: ClassTag](
     val _extraSize = extraSize
     buffers = dataset.mapPartitions(iter => {
       val taskParameter = broadcastParameter.value
-      val paramBuffer = new FP16SplitsParameter[T](_parameterLength,
-        _partitionNum)(_classTag).asInstanceOf[Parameter[T]]
+      val paramBuffer = new FP16SplitsCompressedTensor[T](_parameterLength,
+        _partitionNum)(_classTag).asInstanceOf[CompressedTensor[T]]
       val pid = TaskContext.getPartitionId()
       val start = pid * _taskSize + math.min(pid, _extraSize)
       val length = _taskSize + (if (pid < _extraSize) 1 else 0)
@@ -101,8 +101,8 @@ class AllReduceParameterManager[T: ClassTag](
         start + 1, length))
       val localGradient = Tensor[T](length)(_classTag, _ev)
       val localState = T()
-      val fp16param = new FP16Parameter[T](length)(_classTag)
-      fp16param.copyFrom(0, taskParameter, start, length)
+      val fp16param = new FP16CompressedTensor[T](length)(_classTag)
+      fp16param.compress(0, taskParameter, start, length)
       val blockId = getWeightBlockId(pid)
       SparkEnv.get.blockManager.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
       Iterator.single((paramBuffer, localWeight, localGradient, localState))
@@ -140,7 +140,7 @@ class AllReduceParameterManager[T: ClassTag](
           val length = _taskSize + (if (pid < _extraSize) 1 else 0)
           require(localBuffer.array().length == length * 2)
           SerializerInstance.serialize(localBuffer)(_classTag)
-            .copyTo(0, localParameter, start, length)
+            .deCompress(0, localParameter, start, length)
         }(context)
       }).map(Await.result(_, Duration.Inf))
 
@@ -174,7 +174,7 @@ class AllReduceParameterManager[T: ClassTag](
       val localBuffer = bufferIter.next()._1
 
       var before = System.nanoTime()
-      localBuffer.copyFrom(localParameter)
+      localBuffer.compress(localParameter)
       _metrics.add("worker prepare parameter", System.nanoTime() - before)
 
       before = System.nanoTime()
@@ -248,7 +248,7 @@ class AllReduceParameterManager[T: ClassTag](
 
       before = System.nanoTime()
       val (localParameter, localParam, localGradient, localState) = iter.next()
-      newParams.head.copyTo(localGradient)
+      newParams.head.deCompress(localGradient)
       _metrics.add("worker gradient extract", System.nanoTime() - before)
 
       before = System.nanoTime()

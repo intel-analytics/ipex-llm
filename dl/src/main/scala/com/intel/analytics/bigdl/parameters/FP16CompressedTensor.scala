@@ -26,12 +26,12 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect._
 
-class FP16Parameter[T: ClassTag](buffer: Array[Byte], bufferOffset: Int, bufferLength: Int)
-  extends Parameter[T] {
+class FP16CompressedTensor[T: ClassTag](buffer: Array[Byte], bufferOffset: Int, bufferLength: Int)
+  extends CompressedTensor[T] {
 
   def this(tensor: Tensor[T]) {
     this(new Array[Byte](tensor.nElement() * 2), 0, tensor.nElement() * 2)
-    copyFrom(tensor)
+    compress(tensor)
   }
 
   def this(length: Int) = this(new Array[Byte](length * 2), 0, length * 2)
@@ -40,17 +40,17 @@ class FP16Parameter[T: ClassTag](buffer: Array[Byte], bufferOffset: Int, bufferL
 
   require(bufferLength % 2 == 0 && bufferOffset + bufferLength <= buffer.length)
 
-  override def copyFrom(offset: Int, src: Tensor[T], srcOffset: Int, length: Int)
+  override def compress(offset: Int, src: Tensor[T], srcOffset: Int, length: Int)
   : this.type = {
     require(src.isContiguous() && offset >= 0 && srcOffset >= 0 &&
       srcOffset + length <= src.nElement()
       && offset + length <= bufferLength / 2)
     val tOffset = src.storageOffset() - 1 + srcOffset
     if (classTag[T] == classTag[Double]) {
-      FP16Parameter.toFP16(src.storage().array().asInstanceOf[Array[Double]], tOffset,
+      FP16CompressedTensor.toFP16(src.storage().array().asInstanceOf[Array[Double]], tOffset,
         buffer, bufferOffset + offset, length)
     } else if (classTag[T] == classTag[Float]) {
-      FP16Parameter.toFP16(src.storage().array().asInstanceOf[Array[Float]], tOffset,
+      FP16CompressedTensor.toFP16(src.storage().array().asInstanceOf[Array[Float]], tOffset,
         buffer, bufferOffset + offset, length)
     } else {
       throw new IllegalArgumentException
@@ -59,7 +59,7 @@ class FP16Parameter[T: ClassTag](buffer: Array[Byte], bufferOffset: Int, bufferL
     this
   }
 
-  override def copyFrom(src: Tensor[T]): this.type = copyFrom(0, src, 0, src.nElement())
+  override def compress(src: Tensor[T]): this.type = compress(0, src, 0, src.nElement())
 
   override def bytes(): ByteBuffer = bytes(0, bufferLength / 2)
 
@@ -75,21 +75,21 @@ class FP16Parameter[T: ClassTag](buffer: Array[Byte], bufferOffset: Int, bufferL
     }
   }
 
-  override def copyTo(tensor: Tensor[T]): Unit = copyTo(0, tensor, 0, bufferLength / 2)
+  override def deCompress(tensor: Tensor[T]): Unit = deCompress(0, tensor, 0, bufferLength / 2)
 
-  override def copyTo(srcOffset: Int, tensor: Tensor[T],
-    tgtOffset: Int, length: Int): Unit = {
+  override def deCompress(srcOffset: Int, tensor: Tensor[T],
+                          tgtOffset: Int, length: Int): Unit = {
     require(srcOffset >= 0 && length > 0 && (srcOffset + length) * 2 <= bufferLength &&
       tgtOffset >= 0 && tgtOffset + length <= tensor.nElement())
     require(tensor.isContiguous())
     if (classTag[T] == classTag[Double]) {
       val tdata = tensor.storage().array().asInstanceOf[Array[Double]]
       val toffset = tensor.storageOffset() - 1 + tgtOffset
-      FP16Parameter.fromFP16(buffer, srcOffset * 2 + bufferOffset, length * 2, tdata, toffset)
+      FP16CompressedTensor.fromFP16(buffer, srcOffset * 2 + bufferOffset, length * 2, tdata, toffset)
     } else if (classTag[T] == classTag[Float]) {
       val tdata = tensor.storage().array().asInstanceOf[Array[Float]]
       val toffset = tensor.storageOffset() - 1 + tgtOffset
-      FP16Parameter.fromFP16(buffer, srcOffset * 2 + bufferOffset, length * 2, tdata, toffset)
+      FP16CompressedTensor.fromFP16(buffer, srcOffset * 2 + bufferOffset, length * 2, tdata, toffset)
     } else {
       throw new IllegalArgumentException
     }
@@ -100,7 +100,7 @@ class FP16Parameter[T: ClassTag](buffer: Array[Byte], bufferOffset: Int, bufferL
   override def add(data: ByteBuffer, offset: Int, length: Int): this.type = {
     require(offset >= 0 && length > 0 && (offset + length) * 2 <= bufferLength)
     require(length * 2 == data.remaining())
-    FP16Parameter.add(buffer, offset * 2 + bufferOffset,
+    FP16CompressedTensor.add(buffer, offset * 2 + bufferOffset,
       data.array(), data.position(), data.remaining())
     this
   }
@@ -110,13 +110,13 @@ class FP16Parameter[T: ClassTag](buffer: Array[Byte], bufferOffset: Int, bufferL
   override def parAdd(data: ByteBuffer, offset: Int, length: Int): this.type = {
     require(offset >= 0 && length > 0 && (offset + length) * 2 <= bufferLength)
     require(length * 2 == data.remaining())
-    FP16Parameter.parAdd(buffer, offset * 2 + bufferOffset, data.array(),
+    FP16CompressedTensor.parAdd(buffer, offset * 2 + bufferOffset, data.array(),
       data.position(), data.remaining())
     this
   }
 }
 
-object FP16Parameter {
+object FP16CompressedTensor {
   private def parAdd(l: Array[Byte], lOffset: Int, r: Array[Byte],
     rOffset: Int, length: Int): Array[Byte] = {
     val start = System.nanoTime()
