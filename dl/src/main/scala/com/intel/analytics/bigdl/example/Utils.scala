@@ -140,7 +140,7 @@ object Utils {
       opt[Int]("epoch")
         .text("epoch number")
         .action((x, c) => {
-          c.masterConfig("epoch") = x; c
+          c.masterConfig("epochNum") = x; c
         })
       opt[Int]("maxIter")
         .text("max iteration number")
