@@ -55,13 +55,13 @@ class LocalOptimizer[T](
 
     def loadTH(pathDir: String, nEpoch: Int): (Any) = {
       val suffix = ".t7"
-      val subPath = "/tmp/torchdata" + pathDir + "/data_batch_input_" + nEpoch.toString
-      val tmp: Any = File.load(subPath + suffix)
+      val subPath = "/tmp/torchdata/" + pathDir + "/data_batch_" + pathDir + "_" + nEpoch.toString
+      val tmp: Any = File.loadTorch(subPath + suffix)
       tmp
     }
 
-    val testInput = File.load("/tmp/torchdata/data_test_batch_input.t7").asInstanceOf[Tensor[T]]
-    val testLabel = File.load("/tmp/torchdata/data_test_batch_label.t7").asInstanceOf[Tensor[T]]
+    val testInput = File.loadTorch("/tmp/torchdata/data_test_batch_input.t7").asInstanceOf[Tensor[T]]
+    val testLabel = File.loadTorch("/tmp/torchdata/data_test_batch_label.t7").asInstanceOf[Tensor[T]].squeeze()
 
     //    count = 0
 //    val suffix = ".t7"
@@ -107,16 +107,17 @@ class LocalOptimizer[T](
 
     count = 0
     for (epoch <- 1 to 140) {
-      val inputEpoch = loadTH("/input", epoch).asInstanceOf[Tensor[T]]
-      val labelEpoch = loadTH("/label", epoch).asInstanceOf[Tensor[T]]
-      val numOfIteration = inputEpoch.size(1) / 128
+      val inputEpoch = loadTH("input", epoch).asInstanceOf[Tensor[T]]
+      val labelEpoch = loadTH("label", epoch).asInstanceOf[Tensor[T]]
+      val numOfIteration = 50000 / 128
+      var startIndex: Int = 1
       for (iteration <- 1 to numOfIteration) {
 
         val start = System.nanoTime()
         //val (input, target) = data.next()
-        val input = inputEpoch.narrow(1, iteration, 128)
-        val target = inputEpoch.narrow(1, iteration, 128)
-
+        val input = inputEpoch.narrow(1, startIndex, 128)
+        val target = labelEpoch.narrow(1, startIndex, 128).squeeze()
+        startIndex += 128
         val dataFetchTime = System.nanoTime()
         model.zeroGradParameters()
         val output = model.forward(input)
@@ -154,6 +155,7 @@ class LocalOptimizer[T](
 //          }
 //        })
       }
+      state("epoch") = state[Int]("epoch") + 1
     }
     validate(testInput, testLabel, wallClockTime)
 
@@ -169,8 +171,8 @@ class LocalOptimizer[T](
         validationData.reset()
         var count = 0
         val results = validationData.map { case (input, target) =>
-          val curInput = testInput.narrow(1, count+1, 128)
-          val curTarget = testLabel.narrow(1, count+1, 128)
+          val curInput = testInput.narrow(1, count+1, input.size(1))
+          val curTarget = testLabel.narrow(1, count+1, target.size(1))
           val output = model.forward(curInput)
           println(s"[Validation][Epoch ${state[Int]("epoch")}][Iteration ${state[Int]("neval")}] " +
             s"$count/${validationData.total()}")

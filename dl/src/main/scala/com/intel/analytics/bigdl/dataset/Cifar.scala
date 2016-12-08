@@ -106,7 +106,19 @@ object Cifar10Local {
 
       val arrayToImage = ArrayByteToRGBImage()
       val normalizer = RGBImageNormalizer(trainDataSource -> arrayToImage) //125.3, 123.0, 113.9, 63.0, 62.1, 66.7)
-      val toTensor = new RGBImageToTensor(batchSize = 100)
+      val toTensor = new RGBImageToTensor(batchSize = 128)
+
+
+      if (param.net.equals("resnet")) {
+        println(s"model is ${param.net}, initializing the model")
+        ResNet.convInit(config.model)
+        ResNet.bnInit(config.model)
+        ResNet.lnInit(config.model)
+      }
+      if (param.optnet) {
+        println(s"model is ${param.net}, setting shared variable")
+        ResNet.shareGradInput(config.model)
+      }
 
       val optimizer = new LocalOptimizer[Float](
         //data = trainDataSource -> arrayToImage -> normalizer -> toTensor,
@@ -123,7 +135,7 @@ object Cifar10Local {
           "dampening" -> config.momentum, //0.0,
           "learningRateSchedule" -> EpochDecay(DatasetType.CIFAR10) //EpochStep(25, 0.5)
         ),
-        endWhen = Trigger.maxEpoch(1)
+        endWhen = Trigger.maxEpoch(140)
       )
       optimizer.setValidationTrigger(Trigger.everyEpoch)
       optimizer.addValidation(new Top1Accuracy[Float])
