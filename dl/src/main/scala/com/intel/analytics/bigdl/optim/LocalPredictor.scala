@@ -20,14 +20,14 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Activities, Engine, MKL_BLAS, MKL_DNN}
+import com.intel.analytics.bigdl.utils.{Activities, Engine, MklBlas, MklDnn}
 
 class LocalPredictor[T](model: Module[Activities, Activities, T], coreNumber: Int)
   extends Predictor[T, Iterator[(Tensor[T], Tensor[T])]](model) {
 
-  private val subModelNumber = Engine.backend match {
-    case MKL_BLAS() => coreNumber
-    case MKL_DNN() => 1
+  private val subModelNumber = Engine.getEngineType match {
+    case MklBlas => coreNumber
+    case MklDnn => 1
   }
 
   private val workingModels = (1 to subModelNumber).map(_ => model.cloneModule().evaluate()).toArray

@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.utils.{Activities, Engine, MKL_BLAS, MKL_DNN}
+import com.intel.analytics.bigdl.utils.{Activities}
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, DataSet => DataSource}
 import com.intel.analytics.bigdl.tensor.Tensor
 

@@ -25,21 +25,21 @@ import com.intel.analytics.bigdl.utils.Activities
 import scala.reflect.ClassTag
 
 object LeNet5 {
-  def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Activities, Activities, T] = {
-    val model = new Sequential[Tensor[T], Tensor[T], T]()
-    model.add(new Reshape[T](Array(1, 28, 28)))
-    model.add(new SpatialConvolution[T](1, 6, 5, 5))
-    model.add(new Tanh[T]())
-    model.add(new SpatialMaxPooling[T](2, 2, 2, 2))
-    model.add(new Tanh[T]())
-    model.add(new SpatialConvolution[T](6, 12, 5, 5))
-    model.add(new SpatialMaxPooling[T](2, 2, 2, 2))
-    model.add(new Reshape[T](Array(12 * 4 * 4)))
-    model.add(new Linear[T](12 * 4 * 4, 100))
-    model.add(new Tanh[T]())
-    model.add(new Linear[T](100, classNum))
-    model.add(new LogSoftMax[T]())
-    model.asInstanceOf[Module[Activities, Activities, T]]
+  def apply(classNum: Int): Module[Activities, Activities, Float] = {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.TensorNumericFloat
+    val model = Sequential[Tensor[Float], Tensor[Float], Float]()
+    model.add(Reshape(Array(1, 28, 28)))
+    model.add(SpatialConvolution(1, 6, 5, 5))
+    model.add(Tanh())
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+    model.add(Tanh())
+    model.add(SpatialConvolution(6, 12, 5, 5))
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+    model.add(Reshape(Array(12 * 4 * 4)))
+    model.add(Linear(12 * 4 * 4, 100))
+    model.add(Tanh())
+    model.add(Linear(100, classNum))
+    model.add(LogSoftMax())
+    model.asInstanceOf[Module[Activities, Activities, Float]]
   }
 }

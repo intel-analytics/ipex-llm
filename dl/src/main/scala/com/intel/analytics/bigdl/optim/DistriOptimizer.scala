@@ -92,9 +92,9 @@ class DistriOptimizer[T: ClassTag](
 
   private def initThreadModels() = {
     val broadcast = sc.broadcast((model, criterion, state))
-    val _subModelNumber = Engine.backend match {
-      case MKL_BLAS() => coresPerNode
-      case MKL_DNN() => 1
+    val _subModelNumber = Engine.getEngineType match {
+      case MklBlas => coresPerNode
+      case MklDnn => 1
     }
 
     require(dataset.originRDD().partitions.length == nodeNumber,
@@ -144,9 +144,9 @@ class DistriOptimizer[T: ClassTag](
     var wallClockTime = 0L
     val driverState = T("epoch" -> state.get[Int]("epoch").getOrElse(1),
       "neval" -> state.get[Int]("neval").getOrElse(1))
-    val _subModelNumber = Engine.backend match {
-      case MKL_BLAS() => coresPerNode
-      case MKL_DNN() => 1
+    val _subModelNumber = Engine.getEngineType match {
+      case MklBlas => coresPerNode
+      case MklBlas => 1
     }
     var accumulateCount = 0
     val shuffleBefore = System.nanoTime()
@@ -339,9 +339,9 @@ class DistriOptimizer[T: ClassTag](
     val validateRDD = validationDataSet.get.asInstanceOf[DistributedDataSet[(Tensor[T], Tensor[T])]]
       .data()
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
-    val _subModelNumber = Engine.backend match {
-      case MKL_BLAS() => coresPerNode
-      case MKL_DNN() => 1
+    val _subModelNumber = Engine.getEngineType match {
+      case MklBlas => coresPerNode
+      case MklDnn => 1
     }
     models.zipPartitions(validateRDD)((modelIter, dataIter) => {
       val workingModels = modelIter.next().localModels
