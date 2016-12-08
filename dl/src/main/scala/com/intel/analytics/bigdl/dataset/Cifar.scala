@@ -67,8 +67,8 @@ object Cifar10Local {
       new SGD[Float](),
       imageSize = 32,
       momentum = 0.9,
-      weightDecay = 0.0005,
-      endWhen = Trigger.maxEpoch(90),
+      weightDecay = 1e-4,
+      endWhen = Trigger.maxEpoch(164),
       learningRate = 0.1))
     //  learningRateSchedule = SGD.EpochDecay())
   //)
@@ -135,7 +135,7 @@ object Cifar10Local {
           "dampening" -> config.momentum, //0.0,
           "learningRateSchedule" -> EpochDecay(DatasetType.CIFAR10) //EpochStep(25, 0.5)
         ),
-        endWhen = Trigger.maxEpoch(140)
+        endWhen = Trigger.maxEpoch(164)
       )
       optimizer.setValidationTrigger(Trigger.everyEpoch)
       optimizer.addValidation(new Top1Accuracy[Float])

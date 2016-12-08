@@ -53,117 +53,85 @@ class LocalOptimizer[T](
     data.shuffle()
 
 
-    def loadTH(pathDir: String, nEpoch: Int): (Any) = {
-      val suffix = ".t7"
-      val subPath = "/tmp/torchdata/" + pathDir + "/data_batch_" + pathDir + "_" + nEpoch.toString
-      val tmp: Any = File.loadTorch(subPath + suffix)
-      tmp
-    }
 
-    val testInput = File.loadTorch("/tmp/torchdata/data_test_batch_input.t7").asInstanceOf[Tensor[T]]
-    val testLabel = File.loadTorch("/tmp/torchdata/data_test_batch_label.t7").asInstanceOf[Tensor[T]].squeeze()
-
-    //    count = 0
-//    val suffix = ".t7"
-//    val testDataInput = Tensor[Float](10000, 3, 32, 32)
-//    val testDataLabel = Tensor[Float](10000, 1)
-//    while (count < validationData.total()) {
-//      val (input, target) = validationData.next()
-//      testDataInput.narrow(1, count+1, 100).copy(input.asInstanceOf[Tensor[Float]])
-//      testDataLabel.narrow(1, count+1, 100).copy(target.asInstanceOf[Tensor[Float]])
-//      count += input.size(1)
-//    }
-//
-//    val tmpTestInput = java.io.File.createTempFile("torchdata/data_test_batch_input", suffix)
-//    val tmpTestLabel = java.io.File.createTempFile("torchdata/data_test_batch_label", suffix)
-//    val tmpTestPathInput = tmpTestInput.getAbsolutePath
-//    val tmpTestPathLabel = tmpTestLabel.getAbsolutePath
-//    File.saveTorch(testDataInput, tmpTestPathInput, TYPE_FLOAT_TENSOR)
-//    File.saveTorch(testDataLabel, tmpTestPathLabel, TYPE_FLOAT_TENSOR)
-//    println(s"save to file ${tmpTestPathInput}")
-
-
-//    while (!endWhen(state)) {
-//      count = 0
-//      val trainDataInput = Tensor[Float](50000, 3, 32, 32)
-//      val trainDataLabel = Tensor[Float](50000, 1)
-//      while (count < data.total()) {
-//        val (input, target) = data.next()
-//        trainDataInput.narrow(1, count+1, 100).copy(input.asInstanceOf[Tensor[Float]])
-//        trainDataLabel.narrow(1, count+1, 100).copy(target.asInstanceOf[Tensor[Float]])
-//        count += input.size(1)
-//      }
-//      val tmpInput = java.io.File.createTempFile("torchdata/data_batch_input_" + state("epoch").toString + "_", suffix)
-//      val tmpLabel = java.io.File.createTempFile("torchdata/data_batch_label_" + state("epoch").toString + "_", suffix)
-//      val tmpPathInput = tmpInput.getAbsolutePath
-//      val tmpPathLabel = tmpLabel.getAbsolutePath
-//      File.saveTorch(trainDataInput, tmpPathInput, TYPE_FLOAT_TENSOR)
-//      File.saveTorch(trainDataLabel, tmpPathLabel, TYPE_FLOAT_TENSOR)
-//      println(s"save to file ${tmpPathInput}")
-//      state("epoch") = state[Int]("epoch") + 1
-//      data.reset()
-//      data.shuffle()
-//    }
 
     count = 0
-    for (epoch <- 1 to 140) {
-      val inputEpoch = loadTH("input", epoch).asInstanceOf[Tensor[T]]
-      val labelEpoch = loadTH("label", epoch).asInstanceOf[Tensor[T]]
-      val numOfIteration = 50000 / 128
-      var startIndex: Int = 1
-      for (iteration <- 1 to numOfIteration) {
-
-        val start = System.nanoTime()
-        //val (input, target) = data.next()
-        val input = inputEpoch.narrow(1, startIndex, 128)
-        val target = labelEpoch.narrow(1, startIndex, 128).squeeze()
-        startIndex += 128
-        val dataFetchTime = System.nanoTime()
-        model.zeroGradParameters()
-        val output = model.forward(input)
-        val loss = criterion.forward(output, target)
-        val gradOutput = criterion.backward(output, target)
-        model.backward(input, gradOutput)
-        optimMethod.optimize(_ => (loss, grad), weights, state)
-        val end = System.nanoTime()
-        wallClockTime += end - start
-        count += input.size(1)
-        println(s"[Epoch ${state[Int]("epoch")} $count/${data.total()}][Iteration ${
-          state[Int]("neval")
-        }][Wall Clock ${
-          wallClockTime / 1e9
-        }s] loss is $loss, iteration time is ${(end - start) / 1e9}s data " +
-          s"fetch time is " +
-          s"${(dataFetchTime - start) / 1e9}s, train time ${(end - dataFetchTime) / 1e9}s." +
-          s" Throughput is ${input.size(1).toDouble / (end - start) * 1e9} img / second")
-        state("neval") = state[Int]("neval") + 1
-
-//        if (count >= data.total()) {
-//          state("epoch") = state[Int]("epoch") + 1
-//          data.reset()
-//          data.shuffle()
-//          count = 0
-//        }
-
-        validate(testInput, testLabel, wallClockTime)
-
-//        cacheTrigger.foreach(trigger => {
-//          if (trigger(state) && cachePath.isDefined) {
-//            println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
-//            saveModel(s".${state[Int]("neval")}")
-//            saveState(state, s".${state[Int]("neval")}")
-//          }
-//        })
-      }
-      state("epoch") = state[Int]("epoch") + 1
+    val suffix = ".t7"
+    val testDataInput = Tensor[Float](10000, 3, 32, 32)
+    val testDataLabel = Tensor[Float](10000, 1)
+    while (count < validationData.total()) {
+      val (input, target) = validationData.next()
+      testDataInput.narrow(1, count+1, 100).copy(input.asInstanceOf[Tensor[Float]])
+      testDataLabel.narrow(1, count+1, 100).copy(target.asInstanceOf[Tensor[Float]])
+      count += input.size(1)
     }
-    validate(testInput, testLabel, wallClockTime)
+
+    val tmpTestInput = java.io.File.createTempFile("torchdata/data_test_batch_input", suffix)
+    val tmpTestLabel = java.io.File.createTempFile("torchdata/data_test_batch_label", suffix)
+    val tmpTestPathInput = tmpTestInput.getAbsolutePath
+    val tmpTestPathLabel = tmpTestLabel.getAbsolutePath
+    File.saveTorch(testDataInput, tmpTestPathInput, TYPE_FLOAT_TENSOR)
+    File.saveTorch(testDataLabel, tmpTestPathLabel, TYPE_FLOAT_TENSOR)
+    println(s"save test to file ${tmpTestPathInput}")
+
+
+    val trainDataInput = Tensor[Float](50000, 3, 32, 32)
+    val trainDataLabel = Tensor[Float](50000, 1)
+    count = 0
+    while (!endWhen(state)) {
+      val start = System.nanoTime()
+      val (input, target) = data.next()
+      trainDataInput.narrow(1, count+1, input.size(1)).copy(input.asInstanceOf[Tensor[Float]])
+      trainDataLabel.narrow(1, count+1, target.size(1)).copy(target.asInstanceOf[Tensor[Float]])
+
+      val dataFetchTime = System.nanoTime()
+      model.zeroGradParameters()
+      val output = model.forward(input)
+      val loss = criterion.forward(output, target)
+      val gradOutput = criterion.backward(output, target)
+      model.backward(input, gradOutput)
+      optimMethod.optimize(_ => (loss, grad), weights, state)
+      val end = System.nanoTime()
+      wallClockTime += end - start
+      count += input.size(1)
+      println(s"[Epoch ${state[Int]("epoch")} $count/${data.total()}][Iteration ${
+        state[Int]("neval")}][Wall Clock ${wallClockTime / 1e9
+      }s] loss is $loss, iteration time is ${(end - start) / 1e9}s data " +
+        s"fetch time is " +
+        s"${(dataFetchTime - start) / 1e9}s, train time ${(end - dataFetchTime) / 1e9}s." +
+        s" Throughput is ${input.size(1).toDouble / (end - start) * 1e9} img / second")
+      state("neval") = state[Int]("neval") + 1
+
+      if(count >= data.total()) {
+        val tmpInput = java.io.File.createTempFile("torchdata/data_batch_input_" + state("epoch").toString + "_", suffix)
+        val tmpLabel = java.io.File.createTempFile("torchdata/data_batch_label_" + state("epoch").toString + "_", suffix)
+        val tmpPathInput = tmpInput.getAbsolutePath
+        val tmpPathLabel = tmpLabel.getAbsolutePath
+        File.saveTorch(trainDataInput, tmpPathInput, TYPE_FLOAT_TENSOR)
+        File.saveTorch(trainDataLabel, tmpPathLabel, TYPE_FLOAT_TENSOR)
+        println(s"save train to file ${tmpPathInput}")
+        state("epoch") = state[Int]("epoch") + 1
+        data.reset()
+        data.shuffle()
+        count = 0
+      }
+
+      validate(wallClockTime)
+
+      cacheTrigger.foreach(trigger => {
+        if (trigger(state) && cachePath.isDefined) {
+          println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
+          saveModel(s".${state[Int]("neval")}")
+          saveState(state, s".${state[Int]("neval")}")
+        }
+      })
+    }
+    validate(wallClockTime)
 
     model
   }
 
-  private def validate(testInput: Tensor[T], testLabel: Tensor[T], wallClockTime: Long): Unit = {
-
+  private def validate(wallClockTime: Long): Unit = {
     validationTrigger.foreach(trigger => {
       if (trigger(state) && validationMethods.length > 0) {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
@@ -171,14 +139,12 @@ class LocalOptimizer[T](
         validationData.reset()
         var count = 0
         val results = validationData.map { case (input, target) =>
-          val curInput = testInput.narrow(1, count+1, input.size(1))
-          val curTarget = testLabel.narrow(1, count+1, target.size(1))
-          val output = model.forward(curInput)
+          val output = model.forward(input)
           println(s"[Validation][Epoch ${state[Int]("epoch")}][Iteration ${state[Int]("neval")}] " +
             s"$count/${validationData.total()}")
           count += input.size(1)
           validationMethods.map(validation => {
-            validation(output.asInstanceOf[Tensor[T]], curTarget)
+            validation(output.asInstanceOf[Tensor[T]], target)
           }).toArray
         }.reduce((left, right) => {
           left.zip(right).map { case (l, r) =>
