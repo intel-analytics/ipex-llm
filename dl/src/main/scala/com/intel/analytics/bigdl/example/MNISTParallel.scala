@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.example
 import com.intel.analytics.bigdl.example.MNIST._
 import com.intel.analytics.bigdl.example.Utils._
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.parameters.OneReduceParameterManager
 import org.apache.log4j.{Level, Logger}
@@ -82,10 +83,10 @@ object MNISTParallel {
     val testDataSets = new ShuffleBatchDataSet[Array[Byte], Double](testRDD,
       toTensor(mean, std), 10, 40, params.workerConfig[Int]("batchnum"))
     val optimizer = if (params.distribute == "parallel") {
-      new WeightAvgEpochOptimizer[Double](model, ClassNLLCriterion(),
+      new WeightAvgEpochOptimizer[Double](model, ClassNLLCriterion[Double](),
         getOptimMethod(params.masterOptM), pm, dataSets, metrics, driverConfig)
     } else if (params.distribute == "serial") {
-      new GradAggEpochOptimizer[Double](model, ClassNLLCriterion(),
+      new GradAggEpochOptimizer[Double](model, ClassNLLCriterion[Double](),
         getOptimMethod(params.masterOptM), pm, dataSets, metrics, driverConfig)
     } else {
       throw new IllegalArgumentException

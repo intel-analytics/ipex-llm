@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.example
 
 import com.intel.analytics.bigdl.example.Utils._
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.parameters.{OneReduceParameterManager, ParameterManager}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -37,8 +38,7 @@ object Cifar {
   val classNumber = 10
 
 
-  def getOptim(model: Module[Tensor[Double],
-    Tensor[Double], Double], params: Params, pm: ParameterManager[Double],
+  def getOptim(model: Module[Double], params: Params, pm: ParameterManager[Double],
     dataSets: DataSet[_, Double] with HasEpoch, config: Table,
     metrics: Metrics): DistributedOptimizer[Double] = {
     val optim = params.masterOptM match {
@@ -343,23 +343,22 @@ object Cifar {
     }
   }
 
-  def getCriterion(): Criterion[Tensor[Double], Double] = {
+  def getCriterion(): Criterion[Double] = {
     ClassNLLCriterion[Double]()
   }
 
-  def getModel(file: String): TensorModule[Double] = {
-    val model = File.loadTorch[TensorModule[Double]](file)
+  def getModel(file: String): Module[Double] = {
+    val model = File.loadTorch[Module[Double]](file)
     model
   }
 
   def getModel[T: ClassTag](classNumber: Int, netType: String)(
-    implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+    implicit ev: TensorNumeric[T]): Module[T] = {
     val model = netType match {
       case "vggBnDo" =>
-        val vggBnDo = Sequential[Tensor[T], Tensor[T], T]()
+        val vggBnDo = Sequential[T]()
 
-        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int):
-          Sequential[Tensor[T], Tensor[T], T] = {
+        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[T] = {
           vggBnDo.add(SpatialConvolution[T](nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
           vggBnDo.add(SpatialBatchNormalization[T](nOutPutPlane, 1e-3))
           vggBnDo.add(ReLU[T](true))
@@ -389,7 +388,7 @@ object Cifar {
         vggBnDo.add(SpatialMaxPooling[T](2, 2, 2, 2).ceil())
         vggBnDo.add(View[T](512))
 
-        val classifier = Sequential[Tensor[T], Tensor[T], T]()
+        val classifier = Sequential[T]()
         classifier.add(Dropout[T](0.5))
         classifier.add(Linear[T](512, 512))
         classifier.add(BatchNormalization[T](512))
@@ -402,10 +401,9 @@ object Cifar {
         vggBnDo
 
       case "vggBn" =>
-        val vggBn = Sequential[Tensor[T], Tensor[T], T]()
+        val vggBn = Sequential[T]()
 
-        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int):
-          Sequential[Tensor[T], Tensor[T], T] = {
+        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[T] = {
           vggBn.add(SpatialConvolution[T](nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
           vggBn.add(SpatialBatchNormalization[T](nOutPutPlane, 1e-3))
           vggBn.add(ReLU[T](true))
@@ -435,7 +433,7 @@ object Cifar {
         vggBn.add(SpatialMaxPooling[T](2, 2, 2, 2).ceil())
         vggBn.add(View[T](512))
 
-        val classifier = Sequential[Tensor[T], Tensor[T], T]()
+        val classifier = Sequential[T]()
         classifier.add(Linear[T](512, 512))
         classifier.add(BatchNormalization[T](512))
         classifier.add(ReLU[T](true))
@@ -446,10 +444,9 @@ object Cifar {
         vggBn
 
       case "vggDo" =>
-        val vggDo = Sequential[Tensor[T], Tensor[T], T]()
+        val vggDo = Sequential[T]()
 
-        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int):
-        Sequential[Tensor[T], Tensor[T], T] = {
+        def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[T] = {
           vggDo.add(SpatialConvolution[T](nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
           vggDo.add(ReLU[T](true))
           vggDo
@@ -478,7 +475,7 @@ object Cifar {
         vggDo.add(SpatialMaxPooling[T](2, 2, 2, 2).ceil())
         vggDo.add(View[T](512))
 
-        val classifier = Sequential[Tensor[T], Tensor[T], T]()
+        val classifier = Sequential[T]()
         classifier.add(Dropout[T](0.5))
         classifier.add(Linear[T](512, 512))
         classifier.add(ReLU[T](true))
@@ -489,7 +486,7 @@ object Cifar {
 
         vggDo
       case _ =>
-        val model = Sequential[Tensor[T], Tensor[T], T]
+        val model = Sequential[T]
 
         /** *
          * https://github.com/torch/demos/blob/master/train-on-cifar/train-on-cifar.lua

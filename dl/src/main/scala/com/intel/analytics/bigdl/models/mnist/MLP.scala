@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.models.mnist
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{LogSoftMax, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -30,8 +31,8 @@ object MLP {
   val classNum = 10
 
   def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val mlp = Sequential[Tensor[T], Tensor[T], T]
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val mlp = Sequential[T]
     val nHidden = featureSize / 2
     mlp.add(Reshape(Array(featureSize)))
     mlp.add(Linear(featureSize, nHidden))

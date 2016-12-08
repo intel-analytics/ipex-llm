@@ -15,24 +15,34 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.nn.abstractnn
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import org.apache.commons.lang3.SerializationUtils
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Activities
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{T, Table}
+import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
 
 abstract class TensorCriterion[@specialized(Float, Double) T: ClassTag]
-  (implicit ev: TensorNumeric[T]) extends Criterion[Tensor[T], T]
+(implicit ev: TensorNumeric[T]) extends Criterion[Tensor[T], T]
 
-abstract class Criterion[A <: Activities: ClassTag,
-  @specialized(Float, Double) T: ClassTag](
+abstract class Criterion[A <: Activity: ClassTag,
+@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
+  @transient var gradInput: A = _
   var output: T = ev.fromType[Int](0)
 
+  private[nn] def allocateAs[D <: Activity](dest: D): D = dest match {
+    case tensor: Tensor[T] => Tensor[T]().asInstanceOf[D]
+    case table: Table => T().asInstanceOf[D]
+    case _ => throw new IllegalArgumentException("Activity only support tensor and table now")
+  }
+
   def forward(input: A, target: A): T = {
+    if (gradInput == null) {
+      gradInput = allocateAs[A](input)
+    }
     updateOutput(input, target)
   }
 
@@ -44,8 +54,7 @@ abstract class Criterion[A <: Activities: ClassTag,
     this.output
   }
 
-  def updateGradInput(input: A, target: A): A =
-    Activities.apply[A, T]().asInstanceOf[A]
+  def updateGradInput(input: A, target: A): A
 
   def cloneCriterion(): Criterion[A, T] = {
     SerializationUtils.clone(this)

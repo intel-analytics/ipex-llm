@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.example
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -142,15 +143,15 @@ class CifarLocal[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNum
 
 
   def feval(grad: Tensor[T],
-    module: Module[Tensor[T], Tensor[T], T],
-    criterion: Criterion[Tensor[T], T], input: Tensor[T],
+    module: Module[T],
+    criterion: Criterion[T], input: Tensor[T],
     target: Tensor[T])(weights: Tensor[T])
   : (T, Tensor[T]) = {
     module.training()
     grad.zero()
     val output = module.forward(input)
-    for (d <- 1 to output.size(1)) {
-      val pre = maxIndex(output.select(1, d))
+    for (d <- 1 to output.toTensor[T].size(1)) {
+      val pre = maxIndex(output.toTensor[T].select(1, d))
       //          print(s"|pre:${pre}tar:${target(Array(d))}|")
       count += 1
       if (pre == ev.toType[Int](target.valueAt(d))) correct += 1
@@ -167,8 +168,8 @@ class CifarLocal[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNum
 
 
   def evaluate(masterGrad: Tensor[T],
-    module: Module[Tensor[T], Tensor[T], T],
-    criterion: Criterion[Tensor[T], T],
+    module: Module[T],
+    criterion: Criterion[T],
     testData: Tensor[T], testLabel: Tensor[T], batchSize: Int = 1000): Unit = {
     module.evaluate()
     var i = 1
@@ -191,13 +192,13 @@ class CifarLocal[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNum
   }
 
 
-  def evaluate(grad: Tensor[T], module: Module[Tensor[T], Tensor[T], T],
-    criterion: Criterion[Tensor[T], T],
+  def evaluate(grad: Tensor[T], module: Module[T],
+    criterion: Criterion[T],
     input: Tensor[T], target: Tensor[T]): Int = {
     val output = module.forward(input)
     var corrects = 0
-    for (d <- 1 to output.size(1)) {
-      val pre = maxIndex(output.select(1, d))
+    for (d <- 1 to output.toTensor[T].size(1)) {
+      val pre = maxIndex(output.toTensor[T].select(1, d))
       //                print(s"pre:${pre}tar:${target(Array(d))}   ")
       if (pre == ev.toType[Int](target.valueAt(d))) corrects += 1
     }
@@ -222,8 +223,8 @@ class CifarLocal[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNum
     index
   }
 
-  def getModel(file: String): Module[Tensor[Double], Tensor[Double], Double] = {
-    val model = File.loadTorch[Module[Tensor[Double], Tensor[Double], Double]](file)
+  def getModel(file: String): Module[Double] = {
+    val model = File.loadTorch[Module[Double]](file)
 
     model
   }

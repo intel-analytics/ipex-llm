@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, GoogleNet_v1}
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -36,7 +36,7 @@ class SaveObjSpec extends FlatSpec with Matchers {
     val filePath = java.io.File.createTempFile("SaveObjSpecAlexnet", ".obj").getAbsolutePath
     model.forward(Tensor[Double](4, 3, 227, 227))
     File.save(model, filePath, true)
-    val loadedModel = File.load[Module[Tensor[Double], Tensor[Double], Double]](filePath)
+    val loadedModel = File.load[Module[Double]](filePath)
     loadedModel should be(model)
     loadedModel.forward(Tensor[Double](4, 3, 227, 227))
   }
@@ -46,7 +46,7 @@ class SaveObjSpec extends FlatSpec with Matchers {
     val filePath = java.io.File.createTempFile("SaveObjSpecGoogleNet", ".obj").getAbsolutePath
     model.forward(Tensor[Double](4, 3, 224, 224))
     File.save(model, filePath, true)
-    val loadedModel = File.load[Module[Tensor[Double], Tensor[Double], Double]](filePath)
+    val loadedModel = File.load[Module[Double]](filePath)
     loadedModel should be(model)
     loadedModel.forward(Tensor[Double](4, 3, 224, 224))
   }

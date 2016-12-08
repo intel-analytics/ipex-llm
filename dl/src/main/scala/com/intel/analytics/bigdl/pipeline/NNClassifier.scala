@@ -17,7 +17,8 @@
 
 package org.apache.spark.ml
 
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, Module}
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.parameters.{OneReduceParameterManager, ParameterManager}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -35,10 +36,10 @@ import scala.reflect.ClassTag
 
 trait NNParams[@specialized(Float, Double) T] extends PredictorParams {
 
-  final val model: Param[Int => Module[Tensor[T], Tensor[T], T]] =
+  final val model: Param[Int => Module[T]] =
     new Param(this, "module factory", "neural network model")
 
-  final val criterion: Param[Criterion[Tensor[T], T]] =
+  final val criterion: Param[Criterion[T]] =
     new Param(this, "criterion", "criterion that evaluate the result")
 
   final val state: Param[Table] = new Param(this, "state", "states to train the neural network")
@@ -61,13 +62,13 @@ trait NNParams[@specialized(Float, Double) T] extends PredictorParams {
 
   final def getOptimizerType: String = $(optimizerType)
 
-  final def getModel: Int => Module[Tensor[T], Tensor[T], T] = $(model)
+  final def getModel: Int => Module[T] = $(model)
 
   final def getState: Table = $(state)
 
   final def getOptMethod: OptimMethod[T] = $(optMethod)
 
-  final def getCriterion: Criterion[Tensor[T], T] = $(criterion)
+  final def getCriterion: Criterion[T] = $(criterion)
 
   final def getBatchSize: Int = $(batchSize)
 
@@ -87,7 +88,7 @@ class NNClassifier(override val uid: String)
 
   def this() = this(Identifiable.randomUID("nnc"))
 
-  def setModel(value: Int => Module[Tensor[Double], Tensor[Double], Double]): this.type = {
+  def setModel(value: Int => Module[Double]): this.type = {
     set(model, value)
   }
 
@@ -100,7 +101,7 @@ class NNClassifier(override val uid: String)
 
   def setOptimizerType(value: String): this.type = set(optimizerType, value)
 
-  def setCriterion(value: Criterion[Tensor[Double], Double]): this.type =
+  def setCriterion(value: Criterion[Double]): this.type =
     set(criterion, value)
 
   def setBatchSize(value: Int): this.type = set(batchSize, value)
@@ -145,7 +146,7 @@ class NNClassifier(override val uid: String)
     new NNClassificationModel(uid, optimizer.module)
   }
 
-  private def getOptimizer(module: Module[Tensor[Double], Tensor[Double], Double], featureSize: Int,
+  private def getOptimizer(module: Module[Double], featureSize: Int,
     dataset: DataSet[_, Double] with HasEpoch, pm: ParameterManager[Double],
     metrics: Metrics): DistributedOptimizer[Double] = {
     val epoch = $(state)[Int]("maxIter")
@@ -200,14 +201,16 @@ class NNClassifier(override val uid: String)
 
 class NNClassificationModel[@specialized(Float, Double) T: ClassTag](
   override val uid: String,
-  val module: Module[Tensor[T], Tensor[T], T])(implicit ev: TensorNumeric[T])
+  val module: Module[T])(implicit ev: TensorNumeric[T])
   extends PredictionModel[Vector, NNClassificationModel[T]] with HasRawPredictionCol
     with Serializable {
 
   override protected def predict(features: Vector): Double = {
     var result: Tensor[T] = null
     if (T.isInstanceOf[Double]) {
-      result = module.forward(Tensor(Storage(features.toArray.asInstanceOf[Array[T]])))
+      result = module
+        .forward(Tensor(Storage(features.toArray.asInstanceOf[Array[T]])))
+        .toTensor[T]
     } else {
       val array: Array[T] = new Array[T](features.toArray.length)
       var index = 0
@@ -215,7 +218,9 @@ class NNClassificationModel[@specialized(Float, Double) T: ClassTag](
         array(index) = ev.fromType[Double](x)
         index += 1
       }
-      result = module.forward(Tensor(Storage(array)))
+      result = module
+        .forward(Tensor(Storage(array)))
+        .toTensor[T]
     }
 
     require(result.nDimension() == 1)

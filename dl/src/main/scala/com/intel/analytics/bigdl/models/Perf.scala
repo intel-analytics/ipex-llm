@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.models
 
 import com.intel.analytics.bigdl.models.imagenet._
 import com.intel.analytics.bigdl.models.mnist.LeNet5
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import scopt.OptionParser
@@ -109,10 +109,10 @@ object Perf {
     for (i <- 1 to param.warmUp) {
       var time = System.nanoTime()
       val output = model.forward(input)
-      criterion.forward(output, labels)
+      criterion.forward(output.toTensor[T], labels)
       val forwardTime = System.nanoTime() - time
       time = System.nanoTime()
-      val gradOutput = criterion.backward(output, labels)
+      val gradOutput = criterion.backward(output.toTensor[T], labels)
       model.backward(input, gradOutput)
       val backwardTime = System.nanoTime() - time
       println(s"Warm up iteration $i: forward ${forwardTime / 1e6}ms, " +
@@ -125,11 +125,11 @@ object Perf {
     for (i <- 1 to param.iteration) {
       var time = System.nanoTime()
       val output = model.forward(input)
-      criterion.forward(output, labels)
+      criterion.forward(output.toTensor[T], labels)
       val forwardTime = System.nanoTime() - time
       totalForwardTime += forwardTime
       time = System.nanoTime()
-      val gradOutput = criterion.backward(output, labels)
+      val gradOutput = criterion.backward(output.toTensor[T], labels)
       model.backward(input, gradOutput)
       val backwardTime = System.nanoTime() - time
       totalBackwardTime += backwardTime

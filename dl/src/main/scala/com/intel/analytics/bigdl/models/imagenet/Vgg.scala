@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.models.imagenet
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -25,8 +26,8 @@ import scala.reflect.ClassTag
 
 object Vgg_16 {
   def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val model = Sequential[Tensor[T], Tensor[T], T]()
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val model = Sequential[T]()
     model.add(SpatialConvolution[T](3, 64, 3, 3, 1, 1, 1, 1))
     model.add(ReLU[T](true))
     model.add(SpatialConvolution[T](64, 64, 3, 3, 1, 1, 1, 1))
@@ -79,8 +80,8 @@ object Vgg_16 {
 
 object Vgg_19 {
   def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val model = Sequential[Tensor[T], Tensor[T], T]()
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val model = Sequential[T]()
     model.add(SpatialConvolution[T](3, 64, 3, 3, 1, 1, 1, 1))
     model.add(ReLU[T](true))
     model.add(SpatialConvolution[T](64, 64, 3, 3, 1, 1, 1, 1))

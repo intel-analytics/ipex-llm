@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.models.mnist
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -29,8 +30,8 @@ object SimpleCNN {
   val featureSize = rowN * colN
 
   def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val model = Sequential[Tensor[T], Tensor[T], T]()
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val model = Sequential[T]()
     model.add(Reshape(Array(1, rowN, colN)))
     model.add(SpatialConvolution(1, 32, 5, 5))
     model.add(Tanh())

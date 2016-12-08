@@ -17,8 +17,9 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.models.imagenet.{AlexNet_OWT, AlexNet}
-import com.intel.analytics.bigdl.nn.{Linear, Sequential, Module}
+import com.intel.analytics.bigdl.models.imagenet.{AlexNet, AlexNet_OWT}
+import com.intel.analytics.bigdl.nn.abstractnn.Module
+import com.intel.analytics.bigdl.nn.{Linear, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{File, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
@@ -28,7 +29,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     val filePath = java.io.File.createTempFile("ModelPersistSpec", ".model").getAbsolutePath
     val mp = new ModelPersistTest[Float]
     mp.setPath(filePath)
-    val model = new Sequential[Tensor[Float], Tensor[Float], Float]()
+    val model = new Sequential[Float]()
     model.add(new Linear[Float](3, 10))
     model.add(new Linear[Float](10, 5))
 
@@ -91,7 +92,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     val mp = new ModelPersistTest[Float]
     mp.setModelSaveInterval(10)
     mp.setPath(filePath)
-    val model = new Sequential[Tensor[Float], Tensor[Float], Float]()
+    val model = new Sequential[Float]()
     model.add(new Linear[Float](3, 10))
     model.add(new Linear[Float](10, 5))
     mp.saveModel(model, 10, true)

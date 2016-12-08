@@ -17,37 +17,37 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Module}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Activities
 
 import scala.reflect.ClassTag
 
-class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: ClassTag]
-  (implicit ev: TensorNumeric[T]) extends Container[A, B, T] {
+class Sequential[T: ClassTag]
+  (implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
 
-  override def updateOutput(input: A): B = {
+  override def updateOutput(input: Activity): Activity = {
     var i = 0
-    var result = input.asInstanceOf[Activities]
+    var result = input.asInstanceOf[Activity]
     while (i < modules.length) {
       result = modules(i).forward(result)
       i += 1
     }
 
-    this.output = result.asInstanceOf[B]
+    this.output = result
     output
   }
 
-  override def updateGradInput(input: A, nextError: B): A = {
+  override def updateGradInput(input: Activity, nextError: Activity): Activity = {
     var i = modules.length - 1
-    var error = nextError.asInstanceOf[Activities]
+    var error = nextError.asInstanceOf[Activity]
     while (i > 0) {
       val input = modules(i - 1).output
       error = modules(i).backward(input, error)
       i -= 1
     }
-    error = modules(0).backward(input.asInstanceOf[Activities], error)
+    error = modules(0).backward(input, error)
 
-    this.gradInput = error.asInstanceOf[A]
+    this.gradInput = error
     gradInput
   }
 
@@ -56,10 +56,10 @@ class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: Clas
       return false
     }
 
-    if (!obj.isInstanceOf[Sequential[A, B, T]]) {
+    if (!obj.isInstanceOf[Sequential[T]]) {
       return false
     }
-    val other = obj.asInstanceOf[Sequential[A, B, T]]
+    val other = obj.asInstanceOf[Sequential[T]]
     if (this.eq(other)) {
       return true
     }
@@ -98,13 +98,13 @@ class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: Clas
 
     s"nn.Sequential {${line + tab}[input -> ${
       modules.zipWithIndex.map {
-        case (m: Module[Activities, Activities, T], i: Int) => "(" + (i + 1) + ")"
+        case (m: Module[Activity, Activity, T], i: Int) => "(" + (i + 1) + ")"
       }.
         mkString(" -> ")
     } -> output]${line + tab}" +
       s"${
         modules.zipWithIndex.map {
-          case (model: Module[Activities, Activities, T], index: Int)
+          case (model: Module[Activity, Activity, T], index: Int)
           => s"(${index + 1}): ${model.setLine(line + tab)}"
         }.
           mkString(line + tab)
@@ -114,9 +114,8 @@ class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: Clas
 }
 
 object Sequential {
-  def apply[A <: Activities : ClassTag, B <: Activities : ClassTag,
-      @specialized(Float, Double) T: ClassTag]()
-      (implicit ev: TensorNumeric[T]) : Sequential[A, B, T] = {
-    new Sequential[A, B, T]()
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : Sequential[T] = {
+    new Sequential[T]()
   }
 }

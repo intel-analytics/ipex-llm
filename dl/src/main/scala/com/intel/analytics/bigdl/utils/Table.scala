@@ -17,6 +17,8 @@
 
 package com.intel.analytics.bigdl.utils
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
+
 import scala.collection.mutable
 import scala.collection.mutable.Map
 
@@ -30,7 +32,7 @@ class Table private[bigdl](
   state: Map[Any, Any] = new mutable.HashMap[Any, Any](),
   // index of last element in the contiguous numeric number indexed elements start from 1
   private var topIndex: Int = 0
-) extends Serializable with Activities {
+) extends Serializable with Activity {
 
   private[bigdl] def this(data: Array[Any]) = {
     this(new mutable.HashMap[Any, Any](), 0)

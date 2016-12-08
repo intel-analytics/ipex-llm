@@ -17,10 +17,11 @@
 
 package com.intel.analytics.bigdl.torch
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.{CAddTable, ConcatTable, Linear, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{Activities, T}
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
@@ -36,8 +37,8 @@ class CAddTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
 
-    val model = new Sequential[Activities, Activities, Double]()
-    val ctable = new ConcatTable[Tensor[Double], Double]()
+    val model = new Sequential[Double]()
+    val ctable = new ConcatTable[Double]()
     ctable.add(new Linear(5, 3))
     ctable.add(new Linear(5, 3))
     model.add(ctable)
@@ -71,8 +72,8 @@ class CAddTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
 
-    val model = new Sequential[Activities, Activities, Double]()
-    val ctable = new ConcatTable[Tensor[Double], Double]()
+    val model = new Sequential[Double]()
+    val ctable = new ConcatTable[Double]()
     ctable.add(new Linear(5, 3))
     ctable.add(new Linear(5, 3))
     model.add(ctable)

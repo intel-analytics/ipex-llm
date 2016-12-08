@@ -14,33 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.intel.analytics
 
-package com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Module}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import scala.language.implicitConversions
 
-import scala.reflect.ClassTag
+package object bigdl {
+  type Module[T] = com.intel.analytics.bigdl.nn.abstractnn.Module[Activity, Activity, T]
+  type Criterion[T] = com.intel.analytics.bigdl.nn.abstractnn.Criterion[Activity, T]
 
-class Identity[@specialized(Float, Double) T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Module[Activity, Activity, T] {
+  implicit def convModule[T](
+    module: com.intel.analytics.bigdl.nn.abstractnn.Module[_, _, T]
+  ): Module[T] = module.asInstanceOf[Module[T]]
 
-  override def updateOutput(input: Activity): Activity = {
-    output = input
-    output
-  }
-
-  override def updateGradInput(input: Activity,
-    gradOutput: Activity): Activity = {
-
-    gradInput = gradOutput
-    gradInput
-  }
-}
-
-object Identity {
-  def apply[@specialized(Float, Double) T: ClassTag]()
-      (implicit ev: TensorNumeric[T]) : Identity[T] = {
-    new Identity[T]()
-  }
+  implicit def convCriterion[T](
+    criterion: com.intel.analytics.bigdl.nn.abstractnn.Criterion[_, T]
+  ): Criterion[T] = criterion.asInstanceOf[Criterion[T]]
 }

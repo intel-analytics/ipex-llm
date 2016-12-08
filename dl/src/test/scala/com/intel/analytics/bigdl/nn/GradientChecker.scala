@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 
@@ -25,13 +26,13 @@ import scala.reflect.ClassTag
 class GradientChecker(stepSize: Double, threshold: Double) {
 
   def checkLayer[T: ClassTag](
-    layer: Module[Tensor[T], Tensor[T], T],
+    layer: Module[T],
     input: Tensor[T],
     epsilon: Double = 0.001)
     (implicit ev: TensorNumeric[T]): Boolean = {
-    val gradOutput = lossAndGradient(layer.updateOutput(input))._2
-    val computedGrad = layer.updateGradInput(input, gradOutput)
-    computedGrad.resize(Array(computedGrad.nElement()))
+    val gradOutput = lossAndGradient(layer.updateOutput(input).toTensor[T])._2
+    val computedGrad = layer.updateGradInput(input, gradOutput).toTensor[T]
+    computedGrad.toTensor[Double].resize(Array(computedGrad.nElement()))
 
     val perturbation = Tensor[T]()
     perturbation.set(input)
@@ -41,9 +42,9 @@ class GradientChecker(stepSize: Double, threshold: Double) {
     while (i <= input.nElement()) {
       val curValue = perturbation.valueAt(i)
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) + stepSize))
-      val positiveLoss = lossAndGradient(layer.updateOutput(input))._1
+      val positiveLoss = lossAndGradient(layer.updateOutput(input).toTensor[Double])._1
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) - stepSize))
-      val negativeLoss = lossAndGradient(layer.updateOutput(input))._1
+      val negativeLoss = lossAndGradient(layer.updateOutput(input).toTensor[Double])._1
       val estimatedGradient = (positiveLoss - negativeLoss) / stepSize / 2.0
 
       result = result & (math.abs(estimatedGradient -

@@ -21,7 +21,8 @@ import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.Executors
 
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, GoogleNet_v1}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, Module}
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.optim.SGD.LearningRateSchedule
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -29,7 +30,7 @@ import com.intel.analytics.bigdl.utils.T
 import scopt.OptionParser
 
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 object ImageNetSeqFileGenerator {
 
@@ -133,8 +134,8 @@ object ImageNetLocal {
   )
 
   case class Config(
-    model: Module[Tensor[Float], Tensor[Float], Float],
-    criterion: Criterion[Tensor[Float], Float],
+    model: Module[Float],
+    criterion: Criterion[Float],
     optimMethod: OptimMethod[Float],
     imageSize: Int,
     batchSize: Int,

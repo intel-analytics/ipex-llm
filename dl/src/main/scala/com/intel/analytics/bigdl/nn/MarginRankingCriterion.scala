@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.Criterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -36,7 +37,6 @@ class MarginRankingCriterion[T: ClassTag]
 (val margin: Double = 1.0, val sizeAverage: Boolean = true)
  (implicit ev: TensorNumeric[T]) extends Criterion[Table, T] {
 
-  private val gradInput = T()
   @transient
   var mask: Tensor[T] = null
   @transient

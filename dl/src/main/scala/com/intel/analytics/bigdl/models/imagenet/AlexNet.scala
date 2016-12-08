@@ -18,9 +18,9 @@
 package com.intel.analytics.bigdl.models.imagenet
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Activities
 
 import scala.reflect.ClassTag
 
@@ -30,9 +30,9 @@ import scala.reflect.ClassTag
 object AlexNet_OWT {
   def apply[T: ClassTag](classNum: Int, hasDropout : Boolean = true, firstLayerPropagateBack :
   Boolean = false)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
+    (implicit ev: TensorNumeric[T]): Module[T] = {
 
-    val model = Sequential[Tensor[T], Tensor[T], T]()
+    val model = Sequential[T]()
     model.add(SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2, 1, firstLayerPropagateBack)
       .setName("conv1"))
     model.add(ReLU[T](true).setName("relu1"))
@@ -65,8 +65,8 @@ object AlexNet_OWT {
  */
 object AlexNet {
   def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val model = Sequential[Tensor[T], Tensor[T], T]()
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val model = Sequential[T]()
     model.add(SpatialConvolution[T](3, 96, 11, 11, 4, 4, 0, 0, 1, false).setName("conv1"))
     model.add(ReLU[T](true).setName("relu1"))
     model.add(SpatialCrossMapLRN[T](5, 0.0001, 0.75).setName("norm1"))

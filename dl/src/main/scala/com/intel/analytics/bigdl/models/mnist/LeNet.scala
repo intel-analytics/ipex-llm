@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.models.mnist
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{Linear, LogSoftMax, SpatialMaxPooling, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -25,8 +26,8 @@ import scala.reflect.ClassTag
 
 object LeNet5 {
   def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val model = Sequential[Tensor[T], Tensor[T], T]()
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val model = Sequential[T]()
     model.add(Reshape[T](Array(1, 28, 28)))
     model.add(SpatialConvolution[T](1, 6, 5, 5))
     model.add(Tanh[T]())

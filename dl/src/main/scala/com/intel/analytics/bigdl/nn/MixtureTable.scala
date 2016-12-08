@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.Module
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -102,7 +103,7 @@ class MixtureTable[T: ClassTag](var dim: Int = Int.MaxValue)
     if (input(2).isInstanceOf[Table]) {
 
       if (!gradInput.contains(2)) gradInput.insert(2, T())
-      gradInput = Utils.recursiveResizeAs[T](gradInput, input).toTable()
+      gradInput = Utils.recursiveResizeAs[T](gradInput, input).toTable
 
       val expertInputs = input[Table](2)
       val gaterGradInput = gradInput[Tensor[T]](1)
@@ -146,7 +147,7 @@ class MixtureTable[T: ClassTag](var dim: Int = Int.MaxValue)
     } else if (input(2).isInstanceOf[Tensor[T]]) {
 
       if (!gradInput.contains(2)) gradInput.insert(2, T())
-      gradInput = Utils.recursiveResizeAs[T](gradInput, input).toTable()
+      gradInput = Utils.recursiveResizeAs[T](gradInput, input).toTable
 
       val expertInputs = input[Tensor[T]](2)
       val gaterGradInput = gradInput[Tensor[T]](1)

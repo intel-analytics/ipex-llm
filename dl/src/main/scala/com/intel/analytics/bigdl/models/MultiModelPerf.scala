@@ -19,8 +19,9 @@ package com.intel.analytics.bigdl.models
 
 import java.util.concurrent.Executors
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, AlexNet_OWT, GoogleNet_v1, GoogleNet_v2}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import scopt.OptionParser
@@ -133,8 +134,8 @@ object MultiModelPerf {
       (0 until param.cores).map(j => Future {
         val (model, input, criterion, labels) = tests(j)
         val output = model.forward(input)
-        criterion.forward(output, labels)
-        val gradOutput = criterion.backward(output, labels)
+        criterion.forward(output.toTensor[T], labels)
+        val gradOutput = criterion.backward(output.toTensor[T], labels)
         model.backward(input, gradOutput)
       }).foreach(Await.result(_, Duration.Inf))
 
@@ -159,8 +160,8 @@ object MultiModelPerf {
       (0 until param.cores).map(j => Future {
         val (model, input, criterion, labels) = tests(j)
         val output = model.forward(input)
-        criterion.forward(output, labels)
-        val gradOutput = criterion.backward(output, labels)
+        criterion.forward(output.toTensor[T], labels)
+        val gradOutput = criterion.backward(output.toTensor[T], labels)
         model.backward(input, gradOutput)
       }).foreach(Await.result(_, Duration.Inf))
 

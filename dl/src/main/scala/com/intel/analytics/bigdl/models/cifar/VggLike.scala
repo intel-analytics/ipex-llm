@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.models.cifar
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{LogSoftMax, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -25,10 +26,9 @@ import scala.reflect.ClassTag
 
 object VggLike {
   def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val vggBnDo = Sequential[Tensor[T], Tensor[T], T]()
-    def convBNReLU(nInputPlane: Int, nOutPutPlane: Int)
-      : Sequential[Tensor[T], Tensor[T], T] = {
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val vggBnDo = Sequential[T]()
+    def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[T] = {
       vggBnDo.add(SpatialConvolution[T](nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
       vggBnDo.add(SpatialBatchNormalization[T](nOutPutPlane, 1e-3))
       vggBnDo.add(ReLU[T](true))
@@ -58,7 +58,7 @@ object VggLike {
     vggBnDo.add(SpatialMaxPooling[T](2, 2, 2, 2).ceil())
     vggBnDo.add(View[T](512))
 
-    val classifier = Sequential[Tensor[T], Tensor[T], T]()
+    val classifier = Sequential[T]()
     classifier.add(Dropout[T](0.5))
     classifier.add(Linear[T](512, 512))
     classifier.add(BatchNormalization[T](512))

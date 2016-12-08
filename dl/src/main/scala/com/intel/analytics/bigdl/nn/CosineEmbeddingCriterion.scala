@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.Criterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -31,7 +32,6 @@ import scala.reflect.ClassTag
 class CosineEmbeddingCriterion[T: ClassTag]
  (val margin: Double = 0.0, val sizeAverage: Boolean = true)
  (implicit ev: TensorNumeric[T]) extends Criterion[Table, T]{
-  val gradInput = T()
   @transient
   private var buffer: Tensor[T] = null
   @transient

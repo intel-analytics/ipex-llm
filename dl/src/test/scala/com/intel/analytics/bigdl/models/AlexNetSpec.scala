@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.models
 
 import com.intel.analytics.bigdl.models.imagenet.AlexNet_OWT
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.torch.TH
@@ -142,10 +143,10 @@ gradInput = model.gradInput
 
     model.zeroGradParameters()
     val output = TH.map("output").asInstanceOf[Tensor[Double]]
-    val outputTest = model.forward(floatInput)
+    val outputTest = model.forward(floatInput).toTensor[Double]
     var abss = 0.0
-    for (i <- 0 until outputTest.nElement()) {
-      val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i))
+    for (i <- 0 until outputTest.toTensor[Double].nElement()) {
+      val tmp = abs(outputTest.toTensor[Double].storage().array()(i) - output.storage().array()(i))
       abss += tmp
     }
     assert(abss < 1e-2)
@@ -156,7 +157,7 @@ gradInput = model.gradInput
     println(s"${abs(errTest - err)}")
     assert(abs(errTest - err) < 1e-6)
 
-    val gradOutputTest = criterion.backward(outputTest, floatLabel)
+    val gradOutputTest = criterion.backward(outputTest, floatLabel).toTensor[Double]
     val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
     abss = 0.0
     for (i <- 0 until gradOutputTest.nElement()) {
@@ -166,7 +167,7 @@ gradInput = model.gradInput
     assert(abss == 0.0)
     println(s"gradOutputTestAbs:$abss")
 
-    val gradInput = model.backward(floatInput, gradOutputTest)
+    val gradInput = model.backward(floatInput, gradOutputTest).toTensor[Double]
     val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
 
     abss = 0.0
@@ -177,7 +178,7 @@ gradInput = model.gradInput
     println(s"gradInputTestAbs:$abss")
 
     val (weights, grad) = model.getParameters()
-    val modelTorch = TH.map("model").asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
+    val modelTorch = TH.map("model").asInstanceOf[Module[Double]]
     val (weightsTorch, gradTorch) = modelTorch.getParameters()
     sgd.optimize(_ => (errTest, grad), weights, state, state)
     abss = 0.0
@@ -297,8 +298,8 @@ gradInput = model:backward(input, gradOutput)
     val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
     gradOutputTest should be(gradOutput)
 
-    val gradInput = model.backward(input, gradOutputTest)
-    val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
+    val gradInput = model.backward(input, gradOutputTest).toTensor[Double]
+    val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]].toTensor[Double]
 
     var gradInputAbs = 0.0
     gradInput.map(gradInputTorch, (v1, v2) => {

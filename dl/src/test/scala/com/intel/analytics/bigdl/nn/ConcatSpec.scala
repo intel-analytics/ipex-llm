@@ -23,11 +23,11 @@ import org.scalatest.{FlatSpec, Matchers}
 class ConcatSpec extends FlatSpec with Matchers {
 
   "toString" should "return good value" in {
-    val seq1 = new Sequential[Tensor[Double], Tensor[Double], Double]
+    val seq1 = new Sequential[Double]
     seq1.add(new Linear(10, 15))
     seq1.add(new Sigmoid)
 
-    val seq2 = new Sequential[Tensor[Double], Tensor[Double], Double]
+    val seq2 = new Sequential[Double]
     seq2.add(new Linear(10, 15))
     seq2.add(new Tanh)
 

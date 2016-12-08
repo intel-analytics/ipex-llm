@@ -90,8 +90,8 @@ object MNISTLocal {
         toTensor(mean, std)(buffer, input, target)
         module.zeroGradParameters()
         val output = module.forward(input)
-        val loss = critrion.forward(output, target)
-        val gradOutput = critrion.backward(output, target)
+        val loss = critrion.forward(output.toTensor[Double], target)
+        val gradOutput = critrion.backward(output.toTensor[Double], target)
         module.backward(input, gradOutput)
         optm.optimize(_ => (loss, g), w, config, config)
         val end = System.nanoTime()
@@ -118,8 +118,9 @@ object MNISTLocal {
       while (k < testData.length) {
         val (input, target) = toTensor(mean, std)(Array(testData(k)), buffer1, buffer2)
         val output = module.forward(input)
-        testLoss += critrion.forward(output, target)
-        val (curCorrect, curCount) = EvaluateMethods.calcAccuracy(output, target)
+        testLoss += critrion.forward(output.toTensor[Double], target)
+        val (curCorrect, curCount) =
+          EvaluateMethods.calcAccuracy(output.toTensor[Double], target)
         correct += curCorrect
         count += curCount
         k += 1

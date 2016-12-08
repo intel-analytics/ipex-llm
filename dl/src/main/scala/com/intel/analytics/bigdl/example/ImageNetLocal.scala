@@ -157,8 +157,8 @@ object ImageNetLocal {
         val readImgTime = System.nanoTime()
         model.zeroGradParameters()
         val output = model.forward(input)
-        val loss = criterion.forward(output, target)
-        val gradOutput = criterion.backward(output, target)
+        val loss = criterion.forward(output.toTensor[Float], target)
+        val gradOutput = criterion.backward(output.toTensor[Float], target)
         model.backward(input, gradOutput)
         sgd.optimize(_ => (loss, grad), weights, state, state)
         val end = System.nanoTime()
@@ -182,8 +182,8 @@ object ImageNetLocal {
         while (k < dataSetVal.getTotal) {
           val (input, target) = iterVal.next()
           val output = model.forward(input)
-          top1Correct += EvaluateMethods.calcAccuracy(output, target)._1
-          top5Correct += EvaluateMethods.calcTop5Accuracy(output, target)._1
+          top1Correct += EvaluateMethods.calcAccuracy(output.toTensor[Float], target)._1
+          top5Correct += EvaluateMethods.calcTop5Accuracy(output.toTensor[Float], target)._1
           while (!stageImgsVal.isEmpty) {
             dataSetVal.post(stageImgsVal.poll())
           }

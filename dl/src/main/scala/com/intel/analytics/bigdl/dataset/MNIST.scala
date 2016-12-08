@@ -19,7 +19,8 @@ package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.example.MNIST
 import com.intel.analytics.bigdl.models.mnist.{LeNet5, MLP, SimpleCNN}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, Module, TensorModule}
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
@@ -35,8 +36,8 @@ object MNISTLocal {
     net: String = "cnn"
   )
   case class Config(
-    model : Module[Tensor[Float], Tensor[Float], Float],
-    criterion : Criterion[Tensor[Float], Float],
+    model : Module[Float],
+    criterion : Criterion[Float],
     optimMethod : OptimMethod[Float],
     batchSize : Int,
     maxEpoch : Int,

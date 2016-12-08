@@ -21,6 +21,7 @@ import java.nio.file.{Files, Path, Paths}
 
 import com.intel.analytics.bigdl.models.cifar.VggLike
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.SGD.EpochStep
 import com.intel.analytics.bigdl.optim.{LocalOptimizer, SGD, Top1Accuracy, Trigger}
 import com.intel.analytics.bigdl.utils.T
