@@ -17,10 +17,10 @@
 
 package com.intel.analytics.bigdl.example
 
-import com.intel.analytics.bigdl.dataset.RGBImage
+import com.intel.analytics.bigdl.dataset.image.RGBImage
 import com.intel.analytics.bigdl.example.ImageNetUtils._
 import com.intel.analytics.bigdl.example.Utils._
-import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2_NoAuxClassifier}
+import com.intel.analytics.bigdl.models.imagenet.GoogleNet_v2_NoAuxClassifier
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim._
@@ -58,7 +58,6 @@ object ImageNetParallel {
     val optType = params.masterOptM
     val netType = params.net
     val classNum = params.classNum
-
     val conf = new SparkConf().setAppName(s"ImageNet class[Float]: ${params.classNum} " +
       s"Parallelism: ${params.parallelism.toString}, partition : ${params.partitionNum}, " +
       s"masterConfig: ${params.masterConfig}, workerConfig: ${params.workerConfig}")

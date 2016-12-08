@@ -17,31 +17,31 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{File, Table}
+import com.intel.analytics.bigdl.utils.{Activities, File, Table}
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
 
-import scala.collection.mutable.ArrayBuffer
-
-abstract class Optimizer[@specialized(Float, Double) T](
-  protected val model: Module[T],
+abstract class Optimizer[T](
+  protected val model: Module[Activities, Activities, T],
   protected val endWhen: Trigger
 ) {
-  protected var validationTrigger: Option[Trigger] = None
   protected var cacheTrigger: Option[Trigger] = None
-  protected val validationMethods: ArrayBuffer[ValidationMethod[T]] = new ArrayBuffer()
   protected var cachePath: Option[String] = None
   protected var isOverWrite: Boolean = false
 
-  def optimize(): Module[T]
+  protected var validationTrigger: Option[Trigger] = None
+  protected var validationMethods: Option[Array[ValidationMethod[T]]] = None
+  protected var validationDataSet: Option[DataSource[_]] = None
 
-  def setValidationTrigger(trigger: Trigger): this.type = {
+  def optimize(): Module[Activities, Activities, T]
+
+  def setValidation(trigger: Trigger, dataset: DataSource[_],
+    vMethods : Array[ValidationMethod[T]])
+  : this.type = {
     this.validationTrigger = Some(trigger)
-    this
-  }
-
-  def addValidation(validationMethod: ValidationMethod[T]): this.type = {
-    validationMethods.append(validationMethod)
+    this.validationDataSet = Some(dataset)
+    this.validationMethods = Some(vMethods)
     this
   }
 
@@ -56,7 +56,8 @@ abstract class Optimizer[@specialized(Float, Double) T](
     this
   }
 
-  protected def saveModel(postfix: String = ""): this.type = {
+  protected def saveModel(model: Module[Activities, Activities, T],
+    postfix: String = ""): this.type = {
     if (this.cachePath.isDefined) {
       model.save(s"${cachePath.get}.model$postfix", isOverWrite)
     }
@@ -68,6 +69,11 @@ abstract class Optimizer[@specialized(Float, Double) T](
       state.save(s"${cachePath.get}.state$postfix", isOverWrite)
     }
     this
+  }
+
+  protected def header(epoch: Int, count: Int, total: Long, iter: Int, wallClockTime: Long)
+  : String = {
+    s"[Epoch $epoch $count/$total][Iteration $iter][Wall Clock ${wallClockTime / 1e9}s]"
   }
 }
 

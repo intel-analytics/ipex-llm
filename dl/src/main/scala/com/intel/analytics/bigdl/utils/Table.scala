@@ -149,6 +149,13 @@ class Table private[bigdl](
     }
   }
 
+  def delete(obj: Any): this.type = {
+    if (state.get(obj).isDefined) {
+      state.remove(obj)
+    }
+    this
+  }
+
   def insert[T](obj: T): this.type = update(topIndex + 1, obj)
 
   def insert[T](index: Int, obj: T): this.type = {
