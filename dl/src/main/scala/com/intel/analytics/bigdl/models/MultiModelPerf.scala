@@ -133,9 +133,9 @@ object MultiModelPerf {
       val time = System.nanoTime()
       (0 until param.cores).map(j => Future {
         val (model, input, criterion, labels) = tests(j)
-        val output = model.forward(input)
-        criterion.forward(output.toTensor[T], labels)
-        val gradOutput = criterion.backward(output.toTensor[T], labels)
+        val output = model.forward(input).toTensor[T]
+        criterion.forward(output, labels)
+        val gradOutput = criterion.backward(output, labels)
         model.backward(input, gradOutput)
       }).foreach(Await.result(_, Duration.Inf))
 
@@ -159,9 +159,9 @@ object MultiModelPerf {
       val time = System.nanoTime()
       (0 until param.cores).map(j => Future {
         val (model, input, criterion, labels) = tests(j)
-        val output = model.forward(input)
-        criterion.forward(output.toTensor[T], labels)
-        val gradOutput = criterion.backward(output.toTensor[T], labels)
+        val output = model.forward(input).toTensor[T]
+        criterion.forward(output, labels)
+        val gradOutput = criterion.backward(output, labels)
         model.backward(input, gradOutput)
       }).foreach(Await.result(_, Duration.Inf))
 

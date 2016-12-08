@@ -149,9 +149,9 @@ class CifarLocal[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNum
   : (T, Tensor[T]) = {
     module.training()
     grad.zero()
-    val output = module.forward(input)
-    for (d <- 1 to output.toTensor[T].size(1)) {
-      val pre = maxIndex(output.toTensor[T].select(1, d))
+    val output = module.forward(input).toTensor[T]
+    for (d <- 1 to output.size(1)) {
+      val pre = maxIndex(output.select(1, d))
       //          print(s"|pre:${pre}tar:${target(Array(d))}|")
       count += 1
       if (pre == ev.toType[Int](target.valueAt(d))) correct += 1
@@ -195,10 +195,10 @@ class CifarLocal[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNum
   def evaluate(grad: Tensor[T], module: Module[T],
     criterion: Criterion[T],
     input: Tensor[T], target: Tensor[T]): Int = {
-    val output = module.forward(input)
+    val output = module.forward(input).toTensor[T]
     var corrects = 0
-    for (d <- 1 to output.toTensor[T].size(1)) {
-      val pre = maxIndex(output.toTensor[T].select(1, d))
+    for (d <- 1 to output.size(1)) {
+      val pre = maxIndex(output.select(1, d))
       //                print(s"pre:${pre}tar:${target(Array(d))}   ")
       if (pre == ev.toType[Int](target.valueAt(d))) corrects += 1
     }
