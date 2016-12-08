@@ -52,14 +52,13 @@ class ImprovedAllReduceParameterManager[T: ClassTag](
   private val sc: SparkContext = dataset.sparkContext
 
   @transient
-  private var buffers: RDD[(Parameter[T], Tensor[T], Tensor[T], Table)] = null
+  private var buffers: RDD[(CompressedTensor[T], Tensor[T], Tensor[T], Table)] = null
 
   val parameterLength = parameter.nElement()
 
   val partitionNum: Int = dataset.partitions.length
 
   val idealModuleNum: Int = partitionNum * DropSlowModuleGradAggEpochOptimizer.subModuleNumber
-
   override def sync(parameters: RDD[Tensor[T]]): RDD[Tensor[T]] = {
     parameters.mapPartitions(paramIter => {
       Iterator.single(paramIter.next())

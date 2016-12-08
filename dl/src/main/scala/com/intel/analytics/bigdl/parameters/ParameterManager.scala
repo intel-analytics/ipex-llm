@@ -41,11 +41,11 @@ trait ParameterManager[T] extends Serializable {
   def getState(): Table
 }
 
-abstract trait Parameter[T] extends Serializable {
+abstract trait CompressedTensor[T] extends Serializable {
 
-  def copyTo(srcOffset: Int, tensor: Tensor[T], tgtOffset: Int, length: Int): Unit
+  def deCompress(srcOffset: Int, tensor: Tensor[T], tgtOffset: Int, length: Int): Unit
 
-  def copyTo(tensor: Tensor[T]): Unit
+  def deCompress(tensor: Tensor[T]): Unit
 
   def bytes(offset: Int, length: Int): ByteBuffer
 
@@ -59,7 +59,7 @@ abstract trait Parameter[T] extends Serializable {
 
   def parAdd(data: ByteBuffer): this.type
 
-  def copyFrom(offset: Int, src: Tensor[T], srcOffset: Int, length: Int): this.type
+  def compress(offset: Int, src: Tensor[T], srcOffset: Int, length: Int): this.type
 
-  def copyFrom(tensor: Tensor[T]): this.type
+  def compress(tensor: Tensor[T]): this.type
 }
