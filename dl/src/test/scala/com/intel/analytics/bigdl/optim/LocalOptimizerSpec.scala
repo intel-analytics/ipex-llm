@@ -100,14 +100,11 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
     val optimizer = new LocalOptimizer[Float](
-      DummyDataSet.crossEntropy,
       mlp.asInstanceOf[Module[Activities, Activities, Float]],
-      new ClassNLLCriterion[Float],
-      new SGD[Float](),
-      DummyDataSet.coreNumber,
-      T("learningRate" -> 20.0),
-      Trigger.maxEpoch(100)
-    )
+      DummyDataSet.crossEntropy,
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]],
+      DummyDataSet.coreNumber
+    ).setEndWhen(Trigger.maxEpoch(100)).setState(T("learningRate" -> 20.0))
 
     val result = optimizer.optimize()
     val test = result.forward(Tensor[Float](Storage[Float](
@@ -128,14 +125,11 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     mlp.add(new Sigmoid)
 
     val optimizer = new LocalOptimizer[Float](
-      DummyDataSet.mse,
       mlp.asInstanceOf[Module[Activities, Activities, Float]],
-      new MSECriterion[Float],
-      new SGD[Float](),
-      DummyDataSet.coreNumber,
-      T("learningRate" -> 20.0),
-      Trigger.maxEpoch(10)
-    )
+      DummyDataSet.mse,
+      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]],
+      DummyDataSet.coreNumber
+    ).setEndWhen(Trigger.maxEpoch(10)).setState(T("learningRate" -> 20.0))
 
     val result = optimizer.optimize()
     val test = result.forward(Tensor[Float](Storage[Float](
@@ -154,14 +148,11 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     mlp.add(new LogSoftMax)
 
     val optimizer = new LocalOptimizer[Float](
-      DummyDataSet.crossEntropy,
       mlp.asInstanceOf[Module[Activities, Activities, Float]],
-      new ClassNLLCriterion[Float],
-      new LBFGS[Float](),
-      DummyDataSet.coreNumber,
-      T(),
-      Trigger.maxEpoch(100)
-    )
+      DummyDataSet.crossEntropy,
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]],
+      DummyDataSet.coreNumber
+    ).setEndWhen(Trigger.maxEpoch(100)).setOptimMethod(new LBFGS[Float]())
 
     val result = optimizer.optimize()
     val test = result.forward(Tensor[Float](Storage[Float](
@@ -184,14 +175,11 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     weight.fill(0.125f)
 
     val optimizer = new LocalOptimizer[Float](
-      DummyDataSet.mse,
       mlp.asInstanceOf[Module[Activities, Activities, Float]],
-      new MSECriterion[Float],
-      new LBFGS[Float](),
-      DummyDataSet.coreNumber,
-      T(),
-      Trigger.maxEpoch(100)
-    )
+      DummyDataSet.mse,
+      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]],
+      DummyDataSet.coreNumber
+    ).setEndWhen(Trigger.maxEpoch(100)).setOptimMethod(new LBFGS[Float]())
 
     val result = optimizer.optimize()
     val test = result.forward(Tensor[Float](Storage[Float](

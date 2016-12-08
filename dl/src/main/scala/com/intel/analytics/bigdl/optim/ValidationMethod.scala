@@ -18,9 +18,10 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Activities
 
 trait ValidationMethod[T] extends Serializable {
-  def apply(output: Tensor[T], target: Tensor[T]): ValidationResult
+  def apply(output: Activities, target: Activities): ValidationResult
 
   protected def format(): String
 
@@ -80,21 +81,23 @@ class AccuracyResult(private var correct: Int, private var count: Int)
 }
 
 class Top1Accuracy[T] extends ValidationMethod[T] {
-  override def apply(output: Tensor[T], target: Tensor[T]): ValidationResult = {
+  override def apply(output: Activities, target: Activities): ValidationResult = {
     var correct = 0
     var count = 0
 
-    if (output.dim() == 2) {
-      output.max(2)._2.squeeze().map(target, (a, b) => {
+    val _output = output.asInstanceOf[Tensor[T]]
+    val _target = target.asInstanceOf[Tensor[T]]
+    if (_output.dim() == 2) {
+      _output.max(2)._2.squeeze().map(_target, (a, b) => {
         if (a == b) {
           correct += 1
         }
         a
       })
-      count += output.size(1)
-    } else if (output.dim == 1) {
-      require(target.size(1) == 1)
-      output.max(1)._2.map(target, (a, b) => {
+      count += _output.size(1)
+    } else if (_output.dim == 1) {
+      require(_target.size(1) == 1)
+      _output.max(1)._2.map(_target, (a, b) => {
         if (a == b) {
           correct += 1
         }
@@ -112,29 +115,31 @@ class Top1Accuracy[T] extends ValidationMethod[T] {
 }
 
 class Top5Accuracy[T] extends ValidationMethod[T] {
-  override def apply(output: Tensor[T], target: Tensor[T]): AccuracyResult = {
+  override def apply(output: Activities, target: Activities): AccuracyResult = {
+    val _output = output.asInstanceOf[Tensor[T]]
+    val _target = target.asInstanceOf[Tensor[T]]
     var correct = 0
     var count = 0
-    if (output.dim() == 2) {
-      val indices = output.topk(5, 2, false)._2
+    if (_output.dim() == 2) {
+      val indices = _output.topk(5, 2, false)._2
       var i = 1
-      while (i <= output.size(1)) {
-        if (indices.valueAt(i, 1) == target.valueAt(i)
-          || indices.valueAt(i, 2) == target.valueAt(i)
-          || indices.valueAt(i, 3) == target.valueAt(i)
-          || indices.valueAt(i, 4) == target.valueAt(i)
-          || indices.valueAt(i, 5) == target.valueAt(i)) {
+      while (i <= _output.size(1)) {
+        if (indices.valueAt(i, 1) == _target.valueAt(i)
+          || indices.valueAt(i, 2) == _target.valueAt(i)
+          || indices.valueAt(i, 3) == _target.valueAt(i)
+          || indices.valueAt(i, 4) == _target.valueAt(i)
+          || indices.valueAt(i, 5) == _target.valueAt(i)) {
           correct += 1
         }
         i += 1
       }
-      count += output.size(1)
-    } else if (output.dim == 1) {
-      require(target.size(1) == 1)
-      val indices = output.topk(5, 1, false)._2
-      if (indices.valueAt(1) == target.valueAt(1) || indices.valueAt(2) == target.valueAt(1)
-        || indices.valueAt(3) == target.valueAt(1) || indices.valueAt(4) == target.valueAt(1)
-        || indices.valueAt(5) == target.valueAt(1)) {
+      count += _output.size(1)
+    } else if (_output.dim == 1) {
+      require(_target.size(1) == 1)
+      val indices = _output.topk(5, 1, false)._2
+      if (indices.valueAt(1) == _target.valueAt(1) || indices.valueAt(2) == _target.valueAt(1)
+        || indices.valueAt(3) == _target.valueAt(1) || indices.valueAt(4) == _target.valueAt(1)
+        || indices.valueAt(5) == _target.valueAt(1)) {
         correct += 1
       }
       count += 1

@@ -140,9 +140,11 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "An Artificial Neural Network with MSE and LBFGS" should "be trained with good result" in {
-    val optimizer = new DistriOptimizer[Double](mseModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new MSECriterion,
-      new LBFGS, dataSet, Trigger.maxEpoch(5), nodeNumber, coreNumber)
+    val optimizer = new DistriOptimizer(
+      mseModule.asInstanceOf[Module[Activities, Activities, Double]],
+      dataSet,
+      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(5)).setOptimMethod(new LBFGS)
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -154,14 +156,16 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "be same for blas and dnn" in {
     val optimizerBLAS = new DistriOptimizer[Double](mseModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new MSECriterion,
-      new LBFGS, dataSet, Trigger.maxEpoch(5), nodeNumber, coreNumber)
+      Activities, Double]], dataSet,
+      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(5)).setOptimMethod(new LBFGS)
     val modelBLAS = optimizerBLAS.optimize()
 
     mseWeight.fill(0.125)
     val optimizerMKLDNN = new DistriOptimizer[Double](mseModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new MSECriterion,
-      new LBFGS, dataSet, Trigger.maxEpoch(5), nodeNumber, coreNumber)
+      Activities, Double]], dataSet,
+      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(5)).setOptimMethod(new LBFGS)
     val modelMKLDNN = optimizerMKLDNN.optimize()
 
     modelBLAS.getParameters()._1.map(modelMKLDNN.getParameters()._1, (a, b) => {
@@ -172,8 +176,9 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "be same with grad agg optimizer" in {
     val optimizer = new DistriOptimizer[Double](mseModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new MSECriterion,
-      new LBFGS, dataSet, Trigger.maxIteration(17), nodeNumber, coreNumber)
+      Activities, Double]], dataSet,
+      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(17)).setOptimMethod(new LBFGS)
     val pm = new OneReduceParameterManager[Double](mseWeight, dataSet.originRDD())
     optimizer.setParameterManager(pm)
     val test = optimizer.optimize().getParameters()._1.clone()
@@ -192,8 +197,9 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "An Artificial Neural Network with MSE and SGD" should "be trained with good result" in {
     val optimizer = new DistriOptimizer[Double](mseModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new MSECriterion,
-      new SGD, dataSet, Trigger.maxEpoch(5), nodeNumber, coreNumber, T("learningRate" -> 20.0))
+      Activities, Double]], dataSet,
+      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(5)).setState(T("learningRate" -> 20.0))
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -205,14 +211,16 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "be same for blas and dnn" in {
     val optimizerBLAS = new DistriOptimizer[Double](mseModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new MSECriterion,
-      new SGD, dataSet, Trigger.maxEpoch(2), nodeNumber, coreNumber, T("learningRate" -> 20.0))
+      Activities, Double]], dataSet,
+      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(2)).setState(T("learningRate" -> 20.0))
     val modelBLAS = optimizerBLAS.optimize()
 
     mseWeight.fill(0.125)
     val optimizerMKLDNN = new DistriOptimizer[Double](mseModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new MSECriterion,
-      new SGD, dataSet, Trigger.maxEpoch(2), nodeNumber, coreNumber, T("learningRate" -> 20.0))
+      Activities, Double]], dataSet,
+      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(2)).setState(T("learningRate" -> 20.0))
     val modelMKLDNN = optimizerMKLDNN.optimize()
 
     modelBLAS.getParameters()._1.map(modelMKLDNN.getParameters()._1, (a, b) => {
@@ -223,9 +231,9 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "be same with grad agg optimizer" in {
     val optimizer = new DistriOptimizer[Double](mseModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new MSECriterion,
-      new SGD, dataSet, Trigger.maxIteration(17), nodeNumber, coreNumber,
-      T("learningRate" -> 20.0))
+      Activities, Double]], dataSet,
+      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(17)).setState(T("learningRate" -> 20.0))
     val test = optimizer.optimize().getParameters()._1.clone()
 
     mseWeight.fill(0.125)
@@ -248,8 +256,9 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     "be trained with good result" in {
     plusOne = 1.0
     val optimizer = new DistriOptimizer[Double](crnModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new ClassNLLCriterion,
-      new LBFGS, dataSet, Trigger.maxEpoch(3), nodeNumber, coreNumber)
+      Activities, Double]], dataSet,
+      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(3)).setOptimMethod(new LBFGS)
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -262,14 +271,16 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   it should "be same for blas and dnn" in {
     plusOne = 1.0
     val optimizerBLAS = new DistriOptimizer[Double](crnModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new ClassNLLCriterion,
-      new LBFGS, dataSet, Trigger.maxEpoch(3), nodeNumber, coreNumber)
+      Activities, Double]], dataSet,
+      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(3)).setOptimMethod(new LBFGS)
     val modelBLAS = optimizerBLAS.optimize()
 
     crnWeight.fill(0.125)
     val optimizerMKLDNN = new DistriOptimizer[Double](crnModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new ClassNLLCriterion,
-      new LBFGS, dataSet, Trigger.maxEpoch(3), nodeNumber, coreNumber)
+      Activities, Double]], dataSet,
+      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(3)).setOptimMethod(new LBFGS)
     val modelMKLDNN = optimizerMKLDNN.optimize()
 
     modelBLAS.getParameters()._1.map(modelMKLDNN.getParameters()._1, (a, b) => {
@@ -282,8 +293,9 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   it should "be same with grad agg optimizer" in {
     plusOne = 1.0
     val optimizer = new DistriOptimizer[Double](crnModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new ClassNLLCriterion,
-      new LBFGS, dataSet, Trigger.maxIteration(17), nodeNumber, coreNumber)
+      Activities, Double]], dataSet,
+      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(17)).setOptimMethod(new LBFGS)
     val pm = new OneReduceParameterManager[Double](crnWeight, dataSet.originRDD())
     optimizer.setParameterManager(pm)
     val test = optimizer.optimize().getParameters()._1.clone()
@@ -304,9 +316,9 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     "be trained with good result" in {
     plusOne = 1.0
     val optimizer = new DistriOptimizer[Double](crnModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new ClassNLLCriterion,
-      new SGD, dataSet, Trigger.maxEpoch(1), nodeNumber, coreNumber,
-      T("learningRate" -> 20.0))
+      Activities, Double]], dataSet,
+      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(1)).setState(T("learningRate" -> 20.0))
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -319,14 +331,16 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   it should "be same for blas and dnn" in {
     plusOne = 1.0
     val optimizerBLAS = new DistriOptimizer[Double](crnModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new ClassNLLCriterion,
-      new SGD, dataSet, Trigger.maxEpoch(1), nodeNumber, coreNumber)
+      Activities, Double]], dataSet,
+      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+     nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(1)).setState(T("learningRate" -> 20.0))
     val modelBLAS = optimizerBLAS.optimize()
 
     crnWeight.fill(0.125)
     val optimizerMKLDNN = new DistriOptimizer[Double](crnModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new ClassNLLCriterion,
-      new SGD, dataSet, Trigger.maxEpoch(1), nodeNumber, coreNumber)
+      Activities, Double]], dataSet,
+      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(1)).setState(T("learningRate" -> 20.0))
     val modelMKLDNN = optimizerMKLDNN.optimize()
 
     modelBLAS.getParameters()._1.map(modelMKLDNN.getParameters()._1, (a, b) => {
@@ -338,8 +352,9 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   it should "be same with grad agg optimizer" in {
     plusOne = 1.0
     val optimizer = new DistriOptimizer[Double](crnModule.asInstanceOf[Module[Activities,
-      Activities, Double]], new ClassNLLCriterion,
-      new SGD, dataSet, Trigger.maxIteration(17), nodeNumber, coreNumber, T("learningRate" -> 20.0))
+      Activities, Double]], dataSet,
+      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(17)).setState(T("learningRate" -> 20.0))
     val test = optimizer.optimize().getParameters()._1.clone()
     crnWeight.fill(0.125)
     val pm2 = new OneReduceParameterManager[Double](crnWeight, dataSet2.partitions())

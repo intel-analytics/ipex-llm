@@ -17,20 +17,17 @@
 
 package com.intel.analytics.bigdl.optim
 
-import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
-
 import com.intel.analytics.bigdl.dataset.DistributedDataSet
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
 import com.intel.analytics.bigdl.nn.{Criterion, Module}
 import com.intel.analytics.bigdl.ps.{AllReduceParameterManager, ParameterManager}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
-import org.apache.spark.Logging
+import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect.ClassTag
 
 object DistriOptimizer {
@@ -54,7 +51,7 @@ object DistriOptimizer {
     localModels: Array[Module[Activities, Activities, T]],
     modelWeights: Array[Tensor[T]],
     modelGradients: Array[Tensor[T]],
-    localCriterions: Array[Criterion[Tensor[T], T]],
+    localCriterions: Array[Criterion[Activities, T]],
     localStates: Array[Table],
     buffer: Tensor[T]
   )
@@ -62,15 +59,13 @@ object DistriOptimizer {
 
 class DistriOptimizer[T: ClassTag](
   model: Module[Activities, Activities, T],
-  criterion: Criterion[Tensor[T], T],
-  optimMethod: OptimMethod[T],
   dataset: DistributedDataSet[(Tensor[T], Tensor[T])],
-  endWhen: Trigger,
+  criterion: Criterion[Activities, T],
   nodeNumber: Int,
-  coresPerNode: Int,
-  state: Table = T())
+  coresPerNode: Int)
   (implicit ev: TensorNumeric[T])
-  extends Optimizer[T](model, endWhen) {
+  extends Optimizer[T, RDD[(Tensor[T], Tensor[T])], RDD[(Tensor[T], Tensor[T])]](
+    model, dataset, criterion) {
 
   val metrics = new Metrics
 
@@ -225,7 +220,7 @@ class DistriOptimizer[T: ClassTag](
               localModel.training()
               val localCriterion = cached.localCriterions(i)
               val (input, target) = tensorBuffer(i)
-              val output = localModel.forward(input).asInstanceOf[Tensor[T]]
+              val output = localModel.forward(input)
               lossArray(i) = localEV.toType[Double](localCriterion.forward(output, target))
               val errors = localCriterion.backward(output, target)
               localModel.backward(input, errors)
@@ -336,8 +331,7 @@ class DistriOptimizer[T: ClassTag](
       return
     }
     val vMethods = validationMethods.get
-    val validateRDD = validationDataSet.get.asInstanceOf[DistributedDataSet[(Tensor[T], Tensor[T])]]
-      .data()
+    val validateRDD = validationDataSet.get.data()
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode

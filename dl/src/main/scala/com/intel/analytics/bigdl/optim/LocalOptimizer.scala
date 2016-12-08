@@ -17,28 +17,27 @@
 
 package com.intel.analytics.bigdl.optim
 
-import java.util.concurrent.{LinkedBlockingQueue, TimeUnit, ThreadPoolExecutor}
 
-import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{DataSet=>DataSource, LocalDataSet}
 import com.intel.analytics.bigdl.nn.{Criterion, Module}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 
+import scala.reflect.ClassTag
+
 object LocalOptimizer {
-  // Todo: Move this into engine
   var recordsArray: Array[Int] = null
 }
 
-class LocalOptimizer[T](
-  dataset: LocalDataSet[(Tensor[T], Tensor[T])],
+class LocalOptimizer[T : ClassTag](
   model: Module[Activities, Activities, T],
-  criterion: Criterion[Tensor[T], T],
-  optimMethod: OptimMethod[T],
-  coreNumber: Int,
-  state: Table,
-  endWhen: Trigger
-)(implicit ev : TensorNumeric[T]) extends Optimizer[T](model, endWhen) {
+  dataset: DataSource[Iterator[(Tensor[T], Tensor[T])]],
+  criterion: Criterion[Activities, T],
+  coreNumber: Int
+)(implicit ev : TensorNumeric[T])
+  extends Optimizer[T, Iterator[(Tensor[T], Tensor[T])], Iterator[(Tensor[T], Tensor[T])]](
+    model, dataset, criterion) {
 
   import LocalOptimizer._
 
