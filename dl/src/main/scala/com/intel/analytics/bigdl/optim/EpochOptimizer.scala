@@ -135,8 +135,9 @@ class GradAggEpochOptimizer[T: ClassTag](
         val driverEV = ev
         val optM = optm
         val configDriver = config
+        val _totalCount = partitionNum
         pm.sumAndUpdate(resultRDD, (weights, gradients, state) => {
-          gradients.div(driverEV.fromType[Int](stackCount.value))
+          gradients.div(driverEV.fromType[Int](_totalCount))
           optM.optimize(_ => (driverEV.fromType(lossSum.value / stackCount.value), gradients),
             weights, configDriver, state)
         })
