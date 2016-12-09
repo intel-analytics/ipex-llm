@@ -202,7 +202,7 @@ JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_poolCreat
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
  * Method:    poolForwardExecute
- * Signature: ([F[F[FJ)J
+ * Signature: ([F[F[FJ)V
  */
 JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_poolForwardExecute
   (JNIEnv *, jclass, jfloatArray, jfloatArray, jfloatArray, jlong);
@@ -210,10 +210,74 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_poolForwar
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
  * Method:    poolBackwardExecute
- * Signature: ([F[F[FJ)J
+ * Signature: ([F[F[FJ)V
  */
 JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_poolBackwardExecute
   (JNIEnv *, jclass, jfloatArray, jfloatArray, jfloatArray, jlong);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    linearCreateForwardBias
+ * Signature: (J[JJ)J
+ */
+JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_linearCreateForwardBias
+  (JNIEnv *, jclass, jlong, jlongArray, jlong);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    linearCreateBackData
+ * Signature: (J[JJ)J
+ */
+JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_linearCreateBackData
+  (JNIEnv *, jclass, jlong, jlongArray, jlong);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    linearCreateBackWeight
+ * Signature: (J[JJ)J
+ */
+JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_linearCreateBackWeight
+  (JNIEnv *, jclass, jlong, jlongArray, jlong);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    linearCreateBackBias
+ * Signature: (J[J)J
+ */
+JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_linearCreateBackBias
+  (JNIEnv *, jclass, jlong, jlongArray);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    linearForwardExecute
+ * Signature: ([F[F[F[FJ)J
+ */
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_linearForwardExecute
+  (JNIEnv *, jclass, jfloatArray, jfloatArray, jfloatArray, jfloatArray, jlong);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    linearBackDataExecute
+ * Signature: ([F[F[FJ)V
+ */
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_linearBackDataExecute
+  (JNIEnv *, jclass, jfloatArray, jfloatArray, jfloatArray, jlong);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    linearBackWeightExecute
+ * Signature: ([F[F[FJ)V
+ */
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_linearBackWeightExecute
+  (JNIEnv *, jclass, jfloatArray, jfloatArray, jfloatArray, jlong);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    linearBackBiasExecute
+ * Signature: ([F[FJ)V
+ */
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_linearBackBiasExecute
+  (JNIEnv *, jclass, jfloatArray, jfloatArray, jlong);
 
 #ifdef __cplusplus
 }

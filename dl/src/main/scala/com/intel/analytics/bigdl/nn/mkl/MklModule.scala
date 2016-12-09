@@ -26,11 +26,9 @@ import scala.reflect.ClassTag
 
 abstract class MklModule[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T])
     extends TensorModule[T] {
-  var forwardPrim = 0L
-  var backwardPrim = 0L
 
-  val forward = new MklPrimitive
-  val backward = new MklPrimitive
+//  val forward = new MklPrimitive
+//  val backward = new MklPrimitive
 
   trait Ref {
     var input = new MklTensor[T]()
@@ -42,6 +40,14 @@ abstract class MklModule[@specialized(Float, Double) T: ClassTag](implicit ev: T
   trait Primitive {
     var forward = 0L
     var backward = 0L
+  }
+
+  private[this] var _isInited: Boolean = false
+
+  def isInited: Boolean = _isInited
+
+  def isInited_=(value: Boolean): Unit = {
+    _isInited = value
   }
 
   implicit def bool2int(b: Boolean) = if (b) 1 else 0

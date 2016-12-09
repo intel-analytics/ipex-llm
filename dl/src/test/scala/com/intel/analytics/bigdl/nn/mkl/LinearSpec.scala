@@ -29,15 +29,15 @@ class LinearSpec  extends FlatSpec with Matchers {
     val inputN = 20
     val outputN = 10
 
-    val linear = new Linear[Double](inputN, outputN)
-    val blasLinear = new com.intel.analytics.bigdl.nn.Linear[Double](inputN, outputN)
+    val linear = new Linears[Float](inputN, outputN)
+    val blasLinear = new com.intel.analytics.bigdl.nn.Linear[Float](inputN, outputN)
 
-    val input = Tensor[Double](5, inputN).rand()
-    val gradOutput = Tensor[Double](5, outputN).rand()
+    val input = Tensor[Float](5, inputN).rand()
+    val gradOutput = Tensor[Float](5, outputN).rand()
 
     val seed = 100
     RandomGenerator.RNG.setSeed(seed)
-    linear.reset()
+    linear.convertToMklDnn(input)
     blasLinear.weight.copy(linear.weight)
     blasLinear.bias.copy(linear.bias)
 
