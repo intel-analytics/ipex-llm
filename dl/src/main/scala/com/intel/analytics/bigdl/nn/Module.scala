@@ -214,24 +214,24 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
     this
   }
 
-  /**
-   * Find a module by given a parameter offset
-   *
-   * @param paramOffset parameter offset in the (weight, grad) vector returned by the
-   *                    getParamter function
-   * @param indexes     ignore it
-   * @return module ref, offset(ignore), indexes from the current module
-   */
-  def findModel(
-    paramOffset: Int,
-    indexes: Array[Int] = Array()):
-  (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
-
-  def mapModules(f: Module[_ <: Activities, _ <: Activities, T] => Unit): Unit = {}
-
-  def findModules(name: String): ArrayBuffer[Module[_ <:Activities, _ <:Activities, T]]
-    = {new ArrayBuffer[Module[_ <:Activities, _ <:Activities, T]]()}
-
+//  /**
+//   * Find a module by given a parameter offset
+//   *
+//   * @param paramOffset parameter offset in the (weight, grad) vector returned by the
+//   *                    getParamter function
+//   * @param indexes     ignore it
+//   * @return module ref, offset(ignore), indexes from the current module
+//   */
+//  def findModel(
+//    paramOffset: Int,
+//    indexes: Array[Int] = Array()):
+//  (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
+//
+//  def mapModules(f: Module[_ <: Activities, _ <: Activities, T] => Unit): Unit = {}
+//
+//  def findModules(name: String): ArrayBuffer[Module[_ <:Activities, _ <:Activities, T]]
+//    = {new ArrayBuffer[Module[_ <:Activities, _ <:Activities, T]]()}
+//
 
   def evaluate(): this.type = {
     train = false

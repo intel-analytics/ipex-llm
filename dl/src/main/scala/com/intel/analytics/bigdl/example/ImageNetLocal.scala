@@ -96,9 +96,10 @@ object ImageNetLocal {
         val curModel = ResNet[Float](classNum, T("shortcutType" -> ShortcutType.B, "depth" -> modelDepth))
           .asInstanceOf[Module[Tensor[Float], Tensor[Float], Float]]
         ResNet.shareGradInput(curModel)
-        ResNet.convInit(curModel)
-        ResNet.bnInit(curModel)
-        ResNet.lnInit(curModel)
+        ResNet.modelInit(curModel)
+//        ResNet.convInit(curModel)
+//        ResNet.bnInit(curModel)
+//        ResNet.lnInit(curModel)
         curModel
       }
       case _ => throw new IllegalArgumentException

@@ -31,84 +31,80 @@ import scala.reflect.ClassTag
 object ResNet {
   def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[Tensor[T], Tensor[T], T])
                                                              (implicit ev: TensorNumeric[T]): Unit = {
-    //def sharingKey(m: Module[Tensor[T], Tensor[T], T]) = m.getClass.getName
     def sharingKey(m: Module[_ <: Activities, _ <: Activities, T]) = m.getClass.getName
 
     val cache = mutable.Map[Any, Storage[T]]()
     val packageName: String = model.getName().stripSuffix("Sequential")
-    model.mapModules(m => {
-      val moduleType = m.getClass.getName
-      if (m.gradInput.isInstanceOf[Tensor[T]] && !moduleType.equals(packageName + "ConcatTable")) {
-        val key = sharingKey(m)
-        if (!cache.contains(key)){
-          cache.put(key, Storage(Array(ev.fromType[Int](1))))
-        }
-        val tmpModel = m.asInstanceOf[Module[Tensor[T], Tensor[T], T]]
-        tmpModel.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
-      }
-    })
 
-    for ((m, i) <- model.asInstanceOf[Sequential[Tensor[T],Tensor[T],T]]
-      .findModules(packageName + "ConcatTable")
-      .zipWithIndex){
-      if (!cache.contains(i % 2)) {
-        cache.put(i % 2, Storage(Array(ev.fromType[Int](1))))
-      }
-      val tmpModel = m.asInstanceOf[ConcatTable[Tensor[T], T]]
-      tmpModel.gradInput = Tensor[T](cache.get(i % 2).get, 1, Array(0))
-    }
-
-    //cache.put("gradWeightMM", Storage(Array(ev.fromType[Int](1))))
     cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
     cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
-    for ((m, i) <- model.asInstanceOf[Sequential[Activities,Activities,T]]
-      .findModules(packageName + "SpatialConvolution")
-      .zipWithIndex){
-      val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
-      tmpModel.setSharedVar
-      //tmpModel.setGradWeightMM(Tensor[T](cache.get("gradWeightMM").get))
-      tmpModel.fInput = Tensor[T](cache.get("fInput").get)
-      tmpModel.fGradInput = Tensor[T](cache.get("fGradInput").get)
+
+    var index = 0
+    def matchModels(model: Module[_ <: Activities, _ <: Activities, T]): Unit = {
+      model match {
+        case container: Container[Activities, Activities, T]
+          => {
+          container.modules.foreach( m => {
+
+            if (m.gradInput.isInstanceOf[Tensor[T]] && !m.getClass.getName.equals(packageName + "ConcatTable")) {
+              val key = sharingKey(m)
+              if (!cache.contains(key)){
+                cache.put(key, Storage(Array(ev.fromType[Int](1))))
+              }
+              val tmpModel = m.asInstanceOf[Module[Tensor[T], Tensor[T], T]]
+              tmpModel.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
+            }
+            if (m.getClass.getName.equals(packageName + "ConcatTable")) {
+              if (!cache.contains(index % 2)) cache.put(index%2, Storage(Array(ev.fromType[Int](1))))
+              val tmpModel = m.asInstanceOf[ConcatTable[Tensor[T], T]]
+              tmpModel.gradInput = Tensor[T](cache.get(index % 2).get, 1, Array(0))
+              index = index + 1
+            }
+            matchModels(m)
+          })
+        }
+        case spatialConvolution: SpatialConvolution[T]
+          => {
+          spatialConvolution.setSharedVar
+          spatialConvolution.fInput = Tensor[T](cache.get("fInput").get)
+          spatialConvolution.fGradInput = Tensor[T](cache.get("fGradInput").get)
+        }
+        case _ => Unit
+      }
+    }
+
+    matchModels(model)
+  }
+
+  def findModules[@specialized(Float, Double) T: ClassTag](model: Module[_ <: Activities, _ <: Activities, T])
+                                                          (implicit ev: TensorNumeric[T]): Unit = {
+    model match {
+      case container: Container[Activities, Activities, T]
+      => container.modules.foreach(m => findModules(m))
+      case spatialConvolution: SpatialConvolution[T]
+      => {
+        val n: Float = spatialConvolution.kernelW * spatialConvolution.kernelW * spatialConvolution.nOutputPlane
+        spatialConvolution.weight.apply1(_ => ev.fromType[Float](RNG.normal(0, Math.sqrt(2.0f / n)).toFloat))
+        spatialConvolution.bias.apply1(_ => ev.fromType[Float](0))
+      }
+      case spatialBatchNormalization: SpatialBatchNormalization[T]
+      => {
+        spatialBatchNormalization.weight.apply1(_ => ev.fromType[Float](1.0f))
+        spatialBatchNormalization.bias.apply1(_ => ev.fromType[Float](0.0f))
+      }
+      case linear: Linear[T]
+      => {
+        linear.bias.apply1(_ => ev.fromType[Float](0))
+      }
+      case _ => Unit
     }
   }
 
-  def convInit[@specialized(Float, Double) T: ClassTag](model: Module[Tensor[T], Tensor[T], T])
-                                                       (implicit ev: TensorNumeric[T]): Unit = {
-    val packageName: String = model.getName().stripSuffix("Sequential")
-    val name = packageName + "SpatialConvolution"
-    for ((m, i) <- model
-      .findModules(name)
-      .zipWithIndex) {
-      val tmpModel = m.asInstanceOf[SpatialConvolution[T]]
-      val n: Float = tmpModel.kernelW * tmpModel.kernelH * tmpModel.nOutputPlane
-      tmpModel.weight.apply1(_ => ev.fromType[Float](RNG.normal(0, Math.sqrt(2.0f / n)).toFloat))
-      tmpModel.bias.apply1(_ => ev.fromType[Float](0))
-    }
+  def modelInit[@specialized(Float, Double) T: ClassTag](model: Module[_ <:Activities, _ <:Activities, T])
+                                                        (implicit ev: TensorNumeric[T]): Unit = {
+    findModules(model)
   }
 
-  def bnInit[@specialized(Float, Double) T: ClassTag](model: Module[Tensor[T], Tensor[T], T])
-                                                     (implicit ev: TensorNumeric[T]): Unit = {
-    val packageName: String = model.getName().stripSuffix("Sequential")
-    val name = packageName + "SpatialBatchNormalization"
-    for ((m, i) <- model
-      .findModules(name)
-      .zipWithIndex) {
-      val tmpModel = m.asInstanceOf[SpatialBatchNormalization[T]]
-      tmpModel.weight.apply1(_ => ev.fromType[Float](1.0f))
-      tmpModel.bias.apply1(_ => ev.fromType[Float](0.0f))
-    }
-  }
-  def lnInit[@specialized(Float, Double) T: ClassTag](model: Module[Tensor[T], Tensor[T], T])
-            (implicit ev: TensorNumeric[T]): Unit = {
-    val packageName: String = model.getName().stripSuffix("Sequential")
-    val name = packageName + "Linear"
-    for ((m, i) <- model
-      .findModules(name)
-      .zipWithIndex){
-      val tmpModel = m.asInstanceOf[Linear[T]]
-      tmpModel.bias.apply1(_ => ev.fromType[Float](0))
-    }
-  }
   var iChannels = 0
   def apply[T: ClassTag](classNum: Int, opt: Table)(implicit ev: TensorNumeric[T]): Module[Activities, Activities, T] = {
 

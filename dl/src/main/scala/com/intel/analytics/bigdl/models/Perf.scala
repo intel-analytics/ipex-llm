@@ -105,9 +105,10 @@ object Perf {
         val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
           .asInstanceOf[Module[Tensor[T], Tensor[T], T]]
         ResNet.shareGradInput(curModel)
-        ResNet.convInit(curModel)
-        ResNet.bnInit(curModel)
-        ResNet.lnInit(curModel)
+        ResNet.modelInit(curModel)
+//        ResNet.convInit(curModel)
+//        ResNet.bnInit(curModel)
+//        ResNet.lnInit(curModel)
         (curModel, Tensor[T](param.batchSize, 3, 224, 224))
       }
     }

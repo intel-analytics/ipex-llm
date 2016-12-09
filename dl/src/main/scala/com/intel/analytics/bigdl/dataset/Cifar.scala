@@ -111,9 +111,7 @@ object Cifar10Local {
 
       if (param.net.equals("resnet")) {
         println(s"model is ${param.net}, initializing the model")
-        ResNet.convInit(config.model)
-        ResNet.bnInit(config.model)
-        ResNet.lnInit(config.model)
+        ResNet.modelInit(config.model)
       }
       if (param.optnet) {
         println(s"model is ${param.net}, setting shared variable")

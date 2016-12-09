@@ -64,47 +64,47 @@ abstract class Container[A <: Activities : ClassTag,
   }
 
 
-  /**
-    * Find a module by given a parameter offset
-    *
-    * @param paramOffset parameter offset in the (weight, grad) vector returned by the
-    *                    getParamter function
-    * @param indexes     ignore it
-    * @return module ref, offset(ignore), indexes from the current module
-    */
-  override def findModel(
-                 paramOffset: Int,
-                 indexes: Array[Int] = Array()):
-  (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
-
-  override def mapModules(f: Module[_ <: Activities, _ <: Activities, T] => Unit): Unit = {
-    f(this)
-
-    if (modules != null) {
-      modules.foreach(_.mapModules(f))
-    }
-  }
-
-  override def findModules(name: String): ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]] = {
-    def matchName(module: Module[_ <: Activities, _ <: Activities, T]) =
-      module.getClass.getName.equals(name)
-
-    val nodes = new ArrayBuffer[Module[_ <:Activities, _ <:Activities, T]]()
-
-    if (matchName(this)) nodes.append(this)
-    if (modules != null) {
-      modules
-        .foreach(m => {
-          if (matchName(m)) nodes.append(m)
-          else if (m.isInstanceOf[Container[_ <: Activities, _ <: Activities, T]]) {
-            val tempNodes = m.findModules(name)
-            nodes ++= tempNodes
-          }
-      })
-    }
-
-    nodes
-  }
+//  /**
+//    * Find a module by given a parameter offset
+//    *
+//    * @param paramOffset parameter offset in the (weight, grad) vector returned by the
+//    *                    getParamter function
+//    * @param indexes     ignore it
+//    * @return module ref, offset(ignore), indexes from the current module
+//    */
+//  override def findModel(
+//                 paramOffset: Int,
+//                 indexes: Array[Int] = Array()):
+//  (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
+//
+//  override def mapModules(f: Module[_ <: Activities, _ <: Activities, T] => Unit): Unit = {
+//    f(this)
+//
+//    if (modules != null) {
+//      modules.foreach(_.mapModules(f))
+//    }
+//  }
+//
+//  override def findModules(name: String): ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]] = {
+//    def matchName(module: Module[_ <: Activities, _ <: Activities, T]) =
+//      module.getClass.getName.equals(name)
+//
+//    val nodes = new ArrayBuffer[Module[_ <:Activities, _ <:Activities, T]]()
+//
+//    if (matchName(this)) nodes.append(this)
+//    if (modules != null) {
+//      modules
+//        .foreach(m => {
+//          if (matchName(m)) nodes.append(m)
+//          else if (m.isInstanceOf[Container[_ <: Activities, _ <: Activities, T]]) {
+//            val tempNodes = m.findModules(name)
+//            nodes ++= tempNodes
+//          }
+//      })
+//    }
+//
+//    nodes
+//  }
 
 
   override def getTimes():
