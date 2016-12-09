@@ -125,4 +125,34 @@ public class MklDnnFloat {
                                                   float[] gradOutput,
                                                   float[] workspace,
                                                   long primitive);
+
+    // Linear
+    public native static long linearCreateForwardBias(long dimension,
+                                                      long[] inputSize,
+                                                      long outputChannel);
+    public native static long linearCreateBackData(long dimension,
+                                                   long[] inputSize,
+                                                   long outputChannel);
+    public native static long linearCreateBackWeight(long dimension,
+                                                     long[] inputSize,
+                                                     long outputChannel);
+    public native static long linearCreateBackBias(long dimension,
+                                                   long[] outputSize);
+
+    public native static void linearForwardExecute(float[] input,
+                                                   float[] weight,
+                                                   float[] bias,
+                                                   float[] output,
+                                                   long primitive);
+    public native static void linearBackDataExecute(float[] gradInput,
+                                                    float[] gradOutput,
+                                                    float[] weight,
+                                                    long primitive);
+    public native static void linearBackWeightExecute(float[] input,
+                                                      float[] gradOutput,
+                                                      float[] gradWeight,
+                                                      long primitive);
+    public native static void linearBackBiasExecute(float[] gradOutput,
+                                                    float[] gradBias,
+                                                    long primitive);
 }
