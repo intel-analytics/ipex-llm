@@ -4,6 +4,9 @@ package com.intel.analytics.bigdl.mkl;
  * MKL DNN Library Wrapper for JVM
  */
 public class MklDnnFloat {
+    static {
+        MKL.isMKLLoaded();
+    }
     public native static long layoutCreate(int dimension,
                                            long[] size,
                                            long[] strides);
@@ -91,4 +94,35 @@ public class MklDnnFloat {
     public native static void convolutionBackwardBiasExecute(float[] gradOutput,
                                                              float[] gradBias,
                                                              long primitive);
+
+    // ReLU
+    public native static long reluCreateForward(long layout, float nagtiveSlope);
+    public native static long reluCreateBackward(long layout1, long layout2, float nagtiveSlope);
+    public native static void reluForwardExecute(float[] input, float[] output, long primitive);
+    public native static void reluBackwardExecute(float[] input,
+                                                  float[] gradInput,
+                                                  float[] gradOutput,
+                                                  long primitive);
+
+    // Pooling
+    public native static long poolCreateForward(int algorithm,
+                                                long layout,
+                                                long[] kernelSize,
+                                                long[] stride,
+                                                int[] pad,
+                                                int borderType);
+    public native static long poolCreateBackward(int algorithm,
+                                                 long layout,
+                                                 long[] kernelSize,
+                                                 long[] stride,
+                                                 int[] pad,
+                                                 int borderType);
+    public native static void poolForwardExecute(float[] input,
+                                                 float[] output,
+                                                 float[] workspace,
+                                                 long primitive);
+    public native static void poolBackwardExecute(float[] gradInput,
+                                                  float[] gradOutput,
+                                                  float[] workspace,
+                                                  long primitive);
 }

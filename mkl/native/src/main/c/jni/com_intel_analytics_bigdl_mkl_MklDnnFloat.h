@@ -151,6 +151,70 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_convolutio
 JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_convolutionBackwardBiasExecute
   (JNIEnv *, jclass, jfloatArray, jfloatArray, jlong);
 
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    reluCreateForward
+ * Signature: (JF)J
+ */
+JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_reluCreateForward
+  (JNIEnv *, jclass, jlong, jfloat);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    reluCreateBackward
+ * Signature: (JJF)J
+ */
+JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_reluCreateBackward
+  (JNIEnv *, jclass, jlong, jlong, jfloat);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    reluForwardExecute
+ * Signature: ([F[FJ)V
+ */
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_reluForwardExecute
+  (JNIEnv *, jclass, jfloatArray, jfloatArray, jlong);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    reluBackwardExecute
+ * Signature: ([F[F[FJ)V
+ */
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_reluBackwardExecute
+  (JNIEnv *, jclass, jfloatArray, jfloatArray, jfloatArray, jlong);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    poolCreateForward
+ * Signature: (IJ[J[J[II)J
+ */
+JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_poolCreateForward
+  (JNIEnv *, jclass, jint, jlong, jlongArray, jlongArray, jintArray, jint);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    poolCreateBackward
+ * Signature: (IJ[J[J[II)J
+ */
+JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_poolCreateBackward
+  (JNIEnv *, jclass, jint, jlong, jlongArray, jlongArray, jintArray, jint);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    poolForwardExecute
+ * Signature: ([F[F[FJ)J
+ */
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_poolForwardExecute
+  (JNIEnv *, jclass, jfloatArray, jfloatArray, jfloatArray, jlong);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    poolBackwardExecute
+ * Signature: ([F[F[FJ)J
+ */
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_poolBackwardExecute
+  (JNIEnv *, jclass, jfloatArray, jfloatArray, jfloatArray, jlong);
+
 #ifdef __cplusplus
 }
 #endif

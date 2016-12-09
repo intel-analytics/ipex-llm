@@ -32,32 +32,6 @@ abstract class MklModule[@specialized(Float, Double) T: ClassTag](implicit ev: T
   val forward = new MklPrimitive
   val backward = new MklPrimitive
 
-  private[this] var _firstPassForward: Boolean = true
-
-  def firstPassForward: Boolean = _firstPassForward
-
-  def firstPassForward_=(value: Boolean): Unit = {
-    _firstPassForward = value
-  }
-
-  private[this] var _firstPassBackward: Boolean = true
-
-  def firstPassBackward: Boolean = _firstPassBackward
-
-  def firstPassBackward_=(value: Boolean): Unit = {
-    _firstPassBackward = value
-  }
-
-//  val inputSize = new Array[Long](4)
-//  val outputSize = new Array[Long](4)
-//  val inputStrides = new Array[Long](4)
-//  val outputStrides = new Array[Long](4)
-
-  var inputMkl = new MklTensor[T]()
-  var outputMkl = new MklTensor[T]()
-  var gradOutputMkl = new MklTensor[T]()
-  var gradInputMkl = new MklTensor[T]()
-
   trait Ref {
     var input = new MklTensor[T]()
     var output = new MklTensor[T]()

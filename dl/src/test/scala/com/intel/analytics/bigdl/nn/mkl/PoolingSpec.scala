@@ -142,13 +142,19 @@ class PoolingSpec extends FlatSpec with Matchers {
     TestCase(128, 832, 7, 7, 3, 3, 1, 1, 1, 1)
   )
 
+  val tmp = List(
+    TestCase(128, 64, 32, 32, 2, 2, 2, 2, 0, 0),
+    TestCase(128, 96, 55, 55, 3, 3, 2, 2, 0, 0),
+    TestCase(128, 1024, 7, 7, 3, 3, 1, 1, 1, 1)
+  )
+
   def getModel(kW: Int, kH: Int, dW: Int, dH: Int,
-               padW: Int, padH: Int, ver : String) : SpatialPooling[Float] = {
+               padW: Int, padH: Int, ver : String) : Pool[Float] = {
     ver match {
       case "MAX" =>
-        new SpatialMaxPooling[Float](kW, kH, dW, dH, padW, padH).ceil()
+        new MaxPooling[Float](kW, kH, dW, dH, padW, padH)
       case "AVG" =>
-        new SpatialAveragePooling[Float](kW, kH, dW, dH, padW, padH).ceil()
+        new AvgPooling[Float](kW, kH, dW, dH, padW, padH)
     }
   }
 
@@ -164,6 +170,7 @@ class PoolingSpec extends FlatSpec with Matchers {
     val input = Tools.getTensorFloat("input", Array(test.batchSize, test.channel,
                                                     test.width, test.height), pid)
 
+    model.convertToMklDnn(input)
     model.forward(input)
 
     val output = Tools.getTensorFloat("output", model.output.size(), pid)
@@ -179,7 +186,7 @@ class PoolingSpec extends FlatSpec with Matchers {
 
   }
 
-  for (test <- testCases) {
+  for (test <- tmp) {
     "A MaxPooling" should s"with parameters " +
                                   s"${test.batchSize}, ${test.channel}, ${test.height}" +
                                   ", " + s"${test.width}, ${test.kW}, ${test.kH}" +

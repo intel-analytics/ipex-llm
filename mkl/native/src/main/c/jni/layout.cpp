@@ -8,7 +8,7 @@
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
  * Method:    layoutCreate
- * Signature: (I[I[I)J
+ * Signature: (I[J[J)J
  */
 JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_layoutCreate
   (JNIEnv *env, jclass cls, jint dimension, jlongArray size, jlongArray strides)
