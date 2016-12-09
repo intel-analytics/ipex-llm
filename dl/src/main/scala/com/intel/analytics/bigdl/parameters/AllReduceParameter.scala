@@ -38,7 +38,7 @@ object AllReduceParameter {
 
   private val computePoolSize: Int = System.getProperty(
     "bigdl.Parameter.computePoolSize",
-    (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
+    (Runtime.getRuntime().availableProcessors() * 2).toString()).toInt
 
   private val maxClusterSize = System.getProperty(
     "bigdl.Parameter.maxClusterSize", "10000").toInt
@@ -51,13 +51,14 @@ object AllReduceParameter {
 }
 
 class AllReduceParameter[T: ClassTag]() extends Serializable {
+//class AllReduceParameter() extends Serializable {
   import AllReduceParameter._
 
   @transient lazy val parameterBuffer: CompressedTensor[T] = readParameterBuffer()
   @transient lazy val weights: Tensor[T] = readWeights()
   @transient lazy val gradients: Tensor[T] = readGradients()  
   @transient lazy val state = readState()
-    
+
   def readParameterBuffer(): CompressedTensor[T] = {
     new FP16SplitsCompressedTensor[T](tlength,
       16).asInstanceOf[CompressedTensor[T]]
@@ -94,10 +95,9 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
       case None =>
         throw new Exception("Please initialize AllReduceParameter first!!")
     }
-  }
+  }  
   
   def init(parameter: Tensor[T])(implicit ev: TensorNumeric[T]) = {
-//def init(parameter: Tensor[T]) = {
     val _classTag = classTag[T]    
       val pid = TaskContext.getPartitionId()    
       val start = pid * taskSize + math.min(pid, extraSize)
@@ -105,12 +105,12 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
 
 //    val _parameterBuffer = new FP16SplitsCompressedTensor[T](tlength,
 //      16).asInstanceOf[CompressedTensor[T]]
-    
+
       val _weights = Tensor[T](length)(_classTag, ev).copy(parameter.narrow(1,
         start + 1, length))
 
       val _gradients = Tensor[T](length)(_classTag, ev)
-      
+
     SparkEnv.get.blockManager.putSingle(SparkExtension.getLocalBlockId("weights0"),
       _weights, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
     SparkEnv.get.blockManager.putSingle(SparkExtension.getLocalBlockId("gradients0"),
@@ -121,7 +121,7 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
     SparkEnv.get.blockManager.putBytes(blockId,
       SerializerInstance.serialize(_weights).bytes(), StorageLevel.MEMORY_ONLY_SER)    
   }
-  
+
   def getWeightBlockId(pid : Int): TaskResultBlockId = {
     TaskResultBlockId(maxClusterSize + pid)
   }
@@ -166,7 +166,6 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
       }
     })
     syncPool.invokeAll(sgThreads.asJava)
-    params.foreach(param => require(param != null))
 
     val length = taskSize + (if (curPid < extraSize) 1 else 0)
     val innerTaskSize = length / computePoolSize
