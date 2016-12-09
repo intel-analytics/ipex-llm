@@ -50,22 +50,20 @@ object DropSlowModuleGradAggEpochOptimizer {
   private val logger = Logger.getLogger(getClass);
   private val maxThread = System.getProperty(
     "com.intel.analytics.bigdl.optim.BetterGradAggEpochOptimizer.maxThread",
-    (Runtime.getRuntime().availableProcessors() * 50 / 2).toString()).toInt
+    (Runtime.getRuntime().availableProcessors() * 50).toString()).toInt
 
   val pool = new ThreadPoolExecutor(maxThread, maxThread, 0L, TimeUnit.MILLISECONDS,
     new LinkedBlockingQueue[Runnable])
 
-  val context = new ExecutionContext {
-    val threadPool = pool
-
-    def execute(runnable: Runnable) {
-      threadPool.submit(runnable)
-    }
-
-    def reportFailure(t: Throwable) {}
-  }
-
-  var weightSyncTime = 0L
+//  val context = new ExecutionContext {
+//    val threadPool = pool
+//
+//    def execute(runnable: Runnable) {
+//      threadPool.submit(runnable)
+//    }
+//
+//    def reportFailure(t: Throwable) {}
+//  }
 }
 
 class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
@@ -79,15 +77,14 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
   (implicit ev: TensorNumeric[T])
   extends EpochOptimizer[T](module, criterion, optm, pm, dataSets, metrics, config) {
   import DropSlowModuleGradAggEpochOptimizer._
-
-  var ps = new AllReduceParameter[T]()
+  
   private def init() = {
-    val broadcast = dataSet.getSparkContext().broadcast((module, criterion))
+    val broadcast = dataSet.getSparkContext().broadcast((module, criterion, ev))    
     val _computeThresholdBatchsize = computeThresholdBatchsize
-    val _partitionNum = dataSets.getPartitionNum()
-    
+    val _partitionNum = dataSets.getPartitionNum()   
+    val _ps = new AllReduceParameter[T]()
     val models = dataSet.partitions().mapPartitions(i => {
-      val (broadcastModule, broadcastCriterion) = broadcast.value
+      val (broadcastModule, broadcastCriterion, broadcastEv) = broadcast.value
       
       val test = (0 until subModuleNumber).map { i =>
         val localModule = broadcastModule.cloneModule()
@@ -96,11 +93,13 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
         if(i == 0) CachedModel(localModule, localCriterion, weights, grads, T(),
           new Array[Long](subModuleNumber*_computeThresholdBatchsize))
         else CachedModel(localModule, localCriterion, weights, grads, T())}
-      AllReduceParameter.taskSize = broadcastModule.getParameters()._1.nElement() / _partitionNum
-      AllReduceParameter.extraSize = broadcastModule.getParameters()._1.nElement() % _partitionNum      
-      AllReduceParameter.tlength = broadcastModule.getParameters()._1.nElement()  
-      ps.init(broadcastModule.getParameters()._1)
-      require(ps.parameterBuffer != null)
+
+      val weights = broadcastModule.getParameters()._1
+      AllReduceParameter.taskSize = weights.nElement() / _partitionNum
+      AllReduceParameter.extraSize = weights.nElement() % _partitionNum
+      AllReduceParameter.tlength = weights.nElement()
+      _ps.init(weights)(broadcastEv)
+      
       Iterator(test.toArray)
     }).persist()
     models.setName("modelRDD")
@@ -126,8 +125,9 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
     var iteration = 0
     val idealSubModulesNum = _partitionNum * subModuleNumber    
     val _moduleTimeIgnoredNum = 200
-    val _computeThresholdBatchsize = 100
-    var _moduleTimeList: Array[Long] = null
+    val _computeThresholdBatchsize = computeThresholdBatchsize
+    var _moduleTimeList: Array[Long] = null    
+    val _ps = new AllReduceParameter[T]()
 
     for (i <- 1 to epochNum) {
       logger.info(s"[Epoch $i/$epochNum] Train start")
@@ -158,113 +158,118 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
         metrics.set("aggregate gradient time", 0.0, sc, _partitionNum)
         metrics.set("task1 time from worker", mutable.ArrayBuffer[Double](), sc)
         metrics.set("task2 time from worker", mutable.ArrayBuffer[Double](), sc)
-        metrics.set("worker sync weight average", 0.0, sc, _partitionNum)
-        metrics.set("sync weight for each node", mutable.ArrayBuffer[Double](), sc)
-        metrics.set("gradient sync average", 0.0, sc, _partitionNum)
-        metrics.set("update weights average", 0.0, sc, _partitionNum)
-        metrics.set("gradient sync for each node", mutable.ArrayBuffer[Double](), sc)
-        metrics.set("update weights average", 0.0, sc, _partitionNum)
+        metrics.set("get weights average", 0.0, sc, _partitionNum)
+        metrics.set("get weights for each node", mutable.ArrayBuffer[Double](), sc)
+        metrics.set("get gradients average", 0.0, sc, _partitionNum)        
+        metrics.set("get gradients for each node", mutable.ArrayBuffer[Double](), sc)        
         
-        val _metrics = metrics
-        val _classTag = classTag[T]
+        val _metrics = metrics        
         val start = System.nanoTime()
         val finishedModuleNum = dataSets.fetch().zipPartitions(models, multiThreadModels, true)(
           (data, modelIter, multiThreadModuleIter) => {
-            val workStart = System.nanoTime()
-            var tmp = System.nanoTime()
-            val localMTCaches = multiThreadModuleIter.next()
-            val localCaches = modelIter.next()
-            val curPid = TaskContext.getPartitionId()
-            
-            val syWStart = System.nanoTime()
-            val getWeightsTasks = ps.getWeights(localCaches.weight, _partitionNum)
-
-            val initGTasks = (0 until subModuleNumber).map(i => pool.submit(new Runnable {
-             override def run() = {
-               localMTCaches(i).model.training()
-               localMTCaches(i).model.zeroGradParameters()
-             }
-          }))
-            getWeightsTasks.foreach(_.get())
-            _metrics.add("worker sync weight average", System.nanoTime()-syWStart)
-            _metrics.add("sync weight for each node", System.nanoTime()-syWStart)
-            
-            val weightCopyTasks = (0 until subModuleNumber).map(i => pool.submit(new Runnable {
-              override def run(): Unit = {
-                localMTCaches(i).weight.copy(localCaches.weight)  
-              }
-            }))
-            
-            val localEV = broadcastEV.value
-            tmp = System.nanoTime()
+          val workStart = System.nanoTime()
+          val prepareStartTime = System.nanoTime()
+          val localMTCaches = multiThreadModuleIter.next()
+          val localCaches = modelIter.next()
+          val curPid = TaskContext.getPartitionId()
             val tensorBuffer = new Array[(Tensor[T], Tensor[T])](subModuleNumber)
             
-              val batch = data.next()
-              var b = 0
-              while(b < subModuleNumber) {
-                tensorBuffer(b) = batch.next()
-                b += 1
-              }
-            _metrics.add("construct tensor time", System.nanoTime() - tmp)
-            initGTasks.foreach(_.get())
-            weightCopyTasks.foreach(_.get())
-            _metrics.add("prepare time", System.nanoTime() - tmp)
+          val syWStart = System.nanoTime()
+          val getWeightsTasks = _ps.getWeights(localCaches.weight, _partitionNum)
 
-            // ======================Start train models===================================
-            tmp = System.nanoTime()
-            val moduleTimeList = localMTCaches(0).moduleTimeList
-            val pre = (iteration%_computeThresholdBatchsize)*subModuleNumber
-            val computeThreads = (0 until subModuleNumber).map(i => new Callable[Int] {
-              def call(): Int = {
-                try {
-                  val start = System.nanoTime()
-                  val localModule = localMTCaches(i).model
-                  val localCriterion = localMTCaches(i).criterion
-                  val (inputFloat, targetFloat) = tensorBuffer(i)
-                  val input = inputFloat.asInstanceOf[Tensor[T]]
-                  val target = targetFloat.asInstanceOf[Tensor[T]]
-                  val output = localModule.forward(input)
-                  lossArray(i) = localEV.toType[Double](localCriterion.forward(output, target))
-                  val errors = localCriterion.backward(output, target)
-                  localModule.backward(input, errors)
-                  recordsArray(i) = target.size(1)
-                  moduleTimeList(i + pre) = System.nanoTime() - start + weightSyncTime
-                  i
-                }
+          val initGTasks = (0 until subModuleNumber).map(i => AllReduceParameter.computePool.submit(new Runnable {
+           override def run() = {
+             localMTCaches(i).model.training()
+             localMTCaches(i).model.zeroGradParameters()
+           }
+        }))
+            
+            val constructorTensorTask = AllReduceParameter.computePool.submit(new Runnable {
+              override def run(): Unit = {
+                val batch = data.next()
+                var b = 0
+                while(b < subModuleNumber) {
+                  tensorBuffer(b) = batch.next()
+                  b += 1
+                }    
+              }
+            })
+            
+          getWeightsTasks.foreach(_.get())
+          val weightSyncTime = System.nanoTime()-syWStart
+          _metrics.add("get weights average", weightSyncTime)
+          _metrics.add("get weights for each node", weightSyncTime)
+
+          val weightCopyTasks = (0 until subModuleNumber).map(i => AllReduceParameter.computePool.submit(new Runnable {
+            override def run(): Unit = {
+              localMTCaches(i).weight.copy(localCaches.weight)  
+            }
+          }))
+
+          val localEV = broadcastEV.value
+          
+          initGTasks.foreach(_.get())          
+            constructorTensorTask.get()
+            weightCopyTasks.foreach(_.get())
+          _metrics.add("prepare time", System.nanoTime() - prepareStartTime)
+
+//======================Start train models===================================
+          val trainStartTime = System.nanoTime()
+          val moduleTimeList = localMTCaches(0).moduleTimeList
+          val pre = (iteration%_computeThresholdBatchsize)*subModuleNumber
+          val computeThreads = (0 until subModuleNumber).map(i => new Callable[Int] {
+            def call(): Int = {
+              try {
+                val start = System.nanoTime()
+                val localModule = localMTCaches(i).model
+                val localCriterion = localMTCaches(i).criterion
+                val (inputFloat, targetFloat) = tensorBuffer(i)
+                val input = inputFloat.asInstanceOf[Tensor[T]]
+                val target = targetFloat.asInstanceOf[Tensor[T]]
+                val output = localModule.forward(input)
+                lossArray(i) = localEV.toType[Double](localCriterion.forward(output, target))
+                val errors = localCriterion.backward(output, target)
+                localModule.backward(input, errors)
+                recordsArray(i) = target.size(1)
+                moduleTimeList(i + pre) = System.nanoTime() - start + weightSyncTime
+                i
+              }
 //                catch {
 //                  case e: Exception => e.printStackTrace()
 //                    -1
 //                }
-              }
-            })
-
-            if(iteration > _moduleTimeIgnoredNum+_computeThresholdBatchsize-1) {
-              timeout = ((threshold-weightSyncTime)/1e6).toLong
             }
-            val threads = pool.invokeAll(computeThreads.asJava, timeout, TimeUnit.MILLISECONDS)
+          })
 
-            val computingTime = System.nanoTime() - tmp
-            _metrics.add("computing time average", computingTime)
-            _metrics.add("computing time for each node", computingTime)
+          if(iteration > _moduleTimeIgnoredNum+_computeThresholdBatchsize-1) {
+            timeout = ((threshold-weightSyncTime)/1e6).toLong
+          }
+          val threads = pool.invokeAll(computeThreads.asJava, timeout, TimeUnit.MILLISECONDS)
 
-            val finishedThreads = threads.asScala.filter(!_.isCancelled)
-              .map(_.get()).filter(_ != -1)            
+          val computingTime = System.nanoTime() - trainStartTime
+          _metrics.add("computing time average", computingTime)
+          _metrics.add("computing time for each node", computingTime)
 
-            stackCount += finishedThreads.size
-            finishedThreads.foreach{index =>
-              lossSum += lossArray(index)
-              recordsNum += recordsArray(index)
-            }
+          val finishedThreads = threads.asScala.filter(!_.isCancelled)
+            .map(_.get()).filter(_ != -1)            
 
-            tmp = System.nanoTime()
-            val grads = localMTCaches.map(_.gradient)
-            val gradLength = grads(0).nElement()
-            val taskSize = gradLength / subModuleNumber
-            val extraTask = gradLength % subModuleNumber
+          stackCount += finishedThreads.size
 
-            if(finishedThreads.size>0) {
-              localCaches.gradient.copy(grads(finishedThreads(0)))
-              (0 until subModuleNumber).map(tid => Future {
+          finishedThreads.foreach{index =>
+            lossSum += lossArray(index)
+            recordsNum += recordsArray(index)
+          }
+
+          val aggregateGStartTime = System.nanoTime()
+          val grads = localMTCaches.map(_.gradient)
+          val gradLength = grads(0).nElement()
+          val taskSize = gradLength / subModuleNumber
+          val extraTask = gradLength % subModuleNumber
+
+          if(finishedThreads.size>0) {
+            localCaches.gradient.copy(grads(finishedThreads(0)))
+            val aggregateGTasks = (0 until subModuleNumber).map(tid => new Callable[Int] {
+              override def call(): Int = {
                 val offset = tid * taskSize + math.min(tid, extraTask)
                 val length = taskSize + (if (tid < extraTask) 1 else 0)
 
@@ -272,49 +277,47 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
                   localCaches.gradient.narrow(1, offset + 1, length)
                     .add(grads(index).narrow(1, offset + 1, length))
                 }
-              }(context)).foreach(Await.result(_, Duration.Inf))              
-            } else {
-              localCaches.model.zeroGradParameters()
-            }
-            _metrics.add("aggregate gradient time", System.nanoTime() - tmp)
-            require(localCaches.gradient != null)
-            require(ps.parameterBuffer != null)
-            ps.putGradients(localCaches.gradient,
-              curPid, _partitionNum)
-            _metrics.add("task1 time from worker", System.nanoTime() - workStart)
-            Iterator(finishedThreads.size)
-          }).reduce(_ + _)
-        metrics.set("task1 time from driver", System.nanoTime() - start)
-        
+                tid
+              }
+            })
+            AllReduceParameter.computePool.invokeAll(aggregateGTasks.asJava)
+          } else {
+            localCaches.model.zeroGradParameters()
+          }
+          _metrics.add("aggregate gradient time", System.nanoTime() - aggregateGStartTime)            
+          _ps.putGradients(localCaches.gradient, curPid, _partitionNum)
+          _metrics.add("task1 time from worker", System.nanoTime() - workStart)
+          Iterator(finishedThreads.size)            
+        }).reduce(_ + _)
+        metrics.set("task1 time from driver", System.nanoTime() - start)        
+
         if(finishedModuleNum >= idealSubModulesNum * 0.5) {          
           val finishedModuleNumGType = ev.fromType[Int](finishedModuleNum)
           val value = ev.fromType(lossSum.value / stackCount.value)
           val _optm = optm
           val _config = config
-          
+
           val task2Start = System.nanoTime()
           models.mapPartitions (modelIter => {
-            val task2WorkerStart = System.nanoTime()
-            val localModel = modelIter.next
+            val task2WorkerStart = System.nanoTime()            
             val curPid = TaskContext.getPartitionId()
-            var tmp = System.nanoTime()
+            val tmp = System.nanoTime()
             val params = new Array[CompressedTensor[T]](_partitionNum)
-            val getGradients = ps.getGradients(params, curPid, _partitionNum)
+            val getGradients = _ps.getGradients(params, curPid, _partitionNum)
             getGradients.foreach(_.get())
-            _metrics.add("gradient sync average", System.nanoTime()-tmp)
-            _metrics.add("gradient sync for each node", System.nanoTime()-tmp) 
-              
-            params.head.deCompress(ps.gradients)
+            _metrics.add("get gradients average", System.nanoTime()-tmp)
+            _metrics.add("get gradients for each node", System.nanoTime()-tmp)
+            
+            params.head.deCompress(_ps.gradients)
+            _ps.gradients.div(finishedModuleNumGType)
+            _optm.optimize(_ => (value, _ps.gradients), _ps.weights, _config, _ps.state)           
 
-            tmp = System.nanoTime()
-            _optm.optimize(_ => (value, ps.gradients),
-              ps.weights, _config, ps.state)
-            ps.putWeights(curPid)
+            _ps.putWeights(curPid)
             _metrics.add("task2 time from worker", System.nanoTime()-task2WorkerStart)
             Iterator.empty
           }).count()
           metrics.set("task2 time from driver", System.nanoTime()-task2Start)
-          
+
           accumulateCount += recordsNum.value
           val end = System.nanoTime()
           logger.info(s"[Epoch $i/$epochNum $accumulateCount/${dataSets.total()}] Train ${
@@ -324,6 +327,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
               lossSum.value / stackCount.value
             }. ")
           logger.info("\n" + metrics.summary())
+          logger.info("Dropped modules: " + (idealSubModulesNum-finishedModuleNum))
 
           // compute threshold
           if(iteration%_computeThresholdBatchsize==_computeThresholdBatchsize-1 &&
