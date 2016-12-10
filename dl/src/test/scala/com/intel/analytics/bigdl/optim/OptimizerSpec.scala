@@ -150,7 +150,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
         saveState(state)
         model
       }
-    }
+    }.setState(state)
     dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 
@@ -167,7 +167,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
         saveState(state, ".post")
         model
       }
-    }
+    }.setState(state)
     dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 
