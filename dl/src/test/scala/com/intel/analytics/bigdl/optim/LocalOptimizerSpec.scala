@@ -24,17 +24,15 @@ import com.intel.analytics.bigdl.utils.{Activities, RandomGenerator, T}
 import org.scalatest.{FlatSpec, Matchers}
 
 object DummyDataSet extends LocalDataSet[(Tensor[Float], Tensor[Float])] {
-  var i = 0
-  val max = 10
+  val totalSize = 10
   var isCrossEntropy = true
-  val coreNumber = 4
 
-  def crossEntropy: LocalDataSet[(Tensor[Float], Tensor[Float])] = {
+  def CREDataSet: LocalDataSet[(Tensor[Float], Tensor[Float])] = {
     isCrossEntropy = true
     DummyDataSet
   }
 
-  def mse: LocalDataSet[(Tensor[Float], Tensor[Float])] = {
+  def MSEDataSet: LocalDataSet[(Tensor[Float], Tensor[Float])] = {
     isCrossEntropy = false
     DummyDataSet
   }
@@ -77,34 +75,56 @@ object DummyDataSet extends LocalDataSet[(Tensor[Float], Tensor[Float])] {
     size = Array(4)
   )
 
-  override def size(): Long = max
+  override def size(): Long = totalSize
 
   override def shuffle(): Unit = {}
 
-  val iter = new Iterator[(Tensor[Float], Tensor[Float])] {
-    override def hasNext: Boolean = true
+  override def data(): Iterator[(Tensor[Float], Tensor[Float])] = {
+    new Iterator[(Tensor[Float], Tensor[Float])] {
+      var i = 0
 
-    override def next(): (Tensor[Float], Tensor[Float]) = {
-      i += 1
-      (feature, if (isCrossEntropy) labelCrossEntropy else labelMSE)
+      override def hasNext: Boolean = true
+
+      override def next(): (Tensor[Float], Tensor[Float]) = {
+        i += 1
+        (feature, if (isCrossEntropy) labelCrossEntropy else labelMSE)
+      }
     }
   }
+}
 
-  override def data(): Iterator[(Tensor[Float], Tensor[Float])] = iter
+object Model {
+  def CREModel[T] : Module[Activities, Activities, T] = {
+    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
+    mlp.add(new Linear(4, 2))
+    mlp.add(new LogSoftMax)
+    mlp.asInstanceOf[Module[Activities, Activities, T]]
+  }
+
+  def MSEModel[T] : Module[Activities, Activities, T] = {
+    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
+    mlp.add(new Linear(4, 2))
+    mlp.add(new Sigmoid)
+    mlp.add(new Linear(2, 1))
+    mlp.add(new Sigmoid)
+    mlp.asInstanceOf[Module[Activities, Activities, T]]
+  }
 }
 
 class LocalOptimizerSpec extends FlatSpec with Matchers {
-  "Local Optimizer" should "train model well with CrossEntropy and SGD" in {
+  import Model._
+  import DummyDataSet._
+
+  val coreNumber = 4
+
+  "Train model with CrossEntropy and SGD" should "be good" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
-    mlp.add(new Linear(4, 2))
-    mlp.add(new LogSoftMax)
     val optimizer = new LocalOptimizer[Float](
-      mlp.asInstanceOf[Module[Activities, Activities, Float]],
-      DummyDataSet.crossEntropy,
+      CREModel,
+      CREDataSet,
       new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]],
-      DummyDataSet.coreNumber
-    ).setEndWhen(Trigger.maxEpoch(100)).setState(T("learningRate" -> 20.0))
+      coreNumber
+    )
 
     val result = optimizer.optimize()
     val test = result.forward(Tensor[Float](Storage[Float](
@@ -116,20 +136,39 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     test.toTensor[Float]().max(1)._2.valueAt(1, 2) should be(2.0)
   }
 
-  it should "train model well with MSE and SGD" in {
+  it should "be same compare to ref optimizer" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
-    mlp.add(new Linear(4, 2))
-    mlp.add(new Sigmoid)
-    mlp.add(new Linear(2, 1))
-    mlp.add(new Sigmoid)
+    val optimizer = new LocalOptimizer[Float](
+      CREModel,
+      CREDataSet,
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]],
+      coreNumber
+    )
+    val model = optimizer.optimize()
+    val weight = model.getParameters()._1
+
+    RandomGenerator.RNG.setSeed(1000)
+    val optimizerRef = new RefOptimizer[Float](
+      CREModel,
+      CREDataSet,
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+    )
+    val modelRef = optimizerRef.optimize()
+    val weightRef = modelRef.getParameters()._1
+
+    weight should be(weightRef)
+
+  }
+
+  "Train model with MSE and SGD" should "be good" in {
+    RandomGenerator.RNG.setSeed(1000)
 
     val optimizer = new LocalOptimizer[Float](
-      mlp.asInstanceOf[Module[Activities, Activities, Float]],
-      DummyDataSet.mse,
+      MSEModel,
+      MSEDataSet,
       new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]],
-      DummyDataSet.coreNumber
-    ).setEndWhen(Trigger.maxEpoch(10)).setState(T("learningRate" -> 20.0))
+      coreNumber
+    ).setState(T("learningRate" -> 1.0))
 
     val result = optimizer.optimize()
     val test = result.forward(Tensor[Float](Storage[Float](
@@ -141,18 +180,37 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     test.toTensor[Float]().valueAt(2, 1) > 0.5 should be(true)
   }
 
-  it should "train model with CrossEntropy and LBFGS" in {
+  it should "be same compare to ref optimizer" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
-    mlp.add(new Linear(4, 2))
-    mlp.add(new LogSoftMax)
+    val optimizer = new LocalOptimizer[Float](
+      MSEModel,
+      MSEDataSet,
+      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]],
+      coreNumber
+    ).setState(T("learningRate" -> 1.0)).setEndWhen(Trigger.maxIteration(100))
+    val model = optimizer.optimize()
+    val weight = model.getParameters()._1
+
+    RandomGenerator.RNG.setSeed(1000)
+    val optimizerRef = new RefOptimizer[Float](
+      MSEModel,
+      MSEDataSet,
+      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+    ).setState(T("learningRate" -> 1.0)).setEndWhen(Trigger.maxIteration(100))
+    val modelRef = optimizerRef.optimize()
+    val weightRef = modelRef.getParameters()._1
+    weight should be(weightRef)
+  }
+
+  "Train model with CrossEntropy and LBFGS" should "be good" in {
+    RandomGenerator.RNG.setSeed(1000)
 
     val optimizer = new LocalOptimizer[Float](
-      mlp.asInstanceOf[Module[Activities, Activities, Float]],
-      DummyDataSet.crossEntropy,
+      CREModel,
+      CREDataSet,
       new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]],
-      DummyDataSet.coreNumber
-    ).setEndWhen(Trigger.maxEpoch(100)).setOptimMethod(new LBFGS[Float]())
+      coreNumber
+    ).setOptimMethod(new LBFGS[Float]())
 
     val result = optimizer.optimize()
     val test = result.forward(Tensor[Float](Storage[Float](
@@ -164,22 +222,36 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     test.toTensor[Float]().max(1)._2.valueAt(1, 2) should be(2.0)
   }
 
-  it should "train model with MSE and LBFGS" in {
+  it should "be same compare to ref optimizer" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
-    mlp.add(new Linear(4, 2))
-    mlp.add(new Sigmoid)
-    mlp.add(new Linear(2, 1))
-    mlp.add(new Sigmoid)
-    val (weight, grad) = mlp.getParameters()
-    weight.fill(0.125f)
-
     val optimizer = new LocalOptimizer[Float](
-      mlp.asInstanceOf[Module[Activities, Activities, Float]],
-      DummyDataSet.mse,
+      CREModel,
+      CREDataSet,
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]],
+      coreNumber
+    ).setOptimMethod(new LBFGS[Float]())
+    val model = optimizer.optimize()
+    val weight = model.getParameters()._1
+
+    RandomGenerator.RNG.setSeed(1000)
+    val optimizerRef = new RefOptimizer[Float](
+      CREModel,
+      CREDataSet,
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+    ).setOptimMethod(new LBFGS[Float]())
+    val modelRef = optimizerRef.optimize()
+    val weightRef = modelRef.getParameters()._1
+    weight should be(weightRef)
+  }
+
+  "Train model with MSE and LBFGS" should "be good" in {
+    RandomGenerator.RNG.setSeed(10)
+    val optimizer = new LocalOptimizer[Float](
+      MSEModel,
+      MSEDataSet,
       new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]],
-      DummyDataSet.coreNumber
-    ).setEndWhen(Trigger.maxEpoch(100)).setOptimMethod(new LBFGS[Float]())
+      coreNumber
+    ).setOptimMethod(new LBFGS[Float]())
 
     val result = optimizer.optimize()
     val test = result.forward(Tensor[Float](Storage[Float](
@@ -189,5 +261,27 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
       )), storageOffset = 1, size = Array(2, 4)))
     test.toTensor[Float]().valueAt(1, 1) < 0.5 should be(true)
     test.toTensor[Float]().valueAt(2, 1) > 0.5 should be(true)
+  }
+
+  it should "be same compare to ref optimizer" in {
+    RandomGenerator.RNG.setSeed(10)
+    val optimizer = new LocalOptimizer[Float](
+      MSEModel,
+      MSEDataSet,
+      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]],
+      coreNumber
+    ).setOptimMethod(new LBFGS[Float]())
+    val model = optimizer.optimize()
+    val weight = model.getParameters()._1
+
+    RandomGenerator.RNG.setSeed(10)
+    val optimizerRef = new RefOptimizer[Float](
+      MSEModel,
+      MSEDataSet,
+      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+    ).setOptimMethod(new LBFGS[Float]())
+    val modelRef = optimizerRef.optimize()
+    val weightRef = modelRef.getParameters()._1
+    weight should be(weightRef)
   }
 }

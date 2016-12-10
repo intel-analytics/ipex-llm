@@ -18,6 +18,25 @@
         <scoverage.aggregate>true</scoverage.aggregate>
     </properties>
 
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <spark-scope>provided</spark-scope>
+            </properties>
+        </profile>
+        <profile>
+            <id>standalone</id>
+            <properties>
+                <spark-scope>compile</spark-scope>
+            </properties>
+        </profile>
+    </profiles>
+
     <dependencies>
         <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
@@ -28,7 +47,7 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>2.7.1</version>
-            <scope>provided</scope>
+            <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -45,13 +64,13 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>
             <version>1.5.1</version>
-            <scope>provided</scope>
+            <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-mllib_2.10</artifactId>
             <version>1.5.1</version>
-            <scope>provided</scope>
+            <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.scalanlp</groupId>
@@ -201,14 +220,4 @@
             </plugin>
         </plugins>
     </reporting>
-
-
-    <profiles>
-        <profile>
-            <id>dist</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-        </profile>
-    </profiles>
 </project>

@@ -20,16 +20,29 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{DataSet=>DataSource, LocalDataSet}
 import com.intel.analytics.bigdl.nn.{Criterion, Module}
+import com.intel.analytics.bigdl.optim.BetterGradAggEpochOptimizer._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
+import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag
 
 object LocalOptimizer {
-  var recordsArray: Array[Int] = null
+  val logger =  Logger.getLogger(getClass)
 }
 
+/**
+ * Optimize a model on a single machine
+ *
+ * @param model
+ * @param dataset
+ * @param criterion
+ * @param coreNumber
+ * @param ev$1
+ * @param ev
+ * @tparam T
+ */
 class LocalOptimizer[T : ClassTag](
   model: Module[Activities, Activities, T],
   dataset: DataSource[Iterator[(Tensor[T], Tensor[T])]],
@@ -38,29 +51,32 @@ class LocalOptimizer[T : ClassTag](
 )(implicit ev : TensorNumeric[T])
   extends Optimizer[T, Iterator[(Tensor[T], Tensor[T])], Iterator[(Tensor[T], Tensor[T])]](
     model, dataset, criterion) {
-
   import LocalOptimizer._
-
-  val (weights, grad) = model.getParameters()
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
     case MklDnn => 1
   }
 
+  private val (weight, grad) = model.getParameters()
+  private val gradLength = grad.nElement()
+  private val syncGradTaskSize = gradLength / subModelNumber
+  private val syncGradExtraTask = gradLength % subModelNumber
+  private val syncGradParallelNum =
+    if (syncGradTaskSize == 0) syncGradExtraTask else subModelNumber
+
   private val workingModels = (1 to subModelNumber).map(_ => model.cloneModule()).toArray
 
   private val workingModelWAndG = workingModels.map(_.getParameters())
 
-  workingModelWAndG.foreach(_._1.storage().set(weights.storage()))
+  workingModelWAndG.foreach(_._1.storage().set(weight.storage()))
 
-  private val workingCriterions =
+  private val workingCriterion =
     (1 to subModelNumber).map(_ => criterion.cloneCriterion()).toArray
 
   override def optimize(): Module[Activities, Activities, T] = {
     var wallClockTime = 0L
     var count = 0
-
     optimMethod.clearHistory(state)
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
@@ -73,7 +89,6 @@ class LocalOptimizer[T : ClassTag](
       val batch = iter.next()
       var b = 0
       require(batch._1.size(1) == batch._2.size(1))
-      // require(batch._1.size(1) % subModelNumber == 0)
       val stackSize = batch._1.size(1) / subModelNumber
       val extraSize = batch._1.size(1) % subModelNumber
       val parallelism = if(stackSize == 0) extraSize else subModelNumber
@@ -85,41 +100,30 @@ class LocalOptimizer[T : ClassTag](
           batch._2.narrow(1, offset + 1, length))
         b += 1
       }
-
       val dataFetchTime = System.nanoTime()
 
-      if (recordsArray == null || recordsArray.length < subModelNumber) {
-        recordsArray = new Array[Int](subModelNumber)
-      }
-
-      val loss = Engine.invokeAndWait(
+      val lossSum = Engine.invokeAndWait(
         (0 until parallelism).map(i =>
           () => {
             val localModel = workingModels(i)
             localModel.zeroGradParameters()
             localModel.training()
-            val localCriterion = workingCriterions(i)
+            val localCriterion = workingCriterion(i)
             val (input, target) = tensorBuffer(i)
             val output = localModel.forward(input).asInstanceOf[Tensor[T]]
             val _loss = ev.toType[Double](localCriterion.forward(output, target))
             val errors = localCriterion.backward(output, target)
             localModel.backward(input, errors)
-            recordsArray(i) = target.size(1)
             _loss
           })
       ).sum
 
       // copy multi-model gradient to the buffer
-      val gradLength = grad.nElement()
-      val taskSize = gradLength / subModelNumber
-      val extraTask = gradLength % subModelNumber
-      val parallelNum = if (taskSize == 0) extraTask else subModelNumber
-
       Engine.invokeAndWait(
-        (0 until parallelNum).map(tid =>
+        (0 until syncGradParallelNum).map(tid =>
           () => {
-            val offset = tid * taskSize + math.min(tid, extraTask)
-            val length = taskSize + (if (tid < extraTask) 1 else 0)
+            val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
+            val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
             var i = 0
             while (i < parallelism) {
               if (i == 0) {
@@ -133,17 +137,20 @@ class LocalOptimizer[T : ClassTag](
             }
           })
       )
+      val loss = lossSum / parallelism
+      grad.div(ev.fromType(parallelism))
 
-      optimMethod.optimize(_ => (ev.fromType(loss), grad), weights, state)
+      optimMethod.optimize(_ => (ev.fromType(loss), grad), weight, state)
       val end = System.nanoTime()
       wallClockTime += end - start
       count += batch._1.size(1)
-      println(s"[Epoch ${state[Int]("epoch")} $count/${dataset.size()}][Iteration ${
-        state[Int]("neval")}][Wall Clock ${wallClockTime / 1e9
-      }s] loss is $loss, iteration time is ${(end - start) / 1e9}s data " +
-        s"fetch time is " +
-        s"${(dataFetchTime - start) / 1e9}s, train time ${(end - dataFetchTime) / 1e9}s." +
-        s" Throughput is ${batch._1.size(1).toDouble / (end - start) * 1e9} img / second")
+      val head =
+        header(state[Int]("epoch"), count, dataset.size(), state[Int]("neval"), wallClockTime)
+      logger.info(s"$head " +
+        s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
+        s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
+        s"train time ${(end - dataFetchTime) / 1e9}s. " +
+        s"Throughput is ${batch._1.size(1).toDouble / (end - start) * 1e9} img / second")
       state("neval") = state[Int]("neval") + 1
 
       if (count >= dataset.size()) {
@@ -168,7 +175,7 @@ class LocalOptimizer[T : ClassTag](
     val trigger = cacheTrigger.get
     val path = cachePath.get
     if (trigger(state) && cachePath.isDefined) {
-      println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to path")
+      logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to path")
       saveModel(this.model, s".${state[Int]("neval")}")
       saveState(state, s".${state[Int]("neval")}")
     }
@@ -184,7 +191,7 @@ class LocalOptimizer[T : ClassTag](
     }
     val vMethods = validationMethods.get
     val dataIter = validationDataSet.get.asInstanceOf[LocalDataSet[(Tensor[T], Tensor[T])]].data()
-    println(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
+    logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
 
     workingModels.foreach(_.evaluate())
 
@@ -213,14 +220,14 @@ class LocalOptimizer[T : ClassTag](
         }
       })
       count += batch._1.size(1)
-      println(s"[Validation] $count/${validationDataSet.get.size()}")
+      logger.info(s"[Validation] $count/${validationDataSet.get.size()}")
       result
     }).reduce((left, right) => {
       left.zip(right).map { case (l, r) =>
         l + r
       }
     }).zip(vMethods).foreach(r => {
-      println(s"${r._2} is ${r._1}")
+      logger.info(s"${r._2} is ${r._1}")
     })
   }
 }

@@ -58,7 +58,7 @@ object Engine{
   }
 
   private val maxPoolSize: Int =
-    System.getProperty("com.intel.analytics.bigdl.utils.Engine.maxPoolSize", "140").toInt
+    System.getProperty("com.intel.analytics.bigdl.utils.Engine.maxPoolSize", "1").toInt
 
   private val queuePointer = new AtomicInteger(0)
   private val maxQueueSize: Int =
