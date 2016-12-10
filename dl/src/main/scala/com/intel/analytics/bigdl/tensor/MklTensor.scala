@@ -52,27 +52,47 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
   var nDimension: Int = 0
 
   /**
-    *
-    * @param other
-    * @return current mkl tensor
-    */
-  override def set(other: Tensor[T]): Tensor[T] = {
+   * If other is not a MklTensor, then we set usr storage to other.storage.
+   * Otherwise create an internal layout and conversion primitive
+   * between other.mklStorage and this.mklStorage.
+   *
+   * If it needs not to conversion between internal and current mkl storage,
+   * it will create a storage (need more memory) depends on in-place or
+   * out-of-place, which is useful for mkl.ReLU.
+   *
+   * @param other
+   * @param inplace if it's true, it will not create a new storage and copy
+   * @return current mkl tensor
+   */
+  def set(other: Tensor[T], inplace: Boolean): Tensor[T] = {
     if (other.isMklTensor()) {
+      val otherTensor = other.asInstanceOf[MklTensor[T]]
       val currLayout = this.layoutMkl
       val otherLayout = other.asInstanceOf[MklTensor[T]].layoutMkl
       val isSame = MklDnnFloat.layoutCompare(currLayout, otherLayout)
 
       if (isSame != 1 && internalToMkl == 0) { // TODO internalToMkl primitive only set once
         internalToMkl_=(createOne(otherLayout, currLayout, isSame, internalToMkl))
-        interStorage_=(other.asInstanceOf[MklTensor[T]].mklStorage())
-      } else {
-        mklStorage_=(other.asInstanceOf[MklTensor[T]].mklStorage())
       }
+
+      // should not call mklStorage set method anyway for the logic consistency
+      val newStorage = if (inplace) {
+        otherTensor.mklStorage()
+      } else {
+        // out-of-place exists performance issue
+        Storage[T]().resize(otherTensor.mklStorage().size).copy(otherTensor.mklStorage())
+      }
+
+      interStorage_=(newStorage)
     } else {
       usrStorage_=(other.storage())
       usrStorageOffset_=(other.storageOffset())
     }
     this
+  }
+
+  override def set(other: Tensor[T]): Tensor[T] = {
+    this.set(other, true)
   }
 
   def createUsrLayout(dimension: Int, size: Array[Long], strides: Array[Long]): Unit = {
@@ -100,7 +120,7 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
     mklStorage().resize(MklDnnFloat.layoutGetMemorySize(layoutMkl) / MklDataSize.FLOAT)
     // TODO we should replace the println to standard log
     println(s"resize mkl storage " +
-      s"${MklDnnFloat.layoutGetMemorySize(layoutMkl) / MklDataSize.FLOAT} bytes")
+      s"${MklDnnFloat.layoutGetMemorySize(layoutMkl) / MklDataSize.FLOAT} floats")
   }
 
   /**
@@ -124,7 +144,7 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
           }
 
           val conversion = MklDnnFloat.conversionCreate(src, dst)
-          require(conversion != 0, "create mkl dnn conversion (mkl -> usr) failed.")
+          require(conversion != 0, "create mkl dnn conversion (mkl <-> usr) failed.")
           conversion
         case _ =>
           throw new UnsupportedOperationException(s"Only Float supported")
@@ -146,8 +166,8 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
     }
 
     // if usrToMkl or mklToUsr has been created, we should delete it first
-    usrToMkl_=(createOne(layoutUsr, layoutMkl, usrSameMkl, usrToMkl))
     mklToUsr_=(createOne(layoutMkl, layoutUsr, usrSameMkl, mklToUsr))
+    usrToMkl_=(createOne(layoutUsr, layoutMkl, usrSameMkl, usrToMkl))
   }
 
   def createConversion(layout: MklLayout,
@@ -205,24 +225,28 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
     this.interStorage
   }
 
-  def backToUsr(usr: Tensor[T]): Unit = {
+  def backToUsr(usr: Storage[T], offset: Int): Unit = {
     // resize the storage here
-    usr.resizeAs(this)
+    // TODO it assumes the usr storage will be the size of all elements
+    val usrSize = size.foldLeft(1)(_ * _)
+    if (usr.size != usrSize) {
+      usr.resize(usrSize)
+    }
 
     if (mklToUsr != 0) {
       MklDnnFloat.conversionExecuteToUsr(
-        usr.storage().array().asInstanceOf[Array[Float]],
-        usr.storageOffset() - 1,
+        usr.array().asInstanceOf[Array[Float]],
+        offset - 1,
         mklStorage().array().asInstanceOf[Array[Float]],
         mklToUsr)
     } else {
-      usr.storage().set(mklStorage())
+      usr.set(mklStorage())
     }
   }
 
-  override def storageOffset(): Int = 1
+  override def storageOffset(): Int = _usrStorageOffset
 
-  override def dim(): Int = returnInt()
+  override def dim(): Int = nDimension
 
   override def nElement(): Int = {
     if (this.nDimension == 0) {
@@ -316,12 +340,18 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
 
   def interStorage: Storage[T] = _interStorage
   def interStorage_=(value: Storage[T]): Unit = {
-    _interStorage = value
+    if (_interStorage.size != value.size) {
+      _interStorage.resize(value.size)
+    }
+    _interStorage.set(value)
   }
 
   def usrStorage: Storage[T] = _usrStorage
   def usrStorage_=(value: Storage[T]): Unit = {
-    _usrStorage = value
+    if (_usrStorage.size != value.size) {
+      _usrStorage.resize(value.size)
+    }
+    _usrStorage.set(value)
   }
 
   def usrStorageOffset: Int = _usrStorageOffset
@@ -331,7 +361,10 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
 
   def mklStorage(): Storage[T] = _mklStorage
   def mklStorage_=(value: Storage[T]): Unit = {
-    _mklStorage = value
+    if (_mklStorage.size != value.size) {
+      _mklStorage.resize(value.size)
+    }
+    _mklStorage.set(value)
   }
 
   /**
@@ -339,7 +372,7 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
    * @return storage
    */
   def storage: Storage[T] = {
-    backToUsr(this)
+    backToUsr(this.usrStorage, this.usrStorageOffset)
     _usrStorage
   }
   def storage_=(value: Storage[T]): Unit = {

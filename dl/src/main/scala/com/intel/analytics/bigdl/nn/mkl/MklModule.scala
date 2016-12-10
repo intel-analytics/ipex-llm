@@ -20,6 +20,8 @@ package com.intel.analytics.bigdl.nn.mkl
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.MklTensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Activities
+import com.intel.analytics.bigdl.nn.ModuleType._
 
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
@@ -43,11 +45,40 @@ abstract class MklModule[@specialized(Float, Double) T: ClassTag](implicit ev: T
   }
 
   private[this] var _isInited: Boolean = false
+  private[this] var _nextModuleType: ModuleType = BLAS
+  private[this] var _prevModuleType: ModuleType = BLAS
+
+  override def convertToMklDnn(prevModule: Option[Module[Activities, Activities, T]] = None)
+    : (ModuleType, Module[Activities, Activities, T]) = {
+    prevModule match {
+      case Some(x) => prevModuleType_=(x.moduleType())
+      case _ =>
+    }
+
+    (DNN, this.asInstanceOf[Module[Activities, Activities, T]])
+  }
 
   def isInited: Boolean = _isInited
-
   def isInited_=(value: Boolean): Unit = {
     _isInited = value
+  }
+
+  override def moduleType(): ModuleType = DNN
+
+  override def nextModuleType: ModuleType = _nextModuleType
+  override def nextModuleType_=(value: ModuleType): Unit = {
+    value match {
+      case DNN => _nextModuleType = DNN
+      case _ =>
+    }
+  }
+
+  override def prevModuleType: ModuleType = _prevModuleType
+  override def prevModuleType_=(value: ModuleType): Unit = {
+    value match {
+      case DNN => _prevModuleType = DNN
+      case _ =>
+    }
   }
 
   implicit def bool2int(b: Boolean) = if (b) 1 else 0

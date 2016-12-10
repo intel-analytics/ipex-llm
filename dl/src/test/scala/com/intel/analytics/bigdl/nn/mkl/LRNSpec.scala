@@ -101,7 +101,7 @@ class LRNSpec extends FlatSpec with Matchers {
     "A SpatialCrossLRN" should s"with parameters " +
                                   s"${test.batchSize}, ${test.channel}, ${test.height}, ${test.width}" +
                                   ", " + s"${test.size}, ${test.alpha}, ${test.beta}, ${test.k}" in {
-      val model = new SpatialCrossMapLRN[Float](test.size, test.alpha, test.beta, test.k)
+      val model = new LRN[Float](test.size, test.alpha, test.beta, test.k)
 
       val cmd = (cmd1, test.batchSize, test.channel, test.height, test.width,
         test.size, test.alpha, test.beta, test.k).productIterator.mkString(" ")
