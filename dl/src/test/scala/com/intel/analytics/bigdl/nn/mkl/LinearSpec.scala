@@ -37,7 +37,6 @@ class LinearSpec  extends FlatSpec with Matchers {
 
     val seed = 100
     RandomGenerator.RNG.setSeed(seed)
-    linear.convertToMklDnn(input)
     blasLinear.weight.copy(linear.weight)
     blasLinear.bias.copy(linear.bias)
 

@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.ModuleType._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Activities
 
@@ -164,6 +165,28 @@ class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: Clas
       modules(modules.length - 1).getOutputPtr()
     } else { 0L }
   }
+
+  override def convertToMklDnn(prevModule: Option[Module[Activities, Activities, T]] = None)
+    : (ModuleType, Module[Activities, Activities, T]) = {
+    val (head, tail) = if (modules.length > 0) {
+      var prev: Module[Activities, Activities, T] = prevModule.getOrElse(null)
+
+      val (first, module) = modules(0).convertToMklDnn(prevModule)
+      prev = module
+
+      for (i <- 1 until modules.length) {
+        val (typo, module) = modules(i).convertToMklDnn(Option(prev))
+        prev.nextModuleType_=(typo)
+        prev = module
+      }
+
+      // at last we will get the last TensorModule/MklModule in Sequentail
+      (first, prev)
+    } else {
+      // if there is no module in Sequential, the head and tail module type is BLAS defaultly.
+      (BLAS, this)
+    }
+
+    (head, tail.asInstanceOf[Module[Activities, Activities, T]])
+  }
 }
-
-

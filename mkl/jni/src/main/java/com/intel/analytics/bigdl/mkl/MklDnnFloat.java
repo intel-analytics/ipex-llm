@@ -155,4 +155,26 @@ public class MklDnnFloat {
     public native static void linearBackBiasExecute(float[] gradOutput,
                                                     float[] gradBias,
                                                     long primitive);
+
+    // LRN
+    public native static long lrnCreateForward(long layout,
+                                               long size,
+                                               float alpha,
+                                               float beta,
+                                               float k);
+    public native static long lrnCreateBackward(long layout1,
+                                                long layout2,
+                                                long size,
+                                                float alpha,
+                                                float beta,
+                                                float k);
+    public native static void lrnForwardExecute(float[] input,
+                                                float[] output,
+                                                float[] workspace,
+                                                long primitive);
+    public native static void lrnBackwardExecute(float[] input,
+                                                 float[] gradInput,
+                                                 float[] gradOutput,
+                                                 float[] workspace,
+                                                 long primitive);
 }

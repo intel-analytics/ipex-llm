@@ -2,6 +2,7 @@
 #include <mkl_dnn_types.h>
 #include <mkl_service.h>
 
+#include "cpu_info.hpp"
 #include "com_intel_analytics_bigdl_mkl_MklDnnFloat.h"
 #include "debug.h"
 
@@ -107,6 +108,9 @@ void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_poolForwardExecute
  jfloatArray workspace,
  jlong primitive)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnPrimitive_t jPrimitive = (dnnPrimitive_t)primitive;
   dnnError_t status         = E_UNIMPLEMENTED;
 
@@ -142,6 +146,9 @@ void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_poolBackwardExecute
  jfloatArray workspace,
  jlong primitive)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnPrimitive_t jPrimitive = (dnnPrimitive_t)primitive;
   dnnError_t status         = E_UNIMPLEMENTED;
 

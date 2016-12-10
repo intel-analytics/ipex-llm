@@ -115,6 +115,7 @@ object Perf {
       case "random" => input.rand()
     }
     println(model)
+    model.convertToMklDnn()
     val criterion = new ClassNLLCriterion[T]()
     val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
 

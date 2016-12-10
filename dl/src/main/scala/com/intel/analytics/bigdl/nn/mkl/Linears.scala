@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn.mkl
 
+import com.intel.analytics.bigdl.nn.ModuleType._
 import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.tensor.{MklTensor, Tensor}
@@ -49,11 +50,10 @@ class Linears[@specialized(Float, Double) T: ClassTag](
   val refs = new LinearRef
   val primitive = new LinearPrimitive
 
-  val weight = Tensor[T]()
-  val bias = Tensor[T]()
-
-  val gradWeight = Tensor()
-  val gradBias = Tensor()
+  val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
+  val gradWeight = Tensor[T](outputSize, inputSize)
+  val bias: Tensor[T] = Tensor[T](outputSize)
+  val gradBias = Tensor[T](outputSize)
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
@@ -61,7 +61,6 @@ class Linears[@specialized(Float, Double) T: ClassTag](
   }
 
   override def reset(): Unit = {
-    require(this.isInited == true, s"Please convert first.")
     initMethod match {
       case Default =>
         val stdv = 1.0 / math.sqrt(weight.size(2))
@@ -109,20 +108,16 @@ class Linears[@specialized(Float, Double) T: ClassTag](
     refs.input.resizeAs(input)
     refs.gradInput.resizeAs(input)
 
-    bias.resize(biasLayout.size.map(_.toInt), biasLayout.strides.reverse.map(_.toInt))
-    weight
-      .resize(weightLayout.size.reverse.map(_.toInt), weightLayout.strides.reverse.map(_.toInt))
-    gradBias.resizeAs(bias)
-    gradWeight.resizeAs(weight)
-
-    refs.weight.resizeAs(weight)
-    refs.bias.resizeAs(bias)
-    refs.gradBias.resizeAs(bias)
-    refs.gradWeight.resizeAs(weight)
-
     refs.output.resize(outputLayout.size.reverse.map(_.toInt),
       outputLayout.strides.reverse.map(_.toInt))
     refs.gradOutput.resizeAs(refs.output)
+
+    this.output.resizeAs(refs.output)
+    this.gradInput.resizeAs(refs.input)
+
+
+    for (i <- List(refs.weight, refs.gradWeight)) i.resizeAs(weight)
+    for (i <- List(refs.bias, refs.gradBias)) i.resizeAs(bias)
 
     initForward(inputLayout, outputLayout, weightLayout, biasLayout, outputSize)
     initBackwardData(inputLayout, outputLayout, weightLayout, biasLayout, outputSize)
@@ -130,7 +125,6 @@ class Linears[@specialized(Float, Double) T: ClassTag](
     initBackwardBias(outputLayout, biasLayout)
 
     isInited_=(true)
-    reset()
   }
 
   private[this] def initForward(inputLayout: MklLayout,
@@ -207,11 +201,10 @@ class Linears[@specialized(Float, Double) T: ClassTag](
       ResourceType.dnnResourceDiffBias)
   }
 
-  override def convertToMklDnn(input: Tensor[T]): Unit = {
-    initLayerAttributes(input)
-  }
-
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    if (!isInited) {
+      initLayerAttributes(input)
+    }
     refs.input.set(input)
     refs.weight.set(weight)
     refs.bias.set(bias)
@@ -229,10 +222,10 @@ class Linears[@specialized(Float, Double) T: ClassTag](
         throw new UnsupportedOperationException(s"Only Float supported")
     }
 
-    if (this.getNextPtr() != 0) {
+    if (this.nextModuleType() == DNN) {
       this.output = refs.output
     } else {
-      refs.output.backToUsr(output)
+      refs.output.backToUsr(output.storage(), output.storageOffset())
     }
 
     this.output
@@ -250,10 +243,10 @@ class Linears[@specialized(Float, Double) T: ClassTag](
           primitive.backward)
     }
 
-    if (this.getPrevPtr() != 0) {
+    if (this.prevModuleType() == DNN) {
       this.gradInput = this.refs.gradInput
     } else {
-      refs.gradInput.backToUsr(this.gradInput)
+      refs.gradInput.backToUsr(this.gradInput.storage(), this.gradInput.storageOffset())
     }
 
     this.gradInput
@@ -280,8 +273,8 @@ class Linears[@specialized(Float, Double) T: ClassTag](
         )
     }
 
-    refs.gradWeight.backToUsr(gradWeight)
-    refs.gradBias.backToUsr(gradBias)
+    refs.gradWeight.backToUsr(gradWeight.storage(), gradWeight.storageOffset())
+    refs.gradBias.backToUsr(gradBias.storage(), gradBias.storageOffset())
 
   }
 

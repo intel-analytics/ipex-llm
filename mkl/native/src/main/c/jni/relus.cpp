@@ -3,6 +3,7 @@
 #include <mkl_service.h>
 
 #include "com_intel_analytics_bigdl_mkl_MklDnnFloat.h"
+#include "cpu_info.hpp"
 #include "debug.h"
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
@@ -64,6 +65,9 @@ JNIEXPORT
  jfloatArray output,
  jlong primitive)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnPrimitive_t jPrimitive = (dnnPrimitive_t)primitive;
   dnnError_t status         = E_UNIMPLEMENTED;
 
@@ -96,6 +100,9 @@ JNIEXPORT
  jfloatArray gradOutput,
  jlong primitive)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnPrimitive_t jPrimitive = (dnnPrimitive_t)primitive;
   dnnError_t status         = E_UNIMPLEMENTED;
   void *resources[dnnResourceNumber];

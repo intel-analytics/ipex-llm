@@ -17,8 +17,8 @@
 
 package com.intel.analytics.bigdl.nn.mkl
 
-import com.intel.analytics.bigdl.mkl.{MKL, MklDnnFloat}
-import com.intel.analytics.bigdl.nn.{Module, TensorModule}
+import com.intel.analytics.bigdl.nn.ModuleType
+import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.tensor.{MklTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -35,7 +35,7 @@ class ReLUS[@specialized(Float, Double) T: ClassTag](ip: Boolean = false)(
   val primitive = new ReLUPrimitive
 
   private[this] def initLayerAttributes(input: Tensor[T]): Unit = {
-    val dimension = 4
+    val dimension = input.dim()
     // input and output layout
     val ioLayout = new MklLayout(dimension, Array(
       input.size(input.dim()), // width
@@ -69,22 +69,26 @@ class ReLUS[@specialized(Float, Double) T: ClassTag](ip: Boolean = false)(
         throw new UnsupportedOperationException(s"Only Float supported")
     }
 
-    for (i <- List(refs.input, refs.gradInput, refs.output, refs.gradOutput)) {
-      i.resizeAs(input)
+    // the size of all below are same
+    for (tensor <- List(refs.input, refs.gradInput, refs.output, refs.gradOutput,
+      this.output, this.gradInput)) {
+      tensor.resizeAs(input)
     }
 
     refs.input.createConversion(ioLayout, primitive.forward, ResourceType.dnnResourceSrc)
     refs.output.createConversion(ioLayout, primitive.forward, ResourceType.dnnResourceDst)
-    refs.gradInput.createConversion(ioLayout, primitive.backward, ResourceType.dnnResourceDiffSrc)
-    refs.gradOutput.createConversion(ioLayout, primitive.backward, ResourceType.dnnResourceDiffDst)
-  }
+    refs.gradInput.createConversion(ioLayout, primitive.forward, ResourceType.dnnResourceSrc)
+    refs.gradOutput.createConversion(ioLayout, primitive.forward, ResourceType.dnnResourceDst)
 
-  override def convertToMklDnn(input: Tensor[T]): Unit = {
-    initLayerAttributes(input)
+    isInited_=(true)
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    refs.input.set(input)
+    if (!isInited) {
+      initLayerAttributes(input)
+    }
+    refs.input.set(input, ip)
+//    refs.output.mklStorage.fill(ev.fromType(0), 1, refs.output.mklStorage().size)
 
     ev.getType() match {
       case "Float" => MklDnnFloat.reluForwardExecute(
@@ -96,10 +100,10 @@ class ReLUS[@specialized(Float, Double) T: ClassTag](ip: Boolean = false)(
         throw new UnsupportedOperationException(s"Only Float supported")
     }
 
-    if (this.getNextPtr() != 0) {
+    if (this.nextModuleType() == ModuleType.DNN) {
       this.output = refs.output
     } else {
-      refs.output.backToUsr(this.output)
+      refs.output.backToUsr(this.output.storage(), this.output.storageOffset())
     }
 
     this.output
@@ -107,21 +111,21 @@ class ReLUS[@specialized(Float, Double) T: ClassTag](ip: Boolean = false)(
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     refs.gradOutput.set(gradOutput)
-    refs.input.set(input)
+    refs.input.set(input, ip)
 
     ev.getType() match {
       case "Float" => MklDnnFloat.reluBackwardExecute(
         refs.input.getConvertedStorage().array().asInstanceOf[Array[Float]],
         refs.gradInput.mklStorage.array().asInstanceOf[Array[Float]],
-        refs.gradOutput.getConvertedStorage().asInstanceOf[Array[Float]],
+        refs.gradOutput.getConvertedStorage().array().asInstanceOf[Array[Float]],
         primitive.backward
       )
     }
 
-    if (this.getPrevPtr() != 0) {
+    if (this.prevModuleType() == ModuleType.DNN) {
       this.gradInput = refs.gradInput
     } else {
-      refs.gradInput.backToUsr(this.gradInput)
+      refs.gradInput.backToUsr(this.gradInput.storage(), this.gradInput.storageOffset())
     }
 
     this.gradInput

@@ -17,7 +17,8 @@
 
 package com.intel.analytics.bigdl.nn.mkl
 
-import com.intel.analytics.bigdl.mkl.{MKL, MklDnnFloat}
+import com.intel.analytics.bigdl.nn.ModuleType._
+import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{MklTensor, Tensor}
 
@@ -102,11 +103,11 @@ class Pool[@specialized(Float, Double) T: ClassTag](
         throw new UnsupportedOperationException(s"Only Float supported")
     }
 
-    for (i <- List(refs.input, refs.gradInput)) {
+    for (i <- List(refs.input, refs.gradInput, this.gradInput)) {
       i.resizeAs(input)
     }
 
-    for (i <- List(refs.output, refs.gradOutput)) {
+    for (i <- List(refs.output, refs.gradOutput, this.output)) {
       i.resize(outputLayout.size.reverse.map(_.toInt), outputLayout.strides.reverse.map(_.toInt))
     }
 
@@ -114,15 +115,17 @@ class Pool[@specialized(Float, Double) T: ClassTag](
     refs.output.createConversion(outputLayout, primitive.forward, ResourceType.dnnResourceDst)
     refs.gradInput.createConversion(inputLayout, primitive.backward, ResourceType.dnnResourceDiffSrc)
     refs.gradOutput.createConversion(outputLayout, primitive.backward, ResourceType.dnnResourceDiffDst)
-    // we may create a usr layout and a conversion between usr and mkl layout
-    refs.workspace.createConversion(inputLayout, primitive.backward, ResourceType.dnnResourceWorkspace)
-  }
 
-  override def convertToMklDnn(input: Tensor[T]): Unit = {
-    initLayerAttributes(input)
+    refs.workspace.createMklLayout(primitive.forward, ResourceType.dnnResourceWorkspace)
+
+    isInited_=(true)
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    if (!isInited) {
+      initLayerAttributes(input)
+    }
+
     refs.input.set(input)
 
     ev.getType() match {
@@ -136,10 +139,10 @@ class Pool[@specialized(Float, Double) T: ClassTag](
         throw new UnsupportedOperationException(s"Only Float supported")
     }
 
-    if (this.getNextPtr() != 0) {
+    if (this.nextModuleType() == DNN) {
       this.output = refs.output
     } else {
-      refs.output.backToUsr(this.output)
+      refs.output.backToUsr(this.output.storage(), this.output.storageOffset())
     }
 
     this.output
@@ -148,6 +151,8 @@ class Pool[@specialized(Float, Double) T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     refs.gradOutput.set(gradOutput)
     refs.input.set(input)
+
+    refs.gradInput.mklStorage().fill(ev.fromType(0), 1, refs.gradInput.mklStorage().size)
 
     ev.getType() match {
       case "Float" => MklDnnFloat.poolBackwardExecute(
@@ -158,10 +163,10 @@ class Pool[@specialized(Float, Double) T: ClassTag](
       )
     }
 
-    if (this.getPrevPtr() != 0) {
+    if (this.prevModuleType() == DNN) {
       this.gradInput = refs.gradInput
     } else {
-      refs.gradInput.backToUsr(this.gradInput)
+      refs.gradInput.backToUsr(this.gradInput.storage(), this.gradInput.storageOffset())
     }
 
     this.gradInput

@@ -170,7 +170,6 @@ class PoolingSpec extends FlatSpec with Matchers {
     val input = Tools.getTensorFloat("input", Array(test.batchSize, test.channel,
                                                     test.width, test.height), pid)
 
-    model.convertToMklDnn(input)
     model.forward(input)
 
     val output = Tools.getTensorFloat("output", model.output.size(), pid)

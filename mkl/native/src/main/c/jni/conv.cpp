@@ -2,6 +2,7 @@
 #include <mkl_dnn_types.h>
 #include <mkl_service.h>
 
+#include "cpu_info.hpp"
 #include "com_intel_analytics_bigdl_mkl_MklDnnFloat.h"
 #include "debug.h"
 /*
@@ -72,6 +73,9 @@ void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_convolutionForwardEx
  jfloatArray output,
  jlong primitive)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnPrimitive_t jPrimitive = (dnnPrimitive_t)primitive;
   dnnError_t status         = E_UNIMPLEMENTED;
 
@@ -163,6 +167,9 @@ JNIEXPORT
  jfloatArray backWeight,
  jlong primitive)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnPrimitive_t jPrimitive = (dnnPrimitive_t)primitive;
   dnnError_t status         = E_UNIMPLEMENTED;
   void *resources[dnnResourceNumber];
@@ -250,6 +257,9 @@ void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_convolutionBackwardK
  jfloatArray gradWeight,
  jlong primitive)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnPrimitive_t jPrimitive = (dnnPrimitive_t)primitive;
   dnnError_t status         = E_UNIMPLEMENTED;
   void *resources[dnnResourceNumber];
@@ -317,6 +327,9 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_convolutio
  jfloatArray gradBias,
  jlong primitive)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnPrimitive_t jPrimitive = (dnnPrimitive_t)primitive;
   dnnError_t status         = E_UNIMPLEMENTED;
   void *resources[dnnResourceNumber];

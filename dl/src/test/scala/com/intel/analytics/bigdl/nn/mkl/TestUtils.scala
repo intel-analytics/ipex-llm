@@ -37,10 +37,11 @@ object Tools {
       implicit ev: TensorNumeric[T]): Double = {
     require(tensor1.nElement() == tensor2.nElement())
     var ret = 0.0
+    val storage1 = tensor1.storage().array()
+    val storage2 = tensor2.storage().array()
     for (i <- 0 until tensor1.nElement()) {
       ret += math.abs(
-        ev.toType[Double](tensor1.storage().array()(i)) -
-          ev.toType[Double](tensor2.storage().array()(i)))
+        ev.toType[Double](storage1(i)) - ev.toType[Double](storage2(i)))
     }
     ret
   }

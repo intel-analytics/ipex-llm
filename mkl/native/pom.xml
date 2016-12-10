@@ -51,6 +51,7 @@
                                         <fileName>pool.cpp</fileName>
                                         <fileName>relus.cpp</fileName>
                                         <fileName>linears.cpp</fileName>
+                                        <fileName>lrns.cpp</fileName>
                                         <fileName>omp_threads.cpp</fileName>
                                         <fileName>layer.cpp</fileName>
                                         <fileName>batch_norm.cpp</fileName>

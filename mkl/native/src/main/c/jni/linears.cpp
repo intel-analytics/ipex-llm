@@ -2,6 +2,7 @@
 #include <mkl_dnn_types.h>
 #include <mkl_service.h>
 
+#include "cpu_info.hpp"
 #include "com_intel_analytics_bigdl_mkl_MklDnnFloat.h"
 #include "debug.h"
 
@@ -142,6 +143,9 @@ JNIEXPORT
  jfloatArray output,
  jlong primitive)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnPrimitive_t jPrimitive = (dnnPrimitive_t)primitive;
   dnnError_t status         = E_UNIMPLEMENTED;
 
@@ -180,6 +184,9 @@ JNIEXPORT
  jfloatArray weight,
  jlong primitive)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnPrimitive_t jPrimitive = (dnnPrimitive_t)primitive;
   dnnError_t status         = E_UNIMPLEMENTED;
   void *resources[dnnResourceNumber];
@@ -214,6 +221,9 @@ JNIEXPORT
  jfloatArray gradWeight,
  jlong primitive)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnPrimitive_t jPrimitive = (dnnPrimitive_t)primitive;
   dnnError_t status         = E_UNIMPLEMENTED;
   void *resources[dnnResourceNumber];
@@ -247,6 +257,9 @@ JNIEXPORT
  jfloatArray gradBias,
  jlong primitive)
 {
+  caffe::cpu::OpenMpManager::setGpuDisabled();
+  caffe::cpu::OpenMpManager::bindOpenMpThreads();
+
   dnnPrimitive_t jPrimitive = (dnnPrimitive_t)primitive;
   dnnError_t status         = E_UNIMPLEMENTED;
   void *resources[dnnResourceNumber];
