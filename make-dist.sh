@@ -61,6 +61,8 @@ if [ $MVN_INSTALL -eq 0 ]; then
   exit 1
 fi
 
+cp $BASEDIR/scripts/bigdlvars.sh $BIN_DIR/
+
 mvn clean package -DskipTests $*
 cp $BASEDIR/dl/target/bigdl_0.1-$VERSION-jar-with-dependencies.jar $LIB_DIR/bigdl_0.1-$VERSION-assembly-spark.jar
 

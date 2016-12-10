@@ -160,14 +160,14 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizerBLAS = new DistriOptimizer[Double](mseModule.asInstanceOf[Module[Activities,
       Activities, Double]], dataSet,
       new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
-      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(5)).setOptimMethod(new LBFGS)
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxIteration(1)).setOptimMethod(new LBFGS)
     val modelBLAS = optimizerBLAS.optimize()
 
     mseWeight.fill(0.125)
     val optimizerMKLDNN = new DistriOptimizer[Double](mseModule.asInstanceOf[Module[Activities,
       Activities, Double]], dataSet,
       new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
-      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(5)).setOptimMethod(new LBFGS)
+      nodeNumber, coreNumber).setEndWhen(Trigger.maxIteration(1)).setOptimMethod(new LBFGS)
     val modelMKLDNN = optimizerMKLDNN.optimize()
 
     modelBLAS.getParameters()._1.map(modelMKLDNN.getParameters()._1, (a, b) => {
