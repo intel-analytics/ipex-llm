@@ -25,9 +25,9 @@ import com.intel.analytics.bigdl.utils.Activities
 import scala.reflect.ClassTag
 
 /**
- * The class is used as a reference optimizer in optmizer unit test
+ * The class is used as a reference optimizer in local optimizer unit test
  */
-class RefOptimizer[T : ClassTag](
+class RefLocalOptimizer[T : ClassTag](
   model: Module[Activities, Activities, T],
   dataset: DataSource[Iterator[(Tensor[T], Tensor[T])]],
   criterion: Criterion[Activities, T]

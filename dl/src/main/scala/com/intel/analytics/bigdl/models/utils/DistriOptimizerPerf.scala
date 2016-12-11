@@ -16,27 +16,34 @@
  */
 package com.intel.analytics.bigdl.models.utils
 
-import com.intel.analytics.bigdl.dataset.LocalDataSet
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet}
 import com.intel.analytics.bigdl.models.imagenet._
 import com.intel.analytics.bigdl.models.mnist.LeNet5
-import com.intel.analytics.bigdl.nn.{Module, Criterion, ClassNLLCriterion}
-import com.intel.analytics.bigdl.optim.{Trigger, LocalOptimizer}
+import com.intel.analytics.bigdl.nn.{Criterion, ClassNLLCriterion, Module}
+import com.intel.analytics.bigdl.optim.{DistriOptimizer, Trigger, LocalOptimizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Activities
+import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.rdd.RDD
 import scopt.OptionParser
 
 import scala.reflect.ClassTag
 
-object LocalOptimizerPerf {
-  val parser = new OptionParser[LocalOptimizerPerfParam]("BigDL Local Performance Test") {
-    head("Performance Test of Local Optimizer")
+object DistriOptimizerPerf {
+  val parser = new OptionParser[DistriOptimizerPerfParam]("BigDL Distribute Performance Test") {
+    head("Performance Test of Distribute Optimizer")
     opt[Int]('b', "batchSize")
       .text("Batch size of input data")
       .action((v, p) => p.copy(batchSize = v))
-    opt[Int]('c', "coreNumber")
-      .text("physical cores number of current machine")
-      .action((v, p) => p.copy(coreNumber = v))
+    opt[Int]('n', "nodeNumber")
+      .text("nodes to run the perf test")
+      .action((v, p) => p.copy(nodeNumber = v))
+      .required()
+    opt[Int]('c', "corePerNode")
+      .text("core number of each nodes")
+      .action((v, p) => p.copy(corePerNode = v))
+      .required()
     opt[Int]('i', "iteration")
       .text("Iteration of perf test. The result will be average of each iteration time cost")
       .action((v, p) => p.copy(iteration = v))
@@ -77,7 +84,7 @@ object LocalOptimizerPerf {
   }
 
   def main(args: Array[String]): Unit = {
-    parser.parse(args, new LocalOptimizerPerfParam()).map(param => {
+    parser.parse(args, new DistriOptimizerPerfParam).map(param => {
       param.dataType match {
         case "float" => performance[Float](param)
         case "double" => performance[Double](param)
@@ -86,7 +93,7 @@ object LocalOptimizerPerf {
     })
   }
 
-  def performance[T: ClassTag](param: LocalOptimizerPerfParam)(implicit tn: TensorNumeric[T]): Unit = {
+  def performance[T: ClassTag](param: DistriOptimizerPerfParam)(implicit tn: TensorNumeric[T]): Unit = {
     val (_model, input) = param.module match {
       case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 227, 227))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor[T](param.batchSize, 3, 224, 224))
@@ -104,29 +111,37 @@ object LocalOptimizerPerf {
     println(model)
     val criterion = ClassNLLCriterion[T]().asInstanceOf[Criterion[Activities, T]]
     val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
-    val dummyDataSet = new LocalDataSet[(Tensor[T], Tensor[T])] {
-      override def data(): Iterator[(Tensor[T], Tensor[T])] = {
-        new Iterator[(Tensor[T], Tensor[T])] {
-          override def hasNext: Boolean = true
 
-          override def next(): (Tensor[T], Tensor[T]) = {
-            (input, labels)
-          }
-        }
-      }
+    val conf = new SparkConf().setAppName("DistriOptimizer Performance Test")
+    val sc = new SparkContext(conf)
+    val broadcast = sc.broadcast((input, labels))
+    val rdd = sc.parallelize((1 to param.nodeNumber), param.nodeNumber).mapPartitions(iter => {
+      Iterator.single((broadcast.value))
+    }).persist()
+    rdd.count()
+    val dummyDataSet = new DistributedDataSet[(Tensor[T], Tensor[T])] {
       override def size(): Long = 100000
       override def shuffle(): Unit = {}
+      override def originRDD(): RDD[_] = rdd
+      override def data(): RDD[(Tensor[T], Tensor[T])] = rdd
     }
 
-    val optimizer = new LocalOptimizer[T](model, dummyDataSet, criterion, param.coreNumber)
+    val optimizer = new DistriOptimizer[T](
+      model,
+      dummyDataSet,
+      criterion,
+      param.nodeNumber,
+      param.corePerNode
+    )
     optimizer.setEndWhen(Trigger.maxIteration(param.iteration)).optimize()
   }
 }
 
-case class LocalOptimizerPerfParam(
+case class DistriOptimizerPerfParam(
   batchSize: Int = 128,
-  coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2),
   iteration: Int = 50,
+  nodeNumber: Int = -1,
+  corePerNode: Int = -1,
   dataType: String = "float",
   module: String = "alexnet",
   inputData: String = "random"
