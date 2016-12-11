@@ -55,86 +55,34 @@ object DistriOptimizer {
     localStates: Array[Table],
     buffer: Tensor[T]
   )
-}
 
-class DistriOptimizer[T: ClassTag](
-  model: Module[Activities, Activities, T],
-  dataset: DistributedDataSet[(Tensor[T], Tensor[T])],
-  criterion: Criterion[Activities, T],
-  nodeNumber: Int,
-  coresPerNode: Int)
-  (implicit ev: TensorNumeric[T])
-  extends Optimizer[T, RDD[(Tensor[T], Tensor[T])], RDD[(Tensor[T], Tensor[T])]](
-    model, dataset, criterion) {
-
-  val metrics = new Metrics
-
-  def setParameterManager(pm: ParameterManager[T]): this.type = {
-    this.pm = pm
-    this
+  protected def header(epoch: Int, count: Int, total: Long, iter: Int, wallClockTime: Long)
+  : String = {
+    s"[Epoch $epoch $count/$total][Iteration $iter][Wall Clock ${wallClockTime / 1e9}s]"
   }
 
-  var pm: ParameterManager[T] =
-    new AllReduceParameterManager[T](
-      model.getParameters()._1,
-      dataset.originRDD(),
-      metrics,
-      state)
+  private[optim] def optimize[T: ClassTag](
+    dataset: DistributedDataSet[(Tensor[T], Tensor[T])],
+    coresPerNode: Int,
+    state : Table,
+    endWhen : Trigger,
+    metrics : Metrics,
+    models : RDD[Cache[T]],
+    pm : ParameterManager[T],
+    optimMethod : OptimMethod[T],
+    validationTrigger: Option[Trigger],
+    validationDataSet: Option[DataSource[RDD[(Tensor[T], Tensor[T])]]],
+    validationMethods: Option[Array[ValidationMethod[T]]],
+    cacheTrigger : Option[Trigger],
+    cachePath: Option[String]
+  )(implicit ev: TensorNumeric[T]) = {
+    val sc = dataset.data().sparkContext
 
-  val sc = dataset.data().sparkContext
-
-  import DistriOptimizer._
-
-  private def initThreadModels() = {
-    val broadcast = sc.broadcast((model, criterion, state))
-    val _subModelNumber = Engine.getEngineType match {
-      case MklBlas => coresPerNode
-      case MklDnn => 1
-    }
-
-    require(dataset.originRDD().partitions.length == nodeNumber,
-      s"Passed in rdd partition number ${dataset.originRDD().partitions.length}" +
-        s" is not equal to configured node number ${nodeNumber}")
-
-    val models = dataset.originRDD().mapPartitions(_ => {
-      val (broadcastModel, broadcastCriterion, broadcastState) = broadcast.value
-      require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
-        "Currently not support this")
-      val cached = (0 until _subModelNumber).map { _ =>
-        val localModel = broadcastModel.cloneModule()
-        val localCriterion = broadcastCriterion.cloneCriterion()
-        val localState = broadcastState.clone()
-        val (weights, grads) = localModel.getParameters()
-        (localModel, weights, grads, localCriterion, localState)
-      }.toArray
-      Iterator(Cache(
-        cached.map(_._1),  // models
-        cached.map(_._2),  // weights
-        cached.map(_._3),  // gradients
-        cached.map(_._4),  // criterions
-        cached.map(_._5),  // states
-        cached.head._2.clone()  // a tensor buffer
-      ))
-    }).persist()
-    models.setName("Thread Model RDD")
-    logger.info("Cache thread models...")
-    models.count()
-    logger.info("Cache thread models... done")
-    models
-  }
-
-  val models = initThreadModels()
-
-
-  override def optimize(): Module[Activities, Activities, T] = {
     dataset.originRDD()
       .sparkContext
       .getConf
       .set("spark.task.cpus", coresPerNode.toString)
 
-    // don't send whole Optimizer in closure
-    // Todo: Move this method to object
-    val broadcastEV = sc.broadcast(ev)
     val partitionNum = dataset.originRDD().partitions.length
     var wallClockTime = 0L
     val driverState = T("epoch" -> state.get[Int]("epoch").getOrElse(1),
@@ -187,7 +135,6 @@ class DistriOptimizer[T: ClassTag](
             }
           ))
 
-          val localEV = broadcastEV.value
           val tensorBuffer = new Array[(Tensor[T], Tensor[T])](_subModelNumber)
           Engine.invoke(Seq(() => {
             val batch = data.next()
@@ -221,7 +168,7 @@ class DistriOptimizer[T: ClassTag](
               val localCriterion = cached.localCriterions(i)
               val (input, target) = tensorBuffer(i)
               val output = localModel.forward(input)
-              lossArray(i) = localEV.toType[Double](localCriterion.forward(output, target))
+              lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
               val errors = localCriterion.backward(output, target)
               localModel.backward(input, errors)
               recordsArray(i) = target.size(1)
@@ -271,14 +218,12 @@ class DistriOptimizer[T: ClassTag](
           Iterator.single(cached.buffer)
         })
       val reduceBefore = System.nanoTime()
-      val driverEV = ev
-      val optM = optimMethod
       val driverParNum = partitionNum * _subModelNumber
       pm.sumAndUpdate(resultRDD, (weights, gradients, state) => {
-        gradients.div(driverEV.fromType[Int](driverParNum))
+        gradients.div(ev.fromType[Int](driverParNum))
         state("neval") = driverState[Int]("neval")
         state("epoch") = driverState[Int]("epoch")
-        optM.optimize(_ => (driverEV.fromType(lossSum.value / stackCount.value), gradients),
+        optimMethod.optimize(_ => (ev.fromType(lossSum.value / stackCount.value), gradients),
           weights, state, state)
       })
       val reduceAfter = System.nanoTime()
@@ -302,27 +247,104 @@ class DistriOptimizer[T: ClassTag](
         dataset.shuffle()
         accumulateCount = 0
       }
+      validate(
+        validationTrigger,
+        validationDataSet,
+        validationMethods,
+        coresPerNode,
+        models,
+        wallClockTime,
+        driverState
+      )
 
-      validate(wallClockTime, driverState)
-      cache(wallClockTime, driverState)
+      checkpoint(
+        cacheTrigger,
+        cachePath,
+        wallClockTime,
+        models,
+        pm,
+        driverState
+      )
     }
-    validate(wallClockTime, driverState)
-    cache(wallClockTime, driverState)
-
-    getModel()
   }
 
-  private def cache(wallClockTime: Long, state: Table): Unit = {
-    cacheTrigger.foreach(trigger => {
+
+  private def checkpoint[T](
+    cacheTrigger : Option[Trigger],
+    cachePath: Option[String],
+    wallClockTime: Long,
+    models: RDD[Cache[T]],
+    pm: ParameterManager[T],
+    state: Table)
+  : Unit = {
+    if(cacheTrigger.isDefined) {
+      val trigger = cacheTrigger.get
       if (trigger(state) && cachePath.isDefined) {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
-        saveModel(getModel(), s".${state[Int]("neval")}")
-        saveState(pm.getState(), s".${state[Int]("neval")}")
+        getModel(models, pm).save(cachePath.get + ".model." + state[Int]("neval"), true)
+        pm.getState().save(cachePath.get + ".state." + state[Int]("neval"), true)
       }
-    })
+    }
   }
 
-  private def validate(wallClockTime: Long, state: Table): Unit = {
+  private def initThreadModels[T: ClassTag](
+    model: Module[Activities, Activities, T],
+    dataset: DistributedDataSet[(Tensor[T], Tensor[T])],
+    criterion: Criterion[Activities, T],
+    state: Table,
+    nodeNumber: Int,
+    coresPerNode: Int
+  ) = {
+    val sc = dataset.originRDD().sparkContext
+    val broadcast = sc.broadcast((model, criterion, state))
+    val _subModelNumber = Engine.getEngineType match {
+      case MklBlas => coresPerNode
+      case MklDnn => 1
+    }
+
+    require(dataset.originRDD().partitions.length == nodeNumber,
+      s"Passed in rdd partition number ${dataset.originRDD().partitions.length}" +
+        s" is not equal to configured node number ${nodeNumber}")
+
+    val models = dataset.originRDD().mapPartitions(_ => {
+      val (broadcastModel, broadcastCriterion, broadcastState) = broadcast.value
+      require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
+        "Currently not support this")
+      Engine.setThreadPool((Runtime.getRuntime().availableProcessors() * 50 / 2))
+      val cached = (0 until _subModelNumber).map { _ =>
+        val localModel = broadcastModel.cloneModule()
+        val localCriterion = broadcastCriterion.cloneCriterion()
+        val localState = broadcastState.clone()
+        val (weights, grads) = localModel.getParameters()
+        (localModel, weights, grads, localCriterion, localState)
+      }.toArray
+      Iterator(Cache(
+        cached.map(_._1),  // models
+        cached.map(_._2),  // weights
+        cached.map(_._3),  // gradients
+        cached.map(_._4),  // criterions
+        cached.map(_._5),  // states
+        cached.head._2.clone()  // a tensor buffer
+      ))
+    }).persist()
+    models.setName("Thread Model RDD")
+    logger.info("Cache thread models...")
+    models.count()
+    logger.info("Cache thread models... done")
+    models
+  }
+
+
+
+  private def validate[T](
+    validationTrigger: Option[Trigger],
+    validationDataSet: Option[DataSource[RDD[(Tensor[T], Tensor[T])]]],
+    validationMethods: Option[Array[ValidationMethod[T]]],
+    coresPerNode: Int,
+    models : RDD[Cache[T]],
+    wallClockTime: Long,
+    state: Table
+  ): Unit = {
     if(validationTrigger.isEmpty || validationDataSet.isEmpty) {
       return
     }
@@ -373,11 +395,70 @@ class DistriOptimizer[T: ClassTag](
     })
   }
 
-  private def getModel(): Module[Activities, Activities, T] = {
+
+  private def getModel[T](
+    models: RDD[Cache[T]],
+    pm: ParameterManager[T]
+  ): Module[Activities, Activities, T] = {
     val model = models.first().localModels.head
     val modelParameter = model.getParameters()._1
     modelParameter.copy(pm.getParameter())
     model
+  }
+}
+
+class DistriOptimizer[T: ClassTag](
+  model: Module[Activities, Activities, T],
+  dataset: DistributedDataSet[(Tensor[T], Tensor[T])],
+  criterion: Criterion[Activities, T],
+  nodeNumber: Int,
+  coresPerNode: Int)
+  (implicit ev: TensorNumeric[T])
+  extends Optimizer[T, RDD[(Tensor[T], Tensor[T])], RDD[(Tensor[T], Tensor[T])]](
+    model, dataset, criterion) {
+
+  val metrics = new Metrics
+
+  def setParameterManager(pm: ParameterManager[T]): this.type = {
+    this.pm = pm
+    this
+  }
+
+  private var pm: ParameterManager[T] = null
+
+  private var models : RDD[DistriOptimizer.Cache[T]] = null
+
+  override def optimize(): Module[Activities, Activities, T] = {
+    if(pm == null) {
+      pm = new AllReduceParameterManager[T](
+        model.getParameters()._1,
+        dataset.originRDD(),
+        metrics,
+        state)
+    }
+
+    optimMethod.clearHistory(state)
+
+    models = DistriOptimizer.initThreadModels(
+      model, dataset, criterion, state, nodeNumber, coresPerNode)
+
+    DistriOptimizer.optimize(
+      dataset,
+      coresPerNode,
+      state,
+      endWhen,
+      metrics,
+      models,
+      pm,
+      optimMethod,
+      validationTrigger,
+      validationDataSet,
+      validationMethods,
+      cacheTrigger,
+      cachePath
+    )
+
+    DistriOptimizer.getModel(models, pm)
   }
 }
 

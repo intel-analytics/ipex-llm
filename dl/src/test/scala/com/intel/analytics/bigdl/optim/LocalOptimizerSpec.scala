@@ -93,7 +93,7 @@ object DummyDataSet extends LocalDataSet[(Tensor[Float], Tensor[Float])] {
   }
 }
 
-object Model {
+object LocalOptimizerSpecModel {
   def CREModel[T] : Module[Activities, Activities, T] = {
     val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
     mlp.add(new Linear(4, 2))
@@ -112,7 +112,7 @@ object Model {
 }
 
 class LocalOptimizerSpec extends FlatSpec with Matchers {
-  import Model._
+  import LocalOptimizerSpecModel._
   import DummyDataSet._
 
   val coreNumber = 4
@@ -148,7 +148,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val weight = model.getParameters()._1
 
     RandomGenerator.RNG.setSeed(1000)
-    val optimizerRef = new RefOptimizer[Float](
+    val optimizerRef = new RefLocalOptimizer[Float](
       CREModel,
       CREDataSet,
       new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
@@ -192,7 +192,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val weight = model.getParameters()._1
 
     RandomGenerator.RNG.setSeed(1000)
-    val optimizerRef = new RefOptimizer[Float](
+    val optimizerRef = new RefLocalOptimizer[Float](
       MSEModel,
       MSEDataSet,
       new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]
@@ -234,7 +234,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val weight = model.getParameters()._1
 
     RandomGenerator.RNG.setSeed(1000)
-    val optimizerRef = new RefOptimizer[Float](
+    val optimizerRef = new RefLocalOptimizer[Float](
       CREModel,
       CREDataSet,
       new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
@@ -275,7 +275,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val weight = model.getParameters()._1
 
     RandomGenerator.RNG.setSeed(10)
-    val optimizerRef = new RefOptimizer[Float](
+    val optimizerRef = new RefLocalOptimizer[Float](
       MSEModel,
       MSEDataSet,
       new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]

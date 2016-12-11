@@ -40,15 +40,13 @@ case object MklDnn extends EngineType
 object Engine{
   private val logger = Logger.getLogger(getClass)
 
-  private var engine: ExecutionContext = null
-
   private val singletonCounter : AtomicInteger = new AtomicInteger(0)
 
   private var doCheckSingleton = true
 
   def disableCheckSingleton() : Unit = doCheckSingleton = false
 
-  def enableCheckSingleto() : Unit = doCheckSingleton = true
+  def enableCheckSingleton() : Unit = doCheckSingleton = true
 
   def checkSingleton() : Boolean = {
     if(!doCheckSingleton) return true
@@ -57,20 +55,19 @@ object Engine{
     (count == 1)
   }
 
-  private val maxPoolSize: Int =
-    System.getProperty("com.intel.analytics.bigdl.utils.Engine.maxPoolSize", "10").toInt
-
+  private val defaultPoolSize: Int =
+    System.getProperty("com.intel.analytics.bigdl.utils.Engine.defaultPoolSize",
+      (Runtime.getRuntime().availableProcessors() / 2).toString).toInt
   private val queuePointer = new AtomicInteger(0)
   private val maxQueueSize: Int =
     System.getProperty("com.intel.analytics.bigdl.utils.Engine.maxQueueSize", "500").toInt
-
   private val waitQueue : Array[Future[_]] = new Array[Future[_]](maxQueueSize)
 
   private val threadPool : ThreadLocal[ExecutionContext] = new ThreadLocal[ExecutionContext]
 
-  private def spawnThreadPool() : ExecutionContext = {
+  private def spawnThreadPool(poolSize : Int) : ExecutionContext = {
     new ExecutionContext {
-      val pool = Executors.newFixedThreadPool(maxPoolSize, new ThreadFactory {
+      val pool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
         override def newThread(r: Runnable): Thread = {
           val t = Executors.defaultThreadFactory().newThread(r)
           t.setDaemon(true)
@@ -86,11 +83,17 @@ object Engine{
     }
   }
 
+  def setThreadPool(size : Int): Unit = {
+    threadPool.set(spawnThreadPool(poolSize))
+  }
+
+  def setThreadPool(): Unit = setThreadPool(defaultPoolSize)
+
   private def getThreadPool(): ExecutionContext = {
     var pool = threadPool.get()
     if(pool == null) {
-      pool = spawnThreadPool()
-      threadPool.set(pool)
+      setThreadPool()
+      pool = threadPool.get()
     }
     pool
   }
@@ -180,6 +183,7 @@ object Engine{
 
   def coresNum(): Int = poolSize
 
+  private var engine: ExecutionContext = null
   /**
    * Get the ExecutionContext
    *
