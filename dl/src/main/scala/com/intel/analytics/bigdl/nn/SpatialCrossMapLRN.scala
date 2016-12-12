@@ -153,7 +153,7 @@ object SpatialCrossMapLRN {
       alpha: Double = 1.0,
       beta: Double = 0.75,
       k: Double = 1.0)(implicit ev: TensorNumeric[T]) : SpatialCrossMapLRN[T] = {
-    new SpatialCrossMapLRN[T]()
+    new SpatialCrossMapLRN[T](size, alpha, beta, k)
   }
 
   private def forwardFrame[T](input: Tensor[T], output: Tensor[T],
