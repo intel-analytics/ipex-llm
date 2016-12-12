@@ -52,37 +52,37 @@ class LocalOptimizer[T](
     data.reset()
     data.shuffle()
 
-
-
-
-    count = 0
-    val suffix = ".t7"
-    val testDataInput = Tensor[Float](10000, 3, 32, 32)
-    val testDataLabel = Tensor[Float](10000, 1)
-    while (count < validationData.total()) {
-      val (input, target) = validationData.next()
-      testDataInput.narrow(1, count+1, input.size(1)).copy(input.asInstanceOf[Tensor[Float]])
-      testDataLabel.narrow(1, count+1, input.size(1)).copy(target.asInstanceOf[Tensor[Float]])
-      count += input.size(1)
-    }
-
-    val tmpTestInput = java.io.File.createTempFile("torchdata/data_test_batch_input", suffix)
-    val tmpTestLabel = java.io.File.createTempFile("torchdata/data_test_batch_label", suffix)
-    val tmpTestPathInput = tmpTestInput.getAbsolutePath
-    val tmpTestPathLabel = tmpTestLabel.getAbsolutePath
-    File.saveTorch(testDataInput, tmpTestPathInput, TYPE_FLOAT_TENSOR)
-    File.saveTorch(testDataLabel, tmpTestPathLabel, TYPE_FLOAT_TENSOR)
-    println(s"save test to file ${tmpTestPathInput}")
-
-
-    val trainDataInput = Tensor[Float](50000, 3, 32, 32)
-    val trainDataLabel = Tensor[Float](50000, 1)
+//
+//
+//
+//    count = 0
+//    val suffix = ".t7"
+//    val testDataInput = Tensor[Float](10000, 3, 32, 32)
+//    val testDataLabel = Tensor[Float](10000, 1)
+//    while (count < validationData.total()) {
+//      val (input, target) = validationData.next()
+//      testDataInput.narrow(1, count+1, input.size(1)).copy(input.asInstanceOf[Tensor[Float]])
+//      testDataLabel.narrow(1, count+1, input.size(1)).copy(target.asInstanceOf[Tensor[Float]])
+//      count += input.size(1)
+//    }
+//
+//    val tmpTestInput = java.io.File.createTempFile("torchdata/data_test_batch_input", suffix)
+//    val tmpTestLabel = java.io.File.createTempFile("torchdata/data_test_batch_label", suffix)
+//    val tmpTestPathInput = tmpTestInput.getAbsolutePath
+//    val tmpTestPathLabel = tmpTestLabel.getAbsolutePath
+//    File.saveTorch(testDataInput, tmpTestPathInput, TYPE_FLOAT_TENSOR)
+//    File.saveTorch(testDataLabel, tmpTestPathLabel, TYPE_FLOAT_TENSOR)
+//    println(s"save test to file ${tmpTestPathInput}")
+//
+//
+//    val trainDataInput = Tensor[Float](50000, 3, 32, 32)
+//    val trainDataLabel = Tensor[Float](50000, 1)
     count = 0
     while (!endWhen(state)) {
       val start = System.nanoTime()
       val (input, target) = data.next()
-      trainDataInput.narrow(1, count+1, input.size(1)).copy(input.asInstanceOf[Tensor[Float]])
-      trainDataLabel.narrow(1, count+1, input.size(1)).copy(target.asInstanceOf[Tensor[Float]])
+//      trainDataInput.narrow(1, count+1, input.size(1)).copy(input.asInstanceOf[Tensor[Float]])
+//      trainDataLabel.narrow(1, count+1, input.size(1)).copy(target.asInstanceOf[Tensor[Float]])
 
       val dataFetchTime = System.nanoTime()
       model.zeroGradParameters()
@@ -103,13 +103,13 @@ class LocalOptimizer[T](
       state("neval") = state[Int]("neval") + 1
 
       if(count >= data.total()) {
-        val tmpInput = java.io.File.createTempFile("torchdata/data_batch_input_" + state("epoch").toString + "_", suffix)
-        val tmpLabel = java.io.File.createTempFile("torchdata/data_batch_label_" + state("epoch").toString + "_", suffix)
-        val tmpPathInput = tmpInput.getAbsolutePath
-        val tmpPathLabel = tmpLabel.getAbsolutePath
-        File.saveTorch(trainDataInput, tmpPathInput, TYPE_FLOAT_TENSOR)
-        File.saveTorch(trainDataLabel, tmpPathLabel, TYPE_FLOAT_TENSOR)
-        println(s"save train to file ${tmpPathInput}")
+//        val tmpInput = java.io.File.createTempFile("torchdata/data_batch_input_" + state("epoch").toString + "_", suffix)
+//        val tmpLabel = java.io.File.createTempFile("torchdata/data_batch_label_" + state("epoch").toString + "_", suffix)
+//        val tmpPathInput = tmpInput.getAbsolutePath
+//        val tmpPathLabel = tmpLabel.getAbsolutePath
+//        File.saveTorch(trainDataInput, tmpPathInput, TYPE_FLOAT_TENSOR)
+//        File.saveTorch(trainDataLabel, tmpPathLabel, TYPE_FLOAT_TENSOR)
+//        println(s"save train to file ${tmpPathInput}")
         state("epoch") = state[Int]("epoch") + 1
         data.reset()
         data.shuffle()
