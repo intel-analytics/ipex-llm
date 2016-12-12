@@ -85,11 +85,13 @@ class FP16CompressedTensor[T: ClassTag](buffer: Array[Byte], bufferOffset: Int, 
     if (classTag[T] == classTag[Double]) {
       val tdata = tensor.storage().array().asInstanceOf[Array[Double]]
       val toffset = tensor.storageOffset() - 1 + tgtOffset
-      FP16CompressedTensor.fromFP16(buffer, srcOffset * 2 + bufferOffset, length * 2, tdata, toffset)
+      FP16CompressedTensor.fromFP16(buffer, srcOffset * 2 + bufferOffset,
+        length * 2, tdata, toffset)
     } else if (classTag[T] == classTag[Float]) {
       val tdata = tensor.storage().array().asInstanceOf[Array[Float]]
       val toffset = tensor.storageOffset() - 1 + tgtOffset
-      FP16CompressedTensor.fromFP16(buffer, srcOffset * 2 + bufferOffset, length * 2, tdata, toffset)
+      FP16CompressedTensor.fromFP16(buffer, srcOffset * 2 + bufferOffset,
+        length * 2, tdata, toffset)
     } else {
       throw new IllegalArgumentException
     }
