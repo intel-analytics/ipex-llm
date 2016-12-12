@@ -224,11 +224,10 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
                 recordsArray(i) = target.size(1)
                 moduleTimeList(i + pre) = System.nanoTime() - start + weightSyncTime
                 i
+              } catch {
+                case e: Exception => e.printStackTrace()
+                  -1
               }
-//                catch {
-//                  case e: Exception => e.printStackTrace()
-//                    -1
-//                }
             }
           })
 
