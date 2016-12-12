@@ -60,3 +60,26 @@ abstract trait CompressedTensor[T] extends Serializable {
 
   def compress(tensor: Tensor[T]): this.type
 }
+
+object SerializerInstance {
+  private var pm: String = "fp16"
+
+  def setSerializer(pm: String): Unit = {
+    if (pm.toLowerCase != "fp16") throw new IllegalArgumentException("Unsupported parameter type!")
+    this.pm = pm
+  }
+
+  def serialize[T: ClassTag](data: Tensor[T]): CompressedTensor[T] = {
+    pm.toLowerCase match {
+      case "fp16" => new FP16CompressedTensor[T](data)
+      case _ => throw new IllegalArgumentException("Unsupported parameter type")
+    }
+  }
+
+  def serialize[T: ClassTag](data: ByteBuffer): CompressedTensor[T] = {
+    pm.toLowerCase() match {
+      case "fp16" => new FP16CompressedTensor[T](data)
+      case _ => throw new IllegalArgumentException("Unsupported parameter type")
+    }
+  }
+}
