@@ -82,3 +82,10 @@ class SoftPlus[T: ClassTag](
     s"nn.SoftPlus"
   }
 }
+
+object SoftPlus {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      beta: Double = 1.0)(implicit ev: TensorNumeric[T]) : SoftPlus[T] = {
+    new SoftPlus[T](beta)
+  }
+}

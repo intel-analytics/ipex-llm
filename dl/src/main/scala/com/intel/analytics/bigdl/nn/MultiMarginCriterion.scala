@@ -170,3 +170,13 @@ class MultiMarginCriterion[T: ClassTag](val p: Int = 1,
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object MultiMarginCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      p: Int = 1,
+      weights: Tensor[T] = null,
+      margin: Double = 1.0,
+      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : MultiMarginCriterion[T] = {
+    new MultiMarginCriterion[T](p, weights, margin, sizeAverage)
+  }
+}

@@ -36,11 +36,14 @@ object Utils {
     var result: Activities = null
     if (src.isInstanceOf[Table]) {
       val srcTable = src.toTable()
-      result = if (target.isInstanceOf[Table]) {
+      result = if (null == target) {
+        T()
+      } else if (target.isInstanceOf[Tensor[T]]) {
         T(target)
       } else {
-        target.toTable()
+        target
       }
+
       val resultTable = result.toTable()
       var i = 1
       while (i <= src.toTable().length()) {

@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.optim
 import java.util.concurrent.{TimeUnit, ThreadPoolExecutor, LinkedBlockingQueue}
 import com.intel.analytics.bigdl.nn.{Criterion, Module}
 import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
-import com.intel.analytics.bigdl.ps.ParameterManager
+import com.intel.analytics.bigdl.parameters.ParameterManager
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}

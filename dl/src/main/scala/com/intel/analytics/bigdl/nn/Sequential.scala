@@ -113,4 +113,10 @@ class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: Clas
 
 }
 
-
+object Sequential {
+  def apply[A <: Activities : ClassTag, B <: Activities : ClassTag,
+      @specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : Sequential[A, B, T] = {
+    new Sequential[A, B, T]()
+  }
+}

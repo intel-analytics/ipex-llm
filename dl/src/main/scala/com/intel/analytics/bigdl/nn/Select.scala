@@ -65,3 +65,11 @@ class Select[T: ClassTag](
 
   override def toString: String = s"nn.Select"
 }
+
+object Select {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dimension: Int,
+      index: Int)(implicit ev: TensorNumeric[T]) : Select[T] = {
+    new Select[T](dimension, index)
+  }
+}

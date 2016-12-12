@@ -69,3 +69,10 @@ class CrossEntropyCriterion[T: ClassTag](
     s"nn.CrossEntropyCriterion"
   }
 }
+
+object CrossEntropyCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      weights: Tensor[T] = null)(implicit ev: TensorNumeric[T]) : CrossEntropyCriterion[T] = {
+    new CrossEntropyCriterion[T](weights)
+  }
+}

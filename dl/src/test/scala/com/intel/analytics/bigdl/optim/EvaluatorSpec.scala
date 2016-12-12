@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, LogSoftMax, Sequential}
-import com.intel.analytics.bigdl.ps.OneReduceParameterManager
+import com.intel.analytics.bigdl.parameters.OneReduceParameterManager
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import org.apache.log4j.{Level, Logger}

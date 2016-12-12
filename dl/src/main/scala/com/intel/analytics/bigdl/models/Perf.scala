@@ -103,7 +103,7 @@ object Perf {
       case "random" => input.rand()
     }
     println(model)
-    val criterion = new ClassNLLCriterion[T]()
+    val criterion = ClassNLLCriterion[T]()
     val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
 
     for (i <- 1 to param.warmUp) {

@@ -23,9 +23,8 @@ import com.intel.analytics.bigdl.example.Utils._
 import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2_NoAuxClassifier}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.optim.SGD.{EpochSchedule, EpochStep, Poly, Regime}
-import com.intel.analytics.bigdl.ps.{AllReduceParameterManager, ImprovedAllReduceParameterManager, OneReduceParameterManager}
+import com.intel.analytics.bigdl.parameters.{AllReduceParameterManager, ImprovedAllReduceParameterManager, OneReduceParameterManager}
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
 import org.apache.hadoop.io.Text
@@ -58,6 +57,7 @@ object ImageNetParallel {
     val optType = params.masterOptM
     val netType = params.net
     val classNum = params.classNum
+
     val conf = new SparkConf().setAppName(s"ImageNet class[Float]: ${params.classNum} " +
       s"Parallelism: ${params.parallelism.toString}, partition : ${params.partitionNum}, " +
       s"masterConfig: ${params.masterConfig}, workerConfig: ${params.workerConfig}")
@@ -96,7 +96,7 @@ object ImageNetParallel {
     val std = (varR, varG, varB)
     println(s"varR is $varR varG is $varG varB is $varB")
 
-    val criterion = new ClassNLLCriterion[Float]()
+    val criterion = ClassNLLCriterion[Float]()
     val model = netType match {
       case "alexnet" => AlexNet.getModel[Float](classNum)
       case "googlenet" => GoogleNet.getModelCaffe[Float](classNum)
@@ -191,7 +191,8 @@ object ImageNetParallel {
     optimizer.addEvaluation("top1", EvaluateMethods.calcAccuracy)
     optimizer.addEvaluation("top5", EvaluateMethods.calcTop5Accuracy)
     optimizer.setTestDataSet(testDataSets)
-    optimizer.setMaxEpoch(100)
+    println("epoch: " + driverConfig("epochNum"))
+    optimizer.setMaxEpoch(driverConfig("epochNum"))
 
     conf.set("spark.task.cpus", params.parallelism.toString)
     optimizer.optimize()

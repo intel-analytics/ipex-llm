@@ -69,3 +69,10 @@ class FlattenTable[T: ClassTag] (implicit ev: TensorNumeric[T])
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object FlattenTable {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : FlattenTable[T] = {
+    new FlattenTable[T]()
+  }
+}

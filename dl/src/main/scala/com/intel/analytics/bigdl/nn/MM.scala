@@ -152,3 +152,11 @@ class MM[T: ClassTag](
     this
   }
 }
+
+object MM {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      transA: Boolean = false,
+      transB: Boolean = false)(implicit ev: TensorNumeric[T]) : MM[T] = {
+    new MM[T](transA, transB)
+  }
+}

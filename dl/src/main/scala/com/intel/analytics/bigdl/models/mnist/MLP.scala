@@ -31,13 +31,13 @@ object MLP {
 
   def apply[T: ClassTag](classNum: Int)
     (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val mlp = new Sequential[Tensor[T], Tensor[T], T]
+    val mlp = Sequential[Tensor[T], Tensor[T], T]
     val nHidden = featureSize / 2
-    mlp.add(new Reshape(Array(featureSize)))
-    mlp.add(new Linear(featureSize, nHidden))
-    mlp.add(new Tanh)
-    mlp.add(new Linear(nHidden, classNum))
-    mlp.add(new LogSoftMax)
+    mlp.add(Reshape(Array(featureSize)))
+    mlp.add(Linear(featureSize, nHidden))
+    mlp.add(Tanh())
+    mlp.add(Linear(nHidden, classNum))
+    mlp.add(LogSoftMax())
     mlp
   }
 }

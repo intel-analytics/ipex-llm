@@ -43,3 +43,10 @@ class Sigmoid[@specialized(Float, Double) T: ClassTag](
     s"nn.Sigmoid"
   }
 }
+
+object Sigmoid {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : Sigmoid[T] = {
+    new Sigmoid[T]()
+  }
+}

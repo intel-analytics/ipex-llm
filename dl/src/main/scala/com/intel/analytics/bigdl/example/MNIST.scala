@@ -52,53 +52,53 @@ object MNIST {
   def getModule(netType: String)(): Module[Tensor[Double], Tensor[Double], Double] = {
     netType.toLowerCase match {
       case "ann" =>
-        val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
+        val mlp = Sequential[Tensor[Double], Tensor[Double], Double]
         val nhiddens = featureSize / 2
-        mlp.add(new Reshape(Array(featureSize)))
-        mlp.add(new Linear(featureSize, nhiddens))
-        mlp.add(new Tanh)
-        mlp.add(new Linear(nhiddens, classNum))
-        mlp.add(new LogSoftMax)
+        mlp.add(Reshape(Array(featureSize)))
+        mlp.add(Linear(featureSize, nhiddens))
+        mlp.add(Tanh())
+        mlp.add(Linear(nhiddens, classNum))
+        mlp.add(LogSoftMax())
         mlp
       case "linear" =>
-        val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
-        mlp.add(new Reshape(Array(featureSize)))
-        mlp.add(new Linear(featureSize, classNum))
-        mlp.add(new LogSoftMax)
+        val mlp = Sequential[Tensor[Double], Tensor[Double], Double]
+        mlp.add(Reshape(Array(featureSize)))
+        mlp.add(Linear(featureSize, classNum))
+        mlp.add(LogSoftMax())
         mlp
       case "cnn" =>
-        val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
-        model.add(new Reshape(Array(1, rowN, colN)))
-        model.add(new SpatialConvolution(1, 32, 5, 5))
-        model.add(new Tanh())
-        model.add(new SpatialMaxPooling(3, 3, 3, 3))
-        model.add(new SpatialConvolution(32, 64, 5, 5))
-        model.add(new Tanh())
-        model.add(new SpatialMaxPooling(2, 2, 2, 2))
+        val model = Sequential[Tensor[Double], Tensor[Double], Double]()
+        model.add(Reshape(Array(1, rowN, colN)))
+        model.add(SpatialConvolution(1, 32, 5, 5))
+        model.add(Tanh())
+        model.add(SpatialMaxPooling(3, 3, 3, 3))
+        model.add(SpatialConvolution(32, 64, 5, 5))
+        model.add(Tanh())
+        model.add(SpatialMaxPooling(2, 2, 2, 2))
 
         val linearInputNum = 64 * 2 * 2
         val hiddenNum = 200
-        model.add(new Reshape(Array(linearInputNum)))
-        model.add(new Linear(linearInputNum, hiddenNum))
-        model.add(new Tanh())
-        model.add(new Linear(hiddenNum, classNum))
-        model.add(new LogSoftMax())
+        model.add(Reshape(Array(linearInputNum)))
+        model.add(Linear(linearInputNum, hiddenNum))
+        model.add(Tanh())
+        model.add(Linear(hiddenNum, classNum))
+        model.add(LogSoftMax())
         model
       case "lenet" =>
-        val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
-        model.add(new Reshape(Array(1, rowN, colN)))
-        model.add(new SpatialConvolution(1, 6, 5, 5))
-        model.add(new Tanh())
-        model.add(new SpatialMaxPooling(2, 2, 2, 2))
-        model.add(new Tanh())
-        model.add(new SpatialConvolution(6, 12, 5, 5))
-        model.add(new SpatialMaxPooling(2, 2, 2, 2))
+        val model = Sequential[Tensor[Double], Tensor[Double], Double]()
+        model.add(Reshape(Array(1, rowN, colN)))
+        model.add(SpatialConvolution(1, 6, 5, 5))
+        model.add(Tanh())
+        model.add(SpatialMaxPooling(2, 2, 2, 2))
+        model.add(Tanh())
+        model.add(SpatialConvolution(6, 12, 5, 5))
+        model.add(SpatialMaxPooling(2, 2, 2, 2))
 
-        model.add(new Reshape(Array(12 * 4 * 4)))
-        model.add(new Linear(12 * 4 * 4, 100))
-        model.add(new Tanh())
-        model.add(new Linear(100, 10))
-        model.add(new LogSoftMax())
+        model.add(Reshape(Array(12 * 4 * 4)))
+        model.add(Linear(12 * 4 * 4, 100))
+        model.add(Tanh())
+        model.add(Linear(100, 10))
+        model.add(LogSoftMax())
         model
       case _ =>
         throw new UnsupportedOperationException

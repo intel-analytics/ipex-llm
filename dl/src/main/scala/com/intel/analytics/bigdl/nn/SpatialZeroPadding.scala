@@ -164,3 +164,13 @@ class SpatialZeroPadding[@specialized(Float, Double) T: ClassTag](
     s"nn.SpatialZeroPadding(l=$padLeft, r=$padRight, t=$padTop, b=$padBottom)"
   }
 }
+
+object SpatialZeroPadding {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      padLeft: Int,
+      padRight: Int,
+      padTop: Int,
+      padBottom: Int)(implicit ev: TensorNumeric[T]) : SpatialZeroPadding[T] = {
+    new SpatialZeroPadding[T](padLeft, padRight, padTop, padBottom)
+  }
+}

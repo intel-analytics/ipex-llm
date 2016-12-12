@@ -46,3 +46,10 @@ class Tanh[@specialized(Float, Double) T: ClassTag](
 }
 
 
+object Tanh {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : Tanh[T] = {
+    new Tanh[T]()
+  }
+}
+

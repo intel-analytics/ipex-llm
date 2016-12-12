@@ -103,3 +103,10 @@ class L1HingeEmbeddingCriterion[T: ClassTag](val margin: Double = 1)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object L1HingeEmbeddingCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      margin: Double = 1)(implicit ev: TensorNumeric[T]) : L1HingeEmbeddingCriterion[T] = {
+    new L1HingeEmbeddingCriterion[T](margin)
+  }
+}

@@ -108,3 +108,11 @@ class HingeEmbeddingCriterion[T: ClassTag](
 
   override def toString: String = s"nn.HingeEmbeddingCriterion"
 }
+
+object HingeEmbeddingCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      margin: Double = 1,
+      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : HingeEmbeddingCriterion[T] = {
+    new HingeEmbeddingCriterion[T](margin, sizeAverage)
+  }
+}

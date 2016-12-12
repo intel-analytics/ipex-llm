@@ -147,3 +147,10 @@ class CMul[@specialized(Float, Double) T: ClassTag](
     s"nn.CMul(${java.util.Arrays.toString(size)})"
   }
 }
+
+object CMul {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      size: Array[Int])(implicit ev: TensorNumeric[T]) : CMul[T] = {
+    new CMul[T](size)
+  }
+}

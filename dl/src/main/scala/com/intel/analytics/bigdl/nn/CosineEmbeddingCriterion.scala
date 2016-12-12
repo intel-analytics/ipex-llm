@@ -183,3 +183,11 @@ class CosineEmbeddingCriterion[T: ClassTag]
     s"nn.CosineEmbeddingCriterion($margin, $sizeAverage)"
   }
 }
+
+object CosineEmbeddingCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      margin: Double = 0.0,
+      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : CosineEmbeddingCriterion[T] = {
+    new CosineEmbeddingCriterion[T](margin, sizeAverage)
+  }
+}

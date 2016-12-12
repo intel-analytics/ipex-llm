@@ -69,3 +69,10 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = 
     "nn.CAddTable"
   }
 }
+
+object CAddTable {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : CAddTable[T] = {
+    new CAddTable[T](inplace)
+  }
+}

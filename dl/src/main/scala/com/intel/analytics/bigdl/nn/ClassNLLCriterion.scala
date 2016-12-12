@@ -122,3 +122,11 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
     gradInput
   }
 }
+
+object ClassNLLCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      weights: Tensor[T] = null,
+      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : ClassNLLCriterion[T] = {
+    new ClassNLLCriterion[T](weights, sizeAverage)
+  }
+}

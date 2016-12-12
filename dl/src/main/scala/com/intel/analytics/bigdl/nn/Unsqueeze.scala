@@ -85,3 +85,11 @@ class Unsqueeze[T: ClassTag](
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object Unsqueeze {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      pos: Int,
+      numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Unsqueeze[T] = {
+    new Unsqueeze[T](pos, numInputDims)
+  }
+}

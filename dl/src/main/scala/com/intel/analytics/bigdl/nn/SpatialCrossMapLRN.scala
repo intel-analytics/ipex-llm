@@ -147,6 +147,15 @@ class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
 }
 
 object SpatialCrossMapLRN {
+
+  def apply[@specialized(Float, Double) T: ClassTag](
+      size: Int = 5,
+      alpha: Double = 1.0,
+      beta: Double = 0.75,
+      k: Double = 1.0)(implicit ev: TensorNumeric[T]) : SpatialCrossMapLRN[T] = {
+    new SpatialCrossMapLRN[T](size, alpha, beta, k)
+  }
+
   private def forwardFrame[T](input: Tensor[T], output: Tensor[T],
     scale: Tensor[T], alpha: Double, size: Int, beta: Double, k: Double)
     (implicit ev: TensorNumeric[T]): Unit = {

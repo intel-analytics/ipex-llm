@@ -26,3 +26,11 @@ class Clamp[T: ClassTag](min: Int, max: Int)(
     s"nn.Clamp"
   }
 }
+
+object Clamp {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      min: Int,
+      max: Int)(implicit ev: TensorNumeric[T]) : Clamp[T] = {
+    new Clamp[T](min, max)
+  }
+}

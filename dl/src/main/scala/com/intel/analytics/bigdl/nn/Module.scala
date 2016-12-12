@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{File, T, Table, Activities}
+import com.intel.analytics.bigdl.utils._
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.collection.mutable.ArrayBuffer
@@ -229,6 +229,18 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
 
   def setLine(line: String): this.type = {
     this.line = line
+    this
+  }
+
+  private val engineType: EngineType = Engine.getEngineType()
+
+  /**
+   * get execution engine type
+   */
+  def checkEngineType(): this.type = {
+    if (engineType != Engine.getEngineType()) {
+      throw new Error("Module's EngineType doesn't march global EngineType")
+    }
     this
   }
 

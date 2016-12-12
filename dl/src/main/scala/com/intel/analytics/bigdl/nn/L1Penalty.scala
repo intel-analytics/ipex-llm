@@ -75,3 +75,12 @@ class L1Penalty[T: ClassTag]
     s"nn.L1Penalty ($l1weight, $sizeAverage, $provideOutput)"
   }
 }
+
+object L1Penalty {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      l1weight: Int,
+      sizeAverage: Boolean = false,
+      provideOutput: Boolean = true)(implicit ev: TensorNumeric[T]) : L1Penalty[T] = {
+    new L1Penalty[T](l1weight, sizeAverage, provideOutput)
+  }
+}

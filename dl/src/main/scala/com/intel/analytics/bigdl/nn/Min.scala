@@ -101,3 +101,11 @@ class Min[@specialized(Float, Double) T: ClassTag](
     this
   }
 }
+
+object Min {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dim : Int = 1,
+      numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Min[T] = {
+    new Min[T](dim, numInputDims)
+  }
+}

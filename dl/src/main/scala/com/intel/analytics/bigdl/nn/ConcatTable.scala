@@ -176,3 +176,10 @@ class ConcatTable[A <: Activities : ClassTag, T : ClassTag]
     str
   }
 }
+
+object ConcatTable {
+  def apply[A <: Activities : ClassTag, @specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : ConcatTable[A, T] = {
+    new ConcatTable[A, T]()
+  }
+}

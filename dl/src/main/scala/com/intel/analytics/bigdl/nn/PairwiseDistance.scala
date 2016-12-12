@@ -161,3 +161,10 @@ class PairwiseDistance[@specialized(Float, Double) T: ClassTag](
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object PairwiseDistance {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      norm : Int = 2)(implicit ev: TensorNumeric[T]) : PairwiseDistance[T] = {
+    new PairwiseDistance[T](norm)
+  }
+}

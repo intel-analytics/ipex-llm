@@ -58,3 +58,11 @@ class AddConstant[T: ClassTag](
   }
 
 }
+
+object AddConstant {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    constant_scalar: T,
+    inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : AddConstant[T] = {
+    new AddConstant[T](constant_scalar, inplace)
+  }
+}

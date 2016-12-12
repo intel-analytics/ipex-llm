@@ -685,4 +685,14 @@ trait TensorMath[T] {
    * @param y tensor
    */
   def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T]
+
+  /**
+   * resize this tensor size to floor((xmax - xmin) / step) + 1 and set values from
+   * xmin to xmax with step (default to 1).
+   * @param xmin
+   * @param xmax
+   * @param step
+   * @return this tensor
+   */
+  def range(xmin: Double, xmax: Double, step: Int = 1): Tensor[T]
 }

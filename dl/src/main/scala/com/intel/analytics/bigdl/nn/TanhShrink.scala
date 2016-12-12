@@ -46,3 +46,10 @@ class TanhShrink[T: ClassTag](
 
   override def toString: String = s"nn.TanhShrink"
 }
+
+object TanhShrink {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : TanhShrink[T] = {
+    new TanhShrink[T]()
+  }
+}

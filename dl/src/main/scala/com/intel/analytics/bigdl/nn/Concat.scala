@@ -294,3 +294,10 @@ class Concat[T: ClassTag](val dimension: Int)(
     backwardTime = 0
   }
 }
+
+object Concat {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dimension: Int)(implicit ev: TensorNumeric[T]) : Concat[T] = {
+    new Concat[T](dimension)
+  }
+}

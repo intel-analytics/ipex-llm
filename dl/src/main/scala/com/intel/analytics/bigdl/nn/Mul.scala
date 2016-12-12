@@ -86,3 +86,10 @@ class Mul[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
     s"nn.Mul"
   }
 }
+
+object Mul {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : Mul[T] = {
+    new Mul[T]()
+  }
+}

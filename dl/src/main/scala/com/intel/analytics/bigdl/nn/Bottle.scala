@@ -123,3 +123,12 @@ class Bottle[T: ClassTag](
     state.map(getHashCode).foldLeft(0)((a, b) => 37 * a + b)
   }
 }
+
+object Bottle {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    module: Module[Tensor[T], Tensor[T], T],
+    nInputDim: Int = 2,
+    nOutputDim1: Int = Int.MaxValue)(implicit ev: TensorNumeric[T]) : Bottle[T] = {
+    new Bottle[T](module, nInputDim, nOutputDim1)
+  }
+}

@@ -55,3 +55,10 @@ class GradientReversal[T: ClassTag](var lambda: Double = 1) (implicit ev: Tensor
   }
 }
 
+
+object GradientReversal {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      lambda: Double = 1)(implicit ev: TensorNumeric[T]) : GradientReversal[T] = {
+    new GradientReversal[T](lambda)
+  }
+}
