@@ -31,14 +31,23 @@ object LocalImageFiles {
   ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
   // scalastyle:off methodName
-  def LocalDataSet(path: Path, looped: Boolean, scaleTo: Int = 32)
+  def LocalPathDataSet(path: Path, looped: Boolean)
   : LocalDataSet[LabeledImageLocalPath] = {
     val buffer = readPaths(path)
     new LocalArrayDataSet[LabeledImageLocalPath](buffer, looped)
   }
 
+  def LocalBytesDataSet(path: Path, looped: Boolean, scaleTo : Int)
+  : LocalDataSet[(Float, Array[Byte])] = {
+    val buffer = readPaths(path).map(imageFile => {
+      (imageFile.label, RGBImage.readImage(imageFile.path, scaleTo))
+    })
+    new LocalArrayDataSet[(Float, Array[Byte])](buffer, looped)
+  }
+
   def DistriDataSet(path: Path, looped: Boolean, sc: SparkContext,
-    partitionNum: Int, scaleTo: Int = 32): DistributedDataSet[(Float, Array[Byte])] = {
+    partitionNum: Int, scaleTo: Int = RGBImage.NO_SCALE)
+  : DistributedDataSet[(Float, Array[Byte])] = {
     val paths = readPaths(path)
     val buffer: Array[(Float, Array[Byte])] = {
       paths.map(imageFile => {

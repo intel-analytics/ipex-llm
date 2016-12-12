@@ -427,7 +427,7 @@ class TransformersSpec extends FlatSpec with Matchers {
   "RGBImage To SeqFile" should "be good" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
     val pathToImage = LabeledPathToRGBImg(RGBImage.NO_SCALE)
-    val dataSource = LocalImageFiles.LocalDataSet(
+    val dataSource = LocalImageFiles.LocalPathDataSet(
       Paths.get(processPath(resource.getPath())),
       looped = false
     )

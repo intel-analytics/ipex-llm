@@ -77,12 +77,6 @@ object DistriOptimizer {
     cachePath: Option[String]
   )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.data().sparkContext
-
-    dataset.originRDD()
-      .sparkContext
-      .getConf
-      .set("spark.task.cpus", coresPerNode.toString)
-
     val partitionNum = dataset.originRDD().partitions.length
     var wallClockTime = 0L
     val driverState = T("epoch" -> state.get[Int]("epoch").getOrElse(1),
@@ -140,7 +134,6 @@ object DistriOptimizer {
             val batch = data.next()
             var b = 0
             require(batch._1.size(1) == batch._2.size(1))
-            require(batch._1.size(1) % _subModelNumber == 0)
             val stackSize = batch._1.size(1) / _subModelNumber
             while (b < _subModelNumber) {
               tensorBuffer(b) = (batch._1.narrow(1, b * stackSize + 1, stackSize),
@@ -223,7 +216,7 @@ object DistriOptimizer {
         gradients.div(ev.fromType[Int](driverParNum))
         state("neval") = driverState[Int]("neval")
         state("epoch") = driverState[Int]("epoch")
-        optimMethod.optimize(_ => (ev.fromType(lossSum.value / stackCount.value), gradients),
+        optimMethod.optimize(_ => (ev.fromType(0.0), gradients),
           weights, state, state)
       })
       val reduceAfter = System.nanoTime()
@@ -400,7 +393,7 @@ object DistriOptimizer {
     models: RDD[Cache[T]],
     pm: ParameterManager[T]
   ): Module[Activities, Activities, T] = {
-    val model = models.first().localModels.head
+    val model = models.map(_.localModels.head).first()
     val modelParameter = model.getParameters()._1
     modelParameter.copy(pm.getParameter())
     model
@@ -429,6 +422,11 @@ class DistriOptimizer[T: ClassTag](
   private var models : RDD[DistriOptimizer.Cache[T]] = null
 
   override def optimize(): Module[Activities, Activities, T] = {
+    dataset.originRDD()
+      .sparkContext
+      .getConf
+      .set("spark.task.cpus", coresPerNode.toString)
+
     if(pm == null) {
       pm = new AllReduceParameterManager[T](
         model.getParameters()._1,

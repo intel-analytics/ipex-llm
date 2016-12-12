@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.lenet
+package com.intel.analytics.bigdl.models.googlenet
 
 import scopt.OptionParser
 
@@ -25,41 +25,23 @@ object Options {
     cache: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
-    batchSize: Int = 32,
-    learningRate: Double = 0.05,
-    maxEpoch: Int = 10,
     coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
   )
 
-  val trainLocalParser = new OptionParser[TrainLocalParams]("BigDL Lenet Example") {
-    head("Train Lenet model on single node")
+  val trainLocalParser = new OptionParser[TrainLocalParams]("BigDL AlexNet Example") {
+    head("Train AlexNet model on single node")
     opt[String]('f', "folder")
-      .text("where you put the MNIST data")
+      .text("where you put your local hadoop sequence files")
       .action((x, c) => c.copy(folder = x))
-
-    opt[Int]('b', "batchSize")
-      .text("batch size")
-      .action((x, c) => c.copy(batchSize = x))
-
     opt[String]("model")
       .text("model snapshot location")
       .action((x, c) => c.copy(modelSnapshot = Some(x)))
-    opt[String]("state")
-      .text("state snapshot location")
-      .action((x, c) => c.copy(stateSnapshot = Some(x)))
-
     opt[String]("cache")
       .text("where to cache the model")
       .action((x, c) => c.copy(cache = Some(x)))
-
-    opt[Double]('r', "learningRate")
-      .text("learning rate")
-      .action((x, c) => c.copy(learningRate = x))
-
-    opt[Int]('e', "maxEpoch")
-      .text("epoch numbers")
-      .action((x, c) => c.copy(maxEpoch = x))
-
+    opt[String]("state")
+      .text("state snapshot location")
+      .action((x, c) => c.copy(stateSnapshot = Some(x)))
     opt[Int]('c', "core")
       .text("cores number to train the model")
       .action((x, c) => c.copy(coreNumber = x))
@@ -70,9 +52,6 @@ object Options {
     cache: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
-    batchSize: Int = 32,
-    learningRate: Double = 0.05,
-    maxEpoch: Int = 10,
     coreNumberPerNode: Int = -1,
     nodesNumber: Int = -1
   )
@@ -82,9 +61,6 @@ object Options {
     opt[String]('f', "folder")
       .text("where you put the MNIST data")
       .action((x, c) => c.copy(folder = x))
-    opt[Int]('b', "batchSize")
-      .text("batch size")
-      .action((x, c) => c.copy(batchSize = x))
     opt[String]("model")
       .text("model snapshot location")
       .action((x, c) => c.copy(modelSnapshot = Some(x)))
@@ -94,12 +70,6 @@ object Options {
     opt[String]("cache")
       .text("where to cache the model")
       .action((x, c) => c.copy(cache = Some(x)))
-    opt[Double]('r', "learningRate")
-      .text("learning rate")
-      .action((x, c) => c.copy(learningRate = x))
-    opt[Int]('e', "maxEpoch")
-      .text("epoch numbers")
-      .action((x, c) => c.copy(maxEpoch = x))
     opt[Int]('c', "core")
       .text("cores number on each node")
       .action((x, c) => c.copy(coreNumberPerNode = x))

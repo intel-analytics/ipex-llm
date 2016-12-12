@@ -14,39 +14,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.intel.analytics.bigdl.models.lenet
+package com.intel.analytics.bigdl.models.googlenet
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.nn.{Module, Criterion, ClassNLLCriterion}
+import com.intel.analytics.bigdl.models.alexnet.{AlexNet, DataSet, Options}
+import com.intel.analytics.bigdl.models.alexnet.Options._
+import com.intel.analytics.bigdl.nn.{Criterion, ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Activities, Engine, MklBlas, T}
-import org.apache.spark.{SparkConf, SparkContext}
+import com.intel.analytics.bigdl.utils.{Engine, Activities, T}
+import org.apache.spark.SparkContext
 
 object Train {
-  object Local {
+  object GoogleNetv1_Local {
     import Options._
     def main(args: Array[String]): Unit = {
       trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
-        val trainData = Paths.get(param.folder, "/train-images.idx3-ubyte")
-        val trainDLabel = Paths.get(param.folder, "/train-labels.idx1-ubyte")
-        val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
-        val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
+        val batchSize = 32
+        val imageSize = 224
 
-        val trainDataSet = DataSet.localDataSet(trainData, trainDLabel, true, param.batchSize)
-        import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
+        val trainData = Paths.get(param.folder, "train")
+        val trainDataSet = DataSet.localDataSet(trainData, imageSize, batchSize,
+          param.coreNumber, true)
+        val validationData = Paths.get(param.folder, "val")
+        val validateDataSet = DataSet.localDataSet(validationData, imageSize, batchSize,
+          param.coreNumber, false)
 
         val model = if(param.modelSnapshot.isDefined) {
           Module.load[Float](param.modelSnapshot.get)
         } else {
-          LeNet5(classNum = 10)
+          GoogleNet_v1_NoAuxClassifier(classNum = 1000)
         }
+
         val state = if(param.stateSnapshot.isDefined) {
           T.load(param.stateSnapshot.get)
         } else {
           T(
-            "learningRate" -> param.learningRate
+            "learningRate" -> 0.01,
+            "weightDecay" -> 0.0002,
+            "momentum" -> 0.9,
+            "dampening" -> 0.0,
+            "learningRateSchedule" -> SGD.Poly(0.5, 2400000)
           )
         }
 
@@ -59,43 +67,57 @@ object Train {
         if(param.cache.isDefined) {
           optimizer.setCache(param.cache.get, Trigger.everyEpoch)
         }
-        val validateDataSet = DataSet.localDataSet(validationData, validationLabel, false,
-          param.batchSize)
         optimizer
-          .setValidation(Trigger.everyEpoch, validateDataSet, Array(new Top1Accuracy[Float]))
           .setState(state)
-          .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
+          .setValidation(Trigger.everyEpoch,
+            validateDataSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
+          .setEndWhen(Trigger.maxIteration(2400000))
           .optimize()
       })
     }
   }
 
-  object Spark {
+  object GoogleNetv1_Spark {
     import Options._
     def main(args: Array[String]): Unit = {
       trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
-        val trainData = Paths.get(param.folder, "/train-images.idx3-ubyte")
-        val trainDLabel = Paths.get(param.folder, "/train-labels.idx1-ubyte")
-        val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
-        val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
+        val batchSize = 1600
+        val imageSize = 224
 
-        val conf = Engine.sparkConf().setAppName("Train Lenet")
+        val conf = Engine.sparkConf().setAppName("BigDL GoogleNet v1 Example")
         val sc = new SparkContext(conf)
-
-        val trainDataSet = DataSet.distributedDataSet(trainData, trainDLabel, true, sc,
-          param.nodesNumber, param.batchSize)
-        import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
+        val trainDataSet = DataSet.DistriDataSet(
+          param.folder + "/train",
+          sc,
+          imageSize,
+          batchSize,
+          param.nodesNumber,
+          param.coreNumberPerNode,
+          true)
+        val validateDataSet = DataSet.DistriDataSet(
+          param.folder + "/val",
+          sc,
+          imageSize,
+          batchSize,
+          param.nodesNumber,
+          param.coreNumberPerNode,
+          false)
 
         val model = if(param.modelSnapshot.isDefined) {
           Module.load[Float](param.modelSnapshot.get)
         } else {
-          LeNet5(classNum = 10)
+          GoogleNet_v1_NoAuxClassifier(classNum = 1000)
         }
+
         val state = if(param.stateSnapshot.isDefined) {
           T.load(param.stateSnapshot.get)
         } else {
           T(
-            "learningRate" -> param.learningRate
+            "learningRate" -> 0.0898,
+            "weightDecay" -> 0.0001,
+            "momentum" -> 0.9,
+            "dampening" -> 0.0,
+            "learningRateSchedule" -> SGD.Poly(0.5, 62000)
           )
         }
 
@@ -106,17 +128,19 @@ object Train {
           nodeNumber = param.nodesNumber,
           coresPerNode = param.coreNumberPerNode
         )
-        val validateDataSet = DataSet.distributedDataSet(validationData, validationLabel, false,
-          sc, param.nodesNumber, param.batchSize)
+
         if(param.cache.isDefined) {
           optimizer.setCache(param.cache.get, Trigger.everyEpoch)
         }
+
         optimizer
-          .setValidation(Trigger.everyEpoch, validateDataSet, Array(new Top1Accuracy[Float]))
           .setState(state)
-          .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
+          .setValidation(Trigger.everyEpoch,
+            validateDataSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
+          .setEndWhen(Trigger.maxIteration(62000))
           .optimize()
       })
     }
   }
 }
+

@@ -22,7 +22,7 @@ import java.util.concurrent.{ConcurrentLinkedQueue, Executors, ThreadFactory}
 
 import com.intel.analytics.bigdl.mkl.MKL
 import org.apache.log4j.Logger
-import org.apache.spark.Logging
+import org.apache.spark.{SparkConf, Logging}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.Duration
@@ -42,7 +42,7 @@ object Engine{
 
   private val singletonCounter : AtomicInteger = new AtomicInteger(0)
 
-  private var doCheckSingleton = true
+  private var doCheckSingleton = false
 
   def disableCheckSingleton() : Unit = doCheckSingleton = false
 
@@ -84,7 +84,7 @@ object Engine{
   }
 
   def setThreadPool(size : Int): Unit = {
-    threadPool.set(spawnThreadPool(poolSize))
+    threadPool.set(spawnThreadPool(defaultPoolSize))
   }
 
   def setThreadPool(): Unit = setThreadPool(defaultPoolSize)
@@ -96,22 +96,6 @@ object Engine{
       pool = threadPool.get()
     }
     pool
-  }
-
-  if(Engine.engineType == MklBlas) {
-    require(System.getenv("OMP_NUM_THREADS") == "1", "Under MKL_BLAS mode. Please set env " +
-      "variable OMP_NUM_THREADS to 1")
-    require(System.getenv("OMP_WAIT_POLICY") == "passive", "Under MKL_BLAS mode. Please set " +
-      "env variable OMP_WAIT_POLICY to passive")
-    require(System.getenv("KMP_BLOCKTIME") == "0", "Under MKL_BLAS mode. Please set " +
-      "env variable KMP_BLOCKTIME to 0")
-  } else if(Engine.engineType == MklDnn){
-    require(System.getenv("OMP_NUM_THREADS") == "", "Under MKL_DNN mode. Please unset env " +
-      "variable OMP_NUM_THREADS")
-    require(System.getenv("OMP_WAIT_POLICY") == "", "Under MKL_DNN mode. Please unset " +
-      "env variable OMP_WAIT_POLICY")
-    require(System.getenv("KMP_BLOCKTIME") == "", "Under MKL_DNN mode. Please unset " +
-      "env variable KMP_BLOCKTIME")
   }
 
   def invokeAndWait[T](tasks: Seq[() => T], timeout : Duration = Duration.Inf) : Seq[T] = {
@@ -140,17 +124,42 @@ object Engine{
     queuePointer.set(0)
   }
 
+  private val ERROR = "Please use bigdlvars.sh set the env. For spark application, please use" +
+    "Engine.sparkConf() to initialize your sparkConf"
+
   /**
    * Default engine is MklBlas
    */
   private var engineType: EngineType = {
-    val dlEngineType = System.getProperty("DL_ENGINE_TYPE", "MklBlas")
-    if (dlEngineType.toLowerCase == "mklblas") {
+    val dlEngineType = System.getenv("DL_ENGINE_TYPE")
+
+    if (dlEngineType == null || dlEngineType.toLowerCase == "mklblas") {
       MklBlas
     } else if (dlEngineType.toLowerCase == "mkldnn") {
       MklDnn
     } else {
-      throw new Error(s"Unkown DL_ENGINE_TYPE = $dlEngineType, Please use MklBlas or MklDnn")
+      throw new Error(s"Unkown DL_ENGINE_TYPE. $ERROR")
+    }
+  }
+
+  def sparkConf(): SparkConf = {
+    if(engineType == MklBlas) {
+      new SparkConf().setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
+        .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
+        .setExecutorEnv("KMP_BLOCKTIME", "0")
+        .setExecutorEnv("OMP_WAIT_POLICY", "passive")
+        .setExecutorEnv("OMP_NUM_THREADS", "1")
+        .set("spark.task.maxFailures", "1")
+        .set("spark.shuffle.blockTransferService", "nio")
+        .set("spark.akka.frameSize", "10")
+        .set("spark.task.cpus", "28")
+    } else {
+      new SparkConf().setExecutorEnv("DL_ENGINE_TYPE", "mkldnn")
+        .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
+        .set("spark.task.maxFailures", "1")
+        .set("spark.shuffle.blockTransferService", "nio")
+        .set("spark.akka.frameSize", "10")
+        .set("spark.task.cpus", "28")
     }
   }
 
@@ -165,12 +174,26 @@ object Engine{
     this.engineType
   }
 
+  if(Engine.getEngineType() == MklBlas) {
+    require(System.getenv("OMP_NUM_THREADS") == "1", "Invalid env setting. " + ERROR)
+    require(System.getenv("OMP_WAIT_POLICY") == "passive", "Invalid env setting. " + ERROR)
+    require(System.getenv("KMP_BLOCKTIME") == "0", "Invalid env setting. " + ERROR)
+  } else if(Engine.getEngineType() == MklDnn){
+    require(System.getenv("OMP_NUM_THREADS") == null, "Invalid env setting. " + ERROR)
+    require(System.getenv("OMP_WAIT_POLICY") == null, "Invalid env setting. " + ERROR)
+    require(System.getenv("KMP_BLOCKTIME") == null, "Invalid env setting. " + ERROR)
+  }
+
   // =========== below is old code, will be removed after refactor===================
   /**
    * Work load parallelism
    */
-  private var poolSize: Int = System.getProperty("dl.engine.cores",
-    (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
+  private var poolSize: Int = if(getEngineType() == MklBlas) {
+    1
+  } else {
+    System.getProperty("dl.engine.cores",
+      (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
+  }
 
 
   def setCoreNum(size: Int): Unit = {
