@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.{Criterion, ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.optim.{DistriOptimizer, Trigger, LocalOptimizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Activities
+import com.intel.analytics.bigdl.utils.{Engine, Activities}
 import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.rdd.RDD
 import scopt.OptionParser
@@ -112,7 +112,7 @@ object DistriOptimizerPerf {
     val criterion = ClassNLLCriterion[T]().asInstanceOf[Criterion[Activities, T]]
     val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
 
-    val conf = new SparkConf().setAppName("DistriOptimizer Performance Test")
+    val conf = Engine.sparkConf().setAppName("DistriOptimizer Performance Test")
     val sc = new SparkContext(conf)
     val broadcast = sc.broadcast((input, labels))
     val rdd = sc.parallelize((1 to param.nodeNumber), param.nodeNumber).mapPartitions(iter => {

@@ -3,7 +3,6 @@
 if [ -z "$1" ]
 then
     echo "No engine type"
-    exit 1
 else
     if [ "$1" = "mkl_blas" ]; then
         echo "Set engine type to mkl_blas"
@@ -19,6 +18,5 @@ else
         export DL_ENGINE_TYPE=mkldnn
     else
         echo "Invalid engine type"
-        exit 1
     fi
 fi
