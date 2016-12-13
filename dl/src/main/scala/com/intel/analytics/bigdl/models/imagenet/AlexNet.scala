@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.models.imagenet
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
+import numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -28,10 +29,8 @@ import scala.reflect.ClassTag
  * This is AlexNet that was presented in the One Weird Trick paper. http://arxiv.org/abs/1404.5997
  */
 object AlexNet_OWT {
-  def apply[T: ClassTag](classNum: Int, hasDropout : Boolean = true, firstLayerPropagateBack :
-  Boolean = false)
-    (implicit ev: TensorNumeric[T]): Module[T] = {
-
+  def apply(classNum: Int, hasDropout : Boolean = true, firstLayerPropagateBack :
+  Boolean = false): Module[Float] = {
     val model = Sequential()
     model.add(SpatialConvolution(3, 64, 11, 11, 4, 4, 2, 2, 1, firstLayerPropagateBack)
       .setName("conv1"))
@@ -64,8 +63,7 @@ object AlexNet_OWT {
  * ILSVRC2012 winner
  */
 object AlexNet {
-  def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[T] = {
+  def apply(classNum: Int): Module[Float] = {
     val model = Sequential()
     model.add(SpatialConvolution(3, 96, 11, 11, 4, 4, 0, 0, 1, false).setName("conv1"))
     model.add(ReLU(true).setName("relu1"))

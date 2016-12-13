@@ -17,16 +17,12 @@
 
 package com.intel.analytics.bigdl.models.imagenet
 
-import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
-import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 object Vgg_16 {
-  def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[T] = {
+  def apply(classNum: Int): Module[Float] = {
     val model = Sequential()
     model.add(SpatialConvolution(3, 64, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))
@@ -79,8 +75,7 @@ object Vgg_16 {
 }
 
 object Vgg_19 {
-  def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[T] = {
+  def apply(classNum: Int): Module[Float] = {
     val model = Sequential()
     model.add(SpatialConvolution(3, 64, 3, 3, 1, 1, 1, 1))
     model.add(ReLU(true))

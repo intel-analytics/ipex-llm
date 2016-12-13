@@ -102,7 +102,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
 
   it should "save model to given path" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
-    val model = AlexNet[Float](1000)
+    val model = AlexNet(1000)
     val dummyOptimizer = new Optimizer[Float](model, Trigger.severalIteration(5)) {
       override def optimize(): Module[Float] = {
         saveModel()
@@ -120,7 +120,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
 
   it should "save model and state to given path with postfix" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
-    val model = AlexNet[Float](1000)
+    val model = AlexNet(1000)
     val dummyOptimizer = new Optimizer[Float](model, Trigger.severalIteration(5)) {
       override def optimize(): Module[Float] = {
         saveModel(".test")

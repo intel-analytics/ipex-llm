@@ -17,18 +17,21 @@
 package com.intel.analytics
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.language.implicitConversions
 
 package object bigdl {
   type Module[T] = com.intel.analytics.bigdl.nn.abstractnn.Module[Activity, Activity, T]
-  type Criterion[T] = com.intel.analytics.bigdl.nn.abstractnn.Criterion[Activity, T]
+  type Criterion[T] = com.intel.analytics.bigdl.nn.abstractnn.Criterion[Activity, Activity, T]
 
   implicit def convModule[T](
     module: com.intel.analytics.bigdl.nn.abstractnn.Module[_, _, T]
   ): Module[T] = module.asInstanceOf[Module[T]]
 
   implicit def convCriterion[T](
-    criterion: com.intel.analytics.bigdl.nn.abstractnn.Criterion[_, T]
+    criterion: com.intel.analytics.bigdl.nn.abstractnn.Criterion[_, _, T]
   ): Criterion[T] = criterion.asInstanceOf[Criterion[T]]
+
+  val numeric = com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 }

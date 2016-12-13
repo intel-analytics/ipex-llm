@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
  */
 class CosineEmbeddingCriterion[T: ClassTag]
  (val margin: Double = 0.0, val sizeAverage: Boolean = true)
- (implicit ev: TensorNumeric[T]) extends Criterion[Table, T]{
+ (implicit ev: TensorNumeric[T]) extends Criterion[Table, Table, T]{
   @transient
   private var buffer: Tensor[T] = null
   @transient

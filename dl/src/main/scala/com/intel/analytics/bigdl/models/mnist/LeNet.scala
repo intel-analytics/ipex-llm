@@ -18,15 +18,11 @@
 package com.intel.analytics.bigdl.models.mnist
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn.{Linear, LogSoftMax, SpatialMaxPooling, _}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
-import scala.reflect.ClassTag
 
 object LeNet5 {
-  def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[T] = {
+  def apply(classNum: Int): Module[Float] = {
     val model = Sequential()
     model.add(Reshape(Array(1, 28, 28)))
     model.add(SpatialConvolution(1, 6, 5, 5))

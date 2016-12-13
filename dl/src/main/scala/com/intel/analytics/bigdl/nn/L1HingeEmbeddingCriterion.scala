@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
  * @param margin
  */
 class L1HingeEmbeddingCriterion[T: ClassTag](val margin: Double = 1)
- (implicit ev: TensorNumeric[T]) extends Criterion[Table, T]{
+ (implicit ev: TensorNumeric[T]) extends Criterion[Table, Table, T]{
 
   private def mathSign(t: T): T = {
     var res = 0

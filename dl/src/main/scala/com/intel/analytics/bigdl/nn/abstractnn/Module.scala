@@ -156,10 +156,7 @@ abstract class Module[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @param input
    * @return
    */
-  def updateOutput(input: A): B = {
-    this.output = input.asInstanceOf[B]
-    output
-  }
+  def updateOutput(input: A): B
 
   /**
    * Computing the gradient of the module with respect to its own input. This is returned in

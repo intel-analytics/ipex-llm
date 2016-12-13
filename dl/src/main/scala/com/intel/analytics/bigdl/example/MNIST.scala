@@ -23,7 +23,7 @@ import java.nio.file.{Files, Paths}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.TensorNumericDouble
+import com.intel.analytics.bigdl.numeric.NumericDouble
 
 object MNIST {
   val rowN = 28

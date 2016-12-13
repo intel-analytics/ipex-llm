@@ -46,15 +46,15 @@ object MNISTLocal {
 
   private val configs = Map(
     "mlp" -> Config(
-      MLP[Float](classNum = 10),
+      MLP(classNum = 10),
       ClassNLLCriterion[Float](),
-      new SGD[Float](), 10, 10, 0.05),
+      new SGD(), 10, 10, 0.05),
     "cnn" -> Config(
-      SimpleCNN[Float](classNum = 10),
+      SimpleCNN(classNum = 10),
       ClassNLLCriterion[Float](),
-      new SGD[Float](), 10, 10, 0.05),
+      new SGD(), 10, 10, 0.05),
     "lenet" -> Config(
-      LeNet5[Float](classNum = 10),
+      LeNet5(classNum = 10),
       ClassNLLCriterion[Float](),
       new SGD[Float](), 10, 10, 0.05)
   )

@@ -25,9 +25,9 @@ import org.apache.commons.lang3.SerializationUtils
 import scala.reflect.ClassTag
 
 abstract class TensorCriterion[@specialized(Float, Double) T: ClassTag]
-(implicit ev: TensorNumeric[T]) extends Criterion[Tensor[T], T]
+(implicit ev: TensorNumeric[T]) extends Criterion[Tensor[T], Tensor[T], T]
 
-abstract class Criterion[A <: Activity: ClassTag,
+abstract class Criterion[A <: Activity: ClassTag, B <: Activity: ClassTag,
 @specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
   var gradInput: A = Activity[A, T]()
@@ -39,29 +39,29 @@ abstract class Criterion[A <: Activity: ClassTag,
     case _ => throw new IllegalArgumentException("Activity only support tensor and table now")
   }
 
-  def forward(input: A, target: A): T = {
+  def forward(input: A, target: B): T = {
     updateOutput(input, target)
   }
 
-  def backward(input: A, target: A): A = {
+  def backward(input: A, target: B): A = {
     updateGradInput(input, target)
   }
 
-  def updateOutput(input: A, target: A): T = {
+  def updateOutput(input: A, target: B): T = {
     this.output
   }
 
-  def updateGradInput(input: A, target: A): A
+  def updateGradInput(input: A, target: B): A
 
-  def cloneCriterion(): Criterion[A, T] = {
+  def cloneCriterion(): Criterion[A, B, T] = {
     SerializationUtils.clone(this)
   }
 
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[Criterion[A, T]]
+  def canEqual(other: Any): Boolean = other.isInstanceOf[Criterion[A, B, T]]
 
   override def equals(other: Any): Boolean = other match {
-    case that: Criterion[A, T] =>
+    case that: Criterion[A, B, T] =>
       (that canEqual this) &&
         (that.getClass equals this.getClass) &&
         output == that.output

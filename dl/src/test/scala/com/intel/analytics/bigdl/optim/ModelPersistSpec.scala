@@ -61,7 +61,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     val filePath = java.io.File.createTempFile("ModelPersistSpec", ".model").getAbsolutePath
     val mp = new ModelPersistTest[Float]
     mp.setPath(filePath)
-    val model = AlexNet_OWT[Float](1000, false, true)
+    val model = AlexNet_OWT(1000, false, true)
 
     val input = Tensor[Float](4, 3, 227, 227).rand()
     val grad = Tensor[Float](4, 1000).rand()
@@ -102,18 +102,18 @@ class ModelPersistSpec extends FlatSpec with Matchers {
 
   "save model with iteration number" should "be correct" in {
     val filePath = java.io.File.createTempFile("ModelPersistSpec", ".model").getAbsolutePath
-    val mp = new ModelPersistTest[Double]
+    val mp = new ModelPersistTest[Float]
     mp.setModelSaveInterval(10)
     mp.setPath(filePath)
-    val model = AlexNet[Double](1000)
+    val model = AlexNet(1000)
     mp.saveModel(model, 10, true)
-    val loadedModel = Module.load[Tensor[Double], Tensor[Double], Double](filePath + ".10")
+    val loadedModel = Module.load[Tensor[Float], Tensor[Float], Float](filePath + ".10")
     loadedModel should be(model)
   }
 
   "save state without iteration number" should "be correct" in {
     val filePath = java.io.File.createTempFile("ModelPersistSpec", ".model").getAbsolutePath
-    val mp = new ModelPersistTest[Double]
+    val mp = new ModelPersistTest[Float]
     mp.setPath(filePath)
     val state = T("test" -> 123)
     mp.saveState(state)
@@ -123,7 +123,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
 
   "save state with iteration number" should "be correct" in {
     val filePath = java.io.File.createTempFile("ModelPersistSpec", ".model").getAbsolutePath
-    val mp = new ModelPersistTest[Double]
+    val mp = new ModelPersistTest[Float]
     mp.setModelSaveInterval(10)
     mp.setPath(filePath)
     val state = T("test" -> 123)

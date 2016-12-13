@@ -17,20 +17,16 @@
 
 package com.intel.analytics.bigdl.models.mnist
 
-import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
-import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 object SimpleCNN {
   val rowN = 28
   val colN = 28
   val featureSize = rowN * colN
 
-  def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[T] = {
+  def apply(classNum: Int): Module[Float] = {
     val model = Sequential()
     model.add(Reshape(Array(1, rowN, colN)))
     model.add(SpatialConvolution(1, 32, 5, 5))

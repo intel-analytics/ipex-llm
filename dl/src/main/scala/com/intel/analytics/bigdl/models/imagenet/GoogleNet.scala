@@ -17,17 +17,15 @@
 
 package com.intel.analytics.bigdl.models.imagenet
 
-import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
-import scala.reflect.ClassTag
-
 object GoogleNet_v1 {
-  private def inception[D: ClassTag](inputSize: Int, config: Table, namePrefix : String)(
-    implicit ev: TensorNumeric[D]): Module[D] = {
+  private def inception(inputSize: Int, config: Table, namePrefix : String)
+  : Module[Float] = {
     val concat = Concat(2)
     val conv1 = Sequential()
     conv1.add(SpatialConvolution(inputSize,
@@ -59,8 +57,7 @@ object GoogleNet_v1 {
     concat
   }
 
-  def apply[D: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[D]): Module[D] = {
+  def apply(classNum: Int): Module[Float] = {
     val feature1 = Sequential()
     feature1.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false).setInitMethod(Xavier)
       .setName("conv1/7x7_s2"))
@@ -141,8 +138,8 @@ object GoogleNet_v1 {
 }
 
 object GoogleNet_v2_NoAuxClassifier {
-  def apply[D: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[D]): Module[D] = {
+  def apply(classNum: Int)
+    (implicit ev: TensorNumeric[Float]): Module[Float] = {
     val model = Sequential()
     model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
       .setName("conv1/7x7_s2"))
@@ -178,8 +175,7 @@ object GoogleNet_v2_NoAuxClassifier {
     model
   }
 
-  def inception[D: ClassTag](inputSize: Int, config: Table, namePrefix : String)(
-    implicit ev: TensorNumeric[D]): Module[D] = {
+  def inception(inputSize: Int, config: Table, namePrefix : String): Module[Float] = {
     val concat = Concat(2)
     if (config[Table](1)[Int](1) != 0) {
       val conv1 = Sequential()
@@ -260,8 +256,7 @@ object GoogleNet_v2_NoAuxClassifier {
 }
 
 object GoogleNet_v2 {
-  def apply[D: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[D]): Module[D] = {
+  def apply(classNum: Int): Module[Float] = {
     val features1 = Sequential()
     features1.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
       .setName("conv1/7x7_s2"))
@@ -299,7 +294,7 @@ object GoogleNet_v2 {
     features2.add(inception(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)), "inception_4d/"))
     features2.add(inception(576, T(T(0), T(128, 192), T(192, 256), T("max", 0)), "inception_4e/"))
 
-    val output2 = Sequential[D]
+    val output2 = Sequential()
     output2.add(SpatialAveragePooling(5, 5, 3, 3).ceil().setName("pool4/5x5_s3"))
     output2.add(SpatialConvolution(1024, 128, 1, 1, 1, 1).setName("loss2/conv"))
     output2.add(SpatialBatchNormalization(128, 1e-3).setName("loss2/conv/bn"))
@@ -341,8 +336,8 @@ object GoogleNet_v2 {
     model
   }
 
-  def inception[D: ClassTag](inputSize: Int, config: Table, namePrefix : String)(
-    implicit ev: TensorNumeric[D]): Module[D] = {
+  def inception(inputSize: Int, config: Table, namePrefix : String)
+  : Module[Float] = {
     val concat = Concat(2)
     if (config[Table](1)[Int](1) != 0) {
       val conv1 = Sequential()

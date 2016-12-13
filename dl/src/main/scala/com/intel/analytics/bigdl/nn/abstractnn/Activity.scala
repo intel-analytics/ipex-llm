@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect._
 
 trait Activity {
-  def toTensor[T]: Tensor[T] = this match {
+  def toTensor[T](implicit ev: TensorNumeric[T]): Tensor[T] = this match {
     case tensor: Tensor[T] => tensor
     case table: Table => throw
       new IllegalArgumentException("Table cannot be cast to Tensor")

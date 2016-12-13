@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
  */
 class MarginRankingCriterion[T: ClassTag]
 (val margin: Double = 1.0, val sizeAverage: Boolean = true)
- (implicit ev: TensorNumeric[T]) extends Criterion[Table, T] {
+ (implicit ev: TensorNumeric[T]) extends Criterion[Table, Table, T] {
 
   @transient
   var mask: Tensor[T] = null
