@@ -126,7 +126,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         aux_classifier:add(nn.SpatialBatchNormalization(128,1e-3))
         aux_classifier:add(nn.View(128*4*4):setNumInputDims(3))
         aux_classifier:add(nn.Linear(128*4*4,768))
-        aux_classifier:add(nn.ReLU())
+        aux_classifier:add(nn.ReLU(true))
         aux_classifier:add(nn.Linear(768,nClasses))
         aux_classifier:add(nn.LogSoftMax())
         local splitter = nn.Concat(2)
@@ -318,7 +318,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
         aux_classifier:add(nn.View(128*4*4):setNumInputDims(3))
         aux_classifier:add(nn.Linear(128*4*4,768))
-        aux_classifier:add(nn.ReLU())
+        aux_classifier:add(nn.ReLU(true))
         aux_classifier:add(nn.Linear(768,nClasses))
         aux_classifier:add(nn.LogSoftMax())
 
