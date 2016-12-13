@@ -41,11 +41,19 @@ class Sequential[A <: Activities : ClassTag, B <: Activities : ClassTag, T: Clas
     var i = modules.length - 1
     var error = nextError.asInstanceOf[Activities]
     while (i > 0) {
-      val input = modules(i - 1).output
-      error = modules(i).backward(input, error)
-      i -= 1
+      if (modules(i).propagateBack) {
+        val input = modules(i - 1).output
+        error = modules(i).backward(input, error)
+        i -= 1
+      } else {
+        println(s"${modules(i).getName()} does not need backward computation.")
+      }
     }
-    error = modules(0).backward(input.asInstanceOf[Activities], error)
+    if (modules(0).propagateBack) {
+      error = modules(0).backward(input.asInstanceOf[Activities], error)
+    } else {
+      println(s"${modules(0).getName()} does not need backward computation.")
+    }
 
     this.gradInput = error.asInstanceOf[A]
     gradInput

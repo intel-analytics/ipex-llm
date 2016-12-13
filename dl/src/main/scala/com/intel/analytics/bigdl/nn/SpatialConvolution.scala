@@ -36,9 +36,9 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
   val padW: Int = 0, // The additional zeros added per width to the input planes.
   val padH: Int = 0, // The additional zeros added per height to the input planes.
   val nGroup: Int = 1, // Kernel group number
-  val propagateBack: Boolean = true, // propagate gradient back
+  propagateBack: Boolean = true, // propagate gradient back
   private var initMethod: InitializationMethod = Default
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T](propagateBack) {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
