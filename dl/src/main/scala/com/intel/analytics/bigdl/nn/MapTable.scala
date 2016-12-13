@@ -16,7 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Module}
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
@@ -30,27 +30,27 @@ import scala.reflect.ClassTag
  * @param module
  */
 class MapTable[T: ClassTag](
-  var module: Module[_ <: Activity, _ <: Activity, T] = null)
+  var module: AbstractModule[_ <: Activity, _ <: Activity, T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T]  {
 
   private def extend(n: Int): Unit = {
-    modules.update(0, module.asInstanceOf[Module[Activity, Activity, T]])
+    modules.update(0, module.asInstanceOf[AbstractModule[Activity, Activity, T]])
     var i = 1
     while (i <= n && modules.size <= i) {
         modules.append(module
           .cloneModule()
-          .asInstanceOf[Module[Activity, Activity, T]])
+          .asInstanceOf[AbstractModule[Activity, Activity, T]])
       i += 1
     }
   }
 
-  override def add(module: Module[_ <: Activity, _ <: Activity, T]): this.type = {
+  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     require(module != null, "Single module required")
     this.module = module
     if (modules.nonEmpty) {
-      modules.update(0, module.asInstanceOf[Module[Activity, Activity, T]])
+      modules.update(0, module.asInstanceOf[AbstractModule[Activity, Activity, T]])
     } else {
-      modules.append(module.asInstanceOf[Module[Activity, Activity, T]])
+      modules.append(module.asInstanceOf[AbstractModule[Activity, Activity, T]])
     }
     this
   }
@@ -115,7 +115,7 @@ class MapTable[T: ClassTag](
 
 object MapTable {
   def apply[@specialized(Float, Double) T: ClassTag](
-      module: Module[_ <: Activity, _ <: Activity, T] = null
+      module: AbstractModule[_ <: Activity, _ <: Activity, T] = null
   )(implicit ev: TensorNumeric[T]) : MapTable[T] = {
     new MapTable[T](module)
   }

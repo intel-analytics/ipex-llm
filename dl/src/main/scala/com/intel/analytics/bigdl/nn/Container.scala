@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Module}
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -26,14 +26,14 @@ import scala.reflect.ClassTag
 
 private[nn] abstract class Container[A <: Activity : ClassTag,
     B <: Activity : ClassTag, T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends Module[A, B, T] {
+  implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T] {
 
   // list of sub modules
-  val modules: ArrayBuffer[Module[Activity, Activity, T]]
-  = ArrayBuffer[Module[Activity, Activity, T]]()
+  val modules: ArrayBuffer[AbstractModule[Activity, Activity, T]]
+  = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
 
-  def add(module: Module[_ <: Activity, _ <: Activity, T]): this.type = {
-    modules += module.asInstanceOf[Module[Activity, Activity, T]]
+  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
+    modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     this
   }
 
@@ -67,7 +67,7 @@ private[nn] abstract class Container[A <: Activity : ClassTag,
   }
 
   override def getTimes():
-    Array[(Module[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+    Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
     this.modules.flatMap(_.getTimes()).toArray
   }
 

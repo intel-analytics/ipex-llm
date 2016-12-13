@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Module}
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -98,13 +98,13 @@ class Sequential[T: ClassTag]
 
     s"nn.Sequential {${line + tab}[input -> ${
       modules.zipWithIndex.map {
-        case (m: Module[Activity, Activity, T], i: Int) => "(" + (i + 1) + ")"
+        case (m: AbstractModule[Activity, Activity, T], i: Int) => "(" + (i + 1) + ")"
       }.
         mkString(" -> ")
     } -> output]${line + tab}" +
       s"${
         modules.zipWithIndex.map {
-          case (model: Module[Activity, Activity, T], index: Int)
+          case (model: AbstractModule[Activity, Activity, T], index: Int)
           => s"(${index + 1}): ${model.setLine(line + tab)}"
         }.
           mkString(line + tab)

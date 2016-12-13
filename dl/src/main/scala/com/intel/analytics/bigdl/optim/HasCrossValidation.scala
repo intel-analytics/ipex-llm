@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Module}
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.log4j.Logger
@@ -57,7 +57,7 @@ trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable{
     this
   }
 
-  def test(module: Module[_ <: Activity, _ <: Activity, T],
+  def test(module: AbstractModule[_ <: Activity, _ <: Activity, T],
     iter: Int, wallClockNanoTime: Option[Long] = None): Array[Double] = {
     if (testDataSet.isDefined && iter % testInterval == 0) {
       evalMethods.map(evalM => {

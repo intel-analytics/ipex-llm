@@ -16,7 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Criterion}
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractCriterion}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.T
 
@@ -27,12 +27,12 @@ import scala.reflect.ClassTag
  * a weighted sum of other criterions each applied to the same input and target;
  */
 class MultiCriterion[T: ClassTag]
-(implicit ev: TensorNumeric[T]) extends Criterion[Activity, Activity, T] {
+(implicit ev: TensorNumeric[T]) extends AbstractCriterion[Activity, Activity, T] {
 
   private val weights = new ArrayBuffer[Double]
   private val criterions = T()
 
-  def add(criterion: Criterion[Activity, Activity, T], weight: Double = 1): Unit = {
+  def add(criterion: AbstractCriterion[Activity, Activity, T], weight: Double = 1): Unit = {
     criterions.insert(criterions.length() + 1, criterion)
     weights.append(weight)
   }
@@ -40,7 +40,7 @@ class MultiCriterion[T: ClassTag]
     var i = 1
     while (i <= criterions.length) {
       output = ev.plus(output, ev.times(ev.fromType(weights(i-1)),
-        criterions[Criterion[Activity, Activity, T]](i).updateOutput(input, target)))
+        criterions[AbstractCriterion[Activity, Activity, T]](i).updateOutput(input, target)))
       i +=1
     }
     output
@@ -53,7 +53,7 @@ class MultiCriterion[T: ClassTag]
     var i = 1
     while (i <= criterions.length) {
       Utils.recursiveAdd(gradInput, weights(i - 1),
-        criterions[Criterion[Activity, Activity, T]](i).updateGradInput(input, target))
+        criterions[AbstractCriterion[Activity, Activity, T]](i).updateGradInput(input, target))
       i += 1
     }
     gradInput

@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Module}
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -96,7 +96,7 @@ class Concat[T: ClassTag](val dimension: Int)(
     this.output
   }
 
-  override def getTimes(): Array[(Module[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+  override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
     this.modules.flatMap(_.getTimes()).toArray ++
       Array((this, forwardTimeOverhead, backwardTime))
   }
@@ -276,7 +276,7 @@ class Concat[T: ClassTag](val dimension: Int)(
     val extlast = "       "
     s"nn.Concat {$line${tab}input$line${
       modules.zipWithIndex
-        .map { case (model: Module[Activity, Activity, T], index: Int)
+        .map { case (model: AbstractModule[Activity, Activity, T], index: Int)
         => s"$tab$next(${index + 1}): ${
           if (index == modules.length - 1) {
             model.setLine(line + tab + extlast)

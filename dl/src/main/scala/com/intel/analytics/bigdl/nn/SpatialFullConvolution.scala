@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Module}
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.Table
@@ -72,7 +72,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   var adjH: Int = 0,
   val noBias: Boolean = false,
   private var initMethod: InitializationMethod = Default
-  )(implicit ev: TensorNumeric[T]) extends Module[A, Tensor[T], T]{
+  )(implicit ev: TensorNumeric[T]) extends AbstractModule[A, Tensor[T], T]{
 
   require(adjW <= dW - 1 && adjH <= dH - 1,
     "adjW and adjH must be smaller than dW - 1 and dH - 1 respectively")

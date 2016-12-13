@@ -16,7 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.Module
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -36,7 +36,7 @@ class JoinTable[T: ClassTag] (
   val dimension: Int,
   val nInputDims: Int
 )(implicit ev: TensorNumeric[T])
-  extends Module[Table, Tensor[T], T] {
+  extends AbstractModule[Table, Tensor[T], T] {
 
   private def getPositiveDimension(input: Table): Int = {
     var nDim = this.dimension

@@ -25,7 +25,7 @@ import org.apache.commons.lang3.SerializationUtils
 import scala.reflect.ClassTag
 
 abstract class TensorModule[T: ClassTag]
-  (implicit ev: TensorNumeric[T]) extends Module[Tensor[T], Tensor[T], T]
+  (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T]
 
 /**
  * Module is the basic component of a neural network. It forward activities and backward gradients.
@@ -35,7 +35,7 @@ abstract class TensorModule[T: ClassTag]
  * @tparam B Output data type
  * @tparam T Numeric type. Only support float/double now
  */
-abstract class Module[A <: Activity: ClassTag, B <: Activity: ClassTag,
+abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 @specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
 
@@ -106,7 +106,7 @@ abstract class Module[A <: Activity: ClassTag, B <: Activity: ClassTag,
 
   protected var backwardTime = 0L
 
-  def getTimes(): Array[(Module[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+  def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
     Array((this, forwardTime, backwardTime))
   }
 
@@ -196,7 +196,7 @@ abstract class Module[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   def getParameters(): (Tensor[T], Tensor[T]) = {
     val (weightParameters, gradParameters) = this.parameters()
-    (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
+    (AbstractModule.flatten[T](weightParameters), AbstractModule.flatten[T](gradParameters))
   }
 
   /**
@@ -247,14 +247,14 @@ abstract class Module[A <: Activity: ClassTag, B <: Activity: ClassTag,
     this
   }
 
-  def cloneModule(): Module[A, B, T] = {
+  def cloneModule(): AbstractModule[A, B, T] = {
     SerializationUtils.clone(this)
   }
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[Module[A, B, T]]
+  def canEqual(other: Any): Boolean = other.isInstanceOf[AbstractModule[A, B, T]]
 
   override def equals(other: Any): Boolean = other match {
-    case that: Module[A, B, T] =>
+    case that: AbstractModule[A, B, T] =>
       (that canEqual this) &&
         (that.getClass equals this.getClass) &&
         output == that.output &&
@@ -275,10 +275,10 @@ abstract class Module[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 }
 
-object Module {
+object AbstractModule {
   def load[A <: Activity: ClassTag, B <: Activity: ClassTag,
-  @specialized(Float, Double) T: ClassTag](path : String) : Module[A, B, T] = {
-    File.load[Module[A, B, T]](path)
+  @specialized(Float, Double) T: ClassTag](path : String) : AbstractModule[A, B, T] = {
+    File.load[AbstractModule[A, B, T]](path)
   }
 
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(
