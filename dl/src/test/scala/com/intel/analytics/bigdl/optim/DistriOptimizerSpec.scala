@@ -27,7 +27,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-object RDDOptimizerSpec {
+object DistriOptimizerSpec {
   val input1: Tensor[Double] = Tensor[Double](Storage[Double](Array(0.0, 1.0, 0.0, 1.0)))
   val output1 = 0.0
   val input2: Tensor[Double] = Tensor[Double](Storage[Double](Array(1.0, 0.0, 1.0, 0.0)))
@@ -56,7 +56,7 @@ object RDDOptimizerSpec {
   }
 }
 
-object RDDOptimizerSpecModel {
+object DistriOptimizerSpecModel {
   def MSE[T]: Module[Activities, Activities, T] = {
     val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
     mlp.add(new Linear(4, 2))
@@ -74,10 +74,10 @@ object RDDOptimizerSpecModel {
   }
 }
 
-class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
-  import RDDOptimizerSpec._
-  import RDDOptimizerSpecModel._
+  import DistriOptimizerSpec._
+  import DistriOptimizerSpecModel._
 
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)

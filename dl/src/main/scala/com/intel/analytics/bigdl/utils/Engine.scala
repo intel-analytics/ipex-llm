@@ -175,13 +175,17 @@ object Engine{
   }
 
   if(Engine.getEngineType() == MklBlas) {
-    require(System.getenv("OMP_NUM_THREADS") == "1", "Invalid env setting. " + ERROR)
-    require(System.getenv("OMP_WAIT_POLICY") == "passive", "Invalid env setting. " + ERROR)
-    require(System.getenv("KMP_BLOCKTIME") == "0", "Invalid env setting. " + ERROR)
+    if(System.getenv("OMP_NUM_THREADS") != "1"
+      || System.getenv("OMP_WAIT_POLICY") != "passive"
+      || System.getenv("KMP_BLOCKTIME") != "0") {
+      logger.warn("Invalid env setting. " + ERROR)
+    }
   } else if(Engine.getEngineType() == MklDnn){
-    require(System.getenv("OMP_NUM_THREADS") == null, "Invalid env setting. " + ERROR)
-    require(System.getenv("OMP_WAIT_POLICY") == null, "Invalid env setting. " + ERROR)
-    require(System.getenv("KMP_BLOCKTIME") == null, "Invalid env setting. " + ERROR)
+    if(System.getenv("OMP_NUM_THREADS") != null
+      || System.getenv("OMP_WAIT_POLICY") != null
+      || System.getenv("KMP_BLOCKTIME") != null) {
+      logger.warn("Invalid env setting. " + ERROR)
+    }
   }
 
   // =========== below is old code, will be removed after refactor===================
