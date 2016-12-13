@@ -63,7 +63,7 @@ class LBFGS[@specialized(Float, Double) T: ClassTag](
    *         `f[#f]` is the final fully optimized value, at `x*`
    */
   override def optimize(opfunc: (Tensor[T]) => (T, Tensor[T]), x: Tensor[T],
-    config: Table, state: Table): (Tensor[T], Array[T]) = {
+    config: Table, state: Table, decay: Double = 1.0): (Tensor[T], Array[T]) = {
     val _config = if (config == null) T() else config
     val _state = if (state == null) _config else state
 

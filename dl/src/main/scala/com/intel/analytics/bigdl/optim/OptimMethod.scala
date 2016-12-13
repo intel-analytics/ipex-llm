@@ -36,7 +36,7 @@ trait OptimMethod[@specialized(Float, Double) T] extends Serializable {
    * @return the new x vector and the function list, evaluated before the update
    */
   def optimize(feval: (Tensor[T]) => (T, Tensor[T]), parameter: Tensor[T], config: Table,
-    state: Table = null): (Tensor[T], Array[T])
+    state: Table = null, decay: Double = 1.0): (Tensor[T], Array[T])
 }
 
 trait IterateByItself

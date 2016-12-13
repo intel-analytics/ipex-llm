@@ -41,7 +41,8 @@ class Adagrad[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeri
    * @return the new x vector and the function list, evaluated before the update
    */
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]),
-    parameter: Tensor[T], config: Table, state: Table): (Tensor[T], Array[T]) = {
+    parameter: Tensor[T], config: Table, state: Table, decay: Double = 1.0):
+  (Tensor[T], Array[T]) = {
 
     val _config = if (config == null) T() else config
     val _state = if (state == null) _config else state
