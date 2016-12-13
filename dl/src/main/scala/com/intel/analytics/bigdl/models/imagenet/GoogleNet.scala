@@ -138,8 +138,7 @@ object GoogleNet_v1 {
 }
 
 object GoogleNet_v2_NoAuxClassifier {
-  def apply(classNum: Int)
-    (implicit ev: TensorNumeric[Float]): Module[Float] = {
+  def apply(classNum: Int): Module[Float] = {
     val model = Sequential()
     model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
       .setName("conv1/7x7_s2"))
