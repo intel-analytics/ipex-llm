@@ -16,7 +16,7 @@
  */
 package com.intel.analytics.bigdl.models.utils
 
-import com.intel.analytics.bigdl.dataset.LocalDataSet
+import com.intel.analytics.bigdl.dataset.{Batch, LocalDataSet}
 import com.intel.analytics.bigdl.models.imagenet._
 import com.intel.analytics.bigdl.models.mnist.LeNet5
 import com.intel.analytics.bigdl.nn.{Module, Criterion, ClassNLLCriterion}
@@ -104,13 +104,13 @@ object LocalOptimizerPerf {
     println(model)
     val criterion = ClassNLLCriterion[T]().asInstanceOf[Criterion[Activities, T]]
     val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
-    val dummyDataSet = new LocalDataSet[(Tensor[T], Tensor[T])] {
-      override def data(): Iterator[(Tensor[T], Tensor[T])] = {
-        new Iterator[(Tensor[T], Tensor[T])] {
+    val dummyDataSet = new LocalDataSet[Batch[T]] {
+      override def data(): Iterator[Batch[T]] = {
+        new Iterator[Batch[T]] {
           override def hasNext: Boolean = true
 
-          override def next(): (Tensor[T], Tensor[T]) = {
-            (input, labels)
+          override def next(): Batch[T] = {
+            Batch(input, labels)
           }
         }
       }

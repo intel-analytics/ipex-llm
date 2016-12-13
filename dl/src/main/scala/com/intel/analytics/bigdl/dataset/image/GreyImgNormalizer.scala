@@ -21,9 +21,9 @@ import com.intel.analytics.bigdl.dataset.{LocalDataSet, Transformer}
 
 import scala.collection.Iterator
 
-object LabeledGreyImgNormalizer {
+object GreyImgNormalizer {
   def apply(dataSource: LocalDataSet[LabeledGreyImage], samples: Int = Int.MaxValue)
-  : LabeledGreyImgNormalizer = {
+  : GreyImgNormalizer = {
     var sum: Double = 0
     var total: Int = 0
     dataSource.shuffle()
@@ -52,15 +52,15 @@ object LabeledGreyImgNormalizer {
       i += 1
     }
     val std = math.sqrt(sum / total).toFloat
-    new LabeledGreyImgNormalizer(mean, std)
+    new GreyImgNormalizer(mean, std)
   }
 
-  def apply(mean : Double, std : Double): LabeledGreyImgNormalizer = {
-    new LabeledGreyImgNormalizer(mean, std)
+  def apply(mean : Double, std : Double): GreyImgNormalizer = {
+    new GreyImgNormalizer(mean, std)
   }
 }
 
-class LabeledGreyImgNormalizer(mean : Double, std : Double)
+class GreyImgNormalizer(mean : Double, std : Double)
   extends Transformer[LabeledGreyImage, LabeledGreyImage] {
 
   def getMean(): Double = mean

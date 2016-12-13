@@ -17,22 +17,22 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{Batch, DataSet, LocalDataSet}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Activities, RandomGenerator, T}
 import org.scalatest.{FlatSpec, Matchers}
 
-object DummyDataSet extends LocalDataSet[(Tensor[Float], Tensor[Float])] {
+object DummyDataSet extends LocalDataSet[Batch[Float]] {
   val totalSize = 10
   var isCrossEntropy = true
 
-  def CREDataSet: LocalDataSet[(Tensor[Float], Tensor[Float])] = {
+  def CREDataSet: LocalDataSet[Batch[Float]] = {
     isCrossEntropy = true
     DummyDataSet
   }
 
-  def MSEDataSet: LocalDataSet[(Tensor[Float], Tensor[Float])] = {
+  def MSEDataSet: LocalDataSet[Batch[Float]] = {
     isCrossEntropy = false
     DummyDataSet
   }
@@ -79,15 +79,15 @@ object DummyDataSet extends LocalDataSet[(Tensor[Float], Tensor[Float])] {
 
   override def shuffle(): Unit = {}
 
-  override def data(): Iterator[(Tensor[Float], Tensor[Float])] = {
-    new Iterator[(Tensor[Float], Tensor[Float])] {
+  override def data(): Iterator[Batch[Float]] = {
+    new Iterator[Batch[Float]] {
       var i = 0
 
       override def hasNext: Boolean = true
 
-      override def next(): (Tensor[Float], Tensor[Float]) = {
+      override def next(): Batch[Float] = {
         i += 1
-        (feature, if (isCrossEntropy) labelCrossEntropy else labelMSE)
+        Batch(feature, if (isCrossEntropy) labelCrossEntropy else labelMSE)
       }
     }
   }

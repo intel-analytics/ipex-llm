@@ -17,24 +17,22 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
 
 import scala.collection.Iterator
 
-object LabeledBytesToGreyImg {
-  def apply(row: Int, col: Int): LabeledBytesToGreyImg
-  = new LabeledBytesToGreyImg(row, col)
+object SampleToRGBImg {
+  def apply(normalize: Float = 255f): SampleToRGBImg =
+    new SampleToRGBImg(normalize)
 }
 
-class LabeledBytesToGreyImg(row: Int, col: Int)
-  extends Transformer[(Float, Array[Byte]), LabeledGreyImage] {
-  private val buffer = new LabeledGreyImage(row, col)
+class SampleToRGBImg(normalize: Float)
+  extends Transformer[Sample, LabeledRGBImage] {
+  private val buffer = new LabeledRGBImage()
 
-  override def apply(prev: Iterator[(Float, Array[Byte])]): Iterator[LabeledGreyImage] = {
+  override def apply(prev: Iterator[Sample]): Iterator[LabeledRGBImage] = {
     prev.map(rawData => {
-      require(row * col == rawData._2.length)
-      require(rawData._1 >= 1)
-      buffer.setLabel(rawData._1).copy(rawData._2, 255.0f)
+      buffer.copy(rawData.data, normalize).setLabel(rawData.label)
     })
   }
 }

@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{SeqFileLocalPath, Transformer}
+import com.intel.analytics.bigdl.dataset.{Sample, SeqFileLocalPath, Transformer}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.SequenceFile.Reader
 import org.apache.hadoop.io.{SequenceFile, Text}
@@ -28,7 +28,7 @@ object LocalSeqFileToBytes {
   def apply(): LocalSeqFileToBytes = new LocalSeqFileToBytes()
 }
 
-class LocalSeqFileToBytes extends Transformer[SeqFileLocalPath, (Float, Array[Byte])] {
+class LocalSeqFileToBytes extends Transformer[SeqFileLocalPath, Sample] {
 
   import org.apache.hadoop.fs.{Path => hPath}
 
@@ -43,11 +43,11 @@ class LocalSeqFileToBytes extends Transformer[SeqFileLocalPath, (Float, Array[By
   private var reader: SequenceFile.Reader = null
 
   @transient
-  private var oneRecordBuffer: (Float, Array[Byte]) = null
+  private var oneRecordBuffer: Sample = null
 
-  override def apply(prev: Iterator[SeqFileLocalPath]): Iterator[(Float, Array[Byte])] = {
-    new Iterator[(Float, Array[Byte])] {
-      override def next(): (Float, Array[Byte]) = {
+  override def apply(prev: Iterator[SeqFileLocalPath]): Iterator[Sample] = {
+    new Iterator[Sample] {
+      override def next(): Sample= {
         if (oneRecordBuffer != null) {
           val res = oneRecordBuffer
           oneRecordBuffer = null
@@ -70,7 +70,7 @@ class LocalSeqFileToBytes extends Transformer[SeqFileLocalPath, (Float, Array[By
           reader.next(key, value)
         }
 
-        (key.toString.toFloat, value.copyBytes())
+        Sample(value.copyBytes(), key.toString.toFloat)
       }
 
       override def hasNext: Boolean = {
@@ -80,7 +80,7 @@ class LocalSeqFileToBytes extends Transformer[SeqFileLocalPath, (Float, Array[By
           prev.hasNext
         } else {
           if (reader.next(key, value)) {
-            oneRecordBuffer = (key.toString.toFloat, value.copyBytes())
+            oneRecordBuffer = Sample(value.copyBytes(), key.toString.toFloat)
             return true
           } else {
             prev.hasNext

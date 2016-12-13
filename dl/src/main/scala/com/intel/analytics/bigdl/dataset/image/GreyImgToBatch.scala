@@ -17,19 +17,19 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.dataset.{Batch, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.collection.Iterator
 
-object LabeledGreyImageToTensor {
-  def apply(batchSize : Int) : LabeledGreyImageToTensor = {
-    new LabeledGreyImageToTensor(batchSize)
+object GreyImgToBatch {
+  def apply(batchSize : Int) : GreyImgToBatch = {
+    new GreyImgToBatch(batchSize)
   }
 }
 
-class LabeledGreyImageToTensor(batchSize: Int)
-  extends Transformer[LabeledGreyImage, (Tensor[Float], Tensor[Float])] {
+class GreyImgToBatch(batchSize: Int)
+  extends Transformer[LabeledGreyImage, Batch[Float]] {
 
   private def copyImage(img: GreyImage, storage: Array[Float], offset: Int): Unit = {
     val content = img.content
@@ -41,8 +41,8 @@ class LabeledGreyImageToTensor(batchSize: Int)
     }
   }
 
-  override def apply(prev: Iterator[LabeledGreyImage]): Iterator[(Tensor[Float], Tensor[Float])] = {
-    new Iterator[(Tensor[Float], Tensor[Float])] {
+  override def apply(prev: Iterator[LabeledGreyImage]): Iterator[Batch[Float]] = {
+    new Iterator[Batch[Float]] {
       private val featureTensor: Tensor[Float] = Tensor[Float]()
       private val labelTensor: Tensor[Float] = Tensor[Float]()
       private var featureData: Array[Float] = null
@@ -52,7 +52,7 @@ class LabeledGreyImageToTensor(batchSize: Int)
 
       override def hasNext: Boolean = prev.hasNext
 
-      override def next(): (Tensor[Float], Tensor[Float]) = {
+      override def next(): Batch[Float] = {
         if (prev.hasNext) {
           var i = 0
           while (i < batchSize && prev.hasNext) {
@@ -73,7 +73,7 @@ class LabeledGreyImageToTensor(batchSize: Int)
             labelTensor.set(Storage[Float](labelData),
               storageOffset = 1, sizes = Array(i))
           }
-          (featureTensor, labelTensor)
+          Batch(featureTensor, labelTensor)
         } else {
           null
         }

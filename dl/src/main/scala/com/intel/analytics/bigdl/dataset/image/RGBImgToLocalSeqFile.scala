@@ -27,13 +27,13 @@ import org.apache.hadoop.io.{SequenceFile, Text}
 
 import scala.collection.Iterator
 
-object LabeledRGBImgToLocalSeqFile {
-  def apply(blockSize: Int, baseFileName: Path): LabeledRGBImgToLocalSeqFile = {
-    new LabeledRGBImgToLocalSeqFile(blockSize, baseFileName)
+object RGBImgToLocalSeqFile {
+  def apply(blockSize: Int, baseFileName: Path): RGBImgToLocalSeqFile = {
+    new RGBImgToLocalSeqFile(blockSize, baseFileName)
   }
 }
 
-class LabeledRGBImgToLocalSeqFile(blockSize: Int, baseFileName: Path) extends
+class RGBImgToLocalSeqFile(blockSize: Int, baseFileName: Path) extends
   Transformer[LabeledRGBImage, String] {
   private val conf: Configuration = new Configuration
   private var index = 0

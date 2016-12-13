@@ -16,7 +16,7 @@
  */
 package com.intel.analytics.bigdl.models.utils
 
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{Batch, DistributedDataSet, LocalDataSet}
 import com.intel.analytics.bigdl.models.imagenet._
 import com.intel.analytics.bigdl.models.mnist.LeNet5
 import com.intel.analytics.bigdl.nn.{Criterion, ClassNLLCriterion, Module}
@@ -114,16 +114,16 @@ object DistriOptimizerPerf {
 
     val conf = Engine.sparkConf().setAppName("DistriOptimizer Performance Test")
     val sc = new SparkContext(conf)
-    val broadcast = sc.broadcast((input, labels))
+    val broadcast = sc.broadcast(Batch(input, labels))
     val rdd = sc.parallelize((1 to param.nodeNumber), param.nodeNumber).mapPartitions(iter => {
       Iterator.single((broadcast.value))
     }).persist()
     rdd.count()
-    val dummyDataSet = new DistributedDataSet[(Tensor[T], Tensor[T])] {
+    val dummyDataSet = new DistributedDataSet[Batch[T]] {
       override def size(): Long = 100000
       override def shuffle(): Unit = {}
       override def originRDD(): RDD[_] = rdd
-      override def data(): RDD[(Tensor[T], Tensor[T])] = rdd
+      override def data(): RDD[Batch[T]] = rdd
     }
 
     val optimizer = new DistriOptimizer[T](

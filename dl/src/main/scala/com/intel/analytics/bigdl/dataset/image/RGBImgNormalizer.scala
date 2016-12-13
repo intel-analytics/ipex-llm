@@ -21,15 +21,15 @@ import com.intel.analytics.bigdl.dataset.{LocalDataSet, Transformer}
 
 import scala.collection.Iterator
 
-object LabeledRGBImgNormalizer {
+object RGBImgNormalizer {
   def apply(meanR: Double, meanG: Double, meanB: Double,
-    stdR: Double, stdG: Double, stdB: Double): LabeledRGBImgNormalizer = {
+    stdR: Double, stdG: Double, stdB: Double): RGBImgNormalizer = {
 
-    new LabeledRGBImgNormalizer(meanR, meanG, meanB, stdR, stdG, stdB)
+    new RGBImgNormalizer(meanR, meanG, meanB, stdR, stdG, stdB)
   }
 
   def apply(dataSource: LocalDataSet[LabeledRGBImage], samples: Int = Int.MaxValue)
-  : LabeledRGBImgNormalizer = {
+  : RGBImgNormalizer = {
     var sumR: Double = 0
     var sumG: Double = 0
     var sumB: Double = 0
@@ -81,11 +81,11 @@ object LabeledRGBImgNormalizer {
     val stdR = math.sqrt(sumR / total)
     val stdG = math.sqrt(sumG / total)
     val stdB = math.sqrt(sumB / total)
-    new LabeledRGBImgNormalizer(meanR, meanG, meanB, stdR, stdG, stdB)
+    new RGBImgNormalizer(meanR, meanG, meanB, stdR, stdG, stdB)
   }
 }
 
-class LabeledRGBImgNormalizer(meanR: Double, meanG: Double, meanB: Double,
+class RGBImgNormalizer(meanR: Double, meanG: Double, meanB: Double,
   stdR: Double, stdG: Double, stdB: Double)
   extends Transformer[LabeledRGBImage, LabeledRGBImage] {
 

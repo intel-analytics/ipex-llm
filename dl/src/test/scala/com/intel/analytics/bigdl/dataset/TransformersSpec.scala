@@ -33,7 +33,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val tensor = Tensor[Float](Storage[Float](image.content), 1, Array(32, 32))
     tensor.rand()
     RNG.setSeed(1000)
-    val cropper = new LabeledGreyImgCropper(24, 24)
+    val cropper = new GreyImgCropper(24, 24)
     val iter = cropper.apply(Iterator.single(image))
     val result = iter.next()
 
@@ -65,7 +65,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val dataSource = new LocalArrayDataSet[LabeledGreyImage](
       Array(image1, image2, image3), looped = false)
 
-    val normalizer = LabeledGreyImgNormalizer(dataSource)
+    val normalizer = GreyImgNormalizer(dataSource)
     val iter = normalizer.apply(Iterator.single(image1))
     val test = iter.next()
     normalizer.getMean() should be(mean)
@@ -87,14 +87,14 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     val dataSource = new LocalArrayDataSet[LabeledGreyImage](Array(image1, image2, image3), true)
 
-    val toTensor = new LabeledGreyImageToTensor(2)
+    val toTensor = new GreyImgToBatch(2)
     val tensorDataSource = dataSource -> toTensor
     val iter = tensorDataSource.data()
-    val (tensorResult1, labelTensor1) = iter.next()
-    tensorResult1.size(1) should be(2)
-    tensorResult1.size(2) should be(32)
-    tensorResult1.size(3) should be(32)
-    val testData1 = tensorResult1.storage().array()
+    val batch = iter.next()
+    batch.data.size(1) should be(2)
+    batch.data.size(2) should be(32)
+    batch.data.size(3) should be(32)
+    val testData1 = batch.data.storage().array()
     val content1 = image1.content
     var i = 0
     while (i < content1.length) {
@@ -107,11 +107,11 @@ class TransformersSpec extends FlatSpec with Matchers {
       testData1(i + 32 * 32) should be(content2(i))
       i += 1
     }
-    val (tensorResult2, labelTensor2) = iter.next()
+    val batch2 = iter.next()
     val content3 = image3.content
-    tensorResult2.size(1) should be(2)
-    tensorResult2.size(2) should be(32)
-    tensorResult2.size(3) should be(32)
+    batch2.data.size(1) should be(2)
+    batch2.data.size(2) should be(32)
+    batch2.data.size(3) should be(32)
     i = 0
     while (i < content3.length) {
       testData1(i) should be(content3(i))
@@ -129,7 +129,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val tensor = Tensor[Float](Storage[Float](image.content), 1, Array(3, 32, 32))
     tensor.rand()
     RNG.setSeed(1000)
-    val cropper = new LabeledRGBImgCropper(24, 24)
+    val cropper = new RGBImgCropper(24, 24)
     val iter = cropper.apply(Iterator.single(image))
     val result = iter.next()
 
@@ -184,7 +184,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3), false)
 
-    val normalizer = LabeledRGBImgNormalizer(dataSource)
+    val normalizer = RGBImgNormalizer(dataSource)
     val iter = normalizer.apply(Iterator.single(image1))
     val test = iter.next()
     normalizer.getMean() should be((firstFrameMean, secondFrameMean, thirdFrameMean))
@@ -209,100 +209,100 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3), true)
 
-    val toTensor = new LabeledRGBImgToTensor(2)
+    val toTensor = new RGBImgToBatch(2)
     val tensorDataSource = dataSource -> toTensor
     val iter = tensorDataSource.data()
-    val (tensorResult1, labelTensor1) = iter.next()
-    tensorResult1.size(1) should be(2)
-    tensorResult1.size(2) should be(3)
-    tensorResult1.size(3) should be(32)
-    tensorResult1.size(4) should be(32)
+    val batch1 = iter.next()
+    batch1.data.size(1) should be(2)
+    batch1.data.size(2) should be(3)
+    batch1.data.size(3) should be(32)
+    batch1.data.size(4) should be(32)
     val content1 = image1.content
     var i = 0
-    tensorResult1.select(1, 1).select(1, 1).apply1(e => {
+    batch1.data.select(1, 1).select(1, 1).apply1(e => {
       e should be(content1(i * 3))
       i += 1
       e
     })
 
     i = 0
-    tensorResult1.select(1, 1).select(1, 2).apply1(e => {
+    batch1.data.select(1, 1).select(1, 2).apply1(e => {
       e should be(content1(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    tensorResult1.select(1, 1).select(1, 3).apply1(e => {
+    batch1.data.select(1, 1).select(1, 3).apply1(e => {
       e should be(content1(i * 3 + 2))
       i += 1
       e
     })
     val content2 = image2.content
     i = 0
-    tensorResult1.select(1, 2).select(1, 1).apply1(e => {
+    batch1.data.select(1, 2).select(1, 1).apply1(e => {
       e should be(content2(i * 3))
       i += 1
       e
     })
 
     i = 0
-    tensorResult1.select(1, 2).select(1, 2).apply1(e => {
+    batch1.data.select(1, 2).select(1, 2).apply1(e => {
       e should be(content2(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    tensorResult1.select(1, 2).select(1, 3).apply1(e => {
+    batch1.data.select(1, 2).select(1, 3).apply1(e => {
       e should be(content2(i * 3 + 2))
       i += 1
       e
     })
 
-    val (tensorResult2, labelTensor2) = iter.next()
+    val batch = iter.next()
     val content3 = image3.content
-    tensorResult2.size(1) should be(2)
-    tensorResult2.size(2) should be(3)
-    tensorResult2.size(3) should be(32)
-    tensorResult2.size(4) should be(32)
+    batch.data.size(1) should be(2)
+    batch.data.size(2) should be(3)
+    batch.data.size(3) should be(32)
+    batch.data.size(4) should be(32)
 
     i = 0
-    tensorResult2.select(1, 1).select(1, 1).apply1(e => {
+    batch.data.select(1, 1).select(1, 1).apply1(e => {
       e should be(content3(i * 3))
       i += 1
       e
     })
 
     i = 0
-    tensorResult2.select(1, 1).select(1, 2).apply1(e => {
+    batch.data.select(1, 1).select(1, 2).apply1(e => {
       e should be(content3(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    tensorResult2.select(1, 1).select(1, 3).apply1(e => {
+    batch.data.select(1, 1).select(1, 3).apply1(e => {
       e should be(content3(i * 3 + 2))
       i += 1
       e
     })
     i = 0
-    tensorResult2.select(1, 2).select(1, 1).apply1(e => {
+    batch.data.select(1, 2).select(1, 1).apply1(e => {
       e should be(content1(i * 3))
       i += 1
       e
     })
 
     i = 0
-    tensorResult2.select(1, 2).select(1, 2).apply1(e => {
+    batch.data.select(1, 2).select(1, 2).apply1(e => {
       e should be(content1(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    tensorResult2.select(1, 2).select(1, 3).apply1(e => {
+    batch.data.select(1, 2).select(1, 3).apply1(e => {
       e should be(content1(i * 3 + 2))
       i += 1
       e
@@ -327,97 +327,97 @@ class TransformersSpec extends FlatSpec with Matchers {
     )
     val tensorDataSource = dataSource -> toTensor
     val iter = tensorDataSource.data()
-    val (tensorResult1, labelTensor1) = iter.next()
-    tensorResult1.size(1) should be(2)
-    tensorResult1.size(2) should be(3)
-    tensorResult1.size(3) should be(32)
-    tensorResult1.size(4) should be(32)
+    val batch = iter.next()
+    batch.data.size(1) should be(2)
+    batch.data.size(2) should be(3)
+    batch.data.size(3) should be(32)
+    batch.data.size(4) should be(32)
     val content1 = image1.content
     var i = 0
-    tensorResult1.select(1, 1).select(1, 1).apply1(e => {
+    batch.data.select(1, 1).select(1, 1).apply1(e => {
       e should be(content1(i * 3))
       i += 1
       e
     })
 
     i = 0
-    tensorResult1.select(1, 1).select(1, 2).apply1(e => {
+    batch.data.select(1, 1).select(1, 2).apply1(e => {
       e should be(content1(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    tensorResult1.select(1, 1).select(1, 3).apply1(e => {
+    batch.data.select(1, 1).select(1, 3).apply1(e => {
       e should be(content1(i * 3 + 2))
       i += 1
       e
     })
     val content2 = image2.content
     i = 0
-    tensorResult1.select(1, 2).select(1, 1).apply1(e => {
+    batch.data.select(1, 2).select(1, 1).apply1(e => {
       e should be(content2(i * 3))
       i += 1
       e
     })
 
     i = 0
-    tensorResult1.select(1, 2).select(1, 2).apply1(e => {
+    batch.data.select(1, 2).select(1, 2).apply1(e => {
       e should be(content2(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    tensorResult1.select(1, 2).select(1, 3).apply1(e => {
+    batch.data.select(1, 2).select(1, 3).apply1(e => {
       e should be(content2(i * 3 + 2))
       i += 1
       e
     })
 
-    val (tensorResult2, labelTensor2) = iter.next()
+    val batch2 = iter.next()
     val content3 = image3.content
-    tensorResult2.size(1) should be(2)
-    tensorResult2.size(2) should be(3)
-    tensorResult2.size(3) should be(32)
-    tensorResult2.size(4) should be(32)
+    batch2.data.size(1) should be(2)
+    batch2.data.size(2) should be(3)
+    batch2.data.size(3) should be(32)
+    batch2.data.size(4) should be(32)
 
     i = 0
-    tensorResult2.select(1, 1).select(1, 1).apply1(e => {
+    batch2.data.select(1, 1).select(1, 1).apply1(e => {
       e should be(content3(i * 3))
       i += 1
       e
     })
 
     i = 0
-    tensorResult2.select(1, 1).select(1, 2).apply1(e => {
+    batch2.data.select(1, 1).select(1, 2).apply1(e => {
       e should be(content3(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    tensorResult2.select(1, 1).select(1, 3).apply1(e => {
+    batch2.data.select(1, 1).select(1, 3).apply1(e => {
       e should be(content3(i * 3 + 2))
       i += 1
       e
     })
     i = 0
-    tensorResult2.select(1, 2).select(1, 1).apply1(e => {
+    batch2.data.select(1, 2).select(1, 1).apply1(e => {
       e should be(content1(i * 3))
       i += 1
       e
     })
 
     i = 0
-    tensorResult2.select(1, 2).select(1, 2).apply1(e => {
+    batch2.data.select(1, 2).select(1, 2).apply1(e => {
       e should be(content1(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    tensorResult2.select(1, 2).select(1, 3).apply1(e => {
+    batch2.data.select(1, 2).select(1, 3).apply1(e => {
       e should be(content1(i * 3 + 2))
       i += 1
       e
@@ -426,7 +426,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
   "RGBImage To SeqFile" should "be good" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
-    val pathToImage = LabeledPathToRGBImg(RGBImage.NO_SCALE)
+    val pathToImage = LocalImgReader(RGBImage.NO_SCALE)
     val dataSource = LocalImageFiles.LocalPathDataSet(
       Paths.get(processPath(resource.getPath())),
       looped = false
@@ -436,7 +436,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     dataSource.shuffle()
     val tmpFile = Paths.get(java.io.File.createTempFile("UnitTest", "RGBImageToSeqFile").getPath)
-    val seqWriter = LabeledRGBImgToLocalSeqFile(2, tmpFile)
+    val seqWriter = RGBImgToLocalSeqFile(2, tmpFile)
     val writePipeline = dataSource -> pathToImage -> seqWriter
     val iter = writePipeline.data()
     while (iter.hasNext) {
@@ -452,7 +452,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       SeqFileLocalPath(Paths.get(tmpFile + "_5.seq"))
     ), false)
     var count = 0
-    val readPipeline = seqDataSource -> LocalSeqFileToBytes() -> LabeledBytesToRGBImg()
+    val readPipeline = seqDataSource -> LocalSeqFileToBytes() -> SampleToRGBImg()
     val readIter = readPipeline.data()
     readIter.zip((dataSource -> pathToImage).data()).foreach { case (l, r) =>
       l.label() should be(r.label())

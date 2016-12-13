@@ -18,19 +18,19 @@ package com.intel.analytics.bigdl.models.googlenet
 
 import java.nio.file.Path
 
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, SeqFileLocalPath, LocalDataSet}
+import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.spark.SparkContext
 
 object DataSet {
   def localDataSet(path : Path, imageSize : Int, batchSize : Int, parallel: Int, looped : Boolean)
-  : LocalDataSet[(Tensor[Float], Tensor[Float])] = {
+  : LocalDataSet[Batch[Float]] = {
     val ds = SequenceFiles.LocalFiles(path, 1281167, looped)
     val fileTransformer = LocalSeqFileToBytes()
-    val arrayToImage = LabeledBytesToRGBImg()
-    val cropper = LabeledRGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
-    val normalizer = LabeledRGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
+    val arrayToImage = SampleToRGBImg()
+    val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
+    val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
     val flipper = HFlip(0.5)
     val multiThreadToTensor = MTLabeledRGBImgToTensor[SeqFileLocalPath](
       width = imageSize,
@@ -50,14 +50,14 @@ object DataSet {
     nodeNumber: Int,
     coresPerNode : Int,
     looped : Boolean
-  ): DistributedDataSet[(Tensor[Float], Tensor[Float])] = {
+  ): DistributedDataSet[Batch[Float]] = {
     require(batchSize % nodeNumber == 0, "batch size can't be divided by node number")
     val ds = SequenceFiles.HDFSFiles(path, sc, 1000, looped, nodeNumber)
-    val arrayToImage = LabeledBytesToRGBImg()
-    val cropper = LabeledRGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
-    val normalizer = LabeledRGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
+    val arrayToImage = SampleToRGBImg()
+    val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
+    val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
     val flipper = HFlip(0.5)
-    val multiThreadToTensor = MTLabeledRGBImgToTensor[(Float, Array[Byte])](
+    val multiThreadToTensor = MTLabeledRGBImgToTensor[Sample](
       width = imageSize,
       height = imageSize,
       threadNum = coresPerNode,

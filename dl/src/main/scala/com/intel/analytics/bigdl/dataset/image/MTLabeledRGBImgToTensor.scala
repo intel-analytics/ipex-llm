@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dataset.image
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.dataset.{Batch, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 import scala.reflect.ClassTag
@@ -34,7 +34,7 @@ object MTLabeledRGBImgToTensor {
 
 class MTLabeledRGBImgToTensor[A: ClassTag](width: Int, height: Int,
   threadNum: Int, batchSize: Int, transformer: Transformer[A, LabeledRGBImage])
-  extends Transformer[A, (Tensor[Float], Tensor[Float])] {
+  extends Transformer[A, Batch[Float]] {
 
   private def getPosition(count : AtomicInteger): Int = {
     val position = count.getAndIncrement()
@@ -51,15 +51,15 @@ class MTLabeledRGBImgToTensor[A: ClassTag](width: Int, height: Int,
   private val featureTensor: Tensor[Float] = Tensor[Float]()
   private val labelTensor: Tensor[Float] = Tensor[Float]()
 
-  override def apply(prev: Iterator[A]): Iterator[(Tensor[Float], Tensor[Float])] = {
+  override def apply(prev: Iterator[A]): Iterator[Batch[Float]] = {
     val iterators = transformers.map(_.apply(prev))
 
-    new Iterator[(Tensor[Float], Tensor[Float])] {
+    new Iterator[Batch[Float]] {
       override def hasNext: Boolean = {
         iterators.map(_.hasNext).reduce(_ || _)
       }
 
-      override def next(): (Tensor[Float], Tensor[Float]) = {
+      override def next(): Batch[Float] = {
         val count = new AtomicInteger(0)
         val batch = Engine.invokeAndWait((0 until threadNum).map(tid => () => {
           var position = 0
@@ -83,7 +83,7 @@ class MTLabeledRGBImgToTensor[A: ClassTag](width: Int, height: Int,
             storageOffset = 1, sizes = Array(batch))
         }
 
-        (featureTensor, labelTensor)
+        Batch(featureTensor, labelTensor)
       }
     }
   }

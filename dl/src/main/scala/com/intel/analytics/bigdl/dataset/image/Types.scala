@@ -53,11 +53,11 @@ class GreyImage(
   protected var _height: Int
 ) extends Image {
 
-  def copy(source: Array[Byte], scale: Float = 1.0f, offset: Int = 0): this.type = {
+  def copy(source: Array[Byte], normalize: Float = 1.0f, offset: Int = 0): this.type = {
     require(data.length + offset <= source.length)
     var i = 0
     while (i < data.length) {
-      data(i) = (source(i + offset) & 0xff) / scale
+      data(i) = (source(i + offset) & 0xff) / normalize
       i += 1
     }
     this
