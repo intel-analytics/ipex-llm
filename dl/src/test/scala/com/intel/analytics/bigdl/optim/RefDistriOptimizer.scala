@@ -1,6 +1,6 @@
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
 import com.intel.analytics.bigdl.nn.{Criterion, Module}
 import com.intel.analytics.bigdl.ps.FP16Parameter
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -15,9 +15,9 @@ import scala.reflect.ClassTag
  */
 class RefDistriOptimizer[T: ClassTag](
   model: Module[Activities, Activities, T],
-  dataset: DataSource[RDD[(Tensor[T], Tensor[T])]],
+  dataset: DataSource[RDD[Batch[T]]],
   criterion: Criterion[Activities, T])(implicit ev : TensorNumeric[T])
-  extends Optimizer[T, RDD[(Tensor[T], Tensor[T])], RDD[(Tensor[T], Tensor[T])]](
+  extends Optimizer[T, RDD[Batch[T]], RDD[Batch[T]]](
     model, dataset, criterion
   ){
 
@@ -37,7 +37,7 @@ class RefDistriOptimizer[T: ClassTag](
 object RefDistriOptimizer {
   def optimize[T : ClassTag](
     model: Module[Activities, Activities, T],
-    dataset: DataSource[RDD[(Tensor[T], Tensor[T])]],
+    dataset: DataSource[RDD[Batch[T]]],
     criterion: Criterion[Activities, T],
     optimMethod: OptimMethod[T],
     state: Table,
@@ -57,7 +57,9 @@ object RefDistriOptimizer {
         model.zeroGradParameters()
         val fp16W = new FP16Parameter[T](localW)
         fp16W.copyTo(localW)
-        val (input, target) = iter.next()
+        val batch = iter.next()
+        val input = batch.data
+        val target = batch.labels
         val output = model.forward(input).asInstanceOf[Tensor[T]]
         val loss = criterion.forward(output, target)
         model.backward(input, criterion.backward(output, target))

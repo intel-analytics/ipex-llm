@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.DistributedDataSet
+import com.intel.analytics.bigdl.dataset.{Batch, DistributedDataSet}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.ps.{AllReduceParameterManager, OneReduceParameterManager}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -38,7 +38,7 @@ object RDDOptimizerSpec {
 
   val batchSize = 2 * coreNumber
 
-  val prepareData: Int => (Tensor[Double], Tensor[Double]) = index => {
+  val prepareData: Int => (Batch[Double]) = index => {
     val input = Tensor[Double]().resize(batchSize, 4)
     val target = Tensor[Double]().resize(batchSize)
     var i = 0
@@ -52,7 +52,7 @@ object RDDOptimizerSpec {
       }
       i += 1
     }
-    (input, target)
+    Batch(input, target)
   }
 }
 
@@ -84,7 +84,7 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   var sc: SparkContext = null
 
-  var dataSet: DistributedDataSet[(Tensor[Double], Tensor[Double])] = null
+  var dataSet: DistributedDataSet[Batch[Double]] = null
 
   var dataSet2: ShuffleBatchDataSet[(Int), Double] = null
 
@@ -95,10 +95,10 @@ class RDDOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     Engine.disableCheckSingleton()
 
-    dataSet = new DistributedDataSet[(Tensor[Double], Tensor[Double])] {
+    dataSet = new DistributedDataSet[Batch[Double]] {
       override def originRDD(): RDD[_] = rdd
 
-      override def data(): RDD[(Tensor[Double], Tensor[Double])] = rdd
+      override def data(): RDD[Batch[Double]] = rdd
 
       override def size(): Long = 256 * nodeNumber
 

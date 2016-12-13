@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.models.utils
 
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.dataset.image.{LabeledRGBImgToLocalSeqFile, LabeledPathToRGBImg, LocalImageFiles}
+import com.intel.analytics.bigdl.dataset.image.{RGBImgToLocalSeqFile, LocalImgReader, LocalImageFiles}
 import scopt.OptionParser
 
 object ImageNetSeqFileGenerator {
@@ -68,8 +68,8 @@ object ImageNetSeqFileGenerator {
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
-              val pipeline = trainDataSource -> LabeledPathToRGBImg(256) ->
-                LabeledRGBImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "train",
+              val pipeline = trainDataSource -> LocalImgReader(256) ->
+                RGBImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "train",
                   s"imagenet-seq-$tid"))
               val iter = pipeline.data()
               while (iter.hasNext) {
@@ -95,8 +95,8 @@ object ImageNetSeqFileGenerator {
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
-              val pipeline = validationDataSource -> LabeledPathToRGBImg(256) ->
-                LabeledRGBImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "val",
+              val pipeline = validationDataSource -> LocalImgReader(256) ->
+                RGBImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "val",
                   s"imagenet-seq-$tid"))
               val iter = pipeline.data()
               while (iter.hasNext) {

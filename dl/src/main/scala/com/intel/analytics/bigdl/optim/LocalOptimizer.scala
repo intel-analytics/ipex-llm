@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.optim
 
 
-import com.intel.analytics.bigdl.dataset.{DataSet=>DataSource, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch, LocalDataSet}
 import com.intel.analytics.bigdl.nn.{Criterion, Module}
 import com.intel.analytics.bigdl.optim.BetterGradAggEpochOptimizer._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -45,11 +45,11 @@ object LocalOptimizer {
  */
 class LocalOptimizer[T : ClassTag](
   model: Module[Activities, Activities, T],
-  dataset: DataSource[Iterator[(Tensor[T], Tensor[T])]],
+  dataset: DataSource[Iterator[Batch[T]]],
   criterion: Criterion[Activities, T],
   coreNumber: Int
 )(implicit ev : TensorNumeric[T])
-  extends Optimizer[T, Iterator[(Tensor[T], Tensor[T])], Iterator[(Tensor[T], Tensor[T])]](
+  extends Optimizer[T, Iterator[Batch[T]], Iterator[Batch[T]]](
     model, dataset, criterion) {
   import LocalOptimizer._
 
@@ -88,16 +88,16 @@ class LocalOptimizer[T : ClassTag](
       // Fetch data and prepare tensors
       val batch = iter.next()
       var b = 0
-      require(batch._1.size(1) == batch._2.size(1))
-      val stackSize = batch._1.size(1) / subModelNumber
-      val extraSize = batch._1.size(1) % subModelNumber
+      require(batch.data.size(1) == batch.labels.size(1))
+      val stackSize = batch.data.size(1) / subModelNumber
+      val extraSize = batch.data.size(1) % subModelNumber
       val parallelism = if(stackSize == 0) extraSize else subModelNumber
       val tensorBuffer = new Array[(Tensor[T], Tensor[T])](parallelism)
       while (b < parallelism) {
         val offset = b * stackSize + math.min(b, extraSize)
         val length = stackSize + (if(b < extraSize) 1 else 0)
-        tensorBuffer(b) = (batch._1.narrow(1, offset + 1, length),
-          batch._2.narrow(1, offset + 1, length))
+        tensorBuffer(b) = (batch.data.narrow(1, offset + 1, length),
+          batch.labels.narrow(1, offset + 1, length))
         b += 1
       }
       val dataFetchTime = System.nanoTime()
@@ -143,14 +143,14 @@ class LocalOptimizer[T : ClassTag](
       optimMethod.optimize(_ => (ev.fromType(loss), grad), weight, state)
       val end = System.nanoTime()
       wallClockTime += end - start
-      count += batch._1.size(1)
+      count += batch.data.size(1)
       val head =
         header(state[Int]("epoch"), count, dataset.size(), state[Int]("neval"), wallClockTime)
       logger.info(s"$head " +
         s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
         s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
         s"train time ${(end - dataFetchTime) / 1e9}s. " +
-        s"Throughput is ${batch._1.size(1).toDouble / (end - start) * 1e9} img / second")
+        s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} img / second")
       state("neval") = state[Int]("neval") + 1
 
       if (count >= dataset.size()) {

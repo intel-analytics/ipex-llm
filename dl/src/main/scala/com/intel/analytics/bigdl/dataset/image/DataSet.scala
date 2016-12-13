@@ -38,20 +38,20 @@ object LocalImageFiles {
   }
 
   def LocalBytesDataSet(path: Path, looped: Boolean, scaleTo : Int)
-  : LocalDataSet[(Float, Array[Byte])] = {
+  : LocalDataSet[Sample] = {
     val buffer = readPaths(path).map(imageFile => {
-      (imageFile.label, RGBImage.readImage(imageFile.path, scaleTo))
+      Sample(RGBImage.readImage(imageFile.path, scaleTo), imageFile.label)
     })
-    new LocalArrayDataSet[(Float, Array[Byte])](buffer, looped)
+    new LocalArrayDataSet[Sample](buffer, looped)
   }
 
   def DistriDataSet(path: Path, looped: Boolean, sc: SparkContext,
     partitionNum: Int, scaleTo: Int = RGBImage.NO_SCALE)
-  : DistributedDataSet[(Float, Array[Byte])] = {
+  : DistributedDataSet[Sample] = {
     val paths = readPaths(path)
-    val buffer: Array[(Float, Array[Byte])] = {
+    val buffer: Array[Sample] = {
       paths.map(imageFile => {
-        (imageFile.label, RGBImage.readImage(imageFile.path, scaleTo))
+        Sample(RGBImage.readImage(imageFile.path, scaleTo), imageFile.label)
       })
     }
     CachedDistriDataSet(buffer, sc, partitionNum, looped)
@@ -118,12 +118,12 @@ object SequenceFiles {
   }
 
   def HDFSFiles(url: String, sc: SparkContext, classNum: Int, looped: Boolean,
-    partitionNum: Int): DistributedDataSet[(Float, Array[Byte])] = {
+    partitionNum: Int): DistributedDataSet[Sample] = {
     val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text]).map(image => {
-      (image._1.toString.toFloat, image._2.copyBytes())
-    }).filter(_._1 < classNum)
+      Sample(image._2.copyBytes(), image._1.toString.toFloat)
+    }).filter(_.label < classNum)
 
-    CachedDistriDataSet[(Float, Array[Byte])](rawData, partitionNum, looped)
+    CachedDistriDataSet[Sample](rawData, partitionNum, looped)
   }
   // scalastyle:on methodName
 }

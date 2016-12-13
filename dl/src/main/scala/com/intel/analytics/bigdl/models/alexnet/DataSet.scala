@@ -18,18 +18,18 @@ package com.intel.analytics.bigdl.models.alexnet
 
 import java.nio.file.Path
 
-import com.intel.analytics.bigdl.dataset.{SeqFileLocalPath, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{Batch, SeqFileLocalPath, LocalDataSet}
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
 
 object DataSet {
   def localDataSet(path : Path, imageSize : Int, batchSize : Int, parallel: Int, looped : Boolean)
-  : LocalDataSet[(Tensor[Float], Tensor[Float])] = {
+  : LocalDataSet[Batch[Float]] = {
     val ds = SequenceFiles.LocalFiles(path, 1281167, looped)
     val fileTransformer = LocalSeqFileToBytes()
-    val arrayToImage = LabeledBytesToRGBImg()
-    val cropper = LabeledRGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
-    val normalizer = LabeledRGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
+    val arrayToImage = SampleToRGBImg()
+    val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
+    val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
     val flipper = HFlip(0.5)
     val multiThreadToTensor = MTLabeledRGBImgToTensor[SeqFileLocalPath](
       width = imageSize,

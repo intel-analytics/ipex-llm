@@ -20,9 +20,8 @@ package com.intel.analytics.bigdl.models.lenet
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Path}
 
-import com.intel.analytics.bigdl.dataset.image.{LabeledBytesToGreyImg, LabeledGreyImageToTensor, LabeledGreyImgNormalizer}
-import com.intel.analytics.bigdl.dataset.{CachedDistriDataSet, DistributedDataSet, LocalArrayDataSet, LocalDataSet}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dataset.image.{SampleToGreyImg, GreyImgToBatch, GreyImgNormalizer}
+import com.intel.analytics.bigdl.dataset._
 import org.apache.spark.SparkContext
 
 /**
@@ -30,7 +29,7 @@ import org.apache.spark.SparkContext
  * download from http://yann.lecun.com/exdb/mnist/
  */
 object DataSet {
-  private def load(featureFile: Path, labelFile: Path): Array[(Float, Array[Byte])] = {
+  private def load(featureFile: Path, labelFile: Path): Array[Sample] = {
     val labelBuffer = ByteBuffer.wrap(Files.readAllBytes(labelFile))
     val featureBuffer = ByteBuffer.wrap(Files.readAllBytes(featureFile))
     val labelMagicNumber = labelBuffer.getInt()
@@ -46,7 +45,7 @@ object DataSet {
     val rowNum = featureBuffer.getInt()
     val colNum = featureBuffer.getInt()
 
-    val result = new Array[(Float, Array[Byte])](featureCount)
+    val result = new Array[Sample](featureCount)
     var i = 0
     while (i < featureCount) {
       val img = new Array[Byte]((rowNum * colNum))
@@ -59,7 +58,7 @@ object DataSet {
         }
         y += 1
       }
-      result(i) = (labelBuffer.get().toFloat + 1.0f, img)
+      result(i) = Sample(img, labelBuffer.get().toFloat + 1.0f)
       i += 1
     }
 
@@ -67,23 +66,23 @@ object DataSet {
   }
 
   def localDataSet(imagesFile: Path, labelsFile: Path, looped: Boolean, batchSize : Int)
-  : LocalDataSet[(Tensor[Float], Tensor[Float])] = {
+  : LocalDataSet[Batch[Float]] = {
     val buffer = load(imagesFile, labelsFile)
-    val ds = new LocalArrayDataSet[(Float, Array[Byte])](buffer, looped)
-    val arrayByteToImage = LabeledBytesToGreyImg(28, 28)
-    val normalizer = LabeledGreyImgNormalizer(ds -> arrayByteToImage)
-    val toTensor = new LabeledGreyImageToTensor(batchSize)
+    val ds = new LocalArrayDataSet[Sample](buffer, looped)
+    val arrayByteToImage = SampleToGreyImg(28, 28)
+    val normalizer = GreyImgNormalizer(ds -> arrayByteToImage)
+    val toTensor = new GreyImgToBatch(batchSize)
     ds -> arrayByteToImage -> normalizer -> toTensor
   }
 
   def distributedDataSet(imagesFile: Path, labelsFile: Path, looped: Boolean, sc: SparkContext,
-    partitionNum: Int, batchSize : Int): DistributedDataSet[(Tensor[Float], Tensor[Float])] = {
+    partitionNum: Int, batchSize : Int): DistributedDataSet[Batch[Float]] = {
     val buffer = load(imagesFile, labelsFile)
     val ds = CachedDistriDataSet(buffer, sc, partitionNum, looped)
     val arrayByteToImage =
-      LabeledBytesToGreyImg(28, 28)
-    val normalizer = LabeledGreyImgNormalizer(0.5, 0.5)
-    val toTensor = new LabeledGreyImageToTensor(batchSize)
+      SampleToGreyImg(28, 28)
+    val normalizer = GreyImgNormalizer(0.5, 0.5)
+    val toTensor = new GreyImgToBatch(batchSize)
     ds -> arrayByteToImage -> normalizer -> toTensor
   }
 }

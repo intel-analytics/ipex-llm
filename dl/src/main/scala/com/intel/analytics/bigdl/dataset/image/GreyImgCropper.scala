@@ -21,39 +21,38 @@ import com.intel.analytics.bigdl.dataset.Transformer
 
 import scala.collection.Iterator
 
-object LabeledRGBImgCropper {
-  def apply(cropWidth: Int, cropHeight: Int): LabeledRGBImgCropper =
-    new LabeledRGBImgCropper(cropWidth, cropHeight)
+object GreyImgCropper {
+  def apply(cropWidth: Int, cropHeight: Int) : GreyImgCropper = {
+    new GreyImgCropper(cropWidth, cropHeight)
+  }
 }
 
-class LabeledRGBImgCropper(cropWidth: Int, cropHeight: Int)
-  extends Transformer[LabeledRGBImage, LabeledRGBImage] {
+class GreyImgCropper(cropWidth: Int, cropHeight: Int)
+  extends Transformer[LabeledGreyImage, LabeledGreyImage] {
 
   import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
-  private val buffer = new LabeledRGBImage(cropWidth, cropHeight)
+  private val buffer = new LabeledGreyImage(cropWidth, cropHeight)
 
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
+  override def apply(prev: Iterator[LabeledGreyImage]): Iterator[LabeledGreyImage] = {
     prev.map(img => {
       val width = img.width()
       val height = img.height()
       val startW = RNG.uniform(0, width - cropWidth).toInt
       val startH = RNG.uniform(0, height - cropHeight).toInt
-      val startIndex = (startW + startH * width) * 3
+      val startIndex = startW + startH * width
       val frameLength = cropWidth * cropHeight
       val source = img.content
       val target = buffer.content
       var i = 0
       while (i < frameLength) {
-        target(i * 3 + 2) =
-          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3 + 2)
-        target(i * 3 + 1) =
-          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3 + 1)
-        target(i * 3) =
-          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3)
+        target(i) = source(startIndex + (i / cropWidth) * width +
+          (i % cropWidth))
         i += 1
       }
+
       buffer.setLabel(img.label())
     })
   }
 }
+

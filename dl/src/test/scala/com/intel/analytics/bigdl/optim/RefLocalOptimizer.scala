@@ -16,7 +16,7 @@
  */
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
 import com.intel.analytics.bigdl.nn.{Criterion, Module}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -29,10 +29,10 @@ import scala.reflect.ClassTag
  */
 class RefLocalOptimizer[T : ClassTag](
   model: Module[Activities, Activities, T],
-  dataset: DataSource[Iterator[(Tensor[T], Tensor[T])]],
+  dataset: DataSource[Iterator[Batch[T]]],
   criterion: Criterion[Activities, T]
-)(implicit ev : TensorNumeric[T]) extends Optimizer[T, Iterator[(Tensor[T], Tensor[T])],
-  Iterator[(Tensor[T], Tensor[T])]](model, dataset, criterion){
+)(implicit ev : TensorNumeric[T]) extends Optimizer[T, Iterator[Batch[T]],
+  Iterator[Batch[T]]](model, dataset, criterion){
 
   val (w, g) = model.getParameters()
 
@@ -42,7 +42,9 @@ class RefLocalOptimizer[T : ClassTag](
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     while(!endWhen(state)) {
-      val (input, target) = data.next()
+      val batch = data.next()
+      val input = batch.data
+      val target = batch.labels
       model.training()
       model.zeroGradParameters()
       val output = model.forward(input).asInstanceOf[Tensor[T]]

@@ -19,6 +19,8 @@ package com.intel.analytics.bigdl.dataset
 
 import java.nio.file.Path
 
+import com.intel.analytics.bigdl.tensor.Tensor
+
 /**
  * Represent an image
  */
@@ -32,21 +34,28 @@ abstract class Image extends Serializable {
 
 /**
  * Represent a local file path of an image file
+ *
  * @param path
  */
 class ImageLocalPath(val path : Path)
 
 /**
  * Represent a local file path of a hadoop sequence file
+ *
  * @param path
  */
 case class SeqFileLocalPath(val path: Path)
 
 /**
  * Represent a label
+ *
  * @tparam T
  */
 trait Label[T] {
   def setLabel(label: T): this.type
   def label(): T
 }
+
+case class Batch[T](data: Tensor[T], labels: Tensor[T])
+
+case class Sample(data: Array[Byte], label: Float)

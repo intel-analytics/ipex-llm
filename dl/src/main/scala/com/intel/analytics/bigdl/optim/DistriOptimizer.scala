@@ -17,8 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.DistributedDataSet
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch, DistributedDataSet}
 import com.intel.analytics.bigdl.nn.{Criterion, Module}
 import com.intel.analytics.bigdl.ps.{AllReduceParameterManager, ParameterManager}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -62,7 +61,7 @@ object DistriOptimizer {
   }
 
   private[optim] def optimize[T: ClassTag](
-    dataset: DistributedDataSet[(Tensor[T], Tensor[T])],
+    dataset: DistributedDataSet[Batch[T]],
     coresPerNode: Int,
     state : Table,
     endWhen : Trigger,
@@ -71,7 +70,7 @@ object DistriOptimizer {
     pm : ParameterManager[T],
     optimMethod : OptimMethod[T],
     validationTrigger: Option[Trigger],
-    validationDataSet: Option[DataSource[RDD[(Tensor[T], Tensor[T])]]],
+    validationDataSet: Option[DataSource[RDD[Batch[T]]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
     cacheTrigger : Option[Trigger],
     cachePath: Option[String]
@@ -133,11 +132,11 @@ object DistriOptimizer {
           Engine.invoke(Seq(() => {
             val batch = data.next()
             var b = 0
-            require(batch._1.size(1) == batch._2.size(1))
-            val stackSize = batch._1.size(1) / _subModelNumber
+            require(batch.data.size(1) == batch.labels.size(1))
+            val stackSize = batch.data.size(1) / _subModelNumber
             while (b < _subModelNumber) {
-              tensorBuffer(b) = (batch._1.narrow(1, b * stackSize + 1, stackSize),
-                batch._2.narrow(1, b * stackSize + 1, stackSize))
+              tensorBuffer(b) = (batch.data.narrow(1, b * stackSize + 1, stackSize),
+                batch.labels.narrow(1, b * stackSize + 1, stackSize))
               b += 1
             }
           }))
@@ -282,7 +281,7 @@ object DistriOptimizer {
 
   private def initThreadModels[T: ClassTag](
     model: Module[Activities, Activities, T],
-    dataset: DistributedDataSet[(Tensor[T], Tensor[T])],
+    dataset: DistributedDataSet[Batch[T]],
     criterion: Criterion[Activities, T],
     state: Table,
     nodeNumber: Int,
@@ -331,7 +330,7 @@ object DistriOptimizer {
 
   private def validate[T](
     validationTrigger: Option[Trigger],
-    validationDataSet: Option[DataSource[RDD[(Tensor[T], Tensor[T])]]],
+    validationDataSet: Option[DataSource[RDD[Batch[T]]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
     coresPerNode: Int,
     models : RDD[Cache[T]],
@@ -356,17 +355,17 @@ object DistriOptimizer {
       val workingModels = modelIter.next().localModels
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
-        require(batch._1.size(1) == batch._2.size(1))
-        val stackSize = batch._1.size(1) / _subModelNumber
-        val extraSize = batch._1.size(1) % _subModelNumber
+        require(batch.data.size(1) == batch.labels.size(1))
+        val stackSize = batch.data.size(1) / _subModelNumber
+        val extraSize = batch.data.size(1) % _subModelNumber
         val parallelism = if(stackSize == 0) extraSize else _subModelNumber
         Engine.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
               val offset = b * stackSize + math.min(b, extraSize)
               val length = stackSize + (if(b < extraSize) 1 else 0)
-              val input = batch._1.narrow(1, offset + 1, length)
-              val target = batch._2.narrow(1, offset + 1, length)
+              val input = batch.data.narrow(1, offset + 1, length)
+              val target = batch.labels.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)
               vMethods.map(validation => {
                 validation(output.asInstanceOf[Tensor[T]], target)
@@ -402,12 +401,12 @@ object DistriOptimizer {
 
 class DistriOptimizer[T: ClassTag](
   model: Module[Activities, Activities, T],
-  dataset: DistributedDataSet[(Tensor[T], Tensor[T])],
+  dataset: DistributedDataSet[Batch[T]],
   criterion: Criterion[Activities, T],
   nodeNumber: Int,
   coresPerNode: Int)
   (implicit ev: TensorNumeric[T])
-  extends Optimizer[T, RDD[(Tensor[T], Tensor[T])], RDD[(Tensor[T], Tensor[T])]](
+  extends Optimizer[T, RDD[Batch[T]], RDD[Batch[T]]](
     model, dataset, criterion) {
 
   val metrics = new Metrics

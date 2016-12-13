@@ -23,12 +23,12 @@ import com.intel.analytics.bigdl.dataset.Transformer
 
 import scala.collection.Iterator
 
-object LabeledPathToRGBImg {
-  def apply(scaleTo: Int = RGBImage.NO_SCALE, normalize: Float = 255f): LabeledPathToRGBImg
-  = new LabeledPathToRGBImg(scaleTo, normalize)
+object LocalImgReader {
+  def apply(scaleTo: Int = RGBImage.NO_SCALE, normalize: Float = 255f): LocalImgReader
+  = new LocalImgReader(scaleTo, normalize)
 }
 
-class LabeledPathToRGBImg(scaleTo: Int, normalize: Float)
+class LocalImgReader(scaleTo: Int, normalize: Float)
   extends Transformer[LabeledImageLocalPath, LabeledRGBImage] {
   Class.forName("javax.imageio.ImageIO")
   Class.forName("java.awt.color.ICC_ColorSpace")

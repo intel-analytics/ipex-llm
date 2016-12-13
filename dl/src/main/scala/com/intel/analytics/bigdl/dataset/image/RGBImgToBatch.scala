@@ -17,20 +17,20 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.dataset.{Batch, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.collection.Iterator
 
-object LabeledRGBImgToTensor {
-  def apply(batchSize: Int): LabeledRGBImgToTensor = new LabeledRGBImgToTensor(batchSize)
+object RGBImgToBatch {
+  def apply(batchSize: Int): RGBImgToBatch = new RGBImgToBatch(batchSize)
 }
 
-class LabeledRGBImgToTensor(batchSize: Int)
-  extends Transformer[LabeledRGBImage, (Tensor[Float], Tensor[Float])] {
+class RGBImgToBatch(batchSize: Int)
+  extends Transformer[LabeledRGBImage, Batch[Float]] {
 
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[(Tensor[Float], Tensor[Float])] = {
-    new Iterator[(Tensor[Float], Tensor[Float])] {
+  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[Batch[Float]] = {
+    new Iterator[Batch[Float]] {
       private val featureTensor: Tensor[Float] = Tensor[Float]()
       private val labelTensor: Tensor[Float] = Tensor[Float]()
       private var featureData: Array[Float] = null
@@ -40,7 +40,7 @@ class LabeledRGBImgToTensor(batchSize: Int)
 
       override def hasNext: Boolean = prev.hasNext
 
-      override def next(): (Tensor[Float], Tensor[Float]) = {
+      override def next(): Batch[Float] = {
         if (prev.hasNext) {
           var i = 0
           while (i < batchSize && prev.hasNext) {
@@ -63,7 +63,7 @@ class LabeledRGBImgToTensor(batchSize: Int)
               storageOffset = 1, sizes = Array(i))
           }
 
-          (featureTensor, labelTensor)
+          Batch(featureTensor, labelTensor)
         } else {
           null
         }
