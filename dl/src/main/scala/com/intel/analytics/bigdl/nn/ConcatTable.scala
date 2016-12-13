@@ -49,7 +49,7 @@ class ConcatTable[A <: Activities : ClassTag, T : ClassTag]
       out.toTensor[T]().add(in.toTensor[T]())
     } else {
       var i = 1
-      while (i <= out.toTable().length()) {
+      while (i <= in.toTable().length()) {
         addTable(out.toTable()(i), in.toTable()(i))
         i += 1
       }
@@ -102,20 +102,24 @@ class ConcatTable[A <: Activities : ClassTag, T : ClassTag]
     if (isInputTable) {
       var i = 0
       while (i < modules.length) {
-        val currentGradInput = modules(i).updateGradInput(input,
-          gradOutput.toTable()(i + 1))
-        require(currentGradInput.isInstanceOf[Table],
-          "currentGradInput is not a table!")
-        if (i == 0) {
-          if (!wasGradInputTable ||
-            gradInput.toTable().length() != currentGradInput.toTable().length()) {
-            // We need deep copy here.
-            gradInput = cloneTable(currentGradInput).asInstanceOf[A]
+        if (modules(i).propagateBack) {
+          val currentGradInput = modules(i).updateGradInput(input,
+            gradOutput.toTable()(i + 1))
+          require(currentGradInput.isInstanceOf[Table],
+            "currentGradInput is not a table!")
+          if (i == 0) {
+            if (!wasGradInputTable ||
+              gradInput.toTable().length() != currentGradInput.toTable().length()) {
+              // We need deep copy here.
+              gradInput = cloneTable(currentGradInput).asInstanceOf[A]
+            } else {
+              copyTable(gradInput, currentGradInput)
+            }
           } else {
-            copyTable(gradInput, currentGradInput)
+            addTable(gradInput, currentGradInput)
           }
         } else {
-          addTable(gradInput, currentGradInput)
+          println(s"${modules(i).getName()} does not need backward computation.")
         }
         i += 1
       }
@@ -145,7 +149,9 @@ class ConcatTable[A <: Activities : ClassTag, T : ClassTag]
     scale: Double = 1.0): Unit = {
     var i = 0
     while (i < modules.length) {
-      modules(i).accGradParameters(input, gradOutput.toTable()(i + 1), scale)
+      if (modules(i).propagateBack) {
+        modules(i).accGradParameters(input, gradOutput.toTable()(i + 1), scale)
+      }
       i += 1
     }
   }

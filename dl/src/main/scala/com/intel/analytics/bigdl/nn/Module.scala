@@ -27,7 +27,8 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe._
 
 abstract class TensorModule[@specialized(Float, Double) T: ClassTag]
-  (implicit ev: TensorNumeric[T]) extends Module[Tensor[T], Tensor[T], T]
+  (propagateBack: Boolean = true) // propagate gradient back
+  (implicit ev: TensorNumeric[T]) extends Module[Tensor[T], Tensor[T], T](propagateBack)
 
 /**
  * Module is the basic component of a neural network. It forward activities and backward gradients.
@@ -38,8 +39,8 @@ abstract class TensorModule[@specialized(Float, Double) T: ClassTag]
  * @tparam T Numeric type. Only support float/double now
  */
 abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
-  @specialized(Float, Double) T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends Serializable {
+  @specialized(Float, Double) T: ClassTag](var propagateBack: Boolean = true)
+  (implicit ev: TensorNumeric[T]) extends Serializable {
 
   /**
    * The cached output. So we don't compute it again when need it
@@ -109,6 +110,11 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
   def resetTimes(): Unit = {
     forwardTime = 0
     backwardTime = 0
+  }
+
+  def setPropagateBack(propagateBack: Boolean): this.type = {
+    this.propagateBack = propagateBack
+    this
   }
 
   /**
