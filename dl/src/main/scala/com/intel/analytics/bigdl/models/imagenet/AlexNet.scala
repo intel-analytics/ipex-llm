@@ -17,13 +17,9 @@
 
 package com.intel.analytics.bigdl.models.imagenet
 
-import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.Tensor
-import numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
-import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 /**
  * This is AlexNet that was presented in the One Weird Trick paper. http://arxiv.org/abs/1404.5997
