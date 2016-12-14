@@ -38,7 +38,6 @@ object LocalOptimizer {
  * @param model
  * @param dataset
  * @param criterion
- * @param coreNumber
  * @param ev$1
  * @param ev
  * @tparam T
@@ -46,12 +45,13 @@ object LocalOptimizer {
 class LocalOptimizer[T : ClassTag](
   model: Module[Activities, Activities, T],
   dataset: DataSource[Iterator[Batch[T]]],
-  criterion: Criterion[Activities, T],
-  coreNumber: Int
+  criterion: Criterion[Activities, T]
 )(implicit ev : TensorNumeric[T])
   extends Optimizer[T, Iterator[Batch[T]], Iterator[Batch[T]]](
     model, dataset, criterion) {
   import LocalOptimizer._
+
+  private val coreNumber = Engine.coreNumber()
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber

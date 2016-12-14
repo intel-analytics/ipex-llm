@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.{Module, Criterion, ClassNLLCriterion}
 import com.intel.analytics.bigdl.optim.{Trigger, LocalOptimizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Activities
+import com.intel.analytics.bigdl.utils.{Engine, Activities}
 import scopt.OptionParser
 
 import scala.reflect.ClassTag
@@ -118,7 +118,8 @@ object LocalOptimizerPerf {
       override def shuffle(): Unit = {}
     }
 
-    val optimizer = new LocalOptimizer[T](model, dummyDataSet, criterion, param.coreNumber)
+    Engine.setCoreNumber(param.coreNumber)
+    val optimizer = new LocalOptimizer[T](model, dummyDataSet, criterion)
     optimizer.setEndWhen(Trigger.maxIteration(param.iteration)).optimize()
   }
 }

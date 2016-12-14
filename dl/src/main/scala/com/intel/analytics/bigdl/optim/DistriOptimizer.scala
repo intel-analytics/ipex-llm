@@ -285,7 +285,8 @@ object DistriOptimizer {
     criterion: Criterion[Activities, T],
     state: Table,
     nodeNumber: Int,
-    coresPerNode: Int
+    coresPerNode: Int,
+    checkSingleton: Boolean
   ) = {
     val sc = dataset.originRDD().sparkContext
     val broadcast = sc.broadcast((model, criterion, state))
@@ -300,8 +301,10 @@ object DistriOptimizer {
 
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastModel, broadcastCriterion, broadcastState) = broadcast.value
-      require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
-        "Currently not support this")
+      if(checkSingleton) {
+        require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
+          "Currently not support this")
+      }
       Engine.setThreadPool((Runtime.getRuntime().availableProcessors() * 50 / 2))
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = broadcastModel.cloneModule()
@@ -402,12 +405,18 @@ object DistriOptimizer {
 class DistriOptimizer[T: ClassTag](
   model: Module[Activities, Activities, T],
   dataset: DistributedDataSet[Batch[T]],
-  criterion: Criterion[Activities, T],
-  nodeNumber: Int,
-  coresPerNode: Int)
+  criterion: Criterion[Activities, T]
+)
   (implicit ev: TensorNumeric[T])
   extends Optimizer[T, RDD[Batch[T]], RDD[Batch[T]]](
     model, dataset, criterion) {
+
+  def disableCheckSingleton() : this.type = {
+    this.checkSingleton = false
+    this
+  }
+
+  private var checkSingleton = true
 
   val metrics = new Metrics
 
@@ -424,7 +433,7 @@ class DistriOptimizer[T: ClassTag](
     dataset.originRDD()
       .sparkContext
       .getConf
-      .set("spark.task.cpus", coresPerNode.toString)
+      .set("spark.task.cpus", Engine.coreNumber().toString)
 
     if(pm == null) {
       pm = new AllReduceParameterManager[T](
@@ -436,8 +445,12 @@ class DistriOptimizer[T: ClassTag](
 
     optimMethod.clearHistory(state)
 
+    require(Engine.nodeNumber().isDefined, "Node number is not set")
+    val nodeNumber = Engine.nodeNumber().get
+    val coresPerNode = Engine.coreNumber()
+
     models = DistriOptimizer.initThreadModels(
-      model, dataset, criterion, state, nodeNumber, coresPerNode)
+      model, dataset, criterion, state, nodeNumber, coresPerNode, checkSingleton)
 
     DistriOptimizer.optimize(
       dataset,

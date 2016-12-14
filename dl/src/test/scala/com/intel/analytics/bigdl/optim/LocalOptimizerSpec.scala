@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.dataset.{Batch, DataSet, LocalDataSet}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{Activities, RandomGenerator, T}
+import com.intel.analytics.bigdl.utils.{Engine, Activities, RandomGenerator, T}
 import org.scalatest.{FlatSpec, Matchers}
 
 object DummyDataSet extends LocalDataSet[Batch[Float]] {
@@ -116,14 +116,14 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
   import DummyDataSet._
 
   val coreNumber = 4
+  Engine.setCoreNumber(coreNumber)
 
   "Train model with CrossEntropy and SGD" should "be good" in {
     RandomGenerator.RNG.setSeed(1000)
     val optimizer = new LocalOptimizer[Float](
       CREModel,
       CREDataSet,
-      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]],
-      coreNumber
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
     )
 
     val result = optimizer.optimize()
@@ -141,8 +141,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       CREModel,
       CREDataSet,
-      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]],
-      coreNumber
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
     )
     val model = optimizer.optimize()
     val weight = model.getParameters()._1
@@ -166,8 +165,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       MSEModel,
       MSEDataSet,
-      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]],
-      coreNumber
+      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]
     ).setState(T("learningRate" -> 1.0))
 
     val result = optimizer.optimize()
@@ -185,8 +183,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       MSEModel,
       MSEDataSet,
-      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]],
-      coreNumber
+      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]
     ).setState(T("learningRate" -> 1.0)).setEndWhen(Trigger.maxIteration(100))
     val model = optimizer.optimize()
     val weight = model.getParameters()._1
@@ -208,8 +205,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       CREModel,
       CREDataSet,
-      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]],
-      coreNumber
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
     ).setOptimMethod(new LBFGS[Float]())
 
     val result = optimizer.optimize()
@@ -227,8 +223,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       CREModel,
       CREDataSet,
-      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]],
-      coreNumber
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
     ).setOptimMethod(new LBFGS[Float]())
     val model = optimizer.optimize()
     val weight = model.getParameters()._1
@@ -249,8 +244,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       MSEModel,
       MSEDataSet,
-      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]],
-      coreNumber
+      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]
     ).setOptimMethod(new LBFGS[Float]())
 
     val result = optimizer.optimize()
@@ -268,8 +262,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       MSEModel,
       MSEDataSet,
-      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]],
-      coreNumber
+      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]
     ).setOptimMethod(new LBFGS[Float]())
     val model = optimizer.optimize()
     val weight = model.getParameters()._1

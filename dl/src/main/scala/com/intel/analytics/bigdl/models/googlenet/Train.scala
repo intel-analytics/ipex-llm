@@ -58,11 +58,11 @@ object Train {
           )
         }
 
+        Engine.setCoreNumber(param.coreNumber)
         val optimizer = new LocalOptimizer[Float](
           model = model,
           dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]],
-          coreNumber = param.coreNumber
+          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]]
         )
         if(param.cache.isDefined) {
           optimizer.setCache(param.cache.get, Trigger.everyEpoch)
@@ -121,12 +121,12 @@ object Train {
           )
         }
 
+        Engine.setCoreNumber(param.coreNumberPerNode)
+        Engine.setNodeNumber(param.nodesNumber)
         val optimizer = new DistriOptimizer[Float](
           model = model,
           dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]],
-          nodeNumber = param.nodesNumber,
-          coresPerNode = param.coreNumberPerNode
+          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]]
         )
 
         if(param.cache.isDefined) {

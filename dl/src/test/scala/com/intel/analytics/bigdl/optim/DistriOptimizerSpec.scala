@@ -35,6 +35,8 @@ object DistriOptimizerSpec {
   var plusOne = 0.0
   val nodeNumber = 4
   val coreNumber = 4
+  Engine.setCoreNum(coreNumber)
+  Engine.setNodeNumber(nodeNumber)
 
   val batchSize = 2 * coreNumber
 
@@ -93,8 +95,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber).map(prepareData)
 
-    Engine.disableCheckSingleton()
-
     dataSet = new DistributedDataSet[Batch[Double]] {
       override def originRDD(): RDD[_] = rdd
 
@@ -120,8 +120,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = new DistriOptimizer(
       MSE,
       dataSet,
-      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
-      nodeNumber, coreNumber).setOptimMethod(new LBFGS)
+      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]])
+      .setOptimMethod(new LBFGS).disableCheckSingleton()
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -135,8 +135,9 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val mm = MSE[Double]
     mm.getParameters()._1.fill(0.125)
     val optimizer = new DistriOptimizer[Double](mm, dataSet,
-      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
-      nodeNumber, coreNumber).setState(T("learningRate" -> 20.0)).setEndWhen(Trigger.maxEpoch(5))
+      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]])
+      .setState(T("learningRate" -> 20.0)).setEndWhen(Trigger.maxEpoch(5))
+      .disableCheckSingleton()
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -151,8 +152,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = new DistriOptimizer(
       MSE,
       dataSet,
-      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
-      nodeNumber, coreNumber)
+      new MSECriterion[Double]().asInstanceOf[Criterion[Activities, Double]])
+      .disableCheckSingleton()
     val model = optimizer.optimize()
 
     RandomGenerator.RNG.setSeed(10)
@@ -170,8 +171,9 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     "be trained with good result" in {
     plusOne = 1.0
     val optimizer = new DistriOptimizer[Double](CRE, dataSet,
-      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
-      nodeNumber, coreNumber).setEndWhen(Trigger.maxEpoch(3)).setOptimMethod(new LBFGS)
+      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]])
+      .setEndWhen(Trigger.maxEpoch(3)).setOptimMethod(new LBFGS)
+      .disableCheckSingleton()
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -186,8 +188,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     plusOne = 1.0
     RandomGenerator.RNG.setSeed(10)
     val optimizer = new DistriOptimizer[Double](CRE[Double], dataSet,
-      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
-      nodeNumber, coreNumber).setState(T("learningRate" -> 20.0))
+      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]])
+      .setState(T("learningRate" -> 20.0)).disableCheckSingleton()
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -203,10 +205,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = new DistriOptimizer[Double](
       CRE,
       dataSet,
-      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]],
-      nodeNumber,
-      coreNumber
-    ).setState(T("learningRate" -> 20.0))
+      new ClassNLLCriterion[Double]().asInstanceOf[Criterion[Activities, Double]]
+    ).setState(T("learningRate" -> 20.0)).disableCheckSingleton()
     val model = optimizer.optimize()
 
     RandomGenerator.RNG.setSeed(10)
