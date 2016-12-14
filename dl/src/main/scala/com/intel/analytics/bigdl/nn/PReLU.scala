@@ -102,7 +102,7 @@ class PReLU[T: ClassTag](
       var i = 0
       while (i < bs) {
         val _i = i
-        results(_i) = Future {
+        Engine.model.invoke(() => {
           var nInputOffset = input.storageOffset() - 1 + _i * nOutputPlane * ks
           var nOutputOffset = output.storageOffset() - 1 + _i * nOutputPlane * ks
           var j = 0
@@ -121,14 +121,10 @@ class PReLU[T: ClassTag](
             nOutputOffset += ks
             j += 1
           }
-        }(Engine.getInstance())
+        })
         i += 1
       }
-      i = 0
-      while (i < bs) {
-        Await.result(results(i), Duration.Inf)
-        i += 1
-      }
+      Engine.model.sync()
     }
 
     output
@@ -179,7 +175,7 @@ class PReLU[T: ClassTag](
       var i = 0
       while (i < bs) {
         val _i = i
-        results(_i) = Future {
+        Engine.model.invoke(() => {
           var nInputOffset = input.storageOffset() - 1 + _i * nOutputPlane * ks
           var nGradOutputOffset = gradOutput.storageOffset() - 1 + _i * nOutputPlane * ks
           var nGradInputOffset = gradInput.storageOffset() - 1 + _i * nOutputPlane * ks
@@ -201,14 +197,10 @@ class PReLU[T: ClassTag](
             nGradOutputOffset += ks
             j += 1
           }
-        }(Engine.getInstance())
+        })
         i += 1
       }
-      i = 0
-      while (i < bs) {
-        Await.result(results(i), Duration.Inf)
-        i += 1
-      }
+      Engine.model.sync()
     }
     gradInput
   }
@@ -254,7 +246,7 @@ class PReLU[T: ClassTag](
       var i = 0
       while (i < bs) {
         val _i = i
-        results(_i) = Future {
+        Engine.model.invoke(() => {
           var nInputOffset = input.storageOffset() - 1 + _i * nOutputPlane * ks
           var nGradOutputOffset = gradOutput.storageOffset() - 1 + _i * nOutputPlane * ks
 
@@ -275,14 +267,10 @@ class PReLU[T: ClassTag](
             nGradOutputOffset += ks
             j += 1
           }
-        }(Engine.getInstance())
+        })
         i += 1
       }
-      i = 0
-      while (i < bs) {
-        Await.result(results(i), Duration.Inf)
-        i += 1
-      }
+      Engine.model.sync()
     }
   }
 

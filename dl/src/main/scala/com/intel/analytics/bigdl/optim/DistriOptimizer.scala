@@ -82,7 +82,8 @@ object DistriOptimizer {
       "neval" -> state.get[Int]("neval").getOrElse(1))
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
-      case MklBlas => 1
+      case MklDnn => 1
+      case _ => ???
     }
     var accumulateCount = 0
     val shuffleBefore = System.nanoTime()
@@ -115,10 +116,10 @@ object DistriOptimizer {
           var time = System.nanoTime()
 
           val cached = modelIter.next()
-          Engine.invoke(Seq(
+          Engine.default.invoke(Seq(
             () => {
               weights.next() // Update local weights
-              Engine.invoke(
+              Engine.default.invoke(
                 (0 until _subModelNumber).map(i =>
                   () => {
                     cached.modelWeights(i).copy(cached.buffer)
@@ -129,7 +130,7 @@ object DistriOptimizer {
           ))
 
           val tensorBuffer = new Array[(Tensor[T], Tensor[T])](_subModelNumber)
-          Engine.invoke(Seq(() => {
+          Engine.default.invoke(Seq(() => {
             val batch = data.next()
             var b = 0
             require(batch.data.size(1) == batch.labels.size(1))
@@ -140,7 +141,7 @@ object DistriOptimizer {
               b += 1
             }
           }))
-          Engine.sync()
+          Engine.default.sync()
           driverMetrics.add("prepare time", System.nanoTime() - time)
 
           if (lossArray == null || lossArray.length < _subModelNumber) {
@@ -153,7 +154,7 @@ object DistriOptimizer {
 
           // ======================Start train models===================================
           time = System.nanoTime()
-          Engine.invokeAndWait((0 until _subModelNumber).map(i =>
+          Engine.default.invokeAndWait((0 until _subModelNumber).map(i =>
             () => {
               val localModel = cached.localModels(i)
               localModel.training()
@@ -185,7 +186,7 @@ object DistriOptimizer {
 
           // copy multi-model gradient to the buffer
           val parallelNum = if (taskSize == 0) extraTask else _subModelNumber
-          Engine.invokeAndWait((0 until parallelNum).map(tid => () => {
+          Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
             val offset = tid * taskSize + math.min(tid, extraTask)
             val length = taskSize + (if (tid < extraTask) 1 else 0)
             var i = 0
@@ -202,7 +203,7 @@ object DistriOptimizer {
           }))
           driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
 
-          Engine.invoke((0 until _subModelNumber).map(i => () => {
+          Engine.default.invoke((0 until _subModelNumber).map(i => () => {
             cached.localModels(i).training()
             cached.localModels(i).zeroGradParameters()
           }))
@@ -305,7 +306,6 @@ object DistriOptimizer {
         require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
           "Currently not support this")
       }
-      Engine.setThreadPool((Runtime.getRuntime().availableProcessors() * 50 / 2))
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = broadcastModel.cloneModule()
         val localCriterion = broadcastCriterion.cloneCriterion()
@@ -362,7 +362,7 @@ object DistriOptimizer {
         val stackSize = batch.data.size(1) / _subModelNumber
         val extraSize = batch.data.size(1) % _subModelNumber
         val parallelism = if(stackSize == 0) extraSize else _subModelNumber
-        Engine.invokeAndWait(
+        Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
               val offset = b * stackSize + math.min(b, extraSize)
@@ -435,6 +435,8 @@ class DistriOptimizer[T: ClassTag](
       .getConf
       .set("spark.task.cpus", Engine.coreNumber().toString)
 
+    optimMethod.clearHistory(state)
+
     if(pm == null) {
       pm = new AllReduceParameterManager[T](
         model.getParameters()._1,
@@ -442,8 +444,6 @@ class DistriOptimizer[T: ClassTag](
         metrics,
         state)
     }
-
-    optimMethod.clearHistory(state)
 
     require(Engine.nodeNumber().isDefined, "Node number is not set")
     val nodeNumber = Engine.nodeNumber().get

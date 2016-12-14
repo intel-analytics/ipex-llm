@@ -61,7 +61,7 @@ class MTLabeledRGBImgToTensor[A: ClassTag](width: Int, height: Int,
 
       override def next(): Batch[Float] = {
         val count = new AtomicInteger(0)
-        val batch = Engine.invokeAndWait((0 until threadNum).map(tid => () => {
+        val batch = Engine.default.invokeAndWait((0 until threadNum).map(tid => () => {
           var position = 0
           var record = 0
           while (iterators(tid).hasNext && {

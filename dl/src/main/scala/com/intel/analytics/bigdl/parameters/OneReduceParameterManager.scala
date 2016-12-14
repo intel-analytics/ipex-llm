@@ -111,23 +111,28 @@ class OneReduceParameterManager[T: ClassTag](
 
     val sparkEnv = SparkEnv.get
     before = System.nanoTime()
-    val collectedParameters = blockids.map(blockId => Future[CompressedTensor[T]] {
-      val result = SerializerInstance.serialize(sparkEnv.blockManager.getRemoteBytes(blockId).get)
-      sparkEnv.blockManager.master.removeBlock(blockId)
-      result
-    }(Engine.getInstance())).map(Await.result(_, Duration.Inf))
+    val collectedParameters = Engine.default.invokeAndWait[CompressedTensor[T]](
+      blockids.map(blockId => () => {
+        val result = SerializerInstance.serialize[T](
+          sparkEnv.blockManager.getRemoteBytes(blockId).get)
+        sparkEnv.blockManager.master.removeBlock(blockId)
+        result
+      })
+    )
     metrics.set("driver fetch parameter", System.nanoTime() - before)
 
     before = System.nanoTime()
 
-    val taskSize = parameter.nElement() / Engine.coresNum()
-    val extraSize = parameter.nElement() % Engine.coresNum()
-    val availableTask = if (taskSize == 0) extraSize else Engine.coresNum
-    (0 until availableTask).map(tid => Future {
-      val start = tid * taskSize + math.min(extraSize, tid)
-      val length = taskSize + (if (tid < extraSize) 1 else 0)
-      collectedParameters.reduce((l, r) => l.add(r.bytes(start, length), start, length))
-    }(Engine.getInstance())).map(Await.result(_, Duration.Inf))
+    val taskSize = parameter.nElement() / Engine.coreNumber()
+    val extraSize = parameter.nElement() % Engine.coreNumber()
+    val availableTask = if (taskSize == 0) extraSize else Engine.coreNumber()
+    Engine.default.invokeAndWait(
+      (0 until availableTask).map(tid => () => {
+        val start = tid * taskSize + math.min(extraSize, tid)
+        val length = taskSize + (if (tid < extraSize) 1 else 0)
+        collectedParameters.reduce((l, r) => l.add(r.bytes(start, length), start, length))
+      })
+    )
 
     val reducedParameter = collectedParameters.head
     metrics.set("driver reduce parameter", System.nanoTime() - before)

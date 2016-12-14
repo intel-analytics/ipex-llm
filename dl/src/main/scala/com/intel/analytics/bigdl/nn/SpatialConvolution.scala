@@ -97,6 +97,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
+      case _ => ???
     }
     zeroGradParameters()
   }
@@ -169,7 +170,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       var i = 0
       while (i < batchSize) {
         val _i = i + 1
-        results(i) = Future {
+        Engine.model.invoke(() => {
           val inputT = input.select(1, _i)
           require(inputT.isContiguous())
           val outputT = output.select(1, _i)
@@ -188,15 +189,10 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
               nOutputPlane / nGroup, outputWidth, outputHeight)
             g += 1
           }
-        }(Engine.getInstance())
+        })
         i += 1
       }
-
-      i = 0
-      while (i < results.length) {
-        Await.result(results(i), Duration.Inf)
-        i += 1
-      }
+      Engine.model.sync()
     }
     output
   }
@@ -232,7 +228,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       var i = 0
       while (i < batchSize) {
         val _i = i + 1
-        results(i) = Future {
+        Engine.model.invoke(() => {
           val gradInputT = gradInput.select(1, _i)
           val gradOutputT = gradOutput.select(1, _i)
           require(gradOutputT.isContiguous())
@@ -247,15 +243,10 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
               kernelW, kernelH, strideW, strideH, padW, padH)
             g += 1
           }
-        }(Engine.getInstance())
+        })
         i += 1
       }
-
-      i = 0
-      while (i < results.length) {
-        Await.result(results(i), Duration.Inf)
-        i += 1
-      }
+      Engine.model.sync()
     }
 
     return gradInput
@@ -300,7 +291,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       var i = 0
       while (i < batchSize) {
         val _i = i + 1
-        results(i) = Future {
+        Engine.model.invoke(() => {
           val gradOutputT = gradOutput.select(1, _i)
           val fInputT = fInput.select(1, _i)
           var g = 0
@@ -314,15 +305,11 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
               ev.fromType[Double](scale))
             g += 1
           }
-        }(Engine.getInstance())
+        })
         i += 1
       }
 
-      i = 0
-      while (i < results.length) {
-        Await.result(results(i), Duration.Inf)
-        i += 1
-      }
+      Engine.model.sync()
 
       val gradView = gradWeightMMInBatch.view(batchSize,
         nOutputPlane * nInputPlane * kernelH * kernelW / nGroup).t

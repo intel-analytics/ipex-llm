@@ -47,7 +47,7 @@ class DistriValidator[T](
         val stackSize = batch._1.size(1) / _subModelNumber
         val extraSize = batch._1.size(1) % _subModelNumber
         val parallelism = if(stackSize == 0) extraSize else _subModelNumber
-        Engine.invokeAndWait(
+        Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
               val offset = b * stackSize + math.min(b, extraSize)

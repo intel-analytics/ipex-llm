@@ -101,7 +101,7 @@ class LocalOptimizer[T : ClassTag](
       }
       val dataFetchTime = System.nanoTime()
 
-      val lossSum = Engine.invokeAndWait(
+      val lossSum = Engine.default.invokeAndWait(
         (0 until parallelism).map(i =>
           () => {
             val localModel = workingModels(i)
@@ -118,7 +118,7 @@ class LocalOptimizer[T : ClassTag](
       ).sum
 
       // copy multi-model gradient to the buffer
-      Engine.invokeAndWait(
+      Engine.default.invokeAndWait(
         (0 until syncGradParallelNum).map(tid =>
           () => {
             val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
@@ -200,7 +200,7 @@ class LocalOptimizer[T : ClassTag](
       val stackSize = batch.data.size(1) / subModelNumber
       val extraSize = batch.data.size(1) % subModelNumber
       val parallelism = if(stackSize == 0) extraSize else subModelNumber
-      val result = Engine.invokeAndWait(
+      val result = Engine.default.invokeAndWait(
         (0 until parallelism).map(b =>
           () => {
             val offset = b * stackSize + math.min(b, extraSize)
