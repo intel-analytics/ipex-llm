@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -45,4 +46,11 @@ class TanhShrink[T: ClassTag](
   }
 
   override def toString: String = s"nn.TanhShrink"
+}
+
+object TanhShrink {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : TanhShrink[T] = {
+    new TanhShrink[T]()
+  }
 }

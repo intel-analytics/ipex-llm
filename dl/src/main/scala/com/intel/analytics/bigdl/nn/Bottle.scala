@@ -16,9 +16,9 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.Activities
 
 import scala.reflect.ClassTag
 
@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
  * @param nOutputDim1 output of nOutputDim dimensions
  */
 class Bottle[T: ClassTag](
-  val module: Module[Tensor[T], Tensor[T], T],
+  val module: Module[T],
   val nInputDim: Int = 2,
   val nOutputDim1: Int = Int.MaxValue)
  (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
@@ -44,7 +44,7 @@ class Bottle[T: ClassTag](
   @transient
   private var outShape: Tensor[Double] = null
 
-  this.modules.insert(0, module.asInstanceOf[Module[Activities, Activities, T]])
+  this.modules.insert(0, module)
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     // first batchDims dimensions will be fused
@@ -62,7 +62,7 @@ class Bottle[T: ClassTag](
 
       // Forward with the module's dimension
       val newInput = input.view(inShape.storage().array().map(_.toInt))
-      val output1 = modules(0).updateOutput(newInput).toTensor[T]()
+      val output1 = modules(0).updateOutput(newInput).toTensor[T]
       require(output1.dim() == nOutputDim, "Wrong number of output dims on module")
 
       outShape.copy(Tensor[Double](Storage(output1.size.map(_.toDouble))))
@@ -73,7 +73,7 @@ class Bottle[T: ClassTag](
 
       output.set(output1.view(inSize.storage().array().map(_.toInt)))
     } else {
-      output.set(modules(0).updateOutput(input).toTensor[T]())
+      output.set(modules(0).updateOutput(input).toTensor[T])
     }
     output
   }
@@ -83,11 +83,10 @@ class Bottle[T: ClassTag](
       val input_ = input.view(inShape.storage().array().map(_.toInt))
       val gradOutput_ = gradOutput.view(outShape.storage().array().map(_.toInt))
       modules(0).updateGradInput(input_, gradOutput_)
-      val t2 = modules(0).gradInput.toTensor[T]().resizeAs(input)
+      val t2 = modules(0).gradInput.toTensor[T].resizeAs(input)
       gradInput.set(t2)
     } else {
-      val t1 = modules(0).updateGradInput(input.asInstanceOf[Activities],
-        gradOutput.asInstanceOf[Activities]).toTensor[T]()
+      val t1 = modules(0).updateGradInput(input, gradOutput).toTensor[T]
       gradInput.set(t1)
     }
     gradInput
@@ -121,5 +120,14 @@ class Bottle[T: ClassTag](
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(super.hashCode(), module, nInputDim, nOutputDim1)
     state.map(getHashCode).foldLeft(0)((a, b) => 37 * a + b)
+  }
+}
+
+object Bottle {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    module: Module[T],
+    nInputDim: Int = 2,
+    nOutputDim1: Int = Int.MaxValue)(implicit ev: TensorNumeric[T]) : Bottle[T] = {
+    new Bottle[T](module, nInputDim, nOutputDim1)
   }
 }

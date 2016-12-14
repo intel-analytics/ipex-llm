@@ -53,7 +53,7 @@ class NNClassifierSpec extends FlatSpec with Matchers {
       }
     }
 
-    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
+    val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
@@ -114,7 +114,7 @@ class NNClassifierSpec extends FlatSpec with Matchers {
       }
     }
 
-    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
+    val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 
@@ -181,7 +181,7 @@ class NNClassifierSpec extends FlatSpec with Matchers {
       }
     }
 
-    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
+    val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
     val initW = mlp.getParameters()._1

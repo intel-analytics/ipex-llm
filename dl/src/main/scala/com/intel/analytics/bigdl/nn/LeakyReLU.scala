@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -96,5 +97,13 @@ class LeakyReLU[T: ClassTag](
 
   override def toString(): String = {
     s"nn.LeakyReLU"
+  }
+}
+
+object LeakyReLU {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      negval: Double = 0.01,
+      inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : LeakyReLU[T] = {
+    new LeakyReLU[T](negval, inplace)
   }
 }

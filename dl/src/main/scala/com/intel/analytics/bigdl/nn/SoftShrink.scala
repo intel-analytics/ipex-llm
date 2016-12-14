@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
 
@@ -74,5 +75,12 @@ class SoftShrink[T: ClassTag](
 
   override def toString(): String = {
     s"nn.SoftShrink"
+  }
+}
+
+object SoftShrink {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      lamda: Double = 0.5)(implicit ev: TensorNumeric[T]) : SoftShrink[T] = {
+    new SoftShrink[T](lamda)
   }
 }

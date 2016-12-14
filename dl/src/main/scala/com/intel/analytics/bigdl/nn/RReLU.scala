@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -141,5 +142,14 @@ class RReLU[T: ClassTag](
 
   override def toString: String = {
     "nn.RReLU"
+  }
+}
+
+object RReLU {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      lower: Double = 1.0/8,
+      upper: Double = 1.0/3,
+      inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : RReLU[T] = {
+    new RReLU[T](lower, upper, inplace)
   }
 }

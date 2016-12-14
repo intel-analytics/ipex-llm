@@ -20,8 +20,10 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator
+
 import scala.reflect.ClassTag
 import RandomGenerator._
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 
 class Linear[@specialized(Float, Double) T: ClassTag](
   inputSize: Int,
@@ -166,5 +168,14 @@ class Linear[@specialized(Float, Double) T: ClassTag](
 
   override def toString(): String = {
     s"nn.Linear($inputSize -> $outputSize)"
+  }
+}
+
+object Linear {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      inputSize: Int,
+      outputSize: Int,
+      initMethod: InitializationMethod = Default)(implicit ev: TensorNumeric[T]) : Linear[T] = {
+    new Linear[T](inputSize, outputSize, initMethod)
   }
 }

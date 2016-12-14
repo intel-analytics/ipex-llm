@@ -20,8 +20,9 @@ package com.intel.analytics.bigdl.tensor
 import java.io.Serializable
 
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{File, Activities, Table}
+import com.intel.analytics.bigdl.utils.{File, Table}
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
 
 import scala.reflect.ClassTag
@@ -31,7 +32,7 @@ import scala.reflect.ClassTag
  *
  * @tparam T should be Double or Float
  */
-trait Tensor[T] extends Serializable with TensorMath[T] with Activities {
+trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   /**
    * Dimension number of the tensor. For empty tensor, its dimension number is 0
    *
@@ -473,8 +474,8 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activities {
   def view(sizes: Array[Int]): Tensor[T]
 
   /**
-
-   * Returns a tensor which contains all slices of size @param size
+ *
+ * Returns a tensor which contains all slices of size @param size
    * in the dimension @param dim. Step between two slices is given by @param step.
    *
    * @param dim
@@ -811,4 +812,15 @@ object Tensor {
   def load[T](path : String) : Tensor[T] = {
     File.load[Tensor[T]](path)
   }
+
+  /**
+   * This is equivalent to DenseTensor.range(xmin, xmax, step)
+ *
+   * @param xmin
+   * @param xmax
+   * @param step
+   * @return
+   */
+  def range[@specialized(Float, Double) T: ClassTag](xmin: Double, xmax: Double, step: Int = 1)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = DenseTensor.range[T](xmin, xmax, step)
 }

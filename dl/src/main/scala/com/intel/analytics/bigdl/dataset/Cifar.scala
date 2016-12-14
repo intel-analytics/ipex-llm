@@ -21,6 +21,7 @@ import java.nio.file.{Files, Path, Paths}
 
 import com.intel.analytics.bigdl.models.cifar.VggLike
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.SGD.EpochStep
 import com.intel.analytics.bigdl.optim.{LocalOptimizer, SGD, Top1Accuracy, Trigger}
 import com.intel.analytics.bigdl.utils.T
@@ -45,14 +46,14 @@ object Cifar10Local {
       val validationDataSource = new CifarDataSource(Paths.get(param.folder + "/val"),
         looped = false)
       val arrayToImage = ArrayByteToRGBImage()
-      val normalizer = new ImageNormalizer(trainDataSource -> arrayToImage)
-      val toTensor = new ImageToTensor(batchSize = 128)
+      val normalizer = RGBImageNormalizer(trainDataSource -> arrayToImage)
+      val toTensor = new RGBImageToTensor(batchSize = 128)
 
       val optimizer = new LocalOptimizer[Float](
         data = trainDataSource -> arrayToImage -> normalizer -> toTensor,
         validationData = validationDataSource -> arrayToImage -> normalizer -> toTensor,
-        model = VggLike[Float](classNum = 10),
-        criterion = new ClassNLLCriterion[Float](),
+        model = VggLike(classNum = 10),
+        criterion = ClassNLLCriterion[Float](),
         optimMethod = new SGD[Float](),
         state = T(
           "learningRate" -> 0.01,

@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -80,5 +81,12 @@ class SoftPlus[T: ClassTag](
 
   override def toString(): String = {
     s"nn.SoftPlus"
+  }
+}
+
+object SoftPlus {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      beta: Double = 1.0)(implicit ev: TensorNumeric[T]) : SoftPlus[T] = {
+    new SoftPlus[T](beta)
   }
 }

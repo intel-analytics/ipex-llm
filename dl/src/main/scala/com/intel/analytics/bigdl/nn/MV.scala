@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -29,7 +30,7 @@ import scala.reflect.ClassTag
  * @param trans whether make matrix transpose before multiplication
  */
 class MV[T: ClassTag](val trans: Boolean = false)
-  (implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
+  (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
   gradInput = T(Tensor[T], Tensor[T]())
 
   private def checkInputFormat(input: Table): (Tensor[T], Tensor[T]) = {
@@ -138,5 +139,12 @@ class MV[T: ClassTag](val trans: Boolean = false)
     gradInput[Tensor[T]](2).set()
 
     this
+  }
+}
+
+object MV {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      trans: Boolean = false)(implicit ev: TensorNumeric[T]) : MV[T] = {
+    new MV[T](trans)
   }
 }

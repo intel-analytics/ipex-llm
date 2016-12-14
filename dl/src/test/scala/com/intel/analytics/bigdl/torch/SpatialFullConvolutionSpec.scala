@@ -72,6 +72,46 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     output should be(luaOutput)
   }
 
+  "A SpatialFullConvolution on rectangle input" should "generate correct output" in {
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val nInputPlane = 10
+    val nOutputPlane = 10
+    val kW = 4
+    val kH = 4
+    val dW = 2
+    val dH = 2
+    val padW = 1
+    val padH = 1
+    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH)
+
+    Random.setSeed(seed)
+    val input = Tensor[Double](1, 10, 20, 30).apply1(e => Random.nextDouble())
+    val output = layer.updateOutput(input)
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      "layer = nn.SpatialFullConvolution(10, 10, 4, 4, 2, 2, 1, 1)\n" +
+      "weight = layer.weight\n" +
+      "bias = layer.bias \n" +
+      "output = layer:forward(input) "
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+      Array("weight", "bias", "output"))
+
+    val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
+    val luaBias = torchResult("bias").asInstanceOf[Tensor[Double]]
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+
+    val weight = layer.weight
+    val bias = layer.bias
+
+    weight should be(luaWeight)
+    bias should be(luaBias)
+    output should be(luaOutput)
+  }
+
   "A SpatialFullConvolution" should "generate correct output and grad" in {
     val seed = 100
     RNG.setSeed(seed)
@@ -86,12 +126,12 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val padH = 2
     val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
-    val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
+    val model = new Sequential[Double]()
     model.add(layer)
 
     Random.setSeed(3)
     val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
-    val output = model.updateOutput(input)
+    val output = model.updateOutput(input).toTensor[Double]
 
     val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
 
@@ -147,12 +187,12 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val padH = 1
     val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
-    val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
+    val model = new Sequential[Double]()
     model.add(layer)
 
     Random.setSeed(3)
     val input = Tensor[Double](3, 6, 6).apply1(e => Random.nextDouble())
-    val output = model.updateOutput(input)
+    val output = model.updateOutput(input).toTensor[Double]
 
     val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
 
@@ -208,12 +248,12 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val padH = 1
     val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH, 0, 0, true)
-    val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
+    val model = new Sequential[Double]()
     model.add(layer)
 
     Random.setSeed(3)
     val input = Tensor[Double](3, 6, 6).apply1(e => Random.nextDouble())
-    val output = model.updateOutput(input)
+    val output = model.updateOutput(input).toTensor[Double]
 
     val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
 

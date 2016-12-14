@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -37,5 +38,12 @@ class L1Cost[T: ClassTag]()
 
   override def toString(): String = {
     s"nn.L1Cost"
+  }
+}
+
+object L1Cost {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : L1Cost[T] = {
+    new L1Cost[T]()
   }
 }

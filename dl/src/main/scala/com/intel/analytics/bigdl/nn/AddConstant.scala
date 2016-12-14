@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -57,4 +58,12 @@ class AddConstant[T: ClassTag](
     s"nn.AddConstant ($constant_scalar, $inplace)"
   }
 
+}
+
+object AddConstant {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    constant_scalar: T,
+    inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : AddConstant[T] = {
+    new AddConstant[T](constant_scalar, inplace)
+  }
 }

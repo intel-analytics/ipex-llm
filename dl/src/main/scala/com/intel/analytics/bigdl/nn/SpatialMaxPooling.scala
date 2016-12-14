@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
@@ -258,5 +259,17 @@ class SpatialMaxPooling[@specialized(Float, Double) T: ClassTag](
     super.clearState()
     indices.set()
     this
+  }
+}
+
+object SpatialMaxPooling {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      kW: Int,
+      kH: Int,
+      dW: Int,
+      dH: Int,
+      padW: Int = 0,
+      padH: Int = 0)(implicit ev: TensorNumeric[T]): SpatialMaxPooling[T] = {
+    new SpatialMaxPooling[T](kW, kH, dW, dH, padW, padH)
   }
 }

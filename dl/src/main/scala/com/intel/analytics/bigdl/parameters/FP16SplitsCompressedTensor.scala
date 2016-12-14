@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ps
+package com.intel.analytics.bigdl.parameters
 
 import java.nio.ByteBuffer
 
@@ -23,12 +23,12 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.reflect._
 
-class FP16SplitsParameter[T: ClassTag](buffers: Array[Array[Byte]], size: Int)
-  extends Parameter[T] {
+class FP16SplitsCompressedTensor[T: ClassTag](buffers: Array[Array[Byte]], size: Int)
+  extends CompressedTensor[T] {
 
   def this(tensor: Tensor[T], splitsNum: Int) {
     this(new Array[Array[Byte]](splitsNum), tensor.nElement())
-    copyFrom(tensor)
+    compress(tensor)
   }
 
   def this(length: Int, splitsNum: Int) {
@@ -46,8 +46,8 @@ class FP16SplitsParameter[T: ClassTag](buffers: Array[Array[Byte]], size: Int)
     }
   }
 
-  override def copyFrom(offset: Int, src: Tensor[T], srcOffset: Int,
-    length: Int): FP16SplitsParameter.this.type = {
+  override def compress(offset: Int, src: Tensor[T], srcOffset: Int,
+                        length: Int): FP16SplitsCompressedTensor.this.type = {
     require(src.isContiguous() && offset >= 0 && srcOffset >= 0 &&
       srcOffset + length <= src.nElement())
     require(offset + length <= size)
@@ -65,10 +65,10 @@ class FP16SplitsParameter[T: ClassTag](buffers: Array[Array[Byte]], size: Int)
             buffers(i) = new Array[Byte](curLength * 2)
           }
           if (classTag[T] == classTag[Double]) {
-            FP16Parameter.toFP16(src.storage().array().asInstanceOf[Array[Double]],
+            FP16CompressedTensor.toFP16(src.storage().array().asInstanceOf[Array[Double]],
               tOffset + start, buffers(i), splitOffset, overlapLength)
           } else if (classTag[T] == classTag[Float]) {
-            FP16Parameter.toFP16(src.storage().array().asInstanceOf[Array[Float]],
+            FP16CompressedTensor.toFP16(src.storage().array().asInstanceOf[Array[Float]],
               tOffset + start, buffers(i), splitOffset, overlapLength)
           } else {
             throw new IllegalArgumentException
@@ -81,10 +81,10 @@ class FP16SplitsParameter[T: ClassTag](buffers: Array[Array[Byte]], size: Int)
     this
   }
 
-  override def copyFrom(tensor: Tensor[T]): FP16SplitsParameter.this.type =
-    copyFrom(0, tensor, 0, tensor.nElement())
+  override def compress(tensor: Tensor[T]): FP16SplitsCompressedTensor.this.type =
+    compress(0, tensor, 0, tensor.nElement())
 
-  override def copyTo(srcOffset: Int, tensor: Tensor[T], tgtOffset: Int, length: Int): Unit = {
+  override def deCompress(srcOffset: Int, tensor: Tensor[T], tgtOffset: Int, length: Int): Unit = {
     require(srcOffset >= 0 && length > 0 && srcOffset + length <= size &&
       tgtOffset >= 0 && tgtOffset + length <= tensor.nElement())
     require(tensor.isContiguous())
@@ -99,12 +99,12 @@ class FP16SplitsParameter[T: ClassTag](buffers: Array[Array[Byte]], size: Int)
           if (classTag[T] == classTag[Double]) {
             val tdata = tensor.storage().array().asInstanceOf[Array[Double]]
             val toffset = tensor.storageOffset() - 1 + tgtOffset
-            FP16Parameter.fromFP16(buffers(i), splitOffset * 2, overlapLength * 2,
+            FP16CompressedTensor.fromFP16(buffers(i), splitOffset * 2, overlapLength * 2,
               tdata, toffset + start)
           } else if (classTag[T] == classTag[Float]) {
             val tdata = tensor.storage().array().asInstanceOf[Array[Float]]
             val toffset = tensor.storageOffset() - 1 + tgtOffset
-            FP16Parameter.fromFP16(buffers(i), splitOffset * 2, overlapLength * 2,
+            FP16CompressedTensor.fromFP16(buffers(i), splitOffset * 2, overlapLength * 2,
               tdata, toffset + start)
           } else {
             throw new IllegalArgumentException
@@ -115,7 +115,7 @@ class FP16SplitsParameter[T: ClassTag](buffers: Array[Array[Byte]], size: Int)
     }
   }
 
-  override def copyTo(tensor: Tensor[T]): Unit = copyTo(0, tensor, 0, tensor.nElement())
+  override def deCompress(tensor: Tensor[T]): Unit = deCompress(0, tensor, 0, tensor.nElement())
 
   override def bytes(offset: Int, length: Int): ByteBuffer = {
     val splitSize = size / buffers.length
@@ -137,13 +137,13 @@ class FP16SplitsParameter[T: ClassTag](buffers: Array[Array[Byte]], size: Int)
 
   // scalastyle:off
   override def add(data: ByteBuffer, offset: Int,
-    length: Int): FP16SplitsParameter.this.type = ???
+    length: Int): FP16SplitsCompressedTensor.this.type = ???
 
-  override def add(data: ByteBuffer): FP16SplitsParameter.this.type = ???
+  override def add(data: ByteBuffer): FP16SplitsCompressedTensor.this.type = ???
 
   override def parAdd(data: ByteBuffer, offset: Int,
-    length: Int): FP16SplitsParameter.this.type = ???
+    length: Int): FP16SplitsCompressedTensor.this.type = ???
 
-  override def parAdd(data: ByteBuffer): FP16SplitsParameter.this.type = ???
+  override def parAdd(data: ByteBuffer): FP16SplitsCompressedTensor.this.type = ???
   // scalastyle:on
 }

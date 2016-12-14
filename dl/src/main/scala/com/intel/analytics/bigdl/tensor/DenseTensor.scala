@@ -68,7 +68,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     _size(dim - 1)
   }
 
-  override def stride(): Array[Int] = _stride.clone()
+  override def stride(): Array[Int] = _stride.slice(0, this.nDimension)
 
   override def stride(dim: Int): Int = {
     require(dim > 0 && dim <= this.nDimension,
@@ -769,7 +769,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = {
     require(src.dim() == this.dim(), "Input tensor must have same dimensions as output tensor")
-    require(dim < this.dim(), "Index dimension is out of bounds")
+    require(dim <= this.dim(), "Index dimension is out of bounds")
     require(index.dim() == src.dim(), "Index tensor must have same dimensions as input tensor")
     val elementsPerRow = index.size(dim)
     // TODO: the performance of contiguous tensor should be optimize
@@ -1718,6 +1718,32 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
+
+  /**
+   * resize this tensor size to floor((xmax - xmin) / step) + 1 and set values from
+   * xmin to xmax with step (default to 1).
+   * @param xmin
+   * @param xmax
+   * @param step
+   * @return this tensor
+   */
+  override def range(xmin: Double, xmax: Double, step: Int = 1): Tensor[T] = {
+    require((xmax >= xmin) && (step > 0),
+      "upper bound and larger bound incoherent with step sign")
+    val size = math.floor((xmax-xmin)/ step + 1).toInt
+    if (this.nElement() != size) this.resize(size)
+    var i = 0
+    // TODO: the performance of contiguous tensor should be optimize
+    val func = new TensorFunc2[T] {
+      override def apply(data1: Array[T], offset1: Int): Unit = {
+        data1(offset1) = ev.fromType(xmin + i * step)
+        i += 1
+      }
+    }
+    DenseTensorApply.apply1[T](this, func)
+    this
+  }
+
   override def addSingletonDimension(t: Tensor[T], dim: Int = 1): Tensor[T] = {
     require(dim > 0 && dim <= t.dim() + 1, s"invalid dimension: $dim. " +
       s"Tensor is of ${t.dim()} dimensions.")
@@ -2207,7 +2233,6 @@ object DenseTensor {
 
     Tensor(new ArrayStorage(array))
   }
-
   private[tensor] def sameStride(l: Array[Int], r: Array[Int]): Boolean = {
     if (l.length != r.length) return false
     var i = 0
@@ -2218,5 +2243,12 @@ object DenseTensor {
       i += 1
     }
     return true
+  }
+
+  private[tensor] def range[@specialized(Float, Double) T: ClassTag]
+  (xmin: Double, xmax: Double, step: Int = 1)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val newTensor = Tensor[T]()
+    newTensor.range(xmin, xmax, step)
   }
 }

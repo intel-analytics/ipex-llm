@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.math.tanh
@@ -45,4 +46,11 @@ class Tanh[@specialized(Float, Double) T: ClassTag](
   }
 }
 
+
+object Tanh {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : Tanh[T] = {
+    new Tanh[T]()
+  }
+}
 

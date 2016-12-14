@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
@@ -27,7 +28,7 @@ import scala.reflect.ClassTag
  * table will be produced
  */
 class FlattenTable[T: ClassTag] (implicit ev: TensorNumeric[T])
-  extends Module[Table, Table, T] {
+  extends AbstractModule[Table, Table, T] {
   @transient private var inputMap: Table = null
 
   private def createInputMap(): Unit = {
@@ -67,5 +68,12 @@ class FlattenTable[T: ClassTag] (implicit ev: TensorNumeric[T])
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(super.hashCode(), inputMap)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+object FlattenTable {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : FlattenTable[T] = {
+    new FlattenTable[T]()
   }
 }

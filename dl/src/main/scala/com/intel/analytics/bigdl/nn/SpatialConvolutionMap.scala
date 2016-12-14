@@ -17,8 +17,9 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, DenseTensorConv, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseTensorConv, Storage, Tensor}
 
 import scala.reflect.ClassTag
 
@@ -270,6 +271,18 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
 }
 
 object SpatialConvolutionMap {
+
+  def apply[@specialized(Float, Double) T: ClassTag](
+      connTable: Tensor[T],
+      kW: Int,
+      kH: Int,
+      dW: Int = 1,
+      dH: Int = 1,
+      padW: Int = 0,
+      padH: Int = 0)(implicit ev: TensorNumeric[T]) : SpatialConvolutionMap[T] = {
+    new SpatialConvolutionMap[T](connTable, kW, kH, dW, dH, padW, padH)
+  }
+
   def full[@specialized(Float, Double) T: ClassTag](nin: Int, nout: Int)(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
     val ft = Tensor[T](nin * nout, 2)

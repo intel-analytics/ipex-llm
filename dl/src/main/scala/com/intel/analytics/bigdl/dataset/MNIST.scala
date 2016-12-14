@@ -17,8 +17,10 @@
 
 package com.intel.analytics.bigdl.dataset
 
+import com.intel.analytics.bigdl.example.MNIST
 import com.intel.analytics.bigdl.models.mnist.{LeNet5, MLP, SimpleCNN}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, Module, TensorModule}
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
@@ -34,8 +36,8 @@ object MNISTLocal {
     net: String = "cnn"
   )
   case class Config(
-    model : Module[Tensor[Float], Tensor[Float], Float],
-    criterion : Criterion[Tensor[Float], Float],
+    model : Module[Float],
+    criterion : Criterion[Float],
     optimMethod : OptimMethod[Float],
     batchSize : Int,
     maxEpoch : Int,
@@ -44,16 +46,16 @@ object MNISTLocal {
 
   private val configs = Map(
     "mlp" -> Config(
-      MLP[Float](classNum = 10),
-      new ClassNLLCriterion[Float](),
-      new SGD[Float](), 10, 10, 0.05),
+      MLP(classNum = 10),
+      ClassNLLCriterion[Float](),
+      new SGD(), 10, 10, 0.05),
     "cnn" -> Config(
-      SimpleCNN[Float](classNum = 10),
-      new ClassNLLCriterion[Float](),
-      new SGD[Float](), 10, 10, 0.05),
+      SimpleCNN(classNum = 10),
+      ClassNLLCriterion[Float](),
+      new SGD(), 10, 10, 0.05),
     "lenet" -> Config(
-      LeNet5[Float](classNum = 10),
-      new ClassNLLCriterion[Float](),
+      LeNet5(classNum = 10),
+      ClassNLLCriterion[Float](),
       new SGD[Float](), 10, 10, 0.05)
   )
 
@@ -85,9 +87,9 @@ object MNISTLocal {
       val trainDataSource = new MNISTDataSource(trainData, trainDLabel, looped = true)
       val validationDataSource = new MNISTDataSource(validationData, validationLabel, looped =
         false)
-      val arrayByteToImage = ArrayByteToGreyImage()
-      val normalizer = new ImageNormalizer(trainDataSource -> arrayByteToImage)
-      val toTensor = new ImageToTensor(configs(param.net).batchSize)
+      val arrayByteToImage = ArrayByteToGreyImage(28, 28)
+      val normalizer = new GreyImageNormalizer(trainDataSource -> arrayByteToImage)
+      val toTensor = new GreyImageToTensor(configs(param.net).batchSize)
       val optimizer = new LocalOptimizer[Float](
         data = trainDataSource -> arrayByteToImage -> normalizer -> toTensor,
         validationData = validationDataSource -> arrayByteToImage -> normalizer -> toTensor,

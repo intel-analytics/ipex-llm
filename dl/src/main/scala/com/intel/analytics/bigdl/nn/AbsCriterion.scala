@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -26,8 +27,6 @@ import scala.reflect.ClassTag
  */
 class AbsCriterion[T: ClassTag](sizeAverage: Boolean = true)
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
-
-  var gradInput: Tensor[T] = Tensor[T]()
   @transient
   private var buffer: Tensor[T] = null
 
@@ -62,5 +61,12 @@ class AbsCriterion[T: ClassTag](sizeAverage: Boolean = true)
       i += 1
     }
     gradInput
+  }
+}
+
+object AbsCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : AbsCriterion[T] = {
+    new AbsCriterion[T](sizeAverage)
   }
 }

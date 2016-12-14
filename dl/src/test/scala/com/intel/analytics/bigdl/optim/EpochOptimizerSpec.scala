@@ -17,8 +17,9 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.ps.{AllReduceParameterManager, OneReduceParameterManager}
+import com.intel.analytics.bigdl.parameters.{AllReduceParameterManager, OneReduceParameterManager}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{RandomGenerator, Engine, T}
 import org.apache.log4j.{Level, Logger}
@@ -45,7 +46,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
   var dataSet: ShuffleBatchDataSet[(Int), Double] = null
 
   val (mseModule, mseWeight, mseGradient) = {
-    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
+    val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
@@ -56,7 +57,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
   }
 
   val (crnModule, crnWeight, crnGradient) = {
-    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
+    val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 
@@ -102,59 +103,59 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
 
   "An Artificial Neural Network with MSE and LBFGS" should "be trained with good result" in {
     val pm = new OneReduceParameterManager[Double](mseWeight, dataSet.partitions())
-    val optimizer = new GradAggEpochOptimizer[Double](mseModule, new MSECriterion,
+    val optimizer = new GradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
       new LBFGS, pm, dataSet, new Metrics)
     optimizer.setMaxEpoch(1)
     optimizer.optimize()
 
-    val result1 = mseModule.forward(input1)
+    val result1 = mseModule.forward(input1).toTensor[Double]
     result1(Array(1)) should be(0.0 +- 1e-2)
 
-    val result2 = mseModule.forward(input2)
+    val result2 = mseModule.forward(input2).toTensor[Double]
     result2(Array(1)) should be(1.0 +- 1e-2)
   }
 
   it should "be trained with good result for all reduce parameter manager" in {
     val pm = new AllReduceParameterManager[Double](mseWeight, dataSet.partitions())
-    val optimizer = new GradAggEpochOptimizer[Double](mseModule, new MSECriterion,
+    val optimizer = new GradAggEpochOptimizer[Double](mseModule, MSECriterion[Double](),
       new LBFGS, pm, dataSet, new Metrics)
     optimizer.setMaxEpoch(1)
     optimizer.optimize()
 
     mseWeight.copy(pm.getParameter())
-    val result1 = mseModule.forward(input1)
+    val result1 = mseModule.forward(input1).toTensor[Double]
     result1(Array(1)) should be(0.0 +- 1e-2)
 
-    val result2 = mseModule.forward(input2)
+    val result2 = mseModule.forward(input2).toTensor[Double]
     result2(Array(1)) should be(1.0 +- 1e-2)
   }
 
   "An Artificial Neural Network with MSE and SGD" should "be trained with good result" in {
     val pm = new OneReduceParameterManager[Double](mseWeight, dataSet.partitions())
-    val optimizer = new GradAggEpochOptimizer[Double](mseModule, new MSECriterion,
+    val optimizer = new GradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
       new SGD, pm, dataSet, new Metrics, T("learningRate" -> 20.0))
     optimizer.setMaxEpoch(1)
     optimizer.optimize()
 
-    val result1 = mseModule.forward(input1)
+    val result1 = mseModule.forward(input1).toTensor[Double]
     result1(Array(1)) should be(0.0 +- 5e-2)
 
-    val result2 = mseModule.forward(input2)
+    val result2 = mseModule.forward(input2).toTensor[Double]
     result2(Array(1)) should be(1.0 +- 5e-2)
   }
 
   it should "be trained with good result with all reduce" in {
     val pm = new AllReduceParameterManager[Double](mseWeight, dataSet.partitions())
-    val optimizer = new GradAggEpochOptimizer[Double](mseModule, new MSECriterion,
+    val optimizer = new GradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
       new SGD, pm, dataSet, new Metrics, T("learningRate" -> 20.0))
     optimizer.setMaxEpoch(1)
     optimizer.optimize()
 
     mseWeight.copy(pm.getParameter())
-    val result1 = mseModule.forward(input1)
+    val result1 = mseModule.forward(input1).toTensor[Double]
     result1(Array(1)) should be(0.0 +- 5e-2)
 
-    val result2 = mseModule.forward(input2)
+    val result2 = mseModule.forward(input2).toTensor[Double]
     result2(Array(1)) should be(1.0 +- 5e-2)
   }
 
@@ -162,31 +163,31 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
     "be trained with good result" in {
     plusOne = 1.0
     val pm = new OneReduceParameterManager[Double](crnWeight, dataSet.partitions())
-    val optimizer = new GradAggEpochOptimizer[Double](crnModule, new ClassNLLCriterion,
+    val optimizer = new GradAggEpochOptimizer[Double](crnModule, ClassNLLCriterion[Double](),
       new LBFGS, pm, dataSet, new Metrics)
     optimizer.setMaxEpoch(1)
     optimizer.optimize()
 
-    val result1 = crnModule.forward(input1)
+    val result1 = crnModule.forward(input1).toTensor[Double]
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = crnModule.forward(input2)
+    val result2 = crnModule.forward(input2).toTensor[Double]
     result2.max(1)._2(Array(1)) should be(2.0)
   }
 
   it should "be trained with good result for all reduce" in {
     plusOne = 1.0
     val pm = new AllReduceParameterManager[Double](crnWeight, dataSet.partitions())
-    val optimizer = new GradAggEpochOptimizer[Double](crnModule, new ClassNLLCriterion,
+    val optimizer = new GradAggEpochOptimizer[Double](crnModule, ClassNLLCriterion[Double](),
       new LBFGS, pm, dataSet, new Metrics)
     optimizer.setMaxEpoch(3)
     optimizer.optimize()
 
     crnWeight.copy(pm.getParameter())
-    val result1 = crnModule.forward(input1)
+    val result1 = crnModule.forward(input1).toTensor[Double]
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = crnModule.forward(input2)
+    val result2 = crnModule.forward(input2).toTensor[Double]
     result2.max(1)._2(Array(1)) should be(2.0)
   }
 
@@ -194,31 +195,31 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
     "be trained with good result" in {
     plusOne = 1.0
     val pm = new OneReduceParameterManager[Double](crnWeight, dataSet.partitions())
-    val optimizer = new GradAggEpochOptimizer[Double](crnModule, new ClassNLLCriterion,
+    val optimizer = new GradAggEpochOptimizer[Double](crnModule, ClassNLLCriterion[Double](),
       new SGD, pm, dataSet, new Metrics, T("learningRate" -> 20.0))
     optimizer.setMaxEpoch(1)
     optimizer.optimize()
 
-    val result1 = crnModule.forward(input1)
+    val result1 = crnModule.forward(input1).toTensor[Double]
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = crnModule.forward(input2)
+    val result2 = crnModule.forward(input2).toTensor[Double]
     result2.max(1)._2(Array(1)) should be(2.0)
   }
 
   it should "be trained with good result for all reduce" in {
     plusOne = 1.0
     val pm = new AllReduceParameterManager[Double](crnWeight, dataSet.partitions())
-    val optimizer = new GradAggEpochOptimizer[Double](crnModule, new ClassNLLCriterion,
+    val optimizer = new GradAggEpochOptimizer[Double](crnModule, ClassNLLCriterion[Double](),
       new SGD, pm, dataSet, new Metrics, T("learningRate" -> 20.0))
     optimizer.setMaxEpoch(1)
     optimizer.optimize()
 
     crnWeight.copy(pm.getParameter())
-    val result1 = crnModule.forward(input1)
+    val result1 = crnModule.forward(input1).toTensor[Double]
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = crnModule.forward(input2)
+    val result2 = crnModule.forward(input2).toTensor[Double]
     result2.max(1)._2(Array(1)) should be(2.0)
   }
 }

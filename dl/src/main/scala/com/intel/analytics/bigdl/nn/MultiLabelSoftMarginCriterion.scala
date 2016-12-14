@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -35,7 +36,6 @@ import scala.reflect.ClassTag
 class MultiLabelSoftMarginCriterion[T: ClassTag]
 (var weights: Tensor[T] = null, sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
-  var gradInput = Tensor[T]()
   var lsm = new Sigmoid[T]()
   var nll = new BCECriterion[T](weights)
 
@@ -98,4 +98,13 @@ class MultiLabelSoftMarginCriterion[T: ClassTag]
 
 
   override def toString: String = s"MultiLabelSoftMarginCriterion($weights)"
+}
+
+object MultiLabelSoftMarginCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      weights: Tensor[T] = null,
+      sizeAverage: Boolean = true
+  )(implicit ev: TensorNumeric[T]): MultiLabelSoftMarginCriterion[T] = {
+    new MultiLabelSoftMarginCriterion[T](weights, sizeAverage)
+  }
 }

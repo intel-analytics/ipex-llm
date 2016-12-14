@@ -18,37 +18,37 @@
 package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, GoogleNet_v1}
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 class SaveObjSpec extends FlatSpec with Matchers {
   "A tensor load from saved file" should "be same with original tensor" in {
-    val originTensor = Tensor[Double](3, 2, 4).rand()
+    val originTensor = Tensor[Float](3, 2, 4).rand()
     val filePath = java.io.File.createTempFile("SaveObjSpecTensor", ".obj").getAbsolutePath
     File.save(originTensor, filePath, true)
-    val loadedTensor = File.load[Tensor[Double]](filePath)
+    val loadedTensor = File.load[Tensor[Float]](filePath)
     loadedTensor should be(originTensor)
   }
 
   "Alexnet load from saved file" should "be same with the original one" in {
-    val model = AlexNet[Double](1000)
+    val model = AlexNet(1000)
     val filePath = java.io.File.createTempFile("SaveObjSpecAlexnet", ".obj").getAbsolutePath
-    model.forward(Tensor[Double](4, 3, 227, 227))
+    model.forward(Tensor[Float](4, 3, 227, 227))
     File.save(model, filePath, true)
-    val loadedModel = File.load[Module[Tensor[Double], Tensor[Double], Double]](filePath)
+    val loadedModel = File.load[Module[Float]](filePath)
     loadedModel should be(model)
-    loadedModel.forward(Tensor[Double](4, 3, 227, 227))
+    loadedModel.forward(Tensor[Float](4, 3, 227, 227))
   }
 
   "GoogleNet load from saved file" should "be same with the original one" in {
-    val model = GoogleNet_v1[Double](1000)
+    val model = GoogleNet_v1(1000)
     val filePath = java.io.File.createTempFile("SaveObjSpecGoogleNet", ".obj").getAbsolutePath
-    model.forward(Tensor[Double](4, 3, 224, 224))
+    model.forward(Tensor[Float](4, 3, 224, 224))
     File.save(model, filePath, true)
-    val loadedModel = File.load[Module[Tensor[Double], Tensor[Double], Double]](filePath)
+    val loadedModel = File.load[Module[Float]](filePath)
     loadedModel should be(model)
-    loadedModel.forward(Tensor[Double](4, 3, 224, 224))
+    loadedModel.forward(Tensor[Float](4, 3, 224, 224))
   }
 
   "A table load from saved file" should "be same with original table" in {

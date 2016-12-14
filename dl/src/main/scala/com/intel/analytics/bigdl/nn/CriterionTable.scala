@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -28,9 +29,6 @@ import scala.reflect.ClassTag
  */
 class CriterionTable[T: ClassTag](val criterion: TensorCriterion[T])
  (implicit ev: TensorNumeric[T]) extends  TensorCriterion[T] {
-
-  @transient
-  var gradInput: Tensor[T] = null
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     output = criterion.updateOutput(input, target)
@@ -45,5 +43,12 @@ class CriterionTable[T: ClassTag](val criterion: TensorCriterion[T])
 
   override def toString(): String = {
     s"nn.CriterionTable"
+  }
+}
+
+object CriterionTable {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      criterion: TensorCriterion[T])(implicit ev: TensorNumeric[T]) : CriterionTable[T] = {
+    new CriterionTable[T](criterion)
   }
 }

@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -99,5 +100,13 @@ class Min[@specialized(Float, Double) T: ClassTag](
     values.set()
     indices.set()
     this
+  }
+}
+
+object Min {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dim : Int = 1,
+      numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Min[T] = {
+    new Min[T](dim, numInputDims)
   }
 }

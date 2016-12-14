@@ -17,9 +17,9 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Activities, File, Table}
+import com.intel.analytics.bigdl.utils.{File, Table}
 
 trait ModelPersist[@specialized(Float, Double) T] {
 
@@ -49,7 +49,7 @@ trait ModelPersist[@specialized(Float, Double) T] {
 
 
   def saveModel(
-    model: Module[_ <: Activities, _ <: Activities, T],
+    model: AbstractModule[_ <: Activity, _ <: Activity, T],
     iter: Int,
     force: Boolean = false): this.type = {
     if (this.path.isDefined) {
@@ -65,7 +65,7 @@ trait ModelPersist[@specialized(Float, Double) T] {
     this
   }
 
-  def saveModel(model: Module[_ <: Activities, _ <: Activities, T]): this.type = {
+  def saveModel(model: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     saveModel(model, 0, true)
   }
 

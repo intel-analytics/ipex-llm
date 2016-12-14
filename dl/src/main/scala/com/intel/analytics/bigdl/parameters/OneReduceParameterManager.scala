@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ps
+package com.intel.analytics.bigdl.parameters
 
 import com.intel.analytics.bigdl.optim.Metrics
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -41,12 +41,12 @@ class OneReduceParameterManager[T: ClassTag](
   private val parameterForReduce = parameter.clone()
 
   @transient
-  private val buffers: RDD[Parameter[T]] = {
+  private val buffers: RDD[CompressedTensor[T]] = {
     val parameterLength = parameter.nElement()
     val driverClassTag = classTag[T]
     dataset.mapPartitions(iter => {
-      Iterator.single(new FP16Parameter[T](new Array[Byte](parameterLength * 2),
-        0, parameterLength * 2)(driverClassTag).asInstanceOf[Parameter[T]])
+      Iterator.single(new FP16CompressedTensor[T](new Array[Byte](parameterLength * 2),
+        0, parameterLength * 2)(driverClassTag).asInstanceOf[CompressedTensor[T]])
     }).persist()
   }
 
@@ -54,11 +54,11 @@ class OneReduceParameterManager[T: ClassTag](
   private val sc: SparkContext = dataset.sparkContext
 
   @transient
-  private val globalBuffer: Parameter[T] = Parameter(parameter)
+  private val globalBuffer: CompressedTensor[T] = SerializerInstance.serialize(parameter)
 
   override def sync(parameters: RDD[Tensor[T]]): RDD[Tensor[T]] = {
     var before = System.nanoTime()
-    globalBuffer.copyFrom(parameter)
+    globalBuffer.compress(parameter)
     metrics.set("driver prepare parameter", System.nanoTime() - before)
     before = System.nanoTime()
     val broadcastParameter = sc.broadcast(globalBuffer)
@@ -76,7 +76,7 @@ class OneReduceParameterManager[T: ClassTag](
       require(!paramIter.hasNext)
 
       before = System.nanoTime()
-      localBuffer.copyTo(localParameter)
+      localBuffer.deCompress(localParameter)
       driverMetrics.add("worker extract parameter", System.nanoTime() - before)
 
       Iterator.single(localParameter)
@@ -96,7 +96,7 @@ class OneReduceParameterManager[T: ClassTag](
       val localBuffer = bufferIter.next()
 
       var before = System.nanoTime()
-      localBuffer.copyFrom(localParam)
+      localBuffer.compress(localParam)
       driverMetrics.add("worker prepare parameter", System.nanoTime() - before)
 
       before = System.nanoTime()
@@ -111,8 +111,8 @@ class OneReduceParameterManager[T: ClassTag](
 
     val sparkEnv = SparkEnv.get
     before = System.nanoTime()
-    val collectedParameters = blockids.map(blockId => Future[Parameter[T]] {
-      val result = Parameter[T](sparkEnv.blockManager.getRemoteBytes(blockId).get)
+    val collectedParameters = blockids.map(blockId => Future[CompressedTensor[T]] {
+      val result = SerializerInstance.serialize(sparkEnv.blockManager.getRemoteBytes(blockId).get)
       sparkEnv.blockManager.master.removeBlock(blockId)
       result
     }(Engine.getInstance())).map(Await.result(_, Duration.Inf))
@@ -133,7 +133,7 @@ class OneReduceParameterManager[T: ClassTag](
     metrics.set("driver reduce parameter", System.nanoTime() - before)
 
     before = System.nanoTime()
-    reducedParameter.copyTo(parameterForReduce)
+    reducedParameter.deCompress(parameterForReduce)
     metrics.set("extract reduce parameter", System.nanoTime() - before)
 
     before = System.nanoTime()

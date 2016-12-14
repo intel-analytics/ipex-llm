@@ -15,19 +15,17 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.nn.abstractnn
 
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{File, T, Table, Activities}
+import com.intel.analytics.bigdl.utils._
 import org.apache.commons.lang3.SerializationUtils
 
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
-import scala.reflect.runtime.universe._
 
-abstract class TensorModule[@specialized(Float, Double) T: ClassTag]
-  (implicit ev: TensorNumeric[T]) extends Module[Tensor[T], Tensor[T], T]
+abstract class TensorModule[T: ClassTag]
+  (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T]
 
 /**
  * Module is the basic component of a neural network. It forward activities and backward gradients.
@@ -37,19 +35,19 @@ abstract class TensorModule[@specialized(Float, Double) T: ClassTag]
  * @tparam B Output data type
  * @tparam T Numeric type. Only support float/double now
  */
-abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
-  @specialized(Float, Double) T: ClassTag](
+abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
+@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
 
   /**
    * The cached output. So we don't compute it again when need it
    */
-  var output: B = Activities[B, T]().asInstanceOf[B]
+  var output: B = Activity[B, T]()
 
   /**
    * The cached gradient of activities. So we don't compute it again when need it
    */
-  var gradInput: A = Activities[A, T]().asInstanceOf[A]
+  var gradInput: A = Activity[A, T]()
 
 
   /**
@@ -58,7 +56,7 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
    *
    * The subclass should override this method if it allocate some extra resource, and call the
    * super.clearState in the override method
- *
+   *
    * @return
    */
   def clearState() : this.type = {
@@ -73,6 +71,12 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
     this
   }
 
+  private[nn] def allocateAs(dest: Activity): Activity = dest match {
+    case tensor: Tensor[T] => Tensor[T]()
+    case table: Table => T()
+    case _ => throw new IllegalArgumentException("Activity only support tensor and table now")
+  }
+
   /**
    * The name of the module
    */
@@ -80,7 +84,7 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
 
   /**
    * Set the module name
- *
+   *
    * @param name
    * @return
    */
@@ -91,7 +95,7 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
 
   /**
    * get the module name
- *
+   *
    * @return
    */
   def getName() : String = {
@@ -102,7 +106,7 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
 
   protected var backwardTime = 0L
 
-  def getTimes(): Array[(Module[_ <: Activities, _ <: Activities, T], Long, Long)] = {
+  def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
     Array((this, forwardTime, backwardTime))
   }
 
@@ -120,9 +124,10 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
    */
   final def forward(input: A): B = {
     val before = System.nanoTime()
-    val result = updateOutput(input)
+    updateOutput(input)
     forwardTime += System.nanoTime() - before
-    result
+
+    output
   }
 
   /**
@@ -137,28 +142,26 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
    */
   def backward(input: A, gradOutput: B): A = {
     val before = System.nanoTime()
-    val result = updateGradInput(input, gradOutput)
+    updateGradInput(input, gradOutput)
     accGradParameters(input, gradOutput)
     backwardTime += System.nanoTime() - before
-    result
+
+    gradInput
   }
 
   /**
    * Computes the output using the current parameter set of the class and input. This function
    * returns the result which is stored in the output field.
- *
+   *
    * @param input
    * @return
    */
-  def updateOutput(input: A): B = {
-    this.output = input.asInstanceOf[B]
-    output
-  }
+  def updateOutput(input: A): B
 
   /**
    * Computing the gradient of the module with respect to its own input. This is returned in
    * gradInput. Also, the gradInput state variable is updated accordingly.
- *
+   *
    * @param input
    * @param gradOutput
    * @return
@@ -170,7 +173,7 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
    * perform this step as they do not have any parameters. The state variable name for the
    * parameters is module dependent. The module is expected to accumulate the gradients with
    * respect to the parameters in some variable.
- *
+   *
    * @param input
    * @param gradOutput
    * @param scale
@@ -193,7 +196,7 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
    */
   def getParameters(): (Tensor[T], Tensor[T]) = {
     val (weightParameters, gradParameters) = this.parameters()
-    (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
+    (AbstractModule.flatten[T](weightParameters), AbstractModule.flatten[T](gradParameters))
   }
 
   /**
@@ -232,14 +235,26 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
     this
   }
 
-  def cloneModule(): Module[A, B, T] = {
+  private val engineType: EngineType = Engine.getEngineType()
+
+  /**
+   * get execution engine type
+   */
+  def checkEngineType(): this.type = {
+    if (engineType != Engine.getEngineType()) {
+      throw new Error("Module's EngineType doesn't march global EngineType")
+    }
+    this
+  }
+
+  def cloneModule(): AbstractModule[A, B, T] = {
     SerializationUtils.clone(this)
   }
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[Module[A, B, T]]
+  def canEqual(other: Any): Boolean = other.isInstanceOf[AbstractModule[A, B, T]]
 
   override def equals(other: Any): Boolean = other match {
-    case that: Module[A, B, T] =>
+    case that: AbstractModule[A, B, T] =>
       (that canEqual this) &&
         (that.getClass equals this.getClass) &&
         output == that.output &&
@@ -260,10 +275,10 @@ abstract class Module[A <: Activities: ClassTag, B <: Activities: ClassTag,
   }
 }
 
-object Module {
-  def load[A <: Activities: ClassTag, B <: Activities: ClassTag,
-  @specialized(Float, Double) T: ClassTag](path : String) : Module[A, B, T] = {
-    File.load[Module[A, B, T]](path)
+object AbstractModule {
+  def load[A <: Activity: ClassTag, B <: Activity: ClassTag,
+  @specialized(Float, Double) T: ClassTag](path : String) : AbstractModule[A, B, T] = {
+    File.load[AbstractModule[A, B, T]](path)
   }
 
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(
@@ -317,7 +332,4 @@ object Module {
     return Tensor(storage)
   }
 }
-
-
-
 

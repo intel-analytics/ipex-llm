@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -26,7 +27,7 @@ import scala.reflect.ClassTag
  * Takes a table of Tensors and outputs the multiplication of all of them.
  */
 class CMulTable[T: ClassTag]()(
-  implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T]{
+  implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T]{
   override def updateOutput(input: Table): Tensor[T] = {
     output.resizeAs(input(1)).copy(input(1))
     var i = 2
@@ -54,5 +55,12 @@ class CMulTable[T: ClassTag]()(
 
   override def toString() : String = {
     "nn.CMulTable"
+  }
+}
+
+object CMulTable {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : CMulTable[T] = {
+    new CMulTable[T]()
   }
 }

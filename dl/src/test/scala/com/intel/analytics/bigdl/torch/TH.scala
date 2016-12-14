@@ -94,7 +94,7 @@ object TH {
           File.saveTorch(parameters(k), tmpPath, TYPE_THRESHOLD)
         case _: Concat[_] =>
           File.saveTorch(parameters(k), tmpPath, TYPE_CONCAT)
-        case _: Sequential[_, _, _] =>
+        case _: Sequential[_] =>
           File.saveTorch(parameters(k), tmpPath, TYPE_SEQUENTIAL)
         case _: View[_] =>
           File.saveTorch(parameters(k), tmpPath, TYPE_VIEW)

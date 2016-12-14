@@ -17,35 +17,32 @@
 
 package com.intel.analytics.bigdl.models.mnist
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
-import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 object SimpleCNN {
   val rowN = 28
   val colN = 28
   val featureSize = rowN * colN
 
-  def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val model = new Sequential[Tensor[T], Tensor[T], T]()
-    model.add(new Reshape(Array(1, rowN, colN)))
-    model.add(new SpatialConvolution(1, 32, 5, 5))
-    model.add(new Tanh())
-    model.add(new SpatialMaxPooling(3, 3, 3, 3))
-    model.add(new SpatialConvolution(32, 64, 5, 5))
-    model.add(new Tanh())
-    model.add(new SpatialMaxPooling(2, 2, 2, 2))
+  def apply(classNum: Int): Module[Float] = {
+    val model = Sequential()
+    model.add(Reshape(Array(1, rowN, colN)))
+    model.add(SpatialConvolution(1, 32, 5, 5))
+    model.add(Tanh())
+    model.add(SpatialMaxPooling(3, 3, 3, 3))
+    model.add(SpatialConvolution(32, 64, 5, 5))
+    model.add(Tanh())
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
 
     val linearInputNum = 64 * 2 * 2
     val hiddenNum = 200
-    model.add(new Reshape(Array(linearInputNum)))
-    model.add(new Linear(linearInputNum, hiddenNum))
-    model.add(new Tanh())
-    model.add(new Linear(hiddenNum, classNum))
-    model.add(new LogSoftMax())
+    model.add(Reshape(Array(linearInputNum)))
+    model.add(Linear(linearInputNum, hiddenNum))
+    model.add(Tanh())
+    model.add(Linear(hiddenNum, classNum))
+    model.add(LogSoftMax())
     model
   }
 }

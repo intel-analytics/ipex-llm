@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ps
+package com.intel.analytics.bigdl.parameters
 
 import java.nio.ByteBuffer
 
+import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Table
 import org.apache.spark.rdd.RDD
@@ -37,11 +38,11 @@ trait ParameterManager[T] extends Serializable {
   def getState(): Table
 }
 
-abstract trait Parameter[T] extends Serializable {
+abstract trait CompressedTensor[T] extends Serializable {
 
-  def copyTo(srcOffset: Int, tensor: Tensor[T], tgtOffset: Int, length: Int): Unit
+  def deCompress(srcOffset: Int, tensor: Tensor[T], tgtOffset: Int, length: Int): Unit
 
-  def copyTo(tensor: Tensor[T]): Unit
+  def deCompress(tensor: Tensor[T]): Unit
 
   def bytes(offset: Int, length: Int): ByteBuffer
 
@@ -55,13 +56,30 @@ abstract trait Parameter[T] extends Serializable {
 
   def parAdd(data: ByteBuffer): this.type
 
-  def copyFrom(offset: Int, src: Tensor[T], srcOffset: Int, length: Int): this.type
+  def compress(offset: Int, src: Tensor[T], srcOffset: Int, length: Int): this.type
 
-  def copyFrom(tensor: Tensor[T]): this.type
+  def compress(tensor: Tensor[T]): this.type
 }
 
-object Parameter {
-  def apply[T: ClassTag](t: Tensor[T]): Parameter[T] = new FP16Parameter(t)
+object SerializerInstance {
+  private var pm: String = "fp16"
 
-  def apply[T: ClassTag](b: ByteBuffer): Parameter[T] = new FP16Parameter(b)
+  def setSerializer(pm: String): Unit = {
+    if (pm.toLowerCase != "fp16") throw new IllegalArgumentException("Unsupported parameter type!")
+    this.pm = pm
+  }
+
+  def serialize[T: ClassTag](data: Tensor[T]): CompressedTensor[T] = {
+    pm.toLowerCase match {
+      case "fp16" => new FP16CompressedTensor[T](data)
+      case _ => throw new IllegalArgumentException("Unsupported parameter type")
+    }
+  }
+
+  def serialize[T: ClassTag](data: ByteBuffer): CompressedTensor[T] = {
+    pm.toLowerCase() match {
+      case "fp16" => new FP16CompressedTensor[T](data)
+      case _ => throw new IllegalArgumentException("Unsupported parameter type")
+    }
+  }
 }

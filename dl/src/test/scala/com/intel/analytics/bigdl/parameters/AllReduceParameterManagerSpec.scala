@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ps
+package com.intel.analytics.bigdl.parameters
 
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.utils.{Engine, T}

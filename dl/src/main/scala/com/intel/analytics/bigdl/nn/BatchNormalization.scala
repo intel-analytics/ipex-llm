@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
@@ -575,4 +576,14 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     s"nn.BatchNormalization[${ev.getType()}]($nOutput, $eps, $momentum, $affine)"
   }
 
+}
+
+object BatchNormalization {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    nOutput: Int,
+    eps: Double = 1e-5,
+    momentum: Double = 0.1,
+    affine: Boolean = true)(implicit ev: TensorNumeric[T]) : BatchNormalization[T] = {
+    new BatchNormalization[T](nOutput, eps, momentum, affine)
+  }
 }

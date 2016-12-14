@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -30,11 +31,11 @@ class MultiCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers{
   }
 
   "A MultiCriterion Module " should "generate correct output and grad with Tensor input" in {
-    val module = new MultiCriterion[Tensor[Double], Double]()
+    val module = new MultiCriterion[Double]()
     val nll = new ClassNLLCriterion[Double]()
     val nll2 = new MSECriterion[Double]()
-    module.add(nll.asInstanceOf[TensorCriterion[Double]], 0.5)
-    module.add(nll2.asInstanceOf[TensorCriterion[Double]])
+    module.add(nll, 0.5)
+    module.add(nll2)
 
     val input = Tensor[Double](5).apply1(e => Random.nextDouble())
     val target = Tensor[Double](5)

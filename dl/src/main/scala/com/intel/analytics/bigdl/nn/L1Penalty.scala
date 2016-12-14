@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -73,5 +74,14 @@ class L1Penalty[T: ClassTag]
 
   override def toString(): String = {
     s"nn.L1Penalty ($l1weight, $sizeAverage, $provideOutput)"
+  }
+}
+
+object L1Penalty {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      l1weight: Int,
+      sizeAverage: Boolean = false,
+      provideOutput: Boolean = true)(implicit ev: TensorNumeric[T]) : L1Penalty[T] = {
+    new L1Penalty[T](l1weight, sizeAverage, provideOutput)
   }
 }

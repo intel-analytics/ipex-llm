@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -34,9 +35,8 @@ import scala.reflect.ClassTag
  */
 class MarginRankingCriterion[T: ClassTag]
 (val margin: Double = 1.0, val sizeAverage: Boolean = true)
- (implicit ev: TensorNumeric[T]) extends Criterion[Table, T] {
+ (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Table, T] {
 
-  private val gradInput = T()
   @transient
   var mask: Tensor[T] = null
   @transient
@@ -124,5 +124,13 @@ class MarginRankingCriterion[T: ClassTag]
 
   override def toString(): String = {
     s"nn.MarginRankingCriterion($margin)"
+  }
+}
+
+object MarginRankingCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      margin: Double = 1.0,
+      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : MarginRankingCriterion[T] = {
+    new MarginRankingCriterion[T](margin, sizeAverage)
   }
 }

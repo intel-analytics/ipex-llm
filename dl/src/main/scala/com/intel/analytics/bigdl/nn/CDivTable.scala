@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -26,7 +27,7 @@ import scala.reflect.ClassTag
  * Takes a table with two Tensor and returns the component-wise division between them.
  */
 class CDivTable[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends Module[Table, Tensor[T], T]{
+  extends AbstractModule[Table, Tensor[T], T]{
 
   override def updateOutput(input: Table): Tensor[T] = {
     val res1 = input[Tensor[T]](1)
@@ -52,5 +53,12 @@ class CDivTable[T: ClassTag](implicit ev: TensorNumeric[T])
 
   override def toString() : String = {
     "nn.CDivTable"
+  }
+}
+
+object CDivTable {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : CDivTable[T] = {
+    new CDivTable[T]()
   }
 }

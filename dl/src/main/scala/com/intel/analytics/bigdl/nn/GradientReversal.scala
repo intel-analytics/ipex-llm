@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -55,3 +56,10 @@ class GradientReversal[T: ClassTag](var lambda: Double = 1) (implicit ev: Tensor
   }
 }
 
+
+object GradientReversal {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      lambda: Double = 1)(implicit ev: TensorNumeric[T]) : GradientReversal[T] = {
+    new GradientReversal[T](lambda)
+  }
+}

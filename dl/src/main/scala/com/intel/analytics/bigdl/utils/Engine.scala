@@ -24,6 +24,12 @@ import org.apache.log4j.Logger
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
+sealed trait EngineType
+
+case object MklBlas extends EngineType
+
+case object MklDnn extends EngineType
+
 /**
  * Provide appropriated thread pool based on user provided parallelism
  */
@@ -33,9 +39,34 @@ object Engine{
    */
   private var poolSize: Int = System.getProperty("dl.engine.cores",
     (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
-  private val logger = Logger.getLogger(getClass);
+  private val logger = Logger.getLogger(getClass)
 
   private var engine: ExecutionContext = null
+
+  /**
+   * Default engine is MklBlas
+   */
+  private var engineType: EngineType = {
+    val dlEngineType = System.getProperty("DL_ENGINE_TYPE", "MklBlas")
+    if (dlEngineType.toLowerCase == "mklblas") {
+      MklBlas
+    } else if (dlEngineType.toLowerCase == "mkldnn") {
+      MklDnn
+    } else {
+      throw new Error(s"Unkown DL_ENGINE_TYPE = $dlEngineType, Please use MklBlas or MklDnn")
+    }
+  }
+
+  /**
+   * Notice: Please use property DL_ENGINE_TYPE to set engineType.
+   */
+  private[bigdl] def setEngineType(engineType: EngineType) : Unit = {
+    this.engineType = engineType
+  }
+
+  def getEngineType() : EngineType = {
+    this.engineType
+  }
 
   def setCoreNum(size: Int): Unit = {
     require(size > 0)

@@ -99,9 +99,13 @@ class Metrics extends Serializable {
       localMetricsMap.map(
         entry => s"${entry._1} : ${entry._2.value.get() / entry._2.parallel / scale} $unit\n")
         .mkString("") +
-      aggregateDistributeMetricsMap.map(
-        entry => s"${entry._1} : ${entry._2.value.value / entry._2.parallel / scale} $unit\n")
-        .mkString("") +
+      aggregateDistributeMetricsMap.map{
+        entry => if (entry._2.parallel == 1) {
+          s"${entry._1} : ${entry._2.value.value.toInt} \n"
+        } else {
+          s"${entry._1} : ${entry._2.value.value / entry._2.parallel / scale} $unit\n"
+        }
+      }.mkString("") +
       distributeMetricsMap.map { entry =>
         s"${entry._1} : ${entry._2.value.value.map(_ / scale).mkString(" ")} \n"
       }.mkString("") +

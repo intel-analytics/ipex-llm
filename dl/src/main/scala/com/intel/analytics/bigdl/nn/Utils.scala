@@ -17,9 +17,10 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Activities, T, Table}
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -31,19 +32,22 @@ object Utils {
    * @param target
    * @param src
    */
-  def recursiveResizeAs[T : ClassTag](target : Activities, src: Activities)(
-    implicit ev: TensorNumeric[T]): Activities = {
-    var result: Activities = null
+  def recursiveResizeAs[T : ClassTag](target : Activity, src: Activity)(
+    implicit ev: TensorNumeric[T]): Activity = {
+    var result: Activity = null
     if (src.isInstanceOf[Table]) {
-      val srcTable = src.toTable()
-      result = if (target.isInstanceOf[Table]) {
+      val srcTable = src.toTable
+      result = if (null == target) {
+        T()
+      } else if (target.isInstanceOf[Tensor[T]]) {
         T(target)
       } else {
-        target.toTable()
+        target
       }
-      val resultTable = result.toTable()
+
+      val resultTable = result.toTable
       var i = 1
-      while (i <= src.toTable().length()) {
+      while (i <= src.toTable.length()) {
         if (resultTable.contains(i)) {
           resultTable(i) = recursiveResizeAs(resultTable(i), srcTable(i))
         } else {
@@ -61,7 +65,7 @@ object Utils {
       } else {
         Tensor[T]()
       }
-      result.toTensor[T]().resizeAs(src.toTensor())
+      result.toTensor[T].resizeAs(src.toTensor)
     }
     result
   }
@@ -72,19 +76,19 @@ object Utils {
    * @param x
    * @param func
    */
-  def recursiveTensorApply1[T](x: Activities, func: Tensor[T] => Tensor[T])(
+  def recursiveTensorApply1[T](x: Activity, func: Tensor[T] => Tensor[T])(
     implicit ev: TensorNumeric[T]): Unit = {
-    require(x.isInstanceOf[Activities],
+    require(x.isInstanceOf[Activity],
       s"expecting tensors or tables thereof. Got ${x} instead"
     )
     if (x.isInstanceOf[Table]) {
       var i = 1
-      while (i <= x.toTable().length()) {
-        recursiveTensorApply1(x.toTable()(i), func)
+      while (i <= x.toTable.length()) {
+        recursiveTensorApply1(x.toTable(i), func)
         i += 1
       }
     } else {
-      func(x.toTensor[T]())
+      func(x.toTensor[T])
     }
   }
 
@@ -98,17 +102,17 @@ object Utils {
    * @param func
    * @return
    */
-  def recursiveTensorApply2[T](x: Activities, y: Activities,
-    func: (Tensor[T], Tensor[T]) => Tensor[T])(implicit ev: TensorNumeric[T]): Activities = {
+  def recursiveTensorApply2[T](x: Activity, y: Activity,
+    func: (Tensor[T], Tensor[T]) => Tensor[T])(implicit ev: TensorNumeric[T]): Activity = {
     if (y.isInstanceOf[Tensor[T]] && x.isInstanceOf[Tensor[T]]) {
-      require(x.toTensor[T]().nElement() == y.toTensor[T]().nElement(),
+      require(x.toTensor[T].nElement() == y.toTensor[T].nElement(),
         "x, y should have the same size")
-      func(x.toTensor[T](), y.toTensor[T]())
+      func(x.toTensor[T], y.toTensor[T])
     } else {
       require(x.isInstanceOf[Table] && y.isInstanceOf[Table], "x, y should have the same size")
-      require(x.toTable().length() == y.toTable().length(), "x, y should have the same size")
+      require(x.toTable.length() == y.toTable.length(), "x, y should have the same size")
       var i = 1
-      while (i <= x.toTable().length()) {
+      while (i <= x.toTable.length()) {
         recursiveTensorApply2[T](x, y, func)
         i += 1
       }
@@ -128,8 +132,8 @@ object Utils {
    * @tparam T: Float or Double
    * @return y
    */
-  def recursiveAdd[T](y: Activities, alpha: Double = 1.0, x: Activities )(
-    implicit ev: TensorNumeric[T]): Activities = {
+  def recursiveAdd[T](y: Activity, alpha: Double = 1.0, x: Activity )(
+    implicit ev: TensorNumeric[T]): Activity = {
     recursiveTensorApply2[T](y, x, (t1, t2) => t1.add(ev.fromType[Double](alpha), t2))
     y
   }
@@ -144,8 +148,8 @@ object Utils {
    * @tparam T: Float or Double
    * @return y
    */
-  def recursiveCopy[T](y: Activities, x: Activities )(
-    implicit ev: TensorNumeric[T]): Activities = {
+  def recursiveCopy[T](y: Activity, x: Activity )(
+    implicit ev: TensorNumeric[T]): Activity = {
     recursiveTensorApply2[T](y, x, (t1, t2) => t1.copy(t2))
     y
   }
@@ -156,7 +160,7 @@ object Utils {
    * @param x
    * @param value
    */
-  def recursiveFill[T](x: Activities, value : Double)(
+  def recursiveFill[T](x: Activity, value : Double)(
     implicit ev: TensorNumeric[T]): Unit = {
     recursiveTensorApply1[T](x, t => t.fill(ev.fromType[Double](value)))
   }

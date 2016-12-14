@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -81,5 +82,13 @@ class Squeeze[@specialized(Float, Double) T: ClassTag](
   override def hashCode(): Int = {
     val state = Seq(super.hashCode(), dim, numInputDims)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+object Squeeze {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dim : Int = Int.MinValue,
+      numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Squeeze[T] = {
+    new Squeeze[T](dim, numInputDims)
   }
 }

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.DataSource
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
 import org.scalatest.{FlatSpec, Matchers}
@@ -141,7 +142,7 @@ object TestDummyDataSource extends DataSource[(Tensor[Float], Tensor[Float])] {
 class LocalOptimizerSpec extends FlatSpec with Matchers {
   "Local Optimizer" should "train model well with CrossEntropy and SGD" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
+    val mlp = new Sequential[Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
     val optimizer = new LocalOptimizer[Float](
@@ -158,14 +159,14 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
       Array[Float](
         0, 1, 0, 1,
         1, 0, 1, 0
-      )), storageOffset = 1, size = Array(2, 4)))
+      )), storageOffset = 1, size = Array(2, 4))).toTensor[Float]
     test.max(1)._2.valueAt(1, 1) should be(1.0)
     test.max(1)._2.valueAt(1, 2) should be(2.0)
   }
 
   it should "train model well with MSE and SGD" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
+    val mlp = new Sequential[Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
@@ -185,14 +186,14 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
       Array[Float](
         0, 1, 0, 1,
         1, 0, 1, 0
-      )), storageOffset = 1, size = Array(2, 4)))
+      )), storageOffset = 1, size = Array(2, 4))).toTensor[Float]
     test.valueAt(1, 1) < 0.5 should be(true)
     test.valueAt(2, 1) > 0.5 should be(true)
   }
 
   it should "train model with CrossEntropy and LBFGS" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
+    val mlp = new Sequential[Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 
@@ -210,14 +211,14 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
       Array[Float](
         0, 1, 0, 1,
         1, 0, 1, 0
-      )), storageOffset = 1, size = Array(2, 4)))
+      )), storageOffset = 1, size = Array(2, 4))).toTensor[Float]
     test.max(1)._2.valueAt(1, 1) should be(1.0)
     test.max(1)._2.valueAt(1, 2) should be(2.0)
   }
 
   it should "train model with MSE and LBFGS" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
+    val mlp = new Sequential[Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
@@ -239,14 +240,14 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
       Array[Float](
         0, 1, 0, 1,
         1, 0, 1, 0
-      )), storageOffset = 1, size = Array(2, 4)))
+      )), storageOffset = 1, size = Array(2, 4))).toTensor[Float]
     test.valueAt(1, 1) < 0.5 should be(true)
     test.valueAt(2, 1) > 0.5 should be(true)
   }
 
   it should "get correct validation result" in {
     RandomGenerator.RNG.setSeed(1000)
-    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
+    val mlp = new Sequential[Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
     val optimizer = new LocalOptimizer[Float](

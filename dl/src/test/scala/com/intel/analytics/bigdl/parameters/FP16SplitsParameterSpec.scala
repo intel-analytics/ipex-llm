@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ps
+package com.intel.analytics.bigdl.parameters
 
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -31,8 +31,8 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
 
     val target = tensor.clone().zero()
 
-    val parameter = new FP16SplitsParameter[Double](tensor, 3)
-    parameter.copyTo(target)
+    val parameter = new FP16SplitsCompressedTensor[Double](tensor, 3)
+    parameter.deCompress(target)
 
     target should be(tensor)
   }
@@ -45,8 +45,8 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
     tensor.setValue(4, 4.111111)
     tensor.setValue(5, 5.111111)
 
-    val parameter = new FP16SplitsParameter[Double](tensor, 3)
-    parameter.copyTo(tensor)
+    val parameter = new FP16SplitsCompressedTensor[Double](tensor, 3)
+    parameter.deCompress(tensor)
 
     val target = Tensor[Double](5)
     target.setValue(1, 1.109375)
@@ -66,11 +66,11 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
     tensor.setValue(4, 4.111111)
     tensor.setValue(5, 5.111111)
 
-    val parameter = new FP16SplitsParameter[Double](tensor, 3)
+    val parameter = new FP16SplitsCompressedTensor[Double](tensor, 3)
     val buffer = parameter.bytes(2, 2)
-    val parameter2 = new FP16Parameter[Double](buffer)
+    val parameter2 = new FP16CompressedTensor[Double](buffer)
     val test = tensor.clone()
-    parameter2.copyTo(0, test, 2, 2)
+    parameter2.deCompress(0, test, 2, 2)
 
     val target = Tensor[Double](5)
     target.setValue(1, 1.111111)
@@ -84,7 +84,7 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
 
   it should "throw exception when slice size is not consisted" in {
     val tensor = Tensor[Double](5)
-    val parameter = new FP16SplitsParameter[Double](tensor, 3)
+    val parameter = new FP16SplitsCompressedTensor[Double](tensor, 3)
     intercept[IllegalArgumentException] {
       parameter.bytes(1, 2)
     }
@@ -100,8 +100,8 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
 
     val target = tensor.clone().zero()
 
-    val parameter = new FP16SplitsParameter[Float](tensor, 3)
-    parameter.copyTo(target)
+    val parameter = new FP16SplitsCompressedTensor[Float](tensor, 3)
+    parameter.deCompress(target)
 
     target should be(tensor)
   }
@@ -115,8 +115,8 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
     tensor.setValue(4, 4.111111f)
     tensor.setValue(5, 5.111111f)
 
-    val parameter = new FP16SplitsParameter[Float](tensor, 3)
-    parameter.copyTo(tensor)
+    val parameter = new FP16SplitsCompressedTensor[Float](tensor, 3)
+    parameter.deCompress(tensor)
 
     val target = Tensor[Float](5)
     target.setValue(1, 1.109375f)
@@ -136,11 +136,11 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
     tensor.setValue(4, 4.111111f)
     tensor.setValue(5, 5.111111f)
 
-    val parameter = new FP16SplitsParameter[Float](tensor, 3)
+    val parameter = new FP16SplitsCompressedTensor[Float](tensor, 3)
     val buffer = parameter.bytes(2, 2)
-    val parameter2 = new FP16Parameter[Float](buffer)
+    val parameter2 = new FP16CompressedTensor[Float](buffer)
     val test = tensor.clone()
-    parameter2.copyTo(0, test, 2, 2)
+    parameter2.deCompress(0, test, 2, 2)
 
     val target = Tensor[Float](5)
     target.setValue(1, 1.111111f)
@@ -154,7 +154,7 @@ class FP16SplitsParameterSpec extends FlatSpec with Matchers {
 
   it should "throw exception when slice size is not consisted" in {
     val tensor = Tensor[Float](5)
-    val parameter = new FP16SplitsParameter[Float](tensor, 3)
+    val parameter = new FP16SplitsCompressedTensor[Float](tensor, 3)
     intercept[IllegalArgumentException] {
       parameter.bytes(1, 2)
     }

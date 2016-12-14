@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
@@ -312,5 +313,12 @@ class PReLU[T: ClassTag](
   override def hashCode(): Int = {
     val state = Seq(super.hashCode(), weight, gradWeight, nOutputPlane)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+object PReLU {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      nOutputPlane: Int = 0)(implicit ev: TensorNumeric[T]) : PReLU[T] = {
+    new PReLU[T](nOutputPlane)
   }
 }

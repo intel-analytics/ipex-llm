@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 
@@ -396,5 +397,14 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
 
   override def toString(): String = {
     s"nn.Threshold($th, $v)"
+  }
+}
+
+object Threshold {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      th: Double = 1e-6,
+      v: Double = 0.0,
+      ip: Boolean = false)(implicit ev: TensorNumeric[T]) : Threshold[T] = {
+    new Threshold[T](th, v, ip)
   }
 }

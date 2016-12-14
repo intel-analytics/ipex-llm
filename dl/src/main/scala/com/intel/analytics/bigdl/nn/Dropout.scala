@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
@@ -179,5 +180,14 @@ class Dropout[@specialized(Float, Double) T: ClassTag](
 
   override def toString(): String = {
     s"nn.Dropout($p)"
+  }
+}
+
+object Dropout {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      initP: Double = 0.5,
+      inplace: Boolean = false,
+      scale: Boolean = true)(implicit ev: TensorNumeric[T]) : Dropout[T] = {
+    new Dropout[T](initP, inplace, scale)
   }
 }
