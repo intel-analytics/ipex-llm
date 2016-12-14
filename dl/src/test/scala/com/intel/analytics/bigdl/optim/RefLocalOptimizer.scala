@@ -17,10 +17,9 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
-import com.intel.analytics.bigdl.nn.{Criterion, Module}
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Activities
 
 import scala.reflect.ClassTag
 
@@ -28,15 +27,15 @@ import scala.reflect.ClassTag
  * The class is used as a reference optimizer in local optimizer unit test
  */
 class RefLocalOptimizer[T : ClassTag](
-  model: Module[Activities, Activities, T],
+  model: Module[T],
   dataset: DataSource[Iterator[Batch[T]]],
-  criterion: Criterion[Activities, T]
+  criterion: Criterion[T]
 )(implicit ev : TensorNumeric[T]) extends Optimizer[T, Iterator[Batch[T]],
   Iterator[Batch[T]]](model, dataset, criterion){
 
   val (w, g) = model.getParameters()
 
-  override def optimize(): Module[Activities, Activities, T] = {
+  override def optimize(): Module[T] = {
     val data = dataset.data()
     var count = 0
     state("epoch") = state.get[Int]("epoch").getOrElse(1)

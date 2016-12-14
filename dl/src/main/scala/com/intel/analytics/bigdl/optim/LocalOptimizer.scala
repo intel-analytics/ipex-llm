@@ -19,8 +19,7 @@ package com.intel.analytics.bigdl.optim
 
 
 import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch, LocalDataSet}
-import com.intel.analytics.bigdl.nn.{Criterion, Module}
-import com.intel.analytics.bigdl.optim.BetterGradAggEpochOptimizer._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -43,9 +42,9 @@ object LocalOptimizer {
  * @tparam T
  */
 class LocalOptimizer[T : ClassTag](
-  model: Module[Activities, Activities, T],
+  model: Module[T],
   dataset: DataSource[Iterator[Batch[T]]],
-  criterion: Criterion[Activities, T]
+  criterion: Criterion[T]
 )(implicit ev : TensorNumeric[T])
   extends Optimizer[T, Iterator[Batch[T]], Iterator[Batch[T]]](
     model, dataset, criterion) {
@@ -74,7 +73,7 @@ class LocalOptimizer[T : ClassTag](
   private val workingCriterion =
     (1 to subModelNumber).map(_ => criterion.cloneCriterion()).toArray
 
-  override def optimize(): Module[Activities, Activities, T] = {
+  override def optimize(): Module[T] = {
     var wallClockTime = 0L
     var count = 0
     optimMethod.clearHistory(state)
@@ -110,7 +109,7 @@ class LocalOptimizer[T : ClassTag](
             localModel.training()
             val localCriterion = workingCriterion(i)
             val (input, target) = tensorBuffer(i)
-            val output = localModel.forward(input).asInstanceOf[Tensor[T]]
+            val output = localModel.forward(input)
             val _loss = ev.toType[Double](localCriterion.forward(output, target))
             val errors = localCriterion.backward(output, target)
             localModel.backward(input, errors)
@@ -190,27 +189,27 @@ class LocalOptimizer[T : ClassTag](
       return
     }
     val vMethods = validationMethods.get
-    val dataIter = validationDataSet.get.asInstanceOf[LocalDataSet[(Tensor[T], Tensor[T])]].data()
+    val dataIter = validationDataSet.get.asInstanceOf[LocalDataSet[Batch[T]]].data()
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
 
     workingModels.foreach(_.evaluate())
 
     var count = 0
     dataIter.map(batch => {
-      require(batch._1.size(1) == batch._2.size(1))
-      val stackSize = batch._1.size(1) / subModelNumber
-      val extraSize = batch._1.size(1) % subModelNumber
+      require(batch.data.size(1) == batch.labels.size(1))
+      val stackSize = batch.data.size(1) / subModelNumber
+      val extraSize = batch.data.size(1) % subModelNumber
       val parallelism = if(stackSize == 0) extraSize else subModelNumber
       val result = Engine.invokeAndWait(
         (0 until parallelism).map(b =>
           () => {
             val offset = b * stackSize + math.min(b, extraSize)
             val length = stackSize + (if(b < extraSize) 1 else 0)
-            val input = batch._1.narrow(1, offset + 1, length)
-            val target = batch._2.narrow(1, offset + 1, length)
+            val input = batch.data.narrow(1, offset + 1, length)
+            val target = batch.labels.narrow(1, offset + 1, length)
             val output = workingModels(b).forward(input)
             vMethods.map(validation => {
-              validation(output.asInstanceOf[Tensor[T]], target)
+              validation(output, target)
             })
           }
         )
@@ -219,7 +218,7 @@ class LocalOptimizer[T : ClassTag](
           l + r
         }
       })
-      count += batch._1.size(1)
+      count += batch.data.size(1)
       logger.info(s"[Validation] $count/${validationDataSet.get.size()}")
       result
     }).reduce((left, right) => {

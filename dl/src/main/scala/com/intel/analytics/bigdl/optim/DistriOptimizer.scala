@@ -17,9 +17,9 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch, DistributedDataSet}
-import com.intel.analytics.bigdl.nn.{Criterion, Module}
-import com.intel.analytics.bigdl.ps.{AllReduceParameterManager, ParameterManager}
+import com.intel.analytics.bigdl.parameters.{AllReduceParameterManager, ParameterManager}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -47,10 +47,10 @@ object DistriOptimizer {
    * @tparam T
    */
   case class Cache[T](
-    localModels: Array[Module[Activities, Activities, T]],
+    localModels: Array[Module[T]],
     modelWeights: Array[Tensor[T]],
     modelGradients: Array[Tensor[T]],
-    localCriterions: Array[Criterion[Activities, T]],
+    localCriterions: Array[Criterion[T]],
     localStates: Array[Table],
     buffer: Tensor[T]
   )
@@ -280,9 +280,9 @@ object DistriOptimizer {
   }
 
   private def initThreadModels[T: ClassTag](
-    model: Module[Activities, Activities, T],
+    model: Module[T],
     dataset: DistributedDataSet[Batch[T]],
-    criterion: Criterion[Activities, T],
+    criterion: Criterion[T],
     state: Table,
     nodeNumber: Int,
     coresPerNode: Int,
@@ -394,7 +394,7 @@ object DistriOptimizer {
   private def getModel[T](
     models: RDD[Cache[T]],
     pm: ParameterManager[T]
-  ): Module[Activities, Activities, T] = {
+  ): Module[T] = {
     val model = models.map(_.localModels.head).first()
     val modelParameter = model.getParameters()._1
     modelParameter.copy(pm.getParameter())
@@ -403,9 +403,9 @@ object DistriOptimizer {
 }
 
 class DistriOptimizer[T: ClassTag](
-  model: Module[Activities, Activities, T],
+  model: Module[T],
   dataset: DistributedDataSet[Batch[T]],
-  criterion: Criterion[Activities, T]
+  criterion: Criterion[T]
 )
   (implicit ev: TensorNumeric[T])
   extends Optimizer[T, RDD[Batch[T]], RDD[Batch[T]]](
@@ -429,7 +429,7 @@ class DistriOptimizer[T: ClassTag](
 
   private var models : RDD[DistriOptimizer.Cache[T]] = null
 
-  override def optimize(): Module[Activities, Activities, T] = {
+  override def optimize(): Module[T] = {
     dataset.originRDD()
       .sparkContext
       .getConf

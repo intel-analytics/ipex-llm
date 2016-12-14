@@ -18,11 +18,11 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Activities, Engine, MklBlas, MklDnn}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
 
-class LocalValidator[T](model: Module[Activities, Activities, T], coreNumber: Int)
+class LocalValidator[T](model: Module[T], coreNumber: Int)
   extends Validator[T, Iterator[(Tensor[T], Tensor[T])]](model) {
 
   private val subModelNumber = Engine.getEngineType match {

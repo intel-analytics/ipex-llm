@@ -19,15 +19,13 @@ package com.intel.analytics.bigdl.models.lenet
 
 import com.intel.analytics.bigdl.nn.{Linear, LogSoftMax, SpatialMaxPooling, _}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Activities
+import com.intel.analytics.bigdl._
 
 import scala.reflect.ClassTag
 
 object LeNet5 {
-  def apply(classNum: Int): Module[Activities, Activities, Float] = {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.TensorNumericFloat
-    val model = Sequential[Tensor[Float], Tensor[Float], Float]()
+  def apply(classNum: Int): Module[Float] = {
+    val model = Sequential[Float]()
     model.add(Reshape(Array(1, 28, 28)))
     model.add(SpatialConvolution(1, 6, 5, 5))
     model.add(Tanh())
@@ -40,6 +38,6 @@ object LeNet5 {
     model.add(Tanh())
     model.add(Linear(100, classNum))
     model.add(LogSoftMax())
-    model.asInstanceOf[Module[Activities, Activities, Float]]
+    model
   }
 }

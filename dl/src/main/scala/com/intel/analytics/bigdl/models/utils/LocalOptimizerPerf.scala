@@ -19,11 +19,13 @@ package com.intel.analytics.bigdl.models.utils
 import com.intel.analytics.bigdl.dataset.{Batch, LocalDataSet}
 import com.intel.analytics.bigdl.models.imagenet._
 import com.intel.analytics.bigdl.models.mnist.LeNet5
-import com.intel.analytics.bigdl.nn.{Module, Criterion, ClassNLLCriterion}
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.optim.{Trigger, LocalOptimizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Engine, Activities}
+import com.intel.analytics.bigdl.utils.Engine
 import scopt.OptionParser
 
 import scala.reflect.ClassTag
@@ -40,16 +42,6 @@ object LocalOptimizerPerf {
     opt[Int]('i', "iteration")
       .text("Iteration of perf test. The result will be average of each iteration time cost")
       .action((v, p) => p.copy(iteration = v))
-    opt[String]('t', "type")
-      .text("Data type. It can be float | double")
-      .action((v, p) => p.copy(dataType = v))
-      .validate(v =>
-        if (v.toLowerCase() == "float" || v.toLowerCase() == "double") {
-          success
-        } else {
-          failure("Data type can only be float or double now")
-        }
-      )
     opt[String]('m', "model")
       .text("Model name. It can be alexnet | alexnetowt | googlenet_v1 | vgg16 | vgg19 | lenet5")
       .action((v, p) => p.copy(module = v))
@@ -78,38 +70,34 @@ object LocalOptimizerPerf {
 
   def main(args: Array[String]): Unit = {
     parser.parse(args, new LocalOptimizerPerfParam()).map(param => {
-      param.dataType match {
-        case "float" => performance[Float](param)
-        case "double" => performance[Double](param)
-        case _ => throw new IllegalArgumentException
-      }
+      performance(param)
     })
   }
 
-  def performance[T: ClassTag](param: LocalOptimizerPerfParam)(implicit tn: TensorNumeric[T]): Unit = {
+  def performance(param: LocalOptimizerPerfParam): Unit = {
     val (_model, input) = param.module match {
-      case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 227, 227))
-      case "alexnetowt" => (AlexNet_OWT(1000), Tensor[T](param.batchSize, 3, 224, 224))
-      case "googlenet_v1" => (GoogleNet_v1(1000), Tensor[T](param.batchSize, 3, 224, 224))
-      case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224))
-      case "vgg16" => (Vgg_16(1000), Tensor[T](param.batchSize, 3, 224, 224))
-      case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
-      case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
+      case "alexnet" => (AlexNet(1000), Tensor(param.batchSize, 3, 227, 227))
+      case "alexnetowt" => (AlexNet_OWT(1000), Tensor(param.batchSize, 3, 224, 224))
+      case "googlenet_v1" => (GoogleNet_v1(1000), Tensor(param.batchSize, 3, 224, 224))
+      case "googlenet_v2" => (GoogleNet_v2(1000), Tensor(param.batchSize, 3, 224, 224))
+      case "vgg16" => (Vgg_16(1000), Tensor(param.batchSize, 3, 224, 224))
+      case "vgg19" => (Vgg_19(1000), Tensor(param.batchSize, 3, 224, 224))
+      case "lenet5" => (LeNet5(10), Tensor(param.batchSize, 1, 28, 28))
     }
     param.inputData match {
-      case "constant" => input.fill(tn.fromType(0.01))
+      case "constant" => input.fill(0.01f)
       case "random" => input.rand()
     }
-    val model = _model.asInstanceOf[Module[Activities, Activities, T]]
+    val model = _model
     println(model)
-    val criterion = ClassNLLCriterion[T]().asInstanceOf[Criterion[Activities, T]]
-    val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
-    val dummyDataSet = new LocalDataSet[Batch[T]] {
-      override def data(): Iterator[Batch[T]] = {
-        new Iterator[Batch[T]] {
+    val criterion = ClassNLLCriterion()
+    val labels = Tensor(param.batchSize).fill(1)
+    val dummyDataSet = new LocalDataSet[Batch[Float]] {
+      override def data(): Iterator[Batch[Float]] = {
+        new Iterator[Batch[Float]] {
           override def hasNext: Boolean = true
 
-          override def next(): Batch[T] = {
+          override def next(): Batch[Float] = {
             Batch(input, labels)
           }
         }
@@ -119,7 +107,7 @@ object LocalOptimizerPerf {
     }
 
     Engine.setCoreNumber(param.coreNumber)
-    val optimizer = new LocalOptimizer[T](model, dummyDataSet, criterion)
+    val optimizer = new LocalOptimizer[Float](model, dummyDataSet, criterion)
     optimizer.setEndWhen(Trigger.maxIteration(param.iteration)).optimize()
   }
 }

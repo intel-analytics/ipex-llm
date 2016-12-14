@@ -17,15 +17,16 @@
 
 package com.intel.analytics.bigdl.models.alexnet
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Activities
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.TensorNumericFloat
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 object AlexNet_OWT {
-  def apply(classNum: Int): Module[Activities, Activities, Float] = {
-    val model = Sequential[Tensor[Float], Tensor[Float], Float]()
-    model.add(SpatialConvolution(3, 64, 11, 11, 4, 4, 2, 2, 1, false).setName("conv1"))
+  def apply(classNum: Int, hasDropout : Boolean = true, firstLayerPropagateBack :
+  Boolean = false): Module[Float] = {
+    val model = Sequential()
+    model.add(SpatialConvolution(3, 64, 11, 11, 4, 4, 2, 2, 1, firstLayerPropagateBack)
+      .setName("conv1"))
     model.add(ReLU(true).setName("relu1"))
     model.add(SpatialMaxPooling(3, 3, 2, 2).setName("pool1"))
     model.add(SpatialConvolution(64, 192, 5, 5, 1, 1, 2, 2).setName("conv2"))
@@ -41,19 +42,19 @@ object AlexNet_OWT {
     model.add(View(256 * 6 * 6))
     model.add(Linear(256 * 6 * 6, 4096).setName("fc6"))
     model.add(ReLU(true).setName("relu6"))
-    model.add(Dropout(0.5).setName("drop6"))
+    if (hasDropout) model.add(Dropout(0.5).setName("drop6"))
     model.add(Linear(4096, 4096).setName("fc7"))
     model.add(ReLU(true).setName("relu7"))
-    model.add(Dropout(0.5).setName("drop7"))
+    if (hasDropout) model.add(Dropout(0.5).setName("drop7"))
     model.add(Linear(4096, classNum).setName("fc8"))
     model.add(LogSoftMax())
-    model.asInstanceOf[Module[Activities, Activities, Float]]
+    model
   }
 }
 
 object AlexNet {
-  def apply(classNum: Int): Module[Activities, Activities, Float] = {
-    val model = Sequential[Tensor[Float], Tensor[Float], Float]()
+  def apply(classNum: Int): Module[Float] = {
+    val model = Sequential()
     model.add(SpatialConvolution(3, 96, 11, 11, 4, 4, 0, 0, 1, false).setName("conv1"))
     model.add(ReLU(true).setName("relu1"))
     model.add(SpatialCrossMapLRN(5, 0.0001, 0.75).setName("norm1"))
@@ -78,7 +79,6 @@ object AlexNet {
     model.add(Dropout(0.5).setName("drop7"))
     model.add(Linear(4096, classNum).setName("fc8"))
     model.add(LogSoftMax().setName("loss"))
-    model.asInstanceOf[Module[Activities, Activities, Float]]
+    model
   }
 }
-

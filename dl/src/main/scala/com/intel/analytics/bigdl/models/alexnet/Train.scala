@@ -19,9 +19,11 @@ package com.intel.analytics.bigdl.models.alexnet
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.nn.{Module, Criterion, ClassNLLCriterion}
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, T, Activities}
+import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
 object Train {
@@ -40,7 +42,7 @@ object Train {
           param.coreNumber, false)
 
         val model = if(param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
+          AbstractModule.load[Float](param.modelSnapshot.get)
         } else {
           AlexNet(classNum = 1000)
         }
@@ -61,7 +63,7 @@ object Train {
         val optimizer = new LocalOptimizer[Float](
           model = model,
           dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]]
+          criterion = new ClassNLLCriterion[Float]()
         )
         if(param.cache.isDefined) {
           optimizer.setCache(param.cache.get, Trigger.severalIteration(10000))

@@ -1,18 +1,17 @@
 package com.intel.analytics.bigdl.models.vgg
 
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.TensorNumericFloat
-import com.intel.analytics.bigdl.utils.Activities
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 import scala.reflect.ClassTag
 
 object Vgg {
-  def apply(classNum: Int): Module[Activities, Activities, Float] = {
-    val vggBnDo = Sequential[Tensor[Float], Tensor[Float], Float]()
+  def apply(classNum: Int): Module[Float] = {
+    val vggBnDo = Sequential[Float]()
 
     def convBNReLU(nInputPlane: Int, nOutPutPlane: Int)
-    : Sequential[Tensor[Float], Tensor[Float], Float] = {
+    : Sequential[Float] = {
       vggBnDo.add(SpatialConvolution(nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
       vggBnDo.add(SpatialBatchNormalization(nOutPutPlane, 1e-3))
       vggBnDo.add(ReLU(true))
@@ -42,7 +41,7 @@ object Vgg {
     vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
     vggBnDo.add(View(512))
 
-    val classifier = Sequential[Tensor[Float], Tensor[Float], Float]()
+    val classifier = Sequential[Float]()
     classifier.add(Dropout(0.5))
     classifier.add(Linear(512, 512))
     classifier.add(BatchNormalization(512))
@@ -52,6 +51,6 @@ object Vgg {
     classifier.add(LogSoftMax())
     vggBnDo.add(classifier)
 
-    vggBnDo.asInstanceOf[Module[Activities, Activities, Float]]
+    vggBnDo
   }
 }

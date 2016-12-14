@@ -18,11 +18,11 @@ package com.intel.analytics.bigdl.models.googlenet
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.models.alexnet.{AlexNet, DataSet, Options}
-import com.intel.analytics.bigdl.models.alexnet.Options._
-import com.intel.analytics.bigdl.nn.{Criterion, ClassNLLCriterion, Module}
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, Activities, T}
+import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.spark.SparkContext
 
 object Train {
@@ -41,7 +41,7 @@ object Train {
           param.coreNumber, false)
 
         val model = if(param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
+          AbstractModule.load[Float](param.modelSnapshot.get)
         } else {
           GoogleNet_v1_NoAuxClassifier(classNum = 1000)
         }
@@ -62,7 +62,7 @@ object Train {
         val optimizer = new LocalOptimizer[Float](
           model = model,
           dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]]
+          criterion = new ClassNLLCriterion[Float]()
         )
         if(param.cache.isDefined) {
           optimizer.setCache(param.cache.get, Trigger.everyEpoch)
@@ -104,7 +104,7 @@ object Train {
           false)
 
         val model = if(param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
+          AbstractModule.load[Float](param.modelSnapshot.get)
         } else {
           GoogleNet_v1_NoAuxClassifier(classNum = 1000)
         }
@@ -126,7 +126,7 @@ object Train {
         val optimizer = new DistriOptimizer[Float](
           model = model,
           dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]]
+          criterion = new ClassNLLCriterion[Float]()
         )
 
         if(param.cache.isDefined) {
