@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.sparkdl.models.embedding
+package com.intel.analytics.bigdl.models.embedding
 
-import com.intel.analytics.sparkdl.nn._
-import com.intel.analytics.sparkdl.tensor.Tensor
-import com.intel.analytics.sparkdl.utils.Table
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric.TensorNumericFloat
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.{Module => _, _}
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import scopt.OptionParser
 
-import scala.collection.mutable.Map
+import scala.collection._
 import scala.io.Source
 
 object Word2Vec {
@@ -41,6 +40,7 @@ object Word2Vec {
    * @param minCount The minimum number of word occurrences for it
    *                 to be included in the vocabulary.
    * @param subsample Sub-sampling threshold for word occurrence.
+   * @param alpha Negative sampling unigram distribution raised to alpha power
    */
   case class Word2VecConfig(
     saveLocation: String = "",
@@ -52,7 +52,8 @@ object Word2Vec {
     batchSize: Int = 16,
     windowSize: Int = 5,
     minCount: Int = 5,
-    subsample: Double = 1e-3
+    subsample: Double = 1e-3,
+    alpha: Double = 0.75
   )
 
   def parse(args: Array[String]): Word2VecConfig = new OptionParser[Word2VecConfig]("word2vec") {
@@ -78,13 +79,13 @@ object Word2Vec {
       .action { (x,c) => c.copy(subsample = x) }
   }.parse(args, Word2VecConfig()).get
 
-  val id2Word = Seq[String]()
-  val word2id = Map[String, Int]()
-  val wordCount = Map[String, Int]()
+  var id2Word: Seq[String] = _
+  var word2Id: immutable.Map[String, Int] = _
+  var wordCount = mutable.Map[String, Int]()
   var total = 0
 
-  def getModel: Module[Table, Tensor[Float], Float] = {
-    new Sequential[Table, Tensor[Float], Float]()
+  def getModel: Module[Float] = {
+    new Sequential()
       .add(
         new ParallelTable()
           .add(new ReLU())
@@ -98,8 +99,13 @@ object Word2Vec {
          word <- line.split(" ")) yield {
       wordCount.update(word, wordCount.getOrElse(word, 0) + 1)
     }
-    wordCount
-      .filter(p => p._2 > minCount).keys.toSeq
+    wordCount = wordCount.filter(p => p._2 > minCount)
+    id2Word = wordCount.keys.toSeq
+    word2Id = id2Word.zipWithIndex.toMap
+  }
+
+  def buildTable(): Unit = {
+
   }
 
   def main(args: Array[String]) = {
