@@ -44,6 +44,7 @@ object AllReduceParameter {
   var taskSize = 0
   var extraSize = 0
   var tlength: Int = 0
+  var partitionNum: Int = 0
 }
 
 class AllReduceParameter[T: ClassTag]() extends Serializable {
@@ -56,7 +57,7 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
 
   def readParameterBuffer(): CompressedTensor[T] = {
     new FP16SplitsCompressedTensor[T](tlength,
-      16).asInstanceOf[CompressedTensor[T]]
+      partitionNum).asInstanceOf[CompressedTensor[T]]
   }
 
   def readWeights(): Tensor[T] = {
