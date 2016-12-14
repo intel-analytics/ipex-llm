@@ -223,10 +223,11 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
                 recordsArray(i) = target.size(1)
                 moduleTimeList(i + pre) = System.nanoTime() - start + weightSyncTime
                 i
-              } catch {
-                case e: Exception => e.printStackTrace()
-                  -1
               }
+//              catch {
+//                case e: Exception => e.printStackTrace()
+//                  -1
+//              }
             }
           })
 
@@ -282,7 +283,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
           val value = ev.fromType(lossSum.value / stackCount.value)
           val _optm = optm
           val _config = config
-          val decay = finishedModuleNum.toDouble/idealSubModulesNum
+          _config("dropModuleDecay") = finishedModuleNum.toDouble/idealSubModulesNum
 
           val task2Start = System.nanoTime()
           models.mapPartitions (modelIter => {
@@ -297,7 +298,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
             params.head.deCompress(_ps.partialGradients)
             _ps.partialGradients.div(finishedModuleNumGType)
             _optm.optimize(_ => (value, _ps.partialGradients),
-              _ps.partialWeights, _config, _ps.state, decay)
+              _ps.partialWeights, _config, _ps.state)
 
             _ps.putWeights()
             _metrics.add("task2 time from worker", System.nanoTime()-task2WorkerStart)

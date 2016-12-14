@@ -29,11 +29,11 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
   import SGD._
 
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]), x: Tensor[T],
-    config: Table, state: Table = null, decay : Double = 1.0): (Tensor[T], Array[T]) = {
+    config: Table, state: Table = null): (Tensor[T], Array[T]) = {
 
     val _state = if (state == null) config else state
     val lrSchedule = config.get[LearningRateSchedule]("learningRateSchedule").getOrElse(Default())
-    lrSchedule.updateHyperParameter(config, _state, decay)
+    lrSchedule.updateHyperParameter(config, _state)
 
     val wd = config.get[Double]("weightDecay").getOrElse(0.0)
     val mom = config.get[Double]("momentum").getOrElse(0.0)
@@ -96,22 +96,23 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
 
 object SGD {
   trait LearningRateSchedule {
-    def updateHyperParameter(config : Table, state : Table, decay : Double = 1.0) : Unit
+    def updateHyperParameter(config : Table, state : Table) : Unit
   }
 
   case class EpochSchedule(regimes : Array[Regime]) extends LearningRateSchedule {
-    override def updateHyperParameter(config: Table, state: Table, decay : Double = 1.0): Unit = {
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
       val epoch = config[Int]("epoch")
       for (r <- regimes) {
         if (epoch >= r.startEpoch && epoch <= r.endEpoch) {
           config.add(r.config)
         }
       }
-      config("clr") = -config.get[Double]("learningRate").getOrElse(1e-3)
+      config("clr") = -config.get[Double]("learningRate").getOrElse(1e-3) *
+        config.get[Double]("dropModuleDecay").getOrElse(1.0)
     }
   }
   case class Poly(power : Double, maxIteration : Int) extends LearningRateSchedule {
-    override def updateHyperParameter(config: Table, state: Table, decay : Double = 1.0): Unit = {
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
       val clr = if (nevals > maxIteration) {
@@ -119,14 +120,13 @@ object SGD {
       } else {
         -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
       }
-      println(s"iteration is : ${nevals}. current learning rate is $clr. decay is $decay")
       state("evalCounter") = nevals + 1
-      config("clr") = clr * decay
+      config("clr") = clr * config.get[Double]("dropModuleDecay").getOrElse(1.0)
     }
   }
 
   case class Step(stepSize : Int, gamma : Double) extends LearningRateSchedule {
-    override def updateHyperParameter(config: Table, state: Table, decay : Double = 1.0): Unit = {
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       var clr = -lr
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
@@ -136,12 +136,12 @@ object SGD {
         i += 1
       }
       state("evalCounter") = nevals + 1
-      config("clr") = clr
+      config("clr") = clr * config.get[Double]("dropModuleDecay").getOrElse(1.0)
     }
   }
 
   case class EpochStep(stepSize : Int, gamma : Double) extends LearningRateSchedule {
-    override def updateHyperParameter(config: Table, state: Table, decay : Double = 1.0): Unit = {
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       var clr = -lr
       val epoch = config[Int]("epoch")
@@ -150,16 +150,17 @@ object SGD {
         clr *= gamma
         i += 1
       }
-      config("clr") = clr
+      config("clr") = clr * config.get[Double]("dropModuleDecay").getOrElse(1.0)
     }
   }
 
   case class Default() extends LearningRateSchedule {
-    override def updateHyperParameter(config: Table, state: Table, decay : Double = 1.0): Unit = {
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val lrd = config.get[Double]("learningRateDecay").getOrElse(0.0)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
-      config("clr") = -lr / (1 + nevals * lrd)
+      config("clr") = -lr * 
+        config.get[Double]("dropModuleDecay").getOrElse(1.0) / (1 + nevals * lrd)
       state("evalCounter") = nevals + 1
     }
   }
