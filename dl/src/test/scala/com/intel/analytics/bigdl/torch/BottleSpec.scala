@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.{Bottle, Linear}
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -34,7 +35,7 @@ class BottleSpec extends FlatSpec with BeforeAndAfter with Matchers{
   "A Bottle Container" should "generate correct output and grad" in {
     val seed = 100
     RNG.setSeed(seed)
-    val module = new Bottle[Double](new Linear(10, 2), 2, 2)
+    val module = new Bottle[Double](new Linear[Double](10, 2), 2, 2)
     module.add(new Linear(10, 2))
 
     val input = Tensor[Double](4, 5, 10).apply1(_ => Random.nextDouble())

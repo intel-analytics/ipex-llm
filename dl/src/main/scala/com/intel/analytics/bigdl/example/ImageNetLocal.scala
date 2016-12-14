@@ -156,7 +156,7 @@ object ImageNetLocal {
         val (input, target) = iter.next()
         val readImgTime = System.nanoTime()
         model.zeroGradParameters()
-        val output = model.forward(input)
+        val output = model.forward(input).toTensor[Float]
         val loss = criterion.forward(output, target)
         val gradOutput = criterion.backward(output, target)
         model.backward(input, gradOutput)
@@ -181,7 +181,7 @@ object ImageNetLocal {
         var k = 0
         while (k < dataSetVal.getTotal) {
           val (input, target) = iterVal.next()
-          val output = model.forward(input)
+          val output = model.forward(input).toTensor[Float]
           top1Correct += EvaluateMethods.calcAccuracy(output, target)._1
           top5Correct += EvaluateMethods.calcTop5Accuracy(output, target)._1
           while (!stageImgsVal.isEmpty) {

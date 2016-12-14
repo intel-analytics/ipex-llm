@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -26,7 +27,7 @@ import scala.reflect.ClassTag
  * Takes a table of Tensors and outputs the max of all of them.
  */
 class CMaxTable[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends Module[Table, Tensor[T], T]{
+  extends AbstractModule[Table, Tensor[T], T]{
 
   @transient
   private var maxIdx: Tensor[T] = null

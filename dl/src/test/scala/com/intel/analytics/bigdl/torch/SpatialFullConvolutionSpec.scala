@@ -126,12 +126,12 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val padH = 2
     val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
-    val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
+    val model = new Sequential[Double]()
     model.add(layer)
 
     Random.setSeed(3)
     val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
-    val output = model.updateOutput(input)
+    val output = model.updateOutput(input).toTensor[Double]
 
     val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
 
@@ -187,12 +187,12 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val padH = 1
     val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
-    val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
+    val model = new Sequential[Double]()
     model.add(layer)
 
     Random.setSeed(3)
     val input = Tensor[Double](3, 6, 6).apply1(e => Random.nextDouble())
-    val output = model.updateOutput(input)
+    val output = model.updateOutput(input).toTensor[Double]
 
     val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
 
@@ -248,12 +248,12 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val padH = 1
     val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH, 0, 0, true)
-    val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
+    val model = new Sequential[Double]()
     model.add(layer)
 
     Random.setSeed(3)
     val input = Tensor[Double](3, 6, 6).apply1(e => Random.nextDouble())
-    val output = model.updateOutput(input)
+    val output = model.updateOutput(input).toTensor[Double]
 
     val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
 

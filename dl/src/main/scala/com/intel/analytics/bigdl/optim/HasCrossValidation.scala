@@ -17,10 +17,10 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Activities
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
@@ -57,7 +57,7 @@ trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable{
     this
   }
 
-  def test(module: Module[_ <: Activities, _ <: Activities, T],
+  def test(module: AbstractModule[_ <: Activity, _ <: Activity, T],
     iter: Int, wallClockNanoTime: Option[Long] = None): Array[Double] = {
     if (testDataSet.isDefined && iter % testInterval == 0) {
       evalMethods.map(evalM => {
@@ -69,7 +69,7 @@ trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable{
             localModel.evaluate()
             val localEvaluation = evaluationBroadcast.value
             Iterator.single(data.foldLeft((0, 0))((count, t) => {
-              val result = localEvaluation(localModel.forward(t._1), t._2)
+              val result = localEvaluation(localModel.forward(t._1).asInstanceOf[Tensor[T]], t._2)
               (count._1 + result._1, count._2 + result._2)
             }))
           }).reduce((a, b) => (a._1 + b._1, a._2 + b._2))

@@ -17,13 +17,14 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.utils.{Activities, Engine}
+import com.intel.analytics.bigdl.utils.Engine
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -46,7 +47,7 @@ class Concat[T: ClassTag](val dimension: Int)(
     var i = 0
     while (i < this.modules.length) {
       val currentOutput = this.modules(i)
-        .updateOutput(input.asInstanceOf[Activities])
+        .updateOutput(input.asInstanceOf[Activity])
         .asInstanceOf[Tensor[T]]
 
       outs(i) = currentOutput.asInstanceOf[Tensor[T]]
@@ -95,7 +96,7 @@ class Concat[T: ClassTag](val dimension: Int)(
     this.output
   }
 
-  override def getTimes(): Array[(Module[_ <: Activities, _ <: Activities, T], Long, Long)] = {
+  override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
     this.modules.flatMap(_.getTimes()).toArray ++
       Array((this, forwardTimeOverhead, backwardTime))
   }
@@ -109,9 +110,9 @@ class Concat[T: ClassTag](val dimension: Int)(
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
       val currentGradInput = this.modules(i)
         .updateGradInput(
-          input.asInstanceOf[Activities],
+          input.asInstanceOf[Activity],
           gradOutput.narrow(dimension, offset, currentOutput.size(dimension))
-            .asInstanceOf[Activities])
+            .asInstanceOf[Activity])
         .asInstanceOf[Tensor[T]]
 
       if (currentGradInput != null) {
@@ -137,9 +138,9 @@ class Concat[T: ClassTag](val dimension: Int)(
     while (i < this.modules.length) {
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
       this.modules(i).accGradParameters(
-        input.asInstanceOf[Activities],
+        input.asInstanceOf[Activity],
         gradOutput.narrow(dimension, offset, currentOutput.size(dimension))
-          .asInstanceOf[Activities], scale)
+          .asInstanceOf[Activity], scale)
 
       i += 1
       offset += currentOutput.size(dimension)
@@ -188,7 +189,7 @@ class Concat[T: ClassTag](val dimension: Int)(
     while (i < this.modules.length) {
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
       val currentGradInput = this.modules(i)
-        .backward(input.asInstanceOf[Activities], gradouts(i).asInstanceOf[Activities])
+        .backward(input.asInstanceOf[Activity], gradouts(i).asInstanceOf[Activity])
         .asInstanceOf[Tensor[T]]
 
       before = System.nanoTime()
@@ -275,7 +276,7 @@ class Concat[T: ClassTag](val dimension: Int)(
     val extlast = "       "
     s"nn.Concat {$line${tab}input$line${
       modules.zipWithIndex
-        .map { case (model: Module[Activities, Activities, T], index: Int)
+        .map { case (model: AbstractModule[Activity, Activity, T], index: Int)
         => s"$tab$next(${index + 1}): ${
           if (index == modules.length - 1) {
             model.setLine(line + tab + extlast)

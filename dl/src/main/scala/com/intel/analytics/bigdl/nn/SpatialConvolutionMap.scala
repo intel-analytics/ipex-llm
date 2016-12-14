@@ -17,8 +17,9 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, DenseTensorConv, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseTensorConv, Storage, Tensor}
 
 import scala.reflect.ClassTag
 

@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -31,7 +32,7 @@ import scala.reflect.ClassTag
  */
 class PairwiseDistance[@specialized(Float, Double) T: ClassTag](
   val norm : Int = 2)
-  (implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
+  (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   override def updateOutput(input: Table): Tensor[T] = {
     output.resize(1)

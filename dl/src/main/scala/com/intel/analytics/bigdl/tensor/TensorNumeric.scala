@@ -140,7 +140,7 @@ object TensorNumericMath {
 
   object TensorNumeric {
 
-    implicit object TensorNumericFloat extends TensorNumeric[Float] {
+    implicit object NumericFloat extends TensorNumeric[Float] {
       def plus(x: Float, y: Float): Float = x + y
 
       def minus(x: Float, y: Float): Float = x - y
@@ -330,7 +330,7 @@ object TensorNumericMath {
       }
     }
 
-    implicit object TensorNumericDouble extends TensorNumeric[Double] {
+    implicit object NumericDouble extends TensorNumeric[Double] {
       def plus(x: Double, y: Double): Double = x + y
 
       def minus(x: Double, y: Double): Double = x - y

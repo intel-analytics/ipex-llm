@@ -187,7 +187,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     for (i <- 1 to 4) {
       model.zeroGradParameters()
-      val outputtest = model.forward(input)
+      val outputtest = model.forward(input).toTensor[Double]
       val loss = criterion.forward(outputtest, labels)
       val gradoutputtest = criterion.backward(outputtest, labels)
       model.backward(input, gradoutputtest)
@@ -195,7 +195,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     model.zeroGradParameters()
-    val outputTest = model.forward(input)
+    val outputTest = model.forward(input).toTensor[Double]
     val outputTorch = TH.map("output").asInstanceOf[Tensor[Double]]
     outputTest should be equals outputTorch
 
@@ -388,7 +388,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     for (i <- 1 to 4) {
       model.zeroGradParameters()
-      val outputtest = model.forward(input)
+      val outputtest = model.forward(input).toTensor[Double]
       val loss = criterion.forward(outputtest, labels)
       val gradoutputtest = criterion.backward(outputtest, labels)
       model.backward(input, gradoutputtest)
@@ -398,7 +398,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     model.zeroGradParameters()
     var outputAbs = 0.0
     val outputTorch = TH.map("output").asInstanceOf[Tensor[Double]]
-    val outputTest = model.forward(input)
+    val outputTest = model.forward(input).toTensor[Double]
     outputTest.map(outputTorch, (v1, v2) => {
       outputAbs += abs(v1 - v2)
       v1

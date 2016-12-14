@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.example
 import java.util
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.tensor._
@@ -138,8 +139,8 @@ object AlexNet {
 
   // This is AlexNet that was presented in the One Weird Trick paper. http://arxiv.org/abs/1404.5997
   def getModel[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val feature = Sequential[Tensor[T], Tensor[T], T]
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val feature = Sequential[T]
     feature.add(SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2))
     feature.add(ReLU[T](true))
     feature.add(SpatialMaxPooling[T](3, 3, 2, 2))
@@ -156,7 +157,7 @@ object AlexNet {
 
 
 
-    val classifier = Sequential[Tensor[T], Tensor[T], T]
+    val classifier = Sequential[T]
     classifier.add(View[T](256 * 6 * 6))
     classifier.add(Dropout[T](0.5))
     classifier.add(Linear[T](256 * 6 * 6, 4096))
@@ -168,15 +169,15 @@ object AlexNet {
     classifier.add(LogSoftMax[T])
 
 
-    val model = Sequential[Tensor[T], Tensor[T], T]
+    val model = Sequential[T]
     model.add(feature).add(classifier)
 
     model
   }
 
   def getModelCaffeOWT[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val feature = Sequential[Tensor[T], Tensor[T], T]
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val feature = Sequential[T]
     feature.add(SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2))
     feature.add(ReLU[T](true))
     feature.add(SpatialMaxPooling[T](3, 3, 2, 2))
@@ -193,7 +194,7 @@ object AlexNet {
 
 
 
-    val classifier = Sequential[Tensor[T], Tensor[T], T]
+    val classifier = Sequential[T]
     classifier.add(View[T](256 * 6 * 6))
     classifier.add(Linear[T](256 * 6 * 6, 4096))
     classifier.add(Linear[T](4096, 4096))
@@ -201,7 +202,7 @@ object AlexNet {
     classifier.add(LogSoftMax[T])
 
 
-    val model = Sequential[Tensor[T], Tensor[T], T]
+    val model = Sequential[T]
     model.add(feature).add(classifier)
 
     model

@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
@@ -45,8 +46,8 @@ class BCECriterionSpec extends FlatSpec with Matchers {
   }
 
   "Binary LR " should "converge correctly" in {
-    def specifiedModel(): Module[Tensor[Double], Tensor[Double], Double] = {
-      val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
+    def specifiedModel(): Module[Double] = {
+      val model = new Sequential[Double]()
       val linear = new Linear[Double](2, 1)
       linear.weight(Array(1, 1)) = 0.1
       linear.weight(Array(1, 2)) = -0.6
@@ -56,16 +57,16 @@ class BCECriterionSpec extends FlatSpec with Matchers {
       model
     }
 
-    def getTrainModel(): Module[Tensor[Double], Tensor[Double], Double] = {
-      val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
+    def getTrainModel(): Module[Double] = {
+      val model = new Sequential[Double]()
       model.add(new Linear[Double](2, 1))
       model.add(new Sigmoid[Double]())
       model
     }
 
     def feval(grad: Tensor[Double],
-      module: Module[Tensor[Double], Tensor[Double], Double],
-      criterion: Criterion[Tensor[Double], Double],
+      module: Module[Double],
+      criterion: Criterion[Double],
       input: Tensor[Double], target: Tensor[Double])(weights: Tensor[Double])
     : (Double, Tensor[Double]) = {
       module.training()
@@ -85,7 +86,11 @@ class BCECriterionSpec extends FlatSpec with Matchers {
     val r = new scala.util.Random(1)
     inputs.apply1(v => r.nextDouble())
 
-    val targets = actualModel.forward(inputs).resize(Array(trainSize)).apply1(v => Math.round(v))
+    val targets = actualModel
+      .forward(inputs)
+      .toTensor[Double]
+      .resize(Array(trainSize))
+      .apply1(v => Math.round(v))
 
     val trainModel = getTrainModel()
     val criterion = new BCECriterion[Double]()
@@ -101,8 +106,11 @@ class BCECriterionSpec extends FlatSpec with Matchers {
       var l = 0.0
       while (i <= inputs.size(1)) {
         val (grad, loss) = optm.optimize(feval(masterGrad, trainModel, criterion,
-          inputs.narrow(1, i, batchSize), targets.narrow(1, i, batchSize)), masterWeights,
-          config, config)
+          inputs.narrow(1, i, batchSize),
+          targets
+            .toTensor[Double]
+            .narrow(1, i, batchSize)),
+          masterWeights, config, config)
         l += loss(0)
         i += batchSize
       }
@@ -111,9 +119,11 @@ class BCECriterionSpec extends FlatSpec with Matchers {
 
     val testData = Tensor[Double](testSize, 2)
     testData.apply1(v => r.nextDouble())
-    val testTarget = actualModel.forward(testData).apply1(v => Math.round(v))
+    val testTarget = actualModel
+      .forward(testData).toTensor[Double].apply1(v => Math.round(v))
 
-    val testResult = trainModel.forward(testData).apply1(v => Math.round(v))
+    val testResult = trainModel.forward(testData)
+      .toTensor[Double].apply1(v => Math.round(v))
 
     var corrects = 0
     var i = 1

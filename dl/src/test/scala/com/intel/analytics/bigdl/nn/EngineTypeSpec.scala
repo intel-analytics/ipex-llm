@@ -22,7 +22,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class EngineTypeSpec extends FlatSpec with Matchers {
   "checkEngineType" should "return right result" in {
-    val model = GoogleNet_v2[Float](1000)
+    val model = GoogleNet_v2(1000)
     model.checkEngineType()
   }
 }

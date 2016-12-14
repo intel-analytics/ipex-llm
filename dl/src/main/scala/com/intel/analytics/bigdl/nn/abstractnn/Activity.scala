@@ -15,35 +15,43 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.nn.abstractnn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect._
-import scala.reflect.runtime.universe._
 
-trait Activities {
-  def toTensor[T](): Tensor[T] = {
-    this.asInstanceOf[Tensor[T]]
+trait Activity {
+  def toTensor[T](implicit ev: TensorNumeric[T]): Tensor[T] = this match {
+    case tensor: Tensor[T] => tensor
+    case table: Table => throw
+      new IllegalArgumentException("Table cannot be cast to Tensor")
+    case _ => throw
+      new IllegalArgumentException("Activity only support tensor and table now")
   }
 
-  def toTable(): Table = {
-    this.asInstanceOf[Table]
+  def toTable: Table = this match {
+    case table: Table => table
+    case tensor: Tensor[_] => throw
+      new IllegalArgumentException("Tensor cannot be cast to Table")
+    case _ => throw
+      new IllegalArgumentException("Activity only support tensor and table now")
   }
 }
 
-object Activities {
-  def apply[A <: Activities: ClassTag, @specialized(Float, Double) T: ClassTag]()(
-    implicit ev: TensorNumeric[T]): Activities = {
-    var result: Activities = null
-
-    if (classTag[A] == classTag[Tensor[T]]) {
-      result = Tensor[T]()
+object Activity {
+  def apply[A <: Activity: ClassTag, T : ClassTag]()(
+    implicit ev: TensorNumeric[T]): A = {
+    val result = if (classTag[A] == classTag[Tensor[T]]) {
+      Tensor[T]()
     } else if (classTag[A] == classTag[Table]) {
-      result = T()
+      T()
+    } else {
+      null
     }
 
-    result
+    result.asInstanceOf[A]
   }
 }

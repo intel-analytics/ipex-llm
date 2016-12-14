@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.optim
 import java.util.concurrent.{Callable, LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
 
 import scala.collection.JavaConverters._
-import com.intel.analytics.bigdl.nn.{Criterion, Module}
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.bigdl.parameters._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -67,8 +67,8 @@ object DropSlowModuleGradAggEpochOptimizer {
 }
 
 class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
-    @transient module: Module[Tensor[T], Tensor[T], T],
-    criterion: Criterion[Tensor[T], T],
+    @transient module: Module[T],
+    criterion: Criterion[T],
     optm: OptimMethod[T],
     pm: ParameterManager[T],
     dataSets: DataSet[_, T] with HasEpoch,
@@ -112,7 +112,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
   private val computeThresholdBatchsize = 100
   val multiThreadModels = init()
 
-  override def optimize(): Module[Tensor[T], Tensor[T], T] = {
+  override def optimize(): Module[T] = {
     // don't send whole Optimizer in closure
     val broadcastEV = dataSets.getSparkContext().broadcast(ev)
 

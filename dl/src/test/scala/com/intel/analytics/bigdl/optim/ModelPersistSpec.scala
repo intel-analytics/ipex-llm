@@ -17,8 +17,9 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.models.imagenet.{AlexNet_OWT, AlexNet}
-import com.intel.analytics.bigdl.nn.{Linear, Sequential, Module}
+import com.intel.analytics.bigdl.models.imagenet.{AlexNet, AlexNet_OWT}
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.{Linear, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{File, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
@@ -28,7 +29,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     val filePath = java.io.File.createTempFile("ModelPersistSpec", ".model").getAbsolutePath
     val mp = new ModelPersistTest[Float]
     mp.setPath(filePath)
-    val model = new Sequential[Tensor[Float], Tensor[Float], Float]()
+    val model = new Sequential[Float]()
     model.add(new Linear[Float](3, 10))
     model.add(new Linear[Float](10, 5))
 
@@ -39,7 +40,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     model.backward(input, grad)
     model.clearState()
     mp.saveModel(model)
-    val loadedModel = Module.load[Tensor[Float], Tensor[Float], Float](filePath)
+    val loadedModel = AbstractModule.load[Tensor[Float], Tensor[Float], Float](filePath)
     loadedModel.forward(input)
     loadedModel.backward(input, grad)
     val (weight2, gradweight2) = loadedModel.getParameters()
@@ -60,7 +61,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     val filePath = java.io.File.createTempFile("ModelPersistSpec", ".model").getAbsolutePath
     val mp = new ModelPersistTest[Float]
     mp.setPath(filePath)
-    val model = AlexNet_OWT[Float](1000, false, true)
+    val model = AlexNet_OWT(1000, false, true)
 
     val input = Tensor[Float](4, 3, 227, 227).rand()
     val grad = Tensor[Float](4, 1000).rand()
@@ -69,7 +70,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     model.backward(input, grad)
     model.clearState()
     mp.saveModel(model)
-    val loadedModel = Module.load[Tensor[Float], Tensor[Float], Float](filePath)
+    val loadedModel = AbstractModule.load[Tensor[Float], Tensor[Float], Float](filePath)
     loadedModel.forward(input)
     loadedModel.backward(input, grad)
     val (weight2, gradweight2) = loadedModel.getParameters()
@@ -91,28 +92,28 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     val mp = new ModelPersistTest[Float]
     mp.setModelSaveInterval(10)
     mp.setPath(filePath)
-    val model = new Sequential[Tensor[Float], Tensor[Float], Float]()
+    val model = new Sequential[Float]()
     model.add(new Linear[Float](3, 10))
     model.add(new Linear[Float](10, 5))
     mp.saveModel(model, 10, true)
-    val loadedModel = Module.load[Tensor[Float], Tensor[Float], Float](filePath + ".10")
+    val loadedModel = AbstractModule.load[Tensor[Float], Tensor[Float], Float](filePath + ".10")
     loadedModel should be(model)
   }
 
   "save model with iteration number" should "be correct" in {
     val filePath = java.io.File.createTempFile("ModelPersistSpec", ".model").getAbsolutePath
-    val mp = new ModelPersistTest[Double]
+    val mp = new ModelPersistTest[Float]
     mp.setModelSaveInterval(10)
     mp.setPath(filePath)
-    val model = AlexNet[Double](1000)
+    val model = AlexNet(1000)
     mp.saveModel(model, 10, true)
-    val loadedModel = Module.load[Tensor[Double], Tensor[Double], Double](filePath + ".10")
+    val loadedModel = AbstractModule.load[Tensor[Float], Tensor[Float], Float](filePath + ".10")
     loadedModel should be(model)
   }
 
   "save state without iteration number" should "be correct" in {
     val filePath = java.io.File.createTempFile("ModelPersistSpec", ".model").getAbsolutePath
-    val mp = new ModelPersistTest[Double]
+    val mp = new ModelPersistTest[Float]
     mp.setPath(filePath)
     val state = T("test" -> 123)
     mp.saveState(state)
@@ -122,7 +123,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
 
   "save state with iteration number" should "be correct" in {
     val filePath = java.io.File.createTempFile("ModelPersistSpec", ".model").getAbsolutePath
-    val mp = new ModelPersistTest[Double]
+    val mp = new ModelPersistTest[Float]
     mp.setModelSaveInterval(10)
     mp.setPath(filePath)
     val state = T("test" -> 123)

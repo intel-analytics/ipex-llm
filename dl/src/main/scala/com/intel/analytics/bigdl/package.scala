@@ -14,38 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.intel.analytics
 
-package com.intel.analytics.bigdl.nn
-
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
-import scala.reflect.ClassTag
+import scala.language.implicitConversions
 
-class Copy[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T])
-  extends TensorModule[T] {
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output.resizeAs(input).copy(input)
-    output
-  }
+package object bigdl {
+  type Module[T] =
+    com.intel.analytics.bigdl.nn.abstractnn.AbstractModule[Activity, Activity, T]
+  type Criterion[T] =
+    com.intel.analytics.bigdl.nn.abstractnn.AbstractCriterion[Activity, Activity, T]
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput
-      .resizeAs(gradOutput)
-      .copy(gradOutput)
+  implicit def convModule[T](
+    module: com.intel.analytics.bigdl.nn.abstractnn.AbstractModule[_, _, T]
+  ): Module[T] = module.asInstanceOf[Module[T]]
 
-    gradInput
-  }
+  implicit def convCriterion[T](
+    criterion: com.intel.analytics.bigdl.nn.abstractnn.AbstractCriterion[_, _, T]
+  ): Criterion[T] = criterion.asInstanceOf[Criterion[T]]
 
-  override def toString(): String = {
-    s"nn.Copy"
-  }
-}
-
-object Copy {
-  def apply[@specialized(Float, Double) T: ClassTag]()
-      (implicit ev: TensorNumeric[T]) : Copy[T] = {
-    new Copy[T]()
-  }
+  val numeric = com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 }

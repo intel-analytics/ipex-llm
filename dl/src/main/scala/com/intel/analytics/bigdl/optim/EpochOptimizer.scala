@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.nn.{Criterion, Module}
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.bigdl.parameters.ParameterManager
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -29,8 +29,8 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 
 abstract class EpochOptimizer[T: ClassTag](
-  @transient module: Module[Tensor[T], Tensor[T], T],
-  criterion: Criterion[Tensor[T], T],
+  @transient module: Module[T],
+  criterion: Criterion[T],
   optm: OptimMethod[T],
   pm: ParameterManager[T],
   dataSets: DataSet[_, T] with HasEpoch,
@@ -52,8 +52,8 @@ object GradAggEpochOptimizer{
 }
 
 class GradAggEpochOptimizer[T: ClassTag](
-  @transient module: Module[Tensor[T], Tensor[T], T],
-  criterion: Criterion[Tensor[T], T],
+  @transient module: Module[T],
+  criterion: Criterion[T],
   optm: OptimMethod[T],
   pm: ParameterManager[T],
   dataSets: DataSet[_, T] with HasEpoch,
@@ -64,7 +64,7 @@ class GradAggEpochOptimizer[T: ClassTag](
 
   import GradAggEpochOptimizer._
 
-  override def optimize(): Module[Tensor[T], Tensor[T], T] = {
+  override def optimize(): Module[T] = {
     // don't send whole Optimizer in closure
     val broadcastEV = dataSets.getSparkContext().broadcast(ev)
 
@@ -173,15 +173,15 @@ object WeightAvgEpochOptimizer{
   val logger = Logger.getLogger(getClass)
 }
 class WeightAvgEpochOptimizer[T: ClassTag](
-  @transient module: Module[Tensor[T], Tensor[T], T],
-  criterion: Criterion[Tensor[T], T], optm: OptimMethod[T],
+  @transient module: Module[T],
+  criterion: Criterion[T], optm: OptimMethod[T],
   pm: ParameterManager[T], dataSets: DataSet[_, T] with HasEpoch,
   metrics: Metrics, config: Table = T())(implicit ev: TensorNumeric[T])
   extends EpochOptimizer[T](module, criterion, optm, pm, dataSets, metrics, config) {
 
   import WeightAvgEpochOptimizer._
 
-  override def optimize(): Module[Tensor[T], Tensor[T], T] = {
+  override def optimize(): Module[T] = {
     // don't send whole Optimizer in closure
     val broadcast = dataSets.getSparkContext().broadcast((ev, config, optm))
 

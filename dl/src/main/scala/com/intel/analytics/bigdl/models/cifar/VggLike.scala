@@ -17,55 +17,51 @@
 
 package com.intel.analytics.bigdl.models.cifar
 
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn.{LogSoftMax, _}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
-import scala.reflect.ClassTag
 
 object VggLike {
-  def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val vggBnDo = Sequential[Tensor[T], Tensor[T], T]()
-    def convBNReLU(nInputPlane: Int, nOutPutPlane: Int)
-      : Sequential[Tensor[T], Tensor[T], T] = {
-      vggBnDo.add(SpatialConvolution[T](nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
-      vggBnDo.add(SpatialBatchNormalization[T](nOutPutPlane, 1e-3))
-      vggBnDo.add(ReLU[T](true))
+  def apply(classNum: Int): Module[Float] = {
+    val vggBnDo = Sequential()
+    def convBNReLU(nInputPlane: Int, nOutPutPlane: Int): Sequential[Float] = {
+      vggBnDo.add(SpatialConvolution(nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
+      vggBnDo.add(SpatialBatchNormalization(nOutPutPlane, 1e-3))
+      vggBnDo.add(ReLU(true))
       vggBnDo
     }
-    convBNReLU(3, 64).add(Dropout[T]((0.3)))
+    convBNReLU(3, 64).add(Dropout((0.3)))
     convBNReLU(64, 64)
-    vggBnDo.add(SpatialMaxPooling[T](2, 2, 2, 2).ceil())
+    vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
 
-    convBNReLU(64, 128).add(Dropout[T](0.4))
+    convBNReLU(64, 128).add(Dropout(0.4))
     convBNReLU(128, 128)
-    vggBnDo.add(SpatialMaxPooling[T](2, 2, 2, 2).ceil())
+    vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
 
-    convBNReLU(128, 256).add(Dropout[T](0.4))
-    convBNReLU(256, 256).add(Dropout[T](0.4))
+    convBNReLU(128, 256).add(Dropout(0.4))
+    convBNReLU(256, 256).add(Dropout(0.4))
     convBNReLU(256, 256)
-    vggBnDo.add(SpatialMaxPooling[T](2, 2, 2, 2).ceil())
+    vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
 
-    convBNReLU(256, 512).add(Dropout[T](0.4))
-    convBNReLU(512, 512).add(Dropout[T](0.4))
+    convBNReLU(256, 512).add(Dropout(0.4))
+    convBNReLU(512, 512).add(Dropout(0.4))
     convBNReLU(512, 512)
-    vggBnDo.add(SpatialMaxPooling[T](2, 2, 2, 2).ceil())
+    vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
 
-    convBNReLU(512, 512).add(Dropout[T](0.4))
-    convBNReLU(512, 512).add(Dropout[T](0.4))
+    convBNReLU(512, 512).add(Dropout(0.4))
+    convBNReLU(512, 512).add(Dropout(0.4))
     convBNReLU(512, 512)
-    vggBnDo.add(SpatialMaxPooling[T](2, 2, 2, 2).ceil())
-    vggBnDo.add(View[T](512))
+    vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
+    vggBnDo.add(View(512))
 
-    val classifier = Sequential[Tensor[T], Tensor[T], T]()
-    classifier.add(Dropout[T](0.5))
-    classifier.add(Linear[T](512, 512))
-    classifier.add(BatchNormalization[T](512))
-    classifier.add(ReLU[T](true))
-    classifier.add(Dropout[T](0.5))
-    classifier.add(Linear[T](512, classNum))
-    classifier.add(LogSoftMax[T])
+    val classifier = Sequential()
+    classifier.add(Dropout(0.5))
+    classifier.add(Linear(512, 512))
+    classifier.add(BatchNormalization(512))
+    classifier.add(ReLU(true))
+    classifier.add(Dropout(0.5))
+    classifier.add(Linear(512, classNum))
+    classifier.add(LogSoftMax())
     vggBnDo.add(classifier)
 
     vggBnDo

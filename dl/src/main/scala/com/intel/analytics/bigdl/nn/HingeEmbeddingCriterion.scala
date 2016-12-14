@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 
@@ -47,7 +48,6 @@ class HingeEmbeddingCriterion[T: ClassTag](
 )(implicit ev: TensorNumeric[T])
   extends TensorCriterion[T] {
   @transient private var buffer: Tensor[T] = null
-  val gradInput: Tensor[T] = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     if (buffer == null) {
