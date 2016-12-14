@@ -18,18 +18,18 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.models.imagenet.AlexNet
-import com.intel.analytics.bigdl.nn.{Module, Sequential}
+import com.intel.analytics.bigdl.nn.Sequential
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Activities, File, T, Table}
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.utils.{File, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 class OptimizerSpec extends FlatSpec with Matchers {
-  val model = new Sequential[Tensor[Float], Tensor[Float], Float]()
+  val model = new Sequential[Float]()
 
   "Optimizer" should "end with maxEpoch" in {
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model.asInstanceOf[Module[Activities,
-      Activities, Float]], null, null) {
-      override def optimize(): Module[Activities, Activities, Float] = {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+      override def optimize(): Module[Float] = {
         val state = T("epoch" -> 9)
         endWhen(state) should be(false)
         state("epoch") = 10
@@ -43,9 +43,8 @@ class OptimizerSpec extends FlatSpec with Matchers {
   }
 
   it should "end with iteration" in {
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model.asInstanceOf[Module[Activities,
-      Activities, Float]], null, null) {
-      override def optimize(): Module[Activities, Activities, Float] = {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+      override def optimize(): Module[Float] = {
         val state = T("neval" -> 999)
         endWhen(state) should be(false)
         state("neval") = 1000
@@ -59,9 +58,8 @@ class OptimizerSpec extends FlatSpec with Matchers {
   }
 
   it should "be triggered every epoch" in {
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model.asInstanceOf[Module[Activities,
-      Activities, Float]], null, null) {
-      override def optimize(): Module[Activities, Activities, Float] = {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+      override def optimize(): Module[Float] = {
         val state = T("epoch" -> 9)
         validationTrigger.get(state) should be(false)
         cacheTrigger.get(state) should be(false)
@@ -83,9 +81,8 @@ class OptimizerSpec extends FlatSpec with Matchers {
   }
 
   it should "be triggered every 5 iterations" in {
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model.asInstanceOf[Module[Activities,
-      Activities, Float]], null, null) {
-      override def optimize(): Module[Activities, Activities, Float] = {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+      override def optimize(): Module[Float] = {
         val state = T("neval" -> 1)
         validationTrigger.get(state) should be(false)
         cacheTrigger.get(state) should be(false)
@@ -105,10 +102,9 @@ class OptimizerSpec extends FlatSpec with Matchers {
 
   it should "save model to given path" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
-    val model = AlexNet[Float](1000)
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model.asInstanceOf[Module[Activities,
-      Activities, Float]], null, null) {
-      override def optimize(): Module[Activities, Activities, Float] = {
+    val model = AlexNet(1000)
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+      override def optimize(): Module[Float] = {
         saveModel(model)
         model
       }
@@ -117,17 +113,15 @@ class OptimizerSpec extends FlatSpec with Matchers {
     dummyOptimizer.optimize()
 
     model.clearState()
-    val loadedModel = File
-      .load[Module[Tensor[Double], Tensor[Double], Double]] (filePath + ".model")
+    val loadedModel = File.load[Module[Double]] (filePath + ".model")
     loadedModel should be(model)
   }
 
   it should "save model and state to given path with postfix" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
-    val model = AlexNet[Float](1000)
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model.asInstanceOf[Module[Activities,
-      Activities, Float]], null, null) {
-      override def optimize(): Module[Activities, Activities, Float] = {
+    val model = AlexNet(1000)
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+      override def optimize(): Module[Float] = {
         saveModel(model, ".test")
         model
       }
@@ -137,16 +131,15 @@ class OptimizerSpec extends FlatSpec with Matchers {
 
     model.clearState()
     val loadedModel =
-      File.load[Module[Tensor[Float], Tensor[Float], Double]](filePath + ".model.test")
+      File.load[Module[Double]](filePath + ".model.test")
     loadedModel should be(model)
   }
 
   it should "save state to given path" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "state").getAbsolutePath
     val state = T("test" -> 123)
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model.asInstanceOf[Module[Activities,
-      Activities, Float]], null, null) {
-      override def optimize(): Module[Activities, Activities, Float] = {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+      override def optimize(): Module[Float] = {
         saveState(state)
         model
       }
@@ -161,9 +154,8 @@ class OptimizerSpec extends FlatSpec with Matchers {
   it should "save state to given path with post fix" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "state").getAbsolutePath
     val state = T("test" -> 123)
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model.asInstanceOf[Module[Activities,
-      Activities, Float]], null, null) {
-      override def optimize(): Module[Activities, Activities, Float] = {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+      override def optimize(): Module[Float] = {
         saveState(state, ".post")
         model
       }

@@ -19,9 +19,11 @@ package com.intel.analytics.bigdl.models.lenet
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.nn.{Module, Criterion, ClassNLLCriterion}
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Activities, Engine, MklBlas, T}
+import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.spark.{SparkConf, SparkContext}
 
 object Train {
@@ -38,7 +40,7 @@ object Train {
         import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
         val model = if(param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
+          AbstractModule.load[Float](param.modelSnapshot.get)
         } else {
           LeNet5(classNum = 10)
         }
@@ -50,12 +52,11 @@ object Train {
           )
         }
 
-
         Engine.setCoreNumber(param.coreNumber)
         val optimizer = new LocalOptimizer[Float](
           model = model,
           dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]]
+          criterion = new ClassNLLCriterion[Float]()
         )
         if(param.cache.isDefined) {
           optimizer.setCache(param.cache.get, Trigger.everyEpoch)
@@ -88,7 +89,7 @@ object Train {
         import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
         val model = if(param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
+          AbstractModule.load[Float](param.modelSnapshot.get)
         } else {
           LeNet5(classNum = 10)
         }
@@ -105,7 +106,7 @@ object Train {
         val optimizer = new DistriOptimizer[Float](
           model = model,
           dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]]
+          criterion = new ClassNLLCriterion[Float]()
         )
         val validateDataSet = DataSet.distributedDataSet(validationData, validationLabel, false,
           sc, param.nodesNumber, param.batchSize)

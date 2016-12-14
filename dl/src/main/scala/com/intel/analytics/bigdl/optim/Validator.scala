@@ -17,13 +17,11 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.utils.{Activities}
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, DataSet => DataSource}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
 
 abstract class Validator[T, DS](
-  model: Module[Activities, Activities, T]
+  model: Module[T]
 ) {
   def test(dataSet : DataSource[DS],
     vMethods : Array[ValidationMethod[T]]) : Array[ValidationResult]

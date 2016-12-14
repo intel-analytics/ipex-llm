@@ -19,8 +19,9 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{Batch, DataSet, LocalDataSet}
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{Engine, Activities, RandomGenerator, T}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import org.scalatest.{FlatSpec, Matchers}
 
 object DummyDataSet extends LocalDataSet[Batch[Float]] {
@@ -94,20 +95,20 @@ object DummyDataSet extends LocalDataSet[Batch[Float]] {
 }
 
 object LocalOptimizerSpecModel {
-  def CREModel[T] : Module[Activities, Activities, T] = {
-    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
+  def CREModel : Module[Float] = {
+    val mlp = new Sequential[Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
-    mlp.asInstanceOf[Module[Activities, Activities, T]]
+    mlp
   }
 
-  def MSEModel[T] : Module[Activities, Activities, T] = {
-    val mlp = new Sequential[Tensor[Float], Tensor[Float], Float]
+  def MSEModel : Module[Float] = {
+    val mlp = new Sequential[Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
     mlp.add(new Sigmoid)
-    mlp.asInstanceOf[Module[Activities, Activities, T]]
+    mlp
   }
 }
 
@@ -123,7 +124,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       CREModel,
       CREDataSet,
-      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
     )
 
     val result = optimizer.optimize()
@@ -132,8 +133,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
         0, 1, 0, 1,
         1, 0, 1, 0
       )), storageOffset = 1, size = Array(2, 4)))
-    test.toTensor[Float]().max(1)._2.valueAt(1, 1) should be(1.0)
-    test.toTensor[Float]().max(1)._2.valueAt(1, 2) should be(2.0)
+    test.toTensor[Float].max(1)._2.valueAt(1, 1) should be(1.0)
+    test.toTensor[Float].max(1)._2.valueAt(1, 2) should be(2.0)
   }
 
   it should "be same compare to ref optimizer" in {
@@ -141,7 +142,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       CREModel,
       CREDataSet,
-      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
     )
     val model = optimizer.optimize()
     val weight = model.getParameters()._1
@@ -150,7 +151,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizerRef = new RefLocalOptimizer[Float](
       CREModel,
       CREDataSet,
-      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
     )
     val modelRef = optimizerRef.optimize()
     val weightRef = modelRef.getParameters()._1
@@ -165,7 +166,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       MSEModel,
       MSEDataSet,
-      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+      new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setState(T("learningRate" -> 1.0))
 
     val result = optimizer.optimize()
@@ -174,8 +175,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
         0, 1, 0, 1,
         1, 0, 1, 0
       )), storageOffset = 1, size = Array(2, 4)))
-    test.toTensor[Float]().valueAt(1, 1) < 0.5 should be(true)
-    test.toTensor[Float]().valueAt(2, 1) > 0.5 should be(true)
+    test.toTensor[Float].valueAt(1, 1) < 0.5 should be(true)
+    test.toTensor[Float].valueAt(2, 1) > 0.5 should be(true)
   }
 
   it should "be same compare to ref optimizer" in {
@@ -183,7 +184,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       MSEModel,
       MSEDataSet,
-      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+      new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setState(T("learningRate" -> 1.0)).setEndWhen(Trigger.maxIteration(100))
     val model = optimizer.optimize()
     val weight = model.getParameters()._1
@@ -192,7 +193,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizerRef = new RefLocalOptimizer[Float](
       MSEModel,
       MSEDataSet,
-      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+      new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setState(T("learningRate" -> 1.0)).setEndWhen(Trigger.maxIteration(100))
     val modelRef = optimizerRef.optimize()
     val weightRef = modelRef.getParameters()._1
@@ -205,7 +206,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       CREModel,
       CREDataSet,
-      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
 
     val result = optimizer.optimize()
@@ -214,8 +215,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
         0, 1, 0, 1,
         1, 0, 1, 0
       )), storageOffset = 1, size = Array(2, 4)))
-    test.toTensor[Float]().max(1)._2.valueAt(1, 1) should be(1.0)
-    test.toTensor[Float]().max(1)._2.valueAt(1, 2) should be(2.0)
+    test.toTensor[Float].max(1)._2.valueAt(1, 1) should be(1.0)
+    test.toTensor[Float].max(1)._2.valueAt(1, 2) should be(2.0)
   }
 
   it should "be same compare to ref optimizer" in {
@@ -223,7 +224,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       CREModel,
       CREDataSet,
-      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
     val model = optimizer.optimize()
     val weight = model.getParameters()._1
@@ -232,7 +233,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizerRef = new RefLocalOptimizer[Float](
       CREModel,
       CREDataSet,
-      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
     val modelRef = optimizerRef.optimize()
     val weightRef = modelRef.getParameters()._1
@@ -244,7 +245,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       MSEModel,
       MSEDataSet,
-      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+      new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
 
     val result = optimizer.optimize()
@@ -253,8 +254,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
         0, 1, 0, 1,
         1, 0, 1, 0
       )), storageOffset = 1, size = Array(2, 4)))
-    test.toTensor[Float]().valueAt(1, 1) < 0.5 should be(true)
-    test.toTensor[Float]().valueAt(2, 1) > 0.5 should be(true)
+    test.toTensor[Float].valueAt(1, 1) < 0.5 should be(true)
+    test.toTensor[Float].valueAt(2, 1) > 0.5 should be(true)
   }
 
   it should "be same compare to ref optimizer" in {
@@ -262,7 +263,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizer = new LocalOptimizer[Float](
       MSEModel,
       MSEDataSet,
-      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+      new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
     val model = optimizer.optimize()
     val weight = model.getParameters()._1
@@ -271,7 +272,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     val optimizerRef = new RefLocalOptimizer[Float](
       MSEModel,
       MSEDataSet,
-      new MSECriterion[Float].asInstanceOf[Criterion[Activities, Float]]
+      new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
     val modelRef = optimizerRef.optimize()
     val weightRef = modelRef.getParameters()._1

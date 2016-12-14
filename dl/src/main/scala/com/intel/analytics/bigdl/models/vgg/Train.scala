@@ -2,11 +2,11 @@ package com.intel.analytics.bigdl.models.vgg
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.models.lenet.{LeNet5, DataSet, Options}
-import com.intel.analytics.bigdl.models.lenet.Options._
-import com.intel.analytics.bigdl.nn.{Criterion, ClassNLLCriterion, Module}
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, Activities, T}
+import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.spark.SparkContext
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
@@ -24,7 +24,7 @@ object Train {
         val trainDataSet = DataSet.localDataSet(train, true, batchSize)
 
         val model = if(param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
+          AbstractModule.load[Float](param.modelSnapshot.get)
         } else {
           Vgg(classNum = 10)
         }
@@ -44,7 +44,7 @@ object Train {
         val optimizer = new LocalOptimizer[Float](
           model = model,
           dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]]
+          criterion = new ClassNLLCriterion[Float]()
         )
 
         if(param.cache.isDefined) {
@@ -77,7 +77,7 @@ object Train {
         val trainDataSet = DataSet.distributedDataSet(train, true, sc, param.nodesNumber, batchSize)
 
         val model = if(param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
+          AbstractModule.load[Float](param.modelSnapshot.get)
         } else {
           Vgg(classNum = 10)
         }
@@ -98,7 +98,7 @@ object Train {
         val optimizer = new DistriOptimizer[Float](
           model = model,
           dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]]
+          criterion = new ClassNLLCriterion[Float]()
         )
         val validateDataSet =
           DataSet.distributedDataSet(validation, false, sc, param.nodesNumber, batchSize)

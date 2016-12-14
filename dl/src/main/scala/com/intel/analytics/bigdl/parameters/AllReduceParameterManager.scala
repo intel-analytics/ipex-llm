@@ -83,7 +83,7 @@ class AllReduceParameterManager[T: ClassTag](
   val extraSize = parameterLength % partitionNum
 
   private def init() = {
-    val broadcastParameter = dataset.sparkContext.broadcast(parameter, state)
+    val broadcastParameter = dataset.sparkContext.broadcast(parameter)
     val _classTag = classTag[T]
     val _ev = ev
     val _parameterLength = parameterLength

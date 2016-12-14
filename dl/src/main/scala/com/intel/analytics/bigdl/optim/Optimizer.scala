@@ -17,18 +17,17 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.nn.{Criterion, Module}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Activities, File, Table}
+import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
 
 import scala.reflect.ClassTag
 
 abstract class Optimizer[T  : ClassTag, TDS, VDS](
-    protected val model: Module[Activities, Activities, T],
+    protected val model: Module[T],
     protected val dataset: DataSource[TDS],
-    protected val criterion: Criterion[Activities, T])(implicit ev : TensorNumeric[T])
+    protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
 {
   protected var state: Table = T()
   protected var optimMethod: OptimMethod[T] = new SGD[T]()
@@ -42,7 +41,7 @@ abstract class Optimizer[T  : ClassTag, TDS, VDS](
   protected var validationMethods: Option[Array[ValidationMethod[T]]] = None
   protected var validationDataSet: Option[DataSource[VDS]] = None
 
-  def optimize(): Module[Activities, Activities, T]
+  def optimize(): Module[T]
 
   def setValidation(trigger: Trigger, dataset: DataSource[VDS],
     vMethods : Array[ValidationMethod[T]])
@@ -79,7 +78,7 @@ abstract class Optimizer[T  : ClassTag, TDS, VDS](
     this
   }
 
-  protected def saveModel(model: Module[Activities, Activities, T],
+  protected def saveModel(model: Module[T],
     postfix: String = ""): this.type = {
     if (this.cachePath.isDefined) {
       model.save(s"${cachePath.get}.model$postfix", isOverWrite)

@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.example
 import com.intel.analytics.bigdl.dataset.image.RGBImage
 import com.intel.analytics.bigdl.example.ImageNetUtils._
 import com.intel.analytics.bigdl.example.Utils._
-import com.intel.analytics.bigdl.models.imagenet.GoogleNet_v2_NoAuxClassifier
+import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1_NoAuxClassifier, GoogleNet_v2_NoAuxClassifier}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim._
@@ -101,7 +101,7 @@ object ImageNetParallel {
       case "alexnet" => AlexNet.getModel[Float](classNum)
       case "googlenet" => GoogleNet.getModelCaffe[Float](classNum)
       case "googlenet_v2" => GoogleNet_v2_NoAuxClassifier(classNum)
-      case "googlenet_v1" => GoogleNet_v1(classNum)
+      case "googlenet_v1" => GoogleNet_v1_NoAuxClassifier(classNum)
     }
     println(model)
 

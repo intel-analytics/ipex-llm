@@ -18,10 +18,10 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Activities
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 
 trait ValidationMethod[T] extends Serializable {
-  def apply(output: Activities, target: Activities): ValidationResult
+  def apply(output: Activity, target: Activity): ValidationResult
 
   protected def format(): String
 
@@ -81,7 +81,7 @@ class AccuracyResult(private var correct: Int, private var count: Int)
 }
 
 class Top1Accuracy[T] extends ValidationMethod[T] {
-  override def apply(output: Activities, target: Activities): ValidationResult = {
+  override def apply(output: Activity, target: Activity): ValidationResult = {
     var correct = 0
     var count = 0
 
@@ -115,7 +115,7 @@ class Top1Accuracy[T] extends ValidationMethod[T] {
 }
 
 class Top5Accuracy[T] extends ValidationMethod[T] {
-  override def apply(output: Activities, target: Activities): AccuracyResult = {
+  override def apply(output: Activity, target: Activity): AccuracyResult = {
     val _output = output.asInstanceOf[Tensor[T]]
     val _target = target.asInstanceOf[Tensor[T]]
     var correct = 0

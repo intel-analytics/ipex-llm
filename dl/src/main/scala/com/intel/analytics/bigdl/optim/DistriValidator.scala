@@ -18,13 +18,13 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
-import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Activities, Engine, MklBlas, MklDnn}
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
 import org.apache.spark.rdd.RDD
 
 class DistriValidator[T](
-  model: Module[Activities, Activities, T],
+  model: Module[T],
   nodeNumber: Int,
   coresPerNode: Int
 )extends Validator[T, RDD[(Tensor[T], Tensor[T])]](model) {
@@ -56,7 +56,7 @@ class DistriValidator[T](
               val target = batch._2.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)
               vMethods.map(validation => {
-                validation(output.asInstanceOf[Tensor[T]], target)
+                validation(output, target)
               })
             }
           )
