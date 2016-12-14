@@ -44,6 +44,7 @@ object AllReduceParameter {
   var taskSize = 0
   var extraSize = 0
   var tlength: Int = 0
+  var partitonNum: Int = 0
 }
 
 class AllReduceParameter[T: ClassTag]() extends Serializable {
@@ -56,7 +57,7 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
 
   def readParameterBuffer(): CompressedTensor[T] = {
     new FP16SplitsCompressedTensor[T](tlength,
-      16).asInstanceOf[CompressedTensor[T]]
+      partitonNum).asInstanceOf[CompressedTensor[T]]
   }
 
   def readWeights(): Tensor[T] = {
@@ -109,8 +110,9 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
     SparkEnv.get.blockManager.putSingle(SparkExtension.getLocalBlockId("state0"),
       T(), StorageLevel.MEMORY_AND_DISK, tellMaster = false)
     val blockId = getWeightBlockId(TaskContext.getPartitionId())
-    SparkEnv.get.blockManager.putBytes(blockId,
-      SerializerInstance.serialize(_weights).bytes(), StorageLevel.MEMORY_ONLY_SER)
+    val fp16param = new FP16CompressedTensor[T](length)(_classTag)
+    fp16param.compress(0, parameter, start, length)
+    SparkEnv.get.blockManager.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
 
   def getWeightBlockId(pid : Int): TaskResultBlockId = {
