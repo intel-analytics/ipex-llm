@@ -40,11 +40,11 @@ object Train {
           )
         }
 
+        Engine.setCoreNumber(param.coreNumber)
         val optimizer = new LocalOptimizer[Float](
           model = model,
           dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]],
-          coreNumber = param.coreNumber
+          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]]
         )
 
         if(param.cache.isDefined) {
@@ -93,12 +93,12 @@ object Train {
           )
         }
 
+        Engine.setCoreNumber(param.coreNumberPerNode)
+        Engine.setNodeNumber(param.nodesNumber)
         val optimizer = new DistriOptimizer[Float](
           model = model,
           dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]],
-          nodeNumber = param.nodesNumber,
-          coresPerNode = param.coreNumberPerNode
+          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]]
         )
         val validateDataSet =
           DataSet.distributedDataSet(validation, false, sc, param.nodesNumber, batchSize)

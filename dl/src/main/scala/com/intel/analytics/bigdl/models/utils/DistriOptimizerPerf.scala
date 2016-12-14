@@ -126,12 +126,12 @@ object DistriOptimizerPerf {
       override def data(): RDD[Batch[T]] = rdd
     }
 
+    Engine.setCoreNumber(param.corePerNode)
+    Engine.setNodeNumber(param.nodeNumber)
     val optimizer = new DistriOptimizer[T](
       model,
       dummyDataSet,
-      criterion,
-      param.nodeNumber,
-      param.corePerNode
+      criterion
     )
     optimizer.setEndWhen(Trigger.maxIteration(param.iteration)).optimize()
   }

@@ -42,15 +42,7 @@ object Engine{
 
   private val singletonCounter : AtomicInteger = new AtomicInteger(0)
 
-  private var doCheckSingleton = false
-
-  def disableCheckSingleton() : Unit = doCheckSingleton = false
-
-  def enableCheckSingleton() : Unit = doCheckSingleton = true
-
   def checkSingleton() : Boolean = {
-    if(!doCheckSingleton) return true
-
     val count = singletonCounter.incrementAndGet()
     (count == 1)
   }
@@ -186,6 +178,27 @@ object Engine{
       || System.getenv("KMP_BLOCKTIME") != null) {
       logger.warn("Invalid env setting. " + ERROR)
     }
+  }
+
+  // We assume the HT is enble
+  // Todo: check the Hyper threading
+  private var physicalCoreNumber = System.getProperty("bigdl.engine.coreNumber",
+    (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
+
+  def coreNumber(): Int = physicalCoreNumber
+
+  def setCoreNumber(n : Int): Unit = {
+    require(n > 0)
+    physicalCoreNumber = n
+  }
+
+  private var nodeNum : Option[Int] = None
+
+  def nodeNumber(): Option[Int] = nodeNum
+
+  def setNodeNumber(n : Int) : Unit = {
+    require(n > 0)
+    nodeNum = Some(n)
   }
 
   // =========== below is old code, will be removed after refactor===================

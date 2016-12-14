@@ -21,7 +21,7 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.nn.{Module, Criterion, ClassNLLCriterion}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{T, Activities}
+import com.intel.analytics.bigdl.utils.{Engine, T, Activities}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
 object Train {
@@ -57,11 +57,11 @@ object Train {
           )
         }
 
+        Engine.setCoreNumber(param.coreNumber)
         val optimizer = new LocalOptimizer[Float](
           model = model,
           dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]],
-          coreNumber = param.coreNumber
+          criterion = new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Activities, Float]]
         )
         if(param.cache.isDefined) {
           optimizer.setCache(param.cache.get, Trigger.severalIteration(10000))
