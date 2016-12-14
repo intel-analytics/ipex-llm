@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.parameters
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.TensorNumericDouble
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.utils.Engine
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor

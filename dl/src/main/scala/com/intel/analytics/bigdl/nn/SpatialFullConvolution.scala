@@ -17,9 +17,10 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.{Activities, Table}
+import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
@@ -58,7 +59,7 @@ import scala.reflect.ClassTag
  * @param noBias If bias is needed.
  * @param initMethod Init method, Default, Xavier, Bilinear.
  */
-class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
+class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   val nInputPlane: Int,
   val nOutputPlane: Int,
   val kW: Int,
@@ -71,7 +72,7 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
   var adjH: Int = 0,
   val noBias: Boolean = false,
   private var initMethod: InitializationMethod = Default
-  )(implicit ev: TensorNumeric[T]) extends Module[A, Tensor[T], T]{
+  )(implicit ev: TensorNumeric[T]) extends AbstractModule[A, Tensor[T], T]{
 
   require(adjW <= dW - 1 && adjH <= dH - 1,
     "adjW and adjH must be smaller than dW - 1 and dH - 1 respectively")
@@ -182,15 +183,15 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
 
   override def updateOutput(input: A): Tensor[T] = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
-      val targetTensor: Tensor[T] = input.toTable()[Tensor[T]](2)
+      val targetTensor: Tensor[T] = input.toTable[Tensor[T]](2)
       val tDims = targetTensor.dim()
       val tH = targetTensor.size(tDims - 1)
       val tW = targetTensor.size(tDims)
       adjW = calculateAdj(tW, kW, padW, dW)
       adjH = calculateAdj(tH, kH, padH, dH)
-      input.toTable()[Tensor[T]](1)
+      input.toTable[Tensor[T]](1)
     } else {
-      input.toTensor()
+      input.toTensor[T]
     }
 
 
@@ -316,17 +317,17 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
 
   override def updateGradInput(input: A, gradOutput: Tensor[T]): A = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
-      input.toTable()[Tensor[T]](1)
+      input.toTable[Tensor[T]](1)
     } else {
-      input.toTensor()
+      input.toTensor[T]
     }
     val gradInputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
-      if (!gradInput.toTable().contains(1)) {
-        gradInput.toTable()(1) = Tensor[T]()
+      if (!gradInput.toTable.contains(1)) {
+        gradInput.toTable(1) = Tensor[T]()
       }
-      gradInput.toTable()[Tensor[T]](1)
+      gradInput.toTable[Tensor[T]](1)
     } else {
-      gradInput.toTensor()
+      gradInput.toTensor[T]
     }
     shapeCheck(inputTensor, gradOutput, weight, null, kH, kW, dH, dW, padH, padW, adjH, adjW)
 
@@ -409,12 +410,12 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
     }
 
     if (input.isInstanceOf[Table]) {
-      val input2 = input.toTable()[Tensor[T]](2)
+      val input2 = input.toTable[Tensor[T]](2)
       if (null == zeroScalar) zeroScalar = input2.clone().zero()
       ones.resizeAs(input2).fill(ev.fromType[Int](1))
       val zeroTensor = zeroScalar.view(ones.size()).expandAs(input2)
-      gradInput.toTable()(1) = gradInputTensor
-      gradInput.toTable()(2) = zeroTensor
+      gradInput.toTable(1) = gradInputTensor
+      gradInput.toTable(2) = zeroTensor
     }
 
     return gradInput
@@ -423,15 +424,15 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
   override def accGradParameters(input: A, gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
-      val targetTensor: Tensor[T] = input.toTable()[Tensor[T]](2)
+      val targetTensor: Tensor[T] = input.toTable[Tensor[T]](2)
       val tDims = targetTensor.dim()
       val tH = targetTensor.size(tDims - 1)
       val tW = targetTensor.size(tDims)
       adjW = calculateAdj(tW, kW, padW, dW)
       adjH = calculateAdj(tH, kH, padH, dH)
-      input.toTable()[Tensor[T]](1)
+      input.toTable[Tensor[T]](1)
     } else {
-      input.toTensor()
+      input.toTensor
     }
 
     shapeCheck(inputTensor, gradOutput, gradWeight, gradBias,
@@ -614,7 +615,7 @@ class SpatialFullConvolution[A <: Activities : ClassTag, T: ClassTag](
 }
 
 object SpatialFullConvolution {
-  def apply[A <: Activities : ClassTag, @specialized(Float, Double) T: ClassTag](
+  def apply[A <: Activity : ClassTag, @specialized(Float, Double) T: ClassTag](
       nInputPlane: Int,
       nOutputPlane: Int,
       kW: Int,

@@ -17,7 +17,8 @@
 
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.{Module, Sequential, SpatialConvolution}
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.{Sequential, SpatialConvolution}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -87,7 +88,7 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val padH = 2
     val layer = new SpatialConvolution[Double](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH)
-    val model = new Sequential[Tensor[Double], Tensor[Double], Double]()
+    val model = new Sequential[Double]()
     model.add(layer)
 
     Random.setSeed(3)
@@ -110,7 +111,7 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
     val luaBias = torchResult("bias").asInstanceOf[Tensor[Double]]
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
-    val luaModel = torchResult("model").asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
+    val luaModel = torchResult("model").asInstanceOf[Module[Double]]
 
     val weight = layer.weight
     val bias = layer.bias

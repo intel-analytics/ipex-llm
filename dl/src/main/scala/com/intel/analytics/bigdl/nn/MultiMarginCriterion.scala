@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -37,7 +38,6 @@ class MultiMarginCriterion[T: ClassTag](val p: Int = 1,
   if (null != weights) {
     require(weights.dim() == 1, "weights input should be 1-D Tensor")
   }
-  var gradInput = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.nDimension() == 1 || input.nDimension() == 2, "vector or matrix expected")

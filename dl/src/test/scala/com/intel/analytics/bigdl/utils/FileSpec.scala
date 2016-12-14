@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -29,7 +30,7 @@ class FileSpec extends FlatSpec with Matchers {
     val absolutePath = tmpFile.getAbsolutePath
 
 
-    val module = new Sequential[Tensor[Double], Tensor[Double], Double]
+    val module = new Sequential[Double]
 
     module.add(new SpatialConvolution(1, 6, 5, 5))
     module.add(new Tanh())
@@ -46,7 +47,7 @@ class FileSpec extends FlatSpec with Matchers {
     module.add(new LogSoftMax[Double]())
 
     File.save(module, absolutePath, true)
-    val testModule: Module[Tensor[Double], Tensor[Double], Double] = File.load(absolutePath)
+    val testModule: Module[Double] = File.load(absolutePath)
 
     testModule should be(module)
   }

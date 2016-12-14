@@ -17,13 +17,13 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.reflect.ClassTag
 
 class MSECriterion[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
-  var gradInput: Tensor[T] = Tensor[T]()
   var sizeAverage = true
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {

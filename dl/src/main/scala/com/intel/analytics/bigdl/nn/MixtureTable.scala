@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -28,11 +29,12 @@ import scala.reflect.ClassTag
  * specifies the dimension of the experts Tensor that will be interpolated (or mixed). Otherwise,
  * the experts should take the form of a table of Tensors. This Module works for experts of
  * dimension 1D or more, and for a 1D or 2D gater, i.e. for single examples or mini-batches.
+ *
  * @param dim
  * @tparam T Numeric type. Only support float/double now
  */
 class MixtureTable[T: ClassTag](var dim: Int = Int.MaxValue)
- (implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
+ (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   var size = Storage[Double]()
   var batchSize = 0
@@ -102,7 +104,7 @@ class MixtureTable[T: ClassTag](var dim: Int = Int.MaxValue)
     if (input(2).isInstanceOf[Table]) {
 
       if (!gradInput.contains(2)) gradInput.insert(2, T())
-      gradInput = Utils.recursiveResizeAs[T](gradInput, input).toTable()
+      gradInput = Utils.recursiveResizeAs[T](gradInput, input).toTable
 
       val expertInputs = input[Table](2)
       val gaterGradInput = gradInput[Tensor[T]](1)
@@ -146,7 +148,7 @@ class MixtureTable[T: ClassTag](var dim: Int = Int.MaxValue)
     } else if (input(2).isInstanceOf[Tensor[T]]) {
 
       if (!gradInput.contains(2)) gradInput.insert(2, T())
-      gradInput = Utils.recursiveResizeAs[T](gradInput, input).toTable()
+      gradInput = Utils.recursiveResizeAs[T](gradInput, input).toTable
 
       val expertInputs = input[Tensor[T]](2)
       val gaterGradInput = gradInput[Tensor[T]](1)

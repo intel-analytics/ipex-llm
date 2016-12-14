@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.models
 
 import com.intel.analytics.bigdl.models.imagenet._
 import com.intel.analytics.bigdl.models.mnist.LeNet5
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import scopt.OptionParser
@@ -108,7 +108,7 @@ object Perf {
 
     for (i <- 1 to param.warmUp) {
       var time = System.nanoTime()
-      val output = model.forward(input)
+      val output = model.forward(input).toTensor[T]
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       time = System.nanoTime()
@@ -124,7 +124,7 @@ object Perf {
     var totalBackwardTime = 0L
     for (i <- 1 to param.iteration) {
       var time = System.nanoTime()
-      val output = model.forward(input)
+      val output = model.forward(input).toTensor[T]
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       totalForwardTime += forwardTime

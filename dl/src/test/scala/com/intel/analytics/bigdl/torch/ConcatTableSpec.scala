@@ -36,7 +36,7 @@ class ConcatTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     RNG.setSeed(seed)
 
-    val ctable = new ConcatTable[Tensor[Double], Double]()
+    val ctable = new ConcatTable[Double]()
     ctable.zeroGradParameters()
     ctable.add(new Linear(5, 2))
     ctable.add(new Linear(5, 3))

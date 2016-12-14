@@ -17,8 +17,9 @@
 
 package com.intel.analytics.bigdl.optim
 
-import java.util.concurrent.{TimeUnit, ThreadPoolExecutor, LinkedBlockingQueue}
-import com.intel.analytics.bigdl.nn.{Criterion, Module}
+import java.util.concurrent.{LinkedBlockingQueue, ThreadPoolExecutor, TimeUnit}
+
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.bigdl.parameters.ParameterManager
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -29,7 +30,7 @@ import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future, ExecutionContext}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect.ClassTag
 
 object BetterGradAggEpochOptimizer {
@@ -56,8 +57,8 @@ object BetterGradAggEpochOptimizer {
 }
 
 class BetterGradAggEpochOptimizer[T: ClassTag](
-  @transient module: Module[Tensor[T], Tensor[T], T],
-  criterion: Criterion[Tensor[T], T],
+  @transient module: Module[T],
+  criterion: Criterion[T],
   optm: OptimMethod[T],
   pm: ParameterManager[T],
   dataSets: DataSet[_, T] with HasEpoch,
@@ -92,7 +93,7 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
   val multiThreadModels = init()
 
 
-  override def optimize(): Module[Tensor[T], Tensor[T], T] = {
+  override def optimize(): Module[T] = {
     // don't send whole Optimizer in closure
     val broadcastEV = dataSets.getSparkContext().broadcast(ev)
 

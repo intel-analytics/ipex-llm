@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -35,7 +36,6 @@ import scala.reflect.ClassTag
 class MultiLabelSoftMarginCriterion[T: ClassTag]
 (var weights: Tensor[T] = null, sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
-  var gradInput = Tensor[T]()
   var lsm = new Sigmoid[T]()
   var nll = new BCECriterion[T](weights)
 

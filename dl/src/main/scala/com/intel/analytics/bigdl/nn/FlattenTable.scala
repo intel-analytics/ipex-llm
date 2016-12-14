@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
@@ -27,7 +28,7 @@ import scala.reflect.ClassTag
  * table will be produced
  */
 class FlattenTable[T: ClassTag] (implicit ev: TensorNumeric[T])
-  extends Module[Table, Table, T] {
+  extends AbstractModule[Table, Table, T] {
   @transient private var inputMap: Table = null
 
   private def createInputMap(): Unit = {

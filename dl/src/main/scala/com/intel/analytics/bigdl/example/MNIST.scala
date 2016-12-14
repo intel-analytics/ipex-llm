@@ -21,7 +21,9 @@ import java.nio.ByteBuffer
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.numeric.NumericDouble
 
 object MNIST {
   val rowN = 28
@@ -49,10 +51,10 @@ object MNIST {
     (input, target)
   }
 
-  def getModule(netType: String)(): Module[Tensor[Double], Tensor[Double], Double] = {
+  def getModule(netType: String)(): Module[Double] = {
     netType.toLowerCase match {
       case "ann" =>
-        val mlp = Sequential[Tensor[Double], Tensor[Double], Double]
+        val mlp = Sequential()
         val nhiddens = featureSize / 2
         mlp.add(Reshape(Array(featureSize)))
         mlp.add(Linear(featureSize, nhiddens))
@@ -61,13 +63,13 @@ object MNIST {
         mlp.add(LogSoftMax())
         mlp
       case "linear" =>
-        val mlp = Sequential[Tensor[Double], Tensor[Double], Double]
+        val mlp = Sequential()
         mlp.add(Reshape(Array(featureSize)))
         mlp.add(Linear(featureSize, classNum))
         mlp.add(LogSoftMax())
         mlp
       case "cnn" =>
-        val model = Sequential[Tensor[Double], Tensor[Double], Double]()
+        val model = Sequential()
         model.add(Reshape(Array(1, rowN, colN)))
         model.add(SpatialConvolution(1, 32, 5, 5))
         model.add(Tanh())
@@ -85,7 +87,7 @@ object MNIST {
         model.add(LogSoftMax())
         model
       case "lenet" =>
-        val model = Sequential[Tensor[Double], Tensor[Double], Double]()
+        val model = Sequential()
         model.add(Reshape(Array(1, rowN, colN)))
         model.add(SpatialConvolution(1, 6, 5, 5))
         model.add(Tanh())

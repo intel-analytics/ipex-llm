@@ -15,47 +15,53 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.nn.abstractnn
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import org.apache.commons.lang3.SerializationUtils
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Activities
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{T, Table}
+import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
 
 abstract class TensorCriterion[@specialized(Float, Double) T: ClassTag]
-  (implicit ev: TensorNumeric[T]) extends Criterion[Tensor[T], T]
+(implicit ev: TensorNumeric[T]) extends AbstractCriterion[Tensor[T], Tensor[T], T]
 
-abstract class Criterion[A <: Activities: ClassTag,
-  @specialized(Float, Double) T: ClassTag](
+abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTag,
+@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
+  var gradInput: A = Activity[A, T]()
   var output: T = ev.fromType[Int](0)
 
-  def forward(input: A, target: A): T = {
+  private[nn] def allocateAs[D <: Activity](dest: D): D = dest match {
+    case tensor: Tensor[T] => Tensor[T]().asInstanceOf[D]
+    case table: Table => T().asInstanceOf[D]
+    case _ => throw new IllegalArgumentException("Activity only support tensor and table now")
+  }
+
+  def forward(input: A, target: B): T = {
     updateOutput(input, target)
   }
 
-  def backward(input: A, target: A): A = {
+  def backward(input: A, target: B): A = {
     updateGradInput(input, target)
   }
 
-  def updateOutput(input: A, target: A): T = {
+  def updateOutput(input: A, target: B): T = {
     this.output
   }
 
-  def updateGradInput(input: A, target: A): A =
-    Activities.apply[A, T]().asInstanceOf[A]
+  def updateGradInput(input: A, target: B): A
 
-  def cloneCriterion(): Criterion[A, T] = {
+  def cloneCriterion(): AbstractCriterion[A, B, T] = {
     SerializationUtils.clone(this)
   }
 
 
-  def canEqual(other: Any): Boolean = other.isInstanceOf[Criterion[A, T]]
+  def canEqual(other: Any): Boolean = other.isInstanceOf[AbstractCriterion[A, B, T]]
 
   override def equals(other: Any): Boolean = other match {
-    case that: Criterion[A, T] =>
+    case that: AbstractCriterion[A, B, T] =>
       (that canEqual this) &&
         (that.getClass equals this.getClass) &&
         output == that.output

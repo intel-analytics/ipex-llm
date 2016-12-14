@@ -19,14 +19,16 @@ package com.intel.analytics.bigdl.models
 
 import java.util.concurrent.Executors
 
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, AlexNet_OWT, GoogleNet_v1, GoogleNet_v2}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scopt.OptionParser
 
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect.ClassTag
 
 /**
@@ -132,7 +134,7 @@ object MultiModelPerf {
       val time = System.nanoTime()
       (0 until param.cores).map(j => Future {
         val (model, input, criterion, labels) = tests(j)
-        val output = model.forward(input)
+        val output = model.forward(input).toTensor[T]
         criterion.forward(output, labels)
         val gradOutput = criterion.backward(output, labels)
         model.backward(input, gradOutput)
@@ -158,7 +160,7 @@ object MultiModelPerf {
       val time = System.nanoTime()
       (0 until param.cores).map(j => Future {
         val (model, input, criterion, labels) = tests(j)
-        val output = model.forward(input)
+        val output = model.forward(input).toTensor[T]
         criterion.forward(output, labels)
         val gradOutput = criterion.backward(output, labels)
         model.backward(input, gradOutput)

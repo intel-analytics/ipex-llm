@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -29,7 +30,6 @@ import scala.reflect.ClassTag
 
 class CrossEntropyCriterion[T: ClassTag](
    val weights: Tensor[T] = null )(implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{
-  private val gradInput: Tensor[T] = Tensor[T]()
   private val lsm = new LogSoftMax[T]()
   private val nll = new ClassNLLCriterion[T](weights)
 

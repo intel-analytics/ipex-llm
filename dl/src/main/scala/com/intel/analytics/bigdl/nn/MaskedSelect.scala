@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -29,7 +30,7 @@ import scala.reflect.ClassTag
  */
 
 class MaskedSelect[T: ClassTag]
-(implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T]{
+(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T]{
 
   private val maskIndices = Tensor[T]()
   private val maskIndexBuffer = Tensor[T]()

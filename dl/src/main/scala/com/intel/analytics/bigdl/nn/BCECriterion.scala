@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 
@@ -24,7 +25,6 @@ import scala.reflect.ClassTag
 
 class BCECriterion[T: ClassTag](var weights: Tensor[T] = null, sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
-  var gradInput: Tensor[T] = Tensor[T]()
   var total_weight = ev.fromType[Int](0)
   val eps = ev.fromType[Double](1e-12)
   if (weights != null) require(weights.dim() == 1, "weights input should be 1-D Tensor")
