@@ -103,7 +103,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor.setValue(4, 4.0)
     tensor.setValue(5, 5.0)
 
-    Engine.setCoreNum(1)
+    Engine.model.setPoolSize(1)
     val param = new FP16CompressedTensor(tensor)
 
     val test = tensor.clone().zero
@@ -120,7 +120,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor.setValue(4, 4.0)
     tensor.setValue(5, 5.0)
 
-    Engine.setCoreNum(500)
+    Engine.model.setPoolSize(500)
     val param = new FP16CompressedTensor(tensor)
 
     val test = tensor.clone().zero
@@ -208,7 +208,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor.setValue(4, 4.0f)
     tensor.setValue(5, 5.0f)
 
-    Engine.setCoreNum(1)
+    Engine.model.setPoolSize(1)
     val param = new FP16CompressedTensor(tensor)
 
     val test = tensor.clone().zero
@@ -225,7 +225,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor.setValue(4, 4.0f)
     tensor.setValue(5, 5.0f)
 
-    Engine.setCoreNum(500)
+    Engine.model.setPoolSize(500)
     val param = new FP16CompressedTensor(tensor)
 
     val test = tensor.clone().zero
@@ -398,7 +398,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor1.setValue(4, 4.0f)
     tensor1.setValue(5, 5.0f)
 
-    Engine.setCoreNum(1)
+    Engine.model.setPoolSize(1)
     val param1 = new FP16CompressedTensor(tensor1)
 
     val tensor2 = Tensor[Float](5)
@@ -430,7 +430,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor1.setValue(4, 4.0f)
     tensor1.setValue(5, 5.0f)
 
-    Engine.setCoreNum(100)
+    Engine.model.setPoolSize(100)
     val param1 = new FP16CompressedTensor(tensor1)
 
     val tensor2 = Tensor[Float](5)

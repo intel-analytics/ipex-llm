@@ -43,7 +43,7 @@ class LocalValidator[T](model: Module[T], coreNumber: Int)
       val stackSize = batch._1.size(1) / subModelNumber
       val extraSize = batch._1.size(1) % subModelNumber
       val parallelism = if(stackSize == 0) extraSize else subModelNumber
-      val result = Engine.invokeAndWait(
+      val result = Engine.default.invokeAndWait(
         (0 until parallelism).map(b =>
           () => {
             val offset = b * stackSize + math.min(b, extraSize)

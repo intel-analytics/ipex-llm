@@ -92,7 +92,7 @@ object SoftMax{
     var t = 0
     while (t < stride * nFrame) {
       val _t = t
-      results(_t) = Future {
+      Engine.model.invoke(() => {
         val inputOffset = (_t / stride) * dim * stride + _t % stride
         val outputOffset = (_t / stride) * dim * stride + _t % stride
 
@@ -121,16 +121,11 @@ object SoftMax{
             ev.times(outputArray(d * stride + outputOffset), ev.divide(ev.fromType[Int](1), sum))
           d += 1
         }
-      }(Engine.getInstance())
+      })
 
       t += 1
     }
-
-    t = 0
-    while (t < stride * nFrame) {
-      Await.result(results(t), Duration.Inf)
-      t += 1
-    }
+    Engine.model.sync()
 
     output
   }
@@ -166,7 +161,7 @@ object SoftMax{
     var t = 0
     while (t < stride * nFrame) {
       val _t = t
-      results(_t) = Future {
+      Engine.model.invoke(() => {
         val gradInputOffset = (_t / stride) * dim * stride + _t % stride
         val outputOffset = (_t / stride) * dim * stride + _t % stride
         val gradOutputOffset = (_t / stride) * dim * stride + _t % stride
@@ -186,16 +181,12 @@ object SoftMax{
               ev.minus(gradOutputArray(d * stride + gradOutputOffset), sum))
           d += 1
         }
-      }(Engine.getInstance())
+      })
 
       t += 1
     }
 
-    t = 0
-    while (t < stride * nFrame) {
-      Await.result(results(t), Duration.Inf)
-      t += 1
-    }
+    Engine.model.sync()
 
     gradInput
   }

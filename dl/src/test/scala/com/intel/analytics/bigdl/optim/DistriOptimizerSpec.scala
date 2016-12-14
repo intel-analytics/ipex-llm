@@ -36,7 +36,7 @@ object DistriOptimizerSpec {
   var plusOne = 0.0
   val nodeNumber = 4
   val coreNumber = 4
-  Engine.setCoreNum(coreNumber)
+  Engine.setCoreNumber(coreNumber)
   Engine.setNodeNumber(nodeNumber)
 
   val batchSize = 2 * coreNumber
@@ -107,7 +107,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
 
     plusOne = 0.0
-    Engine.setCoreNum(1)
+    Engine.model.setPoolSize(1)
   }
 
   after {
@@ -135,9 +135,9 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "Train with MSE and SGD" should "be trained with good result" in {
     val mm = MSE
     mm.getParameters()._1.fill(0.125)
-    val optimizer = new DistriOptimizer[Double](mm, dataSet,
-      new MSECriterion[Double]())
-      .setState(T("learningRate" -> 20.0)).setEndWhen(Trigger.maxEpoch(5))
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
       .disableCheckSingleton()
     val model = optimizer.optimize()
 

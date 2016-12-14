@@ -127,22 +127,24 @@ object FP16CompressedTensor {
     require(rOffset + length <= r.length)
 
     val elementSize = length / 2
-    val taskSize = elementSize / Engine.coresNum
-    val extraSize = elementSize % Engine.coresNum
-    val availableTask = if (taskSize == 0) extraSize else Engine.coresNum
-    (0 until availableTask).map(tid => Future {
-      val start = tid * taskSize * 2 + math.min(extraSize, tid) * 2
-      val end = (tid + 1) * taskSize * 2 + math.min(extraSize, tid + 1) * 2
-      var i = start
-      while (i < end) {
-        val sum = toFloat(l(i + lOffset), l(i + lOffset + 1)) +
-          toFloat(r(i + rOffset), r(i + rOffset + 1))
-        val bytes = truncate(sum)
-        l(i + lOffset) = (bytes >>> 24 & 0xff).toByte
-        l(i + lOffset + 1) = (bytes >>> 16 & 0xff).toByte
-        i += 2
-      }
-    }(Engine.getInstance())).map(Await.result(_, Duration.Inf))
+    val taskSize = elementSize / Engine.coreNumber()
+    val extraSize = elementSize % Engine.coreNumber()
+    val availableTask = if (taskSize == 0) extraSize else Engine.coreNumber()
+    Engine.default.invokeAndWait(
+      (0 until availableTask).map(tid => () => {
+        val start = tid * taskSize * 2 + math.min(extraSize, tid) * 2
+        val end = (tid + 1) * taskSize * 2 + math.min(extraSize, tid + 1) * 2
+        var i = start
+        while (i < end) {
+          val sum = toFloat(l(i + lOffset), l(i + lOffset + 1)) +
+            toFloat(r(i + rOffset), r(i + rOffset + 1))
+          val bytes = truncate(sum)
+          l(i + lOffset) = (bytes >>> 24 & 0xff).toByte
+          l(i + lOffset + 1) = (bytes >>> 16 & 0xff).toByte
+          i += 2
+        }
+      })
+    )
 
     l
   }
@@ -173,20 +175,22 @@ object FP16CompressedTensor {
     require(srcOffset + length <= src.length)
     require(tgtOffset + length * 2 <= tgt.length)
 
-    val taskSize = length / Engine.coresNum
-    val extraSize = length % Engine.coresNum
-    val availableTask = if (taskSize == 0) extraSize else Engine.coresNum
-    (0 until availableTask).map(tid => Future {
-      val start = tid * taskSize + math.min(extraSize, tid)
-      val end = (tid + 1) * taskSize + math.min(extraSize, tid + 1)
-      var i = start
-      while (i < end) {
-        val bytes = truncate(src(i + srcOffset))
-        tgt(tgtOffset + i * 2) = (bytes >>> 24 & 0xff).toByte
-        tgt(tgtOffset + i * 2 + 1) = (bytes >>> 16 & 0xff).toByte
-        i += 1
-      }
-    }(Engine.getInstance())).map(Await.result(_, Duration.Inf))
+    val taskSize = length / Engine.coreNumber()
+    val extraSize = length % Engine.coreNumber()
+    val availableTask = if (taskSize == 0) extraSize else Engine.coreNumber()
+    Engine.default.invoke(
+      (0 until availableTask).map(tid => () => {
+        val start = tid * taskSize + math.min(extraSize, tid)
+        val end = (tid + 1) * taskSize + math.min(extraSize, tid + 1)
+        var i = start
+        while (i < end) {
+          val bytes = truncate(src(i + srcOffset))
+          tgt(tgtOffset + i * 2) = (bytes >>> 24 & 0xff).toByte
+          tgt(tgtOffset + i * 2 + 1) = (bytes >>> 16 & 0xff).toByte
+          i += 1
+        }
+      })
+    )
 
     tgt
   }
@@ -197,20 +201,22 @@ object FP16CompressedTensor {
     require(srcOffset + length <= src.length)
     require(tgtOffset + length * 2 <= tgt.length)
 
-    val taskSize = length / Engine.coresNum
-    val extraSize = length % Engine.coresNum
-    val availableTask = if (taskSize == 0) extraSize else Engine.coresNum
-    (0 until availableTask).map(tid => Future {
-      val start = tid * taskSize + math.min(extraSize, tid)
-      val end = (tid + 1) * taskSize + math.min(extraSize, tid + 1)
-      var i = start
-      while (i < end) {
-        val bytes = truncate(src(i + srcOffset).toFloat)
-        tgt(tgtOffset + i * 2) = (bytes >>> 24 & 0xff).toByte
-        tgt(tgtOffset + i * 2 + 1) = (bytes >>> 16 & 0xff).toByte
-        i += 1
-      }
-    }(Engine.getInstance())).map(Await.result(_, Duration.Inf))
+    val taskSize = length / Engine.coreNumber()
+    val extraSize = length % Engine.coreNumber()
+    val availableTask = if (taskSize == 0) extraSize else Engine.coreNumber()
+    Engine.default.invokeAndWait(
+      (0 until availableTask).map(tid => () => {
+        val start = tid * taskSize + math.min(extraSize, tid)
+        val end = (tid + 1) * taskSize + math.min(extraSize, tid + 1)
+        var i = start
+        while (i < end) {
+          val bytes = truncate(src(i + srcOffset).toFloat)
+          tgt(tgtOffset + i * 2) = (bytes >>> 24 & 0xff).toByte
+          tgt(tgtOffset + i * 2 + 1) = (bytes >>> 16 & 0xff).toByte
+          i += 1
+        }
+      })
+    )
 
     tgt
   }
@@ -222,18 +228,20 @@ object FP16CompressedTensor {
     require(fp16Length / 2 + targetOffset <= target.length)
 
     val targetLength = fp16Length / 2
-    val taskSize = targetLength / Engine.coresNum
-    val extraSize = targetLength % Engine.coresNum
-    val availableTask = if (taskSize == 0) extraSize else Engine.coresNum
-    (0 until availableTask).map(tid => Future {
-      val start = tid * taskSize * 2 + math.min(extraSize, tid) * 2
-      val end = (tid + 1) * taskSize * 2 + math.min(extraSize, tid + 1) * 2
-      var i = start
-      while (i < end && i < fp16Length + fp16Offset) {
-        target(i / 2 + targetOffset) = toFloat(fp16(i + fp16Offset), fp16(i + 1 + fp16Offset))
-        i += 2
-      }
-    }(Engine.getInstance())).map(Await.result(_, Duration.Inf))
+    val taskSize = targetLength / Engine.coreNumber()
+    val extraSize = targetLength % Engine.coreNumber()
+    val availableTask = if (taskSize == 0) extraSize else Engine.coreNumber()
+    Engine.default.invokeAndWait(
+      (0 until availableTask).map(tid => () => {
+        val start = tid * taskSize * 2 + math.min(extraSize, tid) * 2
+        val end = (tid + 1) * taskSize * 2 + math.min(extraSize, tid + 1) * 2
+        var i = start
+        while (i < end && i < fp16Length + fp16Offset) {
+          target(i / 2 + targetOffset) = toFloat(fp16(i + fp16Offset), fp16(i + 1 + fp16Offset))
+          i += 2
+        }
+      })
+    )
   }
 
   private[parameters] def fromFP16(fp16: Array[Byte], fp16Offset: Int, fp16Length: Int,
@@ -243,18 +251,20 @@ object FP16CompressedTensor {
     require(fp16Length / 2 + targetOffset <= target.length)
 
     val targetLength = fp16Length / 2
-    val taskSize = targetLength / Engine.coresNum
-    val extraSize = targetLength % Engine.coresNum
-    val availableTask = if (taskSize == 0) extraSize else Engine.coresNum
-    (0 until availableTask).map(tid => Future {
-      val start = tid * taskSize * 2 + math.min(extraSize, tid) * 2
-      val end = (tid + 1) * taskSize * 2 + math.min(extraSize, tid + 1) * 2
-      var i = start
-      while (i < end && i < fp16Length + fp16Offset) {
-        target(i / 2 + targetOffset) = toFloat(fp16(i + fp16Offset), fp16(i + 1 + fp16Offset))
-        i += 2
-      }
-    }(Engine.getInstance())).map(Await.result(_, Duration.Inf))
+    val taskSize = targetLength / Engine.coreNumber()
+    val extraSize = targetLength % Engine.coreNumber()
+    val availableTask = if (taskSize == 0) extraSize else Engine.coreNumber()
+    Engine.default.invokeAndWait(
+      (0 until availableTask).map(tid => () => {
+        val start = tid * taskSize * 2 + math.min(extraSize, tid) * 2
+        val end = (tid + 1) * taskSize * 2 + math.min(extraSize, tid + 1) * 2
+        var i = start
+        while (i < end && i < fp16Length + fp16Offset) {
+          target(i / 2 + targetOffset) = toFloat(fp16(i + fp16Offset), fp16(i + 1 + fp16Offset))
+          i += 2
+        }
+      })
+    )
   }
 
   @inline

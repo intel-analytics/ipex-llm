@@ -98,43 +98,44 @@ class SpatialMaxPooling[@specialized(Float, Double) T: ClassTag](
       val nbatch = input.size(1)
       output.resize(Array(nbatch, nslices, oheight, owidth))
       indices.resize(Array(nbatch, nslices, oheight, owidth))
-      val results = new ArrayBuffer[Future[Unit]]()
       if (classTag[T] == classTag[Double]) {
-        for (i <- 1 to nbatch) results += Future {
-          val curInput = input(i)
-          val curOutput = output(i)
-          val curIndices = indices(i)
-          NNPrimitive.maxPoolingForwardDouble(
-            curInput.asInstanceOf[Tensor[Double]].storage().array(),
-            curInput.storageOffset() - 1,
-            curOutput.asInstanceOf[Tensor[Double]].storage().array(),
-            curOutput.storageOffset() - 1,
-            curIndices.asInstanceOf[Tensor[Double]].storage().array(),
-            curIndices.storageOffset() - 1,
-            nslices, iwidth, iheight, owidth, oheight,
-            kW, kH, dW, dH, padW, padH)
-        }(Engine.getInstance())
+        Engine.model.invokeAndWait(
+          (1 to nbatch).map(i => () => {
+            val curInput = input(i)
+            val curOutput = output(i)
+            val curIndices = indices(i)
+            NNPrimitive.maxPoolingForwardDouble(
+              curInput.asInstanceOf[Tensor[Double]].storage().array(),
+              curInput.storageOffset() - 1,
+              curOutput.asInstanceOf[Tensor[Double]].storage().array(),
+              curOutput.storageOffset() - 1,
+              curIndices.asInstanceOf[Tensor[Double]].storage().array(),
+              curIndices.storageOffset() - 1,
+              nslices, iwidth, iheight, owidth, oheight,
+              kW, kH, dW, dH, padW, padH
+            )
+          })
+        )
       } else if (classTag[T] == classTag[Float]) {
-        for (i <- 1 to nbatch) results += Future {
-          val curInput = input(i)
-          val curOutput = output(i)
-          val curIndices = indices(i)
-          NNPrimitive.maxPoolingForwardFloat(
-            curInput.asInstanceOf[Tensor[Float]].storage().array(),
-            curInput.storageOffset() - 1,
-            curOutput.asInstanceOf[Tensor[Float]].storage().array(),
-            curOutput.storageOffset() - 1,
-            curIndices.asInstanceOf[Tensor[Float]].storage().array(),
-            curIndices.storageOffset() - 1,
-            nslices, iwidth, iheight, owidth, oheight,
-            kW, kH, dW, dH, padW, padH)
-        }(Engine.getInstance())
+        Engine.model.invokeAndWait(
+          (1 to nbatch).map(i => () => {
+            val curInput = input(i)
+            val curOutput = output(i)
+            val curIndices = indices(i)
+            NNPrimitive.maxPoolingForwardFloat(
+              curInput.asInstanceOf[Tensor[Float]].storage().array(),
+              curInput.storageOffset() - 1,
+              curOutput.asInstanceOf[Tensor[Float]].storage().array(),
+              curOutput.storageOffset() - 1,
+              curIndices.asInstanceOf[Tensor[Float]].storage().array(),
+              curIndices.storageOffset() - 1,
+              nslices, iwidth, iheight, owidth, oheight,
+              kW, kH, dW, dH, padW, padH
+            )
+          })
+        )
       } else {
         throw new IllegalArgumentException
-      }
-
-      for (t <- results) {
-        Await.result(t, Duration.Inf)
       }
     }
     output
@@ -172,41 +173,42 @@ class SpatialMaxPooling[@specialized(Float, Double) T: ClassTag](
     }
     else {
       val nbacth = input.size(1)
-      val results = new ArrayBuffer[Future[Unit]]()
       if (classTag[T] == classTag[Double]) {
-        for (k <- 1 to nbacth) results += Future {
-          val curGradInput = gradInput(k)
-          val curGradOutput = gradOutput(k)
-          val curIndices = indices(k)
-          NNPrimitive.maxPoolingBackwardDouble(
-            curGradInput.asInstanceOf[Tensor[Double]].storage().array(),
-            curGradInput.storageOffset() - 1,
-            curGradOutput.asInstanceOf[Tensor[Double]].storage().array(),
-            curGradOutput.storageOffset() - 1,
-            curIndices.asInstanceOf[Tensor[Double]].storage().array(),
-            curIndices.storageOffset() - 1,
-            nslices, iwidth, iheight, owidth, oheight)
-        }(Engine.getInstance())
+        Engine.model.invokeAndWait(
+          (1 to nbacth).map(k => () => {
+            val curGradInput = gradInput(k)
+            val curGradOutput = gradOutput(k)
+            val curIndices = indices(k)
+            NNPrimitive.maxPoolingBackwardDouble(
+              curGradInput.asInstanceOf[Tensor[Double]].storage().array(),
+              curGradInput.storageOffset() - 1,
+              curGradOutput.asInstanceOf[Tensor[Double]].storage().array(),
+              curGradOutput.storageOffset() - 1,
+              curIndices.asInstanceOf[Tensor[Double]].storage().array(),
+              curIndices.storageOffset() - 1,
+              nslices, iwidth, iheight, owidth, oheight
+            )
+          })
+        )
       } else if (classTag[T] == classTag[Float]) {
-        for (k <- 1 to nbacth) results += Future {
-          val curGradInput = gradInput(k)
-          val curGradOutput = gradOutput(k)
-          val curIndices = indices(k)
-          NNPrimitive.maxPoolingBackwardFloat(
-            curGradInput.asInstanceOf[Tensor[Float]].storage().array(),
-            curGradInput.storageOffset() - 1,
-            curGradOutput.asInstanceOf[Tensor[Float]].storage().array(),
-            curGradOutput.storageOffset() - 1,
-            curIndices.asInstanceOf[Tensor[Float]].storage().array(),
-            curIndices.storageOffset() - 1,
-            nslices, iwidth, iheight, owidth, oheight)
-        }(Engine.getInstance())
+        Engine.model.invokeAndWait(
+          (1 to nbacth).map(k => () => {
+            val curGradInput = gradInput(k)
+            val curGradOutput = gradOutput(k)
+            val curIndices = indices(k)
+            NNPrimitive.maxPoolingBackwardFloat(
+              curGradInput.asInstanceOf[Tensor[Float]].storage().array(),
+              curGradInput.storageOffset() - 1,
+              curGradOutput.asInstanceOf[Tensor[Float]].storage().array(),
+              curGradOutput.storageOffset() - 1,
+              curIndices.asInstanceOf[Tensor[Float]].storage().array(),
+              curIndices.storageOffset() - 1,
+              nslices, iwidth, iheight, owidth, oheight
+            )
+          })
+        )
       } else {
         throw new IllegalArgumentException
-      }
-
-      for (t <- results) {
-        Await.result(t, Duration.Inf)
       }
     }
     gradInput

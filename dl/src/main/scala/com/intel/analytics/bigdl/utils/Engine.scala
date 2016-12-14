@@ -35,91 +35,162 @@ case object MklBlas extends EngineType
 case object MklDnn extends EngineType
 
 /**
- * Provide appropriated thread pool based on user provided parallelism
+ * A thread pool wrapper, provide some helper functions for multi-threading
+ */
+class ThreadPool(private var poolSize : Int) {
+  import ThreadPool._
+
+  private var queueLength : Int = 0
+
+  private val waitQueue : ArrayBuffer[Future[_]] = new ArrayBuffer[Future[_]]
+
+  private var context = spawnThreadPool(poolSize)
+
+  private def spawnThreadPool(poolSize : Int) : ExecutionContext = {
+    if (poolSize == 1) {
+      singleThreadPool
+    } else {
+      new ExecutionContext {
+        val threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
+          override def newThread(r: Runnable): Thread = {
+            val t = Executors.defaultThreadFactory().newThread(r)
+            t.setDaemon(true)
+            t
+          }
+        })
+
+        def execute(runnable: Runnable) {
+          threadPool.submit(runnable)
+        }
+
+        def reportFailure(t: Throwable) {}
+      }
+    }
+  }
+
+  /**
+   * Set MKL thread pool size
+   *
+   * @param size
+   * @return
+   */
+  def setMKLThread(size : Int): this.type = {
+    require(MKL.isMKLLoaded)
+    (1 to poolSize).map(i => Future {
+      MKL.setNumThreads(size)
+      val tid = Thread.currentThread().getId()
+      logger.info(s"Set mkl threads to 1 on thread $tid")
+    }(context)).foreach(Await.result(_, Duration.Inf))
+    this
+  }
+
+  /**
+   * Invoke a batch of tasks and wait for all them finished
+   *
+   * @param tasks
+   * @param timeout
+   * @tparam T
+   * @return
+   */
+  def invokeAndWait[T](tasks: Seq[() => T], timeout : Duration = Duration.Inf) : Seq[T] = {
+    tasks.map(task => Future {
+      task()
+    }(context)).map(future => Await.result(future, timeout))
+  }
+
+  /**
+   * Invoke a batch of tasks
+   *
+   * @param tasks
+   */
+  def invoke[T](tasks: Seq[() => T]) : Seq[Future[T]] = {
+    val futures = tasks.map(task => Future {
+      task()
+    }(context))
+    waitQueue ++= futures
+    queueLength += futures.length
+    futures
+  }
+
+  /**
+   * Invoke a single tasks
+   *
+   * @param task
+   */
+  def invoke[T](task: () => T) : Future[T] = {
+    val future = Future {
+      task()
+    }(context)
+    waitQueue += future
+    queueLength += 1
+    future
+  }
+
+  /**
+   * Wait for all the tasks in the wait queue finish
+   *
+   * @param timeout
+   */
+  def sync(timeout : Duration = Duration.Inf) : Unit = {
+    var i = 0
+    while(i < queueLength) {
+      Await.result(waitQueue(i), timeout)
+      i += 1
+    }
+    waitQueue.clear()
+    queueLength = 0
+  }
+
+  /**
+   * Set pool size
+   *
+   * @param size
+   * @return
+   */
+  def setPoolSize(size : Int) : this.type  = {
+    if(size != poolSize) {
+      context = spawnThreadPool(size)
+      poolSize = size
+    }
+    this
+  }
+}
+
+object ThreadPool {
+  val singleThreadPool = new ExecutionContext {
+    def execute(runnable: Runnable) {
+      runnable.run()
+    }
+
+    def reportFailure(t: Throwable) {}
+  }
+
+  private val logger = Logger.getLogger(getClass)
+}
+
+/**
+ * Mange thread parallel behavior
  */
 object Engine{
   private val logger = Logger.getLogger(getClass)
 
   private val singletonCounter : AtomicInteger = new AtomicInteger(0)
 
+  /**
+   * Check if current execution is a singleton on the JVM
+   *
+   * @return
+   */
   def checkSingleton() : Boolean = {
     val count = singletonCounter.incrementAndGet()
     (count == 1)
-  }
-
-  private val defaultPoolSize: Int =
-    System.getProperty("com.intel.analytics.bigdl.utils.Engine.defaultPoolSize",
-      (Runtime.getRuntime().availableProcessors() / 2).toString).toInt
-  private val queuePointer = new AtomicInteger(0)
-  private val maxQueueSize: Int =
-    System.getProperty("com.intel.analytics.bigdl.utils.Engine.maxQueueSize", "500").toInt
-  private val waitQueue : Array[Future[_]] = new Array[Future[_]](maxQueueSize)
-
-  private val threadPool : ThreadLocal[ExecutionContext] = new ThreadLocal[ExecutionContext]
-
-  private def spawnThreadPool(poolSize : Int) : ExecutionContext = {
-    new ExecutionContext {
-      val pool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
-        override def newThread(r: Runnable): Thread = {
-          val t = Executors.defaultThreadFactory().newThread(r)
-          t.setDaemon(true)
-          t
-        }
-      })
-
-      def execute(runnable: Runnable) {
-        pool.submit(runnable)
-      }
-
-      def reportFailure(t: Throwable) {}
-    }
-  }
-
-  def setThreadPool(size : Int): Unit = {
-    threadPool.set(spawnThreadPool(defaultPoolSize))
-  }
-
-  def setThreadPool(): Unit = setThreadPool(defaultPoolSize)
-
-  private def getThreadPool(): ExecutionContext = {
-    var pool = threadPool.get()
-    if(pool == null) {
-      setThreadPool()
-      pool = threadPool.get()
-    }
-    pool
-  }
-
-  def invokeAndWait[T](tasks: Seq[() => T], timeout : Duration = Duration.Inf) : Seq[T] = {
-    tasks.map(task => Future {
-      task()
-    }(getThreadPool)).map(future => Await.result(future, timeout))
-  }
-
-  def invoke(tasks: Seq[() => _]) : Unit = {
-    tasks.map(task => Future {
-      task()
-    }(getThreadPool)).foreach(f => {
-      val i = queuePointer.getAndIncrement()
-      require(i < maxQueueSize, "Queue is full. Please consider increase waiting queue size")
-      waitQueue(i) = f
-    })
-  }
-
-  def sync(timeout : Duration = Duration.Inf) : Unit = {
-    val length = queuePointer.get()
-    var i = 0
-    while(i < length) {
-      Await.result(waitQueue(i), timeout)
-      i += 1
-    }
-    queuePointer.set(0)
   }
 
   private val ERROR = "Please use bigdlvars.sh set the env. For spark application, please use" +
     "Engine.sparkConf() to initialize your sparkConf"
 
   /**
+   * Notice: Please use property DL_ENGINE_TYPE to set engineType.
    * Default engine is MklBlas
    */
   private var engineType: EngineType = {
@@ -134,6 +205,21 @@ object Engine{
     }
   }
 
+  private val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
+    (Runtime.getRuntime().availableProcessors() / 2 * 50).toString).toInt
+
+  private val modelPoolSize: Int = if(engineType == MklBlas) {
+    1
+  } else {
+    System.getProperty("bigdl.utils.Engine.modelPoolSize",
+      (Runtime.getRuntime().availableProcessors() / 2).toString).toInt
+  }
+
+  val default : ThreadPool = new ThreadPool(defaultPoolSize)
+  val model : ThreadPool = new ThreadPool(modelPoolSize)
+  model.setMKLThread(1)
+
+  // Set spark envs
   def sparkConf(): SparkConf = {
     if(engineType == MklBlas) {
       new SparkConf().setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
@@ -155,9 +241,6 @@ object Engine{
     }
   }
 
-  /**
-   * Notice: Please use property DL_ENGINE_TYPE to set engineType.
-   */
   private[bigdl] def setEngineType(engineType: EngineType) : Unit = {
     this.engineType = engineType
   }
@@ -166,6 +249,7 @@ object Engine{
     this.engineType
   }
 
+  // Check envs
   if(Engine.getEngineType() == MklBlas) {
     if(System.getenv("OMP_NUM_THREADS") != "1"
       || System.getenv("OMP_WAIT_POLICY") != "passive"
@@ -180,7 +264,8 @@ object Engine{
     }
   }
 
-  // We assume the HT is enble
+  // Set core number
+  // We assume the HT is enabled
   // Todo: check the Hyper threading
   private var physicalCoreNumber = System.getProperty("bigdl.engine.coreNumber",
     (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
@@ -192,6 +277,7 @@ object Engine{
     physicalCoreNumber = n
   }
 
+  // Set node number
   private var nodeNum : Option[Int] = None
 
   def nodeNumber(): Option[Int] = nodeNum
@@ -199,88 +285,5 @@ object Engine{
   def setNodeNumber(n : Int) : Unit = {
     require(n > 0)
     nodeNum = Some(n)
-  }
-
-  // =========== below is old code, will be removed after refactor===================
-  /**
-   * Work load parallelism
-   */
-  private var poolSize: Int = if(getEngineType() == MklBlas) {
-    1
-  } else {
-    System.getProperty("dl.engine.cores",
-      (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
-  }
-
-
-  def setCoreNum(size: Int): Unit = {
-    require(size > 0)
-    if (size != poolSize) {
-      poolSize = size
-      initEngine()
-    }
-  }
-
-  def coresNum(): Int = poolSize
-
-  private var engine: ExecutionContext = null
-  /**
-   * Get the ExecutionContext
-   *
-   * @return
-   */
-  def getInstance(): ExecutionContext = {
-    if (engine == null) {
-      initEngine()
-    }
-    engine
-  }
-
-  def releaseInstance[T](results : Array[Future[T]]): Seq[T] = {
-    results.map(Await.result(_, Duration.Inf))
-  }
-
-  private val singleThreadEngine = new ExecutionContext {
-    def execute(runnable: Runnable) {
-      runnable.run()
-    }
-
-    def reportFailure(t: Throwable) {}
-  }
-
-  private def initEngine(): Unit = {
-    engine = if (coresNum == 1) {
-      singleThreadEngine
-    } else {
-      val context = new ExecutionContext {
-        val threadPool = Executors.newFixedThreadPool(coresNum, new ThreadFactory {
-          override def newThread(r: Runnable): Thread = {
-            val t = Executors.defaultThreadFactory().newThread(r)
-            t.setDaemon(true)
-            t
-          }
-        })
-
-        def execute(runnable: Runnable) {
-          threadPool.submit(runnable)
-        }
-
-        def reportFailure(t: Throwable) {}
-      }
-      if (MKL.isMKLLoaded) {
-        val results = new Array[Future[Unit]](coresNum)
-        for (i <- 0 until coresNum) {
-          results(i) = Future {
-            MKL.setNumThreads(1)
-            val tid = Thread.currentThread().getId()
-            logger.info(s"Set mkl threads to 1 on thread $tid")
-          }(context)
-        }
-        for (i <- 0 until coresNum) {
-          Await.result(results(i), Duration.Inf)
-        }
-      }
-      context
-    }
   }
 }

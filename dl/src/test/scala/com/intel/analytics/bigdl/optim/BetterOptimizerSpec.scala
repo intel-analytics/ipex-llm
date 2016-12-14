@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.parameters.{AllReduceParameterManager, OneReduceParameterManager}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
@@ -119,7 +120,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
     mseWeight.fill(0.125)
     crnWeight.fill(0.125)
     plusOne = 0.0
-    Engine.setCoreNum(1)
+    Engine.default.setPoolSize(1)
   }
 
   after {
