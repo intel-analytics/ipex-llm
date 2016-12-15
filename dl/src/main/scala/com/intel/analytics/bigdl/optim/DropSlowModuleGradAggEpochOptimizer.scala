@@ -35,7 +35,7 @@ import scala.reflect._
 import org.apache.log4j.Logger
 
 object DropSlowModuleGradAggEpochOptimizer {
-  val subModuleNumber = System.getProperty(
+  var subModuleNumber = System.getProperty(
     "bigdl.optim.BetterGradAggEpochOptimizer.subModuleNumber",
     (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
 
@@ -350,6 +350,23 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
 
     saveModel(module)
     saveState(pm.getState())
+
+    // get parameters
+    val pidToWeightSplit = models.mapPartitions(iter => {
+      val localWeights = _ps.partialWeights
+      val curPartitionId = TaskContext.getPartitionId()
+      Iterator.single(Map(curPartitionId -> localWeights))
+    }).reduce(_ ++ _)
+
+    parameters = module.cloneModule().getParameters()._1
+    (0 until _partitionNum).map(pid => {
+      val start = pid * AllReduceParameter.taskSize + math.min(pid, AllReduceParameter.extraSize)
+      val length = AllReduceParameter.taskSize + (if (pid < AllReduceParameter.extraSize) 1 else 0)
+      parameters.narrow(1, start + 1, length).copy(pidToWeightSplit(pid))
+    })
+
     module
   }
+
+  var parameters: Tensor[T] = null
 }
