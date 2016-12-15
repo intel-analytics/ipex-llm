@@ -197,6 +197,11 @@ object Utils {
       opt[String]("epochOptimizerType")
         .text(s"epochOptimizer typer, default: ${defaultParams.epochOptimizerType}")
         .action((x, c) => c.copy(epochOptimizerType = x.toLowerCase))
+      opt[Double]("dropModulePercentage")
+        .text("Drop module percentage which should not less than 0 and not greater than 0.5")
+        .action((x, c) => {
+          c.masterConfig("dropModulePercentage") = x; c
+        })
     }
   }
 
