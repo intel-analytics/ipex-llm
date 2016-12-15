@@ -86,7 +86,7 @@ class HardTanh[T: ClassTag](
       if (inplace) {
         while (i < input.nElement()) {
           val _i = i
-          Engine.model.invoke(() => {
+          tasks(_i) = Engine.model.invoke(() => {
             if (ev.isGreater(min, inputData(_i + inputOffset))) {
               inputData.update(_i + inputOffset, min)
             } else if (ev.isGreater(inputData(_i + inputOffset), max)) {
@@ -95,11 +95,11 @@ class HardTanh[T: ClassTag](
           })
           i += 1
         }
-        Engine.model.sync()
+        Engine.model.sync(tasks)
       } else {
         while (i < input.nElement()) {
           val _i = i
-          Engine.model.invoke(() => {
+          tasks(_i) = Engine.model.invoke(() => {
             if (ev.isGreater(min, inputData(_i + inputOffset))) {
               outputData.update(_i + outputOffset, min)
             } else if (ev.isGreaterEq(max, inputData(_i + inputOffset))) {
@@ -110,7 +110,7 @@ class HardTanh[T: ClassTag](
           })
           i += 1
         }
-        Engine.model.sync()
+        Engine.model.sync(tasks)
       }
     }
 
@@ -168,7 +168,7 @@ class HardTanh[T: ClassTag](
       if (inplace) {
         while (i < input.nElement()) {
           val _i = i
-          Engine.model.invoke(() => {
+          tasks(_i) = Engine.model.invoke(() => {
             if (ev.isGreaterEq(min, inputData(_i + inputOffset))
               || ev.isGreaterEq(inputData(_i + inputOffset), max)) {
               gradInputData.update(_i + gradInputOffset, ev.fromType[Double](0))
@@ -176,11 +176,11 @@ class HardTanh[T: ClassTag](
           })
           i += 1
         }
-        Engine.model.sync()
+        Engine.model.sync(tasks)
       } else {
         while (i < input.nElement()) {
           val _i = i
-          Engine.model.invoke(() => {
+          tasks(_i) = Engine.model.invoke(() => {
             if (ev.isGreaterEq(min, inputData(_i + inputOffset))
               || ev.isGreaterEq(inputData(_i + inputOffset), max)) {
               gradInputData.update(_i + gradInputOffset, ev.fromType[Double](0))
@@ -190,7 +190,7 @@ class HardTanh[T: ClassTag](
           })
           i += 1
         }
-        Engine.model.sync()
+        Engine.model.sync(tasks)
       }
     }
 

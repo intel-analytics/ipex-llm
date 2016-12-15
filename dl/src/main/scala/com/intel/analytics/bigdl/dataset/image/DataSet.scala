@@ -30,14 +30,13 @@ object LocalImageFiles {
   Class.forName("sun.java2d.cmm.lcms.LCMS")
   ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
-  // scalastyle:off methodName
-  def LocalPathDataSet(path: Path, looped: Boolean)
+  def localPathDataSet(path: Path, looped: Boolean)
   : LocalDataSet[LabeledImageLocalPath] = {
     val buffer = readPaths(path)
     new LocalArrayDataSet[LabeledImageLocalPath](buffer, looped)
   }
 
-  def LocalBytesDataSet(path: Path, looped: Boolean, scaleTo : Int)
+  def localBytesDataSet(path: Path, looped: Boolean, scaleTo : Int)
   : LocalDataSet[Sample] = {
     val buffer = readPaths(path).map(imageFile => {
       Sample(RGBImage.readImage(imageFile.path, scaleTo), imageFile.label)
@@ -45,7 +44,7 @@ object LocalImageFiles {
     new LocalArrayDataSet[Sample](buffer, looped)
   }
 
-  def DistriDataSet(path: Path, looped: Boolean, sc: SparkContext,
+  def distriDataSet(path: Path, looped: Boolean, sc: SparkContext,
     partitionNum: Int, scaleTo: Int = RGBImage.NO_SCALE)
   : DistributedDataSet[Sample] = {
     val paths = readPaths(path)
@@ -56,7 +55,6 @@ object LocalImageFiles {
     }
     CachedDistriDataSet(buffer, sc, partitionNum, looped)
   }
-  // scalastyle:on methodName
 
   /**
    * read the folder names, which are the class names, sort the name and convert to an integer
@@ -101,7 +99,7 @@ object SequenceFiles {
    * @param totalSize
    * @param looped
    */
-  def LocalFiles(path: Path, totalSize: Long, looped: Boolean): LocalDataSet[SeqFileLocalPath] = {
+  def localFiles(path: Path, totalSize: Long, looped: Boolean): LocalDataSet[SeqFileLocalPath] = {
     val buffer: Array[SeqFileLocalPath] = findFiles(path)
     new LocalArrayDataSet[SeqFileLocalPath](buffer, looped) {
       override def size(): Long = {
@@ -117,7 +115,7 @@ object SequenceFiles {
       .filter(_.endsWith(".seq")).toArray.sortWith(_ < _).map(p => SeqFileLocalPath(Paths.get(p)))
   }
 
-  def HDFSFiles(url: String, sc: SparkContext, classNum: Int, looped: Boolean,
+  def hdfsFiles(url: String, sc: SparkContext, classNum: Int, looped: Boolean,
     partitionNum: Int): DistributedDataSet[Sample] = {
     val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text]).map(image => {
       Sample(image._2.copyBytes(), image._1.toString.toFloat)

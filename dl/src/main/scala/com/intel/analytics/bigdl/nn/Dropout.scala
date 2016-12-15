@@ -68,7 +68,7 @@ class Dropout[@specialized(Float, Double) T: ClassTag](
             extraTask -= 1
           }
           val end = allocated
-          Engine.model.invoke(() => {
+          results(i) = Engine.model.invoke(() => {
             var k = start
             while (k < end) {
               noiseData(k) = if (RNG.bernoulli(1 - p)) {
@@ -89,7 +89,7 @@ class Dropout[@specialized(Float, Double) T: ClassTag](
           i += 1
         }
 
-        Engine.model.sync()
+        Engine.model.sync(results)
         this.output
       } else {
         noise.bernoulli(1 - p)
@@ -133,7 +133,7 @@ class Dropout[@specialized(Float, Double) T: ClassTag](
             extraTask -= 1
           }
           val end = allocated
-          Engine.model.invoke(() => {
+          results(i) = Engine.model.invoke(() => {
             var k = start
             while (k < end) {
               gradInputData(gradInputOffset + k) =
@@ -144,7 +144,7 @@ class Dropout[@specialized(Float, Double) T: ClassTag](
           i += 1
         }
 
-        Engine.model.sync()
+        Engine.model.sync(results)
 
         this.gradInput
       } else {

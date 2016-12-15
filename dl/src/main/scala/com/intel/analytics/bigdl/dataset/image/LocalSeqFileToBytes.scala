@@ -47,7 +47,7 @@ class LocalSeqFileToBytes extends Transformer[SeqFileLocalPath, Sample] {
 
   override def apply(prev: Iterator[SeqFileLocalPath]): Iterator[Sample] = {
     new Iterator[Sample] {
-      override def next(): Sample= {
+      override def next(): Sample = {
         if (oneRecordBuffer != null) {
           val res = oneRecordBuffer
           oneRecordBuffer = null

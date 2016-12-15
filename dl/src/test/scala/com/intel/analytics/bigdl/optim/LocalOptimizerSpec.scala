@@ -28,12 +28,12 @@ object DummyDataSet extends LocalDataSet[Batch[Float]] {
   val totalSize = 10
   var isCrossEntropy = true
 
-  def CREDataSet: LocalDataSet[Batch[Float]] = {
+  def creDataSet: LocalDataSet[Batch[Float]] = {
     isCrossEntropy = true
     DummyDataSet
   }
 
-  def MSEDataSet: LocalDataSet[Batch[Float]] = {
+  def mseDataSet: LocalDataSet[Batch[Float]] = {
     isCrossEntropy = false
     DummyDataSet
   }
@@ -95,14 +95,14 @@ object DummyDataSet extends LocalDataSet[Batch[Float]] {
 }
 
 object LocalOptimizerSpecModel {
-  def CREModel : Module[Float] = {
+  def creModel : Module[Float] = {
     val mlp = new Sequential[Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
     mlp
   }
 
-  def MSEModel : Module[Float] = {
+  def mseModel : Module[Float] = {
     val mlp = new Sequential[Float]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
@@ -122,8 +122,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
   "Train model with CrossEntropy and SGD" should "be good" in {
     RandomGenerator.RNG.setSeed(1000)
     val optimizer = new LocalOptimizer[Float](
-      CREModel,
-      CREDataSet,
+      creModel,
+      creDataSet,
       new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
     )
 
@@ -140,8 +140,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
   it should "be same compare to ref optimizer" in {
     RandomGenerator.RNG.setSeed(1000)
     val optimizer = new LocalOptimizer[Float](
-      CREModel,
-      CREDataSet,
+      creModel,
+      creDataSet,
       new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
     )
     val model = optimizer.optimize()
@@ -149,8 +149,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
 
     RandomGenerator.RNG.setSeed(1000)
     val optimizerRef = new RefLocalOptimizer[Float](
-      CREModel,
-      CREDataSet,
+      creModel,
+      creDataSet,
       new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
     )
     val modelRef = optimizerRef.optimize()
@@ -164,8 +164,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     RandomGenerator.RNG.setSeed(1000)
 
     val optimizer = new LocalOptimizer[Float](
-      MSEModel,
-      MSEDataSet,
+      mseModel,
+      mseDataSet,
       new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setState(T("learningRate" -> 1.0))
 
@@ -182,8 +182,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
   it should "be same compare to ref optimizer" in {
     RandomGenerator.RNG.setSeed(1000)
     val optimizer = new LocalOptimizer[Float](
-      MSEModel,
-      MSEDataSet,
+      mseModel,
+      mseDataSet,
       new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setState(T("learningRate" -> 1.0)).setEndWhen(Trigger.maxIteration(100))
     val model = optimizer.optimize()
@@ -191,8 +191,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
 
     RandomGenerator.RNG.setSeed(1000)
     val optimizerRef = new RefLocalOptimizer[Float](
-      MSEModel,
-      MSEDataSet,
+      mseModel,
+      mseDataSet,
       new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setState(T("learningRate" -> 1.0)).setEndWhen(Trigger.maxIteration(100))
     val modelRef = optimizerRef.optimize()
@@ -204,8 +204,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
     RandomGenerator.RNG.setSeed(1000)
 
     val optimizer = new LocalOptimizer[Float](
-      CREModel,
-      CREDataSet,
+      creModel,
+      creDataSet,
       new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
 
@@ -222,8 +222,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
   it should "be same compare to ref optimizer" in {
     RandomGenerator.RNG.setSeed(1000)
     val optimizer = new LocalOptimizer[Float](
-      CREModel,
-      CREDataSet,
+      creModel,
+      creDataSet,
       new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
     val model = optimizer.optimize()
@@ -231,8 +231,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
 
     RandomGenerator.RNG.setSeed(1000)
     val optimizerRef = new RefLocalOptimizer[Float](
-      CREModel,
-      CREDataSet,
+      creModel,
+      creDataSet,
       new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
     val modelRef = optimizerRef.optimize()
@@ -243,8 +243,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
   "Train model with MSE and LBFGS" should "be good" in {
     RandomGenerator.RNG.setSeed(10)
     val optimizer = new LocalOptimizer[Float](
-      MSEModel,
-      MSEDataSet,
+      mseModel,
+      mseDataSet,
       new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
 
@@ -261,8 +261,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
   it should "be same compare to ref optimizer" in {
     RandomGenerator.RNG.setSeed(10)
     val optimizer = new LocalOptimizer[Float](
-      MSEModel,
-      MSEDataSet,
+      mseModel,
+      mseDataSet,
       new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
     val model = optimizer.optimize()
@@ -270,8 +270,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
 
     RandomGenerator.RNG.setSeed(10)
     val optimizerRef = new RefLocalOptimizer[Float](
-      MSEModel,
-      MSEDataSet,
+      mseModel,
+      mseDataSet,
       new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
     val modelRef = optimizerRef.optimize()

@@ -26,12 +26,12 @@ import scala.reflect.ClassTag
 /**
  * The class is used as a reference optimizer in local optimizer unit test
  */
-class RefLocalOptimizer[T : ClassTag](
+class RefLocalOptimizer[T: ClassTag](
   model: Module[T],
   dataset: DataSource[Iterator[Batch[T]]],
   criterion: Criterion[T]
-)(implicit ev : TensorNumeric[T]) extends Optimizer[T, Iterator[Batch[T]],
-  Iterator[Batch[T]]](model, dataset, criterion){
+)(implicit ev: TensorNumeric[T]) extends Optimizer[T, Iterator[Batch[T]],
+  Iterator[Batch[T]]](model, dataset, criterion) {
 
   val (w, g) = model.getParameters()
 
@@ -40,7 +40,7 @@ class RefLocalOptimizer[T : ClassTag](
     var count = 0
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
-    while(!endWhen(state)) {
+    while (!endWhen(state)) {
       val batch = data.next()
       val input = batch.data
       val target = batch.labels
@@ -53,7 +53,7 @@ class RefLocalOptimizer[T : ClassTag](
       count += input.size(1)
       state("neval") = state[Int]("neval") + 1
       println(s"loss is $loss")
-      if(count >= dataset.size()) {
+      if (count >= dataset.size()) {
         state("epoch") = state[Int]("epoch") + 1
         count = 0
       }

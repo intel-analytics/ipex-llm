@@ -125,7 +125,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     var f = 0
     while (f < nInput) {
       val _f = f + 1
-      Engine.model.invoke(() => {
+      results(f) = Engine.model.invoke(() => {
         var mean = 0.0
         var invstd = 0.0
         if (train) {
@@ -178,7 +178,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
       })
       f += 1
     }
-    Engine.model.sync()
+    Engine.model.sync(results)
   }
 
   private def updateOutputFloat(input: Array[Float], inputOffset: Int, inputStride: Int,
@@ -188,7 +188,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     var f = 0
     while (f < nInput) {
       val _f = f + 1
-      Engine.model.invoke(() => {
+      results(f) = Engine.model.invoke(() => {
         var mean = 0.0f
         var invstd = 0.0f
         if (train) {
@@ -242,7 +242,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
       })
       f += 1
     }
-    Engine.model.sync()
+    Engine.model.sync(results)
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
@@ -396,7 +396,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     var f = 0
     while (f < nInput) {
       val _f = f + 1
-      Engine.model.invoke(() => {
+      results(f) = Engine.model.invoke(() => {
         val w = if (null != weight) ev.toType[Double](weight.valueAt(_f)) else 1.0
         val (mean, invstd) = if (train) {
           (ev.toType[Double](saveMean.valueAt(_f)), ev.toType[Double](saveStd.valueAt(_f)))
@@ -472,7 +472,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
       })
       f += 1
     }
-    Engine.model.sync()
+    Engine.model.sync(results)
   }
 
   private def backwardFloat(input: Array[Float], inputOffset: Int, inputStride: Int,
@@ -484,7 +484,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     var f = 0
     while (f < nInput) {
       val _f = f + 1
-      Engine.model.invoke(() => {
+      results(f) = Engine.model.invoke(() => {
         val w = if (null != weight) ev.toType[Float](weight.valueAt(_f)) else 1.0f
         val (mean, invstd) = if (train) {
           (ev.toType[Float](saveMean.valueAt(_f)), ev.toType[Float](saveStd.valueAt(_f)))
@@ -560,7 +560,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
       })
       f += 1
     }
-    Engine.model.sync()
+    Engine.model.sync(results)
   }
 
   override def zeroGradParameters(): Unit = {

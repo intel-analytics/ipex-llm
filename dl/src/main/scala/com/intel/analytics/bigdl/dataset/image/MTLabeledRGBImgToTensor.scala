@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
 object MTLabeledRGBImgToTensor {
   def apply[A: ClassTag](width: Int, height: Int, threadNum: Int, batchSize: Int,
     transformer: Transformer[A, LabeledRGBImage]): MTLabeledRGBImgToTensor[A] = {
-    new MTLabeledRGBImgToTensor[A] (
+    new MTLabeledRGBImgToTensor[A](
       width, height, threadNum, batchSize, transformer)
   }
 }
@@ -36,9 +36,9 @@ class MTLabeledRGBImgToTensor[A: ClassTag](width: Int, height: Int,
   threadNum: Int, batchSize: Int, transformer: Transformer[A, LabeledRGBImage])
   extends Transformer[A, Batch[Float]] {
 
-  private def getPosition(count : AtomicInteger): Int = {
+  private def getPosition(count: AtomicInteger): Int = {
     val position = count.getAndIncrement()
-    if(position < batchSize) position else -1
+    if (position < batchSize) position else -1
   }
 
   private val transformers = (1 to threadNum).map(
@@ -92,19 +92,19 @@ class MTLabeledRGBImgToTensor[A: ClassTag](width: Int, height: Int,
 private class PreFetch[T] extends Transformer[T, T] {
   override def apply(prev: Iterator[T]): Iterator[T] = {
     new Iterator[T] {
-      private var buffer : T = null.asInstanceOf[T]
+      private var buffer: T = null.asInstanceOf[T]
 
       override def hasNext: Boolean = {
-        if(buffer != null) {
+        if (buffer != null) {
           true
         } else {
           buffer = prev.next()
-          if(buffer == null) false else true
+          if (buffer == null) false else true
         }
       }
 
       override def next(): T = {
-        if(buffer == null) {
+        if (buffer == null) {
           prev.next()
         } else {
           val tmp = buffer

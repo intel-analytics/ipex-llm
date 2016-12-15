@@ -102,7 +102,7 @@ class PReLU[T: ClassTag](
       var i = 0
       while (i < bs) {
         val _i = i
-        Engine.model.invoke(() => {
+        results(_i) = Engine.model.invoke(() => {
           var nInputOffset = input.storageOffset() - 1 + _i * nOutputPlane * ks
           var nOutputOffset = output.storageOffset() - 1 + _i * nOutputPlane * ks
           var j = 0
@@ -124,7 +124,7 @@ class PReLU[T: ClassTag](
         })
         i += 1
       }
-      Engine.model.sync()
+      Engine.model.sync(results)
     }
 
     output
@@ -175,7 +175,7 @@ class PReLU[T: ClassTag](
       var i = 0
       while (i < bs) {
         val _i = i
-        Engine.model.invoke(() => {
+        results(_i) = Engine.model.invoke(() => {
           var nInputOffset = input.storageOffset() - 1 + _i * nOutputPlane * ks
           var nGradOutputOffset = gradOutput.storageOffset() - 1 + _i * nOutputPlane * ks
           var nGradInputOffset = gradInput.storageOffset() - 1 + _i * nOutputPlane * ks
@@ -200,7 +200,7 @@ class PReLU[T: ClassTag](
         })
         i += 1
       }
-      Engine.model.sync()
+      Engine.model.sync(results)
     }
     gradInput
   }
@@ -246,7 +246,7 @@ class PReLU[T: ClassTag](
       var i = 0
       while (i < bs) {
         val _i = i
-        Engine.model.invoke(() => {
+        results(_i) = Engine.model.invoke(() => {
           var nInputOffset = input.storageOffset() - 1 + _i * nOutputPlane * ks
           var nGradOutputOffset = gradOutput.storageOffset() - 1 + _i * nOutputPlane * ks
 
@@ -270,7 +270,7 @@ class PReLU[T: ClassTag](
         })
         i += 1
       }
-      Engine.model.sync()
+      Engine.model.sync(results)
     }
   }
 

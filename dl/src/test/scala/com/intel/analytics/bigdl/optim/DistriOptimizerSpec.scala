@@ -60,7 +60,7 @@ object DistriOptimizerSpec {
 }
 
 object DistriOptimizerSpecModel {
-  def MSE: Module[Double] = {
+  def mse: Module[Double] = {
     val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
@@ -69,7 +69,7 @@ object DistriOptimizerSpecModel {
     mlp
   }
 
-  def CRE: Module[Double] = {
+  def cre: Module[Double] = {
     val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
@@ -119,7 +119,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "Train with MSE and LBFGS" should "be good" in {
     RandomGenerator.RNG.setSeed(10)
     val optimizer = new DistriOptimizer(
-      MSE,
+      mse,
       dataSet,
       new MSECriterion[Double]())
       .setOptimMethod(new LBFGS).disableCheckSingleton()
@@ -133,7 +133,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Train with MSE and SGD" should "be trained with good result" in {
-    val mm = MSE
+    val mm = mse
     mm.getParameters()._1.fill(0.125)
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setState(T("learningRate" -> 20.0))
@@ -151,7 +151,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   it should "be same compare to ref optimizer" in {
     RandomGenerator.RNG.setSeed(10)
     val optimizer = new DistriOptimizer(
-      MSE,
+      mse,
       dataSet,
       new MSECriterion[Double]())
       .disableCheckSingleton()
@@ -159,7 +159,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     RandomGenerator.RNG.setSeed(10)
     val optimizerRef = new RefDistriOptimizer(
-      MSE,
+      mse,
       dataSet,
       new MSECriterion[Double]()
     )
@@ -171,7 +171,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An Artificial Neural Network with Cross Entropy and LBFGS" should
     "be trained with good result" in {
     plusOne = 1.0
-    val optimizer = new DistriOptimizer[Double](CRE, dataSet,
+    val optimizer = new DistriOptimizer[Double](cre, dataSet,
       new ClassNLLCriterion[Double]())
       .setEndWhen(Trigger.maxEpoch(3)).setOptimMethod(new LBFGS)
       .disableCheckSingleton()
@@ -188,7 +188,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     "be trained with good result" in {
     plusOne = 1.0
     RandomGenerator.RNG.setSeed(10)
-    val optimizer = new DistriOptimizer[Double](CRE, dataSet,
+    val optimizer = new DistriOptimizer[Double](cre, dataSet,
       new ClassNLLCriterion[Double]())
       .setState(T("learningRate" -> 20.0)).disableCheckSingleton()
     val model = optimizer.optimize()
@@ -204,7 +204,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     plusOne = 1.0
     RandomGenerator.RNG.setSeed(10)
     val optimizer = new DistriOptimizer[Double](
-      CRE,
+      cre,
       dataSet,
       new ClassNLLCriterion[Double]()
     ).setState(T("learningRate" -> 20.0)).disableCheckSingleton()
@@ -212,7 +212,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     RandomGenerator.RNG.setSeed(10)
     val optimizerRef = new RefDistriOptimizer(
-      CRE,
+      cre,
       dataSet,
       new ClassNLLCriterion[Double]()
     ).setState(T("learningRate" -> 20.0))

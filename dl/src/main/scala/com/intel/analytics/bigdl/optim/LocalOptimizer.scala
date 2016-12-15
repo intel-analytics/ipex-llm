@@ -28,7 +28,7 @@ import org.apache.log4j.Logger
 import scala.reflect.ClassTag
 
 object LocalOptimizer {
-  val logger =  Logger.getLogger(getClass)
+  val logger = Logger.getLogger(getClass)
 }
 
 /**
@@ -41,13 +41,14 @@ object LocalOptimizer {
  * @param ev
  * @tparam T
  */
-class LocalOptimizer[T : ClassTag](
+class LocalOptimizer[T: ClassTag](
   model: Module[T],
   dataset: DataSource[Iterator[Batch[T]]],
   criterion: Criterion[T]
-)(implicit ev : TensorNumeric[T])
+)(implicit ev: TensorNumeric[T])
   extends Optimizer[T, Iterator[Batch[T]], Iterator[Batch[T]]](
     model, dataset, criterion) {
+
   import LocalOptimizer._
 
   private val coreNumber = Engine.coreNumber()
@@ -90,11 +91,11 @@ class LocalOptimizer[T : ClassTag](
       require(batch.data.size(1) == batch.labels.size(1))
       val stackSize = batch.data.size(1) / subModelNumber
       val extraSize = batch.data.size(1) % subModelNumber
-      val parallelism = if(stackSize == 0) extraSize else subModelNumber
+      val parallelism = if (stackSize == 0) extraSize else subModelNumber
       val tensorBuffer = new Array[(Tensor[T], Tensor[T])](parallelism)
       while (b < parallelism) {
         val offset = b * stackSize + math.min(b, extraSize)
-        val length = stackSize + (if(b < extraSize) 1 else 0)
+        val length = stackSize + (if (b < extraSize) 1 else 0)
         tensorBuffer(b) = (batch.data.narrow(1, offset + 1, length),
           batch.labels.narrow(1, offset + 1, length))
         b += 1
@@ -167,7 +168,7 @@ class LocalOptimizer[T : ClassTag](
   }
 
   private def checkpoint(wallClockTime: Long): Unit = {
-    if(cacheTrigger.isEmpty || cachePath.isEmpty) {
+    if (cacheTrigger.isEmpty || cachePath.isEmpty) {
       return
     }
 
@@ -181,11 +182,11 @@ class LocalOptimizer[T : ClassTag](
   }
 
   private def validate(wallClockTime: Long): Unit = {
-    if(validationTrigger.isEmpty || validationDataSet.isEmpty) {
+    if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
       return
     }
     val trigger = validationTrigger.get
-    if(!trigger(state)) {
+    if (!trigger(state)) {
       return
     }
     val vMethods = validationMethods.get
@@ -199,12 +200,12 @@ class LocalOptimizer[T : ClassTag](
       require(batch.data.size(1) == batch.labels.size(1))
       val stackSize = batch.data.size(1) / subModelNumber
       val extraSize = batch.data.size(1) % subModelNumber
-      val parallelism = if(stackSize == 0) extraSize else subModelNumber
+      val parallelism = if (stackSize == 0) extraSize else subModelNumber
       val result = Engine.default.invokeAndWait(
         (0 until parallelism).map(b =>
           () => {
             val offset = b * stackSize + math.min(b, extraSize)
-            val length = stackSize + (if(b < extraSize) 1 else 0)
+            val length = stackSize + (if (b < extraSize) 1 else 0)
             val input = batch.data.narrow(1, offset + 1, length)
             val target = batch.labels.narrow(1, offset + 1, length)
             val output = workingModels(b).forward(input)

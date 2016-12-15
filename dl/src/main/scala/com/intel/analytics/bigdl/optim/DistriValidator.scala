@@ -27,7 +27,7 @@ class DistriValidator[T](
   model: Module[T],
   nodeNumber: Int,
   coresPerNode: Int
-)extends Validator[T, RDD[(Tensor[T], Tensor[T])]](model) {
+) extends Validator[T, RDD[(Tensor[T], Tensor[T])]](model) {
 
   override def test(
     dataSet: DataSource[RDD[(Tensor[T], Tensor[T])]],
@@ -46,12 +46,12 @@ class DistriValidator[T](
         require(batch._1.size(1) == batch._2.size(1))
         val stackSize = batch._1.size(1) / _subModelNumber
         val extraSize = batch._1.size(1) % _subModelNumber
-        val parallelism = if(stackSize == 0) extraSize else _subModelNumber
+        val parallelism = if (stackSize == 0) extraSize else _subModelNumber
         Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
               val offset = b * stackSize + math.min(b, extraSize)
-              val length = stackSize + (if(b < extraSize) 1 else 0)
+              val length = stackSize + (if (b < extraSize) 1 else 0)
               val input = batch._1.narrow(1, offset + 1, length)
               val target = batch._2.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)

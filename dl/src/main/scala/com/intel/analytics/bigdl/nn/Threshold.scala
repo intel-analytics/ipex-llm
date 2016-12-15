@@ -55,6 +55,8 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
     }
 
     val taskArray = tasks.toArray
+    val results = new Array[Future[Unit]](taskArray.length)
+
     if (inPlace) {
       output = input
       ev.getType() match {
@@ -66,7 +68,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
           var t = 0
           while (t < taskArray.length) {
             val _t = t
-            Engine.model.invoke(() => {
+            results(_t) = Engine.model.invoke(() => {
               var i = taskArray(_t)._1
               while (i < taskArray(_t)._2) {
                 inputData(inputOffset + i) =
@@ -89,7 +91,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
           var t = 0
           while (t < taskArray.length) {
             val _t = t
-            Engine.model.invoke(() => {
+            results(_t) = Engine.model.invoke(() => {
               var i = taskArray(_t)._1
               while (i < taskArray(_t)._2) {
                 inputData(inputOffset + i) =
@@ -122,7 +124,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
           var t = 0
           while (t < taskArray.length) {
             val _t = t
-            Engine.model.invoke(() => {
+            results(_t) = Engine.model.invoke(() => {
               var i = taskArray(_t)._1
               while (i < taskArray(_t)._2) {
                 outputData(outputOffset + i) =
@@ -150,7 +152,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
           var t = 0
           while (t < taskArray.length) {
             val _t = t
-            Engine.model.invoke(() => {
+            results(_t) = Engine.model.invoke(() => {
               var i = taskArray(_t)._1
               while (i < taskArray(_t)._2) {
                 outputData(outputOffset + i) =
@@ -167,7 +169,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
         case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
       }
     }
-    Engine.model.sync()
+    Engine.model.sync(results)
     output
   }
 
@@ -245,7 +247,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
           var t = 0
           while (t < taskArray.length) {
             val _t = t
-            Engine.model.invoke(() => {
+            results(_t) = Engine.model.invoke(() => {
               var i = taskArray(_t)._1
               while (i < taskArray(_t)._2) {
                 gradInputData(gradInputOffset + i) =
@@ -271,7 +273,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
           var t = 0
           while (t < taskArray.length) {
             val _t = t
-            Engine.model.invoke(() => {
+            results(_t) = Engine.model.invoke(() => {
               var i = taskArray(_t)._1
               while (i < taskArray(_t)._2) {
                 gradInputData(gradInputOffset + i) =
@@ -303,7 +305,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
           var t = 0
           while (t < taskArray.length) {
             val _t = t
-            Engine.model.invoke(() => {
+            results(_t) = Engine.model.invoke(() => {
               var i = taskArray(_t)._1
               while (i < taskArray(_t)._2) {
                 gradInputData(gradInputOffset + i) =
@@ -330,7 +332,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
           var t = 0
           while (t < taskArray.length) {
             val _t = t
-            Engine.model.invoke(() => {
+            results(_t) = Engine.model.invoke(() => {
               var i = taskArray(_t)._1
               while (i < taskArray(_t)._2) {
                 gradInputData(gradInputOffset + i) =
@@ -348,7 +350,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
       }
     }
 
-    Engine.model.sync()
+    Engine.model.sync(results)
     gradInput
   }
 
