@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.models.vgg
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.{Module, ClassNLLCriterion}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.optim._
@@ -43,7 +43,7 @@ object Train {
         val trainDataSet = DataSet.localDataSet(train, true, batchSize)
 
         val model = if (param.modelSnapshot.isDefined) {
-          AbstractModule.load[Float](param.modelSnapshot.get)
+          Module.load[Float](param.modelSnapshot.get)
         } else {
           Vgg(classNum = 10)
         }
@@ -98,7 +98,7 @@ object Train {
         val trainDataSet = DataSet.distributedDataSet(train, true, sc, param.nodesNumber, batchSize)
 
         val model = if (param.modelSnapshot.isDefined) {
-          AbstractModule.load[Float](param.modelSnapshot.get)
+          Module.load[Float](param.modelSnapshot.get)
         } else {
           Vgg(classNum = 10)
         }

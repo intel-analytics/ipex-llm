@@ -40,7 +40,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     model.backward(input, grad)
     model.clearState()
     mp.saveModel(model)
-    val loadedModel = Module.load[Tensor[Float], Tensor[Float], Float](filePath)
+    val loadedModel = Module.load[Float](filePath)
     loadedModel.forward(input)
     loadedModel.backward(input, grad)
     val (weight2, gradweight2) = loadedModel.getParameters()
@@ -70,7 +70,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     model.backward(input, grad)
     model.clearState()
     mp.saveModel(model)
-    val loadedModel = Module.load[Tensor[Float], Tensor[Float], Float](filePath)
+    val loadedModel = Module.load[Float](filePath)
     loadedModel.forward(input)
     loadedModel.backward(input, grad)
     val (weight2, gradweight2) = loadedModel.getParameters()
@@ -96,7 +96,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     model.add(new Linear[Float](3, 10))
     model.add(new Linear[Float](10, 5))
     mp.saveModel(model, 10, true)
-    val loadedModel = Module.load[Tensor[Float], Tensor[Float], Float](filePath + ".10")
+    val loadedModel = Module.load[Float](filePath + ".10")
     loadedModel should be(model)
   }
 
@@ -107,7 +107,7 @@ class ModelPersistSpec extends FlatSpec with Matchers {
     mp.setPath(filePath)
     val model = AlexNet(1000)
     mp.saveModel(model, 10, true)
-    val loadedModel = Module.load[Tensor[Float], Tensor[Float], Float](filePath + ".10")
+    val loadedModel = Module.load[Float](filePath + ".10")
     loadedModel should be(model)
   }
 

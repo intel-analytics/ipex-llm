@@ -20,7 +20,7 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion}
+import com.intel.analytics.bigdl.nn.{Module, ClassNLLCriterion}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.spark.SparkContext
@@ -44,7 +44,7 @@ object Train {
           param.coreNumber, false)
 
         val model = if (param.modelSnapshot.isDefined) {
-          AbstractModule.load[Float](param.modelSnapshot.get)
+          Module.load[Float](param.modelSnapshot.get)
         } else {
           GoogleNet_v1_NoAuxClassifier(classNum = 1000)
         }
@@ -109,7 +109,7 @@ object Train {
           false)
 
         val model = if (param.modelSnapshot.isDefined) {
-          AbstractModule.load[Float](param.modelSnapshot.get)
+          Module.load[Float](param.modelSnapshot.get)
         } else {
           GoogleNet_v1_NoAuxClassifier(classNum = 1000)
         }
