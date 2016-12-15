@@ -434,11 +434,6 @@ class DistriOptimizer[T: ClassTag](
   private var models: RDD[DistriOptimizer.Cache[T]] = null
 
   override def optimize(): Module[T] = {
-    dataset.originRDD()
-      .sparkContext
-      .getConf
-      .set("spark.task.cpus", Engine.coreNumber().toString)
-
     optimMethod.clearHistory(state)
 
     if (pm == null) {

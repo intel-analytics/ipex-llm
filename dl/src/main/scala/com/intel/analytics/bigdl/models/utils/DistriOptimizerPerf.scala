@@ -110,11 +110,13 @@ object DistriOptimizerPerf {
     val labels = Tensor(param.batchSize).fill(1)
 
     val conf = Engine.sparkConf().setAppName("DistriOptimizer Performance Test")
+      .set("spark.task.cpus", param.corePerNode.toString)
     val sc = new SparkContext(conf)
     val broadcast = sc.broadcast(Batch(input, labels))
-    val rdd = sc.parallelize((1 to param.nodeNumber), param.nodeNumber).mapPartitions(iter => {
-      Iterator.single((broadcast.value))
-    }).persist()
+    val rdd = sc.parallelize((1 to param.nodeNumber), param.nodeNumber)
+      .mapPartitions(iter => {
+        Iterator.single((broadcast.value))
+      }).persist()
     rdd.count()
     val dummyDataSet = new DistributedDataSet[Batch[Float]] {
       override def size(): Long = 100000
@@ -123,8 +125,7 @@ object DistriOptimizerPerf {
       override def data(): RDD[Batch[Float]] = rdd
     }
 
-    Engine.setCoreNumber(param.corePerNode)
-    Engine.setNodeNumber(param.nodeNumber)
+    Engine.setCluster(param.nodeNumber, param.corePerNode)
     val optimizer = new DistriOptimizer[Float](
       model,
       dummyDataSet,

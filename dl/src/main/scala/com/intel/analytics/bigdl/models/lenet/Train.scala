@@ -106,8 +106,7 @@ object Train {
           )
         }
 
-        Engine.setCoreNumber(param.coreNumberPerNode)
-        Engine.setNodeNumber(param.nodesNumber)
+        Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
         val optimizer = new DistriOptimizer[Float](
           model = model,
           dataset = trainDataSet,

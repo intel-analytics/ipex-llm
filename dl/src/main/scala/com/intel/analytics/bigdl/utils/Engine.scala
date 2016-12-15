@@ -217,14 +217,12 @@ object Engine {
         .set("spark.task.maxFailures", "1")
         .set("spark.shuffle.blockTransferService", "nio")
         .set("spark.akka.frameSize", "10")
-        .set("spark.task.cpus", "28")
     } else {
       new SparkConf().setExecutorEnv("DL_ENGINE_TYPE", "mkldnn")
         .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
         .set("spark.task.maxFailures", "1")
         .set("spark.shuffle.blockTransferService", "nio")
         .set("spark.akka.frameSize", "10")
-        .set("spark.task.cpus", "28")
     }
   }
 
@@ -269,8 +267,9 @@ object Engine {
 
   def nodeNumber(): Option[Int] = nodeNum
 
-  def setNodeNumber(n: Int): Unit = {
+  def setCluster(n: Int, c: Int): Unit = {
     require(n > 0)
     nodeNum = Some(n)
+    physicalCoreNumber = c
   }
 }
