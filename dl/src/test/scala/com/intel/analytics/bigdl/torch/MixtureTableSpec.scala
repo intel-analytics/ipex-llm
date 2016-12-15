@@ -61,17 +61,10 @@ class MixtureTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val (luaTime, torchResult) = TH.run(code, Map("input1" -> input1, "expertTable" -> expertTable,
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Any, Any]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
 
     output should be (luaOutput1)
-
-    val luagradInput1 = luaOutput2.get(1.0).getOrElse(null)
-    val luagradInput2 = luaOutput2.get(2.0).getOrElse(null).asInstanceOf[HashMap[Any, Any]]
-
-    val gradInput1 = gradInput.apply(1.toDouble).asInstanceOf[Tensor[Double]]
-    gradInput1 should be(luagradInput1)
-    val gradInput2 = gradInput.apply(2.toDouble).asInstanceOf[Table]
-    gradInput2 should be(new Table(luagradInput2))
+    luaOutput2 should be (gradInput)
 
     println("Test case : MixtureTable, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
@@ -96,7 +89,7 @@ class MixtureTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput", "size", "dim"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Any, Any]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
 
     val start = System.nanoTime()
     val output = mse.forward(input)
@@ -105,7 +98,7 @@ class MixtureTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val scalaTime = end - start
 
     output should be (luaOutput1)
-    gradInput should be (new Table(luaOutput2))
+    gradInput should be (luaOutput2)
 
     println("Test case : MixtureTable, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")

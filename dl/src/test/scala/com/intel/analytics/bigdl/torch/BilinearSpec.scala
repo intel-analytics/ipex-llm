@@ -58,7 +58,7 @@ class BilinearSpec extends FlatSpec with BeforeAndAfter with Matchers{
       Array("output", "gradInput", "bias", "weight", "grad", "gradBias", "gradWeight"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Double, Tensor[Double]]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
     val luaBias = torchResult("bias").asInstanceOf[Tensor[Double]]
     val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
     val luaGradBias = torchResult("gradBias").asInstanceOf[Tensor[Double]]
@@ -82,13 +82,7 @@ class BilinearSpec extends FlatSpec with BeforeAndAfter with Matchers{
     gradBias should be(luaGradBias)
     gradWeight should be(luaGradWeight)
 
-    val luagradInput1 = luaOutput2.get(1.0).getOrElse(null)
-    val luagradInput2 = luaOutput2.get(2.0).getOrElse(null)
-
-    val gradInput1 = gradInput.apply(1.toDouble).asInstanceOf[Tensor[Double]]
-    val gradInput2 = gradInput.apply(2.toDouble).asInstanceOf[Tensor[Double]]
-    gradInput1 should be(luagradInput1)
-    gradInput2 should be(luagradInput2)
+    luaOutput2 should be (gradInput)
 
     println("Test case : Bilinear, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")

@@ -355,6 +355,8 @@ class SpatialConvolution[T: ClassTag](
       strideH == other.strideH &&
       padW == other.padW &&
       padH == other.padH &&
+      nGroup == other.nGroup &&
+      propagateBack == other.propagateBack &&
       weight == other.weight &&
       bias == other.bias &&
       gradWeight == other.gradWeight &&

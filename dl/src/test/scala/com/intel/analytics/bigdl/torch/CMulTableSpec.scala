@@ -59,11 +59,10 @@ class CMulTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Double, Tensor[Double]]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
 
-    luaOutput1 should be(output)
-    luaOutput2.get(1.0).getOrElse(null) should be(gradInput[Tensor[Double]](1.0))
-    luaOutput2.get(2.0).getOrElse(null) should be(gradInput[Tensor[Double]](2.0))
+    luaOutput1 should be (output)
+    luaOutput2 should be (gradInput)
 
     println("Test case : CMinTable, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
