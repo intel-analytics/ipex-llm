@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -37,7 +38,6 @@ class MultiMarginCriterion[T: ClassTag](val p: Int = 1,
   if (null != weights) {
     require(weights.dim() == 1, "weights input should be 1-D Tensor")
   }
-  var gradInput = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.nDimension() == 1 || input.nDimension() == 2, "vector or matrix expected")
@@ -168,5 +168,15 @@ class MultiMarginCriterion[T: ClassTag](val p: Int = 1,
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(super.hashCode(), p, weights, sizeAverage)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+object MultiMarginCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      p: Int = 1,
+      weights: Tensor[T] = null,
+      margin: Double = 1.0,
+      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : MultiMarginCriterion[T] = {
+    new MultiMarginCriterion[T](p, weights, margin, sizeAverage)
   }
 }

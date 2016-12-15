@@ -37,7 +37,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>com.intel.analytics.bigdl.mkl</groupId>
+            <groupId>com.intel.analytics.bigdl.native</groupId>
             <artifactId>mkl-java_0.1</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -17,25 +17,25 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Activities, Table}
-import com.intel.analytics.bigdl._
+
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-abstract class Container[A <: Activities : ClassTag,
-    B <: Activities : ClassTag, T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends Module[A, B, T] {
+
+private[nn] abstract class Container[A <: Activity : ClassTag,
+    B <: Activity : ClassTag, T: ClassTag](
+  implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T] {
 
   // list of sub modules
-  val modules: ArrayBuffer[Module[Activities, Activities, T]]
-  = ArrayBuffer[Module[Activities, Activities, T]]()
+  val modules: ArrayBuffer[AbstractModule[Activity, Activity, T]]
+  = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
 
-  def add(module: Module[_ <: Activities, _ <: Activities, T]): this.type = {
-    modules += module.asInstanceOf[Module[Activities, Activities, T]]
+  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
+    modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     this
   }
 
@@ -63,52 +63,13 @@ abstract class Container[A <: Activities : ClassTag,
     this
   }
 
-
-//  /**
-//    * Find a module by given a parameter offset
-//    *
-//    * @param paramOffset parameter offset in the (weight, grad) vector returned by the
-//    *                    getParamter function
-//    * @param indexes     ignore it
-//    * @return module ref, offset(ignore), indexes from the current module
-//    */
-//  override def findModel(
-//                 paramOffset: Int,
-//                 indexes: Array[Int] = Array()):
-//  (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
-//
-//  override def mapModules(f: Module[_ <: Activities, _ <: Activities, T] => Unit): Unit = {
-//    f(this)
-//
-//    if (modules != null) {
-//      modules.foreach(_.mapModules(f))
-//    }
-//  }
-//
-//  override def findModules(name: String): ArrayBuffer[Module[_ <: Activities, _ <: Activities, T]] = {
-//    def matchName(module: Module[_ <: Activities, _ <: Activities, T]) =
-//      module.getClass.getName.equals(name)
-//
-//    val nodes = new ArrayBuffer[Module[_ <:Activities, _ <:Activities, T]]()
-//
-//    if (matchName(this)) nodes.append(this)
-//    if (modules != null) {
-//      modules
-//        .foreach(m => {
-//          if (matchName(m)) nodes.append(m)
-//          else if (m.isInstanceOf[Container[_ <: Activities, _ <: Activities, T]]) {
-//            val tempNodes = m.findModules(name)
-//            nodes ++= tempNodes
-//          }
-//      })
-//    }
-//
-//    nodes
-//  }
-
+  override def checkEngineType(): this.type = {
+    modules.foreach(_.checkEngineType())
+    this
+  }
 
   override def getTimes():
-    Array[(Module[_ <: Activities, _ <: Activities, T], Long, Long)] = {
+    Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
     this.modules.flatMap(_.getTimes()).toArray
   }
 

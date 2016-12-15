@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -24,7 +25,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect._
 
 class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = false)(
-  implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
+  implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   gradInput = T()
 
@@ -76,9 +77,10 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = 
   }
 }
 
-object Test {
-  def main(args: Array[String]): Unit = {
-    val a = T()
-    a.update(1, Tensor[Double]())
+
+object CAddTable {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : CAddTable[T] = {
+    new CAddTable[T](inplace)
   }
 }

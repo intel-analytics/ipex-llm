@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -104,5 +105,13 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
 
   override def toString(): String = {
     s"nn.Reshape(${size.mkString("x")})"
+  }
+}
+
+object Reshape {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      size: Array[Int],
+      batchMode: Option[Boolean] = None)(implicit ev: TensorNumeric[T]) : Reshape[T] = {
+    new Reshape[T](size, batchMode)
   }
 }

@@ -18,7 +18,8 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, LogSoftMax, Sequential}
-import com.intel.analytics.bigdl.ps.OneReduceParameterManager
+import com.intel.analytics.bigdl.parameters.OneReduceParameterManager
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import org.apache.log4j.{Level, Logger}
@@ -174,7 +175,7 @@ class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter  {
       }
     }
 
-    val mlp = new Sequential[Tensor[Double], Tensor[Double], Double]
+    val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
 
@@ -195,17 +196,17 @@ class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter  {
         (input, target)
       }, 4, 4, 1)
     val pm = new OneReduceParameterManager[Double](parameters, dataSet.partitions())
-    val optimizer = new WeightAvgEpochOptimizer[Double](mlp, new ClassNLLCriterion,
+    val optimizer = new WeightAvgEpochOptimizer[Double](mlp, ClassNLLCriterion[Double](),
       new SGD, pm, dataSet, new Metrics, T("learningRate" -> 0.01))
     optimizer.setMaxEpoch(200)
     optimizer.addEvaluation("top1", EvaluateMethods.calcAccuracy)
     optimizer.setTestDataSet(dataSet)
     optimizer.optimize()
 
-    val result1 = mlp.forward(Tensor(Storage(input1)))
+    val result1 = mlp.forward(Tensor(Storage(input1))).toTensor[Double]
     result1.max(1)._2(Array(1)) should be(1.0)
 
-    val result2 = mlp.forward(Tensor(Storage(input2)))
+    val result2 = mlp.forward(Tensor(Storage(input2))).toTensor[Double]
     result2.max(1)._2(Array(1)) should be(2.0)
     sc.stop()
   }

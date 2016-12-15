@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
@@ -121,6 +122,11 @@ class LogSoftMax[@specialized(Float, Double) T: ClassTag](
 }
 
 object LogSoftMax {
+
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : LogSoftMax[T] = {
+    new LogSoftMax[T]()
+  }
   private val A0 = 1.0
   private val A1 = 0.125
   private val A2 = 0.0078125

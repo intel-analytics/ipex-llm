@@ -17,11 +17,11 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.nn.{Criterion, Module}
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{File, T, Table}
-import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
+import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -35,14 +35,14 @@ import scala.reflect.ClassTag
  * @tparam T numeric type of model
  */
 abstract class DistributedOptimizer[T](
-  val module: Module[Tensor[T], Tensor[T], T],
-  val criterion: Criterion[Tensor[T], T],
-  val dataSet: DataSet[_, T]) extends Serializable with Logging
+  val module: Module[T],
+  val criterion: Criterion[T],
+  val dataSet: DataSet[_, T]) extends Serializable
   with HasCrossValidation[T] with ModelPersist[T] {
 
   import DistributedOptimizer._
 
-  def optimize(): Module[Tensor[T], Tensor[T], T]
+  def optimize(): Module[T]
 
   // We pre-create models on each partition of the data set
   private def init() = {
@@ -55,9 +55,9 @@ abstract class DistributedOptimizer[T](
       Iterator.single(CachedModel(localModule, localCriterion, weights, grads, T()))
     }).persist()
     models.setName("modelRDD")
-    logInfo("Cache models...")
+    logger.info("Cache models...")
     models.count()
-    logInfo("Cache models... done")
+    logger.info("Cache models... done")
     models
   }
 
@@ -67,6 +67,8 @@ abstract class DistributedOptimizer[T](
 }
 
 object DistributedOptimizer {
+
+  private val logger = Logger.getLogger(getClass)
 
   /**
    * Represent a cached module and its cost function
@@ -78,8 +80,7 @@ object DistributedOptimizer {
    * @param state     contains train state
    * @tparam T
    */
-  case class CachedModel[T](model: Module[Tensor[T], Tensor[T], T],
-    criterion: Criterion[Tensor[T], T], weight: Tensor[T],
-    gradient: Tensor[T], state: Table)
-
+  case class CachedModel[T](model: Module[T],
+    criterion: Criterion[T], weight: Tensor[T],
+    gradient: Tensor[T], state: Table, var moduleTimeList: Array[Long] = null)
 }

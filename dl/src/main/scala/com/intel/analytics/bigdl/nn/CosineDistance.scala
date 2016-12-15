@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -26,7 +27,7 @@ import scala.reflect.ClassTag
  * outputs the cosine distance between inputs
  */
 class CosineDistance[T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
+  implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   @transient
   private var buffer: Tensor[T] = null
@@ -119,5 +120,12 @@ class CosineDistance[T: ClassTag](
 
   override def toString(): String = {
     s"nn.CosineDistance"
+  }
+}
+
+object CosineDistance {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : CosineDistance[T] = {
+    new CosineDistance[T]()
   }
 }

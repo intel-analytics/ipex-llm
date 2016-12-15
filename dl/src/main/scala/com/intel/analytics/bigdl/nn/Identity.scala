@@ -18,24 +18,31 @@
 package com.intel.analytics.bigdl.nn
 
 
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
+
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Activities
 
 import scala.reflect.ClassTag
 
 class Identity[@specialized(Float, Double) T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends Module[Activities, Activities, T] {
+  (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Activity, T] {
 
-  override def updateOutput(input: Activities): Activities = {
+  override def updateOutput(input: Activity): Activity = {
     output = input
     output
   }
 
-
-  override def updateGradInput(input: Activities,
-    gradOutput: Activities): Activities = {
+  override def updateGradInput(input: Activity,
+    gradOutput: Activity): Activity = {
 
     gradInput = gradOutput
     gradInput
+  }
+}
+
+object Identity {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : Identity[T] = {
+    new Identity[T]()
   }
 }

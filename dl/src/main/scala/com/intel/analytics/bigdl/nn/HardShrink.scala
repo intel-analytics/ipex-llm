@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -67,5 +68,12 @@ class HardShrink[T: ClassTag](lambda: Double = 0.5)
 
   override def toString(): String = {
     s"nn.HardShrink"
+  }
+}
+
+object HardShrink {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      lambda: Double = 0.5)(implicit ev: TensorNumeric[T]) : HardShrink[T] = {
+    new HardShrink[T]()
   }
 }

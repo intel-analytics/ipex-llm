@@ -17,38 +17,72 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
-
-import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
+import scala.reflect.ClassTag
+
+/**
+ * Multiplies input Tensor by a (non-learnable) scalar constant.
+ * This module is sometimes useful for debugging purposes.
+ * @param scalar scalar constant
+ * @param inplace Can optionally do its operation in-place without using extra state memory
+ */
 class MulConstant[@specialized(Float, Double) T: ClassTag](
-  constantScalar:T,
-  ip: Boolean = false)
-  (implicit ev: TensorNumeric[T]) extends Module[Tensor[T], Tensor[T], T] {
+  val scalar : T, val inplace : Boolean = false)(
+  implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (ip) {
-      input.mul(constantScalar)
+    if (inplace) {
+      input.mul(scalar)
       output.set(input)
     } else {
-      output.resizeAs(input)
-            .copy(input)
-            .mul(constantScalar)
+      output.resizeAs(input).copy(input)
+      output.mul(scalar)
     }
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    if (ip) {
-      gradOutput.mul(constantScalar)
+    if (inplace) {
+      gradOutput.mul(scalar)
       gradInput.set(gradOutput)
-      input.div(constantScalar)
+      input.div(scalar)
     } else {
-      gradInput = gradInput.resizeAs(gradOutput)
-        .copy(gradOutput)
-        .mul(constantScalar)
+      gradInput.resizeAs(gradOutput).copy(gradOutput)
+      gradInput.mul(scalar)
     }
     gradInput
+  }
+
+  override def toString(): String = {
+    s"nn.MulConstant($scalar, $inplace)"
+  }
+
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[MulConstant[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: MulConstant[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        scalar == that.scalar &&
+        inplace == that.inplace
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), scalar, inplace)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+object MulConstant {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      scalar : T,
+      inplace : Boolean = false)(implicit ev: TensorNumeric[T]) : MulConstant[T] = {
+    new MulConstant[T](scalar, inplace)
   }
 }

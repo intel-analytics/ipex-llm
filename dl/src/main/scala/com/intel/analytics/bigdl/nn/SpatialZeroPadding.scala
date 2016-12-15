@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -162,5 +163,15 @@ class SpatialZeroPadding[@specialized(Float, Double) T: ClassTag](
 
   override def toString(): String = {
     s"nn.SpatialZeroPadding(l=$padLeft, r=$padRight, t=$padTop, b=$padBottom)"
+  }
+}
+
+object SpatialZeroPadding {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      padLeft: Int,
+      padRight: Int,
+      padTop: Int,
+      padBottom: Int)(implicit ev: TensorNumeric[T]) : SpatialZeroPadding[T] = {
+    new SpatialZeroPadding[T](padLeft, padRight, padTop, padBottom)
   }
 }

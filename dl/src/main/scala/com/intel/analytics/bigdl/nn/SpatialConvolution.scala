@@ -17,9 +17,10 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import com.intel.analytics.bigdl.utils.{Engine, EngineType, MklBlas, RandomGenerator}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.concurrent.duration.Duration
@@ -772,5 +773,24 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           ones.asInstanceOf[Tensor[Float]])
       case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
+  }
+}
+
+object SpatialConvolution {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      nInputPlane: Int,
+      nOutputPlane: Int,
+      kernelW: Int,
+      kernelH: Int,
+      strideW: Int = 1,
+      strideH: Int = 1,
+      padW: Int = 0,
+      padH: Int = 0,
+      nGroup: Int = 1,
+      propagateBack: Boolean = true,
+      initMethod: InitializationMethod = Default
+  )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
+    new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
+      strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)
   }
 }

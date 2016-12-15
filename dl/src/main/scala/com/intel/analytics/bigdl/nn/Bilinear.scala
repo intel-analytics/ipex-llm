@@ -16,10 +16,11 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -37,7 +38,7 @@ class Bilinear[T: ClassTag](inputSize1: Int,
   inputSize2: Int,
   outputSize: Int,
   biasRes: Boolean = true
- )(implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
+ )(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   require((inputSize1 > 0) && (inputSize2 > 0) && (outputSize > 0),
     "inputSize1 and inputSize2 and outputSize should be positive integer numbers")
@@ -179,5 +180,15 @@ class Bilinear[T: ClassTag](inputSize1: Int,
 
   override def toString(): String = {
     s"nn.Bilinear($inputSize1, $inputSize2, $outputSize, $biasRes)"
+  }
+}
+
+object Bilinear {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    inputSize1: Int,
+    inputSize2: Int,
+    outputSize: Int,
+    biasRes: Boolean = true)(implicit ev: TensorNumeric[T]) : Bilinear[T] = {
+    new Bilinear[T](inputSize1, inputSize2, outputSize, biasRes)
   }
 }

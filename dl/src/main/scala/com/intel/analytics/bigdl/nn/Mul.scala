@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -84,5 +85,12 @@ class Mul[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def toString(): String = {
     s"nn.Mul"
+  }
+}
+
+object Mul {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : Mul[T] = {
+    new Mul[T]()
   }
 }

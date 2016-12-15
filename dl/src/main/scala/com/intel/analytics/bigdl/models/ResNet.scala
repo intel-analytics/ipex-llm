@@ -17,11 +17,12 @@
 
 package com.intel.analytics.bigdl.models
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.MulConstant
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Activities, Table}
+import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
 import scala.collection.mutable
@@ -29,84 +30,18 @@ import scala.reflect.ClassTag
 
 
 object ResNet {
-  def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[Tensor[T], Tensor[T], T])
+
+  def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
                                                              (implicit ev: TensorNumeric[T]): Unit = {
-    def sharingKey(m: Module[_ <: Activities, _ <: Activities, T]) = m.getClass.getName
-
-    val cache = mutable.Map[Any, Storage[T]]()
-    val packageName: String = model.getName().stripSuffix("Sequential")
-
-    cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
-    cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
-
-    var index = 0
-    def matchModels(model: Module[_ <: Activities, _ <: Activities, T]): Unit = {
-      model match {
-        case container: Container[Activities, Activities, T]
-          => {
-          container.modules.foreach( m => {
-
-            if (m.gradInput.isInstanceOf[Tensor[T]] && !m.getClass.getName.equals(packageName + "ConcatTable")) {
-              val key = sharingKey(m)
-              if (!cache.contains(key)){
-                cache.put(key, Storage(Array(ev.fromType[Int](1))))
-              }
-              val tmpModel = m.asInstanceOf[Module[Tensor[T], Tensor[T], T]]
-              tmpModel.gradInput = Tensor[T](cache.get(key).get, 1, Array(0))
-            }
-            if (m.getClass.getName.equals(packageName + "ConcatTable")) {
-              if (!cache.contains(index % 2)) cache.put(index%2, Storage(Array(ev.fromType[Int](1))))
-              val tmpModel = m.asInstanceOf[ConcatTable[Tensor[T], T]]
-              tmpModel.gradInput = Tensor[T](cache.get(index % 2).get, 1, Array(0))
-              index = index + 1
-            }
-            matchModels(m)
-          })
-        }
-        case spatialConvolution: SpatialConvolution[T]
-          => {
-          spatialConvolution.setSharedVar
-          spatialConvolution.fInput = Tensor[T](cache.get("fInput").get)
-          spatialConvolution.fGradInput = Tensor[T](cache.get("fGradInput").get)
-        }
-        case _ => Unit
-      }
-    }
-
-    matchModels(model)
+    Utils.shareGradInput(model)
   }
-
-  def findModules[@specialized(Float, Double) T: ClassTag](model: Module[_ <: Activities, _ <: Activities, T])
-                                                          (implicit ev: TensorNumeric[T]): Unit = {
-    model match {
-      case container: Container[Activities, Activities, T]
-      => container.modules.foreach(m => findModules(m))
-      case spatialConvolution: SpatialConvolution[T]
-      => {
-        val n: Float = spatialConvolution.kernelW * spatialConvolution.kernelW * spatialConvolution.nOutputPlane
-        spatialConvolution.weight.apply1(_ => ev.fromType[Float](RNG.normal(0, Math.sqrt(2.0f / n)).toFloat))
-        spatialConvolution.bias.apply1(_ => ev.fromType[Float](0))
-      }
-      case spatialBatchNormalization: SpatialBatchNormalization[T]
-      => {
-        spatialBatchNormalization.weight.apply1(_ => ev.fromType[Float](1.0f))
-        spatialBatchNormalization.bias.apply1(_ => ev.fromType[Float](0.0f))
-      }
-      case linear: Linear[T]
-      => {
-        linear.bias.apply1(_ => ev.fromType[Float](0))
-      }
-      case _ => Unit
-    }
-  }
-
-  def modelInit[@specialized(Float, Double) T: ClassTag](model: Module[_ <:Activities, _ <:Activities, T])
+  def modelInit[@specialized(Float, Double) T: ClassTag](model: Module[T])
                                                         (implicit ev: TensorNumeric[T]): Unit = {
-    findModules(model)
+    Utils.findModules(model)
   }
 
   var iChannels = 0
-  def apply[T: ClassTag](classNum: Int, opt: Table)(implicit ev: TensorNumeric[T]): Module[Activities, Activities, T] = {
+  def apply[T: ClassTag](classNum: Int, opt: Table)(implicit ev: TensorNumeric[T]): Module[T] = {
 
     val depth = opt.get("depth").getOrElse(18)
     val shortCutType = opt.get("shortcutType")
@@ -114,84 +49,83 @@ object ResNet {
     val dataSet = opt.get("dataset")
     val dataset = dataSet.getOrElse(DatasetType.CIFAR10).asInstanceOf[DatasetType]
 
-    def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[Activities, Activities, T] = {
+    def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[T] = {
       val useConv = shortcutType == ShortcutType.C || (shortcutType == ShortcutType.B && nInputPlane != nOutputPlane)
 
       if (useConv) {
-        new Sequential[Activities, Activities, T]()
-          .add(new SpatialConvolution[T](nInputPlane, nOutputPlane, 1, 1, stride, stride))
-          .add(new SpatialBatchNormalization(nOutputPlane))
+        Sequential()
+          .add(SpatialConvolution(nInputPlane, nOutputPlane, 1, 1, stride, stride))
+          .add(SpatialBatchNormalization(nOutputPlane))
       } else if (nInputPlane != nOutputPlane) {
-        new Sequential[Activities, Activities, T]()
-          .add(new SpatialAveragePooling[T](1, 1, stride, stride))
-          .add(new Concat[T](2)
-            .add(new Identity[T]())
-            .add(new MulConstant[T](ev.fromType(0))))
+        Sequential()
+          .add(SpatialAveragePooling(1, 1, stride, stride))
+          .add(Concat(2)
+            .add(Identity())
+            .add(MulConstant(ev.fromType(0))))
       }  else {
-        new Identity()
+        Identity()
       }
     }
 
-    def basicBlock(n: Int, stride: Int): Module[Activities, Activities, T] = {
+    def basicBlock(n: Int, stride: Int): Module[T] = {
       val nInputPlane = iChannels
       iChannels = n
 
-      val s = new Sequential[Activities, Activities, T]()
-      s.add(new SpatialConvolution[T](nInputPlane, n, 3, 3, stride, stride, 1, 1))
-      s.add(new SpatialBatchNormalization[T](n))
-      s.add(new ReLU[T](true))
-      s.add(new SpatialConvolution[T](n ,n, 3, 3, 1, 1, 1, 1))
-      s.add(new SpatialBatchNormalization[T](n))
+      val s = Sequential()
+      s.add(SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1))
+      s.add(SpatialBatchNormalization(n))
+      s.add(ReLU(true))
+      s.add(SpatialConvolution(n ,n, 3, 3, 1, 1, 1, 1))
+      s.add(SpatialBatchNormalization(n))
 
-      new Sequential[Activities, Activities, T]()
-        .add(new ConcatTable[Tensor[T], T]()
+      Sequential()
+        .add(ConcatTable()
           .add(s)
           .add(shortcut(nInputPlane, n, stride)))
-        .add(new CAddTable(true))
-
-        .add(new ReLU[T](true))
+        .add(CAddTable(true))
+        .add(ReLU(true))
     }
 
-    def bottleneck(n: Int, stride: Int): Module[Activities, Activities, T] = {
+    def bottleneck(n: Int, stride: Int): Module[T] = {
       val nInputPlane = iChannels
       iChannels = n * 4
 
-      val s = new Sequential[Activities, Activities, T]()
-      s.add(new SpatialConvolution[T](nInputPlane, n, 1, 1, 1, 1, 0, 0))
-        .add(new SpatialBatchNormalization[T](n))
-        .add(new ReLU[T](true))
-        .add(new SpatialConvolution[T](n, n, 3, 3, stride, stride, 1, 1))
-        .add(new SpatialBatchNormalization[T](n))
-        .add(new ReLU[T](true))
-        .add(new SpatialConvolution[T](n, n*4, 1, 1, 1, 1, 0, 0))
-        .add(new SpatialBatchNormalization[T](n * 4))
+      val s = Sequential()
+      s.add(SpatialConvolution(nInputPlane, n, 1, 1, 1, 1, 0, 0))
+        .add(SpatialBatchNormalization(n))
+        .add(ReLU(true))
+        .add(SpatialConvolution(n, n, 3, 3, stride, stride, 1, 1))
+        .add(SpatialBatchNormalization(n))
+        .add(ReLU(true))
+        .add(SpatialConvolution(n, n*4, 1, 1, 1, 1, 0, 0))
+        .add(SpatialBatchNormalization(n * 4))
 
-      new Sequential[Activities, Activities, T]()
-        .add(new ConcatTable[Tensor[T], T]()
+      Sequential()
+        .add(ConcatTable()
           .add(s)
           .add(shortcut(nInputPlane, n*4, stride)))
-        .add(new CAddTable(true))
-        .add(new ReLU[T](true))
+        .add(CAddTable(true))
+        .add(ReLU(true))
     }
 
-    def layer(block: (Int, Int) => Module[Activities, Activities, T], features: Int, count: Int, stride: Int = 1): Module[Activities, Activities, T] = {
-      val s = new Sequential[Activities, Activities, T]()
+    def layer(block: (Int, Int) => Module[T], features: Int, count: Int, stride: Int = 1): Module[T] = {
+      val s = Sequential()
       for (i <- 1 to count) {
         s.add(block(features, if (i == 1) stride else 1))
       }
       s
     }
 
-    val model = new Sequential[Activities, Activities, T]()
+    val model = Sequential()
 
     if (dataset == DatasetType.ImageNet) {
       val cfg = Map(
-        18 -> ((2, 2, 2, 2), 512, basicBlock: (Int, Int) => Module[Activities, Activities, T]),
-        34 -> ((3, 4, 6, 3), 512, basicBlock: (Int, Int) => Module[Activities, Activities, T]),
-        50 -> ((3, 4, 6, 3), 2048, bottleneck: (Int, Int) => Module[Activities, Activities, T]),
-        101 -> ((3, 4, 23, 3), 2048, bottleneck: (Int, Int) => Module[Activities, Activities, T]),
-        152 -> ((3, 8, 36, 3), 2048, bottleneck: (Int, Int) => Module[Activities, Activities, T]),
-        200 -> ((3, 24, 36, 3), 2048, bottleneck: (Int, Int) => Module[Activities, Activities, T])
+        18 -> ((2, 2, 2, 2), 512, basicBlock: (Int, Int) => Module[T]),
+        34 -> ((3, 4, 6, 3), 512, basicBlock: (Int, Int) => Module[T]),
+        50 -> ((3, 4, 6, 3), 2048, bottleneck: (Int, Int) => Module[T]),
+        101 -> ((3, 4, 23, 3), 2048, bottleneck: (Int, Int) => Module[T]),
+        152 -> ((3, 8, 36, 3), 2048, bottleneck: (Int, Int) => Module[T]),
+        200 -> ((3, 24, 36, 3), 2048, bottleneck: (Int, Int) => Module[T])
       )
 
       assert(cfg.keySet.contains(depth))
@@ -202,32 +136,32 @@ object ResNet {
 
       //-- The ResNet ImageNet Model
 
-      model.add(new SpatialConvolution[T](3, 64, 7, 7, 2, 2, 3, 3))
-        .add(new SpatialBatchNormalization[T](64))
-        .add(new ReLU[T](true))
-        .add(new SpatialMaxPooling[T](3, 3, 2, 2, 1, 1))
+      model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3))
+        .add(SpatialBatchNormalization(64))
+        .add(ReLU(true))
+        .add(SpatialMaxPooling(3, 3, 2, 2, 1, 1))
         .add(layer(block, 64, loopConfig._1))
         .add(layer(block, 128, loopConfig._2, 2))
         .add(layer(block, 256, loopConfig._3, 2))
         .add(layer(block, 512, loopConfig._4, 2))
-        .add(new SpatialAveragePooling[T](7, 7, 1, 1))
-        .add(new View[T](nFeatures).setNumInputDims(3))
-        .add(new Linear[T](nFeatures, classNum))
+        .add(SpatialAveragePooling(7, 7, 1, 1))
+        .add(View(nFeatures).setNumInputDims(3))
+        .add(Linear(nFeatures, classNum))
     } else if (dataset == DatasetType.CIFAR10) {
       assert((depth-2)%6 == 0, "depth should be one of 20, 32, 44, 56, 110, 1202")
       val n = (depth-2)/6
       iChannels = 16
       println(" | ResNet-" + depth + " CIFAR-10")
 
-      model.add(new SpatialConvolution[T](3, 16, 3, 3, 1, 1, 1, 1))
-      model.add(new SpatialBatchNormalization[T](16))
-      model.add(new ReLU[T](true))
+      model.add(SpatialConvolution(3, 16, 3, 3, 1, 1, 1, 1))
+      model.add(SpatialBatchNormalization(16))
+      model.add(ReLU(true))
       model.add(layer(basicBlock, 16, n))
       model.add(layer(basicBlock, 32, n, 2))
       model.add(layer(basicBlock, 64, n, 2))
-      model.add(new SpatialAveragePooling[T](8, 8, 1, 1))
-      model.add(new View[T](64).setNumInputDims(3))
-      model.add(new Linear[T](64, 10))
+      model.add(SpatialAveragePooling(8, 8, 1, 1))
+      model.add(View(64).setNumInputDims(3))
+      model.add(Linear(64, 10))
     } else {
       sys.error("invalid dataset: " + dataset)
     }

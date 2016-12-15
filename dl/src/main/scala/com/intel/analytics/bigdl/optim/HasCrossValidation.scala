@@ -17,16 +17,21 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Activities
-import org.apache.spark.Logging
+import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
 
-trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable with Logging {
+object HasCrossValidation{
+  val logger = Logger.getLogger(getClass)
+}
+
+trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable{
+  import HasCrossValidation._
   private var testInterval: Int = 1
 
   def setTestInterval(testInterval: Int): this.type = {
@@ -52,7 +57,7 @@ trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable wit
     this
   }
 
-  def test(module: Module[_ <: Activities, _ <: Activities, T],
+  def test(module: AbstractModule[_ <: Activity, _ <: Activity, T],
     iter: Int, wallClockNanoTime: Option[Long] = None): Array[Double] = {
     if (testDataSet.isDefined && iter % testInterval == 0) {
       evalMethods.map(evalM => {
@@ -64,22 +69,22 @@ trait HasCrossValidation[@specialized(Float, Double) T] extends Serializable wit
             localModel.evaluate()
             val localEvaluation = evaluationBroadcast.value
             Iterator.single(data.foldLeft((0, 0))((count, t) => {
-              val result = localEvaluation(localModel.forward(t._1), t._2)
+              val result = localEvaluation(localModel.forward(t._1).asInstanceOf[Tensor[T]], t._2)
               (count._1 + result._1, count._2 + result._2)
             }))
           }).reduce((a, b) => (a._1 + b._1, a._2 + b._2))
 
         val accuracy = correctSum.toDouble / totalSum
         if (wallClockNanoTime.isDefined) {
-          logInfo(s"[Wall Clock ${wallClockNanoTime.get.toDouble / 1e9}s}] ${
+          logger.info(s"[Wall Clock ${wallClockNanoTime.get.toDouble / 1e9}s}] ${
             evalM._1
           } correct is $correctSum total is $totalSum")
-          logInfo(s"[Wall Clock ${wallClockNanoTime.get.toDouble / 1e9}s}] ${
+          logger.info(s"[Wall Clock ${wallClockNanoTime.get.toDouble / 1e9}s}] ${
             evalM._1
           } accuracy is $accuracy")
         } else {
-          logInfo(s"${evalM._1} correct is $correctSum total is $totalSum")
-          logInfo(s"${evalM._1} cross validation result is $accuracy")
+          logger.info(s"${evalM._1} correct is $correctSum total is $totalSum")
+          logger.info(s"${evalM._1} cross validation result is $accuracy")
         }
         accuracy
       }).toArray

@@ -20,9 +20,10 @@ package com.intel.analytics.bigdl.example
 import java.awt.color.ColorSpace
 import java.util
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.models.ResNet
 import com.intel.analytics.bigdl.models.ResNet.ShortcutType
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion, Module}
+import com.intel.analytics.bigdl.nn.CrossEntropyCriterion
 import com.intel.analytics.bigdl.optim.{EvaluateMethods, SGD}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -94,7 +95,7 @@ object ImageNetLocal {
       case "googlenet-cf" => GoogleNet.getModelCaffe[Float](classNum)
       case "resnet" => {
         val curModel = ResNet[Float](classNum, T("shortcutType" -> ShortcutType.B, "depth" -> modelDepth))
-          .asInstanceOf[Module[Tensor[Float], Tensor[Float], Float]]
+          .asInstanceOf[Module[Float]]
         ResNet.shareGradInput(curModel)
         ResNet.modelInit(curModel)
 //        ResNet.convInit(curModel)
@@ -109,7 +110,7 @@ object ImageNetLocal {
     val (weights, grad) = model.getParameters()
     println(s"modelsize ${weights.nElement()}")
     println(model)
-    val criterion = new CrossEntropyCriterion[Float]()
+    val criterion = CrossEntropyCriterion[Float]()
     val epochNum = 90
     val featureShape = Array(3, 224, 224)
     val targetShape = Array(1)
@@ -201,7 +202,7 @@ object ImageNetLocal {
         //val (input, target) = iter.next()
         val readImgTime = System.nanoTime()
         model.zeroGradParameters()
-        val output = model.forward(input).asInstanceOf[Tensor[Float]]
+        val output = model.forward(input).toTensor[Float]
         val loss = criterion.forward(output, target)
         val gradOutput = criterion.backward(output, target)
         model.backward(input, gradOutput)
@@ -261,11 +262,8 @@ object ImageNetLocal {
         var k = 0
         var c = 0
         while (k < dataSetVal.getTotal) {
-          val pathDir = "/disk2/test/torchdata/test"
-          val input = loadTH(pathDir + "/input/epoch-"+i.toString, c+1).asInstanceOf[Tensor[Float]]
-          val target = loadTH(pathDir + "/label/epoch-"+i.toString, c+1).asInstanceOf[Tensor[Float]]
-          //val (input, target) = iterVal.next()
-          val output = model.forward(input).asInstanceOf[Tensor[Float]]
+          val (input, target) = iterVal.next()
+          val output = model.forward(input).toTensor[Float]
           top1Correct += EvaluateMethods.calcAccuracy(output, target)._1
           top5Correct += EvaluateMethods.calcTop5Accuracy(output, target)._1
           while (!stageImgsVal.isEmpty) {

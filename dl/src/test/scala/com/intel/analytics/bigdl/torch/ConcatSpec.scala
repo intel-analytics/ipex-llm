@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -35,8 +36,8 @@ class ConcatSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 2
     RNG.setSeed(seed)
     val module = new Concat[Double](2)
-    val layer1 = new Sequential[Tensor[Double], Tensor[Double], Double]()
-    val layer2 = new Sequential[Tensor[Double], Tensor[Double], Double]()
+    val layer1 = new Sequential[Double]()
+    val layer2 = new Sequential[Double]()
     layer1.add(new SpatialBatchNormalization[Double](3, 1e-3))
     layer2.add(new SpatialBatchNormalization[Double](3, 1e-3))
     module.add(layer1).add(layer2)
@@ -68,7 +69,7 @@ class ConcatSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val parametersInitial = torchResult("parameters_initial").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
     val luaModule = torchResult("module")
-      .asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
+      .asInstanceOf[Module[Double]]
 
     val (parameters, gradParameters) = module.getParameters()
     require(gradParametersInitial == gradParameters)
@@ -94,8 +95,8 @@ class ConcatSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "A Concat Container" should "generate correct output and grad" in {
     val module = new Concat[Double](2)
-    val layer1 = new Sequential[Tensor[Double], Tensor[Double], Double]()
-    val layer2 = new Sequential[Tensor[Double], Tensor[Double], Double]()
+    val layer1 = new Sequential[Double]()
+    val layer2 = new Sequential[Double]()
     layer1.add(new LogSoftMax())
     layer2.add(new LogSoftMax())
     module.add(layer1).add(layer2)
@@ -128,7 +129,7 @@ class ConcatSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
     val luaModule = torchResult("module")
-      .asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
+      .asInstanceOf[Module[Double]]
 
     luaOutput should be(output)
     luaGradInput should be(gradInput)

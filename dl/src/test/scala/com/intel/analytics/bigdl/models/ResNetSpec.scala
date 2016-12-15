@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.models
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.models.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -214,7 +215,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     TH.runNM(code, immutable.Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradInput", "model"))
 
-    ResNet.shareGradInput(model.asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]])
+    ResNet.shareGradInput(model.asInstanceOf[Module[Double]])
   //    ResNet.modelInit(model)
   //  ResNet.convInit(model)
   //  ResNet.bnInit("com.intel.analytics.sparkdl.nn.SpatialBatchNormalization", model)
@@ -231,7 +232,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     //val criterion = new ClassNLLCriterion[Double]()
     val (weights, grad) = model.getParameters()
-    val criterion = new CrossEntropyCriterion[Double]()
+    val criterion = CrossEntropyCriterion[Double]()
 
     val state = T("learningRate" -> 1e-2, "momentum" -> 0.9, "weightDecay" -> 5e-4,
       "dampening" -> 0.0)
@@ -250,8 +251,8 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       model.forward(input)
       criterion.forward(model.output.asInstanceOf[Tensor[Double]], labels)
       model.zeroGradParameters()
-      criterion.backward(model.output.asInstanceOf[Tensor[Double]], labels)
-      model.backward(input, criterion.gradInput)
+      val gradOutputTest = criterion.backward(model.output.asInstanceOf[Tensor[Double]], labels)
+      model.backward(input, gradOutputTest)
       (criterion.output, grad)
     }
     for (i <- 1 to 5) {
@@ -269,12 +270,12 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     assert(abss < 1e-2)
 
 
-    val errTest = criterion.output //criterion.forward(outputTest, labels)
+    val errTest = criterion.forward(outputTest, labels)
     val err = TH.map("err").asInstanceOf[Double]
     println(s"${abs(errTest - err)}")
     assert(abs(errTest - err) < 1.5e-6)
 
-    val gradOutputTest = criterion.gradInput //criterion.backward(outputTest, labels)
+    val gradOutputTest = criterion.backward(outputTest, labels)
     val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
     abss = 0.0
     for (i <- 0 until gradOutputTest.nElement()) {

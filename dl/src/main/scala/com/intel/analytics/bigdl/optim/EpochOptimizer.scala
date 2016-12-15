@@ -17,19 +17,20 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.nn.{Criterion, Module}
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
-import com.intel.analytics.bigdl.ps.ParameterManager
+import com.intel.analytics.bigdl.parameters.ParameterManager
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
+import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
 abstract class EpochOptimizer[T: ClassTag](
-  @transient module: Module[Tensor[T], Tensor[T], T],
-  criterion: Criterion[Tensor[T], T],
+  @transient module: Module[T],
+  criterion: Criterion[T],
   optm: OptimMethod[T],
   pm: ParameterManager[T],
   dataSets: DataSet[_, T] with HasEpoch,
@@ -46,9 +47,13 @@ abstract class EpochOptimizer[T: ClassTag](
   }
 }
 
+object GradAggEpochOptimizer{
+  val logger = Logger.getLogger(getClass)
+}
+
 class GradAggEpochOptimizer[T: ClassTag](
-  @transient module: Module[Tensor[T], Tensor[T], T],
-  criterion: Criterion[Tensor[T], T],
+  @transient module: Module[T],
+  criterion: Criterion[T],
   optm: OptimMethod[T],
   pm: ParameterManager[T],
   dataSets: DataSet[_, T] with HasEpoch,
@@ -57,7 +62,9 @@ class GradAggEpochOptimizer[T: ClassTag](
   (implicit ev: TensorNumeric[T])
   extends EpochOptimizer[T](module, criterion, optm, pm, dataSets, metrics, config) {
 
-  override def optimize(): Module[Tensor[T], Tensor[T], T] = {
+  import GradAggEpochOptimizer._
+
+  override def optimize(): Module[T] = {
     // don't send whole Optimizer in closure
     val broadcastEV = dataSets.getSparkContext().broadcast(ev)
 
@@ -67,16 +74,16 @@ class GradAggEpochOptimizer[T: ClassTag](
     val epochNum = maxEpoch.getOrElse(20)
     val state = T()
     for (i <- 1 to epochNum) {
-      logInfo(s"[Epoch $i/$epochNum] Train start")
+      logger.info(s"[Epoch $i/$epochNum] Train start")
       val epochStart = System.nanoTime()
 
-      logInfo("config" + config)
+      logger.info("config" + config)
 
-      logInfo(s"[Epoch $i/$epochNum] Shuffle data")
+      logger.info(s"[Epoch $i/$epochNum] Shuffle data")
       dataSets.reset()
       val shuffleEnd = System.nanoTime()
       var accumulateCount = 0
-      logInfo(s"[Epoch $i/$epochNum] Shuffle data complete. Takes ${
+      logger.info(s"[Epoch $i/$epochNum] Shuffle data complete. Takes ${
         (shuffleEnd -
           epochStart) / 1e9
       }s")
@@ -137,18 +144,19 @@ class GradAggEpochOptimizer[T: ClassTag](
 
         accumulateCount += recordsNum.value
         val end = System.nanoTime()
-        logInfo(s"[Epoch $i/$epochNum $accumulateCount/${dataSets.total()}] Train ${
+        logger.info(s"[Epoch $i/$epochNum $accumulateCount/${dataSets.total()}] Train ${
           recordsNum.value
         } in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${recordsNum.value / ((end - start) / 1e9)} records/second. Loss is ${
             lossSum.value / stackCount.value
           }. " +
           s"Calculate time is ${(reduceBefore - start) / 1e9}seconds. ")
-        logInfo("\n" + metrics.summary())
+        logger.info("\n" + metrics.summary())
       }
       val epochEnd = System.nanoTime()
       wallClockTime = wallClockTime + epochEnd - epochStart
-      logInfo(s"[Epoch $i/$epochNum] Epoch finished. Wall clock time is ${wallClockTime / 1e6}ms")
+      logger.info(s"[Epoch $i/$epochNum] Epoch finished. " +
+        s"Wall clock time is ${wallClockTime / 1e6}ms")
       saveModel(module, i)
       saveState(pm.getState(), i)
       test(module, i)
@@ -161,14 +169,19 @@ class GradAggEpochOptimizer[T: ClassTag](
 
 }
 
+object WeightAvgEpochOptimizer{
+  val logger = Logger.getLogger(getClass)
+}
 class WeightAvgEpochOptimizer[T: ClassTag](
-  @transient module: Module[Tensor[T], Tensor[T], T],
-  criterion: Criterion[Tensor[T], T], optm: OptimMethod[T],
+  @transient module: Module[T],
+  criterion: Criterion[T], optm: OptimMethod[T],
   pm: ParameterManager[T], dataSets: DataSet[_, T] with HasEpoch,
   metrics: Metrics, config: Table = T())(implicit ev: TensorNumeric[T])
   extends EpochOptimizer[T](module, criterion, optm, pm, dataSets, metrics, config) {
 
-  override def optimize(): Module[Tensor[T], Tensor[T], T] = {
+  import WeightAvgEpochOptimizer._
+
+  override def optimize(): Module[T] = {
     // don't send whole Optimizer in closure
     val broadcast = dataSets.getSparkContext().broadcast((ev, config, optm))
 
@@ -178,14 +191,14 @@ class WeightAvgEpochOptimizer[T: ClassTag](
     val epochNum = maxEpoch.getOrElse(10)
     val state = T()
     for (i <- 1 to epochNum) {
-      logInfo(s"[Epoch $i/$epochNum] Train start")
+      logger.info(s"[Epoch $i/$epochNum] Train start")
       val epochStart = System.nanoTime()
-      logInfo("config" + config)
-      logInfo(s"[Epoch $i/$epochNum] Shuffle data")
+      logger.info("config" + config)
+      logger.info(s"[Epoch $i/$epochNum] Shuffle data")
       dataSets.reset()
       val shuffleEnd = System.nanoTime()
       var accumulateCount = 0
-      logInfo(s"[Epoch $i/$epochNum] Shuffle data complete. Takes" +
+      logger.info(s"[Epoch $i/$epochNum] Shuffle data complete. Takes" +
         s" ${(shuffleEnd - epochStart) / 1e9}s")
       config("epoch") = i
       while (!dataSets.epochFinished()) {
@@ -254,19 +267,20 @@ class WeightAvgEpochOptimizer[T: ClassTag](
 
         accumulateCount += recordsNum.value
         val end = System.nanoTime()
-        logInfo(s"[Epoch $i/$epochNum $accumulateCount/${dataSets.total()}] Train" +
+        logger.info(s"[Epoch $i/$epochNum $accumulateCount/${dataSets.total()}] Train" +
           s" ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${recordsNum.value / ((end - start) / 1e9)} records/second." +
           s" Loss is ${lossSum.value / stackCount.value}. " +
           s"Calculate time is ${(reduceBefore - start) / 1e9}seconds. " +
           s"Reduce time is ${(reduceAfter - reduceBefore) / 1e9}seconds.")
-        logInfo("\n" + metrics.summary())
+        logger.info("\n" + metrics.summary())
       }
 
 
       val epochEnd = System.nanoTime()
       wallClockTime = wallClockTime + epochEnd - epochStart
-      logInfo(s"[Epoch $i/$epochNum] Epoch finished. Wall clock time is ${wallClockTime / 1e6}ms")
+      logger.info(s"[Epoch $i/$epochNum] Epoch finished. " +
+        s"Wall clock time is ${wallClockTime / 1e6}ms")
       saveModel(module, i)
       saveState(pm.getState(), i)
       test(module, i)

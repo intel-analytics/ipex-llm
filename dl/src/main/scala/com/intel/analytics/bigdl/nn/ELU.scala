@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -83,5 +84,13 @@ class ELU[T: ClassTag](
       DenseTensorApply.apply3[T](gradInput, gradOutput, output, func)
     }
     gradInput
+  }
+}
+
+object ELU {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      alpha: Double = 1.0,
+      inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : ELU[T] = {
+    new ELU[T](alpha, inplace)
   }
 }

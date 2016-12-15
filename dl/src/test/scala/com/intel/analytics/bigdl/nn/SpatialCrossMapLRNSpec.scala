@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl._
 import org.scalatest.{FlatSpec, Matchers}
 
 class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
@@ -107,7 +108,7 @@ class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
     val input = Tensor[Float](2, 7, 3, 3)
     input.rand()
     val checker = new GradientChecker(1e-2, 1e-2)
-    checker.checkLayer(layer, input) should be(true)
+    checker.checkLayer[Float](layer, input) should be(true)
   }
 
   "LocalNormalizationAcrossChannels with Large Region BackWard Double" should "be correct" in {

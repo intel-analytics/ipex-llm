@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -51,5 +52,12 @@ class Transpose[@specialized(Float, Double) T: ClassTag](
         case (from: Int, to: Int) => s"$from -> $to"
       }.mkString(", ")
     })"
+  }
+}
+
+object Transpose {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      permutations: Array[(Int, Int)])(implicit ev: TensorNumeric[T]) : Transpose[T] = {
+    new Transpose[T](permutations)
   }
 }

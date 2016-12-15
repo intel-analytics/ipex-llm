@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.example
 import java.util
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.tensor._
@@ -49,7 +50,7 @@ object AlexNet {
         val (parm, grad) = model.getParameters()
         println(model)
         println(parm.nElement())
-        val criterion = new ClassNLLCriterion[Float]()
+        val criterion = ClassNLLCriterion[Float]()
         val labelData = new Array[Float](batchSize)
         util.Arrays.fill(labelData, 10)
         val labels = Tensor[Float](Storage(labelData))
@@ -83,7 +84,7 @@ object AlexNet {
         val (parm, grad) = model.getParameters()
         println(model)
         println(parm.nElement())
-        val criterion = new ClassNLLCriterion[Double]()
+        val criterion = ClassNLLCriterion[Double]()
         val labelData = new Array[Double](batchSize)
         util.Arrays.fill(labelData, 10)
         val labels = Tensor[Double](Storage(labelData))
@@ -138,70 +139,70 @@ object AlexNet {
 
   // This is AlexNet that was presented in the One Weird Trick paper. http://arxiv.org/abs/1404.5997
   def getModel[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val feature = new Sequential[Tensor[T], Tensor[T], T]
-    feature.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2))
-    feature.add(new ReLU[T](true))
-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
-    feature.add(new SpatialConvolution[T](64, 192, 5, 5, 1, 1, 2, 2))
-    feature.add(new ReLU[T](true))
-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
-    feature.add(new SpatialConvolution[T](192, 384, 3, 3, 1, 1, 1, 1))
-    feature.add(new ReLU[T](true))
-    feature.add(new SpatialConvolution[T](384, 256, 3, 3, 1, 1, 1, 1))
-    feature.add(new ReLU[T](true))
-    feature.add(new SpatialConvolution[T](256, 256, 3, 3, 1, 1, 1, 1))
-    feature.add(new ReLU[T](true))
-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val feature = Sequential[T]
+    feature.add(SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2))
+    feature.add(ReLU[T](true))
+    feature.add(SpatialMaxPooling[T](3, 3, 2, 2))
+    feature.add(SpatialConvolution[T](64, 192, 5, 5, 1, 1, 2, 2))
+    feature.add(ReLU[T](true))
+    feature.add(SpatialMaxPooling[T](3, 3, 2, 2))
+    feature.add(SpatialConvolution[T](192, 384, 3, 3, 1, 1, 1, 1))
+    feature.add(ReLU[T](true))
+    feature.add(SpatialConvolution[T](384, 256, 3, 3, 1, 1, 1, 1))
+    feature.add(ReLU[T](true))
+    feature.add(SpatialConvolution[T](256, 256, 3, 3, 1, 1, 1, 1))
+    feature.add(ReLU[T](true))
+    feature.add(SpatialMaxPooling[T](3, 3, 2, 2))
 
 
 
-    val classifier = new Sequential[Tensor[T], Tensor[T], T]
-    classifier.add(new View[T](256 * 6 * 6))
-    classifier.add(new Dropout[T](0.5))
-    classifier.add(new Linear[T](256 * 6 * 6, 4096))
-    classifier.add(new Threshold[T](0, 1e-6))
-    classifier.add(new Dropout[T](0.5))
-    classifier.add(new Linear[T](4096, 4096))
-    classifier.add(new Threshold[T](0, 1e-6))
-    classifier.add(new Linear[T](4096, classNum))
-    classifier.add(new LogSoftMax[T])
+    val classifier = Sequential[T]
+    classifier.add(View[T](256 * 6 * 6))
+    classifier.add(Dropout[T](0.5))
+    classifier.add(Linear[T](256 * 6 * 6, 4096))
+    classifier.add(Threshold[T](0, 1e-6))
+    classifier.add(Dropout[T](0.5))
+    classifier.add(Linear[T](4096, 4096))
+    classifier.add(Threshold[T](0, 1e-6))
+    classifier.add(Linear[T](4096, classNum))
+    classifier.add(LogSoftMax[T])
 
 
-    val model = new Sequential[Tensor[T], Tensor[T], T]
+    val model = Sequential[T]
     model.add(feature).add(classifier)
 
     model
   }
 
   def getModelCaffeOWT[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val feature = new Sequential[Tensor[T], Tensor[T], T]
-    feature.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2))
-    feature.add(new ReLU[T](true))
-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
-    feature.add(new SpatialConvolution[T](64, 192, 5, 5, 1, 1, 2, 2))
-    feature.add(new ReLU[T](true))
-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
-    feature.add(new SpatialConvolution[T](192, 384, 3, 3, 1, 1, 1, 1))
-    feature.add(new ReLU[T](true))
-    feature.add(new SpatialConvolution[T](384, 256, 3, 3, 1, 1, 1, 1))
-    feature.add(new ReLU[T](true))
-    feature.add(new SpatialConvolution[T](256, 256, 3, 3, 1, 1, 1, 1))
-    feature.add(new ReLU[T](true))
-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val feature = Sequential[T]
+    feature.add(SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2))
+    feature.add(ReLU[T](true))
+    feature.add(SpatialMaxPooling[T](3, 3, 2, 2))
+    feature.add(SpatialConvolution[T](64, 192, 5, 5, 1, 1, 2, 2))
+    feature.add(ReLU[T](true))
+    feature.add(SpatialMaxPooling[T](3, 3, 2, 2))
+    feature.add(SpatialConvolution[T](192, 384, 3, 3, 1, 1, 1, 1))
+    feature.add(ReLU[T](true))
+    feature.add(SpatialConvolution[T](384, 256, 3, 3, 1, 1, 1, 1))
+    feature.add(ReLU[T](true))
+    feature.add(SpatialConvolution[T](256, 256, 3, 3, 1, 1, 1, 1))
+    feature.add(ReLU[T](true))
+    feature.add(SpatialMaxPooling[T](3, 3, 2, 2))
 
 
 
-    val classifier = new Sequential[Tensor[T], Tensor[T], T]
-    classifier.add(new View[T](256 * 6 * 6))
-    classifier.add(new Linear[T](256 * 6 * 6, 4096))
-    classifier.add(new Linear[T](4096, 4096))
-    classifier.add(new Linear[T](4096, classNum))
-    classifier.add(new LogSoftMax[T])
+    val classifier = Sequential[T]
+    classifier.add(View[T](256 * 6 * 6))
+    classifier.add(Linear[T](256 * 6 * 6, 4096))
+    classifier.add(Linear[T](4096, 4096))
+    classifier.add(Linear[T](4096, classNum))
+    classifier.add(LogSoftMax[T])
 
 
-    val model = new Sequential[Tensor[T], Tensor[T], T]
+    val model = Sequential[T]
     model.add(feature).add(classifier)
 
     model

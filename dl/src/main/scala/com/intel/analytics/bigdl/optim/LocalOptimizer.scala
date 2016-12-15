@@ -18,16 +18,15 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.DataSource
-import com.intel.analytics.bigdl.nn.{Criterion, Module, TensorModule}
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.TorchObject.TYPE_FLOAT_TENSOR
-import com.intel.analytics.bigdl.utils.{Activities, File, Table}
+import com.intel.analytics.bigdl.utils.Table
 
 class LocalOptimizer[T](
   data: DataSource[(Tensor[T], Tensor[T])],
   validationData: DataSource[(Tensor[T], Tensor[T])],
-  model: Module[Tensor[T], Tensor[T], T],
-  criterion: Criterion[Tensor[T], T],
+  model: Module[T],
+  criterion: Criterion[T],
   optimMethod: OptimMethod[T],
   state: Table,
   endWhen: Trigger
@@ -35,13 +34,13 @@ class LocalOptimizer[T](
 
   def this(
     data: DataSource[(Tensor[T], Tensor[T])],
-    model: Module[Tensor[T], Tensor[T], T],
-    criterion: Criterion[Tensor[T], T],
+    model: Module[T],
+    criterion: Criterion[T],
     optimMethod: OptimMethod[T],
     state: Table,
     endWhen: Trigger) = this(data, null, model, criterion, optimMethod, state, endWhen)
 
-  override def optimize(): Module[Tensor[T], Tensor[T], T] = {
+  override def optimize(): Module[T] = {
     val (weights, grad) = model.getParameters()
     var wallClockTime = 0L
     var count = 0

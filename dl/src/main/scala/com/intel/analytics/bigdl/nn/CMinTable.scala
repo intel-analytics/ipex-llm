@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -26,7 +27,7 @@ import scala.reflect.ClassTag
  * Takes a table of Tensors and outputs the min of all of them.
  */
 class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends Module[Table, Tensor[T], T]{
+  extends AbstractModule[Table, Tensor[T], T]{
 
   @transient
   private var minIdx: Tensor[T] = null
@@ -96,4 +97,11 @@ class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
     "nn.CMinTable"
   }
 
+}
+
+object CMinTable {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : CMinTable[T] = {
+    new CMinTable[T]()
+  }
 }

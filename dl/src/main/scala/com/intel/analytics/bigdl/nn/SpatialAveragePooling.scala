@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -445,5 +446,20 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
 
   override def toString(): String = {
     s"nn.SpatialAveragePooling($kW, $kH, $dW, $dH, $padW, $padH)"
+  }
+}
+
+object SpatialAveragePooling {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      kW: Int,
+      kH: Int,
+      dW: Int = 1,
+      dH: Int = 1,
+      padW: Int = 0,
+      padH: Int = 0,
+      ceilMode: Boolean = false,
+      countIncludePad: Boolean = true,
+      divide: Boolean = true)(implicit ev: TensorNumeric[T]) : SpatialAveragePooling[T] = {
+    new SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, ceilMode, countIncludePad, divide)
   }
 }

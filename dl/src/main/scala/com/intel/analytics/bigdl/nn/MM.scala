@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -32,7 +33,7 @@ import scala.reflect.ClassTag
 class MM[T: ClassTag](
   val transA: Boolean = false,
   val transB: Boolean = false)
-  (implicit ev: TensorNumeric[T]) extends Module[Table, Tensor[T], T] {
+  (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
   gradInput = T(Tensor[T], Tensor[T]())
 
   private def checkInputFormat(input: Table): (Tensor[T], Tensor[T]) = {
@@ -150,5 +151,13 @@ class MM[T: ClassTag](
     gradInput[Tensor[T]](2).set()
 
     this
+  }
+}
+
+object MM {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      transA: Boolean = false,
+      transB: Boolean = false)(implicit ev: TensorNumeric[T]) : MM[T] = {
+    new MM[T](transA, transB)
   }
 }

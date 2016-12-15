@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -31,7 +32,7 @@ import scala.reflect.ClassTag
  * @param length
  */
 class NarrowTable[T: ClassTag](val offset: Int, val length: Int = 1)
- (implicit ev: TensorNumeric[T]) extends Module[Table, Table, T]{
+ (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Table, T]{
 
   override def updateOutput(input: Table): Table = {
     var i = 1
@@ -79,5 +80,13 @@ class NarrowTable[T: ClassTag](val offset: Int, val length: Int = 1)
   override def hashCode(): Int = {
     val state = Seq(super.hashCode(), offset, length)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+object NarrowTable {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      offset: Int,
+      length: Int = 1)(implicit ev: TensorNumeric[T]) : NarrowTable[T] = {
+    new NarrowTable[T](offset, length)
   }
 }

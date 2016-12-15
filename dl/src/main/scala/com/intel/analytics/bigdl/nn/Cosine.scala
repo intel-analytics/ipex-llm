@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -192,5 +193,13 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(super.hashCode(), weight, inputSize, outputSize)
     state.map(getHashCode).foldLeft(0)((a, b) => 37 * a + b)
+  }
+}
+
+object Cosine {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      inputSize : Int,
+      outputSize : Int)(implicit ev: TensorNumeric[T]) : Cosine[T] = {
+    new Cosine[T](inputSize, outputSize)
   }
 }

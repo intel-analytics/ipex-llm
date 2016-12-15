@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -25,8 +26,6 @@ import scala.reflect.ClassTag
 class SmoothL1Criterion[T: ClassTag](sizeAverage: Boolean = true)
                                     (implicit ev: TensorNumeric[T])
   extends TensorCriterion[T] {
-  @transient var gradInput: Tensor[T] = null
-
   @transient var buffer: Tensor[T] = null
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
@@ -73,5 +72,12 @@ class SmoothL1Criterion[T: ClassTag](sizeAverage: Boolean = true)
       }
     }
     gradInput
+  }
+}
+
+object SmoothL1Criterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : SmoothL1Criterion[T] = {
+    new SmoothL1Criterion[T](sizeAverage)
   }
 }

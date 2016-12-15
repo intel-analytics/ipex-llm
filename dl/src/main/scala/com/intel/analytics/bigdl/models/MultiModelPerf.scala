@@ -19,16 +19,18 @@ package com.intel.analytics.bigdl.models
 
 import java.util.concurrent.Executors
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.ResNet.ShortcutType
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, AlexNet_OWT, GoogleNet_v1, GoogleNet_v2}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion, Module}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.T
 import scopt.OptionParser
 
-import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect.ClassTag
 import spire.syntax.module
 /**
@@ -100,24 +102,21 @@ object MultiModelPerf {
   def performance[T: ClassTag](param: MultiModelPerfParams)(implicit tn: TensorNumeric[T]): Unit = {
     val tests = (1 to param.cores).map(_ => param.module match {
       case "alexnet" => (AlexNet(1000), Tensor[T](param.batchSize, 3, 227, 227).rand(),
-        new ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
+        ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
-        new ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
+        ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
       case "googlenet_v1" => (GoogleNet_v1(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
-        new ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
+        ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
       case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
-        new ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
-      case "resnet" => {
-        val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
-          .asInstanceOf[Module[Tensor[T], Tensor[T], T]]
-        ResNet.shareGradInput(curModel)
-        ResNet.modelInit(curModel)
-//        ResNet.convInit(curModel)
-//        ResNet.bnInit(curModel)
-//        ResNet.lnInit(curModel)
-        (curModel, Tensor[T](param.batchSize, 3, 224, 224).rand(),
-          new CrossEntropyCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
-      }
+        ClassNLLCriterion(), Tensor[T](param.batchSize).fill(tn.fromType(1)))
+//      case "resnet" => {
+//        val curModel = ResNet[T](1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
+//          .asInstanceOf[Module[T]]
+//        ResNet.shareGradInput(curModel)
+//        ResNet.modelInit(curModel)
+//        (curModel, Tensor[T](param.batchSize, 3, 224, 224).rand(),
+//          CrossEntropyCriterion(), Tensor(param.batchSize).fill(tn.fromType(1)))
+//      }
     })
 
     val grads = tests.map(_._1.getParameters()._2).toArray
@@ -145,7 +144,7 @@ object MultiModelPerf {
       val time = System.nanoTime()
       (0 until param.cores).map(j => Future {
         val (model, input, criterion, labels) = tests(j)
-        val output = model.forward(input).asInstanceOf[Tensor[T]]
+        val output = model.forward(input).toTensor[T]
         criterion.forward(output, labels)
         val gradOutput = criterion.backward(output, labels)
         model.backward(input, gradOutput)
@@ -171,7 +170,7 @@ object MultiModelPerf {
       val time = System.nanoTime()
       (0 until param.cores).map(j => Future {
         val (model, input, criterion, labels) = tests(j)
-        val output = model.forward(input).asInstanceOf[Tensor[T]]
+        val output = model.forward(input).toTensor[T]
         criterion.forward(output, labels)
         val gradOutput = criterion.backward(output, labels)
         model.backward(input, gradOutput)

@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -27,7 +28,7 @@ import scala.reflect.ClassTag
  * and calculate the dot product between them as outputs
  */
 class DotProduct[T: ClassTag] (implicit ev: TensorNumeric[T])
-  extends Module[Table, Tensor[T], T] {
+  extends AbstractModule[Table, Tensor[T], T] {
   gradInput = T(Tensor[T](), Tensor[T]())
   @transient private var buffer: Tensor[T] = null
 
@@ -87,5 +88,12 @@ class DotProduct[T: ClassTag] (implicit ev: TensorNumeric[T])
 
   override def toString: String = {
     s"nn.DotProduct"
+  }
+}
+
+object DotProduct {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : DotProduct[T] = {
+    new DotProduct[T]()
   }
 }

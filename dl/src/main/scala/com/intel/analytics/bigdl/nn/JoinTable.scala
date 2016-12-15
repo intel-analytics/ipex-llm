@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -35,7 +36,7 @@ class JoinTable[T: ClassTag] (
   val dimension: Int,
   val nInputDims: Int
 )(implicit ev: TensorNumeric[T])
-  extends Module[Table, Tensor[T], T] {
+  extends AbstractModule[Table, Tensor[T], T] {
 
   private def getPositiveDimension(input: Table): Int = {
     var nDim = this.dimension
@@ -122,5 +123,13 @@ class JoinTable[T: ClassTag] (
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(super.hashCode(), dimension, nInputDims)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+object JoinTable {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dimension: Int,
+      nInputDims: Int)(implicit ev: TensorNumeric[T]) : JoinTable[T] = {
+    new JoinTable[T](dimension, nInputDims)
   }
 }

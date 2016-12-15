@@ -21,7 +21,7 @@ package com.intel.analytics.bigdl.models
 import com.intel.analytics.bigdl.models.ResNet.ShortcutType
 import com.intel.analytics.bigdl.models.imagenet._
 import com.intel.analytics.bigdl.models.mnist.LeNet5
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion, Module}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
@@ -103,7 +103,6 @@ object Perf {
       case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
       case "resnet" => {
         val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
-          .asInstanceOf[Module[Tensor[T], Tensor[T], T]]
         ResNet.shareGradInput(curModel)
         ResNet.modelInit(curModel)
 //        ResNet.convInit(curModel)
@@ -118,14 +117,14 @@ object Perf {
     }
     println(model)
     val criterion = param.module match {
-      case "resnet" => new CrossEntropyCriterion[T]()
-      case _ => new ClassNLLCriterion[T]()
+      case "resnet" => CrossEntropyCriterion()
+      case _ => ClassNLLCriterion()
     }
     val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
 
     for (i <- 1 to param.warmUp) {
       var time = System.nanoTime()
-      val output = model.forward(input).asInstanceOf[Tensor[T]]
+      val output = model.forward(input).toTensor[T]
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       time = System.nanoTime()
@@ -141,7 +140,7 @@ object Perf {
     var totalBackwardTime = 0L
     for (i <- 1 to param.iteration) {
       var time = System.nanoTime()
-      val output = model.forward(input).asInstanceOf[Tensor[T]]
+      val output = model.forward(input).toTensor[T]
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       totalForwardTime += forwardTime

@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -46,5 +47,12 @@ class Echo[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[
 
   override def toString(): String = {
     s"nn.Echo"
+  }
+}
+
+object Echo {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : Echo[T] = {
+    new Echo[T]()
   }
 }

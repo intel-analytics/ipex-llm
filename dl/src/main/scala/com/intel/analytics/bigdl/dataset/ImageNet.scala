@@ -18,21 +18,17 @@
 package com.intel.analytics.bigdl.dataset
 
 import java.nio.file.{Files, Path, Paths}
-import java.util.concurrent.Executors
 
 import com.intel.analytics.bigdl.models.ResNet
 import com.intel.analytics.bigdl.models.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, GoogleNet_v1}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, CrossEntropyCriterion, Module}
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
 import com.intel.analytics.bigdl.optim.SGD.LearningRateSchedule
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Activities, T}
-import com.sun.prism.PixelFormat.DataType
+import com.intel.analytics.bigdl.utils.T
 import scopt.OptionParser
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
 
 object ImageNetSeqFileGenerator {
 
@@ -137,8 +133,8 @@ object ImageNetLocal {
   )
 
   case class Config(
-    model: Module[Tensor[Float], Tensor[Float], Float],
-    criterion: Criterion[Tensor[Float], Float],
+    model: Module[Float],
+    criterion: Criterion[Float],
     optimMethod: OptimMethod[Float],
     imageSize: Int,
     batchSize: Int,
@@ -153,8 +149,8 @@ object ImageNetLocal {
 
   private val configs = Map(
     "alexnet" -> Config(
-      AlexNet[Float](classNum = 1000),
-      new ClassNLLCriterion[Float](),
+      AlexNet(classNum = 1000),
+      ClassNLLCriterion[Float](),
       new SGD[Float](),
       imageSize = 227,
       batchSize = 256,
@@ -166,8 +162,8 @@ object ImageNetLocal {
       learningRate = 0.01,
       learningRateSchedule = SGD.Step(100000, 0.1)),
     "googlenetv1" -> Config(
-      GoogleNet_v1[Float](classNum = 1000),
-      new ClassNLLCriterion[Float](),
+      GoogleNet_v1(classNum = 1000),
+      ClassNLLCriterion[Float](),
       new SGD[Float](),
       imageSize = 224,
       batchSize = 32,
@@ -180,8 +176,8 @@ object ImageNetLocal {
       learningRateSchedule = SGD.Poly(0.5, 2400000)),
     "resnet" -> Config(
       ResNet[Float](classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
-        .asInstanceOf[Module[Tensor[Float], Tensor[Float], Float]],
-      new CrossEntropyCriterion[Float](),
+        .asInstanceOf[Module[Float]],
+      CrossEntropyCriterion[Float](),
       new SGD[Float](),
       imageSize = 224,
       batchSize = 64,
@@ -241,9 +237,6 @@ object ImageNetLocal {
       if (param.net.equals("resnet")) {
         println(s"model is ${param.net}, initializing the model")
         ResNet.modelInit(config.model)
-//        ResNet.convInit(config.model)
-//        ResNet.bnInit(config.model)
-//        ResNet.lnInit(config.model)
       }
       if (param.optnet) {
         println(s"model is ${param.net}, setting shared variable")

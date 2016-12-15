@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -32,8 +33,6 @@ class MultiLabelMarginCriterion[T: ClassTag]
 
   @transient
   private var isTarget: Tensor[T] = null
-
-  var gradInput = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     if (null == isTarget) isTarget = Tensor[T]()
@@ -194,5 +193,12 @@ class MultiLabelMarginCriterion[T: ClassTag]
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(super.hashCode(), sizeAverage)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+object MultiLabelMarginCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : MultiLabelMarginCriterion[T] = {
+    new MultiLabelMarginCriterion[T](sizeAverage)
   }
 }

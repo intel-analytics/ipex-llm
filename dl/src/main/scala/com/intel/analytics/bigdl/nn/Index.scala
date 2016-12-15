@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -28,7 +29,7 @@ import scala.reflect.ClassTag
  * @param dimension
  */
 class Index[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
-  extends Module[Table, Tensor[T], T]{
+  extends AbstractModule[Table, Tensor[T], T]{
 
   override def updateOutput(input: Table): Tensor[T] = {
     val t = input[Tensor[T]](1)
@@ -67,5 +68,12 @@ class Index[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
 
   override def toString(): String = {
     s"nn.Index($dimension)"
+  }
+}
+
+object Index {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      dimension: Int)(implicit ev: TensorNumeric[T]) : Index[T] = {
+    new Index[T](dimension)
   }
 }

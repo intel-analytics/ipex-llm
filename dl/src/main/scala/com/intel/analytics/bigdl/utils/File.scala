@@ -20,6 +20,8 @@ package com.intel.analytics.bigdl.utils
 import java.io._
 import java.nio._
 import java.nio.file._
+
+import com.intel.analytics.bigdl._
 // import java.util.{HashMap, Map}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -281,7 +283,7 @@ object File {
         rawdata.putInt(i)
         writeVersionAndClass("V 1", "nn.Sequential", rawdata, path)
         writeSequential(source
-          .asInstanceOf[Sequential[Tensor[Double], Tensor[Double], Double]], rawdata, path)
+          .asInstanceOf[Sequential[Double]], rawdata, path)
       case TYPE_DROPOUT =>
         i = i + 1
         rawdata.putInt(i)
@@ -487,11 +489,10 @@ object File {
     val output = source.output
     val train = source.training()
     val gradInput = source.gradInput
-    val modules: Map[Double, Module[Tensor[Double], Tensor[Double], Double]] = new HashMap()
+    val modules: Map[Double, Module[Double]] = new HashMap()
 
     for (i <- 1 to source.modules.length) {
-      modules.put(i, source.modules(i - 1)
-        .asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]])
+      modules.put(i, source.modules(i - 1))
     }
 
     table.put("gradInput", gradInput)
@@ -503,16 +504,16 @@ object File {
     byteWrite(rawdata, path)
   }
 
-  private def writeSequential(source: Sequential[Tensor[Double], Tensor[Double], Double],
+  private def writeSequential(source: Sequential[Double],
     rawdata: ByteBuffer, path: Path): Unit = {
     val table: Map[String, Any] = new HashMap()
     val output = source.output
     val gradInput = source.gradInput
-    val modules: Map[Double, Module[Tensor[Double], Tensor[Double], Double]] = new HashMap()
+    val modules: Map[Double, Module[Double]] = new HashMap()
 
     for (i <- 1 to source.modules.length) {
       modules.put(i, source.modules(i - 1)
-        .asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]])
+        .asInstanceOf[Module[Double]])
     }
 
     table.put("gradInput", gradInput)
@@ -873,7 +874,7 @@ object File {
     result.output.copy(output)
 
     for (m <- readModules(modules)) {
-      result.modules += m.asInstanceOf[Module[Activities, Activities, Double]]
+      result.modules += m
     }
     result
   }
@@ -1176,39 +1177,36 @@ object File {
   }
 
   private def readSequentialModule(
-    rawData: ByteBuffer, objects: Map[Int, Any]):
-  Sequential[Tensor[Double], Tensor[Double], Double] = {
+    rawData: ByteBuffer, objects: Map[Int, Any]): Sequential[Double] = {
     val elements = readObject(rawData, objects).asInstanceOf[Map[Any, Any]]
     val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
     val modules = elements.get("modules").getOrElse(null).asInstanceOf[Map[Any, Any]]
-    val result = new Sequential[Tensor[Double], Tensor[Double], Double]()
+    val result = new Sequential[Double]()
     if (null != output) {
-      result.output.resizeAs(output)
-      result.output.copy(output)
+      result.output = Tensor[Double].resizeAs(output).copy(output)
     }
     if (elements.contains("gradInput")) {
       val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
       if (null != gradInput) {
-        result.gradInput.resizeAs(gradInput)
-        result.gradInput.copy(gradInput)
+        result.gradInput = Tensor[Double].resizeAs(gradInput).copy(gradInput)
       }
     }
 
     for (m <- readModules(modules)) {
-      result.modules += m.asInstanceOf[Module[Activities, Activities, Double]]
+      result.modules += m
     }
     result
   }
 
   private def readModules(modules: Map[Any, Any]):
-  Array[Module[Tensor[Double], Tensor[Double], Double]] = {
+  Array[Module[Double]] = {
     val moduleLength = modules.keySet.size
-    val modulesArray = new Array[Module[Tensor[Double], Tensor[Double], Double]](moduleLength)
+    val modulesArray = new Array[Module[Double]](moduleLength)
     for (k <- modules.keySet.toArray) {
       val key = k.asInstanceOf[Double]
       modulesArray(key.toInt - 1) = modules
         .get(key).getOrElse(null)
-        .asInstanceOf[Module[Tensor[Double], Tensor[Double], Double]]
+        .asInstanceOf[Module[Double]]
     }
     modulesArray
   }

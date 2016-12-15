@@ -20,12 +20,12 @@ package com.intel.analytics.bigdl.example
 import com.intel.analytics.bigdl.dataset.RGBImage
 import com.intel.analytics.bigdl.example.ImageNetUtils._
 import com.intel.analytics.bigdl.example.Utils._
-import com.intel.analytics.bigdl.models.imagenet.GoogleNet_v2_NoAuxClassifier
+import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2_NoAuxClassifier}
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.optim.SGD
-import com.intel.analytics.bigdl.optim.SGD.{EpochStep, EpochSchedule, Poly, Regime}
-import com.intel.analytics.bigdl.ps.{AllReduceParameterManager, OneReduceParameterManager}
+import com.intel.analytics.bigdl.optim.SGD.{EpochSchedule, EpochStep, Poly, Regime}
+import com.intel.analytics.bigdl.parameters.{AllReduceParameterManager, ImprovedAllReduceParameterManager, OneReduceParameterManager}
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
 import org.apache.hadoop.io.Text
@@ -58,6 +58,7 @@ object ImageNetParallel {
     val optType = params.masterOptM
     val netType = params.net
     val classNum = params.classNum
+
     val conf = new SparkConf().setAppName(s"ImageNet class[Float]: ${params.classNum} " +
       s"Parallelism: ${params.parallelism.toString}, partition : ${params.partitionNum}, " +
       s"masterConfig: ${params.masterConfig}, workerConfig: ${params.workerConfig}")
@@ -96,11 +97,12 @@ object ImageNetParallel {
     val std = (varR, varG, varB)
     println(s"varR is $varR varG is $varG varB is $varB")
 
-    val criterion = new ClassNLLCriterion[Float]()
+    val criterion = ClassNLLCriterion[Float]()
     val model = netType match {
       case "alexnet" => AlexNet.getModel[Float](classNum)
       case "googlenet" => GoogleNet.getModelCaffe[Float](classNum)
-      case "googlenet_v2" => GoogleNet_v2_NoAuxClassifier[Float](classNum)
+      case "googlenet_v2" => GoogleNet_v2_NoAuxClassifier(classNum)
+      case "googlenet_v1" => GoogleNet_v1(classNum)
     }
     println(model)
 
@@ -118,6 +120,8 @@ object ImageNetParallel {
         Regime(44, 52, T("learningRate" -> 5e-4, "weightDecay" -> 0.0)),
         Regime(53, 1000, T("learningRate" -> 1e-4, "weightDecay" -> 0.0))
       ))
+      case "googlenet_v1" =>
+        driverConfig("learningRateSchedule") = Poly(0.5, 62000)
     }
     // driverConfig("learningRateSchedule") = Poly(0.5, 62000)
     // driverConfig("learningRateSchedule") = Poly(0.5, 90000)
@@ -146,14 +150,16 @@ object ImageNetParallel {
       // val dataSets = new ShuffleBatchDataSet[(Float, Array[Byte]), Float](croppedData,
       if (cropImage) toTensorWithoutCrop(mean, std) else toTensor(mean, std),
       params.workerConfig[Int]("stack"), params.workerConfig[Int]("batch"))
+
     val pm = if (params.pmType == "allreduce") {
       new AllReduceParameterManager[Float](parameter, dataSets.partitions(), metrics)
     } else if (params.pmType == "onereduce") {
       new OneReduceParameterManager[Float](parameter, dataSets.partitions(), metrics)
+    } else if (params.pmType == "improvedallreduce") {
+      new ImprovedAllReduceParameterManager[Float](parameter, dataSets.partitions(), metrics)
     } else {
       throw new IllegalArgumentException()
     }
-
     val validation = croppedData.zipPartitions((if (cropImage) {
       loadCroppedData(testFiles, sc, labelsMap, classNum + 0.5)
     } else {
@@ -167,14 +173,27 @@ object ImageNetParallel {
     val testDataSets = new ShuffleBatchDataSet[(Float, Array[Byte]), Float](validation,
       if (cropImage) toTensorWithoutCrop(mean, std) else toTensor(mean, std), 4, 4)
 
-    val optimizer = new BetterGradAggEpochOptimizer[Float](model, criterion,
-      // val optimizer = new GradAggEpochOptimizer[Float](model, criterion,
-      getOptimMethodFloat(params.masterOptM),
-      pm, dataSets, metrics, 28, driverConfig)
+//    val optimizer = new BetterGradAggEpochOptimizer[Float](model, criterion,
+//      // val optimizer = new GradAggEpochOptimizer[Float](model, criterion,
+//      getOptimMethodFloat(params.masterOptM),
+//      pm, dataSets, metrics, 28, driverConfig)
+    val optimizer = if (params.epochOptimizerType == "bettergradaggepochoptimizer") {
+      new BetterGradAggEpochOptimizer[Float](model, criterion,
+        getOptimMethodFloat(params.masterOptM),
+        pm, dataSets, metrics, 28, driverConfig)
+    } else if (params.epochOptimizerType == "dropslowmodulegradaggepochoptimizer") {
+      new DropSlowModuleGradAggEpochOptimizer[Float](model, criterion,
+        getOptimMethodFloat(params.masterOptM),
+        pm, dataSets, metrics, driverConfig)
+    } else {
+      throw new IllegalArgumentException()
+    }
+
     optimizer.addEvaluation("top1", EvaluateMethods.calcAccuracy)
     optimizer.addEvaluation("top5", EvaluateMethods.calcTop5Accuracy)
     optimizer.setTestDataSet(testDataSets)
-    optimizer.setMaxEpoch(100)
+    println("epoch: " + driverConfig("epochNum"))
+    optimizer.setMaxEpoch(driverConfig("epochNum"))
 
     conf.set("spark.task.cpus", params.parallelism.toString)
     optimizer.optimize()

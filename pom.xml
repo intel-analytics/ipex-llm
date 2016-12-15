@@ -51,7 +51,7 @@
                 <enabled>true</enabled>
             </releases>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </snapshots>
         </repository>
     </repositories>
@@ -149,7 +149,6 @@
         <commons-codec.version>1.9</commons-codec.version>
         <commons-io.version>2.4</commons-io.version>
         <commons-lang.version>2.6</commons-lang.version>
-        <commons-logging.version>1.2</commons-logging.version>
         <commons-math.version>2.2</commons-math.version>
         <collections.version>3.2.1</collections.version>
 
@@ -158,10 +157,6 @@
 
     </properties>
 
-    <modules>
-        <module>mkl</module>
-        <module>dl</module>
-    </modules>
     <distributionManagement>
         <repository>
             <id>arda.nexus.releases</id>
@@ -464,6 +459,22 @@
     </reporting>
 
     <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>dl</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>full-build</id>
+            <modules>
+                <module>native</module>
+                <module>dl</module>
+            </modules>
+        </profile>
         <profile>
             <id>src</id>
             <activation>

@@ -23,11 +23,10 @@ import com.intel.analytics.bigdl.dataset.ImageNetLocal.Config
 import com.intel.analytics.bigdl.models.ResNet
 import com.intel.analytics.bigdl.models.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.models.cifar.VggLike
-import com.intel.analytics.bigdl.models.imagenet.{AlexNet, GoogleNet_v1}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Criterion, CrossEntropyCriterion, Module}
-import com.intel.analytics.bigdl.optim.SGD.{EpochDecay, EpochStep, LearningRateSchedule}
-import com.intel.analytics.bigdl.optim.{SGD, _}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.optim.SGD.{EpochDecay, EpochStep}
+import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.T
 import scopt.OptionParser
 
@@ -39,8 +38,8 @@ object Cifar10Local {
   )
 
   case class Config(
-    model: Module[Tensor[Float], Tensor[Float], Float],
-    criterion: Criterion[Tensor[Float], Float],
+    model: Module[Float],
+    criterion: Criterion[Float],
     optimMethod: OptimMethod[Float],
     imageSize: Int,
     momentum: Double,
@@ -51,8 +50,8 @@ object Cifar10Local {
 
   private val configs = Map(
     "vgg" -> Config(
-      VggLike[Float](classNum = 10),
-      new ClassNLLCriterion[Float](),
+      VggLike(classNum = 10),
+      ClassNLLCriterion[Float](),
       new SGD[Float](),
       imageSize = 32,
       momentum = 0.9,
@@ -62,8 +61,8 @@ object Cifar10Local {
       //learningRateSchedule = SGD.Step(100000, 0.1)),
     "resnet" -> Config(
       ResNet[Float](classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20, "dataset" -> DatasetType.CIFAR10))
-        .asInstanceOf[Module[Tensor[Float], Tensor[Float], Float]],
-      new CrossEntropyCriterion[Float](),
+        .asInstanceOf[Module[Float]],
+      CrossEntropyCriterion[Float](),
       new SGD[Float](),
       imageSize = 32,
       momentum = 0.9,

@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -96,5 +97,12 @@ class Add[T: ClassTag](inputSize: Int
 
   override def toString(): String = {
     s"nn.Add"
+  }
+}
+
+object Add {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    inputSize: Int)(implicit ev: TensorNumeric[T]) : Add[T] = {
+    new Add[T](inputSize)
   }
 }

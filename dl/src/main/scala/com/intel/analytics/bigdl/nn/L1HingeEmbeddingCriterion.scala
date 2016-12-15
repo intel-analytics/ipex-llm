@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -30,9 +31,7 @@ import scala.reflect.ClassTag
  * @param margin
  */
 class L1HingeEmbeddingCriterion[T: ClassTag](val margin: Double = 1)
- (implicit ev: TensorNumeric[T]) extends Criterion[Table, T]{
-
-  private val gradInput = T()
+ (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Table, T]{
 
   private def mathSign(t: T): T = {
     var res = 0
@@ -101,5 +100,12 @@ class L1HingeEmbeddingCriterion[T: ClassTag](val margin: Double = 1)
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(margin)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+object L1HingeEmbeddingCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      margin: Double = 1)(implicit ev: TensorNumeric[T]) : L1HingeEmbeddingCriterion[T] = {
+    new L1HingeEmbeddingCriterion[T](margin)
   }
 }

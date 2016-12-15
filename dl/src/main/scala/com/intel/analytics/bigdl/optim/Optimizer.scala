@@ -17,14 +17,14 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{File, Table}
 
 import scala.collection.mutable.ArrayBuffer
 
 abstract class Optimizer[@specialized(Float, Double) T](
-  protected val model: Module[Tensor[T], Tensor[T], T],
+  protected val model: Module[T],
   protected val endWhen: Trigger
 ) {
   protected var validationTrigger: Option[Trigger] = None
@@ -33,7 +33,7 @@ abstract class Optimizer[@specialized(Float, Double) T](
   protected var cachePath: Option[String] = None
   protected var isOverWrite: Boolean = false
 
-  def optimize(): Module[Tensor[T], Tensor[T], T]
+  def optimize(): Module[T]
 
   def setValidationTrigger(trigger: Trigger): this.type = {
     this.validationTrigger = Some(trigger)

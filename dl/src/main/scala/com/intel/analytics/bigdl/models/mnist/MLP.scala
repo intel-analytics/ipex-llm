@@ -17,11 +17,9 @@
 
 package com.intel.analytics.bigdl.models.mnist
 
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn.{LogSoftMax, _}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
-import scala.reflect.ClassTag
 
 object MLP {
   val rowN = 28
@@ -29,15 +27,14 @@ object MLP {
   val featureSize = rowN * colN
   val classNum = 10
 
-  def apply[T: ClassTag](classNum: Int)
-    (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val mlp = new Sequential[Tensor[T], Tensor[T], T]
+  def apply(classNum: Int): Module[Float] = {
+    val mlp = Sequential()
     val nHidden = featureSize / 2
-    mlp.add(new Reshape(Array(featureSize)))
-    mlp.add(new Linear(featureSize, nHidden))
-    mlp.add(new Tanh)
-    mlp.add(new Linear(nHidden, classNum))
-    mlp.add(new LogSoftMax)
+    mlp.add(Reshape(Array(featureSize)))
+    mlp.add(Linear(featureSize, nHidden))
+    mlp.add(Tanh())
+    mlp.add(Linear(nHidden, classNum))
+    mlp.add(LogSoftMax())
     mlp
   }
 }
