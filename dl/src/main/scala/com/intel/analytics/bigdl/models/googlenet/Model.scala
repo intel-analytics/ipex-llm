@@ -325,12 +325,12 @@ object GoogleNet_v2 {
 
 
     val features2 = Sequential()
-    features2.add(Inception_v2(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128)), "inception_4a/"))
-    features2.add(Inception_v2(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)), "inception_4b/"))
-    features2.add(Inception_v2(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96)),
-      "inception_4c/"))
-    features2.add(Inception_v2(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)), "inception_4d/"))
-    features2.add(Inception_v2(576, T(T(0), T(128, 192), T(192, 256), T("max", 0)), "inception_4e/"))
+    features2
+      .add(Inception_v2(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128)), "inception_4a/"))
+      .add(Inception_v2(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)), "inception_4b/"))
+      .add(Inception_v2(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96)), "inception_4c/"))
+      .add(Inception_v2(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)), "inception_4d/"))
+      .add(Inception_v2(576, T(T(0), T(128, 192), T(192, 256), T("max", 0)), "inception_4e/"))
 
     val output2 = Sequential()
     output2.add(SpatialAveragePooling(5, 5, 3, 3).ceil().setName("pool4/5x5_s3"))

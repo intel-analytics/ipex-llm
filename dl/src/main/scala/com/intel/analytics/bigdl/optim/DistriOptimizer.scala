@@ -27,11 +27,14 @@ import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 object DistriOptimizer {
   private var lossArray: Array[Double] = null
   private var recordsArray: Array[Int] = null
+  private var tasks: ArrayBuffer[Future[_]] = new ArrayBuffer()
 
   val logger = Logger.getLogger(getClass)
 
@@ -63,16 +66,16 @@ object DistriOptimizer {
   private[optim] def optimize[T: ClassTag](
     dataset: DistributedDataSet[Batch[T]],
     coresPerNode: Int,
-    state : Table,
-    endWhen : Trigger,
-    metrics : Metrics,
-    models : RDD[Cache[T]],
-    pm : ParameterManager[T],
-    optimMethod : OptimMethod[T],
+    state: Table,
+    endWhen: Trigger,
+    metrics: Metrics,
+    models: RDD[Cache[T]],
+    pm: ParameterManager[T],
+    optimMethod: OptimMethod[T],
     validationTrigger: Option[Trigger],
     validationDataSet: Option[DataSource[RDD[Batch[T]]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
-    cacheTrigger : Option[Trigger],
+    cacheTrigger: Option[Trigger],
     cachePath: Option[String]
   )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.data().sparkContext
@@ -83,7 +86,7 @@ object DistriOptimizer {
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case MklDnn => 1
-      case _ => ???
+      case _ => throw new IllegalArgumentException()
     }
     var accumulateCount = 0
     val shuffleBefore = System.nanoTime()
@@ -116,21 +119,14 @@ object DistriOptimizer {
           var time = System.nanoTime()
 
           val cached = modelIter.next()
-          Engine.default.invoke(Seq(
+          tasks += Engine.default.invoke(
             () => {
               weights.next() // Update local weights
-              Engine.default.invoke(
-                (0 until _subModelNumber).map(i =>
-                  () => {
-                    cached.modelWeights(i).copy(cached.buffer)
-                  }
-                )
-              )
             }
-          ))
+          )
 
           val tensorBuffer = new Array[(Tensor[T], Tensor[T])](_subModelNumber)
-          Engine.default.invoke(Seq(() => {
+          tasks += Engine.default.invoke(() => {
             val batch = data.next()
             var b = 0
             require(batch.data.size(1) == batch.labels.size(1))
@@ -140,8 +136,17 @@ object DistriOptimizer {
                 batch.labels.narrow(1, b * stackSize + 1, stackSize))
               b += 1
             }
-          }))
-          Engine.default.sync()
+          })
+          Engine.default.sync(tasks)
+          tasks.clear()
+
+          Engine.default.invokeAndWait(
+            (0 until _subModelNumber).map(i =>
+              () => {
+                cached.modelWeights(i).copy(cached.buffer)
+              }
+            )
+          )
           driverMetrics.add("prepare time", System.nanoTime() - time)
 
           if (lossArray == null || lossArray.length < _subModelNumber) {
@@ -203,7 +208,7 @@ object DistriOptimizer {
           }))
           driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
 
-          Engine.default.invoke((0 until _subModelNumber).map(i => () => {
+          tasks ++= Engine.default.invoke((0 until _subModelNumber).map(i => () => {
             cached.localModels(i).training()
             cached.localModels(i).zeroGradParameters()
           }))
@@ -263,14 +268,14 @@ object DistriOptimizer {
 
 
   private def checkpoint[T](
-    cacheTrigger : Option[Trigger],
+    cacheTrigger: Option[Trigger],
     cachePath: Option[String],
     wallClockTime: Long,
     models: RDD[Cache[T]],
     pm: ParameterManager[T],
     state: Table)
   : Unit = {
-    if(cacheTrigger.isDefined) {
+    if (cacheTrigger.isDefined) {
       val trigger = cacheTrigger.get
       if (trigger(state) && cachePath.isDefined) {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
@@ -302,7 +307,7 @@ object DistriOptimizer {
 
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastModel, broadcastCriterion, broadcastState) = broadcast.value
-      if(checkSingleton) {
+      if (checkSingleton) {
         require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
           "Currently not support this")
       }
@@ -314,12 +319,12 @@ object DistriOptimizer {
         (localModel, weights, grads, localCriterion, localState)
       }.toArray
       Iterator(Cache(
-        cached.map(_._1),  // models
-        cached.map(_._2),  // weights
-        cached.map(_._3),  // gradients
-        cached.map(_._4),  // criterions
-        cached.map(_._5),  // states
-        cached.head._2.clone()  // a tensor buffer
+        cached.map(_._1), // models
+        cached.map(_._2), // weights
+        cached.map(_._3), // gradients
+        cached.map(_._4), // criterions
+        cached.map(_._5), // states
+        cached.head._2.clone() // a tensor buffer
       ))
     }).persist()
     models.setName("Thread Model RDD")
@@ -330,21 +335,20 @@ object DistriOptimizer {
   }
 
 
-
   private def validate[T](
     validationTrigger: Option[Trigger],
     validationDataSet: Option[DataSource[RDD[Batch[T]]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
     coresPerNode: Int,
-    models : RDD[Cache[T]],
+    models: RDD[Cache[T]],
     wallClockTime: Long,
     state: Table
   ): Unit = {
-    if(validationTrigger.isEmpty || validationDataSet.isEmpty) {
+    if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
       return
     }
     val trigger = validationTrigger.get
-    if(!trigger(state)) {
+    if (!trigger(state)) {
       return
     }
     val vMethods = validationMethods.get
@@ -361,12 +365,12 @@ object DistriOptimizer {
         require(batch.data.size(1) == batch.labels.size(1))
         val stackSize = batch.data.size(1) / _subModelNumber
         val extraSize = batch.data.size(1) % _subModelNumber
-        val parallelism = if(stackSize == 0) extraSize else _subModelNumber
+        val parallelism = if (stackSize == 0) extraSize else _subModelNumber
         Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
               val offset = b * stackSize + math.min(b, extraSize)
-              val length = stackSize + (if(b < extraSize) 1 else 0)
+              val length = stackSize + (if (b < extraSize) 1 else 0)
               val input = batch.data.narrow(1, offset + 1, length)
               val target = batch.labels.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)
@@ -411,7 +415,7 @@ class DistriOptimizer[T: ClassTag](
   extends Optimizer[T, RDD[Batch[T]], RDD[Batch[T]]](
     model, dataset, criterion) {
 
-  def disableCheckSingleton() : this.type = {
+  def disableCheckSingleton(): this.type = {
     this.checkSingleton = false
     this
   }
@@ -427,7 +431,7 @@ class DistriOptimizer[T: ClassTag](
 
   private var pm: ParameterManager[T] = null
 
-  private var models : RDD[DistriOptimizer.Cache[T]] = null
+  private var models: RDD[DistriOptimizer.Cache[T]] = null
 
   override def optimize(): Module[T] = {
     dataset.originRDD()
@@ -437,7 +441,7 @@ class DistriOptimizer[T: ClassTag](
 
     optimMethod.clearHistory(state)
 
-    if(pm == null) {
+    if (pm == null) {
       pm = new AllReduceParameterManager[T](
         model.getParameters()._1,
         dataset.originRDD(),

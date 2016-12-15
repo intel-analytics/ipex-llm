@@ -27,8 +27,11 @@ import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.spark.{SparkConf, SparkContext}
 
 object Train {
+
   object Local {
+
     import Options._
+
     def main(args: Array[String]): Unit = {
       trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
         val trainData = Paths.get(param.folder, "/train-images.idx3-ubyte")
@@ -39,12 +42,12 @@ object Train {
         val trainDataSet = DataSet.localDataSet(trainData, trainDLabel, true, param.batchSize)
         import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
-        val model = if(param.modelSnapshot.isDefined) {
+        val model = if (param.modelSnapshot.isDefined) {
           AbstractModule.load[Float](param.modelSnapshot.get)
         } else {
           LeNet5(classNum = 10)
         }
-        val state = if(param.stateSnapshot.isDefined) {
+        val state = if (param.stateSnapshot.isDefined) {
           T.load(param.stateSnapshot.get)
         } else {
           T(
@@ -58,7 +61,7 @@ object Train {
           dataset = trainDataSet,
           criterion = new ClassNLLCriterion[Float]()
         )
-        if(param.cache.isDefined) {
+        if (param.cache.isDefined) {
           optimizer.setCache(param.cache.get, Trigger.everyEpoch)
         }
         val validateDataSet = DataSet.localDataSet(validationData, validationLabel, false,
@@ -73,7 +76,9 @@ object Train {
   }
 
   object Spark {
+
     import Options._
+
     def main(args: Array[String]): Unit = {
       trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
         val trainData = Paths.get(param.folder, "/train-images.idx3-ubyte")
@@ -88,12 +93,12 @@ object Train {
           param.nodesNumber, param.batchSize)
         import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
-        val model = if(param.modelSnapshot.isDefined) {
+        val model = if (param.modelSnapshot.isDefined) {
           AbstractModule.load[Float](param.modelSnapshot.get)
         } else {
           LeNet5(classNum = 10)
         }
-        val state = if(param.stateSnapshot.isDefined) {
+        val state = if (param.stateSnapshot.isDefined) {
           T.load(param.stateSnapshot.get)
         } else {
           T(
@@ -110,7 +115,7 @@ object Train {
         )
         val validateDataSet = DataSet.distributedDataSet(validationData, validationLabel, false,
           sc, param.nodesNumber, param.batchSize)
-        if(param.cache.isDefined) {
+        if (param.cache.isDefined) {
           optimizer.setCache(param.cache.get, Trigger.everyEpoch)
         }
         optimizer
@@ -121,4 +126,5 @@ object Train {
       })
     }
   }
+
 }

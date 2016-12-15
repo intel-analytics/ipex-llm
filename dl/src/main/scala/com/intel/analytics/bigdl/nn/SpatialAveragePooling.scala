@@ -206,7 +206,7 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
       var i = 1
       while (i <= nbatch) {
         val _i = i
-        Engine.model.invoke(() => {
+        results(_i - 1) = Engine.model.invoke(() => {
           if (classTag[T] == classTag[Double]) {
             updateOutputFrameDouble(input(_i).asInstanceOf[Tensor[Double]],
               output(_i).asInstanceOf[Tensor[Double]],
@@ -221,7 +221,7 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
         })
         i += 1
       }
-      Engine.model.sync()
+      Engine.model.sync(results)
     }
 
     if (!divide) {
@@ -376,7 +376,7 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
       var i = 1
       while (i <= nBatch) {
         val _i = i
-        Engine.model.invoke(() => {
+        results(_i - 1) = Engine.model.invoke(() => {
           if (classTag[T] == classTag[Double]) {
             updateGradInputFrameDouble(gradInput(_i).asInstanceOf[Tensor[Double]],
               gradOutput(_i).asInstanceOf[Tensor[Double]],
@@ -391,7 +391,7 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
         })
         i += 1
       }
-      Engine.model.sync()
+      Engine.model.sync(results)
     }
     if (!divide) {
       gradInput.mul(ev.fromType[Int](kW * kH))

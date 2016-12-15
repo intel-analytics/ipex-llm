@@ -63,7 +63,7 @@ object ImageNetSeqFileGenerator {
         val trainFolderPath = Paths.get(param.folder, "train")
         require(Files.isDirectory(trainFolderPath),
           s"${trainFolderPath} is not valid")
-        val trainDataSource = LocalImageFiles.LocalPathDataSet(trainFolderPath, false)
+        val trainDataSource = LocalImageFiles.localPathDataSet(trainFolderPath, false)
         trainDataSource.shuffle()
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
@@ -90,7 +90,7 @@ object ImageNetSeqFileGenerator {
         require(Files.isDirectory(validationFolderPath),
           s"${validationFolderPath} is not valid")
 
-        val validationDataSource = LocalImageFiles.LocalPathDataSet(validationFolderPath, false)
+        val validationDataSource = LocalImageFiles.localPathDataSet(validationFolderPath, false)
         validationDataSource.shuffle()
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {

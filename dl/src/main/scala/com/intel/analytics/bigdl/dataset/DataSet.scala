@@ -102,6 +102,7 @@ class LocalArrayDataSet[T](buffer: Array[T], looped: Boolean = true) extends Loc
   override def data(): Iterator[T] = {
     new Iterator[T] {
       private val index = new AtomicInteger()
+
       override def hasNext: Boolean = {
         if (looped) {
           true
@@ -112,7 +113,7 @@ class LocalArrayDataSet[T](buffer: Array[T], looped: Boolean = true) extends Loc
 
       override def next(): T = {
         val curIndex = index.getAndIncrement()
-        if(looped || curIndex < buffer.length) {
+        if (looped || curIndex < buffer.length) {
           buffer(if (looped) (curIndex % buffer.length) else curIndex)
         } else {
           null.asInstanceOf[T]
@@ -149,6 +150,7 @@ trait DistributedDataSet[T] extends DataSet[RDD[T]] {
       override def originRDD(): RDD[_] = preDataSource.originRDD()
     }
   }
+
   // scalastyle:on noSpaceBeforeLeftBracket
   // scalastyle:on methodName
 
@@ -196,7 +198,7 @@ class CachedDistriDataSet[T: ClassTag](buffer: RDD[Array[T]], looped: Boolean)
           if (_looped) {
             localData(indexes(i % localData.length))
           } else {
-            if(i < localData.length) {
+            if (i < localData.length) {
               localData(indexes(i))
             } else {
               null.asInstanceOf[T]
@@ -214,7 +216,6 @@ class CachedDistriDataSet[T: ClassTag](buffer: RDD[Array[T]], looped: Boolean)
     indexes = buffer.mapPartitions(iter => {
       Iterator.single(RandomGenerator.shuffle((0 until iter.next().length).toArray))
     }).setName("shuffled index").cache()
-    this
   }
 
   override def originRDD(): RDD[_] = buffer

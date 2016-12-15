@@ -27,8 +27,11 @@ import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
 object Train {
+
   object Local {
+
     import Options._
+
     def main(args: Array[String]): Unit = {
       trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
         val batchSize = 256
@@ -41,13 +44,13 @@ object Train {
         val validateDataSet = DataSet.localDataSet(validationData, imageSize, batchSize,
           param.coreNumber, false)
 
-        val model = if(param.modelSnapshot.isDefined) {
+        val model = if (param.modelSnapshot.isDefined) {
           AbstractModule.load[Float](param.modelSnapshot.get)
         } else {
           AlexNet(classNum = 1000)
         }
 
-        val state = if(param.stateSnapshot.isDefined) {
+        val state = if (param.stateSnapshot.isDefined) {
           T.load(param.stateSnapshot.get)
         } else {
           T(
@@ -65,7 +68,7 @@ object Train {
           dataset = trainDataSet,
           criterion = new ClassNLLCriterion[Float]()
         )
-        if(param.cache.isDefined) {
+        if (param.cache.isDefined) {
           optimizer.setCache(param.cache.get, Trigger.severalIteration(10000))
         }
         optimizer
@@ -77,4 +80,5 @@ object Train {
       })
     }
   }
+
 }

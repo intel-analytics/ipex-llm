@@ -47,12 +47,12 @@ class LogSoftMax[@specialized(Float, Double) T: ClassTag](
       var t = 1
       while (t <= nframe) {
         val _t = t
-        Engine.model.invoke(() => {
+        results(_t - 1) = Engine.model.invoke(() => {
           updateOutputFrame(input.select(1, _t), output.select(1, _t))
         })
         t += 1
       }
-      Engine.model.sync()
+      Engine.model.sync(results)
     }
 
     output
@@ -84,7 +84,7 @@ class LogSoftMax[@specialized(Float, Double) T: ClassTag](
     var t = 1
     while (t <= nframe) {
       val _t = t
-      Engine.model.invoke(() => {
+      results(_t - 1) = Engine.model.invoke(() => {
         var sum = 0.0
         var d = 1
         while (d <= dim) {
@@ -101,7 +101,7 @@ class LogSoftMax[@specialized(Float, Double) T: ClassTag](
       })
       t += 1
     }
-    Engine.model.sync()
+    Engine.model.sync(results)
 
     gradInput
   }

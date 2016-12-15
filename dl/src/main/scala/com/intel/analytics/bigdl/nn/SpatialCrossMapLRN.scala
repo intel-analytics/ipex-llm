@@ -96,13 +96,13 @@ class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
     var b = 1
     while (b <= batchNum) {
       val _b = b
-      Engine.model.invoke(() => {
+      results(b - 1) = Engine.model.invoke(() => {
         SpatialCrossMapLRN.forwardFrame(input.select(1, _b), output.select(1, _b),
           scale.select(1, _b), alpha, size, beta, k)
       })
       b += 1
     }
-    Engine.model.sync()
+    Engine.model.sync(results)
     this.output
   }
 
@@ -133,14 +133,14 @@ class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
     var b = 1
     while (b <= batchNum) {
       val _b = b
-      Engine.model.invoke(() => {
+      results(b - 1) = Engine.model.invoke(() => {
         SpatialCrossMapLRN.backwardFrame(input.select(1, _b), output.select(1, _b),
           scale.select(1, _b), gradOutput.select(1, _b), gradInput.select(1, _b),
           paddedRatio.select(1, _b), accumRatio.select(1, _b), alpha, size, beta)
       })
       b += 1
     }
-    Engine.model.sync()
+    Engine.model.sync(results)
 
     this.gradInput
   }

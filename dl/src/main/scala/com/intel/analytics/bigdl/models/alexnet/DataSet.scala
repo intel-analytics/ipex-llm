@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 object DataSet {
   def localDataSet(path : Path, imageSize : Int, batchSize : Int, parallel: Int, looped : Boolean)
   : LocalDataSet[Batch[Float]] = {
-    val ds = SequenceFiles.LocalFiles(path, 1281167, looped)
+    val ds = SequenceFiles.localFiles(path, 1281167, looped)
     val fileTransformer = LocalSeqFileToBytes()
     val arrayToImage = SampleToRGBImg()
     val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)

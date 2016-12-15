@@ -42,12 +42,12 @@ class LocalValidator[T](model: Module[T], coreNumber: Int)
       require(batch._1.size(1) == batch._2.size(1))
       val stackSize = batch._1.size(1) / subModelNumber
       val extraSize = batch._1.size(1) % subModelNumber
-      val parallelism = if(stackSize == 0) extraSize else subModelNumber
+      val parallelism = if (stackSize == 0) extraSize else subModelNumber
       val result = Engine.default.invokeAndWait(
         (0 until parallelism).map(b =>
           () => {
             val offset = b * stackSize + math.min(b, extraSize)
-            val length = stackSize + (if(b < extraSize) 1 else 0)
+            val length = stackSize + (if (b < extraSize) 1 else 0)
             val input = batch._1.narrow(1, offset + 1, length)
             val target = batch._2.narrow(1, offset + 1, length)
             val output = workingModels(b).forward(input)

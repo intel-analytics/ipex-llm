@@ -26,8 +26,11 @@ import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.spark.SparkContext
 
 object Train {
+
   object GoogleNetv1_Local {
+
     import Options._
+
     def main(args: Array[String]): Unit = {
       trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
         val batchSize = 32
@@ -40,13 +43,13 @@ object Train {
         val validateDataSet = DataSet.localDataSet(validationData, imageSize, batchSize,
           param.coreNumber, false)
 
-        val model = if(param.modelSnapshot.isDefined) {
+        val model = if (param.modelSnapshot.isDefined) {
           AbstractModule.load[Float](param.modelSnapshot.get)
         } else {
           GoogleNet_v1_NoAuxClassifier(classNum = 1000)
         }
 
-        val state = if(param.stateSnapshot.isDefined) {
+        val state = if (param.stateSnapshot.isDefined) {
           T.load(param.stateSnapshot.get)
         } else {
           T(
@@ -64,7 +67,7 @@ object Train {
           dataset = trainDataSet,
           criterion = new ClassNLLCriterion[Float]()
         )
-        if(param.cache.isDefined) {
+        if (param.cache.isDefined) {
           optimizer.setCache(param.cache.get, Trigger.everyEpoch)
         }
         optimizer
@@ -78,7 +81,9 @@ object Train {
   }
 
   object GoogleNetv1_Spark {
+
     import Options._
+
     def main(args: Array[String]): Unit = {
       trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
         val batchSize = 1600
@@ -86,7 +91,7 @@ object Train {
 
         val conf = Engine.sparkConf().setAppName("BigDL GoogleNet v1 Example")
         val sc = new SparkContext(conf)
-        val trainDataSet = DataSet.DistriDataSet(
+        val trainDataSet = DataSet.distriDataSet(
           param.folder + "/train",
           sc,
           imageSize,
@@ -94,7 +99,7 @@ object Train {
           param.nodesNumber,
           param.coreNumberPerNode,
           true)
-        val validateDataSet = DataSet.DistriDataSet(
+        val validateDataSet = DataSet.distriDataSet(
           param.folder + "/val",
           sc,
           imageSize,
@@ -103,13 +108,13 @@ object Train {
           param.coreNumberPerNode,
           false)
 
-        val model = if(param.modelSnapshot.isDefined) {
+        val model = if (param.modelSnapshot.isDefined) {
           AbstractModule.load[Float](param.modelSnapshot.get)
         } else {
           GoogleNet_v1_NoAuxClassifier(classNum = 1000)
         }
 
-        val state = if(param.stateSnapshot.isDefined) {
+        val state = if (param.stateSnapshot.isDefined) {
           T.load(param.stateSnapshot.get)
         } else {
           T(
@@ -129,7 +134,7 @@ object Train {
           criterion = new ClassNLLCriterion[Float]()
         )
 
-        if(param.cache.isDefined) {
+        if (param.cache.isDefined) {
           optimizer.setCache(param.cache.get, Trigger.everyEpoch)
         }
 
@@ -142,5 +147,6 @@ object Train {
       })
     }
   }
+
 }
 
