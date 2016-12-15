@@ -113,7 +113,8 @@ object SGD {
           config.add(r.config)
         }
       }
-      config("clr") = -config.get[Double]("learningRate").getOrElse(1e-3)
+      config("clr") = -config.get[Double]("learningRate").getOrElse(1e-3) *
+        config.get[Double]("dropModuleDecay").getOrElse(1.0)
     }
   }
   case class Poly(power : Double, maxIteration : Int) extends LearningRateSchedule {
@@ -125,9 +126,8 @@ object SGD {
       } else {
         -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
       }
-      println(s"iteration is : ${nevals}. current learning rate is $clr")
       state("evalCounter") = nevals + 1
-      config("clr") = clr
+      config("clr") = clr * config.get[Double]("dropModuleDecay").getOrElse(1.0)
     }
   }
 
@@ -142,7 +142,7 @@ object SGD {
         i += 1
       }
       state("evalCounter") = nevals + 1
-      config("clr") = clr
+      config("clr") = clr * config.get[Double]("dropModuleDecay").getOrElse(1.0)
     }
   }
 
@@ -156,7 +156,7 @@ object SGD {
         clr *= gamma
         i += 1
       }
-      config("clr") = clr
+      config("clr") = clr * config.get[Double]("dropModuleDecay").getOrElse(1.0)
     }
   }
 
@@ -165,7 +165,8 @@ object SGD {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val lrd = config.get[Double]("learningRateDecay").getOrElse(0.0)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
-      config("clr") = -lr / (1 + nevals * lrd)
+      config("clr") = -lr * 
+        config.get[Double]("dropModuleDecay").getOrElse(1.0) / (1 + nevals * lrd)
       state("evalCounter") = nevals + 1
     }
   }
