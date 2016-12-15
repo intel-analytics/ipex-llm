@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.utils
 
 object Util {
   def kthLargest(arr: Array[Long], l: Int, r: Int, k: Int): Long = {
+    if (k == 0) return Long.MaxValue
     val pos = randomPartition(arr, l, r)
     if (pos-l == k-1)  return arr(pos)
 

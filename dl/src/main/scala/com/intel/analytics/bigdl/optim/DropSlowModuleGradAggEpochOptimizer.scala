@@ -39,10 +39,6 @@ object DropSlowModuleGradAggEpochOptimizer {
     "bigdl.optim.BetterGradAggEpochOptimizer.subModuleNumber",
     (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
 
-  val dropModulePercentage = System.getProperty(
-    "bigdl.optim.dropModulePercentage", "0.04").toDouble
-  require(dropModulePercentage>=0 && dropModulePercentage<0.5)
-
   val lossArray = new Array[Double](subModuleNumber)
   val recordsArray = new Array[Int](subModuleNumber)
   private val logger = Logger.getLogger(getClass);
@@ -129,6 +125,8 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
     val _computeThresholdBatchsize = computeThresholdBatchsize
     var _moduleTimeList: Array[Long] = null
     val _ps = new AllReduceParameter[T]()
+    val percentage = config.get[Double]("dropModulePercentage").getOrElse(0.0)
+    require(percentage>=0 && percentage<0.5)
 
     for (i <- 1 to epochNum) {
       logger.info(s"[Epoch $i/$epochNum] Train start")
@@ -322,7 +320,8 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
             _moduleTimeList = multiThreadModels.mapPartitions{ iter =>
               iter.next().apply(0).moduleTimeList.iterator
             }.collect()
-            val k = (dropModulePercentage*_computeThresholdBatchsize*idealSubModulesNum).toInt
+
+            val k = (percentage*_computeThresholdBatchsize*idealSubModulesNum).toInt
             threshold = Util.kthLargest(_moduleTimeList, 0, _moduleTimeList.length-1, k)
             logger.info("threshold: " + threshold)
 
