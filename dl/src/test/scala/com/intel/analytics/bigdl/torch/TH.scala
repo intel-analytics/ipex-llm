@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.torch
 import java.io._
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.TorchObject._
 import com.intel.analytics.bigdl.utils.{File, Table}
@@ -80,28 +81,14 @@ object TH {
       parameters(k) match {
         case _: Tensor[_] =>
           if (parameters(k).asInstanceOf[Tensor[_]].getType() == FloatType) {
-            File.saveTorch(parameters(k), tmpPath, TYPE_FLOAT_TENSOR)
+            File.saveTorch(parameters(k), tmpPath, TYPE_FLOAT_TENSOR, true)
           } else {
-            File.saveTorch(parameters(k), tmpPath, TYPE_DOUBLE_TENSOR)
+            File.saveTorch(parameters(k), tmpPath, TYPE_DOUBLE_TENSOR, true)
           }
-        case _: Linear[_] =>
-          File.saveTorch(parameters(k), tmpPath, TYPE_LINEAR)
-        case _: SpatialConvolution[_] =>
-          File.saveTorch(parameters(k), tmpPath, TYPE_SPATIALCONVOLUTION)
-        case _: SpatialMaxPooling[_] =>
-          File.saveTorch(parameters(k), tmpPath, TYPE_SPATIALMAXPOOLING)
-        case _: Threshold[_] =>
-          File.saveTorch(parameters(k), tmpPath, TYPE_THRESHOLD)
-        case _: Concat[_] =>
-          File.saveTorch(parameters(k), tmpPath, TYPE_CONCAT)
-        case _: Sequential[_] =>
-          File.saveTorch(parameters(k), tmpPath, TYPE_SEQUENTIAL)
-        case _: View[_] =>
-          File.saveTorch(parameters(k), tmpPath, TYPE_VIEW)
-        case _: Dropout[_] =>
-          File.saveTorch(parameters(k), tmpPath, TYPE_DROPOUT)
+        case _: AbstractModule[_, _, _] =>
+          File.saveTorch(parameters(k), tmpPath, TYPE_MODULE, true)
         case _: Table =>
-          File.saveTorch(parameters(k).asInstanceOf[Table].getState(), tmpPath, TYPE_TABLE)
+          File.saveTorch(parameters(k).asInstanceOf[Table].getState(), tmpPath, TYPE_TABLE, true)
         case _ =>
       }
       varCode.append(k + " = torch.load(\'" + tmpPath + "\')\n")

@@ -34,9 +34,7 @@ class MVSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A MV" should "generate correct output with no transform and no batch" in {
     val input1 = Tensor[Double](3, 3).apply1(x => randn())
     val input2 = Tensor[Double](3).apply1(x => randn())
-    val input = T()
-    input(1.toDouble) = input1
-    input(2.toDouble) = input2
+    val input = T(input1, input2)
     val gradOutput = Tensor[Double](3)
     gradOutput.apply1(x => randn())
 
@@ -56,15 +54,10 @@ class MVSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
-    val luaGradInput = torchResult("gradInput").asInstanceOf[mutable.HashMap[Any, Any]]
-    luaGradInput.keys.foreach(k => {
-      val v = luaGradInput.remove(k).get
-      luaGradInput.put(k.asInstanceOf[Double].toInt, v)
-    })
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Table]
 
-
-    luaOutput should be(output)
-    gradInput should equal (new Table(luaGradInput))
+    luaOutput should be (output)
+    gradInput should equal (luaGradInput)
 
     println("Test case : MV, Torch : " +
       luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
@@ -73,9 +66,7 @@ class MVSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A MV" should "generate correct output with transform and no batch" in {
     val input1 = Tensor[Double](3, 3).apply1(x => randn())
     val input2 = Tensor[Double](3).apply1(x => randn())
-    val input = T()
-    input(1.toDouble) = input1
-    input(2.toDouble) = input2
+    val input = T(input1, input2)
     val gradOutput = Tensor[Double](3)
     gradOutput.apply1(x => randn())
 
@@ -95,15 +86,10 @@ class MVSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
-    val luaGradInput = torchResult("gradInput").asInstanceOf[mutable.HashMap[Any, Any]]
-    luaGradInput.keys.foreach(k => {
-      val v = luaGradInput.remove(k).get
-      luaGradInput.put(k.asInstanceOf[Double].toInt, v)
-    })
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Table]
 
-
-    luaOutput should be(output)
-    gradInput should equal (new Table(luaGradInput))
+    luaOutput should be (output)
+    gradInput should equal (luaGradInput)
 
     println("Test case : MV, Torch : " +
       luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
@@ -112,9 +98,7 @@ class MVSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A MV" should "generate correct output with no transform and batch" in {
     val input1 = Tensor[Double](3, 3, 3).apply1(x => randn())
     val input2 = Tensor[Double](3, 3).apply1(x => randn())
-    val input = T()
-    input(1.toDouble) = input1
-    input(2.toDouble) = input2
+    val input = T(input1, input2)
     val gradOutput = Tensor[Double](3, 3)
     gradOutput.apply1(x => randn())
 
@@ -134,15 +118,10 @@ class MVSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
-    val luaGradInput = torchResult("gradInput").asInstanceOf[mutable.HashMap[Any, Any]]
-    luaGradInput.keys.foreach(k => {
-      val v = luaGradInput.remove(k).get
-      luaGradInput.put(k.asInstanceOf[Double].toInt, v)
-    })
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Table]
 
-
-    luaOutput should be(output)
-    gradInput should equal (new Table(luaGradInput))
+    luaOutput should be (output)
+    gradInput should equal (luaGradInput)
 
     println("Test case : MV, Torch : " +
       luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
@@ -152,9 +131,7 @@ class MVSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "A MV" should "generate correct output with transform and batch" in {
     val input1 = Tensor[Double](3, 3, 3).apply1(x => randn())
     val input2 = Tensor[Double](3, 3).apply1(x => randn())
-    val input = T()
-    input(1.toDouble) = input1
-    input(2.toDouble) = input2
+    val input = T(input1, input2)
     val gradOutput = Tensor[Double](3, 3)
     gradOutput.apply1(x => randn())
 
@@ -174,15 +151,10 @@ class MVSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
-    val luaGradInput = torchResult("gradInput").asInstanceOf[mutable.HashMap[Any, Any]]
-    luaGradInput.keys.foreach(k => {
-      val v = luaGradInput.remove(k).get
-      luaGradInput.put(k.asInstanceOf[Double].toInt, v)
-    })
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Table]
 
-
-    luaOutput should be(output)
-    gradInput should equal (new Table(luaGradInput))
+    luaOutput should be (output)
+    gradInput should equal (luaGradInput)
 
     println("Test case : MV, Torch : " +
       luaTime + " s, Scala : " + scalaTime / 1e9 + " s")

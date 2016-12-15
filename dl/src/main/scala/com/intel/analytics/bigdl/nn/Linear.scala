@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
 import RandomGenerator._
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 
-class Linear[@specialized(Float, Double) T: ClassTag](
+class Linear[T: ClassTag](
   inputSize: Int,
   outputSize: Int,
   private var initMethod: InitializationMethod = Default

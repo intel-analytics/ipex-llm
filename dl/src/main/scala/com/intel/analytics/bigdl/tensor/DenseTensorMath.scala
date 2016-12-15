@@ -703,7 +703,7 @@ object DenseTensorMath {
   def nearlyEqual[@specialized(Float, Double) T](a: T, b: T, epsilon: Double)(
     implicit ev: TensorNumeric[T]): Boolean = {
     ev.getType() match {
-      case "Float" =>
+      case FloatType =>
         val floatA = ev.toType[Float](a)
         val floatB = ev.toType[Float](b)
         val absA = math.abs(floatA)
@@ -728,7 +728,7 @@ object DenseTensorMath {
           }
         }
         result
-      case "Double" =>
+      case DoubleType =>
         val doubleA = ev.toType[Double](a)
         val doubleB = ev.toType[Double](b)
         val absA = math.abs(doubleA)

@@ -27,7 +27,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
-class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
+class SpatialConvolution[T: ClassTag](
   val nInputPlane: Int, // The number of expected input planes in the image given into forward()
   val nOutputPlane: Int, // The number of output planes the convolution layer will produce.
   val kernelW: Int, // The kernel width of the convolution
@@ -406,13 +406,13 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     val output2d = output.view(nOutputPlane, outputHeight * outputWidth)
     if (!_1x1) {
       ev.getType() match {
-        case "Double" =>
+        case DoubleType =>
           val before = System.nanoTime()
           NNPrimitive.im2colDouble(fInput.asInstanceOf[Tensor[Double]],
             input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH, nInputPlane,
             inputWidth, inputHeight, outputWidth, outputHeight)
           im2colTime += System.nanoTime() - before
-        case "Float" =>
+        case FloatType =>
           val before = System.nanoTime()
           NNPrimitive.im2colFloat(fInput.asInstanceOf[Tensor[Float]],
             input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH, nInputPlane,
@@ -429,7 +429,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     weight: Tensor[T], fgradInput: Tensor[T], kW: Int, kH: Int, dW: Int, dH: Int,
     padW: Int, padH: Int)(implicit ev: TensorNumeric[T]): Unit = {
     ev.getType() match {
-      case "Double" =>
+      case DoubleType =>
         val gradOutput2d = Tensor(gradOutput.storage().asInstanceOf[Storage[Double]],
           gradOutput.storageOffset(), Array(gradOutput.size(1),
             gradOutput.size(2) * gradOutput.size(3)))
@@ -444,7 +444,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
             gradInput.size(2), gradOutput.size(3), gradOutput.size(2))
           col2imTime += System.nanoTime() - before
         }
-      case "Float" =>
+      case FloatType =>
         val gradOutput2d = Tensor(gradOutput.storage().asInstanceOf[Storage[Float]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
@@ -467,7 +467,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     gradBias: Tensor[T], fInput: Tensor[T], scale: T)(implicit ev: TensorNumeric[T]): Unit = {
 
     ev.getType() match {
-      case "Double" =>
+      case DoubleType =>
         val gradOutput2d = Tensor[Double](gradOutput.storage().asInstanceOf[Storage[Double]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
@@ -491,7 +491,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
               (ev.toType[Double](scale) * sum))
           i += 1
         }
-      case "Float" =>
+      case FloatType =>
         val gradOutput2d = Tensor[Float](gradOutput.storage().asInstanceOf[Storage[Float]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
@@ -524,7 +524,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
     fInput: Tensor[T], scale: T)(implicit ev: TensorNumeric[T]): Unit = {
 
     ev.getType() match {
-      case "Double" =>
+      case DoubleType =>
         val gradOutput2d = Tensor[Double](gradOutput.storage().asInstanceOf[Storage[Double]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
@@ -534,7 +534,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           fInput.t.asInstanceOf[Tensor[Double]])
         gradBias.asInstanceOf[Tensor[Double]].addmv(0.0, 1.0, gradOutput2d,
           ones.asInstanceOf[Tensor[Double]])
-      case "Float" =>
+      case FloatType =>
         val gradOutput2d = Tensor[Float](gradOutput.storage().asInstanceOf[Storage[Float]],
           gradOutput.storageOffset(),
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))

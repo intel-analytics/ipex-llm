@@ -27,7 +27,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
-class Dropout[@specialized(Float, Double) T: ClassTag](
+class Dropout[T: ClassTag](
   val initP: Double = 0.5, val inplace: Boolean = false, var scale: Boolean = true)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   private var p = initP

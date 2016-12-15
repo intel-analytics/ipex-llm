@@ -47,14 +47,14 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
     val gradOutput = Tensor[Double](16, 3, 4, 4)
     i = 0
     gradOutput.apply1(e => {
-      i += 1;
+      i += 1
       0.1 * i
     })
 
     val gradOutput2 = Tensor[Double](16, 3, 4, 4)
     i = 0
     gradOutput2.apply1(e => {
-      i += 1;
+      i += 1
       0.05 * i
     })
 
@@ -71,22 +71,23 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
         |parameters_initial = parameters : clone()
         |gradParameters_initial = gradParameters : clone()
         |
-        |output = sbn:forward(input)
-        |
-        |gradInput = sbn:backward(input, gradOutput)
-        |
         |sbn:forward(input)
         |
-        |sbn:backward(input, gradOutput2)
+        |sbn:backward(input, gradOutput)
+        |
+        |output = sbn:forward(input)
+        |
+        |gradInput = sbn:backward(input, gradOutput2)
       """.stripMargin
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput,
-      "gradOutput2" -> gradOutput2), Array("sbn", "parameters_initial", "gradParameters_initial",
-      "gradParameters"))
-    val sbnTorch = torchResult("sbn").asInstanceOf[SpatialBatchNormalization[Double]]
+      "gradOutput2" -> gradOutput2), Array("parameters_initial", "gradParameters_initial",
+      "gradParameters", "output", "gradInput"))
     val parameterTorch = torchResult("parameters_initial").asInstanceOf[Tensor[Double]]
     val gradparameterTorch = torchResult("gradParameters_initial").asInstanceOf[Tensor[Double]]
     val gradparametersTorch = torchResult("gradParameters").asInstanceOf[Tensor[Double]]
+    val outputTorch = torchResult("output").asInstanceOf[Tensor[Double]]
+    val gradInputTorch = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
     require(parameters == parameterTorch, "parameter compare failed")
 
@@ -99,12 +100,12 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
 
     val gradInput = sbn.backward(input, gradOutput2)
 
-    sbnTorch.output.map(sbn.output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0);
+    outputTorch.map(output, (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
       v1
     })
 
-    gradInput.map(sbnTorch.gradInput, (v1, v2) => {
+    gradInputTorch.map(gradInput, (v1, v2) => {
       if (abs(v1 - v2) != 0) println(s"$v1 $v2")
       v1
     })
@@ -113,18 +114,6 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
       if (abs(v1 - v2) != 0) println(s"$v1 $v2")
       v1
     })
-
-    var j = 0
-    var gradInputAbs = 0.0
-    while (j < gradInput.nElement()) {
-      val tmp = abs(gradInput.storage().array()(j) - sbnTorch.gradInput.storage().array()(j))
-      gradInputAbs += tmp
-      if (tmp != 0) println(s"$j: ${gradInput.storage().array()(j)} ${
-        sbnTorch.gradInput.storage().array()(j)
-      }")
-      j += 1
-    }
-    println(s"gradInputAbs:$gradInputAbs")
 
   }
 
@@ -144,14 +133,14 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
     val gradOutput = Tensor[Double](16, 3, 4, 4)
     i = 0
     gradOutput.apply1(e => {
-      i += 1;
+      i += 1
       0.1 * i
     })
 
     val gradOutput2 = Tensor[Double](16, 3, 4, 4)
     i = 0
     gradOutput2.apply1(e => {
-      i += 1;
+      i += 1
       0.05 * i
     })
 
@@ -168,9 +157,9 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
         |parameters_initial = parameters : clone()
         |gradParameters_initial = gradParameters : clone()
         |
-        |output = sbn:forward(input)
+        |sbn:forward(input)
         |
-        |gradInput = sbn:backward(input, gradOutput)
+        |sbn:backward(input, gradOutput)
         |
         |sbn:forward(input)
         |
@@ -181,11 +170,13 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
         |output = sbn:forward(input)
       """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput,
-      "gradOutput2" -> gradOutput2), Array("sbn", "parameters_initial", "gradParameters_initial"))
-    val sbnTorch = torchResult("sbn").asInstanceOf[SpatialBatchNormalization[Double]]
+    val (luaTime, torchResult) = TH.run(code,
+      Map("input" -> input, "gradOutput" -> gradOutput, "gradOutput2" -> gradOutput2),
+      Array("parameters_initial", "gradParameters_initial", "output", "gradInput"))
     val parameterTorch = torchResult("parameters_initial").asInstanceOf[Tensor[Double]]
     val gradparameterTorch = torchResult("gradParameters_initial").asInstanceOf[Tensor[Double]]
+    val outputTorch = torchResult("output").asInstanceOf[Tensor[Double]]
+    val gradInputTorch = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
     require(parameters == parameterTorch, "parameter compare failed")
 
@@ -201,8 +192,8 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
     sbn.evaluate()
     val output = sbn.forward(input)
 
-    sbnTorch.output.map(sbn.output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0);
+    outputTorch.map(output, (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
       v1
     })
 

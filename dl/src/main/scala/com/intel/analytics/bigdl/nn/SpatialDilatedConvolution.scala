@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.{DenseTensorBLAS, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseTensorBLAS, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
@@ -223,7 +223,7 @@ class SpatialDilatedConvolution[T: ClassTag](
       // Extract columns:
       val before = System.nanoTime()
       ev.getType() match {
-        case "Double" => NNPrimitive.im2colWithDilationDouble(
+        case DoubleType => NNPrimitive.im2colWithDilationDouble(
           input_n.asInstanceOf[Tensor[Double]], columns.asInstanceOf[Tensor[Double]],
           nInputPlane, inputHeight, inputWidth,
           kH, kW,
@@ -231,7 +231,7 @@ class SpatialDilatedConvolution[T: ClassTag](
           dH, dW,
           dilationH, dilationW
         )
-        case "Float" => NNPrimitive.im2colWithDilationFloat(
+        case FloatType => NNPrimitive.im2colWithDilationFloat(
           input_n.asInstanceOf[Tensor[Float]], columns.asInstanceOf[Tensor[Float]],
           nInputPlane, inputHeight, inputWidth,
           kH, kW,
@@ -323,7 +323,7 @@ class SpatialDilatedConvolution[T: ClassTag](
       // Unpack columns back into input:
       val before = System.nanoTime()
       ev.getType() match {
-        case "Double" => NNPrimitive.col2imWithDilationDouble(
+        case DoubleType => NNPrimitive.col2imWithDilationDouble(
           gradColumns.asInstanceOf[Tensor[Double]], gradInput_n.asInstanceOf[Tensor[Double]],
           nInputPlane, inputHeight, inputWidth,
           kH, kW,
@@ -331,7 +331,7 @@ class SpatialDilatedConvolution[T: ClassTag](
           dH, dW,
           dilationH, dilationW
         )
-        case "Float" => NNPrimitive.col2imWithDilationFloat(
+        case FloatType => NNPrimitive.col2imWithDilationFloat(
           gradColumns.asInstanceOf[Tensor[Float]], gradInput_n.asInstanceOf[Tensor[Float]],
           nInputPlane, inputHeight, inputWidth,
           kH, kW,
@@ -398,7 +398,7 @@ class SpatialDilatedConvolution[T: ClassTag](
       // Extract columns:
       val before = System.nanoTime()
       ev.getType() match {
-        case "Double" => NNPrimitive.im2colWithDilationDouble(
+        case DoubleType => NNPrimitive.im2colWithDilationDouble(
           input_n.asInstanceOf[Tensor[Double]], columns.asInstanceOf[Tensor[Double]],
           nInputPlane, inputHeight, inputWidth,
           kH, kW,
@@ -406,7 +406,7 @@ class SpatialDilatedConvolution[T: ClassTag](
           dH, dW,
           dilationH, dilationW
         )
-        case "Float" => NNPrimitive.im2colWithDilationFloat(
+        case FloatType => NNPrimitive.im2colWithDilationFloat(
           input_n.asInstanceOf[Tensor[Float]], columns.asInstanceOf[Tensor[Float]],
           nInputPlane, inputHeight, inputWidth,
           kH, kW,

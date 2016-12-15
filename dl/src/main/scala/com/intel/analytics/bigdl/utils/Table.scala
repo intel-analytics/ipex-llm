@@ -52,6 +52,10 @@ class Table private[bigdl](
     Option(state(key).asInstanceOf[T])
   }
 
+  def getOrElse[T](key: Any, default: T): T = {
+    state.getOrElse(key, default).asInstanceOf[T]
+  }
+
   def contains(key: Any): Boolean = {
     state.contains(key)
   }
