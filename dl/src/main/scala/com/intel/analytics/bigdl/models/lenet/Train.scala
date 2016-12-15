@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.models.lenet
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.{Module, ClassNLLCriterion}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
@@ -43,7 +43,7 @@ object Train {
         import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
         val model = if (param.modelSnapshot.isDefined) {
-          AbstractModule.load[Float](param.modelSnapshot.get)
+          Module.load[Float](param.modelSnapshot.get)
         } else {
           LeNet5(classNum = 10)
         }
@@ -94,7 +94,7 @@ object Train {
         import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
         val model = if (param.modelSnapshot.isDefined) {
-          AbstractModule.load[Float](param.modelSnapshot.get)
+          Module.load[Float](param.modelSnapshot.get)
         } else {
           LeNet5(classNum = 10)
         }

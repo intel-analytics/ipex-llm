@@ -25,9 +25,8 @@ import com.intel.analytics.bigdl.utils.File
 import scala.reflect.ClassTag
 
 object Module {
-  def load[A <: Activity: ClassTag, B <: Activity: ClassTag,
-  @specialized(Float, Double) T: ClassTag](path : String) : AbstractModule[A, B, T] = {
-    File.load[AbstractModule[A, B, T]](path)
+  def load[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
+    File.load[AbstractModule[Activity, Activity, T]](path)
   }
 
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(
