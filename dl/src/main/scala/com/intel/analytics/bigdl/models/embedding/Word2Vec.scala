@@ -19,10 +19,19 @@ package com.intel.analytics.bigdl.models.embedding
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import org.apache.spark.rdd.RDD
 import scopt.OptionParser
 
 import scala.collection._
-import scala.io.Source
+
+
+/**
+ *  Entry in vocabulary
+ */
+private case class WordCount(
+  var word: String,
+  var count: Int
+)
 
 object Word2Vec {
   /**
@@ -79,9 +88,10 @@ object Word2Vec {
       .action { (x,c) => c.copy(subsample = x) }
   }.parse(args, Word2VecConfig()).get
 
-  var id2Word: Seq[String] = _
-  var word2Id: immutable.Map[String, Int] = _
-  var wordCount = mutable.Map[String, Int]()
+  private var trainWordsCount = 0L
+  private var vocabSize = 0
+  @transient private var vocab: Array[WordCount] = null
+  @transient private var word2Id = mutable.HashMap.empty[String, Int]
   var total = 0
 
   def getModel: Module[Float] = {
@@ -94,21 +104,44 @@ object Word2Vec {
       .add(new Sigmoid())
   }
 
-  def buildVocab(corpusPath: String, minCount: Int): Unit = {
-    for (line <- Source.fromFile(corpusPath).getLines();
-         word <- line.split(" ")) yield {
-      wordCount.update(word, wordCount.getOrElse(word, 0) + 1)
+  def buildVocab[S <: Iterable[String]](dataset: RDD[S], minCount: Int): Unit = {
+    val words = dataset.flatMap(x => x)
+    vocab = words.map(w => (w, 1))
+      .reduceByKey(_ + _)
+      .filter(_._2 >= minCount)
+      .map(x => WordCount(x._1, x._2))
+      .collect()
+      .sortWith((a, b) => a.count > b.count)
+
+    vocabSize = vocab.length
+    require(vocabSize > 0, "The vocabulary size should be > 0. You may need to check " +
+      "the setting of minCount, which could be large enough to remove all your words in sentences.")
+
+    var id = 0
+    while (id < vocabSize) {
+      word2Id += vocab(id).word -> id
+      trainWordsCount += vocab(id).count
+      id += 1
     }
-    wordCount = wordCount.filter(p => p._2 > minCount)
-    id2Word = wordCount.keys.toSeq
-    word2Id = id2Word.zipWithIndex.toMap
+
+    println(s"vocabSize = $vocabSize, trainWordsCount = $trainWordsCount")
   }
 
-  def buildTable(): Unit = {
+  def buildNegSampTable(alpah: Double): Unit = {
+    val powerSum = vocab
+      .foldLeft(0.0)((sum, pair) => sum + math.pow(pair.count, alpah))
+
+    def wordProb(id: Int) = math.pow(vocab(id).count, alpah) / powerSum
+
+
+
 
   }
+
+
 
   def main(args: Array[String]) = {
     val config = parse(args)
   }
 }
+
