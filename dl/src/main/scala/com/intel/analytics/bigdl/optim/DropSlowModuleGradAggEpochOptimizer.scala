@@ -170,7 +170,6 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
           val workStart = System.nanoTime()
           val localMTCaches = multiThreadModuleIter.next()
           val localCaches = modelIter.next()
-          val curPid = TaskContext.getPartitionId()
           val localEV = broadcastEV.value
 
           val syWStart = System.nanoTime()
@@ -273,7 +272,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
           }
           _metrics.add("aggregate gradient time",
             System.nanoTime() - aggregateGStartTime)
-          _ps.putGradients(localCaches.gradient, curPid, _partitionNum)
+          _ps.putGradients(localCaches.gradient, _partitionNum)
           _metrics.add("task1 time from worker", System.nanoTime() - workStart)
           Iterator(finishedThreads.size)
         }).reduce(_ + _)
@@ -288,10 +287,9 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
           val task2Start = System.nanoTime()
           models.mapPartitions (modelIter => {
             val task2WorkerStart = System.nanoTime()
-            val curPid = TaskContext.getPartitionId()
             val tmp = System.nanoTime()
             val params = new Array[CompressedTensor[T]](_partitionNum)
-            val getGradients = _ps.getGradients(params, curPid, _partitionNum)
+            val getGradients = _ps.getGradients(params, _partitionNum)
             getGradients.foreach(_.get())
             _metrics.add("get gradients average", System.nanoTime()-tmp)
             _metrics.add("get gradients for each node", System.nanoTime()-tmp)
@@ -301,7 +299,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
             _optm.optimize(_ => (value, _ps.partialGradients),
               _ps.partialWeights, _config, _ps.state)
 
-            _ps.putWeights(curPid)
+            _ps.putWeights()
             _metrics.add("task2 time from worker", System.nanoTime()-task2WorkerStart)
             Iterator.empty
           }).count()
