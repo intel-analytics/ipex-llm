@@ -65,7 +65,10 @@ class LocalOptimizer[T: ClassTag](
   private val syncGradParallelNum =
     if (syncGradTaskSize == 0) syncGradExtraTask else subModelNumber
 
-  private val workingModels = (1 to subModelNumber).map(_ => model.cloneModule()).toArray
+  private val workingModels = (1 to subModelNumber).map(i => {
+    logger.info(s"Clone $i model...")
+    model.cloneModule()
+  }).toArray
 
   private val workingModelWAndG = workingModels.map(_.getParameters())
 
