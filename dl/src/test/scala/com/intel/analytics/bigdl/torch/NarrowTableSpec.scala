@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.NarrowTable
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
@@ -50,8 +50,8 @@ class NarrowTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
 
-    val luaOutput1 = torchResult("output").asInstanceOf[HashMap[Double, Tensor[Double]]]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Double, Tensor[Double]]]
+    val luaOutput1 = torchResult("output").asInstanceOf[Table]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
 
     val start = System.nanoTime()
     val output = module.forward(input)
@@ -59,24 +59,8 @@ class NarrowTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    luaOutput1.size should be(output.length())
-    luaOutput2.size should be(gradInput.length())
-
-    var i = 1
-    while (i <= luaOutput1.size) {
-      val val1 = luaOutput1.get(i.toDouble).getOrElse(null)
-      val val2 = output[Tensor[Double]](i)
-      val1 should be(val2)
-      i += 1
-    }
-
-    i = 1
-    while (i <= luaOutput2.size) {
-      val val1 = luaOutput2.get(i.toDouble).getOrElse(null)
-      val val2 = gradInput[Tensor[Double]](i)
-      val1 should be(val2)
-      i += 1
-    }
+    luaOutput1 should be (output)
+    luaOutput2 should be (gradInput)
 
     println("Test case : NarrowTable, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")

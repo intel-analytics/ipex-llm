@@ -105,7 +105,7 @@ object File {
     } else {
       file.createNewFile()
     }
-    val capacity = Int.MaxValue - 5
+    val capacity = 300000
     val buffer = ByteBuffer.allocate(capacity)
     buffer.order(ByteOrder.LITTLE_ENDIAN)
     writeObject(source: Any, buffer, file.toPath, objectType)
@@ -478,10 +478,11 @@ object File {
     table("fInput") = source.fInput
     table("gradBias") = source.gradBias
     table("bias") = source.bias
-    table("weight") = source.weight.resize(source.nOutputPlane,
+    table("weight") = source.weight.clone().resize(source.nOutputPlane,
       source.nInputPlane * source.kernelH * source.kernelW)
-    table("gradWeight") = source.gradWeight.resize(source.nOutputPlane,
+    table("gradWeight") = source.gradWeight.clone().resize(source.nOutputPlane,
       source.nInputPlane * source.kernelH * source.kernelW)
+    if (!source.propagateBack) table("gradInput") = null
     writeObject(table, rawdata, path, TYPE_TABLE)
     byteWrite(rawdata, path)
   }
@@ -1020,6 +1021,7 @@ object File {
 
   private def readSpatialConvolutionWithType[T: ClassTag](
       elements: Table)(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
+    val propagateBack = if (null == elements("gradInput")) false else true
     val result = SpatialConvolution[T](
       nInputPlane = elements[Double]("nInputPlane").toInt,
       nOutputPlane = elements[Double]("nOutputPlane").toInt,
@@ -1028,7 +1030,9 @@ object File {
       strideW = elements.getOrElse("dW", 1.0).toInt,
       strideH = elements.getOrElse("dH", 1.0).toInt,
       padW = elements.getOrElse("padW", 0.0).toInt,
-      padH = elements.getOrElse("padH", 0.0).toInt
+      padH = elements.getOrElse("padH", 0.0).toInt,
+      nGroup = 1,
+      propagateBack = propagateBack
     )
     result.weight.copy(elements("weight").asInstanceOf[Tensor[T]])
     result.bias.copy(elements("bias").asInstanceOf[Tensor[T]])

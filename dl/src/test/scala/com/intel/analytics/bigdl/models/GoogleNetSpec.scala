@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
@@ -199,8 +199,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val outputTorch = TH.map("output").asInstanceOf[Tensor[Double]]
     outputTest should be equals outputTorch
 
-    val errTorch = TH.map("err").asInstanceOf[HashMap[Double, Double]].
-      get(1.0).getOrElse(null).asInstanceOf[Double]
+    val errTorch = TH.map("err").asInstanceOf[Table][Double](1)
     val errTest = criterion.forward(outputTest, labels)
     println(s"err:${abs(errTest - errTorch)}")
     assert(abs(errTest - errTorch) < 4e-10)
@@ -406,8 +405,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     println(s"outputAbs:$outputAbs")
 
     val errTest = criterion.forward(outputTest, labels)
-    val errTorch = TH.map("err").asInstanceOf[HashMap[Double, Double]].
-      get(1.0).getOrElse(null).asInstanceOf[Double]
+    val errTorch = TH.map("err").asInstanceOf[Table][Double](1)
     println(s"err:${abs(errTest - errTorch)}")
     assert(abs(errTest - errTorch) == 0)
 
@@ -590,8 +588,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val outputTorch = TH.map("output").asInstanceOf[Tensor[Double]]
     outputTest should be equals outputTorch
 
-    val errTorch = TH.map("err").asInstanceOf[HashMap[Double, Double]].
-      get(1.0).getOrElse(null).asInstanceOf[Double]
+    val errTorch = TH.map("err").asInstanceOf[Table][Double](1)
     val errTest = criterion.forward(outputTest, labels)
     println(s"err:${abs(errTest - errTorch)}")
     assert(abs(errTest - errTorch) < 4e-10)

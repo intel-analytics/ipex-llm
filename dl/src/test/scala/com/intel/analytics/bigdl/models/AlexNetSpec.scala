@@ -397,6 +397,7 @@ gradInput = model.gradInput
     TH.runNM(code, Map("model" -> model, "input" -> input, "labels" -> labels),
       Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradInput", "model"))
+    val torchModel = TH.map("parameters_initial").asInstanceOf[Sequential[Float]]
 
     val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Float]]
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Float]]

@@ -30,11 +30,9 @@ class FileSpec extends FlatSpec with Matchers {
     val tmpFile = java.io.File.createTempFile("module", ".t7")
     val absolutePath = tmpFile.getAbsolutePath
     val alexnet = AlexNet_OWT(1000)
-    File.saveTorch(alexnet, absolutePath, TYPE_MODULE)
-    val model = File.loadTorch[Sequential[Float]](absolutePath)
+    alexnet.saveTorch(absolutePath, true)
+    val model = Module.loadTorch[Float](absolutePath).asInstanceOf[Sequential[Float]]
     model.getParameters() should be (alexnet.getParameters())
-    println(alexnet)
-    println(model)
     for (i <- 0 until model.modules.size) {
       println(i)
       println(model.modules(i).equals(alexnet.asInstanceOf[Sequential[Float]].modules(i)))

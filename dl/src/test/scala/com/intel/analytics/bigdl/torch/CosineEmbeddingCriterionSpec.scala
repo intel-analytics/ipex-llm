@@ -66,17 +66,10 @@ class CosineEmbeddingCriterionSpec extends FlatSpec with BeforeAndAfter with Mat
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
       Array("output", "gradInput", "_idx", "buffer", "_outputs"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Double, Tensor[Double]]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
 
     luaOutput1 should be(output)
-
-    val luagradInput1 = luaOutput2.get(1.0).getOrElse(null)
-    val luagradInput2 = luaOutput2.get(2.0).getOrElse(null)
-
-    val gradInput1 = gradInput.apply(1.toDouble).asInstanceOf[Tensor[Double]]
-    val gradInput2 = gradInput.apply(2.toDouble).asInstanceOf[Tensor[Double]]
-    gradInput1 should be(luagradInput1)
-    gradInput2 should be(luagradInput2)
+    luaOutput2 should be (gradInput)
 
     println("Test case : CrossEntropyCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")

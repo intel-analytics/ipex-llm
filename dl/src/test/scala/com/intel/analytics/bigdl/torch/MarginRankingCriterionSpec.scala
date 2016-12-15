@@ -57,10 +57,10 @@ class MarginRankingCriterionSpec extends FlatSpec with BeforeAndAfter with Match
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Any, Any]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
 
-    luaOutput1 should be(output)
-    gradInput should equal(new Table(luaOutput2))
+    luaOutput1 should be (output)
+    gradInput should equal (luaOutput2)
 
     println("Test case : MarginRankingCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
@@ -93,10 +93,10 @@ class MarginRankingCriterionSpec extends FlatSpec with BeforeAndAfter with Match
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target1),
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Any, Any]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
 
-    luaOutput1 should be(output)
-    gradInput should equal(new Table(luaOutput2))
+    luaOutput1 should be (output)
+    gradInput should equal (luaOutput2)
 
     println("Test case : MarginRankingCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")

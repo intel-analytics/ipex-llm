@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.{CriterionTable, MSECriterion}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
@@ -40,9 +40,7 @@ class CriterionTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val input2 = Tensor[Double](2, 2, 2).apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](5, 2).apply1(e => Random.nextDouble())
 
-    var input = new Table()
-    input(1.toDouble) = input1
-    input(2.toDouble) = input2
+    val input = T(input1, input2)
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.CriterionTable(nn.MSECriterion())\n" +
       "output = module:forward(input)\n" +
@@ -52,7 +50,7 @@ class CriterionTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Double, Tensor[Double]]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
 
     val module = new CriterionTable[Double](new MSECriterion())
     val start = System.nanoTime()
@@ -61,8 +59,8 @@ class CriterionTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    output should be(luaOutput1)
-    gradInput should be(luaOutput2.get(1).getOrElse(null))
+    output should be (luaOutput1)
+    gradInput should be (luaOutput2[Tensor[Double]](1))
 
     println("Test case : CriterionTable, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
