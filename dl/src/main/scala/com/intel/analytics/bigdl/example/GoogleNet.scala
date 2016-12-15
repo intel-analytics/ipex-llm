@@ -82,7 +82,7 @@ object GoogleNet {
           if (config[Table](4)[Int](2) != 0) {
             pool.add(SpatialConvolution[D](inputSize, config[Table](4)[Int](2), 1, 1, 1, 1))
             pool.add(SpatialBatchNormalization(config[Table](4)(2), 1e-3))
-            pool.add(ReLU[D]())
+            pool.add(ReLU[D](true))
           }
           concat.add(pool)
 
@@ -125,7 +125,7 @@ object GoogleNet {
         auxClassifier.add(SpatialBatchNormalization(128, 1e-3))
         auxClassifier.add(View[D](128 * 4 * 4).setNumInputDims(3))
         auxClassifier.add(Linear[D](128 * 4 * 4, 768))
-        auxClassifier.add(ReLU[D]())
+        auxClassifier.add(ReLU[D](true))
         auxClassifier.add(Linear[D](768, classNum))
         auxClassifier.add(LogSoftMax[D])
 
@@ -172,7 +172,7 @@ object GoogleNet {
         auxClassifier.add(SpatialConvolution[D](576, 128, 1, 1, 1, 1))
         auxClassifier.add(View[D](128 * 4 * 4).setNumInputDims(3))
         auxClassifier.add(Linear[D](128 * 4 * 4, 768))
-        auxClassifier.add(ReLU[D]())
+        auxClassifier.add(ReLU[D](true))
         auxClassifier.add(Linear[D](768, classNum))
         auxClassifier.add(LogSoftMax[D])
 
@@ -227,7 +227,7 @@ object GoogleNet {
 
     if (config[Table](4)[Int](2) != 0) {
       pool.add(SpatialConvolution[D](inputSize, config[Table](4)[Int](2), 1, 1, 1, 1))
-      pool.add(ReLU[D]())
+      pool.add(ReLU[D](true))
     }
     concat.add(pool)
 

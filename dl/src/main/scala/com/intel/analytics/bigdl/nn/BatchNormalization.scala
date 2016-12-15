@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
@@ -88,7 +88,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     }
     val n = input.nElement() / nInput
     ev.getType() match {
-      case "Double" =>
+      case DoubleType =>
         val inputDouble = input.asInstanceOf[Tensor[Double]]
         val inputData = inputDouble.storage().array()
         val inputOffset = inputDouble.storageOffset() - 1
@@ -101,7 +101,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
         updateOutputDouble(inputData, inputOffset, inputStride, outputData, outputOffset,
           outputStride, nInput, n, inputStride2)
 
-      case "Float" =>
+      case FloatType =>
         val inputFloat = input.asInstanceOf[Tensor[Float]]
         val inputData = inputFloat.storage().array()
         val inputOffset = inputFloat.storageOffset() - 1
@@ -279,7 +279,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     val n = input.nElement() / nInput
 
     ev.getType() match {
-      case "Double" =>
+      case DoubleType =>
         val inputDouble = input.asInstanceOf[Tensor[Double]]
         val inputData = inputDouble.storage().array()
         val inputOffset = inputDouble.storageOffset() - 1
@@ -331,7 +331,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
 
         }
 
-      case "Float" =>
+      case FloatType =>
         val inputFloat = input.asInstanceOf[Tensor[Float]]
         val inputData = inputFloat.storage().array()
         val inputOffset = inputFloat.storageOffset() - 1

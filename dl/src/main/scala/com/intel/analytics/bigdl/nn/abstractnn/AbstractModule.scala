@@ -17,10 +17,11 @@
 
 package com.intel.analytics.bigdl.nn.abstractnn
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
@@ -273,6 +274,19 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     this.clearState()
     File.save(this, path, overWrite)
     this
+  }
+
+  def saveTorch(path : String, overWrite: Boolean = false) : this.type = {
+    this.clearState()
+    File.saveTorch(this, path, TYPE_MODULE, overWrite)
+    this
+  }
+
+  /**
+   * @return Float or Double
+   */
+  def getNumericType(): TensorDataType = {
+    ev.getType()
   }
 }
 

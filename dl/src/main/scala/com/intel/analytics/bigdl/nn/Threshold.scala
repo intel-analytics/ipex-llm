@@ -60,7 +60,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
     if (inPlace) {
       output = input
       ev.getType() match {
-        case "Double" =>
+        case DoubleType =>
           val inputDouble = input.asInstanceOf[Tensor[Double]]
           val inputData = inputDouble.storage().array()
           val inputOffset = inputDouble.storageOffset() - 1
@@ -82,7 +82,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
             })
             t += 1
           }
-        case "Float" =>
+        case FloatType =>
           val inputDouble = input.asInstanceOf[Tensor[Float]]
           val inputData = inputDouble.storage().array()
           val inputOffset = inputDouble.storageOffset() - 1
@@ -111,7 +111,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
     }
     else {
       ev.getType() match {
-        case "Double" =>
+        case DoubleType =>
           output.asInstanceOf[Tensor[Double]].resizeAs(input.asInstanceOf[Tensor[Double]])
 
           val inputDouble = input.asInstanceOf[Tensor[Double]]
@@ -138,7 +138,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
             })
             t += 1
           }
-        case "Float" =>
+        case FloatType =>
           output.asInstanceOf[Tensor[Float]].resizeAs(input.asInstanceOf[Tensor[Float]])
 
           val inputFloat = input.asInstanceOf[Tensor[Float]]
@@ -178,10 +178,10 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
     if (inPlace) {
       gradInput = gradOutput
       ev.getType() match {
-        case "Double" =>
+        case DoubleType =>
           gradInput.asInstanceOf[Tensor[Double]].map(input.asInstanceOf[Tensor[Double]], (g, i) =>
             if (i <= threshold) 0 else g)
-        case "Float" =>
+        case FloatType =>
           gradInput.asInstanceOf[Tensor[Float]].map(input.asInstanceOf[Tensor[Float]], (g, i) =>
             if (i <= threshold) 0 else g)
         case _ =>
@@ -192,10 +192,10 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
       gradInput.resizeAs(gradOutput)
       gradInput.copy(gradOutput)
       ev.getType() match {
-        case "Double" =>
+        case DoubleType =>
           gradInput.asInstanceOf[Tensor[Double]].map(input.asInstanceOf[Tensor[Double]], (g, i) =>
             if (i > threshold) g else 0)
-        case "Float" =>
+        case FloatType =>
           gradInput.asInstanceOf[Tensor[Float]].map(input.asInstanceOf[Tensor[Float]], (g, i) =>
             if (i > threshold) g else 0)
         case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
@@ -236,7 +236,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
     if (inPlace) {
       gradInput = gradOutput
       ev.getType() match {
-        case "Double" =>
+        case DoubleType =>
           val gradInputDouble = gradInput.asInstanceOf[Tensor[Double]]
           val inputDouble = input.asInstanceOf[Tensor[Double]]
           val gradInputData = gradInputDouble.storage().array()
@@ -262,7 +262,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
             t += 1
           }
 
-        case "Float" =>
+        case FloatType =>
           val gradInputFloat = gradInput.asInstanceOf[Tensor[Float]]
           val inputFloat = input.asInstanceOf[Tensor[Float]]
           val gradInputData = gradInputFloat.storage().array()
@@ -292,7 +292,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
     }
     else {
       ev.getType() match {
-        case "Double" =>
+        case DoubleType =>
           gradInput.asInstanceOf[Tensor[Double]].resizeAs(gradOutput.asInstanceOf[Tensor[Double]])
           gradInput.asInstanceOf[Tensor[Double]].copy(gradOutput.asInstanceOf[Tensor[Double]])
           val gradInputDouble = gradInput.asInstanceOf[Tensor[Double]]
@@ -319,7 +319,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
             })
             t += 1
           }
-        case "Float" =>
+        case FloatType =>
           gradInput.asInstanceOf[Tensor[Float]].resizeAs(gradOutput.asInstanceOf[Tensor[Float]])
           gradInput.asInstanceOf[Tensor[Float]].copy(gradOutput.asInstanceOf[Tensor[Float]])
           val gradInputFloat = gradInput.asInstanceOf[Tensor[Float]]

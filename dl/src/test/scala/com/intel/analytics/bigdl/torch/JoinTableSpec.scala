@@ -38,9 +38,7 @@ class JoinTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     input1.apply1(x => randomn())
     val input2 = Tensor[Double](3, 3, 3)
     input2.apply1(x => randomn())
-    val input = T()
-    input(1.toDouble) = input1
-    input(2.toDouble) = input2
+    val input = T(input1, input2)
     val gradOutput = Tensor[Double](3, 3, 6)
     gradOutput.apply1(x => randomn())
 
@@ -57,10 +55,10 @@ class JoinTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
-    val luaGradInput = torchResult("gradInput").asInstanceOf[mutable.HashMap[Any, Any]]
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Table]
 
     output should be (luaOutput)
-    gradInput should be (new Table(luaGradInput))
+    gradInput should be (luaGradInput)
 
     println("Test case : JoinTable, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
