@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset
+package com.intel.analytics.bigdl.dataset.image
 
 import java.awt.Color
 import java.awt.image.{BufferedImage, DataBufferByte}
@@ -25,34 +25,39 @@ import java.nio.channels.Channels
 import java.nio.file.Path
 import javax.imageio.ImageIO
 
-abstract class Image(protected var data: Array[Float], protected var _width: Int,
-  protected var _height: Int, protected var _label: Float) extends Serializable {
+import com.intel.analytics.bigdl.dataset.{Image, ImageLocalPath, Label}
 
-  def width(): Int = _width
+/**
+ * Represent a local file path of a image file with a float label
+ * @param label
+ * @param p
+ */
+case class LabeledImageLocalPath(var label : Float, p : Path)
+  extends ImageLocalPath(p) with Label[Float] {
 
-  def height(): Int = _height
-
-  def content: Array[Float] = data
-
-  def label(): Float = _label
-
-  def setLabel(label: Float): this.type = {
-    this._label = label
+  override def setLabel(label: Float): this.type = {
+    this.label = label
     this
   }
 }
 
-class GreyImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h, l) {
-  def this(_width: Int, _height: Int) =
-    this(new Array[Float](_width * _height), _width, _height, 0.0f)
+/**
+ * Represent a grey image
+ * @param data
+ * @param _width
+ * @param _height
+ */
+class GreyImage(
+  protected var data: Array[Float],
+  protected var _width: Int,
+  protected var _height: Int
+) extends Image {
 
-  def this() = this(new Array[Float](0), 0, 0, 0)
-
-  def copy(source: Array[Byte], scale: Float = 1.0f, offset: Int = 0): this.type = {
+  def copy(source: Array[Byte], normalize: Float = 1.0f, offset: Int = 0): this.type = {
     require(data.length + offset <= source.length)
     var i = 0
     while (i < data.length) {
-      data(i) = (source(i + offset) & 0xff) / scale
+      data(i) = (source(i + offset) & 0xff) / normalize
       i += 1
     }
     this
@@ -61,7 +66,6 @@ class GreyImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h
   def copy(other: GreyImage): GreyImage = {
     this._width = other._width
     this._height = other._height
-    this._label = other.label
     if (this.data.length < this._width * this._height) {
       this.data = new Array[Float](this._width * this._height)
     }
@@ -73,15 +77,62 @@ class GreyImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h
     }
     this
   }
+
+  override def width(): Int = _width
+
+  override def content: Array[Float] = data
+
+  override def height(): Int = _height
 }
 
-class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h, l) {
-  def this() = this(new Array[Float](0), 0, 0, 0)
+/**
+ * A grey image with a float label
+ * @param d
+ * @param w
+ * @param h
+ * @param _label
+ */
+class LabeledGreyImage(d: Array[Float], w: Int, h: Int,
+  protected var _label : Float
+) extends GreyImage(d, w, h) with Label[Float] {
 
   def this(_width: Int, _height: Int) =
-    this(new Array[Float](_width * _height * 3), _width, _height, 0.0f)
+    this(new Array[Float](_width * _height), _width, _height, 0.0f)
 
-  def copy(rawData: Array[Byte], scale: Float = 255.0f): this.type = {
+  def this() = this(new Array[Float](0), 0, 0, 0.0f)
+
+  override def setLabel(label: Float): LabeledGreyImage.this.type = {
+    this._label = label
+    this
+  }
+
+  override def label(): Float = _label
+
+  def copy(other: LabeledGreyImage): GreyImage = {
+    this.copy(other.asInstanceOf[GreyImage])
+    this._label = other._label
+    this
+  }
+}
+
+/**
+ * Represent a RGB image
+ * @param data
+ * @param _width
+ * @param _height
+ */
+class RGBImage(
+  protected var data: Array[Float],
+  protected var _width: Int,
+  protected var _height: Int
+) extends Image {
+
+  def this() = this(new Array[Float](0), 0, 0)
+
+  def this(_width: Int, _height: Int) =
+    this(new Array[Float](_width * _height * 3), _width, _height)
+
+  def copy(rawData: Array[Byte], normalize: Float = 255.0f): this.type = {
     val buffer = ByteBuffer.wrap(rawData)
     _width = buffer.getInt
     _height = buffer.getInt
@@ -91,7 +142,7 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
     }
     var i = 0
     while (i < _width * _height * 3) {
-      data(i) = (rawData(i + 8) & 0xff) / scale
+      data(i) = (rawData(i + 8) & 0xff) / normalize
       i += 1
     }
     this
@@ -130,7 +181,6 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
   def copy(other: RGBImage): RGBImage = {
     this._width = other._width
     this._height = other._height
-    this._label = other._label
     if (this.data.length < this._width * this._height * 3) {
       this.data = new Array[Float](this._width * this._height * 3)
     }
@@ -168,6 +218,49 @@ class RGBImage(d: Array[Float], w: Int, h: Int, l: Float) extends Image(d, w, h,
     }
     res
   }
+
+  override def clone(): RGBImage = {
+    new RGBImage().copy(this)
+  }
+
+  override def width(): Int = _width
+
+  override def content: Array[Float] = data
+
+  override def height(): Int = _height
+}
+
+
+class LabeledRGBImage(d: Array[Float], w: Int, h: Int,
+  protected var _label : Float) extends RGBImage(d, w, h) with Label[Float] {
+
+  def this() = this(new Array[Float](0), 0, 0, 0.0f)
+
+  def this(_width: Int, _height: Int) =
+    this(new Array[Float](_width * _height * 3), _width, _height, 0.0f)
+
+  override def setLabel(label: Float): this.type = {
+    this._label = label
+    this
+  }
+
+  override def hflip(): LabeledRGBImage = {
+    super.hflip()
+    this
+  }
+
+  override def label(): Float = _label
+
+  def copy(other: LabeledRGBImage): LabeledRGBImage = {
+    this.copy(other.asInstanceOf[RGBImage])
+    this._label = other._label
+    this
+  }
+
+  override def clone(): LabeledRGBImage = {
+    new LabeledRGBImage().copy(this)
+  }
+
 }
 
 object RGBImage {
@@ -208,7 +301,7 @@ object RGBImage {
       var widthAfterScale = 0
       var scaledImage: java.awt.Image = null
       // no scale
-      if (-1 == scaleTo) {
+      if (NO_SCALE == scaleTo) {
         heightAfterScale = img.getHeight
         widthAfterScale = img.getWidth
         scaledImage = img

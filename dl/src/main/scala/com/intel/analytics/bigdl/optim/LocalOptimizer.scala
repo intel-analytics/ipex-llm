@@ -17,107 +17,217 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.DataSource
+
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch, LocalDataSet}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils._
+import org.apache.log4j.Logger
 
-class LocalOptimizer[T](
-  data: DataSource[(Tensor[T], Tensor[T])],
-  validationData: DataSource[(Tensor[T], Tensor[T])],
+import scala.reflect.ClassTag
+
+object LocalOptimizer {
+  val logger = Logger.getLogger(getClass)
+}
+
+/**
+ * Optimize a model on a single machine
+ *
+ * @param model
+ * @param dataset
+ * @param criterion
+ * @param ev$1
+ * @param ev
+ * @tparam T
+ */
+class LocalOptimizer[T: ClassTag](
   model: Module[T],
-  criterion: Criterion[T],
-  optimMethod: OptimMethod[T],
-  state: Table,
-  endWhen: Trigger
-) extends Optimizer[T](model, endWhen) {
+  dataset: DataSource[Iterator[Batch[T]]],
+  criterion: Criterion[T]
+)(implicit ev: TensorNumeric[T])
+  extends Optimizer[T, Iterator[Batch[T]], Iterator[Batch[T]]](
+    model, dataset, criterion) {
 
-  def this(
-    data: DataSource[(Tensor[T], Tensor[T])],
-    model: Module[T],
-    criterion: Criterion[T],
-    optimMethod: OptimMethod[T],
-    state: Table,
-    endWhen: Trigger) = this(data, null, model, criterion, optimMethod, state, endWhen)
+  import LocalOptimizer._
+
+  private val coreNumber = Engine.coreNumber()
+
+  private val subModelNumber = Engine.getEngineType match {
+    case MklBlas => coreNumber
+    case MklDnn => 1
+  }
+
+  private val (weight, grad) = model.getParameters()
+  private val gradLength = grad.nElement()
+  private val syncGradTaskSize = gradLength / subModelNumber
+  private val syncGradExtraTask = gradLength % subModelNumber
+  private val syncGradParallelNum =
+    if (syncGradTaskSize == 0) syncGradExtraTask else subModelNumber
+
+  private val workingModels = (1 to subModelNumber).map(_ => model.cloneModule()).toArray
+
+  private val workingModelWAndG = workingModels.map(_.getParameters())
+
+  workingModelWAndG.foreach(_._1.storage().set(weight.storage()))
+
+  private val workingCriterion =
+    (1 to subModelNumber).map(_ => criterion.cloneCriterion()).toArray
 
   override def optimize(): Module[T] = {
-    val (weights, grad) = model.getParameters()
     var wallClockTime = 0L
     var count = 0
-
+    optimMethod.clearHistory(state)
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
-    data.reset()
-    data.shuffle()
+    dataset.shuffle()
+    var iter = dataset.data()
     while (!endWhen(state)) {
       val start = System.nanoTime()
-      val (input, target) = data.next()
+
+      // Fetch data and prepare tensors
+      val batch = iter.next()
+      var b = 0
+      require(batch.data.size(1) == batch.labels.size(1))
+      val stackSize = batch.data.size(1) / subModelNumber
+      val extraSize = batch.data.size(1) % subModelNumber
+      val parallelism = if (stackSize == 0) extraSize else subModelNumber
+      val tensorBuffer = new Array[(Tensor[T], Tensor[T])](parallelism)
+      while (b < parallelism) {
+        val offset = b * stackSize + math.min(b, extraSize)
+        val length = stackSize + (if (b < extraSize) 1 else 0)
+        tensorBuffer(b) = (batch.data.narrow(1, offset + 1, length),
+          batch.labels.narrow(1, offset + 1, length))
+        b += 1
+      }
       val dataFetchTime = System.nanoTime()
-      model.zeroGradParameters()
-      val output = model.forward(input)
-      val loss = criterion.forward(output, target)
-      val gradOutput = criterion.backward(output, target)
-      model.backward(input, gradOutput)
-      optimMethod.optimize(_ => (loss, grad), weights, state)
+
+      val lossSum = Engine.default.invokeAndWait(
+        (0 until parallelism).map(i =>
+          () => {
+            val localModel = workingModels(i)
+            localModel.zeroGradParameters()
+            localModel.training()
+            val localCriterion = workingCriterion(i)
+            val (input, target) = tensorBuffer(i)
+            val output = localModel.forward(input)
+            val _loss = ev.toType[Double](localCriterion.forward(output, target))
+            val errors = localCriterion.backward(output, target)
+            localModel.backward(input, errors)
+            _loss
+          })
+      ).sum
+
+      // copy multi-model gradient to the buffer
+      Engine.default.invokeAndWait(
+        (0 until syncGradParallelNum).map(tid =>
+          () => {
+            val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
+            val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
+            var i = 0
+            while (i < parallelism) {
+              if (i == 0) {
+                grad.narrow(1, offset + 1, length)
+                  .copy(workingModelWAndG(i)._2.narrow(1, offset + 1, length))
+              } else {
+                grad.narrow(1, offset + 1, length)
+                  .add(workingModelWAndG(i)._2.narrow(1, offset + 1, length))
+              }
+              i += 1
+            }
+          })
+      )
+      val loss = lossSum / parallelism
+      grad.div(ev.fromType(parallelism))
+
+      optimMethod.optimize(_ => (ev.fromType(loss), grad), weight, state)
       val end = System.nanoTime()
       wallClockTime += end - start
-      count += input.size(1)
-      println(s"[Epoch ${state[Int]("epoch")} $count/${data.total()}][Iteration ${
-        state[Int]("neval")}][Wall Clock ${wallClockTime / 1e9
-      }s] loss is $loss, iteration time is ${(end - start) / 1e9}s data " +
-        s"fetch time is " +
-        s"${(dataFetchTime - start) / 1e9}s, train time ${(end - dataFetchTime) / 1e9}s." +
-        s" Throughput is ${input.size(1).toDouble / (end - start) * 1e9} img / second")
+      count += batch.data.size(1)
+      val head =
+        header(state[Int]("epoch"), count, dataset.size(), state[Int]("neval"), wallClockTime)
+      logger.info(s"$head " +
+        s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
+        s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
+        s"train time ${(end - dataFetchTime) / 1e9}s. " +
+        s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} img / second")
       state("neval") = state[Int]("neval") + 1
 
-      if(count >= data.total()) {
+      if (count >= dataset.size()) {
         state("epoch") = state[Int]("epoch") + 1
-        data.reset()
-        data.shuffle()
+        dataset.shuffle()
+        iter = dataset.data()
         count = 0
       }
 
       validate(wallClockTime)
-
-      cacheTrigger.foreach(trigger => {
-        if (trigger(state) && cachePath.isDefined) {
-          println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
-          saveModel(s".${state[Int]("neval")}")
-          saveState(state, s".${state[Int]("neval")}")
-        }
-      })
+      checkpoint(wallClockTime)
     }
-    validate(wallClockTime)
 
     model
   }
 
+  private def checkpoint(wallClockTime: Long): Unit = {
+    if (cacheTrigger.isEmpty || cachePath.isEmpty) {
+      return
+    }
+
+    val trigger = cacheTrigger.get
+    val path = cachePath.get
+    if (trigger(state) && cachePath.isDefined) {
+      logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to path")
+      saveModel(this.model, s".${state[Int]("neval")}")
+      saveState(state, s".${state[Int]("neval")}")
+    }
+  }
+
   private def validate(wallClockTime: Long): Unit = {
-    validationTrigger.foreach(trigger => {
-      if (trigger(state) && validationMethods.length > 0) {
-        println(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
-        model.evaluate()
-        validationData.reset()
-        var count = 0
-        val results = validationData.map { case (input, target) =>
-          val output = model.forward(input)
-          println(s"[Validation][Epoch ${state[Int]("epoch")}][Iteration ${state[Int]("neval")}] " +
-            s"$count/${validationData.total()}")
-          count += input.size(1)
-          validationMethods.map(validation => {
-            validation(output.asInstanceOf[Tensor[T]], target)
-          }).toArray
-        }.reduce((left, right) => {
-          left.zip(right).map { case (l, r) =>
-            l ++ r
+    if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
+      return
+    }
+    val trigger = validationTrigger.get
+    if (!trigger(state)) {
+      return
+    }
+    val vMethods = validationMethods.get
+    val dataIter = validationDataSet.get.asInstanceOf[LocalDataSet[Batch[T]]].data()
+    logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
+
+    workingModels.foreach(_.evaluate())
+
+    var count = 0
+    dataIter.map(batch => {
+      require(batch.data.size(1) == batch.labels.size(1))
+      val stackSize = batch.data.size(1) / subModelNumber
+      val extraSize = batch.data.size(1) % subModelNumber
+      val parallelism = if (stackSize == 0) extraSize else subModelNumber
+      val result = Engine.default.invokeAndWait(
+        (0 until parallelism).map(b =>
+          () => {
+            val offset = b * stackSize + math.min(b, extraSize)
+            val length = stackSize + (if (b < extraSize) 1 else 0)
+            val input = batch.data.narrow(1, offset + 1, length)
+            val target = batch.labels.narrow(1, offset + 1, length)
+            val output = workingModels(b).forward(input)
+            vMethods.map(validation => {
+              validation(output, target)
+            })
           }
-        })
-        validationMethods.zip(results).foreach {
-          case (validation, result) =>
-            println(s"[Wall Clock ${wallClockTime / 1e9}s] $validation is $result")
+        )
+      ).reduce((left, right) => {
+        left.zip(right).map { case (l, r) =>
+          l + r
         }
-        model.training()
+      })
+      count += batch.data.size(1)
+      logger.info(s"[Validation] $count/${validationDataSet.get.size()}")
+      result
+    }).reduce((left, right) => {
+      left.zip(right).map { case (l, r) =>
+        l + r
       }
+    }).zip(vMethods).foreach(r => {
+      logger.info(s"${r._2} is ${r._1}")
     })
   }
 }

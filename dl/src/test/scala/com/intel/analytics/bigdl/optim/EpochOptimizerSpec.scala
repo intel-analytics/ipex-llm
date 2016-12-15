@@ -92,7 +92,7 @@ class EpochOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
     mseWeight.fill(0.125)
     crnWeight.fill(0.125)
     plusOne = 0.0
-    Engine.setCoreNum(1)
+    Engine.model.setPoolSize(1)
   }
 
   after {

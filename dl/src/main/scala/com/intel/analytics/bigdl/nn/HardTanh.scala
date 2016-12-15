@@ -86,24 +86,20 @@ class HardTanh[T: ClassTag](
       if (inplace) {
         while (i < input.nElement()) {
           val _i = i
-          tasks(_i) = Future {
+          tasks(_i) = Engine.model.invoke(() => {
             if (ev.isGreater(min, inputData(_i + inputOffset))) {
               inputData.update(_i + inputOffset, min)
             } else if (ev.isGreater(inputData(_i + inputOffset), max)) {
               inputData.update(_i + inputOffset, max)
             }
-          }(Engine.getInstance())
+          })
           i += 1
         }
-        i = 0
-        while (i < input.nElement()) {
-          Await.result(tasks(i), Duration.Inf)
-          i += 1
-        }
+        Engine.model.sync(tasks)
       } else {
         while (i < input.nElement()) {
           val _i = i
-          tasks(_i) = Future {
+          tasks(_i) = Engine.model.invoke(() => {
             if (ev.isGreater(min, inputData(_i + inputOffset))) {
               outputData.update(_i + outputOffset, min)
             } else if (ev.isGreaterEq(max, inputData(_i + inputOffset))) {
@@ -111,14 +107,10 @@ class HardTanh[T: ClassTag](
             } else {
               outputData.update(_i + outputOffset, max)
             }
-          }(Engine.getInstance())
+          })
           i += 1
         }
-        i = 0
-        while (i < input.nElement()) {
-          Await.result(tasks(i), Duration.Inf)
-          i += 1
-        }
+        Engine.model.sync(tasks)
       }
     }
 
@@ -176,37 +168,29 @@ class HardTanh[T: ClassTag](
       if (inplace) {
         while (i < input.nElement()) {
           val _i = i
-          tasks(_i) = Future {
+          tasks(_i) = Engine.model.invoke(() => {
             if (ev.isGreaterEq(min, inputData(_i + inputOffset))
               || ev.isGreaterEq(inputData(_i + inputOffset), max)) {
               gradInputData.update(_i + gradInputOffset, ev.fromType[Double](0))
             }
-          }(Engine.getInstance())
+          })
           i += 1
         }
-        i = 0
-        while (i < input.nElement()) {
-          Await.result(tasks(i), Duration.Inf)
-          i += 1
-        }
+        Engine.model.sync(tasks)
       } else {
         while (i < input.nElement()) {
           val _i = i
-          tasks(_i) = Future {
+          tasks(_i) = Engine.model.invoke(() => {
             if (ev.isGreaterEq(min, inputData(_i + inputOffset))
               || ev.isGreaterEq(inputData(_i + inputOffset), max)) {
               gradInputData.update(_i + gradInputOffset, ev.fromType[Double](0))
             } else {
               gradInputData.update(_i + gradInputOffset, gradOutputData(_i + gradOutputOffset))
             }
-          }(Engine.getInstance())
+          })
           i += 1
         }
-        i = 0
-        while (i < input.nElement()) {
-          Await.result(tasks(i), Duration.Inf)
-          i += 1
-        }
+        Engine.model.sync(tasks)
       }
     }
 

@@ -145,7 +145,7 @@ class OneReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
     parameters.setValue(9, 9.0)
     val target = parameters.clone()
 
-    Engine.setCoreNum(1000)
+    Engine.model.setPoolSize(1000)
     val gradients = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
         val result = Tensor[Double](9)

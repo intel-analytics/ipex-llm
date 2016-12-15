@@ -69,7 +69,7 @@ class Concat[T: ClassTag](val dimension: Int)(
     while (i < this.modules.length) {
       val currentOutput = outs(i)
       val _offset = offset
-      results(i) = Future {
+      results(i) = Engine.model.invoke(() => {
         val target = this.output.narrow(this.dimension, _offset,
           currentOutput.size(this.dimension))
         var f = 1
@@ -81,16 +81,12 @@ class Concat[T: ClassTag](val dimension: Int)(
           curFrame.copy(outputFrame)
           f += 1
         }
-      }(Engine.getInstance())
+      })
       i += 1
       offset += currentOutput.size(this.dimension)
     }
 
-    i = 0
-    while (i < results.length) {
-      Await.result(results(i), Duration.Inf)
-      i += 1
-    }
+    Engine.model.sync(results)
     forwardTimeOverhead += System.nanoTime() - before
 
     this.output
@@ -159,7 +155,7 @@ class Concat[T: ClassTag](val dimension: Int)(
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
       val _offset = offset
       val _i = i
-      results(i) = Future {
+      results(i) = Engine.model.invoke( () => {
         val narrowedTensor = gradOutput.narrow(dimension, _offset,
           currentOutput.size(dimension))
         if(dimension == 2) {
@@ -173,15 +169,11 @@ class Concat[T: ClassTag](val dimension: Int)(
         } else {
           gradouts(_i) = narrowedTensor.contiguous()
         }
-      }(Engine.getInstance())
+      })
       i += 1
       offset += currentOutput.size(dimension)
     }
-    i = 0
-    while (i < this.modules.length) {
-      Await.result(results(i), Duration.Inf)
-      i += 1
-    }
+    Engine.model.sync(results)
     backwardTime += System.nanoTime() - before
 
     i = 0

@@ -42,7 +42,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
     param.setValue(4, 10.0)
     param.setValue(5, 10.0)
 
-    Engine.setCoreNum(1000)
+    Engine.model.setPoolSize(1000)
     val parameters = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => Iterator.single(Tensor[Double](5).fill(10.0)))
     val pm = new AllReduceParameterManager[Double](param, parameters)
@@ -59,7 +59,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
     param.setValue(4, 10.0f)
     param.setValue(5, 10.0f)
 
-    Engine.setCoreNum(1000)
+    Engine.model.setPoolSize(1000)
     val parameters = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => Iterator.single(Tensor[Float](5).fill(10.0f)))
     val pm = new AllReduceParameterManager[Float](param, parameters)
@@ -80,7 +80,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
     parameters.setValue(8, 8.0)
     parameters.setValue(9, 9.0)
 
-    Engine.setCoreNum(1000)
+    Engine.model.setPoolSize(1000)
     val gradients = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
         val result = Tensor[Double](9)
@@ -133,7 +133,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
         Iterator.single(Tensor[Double](9))
       })
 
-    Engine.setCoreNum(1000)
+    Engine.model.setPoolSize(1000)
     val gradients = sc.parallelize(Seq(1 to 5), 5)
       .mapPartitions(iter => {
         val result = Tensor[Double](9)
@@ -168,7 +168,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
   }
 
   it should "be same when compare to OneReduceParameter" in {
-    Engine.setCoreNum(1000) // or thread pool will be deadlock for local mode
+    Engine.model.setPoolSize(1000) // or thread pool will be deadlock for local mode
     sc = new SparkContext("local[4]", "AllReduceParameterManagerSpec")
     val parameter = Tensor[Double](9).rand()
     val parameterRDD = sc.parallelize(Seq(1 to 5), 5)
@@ -216,7 +216,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
   it should "be correct for float parameter" in {
     sc = new SparkContext("local[4]", "AllReduceParameterManagerSpec")
 
-    Engine.setCoreNum(1000)
+    Engine.model.setPoolSize(1000)
     val parameters = Tensor[Float](9)
     parameters.setValue(1, 1.0f)
     parameters.setValue(2, 2.0f)
@@ -263,7 +263,7 @@ class AllReduceParameterManagerSpec extends FlatSpec with Matchers with BeforeAn
   it should "state should be saved" in {
     sc = new SparkContext("local[4]", "AllReduceParameterManagerSpec")
 
-    Engine.setCoreNum(1000)
+    Engine.model.setPoolSize(1000)
     val parameters = Tensor[Float](9)
     parameters.setValue(1, 1.0f)
     parameters.setValue(2, 2.0f)

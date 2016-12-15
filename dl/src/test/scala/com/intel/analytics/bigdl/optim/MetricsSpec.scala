@@ -99,9 +99,11 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
   it should "work on existed a local metric in multi-thread env" in {
     val metric = new Metrics
     metric.set("test", 1.0, 5)
-    (1 to 5).map(i => Future {
-      metric.add("test", i)
-    }(Engine.getInstance())).map(Await.result(_, Duration.Inf))
+    Engine.default.invokeAndWait(
+      (1 to 5).map(i => () => {
+        metric.add("test", i)
+      })
+    )
     val result = metric.get("test")
     result._1 should be(16.0)
     result._2 should be(5)

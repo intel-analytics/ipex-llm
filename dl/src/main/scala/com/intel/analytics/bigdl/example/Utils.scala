@@ -42,6 +42,7 @@ object Utils {
     dataType: String = "float",
     crop: Boolean = false,
     pmType : String = "onereduce",
+    optimType : String = "default",
     epochOptimizerType : String = "bettergradaggepochoptimizer"
   )
 
@@ -65,6 +66,11 @@ object Utils {
         .text("dataFormat")
         .action((x, c) => {
           c.workerConfig("dataFormat") = x; c
+        })
+      opt[String]("optimType")
+        .text("optimizer type")
+        .action((x, c) => {
+          c.copy(optimType = x)
         })
       opt[Double]("workerLearningRate")
         .text("worker learning rate")

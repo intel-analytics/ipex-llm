@@ -37,6 +37,14 @@ trait OptimMethod[@specialized(Float, Double) T] extends Serializable {
    */
   def optimize(feval: (Tensor[T]) => (T, Tensor[T]), parameter: Tensor[T], config: Table,
     state: Table = null): (Tensor[T], Array[T])
+
+  /**
+   * Clear the history information in the state
+   *
+   * @param state
+   * @return
+   */
+  def clearHistory(state: Table): Table
 }
 
 trait IterateByItself

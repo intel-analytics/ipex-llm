@@ -56,13 +56,13 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
       var i = 1
       while (i <= batchSize) {
         val _i = i
-        results(_i - 1) = Future {
+        results(_i - 1) = Engine.model.invoke( () => {
           val curTarget = ev.toType[Int](target.valueAt(_i))
           assert(curTarget >= 1 && curTarget <= nClasses,
             s"curTarget ${curTarget} is out of range 1 to ${nClasses}")
           val curWeight = if (weights != null) weights.valueAt(curTarget) else ev.fromType[Int](1)
           (ev.times(input.valueAt(_i, curTarget), curWeight), curWeight)
-        }(Engine.getInstance())
+        })
         i += 1
       }
 
@@ -103,14 +103,14 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
       var i = 1
       while (i <= batchSize) {
         val _i = i
-        resultsBackward(_i - 1) = Future {
+        resultsBackward(_i - 1) = Engine.model.invoke(() => {
           val curTarget = ev.toType[Int](target.valueAt(_i))
           gradInput.setValue(_i, curTarget, if (weights != null) ev.times(ev.fromType[Int](-1),
             weights.valueAt(curTarget))
           else ev.fromType[Int](-1))
           if (sizeAverage) gradInput.setValue(_i, curTarget, ev.divide(gradInput.valueAt(_i,
             curTarget), total_weight))
-        }(Engine.getInstance())
+        })
         i += 1
       }
 

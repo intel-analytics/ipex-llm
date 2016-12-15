@@ -18,30 +18,37 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{File, Table}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
 
-import scala.collection.mutable.ArrayBuffer
+import scala.reflect.ClassTag
 
-abstract class Optimizer[@specialized(Float, Double) T](
-  protected val model: Module[T],
-  protected val endWhen: Trigger
-) {
-  protected var validationTrigger: Option[Trigger] = None
+abstract class Optimizer[T  : ClassTag, TDS, VDS](
+    protected val model: Module[T],
+    protected val dataset: DataSource[TDS],
+    protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
+{
+  protected var state: Table = T()
+  protected var optimMethod: OptimMethod[T] = new SGD[T]()
+  protected var endWhen: Trigger = Trigger.maxIteration(100)
+
   protected var cacheTrigger: Option[Trigger] = None
-  protected val validationMethods: ArrayBuffer[ValidationMethod[T]] = new ArrayBuffer()
   protected var cachePath: Option[String] = None
   protected var isOverWrite: Boolean = false
 
+  protected var validationTrigger: Option[Trigger] = None
+  protected var validationMethods: Option[Array[ValidationMethod[T]]] = None
+  protected var validationDataSet: Option[DataSource[VDS]] = None
+
   def optimize(): Module[T]
 
-  def setValidationTrigger(trigger: Trigger): this.type = {
+  def setValidation(trigger: Trigger, dataset: DataSource[VDS],
+    vMethods : Array[ValidationMethod[T]])
+  : this.type = {
     this.validationTrigger = Some(trigger)
-    this
-  }
-
-  def addValidation(validationMethod: ValidationMethod[T]): this.type = {
-    validationMethods.append(validationMethod)
+    this.validationDataSet = Some(dataset)
+    this.validationMethods = Some(vMethods)
     this
   }
 
@@ -56,7 +63,23 @@ abstract class Optimizer[@specialized(Float, Double) T](
     this
   }
 
-  protected def saveModel(postfix: String = ""): this.type = {
+  def setState(state: Table): this.type = {
+    this.state = state
+    this
+  }
+
+  def setOptimMethod(method : OptimMethod[T]): this.type = {
+    this.optimMethod = method
+    this
+  }
+
+  def setEndWhen(endWhen: Trigger): this.type = {
+    this.endWhen = endWhen
+    this
+  }
+
+  protected def saveModel(model: Module[T],
+    postfix: String = ""): this.type = {
     if (this.cachePath.isDefined) {
       model.save(s"${cachePath.get}.model$postfix", isOverWrite)
     }
@@ -69,55 +92,9 @@ abstract class Optimizer[@specialized(Float, Double) T](
     }
     this
   }
-}
 
-trait Trigger {
-  def apply(state: Table): Boolean
-}
-
-object Trigger {
-  def everyEpoch: Trigger = {
-    new Trigger() {
-      private var lastEpoch = -1
-
-      override def apply(state: Table): Boolean = {
-        if (lastEpoch == -1) {
-          lastEpoch = state[Int]("epoch")
-          false
-        } else {
-          if (state[Int]("epoch") == lastEpoch) {
-            false
-          } else {
-            lastEpoch = state[Int]("epoch")
-            true
-          }
-        }
-      }
-    }
-  }
-
-  def severalIteration(interval: Int): Trigger = {
-    new Trigger() {
-      override def apply(state: Table): Boolean = {
-        val curIteration = state[Int]("neval")
-        curIteration != 0 && curIteration % interval == 0
-      }
-    }
-  }
-
-  def maxEpoch(max: Int): Trigger = {
-    new Trigger() {
-      override def apply(state: Table): Boolean = {
-        state[Int]("epoch") > max
-      }
-    }
-  }
-
-  def maxIteration(max: Int): Trigger = {
-    new Trigger() {
-      override def apply(state: Table): Boolean = {
-        state[Int]("neval") > max
-      }
-    }
+  protected def header(epoch: Int, count: Int, total: Long, iter: Int, wallClockTime: Long)
+  : String = {
+    s"[Epoch $epoch $count/$total][Iteration $iter][Wall Clock ${wallClockTime / 1e9}s]"
   }
 }
