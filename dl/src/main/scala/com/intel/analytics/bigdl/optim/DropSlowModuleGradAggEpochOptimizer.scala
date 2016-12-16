@@ -144,8 +144,6 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
       }s")
       config("epoch") = i
 
-
-
       while (!dataSets.epochFinished()) {
         val lossSum = sc.accumulator(0.0, "loss sum")
         val recordsNum = sc.accumulator(0, "record number")
@@ -163,6 +161,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
 
         val _metrics = metrics
         val start = System.nanoTime()
+
         val finishedModuleNum = dataSets.fetch().zipPartitions(models, multiThreadModels, true)(
           (data, modelIter, multiThreadModuleIter) => {
           val workStart = System.nanoTime()
@@ -249,20 +248,29 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
           }
 
           val aggregateGStartTime = System.nanoTime()
+            if (!finishedThreads.contains(0)) {
+              localMTCaches(0).model.zeroGradParameters() }
           val grads = localMTCaches.map(_.gradient)
+
           val gradLength = grads(0).nElement()
           val taskSize = gradLength / subModuleNumber
           val extraTask = gradLength % subModuleNumber
-
           if(finishedThreads.size>0) {
-            localCaches.gradient.copy(grads(finishedThreads(0)))
-            (0 until subModuleNumber).map(tid => Future {
+            val parallelNum = if (taskSize == 0) extraTask else subModuleNumber
+            (0 until parallelNum).map(tid => Future {
               val offset = tid * taskSize + math.min(tid, extraTask)
               val length = taskSize + (if (tid < extraTask) 1 else 0)
 
-              finishedThreads.drop(0).foreach{index =>
-                localCaches.gradient.narrow(1, offset + 1, length)
-                  .add(grads(index).narrow(1, offset + 1, length))
+              var i = 0
+              while (i < grads.length) {
+                if (i == 0) {
+                  localCaches.gradient.narrow(1, offset + 1, length)
+                    .copy(grads(i).narrow(1, offset + 1, length))
+                } else {
+                  localCaches.gradient.narrow(1, offset + 1, length)
+                    .add(grads(i).narrow(1, offset + 1, length))
+                }
+                i += 1
               }
             }(context)).foreach(Await.result(_, Duration.Inf))
           } else {
