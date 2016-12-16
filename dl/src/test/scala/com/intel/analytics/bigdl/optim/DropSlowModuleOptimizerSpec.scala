@@ -144,6 +144,72 @@ class DropSlowModuleOptimizerSpec extends FlatSpec with Matchers with BeforeAndA
     result2(Array(1)) should be(1.0 +- 1e-2)
   }
 
+//  it should "be same with grad agg optimizer" in {
+//    val pm = new AllReduceParameterManager[Double](mseWeight, dataSet.partitions())
+//    val optimizer = new BetterGradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
+//      new LBFGS, pm, dataSet, new Metrics, DropSlowModuleGradAggEpochOptimizer.subModuleNumber)
+//    optimizer.setMaxEpoch(1)
+//    optimizer.optimize()
+//
+//    val test = pm.getParameter().clone()
+//    val pm = new OneReduceParameterManager[Double](mseWeight, dataSet.partitions())
+//    val optimizer = new BetterGradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
+//      new LBFGS, pm, dataSet, new Metrics, DropSlowModuleGradAggEpochOptimizer.subModuleNumber)
+//    optimizer.setMaxEpoch(1)
+//    optimizer.optimize()
+//
+//    val test = pm.getParameter().clone()
+//    mseWeight.fill(0.125)
+//    val pm2 = new OneReduceParameterManager[Double](mseWeight, dataSet2.partitions())
+//    val optimizer2 = new GradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
+//      new LBFGS, pm2, dataSet2, new Metrics)
+//    optimizer2.setMaxEpoch(1)
+//    optimizer2.optimize()
+//
+//    println(test)
+//    println(mseWeight)
+//
+//    test.map(mseWeight, (a, b) => {
+//      a should be(b)
+//      a
+//    })
+//  }
+
+//  it should "be same with grad agg optimizer with multi stack dataset" in {
+//    val pm = new ImprovedAllReduceParameterManager[Double](mseWeight, dataSet.partitions())
+//    val optimizer = new DropSlowModuleGradAggEpochOptimizer[Double](mseModule,
+//    MSECriterion[Double], new LBFGS, pm, dataSet, new Metrics)
+//    optimizer.setMaxEpoch(1)
+//    optimizer.optimize()
+//
+//    val test = optimizer.parameters
+//    mseWeight.fill(0.125)
+//
+//    val pm3 = new OneReduceParameterManager[Double](mseWeight, dataSet.partitions())
+//    val optimizer3 = new BetterGradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
+//      new LBFGS, pm3, dataSet, new Metrics, DropSlowModuleGradAggEpochOptimizer.subModuleNumber)
+//    optimizer3.setMaxEpoch(1)
+//    optimizer3.optimize()
+//
+//    val test3 = pm3.getParameter().clone()
+//
+// //    val pm2 = new OneReduceParameterManager[Double](mseWeight, dataSet.partitions())
+// //    val optimizer2 = new GradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
+// //      new LBFGS, pm2, dataSet, new Metrics)
+// //    optimizer2.setMaxEpoch(1)
+// //    optimizer2.optimize()
+//
+//    println(test)
+//    println(test3)
+// //    println(mseWeight)
+//
+// //    test.map(mseWeight, (a, b) => {
+//    test.map(test3, (a, b) => {
+//      a should be(b)
+//      a
+//    })
+//  }
+
   "An Artificial Neural Network with MSE and SGD" should "be trained with good result" in {
     val pm = new ImprovedAllReduceParameterManager[Double](mseWeight, dataSet.partitions())
     val optimizer = new DropSlowModuleGradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
@@ -157,6 +223,28 @@ class DropSlowModuleOptimizerSpec extends FlatSpec with Matchers with BeforeAndA
 
     val result2 = mseModule.forward(input2).toTensor[Double]
     result2(Array(1)) should be(1.0 +- 5e-2)
+  }
+
+  it should "be same with grad agg optimizer" in {
+    val pm = new ImprovedAllReduceParameterManager[Double](mseWeight, dataSet.partitions())
+    val optimizer = new DropSlowModuleGradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
+      new SGD, pm, dataSet, new Metrics, T("learningRate" -> 20.0))
+    optimizer.setMaxEpoch(1)
+    optimizer.optimize()
+
+    val test = optimizer.parameters
+
+    mseWeight.fill(0.125)
+    val pm2 = new OneReduceParameterManager[Double](mseWeight, dataSet2.partitions())
+    val optimizer2 = new GradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
+      new SGD, pm2, dataSet2, new Metrics, T("learningRate" -> 20.0))
+    optimizer2.setMaxEpoch(1)
+    optimizer2.optimize()
+
+    test.map(mseWeight, (a, b) => {
+      a should be(b)
+      a
+    })
   }
 
   "An Artificial Neural Network with Cross Entropy and LBFGS" should
@@ -176,6 +264,29 @@ class DropSlowModuleOptimizerSpec extends FlatSpec with Matchers with BeforeAndA
     result2.max(1)._2(Array(1)) should be(2.0)
   }
 
+  it should "be same with grad agg optimizer" in {
+    plusOne = 1.0
+    val pm = new ImprovedAllReduceParameterManager[Double](crnWeight, dataSet.partitions())
+    val optimizer = new DropSlowModuleGradAggEpochOptimizer[Double](crnModule,
+      ClassNLLCriterion[Double](), new LBFGS, pm, dataSet, new Metrics)
+    optimizer.setMaxEpoch(3)
+    optimizer.optimize()
+    val test = optimizer.parameters
+
+    crnWeight.fill(0.125)
+    val pm3 = new AllReduceParameterManager[Double](crnWeight, dataSet.partitions())
+    val optimizer3 = new BetterGradAggEpochOptimizer[Double](crnModule, ClassNLLCriterion[Double](),
+      new LBFGS, pm3, dataSet, new Metrics, DropSlowModuleGradAggEpochOptimizer.subModuleNumber)
+    optimizer3.setMaxEpoch(3)
+    optimizer3.optimize()
+    val test3 = pm3.getParameter()
+
+    test.map(test3, (a, b) => {
+      a should be(b)
+      a
+    })
+  }
+
   "An Artificial Neural Network with Cross Entropy and SGD" should
     "be trained with good result" in {
     plusOne = 1.0
@@ -191,5 +302,37 @@ class DropSlowModuleOptimizerSpec extends FlatSpec with Matchers with BeforeAndA
 
     val result2 = crnModule.forward(input2).toTensor[Double]
     result2.max(1)._2(Array(1)) should be(2.0)
+  }
+
+  it should "be same with grad agg optimizer" in {
+    plusOne = 1.0
+    val pm = new ImprovedAllReduceParameterManager[Double](crnWeight, dataSet.partitions())
+    val optimizer = new DropSlowModuleGradAggEpochOptimizer[Double](crnModule,
+      ClassNLLCriterion[Double](), new SGD, pm, dataSet, new Metrics, T("learningRate" -> 20.0))
+    optimizer.setMaxEpoch(1)
+    optimizer.optimize()
+
+    val test = optimizer.parameters
+
+    crnWeight.fill(0.125)
+    val pm3 = new AllReduceParameterManager[Double](crnWeight, dataSet.partitions())
+    val optimizer3 = new BetterGradAggEpochOptimizer[Double](crnModule, ClassNLLCriterion[Double](),
+      new SGD, pm3, dataSet, new Metrics, DropSlowModuleGradAggEpochOptimizer.subModuleNumber,
+      T("learningRate" -> 20.0))
+    optimizer3.setMaxEpoch(1)
+    optimizer3.optimize()
+    val test3 = pm3.getParameter().clone()
+//    crnWeight.fill(0.125)
+//    val pm2 = new OneReduceParameterManager[Double](crnWeight, dataSet2.partitions())
+//    val optimizer2 = new GradAggEpochOptimizer[Double](crnModule, ClassNLLCriterion[Double](),
+//      new SGD, pm2, dataSet2, new Metrics, T("learningRate" -> 20.0))
+//    optimizer2.setMaxEpoch(1)
+//    optimizer2.optimize()
+
+//    test3.map(crnWeight, (a, b) => {
+      test.map(test3, (a, b) => {
+      a should be(b)
+      a
+    })
   }
 }
