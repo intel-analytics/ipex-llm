@@ -45,10 +45,11 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
     layer: Module[T],
     input: Tensor[T],
     epsilon: Double = 0.001)
-    (implicit ev: TensorNumeric[T]): Boolean = {
-    val gradOutput = lossAndGradient(layer.updateOutput(input).toTensor[T])._2
+  (implicit ev: TensorNumeric[T]): Boolean = {
+
+    val gradOutput = lossAndGradient(layer.forward(input).toTensor[T])._2
     val computedGrad = layer.updateGradInput(input, gradOutput).toTensor[T]
-    computedGrad.toTensor[Double].resize(Array(computedGrad.nElement()))
+    computedGrad.resize(Array(computedGrad.nElement()))
 
     val perturbation = Tensor[T]()
     perturbation.set(input)
@@ -69,11 +70,9 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
       i = Random.nextInt(input.nElement()) + 1
       val curValue = perturbation.valueAt(i)
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) + stepSize))
-      val positiveLoss = lossAndGradient(layer.updateOutput(input).toTensor[T])._1
-      val positiveLoss = lossAndGradient(layer.forward(input))._1
+      val positiveLoss = lossAndGradient(layer.forward(input).toTensor[T])._1
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) - stepSize))
-      val negativeLoss = lossAndGradient(layer.updateOutput(input).toTensor[T])._1
-      val negativeLoss = lossAndGradient(layer.forward(input))._1
+      val negativeLoss = lossAndGradient(layer.forward(input).toTensor[T])._1
       val estimatedGradient = (positiveLoss - negativeLoss) / stepSize / 2.0
 
       val errDiff = math.abs(estimatedGradient - ev.toType[Double](computedGrad.valueAt(i)))
@@ -92,17 +91,15 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
 
 
   def checkWeight[T: ClassTag](
-                                layer: Module[T],
-                                input: Tensor[T],
-                                epsilon: Double = 0.001,
-                                num: Int = -1)
-                              (implicit ev: TensorNumeric[T]): Boolean = {
-    // add status
-    var status = System.getProperty("checkAllGradient").asInstanceOf[Int]
+    layer: Module[T],
+    input: Tensor[T],
+    epsilon: Double = 0.001,
+    num: Int = -1)
+  (implicit ev: TensorNumeric[T]): Boolean = {
 
     var (weights, gradWeights) = layer.getParameters()
-    val gradOutput = lossAndGradient(layer.forward(input))._2
-    val computedGrad = layer.backward(input, gradOutput)
+    val gradOutput = lossAndGradient(layer.forward(input).toTensor[T])._2
+    val computedGrad = layer.backward(input, gradOutput).toTensor[T]
 
     weights = layer.getParameters()._1
     gradWeights = layer.getParameters()._2
@@ -127,10 +124,10 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
       i = Random.nextInt(weights.nElement()) + 1
       val curValue = perturbation.valueAt(i)
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) + stepSize))
-      val positiveLoss = lossAndGradient(layer.forward(input))._1
+      val positiveLoss = lossAndGradient(layer.forward(input).toTensor[T])._1
 
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) - stepSize))
-      val negativeLoss = lossAndGradient(layer.forward(input))._1
+      val negativeLoss = lossAndGradient(layer.forward(input).toTensor[T])._1
 
       val estimatedGradient = (positiveLoss - negativeLoss) / stepSize / 2.0
       val errDiff = math.abs(estimatedGradient - ev.toType[Double](gradWeights.valueAt(i)))

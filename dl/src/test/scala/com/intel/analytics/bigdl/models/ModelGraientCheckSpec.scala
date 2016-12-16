@@ -17,7 +17,6 @@
 
 package com.intel.analytics.bigdl.models
 
-import com.intel.analytics.bigdl.models.mnist.{LeNet5, SimpleCNN}
 import com.intel.analytics.bigdl.nn.GradientChecker
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -34,7 +33,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val model = GoogleNet_v1[Double](1000)
+    val model = GoogleNet_v1(1000)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
@@ -48,7 +47,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val model = GoogleNet_v1[Double](1000)
+    val model = GoogleNet_v1(1000)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
@@ -62,7 +61,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val model = GoogleNet_v2[Double](1000)
+    val model = GoogleNet_v2(1000)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
@@ -76,53 +75,11 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val model = GoogleNet_v2.applyNoBn[Double](1000)
+    val model = GoogleNet_v2.applyNoBn(1000)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
     checker.checkWeight(model, input, 1e-2) should be(true)
-    val scalaTime = System.nanoTime() - start
-    println("Test Scala time : " + scalaTime / 1e9 + " s")
-  }
-
-  "GoogleNet model in batch mode" should "be good in gradient check for input" in {
-    val seed = 100
-    RNG.setSeed(seed)
-    val start = System.nanoTime()
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val model = GoogleNet.getModel[Double](1000, "googlenet")
-    model.zeroGradParameters()
-
-    val checker = new GradientChecker(1e-4).setType(checkModel)
-    checker.checkLayer(model, input, 1e-2) should be(true)
-    val scalaTime = System.nanoTime() - start
-    println("Test Scala time : " + scalaTime / 1e9 + " s")
-  }
-
-  "GoogleNet model in batch mode" should "be good in gradient check for weight" in {
-    val seed = 100
-    RNG.setSeed(seed)
-    val start = System.nanoTime()
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val model = GoogleNet.getModel[Double](1000, "googlenet")
-    model.zeroGradParameters()
-
-    val checker = new GradientChecker(1e-4).setType(checkModel)
-    checker.checkWeight(model, input, 1e-2) should be(true)
-    val scalaTime = System.nanoTime() - start
-    println("Test Scala time : " + scalaTime / 1e9 + " s")
-  }
-
-  "GoogleNet+bn model in batch mode" should "be good in gradient check for input" in {
-    val seed = 100
-    RNG.setSeed(seed)
-    val start = System.nanoTime()
-    val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
-    val model = GoogleNet.getModel[Double](1000, "googlenet-bn")
-    model.zeroGradParameters()
-
-    val checker = new GradientChecker(1e-4).setType(checkModel)
-    checker.checkLayer(model, input, 1e-2) should be(true)
     val scalaTime = System.nanoTime() - start
     println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
@@ -132,11 +89,11 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
-    val model = AlexNet_OWT[Double](1000, false, true)
+    val model = AlexNet_OWT(1000, false, true)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
-    checker.checkLayer(model, input, 1e-2) should be(true)
+    checker.checkLayer[Double](model, input, 1e-2) should be(true)
     val scalaTime = System.nanoTime() - start
     println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
@@ -146,11 +103,11 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
-    val model = AlexNet_OWT[Double](1000, false, true)
+    val model = AlexNet_OWT(1000, false, true)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
-    checker.checkWeight(model, input, 1e-2) should be(true)
+    checker.checkWeight[Double](model, input, 1e-2) should be(true)
     val scalaTime = System.nanoTime() - start
     println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
@@ -160,11 +117,11 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](8, 3, 227, 227).apply1(e => Random.nextDouble())
-    val model = AlexNet[Double](1000)
+    val model = AlexNet(1000)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
-    checker.checkLayer(model, input, 1e-2) should be(true)
+    checker.checkLayer[Double](model, input, 1e-2) should be(true)
     val scalaTime = System.nanoTime() - start
     println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
@@ -174,11 +131,11 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](8, 3, 227, 227).apply1(e => Random.nextDouble())
-    val model = AlexNet[Double](1000)
+    val model = AlexNet(1000)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
-    checker.checkWeight(model, input, 1e-2) should be(true)
+    checker.checkWeight[Double](model, input, 1e-2) should be(true)
     val scalaTime = System.nanoTime() - start
     println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
@@ -188,11 +145,11 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](8, 3, 32, 32).apply1(e => Random.nextDouble())
-    val model = VggLike[Double](10)
+    val model = VggLike(10)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
-    checker.checkLayer(model, input, 1e-2) should be(true)
+    checker.checkLayer[Double](model, input, 1e-2) should be(true)
     val scalaTime = System.nanoTime() - start
     println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
@@ -202,11 +159,11 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](8, 3, 32, 32).apply1(e => Random.nextDouble())
-    val model = VggLike[Double](10)
+    val model = VggLike(10)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
-    checker.checkWeight(model, input, 1e-2) should be(true)
+    checker.checkWeight[Double](model, input, 1e-2) should be(true)
     val scalaTime = System.nanoTime() - start
     println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
@@ -216,11 +173,11 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](8, 1, 28, 28).apply1(e => Random.nextDouble())
-    val model = LeNet5[Double](10)
+    val model = LeNet5(10)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
-    checker.checkLayer(model, input, 1e-2) should be(true)
+    checker.checkLayer[Double](model, input, 1e-2) should be(true)
     val scalaTime = System.nanoTime() - start
     println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
@@ -230,7 +187,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](8, 1, 28, 28).apply1(e => Random.nextDouble())
-    val model = LeNet5[Double](10)
+    val model = LeNet5(10)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
@@ -244,11 +201,11 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](8, 1, 28, 28).apply1(e => Random.nextDouble())
-    val model = SimpleCNN[Double](10)
+    val model = SimpleCNN(10)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)
-    checker.checkLayer(model, input, 1e-2) should be(true)
+    checker.checkLayer[Double](model, input, 1e-2) should be(true)
     val scalaTime = System.nanoTime() - start
     println("Test Scala time : " + scalaTime / 1e9 + " s")
   }
@@ -258,7 +215,7 @@ class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val start = System.nanoTime()
     val input = Tensor[Double](8, 1, 28, 28).apply1(e => Random.nextDouble())
-    val model = SimpleCNN[Double](10)
+    val model = SimpleCNN(10)
     model.zeroGradParameters()
 
     val checker = new GradientChecker(1e-4).setType(checkModel)

@@ -201,7 +201,7 @@ gradInput = model.gradInput
 
     val seed = 100
     RNG.setSeed(seed)
-    val model = AlexNet_OWT(1000, false, true)
+    val model = imagenet.AlexNet_OWT(1000, false, true)
     model.zeroGradParameters()
 
 

@@ -17,80 +17,75 @@
 
 package com.intel.analytics.bigdl.models
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
-import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.numeric.NumericDouble
 
 /**
  * This is AlexNet that was presented in the One Weird Trick paper. http://arxiv.org/abs/1404.5997
  */
 object AlexNet_OWT {
-  def apply[T: ClassTag](classNum: Int, hasDropout : Boolean = true, firstLayerPropagateBack :
-  Boolean = false)
-                        (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-
-    val model = new Sequential[Tensor[T], Tensor[T], T]()
-    model.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2, 1,
-      firstLayerPropagateBack).setName("conv1"))
-    model.add(new ReLU[T](true).setName("relu1"))
-    model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool1"))
-    model.add(new SpatialConvolution[T](64, 192, 5, 5, 1, 1, 2, 2).setName("conv2"))
-    model.add(new ReLU[T](true).setName("relu2"))
-    model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool2"))
-    model.add(new SpatialConvolution[T](192, 384, 3, 3, 1, 1, 1, 1).setName("conv3"))
-    model.add(new ReLU[T](true).setName("relu3"))
-    model.add(new SpatialConvolution[T](384, 256, 3, 3, 1, 1, 1, 1).setName("conv4"))
-    model.add(new ReLU[T](true).setName("relu4"))
-    model.add(new SpatialConvolution[T](256, 256, 3, 3, 1, 1, 1, 1).setName("conv5"))
-    model.add(new ReLU[T](true).setName("relu5"))
-    model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("poo5"))
-    model.add(new View[T](256 * 6 * 6))
-    model.add(new Linear[T](256 * 6 * 6, 4096).setName("fc6"))
-    model.add(new ReLU[T](true).setName("relu6"))
-    // if (hasDropout) model.add(new Dropout[T](0.5).setName("drop6"))
-    model.add(new Linear[T](4096, 4096).setName("fc7"))
-    model.add(new ReLU[T](true).setName("relu7"))
-    // if (hasDropout) model.add(new Dropout[T](0.5).setName("drop7"))
-    model.add(new Linear[T](4096, classNum).setName("fc8"))
-    model.add(new LogSoftMax[T])
+  def apply(classNum: Int, hasDropout : Boolean = true, firstLayerPropagateBack :
+  Boolean = false): Module[Double] = {
+    val model = Sequential()
+    model.add(SpatialConvolution(3, 64, 11, 11, 4, 4, 2, 2, 1, firstLayerPropagateBack)
+      .setName("conv1"))
+    model.add(ReLU(true).setName("relu1"))
+    model.add(SpatialMaxPooling(3, 3, 2, 2).setName("pool1"))
+    model.add(SpatialConvolution(64, 192, 5, 5, 1, 1, 2, 2).setName("conv2"))
+    model.add(ReLU(true).setName("relu2"))
+    model.add(SpatialMaxPooling(3, 3, 2, 2).setName("pool2"))
+    model.add(SpatialConvolution(192, 384, 3, 3, 1, 1, 1, 1).setName("conv3"))
+    model.add(ReLU(true).setName("relu3"))
+    model.add(SpatialConvolution(384, 256, 3, 3, 1, 1, 1, 1).setName("conv4"))
+    model.add(ReLU(true).setName("relu4"))
+    model.add(SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1).setName("conv5"))
+    model.add(ReLU(true).setName("relu5"))
+    model.add(SpatialMaxPooling(3, 3, 2, 2).setName("poo5"))
+    model.add(View(256 * 6 * 6))
+    model.add(Linear(256 * 6 * 6, 4096).setName("fc6"))
+    model.add(ReLU(true).setName("relu6"))
+    // if (hasDropout) model.add(Dropout(0.5).setName("drop6"))
+    model.add(Linear(4096, 4096).setName("fc7"))
+    model.add(ReLU(true).setName("relu7"))
+    // if (hasDropout) model.add(Dropout(0.5).setName("drop7"))
+    model.add(Linear(4096, classNum).setName("fc8"))
+    model.add(LogSoftMax())
     model
   }
 }
 
 /**
  * ILSVRC2012 winner
- * no Dropout
  */
 object AlexNet {
-  def apply[T: ClassTag](classNum: Int)
-                        (implicit ev: TensorNumeric[T]): Module[Tensor[T], Tensor[T], T] = {
-    val model = new Sequential[Tensor[T], Tensor[T], T]()
-    model.add(new SpatialConvolution[T](3, 96, 11, 11, 4, 4, 0, 0, 1, true).setName("conv1"))
-    model.add(new ReLU[T](true).setName("relu1"))
-    model.add(new SpatialCrossMapLRN[T](5, 0.0001, 0.75).setName("norm1"))
-    model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool1"))
-    model.add(new SpatialConvolution[T](96, 256, 5, 5, 1, 1, 2, 2, 2).setName("conv2"))
-    model.add(new ReLU[T](true).setName("relu2"))
-    model.add(new SpatialCrossMapLRN[T](5, 0.0001, 0.75).setName("norm2"))
-    model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool2"))
-    model.add(new SpatialConvolution[T](256, 384, 3, 3, 1, 1, 1, 1).setName("conv3"))
-    model.add(new ReLU[T](true).setName("relu3"))
-    model.add(new SpatialConvolution[T](384, 384, 3, 3, 1, 1, 1, 1, 2).setName("conv4"))
-    model.add(new ReLU[T](true).setName("relu4"))
-    model.add(new SpatialConvolution[T](384, 256, 3, 3, 1, 1, 1, 1, 2).setName("conv5"))
-    model.add(new ReLU[T](true).setName("relu5"))
-    model.add(new SpatialMaxPooling[T](3, 3, 2, 2).setName("pool5"))
-    model.add(new View[T](256 * 6 * 6))
-    model.add(new Linear[T](256 * 6 * 6, 4096).setName("fc6"))
-    model.add(new ReLU[T](true).setName("relu6"))
-    // model.add(new Dropout[T](0.5).setName("drop6"))
-    model.add(new Linear[T](4096, 4096).setName("fc7"))
-    model.add(new ReLU[T](true).setName("relu7"))
-    // model.add(new Dropout[T](0.5).setName("drop7"))
-    model.add(new Linear[T](4096, classNum).setName("fc8"))
-    model.add(new LogSoftMax[T].setName("loss"))
+  def apply(classNum: Int): Module[Double] = {
+    val model = Sequential()
+    model.add(SpatialConvolution(3, 96, 11, 11, 4, 4, 0, 0, 1, true).setName("conv1"))
+    model.add(ReLU(true).setName("relu1"))
+    model.add(SpatialCrossMapLRN(5, 0.0001, 0.75).setName("norm1"))
+    model.add(SpatialMaxPooling(3, 3, 2, 2).setName("pool1"))
+    model.add(SpatialConvolution(96, 256, 5, 5, 1, 1, 2, 2, 2).setName("conv2"))
+    model.add(ReLU(true).setName("relu2"))
+    model.add(SpatialCrossMapLRN(5, 0.0001, 0.75).setName("norm2"))
+    model.add(SpatialMaxPooling(3, 3, 2, 2).setName("pool2"))
+    model.add(SpatialConvolution(256, 384, 3, 3, 1, 1, 1, 1).setName("conv3"))
+    model.add(ReLU(true).setName("relu3"))
+    model.add(SpatialConvolution(384, 384, 3, 3, 1, 1, 1, 1, 2).setName("conv4"))
+    model.add(ReLU(true).setName("relu4"))
+    model.add(SpatialConvolution(384, 256, 3, 3, 1, 1, 1, 1, 2).setName("conv5"))
+    model.add(ReLU(true).setName("relu5"))
+    model.add(SpatialMaxPooling(3, 3, 2, 2).setName("pool5"))
+    model.add(View(256 * 6 * 6))
+    model.add(Linear(256 * 6 * 6, 4096).setName("fc6"))
+    model.add(ReLU(true).setName("relu6"))
+    // model.add(Dropout(0.5).setName("drop6"))
+    model.add(Linear(4096, 4096).setName("fc7"))
+    model.add(ReLU(true).setName("relu7"))
+    // model.add(Dropout(0.5).setName("drop7"))
+    model.add(Linear(4096, classNum).setName("fc8"))
+    model.add(LogSoftMax().setName("loss"))
     model
   }
 }
+
