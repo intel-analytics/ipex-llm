@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class FlattenTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  "An HardShrink" should "generate correct output and grad" in {
+  "An FlattenTable" should "generate correct output and grad" in {
     val layer = new FlattenTable[Double]()
     val input = T(Tensor[Double](
       Storage(Array(1.0, 2, 3))),
