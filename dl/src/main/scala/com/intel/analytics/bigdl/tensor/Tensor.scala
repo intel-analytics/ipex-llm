@@ -639,6 +639,11 @@ object Tensor {
   def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int, d5: Int)(
     implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor[T](d1, d2, d3, d4, d5)
 
+  /**
+   * Create a tensor with a table
+   * @param xs the table contains a multi-dimensional numbers
+   * @return a new Tensor
+   */
   def apply[@specialized(Float, Double) T: ClassTag](xs : Table)(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
     val map = xs.flatten().getState().asInstanceOf[Map[Int, T]]
