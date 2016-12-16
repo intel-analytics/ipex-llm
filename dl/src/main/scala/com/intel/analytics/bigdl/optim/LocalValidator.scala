@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
 
 class LocalValidator[T](model: Module[T], coreNumber: Int)
-  extends Validator[T, Iterator[Batch[Float]]](model) {
+  extends Validator[T, Iterator[Batch[T]]](model) {
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
@@ -33,7 +33,7 @@ class LocalValidator[T](model: Module[T], coreNumber: Int)
   private val workingModels = (1 to subModelNumber).map(_ => model.cloneModule().evaluate()).toArray
 
   override def test(
-    dataSet: DataSource[Iterator[Batch[Float]]],
+    dataSet: DataSource[Iterator[Batch[T]]],
     vMethods: Array[ValidationMethod[T]]
   ): Array[(ValidationResult, ValidationMethod[T])] = {
     val dataIter = dataSet.data()
