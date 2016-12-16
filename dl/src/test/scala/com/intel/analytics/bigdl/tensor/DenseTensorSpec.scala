@@ -52,6 +52,28 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t.stride(1) should be(1)
   }
 
+  "Construct A Tensor with Table directly" should "work correclty " in {
+    val t: Tensor[Double] = Tensor[Double](
+      T(T(
+        T(1.0,2.0),
+        T(3.0,4.0)
+      ),
+        T(
+          T(5.0,6.0),
+          T(7.0,8.0)
+        )
+      ))
+
+    t(Array(1, 1, 1)) should be(1)
+    t(Array(1, 1, 2)) should be(2)
+    t(Array(1, 2, 1)) should be(3)
+    t(Array(1, 2, 2)) should be(4)
+    t(Array(2, 1, 1)) should be(5)
+    t(Array(2, 1, 2)) should be(6)
+    t(Array(2, 2, 1)) should be(7)
+    t(Array(2, 2, 2)) should be(8)
+  }
+
   "Construct with another tensor" should "use same storage and separate views" in {
     val other = new DenseTensor[Double](1, 2, 3)
     val t: Tensor[Double] = new DenseTensor(other)
