@@ -55,12 +55,12 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   "Construct A Tensor with Table directly" should "work correclty " in {
     val t: Tensor[Double] = Tensor[Double](
       T(T(
-        T(1.0,2.0),
-        T(3.0,4.0)
+        T(1.0, 2.0),
+        T(3.0, 4.0)
       ),
         T(
-          T(5.0,6.0),
-          T(7.0,8.0)
+          T(5.0, 6.0),
+          T(7.0, 8.0)
         )
       ))
 
