@@ -218,7 +218,7 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
     mseWeight.fill(0.125)
     val pm2 = new OneReduceParameterManager[Double](mseWeight, dataSet2.partitions())
     val optimizer2 = new GradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
-      new SGD, pm, dataSet2, new Metrics, T("learningRate" -> 20.0))
+      new SGD, pm2, dataSet2, new Metrics, T("learningRate" -> 20.0))
     optimizer2.setMaxEpoch(1)
     optimizer2.optimize()
 

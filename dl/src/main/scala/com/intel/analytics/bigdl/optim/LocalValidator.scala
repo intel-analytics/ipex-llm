@@ -17,13 +17,13 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
 
 class LocalValidator[T](model: Module[T], coreNumber: Int)
-  extends Validator[T, Iterator[(Tensor[T], Tensor[T])]](model) {
+  extends Validator[T, Iterator[Batch[Float]]](model) {
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
@@ -33,23 +33,23 @@ class LocalValidator[T](model: Module[T], coreNumber: Int)
   private val workingModels = (1 to subModelNumber).map(_ => model.cloneModule().evaluate()).toArray
 
   override def test(
-    dataSet: DataSource[Iterator[(Tensor[T], Tensor[T])]],
+    dataSet: DataSource[Iterator[Batch[Float]]],
     vMethods: Array[ValidationMethod[T]]
-  ): Array[ValidationResult] = {
+  ): Array[(ValidationResult, ValidationMethod[T])] = {
     val dataIter = dataSet.data()
     var count = 0
     dataIter.map(batch => {
-      require(batch._1.size(1) == batch._2.size(1))
-      val stackSize = batch._1.size(1) / subModelNumber
-      val extraSize = batch._1.size(1) % subModelNumber
+      require(batch.data.size(1) == batch.labels.size(1))
+      val stackSize = batch.data.size(1) / subModelNumber
+      val extraSize = batch.data.size(1) % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
       val result = Engine.default.invokeAndWait(
         (0 until parallelism).map(b =>
           () => {
             val offset = b * stackSize + math.min(b, extraSize)
             val length = stackSize + (if (b < extraSize) 1 else 0)
-            val input = batch._1.narrow(1, offset + 1, length)
-            val target = batch._2.narrow(1, offset + 1, length)
+            val input = batch.data.narrow(1, offset + 1, length)
+            val target = batch.labels.narrow(1, offset + 1, length)
             val output = workingModels(b).forward(input)
             vMethods.map(validation => {
               validation(output.asInstanceOf[Tensor[T]], target)
@@ -61,13 +61,13 @@ class LocalValidator[T](model: Module[T], coreNumber: Int)
           l + r
         }
       })
-      count += batch._1.size(1)
+      count += batch.data.size(1)
       println(s"[Validation] $count/${dataSet.size()}")
       result
     }).reduce((left, right) => {
       left.zip(right).map { case (l, r) =>
         l + r
       }
-    })
+    }).zip(vMethods)
   }
 }
