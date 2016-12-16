@@ -27,10 +27,14 @@ trait DataSet {
   : LocalDataSet[Batch[Float]]
   def localValDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
   : LocalDataSet[Batch[Float]]
+  def distributedValDataSet(imagesFile: Path, looped: Boolean, sc: SparkContext,
+                            partitionNum: Int, batchSize : Int): DistributedDataSet[Batch[Float]]
+  def distributedTrainDataSet(imagesFile: Path, looped: Boolean, sc: SparkContext,
+                              partitionNum: Int, batchSize : Int): DistributedDataSet[Batch[Float]]
 }
 
 object ImagenetDataSet extends DataSet {
-  def localTrainDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
+  override def localTrainDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
   : LocalDataSet[Batch[Float]] = {
     val ds = LocalImageFiles.localBytesDataSet(imagesFile, looped, 32)
     val arrayToImage = SampleToRGBImg()
@@ -43,7 +47,7 @@ object ImagenetDataSet extends DataSet {
     ds -> arrayToImage -> cropper -> colorJitter -> lighting -> normalizer -> toBatch
   }
 
-def localValDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
+  override def localValDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
 : LocalDataSet[Batch[Float]] = {
   val ds = LocalImageFiles.localBytesDataSet(imagesFile, looped, 32)
   val fileTransformer = LocalSeqFileToBytes()
@@ -53,11 +57,35 @@ def localValDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
   val toBatch = new RGBImgToBatch(batchSize)
     ds -> arrayToImage -> normalizer -> cropper -> toBatch
   }
+
+  override def distributedValDataSet(imagesFile: Path, looped: Boolean, sc: SparkContext,
+                            partitionNum: Int, batchSize : Int): DistributedDataSet[Batch[Float]] = {
+    val ds = LocalImageFiles.distriDataSet(imagesFile, looped, sc, partitionNum, 224)
+    val fileTransformer = LocalSeqFileToBytes()
+    val arrayToImage = SampleToRGBImg()
+    val cropper = RGBImgCropper(cropWidth = 224, cropHeight = 224)
+    val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
+    val toBatch = new RGBImgToBatch(batchSize)
+    ds -> arrayToImage -> normalizer -> cropper -> toBatch
+  }
+  override def distributedTrainDataSet(imagesFile: Path, looped: Boolean, sc: SparkContext,
+                              partitionNum: Int, batchSize : Int): DistributedDataSet[Batch[Float]] = {
+    val ds = LocalImageFiles.distriDataSet(imagesFile, looped, sc, partitionNum, 224)
+    val arrayToImage = SampleToRGBImg()
+    val cropper = RGBImgCropper(cropWidth = 224, cropHeight = 224)
+    val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
+    val flipper = HFlip(0.5)
+    val colorJitter = ColorJitter()
+    val lighting = Lighting()
+    val toBatch = new RGBImgToBatch(batchSize)
+    ds -> arrayToImage -> cropper -> colorJitter -> lighting -> normalizer -> toBatch
+  }
+
 }
 
 object Cifar10DataSet extends DataSet {
 
-  def localTrainDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
+  override def localTrainDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
   : LocalDataSet[Batch[Float]] = {
     val ds = LocalImageFiles.localBytesDataSet(imagesFile, looped, 32)
     val arrayToImage = SampleToRGBImg()
@@ -68,7 +96,7 @@ object Cifar10DataSet extends DataSet {
     ds -> arrayToImage -> normalizer -> flipper -> rdmCropper -> toBatch
   }
 
-  def localValDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
+  override def localValDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
   : LocalDataSet[Batch[Float]] = {
     val ds = LocalImageFiles.localBytesDataSet(imagesFile, looped, 32)
     val arrayToImage = SampleToRGBImg()
@@ -77,7 +105,7 @@ object Cifar10DataSet extends DataSet {
     ds -> arrayToImage -> normalizer -> toBatch
   }
 
-  def distributedValDataSet(imagesFile: Path, looped: Boolean, sc: SparkContext,
+  override def distributedValDataSet(imagesFile: Path, looped: Boolean, sc: SparkContext,
                          partitionNum: Int, batchSize : Int): DistributedDataSet[Batch[Float]] = {
     val ds = LocalImageFiles.distriDataSet(imagesFile, looped, sc, partitionNum, 32)
 
@@ -86,7 +114,7 @@ object Cifar10DataSet extends DataSet {
     val toTensor = new RGBImgToBatch(batchSize)
     ds -> toImage -> normalizer -> toTensor
   }
-  def distributedTrainDataSet(imagesFile: Path, looped: Boolean, sc: SparkContext,
+  override def distributedTrainDataSet(imagesFile: Path, looped: Boolean, sc: SparkContext,
                             partitionNum: Int, batchSize : Int): DistributedDataSet[Batch[Float]] = {
     val ds = LocalImageFiles.distriDataSet(imagesFile, looped, sc, partitionNum, 32)
     val rdmCropper = RGBImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4)

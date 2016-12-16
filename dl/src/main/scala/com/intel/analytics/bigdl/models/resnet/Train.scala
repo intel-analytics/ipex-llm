@@ -26,11 +26,13 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import Options._
+import com.intel.analytics.bigdl.models.resnet.Options.{TrainSparkParams, TrainSparkParams => _, trainSparkParser => _, _}
+import org.apache.spark.SparkContext
 
 object Train {
 
     def main(args: Array[String]): Unit = {
-      trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
+      trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
 
         val batchSize = 64
         val (imageSize, lrSchedule, epochEnd, dataSet) = param.dataset match {
@@ -38,10 +40,15 @@ object Train {
           case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
         }
 
+        val conf = Engine.sparkConf().setAppName("Train ResNet-20 on Cifar10")
+        val sc = new SparkContext(conf)
+
+        //val trainDataSet = DataSet.distributedDataSet(train, true, sc, param.nodesNumber, batchSize)
+
         val trainData = Paths.get(param.folder, "train")
-        val trainDataSet = dataSet.localTrainDataSet(trainData, true, batchSize)
+        val trainDataSet = dataSet.distributedTrainDataSet(trainData, true, sc, param.nodesNumber, batchSize)
         val validationData = Paths.get(param.folder, "val")
-        val validateDataSet = dataSet.localValDataSet(validationData, true, batchSize)
+        val validateDataSet = dataSet.distributedValDataSet(validationData, false, sc, param.nodesNumber, batchSize)
 
         val model = if (param.modelSnapshot.isDefined) {
           Module.load[Float](param.modelSnapshot.get)
@@ -71,7 +78,7 @@ object Train {
         }
 
         Engine.setCoreNumber(param.coreNumber)
-        val optimizer = new LocalOptimizer[Float](
+        val optimizer = new DistriOptimizer[Float](
           model = model,
           dataset = trainDataSet,
           criterion = new CrossEntropyCriterion[Float]()

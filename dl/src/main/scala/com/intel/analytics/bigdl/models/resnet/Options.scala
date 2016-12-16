@@ -53,4 +53,46 @@ object Options {
       .text("datasets: imagenet | cifar-10")
       .action((x, c) => c.copy(dataset = x))
   }
+
+  case class TrainSparkParams(
+     folder: String = "./",
+     cache: Option[String] = None,
+     modelSnapshot: Option[String] = None,
+     stateSnapshot: Option[String] = None,
+     coreNumberPerNode: Int = -1,
+     nodesNumber: Int = -1,
+     optnet: Boolean = false,
+     dataset: String = "",
+     coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2))
+
+  val trainSparkParser = new OptionParser[TrainSparkParams]("BigDL ResNet Example") {
+    head("Train ResNet model on Apache Spark")
+    opt[String]('f', "folder")
+      .text("where you put the data")
+      .action((x, c) => c.copy(folder = x))
+    opt[String]("model")
+      .text("model snapshot location")
+      .action((x, c) => c.copy(modelSnapshot = Some(x)))
+    opt[String]("state")
+      .text("state snapshot location")
+      .action((x, c) => c.copy(stateSnapshot = Some(x)))
+    opt[String]("cache")
+      .text("where to cache the model")
+      .action((x, c) => c.copy(cache = Some(x)))
+    opt[Int]('c', "core")
+      .text("cores number on each node")
+      .action((x, c) => c.copy(coreNumberPerNode = x))
+      .required()
+    opt[Int]('n', "nodeNumber")
+      .text("nodes number to train the model")
+      .action((x, c) => c.copy(nodesNumber = x))
+      .required()
+    opt[Boolean]("optnet")
+      .text("shared gradients and caches to reduce memory usage")
+      .action((x, c) => c.copy(optnet = x))
+    opt[String]("dataset")
+      .text("datasets: imagenet | cifar-10")
+      .action((x, c) => c.copy(dataset = x))
+  }
+
 }
