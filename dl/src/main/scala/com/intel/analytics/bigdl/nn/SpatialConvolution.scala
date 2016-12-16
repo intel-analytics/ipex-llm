@@ -585,13 +585,13 @@ class SpatialConvolution[T: ClassTag](
 
     if (!_1x1) {
       ev.getType() match {
-        case "Double" =>
+        case DoubleType =>
           val before = System.nanoTime()
           NNPrimitive.im2colDouble(fInput.asInstanceOf[Tensor[Double]],
             input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH, nInputPlane,
             inputWidth, inputHeight, outputWidth, outputHeight)
           im2colTime += System.nanoTime() - before
-        case "Float" =>
+        case FloatType =>
           val before = System.nanoTime()
           NNPrimitive.im2colFloat(fInput.asInstanceOf[Tensor[Float]],
             input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH, nInputPlane,

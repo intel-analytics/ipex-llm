@@ -174,7 +174,7 @@ object Utils {
 
     val cache = mutable.Map[Any, Storage[T]]()
     val packageName: String = model.getName().stripSuffix("Sequential")
-
+    //println("packageName = " + packageName)
     cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
     cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
 
@@ -183,22 +183,23 @@ object Utils {
       model match {
         case container: Container[Activity, Activity, T] => {
           container.modules.foreach( m => {
-
             if (m.gradInput.isInstanceOf[Tensor[T]] && !m.getClass.getName.equals(packageName + "ConcatTable")) {
+             // println("initial gradInput, not in ConcatTable")
               val key = sharingKey(m)
               if (!cache.contains(key)){
                 cache.put(key, Storage(Array(ev.fromType[Int](1))))
               }
               m.gradInput = Tensor(cache.get(key).get, 1, Array(0))
             }
-            if (m.getClass.getName.equals(packageName + "ConcatTable")) {
-              if (!cache.contains(index % 2)) cache.put(index%2, Storage(Array(ev.fromType[Int](1))))
-              //val tmpModel = m.asInstanceOf[ConcatTable]
-              m.gradInput = Tensor(cache.get(index % 2).get, 1, Array(0))
-              index = index + 1
-            }
             matchModels(m)
           })
+        }
+        case concatTable if (concatTable.isInstanceOf[ConcatTable[T]]) => {
+          if (!cache.contains(index % 2)) {
+            cache.put(index % 2, Storage(Array(ev.fromType[Int](1))))
+          }
+          concatTable.gradInput = Tensor[T](cache.get(index % 2).get, 1, Array(0))
+          index = index + 1
         }
         case spatialConvolution if (spatialConvolution.isInstanceOf[SpatialConvolution[T]]) => {
           val curModel = spatialConvolution.asInstanceOf[SpatialConvolution[T]]
