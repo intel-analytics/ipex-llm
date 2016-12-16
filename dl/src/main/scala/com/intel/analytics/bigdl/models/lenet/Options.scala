@@ -20,19 +20,18 @@ package com.intel.analytics.bigdl.models.lenet
 import scopt.OptionParser
 
 object Options {
-  case class TrainLocalParams(
+  case class TrainParams(
     folder: String = "./",
     cache: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
-    batchSize: Int = 32,
+    batchSize: Int = 10,
     learningRate: Double = 0.05,
-    maxEpoch: Int = 10,
+    maxEpoch: Int = 15,
     coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
   )
 
-  val trainLocalParser = new OptionParser[TrainLocalParams]("BigDL Lenet Example") {
-    head("Train Lenet model on single node")
+  val trainParser = new OptionParser[TrainParams]("BigDL Lenet Train Example") {
     opt[String]('f', "folder")
       .text("where you put the MNIST data")
       .action((x, c) => c.copy(folder = x))
@@ -65,48 +64,20 @@ object Options {
       .action((x, c) => c.copy(coreNumber = x))
   }
 
-  case class TrainSparkParams(
+  case class TestParams(
     folder: String = "./",
-    cache: Option[String] = None,
-    modelSnapshot: Option[String] = None,
-    stateSnapshot: Option[String] = None,
-    batchSize: Int = 32,
-    learningRate: Double = 0.05,
-    maxEpoch: Int = 10,
-    coreNumberPerNode: Int = -1,
-    nodesNumber: Int = -1
+    model: String = "",
+    coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
   )
 
-  val trainSparkParser = new OptionParser[TrainSparkParams]("BigDL Lenet Example") {
-    head("Train Lenet model on Apache Spark")
+  val testParser = new OptionParser[TestParams]("BigDL Lenet Test Example") {
     opt[String]('f', "folder")
       .text("where you put the MNIST data")
       .action((x, c) => c.copy(folder = x))
-    opt[Int]('b', "batchSize")
-      .text("batch size")
-      .action((x, c) => c.copy(batchSize = x))
+
     opt[String]("model")
       .text("model snapshot location")
-      .action((x, c) => c.copy(modelSnapshot = Some(x)))
-    opt[String]("state")
-      .text("state snapshot location")
-      .action((x, c) => c.copy(stateSnapshot = Some(x)))
-    opt[String]("cache")
-      .text("where to cache the model")
-      .action((x, c) => c.copy(cache = Some(x)))
-    opt[Double]('r', "learningRate")
-      .text("learning rate")
-      .action((x, c) => c.copy(learningRate = x))
-    opt[Int]('e', "maxEpoch")
-      .text("epoch numbers")
-      .action((x, c) => c.copy(maxEpoch = x))
-    opt[Int]('c', "core")
-      .text("cores number on each node")
-      .action((x, c) => c.copy(coreNumberPerNode = x))
-      .required()
-    opt[Int]('n', "nodeNumber")
-      .text("nodes number to train the model")
-      .action((x, c) => c.copy(nodesNumber = x))
+      .action((x, c) => c.copy(model = x))
       .required()
   }
 }

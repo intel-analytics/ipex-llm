@@ -21,3 +21,6 @@ project/plugins/project/
 # other
 *.txt
 *.csv
+nohup.out
+model.*
+state.*

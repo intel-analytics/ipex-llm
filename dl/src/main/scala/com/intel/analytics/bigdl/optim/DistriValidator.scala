@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
@@ -27,12 +27,12 @@ class DistriValidator[T](
   model: Module[T],
   nodeNumber: Int,
   coresPerNode: Int
-) extends Validator[T, RDD[(Tensor[T], Tensor[T])]](model) {
+) extends Validator[T, RDD[Batch[Float]]](model) {
 
   override def test(
-    dataSet: DataSource[RDD[(Tensor[T], Tensor[T])]],
+    dataSet: DataSource[RDD[Batch[Float]]],
     vMethods: Array[ValidationMethod[T]])
-  : Array[ValidationResult] = {
+  : Array[(ValidationResult, ValidationMethod[T])] = {
     val rdd = dataSet.data()
     val broadcastModel = rdd.sparkContext.broadcast(model.evaluate())
     val _subModelNumber = Engine.getEngineType match {
@@ -43,17 +43,17 @@ class DistriValidator[T](
       val localModel = broadcastModel.value
       val workingModels = (1 to _subModelNumber).map(_ => localModel.cloneModule()).toArray
       dataIter.map(batch => {
-        require(batch._1.size(1) == batch._2.size(1))
-        val stackSize = batch._1.size(1) / _subModelNumber
-        val extraSize = batch._1.size(1) % _subModelNumber
+        require(batch.data.size(1) == batch.labels.size(1))
+        val stackSize = batch.data.size(1) / _subModelNumber
+        val extraSize = batch.data.size(1) % _subModelNumber
         val parallelism = if (stackSize == 0) extraSize else _subModelNumber
         Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
               val offset = b * stackSize + math.min(b, extraSize)
               val length = stackSize + (if (b < extraSize) 1 else 0)
-              val input = batch._1.narrow(1, offset + 1, length)
-              val target = batch._2.narrow(1, offset + 1, length)
+              val input = batch.data.narrow(1, offset + 1, length)
+              val target = batch.labels.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)
               vMethods.map(validation => {
                 validation(output, target)
@@ -70,6 +70,6 @@ class DistriValidator[T](
       left.zip(right).map { case (l, r) =>
         l + r
       }
-    })
+    }).zip(vMethods)
   }
 }

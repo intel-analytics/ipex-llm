@@ -17,6 +17,8 @@
 
 package com.intel.analytics.bigdl.optim
 
+import java.nio.file.{Paths, Files}
+
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -53,6 +55,7 @@ abstract class Optimizer[T  : ClassTag, TDS, VDS](
   }
 
   def setCache(path: String, trigger: Trigger): this.type = {
+    require(Files.isDirectory(Paths.get(path)), s"$path is not a folder")
     this.cachePath = Some(path)
     this.cacheTrigger = Some(trigger)
     this
@@ -81,14 +84,14 @@ abstract class Optimizer[T  : ClassTag, TDS, VDS](
   protected def saveModel(model: Module[T],
     postfix: String = ""): this.type = {
     if (this.cachePath.isDefined) {
-      model.save(s"${cachePath.get}.model$postfix", isOverWrite)
+      model.save(s"${cachePath.get}/model$postfix", isOverWrite)
     }
     this
   }
 
   protected def saveState(state: Table, postfix: String = ""): this.type = {
     if (this.cachePath.isDefined) {
-      state.save(s"${cachePath.get}.state$postfix", isOverWrite)
+      state.save(s"${cachePath.get}/state$postfix", isOverWrite)
     }
     this
   }

@@ -28,102 +28,47 @@ import org.apache.spark.{SparkConf, SparkContext}
 
 object Train {
 
-  object Local {
+  import Options._
 
-    import Options._
+  def main(args: Array[String]): Unit = {
+    trainParser.parse(args, new TrainParams()).map(param => {
+      val trainData = Paths.get(param.folder, "/train-images.idx3-ubyte")
+      val trainDLabel = Paths.get(param.folder, "/train-labels.idx1-ubyte")
+      val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
+      val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
 
-    def main(args: Array[String]): Unit = {
-      trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
-        val trainData = Paths.get(param.folder, "/train-images.idx3-ubyte")
-        val trainDLabel = Paths.get(param.folder, "/train-labels.idx1-ubyte")
-        val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
-        val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
+      val trainDataSet = DataSet.localDataSet(trainData, trainDLabel, true, param.batchSize)
+      import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
-        val trainDataSet = DataSet.localDataSet(trainData, trainDLabel, true, param.batchSize)
-        import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
-
-        val model = if (param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
-        } else {
-          LeNet5(classNum = 10)
-        }
-        val state = if (param.stateSnapshot.isDefined) {
-          T.load(param.stateSnapshot.get)
-        } else {
-          T(
-            "learningRate" -> param.learningRate
-          )
-        }
-
-        Engine.setCoreNumber(param.coreNumber)
-        val optimizer = new LocalOptimizer[Float](
-          model = model,
-          dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]()
+      val model = if (param.modelSnapshot.isDefined) {
+        Module.load[Float](param.modelSnapshot.get)
+      } else {
+        LeNet5(classNum = 10)
+      }
+      val state = if (param.stateSnapshot.isDefined) {
+        T.load(param.stateSnapshot.get)
+      } else {
+        T(
+          "learningRate" -> param.learningRate
         )
-        if (param.cache.isDefined) {
-          optimizer.setCache(param.cache.get, Trigger.everyEpoch)
-        }
-        val validateDataSet = DataSet.localDataSet(validationData, validationLabel, false,
-          param.batchSize)
-        optimizer
-          .setValidation(Trigger.everyEpoch, validateDataSet, Array(new Top1Accuracy[Float]))
-          .setState(state)
-          .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
-          .optimize()
-      })
-    }
+      }
+
+      Engine.setCoreNumber(param.coreNumber)
+      val optimizer = new LocalOptimizer[Float](
+        model = model,
+        dataset = trainDataSet,
+        criterion = new ClassNLLCriterion[Float]()
+      )
+      if (param.cache.isDefined) {
+        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      }
+      val validateDataSet = DataSet.localDataSet(validationData, validationLabel, false,
+        param.batchSize)
+      optimizer
+        .setValidation(Trigger.everyEpoch, validateDataSet, Array(new Top1Accuracy[Float]))
+        .setState(state)
+        .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
+        .optimize()
+    })
   }
-
-  object Spark {
-
-    import Options._
-
-    def main(args: Array[String]): Unit = {
-      trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
-        val trainData = Paths.get(param.folder, "/train-images.idx3-ubyte")
-        val trainDLabel = Paths.get(param.folder, "/train-labels.idx1-ubyte")
-        val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
-        val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
-
-        val conf = Engine.sparkConf().setAppName("Train Lenet")
-        val sc = new SparkContext(conf)
-
-        val trainDataSet = DataSet.distributedDataSet(trainData, trainDLabel, true, sc,
-          param.nodesNumber, param.batchSize)
-        import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
-
-        val model = if (param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
-        } else {
-          LeNet5(classNum = 10)
-        }
-        val state = if (param.stateSnapshot.isDefined) {
-          T.load(param.stateSnapshot.get)
-        } else {
-          T(
-            "learningRate" -> param.learningRate
-          )
-        }
-
-        Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
-        val optimizer = new DistriOptimizer[Float](
-          model = model,
-          dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]()
-        )
-        val validateDataSet = DataSet.distributedDataSet(validationData, validationLabel, false,
-          sc, param.nodesNumber, param.batchSize)
-        if (param.cache.isDefined) {
-          optimizer.setCache(param.cache.get, Trigger.everyEpoch)
-        }
-        optimizer
-          .setValidation(Trigger.everyEpoch, validateDataSet, Array(new Top1Accuracy[Float]))
-          .setState(state)
-          .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
-          .optimize()
-      })
-    }
-  }
-
 }
