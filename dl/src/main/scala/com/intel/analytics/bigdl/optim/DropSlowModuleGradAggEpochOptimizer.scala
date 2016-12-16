@@ -98,6 +98,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
       AllReduceParameter.taskSize = weights.nElement() / _partitionNum
       AllReduceParameter.extraSize = weights.nElement() % _partitionNum
       AllReduceParameter.tlength = weights.nElement()
+      AllReduceParameter.partitionNum = _partitionNum
       _ps.init(weights)(broadcastEv)
 
       Iterator(test.toArray)

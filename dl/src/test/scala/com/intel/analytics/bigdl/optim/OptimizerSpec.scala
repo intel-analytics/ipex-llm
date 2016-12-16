@@ -19,8 +19,8 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.models.imagenet.AlexNet
 import com.intel.analytics.bigdl.nn.Sequential
-import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.utils.{File, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -28,7 +28,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
   val model = new Sequential[Float]()
 
   "Optimizer" should "end with maxEpoch" in {
-    val dummyOptimizer = new Optimizer[Float](model, Trigger.maxEpoch(10)) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         val state = T("epoch" -> 9)
         endWhen(state) should be(false)
@@ -39,11 +39,11 @@ class OptimizerSpec extends FlatSpec with Matchers {
         model
       }
     }
-    dummyOptimizer.optimize()
+    dummyOptimizer.setEndWhen(Trigger.maxEpoch(10)).optimize()
   }
 
   it should "end with iteration" in {
-    val dummyOptimizer = new Optimizer[Float](model, Trigger.maxIteration(1000)) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         val state = T("neval" -> 999)
         endWhen(state) should be(false)
@@ -54,11 +54,11 @@ class OptimizerSpec extends FlatSpec with Matchers {
         model
       }
     }
-    dummyOptimizer.optimize()
+    dummyOptimizer.setEndWhen(Trigger.maxIteration(1000)).optimize()
   }
 
   it should "be triggered every epoch" in {
-    val dummyOptimizer = new Optimizer[Float](model, Trigger.maxEpoch(10)) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         val state = T("epoch" -> 9)
         validationTrigger.get(state) should be(false)
@@ -75,13 +75,13 @@ class OptimizerSpec extends FlatSpec with Matchers {
         model
       }
     }
-    dummyOptimizer.setValidationTrigger(Trigger.everyEpoch)
+    dummyOptimizer.setValidation(Trigger.everyEpoch, null, null)
     dummyOptimizer.setCache("", Trigger.everyEpoch)
     dummyOptimizer.optimize()
   }
 
   it should "be triggered every 5 iterations" in {
-    val dummyOptimizer = new Optimizer[Float](model, Trigger.maxEpoch(5)) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         val state = T("neval" -> 1)
         validationTrigger.get(state) should be(false)
@@ -95,7 +95,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
         model
       }
     }
-    dummyOptimizer.setValidationTrigger(Trigger.severalIteration(5))
+    dummyOptimizer.setValidation(Trigger.severalIteration(5), null, null)
     dummyOptimizer.setCache("", Trigger.severalIteration(5))
     dummyOptimizer.optimize()
   }
@@ -103,9 +103,9 @@ class OptimizerSpec extends FlatSpec with Matchers {
   it should "save model to given path" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
     val model = AlexNet(1000)
-    val dummyOptimizer = new Optimizer[Float](model, Trigger.severalIteration(5)) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        saveModel()
+        saveModel(model)
         model
       }
     }
@@ -113,17 +113,16 @@ class OptimizerSpec extends FlatSpec with Matchers {
     dummyOptimizer.optimize()
 
     model.clearState()
-    val loadedModel = File
-      .load[Module[Double]] (filePath + ".model")
+    val loadedModel = File.load[Module[Double]] (filePath + ".model")
     loadedModel should be(model)
   }
 
   it should "save model and state to given path with postfix" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
     val model = AlexNet(1000)
-    val dummyOptimizer = new Optimizer[Float](model, Trigger.severalIteration(5)) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        saveModel(".test")
+        saveModel(model, ".test")
         model
       }
     }
@@ -139,12 +138,12 @@ class OptimizerSpec extends FlatSpec with Matchers {
   it should "save state to given path" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "state").getAbsolutePath
     val state = T("test" -> 123)
-    val dummyOptimizer = new Optimizer[Float](model, Trigger.severalIteration(5)) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         saveState(state)
         model
       }
-    }
+    }.setState(state)
     dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 
@@ -155,12 +154,12 @@ class OptimizerSpec extends FlatSpec with Matchers {
   it should "save state to given path with post fix" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "state").getAbsolutePath
     val state = T("test" -> 123)
-    val dummyOptimizer = new Optimizer[Float](model, Trigger.severalIteration(5)) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         saveState(state, ".post")
         model
       }
-    }
+    }.setState(state)
     dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 

@@ -15,14 +15,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models
+package com.intel.analytics.bigdl.models.utils
 
 import java.util.concurrent.Executors
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.models.ResNet.ShortcutType
+import com.intel.analytics.bigdl.models.resnet.ResNet.ShortcutType
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, AlexNet_OWT, GoogleNet_v1, GoogleNet_v2}
+import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -109,14 +110,13 @@ object MultiModelPerf {
         ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
       case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
         ClassNLLCriterion(), Tensor[T](param.batchSize).fill(tn.fromType(1)))
-//      case "resnet" => {
-//        val curModel = ResNet[T](1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
-//          .asInstanceOf[Module[T]]
-//        ResNet.shareGradInput(curModel)
-//        ResNet.modelInit(curModel)
-//        (curModel, Tensor[T](param.batchSize, 3, 224, 224).rand(),
-//          CrossEntropyCriterion(), Tensor(param.batchSize).fill(tn.fromType(1)))
-//      }
+      case "resnet" => {
+        val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
+        ResNet.shareGradInput(curModel)
+        ResNet.modelInit(curModel)
+        (curModel, Tensor[T](param.batchSize, 3, 224, 224).rand(),
+          CrossEntropyCriterion(), Tensor(param.batchSize).fill(tn.fromType(1)))
+      }
     })
 
     val grads = tests.map(_._1.getParameters()._2).toArray

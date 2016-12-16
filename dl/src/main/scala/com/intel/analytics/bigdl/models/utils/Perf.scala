@@ -15,12 +15,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models
+package com.intel.analytics.bigdl.models.utils
 
 
-import com.intel.analytics.bigdl.models.ResNet.ShortcutType
+import com.intel.analytics.bigdl.models.resnet.ResNet.ShortcutType
 import com.intel.analytics.bigdl.models.imagenet._
 import com.intel.analytics.bigdl.models.mnist.LeNet5
+import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -105,9 +106,6 @@ object Perf {
         val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
         ResNet.shareGradInput(curModel)
         ResNet.modelInit(curModel)
-//        ResNet.convInit(curModel)
-//        ResNet.bnInit(curModel)
-//        ResNet.lnInit(curModel)
         (curModel, Tensor[T](param.batchSize, 3, 224, 224))
       }
     }
@@ -124,7 +122,7 @@ object Perf {
 
     for (i <- 1 to param.warmUp) {
       var time = System.nanoTime()
-      val output = model.forward(input).toTensor[T]
+      val output = model.forward(input).asInstanceOf[Tensor[T]]
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       time = System.nanoTime()
@@ -140,7 +138,7 @@ object Perf {
     var totalBackwardTime = 0L
     for (i <- 1 to param.iteration) {
       var time = System.nanoTime()
-      val output = model.forward(input).toTensor[T]
+      val output = model.forward(input).asInstanceOf[Tensor[T]]
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       totalForwardTime += forwardTime

@@ -62,7 +62,7 @@ object AllReduceParameterManager {
 }
 
 class AllReduceParameterManager[T: ClassTag](
-  parameter: Tensor[T], dataset: RDD[_], metrics: Metrics = new Metrics()
+  parameter: Tensor[T], dataset: RDD[_], metrics: Metrics = new Metrics(), state: Table = T()
 )(implicit ev: TensorNumeric[T]) extends ParameterManager[T] {
 
   import AllReduceParameterManager._
@@ -83,7 +83,7 @@ class AllReduceParameterManager[T: ClassTag](
   val extraSize = parameterLength % partitionNum
 
   private def init() = {
-    val broadcastParameter = dataset.sparkContext.broadcast(parameter)
+    val broadcastParameter = dataset.sparkContext.broadcast(parameter, state)
     val _classTag = classTag[T]
     val _ev = ev
     val _parameterLength = parameterLength
@@ -91,7 +91,8 @@ class AllReduceParameterManager[T: ClassTag](
     val _taskSize = taskSize
     val _extraSize = extraSize
     buffers = dataset.mapPartitions(iter => {
-      val taskParameter = broadcastParameter.value
+      val taskParameter = broadcastParameter.value._1
+      val localState = broadcastParameter.value._2.clone()
       val paramBuffer = new FP16SplitsCompressedTensor[T](_parameterLength,
         _partitionNum)(_classTag).asInstanceOf[CompressedTensor[T]]
       val pid = TaskContext.getPartitionId()
@@ -100,10 +101,10 @@ class AllReduceParameterManager[T: ClassTag](
       val localWeight = Tensor[T](length)(_classTag, _ev).copy(taskParameter.narrow(1,
         start + 1, length))
       val localGradient = Tensor[T](length)(_classTag, _ev)
-      val localState = T()
       val fp16param = new FP16CompressedTensor[T](length)(_classTag)
       fp16param.compress(0, taskParameter, start, length)
       val blockId = getWeightBlockId(pid)
+      SparkEnv.get.blockManager.removeBlock(blockId)
       SparkEnv.get.blockManager.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
       Iterator.single((paramBuffer, localWeight, localGradient, localState))
     }).setName("Parameter Manager Buffers").persist()
@@ -294,5 +295,7 @@ class AllReduceParameterManager[T: ClassTag](
     parameter
   }
 
-  override def getState(): Table = T()
+  override def getState(): Table = {
+    buffers.map(_._4).first()
+  }
 }

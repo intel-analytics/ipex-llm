@@ -102,6 +102,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
+      case _ => throw new IllegalArgumentException()
     }
     zeroGradParameters()
   }
@@ -153,7 +154,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
 
       if (sharedFlag) {
-        val coresNum = Math.min(batchSize, Engine.coresNum)
+        val coresNum = Math.min(batchSize, Engine.coreNumber)
         fInput.resize(Array(coresNum, nGroup, kernelW * kernelH * nInputPlane / nGroup,
           outputHeight * outputWidth))
 
@@ -162,12 +163,12 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         }
 
         var i, j = 0
-        val minJobNum: Int = batchSize / Engine.coresNum
-        val remainJobNum: Int = batchSize - minJobNum * Engine.coresNum
+        val minJobNum: Int = batchSize / Engine.coreNumber
+        val remainJobNum: Int = batchSize - minJobNum * Engine.coreNumber
 
         while (j < coresNum) {
           val _j = j
-          results(j) = Future {
+          results(j) = Engine.model.invoke(() => {
             var _i = 1
             val distJobNum: Int = minJobNum + (if (_j < remainJobNum) 1 else 0)
             val indexStart: Int = _j * minJobNum + (if (_j < remainJobNum) _j else remainJobNum)
@@ -191,7 +192,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
               }
               _i += 1
             }
-          }(Engine.getInstance())
+          })
           j += 1
         }
 
@@ -201,7 +202,7 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           i += 1
         }
       } else {
-        if(_1x1) {
+        if (_1x1) {
           fInput.set(input)
           fInput.resize(Array(batchSize, nGroup, kernelW * kernelH * nInputPlane / nGroup,
             outputHeight * outputWidth))
@@ -214,16 +215,17 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
           results = new Array[Future[Unit]](batchSize)
         }
 
+
         var i = 0
         while (i < batchSize) {
           val _i = i + 1
-          results(i) = Future {
+          results(i) = Engine.model.invoke(() => {
             val inputT = input.select(1, _i)
             require(inputT.isContiguous())
             val outputT = output.select(1, _i)
             val fInputT = fInput.select(1, _i)
             var g = 0
-            while(g < nGroup) {
+            while (g < nGroup) {
               updateOutputFrame(
                 inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
                 outputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
@@ -236,15 +238,10 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
                 nOutputPlane / nGroup, outputWidth, outputHeight)
               g += 1
             }
-          }(Engine.getInstance())
+          })
           i += 1
         }
-
-        i = 0
-        while (i < results.length) {
-          Await.result(results(i), Duration.Inf)
-          i += 1
-        }
+        Engine.model.sync(results)
       }
     }
     output
@@ -294,21 +291,21 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
       val batchSize = input.size(1)
       if (sharedFlag) {
         val (outputWidth, outputHeight, _, _) = calcOutputWH(input)
-        fGradInput.resize(Array(Engine.coresNum, nGroup, kernelW * kernelH * nInputPlane / nGroup,
+        fGradInput.resize(Array(Engine.coreNumber, nGroup, kernelW * kernelH * nInputPlane / nGroup,
           outputHeight * outputWidth))
 
-        val coresNum = Math.min(batchSize, Engine.coresNum)
+        val coresNum = Math.min(batchSize, Engine.coreNumber)
         if (results == null || results.length != coresNum) {
           results = new Array[Future[Unit]](coresNum)
         }
 
         var i, j = 0
-        val minJobNum: Int = batchSize / Engine.coresNum
-        val remainJobNum: Int = batchSize - minJobNum * Engine.coresNum
+        val minJobNum: Int = batchSize / Engine.coreNumber
+        val remainJobNum: Int = batchSize - minJobNum * Engine.coreNumber
 
         while (j < coresNum) {
           val _j = j
-          results(j) = Future {
+          results(j) = Engine.model.invoke(() => {
             var _i = 1
             val distJobNum: Int = minJobNum + (if (_j < remainJobNum) 1 else 0)
             val indexStart: Int = _j * minJobNum + (if (_j < remainJobNum) _j else remainJobNum)
@@ -328,26 +325,23 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
               }
               _i += 1
             }
-          }(Engine.getInstance())
+          })
           j += 1
         }
-        i = 0
-        while (i < results.length) {
-          Await.result(results(i), Duration.Inf)
-          i += 1
-        }
+        Engine.model.sync(results)
       } else {
         fGradInput.resizeAs(fInput)
+
         var i = 0
         while (i < batchSize) {
           val _i = i + 1
-          results(i) = Future {
+          results(i) = Engine.model.invoke(() => {
             val gradInputT = gradInput.select(1, _i)
             val gradOutputT = gradOutput.select(1, _i)
             require(gradOutputT.isContiguous())
             val fgradInputT = fGradInput.select(1, _i)
             var g = 0
-            while(g < nGroup) {
+            while (g < nGroup) {
               updateGradInputFrame(
                 gradInputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
                 gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
@@ -356,18 +350,12 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
                 kernelW, kernelH, strideW, strideH, padW, padH)
               g += 1
             }
-          }(Engine.getInstance())
+          })
           i += 1
         }
-
-        i = 0
-        while (i < results.length) {
-          Await.result(results(i), Duration.Inf)
-          i += 1
-        }
+        Engine.model.sync(results)
       }
     }
-
     return gradInput
   }
 
@@ -430,22 +418,21 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
         onesBatch.resize(Array(batchSize)).fill(ev.fromType(1.0))
       }
 
-
       if (sharedFlag) {
-        val coresNum = Math.min(batchSize, Engine.coresNum)
+        val coresNum = Math.min(batchSize, Engine.coreNumber)
         if (results == null || results.length != coresNum) {
           results = new Array[Future[Unit]](coresNum)
         }
 
         var i, j = 0
-        val minJobNum: Int = batchSize / Engine.coresNum
-        val remainJobNum: Int = batchSize - minJobNum * Engine.coresNum
+        val minJobNum: Int = batchSize / Engine.coreNumber
+        val remainJobNum: Int = batchSize - minJobNum * Engine.coreNumber
         val (outputWidth, outputHeight, inputWidth, inputHeight) =  calcOutputWH(input)
-        fInput.resize(Array(Engine.coresNum, nGroup, kernelW * kernelH * nInputPlane / nGroup,
+        fInput.resize(Array(Engine.coreNumber, nGroup, kernelW * kernelH * nInputPlane / nGroup,
           outputHeight * outputWidth))
         while (j < coresNum) {
           val _j = j
-          results(j) = Future {
+          results(j) = Engine.model.invoke(() => {
             var _i = 1
             val distJobNum: Int = minJobNum + (if (_j < remainJobNum) 1 else 0)
             val indexStart: Int = _j * minJobNum + (if (_j < remainJobNum) _j else remainJobNum)
@@ -473,19 +460,15 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
               }
               _i += 1
             }
-          }(Engine.getInstance())
+          })
           j += 1
         }
-        i = 0
-        while (i < results.length) {
-          Await.result(results(i), Duration.Inf)
-          i += 1
-        }
+        Engine.model.sync(results)
       } else {
         var i = 0
         while (i < batchSize) {
           val _i = i + 1
-          results(i) = Future {
+          results(i) = Engine.model.invoke(() => {
             val gradOutputT = gradOutput.select(1, _i)
             val fInputT = fInput.select(1, _i)
             var g = 0
@@ -499,15 +482,11 @@ class SpatialConvolution[@specialized(Float, Double) T: ClassTag](
                 ev.fromType[Double](scale))
               g += 1
             }
-          }(Engine.getInstance())
+          })
           i += 1
         }
 
-        i = 0
-        while (i < results.length) {
-          Await.result(results(i), Duration.Inf)
-          i += 1
-        }
+        Engine.model.sync(results)
       }
 
       val gradView = gradWeightMMInBatch.view(batchSize,

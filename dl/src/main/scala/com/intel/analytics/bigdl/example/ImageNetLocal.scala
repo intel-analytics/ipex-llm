@@ -20,9 +20,8 @@ package com.intel.analytics.bigdl.example
 import java.awt.color.ColorSpace
 import java.util
 
-import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.models.ResNet
-import com.intel.analytics.bigdl.models.ResNet.ShortcutType
+import com.intel.analytics.bigdl.models.resnet.ResNet
+import com.intel.analytics.bigdl.models.resnet.ResNet.ShortcutType
 import com.intel.analytics.bigdl.nn.CrossEntropyCriterion
 import com.intel.analytics.bigdl.optim.{EvaluateMethods, SGD}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -94,13 +93,9 @@ object ImageNetLocal {
       case "googlenet-bn" => GoogleNet.getModel[Float](classNum, "googlenet-bn")
       case "googlenet-cf" => GoogleNet.getModelCaffe[Float](classNum)
       case "resnet" => {
-        val curModel = ResNet[Float](classNum, T("shortcutType" -> ShortcutType.B, "depth" -> modelDepth))
-          .asInstanceOf[Module[Float]]
+        val curModel = ResNet(classNum, T("shortcutType" -> ShortcutType.B, "depth" -> modelDepth))
         ResNet.shareGradInput(curModel)
         ResNet.modelInit(curModel)
-//        ResNet.convInit(curModel)
-//        ResNet.bnInit(curModel)
-//        ResNet.lnInit(curModel)
         curModel
       }
       case _ => throw new IllegalArgumentException
@@ -207,32 +202,6 @@ object ImageNetLocal {
         val gradOutput = criterion.backward(output, target)
         model.backward(input, gradOutput)
         sgd.optimize(_ => (loss, grad), weights, state, state)
-
-//        def feval(x: Tensor[Float]): (Float, Tensor[Float]) = {
-//          model.forward(input)
-//          criterion.forward(model.output.asInstanceOf[Tensor[Float]], target)
-//          model.zeroGradParameters()
-//          criterion.backward(model.output.asInstanceOf[Tensor[Float]], target)
-//          model.backward(input, criterion.gradInput)
-//          (criterion.output, grad)
-//        }
-//        val (_, loss) = sgd.optimize(feval, weights, state)
-//        val output = model.output.asInstanceOf[Tensor[Float]]
-        /*
-        def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
-          model.forward(input)
-          criterion.forward(model.output, labels)
-          model.zeroGradParameters()
-          criterion.backward(model.output, labels)
-          model.backward(input, criterion.gradInput)
-          (criterion.output, grad)
-        }
-        for (i <- 1 to 5) {
-          sgd.optimize(feval, weights, state)
-        }
-*/
-
-
         val end = System.nanoTime()
         wallClockTime += end - start
         log(s"Epoch[$i][Iteration $c $j/${dataSet.getTotal}][Wall Clock ${wallClockTime / 1e9}s]" +
@@ -277,9 +246,6 @@ object ImageNetLocal {
         val top5Accuracy = top5Correct.toDouble / dataSetVal.getTotal
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Testing: Top-1 Accuracy is $top1Accuracy")
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Testing: Top-5 Accuracy is $top5Accuracy")
-        //println(s"Save model and state to $modelPath-$i")
-        //File.save(model, modelPath + s"-$i.model")
-        //File.save(state, modelPath + s"-$i.state")
       }
 
       log("shuffle")

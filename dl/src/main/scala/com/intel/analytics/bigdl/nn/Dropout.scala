@@ -48,14 +48,14 @@ class Dropout[@specialized(Float, Double) T: ClassTag](
     }
 
     if (results == null) {
-      results = new Array[Future[Unit]](Engine.coresNum)
+      results = new Array[Future[Unit]](Engine.coreNumber())
     }
     if (train) {
       noise.resizeAs(input)
       if (input.isContiguous()) {
         val noiseData = noise.storage().array()
-        var taskSize = noise.nElement() / Engine.coresNum
-        var extraTask = noise.nElement() % Engine.coresNum
+        var taskSize = noise.nElement() / Engine.coreNumber()
+        var extraTask = noise.nElement() % Engine.coreNumber()
         var allocated = 0
         val offset = this.output.storageOffset() - 1
         val data = this.output.storage.array()
@@ -68,7 +68,7 @@ class Dropout[@specialized(Float, Double) T: ClassTag](
             extraTask -= 1
           }
           val end = allocated
-          results(i) = Future {
+          results(i) = Engine.model.invoke(() => {
             var k = start
             while (k < end) {
               noiseData(k) = if (RNG.bernoulli(1 - p)) {
@@ -85,16 +85,11 @@ class Dropout[@specialized(Float, Double) T: ClassTag](
 
               k += 1
             }
-          }(Engine.getInstance())
+          })
           i += 1
         }
 
-        val allocatedTask = i
-        i = 0
-        while (i < allocatedTask) {
-          Await.result(results(i), Duration.Inf)
-          i += 1
-        }
+        Engine.model.sync(results)
         this.output
       } else {
         noise.bernoulli(1 - p)
@@ -113,7 +108,7 @@ class Dropout[@specialized(Float, Double) T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     if (results == null) {
-      results = new Array[Future[Unit]](Engine.coresNum)
+      results = new Array[Future[Unit]](Engine.coreNumber())
     }
     if (train) {
       if (inplace) {
@@ -124,8 +119,8 @@ class Dropout[@specialized(Float, Double) T: ClassTag](
 
       if (gradInput.isContiguous()) {
         val noiseData = noise.storage().array()
-        var taskSize = noise.nElement() / Engine.coresNum
-        var extraTask = noise.nElement() % Engine.coresNum
+        var taskSize = noise.nElement() / Engine.coreNumber()
+        var extraTask = noise.nElement() % Engine.coreNumber()
         val gradInputData = gradInput.storage().array()
         val gradInputOffset = gradInput.storageOffset() - 1
         var allocated = 0
@@ -138,23 +133,18 @@ class Dropout[@specialized(Float, Double) T: ClassTag](
             extraTask -= 1
           }
           val end = allocated
-          results(i) = Future {
+          results(i) = Engine.model.invoke(() => {
             var k = start
             while (k < end) {
               gradInputData(gradInputOffset + k) =
                 ev.times(gradInputData(gradInputOffset + k), noiseData(k))
               k += 1
             }
-          }(Engine.getInstance())
+          })
           i += 1
         }
 
-        val allocatedTask = i
-        i = 0
-        while (i < allocatedTask) {
-          Await.result(results(i), Duration.Inf)
-          i += 1
-        }
+        Engine.model.sync(results)
 
         this.gradInput
       } else {

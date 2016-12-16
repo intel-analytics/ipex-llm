@@ -34,7 +34,7 @@ import scala.util.Random
 class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "GoogleNet+bn" should "generate correct output" in {
-    Engine.setCoreNum(4)
+    Engine.setCoreNumber(4)
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -220,7 +220,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "GoogleNet" should "generate correct output" in {
-    Engine.setCoreNum(4)
+    Engine.setCoreNumber(4)
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }

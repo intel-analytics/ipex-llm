@@ -15,33 +15,26 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models
+package com.intel.analytics.bigdl.models.resnet
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.MulConstant
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.nn.{MulConstant, _}
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Table
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-
-import scala.collection.mutable
-import scala.reflect.ClassTag
-
 
 object ResNet {
 
-  def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
-                                                             (implicit ev: TensorNumeric[T]): Unit = {
+  def shareGradInput(model: Module[Float]): Unit = {
+    println("Share gradients in ResNet")
     Utils.shareGradInput(model)
   }
-  def modelInit[@specialized(Float, Double) T: ClassTag](model: Module[T])
-                                                        (implicit ev: TensorNumeric[T]): Unit = {
+  def modelInit(model: Module[Float]): Unit = {
+    println("Initialize ResNet")
     Utils.findModules(model)
   }
 
   var iChannels = 0
-  def apply[T: ClassTag](classNum: Int, opt: Table)(implicit ev: TensorNumeric[T]): Module[T] = {
+  def apply(classNum: Int, opt: Table): Module[Float] = {
 
     val depth = opt.get("depth").getOrElse(18)
     val shortCutType = opt.get("shortcutType")
@@ -49,7 +42,7 @@ object ResNet {
     val dataSet = opt.get("dataset")
     val dataset = dataSet.getOrElse(DatasetType.CIFAR10).asInstanceOf[DatasetType]
 
-    def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[T] = {
+    def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[Float] = {
       val useConv = shortcutType == ShortcutType.C || (shortcutType == ShortcutType.B && nInputPlane != nOutputPlane)
 
       if (useConv) {
@@ -61,13 +54,13 @@ object ResNet {
           .add(SpatialAveragePooling(1, 1, stride, stride))
           .add(Concat(2)
             .add(Identity())
-            .add(MulConstant(ev.fromType(0))))
+            .add(MulConstant(0f)))
       }  else {
         Identity()
       }
     }
 
-    def basicBlock(n: Int, stride: Int): Module[T] = {
+    def basicBlock(n: Int, stride: Int): Module[Float] = {
       val nInputPlane = iChannels
       iChannels = n
 
@@ -86,7 +79,7 @@ object ResNet {
         .add(ReLU(true))
     }
 
-    def bottleneck(n: Int, stride: Int): Module[T] = {
+    def bottleneck(n: Int, stride: Int): Module[Float] = {
       val nInputPlane = iChannels
       iChannels = n * 4
 
@@ -108,7 +101,7 @@ object ResNet {
         .add(ReLU(true))
     }
 
-    def layer(block: (Int, Int) => Module[T], features: Int, count: Int, stride: Int = 1): Module[T] = {
+    def layer(block: (Int, Int) => Module[Float], features: Int, count: Int, stride: Int = 1): Module[Float] = {
       val s = Sequential()
       for (i <- 1 to count) {
         s.add(block(features, if (i == 1) stride else 1))
@@ -120,12 +113,12 @@ object ResNet {
 
     if (dataset == DatasetType.ImageNet) {
       val cfg = Map(
-        18 -> ((2, 2, 2, 2), 512, basicBlock: (Int, Int) => Module[T]),
-        34 -> ((3, 4, 6, 3), 512, basicBlock: (Int, Int) => Module[T]),
-        50 -> ((3, 4, 6, 3), 2048, bottleneck: (Int, Int) => Module[T]),
-        101 -> ((3, 4, 23, 3), 2048, bottleneck: (Int, Int) => Module[T]),
-        152 -> ((3, 8, 36, 3), 2048, bottleneck: (Int, Int) => Module[T]),
-        200 -> ((3, 24, 36, 3), 2048, bottleneck: (Int, Int) => Module[T])
+        18 -> ((2, 2, 2, 2), 512, basicBlock: (Int, Int) => Module[Float]),
+        34 -> ((3, 4, 6, 3), 512, basicBlock: (Int, Int) => Module[Float]),
+        50 -> ((3, 4, 6, 3), 2048, bottleneck: (Int, Int) => Module[Float]),
+        101 -> ((3, 4, 23, 3), 2048, bottleneck: (Int, Int) => Module[Float]),
+        152 -> ((3, 8, 36, 3), 2048, bottleneck: (Int, Int) => Module[Float]),
+        200 -> ((3, 24, 36, 3), 2048, bottleneck: (Int, Int) => Module[Float])
       )
 
       assert(cfg.keySet.contains(depth))
