@@ -81,13 +81,16 @@ class BatchNormalizationSpec extends FlatSpec with BeforeAndAfter with Matchers 
         |sbn:backward(input, gradOutput2)
       """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput,
-      "gradOutput2" -> gradOutput2), Array("sbn", "parameters_initial", "gradParameters_initial",
-      "gradParameters"))
-    val sbnTorch = torchResult("sbn").asInstanceOf[BatchNormalization[Double]]
+    val (luaTime, torchResult) = TH.run(code,
+      Map("input" -> input, "gradOutput" -> gradOutput, "gradOutput2" -> gradOutput2),
+      Array("parameters_initial", "gradParameters_initial", "gradParameters",
+        "output", "gradInput")
+    )
     val parameterTorch = torchResult("parameters_initial").asInstanceOf[Tensor[Double]]
     val gradparameterTorch = torchResult("gradParameters_initial").asInstanceOf[Tensor[Double]]
     val gradparametersTorch = torchResult("gradParameters").asInstanceOf[Tensor[Double]]
+    val outputTorch = torchResult("output").asInstanceOf[Tensor[Double]]
+    val gradInputTorch = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
     require(parameters == parameterTorch, "parameter compare failed")
 
@@ -100,32 +103,20 @@ class BatchNormalizationSpec extends FlatSpec with BeforeAndAfter with Matchers 
 
     val gradInput = sbn.backward(input, gradOutput2)
 
-    sbnTorch.output.map(sbn.output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0);
+    outputTorch.map(output, (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
       v1
     })
 
-    gradInput.map(sbnTorch.gradInput, (v1, v2) => {
-      if (abs(v1 - v2) != 0) println(s"$v1 $v2")
+    gradInputTorch.map(gradInput, (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
       v1
     })
 
     gradparametersTorch.map(gradparameters, (v1, v2) => {
-      if (abs(v1 - v2) != 0) println(s"$v1 $v2")
+      assert(abs(v1 - v2) == 0)
       v1
     })
-
-    var j = 0
-    var gradInputAbs = 0.0
-    while (j < gradInput.nElement()) {
-      val tmp = abs(gradInput.storage().array()(j) - sbnTorch.gradInput.storage().array()(j))
-      gradInputAbs += tmp
-      if (tmp != 0) println(s"$j: ${gradInput.storage().array()(j)} ${
-        sbnTorch.gradInput.storage().array()(j)
-      }")
-      j += 1
-    }
-    println(s"gradInputAbs:$gradInputAbs")
 
   }
 
@@ -182,11 +173,12 @@ class BatchNormalizationSpec extends FlatSpec with BeforeAndAfter with Matchers 
         |output = sbn:forward(input)
       """.stripMargin
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput,
-      "gradOutput2" -> gradOutput2), Array("sbn", "parameters_initial", "gradParameters_initial"))
-    val sbnTorch = torchResult("sbn").asInstanceOf[BatchNormalization[Double]]
+    val (luaTime, torchResult) = TH.run(code,
+      Map("input" -> input, "gradOutput" -> gradOutput, "gradOutput2" -> gradOutput2),
+      Array("parameters_initial", "gradParameters_initial", "output"))
     val parameterTorch = torchResult("parameters_initial").asInstanceOf[Tensor[Double]]
     val gradparameterTorch = torchResult("gradParameters_initial").asInstanceOf[Tensor[Double]]
+    val outputTorch = torchResult("output").asInstanceOf[Tensor[Double]]
 
     require(parameters == parameterTorch, "parameter compare failed")
 
@@ -202,8 +194,8 @@ class BatchNormalizationSpec extends FlatSpec with BeforeAndAfter with Matchers 
     sbn.evaluate()
     val output = sbn.forward(input)
 
-    sbnTorch.output.map(sbn.output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0);
+    outputTorch.map(output, (v1, v2) => {
+      assert(abs(v1 - v2) == 0)
       v1
     })
 
@@ -251,12 +243,13 @@ class BatchNormalizationSpec extends FlatSpec with BeforeAndAfter with Matchers 
       """.stripMargin
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput,
-      "gradOutput2" -> gradOutput2), Array("sbn", "parameters_initial", "gradParameters_initial",
-      "gradParameters"))
-    val sbnTorch = torchResult("sbn").asInstanceOf[BatchNormalization[Double]]
+      "gradOutput2" -> gradOutput2), Array("parameters_initial", "gradParameters_initial",
+      "gradParameters", "output", "gradInput"))
     val parameterTorch = torchResult("parameters_initial").asInstanceOf[Tensor[Double]]
     val gradparameterTorch = torchResult("gradParameters_initial").asInstanceOf[Tensor[Double]]
     val gradparametersTorch = torchResult("gradParameters").asInstanceOf[Tensor[Double]]
+    val outputTorch = torchResult("output").asInstanceOf[Tensor[Double]]
+    val gradInputTorch = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
     require(parameters == parameterTorch, "parameter compare failed")
 
@@ -267,8 +260,8 @@ class BatchNormalizationSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val output = sbn.forward(input)
     val gradInput = sbn.backward(input, gradOutput2)
 
-    output should be (sbnTorch.output)
-    gradInput should be (sbnTorch.gradInput)
+    output should be (outputTorch)
+    gradInput should be (gradInputTorch)
     gradparametersTorch should be (gradparameters)
 
   }

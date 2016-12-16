@@ -21,12 +21,15 @@ import java.io._
 import java.nio._
 import java.nio.file._
 
-import com.intel.analytics.bigdl._
-// import java.util.{HashMap, Map}
+import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+
+import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
-import scala.collection.mutable.{HashMap, Map}
+import scala.collection.mutable
 
 
 sealed abstract class TorchObject(val typeId: Int)
@@ -47,28 +50,13 @@ object TorchObject {
 
   case object TYPE_LONG_STORAGE extends TorchObject(4)
 
-  case object TYPE_LINEAR extends TorchObject(4)
+  case object TYPE_MODULE extends TorchObject(4)
 
   case object TYPE_STRING extends TorchObject(2)
 
   case object TYPE_BOOLEAN extends TorchObject(5)
 
   case object TYPE_TABLE extends TorchObject(3)
-
-  case object TYPE_SPATIALCONVOLUTION extends TorchObject(4)
-
-  case object TYPE_SPATIALMAXPOOLING extends TorchObject(4)
-
-  case object TYPE_THRESHOLD extends TorchObject(4)
-
-  case object TYPE_CONCAT extends TorchObject(4)
-
-  case object TYPE_SEQUENTIAL extends TorchObject(4)
-
-  case object TYPE_VIEW extends TorchObject(4)
-
-  case object TYPE_DROPOUT extends TorchObject(4)
-
 }
 
 object File {
@@ -88,7 +76,7 @@ object File {
     val path = Paths.get(fileName)
     val rawData = ByteBuffer.wrap(Files.readAllBytes(path))
     rawData.order(ByteOrder.LITTLE_ENDIAN)
-    val objects: Map[Int, Any] = new HashMap()
+    val objects: mutable.Map[Int, Any] = new mutable.HashMap()
     readObject(rawData, objects).asInstanceOf[T]
   }
 
@@ -99,12 +87,28 @@ object File {
    * @param fileName
    * @param objectType
    */
-  def saveTorch(source: Any, fileName: String, objectType: TorchObject): Unit = {
-    val capacity = 300
-    val path = Paths.get(fileName)
+  def saveTorch(
+      source: Any,
+      fileName: String,
+      objectType: TorchObject,
+      overWrite: Boolean = false): Unit = {
+    val file = new File(fileName)
+    if (file.exists()) {
+      require(file.isFile(), s"$fileName is not a file")
+      if (!overWrite) {
+        throw new FileAlreadyExistsException(fileName)
+      } else { // clear the file
+        val fw = new FileWriter(file)
+        fw.write("")
+        fw.close()
+      }
+    } else {
+      file.createNewFile()
+    }
+    val capacity = 300000
     val buffer = ByteBuffer.allocate(capacity)
     buffer.order(ByteOrder.LITTLE_ENDIAN)
-    writeObject(source: Any, buffer, path, objectType)
+    writeObject(source: Any, buffer, file.toPath, objectType)
   }
 
   /**
@@ -143,8 +147,69 @@ object File {
     rawdata.clear()
   }
 
+  private def createInstanceFor(className: String, args: mutable.Seq[(Class[_], AnyRef)]): Any = {
+    val types = args.map(_._1).toArray
+    val values = args.map(_._2).toArray
+    val constructor = Class.forName(className).getDeclaredConstructor(types: _*)
+    constructor.setAccessible(true)
+    val obj = constructor.newInstance(values: _*)
+    obj
+  }
 
-  private def readObject(rawData: ByteBuffer, objects: Map[Int, Any]): Any = {
+  private def readModuleWithType[T: ClassTag](
+      moduleName: String,
+      elements: Table)(implicit ev: TensorNumeric[T]): Any = {
+    val module = moduleName match {
+      case "nn.BatchNormalization" => readBatchNormalizationWithType(elements)
+      case "nn.CAddTable" => CAddTable(elements.getOrElse("inplace", false))
+      case "nn.Concat" => readConcatWithType(elements)
+      case "nn.ConcatTable" => readConcatTableWithType(elements)
+      case "nn.Dropout" => readDropoutWithType(elements)
+      case "nn.Linear" => readLinearWithType(elements)
+      case "nn.ReLU" => ReLU(elements("inplace").asInstanceOf[Boolean])
+      case "nn.Reshape" => Reshape(elements("size").asInstanceOf[Array[Int]])
+      case "nn.Sequential" => readSequentialModuleWithType[T](elements)
+      case "nn.SpatialMaxPooling" => readSpatialMaxPoolingWithType(elements)
+      case "nn.SpatialAveragePooling" => readSpatialAveragePoolingWithType(elements)
+      case "nn.SpatialBatchNormalization" => readSpatialBatchNormalizationWithType(elements)
+      case "nn.SpatialConvolution" => readSpatialConvolutionWithType(elements)
+      case "nn.SpatialConvolutionMap" => readSpatialConvolutionMapWithType(elements)
+      case "nn.SpatialConvolutionMM" => readSpatialConvolutionWithType(elements)
+      case "nn.SpatialZeroPadding" => readSpatialZeroPaddingWithType(elements)
+      case "nn.Threshold" => readThresholdWithType(elements)
+      case "nn.View" => readViewWithType(elements)
+      case _ => try {
+        val classTag =
+          if (elements("_type") == "torch.FloatTensor") ClassTag.Float else ClassTag.Double
+        val bigDlName = "com.intel.analytics.bigdl." + moduleName
+        // Use reflection to load all parameter-free module
+        val args: Array[(Class[_], AnyRef)] = Array((classOf[ClassTag[_]], classTag),
+          (classOf[TensorNumeric[_]], ev))
+        createInstanceFor(bigDlName, args)
+      } catch {
+        case _ => throw new IllegalArgumentException(s"unsupported module $moduleName")
+      }
+    }
+    module
+  }
+
+  private def readModule(
+    moduleName: String,
+    rawData: ByteBuffer,
+    objects: mutable.Map[Int, Any]): Any = {
+    val elements = readObject(rawData, objects).asInstanceOf[Table]
+    val moduleType = elements.getOrElse("_type", "")
+    if(moduleType == "torch.FloatTensor") {
+      readModuleWithType[Float](moduleName, elements)
+    } else if (moduleType == "torch.DoubleTensor") {
+      readModuleWithType[Double](moduleName, elements)
+    } else {
+      throw new Error(s"unkown module type $moduleType")
+    }
+
+  }
+
+  private def readObject(rawData: ByteBuffer, objects: mutable.Map[Int, Any]): Any = {
     val TYPE_NIL: Int = 0
     val TYPE_NUMBER: Int = 1
     val TYPE_STRING: Int = 2
@@ -157,12 +222,12 @@ object File {
 
     val typeId = rawData.getInt()
 
-    val res = typeId match {
+    typeId match {
       case TYPE_NIL => null
       case TYPE_TORCH =>
         val indexId = rawData.getInt()
         if (objects.contains(indexId)) {
-          objects.get(indexId).get
+          objects(indexId)
         } else {
           val (versionNumber, className) = readVersionAndClass(rawData)
           // Todo: Use reflection to do this is better
@@ -170,28 +235,10 @@ object File {
             case "torch.FloatTensor" => readFloatTensor(rawData, objects)
             case "torch.DoubleTensor" => readDoubleTensor(rawData, objects)
             case "torch.LongTensor" => readLongTensor(rawData, objects)
-            case "nn.Sequential" => readSequentialModule(rawData, objects)
-            case "nn.SpatialConvolutionMM" => readSpatialConvolution(rawData, objects)
-            case "nn.SpatialConvolution" => readSpatialConvolution(rawData, objects)
-            case "nn.SpatialZeroPadding" => readSpatialZeroPadding(rawData, objects)
-            case "nn.ReLU" => readReLU(rawData, objects)
-            case "nn.SpatialMaxPooling" => readSpatialMaxPooling(rawData, objects)
-            case "nn.SpatialAveragePooling" => readSpatialAveragePooling(rawData, objects)
-            case "nn.View" => readView(rawData, objects)
-            case "nn.Linear" => readLinear(rawData, objects)
-            case "nn.Threshold" => readThreshold(rawData, objects)
-            case "nn.LogSoftMax" => readLogSoftMax(rawData, objects)
-            case "nn.Concat" => readConcat(rawData, objects)
-            case "nn.Dropout" => readDropout(rawData, objects)
             case "torch.DoubleStorage" => readDoubleStorage(rawData)
             case "torch.FloatStorage" => readFloatStorage(rawData)
             case "torch.LongStorage" => readLongStorage(rawData)
-            case "nn.SpatialConvolutionMap" => readSpatialConvolutionMap(rawData, objects)
-            case "nn.Tanh" => readTanh(rawData, objects)
-            case "nn.Reshape" => readReshape(rawData, objects)
-            case "nn.BatchNormalization" => readBatchNormalization(rawData, objects)
-            case "nn.SpatialBatchNormalization" => readSpatialBatchNormalization(rawData, objects)
-            case _ => throw new UnsupportedOperationException(className)
+            case _ => readModule(className, rawData, objects)
           }
           objects.put(indexId, result)
           result
@@ -199,7 +246,7 @@ object File {
       case TYPE_TABLE =>
         val indexId = rawData.getInt()
         if (objects.contains(indexId)) {
-          objects.get(indexId).get
+          objects(indexId)
         } else {
           val result = readTable(rawData, objects)
           objects.put(indexId, result)
@@ -210,18 +257,51 @@ object File {
       case TYPE_BOOLEAN => readBoolean(rawData)
       case _ => throw new UnsupportedOperationException(typeId.toString)
     }
-    if (res.isInstanceOf[Some[Any]]) {
-      res.asInstanceOf[Some[Any]].getOrElse(null)
-    } else {
-      res
+  }
+
+  private def writeModule(
+      module: AbstractModule[_, _, _],
+      rawData: ByteBuffer, path: Path): Unit = {
+    module match {
+      case m: Linear[_] =>
+        writeVersionAndClass("V 1", "nn.Linear", rawData, path)
+        writeLinear(m, rawData, path)
+      case m: SpatialConvolution[_] =>
+        writeVersionAndClass("V 1", "nn.SpatialConvolutionMM", rawData, path)
+        writeSpatialConvolution(m, rawData, path)
+      case m: SpatialMaxPooling[_] =>
+        writeVersionAndClass("V 1", "nn.SpatialMaxPooling", rawData, path)
+        writeSpatialMaxPooling(m, rawData, path)
+      case m: ReLU[_] =>
+        writeVersionAndClass("V 1", "nn.ReLU", rawData, path)
+        writeReLU(m, rawData, path)
+      case m: Threshold[_] =>
+        writeVersionAndClass("V 1", "nn.Threshold", rawData, path)
+        writeThreshold(m, rawData, path)
+      case m: Concat[_] =>
+        writeVersionAndClass("V 1", "nn.Concat", rawData, path)
+        writeConcat(m, rawData, path)
+      case m: Sequential[_] =>
+        writeVersionAndClass("V 1", "nn.Sequential", rawData, path)
+        writeSequential(m, rawData, path)
+      case m: Dropout[_] =>
+        writeVersionAndClass("V 1", "nn.Dropout", rawData, path)
+        writeDropout(m, rawData, path)
+      case m: View[_] =>
+        writeVersionAndClass("V 1", "nn.View", rawData, path)
+        writeView(m, rawData, path)
+      case m: LogSoftMax[_] =>
+        writeVersionAndClass("V 1", "nn.LogSoftMax", rawData, path)
+        writeLogSoftMax(m, rawData, path)
+      case _ => throw new Error(s"Unimplemented module $module")
     }
+
   }
 
   private def writeObject(
     source: Any, rawdata: ByteBuffer, path: Path, objectType: TorchObject): Unit = {
     flush(rawdata, path)
     rawdata.putInt(objectType.typeId)
-
 
     objectType match {
       case TYPE_NIL => return
@@ -253,54 +333,24 @@ object File {
       case TYPE_NUMBER => writeNumber(source.asInstanceOf[Double], rawdata, path)
       case TYPE_STRING => writeString(source.asInstanceOf[String], rawdata, path)
       case TYPE_BOOLEAN => writeBoolean(source.asInstanceOf[Boolean], rawdata, path)
-      case TYPE_LINEAR =>
+      case TYPE_MODULE =>
         i = i + 1
         rawdata.putInt(i)
-        writeVersionAndClass("V 1", "nn.Linear", rawdata, path)
-        writeLinear(source.asInstanceOf[Linear[Double]], rawdata, path)
-      case TYPE_SPATIALCONVOLUTION =>
-        i = i + 1
-        rawdata.putInt(i)
-        writeVersionAndClass("V 1", "nn.SpatialConvolutionMM", rawdata, path)
-        writeSpatialConvolution(source.asInstanceOf[SpatialConvolution[Double]], rawdata, path)
-      case TYPE_SPATIALMAXPOOLING =>
-        i = i + 1
-        rawdata.putInt(i)
-        writeVersionAndClass("V 1", "nn.SpatialMaxPooling", rawdata, path)
-        writeSpatialMaxPooling(source.asInstanceOf[SpatialMaxPooling[Double]], rawdata, path)
-      case TYPE_THRESHOLD =>
-        i = i + 1
-        rawdata.putInt(i)
-        writeVersionAndClass("V 1", "nn.Threshold", rawdata, path)
-        writeThreshold(source.asInstanceOf[Threshold[Double]], rawdata, path)
-      case TYPE_CONCAT =>
-        i = i + 1
-        rawdata.putInt(i)
-        writeVersionAndClass("V 1", "nn.Concat", rawdata, path)
-        writeConcat(source.asInstanceOf[Concat[Double]], rawdata, path)
-      case TYPE_SEQUENTIAL =>
-        i = i + 1
-        rawdata.putInt(i)
-        writeVersionAndClass("V 1", "nn.Sequential", rawdata, path)
-        writeSequential(source
-          .asInstanceOf[Sequential[Double]], rawdata, path)
-      case TYPE_DROPOUT =>
-        i = i + 1
-        rawdata.putInt(i)
-        writeVersionAndClass("V 1", "nn.Dropout", rawdata, path)
-        writeDropout(source.asInstanceOf[Dropout[Double]], rawdata, path)
-      case TYPE_VIEW =>
-        i = i + 1
-        rawdata.putInt(i)
-        writeVersionAndClass("V 1", "nn.View", rawdata, path)
-        writeView(source.asInstanceOf[View[Double]], rawdata, path)
+        writeModule(source.asInstanceOf[AbstractModule[_, _, _]], rawdata, path)
       case TYPE_TABLE =>
         i = i + 1
         rawdata.putInt(i)
-        writeTable(source.asInstanceOf[Map[Any, Any]], rawdata, path)
-      case _ => throw new UnsupportedOperationException(objectType.toString)
+        source match {
+          case s: mutable.Map[Any, Any] =>
+            writeTable(s, rawdata, path)
+          case s: Table =>
+            writeTable(source.asInstanceOf[Table].getState(), rawdata, path)
+          case _ => throw new Error(s"Unknown table $source")
+        }
+      case _ => throw new IllegalArgumentException(objectType.toString)
 
     }
+    byteWrite(rawdata, path)
   }
 
   private def writeNumber(source: Double, rawdata: ByteBuffer, path: Path): Unit = {
@@ -329,10 +379,7 @@ object File {
   }
 
   private def writeBoolean(source: Boolean, rawdata: ByteBuffer, path: Path): Unit = {
-    var tmp = 1
-    if (source == false) {
-      tmp = 0
-    }
+    val tmp = if (source) 1 else 0
     flush(rawdata, path)
     rawdata.putInt(tmp)
     byteWrite(rawdata, path)
@@ -400,220 +447,204 @@ object File {
     byteWrite(rawdata, path)
   }
 
-  private def writeSpatialConvolution(source: SpatialConvolution[Double], rawdata: ByteBuffer,
-    path: Path): Unit = {
-    val table: Map[String, Any] = new HashMap()
-    val nInputPlane = source.nInputPlane
-    val nOutputPlane = source.nOutputPlane
-    val kW = source.kernelW
-    val kH = source.kernelH
-    val dW = source.strideW
-    val dH = source.strideH
-    val padW = source.padW
-    val padH = source.padH
-    val gradBias = source.gradBias
-    val fGradInput = source.fGradInput
-    val fInput = source.fInput
-    val bias = source.bias
-    val weight = source.weight
-    val gradWeight = source.gradWeight
-    val output = source.output
-    val gradInput = source.gradInput
-    table.put("gradInput", gradInput)
-    table.put("nInputPlane", nInputPlane)
-    table.put("nOutputPlane", nOutputPlane)
-    table.put("kW", kW)
-    table.put("kH", kH)
-    table.put("dW", dW)
-    table.put("dH", dH)
-    table.put("padW", padW)
-    table.put("padH", padH)
-    table.put("fGradInput", fGradInput)
-    table.put("fInput", fInput)
-    table.put("gradBias", gradBias)
-    table.put("output", output)
-    table.put("bias", bias)
-    table.put("weight", weight)
-    table.put("gradWeight", gradWeight)
-    writeObject(table.asInstanceOf[Map[Any, Any]], rawdata, path, TYPE_TABLE)
-    byteWrite(rawdata, path)
-  }
-
-  private def writeSpatialMaxPooling(source: SpatialMaxPooling[Double], rawdata: ByteBuffer,
-    path: Path): Unit = {
-    val table: Map[String, Any] = new HashMap()
-    val indices = source.indices
-    val ceilMode = source.ceil_mode
-    val kW = source.kW
-    val kH = source.kH
-    val dW = source.dW
-    val dH = source.dH
-    val padW = source.padW
-    val padH = source.padH
-    val output = source.output
-    val gradInput = source.gradInput
-    table.put("gradInput", gradInput)
-    table.put("kW", kW)
-    table.put("kH", kH)
-    table.put("dW", dW)
-    table.put("dH", dH)
-    table.put("padW", padW)
-    table.put("padH", padH)
-    table.put("indices", indices)
-    table.put("ceil_mode", ceilMode)
-    table.put("output", output)
-    writeObject(table.asInstanceOf[Map[Any, Any]], rawdata, path, TYPE_TABLE)
-    byteWrite(rawdata, path)
-  }
-
-  private def writeThreshold(source: Threshold[Double], rawdata: ByteBuffer, path: Path): Unit = {
-    val table: Map[String, Any] = new HashMap()
-    val value = source.value
-    val output = source.output
-    val inPlace = source.inPlace
-    val gradInput = source.gradInput
-    val threshold = source.threshold
-    table.put("gradInput", gradInput)
-    table.put("val", value)
-    table.put("inplace", inPlace)
-    table.put("threshold", threshold)
-    table.put("output", output)
-    writeObject(table.asInstanceOf[Map[Any, Any]], rawdata, path, TYPE_TABLE)
-    byteWrite(rawdata, path)
-  }
-
-  private def writeConcat(source: Concat[Double], rawdata: ByteBuffer, path: Path): Unit = {
-    val table: Map[String, Any] = new HashMap()
-    val dimension = source.dimension
-    val size = source.getSize()
-    val output = source.output
-    val train = source.training()
-    val gradInput = source.gradInput
-    val modules: Map[Double, Module[Double]] = new HashMap()
-
-    for (i <- 1 to source.modules.length) {
-      modules.put(i, source.modules(i - 1))
+  private def writeGeneralParameters(
+      source: AbstractModule[_, _, _],
+      table: Table): Table = {
+    table("gradInput") = source.gradInput
+    table("output") = source.output
+    table("_type") = source.getNumericType() match {
+      case DoubleType => "torch.DoubleTensor"
+      case FloatType => "torch.FloatTensor"
+      case _ =>
+        throw new IllegalArgumentException(s"Unknown type ${source.getNumericType()}")
     }
+    table
+  }
 
-    table.put("gradInput", gradInput)
-    table.put("size", size)
-    table.put("dimension", dimension)
-    table.put("modules", modules.asInstanceOf[Map[Any, Any]])
-    table.put("output", output)
-    writeObject(table.asInstanceOf[Map[Any, Any]], rawdata, path, TYPE_TABLE)
+  private def writeSpatialConvolution(source: SpatialConvolution[_], rawdata: ByteBuffer,
+    path: Path): Unit = {
+    require(source.nGroup == 1, "nGroup is not supported in torch")
+    val table: Table = T()
+    writeGeneralParameters(source, table)
+    table("nInputPlane") = source.nInputPlane
+    table("nOutputPlane") = source.nOutputPlane
+    table("kW") = source.kernelW
+    table("kH") = source.kernelH
+    table("dW") = source.strideW
+    table("dH") = source.strideH
+    table("padW") = source.padW
+    table("padH") = source.padH
+    table("fGradInput") = source.fGradInput
+    table("fInput") = source.fInput
+    table("gradBias") = source.gradBias
+    table("bias") = source.bias
+    table("weight") = source.weight.view(source.nOutputPlane,
+      source.nInputPlane * source.kernelH * source.kernelW)
+    table("gradWeight") = source.gradWeight.view(source.nOutputPlane,
+      source.nInputPlane * source.kernelH * source.kernelW)
+    if (!source.propagateBack) table("gradInput") = null
+    writeObject(table, rawdata, path, TYPE_TABLE)
     byteWrite(rawdata, path)
   }
 
-  private def writeSequential(source: Sequential[Double],
+  private def writeSpatialMaxPooling(source: SpatialMaxPooling[_], rawdata: ByteBuffer,
+    path: Path): Unit = {
+    val table: Table = T()
+    writeGeneralParameters(source, table)
+    table("kW") = source.kW
+    table("kH") = source.kH
+    table("dW") = source.dW
+    table("dH") = source.dH
+    table("padW") = source.padW
+    table("padH") = source.padH
+    table("indices") = source.indices
+    table("ceil_mode") = source.ceil_mode
+    writeObject(table, rawdata, path, TYPE_TABLE)
+    byteWrite(rawdata, path)
+  }
+
+  private def writeThreshold(source: Threshold[_], rawdata: ByteBuffer, path: Path): Unit = {
+    val table: Table = T()
+    writeGeneralParameters(source, table)
+    table("val") = source.value
+    table("inplace") = source.inPlace
+    table("threshold") = source.threshold
+    writeObject(table, rawdata, path, TYPE_TABLE)
+    byteWrite(rawdata, path)
+  }
+
+  private def writeConcat(source: Concat[_], rawdata: ByteBuffer, path: Path): Unit = {
+    val table: Table = T()
+    writeGeneralParameters(source, table)
+    val modules = T()
+    for (i <- 1 to source.modules.length) {
+      modules(i) = source.modules(i - 1)
+    }
+    table("size") = source.getSize()
+    table("dimension") = source.dimension
+    table("modules") = modules
+    writeObject(table, rawdata, path, TYPE_TABLE)
+    byteWrite(rawdata, path)
+  }
+
+  private def writeSequential(source: Sequential[_],
     rawdata: ByteBuffer, path: Path): Unit = {
-    val table: Map[String, Any] = new HashMap()
-    val output = source.output
-    val gradInput = source.gradInput
-    val modules: Map[Double, Module[Double]] = new HashMap()
-
+    val table: Table = T()
+    writeGeneralParameters(source, table)
+    val modules = T()
     for (i <- 1 to source.modules.length) {
-      modules.put(i, source.modules(i - 1)
-        .asInstanceOf[Module[Double]])
+      modules(i) = source.modules(i - 1)
     }
-
-    table.put("gradInput", gradInput)
-    table.put("modules", modules.asInstanceOf[Map[Any, Any]])
-    table.put("output", output)
-    writeObject(table.asInstanceOf[Map[Any, Any]], rawdata, path, TYPE_TABLE)
+    table("modules") = modules
+    writeObject(table, rawdata, path, TYPE_TABLE)
     byteWrite(rawdata, path)
   }
 
-  private def writeDropout(source: Dropout[Double], rawdata: ByteBuffer, path: Path): Unit = {
-    val table: Map[String, Any] = new HashMap()
-    val p = source.getP()
-    val output = source.output
-    val noise = source.noise
-    val gradInput = source.gradInput
-    val train = source.isTraining()
-
-    table.put("gradInput", gradInput)
-    table.put("train", train)
-    table.put("noise", noise)
-    table.put("gradInput", gradInput)
-    table.put("output", output)
-    table.put("p", p)
-
-    writeObject(table.asInstanceOf[Map[Any, Any]], rawdata, path, TYPE_TABLE)
+  private def writeDropout(source: Dropout[_], rawdata: ByteBuffer, path: Path): Unit = {
+    val table: Table = T()
+    writeGeneralParameters(source, table)
+    table("noise") = source.noise
+    table("p") = source.getP()
+    writeObject(table, rawdata, path, TYPE_TABLE)
     byteWrite(rawdata, path)
   }
 
-  private def writeView(source: View[Double], rawdata: ByteBuffer, path: Path): Unit = {
-    val table: Map[String, Any] = new HashMap()
-    val size = source.getSize()
-    val output = source.output
-    val numElements = source.numElements
-
-    table.put("numElements", numElements)
-    table.put("output", output)
-    table.put("size", size)
-    writeObject(table.asInstanceOf[Map[Any, Any]], rawdata, path, TYPE_TABLE)
+  private def writeView(source: View[_], rawdata: ByteBuffer, path: Path): Unit = {
+    val table: Table = T()
+    writeGeneralParameters(source, table)
+    table("numElements") = source.numElements
+    table("size") = source.getSize()
+    writeObject(table, rawdata, path, TYPE_TABLE)
     byteWrite(rawdata, path)
   }
 
-
-  private def writeLinear(source: Linear[Double], rawdata: ByteBuffer, path: Path): Unit = {
-    val table: Map[String, Any] = new HashMap()
-    val gradBias = source.gradBias
-    val output = source.output
-    val gradInput = source.gradInput
-    val bias = source.bias
-    val weight = source.weight
-    val gradWeight = source.gradWeight
-    table.put("gradBias", gradBias)
-    table.put("output", output)
-    table.put("gradInput", gradInput)
-    table.put("bias", bias)
-    table.put("weight", weight)
-    table.put("gradWeight", gradWeight)
-    writeObject(table.asInstanceOf[Map[Any, Any]], rawdata, path, TYPE_TABLE)
+  private def writeReLU(source: ReLU[_], rawdata: ByteBuffer, path: Path): Unit = {
+    val table: Table = T()
+    writeGeneralParameters(source, table)
+    table("val") = source.value
+    table("threshold") = source.threshold
+    table("inplace") = source.inPlace
+    writeObject(table, rawdata, path, TYPE_TABLE)
     byteWrite(rawdata, path)
   }
 
+  private def writeLogSoftMax(source: LogSoftMax[_], rawdata: ByteBuffer, path: Path): Unit = {
+    val table: Table = T()
+    writeGeneralParameters(source, table)
+    writeObject(table, rawdata, path, TYPE_TABLE)
+    byteWrite(rawdata, path)
+  }
 
-  private def writeTable(source: Map[Any, Any], rawdata: ByteBuffer, path: Path): Unit = {
+  private def writeLinear(source: Linear[_], rawdata: ByteBuffer, path: Path): Unit = {
+    val table: Table = T()
+    writeGeneralParameters(source, table)
+    table("gradBias") = source.gradBias
+    table("bias") = source.bias
+    table("weight") = source.weight
+    table("gradWeight") = source.gradWeight
+    writeObject(table, rawdata, path, TYPE_TABLE)
+    byteWrite(rawdata, path)
+  }
+
+  private def isDoubleTensor(tensor: Tensor[_]): Boolean = {
+    tensor.getType() match {
+      case FloatType => false
+      case DoubleType => true
+      case _ => throw new IllegalArgumentException
+    }
+  }
+
+  private def writeTable(source: mutable.Map[Any, Any], rawdata: ByteBuffer, path: Path): Unit = {
     val size = source.size
     flush(rawdata, path)
     rawdata.putInt(size)
 
     val it = source.keySet.toIterator
     while (it.hasNext) {
-      var key = it.next()
-      if (key.isInstanceOf[String]) {
-        writeObject(key.asInstanceOf[String], rawdata, path, TYPE_STRING)
-      }
-      else if (key.isInstanceOf[Double]) {
-        writeObject(key.asInstanceOf[Double], rawdata, path, TYPE_NUMBER)
+      val key = it.next()
+      key match {
+        case k: String =>
+          writeObject(k, rawdata, path, TYPE_STRING)
+        case d: Double =>
+          writeObject(d, rawdata, path, TYPE_NUMBER)
+        case f: Float =>
+          writeObject(f.toDouble, rawdata, path, TYPE_NUMBER)
+        case i: Int =>
+          writeObject(i.toDouble, rawdata, path, TYPE_NUMBER)
+        case _ => new Error(s"Unsupported key type $key")
       }
 
-      val sourceKey = source.get(key).getOrElse(null)
-      if ( sourceKey == null) {
-        writeObject(sourceKey, rawdata, path, TYPE_NIL)
-      }
-      else if (sourceKey.isInstanceOf[Tensor[_]]) {
-        writeObject(sourceKey.asInstanceOf[Tensor[Double]], rawdata, path, TYPE_DOUBLE_TENSOR)
-      }
-      else if (sourceKey.isInstanceOf[Int]) {
-        writeObject(sourceKey.asInstanceOf[Int].toDouble, rawdata, path, TYPE_NUMBER)
-      }
-      else if (sourceKey.isInstanceOf[Double]) {
-        writeObject(sourceKey.asInstanceOf[Double], rawdata, path, TYPE_NUMBER)
-      }
-      else if (sourceKey.isInstanceOf[Boolean]) {
-        writeObject(sourceKey.asInstanceOf[Boolean], rawdata, path, TYPE_BOOLEAN)
-      }
-      else if (sourceKey.isInstanceOf[Map[_, _]]) {
-        writeObject(sourceKey.asInstanceOf[Map[Any, Any]], rawdata, path, TYPE_TABLE)
-      }
-      else if (sourceKey.isInstanceOf[Linear[_]]) {
-        writeObject(sourceKey.asInstanceOf[Linear[Double]], rawdata, path, TYPE_LINEAR)
-      }
-      else if (sourceKey.isInstanceOf[Array[Int]]) {
-        writeObject(sourceKey.asInstanceOf[Array[Int]], rawdata, path, TYPE_LONG_STORAGE)
+      val sourceKey = source.getOrElse(key, null)
+      sourceKey match {
+        case s: Tensor[_] =>
+          if (isDoubleTensor(s)) {
+            writeObject(s.asInstanceOf[Tensor[Double]], rawdata, path, TYPE_DOUBLE_TENSOR)
+          } else {
+            writeObject(s.asInstanceOf[Tensor[Float]], rawdata, path, TYPE_FLOAT_TENSOR)
+          }
+        case s: Table =>
+          writeObject(s.getState(), rawdata, path, TYPE_TABLE)
+        case s: Int =>
+          writeObject(s.toDouble, rawdata, path, TYPE_NUMBER)
+        case s: Float =>
+          writeObject(s.toDouble, rawdata, path, TYPE_NUMBER)
+        case s: Double =>
+          writeObject(s, rawdata, path, TYPE_NUMBER)
+        case s: Boolean =>
+          writeObject(s, rawdata, path, TYPE_BOOLEAN)
+        case s: String =>
+          writeObject(s, rawdata, path, TYPE_STRING)
+        case s: mutable.Map[_, _] =>
+          writeObject(s, rawdata, path, TYPE_TABLE)
+        case s: Table =>
+          writeObject(s, rawdata, path, TYPE_TABLE)
+        case s: Array[Int] =>
+          writeObject(s, rawdata, path, TYPE_LONG_STORAGE)
+        case s: AbstractModule[_, _, _] =>
+          writeObject(s, rawdata, path, TYPE_MODULE)
+        case null =>
+          writeObject(sourceKey, rawdata, path, TYPE_NIL)
+        case _ => new Error(s"Unsupported value type $key")
       }
     }
     byteWrite(rawdata, path)
@@ -626,7 +657,7 @@ object File {
     var i = 0
     while (i < storageLength) {
       flush(rawdata, path)
-      rawdata.putFloat(source.storage().asInstanceOf[Storage[Float]](i))
+      rawdata.putFloat(source.storage()(i))
       i += 1
     }
     byteWrite(rawdata, path)
@@ -640,7 +671,7 @@ object File {
     var i = 0
     while (i < storageLength) {
       flush(rawdata, path)
-      rawdata.putDouble(source.storage().asInstanceOf[Storage[Double]](i))
+      rawdata.putDouble(source.storage()(i))
       i += 1
     }
     byteWrite(rawdata, path)
@@ -722,19 +753,30 @@ object File {
   }
 
   // Table
-  private def readTable(rawData: ByteBuffer, objects: Map[Int, Any]): Map[Any, Any] = {
+  private def readTable(
+      rawData: ByteBuffer,
+      objects: mutable.Map[Int, Any]): Table = {
     val size = rawData.getInt
-    val result = new HashMap[Any, Any]()
+    val result = T()
     var i = 0
     while (i < size) {
-      result.put(readObject(rawData, objects), readObject(rawData, objects))
+      val key = readObject(rawData, objects)
+      val value = readObject(rawData, objects)
+      key match {
+        case d: Double if d % 1 == 0 =>
+          result(d.toInt) = value
+        case _ =>
+          result(key) = value
+      }
       i += 1
     }
     result
   }
 
   // Tensor
-  private def readDoubleTensor(rawData: ByteBuffer, objects: Map[Int, Any]): Tensor[Double] = {
+  private def readDoubleTensor(
+      rawData: ByteBuffer,
+      objects: mutable.Map[Int, Any]): Tensor[Double] = {
     val nDimension = rawData.getInt()
     val sizes = new Array[Int](nDimension)
     val strides = new Array[Int](nDimension)
@@ -757,7 +799,9 @@ object File {
   }
 
   // Tensor float
-  private def readFloatTensor(rawData: ByteBuffer, objects: Map[Int, Any]): Tensor[Float] = {
+  private def readFloatTensor(
+      rawData: ByteBuffer,
+      objects: mutable.Map[Int, Any]): Tensor[Float] = {
     val nDimension = rawData.getInt()
     val sizes = new Array[Int](nDimension)
     val strides = new Array[Int](nDimension)
@@ -780,7 +824,9 @@ object File {
   }
 
   // Tensor long
-  private def readLongTensor(rawData: ByteBuffer, objects: Map[Int, Any]): Tensor[Double] = {
+  private def readLongTensor(
+      rawData: ByteBuffer,
+      objects: mutable.Map[Int, Any]): Tensor[Double] = {
     val nDimension = rawData.getInt()
     val sizes = new Array[Int](nDimension)
     val strides = new Array[Int](nDimension)
@@ -810,404 +856,196 @@ object File {
     Tensor(storage, offset, sizes, strides)
   }
 
-  // Modules
-  private def readSpatialMaxPooling(
-    rawData: ByteBuffer, objects: Map[Int, Any]): SpatialMaxPooling[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val padW = elements.get("padW").getOrElse(null).asInstanceOf[Double].toInt
-    val padH = elements.get("padH").getOrElse(null).asInstanceOf[Double].toInt
-    val indices = elements.get("indices").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val dW = elements.get("dW").getOrElse(null).asInstanceOf[Double].toInt
-    val dH = elements.get("dH").getOrElse(null).asInstanceOf[Double].toInt
-    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val ceilMode = elements.get("ceil_mode").getOrElse(null).asInstanceOf[Boolean]
-    val kW = elements.get("kW").getOrElse(null).asInstanceOf[Double].toInt
-    val kH = elements.get("kH").getOrElse(null).asInstanceOf[Double].toInt
-    val result = new SpatialMaxPooling[Double](kW, kH, dW, dH, padW, padH)
-    result.ceil_mode = ceilMode
-    result.output.resizeAs(output)
-    result.output.copy(output)
-    result.indices.resizeAs(indices)
-    result.indices.copy(indices)
-    result.gradInput.resizeAs(gradInput)
-    result.gradInput.copy(gradInput)
+  private def readSpatialMaxPoolingWithType[T: ClassTag](
+      elements: Table)(implicit ev: TensorNumeric[T]): SpatialMaxPooling[T] = {
+    val result = SpatialMaxPooling[T](
+      kW = elements[Double]("kW").toInt,
+      kH = elements[Double]("kH").toInt,
+      dW = elements[Double]("dW").toInt,
+      dH = elements[Double]("dH").toInt,
+      padW = elements.getOrElse("padW", 0.0).toInt,
+      padH = elements.getOrElse("padH", 0.0).toInt
+    )
+    val ceilMode = elements("ceil_mode").asInstanceOf[Boolean]
+    if (ceilMode) result.ceil() else result.floor()
     result
   }
 
-  private def readSpatialAveragePooling(
-    rawData: ByteBuffer, objects: Map[Int, Any]): SpatialAveragePooling[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val padW = elements.get("padW").getOrElse(null).asInstanceOf[Double].toInt
-    val padH = elements.get("padH").getOrElse(null).asInstanceOf[Double].toInt
-    val dW = elements.get("dW").getOrElse(null).asInstanceOf[Double].toInt
-    val dH = elements.get("dH").getOrElse(null).asInstanceOf[Double].toInt
-    val ceilMode = elements.get("ceil_mode").getOrElse(null).asInstanceOf[Boolean]
-    val kW = elements.get("kW").getOrElse(null).asInstanceOf[Double].toInt
-    val kH = elements.get("kH").getOrElse(null).asInstanceOf[Double].toInt
-    val countIncludePad = elements.get("count_include_pad").getOrElse(null).asInstanceOf[Boolean]
-    val divide = elements.get("divide").getOrElse(null).asInstanceOf[Boolean]
-    val result = new SpatialAveragePooling[Double](kW, kH, dW, dH, padW, padH, ceilMode,
-      countIncludePad, divide)
-    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    result.output.resizeAs(output)
-    result.output.copy(output)
-    result.gradInput.resizeAs(gradInput)
-    result.gradInput.copy(gradInput)
+  private def readSpatialAveragePoolingWithType[T: ClassTag](
+      elements: Table)(
+      implicit ev: TensorNumeric[T]): SpatialAveragePooling[T] = {
+    val result = SpatialAveragePooling[T](
+      kW = elements[Double]("kW").toInt,
+      kH = elements[Double]("kH").toInt,
+      dW = elements.getOrElse("dW", 1.0).toInt,
+      dH = elements.getOrElse("dH", 1.0).toInt,
+      padW = elements.getOrElse("padW", 0.0).toInt,
+      padH = elements.getOrElse("padH", 0.0).toInt,
+      ceilMode = elements.getOrElse("ceil_mode", false),
+      countIncludePad = elements.getOrElse("count_include_pad", true),
+      divide = elements.getOrElse("divide", true)
+    )
     result
   }
 
-  private def readConcat(rawData: ByteBuffer, objects: Map[Int, Any]): Concat[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    // size array will be adjust to the input in the training
-    val size = elements.get("size").getOrElse(null).asInstanceOf[Array[Int]]
-    val dimension = elements.get("dimension").getOrElse(null).asInstanceOf[Double].toInt
-    val train = elements.get("train").getOrElse(null).asInstanceOf[Boolean] // what's this?
-    val modules = elements.get("modules").getOrElse(null).asInstanceOf[Map[Any, Any]]
-    val result = new Concat[Double](dimension)
-    result.gradInput.resizeAs(gradInput)
-    result.gradInput.copy(gradInput)
-    result.output.resizeAs(output)
-    result.output.copy(output)
+  private def readConcatWithType[T: ClassTag](
+      elements: Table)(implicit ev: TensorNumeric[T]): Concat[T] = {
+    val modules = elements[Table]("modules")
+    val result = Concat[T](elements("dimension").asInstanceOf[Double].toInt)
 
-    for (m <- readModules(modules)) {
-      result.modules += m
+    for (i <- 1 to modules.length()) {
+      result.add(modules(i))
     }
     result
   }
 
-  private def readDropout(rawData: ByteBuffer, objects: Map[Int, Any]): Dropout[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val p = elements.get("p").getOrElse(null).asInstanceOf[Double]
-    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val noise = elements.get("noise").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val train = elements.get("train").getOrElse(null).asInstanceOf[Boolean]
-
-    val result = new Dropout[Double](p, false, true)
-    result.output.resizeAs(output)
-    result.output.copy(output)
-    result.gradInput.resizeAs(gradInput)
-    result.gradInput.copy(gradInput)
-    result.noise.resizeAs(noise)
-    result.noise.copy(noise)
-    if (train) result.training() else result.evaluate()
-
+  private def readDropoutWithType[T: ClassTag](
+      elements: Table)(implicit ev: TensorNumeric[T]): Dropout[T] = {
+    val result = Dropout[T](
+      initP = elements.getOrElse("p", 0.5),
+      inplace = elements.getOrElse("inplace", false),
+      scale = elements.getOrElse("", true)
+    )
     result
   }
 
-  private def readLinear(rawData: ByteBuffer, objects: Map[Int, Any]): Linear[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradBias = elements.get("gradBias").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val bias = elements.get("bias").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val weight = elements.get("weight").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradWeight = elements.get("gradWeight").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val result = new Linear[Double](weight.size(2), weight.size(1))
-    result.output.resizeAs(output)
-    result.output.copy(output)
-    result.gradBias.resizeAs(gradBias)
-    result.gradBias.copy(gradBias)
-    result.gradInput.resizeAs(gradInput)
-    result.gradInput.copy(gradInput)
-    result.bias.resizeAs(bias)
+  private def readLinearWithType[T: ClassTag](
+      elements: Table)(implicit ev: TensorNumeric[T]) : Linear[T] = {
+    val bias = elements("bias").asInstanceOf[Tensor[T]]
+    val weight = elements("weight").asInstanceOf[Tensor[T]]
+    val result = Linear[T](weight.size(2), weight.size(1))
     result.bias.copy(bias)
-    result.weight.resizeAs(weight)
     result.weight.copy(weight)
-    result.gradWeight.resizeAs(gradWeight)
-    result.gradWeight.copy(gradWeight)
+    result
+
+  }
+
+  private def readSpatialConvolutionMapWithType[T: ClassTag](
+      elements: Table)(
+      implicit ev: TensorNumeric[T]): SpatialConvolutionMap[T] = {
+    val weight = elements.getOrElse("weight", null).asInstanceOf[Tensor[T]]
+    val bias = elements.getOrElse("bias", null).asInstanceOf[Tensor[T]]
+    val result = SpatialConvolutionMap[T](
+      connTable = elements("connTable").asInstanceOf[Tensor[T]],
+      kW = elements[Double]("kW").toInt,
+      kH = elements[Double]("kH").toInt,
+      dW = elements.getOrElse("dW", 1.0).toInt,
+      dH = elements.getOrElse("dH", 1.0).toInt,
+      padW = elements.getOrElse("padW", 0.0).toInt,
+      padH = elements.getOrElse("padH", 0.0).toInt
+    )
+    result.weight.copy(weight)
+    result.bias.copy(bias)
     result
   }
 
-  private def readSpatialConvolutionMap(
-    rawData: ByteBuffer, objects: Map[Int, Any]): SpatialConvolutionMap[Double] = {
-
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-
-    val padH = elements.get("padH").getOrElse(null).asInstanceOf[Double].toInt
-    val padW = elements.get("padW").getOrElse(null).asInstanceOf[Double].toInt
-    val dH = elements.get("dH").getOrElse(null).asInstanceOf[Double].toInt
-    val dW = elements.get("dW").getOrElse(null).asInstanceOf[Double].toInt
-    val kH = elements.get("kH").getOrElse(null).asInstanceOf[Double].toInt
-    val kW = elements.get("kW").getOrElse(null).asInstanceOf[Double].toInt
-    val connTable = elements.get("connTable").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradBias = elements.get("gradBias").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val weight = elements.get("weight").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val finput = elements.get("finput").asInstanceOf[Tensor[Double]]
-    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val bias = elements.get("bias").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradWeight = elements.get("gradWeight").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val fgradInput = elements.get("fgradInput").asInstanceOf[Tensor[Double]]
-
-    val result = new SpatialConvolutionMap[Double](connTable, kW, kH, dW, dH, padW, padH)
-    result.gradBias.resizeAs(gradBias)
-    result.gradBias.copy(gradBias)
-    result.weight.resizeAs(weight)
+  private def readBatchNormalizationWithType[T: ClassTag](
+      elements: Table)(implicit ev: TensorNumeric[T]): BatchNormalization[T] = {
+    val weight = elements("weight").asInstanceOf[Tensor[T]]
+    val runningMean = elements("running_mean").asInstanceOf[Tensor[T]]
+    val runningVar = elements("running_var").asInstanceOf[Tensor[T]]
+    val bias = elements("bias").asInstanceOf[Tensor[T]]
+    val result = new BatchNormalization[T](
+      nOutput = runningMean.size(1),
+      eps = elements.getOrElse("eps", 1e-5),
+      momentum = elements.getOrElse("momentum", 0.1),
+      affine = elements.getOrElse("affine", true)
+    )
     result.weight.copy(weight)
-    result.fInput.resizeAs(finput)
-    result.fInput.copy(finput)
-    result.output.resizeAs(output)
-    result.output.copy(output)
-    result.gradInput.resizeAs(gradInput)
-    result.gradInput.copy(gradInput)
-    result.bias.resizeAs(bias)
     result.bias.copy(bias)
-    result.gradWeight.resizeAs(gradWeight)
-    result.gradWeight.copy(gradWeight)
-    result.fGradInput.resizeAs(fgradInput)
-    result.fGradInput.copy(fgradInput)
-    result
-  }
-
-  private def readBatchNormalization(
-    rawData: ByteBuffer, objects: Map[Int, Any]): BatchNormalization[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val eps = elements.get("eps").getOrElse(null).asInstanceOf[Double]
-    val momentum = elements.get("momentum").getOrElse(null).asInstanceOf[Double]
-    val affine = elements.get("affine").getOrElse(null).asInstanceOf[Boolean]
-    val gradBias = elements.get("gradBias").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val weight = elements.get("weight").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val runningMean = elements.get("running_mean").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val runningVar = elements.get("running_var").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val saveMean = elements.get("save_mean").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val saveStd = elements.get("save_std").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val bias = elements.get("bias").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradWeight = elements.get("gradWeight").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val nOutput = runningMean.size(1)
-    val result = new BatchNormalization[Double](nOutput, eps, momentum, affine)
-    result.gradBias.resizeAs(gradBias)
-    result.gradBias.copy(gradBias)
-    result.weight.resizeAs(weight)
-    result.weight.copy(weight)
-    result.output.resizeAs(output)
-    result.output.copy(output)
-    result.gradInput.resizeAs(gradInput)
-    result.gradInput.copy(gradInput)
-    result.bias.resizeAs(bias)
-    result.bias.copy(bias)
-    result.gradWeight.resizeAs(gradWeight)
-    result.gradWeight.copy(gradWeight)
-    result.runningMean.resizeAs(runningMean)
     result.runningMean.copy(runningMean)
-    result.runningVar.resizeAs(runningVar)
     result.runningVar.copy(runningVar)
-    result.saveMean.resizeAs(saveMean)
-    result.saveMean.copy(saveMean)
-    result.saveStd.resizeAs(saveStd)
-    result.saveStd.copy(saveStd)
 
     result
   }
 
-  private def readSpatialBatchNormalization(
-    rawData: ByteBuffer, objects: Map[Int, Any]): SpatialBatchNormalization[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val eps = elements.get("eps").getOrElse(null).asInstanceOf[Double]
-    val momentum = elements.get("momentum").getOrElse(null).asInstanceOf[Double]
-    val affine = elements.get("affine").getOrElse(null).asInstanceOf[Boolean]
-    val gradBias = elements.get("gradBias").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val weight = elements.get("weight").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val runningMean = elements.get("running_mean").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val runningVar = elements.get("running_var").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val saveMean = elements.get("save_mean").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val saveStd = elements.get("save_std").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val bias = elements.get("bias").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradWeight = elements.get("gradWeight").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val nOutput = runningMean.size(1)
-    val result = new SpatialBatchNormalization[Double](nOutput, eps, momentum, affine)
-    result.gradBias.resizeAs(gradBias)
-    result.gradBias.copy(gradBias)
-    result.weight.resizeAs(weight)
+  private def readSpatialBatchNormalizationWithType[T: ClassTag](
+      elements: Table)(
+      implicit ev: TensorNumeric[T]): SpatialBatchNormalization[T] = {
+    val weight = elements("weight").asInstanceOf[Tensor[T]]
+    val runningMean = elements("running_mean").asInstanceOf[Tensor[T]]
+    val runningVar = elements("running_var").asInstanceOf[Tensor[T]]
+    val bias = elements("bias").asInstanceOf[Tensor[T]]
+    val result = new SpatialBatchNormalization[T](
+      nOutput = runningMean.size(1),
+      eps = elements.getOrElse("eps", 1e-5),
+      momentum = elements.getOrElse("momentum", 0.1),
+      affine = elements.getOrElse("affine", true)
+    )
     result.weight.copy(weight)
-    result.output.resizeAs(output)
-    result.output.copy(output)
-    result.gradInput.resizeAs(gradInput)
-    result.gradInput.copy(gradInput)
-    result.bias.resizeAs(bias)
     result.bias.copy(bias)
-    result.gradWeight.resizeAs(gradWeight)
-    result.gradWeight.copy(gradWeight)
-    result.runningMean.resizeAs(runningMean)
     result.runningMean.copy(runningMean)
-    result.runningVar.resizeAs(runningVar)
     result.runningVar.copy(runningVar)
-    if (null != saveMean) {
-      result.saveMean.resizeAs(saveMean)
-      result.saveMean.copy(saveMean)
-    }
-    if (null != saveStd) {
-      result.saveStd.resizeAs(saveStd)
-      result.saveStd.copy(saveStd)
-    }
 
     result
   }
 
-  private def readThreshold(rawData: ByteBuffer, objects: Map[Int, Any]): Threshold[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val result = new Threshold[Double]
-    val value = elements.get("val").getOrElse(null).asInstanceOf[Double]
-    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val inPlace = elements.get("inplace").getOrElse(null).asInstanceOf[Boolean]
-    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val threshold = elements.get("threshold").getOrElse(null).asInstanceOf[Double]
-    result.value = value
-    result.output.resizeAs(output)
-    result.output.copy(output)
-    result.gradInput.resizeAs(gradInput)
-    result.gradInput.copy(gradInput)
-    result.inPlace = inPlace
-    result.threshold = threshold
-    result
-  }
-
-  private def readLogSoftMax(rawData: ByteBuffer, objects: Map[Int, Any]): LogSoftMax[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val result = new LogSoftMax[Double]
-    result.output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    result.gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    result
-  }
-
-  private def readView(rawData: ByteBuffer, objects: Map[Int, Any]): View[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val size = elements.get("size").getOrElse(null).asInstanceOf[Array[Int]]
-    val result = new View[Double](size)
-    if (elements.contains("output")) {
-      val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-      result.output.resizeAs(output)
-      result.output.copy(output)
+  private def readConcatTableWithType[T: ClassTag](
+      elements: Table)(implicit ev: TensorNumeric[T]): ConcatTable[T] = {
+    val result = new ConcatTable[T]()
+    val modules = elements[Table]("modules")
+    for (i <- 1 to modules.length()) {
+      result.add(modules(i))
     }
-    val numElements = elements.get("numElements").getOrElse(null).asInstanceOf[Double].toInt
-    val numInputDims = elements.get("numInputDims").getOrElse(null).asInstanceOf[Double].toInt
-    result.setNumInputDims(numInputDims)
+    result
+  }
+
+  private def readThresholdWithType[T: ClassTag](
+      elements: Table)(implicit ev: TensorNumeric[T]): Threshold[T] = {
+    Threshold[T](
+      th = elements.getOrElse("threshold", 1e-6),
+      v = elements.getOrElse("val", 0.0),
+      ip = elements.getOrElse("inplace", false)
+    )
+  }
+
+  private def readViewWithType[T: ClassTag](
+      elements: Table)(implicit ev: TensorNumeric[T]): View[T] = {
+    val result = View[T](elements("size").asInstanceOf[Array[Int]])
+    result.setNumInputDims(elements.getOrElse("numInputDims", 0.0).toInt)
+    val numElements = elements.getOrElse("numElements", - 1.0).toInt
     require(result.numElements == numElements, "Invalid view file")
     result
   }
 
-  private def readSpatialZeroPadding(
-    rawData: ByteBuffer, objects: Map[Int, Any]): SpatialZeroPadding[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val result = new SpatialZeroPadding[Double](
-      elements.get("pad_l").getOrElse(null).asInstanceOf[Double].toInt,
-      elements.get("pad_r").getOrElse(null).asInstanceOf[Double].toInt,
-      elements.get("pad_t").getOrElse(null).asInstanceOf[Double].toInt,
-      elements.get("pad_b").getOrElse(null).asInstanceOf[Double].toInt
+  private def readSpatialZeroPaddingWithType[T: ClassTag](
+      elements: Table)(implicit ev: TensorNumeric[T]): SpatialZeroPadding[T] = {
+    val result = SpatialZeroPadding[T](
+      elements[Double]("pad_l").toInt,
+      elements[Double]("pad_r").toInt,
+      elements[Double]("pad_t").toInt,
+      elements[Double]("pad_b").toInt
     )
-    result.output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    result.gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
     result
   }
 
-  private def readReLU(rawData: ByteBuffer, objects: Map[Int, Any]): ReLU[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val result = new ReLU[Double]
-    result.value = elements.get("val").getOrElse(null).asInstanceOf[Double]
-    result.output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    result.inPlace = elements.get("inplace").getOrElse(null).asInstanceOf[Boolean]
-    result.gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    result.threshold = elements.get("threshold").getOrElse(null).asInstanceOf[Double]
+  private def readSpatialConvolutionWithType[T: ClassTag](
+      elements: Table)(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
+    val propagateBack = if (null == elements("gradInput")) false else true
+    val result = SpatialConvolution[T](
+      nInputPlane = elements[Double]("nInputPlane").toInt,
+      nOutputPlane = elements[Double]("nOutputPlane").toInt,
+      kernelW = elements[Double]("kW").toInt,
+      kernelH = elements[Double]("kH").toInt,
+      strideW = elements.getOrElse("dW", 1.0).toInt,
+      strideH = elements.getOrElse("dH", 1.0).toInt,
+      padW = elements.getOrElse("padW", 0.0).toInt,
+      padH = elements.getOrElse("padH", 0.0).toInt,
+      nGroup = 1,
+      propagateBack = propagateBack
+    )
+    result.weight.copy(elements("weight").asInstanceOf[Tensor[T]])
+    result.bias.copy(elements("bias").asInstanceOf[Tensor[T]])
     result
   }
 
-  private def readTanh(rawData: ByteBuffer, objects: Map[Int, Any]): Tanh[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val result = new Tanh[Double]
-    result
-  }
-
-  private def readReshape(rawData: ByteBuffer, objects: Map[Int, Any]): Reshape[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val size = elements.get("size").getOrElse(null).asInstanceOf[Array[Int]]
-    val result = new Reshape[Double](size)
-    result
-  }
-
-  private def readSpatialConvolution(
-    rawData: ByteBuffer, objects: Map[Int, Any]): SpatialConvolution[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[String, Any]]
-    val padH = elements.get("padH").getOrElse(null).asInstanceOf[Double].toInt
-    val padW = elements.get("padW").getOrElse(null).asInstanceOf[Double].toInt
-    val dH = elements.get("dH").getOrElse(null).asInstanceOf[Double].toInt
-    val dW = elements.get("dW").getOrElse(null).asInstanceOf[Double].toInt
-    val kH = elements.get("kH").getOrElse(null).asInstanceOf[Double].toInt
-    val kW = elements.get("kW").getOrElse(null).asInstanceOf[Double].toInt
-    val nInputPlane = elements.get("nInputPlane").getOrElse(null).asInstanceOf[Double].toInt
-    val nOutputPlane = elements.get("nOutputPlane").getOrElse(null).asInstanceOf[Double].toInt
-    val gradBias = elements.get("gradBias").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val weight = elements.get("weight").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val finput = elements.get("finput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val bias = elements.get("bias").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val gradWeight = elements.get("gradWeight").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val fgradInput = elements.get("fgradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val result = new SpatialConvolution[Double](
-      nInputPlane, nOutputPlane, kW, kH, dW, dH, padW, padH)
-    result.gradBias.resizeAs(gradBias)
-    result.gradBias.copy(gradBias)
-    result.weight.resizeAs(weight)
-    result.weight.copy(weight)
-    if (finput != null) {
-      result.fInput.resizeAs(finput)
-      result.fInput.copy(finput)
-    }
-    result.output.resizeAs(output)
-    result.output.copy(output)
-    result.gradInput.resizeAs(gradInput)
-    result.gradInput.copy(gradInput)
-    result.bias.resizeAs(bias)
-    result.bias.copy(bias)
-    result.gradWeight.resizeAs(gradWeight)
-    result.gradWeight.copy(gradWeight)
-    if (fgradInput != null) {
-      result.fGradInput.resizeAs(fgradInput)
-      result.fGradInput.copy(fgradInput)
+  private def readSequentialModuleWithType[T : ClassTag](
+      elements: Table)(implicit ev: TensorNumeric[T]): Sequential[T] = {
+    val modules = elements[Table]("modules")
+    val result = Sequential[T]()
+    for (i <- 1 to modules.length()) {
+      result.add(modules(i))
     }
     result
-  }
-
-  private def readSequentialModule(
-    rawData: ByteBuffer, objects: Map[Int, Any]): Sequential[Double] = {
-    val elements = readObject(rawData, objects).asInstanceOf[Map[Any, Any]]
-    val output = elements.get("output").getOrElse(null).asInstanceOf[Tensor[Double]]
-    val modules = elements.get("modules").getOrElse(null).asInstanceOf[Map[Any, Any]]
-    val result = new Sequential[Double]()
-    if (null != output) {
-      result.output = Tensor[Double].resizeAs(output).copy(output)
-    }
-    if (elements.contains("gradInput")) {
-      val gradInput = elements.get("gradInput").getOrElse(null).asInstanceOf[Tensor[Double]]
-      if (null != gradInput) {
-        result.gradInput = Tensor[Double].resizeAs(gradInput).copy(gradInput)
-      }
-    }
-
-    for (m <- readModules(modules)) {
-      result.modules += m
-    }
-    result
-  }
-
-  private def readModules(modules: Map[Any, Any]):
-  Array[Module[Double]] = {
-    val moduleLength = modules.keySet.size
-    val modulesArray = new Array[Module[Double]](moduleLength)
-    for (k <- modules.keySet.toArray) {
-      val key = k.asInstanceOf[Double]
-      modulesArray(key.toInt - 1) = modules
-        .get(key).getOrElse(null)
-        .asInstanceOf[Module[Double]]
-    }
-    modulesArray
   }
 }

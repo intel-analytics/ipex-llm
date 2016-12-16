@@ -122,7 +122,7 @@ object TensorNumericMath {
 
     def sum(n: Int, a: Array[T], aOffset: Int, stride: Int): T
 
-    def getType(): String
+    def getType(): TensorDataType
   }
 
   class TensorNumericOps[@specialized(Float, Double) T](lhs: T)(implicit ev: TensorNumeric[T]) {
@@ -220,7 +220,7 @@ object TensorNumericMath {
       def toType[@specialized(Float, Double, Int) K](t: Float)(implicit c: ConvertableTo[K]): K =
         c.fromFloat(t)
 
-      def getType(): String = "Float"
+      def getType(): TensorDataType = FloatType
 
       override def vPowx(n: Int, a: Array[Float], aOffset: Int, b: Float, y: Array[Float],
         yOffset: Int): Unit = {
@@ -413,7 +413,7 @@ object TensorNumericMath {
       def toType[@specialized(Float, Double, Int) K](t: Double)(implicit c: ConvertableTo[K]): K =
         c.fromDouble(t)
 
-      def getType(): String = "Double"
+      def getType(): TensorDataType = DoubleType
 
       override def vPowx(n: Int, a: Array[Double], aOffset: Int, b: Double, y: Array[Double],
         yOffset: Int): Unit = {

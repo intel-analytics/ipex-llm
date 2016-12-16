@@ -916,7 +916,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
     if (this.isContiguous() && tensor1.isContiguous() && tensor2.isContiguous()) {
       ev.getType() match {
-        case "Double" =>
+        case DoubleType =>
           val v = value.asInstanceOf[Double]
           val t1 = tensor1.storage().array().asInstanceOf[Array[Double]]
           val t1Offset = tensor1.storageOffset() - 1
@@ -931,7 +931,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
             self(i + selfOffset) += t1(t1Offset + i) * t2(t2Offset + i) * v
             i += 1
           }
-        case "Float" =>
+        case FloatType =>
           val v = value.asInstanceOf[Float]
           val t1 = tensor1.storage().array().asInstanceOf[Array[Float]]
           val t1Offset = tensor1.storageOffset() - 1
@@ -965,7 +965,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   override def addcdiv(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
     if (this.isContiguous() && tensor1.isContiguous() && tensor2.isContiguous()) {
       ev.getType() match {
-        case "Double" =>
+        case DoubleType =>
           val v = value.asInstanceOf[Double]
           val t1 = tensor1.storage().array().asInstanceOf[Array[Double]]
           val t1Offset = tensor1.storageOffset() - 1
@@ -980,7 +980,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
             self(i + selfOffset) += t1(t1Offset + i) / t2(t2Offset + i) * v
             i += 1
           }
-        case "Float" =>
+        case FloatType =>
           val v = value.asInstanceOf[Float]
           val t1 = tensor1.storage().array().asInstanceOf[Array[Float]]
           val t1Offset = tensor1.storageOffset() - 1
@@ -1206,14 +1206,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       this.nElement())
   }
 
-  override def getType(): TensorDataType =
-    if (ev.getType() == "Float") {
-      FloatType
-    } else if (ev.getType() == "Double") {
-      DoubleType
-    } else {
-      throw new IllegalArgumentException
-    }
+  override def getType(): TensorDataType = ev.getType()
 
   override def toMLlibMatrix(): Matrix = {
     require(this.nDimension == 2, "tensor is not 2D")
@@ -1262,9 +1255,9 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this.map(other, (a, b) => {
       if (result) {
         ev.getType() match {
-          case "Float" =>
+          case FloatType =>
             result = DenseTensorMath.nearlyEqual(a, b, DenseTensorMath.floatEpsilon)
-          case "Double" =>
+          case DoubleType =>
             result = DenseTensorMath.nearlyEqual(a, b, DenseTensorMath.doubleEpsilon)
         }
       }

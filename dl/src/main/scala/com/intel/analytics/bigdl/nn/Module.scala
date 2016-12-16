@@ -29,6 +29,10 @@ object Module {
     File.load[AbstractModule[Activity, Activity, T]](path)
   }
 
+  def loadTorch[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
+    File.loadTorch[AbstractModule[Activity, Activity, T]](path)
+  }
+
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
     val compactedTensor = isCompact(parameters)

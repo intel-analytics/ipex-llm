@@ -264,7 +264,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       // Unpack columns back into input:
       val before = System.nanoTime()
       ev.getType() match {
-        case "Double" => NNPrimitive.col2imWithDilationDouble(
+        case DoubleType => NNPrimitive.col2imWithDilationDouble(
           columns.asInstanceOf[Tensor[Double]], output_n.asInstanceOf[Tensor[Double]],
           nOutputPlane, outputHeight, outputWidth,
           kH, kW,
@@ -273,7 +273,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
           1, 1
         )
 
-        case "Float" => NNPrimitive.col2imWithDilationFloat(
+        case FloatType => NNPrimitive.col2imWithDilationFloat(
           columns.asInstanceOf[Tensor[Float]], output_n.asInstanceOf[Tensor[Float]],
           nOutputPlane, outputHeight, outputWidth,
           kH, kW,
@@ -363,7 +363,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       // Extract columns:
       val before = System.nanoTime()
       ev.getType() match {
-        case "Double" => NNPrimitive.im2colWithDilationDouble(
+        case DoubleType => NNPrimitive.im2colWithDilationDouble(
           gradOutput_n.asInstanceOf[Tensor[Double]], columns.asInstanceOf[Tensor[Double]],
           nOutputPlane, outputHeight, outputWidth,
           kH, kW,
@@ -372,7 +372,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
           1, 1
         )
 
-        case "Float" => NNPrimitive.im2colWithDilationFloat(
+        case FloatType => NNPrimitive.im2colWithDilationFloat(
           gradOutput_n.asInstanceOf[Tensor[Float]], columns.asInstanceOf[Tensor[Float]],
           nOutputPlane, outputHeight,
           outputWidth, kH, kW,
@@ -475,7 +475,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       // Extract columns:
       val before = System.nanoTime()
       ev.getType() match {
-        case "Double" => NNPrimitive.im2colWithDilationDouble(
+        case DoubleType => NNPrimitive.im2colWithDilationDouble(
           gradOutput_n.asInstanceOf[Tensor[Double]], columns.asInstanceOf[Tensor[Double]],
           nOutputPlane, outputHeight, outputWidth,
           kH, kW,
@@ -484,7 +484,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
           1, 1
         )
 
-        case "Float" => NNPrimitive.im2colWithDilationFloat(
+        case FloatType => NNPrimitive.im2colWithDilationFloat(
           gradOutput_n.asInstanceOf[Tensor[Float]], columns.asInstanceOf[Tensor[Float]],
           nOutputPlane, outputHeight, outputWidth,
           kH, kW,

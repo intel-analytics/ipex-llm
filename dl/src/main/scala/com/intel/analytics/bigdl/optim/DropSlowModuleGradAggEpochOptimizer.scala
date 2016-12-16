@@ -35,13 +35,9 @@ import scala.reflect._
 import org.apache.log4j.Logger
 
 object DropSlowModuleGradAggEpochOptimizer {
-  val subModuleNumber = System.getProperty(
+  var subModuleNumber = System.getProperty(
     "bigdl.optim.BetterGradAggEpochOptimizer.subModuleNumber",
     (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
-
-  val dropModulePercentage = System.getProperty(
-    "bigdl.optim.dropModulePercentage", "0.04").toDouble
-  require(dropModulePercentage>=0 && dropModulePercentage<0.5)
 
   val lossArray = new Array[Double](subModuleNumber)
   val recordsArray = new Array[Int](subModuleNumber)
@@ -129,6 +125,8 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
     val _computeThresholdBatchsize = computeThresholdBatchsize
     var _moduleTimeList: Array[Long] = null
     val _ps = new AllReduceParameter[T]()
+    val percentage = config.get[Double]("dropModulePercentage").getOrElse(0.0)
+    require(percentage>=0 && percentage<0.5)
 
     for (i <- 1 to epochNum) {
       logger.info(s"[Epoch $i/$epochNum] Train start")
@@ -170,7 +168,6 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
           val workStart = System.nanoTime()
           val localMTCaches = multiThreadModuleIter.next()
           val localCaches = modelIter.next()
-          val curPid = TaskContext.getPartitionId()
           val localEV = broadcastEV.value
 
           val syWStart = System.nanoTime()
@@ -273,7 +270,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
           }
           _metrics.add("aggregate gradient time",
             System.nanoTime() - aggregateGStartTime)
-          _ps.putGradients(localCaches.gradient, curPid, _partitionNum)
+          _ps.putGradients(localCaches.gradient, _partitionNum)
           _metrics.add("task1 time from worker", System.nanoTime() - workStart)
           Iterator(finishedThreads.size)
         }).reduce(_ + _)
@@ -288,10 +285,9 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
           val task2Start = System.nanoTime()
           models.mapPartitions (modelIter => {
             val task2WorkerStart = System.nanoTime()
-            val curPid = TaskContext.getPartitionId()
             val tmp = System.nanoTime()
             val params = new Array[CompressedTensor[T]](_partitionNum)
-            val getGradients = _ps.getGradients(params, curPid, _partitionNum)
+            val getGradients = _ps.getGradients(params, _partitionNum)
             getGradients.foreach(_.get())
             _metrics.add("get gradients average", System.nanoTime()-tmp)
             _metrics.add("get gradients for each node", System.nanoTime()-tmp)
@@ -301,7 +297,7 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
             _optm.optimize(_ => (value, _ps.partialGradients),
               _ps.partialWeights, _config, _ps.state)
 
-            _ps.putWeights(curPid)
+            _ps.putWeights()
             _metrics.add("task2 time from worker", System.nanoTime()-task2WorkerStart)
             Iterator.empty
           }).count()
@@ -324,7 +320,8 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
             _moduleTimeList = multiThreadModels.mapPartitions{ iter =>
               iter.next().apply(0).moduleTimeList.iterator
             }.collect()
-            val k = (dropModulePercentage*_computeThresholdBatchsize*idealSubModulesNum).toInt
+
+            val k = (percentage*_computeThresholdBatchsize*idealSubModulesNum).toInt
             threshold = Util.kthLargest(_moduleTimeList, 0, _moduleTimeList.length-1, k)
             logger.info("threshold: " + threshold)
 
@@ -352,6 +349,23 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
 
     saveModel(module)
     saveState(pm.getState())
+
+    // get parameters
+    val pidToWeightSplit = models.mapPartitions(iter => {
+      val localWeights = _ps.partialWeights
+      val curPartitionId = TaskContext.getPartitionId()
+      Iterator.single(Map(curPartitionId -> localWeights))
+    }).reduce(_ ++ _)
+
+    parameters = module.cloneModule().getParameters()._1
+    (0 until _partitionNum).map(pid => {
+      val start = pid * AllReduceParameter.taskSize + math.min(pid, AllReduceParameter.extraSize)
+      val length = AllReduceParameter.taskSize + (if (pid < AllReduceParameter.extraSize) 1 else 0)
+      parameters.narrow(1, start + 1, length).copy(pidToWeightSplit(pid))
+    })
+
     module
   }
+
+  var parameters: Tensor[T] = null
 }

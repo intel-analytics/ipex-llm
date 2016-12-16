@@ -17,15 +17,30 @@
 
 package com.intel.analytics.bigdl.utils
 
+import com.intel.analytics.bigdl.models.imagenet.AlexNet_OWT
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.TorchObject.{TYPE_MODULE}
 import org.scalatest.{FlatSpec, Matchers}
 
 
 class FileSpec extends FlatSpec with Matchers {
-  "save/load Java object file" should "work properly" in {
 
+  "read/write alexnet" should "work properly" in {
+    val tmpFile = java.io.File.createTempFile("module", ".t7")
+    val absolutePath = tmpFile.getAbsolutePath
+    val alexnet = AlexNet_OWT(1000)
+    alexnet.saveTorch(absolutePath, true)
+    val model = Module.loadTorch[Float](absolutePath).asInstanceOf[Sequential[Float]]
+    model.getParameters() should be (alexnet.getParameters())
+    for (i <- 0 until model.modules.size) {
+      println(i)
+      model.modules(i) should be (alexnet.asInstanceOf[Sequential[Float]].modules(i))
+    }
+    model should be (alexnet)
+  }
+
+  "save/load Java object file" should "work properly" in {
     val tmpFile = java.io.File.createTempFile("module", "obj")
     val absolutePath = tmpFile.getAbsolutePath
 
@@ -39,7 +54,7 @@ class FileSpec extends FlatSpec with Matchers {
     module.add(new SpatialConvolution(6, 12, 5, 5))
     module.add(new Tanh())
     module.add(new SpatialMaxPooling(2, 2, 2, 2))
-    //      -- stage 3 : standard 2-layer neural network
+    // stage 3 : standard 2-layer neural network
     module.add(new Reshape(Array(12 * 5 * 5)))
     module.add(new Linear(12 * 5 * 5, 100))
     module.add(new Tanh())

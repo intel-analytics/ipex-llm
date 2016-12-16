@@ -16,53 +16,48 @@
  */
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.{CriterionTable, MSECriterion}
+import com.intel.analytics.bigdl.nn.DistKLDivCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-
-import scala.collection.mutable.HashMap
 import scala.util.Random
 
-class CriterionTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
+class DistKLDivCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers{
   before {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
   }
 
-  "A CriterionTable " should "generate correct output and grad" in {
+  "A DistKLDivCriterion " should "generate correct output and grad" in {
     val seed = 100
     RNG.setSeed(seed)
 
-    val input1 = Tensor[Double](2, 2, 2).apply1(_ => Random.nextDouble())
-    val input2 = Tensor[Double](2, 2, 2).apply1(_ => Random.nextDouble())
-    val gradOutput = Tensor[Double](5, 2).apply1(e => Random.nextDouble())
+    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
+    val target = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
 
-    val input = T(input1, input2)
     val code = "torch.manualSeed(" + seed + ")\n" +
-      "module = nn.CriterionTable(nn.MSECriterion())\n" +
-      "output = module:forward(input)\n" +
-      "gradInput = module:backward(input,gradOutput)\n"
+      "module = nn.DistKLDivCriterion(true)\n" +
+      "output = module:forward(input, target)\n" +
+      "gradInput = module:backward(input, target)"
 
-    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    val module = new CriterionTable[Double](new MSECriterion())
+    val module = new DistKLDivCriterion[Double]()
     val start = System.nanoTime()
-    val output = module.forward(input1, input2)
-    val gradInput = module.backward(input1, input2)
+    val output = module.forward(input, target)
+    val gradInput = module.backward(input, target)
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    output should be (luaOutput1)
-    gradInput should be (luaOutput2[Tensor[Double]](1))
+    output should be(luaOutput1)
+    gradInput should be(luaOutput2)
 
-    println("Test case : CriterionTable, Torch : " + luaTime +
+    println("Test case : DistKLDivCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
   }
 }

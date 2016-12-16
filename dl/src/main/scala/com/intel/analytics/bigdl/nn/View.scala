@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-class View[@specialized(Float, Double) T: ClassTag](sizes: Array[Int])(
+class View[T: ClassTag](sizes: Array[Int])(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   def getSize(): Array[Int] = {
@@ -125,5 +125,10 @@ object View {
   def apply[@specialized(Float, Double) T: ClassTag](
       sizes: Int*)(implicit ev: TensorNumeric[T]) : View[T] = {
     new View[T](sizes.toArray)
+  }
+
+  def apply[@specialized(Float, Double) T: ClassTag](
+      sizes: Array[Int])(implicit ev: TensorNumeric[T]) : View[T] = {
+    new View[T](sizes)
   }
 }

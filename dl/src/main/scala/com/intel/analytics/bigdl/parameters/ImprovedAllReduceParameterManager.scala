@@ -46,19 +46,6 @@ class ImprovedAllReduceParameterManager[T: ClassTag](
   parameter: Tensor[T], dataset: RDD[_], metrics: Metrics = new Metrics()
 )(implicit ev: TensorNumeric[T]) extends ParameterManager[T] with Logging {
 
-  import ImprovedAllReduceParameterManager._
-
-  @transient
-  private val sc: SparkContext = dataset.sparkContext
-
-  @transient
-  private var buffers: RDD[(CompressedTensor[T], Tensor[T], Tensor[T], Table)] = null
-
-  val parameterLength = parameter.nElement()
-
-  val partitionNum: Int = dataset.partitions.length
-
-  val idealModuleNum: Int = partitionNum * DropSlowModuleGradAggEpochOptimizer.subModuleNumber
   override def sync(parameters: RDD[Tensor[T]]): RDD[Tensor[T]] = {
     parameters.mapPartitions(paramIter => {
       Iterator.single(paramIter.next())
@@ -70,26 +57,7 @@ class ImprovedAllReduceParameterManager[T: ClassTag](
   }
 
   override def getParameter(): Tensor[T] = {
-    val pidToWeightSplit = buffers.mapPartitions(iter => {
-      val localWeights = iter.next()._2
-      val curPartitionId = TaskContext.getPartitionId()
-      Iterator.single(Map(curPartitionId -> localWeights))
-    }).reduce(_ ++ _)
-
-
-    val partitionNum: Int = dataset.partitions.length
-    val parameterLength = parameter.nElement()
-    val taskSize = parameterLength / partitionNum
-    require(taskSize != 0, "parameter length should not less than partition number")
-    val extraSize = parameterLength % partitionNum
-
-    (0 until partitionNum).map(pid => {
-      val start = pid * taskSize + math.min(pid, extraSize)
-      val length = taskSize + (if (pid < extraSize) 1 else 0)
-      parameter.narrow(1, start + 1, length).copy(pidToWeightSplit(pid))
-    })
-
-    parameter
+    null
   }
 
   override def getState(): Table = T()

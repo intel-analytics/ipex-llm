@@ -56,7 +56,7 @@ class MaskedSelectSpec extends FlatSpec with BeforeAndAfter with Matchers{
       Array("output", "gradInput"))
 
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
-    val luaOutput2 = torchResult("gradInput").asInstanceOf[HashMap[Any, Any]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
 
     val start = System.nanoTime()
     val output = module.forward(input)
@@ -64,8 +64,8 @@ class MaskedSelectSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    output should be(luaOutput1)
-    gradInput should equal (new Table(luaOutput2))
+    output should be (luaOutput1)
+    gradInput should equal (luaOutput2)
 
     println("Test case : MaskedSelect, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
