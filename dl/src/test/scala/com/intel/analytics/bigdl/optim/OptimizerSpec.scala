@@ -17,6 +17,8 @@
 
 package com.intel.analytics.bigdl.optim
 
+import java.nio.file.{Paths, Files}
+
 import com.intel.analytics.bigdl.models.imagenet.AlexNet
 import com.intel.analytics.bigdl.nn.Sequential
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -102,6 +104,8 @@ class OptimizerSpec extends FlatSpec with Matchers {
 
   it should "save model to given path" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
     val model = AlexNet(1000)
     val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
@@ -113,12 +117,14 @@ class OptimizerSpec extends FlatSpec with Matchers {
     dummyOptimizer.optimize()
 
     model.clearState()
-    val loadedModel = File.load[Module[Double]] (filePath + ".model")
+    val loadedModel = File.load[Module[Double]] (filePath + "/model")
     loadedModel should be(model)
   }
 
   it should "save model and state to given path with postfix" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
     val model = AlexNet(1000)
     val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
@@ -131,12 +137,14 @@ class OptimizerSpec extends FlatSpec with Matchers {
 
     model.clearState()
     val loadedModel =
-      File.load[Module[Double]](filePath + ".model.test")
+      File.load[Module[Double]](filePath + "/model.test")
     loadedModel should be(model)
   }
 
   it should "save state to given path" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "state").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
     val state = T("test" -> 123)
     val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
@@ -147,12 +155,14 @@ class OptimizerSpec extends FlatSpec with Matchers {
     dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 
-    val loadedState = File.load[Table](filePath + ".state")
+    val loadedState = File.load[Table](filePath + "/state")
     loadedState should be(state)
   }
 
   it should "save state to given path with post fix" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "state").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
     val state = T("test" -> 123)
     val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
@@ -163,7 +173,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
     dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 
-    val loadedState = File.load[Table](filePath + ".state.post")
+    val loadedState = File.load[Table](filePath + "/state.post")
     loadedState should be(state)
   }
 }
