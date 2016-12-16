@@ -227,7 +227,7 @@ object Utils {
       }
       case spatialBatchNormalization if (spatialBatchNormalization.isInstanceOf[SpatialBatchNormalization[T]])
       => {
-        val curModel = spatialBatchNormalization.asInstanceOf[SpatialConvolution[T]]
+        val curModel = spatialBatchNormalization.asInstanceOf[SpatialBatchNormalization[T]]
         curModel.weight.apply1(_ => ev.fromType[Float](1.0f))
         curModel.bias.apply1(_ => ev.fromType[Float](0.0f))
       }

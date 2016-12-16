@@ -25,12 +25,9 @@ import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
+import Options._
 
 object Train {
-
-  object Local {
-
-    import Options._
 
     def main(args: Array[String]): Unit = {
       trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
@@ -38,24 +35,20 @@ object Train {
         val batchSize = 64
         val (imageSize, lrSchedule, epochEnd, dataSet) = param.dataset match {
           case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
-          case "cifar10" => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
-          case _ => throw new IllegalArgumentException
+          case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
         }
 
         val trainData = Paths.get(param.folder, "train")
-        val trainDataSet = dataSet.localTrainDataSet(trainData, imageSize, batchSize,
-          param.coreNumber, true)
+        val trainDataSet = dataSet.localTrainDataSet(trainData, true, batchSize)
         val validationData = Paths.get(param.folder, "val")
-        val validateDataSet = dataSet.localValDataSet(validationData, imageSize, batchSize,
-          param.coreNumber, false)
+        val validateDataSet = dataSet.localValDataSet(validationData, true, batchSize)
 
         val model = if (param.modelSnapshot.isDefined) {
           Module.load[Float](param.modelSnapshot.get)
         } else {
           val curModel = param.dataset match {
             case "imagenet" => ResNet(classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
-            case "cifar10"  => ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
-            case _ => throw new IllegalArgumentException
+            case _ => ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
           }
           ResNet.modelInit(curModel)
           curModel
@@ -94,6 +87,5 @@ object Train {
           .optimize()
       })
     }
-  }
 
 }

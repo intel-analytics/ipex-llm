@@ -18,88 +18,83 @@ package com.intel.analytics.bigdl.models.resnet
 
 import java.nio.file.Path
 
-import com.intel.analytics.bigdl.dataset.{Batch, SeqFileLocalPath, LocalDataSet}
+import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.dataset.image._
+import org.apache.spark.SparkContext
 
 trait DataSet {
-  def localTrainDataSet(path: Path, imageSize: Int, batchSize: Int, parallel: Int, looped: Boolean)
+  def localTrainDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
   : LocalDataSet[Batch[Float]]
-  def localValDataSet(path: Path, imageSize: Int, batchSize: Int, parallel: Int, looped: Boolean)
+  def localValDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
   : LocalDataSet[Batch[Float]]
 }
 
 object ImagenetDataSet extends DataSet {
-  def localTrainDataSet(path: Path, imageSize: Int, batchSize: Int, parallel: Int, looped: Boolean)
+  def localTrainDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
   : LocalDataSet[Batch[Float]] = {
-    val ds = SequenceFiles.localFiles(path, 1281167, looped)
-    val fileTransformer = LocalSeqFileToBytes()
+    val ds = LocalImageFiles.localBytesDataSet(imagesFile, looped, 32)
     val arrayToImage = SampleToRGBImg()
-    val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
+    val cropper = RGBImgCropper(cropWidth = 224, cropHeight = 224)
     val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
     val flipper = HFlip(0.5)
     val colorJitter = ColorJitter()
     val lighting = Lighting()
-    val multiThreadToTensor = MTLabeledRGBImgToTensor[SeqFileLocalPath](
-      width = imageSize,
-      height = imageSize,
-      threadNum = parallel,
-      batchSize = batchSize,
-      transformer = fileTransformer -> arrayToImage -> cropper -> colorJitter -> lighting -> normalizer
-        -> flipper
-    )
-    ds -> multiThreadToTensor
+    val toBatch = new RGBImgToBatch(batchSize)
+    ds -> arrayToImage -> cropper -> colorJitter -> lighting -> normalizer -> toBatch
   }
 
-  def localValDataSet(path: Path, imageSize: Int, batchSize: Int, parallel: Int, looped: Boolean)
-  : LocalDataSet[Batch[Float]] = {
-    val ds = SequenceFiles.localFiles(path, 1281167, looped)
-    val fileTransformer = LocalSeqFileToBytes()
+def localValDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
+: LocalDataSet[Batch[Float]] = {
+  val ds = LocalImageFiles.localBytesDataSet(imagesFile, looped, 32)
+  val fileTransformer = LocalSeqFileToBytes()
     val arrayToImage = SampleToRGBImg()
-    val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
+    val cropper = RGBImgCropper(cropWidth = 224, cropHeight = 224)
     val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
-    val multiThreadToTensor = MTLabeledRGBImgToTensor[SeqFileLocalPath](
-      width = imageSize,
-      height = imageSize,
-      threadNum = parallel,
-      batchSize = batchSize,
-      transformer = fileTransformer -> arrayToImage -> normalizer -> cropper
-    )
-    ds -> multiThreadToTensor
+  val toBatch = new RGBImgToBatch(batchSize)
+    ds -> arrayToImage -> normalizer -> cropper -> toBatch
   }
 }
 
 object Cifar10DataSet extends DataSet {
-  def localTrainDataSet(path : Path, imageSize : Int, batchSize : Int, parallel: Int, looped : Boolean)
+
+  def localTrainDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
   : LocalDataSet[Batch[Float]] = {
-    val ds = SequenceFiles.localFiles(path, 50000, looped)
-    val fileTransformer = LocalSeqFileToBytes()
+    val ds = LocalImageFiles.localBytesDataSet(imagesFile, looped, 32)
     val arrayToImage = SampleToRGBImg()
-    val rdmCropper = RGBImgRdmCropper(cropWidth = imageSize, cropHeight = imageSize, padding = 4)
-    val normalizer = RGBImgNormalizer(ds -> fileTransformer -> arrayToImage)
+    val rdmCropper = RGBImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4)
+    val normalizer = RGBImgNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7)
     val flipper = HFlip(0.5)
-    val multiThreadToTensor = MTLabeledRGBImgToTensor[SeqFileLocalPath](
-      width = imageSize,
-      height = imageSize,
-      threadNum = parallel,
-      batchSize = batchSize,
-      transformer = fileTransformer -> arrayToImage -> normalizer -> flipper -> rdmCropper
-    )
-    ds -> multiThreadToTensor
+    val toBatch = new RGBImgToBatch(batchSize)
+    ds -> arrayToImage -> normalizer -> flipper -> rdmCropper -> toBatch
   }
-  def localValDataSet(path : Path, imageSize : Int, batchSize : Int, parallel: Int, looped : Boolean)
+
+  def localValDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
   : LocalDataSet[Batch[Float]] = {
-    val ds = SequenceFiles.localFiles(path, 10000, looped)
-    val fileTransformer = LocalSeqFileToBytes()
+    val ds = LocalImageFiles.localBytesDataSet(imagesFile, looped, 32)
     val arrayToImage = SampleToRGBImg()
-    val normalizer = RGBImgNormalizer(ds -> fileTransformer -> arrayToImage)
-    val multiThreadToTensor = MTLabeledRGBImgToTensor[SeqFileLocalPath](
-      width = imageSize,
-      height = imageSize,
-      threadNum = parallel,
-      batchSize = batchSize,
-      transformer = fileTransformer -> arrayToImage -> normalizer
-    )
-    ds -> multiThreadToTensor
+    val normalizer = RGBImgNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7)
+    val toBatch = new RGBImgToBatch(batchSize)
+    ds -> arrayToImage -> normalizer -> toBatch
+  }
+
+  def distributedValDataSet(imagesFile: Path, looped: Boolean, sc: SparkContext,
+                         partitionNum: Int, batchSize : Int): DistributedDataSet[Batch[Float]] = {
+    val ds = LocalImageFiles.distriDataSet(imagesFile, looped, sc, partitionNum, 32)
+
+    val toImage = SampleToRGBImg()
+    val normalizer = RGBImgNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7)
+    val toTensor = new RGBImgToBatch(batchSize)
+    ds -> toImage -> normalizer -> toTensor
+  }
+  def distributedTrainDataSet(imagesFile: Path, looped: Boolean, sc: SparkContext,
+                            partitionNum: Int, batchSize : Int): DistributedDataSet[Batch[Float]] = {
+    val ds = LocalImageFiles.distriDataSet(imagesFile, looped, sc, partitionNum, 32)
+    val rdmCropper = RGBImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4)
+    val toImage = SampleToRGBImg()
+    val normalizer = RGBImgNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7)
+    val flipper = HFlip(0.5)
+    val toTensor = new RGBImgToBatch(batchSize)
+    ds -> toImage -> normalizer -> flipper -> rdmCropper -> toTensor
   }
 
 }
