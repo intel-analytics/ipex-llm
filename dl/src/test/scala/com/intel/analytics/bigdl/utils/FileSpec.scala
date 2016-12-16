@@ -35,7 +35,7 @@ class FileSpec extends FlatSpec with Matchers {
     model.getParameters() should be (alexnet.getParameters())
     for (i <- 0 until model.modules.size) {
       println(i)
-      println(model.modules(i).equals(alexnet.asInstanceOf[Sequential[Float]].modules(i)))
+      model.modules(i) should be (alexnet.asInstanceOf[Sequential[Float]].modules(i))
     }
     model should be (alexnet)
   }

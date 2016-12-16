@@ -478,9 +478,9 @@ object File {
     table("fInput") = source.fInput
     table("gradBias") = source.gradBias
     table("bias") = source.bias
-    table("weight") = source.weight.clone().resize(source.nOutputPlane,
+    table("weight") = source.weight.view(source.nOutputPlane,
       source.nInputPlane * source.kernelH * source.kernelW)
-    table("gradWeight") = source.gradWeight.clone().resize(source.nOutputPlane,
+    table("gradWeight") = source.gradWeight.view(source.nOutputPlane,
       source.nInputPlane * source.kernelH * source.kernelW)
     if (!source.propagateBack) table("gradInput") = null
     writeObject(table, rawdata, path, TYPE_TABLE)
