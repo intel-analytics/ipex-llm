@@ -579,7 +579,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @param dim the specific dimension, default is 1
    * @return this
    */
-  def addSingletonDimension(t: Tensor[T], dim: Int = 1): Tensor[T]
+  def addSingletonDimension(t: Tensor[T] = this, dim: Int = 1): Tensor[T]
 
   /**
    * create a new tensor without any change of the tensor

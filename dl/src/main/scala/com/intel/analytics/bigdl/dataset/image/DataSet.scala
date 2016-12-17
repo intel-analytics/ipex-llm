@@ -21,7 +21,9 @@ import java.awt.color.ColorSpace
 import java.nio.file.{Files, Path, Paths}
 
 import com.intel.analytics.bigdl.dataset.{CachedDistriDataSet, _}
+import com.intel.analytics.bigdl.optim.LocalOptimizer._
 import org.apache.hadoop.io.Text
+import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 
 object LocalImageFiles {
@@ -29,6 +31,8 @@ object LocalImageFiles {
   Class.forName("java.awt.color.ICC_ColorSpace")
   Class.forName("sun.java2d.cmm.lcms.LCMS")
   ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
+
+  val logger = Logger.getLogger(getClass)
 
   def localPathDataSet(path: Path, looped: Boolean)
   : LocalDataSet[LabeledImageLocalPath] = {
@@ -38,7 +42,12 @@ object LocalImageFiles {
 
   def localBytesDataSet(path: Path, looped: Boolean, scaleTo : Int)
   : LocalDataSet[Sample] = {
-    val buffer = readPaths(path).map(imageFile => {
+    val paths = readPaths(path)
+    val total = paths.length
+    var count = 1
+    val buffer = paths.map(imageFile => {
+      logger.info(s"Cache image $count/$total")
+      count += 1
       Sample(RGBImage.readImage(imageFile.path, scaleTo), imageFile.label)
     })
     new LocalArrayDataSet[Sample](buffer, looped)

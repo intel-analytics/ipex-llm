@@ -80,24 +80,25 @@ abstract class Optimizer[T  : ClassTag, TDS, VDS](
     this.endWhen = endWhen
     this
   }
+}
 
-  protected def saveModel(model: Module[T],
-    postfix: String = ""): this.type = {
-    if (this.cachePath.isDefined) {
-      model.save(s"${cachePath.get}/model$postfix", isOverWrite)
-    }
-    this
-  }
-
-  protected def saveState(state: Table, postfix: String = ""): this.type = {
-    if (this.cachePath.isDefined) {
-      state.save(s"${cachePath.get}/state$postfix", isOverWrite)
-    }
-    this
-  }
-
-  protected def header(epoch: Int, count: Int, total: Long, iter: Int, wallClockTime: Long)
+object Optimizer {
+  private[bigdl] def header(epoch: Int, count: Int, total: Long, iter: Int, wallClockTime: Long)
   : String = {
     s"[Epoch $epoch $count/$total][Iteration $iter][Wall Clock ${wallClockTime / 1e9}s]"
+  }
+
+  private[bigdl] def saveModel[T](model: Module[T], cachePath : Option[String], overWrite : Boolean,
+    postfix: String = ""): Unit = {
+    if (cachePath.isDefined) {
+      model.save(s"${cachePath.get}/model$postfix", overWrite)
+    }
+  }
+
+  private[bigdl] def saveState(state: Table, cachePath : Option[String], overWrite : Boolean,
+    postfix: String = ""): Unit = {
+    if (cachePath.isDefined) {
+      state.save(s"${cachePath.get}/state$postfix", overWrite)
+    }
   }
 }

@@ -24,9 +24,7 @@ import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
 import org.apache.spark.rdd.RDD
 
 class DistriValidator[T](
-  model: Module[T],
-  nodeNumber: Int,
-  coresPerNode: Int
+  model: Module[T]
 ) extends Validator[T, RDD[Batch[T]]](model) {
 
   override def test(
@@ -36,12 +34,12 @@ class DistriValidator[T](
     val rdd = dataSet.data()
     val broadcastModel = rdd.sparkContext.broadcast(model.evaluate())
     val _subModelNumber = Engine.getEngineType match {
-      case MklBlas => coresPerNode
+      case MklBlas => Engine.coreNumber()
       case MklDnn => 1
     }
     rdd.mapPartitions(dataIter => {
       val localModel = broadcastModel.value
-      val workingModels = (1 to _subModelNumber).map(_ => localModel.cloneModule()).toArray
+      val workingModels = (1 to _subModelNumber).map(_ => localModel.cloneModule().evaluate()).toArray
       dataIter.map(batch => {
         require(batch.data.size(1) == batch.labels.size(1))
         val stackSize = batch.data.size(1) / _subModelNumber
