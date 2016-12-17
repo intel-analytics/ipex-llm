@@ -18,24 +18,56 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.DistributedDataSet
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
 import org.apache.spark.rdd.RDD
 
-class DistriPredictor[T](model: Module[T])(implicit ev: TensorNumeric[T])
+import scala.reflect.ClassTag
+
+class DistriPredictor[T: ClassTag](model: Module[T])(implicit ev: TensorNumeric[T])
   extends Predictor[T, RDD[Tensor[T]], RDD[Tensor[T]]]{
 
   override def predict(dataSet: dataset.DataSet[RDD[Tensor[T]]])
   : dataset.DataSet[RDD[Tensor[T]]] = {
     val rdd = dataSet.data(looped = false)
     val broadcastModel = rdd.sparkContext.broadcast(model.evaluate())
-
+    val _subModelNumber = Engine.getEngineType match {
+      case MklBlas => Engine.coreNumber()
+      case MklDnn => 1
+    }
+    val _ev = ev
     val result = rdd.mapPartitions(dataIter => {
-      val localModel = broadcastModel.value.cloneModule().evaluate()
+      val localModel = broadcastModel.value
+      val workingModels = (1 to _subModelNumber)
+        .map(_ => localModel.cloneModule().evaluate()).toArray
       dataIter.map(batch => {
-        val input = batch
-        localModel.forward(input).toTensor[T]
+        val stackSize = batch.size(1) / _subModelNumber
+        val extraSize = batch.size(1) % _subModelNumber
+        val parallelism = if (stackSize == 0) extraSize else _subModelNumber
+        val result = Engine.default.invokeAndWait(
+          (0 until parallelism).map(b =>
+            () => {
+              val offset = b * stackSize + math.min(b, extraSize)
+              val length = stackSize + (if (b < extraSize) 1 else 0)
+              val input = batch.narrow(1, offset + 1, length)
+              workingModels(b).forward(input).toTensor[T](_ev)
+            }
+          )
+        )
+        val resultSize = result.head.size()
+        resultSize(0) = batch.size(1)
+        val resultTensor = Tensor[T](resultSize)
+        Engine.default.invokeAndWait(
+          (0 until parallelism).map(b =>
+            () => {
+              val offset = b * stackSize + math.min(b, extraSize)
+              val length = stackSize + (if (b < extraSize) 1 else 0)
+              resultTensor.narrow(1, offset + 1, length).copy(result(b))
+            }
+          )
+        )
+        resultTensor
       })
     })
 
