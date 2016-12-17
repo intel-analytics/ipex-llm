@@ -250,7 +250,6 @@ object DataSet {
   : DistributedDataSet[T] = {
     new CachedDistriDataSet[T](
       sc.parallelize(localData, partitionNum)
-        .coalesce(partitionNum, true)
         .mapPartitions(iter => {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")
@@ -261,7 +260,7 @@ object DataSet {
   def rdd[T: ClassTag](data: RDD[T], partitionNum: Int):
   DistributedDataSet[T] = {
     new CachedDistriDataSet[T](
-      data.coalesce(partitionNum, true)
+      data.coalesce(partitionNum, false)
         .mapPartitions(iter => {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")

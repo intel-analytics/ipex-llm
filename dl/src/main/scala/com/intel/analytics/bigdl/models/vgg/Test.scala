@@ -67,7 +67,7 @@ object SparkTest {
         .set("spark.akka.frameSize", 64.toString)
       val sc = new SparkContext(conf)
       val validationSet = DataSet.ImageFolder
-        .images(Paths.get(param.folder), sc, param.nodesNumber * param.coreNumberPerNode, 32)
+        .images(Paths.get(param.folder), sc, param.nodesNumber, 32)
         .transform(RGBImgNormalizer(testMean, testStd))
         .transform(RGBImgToBatch(batchSize))
 
