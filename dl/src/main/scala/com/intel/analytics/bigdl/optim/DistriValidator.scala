@@ -33,36 +33,16 @@ class DistriValidator[T](
   : Array[(ValidationResult, ValidationMethod[T])] = {
     val rdd = dataSet.data()
     val broadcastModel = rdd.sparkContext.broadcast(model.evaluate())
-    val _subModelNumber = Engine.getEngineType match {
-      case MklBlas => Engine.coreNumber()
-      case MklDnn => 1
-    }
+
     rdd.mapPartitions(dataIter => {
-      val localModel = broadcastModel.value
-      val workingModels = (1 to _subModelNumber)
-        .map(_ => localModel.cloneModule().evaluate()).toArray
+      val localModel = broadcastModel.value.cloneModule().evaluate()
       dataIter.map(batch => {
         require(batch.data.size(1) == batch.labels.size(1))
-        val stackSize = batch.data.size(1) / _subModelNumber
-        val extraSize = batch.data.size(1) % _subModelNumber
-        val parallelism = if (stackSize == 0) extraSize else _subModelNumber
-        Engine.default.invokeAndWait(
-          (0 until parallelism).map(b =>
-            () => {
-              val offset = b * stackSize + math.min(b, extraSize)
-              val length = stackSize + (if (b < extraSize) 1 else 0)
-              val input = batch.data.narrow(1, offset + 1, length)
-              val target = batch.labels.narrow(1, offset + 1, length)
-              val output = workingModels(b).forward(input)
-              vMethods.map(validation => {
-                validation(output, target)
-              })
-            }
-          )
-        ).reduce((left, right) => {
-          left.zip(right).map { case (l, r) =>
-            l + r
-          }
+        val input = batch.data
+        val target = batch.labels
+        val output = localModel.forward(input)
+        vMethods.map(validation => {
+          validation(output, target)
         })
       })
     }).reduce((left, right) => {
