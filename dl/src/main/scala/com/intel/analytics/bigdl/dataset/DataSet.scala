@@ -46,7 +46,7 @@ trait DataSet[DataSequence] {
    * @param looped if the data is looped
    * @return
    */
-  def data(looped : Boolean): DataSequence
+  def data(looped: Boolean): DataSequence
 
   /**
    * Change the sequence of data flow from the data set
@@ -74,7 +74,7 @@ trait LocalDataSet[T] extends DataSet[Iterator[T]] {
 
       override def size(): Long = preDataSource.size()
 
-      override def data(looped : Boolean): Iterator[C] = transformer(preDataSource.data(looped))
+      override def data(looped: Boolean): Iterator[C] = transformer(preDataSource.data(looped))
     }
   }
 
@@ -105,7 +105,7 @@ class LocalArrayDataSet[T](buffer: Array[T]) extends LocalDataSet[T] {
     RandomGenerator.shuffle(buffer)
   }
 
-  override def data(looped : Boolean): Iterator[T] = {
+  override def data(looped: Boolean): Iterator[T] = {
     new Iterator[T] {
       private val index = new AtomicInteger()
 
@@ -138,7 +138,7 @@ class LocalArrayDataSet[T](buffer: Array[T]) extends LocalDataSet[T] {
  */
 trait DistributedDataSet[T] extends DataSet[RDD[T]] {
 
-  def transform [C: ClassTag](transformer: Transformer[T, C]): DistributedDataSet[C] = {
+  def transform[C: ClassTag](transformer: Transformer[T, C]): DistributedDataSet[C] = {
     val preDataSource = this
 
     val transformFunc: Iterator[T] => Iterator[C] = (d => {
@@ -150,7 +150,7 @@ trait DistributedDataSet[T] extends DataSet[RDD[T]] {
 
       override def shuffle(): Unit = preDataSource.shuffle()
 
-      override def data(looped : Boolean): RDD[C] =
+      override def data(looped: Boolean): RDD[C] =
         preDataSource.data(looped).mapPartitions(transformFunc)
 
       override def originRDD(): RDD[_] = preDataSource.originRDD()
@@ -188,7 +188,7 @@ class CachedDistriDataSet[T: ClassTag](buffer: RDD[Array[T]])
     Iterator.single(RandomGenerator.shuffle((0 until iter.next().length).toArray))
   }).setName("shuffled index").cache()
 
-  override def data(looped : Boolean): RDD[T] = {
+  override def data(looped: Boolean): RDD[T] = {
     val _looped = looped
     buffer.zipPartitions(indexes)((dataIter, indexIter) => {
       val indexes = indexIter.next()
@@ -275,7 +275,7 @@ object DataSet {
       new LocalArrayDataSet[LabeledImageLocalPath](buffer)
     }
 
-    def images(path: Path, scaleTo : Int): LocalDataSet[LabeledRGBImage] = {
+    def images(path: Path, scaleTo: Int): LocalDataSet[LabeledRGBImage] = {
       val paths = LocalImageFiles.readPaths(path)
       val total = paths.length
       var count = 1
@@ -287,7 +287,7 @@ object DataSet {
       new LocalArrayDataSet[Sample](buffer) -> SampleToRGBImg()
     }
 
-    def images(path: Path, sc: SparkContext, partitionNum: Int, scaleTo : Int)
+    def images(path: Path, sc: SparkContext, partitionNum: Int, scaleTo: Int)
     : DistributedDataSet[LabeledRGBImage] = {
       val paths = LocalImageFiles.readPaths(path)
       val buffer: Array[Sample] = {
@@ -318,6 +318,7 @@ object DataSet {
       rdd[Sample](rawData, partitionNum)
     }
   }
+
 }
 
 
