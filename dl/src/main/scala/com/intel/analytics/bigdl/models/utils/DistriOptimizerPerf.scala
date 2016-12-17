@@ -121,7 +121,7 @@ object DistriOptimizerPerf {
       override def size(): Long = 100000
       override def shuffle(): Unit = {}
       override def originRDD(): RDD[_] = rdd
-      override def data(): RDD[Batch[Float]] = rdd
+      override def data(looped: Boolean): RDD[Batch[Float]] = rdd
     }
 
     Engine.setCluster(param.nodeNumber, param.corePerNode)

@@ -23,10 +23,10 @@ import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.spark.SparkContext
 
-object DataSet {
-  def localDataSet(path : Path, imageSize : Int, batchSize : Int, parallel: Int, looped : Boolean)
+object ImageNet2012 {
+  def localFolder(path : Path, imageSize : Int, batchSize : Int, parallel: Int)
   : LocalDataSet[Batch[Float]] = {
-    val ds = SequenceFiles.localFiles(path, 1281167, looped)
+    val ds = DataSet.SequenceFolder.paths(path, 1281167)
     val fileTransformer = LocalSeqFileToBytes()
     val arrayToImage = SampleToRGBImg()
     val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
@@ -42,17 +42,16 @@ object DataSet {
     ds -> multiThreadToTensor
   }
 
-  def distriDataSet(
+  def hdfs(
     path : String,
     sc : SparkContext,
     imageSize : Int,
     batchSize : Int,
     nodeNumber: Int,
-    coresPerNode : Int,
-    looped : Boolean
-  ): DistributedDataSet[Batch[Float]] = {
+    coresPerNode : Int)
+  : DistributedDataSet[Batch[Float]] = {
     require(batchSize % nodeNumber == 0, "batch size can't be divided by node number")
-    val ds = SequenceFiles.hdfsFiles(path, sc, 1000, looped, nodeNumber)
+    val ds = DataSet.SequenceFolder.files(path, sc, 1000, nodeNumber)
     val arrayToImage = SampleToRGBImg()
     val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
     val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)

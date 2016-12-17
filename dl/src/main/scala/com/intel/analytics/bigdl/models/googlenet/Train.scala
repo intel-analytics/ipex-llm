@@ -37,11 +37,11 @@ object Train {
         val imageSize = 224
 
         val trainData = Paths.get(param.folder, "train")
-        val trainDataSet = DataSet.localDataSet(trainData, imageSize, batchSize,
-          param.coreNumber, true)
+        val trainDataSet = ImageNet2012.localFolder(trainData, imageSize, batchSize,
+          param.coreNumber)
         val validationData = Paths.get(param.folder, "val")
-        val validateDataSet = DataSet.localDataSet(validationData, imageSize, batchSize,
-          param.coreNumber, false)
+        val validateDataSet = ImageNet2012.localFolder(validationData, imageSize, batchSize,
+          param.coreNumber)
 
         val model = if (param.modelSnapshot.isDefined) {
           Module.load[Float](param.modelSnapshot.get)
@@ -91,22 +91,20 @@ object Train {
 
         val conf = Engine.sparkConf().setAppName("BigDL GoogleNet v1 Example")
         val sc = new SparkContext(conf)
-        val trainDataSet = DataSet.distriDataSet(
+        val trainDataSet = ImageNet2012.hdfs(
           param.folder + "/train",
           sc,
           imageSize,
           batchSize,
           param.nodesNumber,
-          param.coreNumberPerNode,
-          true)
-        val validateDataSet = DataSet.distriDataSet(
+          param.coreNumberPerNode)
+        val validateDataSet = ImageNet2012.hdfs(
           param.folder + "/val",
           sc,
           imageSize,
           batchSize,
           param.nodesNumber,
-          param.coreNumberPerNode,
-          false)
+          param.coreNumberPerNode)
 
         val model = if (param.modelSnapshot.isDefined) {
           Module.load[Float](param.modelSnapshot.get)

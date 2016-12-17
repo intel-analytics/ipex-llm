@@ -31,7 +31,7 @@ class DistriValidator[T](
     dataSet: DataSource[RDD[Batch[T]]],
     vMethods: Array[ValidationMethod[T]])
   : Array[(ValidationResult, ValidationMethod[T])] = {
-    val rdd = dataSet.data()
+    val rdd = dataSet.data(looped = false)
     val broadcastModel = rdd.sparkContext.broadcast(model.evaluate())
 
     rdd.mapPartitions(dataIter => {

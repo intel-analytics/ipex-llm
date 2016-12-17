@@ -92,7 +92,7 @@ object LocalOptimizerPerf {
     val criterion = ClassNLLCriterion()
     val labels = Tensor(param.batchSize).fill(1)
     val dummyDataSet = new LocalDataSet[Batch[Float]] {
-      override def data(): Iterator[Batch[Float]] = {
+      override def data(looped : Boolean): Iterator[Batch[Float]] = {
         new Iterator[Batch[Float]] {
           override def hasNext: Boolean = true
 

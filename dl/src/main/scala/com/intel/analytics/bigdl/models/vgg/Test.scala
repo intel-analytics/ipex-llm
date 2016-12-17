@@ -18,6 +18,8 @@
 package com.intel.analytics.bigdl.models.vgg
 
 import java.nio.file.Paths
+import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset.image.{RGBImgToBatch, RGBImgNormalizer}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{DistriValidator, Top1Accuracy, LocalValidator}
 import com.intel.analytics.bigdl.utils.Engine
@@ -26,13 +28,17 @@ import org.apache.spark.SparkContext
 
 object LocalTest {
 
-  import Options._
+  import Utils._
 
   def main(args: Array[String]) {
     val batchSize = 128
     testLocalParser.parse(args, new TestLocalParams()).map(param => {
       Engine.setCoreNumber(param.coreNumber)
-      val validationSet = DataSet.localDataSet(Paths.get(param.folder), false, batchSize)
+      val validationSet = DataSet.ImageFolder
+        .images(Paths.get(param.folder), 32)
+        .transform(RGBImgNormalizer(testMean, testStd))
+        .transform(RGBImgToBatch(batchSize))
+
       val model = Module.load[Float](param.model)
       val validator = new LocalValidator[Float](model)
       val result = validator.test(validationSet, Array(new Top1Accuracy[Float]))
@@ -49,10 +55,7 @@ object SparkTest {
   Logger.getLogger("breeze").setLevel(Level.ERROR)
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
 
-  import Options._
-
-  val testMean = (0.4942142913295297, 0.4851314002725445, 0.45040910258647154)
-  val testStd = (0.2466525177466614, 0.2428922662655766, 0.26159238066790275)
+  import Utils._
 
   def main(args: Array[String]) {
     val batchSize = 128
@@ -63,8 +66,11 @@ object SparkTest {
         .setAppName("Test Vgg on Cifar10")
         .set("spark.akka.frameSize", 64.toString)
       val sc = new SparkContext(conf)
-      val validationSet = DataSet.distributedDataSet(Paths.get(param.folder), false, sc,
-        param.nodesNumber, batchSize, testMean, testStd)
+      val validationSet = DataSet.ImageFolder
+        .images(Paths.get(param.folder), sc, param.nodesNumber, 32)
+        .transform(RGBImgNormalizer(testMean, testStd))
+        .transform(RGBImgToBatch(batchSize))
+
       val model = Module.load[Float](param.model)
       val validator = new DistriValidator[Float](model)
       val result = validator.test(validationSet, Array(new Top1Accuracy[Float]))

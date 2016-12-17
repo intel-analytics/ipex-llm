@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.models.utils
 
 import java.nio.file.{Files, Paths}
 
+import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{RGBImgToLocalSeqFile, LocalImgReader, LocalImageFiles}
 import scopt.OptionParser
 
@@ -63,7 +64,7 @@ object ImageNetSeqFileGenerator {
         val trainFolderPath = Paths.get(param.folder, "train")
         require(Files.isDirectory(trainFolderPath),
           s"${trainFolderPath} is not valid")
-        val trainDataSource = LocalImageFiles.localPathDataSet(trainFolderPath, false)
+        val trainDataSource = DataSet.ImageFolder.paths(trainFolderPath)
         trainDataSource.shuffle()
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
@@ -71,7 +72,7 @@ object ImageNetSeqFileGenerator {
               val pipeline = trainDataSource -> LocalImgReader(256) ->
                 RGBImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "train",
                   s"imagenet-seq-$tid"))
-              val iter = pipeline.data()
+              val iter = pipeline.data(looped = false)
               while (iter.hasNext) {
                 println(s"Generated file ${iter.next()}")
               }
@@ -90,7 +91,7 @@ object ImageNetSeqFileGenerator {
         require(Files.isDirectory(validationFolderPath),
           s"${validationFolderPath} is not valid")
 
-        val validationDataSource = LocalImageFiles.localPathDataSet(validationFolderPath, false)
+        val validationDataSource = DataSet.ImageFolder.paths(validationFolderPath)
         validationDataSource.shuffle()
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
@@ -98,7 +99,7 @@ object ImageNetSeqFileGenerator {
               val pipeline = validationDataSource -> LocalImgReader(256) ->
                 RGBImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "val",
                   s"imagenet-seq-$tid"))
-              val iter = pipeline.data()
+              val iter = pipeline.data(looped = false)
               while (iter.hasNext) {
                 println(s"Generated file ${iter.next()}")
               }

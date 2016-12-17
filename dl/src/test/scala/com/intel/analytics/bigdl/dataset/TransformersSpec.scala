@@ -63,7 +63,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val target = image1.content.map(e => (e - mean) / std)
 
     val dataSource = new LocalArrayDataSet[LabeledGreyImage](
-      Array(image1, image2, image3), looped = false)
+      Array(image1, image2, image3))
 
     val normalizer = GreyImgNormalizer(dataSource)
     val iter = normalizer.apply(Iterator.single(image1))
@@ -85,11 +85,11 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new LocalArrayDataSet[LabeledGreyImage](Array(image1, image2, image3), true)
+    val dataSource = new LocalArrayDataSet[LabeledGreyImage](Array(image1, image2, image3))
 
     val toTensor = new GreyImgToBatch(2)
     val tensorDataSource = dataSource -> toTensor
-    val iter = tensorDataSource.data()
+    val iter = tensorDataSource.data(looped = true)
     val batch = iter.next()
     batch.data.size(1) should be(2)
     batch.data.size(2) should be(32)
@@ -182,7 +182,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       r
     })
 
-    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3), false)
+    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3))
 
     val normalizer = RGBImgNormalizer(dataSource)
     val iter = normalizer.apply(Iterator.single(image1))
@@ -207,11 +207,11 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3), true)
+    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3))
 
     val toTensor = new RGBImgToBatch(2)
     val tensorDataSource = dataSource -> toTensor
-    val iter = tensorDataSource.data()
+    val iter = tensorDataSource.data(looped = true)
     val batch1 = iter.next()
     batch1.data.size(1) should be(2)
     batch1.data.size(2) should be(3)
@@ -320,13 +320,13 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3), true)
+    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3))
 
     val toTensor = new MTLabeledRGBImgToTensor[LabeledRGBImage](
       width = 32, height = 32, threadNum = 1, batchSize = 2, transformer = Identity[LabeledRGBImage]
     )
     val tensorDataSource = dataSource -> toTensor
-    val iter = tensorDataSource.data()
+    val iter = tensorDataSource.data(looped = true)
     val batch = iter.next()
     batch.data.size(1) should be(2)
     batch.data.size(2) should be(3)
@@ -427,9 +427,8 @@ class TransformersSpec extends FlatSpec with Matchers {
   "RGBImage To SeqFile" should "be good" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
     val pathToImage = LocalImgReader(RGBImage.NO_SCALE)
-    val dataSource = LocalImageFiles.localPathDataSet(
-      Paths.get(processPath(resource.getPath())),
-      looped = false
+    val dataSource = DataSet.ImageFolder.paths(
+      Paths.get(processPath(resource.getPath()))
     )
 
     RandomGenerator.RNG.setSeed(1000)
@@ -438,7 +437,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val tmpFile = Paths.get(java.io.File.createTempFile("UnitTest", "RGBImageToSeqFile").getPath)
     val seqWriter = RGBImgToLocalSeqFile(2, tmpFile)
     val writePipeline = dataSource -> pathToImage -> seqWriter
-    val iter = writePipeline.data()
+    val iter = writePipeline.data(looped = false)
     while (iter.hasNext) {
       println(s"writer file ${iter.next()}")
     }
@@ -450,11 +449,11 @@ class TransformersSpec extends FlatSpec with Matchers {
       SeqFileLocalPath(Paths.get(tmpFile + "_3.seq")),
       SeqFileLocalPath(Paths.get(tmpFile + "_4.seq")),
       SeqFileLocalPath(Paths.get(tmpFile + "_5.seq"))
-    ), false)
+    ))
     var count = 0
     val readPipeline = seqDataSource -> LocalSeqFileToBytes() -> SampleToRGBImg()
-    val readIter = readPipeline.data()
-    readIter.zip((dataSource -> pathToImage).data()).foreach { case (l, r) =>
+    val readIter = readPipeline.data(looped = false)
+    readIter.zip((dataSource -> pathToImage).data(looped = false)).foreach { case (l, r) =>
       l.label() should be(r.label())
       l.width() should be(r.width())
       l.height() should be(r.height())

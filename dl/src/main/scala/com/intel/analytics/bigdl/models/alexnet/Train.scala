@@ -38,11 +38,9 @@ object Train {
         val imageSize = 227
 
         val trainData = Paths.get(param.folder, "train")
-        val trainDataSet = DataSet.localDataSet(trainData, imageSize, batchSize,
-          param.coreNumber, true)
+        val trainDataSet = ImageNet2012(trainData, imageSize, batchSize, param.coreNumber)
         val validationData = Paths.get(param.folder, "val")
-        val validateDataSet = DataSet.localDataSet(validationData, imageSize, batchSize,
-          param.coreNumber, false)
+        val validateDataSet = ImageNet2012(validationData, imageSize, batchSize, param.coreNumber)
 
         val model = if (param.modelSnapshot.isDefined) {
           Module.load[Float](param.modelSnapshot.get)
