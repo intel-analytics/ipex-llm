@@ -204,7 +204,7 @@ object Engine {
   private var _model : ThreadPool = null
 
   def model : ThreadPool = {
-    if (model == null) {
+    if (_model == null) {
       val modelPoolSize: Int = if (engineType == MklBlas) {
         1
       } else {
