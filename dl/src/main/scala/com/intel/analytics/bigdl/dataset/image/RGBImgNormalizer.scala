@@ -32,7 +32,13 @@ object RGBImgNormalizer {
     new RGBImgNormalizer(meanR, meanG, meanB, stdR, stdG, stdB)
   }
 
-  def apply(dataSource: LocalDataSet[LabeledRGBImage], samples: Int = Int.MaxValue)
+  def apply(dataSource: LocalDataSet[LabeledRGBImage])
+  : RGBImgNormalizer = {
+    apply(dataSource, -1)
+  }
+
+
+  def apply(dataSource: LocalDataSet[LabeledRGBImage], samples: Int)
   : RGBImgNormalizer = {
     var sumR: Double = 0
     var sumG: Double = 0
@@ -41,8 +47,8 @@ object RGBImgNormalizer {
     dataSource.shuffle()
     var iter = dataSource.data()
     val totalCount = if (samples < 0) dataSource.size() else samples
-    var i = 0
-    while (i < math.min(samples, dataSource.size())) {
+    var i = 1
+    while (i <= totalCount) {
       val content = iter.next().content
       require(content.length % 3 == 0)
       var j = 0
@@ -63,9 +69,9 @@ object RGBImgNormalizer {
     sumR = 0
     sumG = 0
     sumB = 0
-    i = 0
+    i = 1
     iter = dataSource.data()
-    while (i < math.min(samples, dataSource.size())) {
+    while (i <= totalCount) {
       val content = iter.next().content
       var j = 0
       while (j < content.length) {

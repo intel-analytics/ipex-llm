@@ -39,7 +39,8 @@ class DistriValidator[T](
     }
     rdd.mapPartitions(dataIter => {
       val localModel = broadcastModel.value
-      val workingModels = (1 to _subModelNumber).map(_ => localModel.cloneModule().evaluate()).toArray
+      val workingModels = (1 to _subModelNumber)
+        .map(_ => localModel.cloneModule().evaluate()).toArray
       dataIter.map(batch => {
         require(batch.data.size(1) == batch.labels.size(1))
         val stackSize = batch.data.size(1) / _subModelNumber

@@ -32,7 +32,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   val nOutput: Int, // output feature map number
   val eps: Double = 1e-5, // avoid divde zero
   val momentum: Double = 0.1, // momentum for weight update
-  val affine: Boolean = true  // affine operation on output or not
+  val affine: Boolean = true // affine operation on output or not
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(nOutput > 0)
@@ -50,7 +50,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   val gradBias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
 
   @transient
-  private var results : Array[Future[_]] = null
+  private var results: Array[Future[_]] = null
 
   reset()
 
@@ -72,7 +72,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   private def checkInputDim(input: Tensor[T]): Unit = {
     require(input.dim() == nDim || (input.dim() == nDim - 1 && train == false),
       s"only mini-batch supported (${nDim}D tensor), got ${input.dim()}D tensor instead")
-    val featDim= if (input.dim() == nDim - 1) 1 else 2
+    val featDim = if (input.dim() == nDim - 1) 1 else 2
     require(input.size(featDim) == runningMean.nElement(),
       s"got ${input.size(featDim)}-feature tensor, expected ${runningMean.nElement()}")
   }
@@ -95,7 +95,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
 
     val _input = makeBatch(input)
     val nInput = _input.size(2)
-    if(results == null || results.length > nInput) {
+    if (results == null || results.length > nInput) {
       results = new Array[Future[_]](nInput)
     }
     val n = _input.nElement() / nInput
@@ -285,7 +285,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     }
 
     val nInput = input.size(2)
-    if(results == null || results.length > nInput) {
+    if (results == null || results.length > nInput) {
       results = new Array[Future[_]](nInput)
     }
     val n = input.nElement() / nInput
@@ -595,7 +595,7 @@ object BatchNormalization {
     nOutput: Int,
     eps: Double = 1e-5,
     momentum: Double = 0.1,
-    affine: Boolean = true)(implicit ev: TensorNumeric[T]) : BatchNormalization[T] = {
+    affine: Boolean = true)(implicit ev: TensorNumeric[T]): BatchNormalization[T] = {
     new BatchNormalization[T](nOutput, eps, momentum, affine)
   }
 }

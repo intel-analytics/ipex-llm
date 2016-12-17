@@ -25,6 +25,7 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
 object LocalTest {
+
   import Options._
 
   def main(args: Array[String]) {
@@ -47,10 +48,11 @@ object SparkTest {
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
   import Options._
 
   val testMean = (0.4942142913295297, 0.4851314002725445, 0.45040910258647154)
-  val testStd = (0.2466525177466614,0.2428922662655766,0.26159238066790275)
+  val testStd = (0.2466525177466614, 0.2428922662655766, 0.26159238066790275)
 
   def main(args: Array[String]) {
     val batchSize = 128

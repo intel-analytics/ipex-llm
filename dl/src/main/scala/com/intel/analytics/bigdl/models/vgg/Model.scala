@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 
 import scala.reflect.ClassTag
 
-object Vgg {
+object VggForCifar10 {
   def apply(classNum: Int): Module[Float] = {
     val vggBnDo = Sequential[Float]()
 
@@ -68,5 +68,117 @@ object Vgg {
     vggBnDo.add(classifier)
 
     vggBnDo
+  }
+}
+
+object Vgg_16 {
+  def apply(classNum: Int): Module[Float] = {
+    val model = Sequential()
+    model.add(SpatialConvolution(3, 64, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(64, 64, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+
+    model.add(SpatialConvolution(64, 128, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(128, 128, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+
+    model.add(SpatialConvolution(128, 256, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+
+    model.add(SpatialConvolution(256, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+
+    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+
+    model.add(View(512 * 7 * 7))
+    model.add(Linear(512 * 7 * 7, 4096))
+    model.add(Threshold(0, 1e-6))
+    model.add(Dropout(0.5))
+    model.add(Linear(4096, 4096))
+    model.add(Threshold(0, 1e-6))
+    model.add(Dropout(0.5))
+    model.add(Linear(4096, classNum))
+    model.add(LogSoftMax())
+
+    model
+  }
+}
+
+object Vgg_19 {
+  def apply(classNum: Int): Module[Float] = {
+    val model = Sequential()
+    model.add(SpatialConvolution(3, 64, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(64, 64, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+
+    model.add(SpatialConvolution(64, 128, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(128, 128, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+
+    model.add(SpatialConvolution(128, 256, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(256, 256, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+
+    model.add(SpatialConvolution(256, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+
+    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialConvolution(512, 512, 3, 3, 1, 1, 1, 1))
+    model.add(ReLU(true))
+    model.add(SpatialMaxPooling(2, 2, 2, 2))
+
+    model.add(View(512 * 7 * 7))
+    model.add(Linear(512 * 7 * 7, 4096))
+    model.add(Threshold(0, 1e-6))
+    model.add(Dropout(0.5))
+    model.add(Linear(4096, 4096))
+    model.add(Threshold(0, 1e-6))
+    model.add(Dropout(0.5))
+    model.add(Linear(4096, classNum))
+    model.add(LogSoftMax())
+
+    model
   }
 }

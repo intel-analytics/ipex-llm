@@ -44,7 +44,7 @@ object LocalTrain {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        Vgg(classNum = 10)
+        VggForCifar10(classNum = 10)
       }
       val state = if (param.stateSnapshot.isDefined) {
         T.load(param.stateSnapshot.get)
@@ -92,10 +92,10 @@ object SparkTrain {
     trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
       val batchSize = 128
       val maxEpoch = 90
-      val trainMean = (0.4913996898739353,0.4821584196221302,0.44653092422369434)
-      val trainStd = (0.24703223517429462,0.2434851308749409,0.26158784442034005)
+      val trainMean = (0.4913996898739353, 0.4821584196221302, 0.44653092422369434)
+      val trainStd = (0.24703223517429462, 0.2434851308749409, 0.26158784442034005)
       val testMean = (0.4942142913295297, 0.4851314002725445, 0.45040910258647154)
-      val testStd = (0.2466525177466614,0.2428922662655766,0.26159238066790275)
+      val testStd = (0.2466525177466614, 0.2428922662655766, 0.26159238066790275)
 
       val train = Paths.get(param.folder, "/train")
       val validation = Paths.get(param.folder, "/val")
@@ -111,7 +111,7 @@ object SparkTrain {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        Vgg(classNum = 10)
+        VggForCifar10(classNum = 10)
       }
       val state = if (param.stateSnapshot.isDefined) {
         T.load(param.stateSnapshot.get)
