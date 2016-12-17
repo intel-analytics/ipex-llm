@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.dataset.{Batch, DistributedDataSet}
 import com.intel.analytics.bigdl.models.imagenet._
+import com.intel.analytics.bigdl.models.vgg.{Vgg_19, Vgg_16}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.optim.{DistriOptimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor

@@ -187,7 +187,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val normalizer = RGBImgNormalizer(dataSource)
     val iter = normalizer.apply(Iterator.single(image1))
     val test = iter.next()
-    normalizer.getMean() should be((firstFrameMean, secondFrameMean, thirdFrameMean))
+    normalizer.getMean() should be((thirdFrameMean, secondFrameMean, firstFrameMean))
     val stds = normalizer.getStd()
     stds._1 should be(firstFrameStd.toDouble +- 1e-6)
     stds._2 should be(secondFrameStd.toDouble +- 1e-6)

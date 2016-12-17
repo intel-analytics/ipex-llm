@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.dataset.{Batch, LocalDataSet}
 import com.intel.analytics.bigdl.models.imagenet._
+import com.intel.analytics.bigdl.models.vgg.{Vgg_19, Vgg_16}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
