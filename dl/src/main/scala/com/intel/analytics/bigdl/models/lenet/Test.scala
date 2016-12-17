@@ -19,23 +19,31 @@ package com.intel.analytics.bigdl.models.lenet
 
 import java.nio.file.Paths
 
+import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset.image.{GreyImgToBatch, GreyImgNormalizer, SampleToGreyImg}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{Top1Accuracy, LocalValidator}
 import com.intel.analytics.bigdl.utils.Engine
 
 object Test {
-  import Options._
+  import Utils._
 
   def main(args: Array[String]): Unit = {
     val batchSize = 32
     testParser.parse(args, new TestParams()).map(param => {
       val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
       val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
-      val validateDataSet = DataSet.localDataSet(validationData, validationLabel, false, batchSize)
+
+      val validationSet = DataSet.array(load(validationData, validationLabel))
+        .transform(SampleToGreyImg(28, 28))
+      val normalizerVal = GreyImgNormalizer(validationSet)
+      val valSet = validationSet.transform(normalizerVal)
+        .transform(GreyImgToBatch(batchSize))
+
       val model = Module.load[Float](param.model)
       Engine.setCoreNumber(param.coreNumber)
       val validator = new LocalValidator[Float](model)
-      val result = validator.test(validateDataSet, Array(new Top1Accuracy[Float]))
+      val result = validator.test(valSet, Array(new Top1Accuracy[Float]))
       result.foreach(r => {
         println(s"${r._2} is ${r._1}")
       })

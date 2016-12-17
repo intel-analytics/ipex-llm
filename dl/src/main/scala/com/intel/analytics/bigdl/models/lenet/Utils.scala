@@ -17,9 +17,13 @@
 
 package com.intel.analytics.bigdl.models.lenet
 
+import java.nio.ByteBuffer
+import java.nio.file.{Files, Path}
+
+import com.intel.analytics.bigdl.dataset.Sample
 import scopt.OptionParser
 
-object Options {
+object Utils {
   case class TrainParams(
     folder: String = "./",
     cache: Option[String] = None,
@@ -79,5 +83,41 @@ object Options {
       .text("model snapshot location")
       .action((x, c) => c.copy(model = x))
       .required()
+  }
+
+  private[bigdl] def load(featureFile: Path, labelFile: Path): Array[Sample] = {
+    val labelBuffer = ByteBuffer.wrap(Files.readAllBytes(labelFile))
+    val featureBuffer = ByteBuffer.wrap(Files.readAllBytes(featureFile))
+    val labelMagicNumber = labelBuffer.getInt()
+
+    require(labelMagicNumber == 2049)
+    val featureMagicNumber = featureBuffer.getInt()
+    require(featureMagicNumber == 2051)
+
+    val labelCount = labelBuffer.getInt()
+    val featureCount = featureBuffer.getInt()
+    require(labelCount == featureCount)
+
+    val rowNum = featureBuffer.getInt()
+    val colNum = featureBuffer.getInt()
+
+    val result = new Array[Sample](featureCount)
+    var i = 0
+    while (i < featureCount) {
+      val img = new Array[Byte]((rowNum * colNum))
+      var y = 0
+      while (y < rowNum) {
+        var x = 0
+        while (x < colNum) {
+          img(x + y * colNum) = featureBuffer.get()
+          x += 1
+        }
+        y += 1
+      }
+      result(i) = Sample(img, labelBuffer.get().toFloat + 1.0f)
+      i += 1
+    }
+
+    result
   }
 }

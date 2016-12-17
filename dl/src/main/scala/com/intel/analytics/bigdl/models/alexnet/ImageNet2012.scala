@@ -18,14 +18,14 @@ package com.intel.analytics.bigdl.models.alexnet
 
 import java.nio.file.Path
 
-import com.intel.analytics.bigdl.dataset.{Batch, SeqFileLocalPath, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{DataSet, Batch, SeqFileLocalPath, LocalDataSet}
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
 
-object DataSet {
-  def localDataSet(path : Path, imageSize : Int, batchSize : Int, parallel: Int, looped : Boolean)
+object ImageNet2012 {
+  def apply(path : Path, imageSize : Int, batchSize : Int, parallel: Int)
   : LocalDataSet[Batch[Float]] = {
-    val ds = SequenceFiles.localFiles(path, 1281167, looped)
+    val ds = DataSet.SequenceFolder.paths(path, 1281167)
     val fileTransformer = LocalSeqFileToBytes()
     val arrayToImage = SampleToRGBImg()
     val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)

@@ -38,7 +38,7 @@ class LocalValidator[T](model: Module[T])
     dataSet: DataSource[Iterator[Batch[T]]],
     vMethods: Array[ValidationMethod[T]]
   ): Array[(ValidationResult, ValidationMethod[T])] = {
-    val dataIter = dataSet.data()
+    val dataIter = dataSet.data(looped = false)
     var count = 0
     dataIter.map(batch => {
       require(batch.data.size(1) == batch.labels.size(1))

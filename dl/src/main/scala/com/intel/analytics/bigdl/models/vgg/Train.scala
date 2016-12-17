@@ -18,9 +18,12 @@ package com.intel.analytics.bigdl.models.vgg
 
 import java.nio.file.Paths
 
+import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset.image.{RGBImgToBatch, RGBImgNormalizer, SampleToRGBImg, RGBImage}
 import com.intel.analytics.bigdl.nn.{Module, ClassNLLCriterion}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.optim.DataSet
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.log4j.{Level, Logger}
@@ -29,23 +32,23 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
 
 object LocalTrain {
-
-  import Options._
+  import Utils._
 
   def main(args: Array[String]): Unit = {
     trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
       val batchSize = 128
       val maxEpoch = 90
 
-      val train = Paths.get(param.folder, "/train")
-      val validation = Paths.get(param.folder, "/val")
-      val trainSet = DataSet.localDataSet(train, true, batchSize)
+      val trainSet = DataSet.ImageFolder.images(Paths.get(param.folder, "/train"), 32)
+        .transform(RGBImgNormalizer(trainMean, trainStd))
+        .transform(RGBImgToBatch(batchSize))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
         VggForCifar10(classNum = 10)
       }
+
       val state = if (param.stateSnapshot.isDefined) {
         T.load(param.stateSnapshot.get)
       } else {
@@ -69,7 +72,10 @@ object LocalTrain {
         optimizer.setCache(param.cache.get, Trigger.everyEpoch)
       }
 
-      val validationSet = DataSet.localDataSet(validation, false, batchSize)
+      val validationSet = DataSet.ImageFolder.images(Paths.get(param.folder, "/val"), 32)
+        .transform(RGBImgNormalizer(testMean, testStd))
+        .transform(RGBImgToBatch(batchSize))
+
       optimizer
         .setValidation(Trigger.everyEpoch, validationSet, Array(new Top1Accuracy[Float]))
         .setState(state)
@@ -80,39 +86,35 @@ object LocalTrain {
 }
 
 object SparkTrain {
-
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
 
-  import Options._
+
+  import Utils._
 
   def main(args: Array[String]): Unit = {
     trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
       val batchSize = 128
       val maxEpoch = 90
-      val trainMean = (0.4913996898739353, 0.4821584196221302, 0.44653092422369434)
-      val trainStd = (0.24703223517429462, 0.2434851308749409, 0.26158784442034005)
-      val testMean = (0.4942142913295297, 0.4851314002725445, 0.45040910258647154)
-      val testStd = (0.2466525177466614, 0.2428922662655766, 0.26159238066790275)
-
-      val train = Paths.get(param.folder, "/train")
-      val validation = Paths.get(param.folder, "/val")
 
       val conf = Engine.sparkConf()
         .setAppName("Train Vgg on Cifar10")
         .set("spark.akka.frameSize", 64.toString)
       val sc = new SparkContext(conf)
 
-      val trainDataSet = DataSet.distributedDataSet(train, true, sc, param.nodesNumber, batchSize,
-        trainMean, trainStd)
+      val trainDataSet = DataSet.ImageFolder
+        .images(Paths.get(param.folder, "/train"), sc, param.nodesNumber, 32)
+        .transform(RGBImgNormalizer(trainMean, trainStd))
+        .transform(RGBImgToBatch(batchSize))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
         VggForCifar10(classNum = 10)
       }
+
       val state = if (param.stateSnapshot.isDefined) {
         T.load(param.stateSnapshot.get)
       } else {
@@ -131,14 +133,17 @@ object SparkTrain {
         dataset = trainDataSet,
         criterion = new ClassNLLCriterion[Float]()
       )
-      val validateDataSet =
-        DataSet.distributedDataSet(validation, false, sc, param.nodesNumber, batchSize, testMean,
-          testStd)
+
+      val validateSet = DataSet.ImageFolder
+        .images(Paths.get(param.folder, "/val"), sc, param.nodesNumber, 32)
+        .transform(RGBImgNormalizer(testMean, testStd))
+        .transform(RGBImgToBatch(batchSize))
+
       if (param.cache.isDefined) {
         optimizer.setCache(param.cache.get, Trigger.everyEpoch)
       }
       optimizer
-        .setValidation(Trigger.everyEpoch, validateDataSet, Array(new Top1Accuracy[Float]))
+        .setValidation(Trigger.everyEpoch, validateSet, Array(new Top1Accuracy[Float]))
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(maxEpoch))
         .optimize()
