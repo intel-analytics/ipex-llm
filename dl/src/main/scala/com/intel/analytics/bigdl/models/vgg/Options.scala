@@ -28,10 +28,10 @@ object Options {
     coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
   )
 
-  val trainLocalParser = new OptionParser[TrainLocalParams]("BigDL Vgg Example") {
+  val trainLocalParser = new OptionParser[TrainLocalParams]("BigDL Vgg on Cifar Example") {
     head("Train Vgg model on single node")
     opt[String]('f', "folder")
-      .text("where you put the MNIST data")
+      .text("where you put the Cifar10 data")
       .action((x, c) => c.copy(folder = x))
     opt[String]("model")
       .text("model snapshot location")
@@ -56,10 +56,10 @@ object Options {
     nodesNumber: Int = -1
   )
 
-  val trainSparkParser = new OptionParser[TrainSparkParams]("BigDL Vgg Example") {
+  val trainSparkParser = new OptionParser[TrainSparkParams]("BigDL Vgg on Cifar Example") {
     head("Train Vgg model on Apache Spark")
     opt[String]('f', "folder")
-      .text("where you put the MNIST data")
+      .text("where you put the Cifar10 data")
       .action((x, c) => c.copy(folder = x))
     opt[String]("model")
       .text("model snapshot location")
@@ -70,6 +70,50 @@ object Options {
     opt[String]("cache")
       .text("where to cache the model")
       .action((x, c) => c.copy(cache = Some(x)))
+    opt[Int]('c', "core")
+      .text("cores number on each node")
+      .action((x, c) => c.copy(coreNumberPerNode = x))
+      .required()
+    opt[Int]('n', "nodeNumber")
+      .text("nodes number to train the model")
+      .action((x, c) => c.copy(nodesNumber = x))
+      .required()
+  }
+
+  case class TestLocalParams(
+    folder: String = "./",
+    model: String = "",
+    coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
+  )
+
+  val testLocalParser = new OptionParser[TestLocalParams]("BigDL Vgg on Cifar10 Test Example") {
+    opt[String]('f', "folder")
+      .text("where you put the Cifar10 data")
+      .action((x, c) => c.copy(folder = x))
+    opt[String]("model")
+      .text("model snapshot location")
+      .action((x, c) => c.copy(model = x))
+      .required()
+    opt[Int]('c', "core")
+      .text("cores number to train the model")
+      .action((x, c) => c.copy(coreNumber = x))
+  }
+
+  case class TestSparkParams(
+    folder: String = "./",
+    model: String = "",
+    coreNumberPerNode: Int = -1,
+    nodesNumber: Int = -1
+  )
+
+  val testSparkParser = new OptionParser[TestSparkParams]("BigDL Vgg on Cifar10 Test Example") {
+    opt[String]('f', "folder")
+      .text("where you put the Cifar10 data")
+      .action((x, c) => c.copy(folder = x))
+    opt[String]("model")
+      .text("model snapshot location")
+      .action((x, c) => c.copy(model = x))
+      .required()
     opt[Int]('c', "core")
       .text("cores number on each node")
       .action((x, c) => c.copy(coreNumberPerNode = x))

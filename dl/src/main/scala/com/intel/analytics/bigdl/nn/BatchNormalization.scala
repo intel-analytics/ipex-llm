@@ -68,11 +68,22 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     zeroGradParameters()
   }
 
+  @inline
   private def checkInputDim(input: Tensor[T]): Unit = {
-    require(input.dim() == nDim,
+    require(input.dim() == nDim || (input.dim() == nDim - 1 && train == false),
       s"only mini-batch supported (${nDim}D tensor), got ${input.dim()}D tensor instead")
-    require(input.size(2) == runningMean.nElement(),
-      s"got ${input.size(2)}-feature tensor, expected ${runningMean.nElement()}")
+    val featDim= if (input.dim() == nDim - 1) 1 else 2
+    require(input.size(featDim) == runningMean.nElement(),
+      s"got ${input.size(featDim)}-feature tensor, expected ${runningMean.nElement()}")
+  }
+
+  @inline
+  private def makeBatch(input: Tensor[T]): Tensor[T] = {
+    if (input.dim() == nDim - 1 && train == false) {
+      input.addSingletonDimension()
+    } else {
+      input
+    }
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -82,18 +93,19 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     saveMean.resizeAs(runningMean)
     saveStd.resizeAs(runningVar)
 
-    val nInput = input.size(2)
+    val _input = makeBatch(input)
+    val nInput = _input.size(2)
     if(results == null || results.length > nInput) {
       results = new Array[Future[_]](nInput)
     }
-    val n = input.nElement() / nInput
+    val n = _input.nElement() / nInput
     ev.getType() match {
       case DoubleType =>
-        val inputDouble = input.asInstanceOf[Tensor[Double]]
+        val inputDouble = _input.asInstanceOf[Tensor[Double]]
         val inputData = inputDouble.storage().array()
         val inputOffset = inputDouble.storageOffset() - 1
-        val inputStride = input.stride(1)
-        val inputStride2 = input.stride(2)
+        val inputStride = _input.stride(1)
+        val inputStride2 = _input.stride(2)
         val outputDouble = output.asInstanceOf[Tensor[Double]]
         val outputData = outputDouble.storage().array()
         val outputOffset = outputDouble.storageOffset() - 1
@@ -102,11 +114,11 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
           outputStride, nInput, n, inputStride2)
 
       case FloatType =>
-        val inputFloat = input.asInstanceOf[Tensor[Float]]
+        val inputFloat = _input.asInstanceOf[Tensor[Float]]
         val inputData = inputFloat.storage().array()
         val inputOffset = inputFloat.storageOffset() - 1
-        val inputStride = input.stride(1)
-        val inputStride2 = input.stride(2)
+        val inputStride = _input.stride(1)
+        val inputStride2 = _input.stride(2)
         val outputFloat = output.asInstanceOf[Tensor[Float]]
         val outputData = outputFloat.storage().array()
         val outputOffset = outputFloat.storageOffset() - 1

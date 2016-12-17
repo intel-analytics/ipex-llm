@@ -21,6 +21,7 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{Top1Accuracy, LocalValidator}
+import com.intel.analytics.bigdl.utils.Engine
 
 object Test {
   import Options._
@@ -32,12 +33,12 @@ object Test {
       val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
       val validateDataSet = DataSet.localDataSet(validationData, validationLabel, false, batchSize)
       val model = Module.load[Float](param.model)
-      val validator = new LocalValidator[Float](model, param.coreNumber)
+      Engine.setCoreNumber(param.coreNumber)
+      val validator = new LocalValidator[Float](model)
       val result = validator.test(validateDataSet, Array(new Top1Accuracy[Float]))
       result.foreach(r => {
         println(s"${r._2} is ${r._1}")
       })
-
     })
   }
 }

@@ -18,10 +18,14 @@
 package com.intel.analytics.bigdl.dataset.image
 
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, Transformer}
+import com.intel.analytics.bigdl.optim.LocalOptimizer._
+import org.apache.log4j.Logger
 
 import scala.collection.Iterator
 
 object RGBImgNormalizer {
+  val logger = Logger.getLogger(getClass)
+
   def apply(meanR: Double, meanG: Double, meanB: Double,
     stdR: Double, stdG: Double, stdB: Double): RGBImgNormalizer = {
 
@@ -50,9 +54,8 @@ object RGBImgNormalizer {
         j += 3
       }
       i += 1
-      print(s"Mean: $i / $totalCount \r")
+      logger.info(s"Mean: $i / $totalCount")
     }
-    println()
     require(total > 0)
     val meanR = sumR / total
     val meanG = sumG / total
@@ -74,10 +77,9 @@ object RGBImgNormalizer {
         sumB += diffB * diffB
         j += 3
       }
-      print(s"Std: $i / $totalCount \r")
+      logger.info(s"Std: $i / $totalCount")
       i += 1
     }
-    println()
     val stdR = math.sqrt(sumR / total)
     val stdG = math.sqrt(sumG / total)
     val stdB = math.sqrt(sumB / total)
@@ -89,9 +91,9 @@ class RGBImgNormalizer(meanR: Double, meanG: Double, meanB: Double,
   stdR: Double, stdG: Double, stdB: Double)
   extends Transformer[LabeledRGBImage, LabeledRGBImage] {
 
-  def getMean(): (Double, Double, Double) = (meanB, meanG, meanR)
+  def getMean(): (Double, Double, Double) = (meanR, meanG, meanB)
 
-  def getStd(): (Double, Double, Double) = (stdB, stdG, stdR)
+  def getStd(): (Double, Double, Double) = (stdR, stdG, stdB)
 
   override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
     prev.map(img => {

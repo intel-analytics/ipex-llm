@@ -50,6 +50,7 @@ class LocalOptimizer[T: ClassTag](
     model, dataset, criterion) {
 
   import LocalOptimizer._
+  import Optimizer._
 
   private val coreNumber = Engine.coreNumber()
 
@@ -178,8 +179,8 @@ class LocalOptimizer[T: ClassTag](
     val trigger = cacheTrigger.get
     if (trigger(state) && cachePath.isDefined) {
       logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to path")
-      saveModel(workingModels.head, s".${state[Int]("neval")}")
-      saveState(state, s".${state[Int]("neval")}")
+      saveModel(workingModels.head, cachePath, isOverWrite, s".${state[Int]("neval")}")
+      saveState(state, cachePath, isOverWrite, s".${state[Int]("neval")}")
     }
   }
 

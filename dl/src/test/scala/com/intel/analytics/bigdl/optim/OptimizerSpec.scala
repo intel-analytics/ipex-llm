@@ -109,7 +109,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
     val model = AlexNet(1000)
     val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        saveModel(model)
+        Optimizer.saveModel(model, this.cachePath, this.isOverWrite)
         model
       }
     }
@@ -128,7 +128,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
     val model = AlexNet(1000)
     val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        saveModel(model, ".test")
+        Optimizer.saveModel(model, this.cachePath, this.isOverWrite, ".test")
         model
       }
     }
@@ -148,7 +148,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
     val state = T("test" -> 123)
     val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        saveState(state)
+        Optimizer.saveState(state, this.cachePath, this.isOverWrite)
         model
       }
     }.setState(state)
@@ -166,7 +166,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
     val state = T("test" -> 123)
     val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        saveState(state, ".post")
+        Optimizer.saveState(state, this.cachePath, this.isOverWrite, ".post")
         model
       }
     }.setState(state)

@@ -33,13 +33,20 @@ object DataSet {
     ds -> toImage -> normalizer -> toBatch
   }
 
-  def distributedDataSet(imagesFile: Path, looped: Boolean, sc: SparkContext,
-    partitionNum: Int, batchSize : Int): DistributedDataSet[Batch[Float]] = {
+  def distributedDataSet(
+    imagesFile: Path,
+    looped: Boolean,
+    sc: SparkContext,
+    partitionNum: Int,
+    batchSize : Int,
+    mean: (Double, Double, Double),
+    std: (Double, Double, Double)
+  ): DistributedDataSet[Batch[Float]] = {
     val ds = LocalImageFiles.distriDataSet(imagesFile, looped, sc, partitionNum, 32)
 
     val toImage = SampleToRGBImg()
-    val normalizer = RGBImgNormalizer(0.5, 0.5, 0.5, 1.0, 1.0, 1.0)
-    val toTensor = new RGBImgToBatch(batchSize)
-    ds -> toImage -> normalizer -> toTensor
+    val normalizer = RGBImgNormalizer(mean._1, mean._2, mean._3, std._1, std._2, std._3)
+    val toBatch = new RGBImgToBatch(batchSize)
+    ds -> toImage -> normalizer -> toBatch
   }
 }
