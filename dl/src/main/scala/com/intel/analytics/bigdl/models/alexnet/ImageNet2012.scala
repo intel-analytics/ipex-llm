@@ -18,26 +18,25 @@ package com.intel.analytics.bigdl.models.alexnet
 
 import java.nio.file.Path
 
-import com.intel.analytics.bigdl.dataset.{DataSet, Batch, SeqFileLocalPath, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{Batch, DataSet, LocalDataSet, SeqFileLocalPath}
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Engine
 
 object ImageNet2012 {
-  def apply(path : Path, imageSize : Int, batchSize : Int, parallel: Int)
+  def apply(path: Path, imageSize: Int, batchSize: Int, size: Int)
   : LocalDataSet[Batch[Float]] = {
-    val ds = DataSet.SequenceFolder.paths(path, 1281167)
-    val fileTransformer = LocalSeqFileToBytes()
-    val arrayToImage = SampleToRGBImg()
-    val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
-    val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
-    val flipper = HFlip(0.5)
-    val multiThreadToTensor = MTLabeledRGBImgToTensor[SeqFileLocalPath](
-      width = imageSize,
-      height = imageSize,
-      threadNum = parallel,
-      batchSize = batchSize,
-      transformer = fileTransformer -> arrayToImage -> cropper -> flipper -> normalizer
-    )
-    ds -> multiThreadToTensor
+    DataSet.SequenceFolder.paths(path, size)
+      .transform(
+        MTLabeledRGBImgToBatch(
+          width = imageSize,
+          height = imageSize,
+          batchSize = batchSize,
+          transformer = (LocalSeqFileToBytes() -> SampleToRGBImg() ->
+            RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize) -> HFlip(0.5) ->
+            RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
+            )
+        )
+      )
   }
 }

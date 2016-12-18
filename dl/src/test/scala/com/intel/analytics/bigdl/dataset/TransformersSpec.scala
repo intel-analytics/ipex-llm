@@ -21,7 +21,7 @@ import java.nio.file.{Path, Paths}
 
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -321,9 +321,8 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor3.rand()
 
     val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3))
-
-    val toTensor = new MTLabeledRGBImgToTensor[LabeledRGBImage](
-      width = 32, height = 32, threadNum = 1, batchSize = 2, transformer = Identity[LabeledRGBImage]
+    val toTensor = new MTLabeledRGBImgToBatch[LabeledRGBImage](
+      width = 32, height = 32, batchSize = 2, transformer = Identity[LabeledRGBImage]
     )
     val tensorDataSource = dataSource -> toTensor
     val iter = tensorDataSource.data(looped = true)

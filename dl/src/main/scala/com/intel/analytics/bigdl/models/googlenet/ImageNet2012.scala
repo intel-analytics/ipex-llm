@@ -32,10 +32,9 @@ object ImageNet2012 {
     val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
     val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
     val flipper = HFlip(0.5)
-    val multiThreadToTensor = MTLabeledRGBImgToTensor[SeqFileLocalPath](
+    val multiThreadToTensor = MTLabeledRGBImgToBatch[SeqFileLocalPath](
       width = imageSize,
       height = imageSize,
-      threadNum = parallel,
       batchSize = batchSize,
       transformer = fileTransformer -> arrayToImage -> cropper -> flipper -> normalizer
     )
@@ -56,10 +55,9 @@ object ImageNet2012 {
     val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
     val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
     val flipper = HFlip(0.5)
-    val multiThreadToTensor = MTLabeledRGBImgToTensor[Sample](
+    val multiThreadToTensor = MTLabeledRGBImgToBatch[Sample](
       width = imageSize,
       height = imageSize,
-      threadNum = coresPerNode,
       batchSize = batchSize / nodeNumber,
       transformer = arrayToImage -> cropper -> flipper -> normalizer
     )
