@@ -225,7 +225,7 @@ class LocalOptimizer[T: ClassTag](
       })
       count += batch.data.size(1)
       logger.info(s"[Validation] $count/${validationDataSet.get.size()} Throughput is ${
-        batch.data.size(1) / (System.nanoTime() - start) * 1e9
+        batch.data.size(1) / ((System.nanoTime() - start) / 1e9)
       } record / sec")
       result
     }).reduce((left, right) => {
