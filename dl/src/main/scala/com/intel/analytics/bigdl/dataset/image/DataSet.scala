@@ -40,7 +40,7 @@ object LocalImageFiles {
    * @param path
    * @return
    */
-  private def readLabels(path: Path): Map[String, Int] = {
+  private[bigdl] def readLabels(path: Path): Map[String, Int] = {
     import scala.collection.JavaConverters._
     Files.newDirectoryStream(path).asScala.map(_.getFileName.toString)
       .toArray.sortWith(_ < _).zipWithIndex.map(c => c._1 -> (c._2 + 1)).toMap

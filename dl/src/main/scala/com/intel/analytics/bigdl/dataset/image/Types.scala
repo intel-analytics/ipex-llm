@@ -153,9 +153,9 @@ class RGBImage(
     require(frameLength * 3 + offset <= storage.length)
     var j = 0
     while (j < frameLength) {
-      storage(offset + j) = content(j * 3)
+      storage(offset + j) = content(j * 3 + 2)
       storage(offset + j + frameLength) = content(j * 3 + 1)
-      storage(offset + j + frameLength * 2) = content(j * 3 + 2)
+      storage(offset + j + frameLength * 2) = content(j * 3)
       j += 1
     }
   }
