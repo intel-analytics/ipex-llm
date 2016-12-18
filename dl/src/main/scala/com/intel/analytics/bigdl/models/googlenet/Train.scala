@@ -20,130 +20,146 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.nn.{Module, ClassNLLCriterion}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
-object Train {
+object GoogleNetv1_SparkTrain {
+  Logger.getLogger("org").setLevel(Level.ERROR)
+  Logger.getLogger("akka").setLevel(Level.ERROR)
+  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
 
-  object GoogleNetv1_Local {
+  import Options._
 
-    import Options._
+  def main(args: Array[String]): Unit = {
+    trainParser.parse(args, new TrainParams()).map(param => {
+      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
+      val batchSize = param.batchSize.getOrElse(1568)
+      val imageSize = 224
 
-    def main(args: Array[String]): Unit = {
-      trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
-        val batchSize = 32
-        val imageSize = 224
+      val conf = Engine.sparkConf().setAppName("BigDL GoogleNet v1 Train Example")
+      val sc = new SparkContext(conf)
+      val trainSet = ImageNet2012(
+        param.folder + "/train",
+        sc,
+        imageSize,
+        batchSize,
+        param.nodesNumber,
+        param.coreNumberPerNode)
+      val valSet = ImageNet2012(
+        param.folder + "/val",
+        sc,
+        imageSize,
+        batchSize,
+        param.nodesNumber,
+        param.coreNumberPerNode)
 
-        val trainData = Paths.get(param.folder, "train")
-        val trainDataSet = ImageNet2012.localFolder(trainData, imageSize, batchSize,
-          param.coreNumber)
-        val validationData = Paths.get(param.folder, "val")
-        val validateDataSet = ImageNet2012.localFolder(validationData, imageSize, batchSize,
-          param.coreNumber)
+      val model = if (param.modelSnapshot.isDefined) {
+        Module.load[Float](param.modelSnapshot.get)
+      } else {
+        GoogleNet_v1_NoAuxClassifier(classNum = 1000)
+      }
 
-        val model = if (param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
-        } else {
-          GoogleNet_v1_NoAuxClassifier(classNum = 1000)
-        }
-
-        val state = if (param.stateSnapshot.isDefined) {
-          T.load(param.stateSnapshot.get)
-        } else {
-          T(
-            "learningRate" -> 0.01,
-            "weightDecay" -> 0.0002,
-            "momentum" -> 0.9,
-            "dampening" -> 0.0,
-            "learningRateSchedule" -> SGD.Poly(0.5, 2400000)
-          )
-        }
-
-        Engine.setCoreNumber(param.coreNumber)
-        val optimizer = new LocalOptimizer[Float](
-          model = model,
-          dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]()
+      val state = if (param.stateSnapshot.isDefined) {
+        T.load(param.stateSnapshot.get)
+      } else {
+        T(
+          "learningRate" -> 0.0898,
+          "weightDecay" -> 0.0001,
+          "momentum" -> 0.9,
+          "dampening" -> 0.0,
+          "learningRateSchedule" -> SGD.Poly(0.5, 62000)
         )
-        if (param.cache.isDefined) {
-          optimizer.setCache(param.cache.get, Trigger.everyEpoch)
-        }
-        optimizer
-          .setState(state)
-          .setValidation(Trigger.everyEpoch,
-            validateDataSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
-          .setEndWhen(Trigger.maxIteration(2400000))
-          .optimize()
-      })
-    }
+      }
+
+      val optimizer = new DistriOptimizer[Float](
+        model = model,
+        dataset = trainSet,
+        criterion = new ClassNLLCriterion[Float]()
+      )
+
+      if (param.cache.isDefined) {
+        optimizer.setCache(param.cache.get, Trigger.severalIteration(620))
+      }
+
+      optimizer
+        .setState(state)
+        .setValidation(Trigger.severalIteration(620),
+          valSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
+        .setEndWhen(Trigger.maxIteration(62000))
+        .optimize()
+    })
   }
-
-  object GoogleNetv1_Spark {
-
-    import Options._
-
-    def main(args: Array[String]): Unit = {
-      trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
-        val batchSize = 1600
-        val imageSize = 224
-
-        val conf = Engine.sparkConf().setAppName("BigDL GoogleNet v1 Example")
-        val sc = new SparkContext(conf)
-        val trainDataSet = ImageNet2012.hdfs(
-          param.folder + "/train",
-          sc,
-          imageSize,
-          batchSize,
-          param.nodesNumber,
-          param.coreNumberPerNode)
-        val validateDataSet = ImageNet2012.hdfs(
-          param.folder + "/val",
-          sc,
-          imageSize,
-          batchSize,
-          param.nodesNumber,
-          param.coreNumberPerNode)
-
-        val model = if (param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
-        } else {
-          GoogleNet_v1_NoAuxClassifier(classNum = 1000)
-        }
-
-        val state = if (param.stateSnapshot.isDefined) {
-          T.load(param.stateSnapshot.get)
-        } else {
-          T(
-            "learningRate" -> 0.0898,
-            "weightDecay" -> 0.0001,
-            "momentum" -> 0.9,
-            "dampening" -> 0.0,
-            "learningRateSchedule" -> SGD.Poly(0.5, 62000)
-          )
-        }
-
-        Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
-        val optimizer = new DistriOptimizer[Float](
-          model = model,
-          dataset = trainDataSet,
-          criterion = new ClassNLLCriterion[Float]()
-        )
-
-        if (param.cache.isDefined) {
-          optimizer.setCache(param.cache.get, Trigger.everyEpoch)
-        }
-
-        optimizer
-          .setState(state)
-          .setValidation(Trigger.everyEpoch,
-            validateDataSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
-          .setEndWhen(Trigger.maxIteration(62000))
-          .optimize()
-      })
-    }
-  }
-
 }
 
+object GoogleNetv2_SparkTrain {
+  Logger.getLogger("org").setLevel(Level.ERROR)
+  Logger.getLogger("akka").setLevel(Level.ERROR)
+  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
+  import Options._
+
+  def main(args: Array[String]): Unit = {
+    trainParser.parse(args, new TrainParams()).map(param => {
+      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
+      val batchSize = param.batchSize.getOrElse(1344)
+      val imageSize = 224
+
+      val conf = Engine.sparkConf().setAppName("BigDL GoogleNet v2 Train Example")
+      val sc = new SparkContext(conf)
+      val trainSet = ImageNet2012(
+        param.folder + "/train",
+        sc,
+        imageSize,
+        batchSize,
+        param.nodesNumber,
+        param.coreNumberPerNode)
+      val valSet = ImageNet2012(
+        param.folder + "/val",
+        sc,
+        imageSize,
+        batchSize,
+        param.nodesNumber,
+        param.coreNumberPerNode)
+
+      val model = if (param.modelSnapshot.isDefined) {
+        Module.load[Float](param.modelSnapshot.get)
+      } else {
+        GoogleNet_v2_NoAuxClassifier(classNum = 1000)
+      }
+
+      val state = if (param.stateSnapshot.isDefined) {
+        T.load(param.stateSnapshot.get)
+      } else {
+        T(
+          "learningRate" -> 0.1,
+          "weightDecay" -> 0.0002,
+          "momentum" -> 0.9,
+          "dampening" -> 0.0,
+          "learningRateSchedule" -> SGD.Step(900, 0.96)
+        )
+      }
+
+      val optimizer = new DistriOptimizer[Float](
+        model = model,
+        dataset = trainSet,
+        criterion = new ClassNLLCriterion[Float]()
+      )
+
+      if (param.cache.isDefined) {
+        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      }
+
+      optimizer
+        .setState(state)
+        .setValidation(Trigger.everyEpoch,
+          valSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
+        .setEndWhen(Trigger.maxEpoch(100))
+        .optimize()
+    })
+  }
+}
