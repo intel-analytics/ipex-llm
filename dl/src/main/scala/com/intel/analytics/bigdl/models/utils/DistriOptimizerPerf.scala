@@ -18,13 +18,14 @@ package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.dataset.{Batch, DistributedDataSet}
 import com.intel.analytics.bigdl.models.imagenet._
-import com.intel.analytics.bigdl.models.vgg.{Vgg_19, Vgg_16}
+import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.optim.{DistriOptimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.{Engine}
+import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import scopt.OptionParser

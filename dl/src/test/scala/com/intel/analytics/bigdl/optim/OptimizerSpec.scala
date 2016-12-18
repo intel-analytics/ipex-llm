@@ -17,12 +17,11 @@
 
 package com.intel.analytics.bigdl.optim
 
-import java.nio.file.{Paths, Files}
+import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.models.imagenet.AlexNet
 import com.intel.analytics.bigdl.nn.Sequential
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.models.alexnet.AlexNet
 import com.intel.analytics.bigdl.utils.{File, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
