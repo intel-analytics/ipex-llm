@@ -44,7 +44,7 @@ end
 
 local function preprocess(source, target)
     local img = loadImage(source)
-    --img = crop(img, 224, 224)
+    img = crop(img, 224, 224)
     img = image.hflip(img)
     norm(img, { 0.4, 0.5, 0.6 }, { 0.1, 0.2, 0.3 })
     torch.save(target, img)

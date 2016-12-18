@@ -123,7 +123,10 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val rdd = dataSource.data(looped = false)
     rdd.filter(_.label() == 1f).count() should be(3)
     rdd.filter(_.label() == 2f).count() should be(4)
-    val images = rdd.filter(_.label() == 1f).collect().sortWith(_.content(0) < _.content(0))
+    val images = rdd.map(_.clone())
+      .filter(_.label() == 1f)
+      .collect()
+      .sortWith(_.content(0) < _.content(0))
     val img1 = images(1)
     img1.label() should be(1f)
     img1.content(2) should be(234 / 255f)
@@ -133,7 +136,10 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     img1.content((22 + 4 * 32) * 3 + 1) should be(148 / 255f)
     img1.content((22 + 4 * 32) * 3) should be(31 / 255f)
 
-    val images2 = rdd.filter(_.label() == 2).collect().sortWith(_.content(0) < _.content(0))
+    val images2 = rdd.map(_.clone())
+      .filter(_.label() == 2)
+      .collect()
+      .sortWith(_.content(0) < _.content(0))
     val img4 = images2(0)
     img4.label() should be(2f)
     img4.content((9 + 8 * 32) * 3 + 2) should be(40 / 255f)
@@ -220,18 +226,20 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "image preprocess" should "be same with torch result" in {
-    val resource = getClass().getClassLoader().getResource("imagenet")
+    val resourceImageNet = getClass().getClassLoader().getResource("imagenet")
     def test(imgFolder: String, imgFileName: String, tensorFile: String): Unit = {
-      val img1Path = Paths.get(processPath(resource.getPath()), imgFolder, imgFileName)
+      val img1Path = Paths.get(processPath(resourceImageNet.getPath()), imgFolder, imgFileName)
       val iter = (DataSet.array(Array(LabeledImageLocalPath(1.0f, img1Path)))
         -> LocalImgReader()
-        //-> RGBImgCropper(224, 224)
+        -> RGBImgCropper(224, 224)
         -> HFlip()
         -> RGBImgNormalizer((0.4, 0.5, 0.6), (0.1, 0.2, 0.3))
         -> RGBImgToBatch(1)
         ).data(looped = false)
       val image1 = iter.next().data
-      val tensor1Path = Paths.get(processPath(resource.getPath()), "torch", tensorFile)
+
+      val resourceTorch = getClass().getClassLoader().getResource("torch")
+      val tensor1Path = Paths.get(processPath(resourceTorch.getPath()), tensorFile)
       val tensor1 = com.intel.analytics.bigdl.utils.File.loadTorch[Tensor[Float]](
         tensor1Path.toString).addSingletonDimension()
       image1.size() should be(tensor1.size())
