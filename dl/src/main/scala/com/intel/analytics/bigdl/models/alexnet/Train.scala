@@ -29,57 +29,54 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
 object Train {
 
-  object Local {
+  import Options._
 
-    import Options._
+  val batchSize = 128
+  val imageSize = 224
 
-    def main(args: Array[String]): Unit = {
-      trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
-        Engine.setCoreNumber(param.coreNumber)
-        val batchSize = 128
-        val imageSize = 224
+  def main(args: Array[String]): Unit = {
+    trainParser.parse(args, new TrainParams()).map(param => {
+      Engine.setCoreNumber(param.coreNumber)
 
-        val trainSet = ImageNet2012(Paths.get(param.folder, "train"), imageSize, batchSize, 1281167)
-        val valSet = ImageNet2012(Paths.get(param.folder, "val"), imageSize, batchSize, 50000)
+      val trainSet = ImageNet2012(Paths.get(param.folder, "train"), imageSize, batchSize, 1281167)
+      val valSet = ImageNet2012(Paths.get(param.folder, "val"), imageSize, batchSize, 50000)
 
-        val model = if (param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
-        } else {
-          AlexNet_OWT(classNum = 1000)
-        }
+      val model = if (param.modelSnapshot.isDefined) {
+        Module.load[Float](param.modelSnapshot.get)
+      } else {
+        AlexNet_OWT(classNum = 1000)
+      }
 
-        val state = if (param.stateSnapshot.isDefined) {
-          T.load(param.stateSnapshot.get)
-        } else {
-          T(
-            "momentum" -> 0.9,
-            "dampening" -> 0.0,
-            "learningRateSchedule" -> SGD.EpochSchedule(Array(
-              Regime(1, 18, T("learningRate" -> 1e-2, "weightDecay" -> 2e-4)),
-              Regime(19, 29, T("learningRate" -> 5e-3, "weightDecay" -> 2e-4)),
-              Regime(30, 43, T("learningRate" -> 1e-3, "weightDecay" -> 0.0)),
-              Regime(44, 52, T("learningRate" -> 5e-4, "weightDecay" -> 0.0)),
-              Regime(53, 100, T("learningRate" -> 1e-4, "weightDecay" -> 0.0))
-            ))
-          )
-        }
-
-        val optimizer = new LocalOptimizer[Float](
-          model = model,
-          dataset = trainSet,
-          criterion = new ClassNLLCriterion[Float]()
+      val state = if (param.stateSnapshot.isDefined) {
+        T.load(param.stateSnapshot.get)
+      } else {
+        T(
+          "momentum" -> 0.9,
+          "dampening" -> 0.0,
+          "learningRateSchedule" -> SGD.EpochSchedule(Array(
+            Regime(1, 18, T("learningRate" -> 1e-2, "weightDecay" -> 2e-4)),
+            Regime(19, 29, T("learningRate" -> 5e-3, "weightDecay" -> 2e-4)),
+            Regime(30, 43, T("learningRate" -> 1e-3, "weightDecay" -> 0.0)),
+            Regime(44, 52, T("learningRate" -> 5e-4, "weightDecay" -> 0.0)),
+            Regime(53, 100, T("learningRate" -> 1e-4, "weightDecay" -> 0.0))
+          ))
         )
-        if (param.cache.isDefined) {
-          optimizer.setCache(param.cache.get, Trigger.severalIteration(10000))
-        }
-        optimizer
-          .setState(state)
-          .setValidation(Trigger.everyEpoch, valSet,
-            Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
-          .setEndWhen(Trigger.maxEpoch(56))
-          .optimize()
-      })
-    }
-  }
+      }
 
+      val optimizer = new LocalOptimizer[Float](
+        model = model,
+        dataset = trainSet,
+        criterion = new ClassNLLCriterion[Float]()
+      )
+      if (param.cache.isDefined) {
+        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      }
+      optimizer
+        .setState(state)
+        .setValidation(Trigger.everyEpoch, valSet,
+          Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
+        .setEndWhen(Trigger.maxEpoch(56))
+        .optimize()
+    })
+  }
 }
