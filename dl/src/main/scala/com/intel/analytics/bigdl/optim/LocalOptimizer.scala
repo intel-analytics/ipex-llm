@@ -204,6 +204,7 @@ class LocalOptimizer[T: ClassTag](
       val stackSize = batch.data.size(1) / subModelNumber
       val extraSize = batch.data.size(1) % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
+      val start = System.nanoTime()
       val result = Engine.default.invokeAndWait(
         (0 until parallelism).map(b =>
           () => {
@@ -223,7 +224,9 @@ class LocalOptimizer[T: ClassTag](
         }
       })
       count += batch.data.size(1)
-      logger.info(s"[Validation] $count/${validationDataSet.get.size()}")
+      logger.info(s"[Validation] $count/${validationDataSet.get.size()} Throughput is ${
+        batch.data.size(1) / (System.nanoTime() - start) * 1e9
+      } record / sec")
       result
     }).reduce((left, right) => {
       left.zip(right).map { case (l, r) =>

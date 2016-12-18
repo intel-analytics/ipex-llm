@@ -299,8 +299,12 @@ object DataSet {
   }
 
   object SequenceFolder {
+    val logger = Logger.getLogger(getClass)
     def paths(path: Path, totalSize: Long): LocalDataSet[SeqFileLocalPath] = {
+      logger.info(s"Read sequence files folder $path")
       val buffer: Array[SeqFileLocalPath] = SequenceFiles.findFiles(path)
+      logger.info(s"Find ${buffer.length} sequence files")
+      require(buffer.length > 0, s"Can't find any sequence files under $path")
       new LocalArrayDataSet[SeqFileLocalPath](buffer) {
         override def size(): Long = {
           totalSize

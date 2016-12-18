@@ -20,7 +20,8 @@ package com.intel.analytics.bigdl.models.alexnet
 import scopt.OptionParser
 
 object Options {
-  case class TrainLocalParams(
+
+  case class TrainParams(
     folder: String = "./",
     cache: Option[String] = None,
     modelSnapshot: Option[String] = None,
@@ -28,7 +29,7 @@ object Options {
     coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
   )
 
-  val trainLocalParser = new OptionParser[TrainLocalParams]("BigDL AlexNet Example") {
+  val trainParser = new OptionParser[TrainParams]("BigDL AlexNet Example") {
     head("Train AlexNet model on single node")
     opt[String]('f', "folder")
       .text("where you put your local hadoop sequence files")
@@ -45,5 +46,22 @@ object Options {
     opt[String]("cache")
       .text("where to cache the model")
       .action((x, c) => c.copy(cache = Some(x)))
+  }
+
+  case class TestParams(
+    folder: String = "./",
+    model: String = "",
+    coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
+  )
+
+  val testParser = new OptionParser[TestParams]("BigDL AlexNet Test Example") {
+    opt[String]('f', "folder")
+      .text("where you put your local hadoop sequence files")
+      .action((x, c) => c.copy(folder = x))
+
+    opt[String]("model")
+      .text("model snapshot location")
+      .action((x, c) => c.copy(model = x))
+      .required()
   }
 }
