@@ -144,7 +144,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       while (y < 24) {
         var x = 0
         while (x < 24) {
-          resultContent((y * 24 + x) * 3 + c) should be(originContent((37 + y * 32 + x) * 3 +
+          resultContent((y * 24 + x) * 3 + c) should be(originContent(582 + (y * 32 + x) * 3 +
             c))
           x += 1
         }
@@ -220,7 +220,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val content1 = image1.content
     var i = 0
     batch1.data.select(1, 1).select(1, 1).apply1(e => {
-      e should be(content1(i * 3))
+      e should be(content1(i * 3 + 2))
       i += 1
       e
     })
@@ -234,14 +234,14 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch1.data.select(1, 1).select(1, 3).apply1(e => {
-      e should be(content1(i * 3 + 2))
+      e should be(content1(i * 3))
       i += 1
       e
     })
     val content2 = image2.content
     i = 0
     batch1.data.select(1, 2).select(1, 1).apply1(e => {
-      e should be(content2(i * 3))
+      e should be(content2(i * 3 + 2))
       i += 1
       e
     })
@@ -255,7 +255,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch1.data.select(1, 2).select(1, 3).apply1(e => {
-      e should be(content2(i * 3 + 2))
+      e should be(content2(i * 3))
       i += 1
       e
     })
@@ -269,7 +269,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch.data.select(1, 1).select(1, 1).apply1(e => {
-      e should be(content3(i * 3))
+      e should be(content3(i * 3 + 2))
       i += 1
       e
     })
@@ -283,13 +283,13 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch.data.select(1, 1).select(1, 3).apply1(e => {
-      e should be(content3(i * 3 + 2))
+      e should be(content3(i * 3))
       i += 1
       e
     })
     i = 0
     batch.data.select(1, 2).select(1, 1).apply1(e => {
-      e should be(content1(i * 3))
+      e should be(content1(i * 3 + 2))
       i += 1
       e
     })
@@ -303,7 +303,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch.data.select(1, 2).select(1, 3).apply1(e => {
-      e should be(content1(i * 3 + 2))
+      e should be(content1(i * 3))
       i += 1
       e
     })
@@ -320,6 +320,8 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
+    val core = Engine.coreNumber()
+    Engine.setCoreNumber(1)
     val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3))
     val toTensor = new MTLabeledRGBImgToBatch[LabeledRGBImage](
       width = 32, height = 32, batchSize = 2, transformer = Identity[LabeledRGBImage]
@@ -334,7 +336,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val content1 = image1.content
     var i = 0
     batch.data.select(1, 1).select(1, 1).apply1(e => {
-      e should be(content1(i * 3))
+      e should be(content1(i * 3 + 2))
       i += 1
       e
     })
@@ -348,14 +350,14 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch.data.select(1, 1).select(1, 3).apply1(e => {
-      e should be(content1(i * 3 + 2))
+      e should be(content1(i * 3))
       i += 1
       e
     })
     val content2 = image2.content
     i = 0
     batch.data.select(1, 2).select(1, 1).apply1(e => {
-      e should be(content2(i * 3))
+      e should be(content2(i * 3 + 2))
       i += 1
       e
     })
@@ -369,7 +371,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch.data.select(1, 2).select(1, 3).apply1(e => {
-      e should be(content2(i * 3 + 2))
+      e should be(content2(i * 3))
       i += 1
       e
     })
@@ -383,7 +385,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch2.data.select(1, 1).select(1, 1).apply1(e => {
-      e should be(content3(i * 3))
+      e should be(content3(i * 3 + 2))
       i += 1
       e
     })
@@ -397,13 +399,13 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch2.data.select(1, 1).select(1, 3).apply1(e => {
-      e should be(content3(i * 3 + 2))
+      e should be(content3(i * 3))
       i += 1
       e
     })
     i = 0
     batch2.data.select(1, 2).select(1, 1).apply1(e => {
-      e should be(content1(i * 3))
+      e should be(content1(i * 3 + 2))
       i += 1
       e
     })
@@ -417,10 +419,11 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch2.data.select(1, 2).select(1, 3).apply1(e => {
-      e should be(content1(i * 3 + 2))
+      e should be(content1(i * 3))
       i += 1
       e
     })
+    Engine.setCoreNumber(core)
   }
 
   "RGBImage To SeqFile" should "be good" in {
