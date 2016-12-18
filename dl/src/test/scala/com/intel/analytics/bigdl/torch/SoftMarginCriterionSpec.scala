@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.sparkdl.torch
+package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.sparkdl.nn.SoftMarginCriterion
-import com.intel.analytics.sparkdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.SoftMarginCriterion
+import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
@@ -57,7 +57,7 @@ class SoftMarginCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers
       + scalaTime / 1e9 + " s")
   }
 
-  "A SoftMarginCriterion Module with setting sizeAverage to true" should "generate " +
+  "A SoftMarginCriterion Module with setting sizeAverage to false" should "generate " +
     "correct output and grad" in {
     val module = new SoftMarginCriterion[Double](false)
     Random.setSeed(100)

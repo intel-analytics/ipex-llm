@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.sparkdl.nn
+package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.sparkdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
@@ -28,15 +29,12 @@ import scala.reflect.ClassTag
  *
  *    loss(x, y) = sum_i (log(1 + exp(-y[i]*x[i]))) / x:nElement()
  *
- * @param _sizeAverage The normalization by the number of elements in the input
+ * @param sizeAverage The normalization by the number of elements in the input
  *                     can be disabled by setting
  */
-class SoftMarginCriterion[T: ClassTag](_sizeAverage: Boolean = true)
+class SoftMarginCriterion[T: ClassTag](var sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T])
   extends TensorCriterion[T] {
-  var gradInput = Tensor[T]()
-  var sizeAverage = _sizeAverage
-
   def isSizeAverage: Boolean = sizeAverage
 
   def setSizeAverage(sizeAverage: Boolean): this.type = {
