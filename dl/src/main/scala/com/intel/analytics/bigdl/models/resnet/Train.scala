@@ -54,6 +54,7 @@ object LocalTrain {
         case "imagenet" => ResNet(classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
         case _ => ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
         }
+        ResNet.shareGradInput(curModel)
         ResNet.modelInit(curModel)
         curModel
       }
@@ -65,7 +66,7 @@ object LocalTrain {
           "learningRate" -> 0.1,
           "weightDecay" -> 1e-4,
           "momentum" -> 0.9,
-          "dampening" -> 0.9,
+          "dampening" -> 0.0,
           "learningRateSchedule" -> SGD.EpochDecay(lrSchedule)
         )
       }
