@@ -365,15 +365,19 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
       Iterator.single(Map(curPartitionId -> localWeights))
     }).reduce(_ ++ _)
 
-    parameters = module.cloneModule().getParameters()._1
+    val parameterLength = module.getParameters()._1.nElement()
+    val taskSize = parameterLength / _partitionNum
+    require(taskSize != 0, "parameter length should not less than partition number")
+    val extraSize = parameterLength % _partitionNum
+
     (0 until _partitionNum).map(pid => {
-      val start = pid * AllReduceParameter.taskSize + math.min(pid, AllReduceParameter.extraSize)
-      val length = AllReduceParameter.taskSize + (if (pid < AllReduceParameter.extraSize) 1 else 0)
+      val start = pid * taskSize + math.min(pid, extraSize)
+      val length = taskSize + (if (pid < extraSize) 1 else 0)
       parameters.narrow(1, start + 1, length).copy(pidToWeightSplit(pid))
     })
 
     module
   }
 
-  var parameters: Tensor[T] = null
+  var parameters: Tensor[T] = module.cloneModule().getParameters()._1
 }
