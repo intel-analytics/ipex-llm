@@ -21,8 +21,10 @@ import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
+
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+
 
 private[nn] abstract class Container[A <: Activity : ClassTag,
     B <: Activity : ClassTag, T: ClassTag](

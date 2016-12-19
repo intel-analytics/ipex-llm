@@ -23,15 +23,18 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2}
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.models.resnet.ResNet
+import com.intel.analytics.bigdl.models.resnet.ResNet.ShortcutType
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.T
 import scopt.OptionParser
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect.ClassTag
-
+import spire.syntax.module
 /**
  * Performance test for the models, in this program, we rum multiple models, each model train
  * a small batch. This is better for some complex model(e.g googlenet) compare to single model
@@ -67,7 +70,7 @@ object MultiModelPerf {
       .text("Model name. It can be alexnet | alexnetowt | googlenet_v1 | googlenet_v2")
       .action((v, p) => p.copy(module = v))
       .validate(v =>
-        if (Set("alexnet", "alexnetowt", "googlenet_v1", "googlenet_v2").
+        if (Set("alexnet", "alexnetowt", "googlenet_v1", "googlenet_v2", "resnet").
           contains(v.toLowerCase())) {
           success
         } else {
@@ -107,7 +110,14 @@ object MultiModelPerf {
       case "googlenet_v1" => (GoogleNet_v1(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
         ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
       case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
-        ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
+        ClassNLLCriterion(), Tensor[T](param.batchSize).fill(tn.fromType(1)))
+      case "resnet" => {
+        val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
+        ResNet.shareGradInput(curModel)
+        ResNet.modelInit(curModel)
+        (curModel, Tensor[T](param.batchSize, 3, 224, 224).rand(),
+          CrossEntropyCriterion(), Tensor(param.batchSize).fill(tn.fromType(1)))
+      }
     })
 
     val grads = tests.map(_._1.getParameters()._2).toArray
@@ -187,11 +197,13 @@ object MultiModelPerf {
 }
 
 case class MultiModelPerfParams(
-  batchSize: Int = 128,
-  iteration: Int = 50,
+  batchSize: Int = 2,
+  iteration: Int = 20,
   cores: Int = 28,
   warmUp: Int = 10,
   dataType: String = "float",
+
   module: String = "alexnet",
   inputData: String = "random"
+
 )

@@ -15,6 +15,7 @@
  * limitations under the License.
  */
 
+
 package com.intel.analytics.bigdl.models
 
 import com.intel.analytics.bigdl.example.GoogleNet
@@ -24,7 +25,8 @@ import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
+
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
@@ -32,7 +34,9 @@ import scala.math._
 import scala.util.Random
 
 class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
+
   "GoogleNet+bn" should "generate correct output" in {
+    Engine.setCoreNumber(4)
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -216,6 +220,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "GoogleNet" should "generate correct output" in {
+    Engine.setCoreNumber(4)
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }

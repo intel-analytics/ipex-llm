@@ -30,8 +30,9 @@ import scala.reflect.ClassTag
 
 class CrossEntropyCriterion[T: ClassTag](
    val weights: Tensor[T] = null )(implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{
-  private val lsm = new LogSoftMax[T]()
-  private val nll = new ClassNLLCriterion[T](weights)
+
+  private val lsm = LogSoftMax[T]()
+  private val nll = ClassNLLCriterion[T](weights)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     input.squeeze()

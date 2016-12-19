@@ -23,7 +23,10 @@ import java.util
 import java.util.Collections
 import java.util.concurrent.{Executors, LinkedBlockingQueue}
 
+import com.intel.analytics.bigdl.example.ImageNetLocal.{ColorJitter, ColorNormalize, Lighting}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import scala.util.Random
 
 object ImageNetUtils {
 
@@ -59,7 +62,7 @@ object ImageNetUtils {
   def toTensorFloat(imgIter: Iterator[(Float, Array[Byte])], featureShape: Array[Int],
     labelShape: Array[Int], batchSize: Int, mean: (Float, Float, Float),
     std: (Float, Float, Float), input: Tensor[Float],
-    target: Tensor[Float]): Iterator[(Tensor[Float], Tensor[Float])] = {
+    target: Tensor[Float], valFlag: Boolean): Iterator[(Tensor[Float], Tensor[Float])] = {
     imgIter.grouped(batchSize).map(seq => {
       val size = seq.size
       require(input.nElement() >= size * featureShape.product)
@@ -72,7 +75,14 @@ object ImageNetUtils {
           i * featureShape.product)
         targets(i) = label
         i += 1
+        if (!valFlag) {
+          ColorJitter.randomOrder(input(i))
+          Lighting.lighting(input(i))
+          //HorizontalFlip.hflip(input(i))
+        }
+        ColorNormalize.colorNormalize(input(i))
       }
+      //ColorJitter.RandomOrder(input)
       (input, target)
     })
   }
@@ -94,7 +104,7 @@ object ImageNetUtils {
     val frameLength = cropWidth * cropHeight
     while (i < frameLength) {
       result(resultOffset + i) = ((rawData(offset + (startIndex + (i / cropWidth) * width +
-        (i % cropWidth)) * 3 + 2) & 0xff) / 255.0 - mean._1) / std._1
+        (i % cropWidth)) * 3 + 2) & 0xff) / 255.0  - mean._1) / std._1
       result(resultOffset + i + frameLength) = ((rawData(offset +
         (startIndex + (i / cropWidth) * width + (i % cropWidth)) * 3 + 1) & 0xff) / 255.0
         - mean._2) / std._2
@@ -103,6 +113,32 @@ object ImageNetUtils {
       i += 1
     }
   }
+
+/*  def randomSizedCrop(width: Int, height: Int)(cropWidth: Int, cropHeight: Int): (Int, Int) = {
+    val area = width * height
+    val r = scala.util.Random
+    var y1 = r.nextInt((height - cropHeight)/2)
+    var x1 = r.nextInt((width - cropWidth)/2)
+    breakable {
+      for (j <- 1 to 10) {
+        val targetArea = RNG.uniform(0.08, 1.0) * area
+        val aspectRatio = RNG.uniform(3 / 4, 4 / 3)
+        var w = Math.round(Math.sqrt(targetArea * aspectRatio))
+        var h = Math.round(Math.sqrt(targetArea / aspectRatio))
+        if (RNG.uniform(0, 1) < 0.5) {
+          val tmp = (w, h).swap
+          w = tmp._1
+          h = tmp._2
+        }
+        if (h <= height && w <= width) {
+          y1 = RNG.uniform(0, height - h).toInt
+          x1 = RNG.uniform(0, width - w).toInt
+          break
+        }
+      }
+    }
+    (x1, y1)
+  }*/
 
   def cropFloat(rawData: Array[Byte], cropWidth: Int, cropHeight: Int,
     mean: (Float, Float, Float), std: (Float, Float, Float), result: Array[Float],
@@ -113,22 +149,35 @@ object ImageNetUtils {
     val width = buffer.getInt
     val height = buffer.getInt
 
-    val startW = r.nextInt(width - cropWidth)
-    val startH = r.nextInt(height - cropHeight)
+    val startW = r.nextInt((width - cropWidth)/2)
+    val startH = r.nextInt((height - cropHeight)/2)
+
+    //val (startW, startH) = randomSizedCrop(width, height)(cropWidth, cropHeight)
+
     val offset = 2 * 4
     val startIndex = startW + startH * width
     var i = 0
     val frameLength = cropWidth * cropHeight
     while (i < frameLength) {
-      result(resultOffset + i) = ((rawData(offset + (startIndex + (i / cropWidth) * width +
-        (i % cropWidth)) * 3 + 2) & 0xff) / 255.0f - mean._1) / std._1
-      result(resultOffset + i + frameLength) = ((rawData(offset + (startIndex +
-        (i / cropWidth) * width + (i % cropWidth)) * 3 + 1) & 0xff) / 255.0f - mean._2) / std._2
-      result(resultOffset + i + frameLength * 2) = ((rawData(offset +
+      result(resultOffset + i) = (rawData(offset + (startIndex + (i / cropWidth) * width +
+        (i % cropWidth)) * 3 + 2 )  & 0xff ) / 255.0f
+      result(resultOffset + i + frameLength) = (rawData(offset + (startIndex +
+        (i / cropWidth) * width + (i % cropWidth)) * 3 + 1)  & 0xff) / 255.0f
+      result(resultOffset + i + frameLength * 2) = (rawData(offset +
         (startIndex + (i / cropWidth) * width + (i % cropWidth)) * 3) & 0xff) / 255.0f
-        - mean._3) / std._3
+
       i += 1
     }
+    /*while (i < frameLength) {
+      result(resultOffset + i) = ((rawData(offset + (startIndex + (i / cropWidth) * width +
+        (i % cropWidth)) * 3 + 2 )  & 0xff ) / 255.0f + (if (Split.getValFlag) rgb(Array(1)) else 0f) - mean._1) / std._1
+      result(resultOffset + i + frameLength) = ((rawData(offset + (startIndex +
+        (i / cropWidth) * width + (i % cropWidth)) * 3 + 1)  & 0xff) / 255.0f + (if (Split.getValFlag) rgb(Array(2)) else 0f) - mean._2) / std._2
+      result(resultOffset + i + frameLength * 2) = ((rawData(offset +
+        (startIndex + (i / cropWidth) * width + (i % cropWidth)) * 3) & 0xff) / 255.0f + (if (Split.getValFlag) rgb(Array(3)) else 0f)
+        - mean._3) / std._3
+      i += 1
+    }*/
   }
 
   def crop(rawData: Array[Byte], cropWidth: Int, cropHeight: Int,

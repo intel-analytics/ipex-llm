@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn.abstractnn
 
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
@@ -50,7 +51,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * The cached gradient of activities. So we don't compute it again when need it
    */
   var gradInput: A = Activity[A, T]()
-
 
   /**
    * Clear cached activities to save storage space or network bandwidth. Note that we use
@@ -218,6 +218,25 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     train = true
     this
   }
+
+//  /**
+//   * Find a module by given a parameter offset
+//   *
+//   * @param paramOffset parameter offset in the (weight, grad) vector returned by the
+//   *                    getParamter function
+//   * @param indexes     ignore it
+//   * @return module ref, offset(ignore), indexes from the current module
+//   */
+//  def findModel(
+//    paramOffset: Int,
+//    indexes: Array[Int] = Array()):
+//  (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
+//
+//  def mapModules(f: Module[_ <: Activities, _ <: Activities, T] => Unit): Unit = {}
+//
+//  def findModules(name: String): ArrayBuffer[Module[_ <:Activities, _ <:Activities, T]]
+//    = {new ArrayBuffer[Module[_ <:Activities, _ <:Activities, T]]()}
+//
 
   def evaluate(): this.type = {
     train = false
