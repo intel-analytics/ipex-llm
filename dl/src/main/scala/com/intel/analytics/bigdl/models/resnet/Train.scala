@@ -24,75 +24,135 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import Options._
-import com.intel.analytics.bigdl.models.resnet.Options.{TrainSparkParams, TrainSparkParams => _, trainSparkParser => _, _}
+import com.intel.analytics.bigdl.models.resnet.Options.{TrainSparkParams => _, trainSparkParser => _, _}
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
-object Train {
+object LocalTrain {
 
-    def main(args: Array[String]): Unit = {
-      trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
+  def main(args: Array[String]): Unit = {
+    trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
 
-        val batchSize = 64
-        val (imageSize, lrSchedule, epochEnd, dataSet) = param.dataset match {
-          case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
-          case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
+      val batchSize = 128
+      val (imageSize, lrSchedule, maxEpoch, dataSet) = param.dataset match {
+        //case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
+        case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
+      }
+
+      val trainData = Paths.get(param.folder, "train")
+      val trainDataSet = dataSet.localTrainDataSet(trainData, batchSize, imageSize)
+      val validationData = Paths.get(param.folder, "val")
+      val validateDataSet = dataSet.localValDataSet(validationData, batchSize, imageSize)
+
+
+      val model = if (param.modelSnapshot.isDefined) {
+        Module.load[Float](param.modelSnapshot.get)
+      } else {
+        val curModel = param.dataset match {
+        case "imagenet" => ResNet(classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
+        case _ => ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
         }
+        ResNet.modelInit(curModel)
+        curModel
+      }
 
-        val conf = Engine.sparkConf().setAppName("Train ResNet-20 on Cifar10")
-        val sc = new SparkContext(conf)
-
-        //val trainDataSet = DataSet.distributedDataSet(train, true, sc, param.nodesNumber, batchSize)
-
-        val trainData = Paths.get(param.folder, "train")
-        val trainDataSet = dataSet.distributedTrainDataSet(trainData, true, sc, param.nodesNumber, batchSize)
-        val validationData = Paths.get(param.folder, "val")
-        val validateDataSet = dataSet.distributedValDataSet(validationData, false, sc, param.nodesNumber, batchSize)
-
-        val model = if (param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
-        } else {
-          val curModel = param.dataset match {
-            case "imagenet" => ResNet(classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
-            case _ => ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
-          }
-          ResNet.modelInit(curModel)
-          curModel
-        }
-
-        if (param.optnet) {
-          ResNet.shareGradInput(model)
-        }
-
-        val state = if (param.stateSnapshot.isDefined) {
-          T.load(param.stateSnapshot.get)
-        } else {
-          T(
-            "learningRate" -> 0.1,
-            "weightDecay" -> 1e-4,
-            "momentum" -> 0.9,
-            "dampening" -> 0.9,
-            "learningRateSchedule" -> SGD.EpochDecay(lrSchedule)
-          )
-        }
-
-        Engine.setCoreNumber(param.coreNumber)
-        val optimizer = new DistriOptimizer[Float](
-          model = model,
-          dataset = trainDataSet,
-          criterion = new CrossEntropyCriterion[Float]()
+      val state = if (param.stateSnapshot.isDefined) {
+        T.load(param.stateSnapshot.get)
+      } else {
+        T(
+          "learningRate" -> 0.1,
+          "weightDecay" -> 1e-4,
+          "momentum" -> 0.9,
+          "dampening" -> 0.9,
+          "learningRateSchedule" -> SGD.EpochDecay(lrSchedule)
         )
-        if (param.cache.isDefined) {
-          optimizer.setCache(param.cache.get, Trigger.severalIteration(3910))
-        }
-        optimizer
-          .setState(state)
-          .setValidation(Trigger.severalIteration(391),
-            validateDataSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
-          .setEndWhen(Trigger.maxEpoch(epochEnd))
-          .optimize()
-      })
-    }
+      }
 
+      Engine.setCoreNumber(param.coreNumber)
+      val optimizer = new LocalOptimizer[Float](
+        model = model,
+        dataset = trainDataSet,
+        criterion = new CrossEntropyCriterion[Float]()
+      )
+      if (param.cache.isDefined) {
+        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      }
+
+      optimizer
+        .setState(state)
+        .setValidation(Trigger.everyEpoch,
+          validateDataSet, Array(new Top1Accuracy[Float]))
+        .setEndWhen(Trigger.maxEpoch(maxEpoch))
+        .optimize()
+
+    })
+  }
+}
+
+object SparkTrain {
+  Logger.getLogger("org").setLevel(Level.ERROR)
+  Logger.getLogger("akka").setLevel(Level.ERROR)
+  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
+  def main(args: Array[String]): Unit = {
+    trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
+      val batchSize = 64
+      val (imageSize, lrSchedule, maxEpoch, dataSet) = param.dataset match {
+        //case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
+        case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
+      }
+
+      val conf = Engine.sparkConf()
+        .setAppName("Train ResNet on Cifar10")
+        .set("spark.akka.frameSize", 64.toString)
+      val sc = new SparkContext(conf)
+
+      val trainData = Paths.get(param.folder, "train")
+      val trainDataSet = dataSet.distributedTrainDataSet(trainData, sc, param.nodesNumber, imageSize, batchSize)
+      val validationData = Paths.get(param.folder, "val")
+      val validateDataSet = dataSet.distributedValDataSet(validationData, sc, param.nodesNumber, imageSize, batchSize)
+
+      val model = if (param.modelSnapshot.isDefined) {
+        Module.load[Float](param.modelSnapshot.get)
+      } else {
+        val curModel = param.dataset match {
+          case "imagenet" => ResNet(classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
+          case _ => ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
+        }
+        ResNet.modelInit(curModel)
+        curModel
+      }
+
+      val state = if (param.stateSnapshot.isDefined) {
+        T.load(param.stateSnapshot.get)
+      } else {
+        T(
+          "learningRate" -> 0.1,
+          "weightDecay" -> 1e-4,
+          "momentum" -> 0.9,
+          "dampening" -> 0.9,
+          "learningRateSchedule" -> SGD.EpochDecay(lrSchedule)
+        )
+      }
+
+      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
+      val optimizer = new DistriOptimizer[Float](
+        model = model,
+        dataset = trainDataSet,
+        criterion = new CrossEntropyCriterion[Float]()
+      )
+
+      if (param.cache.isDefined) {
+        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      }
+      optimizer
+        .setValidation(Trigger.everyEpoch, validateDataSet, Array(new Top1Accuracy[Float]))
+        .setState(state)
+        .setEndWhen(Trigger.maxEpoch(maxEpoch))
+        .optimize()
+    })
+  }
 }
