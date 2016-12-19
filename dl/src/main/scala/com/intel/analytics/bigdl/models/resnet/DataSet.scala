@@ -33,6 +33,8 @@ trait ResNetDataSet {
     : DistributedDataSet[Batch[Float]]
 }
 
+
+
 /*object ImagenetDataSet extends ResNetDataSet {
 
   override def localTrainDataSet(path: Path, batchSize: Int, size: Int)
@@ -93,11 +95,16 @@ trait ResNetDataSet {
 
 object Cifar10DataSet extends ResNetDataSet {
 
+  val trainMean = (0.4913996898739353, 0.4821584196221302, 0.44653092422369434)
+  val trainStd = (0.24703223517429462, 0.2434851308749409, 0.26158784442034005)
+  val testMean = (0.4942142913295297, 0.4851314002725445, 0.45040910258647154)
+  val testStd = (0.2466525177466614, 0.2428922662655766, 0.26159238066790275)
+
   override def localTrainDataSet(path: Path, batchSize: Int, size: Int)
   : LocalDataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, size)
-      .transform(RGBImgNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7))
+      .transform(RGBImgNormalizer(trainMean, trainStd))
       .transform(HFlip(0.5))
       .transform(RGBImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))
       .transform(RGBImgToBatch(batchSize))
@@ -107,7 +114,7 @@ object Cifar10DataSet extends ResNetDataSet {
   : LocalDataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, size)
-      .transform(RGBImgNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7))
+      .transform(RGBImgNormalizer(testMean, testStd))
       .transform(RGBImgToBatch(batchSize))
   }
 
@@ -115,7 +122,7 @@ object Cifar10DataSet extends ResNetDataSet {
   : DistributedDataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
-      .transform(RGBImgNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7))
+      .transform(RGBImgNormalizer(trainMean, trainStd))
       .transform(RGBImgToBatch(batchSize))
   }
 
@@ -123,7 +130,7 @@ object Cifar10DataSet extends ResNetDataSet {
   : DistributedDataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
-      .transform(RGBImgNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7))
+      .transform(RGBImgNormalizer(testMean, testStd))
       .transform(HFlip(0.5))
       .transform(RGBImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))
       .transform(RGBImgToBatch(batchSize))
