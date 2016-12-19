@@ -161,12 +161,12 @@ object ResNet {
     model
   }
 
-  sealed abstract class DatasetType(typeId: Int)
+  sealed abstract class DatasetType(typeId: Int) extends Serializable
   object DatasetType {
     case object CIFAR10 extends DatasetType(0)
     case object ImageNet extends DatasetType(1)
   }
-  sealed abstract class ShortcutType(typeId: Int)
+  sealed abstract class ShortcutType(typeId: Int) extends Serializable
 
   object ShortcutType{
     case object A extends ShortcutType(0)
