@@ -2244,4 +2244,40 @@ object DenseTensor {
     val newTensor = Tensor[T]()
     newTensor.range(xmin, xmax, step)
   }
+
+  private[tensor] def ones[@specialized(Float, Double) T: ClassTag](sizes: Array[Int])(
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val length = sizes.product
+    Tensor(Storage(new Array[T](length)), 1, sizes).fill(ev.fromType[Int](1))
+  }
+
+  private[tensor] def gaussian1D[@specialized(Float, Double) T: ClassTag](
+      size: Int = 3,
+      sigma: Double = 0.25,
+      amplitude: Int = 1,
+      normalize: Boolean = false,
+      mean: Double = 0.5,
+      tensor: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val gauss = if (null != tensor) {
+      require(tensor.dim() == 1, "expecting 1D tensor")
+      require(tensor.nElement() > 0, "expecting non-empty tensor")
+      tensor
+    } else {
+      Tensor[T](size)
+    }
+    val center = mean * gauss.nElement() + 0.5
+
+    // generate kernel
+    var i = 1
+    while (i <= gauss.nElement()) {
+      gauss.setValue(i, ev.fromType[Double](amplitude * math.exp(-(math.pow((i - center)
+        / (sigma * size), 2) / 2)))
+      )
+      i += 1
+    }
+    if (normalize) {
+      gauss.div(gauss.sum())
+    }
+    gauss
+  }
 }
