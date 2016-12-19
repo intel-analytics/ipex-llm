@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import scopt.OptionParser
@@ -33,6 +34,11 @@ import scopt.OptionParser
 import scala.reflect.ClassTag
 
 object DistriOptimizerPerf {
+  Logger.getLogger("org").setLevel(Level.ERROR)
+  Logger.getLogger("akka").setLevel(Level.ERROR)
+  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.DEBUG)
+
   val parser = new OptionParser[DistriOptimizerPerfParam]("BigDL Distribute Performance Test") {
     head("Performance Test of Distribute Optimizer")
     opt[Int]('b', "batchSize")
@@ -110,6 +116,7 @@ object DistriOptimizerPerf {
     val criterion = ClassNLLCriterion[Float]()
     val labels = Tensor(param.batchSize).fill(1)
 
+    Engine.setCluster(param.nodeNumber, param.corePerNode)
     val conf = Engine.sparkConf().setAppName("DistriOptimizer Performance Test")
       .set("spark.task.cpus", param.corePerNode.toString)
     val sc = new SparkContext(conf)
