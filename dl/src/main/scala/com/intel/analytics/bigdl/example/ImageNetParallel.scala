@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1_NoAuxClassifier, 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.alexnet.AlexNet
+import com.intel.analytics.bigdl.models.googlenet.{GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.optim.SGD.{EpochSchedule, EpochStep, Poly, Regime}
 import com.intel.analytics.bigdl.parameters.{AllReduceParameterManager, ImprovedAllReduceParameterManager, OneReduceParameterManager}
@@ -101,8 +102,8 @@ object ImageNetParallel {
     val model = netType match {
       case "alexnet" => AlexNet(classNum)
       case "googlenet" => GoogleNet.getModelCaffe[Float](classNum)
-      case "googlenet_v2" => GoogleNet_v2_NoAuxClassifier(classNum)
-      case "googlenet_v1" => GoogleNet_v1_NoAuxClassifier(classNum)
+      case "googlenet_v2" => GoogleNet_v2(classNum)
+      case "googlenet_v1" => GoogleNet_v1(classNum)
     }
     println(model)
 
