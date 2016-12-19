@@ -67,6 +67,7 @@ object LocalTrain {
           "weightDecay" -> 1e-4,
           "momentum" -> 0.9,
           "dampening" -> 0.0,
+          "nesterov" -> true,
           "learningRateSchedule" -> SGD.EpochDecay(lrSchedule)
         )
       }
@@ -134,7 +135,8 @@ object SparkTrain {
           "learningRate" -> 0.1,
           "weightDecay" -> 1e-4,
           "momentum" -> 0.9,
-          "dampening" -> 0.9,
+          "dampening" -> 0.0,
+          "nesterov" -> true,
           "learningRateSchedule" -> SGD.EpochDecay(lrSchedule)
         )
       }
