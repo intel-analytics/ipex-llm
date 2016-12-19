@@ -106,10 +106,12 @@ object SparkTrain {
         //case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
         case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
       }
-
+      
+      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
       val conf = Engine.sparkConf()
         .setAppName("Train ResNet on Cifar10")
         .set("spark.akka.frameSize", 64.toString)
+
       val sc = new SparkContext(conf)
 
       val trainData = Paths.get(param.folder, "train")
@@ -141,7 +143,7 @@ object SparkTrain {
         )
       }
 
-      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
+
       val optimizer = new DistriOptimizer[Float](
         model = model,
         dataset = trainDataSet,
