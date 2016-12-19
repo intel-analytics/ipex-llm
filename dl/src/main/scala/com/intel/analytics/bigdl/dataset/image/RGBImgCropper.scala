@@ -37,8 +37,8 @@ class RGBImgCropper(cropWidth: Int, cropHeight: Int)
     prev.map(img => {
       val width = img.width()
       val height = img.height()
-      val startW = RNG.uniform(0, width - cropWidth).toInt
-      val startH = RNG.uniform(0, height - cropHeight).toInt
+      val startH = math.ceil(RNG.uniform(1e-2, height - cropHeight)).toInt
+      val startW = math.ceil(RNG.uniform(1e-2, width - cropWidth)).toInt
       val startIndex = (startW + startH * width) * 3
       val frameLength = cropWidth * cropHeight
       val source = img.content

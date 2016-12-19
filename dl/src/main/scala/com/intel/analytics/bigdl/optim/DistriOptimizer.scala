@@ -32,6 +32,8 @@ import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 object DistriOptimizer {
+  import Optimizer._
+
   private var lossArray: Array[Double] = null
   private var recordsArray: Array[Int] = null
   private var tasks: ArrayBuffer[Future[_]] = new ArrayBuffer()
@@ -58,11 +60,6 @@ object DistriOptimizer {
     buffer: Tensor[T]
   )
 
-  protected def header(epoch: Int, count: Int, total: Long, iter: Int, wallClockTime: Long)
-  : String = {
-    s"[Epoch $epoch $count/$total][Iteration $iter][Wall Clock ${wallClockTime / 1e9}s]"
-  }
-
   private[optim] def optimize[T: ClassTag](
     dataset: DistributedDataSet[Batch[T]],
     coresPerNode: Int,
@@ -76,9 +73,10 @@ object DistriOptimizer {
     validationDataSet: Option[DataSource[RDD[Batch[T]]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
     cacheTrigger: Option[Trigger],
-    cachePath: Option[String]
+    cachePath: Option[String],
+    isOverWrite: Boolean
   )(implicit ev: TensorNumeric[T]) = {
-    val sc = dataset.data().sparkContext
+    val sc = dataset.data(looped = true).sparkContext
     val partitionNum = dataset.originRDD().partitions.length
     var wallClockTime = 0L
     val driverState = T("epoch" -> state.get[Int]("epoch").getOrElse(1),
@@ -112,7 +110,7 @@ object DistriOptimizer {
 
       val driverMetrics = metrics
       val start = System.nanoTime()
-      val resultRDD = dataset.data().zipPartitions(
+      val resultRDD = dataset.data(looped = true).zipPartitions(
         models,
         pm.sync(models.mapPartitions(iter => Iterator.single(iter.next().buffer))), true)(
         (data, modelIter, weights) => {
@@ -233,7 +231,7 @@ object DistriOptimizer {
           lossSum.value / stackCount.value
         }. " +
         s"Calculate time is ${(reduceBefore - start) / 1e9}seconds. ")
-      logger.info("\n" + metrics.summary())
+      logger.debug("\n" + metrics.summary())
       driverState("neval") = driverState[Int]("neval") + 1
       if (accumulateCount >= dataset.size()) {
         val epochEnd = System.nanoTime()
@@ -258,6 +256,7 @@ object DistriOptimizer {
       checkpoint(
         cacheTrigger,
         cachePath,
+        isOverWrite,
         wallClockTime,
         models,
         pm,
@@ -270,6 +269,7 @@ object DistriOptimizer {
   private def checkpoint[T](
     cacheTrigger: Option[Trigger],
     cachePath: Option[String],
+    isOverWrite: Boolean,
     wallClockTime: Long,
     models: RDD[Cache[T]],
     pm: ParameterManager[T],
@@ -279,8 +279,8 @@ object DistriOptimizer {
       val trigger = cacheTrigger.get
       if (trigger(state) && cachePath.isDefined) {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
-        getModel(models, pm).save(cachePath.get + ".model." + state[Int]("neval"), true)
-        pm.getState().save(cachePath.get + ".state." + state[Int]("neval"), true)
+        saveModel(getModel(models, pm), cachePath, isOverWrite, s".${state[Int]("neval")}")
+        saveState(pm.getState(), cachePath, isOverWrite, s".${state[Int]("neval")}")
       }
     }
   }
@@ -352,7 +352,7 @@ object DistriOptimizer {
       return
     }
     val vMethods = validationMethods.get
-    val validateRDD = validationDataSet.get.data()
+    val validateRDD = validationDataSet.get.data(looped = false)
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
@@ -434,11 +434,6 @@ class DistriOptimizer[T: ClassTag](
   private var models: RDD[DistriOptimizer.Cache[T]] = null
 
   override def optimize(): Module[T] = {
-    dataset.originRDD()
-      .sparkContext
-      .getConf
-      .set("spark.task.cpus", Engine.coreNumber().toString)
-
     optimMethod.clearHistory(state)
 
     if (pm == null) {
@@ -469,7 +464,8 @@ class DistriOptimizer[T: ClassTag](
       validationDataSet,
       validationMethods,
       cacheTrigger,
-      cachePath
+      cachePath,
+      isOverWrite
     )
 
     DistriOptimizer.getModel(models, pm)

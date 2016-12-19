@@ -17,10 +17,11 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.models.imagenet.AlexNet
+import java.nio.file.{Files, Paths}
+
 import com.intel.analytics.bigdl.nn.Sequential
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.models.alexnet.AlexNet
 import com.intel.analytics.bigdl.utils.{File, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -102,10 +103,12 @@ class OptimizerSpec extends FlatSpec with Matchers {
 
   it should "save model to given path" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
     val model = AlexNet(1000)
     val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        saveModel(model)
+        Optimizer.saveModel(model, this.cachePath, this.isOverWrite)
         model
       }
     }
@@ -113,16 +116,18 @@ class OptimizerSpec extends FlatSpec with Matchers {
     dummyOptimizer.optimize()
 
     model.clearState()
-    val loadedModel = File.load[Module[Double]] (filePath + ".model")
+    val loadedModel = File.load[Module[Double]] (filePath + "/model")
     loadedModel should be(model)
   }
 
   it should "save model and state to given path with postfix" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
     val model = AlexNet(1000)
     val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        saveModel(model, ".test")
+        Optimizer.saveModel(model, this.cachePath, this.isOverWrite, ".test")
         model
       }
     }
@@ -131,39 +136,43 @@ class OptimizerSpec extends FlatSpec with Matchers {
 
     model.clearState()
     val loadedModel =
-      File.load[Module[Double]](filePath + ".model.test")
+      File.load[Module[Double]](filePath + "/model.test")
     loadedModel should be(model)
   }
 
   it should "save state to given path" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "state").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
     val state = T("test" -> 123)
     val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        saveState(state)
+        Optimizer.saveState(state, this.cachePath, this.isOverWrite)
         model
       }
     }.setState(state)
     dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 
-    val loadedState = File.load[Table](filePath + ".state")
+    val loadedState = File.load[Table](filePath + "/state")
     loadedState should be(state)
   }
 
   it should "save state to given path with post fix" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "state").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
     val state = T("test" -> 123)
     val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        saveState(state, ".post")
+        Optimizer.saveState(state, this.cachePath, this.isOverWrite, ".post")
         model
       }
     }.setState(state)
     dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 
-    val loadedState = File.load[Table](filePath + ".state.post")
+    val loadedState = File.load[Table](filePath + "/state.post")
     loadedState should be(state)
   }
 }

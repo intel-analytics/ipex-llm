@@ -24,6 +24,5 @@ abstract class Validator[T, DS](
   model: Module[T]
 ) {
   def test(dataSet : DataSource[DS],
-    vMethods : Array[ValidationMethod[T]]) : Array[ValidationResult]
+    vMethods : Array[ValidationMethod[T]]) : Array[(ValidationResult, ValidationMethod[T])]
 }
-

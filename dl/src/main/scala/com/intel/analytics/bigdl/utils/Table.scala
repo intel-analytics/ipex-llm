@@ -214,11 +214,11 @@ class Table private[bigdl](
         case table: Table =>
           val newTable = table.flatten(resultIndex)
           newState ++= newTable.getState()
-          resultIndex = newState.size
+          resultIndex += newState.size
         case other =>
           newState.put(resultIndex, other)
+          resultIndex += 1
       }
-      resultIndex += 1
       i += 1
     }
     new Table(newState)

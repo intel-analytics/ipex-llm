@@ -14,29 +14,52 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.models.alexnet
+package com.intel.analytics.bigdl.models.googlenet
 
 import java.nio.file.Path
 
-import com.intel.analytics.bigdl.dataset.{Batch, SeqFileLocalPath, LocalDataSet}
+import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
+import org.apache.spark.SparkContext
 
-object DataSet {
-  def localDataSet(path : Path, imageSize : Int, batchSize : Int, parallel: Int, looped : Boolean)
+object ImageNet2012 {
+  def localFolder(path : Path, imageSize : Int, batchSize : Int, parallel: Int)
   : LocalDataSet[Batch[Float]] = {
-    val ds = SequenceFiles.localFiles(path, 1281167, looped)
+    val ds = DataSet.SequenceFolder.paths(path, 1281167)
     val fileTransformer = LocalSeqFileToBytes()
     val arrayToImage = SampleToRGBImg()
     val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
     val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
     val flipper = HFlip(0.5)
-    val multiThreadToTensor = MTLabeledRGBImgToTensor[SeqFileLocalPath](
+    val multiThreadToTensor = MTLabeledRGBImgToBatch[SeqFileLocalPath](
       width = imageSize,
       height = imageSize,
-      threadNum = parallel,
       batchSize = batchSize,
       transformer = fileTransformer -> arrayToImage -> cropper -> flipper -> normalizer
+    )
+    ds -> multiThreadToTensor
+  }
+
+  def hdfs(
+    path : String,
+    sc : SparkContext,
+    imageSize : Int,
+    batchSize : Int,
+    nodeNumber: Int,
+    coresPerNode : Int)
+  : DistributedDataSet[Batch[Float]] = {
+    require(batchSize % nodeNumber == 0, "batch size can't be divided by node number")
+    val ds = DataSet.SequenceFolder.files(path, sc, 1000, nodeNumber)
+    val arrayToImage = SampleToRGBImg()
+    val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
+    val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
+    val flipper = HFlip(0.5)
+    val multiThreadToTensor = MTLabeledRGBImgToBatch[Sample](
+      width = imageSize,
+      height = imageSize,
+      batchSize = batchSize / nodeNumber,
+      transformer = arrayToImage -> cropper -> flipper -> normalizer
     )
     ds -> multiThreadToTensor
   }

@@ -18,7 +18,9 @@
 package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.models.imagenet._
-import com.intel.analytics.bigdl.models.mnist.LeNet5
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
+import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -96,7 +98,6 @@ object Perf {
       case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "vgg16" => (Vgg_16(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
-      case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
     }
     param.inputData match {
       case "constant" => input.fill(tn.fromType(0.01))

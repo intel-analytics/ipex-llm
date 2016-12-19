@@ -17,19 +17,22 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.LocalDataSet
 import com.intel.analytics.bigdl.optim.DistriOptimizer._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{MklDnn, MklBlas, Engine}
 import org.apache.log4j.Logger
 
-object LocalValidator {
+import scala.reflect.ClassTag
+
+object LocalPredictor {
   val logger = Logger.getLogger(getClass)
 }
 
-class LocalValidator[T](model: Module[T])
-  extends Validator[T, Iterator[Batch[T]]](model) {
+class LocalPredictor[T : ClassTag](model: Module[T])(implicit ev: TensorNumeric[T])
+  extends Predictor[T, Iterator[Tensor[T]], Iterator[Tensor[T]]]{
 
   private val coreNumber = Engine.coreNumber()
 
@@ -40,45 +43,48 @@ class LocalValidator[T](model: Module[T])
 
   private val workingModels = (1 to subModelNumber).map(_ => model.cloneModule().evaluate()).toArray
 
-  override def test(
-    dataSet: DataSource[Iterator[Batch[T]]],
-    vMethods: Array[ValidationMethod[T]]
-  ): Array[(ValidationResult, ValidationMethod[T])] = {
+
+  override def predict(dataSet: dataset.DataSet[Iterator[Tensor[T]]])
+  : dataset.DataSet[Iterator[Tensor[T]]] = {
     val dataIter = dataSet.data(looped = false)
     var count = 0
-    dataIter.map(batch => {
-      require(batch.data.size(1) == batch.labels.size(1))
-      val stackSize = batch.data.size(1) / subModelNumber
-      val extraSize = batch.data.size(1) % subModelNumber
+    val iter = dataIter.map(batch => {
+      val stackSize = batch.size(1) / subModelNumber
+      val extraSize = batch.size(1) % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
-      val start = System.nanoTime()
       val result = Engine.default.invokeAndWait(
         (0 until parallelism).map(b =>
           () => {
             val offset = b * stackSize + math.min(b, extraSize)
             val length = stackSize + (if (b < extraSize) 1 else 0)
-            val input = batch.data.narrow(1, offset + 1, length)
-            val target = batch.labels.narrow(1, offset + 1, length)
-            val output = workingModels(b).forward(input)
-            vMethods.map(validation => {
-              validation(output.asInstanceOf[Tensor[T]], target)
-            })
+            val input = batch.narrow(1, offset + 1, length)
+            workingModels(b).forward(input).toTensor[T]
           }
         )
-      ).reduce((left, right) => {
-        left.zip(right).map { case (l, r) =>
-          l + r
-        }
-      })
-      count += batch.data.size(1)
-      logger.info(s"[Validation] $count/${dataSet.size()} Throughput is ${
-        batch.data.size(1) / ((System.nanoTime() - start) / 1e9)
-      } record / sec")
-      result
-    }).reduce((left, right) => {
-      left.zip(right).map { case (l, r) =>
-        l + r
-      }
-    }).zip(vMethods)
+      )
+
+      val resultSize = result.head.size()
+      resultSize(0) = batch.size(1)
+      val resultTensor = Tensor[T](resultSize)
+      Engine.default.invokeAndWait(
+        (0 until parallelism).map(b =>
+          () => {
+            val offset = b * stackSize + math.min(b, extraSize)
+            val length = stackSize + (if (b < extraSize) 1 else 0)
+            resultTensor.narrow(1, offset + 1, length).copy(result(b))
+          }
+        )
+      )
+
+      logger.info(s"[Predict] $count/${dataSet.size()}")
+      count += batch.size(1)
+      resultTensor
+    })
+
+    new LocalDataSet[Tensor[T]] {
+      override def data(looped: Boolean): Iterator[Tensor[T]] = iter
+      override def size(): Long = dataSet.size()
+      override def shuffle(): Unit = dataSet.shuffle()
+    }
   }
 }

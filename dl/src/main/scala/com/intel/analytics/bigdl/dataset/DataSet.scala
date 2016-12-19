@@ -22,11 +22,13 @@ import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.intel.analytics.bigdl.dataset.image.RGBImage
+import com.intel.analytics.bigdl.dataset.image.LocalImageFiles._
+import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.utils.RandomGenerator
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.{SequenceFile, Text}
 import org.apache.hadoop.io.SequenceFile.Reader
+import org.apache.log4j.Logger
 import org.apache.spark.{Partition, SparkContext}
 import org.apache.spark.rdd.RDD
 
@@ -41,9 +43,10 @@ trait DataSet[DataSequence] {
   /**
    * Get a sequence of data
    *
+   * @param looped if the data is looped
    * @return
    */
-  def data(): DataSequence
+  def data(looped: Boolean): DataSequence
 
   /**
    * Change the sequence of data flow from the data set
@@ -64,6 +67,17 @@ trait DataSet[DataSequence] {
  * @tparam T
  */
 trait LocalDataSet[T] extends DataSet[Iterator[T]] {
+  def transform[C](transformer: Transformer[T, C]): LocalDataSet[C] = {
+    val preDataSource = this
+    new LocalDataSet[C] {
+      override def shuffle(): Unit = preDataSource.shuffle
+
+      override def size(): Long = preDataSource.size()
+
+      override def data(looped: Boolean): Iterator[C] = transformer(preDataSource.data(looped))
+    }
+  }
+
   // scalastyle:off methodName
   // scalastyle:off noSpaceBeforeLeftBracket
   /**
@@ -74,14 +88,7 @@ trait LocalDataSet[T] extends DataSet[Iterator[T]] {
    * @return
    */
   def -> [C](transformer: Transformer[T, C]): LocalDataSet[C] = {
-    val preDataSource = this
-    new LocalDataSet[C] {
-      override def shuffle(): Unit = preDataSource.shuffle
-
-      override def size(): Long = preDataSource.size()
-
-      override def data(): Iterator[C] = transformer(preDataSource.data())
-    }
+    this.transform(transformer)
   }
 
   // scalastyle:on noSpaceBeforeLeftBracket
@@ -91,15 +98,14 @@ trait LocalDataSet[T] extends DataSet[Iterator[T]] {
 /**
  * Represent a set of data cached in an array
  *
- * @param looped
  * @tparam T
  */
-class LocalArrayDataSet[T](buffer: Array[T], looped: Boolean = true) extends LocalDataSet[T] {
+class LocalArrayDataSet[T](buffer: Array[T]) extends LocalDataSet[T] {
   override def shuffle(): Unit = {
     RandomGenerator.shuffle(buffer)
   }
 
-  override def data(): Iterator[T] = {
+  override def data(looped: Boolean): Iterator[T] = {
     new Iterator[T] {
       private val index = new AtomicInteger()
 
@@ -131,9 +137,8 @@ class LocalArrayDataSet[T](buffer: Array[T], looped: Boolean = true) extends Loc
  * @tparam T
  */
 trait DistributedDataSet[T] extends DataSet[RDD[T]] {
-  // scalastyle:off methodName
-  // scalastyle:off noSpaceBeforeLeftBracket
-  def -> [C: ClassTag](transformer: Transformer[T, C]): DistributedDataSet[C] = {
+
+  def transform[C: ClassTag](transformer: Transformer[T, C]): DistributedDataSet[C] = {
     val preDataSource = this
 
     val transformFunc: Iterator[T] => Iterator[C] = (d => {
@@ -145,10 +150,17 @@ trait DistributedDataSet[T] extends DataSet[RDD[T]] {
 
       override def shuffle(): Unit = preDataSource.shuffle()
 
-      override def data(): RDD[C] = preDataSource.data().mapPartitions(transformFunc)
+      override def data(looped: Boolean): RDD[C] =
+        preDataSource.data(looped).mapPartitions(transformFunc)
 
       override def originRDD(): RDD[_] = preDataSource.originRDD()
     }
+  }
+
+  // scalastyle:off methodName
+  // scalastyle:off noSpaceBeforeLeftBracket
+  def -> [C: ClassTag](transformer: Transformer[T, C]): DistributedDataSet[C] = {
+    this.transform(transformer)
   }
 
   // scalastyle:on noSpaceBeforeLeftBracket
@@ -162,7 +174,7 @@ trait DistributedDataSet[T] extends DataSet[RDD[T]] {
   def originRDD(): RDD[_]
 }
 
-class CachedDistriDataSet[T: ClassTag](buffer: RDD[Array[T]], looped: Boolean)
+class CachedDistriDataSet[T: ClassTag](buffer: RDD[Array[T]])
   extends DistributedDataSet[T] {
 
   protected lazy val count: Long = buffer.mapPartitions(iter => {
@@ -176,7 +188,7 @@ class CachedDistriDataSet[T: ClassTag](buffer: RDD[Array[T]], looped: Boolean)
     Iterator.single(RandomGenerator.shuffle((0 until iter.next().length).toArray))
   }).setName("shuffled index").cache()
 
-  override def data(): RDD[T] = {
+  override def data(looped: Boolean): RDD[T] = {
     val _looped = looped
     buffer.zipPartitions(indexes)((dataIter, indexIter) => {
       val indexes = indexIter.next()
@@ -222,33 +234,94 @@ class CachedDistriDataSet[T: ClassTag](buffer: RDD[Array[T]], looped: Boolean)
 }
 
 /**
- * Helper functions of CachedDistriDataSet
+ * Common used data set generator
  */
-object CachedDistriDataSet {
-  def apply[T: ClassTag](localData: Array[T], sc: SparkContext, partitionNum: Int,
-    looped: Boolean): DistributedDataSet[T] = {
+object DataSet {
+  val logger = Logger.getLogger(getClass)
+
+  /**
+   * Generate data set from an array
+   */
+  def array[T](data: Array[T]): LocalArrayDataSet[T] = {
+    new LocalArrayDataSet[T](data)
+  }
+
+  def array[T: ClassTag](localData: Array[T], sc: SparkContext, partitionNum: Int)
+  : DistributedDataSet[T] = {
     new CachedDistriDataSet[T](
       sc.parallelize(localData, partitionNum)
-        .coalesce(partitionNum, true)
         .mapPartitions(iter => {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")
-        .cache(),
-      looped
+        .cache()
     )
   }
 
-  def apply[T: ClassTag](data: RDD[T], partitionNum: Int, looped: Boolean):
+  def rdd[T: ClassTag](data: RDD[T], partitionNum: Int):
   DistributedDataSet[T] = {
     new CachedDistriDataSet[T](
-      data.coalesce(partitionNum, true)
+      data.coalesce(partitionNum, false)
         .mapPartitions(iter => {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")
-        .cache(),
-      looped
+        .cache()
     )
   }
+
+  object ImageFolder {
+    def paths(path: Path): LocalDataSet[LabeledImageLocalPath] = {
+      val buffer = LocalImageFiles.readPaths(path)
+      new LocalArrayDataSet[LabeledImageLocalPath](buffer)
+    }
+
+    def images(path: Path, scaleTo: Int): LocalDataSet[LabeledRGBImage] = {
+      val paths = LocalImageFiles.readPaths(path)
+      val total = paths.length
+      var count = 1
+      val buffer = paths.map(imageFile => {
+        logger.info(s"Cache image $count/$total")
+        count += 1
+        Sample(RGBImage.readImage(imageFile.path, scaleTo), imageFile.label)
+      })
+      new LocalArrayDataSet[Sample](buffer) -> SampleToRGBImg()
+    }
+
+    def images(path: Path, sc: SparkContext, partitionNum: Int, scaleTo: Int)
+    : DistributedDataSet[LabeledRGBImage] = {
+      val paths = LocalImageFiles.readPaths(path)
+      val buffer: Array[Sample] = {
+        paths.map(imageFile => {
+          Sample(RGBImage.readImage(imageFile.path, scaleTo), imageFile.label)
+        })
+      }
+      array(buffer, sc, partitionNum) -> SampleToRGBImg()
+    }
+  }
+
+  object SequenceFolder {
+    val logger = Logger.getLogger(getClass)
+    def paths(path: Path, totalSize: Long): LocalDataSet[SeqFileLocalPath] = {
+      logger.info(s"Read sequence files folder $path")
+      val buffer: Array[SeqFileLocalPath] = SequenceFiles.findFiles(path)
+      logger.info(s"Find ${buffer.length} sequence files")
+      require(buffer.length > 0, s"Can't find any sequence files under $path")
+      new LocalArrayDataSet[SeqFileLocalPath](buffer) {
+        override def size(): Long = {
+          totalSize
+        }
+      }
+    }
+
+    def files(url: String, sc: SparkContext, classNum: Int,
+      partitionNum: Int): DistributedDataSet[Sample] = {
+      val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text]).map(image => {
+        Sample(image._2.copyBytes(), image._1.toString.toFloat)
+      }).filter(_.label < classNum)
+
+      rdd[Sample](rawData, partitionNum)
+    }
+  }
+
 }
 
 

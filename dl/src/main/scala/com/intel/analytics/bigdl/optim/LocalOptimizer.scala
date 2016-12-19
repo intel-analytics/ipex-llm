@@ -50,6 +50,7 @@ class LocalOptimizer[T: ClassTag](
     model, dataset, criterion) {
 
   import LocalOptimizer._
+  import Optimizer._
 
   private val coreNumber = Engine.coreNumber()
 
@@ -65,7 +66,10 @@ class LocalOptimizer[T: ClassTag](
   private val syncGradParallelNum =
     if (syncGradTaskSize == 0) syncGradExtraTask else subModelNumber
 
-  private val workingModels = (1 to subModelNumber).map(_ => model.cloneModule()).toArray
+  private val workingModels = (1 to subModelNumber).map(i => {
+    logger.info(s"Clone $i model...")
+    model.cloneModule()
+  }).toArray
 
   private val workingModelWAndG = workingModels.map(_.getParameters())
 
@@ -81,7 +85,7 @@ class LocalOptimizer[T: ClassTag](
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     dataset.shuffle()
-    var iter = dataset.data()
+    var iter = dataset.data(looped = true)
     while (!endWhen(state)) {
       val start = System.nanoTime()
 
@@ -156,7 +160,7 @@ class LocalOptimizer[T: ClassTag](
       if (count >= dataset.size()) {
         state("epoch") = state[Int]("epoch") + 1
         dataset.shuffle()
-        iter = dataset.data()
+        iter = dataset.data(looped = true)
         count = 0
       }
 
@@ -173,11 +177,10 @@ class LocalOptimizer[T: ClassTag](
     }
 
     val trigger = cacheTrigger.get
-    val path = cachePath.get
     if (trigger(state) && cachePath.isDefined) {
       logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to path")
-      saveModel(this.model, s".${state[Int]("neval")}")
-      saveState(state, s".${state[Int]("neval")}")
+      saveModel(workingModels.head, cachePath, isOverWrite, s".${state[Int]("neval")}")
+      saveState(state, cachePath, isOverWrite, s".${state[Int]("neval")}")
     }
   }
 
@@ -190,7 +193,7 @@ class LocalOptimizer[T: ClassTag](
       return
     }
     val vMethods = validationMethods.get
-    val dataIter = validationDataSet.get.asInstanceOf[LocalDataSet[Batch[T]]].data()
+    val dataIter = validationDataSet.get.asInstanceOf[LocalDataSet[Batch[T]]].data(looped = false)
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
 
     workingModels.foreach(_.evaluate())
@@ -201,6 +204,7 @@ class LocalOptimizer[T: ClassTag](
       val stackSize = batch.data.size(1) / subModelNumber
       val extraSize = batch.data.size(1) % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
+      val start = System.nanoTime()
       val result = Engine.default.invokeAndWait(
         (0 until parallelism).map(b =>
           () => {
@@ -220,7 +224,9 @@ class LocalOptimizer[T: ClassTag](
         }
       })
       count += batch.data.size(1)
-      logger.info(s"[Validation] $count/${validationDataSet.get.size()}")
+      logger.info(s"[Validation] $count/${validationDataSet.get.size()} Throughput is ${
+        batch.data.size(1) / ((System.nanoTime() - start) / 1e9)
+      } record / sec")
       result
     }).reduce((left, right) => {
       left.zip(right).map { case (l, r) =>
