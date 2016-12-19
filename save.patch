@@ -1,0 +1,3883 @@
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/dataset/Transformer.scala b/dl/src/main/scala/com/intel/analytics/bigdl/dataset/Transformer.scala
+index 365b380..a9cda1e 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/dataset/Transformer.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/dataset/Transformer.scala
+@@ -16,6 +16,7 @@
+  */
+ package com.intel.analytics.bigdl.dataset
+ 
++
+ import org.apache.commons.lang3.SerializationUtils
+ 
+ import scala.collection.Iterator
+@@ -44,6 +45,7 @@ trait Transformer[A, B] extends Serializable {
+ 
+ class ChainedTransformer[A, B, C](first: Transformer[A, B], last: Transformer[B, C])
+   extends Transformer[A, C] {
++
+   override def apply(prev: Iterator[A]): Iterator[C] = {
+     last(first(prev))
+   }
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/dataset/image/ColoJitter.scala b/dl/src/main/scala/com/intel/analytics/bigdl/dataset/image/ColoJitter.scala
+new file mode 100644
+index 0000000..fc80d4e
+--- /dev/null
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/dataset/image/ColoJitter.scala
+@@ -0,0 +1,93 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *    http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.intel.analytics.bigdl.dataset.image
++
++import com.intel.analytics.bigdl.dataset.Transformer
++import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
++
++import scala.collection.Iterator
++import scala.util.Random
++
++object ColorJitter {
++  def apply(): ColorJitter = {
++    new ColorJitter()
++  }
++}
++
++class ColorJitter extends Transformer[LabeledRGBImage, LabeledRGBImage] {
++  val bcsParameters = Map("brightness" -> 0.4f, "contrast" -> 0.4f, "saturation" -> 0.4f)
++
++  def grayScale(dst: Array[Float], img: Array[Float]): Array[Float] = {
++    var i = 0
++    while (i < img.length) {
++      dst(i) = img(i)*0.299f + img(i+1)*0.587f + img(i+2)*0.114f
++      dst(i+1) = dst(i)
++      dst(i+2) = dst(i)
++      i += 3
++    }
++    dst
++  }
++
++  def blend(img1: Array[Float], img2: Array[Float], alpha: Float) =
++    (img1 zip img2) map {case (a,b) => a + (1-alpha)*b }
++
++  def saturation(variance: Float)(input: Array[Float]) = {
++    val gs = new Array[Float](input.length)
++    grayScale(gs, input)
++    val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
++    blend(input, gs, alpha)
++    input
++  }
++
++  def brightness(variance: Float)(input: Array[Float])= {
++    val gs = new Array[Float](input.length)
++    val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
++    blend(input, gs, alpha)
++    input
++  }
++
++  def contrast(variance: Float)(input: Array[Float]) = {
++    val gs = new Array[Float](input.length)
++    grayScale(gs, input)
++    val mean = gs.sum / gs.length
++    gs.foreach( _ => mean)
++    val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
++    blend(input, gs, alpha)
++    input
++  }
++
++  val ts = Map(
++    "brightness" -> {brightness(bcsParameters.get("brightness").get)(_)},
++    "contrast"   -> {contrast(bcsParameters.get("contrast").get)(_)},
++    "saturation" -> {saturation(bcsParameters.get("saturation").get)(_)}
++  )
++
++  def randomOrder(input: Array[Float]): Unit = {
++    val randOrder = Random.shuffle(List("brightness", "contrast", "saturation"))
++    randOrder.map( x => ts(x))
++  }
++
++  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
++    prev.map(img => {
++      val content = img.content
++      require(content.length % 3 == 0)
++      randomOrder(content)
++      img
++    })
++  }
++}
+\ No newline at end of file
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/dataset/image/Lighting.scala b/dl/src/main/scala/com/intel/analytics/bigdl/dataset/image/Lighting.scala
+new file mode 100644
+index 0000000..7c02196
+--- /dev/null
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/dataset/image/Lighting.scala
+@@ -0,0 +1,62 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *    http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.intel.analytics.bigdl.dataset.image
++
++import com.intel.analytics.bigdl.dataset.Transformer
++import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
++import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
++
++import scala.collection.Iterator
++
++object Lighting {
++  def apply(): Lighting = {
++    new Lighting()
++  }
++}
++
++class Lighting extends Transformer[LabeledRGBImage, LabeledRGBImage] {
++  val alphastd = 0.1f
++  val eigval = Tensor[Float](Storage(Array(0.2175f, 0.0188f, 0.0045f)), 1, Array(3))
++  val eigvec = Tensor[Float](Storage(Array(-0.5675f, 0.7192f, 0.4009f,
++    -0.5808f, -0.0045f, -0.8140f,
++    -0.5836f, -0.6948f, 0.4203f)), 1, Array(3, 3))
++
++  def lighting(input: Array[Float]): Unit = {
++    if (alphastd != 0) {
++      val alpha = Tensor[Float](3).apply1(_ => RNG.uniform(0, alphastd).toFloat)
++      val rgb = eigvec.clone
++        .cmul(alpha.view(1, 3).expand(Array(3, 3)))
++        .cmul(eigval.view(1, 3).expand(Array(3, 3)))
++        .sum(2).squeeze
++      var i = 0
++      while (i < input.length) {
++        input(i) = input(i) + rgb.storage().array()(0)
++        input(i + 1) = input(i + 1) + rgb.storage().array()(1)
++        input(i + 2) = input(i + 2) + rgb.storage().array()(2)
++        i += 3
++      }
++    }
++  }
++
++  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
++    prev.map(img => {
++      lighting(img.content)
++      img
++    })
++  }
++}
+\ No newline at end of file
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/dataset/image/RGBImgRdmCropper.scala b/dl/src/main/scala/com/intel/analytics/bigdl/dataset/image/RGBImgRdmCropper.scala
+new file mode 100644
+index 0000000..47a3c88
+--- /dev/null
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/dataset/image/RGBImgRdmCropper.scala
+@@ -0,0 +1,85 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *    http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.intel.analytics.bigdl.dataset.image
++
++import com.intel.analytics.bigdl.dataset.Transformer
++
++import scala.collection.Iterator
++
++object RGBImgRdmCropper {
++  def apply(cropWidth: Int, cropHeight: Int, padding: Int): RGBImgRdmCropper =
++    new RGBImgRdmCropper(cropHeight, cropWidth, padding)
++}
++
++class RGBImgRdmCropper(cropHeight: Int, cropWidth: Int, padding: Int)
++  extends Transformer[LabeledRGBImage, LabeledRGBImage] {
++  import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
++
++  private val buffer = new LabeledRGBImage(cropWidth, cropHeight)
++
++  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
++    prev.map(img => {
++      val curImg = padding > 0 match {
++        case true => {
++          val widthTmp = img.width()
++          val heightTmp = img.height()
++          val sourceTmp = img.content
++          val padWidth = widthTmp + 2 * padding
++          val padHeight = heightTmp + 2 * padding
++          val temp = new LabeledRGBImage(padWidth, padHeight)
++          val tempBuffer = temp.content
++          val startIndex = (padding + 1 + (padding + 1) * padWidth) * 3
++          val frameLength = widthTmp * heightTmp
++          var i = 0
++          while (i < frameLength) {
++            tempBuffer(startIndex + ((i / widthTmp) * padWidth + (i % widthTmp)) * 3 + 2) = sourceTmp(i * 3 + 2)
++            tempBuffer(startIndex + ((i / widthTmp) * padWidth + (i % widthTmp)) * 3 + 1) = sourceTmp(i * 3 + 1)
++            tempBuffer(startIndex + ((i / widthTmp) * padWidth + (i % widthTmp)) * 3) = sourceTmp(i * 3)
++            i += 1
++          }
++          temp.setLabel(img.label())
++          temp
++        }
++        case _ => img
++      }
++
++      val width = curImg.width()
++      val height = curImg.height()
++      val source = curImg.content
++
++      val startW = RNG.uniform(0, width - cropWidth).toInt
++      val startH = RNG.uniform(0, height - cropHeight).toInt
++      val startIndex = (startW + startH * width) * 3
++      val frameLength = cropWidth * cropHeight
++
++      val target = buffer.content
++      var i = 0
++      while (i < frameLength) {
++        target(i * 3 + 2) =
++          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3 + 2)
++        target(i * 3 + 1) =
++          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3 + 1)
++        target(i * 3) =
++          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3)
++        i += 1
++      }
++      buffer.setLabel(curImg.label())
++    })
++  }
++
++}
+\ No newline at end of file
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/dataset/image/Types.scala b/dl/src/main/scala/com/intel/analytics/bigdl/dataset/image/Types.scala
+index 8aa1b6f..1fed7c4 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/dataset/image/Types.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/dataset/image/Types.scala
+@@ -17,6 +17,8 @@
+ 
+ package com.intel.analytics.bigdl.dataset.image
+ 
++import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
++
+ import java.awt.Color
+ import java.awt.image.{BufferedImage, DataBufferByte}
+ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File, FileInputStream}
+@@ -300,6 +302,7 @@ object RGBImage {
+       var heightAfterScale = 0
+       var widthAfterScale = 0
+       var scaledImage: java.awt.Image = null
++
+       // no scale
+       if (NO_SCALE == scaleTo) {
+         heightAfterScale = img.getHeight
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/example/ImageNet.scala b/dl/src/main/scala/com/intel/analytics/bigdl/example/ImageNet.scala
+index a53b138..452f6bc 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/example/ImageNet.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/example/ImageNet.scala
+@@ -23,7 +23,10 @@ import java.util
+ import java.util.Collections
+ import java.util.concurrent.{Executors, LinkedBlockingQueue}
+ 
++import com.intel.analytics.bigdl.example.ImageNetLocal.{ColorJitter, ColorNormalize, Lighting}
+ import com.intel.analytics.bigdl.tensor.Tensor
++import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
++import scala.util.Random
+ 
+ object ImageNetUtils {
+ 
+@@ -59,7 +62,7 @@ object ImageNetUtils {
+   def toTensorFloat(imgIter: Iterator[(Float, Array[Byte])], featureShape: Array[Int],
+     labelShape: Array[Int], batchSize: Int, mean: (Float, Float, Float),
+     std: (Float, Float, Float), input: Tensor[Float],
+-    target: Tensor[Float]): Iterator[(Tensor[Float], Tensor[Float])] = {
++    target: Tensor[Float], valFlag: Boolean): Iterator[(Tensor[Float], Tensor[Float])] = {
+     imgIter.grouped(batchSize).map(seq => {
+       val size = seq.size
+       require(input.nElement() >= size * featureShape.product)
+@@ -72,7 +75,14 @@ object ImageNetUtils {
+           i * featureShape.product)
+         targets(i) = label
+         i += 1
++        if (!valFlag) {
++          ColorJitter.randomOrder(input(i))
++          Lighting.lighting(input(i))
++          //HorizontalFlip.hflip(input(i))
++        }
++        ColorNormalize.colorNormalize(input(i))
+       }
++      //ColorJitter.RandomOrder(input)
+       (input, target)
+     })
+   }
+@@ -94,7 +104,7 @@ object ImageNetUtils {
+     val frameLength = cropWidth * cropHeight
+     while (i < frameLength) {
+       result(resultOffset + i) = ((rawData(offset + (startIndex + (i / cropWidth) * width +
+-        (i % cropWidth)) * 3 + 2) & 0xff) / 255.0 - mean._1) / std._1
++        (i % cropWidth)) * 3 + 2) & 0xff) / 255.0  - mean._1) / std._1
+       result(resultOffset + i + frameLength) = ((rawData(offset +
+         (startIndex + (i / cropWidth) * width + (i % cropWidth)) * 3 + 1) & 0xff) / 255.0
+         - mean._2) / std._2
+@@ -104,6 +114,32 @@ object ImageNetUtils {
+     }
+   }
+ 
++/*  def randomSizedCrop(width: Int, height: Int)(cropWidth: Int, cropHeight: Int): (Int, Int) = {
++    val area = width * height
++    val r = scala.util.Random
++    var y1 = r.nextInt((height - cropHeight)/2)
++    var x1 = r.nextInt((width - cropWidth)/2)
++    breakable {
++      for (j <- 1 to 10) {
++        val targetArea = RNG.uniform(0.08, 1.0) * area
++        val aspectRatio = RNG.uniform(3 / 4, 4 / 3)
++        var w = Math.round(Math.sqrt(targetArea * aspectRatio))
++        var h = Math.round(Math.sqrt(targetArea / aspectRatio))
++        if (RNG.uniform(0, 1) < 0.5) {
++          val tmp = (w, h).swap
++          w = tmp._1
++          h = tmp._2
++        }
++        if (h <= height && w <= width) {
++          y1 = RNG.uniform(0, height - h).toInt
++          x1 = RNG.uniform(0, width - w).toInt
++          break
++        }
++      }
++    }
++    (x1, y1)
++  }*/
++
+   def cropFloat(rawData: Array[Byte], cropWidth: Int, cropHeight: Int,
+     mean: (Float, Float, Float), std: (Float, Float, Float), result: Array[Float],
+     resultOffset: Int): Unit = {
+@@ -113,22 +149,35 @@ object ImageNetUtils {
+     val width = buffer.getInt
+     val height = buffer.getInt
+ 
+-    val startW = r.nextInt(width - cropWidth)
+-    val startH = r.nextInt(height - cropHeight)
++    val startW = r.nextInt((width - cropWidth)/2)
++    val startH = r.nextInt((height - cropHeight)/2)
++
++    //val (startW, startH) = randomSizedCrop(width, height)(cropWidth, cropHeight)
++
+     val offset = 2 * 4
+     val startIndex = startW + startH * width
+     var i = 0
+     val frameLength = cropWidth * cropHeight
+     while (i < frameLength) {
++      result(resultOffset + i) = (rawData(offset + (startIndex + (i / cropWidth) * width +
++        (i % cropWidth)) * 3 + 2 )  & 0xff ) / 255.0f
++      result(resultOffset + i + frameLength) = (rawData(offset + (startIndex +
++        (i / cropWidth) * width + (i % cropWidth)) * 3 + 1)  & 0xff) / 255.0f
++      result(resultOffset + i + frameLength * 2) = (rawData(offset +
++        (startIndex + (i / cropWidth) * width + (i % cropWidth)) * 3) & 0xff) / 255.0f
++
++      i += 1
++    }
++    /*while (i < frameLength) {
+       result(resultOffset + i) = ((rawData(offset + (startIndex + (i / cropWidth) * width +
+-        (i % cropWidth)) * 3 + 2) & 0xff) / 255.0f - mean._1) / std._1
++        (i % cropWidth)) * 3 + 2 )  & 0xff ) / 255.0f + (if (Split.getValFlag) rgb(Array(1)) else 0f) - mean._1) / std._1
+       result(resultOffset + i + frameLength) = ((rawData(offset + (startIndex +
+-        (i / cropWidth) * width + (i % cropWidth)) * 3 + 1) & 0xff) / 255.0f - mean._2) / std._2
++        (i / cropWidth) * width + (i % cropWidth)) * 3 + 1)  & 0xff) / 255.0f + (if (Split.getValFlag) rgb(Array(2)) else 0f) - mean._2) / std._2
+       result(resultOffset + i + frameLength * 2) = ((rawData(offset +
+-        (startIndex + (i / cropWidth) * width + (i % cropWidth)) * 3) & 0xff) / 255.0f
++        (startIndex + (i / cropWidth) * width + (i % cropWidth)) * 3) & 0xff) / 255.0f + (if (Split.getValFlag) rgb(Array(3)) else 0f)
+         - mean._3) / std._3
+       i += 1
+-    }
++    }*/
+   }
+ 
+   def crop(rawData: Array[Byte], cropWidth: Int, cropHeight: Int,
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/example/ImageNetLocal.scala b/dl/src/main/scala/com/intel/analytics/bigdl/example/ImageNetLocal.scala
+new file mode 100644
+index 0000000..e414f04
+--- /dev/null
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/example/ImageNetLocal.scala
+@@ -0,0 +1,401 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *    http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.intel.analytics.bigdl.example
++
++import java.awt.color.ColorSpace
++import java.util
++
++import com.intel.analytics.bigdl.models.alexnet.AlexNet
++import com.intel.analytics.bigdl.models.resnet.ResNet
++import com.intel.analytics.bigdl.models.resnet.ResNet.ShortcutType
++import com.intel.analytics.bigdl.nn.CrossEntropyCriterion
++import com.intel.analytics.bigdl.optim.{EvaluateMethods, SGD}
++import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
++import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
++import com.intel.analytics.bigdl.utils.{File, T}
++import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
++
++import scala.collection.mutable
++import scala.reflect.ClassTag
++import scala.util.Random
++
++object ImageNetLocal {
++  val startTime = System.nanoTime()
++
++  val regimes = Map(
++    "alexnet" -> Array(
++      (1, 18, 1e-2, 5e-4),
++      (19, 29, 5e-3, 5e-4),
++      (30, 43, 1e-3, 0.0),
++      (44, 52, 5e-4, 0.0),
++      (53, 100000000, 1e-4, 0.0)
++    ),
++    "googlenet-cf" -> Array(
++      (1, 18, 1e-2, 2e-4),
++      (19, 29, 5e-3, 2e-4),
++      (30, 43, 1e-3, 0.0),
++      (44, 52, 5e-4, 0.0),
++      (53, 100000000, 1e-4, 0.0)
++    )
++  )
++
++  def log(msg: String): Unit = {
++    println(s"[${(System.nanoTime() - startTime) / 1e9}s] $msg")
++  }
++
++  def run(donkey: Donkey, dataSet: DataSets, netType: String, classNum: Int,
++    labelsMap: Map[String, Double], testInterval: Int, donkeyVal: Donkey,
++    dataSetVal: DataSets, batchSize: Int, modelPath : String, modelDepth: Int): Unit = {
++    // Compute Mean on amount of samples
++    //val samples = 10000
++    /*val samples = 100
++    log(s"Start to calculate Mean on $samples samples")
++    var (meanR, meanG, meanB) = Array.tabulate(samples)(n => {
++      //print(".")
++      val data = donkey.pull
++      dataSet.post(data._2)
++      ImageNetUtils.computeMean(data._1, data._2.dataOffset)
++    }).reduce((a, b) => (a._1 + b._1, a._2 + b._2, a._3 + b._3))
++    meanR /= samples
++    meanG /= samples
++    meanB /= samples
++    println()
++
++    // Compute std on amount of samples
++    log(s"Start to calculate std on $samples samples")
++    var (varR, varG, varB) = Array.tabulate(samples)(n => {
++      //print(".")
++      val data = donkey.pull
++      dataSet.post(data._2)
++      ImageNetUtils.computeVar(data._1, meanR, meanG, meanB, data._2.dataOffset)
++    }).reduce((a, b) => (a._1 + b._1, a._2 + b._2, a._3 + b._3))
++    varR /= samples
++    varG /= samples
++    varB /= samples*/
++
++    val model = netType match {
++      //case "alexnet" => AlexNet.getModel[Float](classNum)
++      case "googlenet" => GoogleNet.getModel[Float](classNum)
++      case "googlenet-bn" => GoogleNet.getModel[Float](classNum, "googlenet-bn")
++      case "googlenet-cf" => GoogleNet.getModelCaffe[Float](classNum)
++      case "resnet" => {
++        val curModel = ResNet(classNum, T("shortcutType" -> ShortcutType.B, "depth" -> modelDepth))
++        ResNet.shareGradInput(curModel)
++        ResNet.modelInit(curModel)
++        curModel
++      }
++      case _ => throw new IllegalArgumentException
++    }
++
++
++    val (weights, grad) = model.getParameters()
++    println(s"modelsize ${weights.nElement()}")
++    println(model)
++    val criterion = CrossEntropyCriterion[Float]()
++    val epochNum = 90
++    val featureShape = Array(3, 224, 224)
++    val targetShape = Array(1)
++    val sgd = new SGD[Float]
++    val state = T("learningRate" -> 0.1, "momentum" -> 0.9, "dampening" -> 1e-4, "weightDecay" -> 1e-4)
++    val stageImgs = new util.ArrayDeque[Image](batchSize)
++    val input = Tensor[Float](batchSize, 3, 224, 224)
++    val target = Tensor[Float](batchSize)
++    val meanRFloat = MeanStd.mean(0) // meanR.toFloat
++    val meanGFloat = MeanStd.mean(1) // meanG.toFloat
++    val meanBFloat = MeanStd.mean(2) // meanB.toFloat
++    val varRFloat = MeanStd.std(0) // varR.toFloat
++    val varGFloat = MeanStd.std(1) // varG.toFloat
++    val varBFloat = MeanStd.std(2) // varB.toFloat
++
++    val iter = ImageNetUtils.toTensorFloat(
++      donkey.map(d => {
++        stageImgs.push(d._2)
++        (labelsMap(d._2.label).toFloat, d._1)
++      }),
++      featureShape,
++      targetShape,
++      batchSize,
++      (meanRFloat, meanGFloat, meanBFloat),
++      (varRFloat, varGFloat, varBFloat),
++      input,
++      target,
++      Split.TRAIN
++    )
++
++    val stageImgsVal = new util.ArrayDeque[Image](batchSize)
++    val iterVal = ImageNetUtils.toTensorFloat(
++      donkeyVal.map(d => {
++        stageImgsVal.push(d._2)
++        (labelsMap(d._2.label).toFloat, d._1)
++      }),
++      featureShape,
++      targetShape,
++      batchSize,
++      (meanRFloat, meanGFloat, meanBFloat),
++      (varRFloat, varGFloat, varBFloat),
++      input,
++      target,
++      Split.VAL
++    )
++
++    //log(s"meanR is $meanR meanG is $meanG meanB is $meanB")
++    //log(s"varR is $varR varG is $varG varB is $varB")
++    log("Start to train...")
++
++    var wallClockTime = 0L
++    for (i <- 1 to epochNum) {
++
++
++      println(s"Epoch[$i] Train")
++
++      /*for (regime <- regimes(netType)) {
++        if (i >= regime._1 && i <= regime._2) {
++          state("learningRate") = regime._3
++          state("weightDecay") = regime._4
++        }
++      }
++      */
++/*      def feval(x: Tensor[Float]): (Float, Tensor[Float]) = {
++        (criterion.output, grad)
++      }*/
++      state("learningRate") =  state("learningRate").asInstanceOf[Double] * Math.pow(0.1, math.floor((i-1)/30))
++      var j = 0
++      var c = 0
++
++      def loadTH(pathDir: String, iteration: Int): (Any) = {
++        val suffix = ".t7"
++        //val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
++        //val absolutePath = tmpFile.getAbsolutePath
++        //val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
++        val subPath = pathDir + "/iteration-" + iteration.toString
++        val tmp: Any = File.load(subPath + suffix)
++        tmp
++      }
++
++      while (j < dataSet.getTotal) {
++        model.training()
++        val start = System.nanoTime()
++
++        val pathDir = "/tmp/train"
++        val input = loadTH(pathDir + "/input/epoch-" + i.toString, c+388).asInstanceOf[Tensor[Float]]
++        val target = loadTH(pathDir + "/label/epoch-"+i.toString, c+388).asInstanceOf[Tensor[Float]]
++        //println(c+388)
++        //val (input, target) = iter.next()
++        val readImgTime = System.nanoTime()
++        model.zeroGradParameters()
++        val output = model.forward(input).toTensor[Float]
++        val loss = criterion.forward(output, target)
++        val gradOutput = criterion.backward(output, target)
++        model.backward(input, gradOutput)
++        sgd.optimize(_ => (loss, grad), weights, state, state)
++        val end = System.nanoTime()
++        wallClockTime += end - start
++        log(s"Epoch[$i][Iteration $c $j/${dataSet.getTotal}][Wall Clock ${wallClockTime / 1e9}s]" +
++          s" loss is ${loss} time ${(end - start) / 1e9}s read " +
++          s"time ${(readImgTime - start) / 1e9}s train time ${(end - readImgTime) / 1e9}s." +
++          s" Throughput is ${input.size(1).toDouble / (end - start) * 1e9} img / second")
++        while (!stageImgs.isEmpty) {
++          dataSet.post(stageImgs.poll())
++        }
++        j += input.size(1)
++        c += 1
++
++
++        val (top1Correct, curTop1Batch) = EvaluateMethods.calcAccuracy(output, target)
++        val (top5Correct, curTop5Batch) = EvaluateMethods.calcTop5Accuracy(output, target)
++
++        val top1Accuracy = top1Correct.toDouble / curTop1Batch.toDouble // / dataSetVal.getTotal
++        val top5Accuracy = top5Correct.toDouble / curTop5Batch.toDouble // / dataSetVal.getTotal
++        println(s"[Wall Clock ${wallClockTime / 1e9}s] Train: Top-1 Accuracy is $top1Accuracy")
++        println(s"[Wall Clock ${wallClockTime / 1e9}s] Train: Top-5 Accuracy is $top5Accuracy")
++      }
++
++      if (i % testInterval == 0) {
++        model.evaluate()
++        var top1Correct = 0
++        var top5Correct = 0
++        var k = 0
++        var c = 0
++        while (k < dataSetVal.getTotal) {
++          val (input, target) = iterVal.next()
++          val output = model.forward(input).toTensor[Float]
++          top1Correct += EvaluateMethods.calcAccuracy(output, target)._1
++          top5Correct += EvaluateMethods.calcTop5Accuracy(output, target)._1
++          while (!stageImgsVal.isEmpty) {
++            dataSetVal.post(stageImgsVal.poll())
++          }
++          k += input.size(1)
++          c += 1
++        }
++
++        val top1Accuracy = top1Correct.toDouble / dataSetVal.getTotal
++        val top5Accuracy = top5Correct.toDouble / dataSetVal.getTotal
++        println(s"[Wall Clock ${wallClockTime / 1e9}s] Testing: Top-1 Accuracy is $top1Accuracy")
++        println(s"[Wall Clock ${wallClockTime / 1e9}s] Testing: Top-5 Accuracy is $top5Accuracy")
++      }
++
++      log("shuffle")
++      dataSet.shuffle
++      log("shuffle end")
++    }
++  }
++
++  def main(args: Array[String]): Unit = {
++    // See http://stackoverflow.com/questions/26535842/multithreaded-jpeg-image-processing-in-java
++    Class.forName("javax.imageio.ImageIO")
++    Class.forName("java.awt.color.ICC_ColorSpace")
++    Class.forName("sun.java2d.cmm.lcms.LCMS")
++    ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
++
++    require(args.length == 10, "invalid args, should be <path> <parallelism> <labelPath>" +
++      " <testInterval> <netType> <classNum> <dataType> <batchSize> <modelDepth>")
++
++    val path = args(0)
++    val parallelism = args(1).toInt
++    val labelsMap = ImageNetUtils.getLabels(args(2))
++    val pathVal = args(3)
++    val testInterval = args(4).toInt
++    val netType = args(5)
++    val classNum = args(6).toInt
++    val batchSize = args(7).toInt
++    val modelPath = args(8)
++    val modelDepth = args(9).toInt
++
++    val dataSet = new DataSets(path, classNum, labelsMap)
++    val donkey = new Donkey(parallelism, dataSet)
++    val dataSetVal = new DataSets(pathVal, classNum, labelsMap)
++    val donkeyVal = new Donkey(parallelism, dataSetVal)
++
++    log("shuffle")
++    dataSet.shuffle
++    log("shuffle end")
++
++    run(donkey, dataSet, netType, classNum, labelsMap, testInterval,
++      donkeyVal, dataSetVal, batchSize, modelPath, modelDepth)
++
++  }
++
++
++  object MeanStd {
++    val mean = Array(0.485f, 0.456f, 0.406f)
++    val std = Array(0.229f, 0.224f, 0.225f)
++  }
++  object PCA {
++    val eigval = Tensor[Float](Storage(Array( 0.2175f, 0.0188f, 0.0045f )), 1, Array(3))
++    val eigvec = Tensor[Float](Storage(Array( -0.5675f,  0.7192f,  0.4009f,
++                                       -0.5808f, -0.0045f, -0.8140f,
++                                       -0.5836f, -0.6948f,  0.4203f)), 1, Array(3, 3))
++    val alphastd = 0.1f
++    val alpha = Tensor[Float](3).apply1(_ => RNG.uniform(0, alphastd).toFloat)
++    val rgb = eigvec.clone.cmul(alpha.view(1, 3).expand(Array(3, 3)))
++      .cmul(eigval.view(1, 3).expand(Array(3, 3)))
++      .sum(2).squeeze
++  }
++
++
++  object Lighting {
++    val alphastd = 0.1f
++    val eigval = Tensor[Float](Storage(Array( 0.2175f, 0.0188f, 0.0045f )), 1, Array(3))
++    val eigvec = Tensor[Float](Storage(Array( -0.5675f,  0.7192f,  0.4009f,
++      -0.5808f, -0.0045f, -0.8140f,
++      -0.5836f, -0.6948f,  0.4203f)), 1, Array(3, 3))
++    def lighting(input: Tensor[Float]): Unit = {
++      if (alphastd != 0) {
++        val alpha = Tensor[Float](3).apply1(_ => RNG.uniform(0, alphastd).toFloat)
++        val rgb = eigvec.clone
++          .cmul(alpha.view(1, 3).expand(Array(3, 3)))
++          .cmul(eigval.view(1, 3).expand(Array(3, 3)))
++          .sum(2).squeeze
++        for (i <- 1 to 3) input(i).add(rgb.storage().array()(i-1))
++      }
++    }
++  }
++  object HorizontalFlip {
++    def hflip(input: Tensor[Float]): Unit = {
++      val prob: Float = 0.5.toFloat
++      if (RNG.uniform(0, 1).toFloat < prob) {
++        val channels = input.size(1)
++        val height = input.size(2)
++        val width: Int = input.size(3)
++        val halfWidth: Int = width >> 1
++        for (i <- 1 to channels; j <- 1 to height; k <- 1 to halfWidth) {
++          val tmp = input(Array(i, j, k))
++          input(Array(i, j, k)) = input(Array(i, j, (width-k+1)))
++          input(Array(i, j, (width-k+1))) = tmp
++        }
++      }
++    }
++  }
++  object ColorNormalize {
++    val mean = Array(0.485f, 0.456f, 0.406f)
++    val std = Array(0.229f, 0.224f, 0.225f)
++    def colorNormalize(input: Tensor[Float]): Unit = {
++      for (i <- 1 to 3) input(i).add(mean(i-1)).div(std(i-1))
++    }
++  }
++  object ColorJitter {
++    val bcsParameters = Map("brightness" -> 0.4f, "contrast" -> 0.4f, "saturation" -> 0.4f)
++    def grayScale[@specialized(Float, Double) T: ClassTag](dst: Tensor[T], img: Tensor[T])
++                                                          (implicit ev: TensorNumeric[T]): Tensor[T] = {
++      dst.resizeAs(img)
++      dst(1).zero
++      dst(1).add(ev.fromType(0.299f), img(1)).add(ev.fromType(0.587f), img(2)).add(ev.fromType(0.114f), img(3))
++      dst(2).copy(dst(1))
++      dst(3).copy(dst(1))
++      dst
++    }
++    //def blend[@specialized(Float, Double) T: ClassTag](img1: Tensor[T], img2: Tensor[T], alpha: T)
++    //                                                  (implicit ev: TensorNumeric[T]) =
++    //  img1.mul(alpha).add(ev.minus(ev.fromType(1), alpha), img2)
++
++    def blend(img1: Tensor[Float], img2: Tensor[Float], alpha: Float) =
++      img1.mul(alpha).add(1.0f - alpha, img2)
++
++    def brightness(variance: Float)(input: Tensor[Float])= {
++      val gs = Tensor[Float]().resize(input.size).zero
++      val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
++      blend(input, gs, alpha)
++    }
++    def contrast(variance: Float)(input: Tensor[Float]) = {
++      val gs = Tensor[Float]().resize(input.size)
++      grayScale(gs, input)
++      gs.fill(gs(1).mean)
++      val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
++      blend(input, gs, alpha)
++    }
++    def saturation(variance: Float)(input:Tensor[Float]) = {
++      val gs = Tensor[Float]().resize(input.size)
++      grayScale(gs, input)
++      val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
++      blend(input, gs, alpha)
++    }
++    val ts = Map(
++      "brightness" -> {brightness(bcsParameters.get("brightness").get)(_)},
++      "contrast"   -> {contrast(bcsParameters.get("contrast").get)(_)},
++      "saturation" -> {saturation(bcsParameters.get("saturation").get)(_)}
++    )
++    def randomOrder(input: Tensor[Float]): Unit = {
++      ts.values.foreach( x => x(input) )
++    }
++  }
++
++  object Split {
++    val TRAIN = false
++    val VAL = true
++  }
++}
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/models/resnet/DataSet.scala b/dl/src/main/scala/com/intel/analytics/bigdl/models/resnet/DataSet.scala
+new file mode 100644
+index 0000000..367230d
+--- /dev/null
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/models/resnet/DataSet.scala
+@@ -0,0 +1,131 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *    http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++package com.intel.analytics.bigdl.models.resnet
++
++import java.nio.file.{Path, Paths}
++
++import com.intel.analytics.bigdl.dataset._
++import com.intel.analytics.bigdl.dataset.image._
++import org.apache.spark.SparkContext
++
++trait ResNetDataSet {
++  def localTrainDataSet(path: Path, batchSize: Int, size: Int)
++  : LocalDataSet[Batch[Float]]
++  def localValDataSet(path: Path, batchSize: Int, size: Int)
++  : LocalDataSet[Batch[Float]]
++  def distributedValDataSet(path: Path, sc: SparkContext, partitionNum: Int, imageSize: Int, batchSize: Int)
++  : DistributedDataSet[Batch[Float]]
++  def distributedTrainDataSet(path: Path, sc: SparkContext, partitionNum: Int, imageSize: Int, batchSize: Int)
++    : DistributedDataSet[Batch[Float]]
++}
++
++/*object ImagenetDataSet extends ResNetDataSet {
++
++  override def localTrainDataSet(path: Path, batchSize: Int, size: Int)
++  : LocalDataSet[Batch[Float]] = {
++    DataSet.SequenceFolder.paths(path, size)
++      .transform(
++        MTLabeledRGBImgToBatch(
++          width = size,
++          height = size,
++          batchSize = batchSize,
++          transformer = (LocalSeqFileToBytes() -> SampleToRGBImg() ->
++            RGBImgCropper(cropWidth = 224, cropHeight = 224) ->
++            ColorJitter() -> Lighting() ->
++            RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) ->
++            HFlip(0.5)))
++      )
++  }
++
++  override def localValDataSet(path: Path, batchSize: Int, size: Int)
++  : LocalDataSet[Batch[Float]] = {
++    DataSet.SequenceFolder.paths(path, size)
++      .transform(
++        MTLabeledRGBImgToBatch(
++          width = size,
++          height = size,
++          batchSize = batchSize,
++          transformer = (LocalSeqFileToBytes() -> SampleToRGBImg() ->
++            RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) ->
++            RGBImgCropper(cropWidth = 224, cropHeight = 224))
++        )
++      )
++  }
++
++  override def distributedValDataSet(path: Path, sc: SparkContext, partitionNum: Int, imageSize: Int, batchSize: Int)
++  : DistributedDataSet[Batch[Float]] = {
++    val ds = LocalImageFiles.distriDataSet(imagesFile, looped, sc, partitionNum, 224)
++    val fileTransformer = LocalSeqFileToBytes()
++    val arrayToImage = SampleToRGBImg()
++    val cropper = RGBImgCropper(cropWidth = 224, cropHeight = 224)
++    val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
++    val toBatch = new RGBImgToBatch(batchSize)
++    ds -> arrayToImage -> normalizer -> cropper -> toBatch
++  }
++  override def distributedTrainDataSet(path: Path, sc: SparkContext, partitionNum: Int, imageSize: Int, batchSize: Int)
++  : DistributedDataSet[Batch[Float]] = {
++    val ds = LocalImageFiles.distriDataSet(imagesFile, looped, sc, partitionNum, 224)
++    val arrayToImage = SampleToRGBImg()
++    val cropper = RGBImgCropper(cropWidth = 224, cropHeight = 224)
++    val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
++    val flipper = HFlip(0.5)
++    val colorJitter = ColorJitter()
++    val lighting = Lighting()
++    val toBatch = new RGBImgToBatch(batchSize)
++    ds -> arrayToImage -> cropper -> colorJitter -> lighting -> normalizer -> toBatch
++  }
++
++}*/
++
++object Cifar10DataSet extends ResNetDataSet {
++
++  override def localTrainDataSet(path: Path, batchSize: Int, size: Int)
++  : LocalDataSet[Batch[Float]] = {
++
++    DataSet.ImageFolder.images(path, size)
++      .transform(RGBImgNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7))
++      .transform(HFlip(0.5))
++      .transform(RGBImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))
++      .transform(RGBImgToBatch(batchSize))
++  }
++
++  override def localValDataSet(path: Path, batchSize: Int, size: Int)
++  : LocalDataSet[Batch[Float]] = {
++
++    DataSet.ImageFolder.images(path, size)
++      .transform(RGBImgNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7))
++      .transform(RGBImgToBatch(batchSize))
++  }
++
++  override def distributedValDataSet(path: Path, sc: SparkContext, partitionNum: Int, imageSize: Int, batchSize: Int)
++  : DistributedDataSet[Batch[Float]] = {
++
++    DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
++      .transform(RGBImgNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7))
++      .transform(RGBImgToBatch(batchSize))
++  }
++
++  override def distributedTrainDataSet(path: Path, sc: SparkContext, partitionNum: Int, imageSize: Int, batchSize: Int)
++  : DistributedDataSet[Batch[Float]] = {
++
++    DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
++      .transform(RGBImgNormalizer(125.3, 123.0, 113.9, 63.0, 62.1, 66.7))
++      .transform(HFlip(0.5))
++      .transform(RGBImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))
++      .transform(RGBImgToBatch(batchSize))
++  }
++}
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/models/resnet/Options.scala b/dl/src/main/scala/com/intel/analytics/bigdl/models/resnet/Options.scala
+new file mode 100644
+index 0000000..b9d63be
+--- /dev/null
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/models/resnet/Options.scala
+@@ -0,0 +1,98 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *    http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.intel.analytics.bigdl.models.resnet
++
++import scopt.OptionParser
++
++object Options {
++  case class TrainLocalParams(
++  folder: String = "./",
++  cache: Option[String] = None,
++  modelSnapshot: Option[String] = None,
++  stateSnapshot: Option[String] = None,
++  optnet: Boolean = false,
++  dataset: String = "",
++  coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2))
++
++  val trainLocalParser = new OptionParser[TrainLocalParams]("BigDL ResNet Example") {
++    head("Train ResNet model on single node")
++    opt[String]('f', "folder")
++      .text("where you put your local hadoop sequence files")
++      .action((x, c) => c.copy(folder = x))
++    opt[String]("model")
++      .text("model snapshot location")
++      .action((x, c) => c.copy(modelSnapshot = Some(x)))
++    opt[String]("state")
++      .text("state snapshot location")
++      .action((x, c) => c.copy(stateSnapshot = Some(x)))
++    opt[Int]('c', "core")
++      .text("cores number to train the model")
++      .action((x, c) => c.copy(coreNumber = x))
++    opt[String]("cache")
++      .text("where to cache the model")
++      .action((x, c) => c.copy(cache = Some(x)))
++    opt[Boolean]("optnet")
++      .text("shared gradients and caches to reduce memory usage")
++      .action((x, c) => c.copy(optnet = x))
++    opt[String]("dataset")
++      .text("datasets: imagenet | cifar-10")
++      .action((x, c) => c.copy(dataset = x))
++  }
++
++  case class TrainSparkParams(
++     folder: String = "./",
++     cache: Option[String] = None,
++     modelSnapshot: Option[String] = None,
++     stateSnapshot: Option[String] = None,
++     coreNumberPerNode: Int = -1,
++     nodesNumber: Int = -1,
++     optnet: Boolean = false,
++     dataset: String = "",
++     coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2))
++
++  val trainSparkParser = new OptionParser[TrainSparkParams]("BigDL ResNet Example") {
++    head("Train ResNet model on Apache Spark")
++    opt[String]('f', "folder")
++      .text("where you put the data")
++      .action((x, c) => c.copy(folder = x))
++    opt[String]("model")
++      .text("model snapshot location")
++      .action((x, c) => c.copy(modelSnapshot = Some(x)))
++    opt[String]("state")
++      .text("state snapshot location")
++      .action((x, c) => c.copy(stateSnapshot = Some(x)))
++    opt[String]("cache")
++      .text("where to cache the model")
++      .action((x, c) => c.copy(cache = Some(x)))
++    opt[Int]('c', "core")
++      .text("cores number on each node")
++      .action((x, c) => c.copy(coreNumberPerNode = x))
++      .required()
++    opt[Int]('n', "nodeNumber")
++      .text("nodes number to train the model")
++      .action((x, c) => c.copy(nodesNumber = x))
++      .required()
++    opt[Boolean]("optnet")
++      .text("shared gradients and caches to reduce memory usage")
++      .action((x, c) => c.copy(optnet = x))
++    opt[String]("dataset")
++      .text("datasets: imagenet | cifar-10")
++      .action((x, c) => c.copy(dataset = x))
++  }
++
++}
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/models/resnet/ResNet.scala b/dl/src/main/scala/com/intel/analytics/bigdl/models/resnet/ResNet.scala
+new file mode 100644
+index 0000000..a122053
+--- /dev/null
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/models/resnet/ResNet.scala
+@@ -0,0 +1,176 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *    http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.intel.analytics.bigdl.models.resnet
++
++import com.intel.analytics.bigdl.Module
++import com.intel.analytics.bigdl.nn.{MulConstant, _}
++import com.intel.analytics.bigdl.numeric.NumericFloat
++import com.intel.analytics.bigdl.utils.Table
++
++object ResNet {
++
++  def shareGradInput(model: Module[Float]): Unit = {
++    println("Share gradients in ResNet")
++    Utils.shareGradInput(model)
++  }
++  def modelInit(model: Module[Float]): Unit = {
++    println("Initialize ResNet")
++    Utils.findModules(model)
++  }
++
++  var iChannels = 0
++  def apply(classNum: Int, opt: Table): Module[Float] = {
++
++    val depth = opt.get("depth").getOrElse(18)
++    val shortCutType = opt.get("shortcutType")
++    val shortcutType = shortCutType.getOrElse(ShortcutType.B).asInstanceOf[ShortcutType]
++    val dataSet = opt.get("dataset")
++    val dataset = dataSet.getOrElse(DatasetType.CIFAR10).asInstanceOf[DatasetType]
++
++    def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[Float] = {
++      val useConv = shortcutType == ShortcutType.C || (shortcutType == ShortcutType.B && nInputPlane != nOutputPlane)
++
++      if (useConv) {
++        Sequential()
++          .add(SpatialConvolution(nInputPlane, nOutputPlane, 1, 1, stride, stride))
++          .add(SpatialBatchNormalization(nOutputPlane))
++      } else if (nInputPlane != nOutputPlane) {
++        Sequential()
++          .add(SpatialAveragePooling(1, 1, stride, stride))
++          .add(Concat(2)
++            .add(Identity())
++            .add(MulConstant(0f)))
++      }  else {
++        Identity()
++      }
++    }
++
++    def basicBlock(n: Int, stride: Int): Module[Float] = {
++      val nInputPlane = iChannels
++      iChannels = n
++
++      val s = Sequential()
++      s.add(SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1))
++      s.add(SpatialBatchNormalization(n))
++      s.add(ReLU(true))
++      s.add(SpatialConvolution(n ,n, 3, 3, 1, 1, 1, 1))
++      s.add(SpatialBatchNormalization(n))
++
++      Sequential()
++        .add(ConcatTable()
++          .add(s)
++          .add(shortcut(nInputPlane, n, stride)))
++        .add(CAddTable(true))
++        .add(ReLU(true))
++    }
++
++    def bottleneck(n: Int, stride: Int): Module[Float] = {
++      val nInputPlane = iChannels
++      iChannels = n * 4
++
++      val s = Sequential()
++      s.add(SpatialConvolution(nInputPlane, n, 1, 1, 1, 1, 0, 0))
++        .add(SpatialBatchNormalization(n))
++        .add(ReLU(true))
++        .add(SpatialConvolution(n, n, 3, 3, stride, stride, 1, 1))
++        .add(SpatialBatchNormalization(n))
++        .add(ReLU(true))
++        .add(SpatialConvolution(n, n*4, 1, 1, 1, 1, 0, 0))
++        .add(SpatialBatchNormalization(n * 4))
++
++      Sequential()
++        .add(ConcatTable()
++          .add(s)
++          .add(shortcut(nInputPlane, n*4, stride)))
++        .add(CAddTable(true))
++        .add(ReLU(true))
++    }
++
++    def layer(block: (Int, Int) => Module[Float], features: Int, count: Int, stride: Int = 1): Module[Float] = {
++      val s = Sequential()
++      for (i <- 1 to count) {
++        s.add(block(features, if (i == 1) stride else 1))
++      }
++      s
++    }
++
++    val model = Sequential()
++
++    if (dataset == DatasetType.ImageNet) {
++      val cfg = Map(
++        18 -> ((2, 2, 2, 2), 512, basicBlock: (Int, Int) => Module[Float]),
++        34 -> ((3, 4, 6, 3), 512, basicBlock: (Int, Int) => Module[Float]),
++        50 -> ((3, 4, 6, 3), 2048, bottleneck: (Int, Int) => Module[Float]),
++        101 -> ((3, 4, 23, 3), 2048, bottleneck: (Int, Int) => Module[Float]),
++        152 -> ((3, 8, 36, 3), 2048, bottleneck: (Int, Int) => Module[Float]),
++        200 -> ((3, 24, 36, 3), 2048, bottleneck: (Int, Int) => Module[Float])
++      )
++
++      assert(cfg.keySet.contains(depth))
++
++      val (loopConfig, nFeatures, block) = cfg.get(depth).get
++      iChannels = 64
++      println(" | ResNet-" + depth + " ImageNet")
++
++      //-- The ResNet ImageNet Model
++
++      model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3))
++        .add(SpatialBatchNormalization(64))
++        .add(ReLU(true))
++        .add(SpatialMaxPooling(3, 3, 2, 2, 1, 1))
++        .add(layer(block, 64, loopConfig._1))
++        .add(layer(block, 128, loopConfig._2, 2))
++        .add(layer(block, 256, loopConfig._3, 2))
++        .add(layer(block, 512, loopConfig._4, 2))
++        .add(SpatialAveragePooling(7, 7, 1, 1))
++        .add(View(nFeatures).setNumInputDims(3))
++        .add(Linear(nFeatures, classNum))
++    } else if (dataset == DatasetType.CIFAR10) {
++      assert((depth-2)%6 == 0, "depth should be one of 20, 32, 44, 56, 110, 1202")
++      val n = (depth-2)/6
++      iChannels = 16
++      println(" | ResNet-" + depth + " CIFAR-10")
++
++      model.add(SpatialConvolution(3, 16, 3, 3, 1, 1, 1, 1))
++      model.add(SpatialBatchNormalization(16))
++      model.add(ReLU(true))
++      model.add(layer(basicBlock, 16, n))
++      model.add(layer(basicBlock, 32, n, 2))
++      model.add(layer(basicBlock, 64, n, 2))
++      model.add(SpatialAveragePooling(8, 8, 1, 1))
++      model.add(View(64).setNumInputDims(3))
++      model.add(Linear(64, 10))
++    } else {
++      sys.error("invalid dataset: " + dataset)
++    }
++    model
++  }
++
++  sealed abstract class DatasetType(typeId: Int)
++  object DatasetType {
++    case object CIFAR10 extends DatasetType(0)
++    case object ImageNet extends DatasetType(1)
++  }
++  sealed abstract class ShortcutType(typeId: Int)
++
++  object ShortcutType{
++    case object A extends ShortcutType(0)
++    case object B extends ShortcutType(1)
++    case object C extends ShortcutType(2)
++  }
++}
+\ No newline at end of file
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/models/resnet/Train.scala b/dl/src/main/scala/com/intel/analytics/bigdl/models/resnet/Train.scala
+new file mode 100644
+index 0000000..84128d0
+--- /dev/null
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/models/resnet/Train.scala
+@@ -0,0 +1,158 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *    http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.intel.analytics.bigdl.models.resnet
++
++import java.nio.file.Paths
++
++import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
++import com.intel.analytics.bigdl._
++import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
++import com.intel.analytics.bigdl.optim._
++import com.intel.analytics.bigdl.utils.{Engine, T}
++import Options._
++import com.intel.analytics.bigdl.models.resnet.Options.{TrainSparkParams => _, trainSparkParser => _, _}
++import org.apache.log4j.{Level, Logger}
++import org.apache.spark.SparkContext
++import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
++
++object LocalTrain {
++
++  def main(args: Array[String]): Unit = {
++    trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
++
++      val batchSize = 128
++      val (imageSize, lrSchedule, maxEpoch, dataSet) = param.dataset match {
++        //case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
++        case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
++      }
++
++      val trainData = Paths.get(param.folder, "train")
++      val trainDataSet = dataSet.localTrainDataSet(trainData, batchSize, imageSize)
++      val validationData = Paths.get(param.folder, "val")
++      val validateDataSet = dataSet.localValDataSet(validationData, batchSize, imageSize)
++
++
++      val model = if (param.modelSnapshot.isDefined) {
++        Module.load[Float](param.modelSnapshot.get)
++      } else {
++        val curModel = param.dataset match {
++        case "imagenet" => ResNet(classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
++        case _ => ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
++        }
++        ResNet.modelInit(curModel)
++        curModel
++      }
++
++      val state = if (param.stateSnapshot.isDefined) {
++        T.load(param.stateSnapshot.get)
++      } else {
++        T(
++          "learningRate" -> 0.1,
++          "weightDecay" -> 1e-4,
++          "momentum" -> 0.9,
++          "dampening" -> 0.9,
++          "learningRateSchedule" -> SGD.EpochDecay(lrSchedule)
++        )
++      }
++
++      Engine.setCoreNumber(param.coreNumber)
++      val optimizer = new LocalOptimizer[Float](
++        model = model,
++        dataset = trainDataSet,
++        criterion = new CrossEntropyCriterion[Float]()
++      )
++      if (param.cache.isDefined) {
++        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
++      }
++
++      optimizer
++        .setState(state)
++        .setValidation(Trigger.everyEpoch,
++          validateDataSet, Array(new Top1Accuracy[Float]))
++        .setEndWhen(Trigger.maxEpoch(maxEpoch))
++        .optimize()
++
++    })
++  }
++}
++
++object SparkTrain {
++  Logger.getLogger("org").setLevel(Level.ERROR)
++  Logger.getLogger("akka").setLevel(Level.ERROR)
++  Logger.getLogger("breeze").setLevel(Level.ERROR)
++  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
++
++  def main(args: Array[String]): Unit = {
++    trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
++      val batchSize = 64
++      val (imageSize, lrSchedule, maxEpoch, dataSet) = param.dataset match {
++        //case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
++        case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
++      }
++
++      val conf = Engine.sparkConf()
++        .setAppName("Train ResNet on Cifar10")
++        .set("spark.akka.frameSize", 64.toString)
++      val sc = new SparkContext(conf)
++
++      val trainData = Paths.get(param.folder, "train")
++      val trainDataSet = dataSet.distributedTrainDataSet(trainData, sc, param.nodesNumber, imageSize, batchSize)
++      val validationData = Paths.get(param.folder, "val")
++      val validateDataSet = dataSet.distributedValDataSet(validationData, sc, param.nodesNumber, imageSize, batchSize)
++
++      val model = if (param.modelSnapshot.isDefined) {
++        Module.load[Float](param.modelSnapshot.get)
++      } else {
++        val curModel = param.dataset match {
++          case "imagenet" => ResNet(classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
++          case _ => ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
++        }
++        ResNet.modelInit(curModel)
++        curModel
++      }
++
++      val state = if (param.stateSnapshot.isDefined) {
++        T.load(param.stateSnapshot.get)
++      } else {
++        T(
++          "learningRate" -> 0.1,
++          "weightDecay" -> 1e-4,
++          "momentum" -> 0.9,
++          "dampening" -> 0.9,
++          "learningRateSchedule" -> SGD.EpochDecay(lrSchedule)
++        )
++      }
++
++      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
++      val optimizer = new DistriOptimizer[Float](
++        model = model,
++        dataset = trainDataSet,
++        criterion = new CrossEntropyCriterion[Float]()
++      )
++
++      if (param.cache.isDefined) {
++        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
++      }
++      optimizer
++        .setValidation(Trigger.everyEpoch, validateDataSet, Array(new Top1Accuracy[Float]))
++        .setState(state)
++        .setEndWhen(Trigger.maxEpoch(maxEpoch))
++        .optimize()
++    })
++  }
++}
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/models/utils/MultiModelPerf.scala b/dl/src/main/scala/com/intel/analytics/bigdl/models/utils/MultiModelPerf.scala
+index 07782b7..0d20e64 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/models/utils/MultiModelPerf.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/models/utils/MultiModelPerf.scala
+@@ -23,15 +23,18 @@ import com.intel.analytics.bigdl._
+ import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
+ import com.intel.analytics.bigdl.numeric.NumericFloat
+ import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2}
+-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
++import com.intel.analytics.bigdl.models.resnet.ResNet
++import com.intel.analytics.bigdl.models.resnet.ResNet.ShortcutType
++import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
+ import com.intel.analytics.bigdl.tensor.Tensor
+ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
++import com.intel.analytics.bigdl.utils.T
+ import scopt.OptionParser
+ 
+ import scala.concurrent.duration.Duration
+ import scala.concurrent.{Await, ExecutionContext, Future}
+ import scala.reflect.ClassTag
+-
++import spire.syntax.module
+ /**
+  * Performance test for the models, in this program, we rum multiple models, each model train
+  * a small batch. This is better for some complex model(e.g googlenet) compare to single model
+@@ -67,7 +70,7 @@ object MultiModelPerf {
+       .text("Model name. It can be alexnet | alexnetowt | googlenet_v1 | googlenet_v2")
+       .action((v, p) => p.copy(module = v))
+       .validate(v =>
+-        if (Set("alexnet", "alexnetowt", "googlenet_v1", "googlenet_v2").
++        if (Set("alexnet", "alexnetowt", "googlenet_v1", "googlenet_v2", "resnet").
+           contains(v.toLowerCase())) {
+           success
+         } else {
+@@ -107,7 +110,14 @@ object MultiModelPerf {
+       case "googlenet_v1" => (GoogleNet_v1(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
+         ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
+       case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
+-        ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
++        ClassNLLCriterion(), Tensor[T](param.batchSize).fill(tn.fromType(1)))
++      case "resnet" => {
++        val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
++        ResNet.shareGradInput(curModel)
++        ResNet.modelInit(curModel)
++        (curModel, Tensor[T](param.batchSize, 3, 224, 224).rand(),
++          CrossEntropyCriterion(), Tensor(param.batchSize).fill(tn.fromType(1)))
++      }
+     })
+ 
+     val grads = tests.map(_._1.getParameters()._2).toArray
+@@ -187,11 +197,13 @@ object MultiModelPerf {
+ }
+ 
+ case class MultiModelPerfParams(
+-  batchSize: Int = 128,
+-  iteration: Int = 50,
++  batchSize: Int = 2,
++  iteration: Int = 20,
+   cores: Int = 28,
+   warmUp: Int = 10,
+   dataType: String = "float",
++
+   module: String = "alexnet",
+   inputData: String = "random"
++
+ )
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/models/utils/Perf.scala b/dl/src/main/scala/com/intel/analytics/bigdl/models/utils/Perf.scala
+index e3b86b4..cb9034b 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/models/utils/Perf.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/models/utils/Perf.scala
+@@ -17,14 +17,20 @@
+ 
+ package com.intel.analytics.bigdl.models.utils
+ 
++
++import com.intel.analytics.bigdl.models.resnet.ResNet.ShortcutType
+ import com.intel.analytics.bigdl.models.imagenet._
+ import com.intel.analytics.bigdl._
+ import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
++import com.intel.analytics.bigdl.models.lenet.LeNet5
++import com.intel.analytics.bigdl.models.resnet.ResNet
+ import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
+-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
++import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
+ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+ import com.intel.analytics.bigdl.tensor.Tensor
++import com.intel.analytics.bigdl.utils.T
+ import scopt.OptionParser
++import spire.syntax.module
+ 
+ import scala.reflect.ClassTag
+ 
+@@ -59,7 +65,7 @@ object Perf {
+       .action((v, p) => p.copy(module = v))
+       .validate(v =>
+         if (Set("alexnet", "alexnetowt", "googlenet_v1", "googlenet_v2", "vgg16", "vgg19",
+-          "lenet5").
++          "lenet5", "resnet")
+           contains(v.toLowerCase())) {
+           success
+         } else {
+@@ -98,18 +104,28 @@ object Perf {
+       case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224))
+       case "vgg16" => (Vgg_16(1000), Tensor[T](param.batchSize, 3, 224, 224))
+       case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
++      case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
++      case "resnet" => {
++        val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
++        ResNet.shareGradInput(curModel)
++        ResNet.modelInit(curModel)
++        (curModel, Tensor[T](param.batchSize, 3, 224, 224))
++      }
+     }
+     param.inputData match {
+       case "constant" => input.fill(tn.fromType(0.01))
+       case "random" => input.rand()
+     }
+     println(model)
+-    val criterion = ClassNLLCriterion[T]()
++    val criterion = param.module match {
++      case "resnet" => CrossEntropyCriterion()
++      case _ => ClassNLLCriterion()
++    }
+     val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
+ 
+     for (i <- 1 to param.warmUp) {
+       var time = System.nanoTime()
+-      val output = model.forward(input)
++      val output = model.forward(input).asInstanceOf[Tensor[T]]
+       criterion.forward(output, labels)
+       val forwardTime = System.nanoTime() - time
+       time = System.nanoTime()
+@@ -125,7 +141,7 @@ object Perf {
+     var totalBackwardTime = 0L
+     for (i <- 1 to param.iteration) {
+       var time = System.nanoTime()
+-      val output = model.forward(input)
++      val output = model.forward(input).asInstanceOf[Tensor[T]]
+       criterion.forward(output, labels)
+       val forwardTime = System.nanoTime() - time
+       totalForwardTime += forwardTime
+@@ -154,9 +170,9 @@ object Perf {
+ }
+ 
+ case class PerfParams(
+-  batchSize: Int = 128,
+-  iteration: Int = 50,
+-  warmUp: Int = 10,
++  batchSize: Int = 50,
++  iteration: Int = 10,
++  warmUp: Int = 3,
+   dataType: String = "float",
+   module: String = "alexnet",
+   inputData: String = "random"
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/nn/CAddTable.scala b/dl/src/main/scala/com/intel/analytics/bigdl/nn/CAddTable.scala
+index 0512a0a..d55a81a 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/nn/CAddTable.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/nn/CAddTable.scala
+@@ -22,21 +22,25 @@ import com.intel.analytics.bigdl.tensor.Tensor
+ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+ import com.intel.analytics.bigdl.utils.{T, Table}
+ 
+-import scala.reflect.ClassTag
++import scala.reflect._
+ 
+ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = false)(
+   implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
+ 
++  gradInput = T()
++
+   override def updateOutput(input: Table): Tensor[T] = {
+     if (inplace) {
+-      output = input[Tensor[T]](1)
++      output.set(input[Tensor[T]](1))
++      //output = input[Tensor[T]](1)
+     } else {
+-      val input1 = input[Tensor[T]](1)
++      output.resizeAs(input[Tensor[T]](1)).copy(input[Tensor[T]](1))
++     /* val input1 = input[Tensor[T]](1)
+       if (null == output) {
+         output = input1.clone()
+       } else {
+         output.resizeAs(input1).copy(input1)
+-      }
++      }*/
+     }
+ 
+     var i = 2
+@@ -51,18 +55,20 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean =
+   override def updateGradInput(input: Table, gradOutput: Tensor[T]) : Table = {
+     var i = 1
+     while (i <= input.length()) {
++      if (i > gradInput.length) gradInput.insert(i, Tensor[T]().resizeAs(input(1)))
+       if (inplace) {
+-        gradInput(i) = gradOutput
++        gradInput[Tensor[T]](i).set(gradOutput) // = gradOutput
+       } else {
+-        if (gradInput.contains(i)) {
+-          gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
+-        } else {
+-          gradInput.insert(i, gradOutput.clone())
+-        }
++//        if (gradInput.contains(i)) {
++//          gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
++        gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
+       }
+       i += 1
+     }
+-
++    i = input.length + 1
++    while (i <= gradInput.length) {
++      gradInput.remove(i)
++    }
+     gradInput
+   }
+ 
+@@ -71,6 +77,7 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean =
+   }
+ }
+ 
++
+ object CAddTable {
+   def apply[@specialized(Float, Double) T: ClassTag](
+       inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : CAddTable[T] = {
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/nn/ClassNLLCriterion.scala b/dl/src/main/scala/com/intel/analytics/bigdl/nn/ClassNLLCriterion.scala
+index 6369475..8e168f4 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/nn/ClassNLLCriterion.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/nn/ClassNLLCriterion.scala
+@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.utils.Engine
+ 
+ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boolean = true)
+   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
++
+   private var total_weight = ev.fromType[Int](0)
+   if (weights != null) require(weights.dim() == 1, "weights input should be 1-D Tensor")
+ 
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/nn/Container.scala b/dl/src/main/scala/com/intel/analytics/bigdl/nn/Container.scala
+index a27277b..8c7d64d 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/nn/Container.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/nn/Container.scala
+@@ -21,9 +21,11 @@ import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
+ import com.intel.analytics.bigdl.tensor.Tensor
+ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+ 
++
+ import scala.collection.mutable.ArrayBuffer
+ import scala.reflect.ClassTag
+ 
++
+ private[nn] abstract class Container[A <: Activity : ClassTag,
+     B <: Activity : ClassTag, T: ClassTag](
+   implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T] {
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/nn/CrossEntropyCriterion.scala b/dl/src/main/scala/com/intel/analytics/bigdl/nn/CrossEntropyCriterion.scala
+index 6538973..d2a6725 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/nn/CrossEntropyCriterion.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/nn/CrossEntropyCriterion.scala
+@@ -30,8 +30,9 @@ import scala.reflect.ClassTag
+ 
+ class CrossEntropyCriterion[T: ClassTag](
+    val weights: Tensor[T] = null )(implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{
+-  private val lsm = new LogSoftMax[T]()
+-  private val nll = new ClassNLLCriterion[T](weights)
++
++  private val lsm = LogSoftMax[T]()
++  private val nll = ClassNLLCriterion[T](weights)
+ 
+   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
+     input.squeeze()
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/nn/Identity.scala b/dl/src/main/scala/com/intel/analytics/bigdl/nn/Identity.scala
+index ec19c0d..932d1c6 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/nn/Identity.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/nn/Identity.scala
+@@ -17,7 +17,9 @@
+ 
+ package com.intel.analytics.bigdl.nn
+ 
++
+ import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
++
+ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+ 
+ import scala.reflect.ClassTag
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/nn/SpatialConvolution.scala b/dl/src/main/scala/com/intel/analytics/bigdl/nn/SpatialConvolution.scala
+index 4518ce1..2ef121b 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/nn/SpatialConvolution.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/nn/SpatialConvolution.scala
+@@ -52,13 +52,15 @@ class SpatialConvolution[T: ClassTag](
+     kernelH, kernelW)
+   val gradBias: Tensor[T] = Tensor[T](nOutputPlane)
+ 
+-  val fInput = Tensor[T]()
+-  val fGradInput = Tensor[T]()
++  private var sharedFlag: Boolean = false
++
++  var fInput = Tensor[T]()
++  var fGradInput = Tensor[T]()
+   private val ones = Tensor[T]()
+   private val onesBatch = Tensor[T]()
+   private val onesBias = Tensor[T]()
+   private var weightMM: Tensor[T] = null
+-  private val gradientBiasMT: Tensor[T] = Tensor[T]()
++  private var gradientBiasMT: Tensor[T] = Tensor[T]()
+   private var gradWeightMM: Tensor[T] = null
+   @transient
+   private var gradWeightMMInBatch: Tensor[T] = null
+@@ -69,7 +71,7 @@ class SpatialConvolution[T: ClassTag](
+     false
+   }
+   reset()
+-
++  
+   private var im2colTime = 0L
+   private var col2imTime = 0L
+ 
+@@ -82,6 +84,9 @@ class SpatialConvolution[T: ClassTag](
+     this
+   }
+ 
++  def setSharedVar(): Unit = sharedFlag = true
++  //def setGradWeightMM(sharedTensor: Tensor[T]): Unit = gradWeightMM = sharedTensor
++
+   @transient
+   private var results: Array[Future[Unit]] = null
+ 
+@@ -110,14 +115,7 @@ class SpatialConvolution[T: ClassTag](
+       weightMM = weight.view(nGroup, nOutputPlane / nGroup,
+         nInputPlane * kernelH * kernelW / nGroup)
+     }
+-    val dimWidth = if (input.dim() == 3) 3 else 4
+-    val dimHeight = if (input.dim() == 3) 2 else 3
+-
+-    val inputWidth = input.size(dimWidth)
+-    val inputHeight = input.size(dimHeight)
+-
+-    val outputWidth = (inputWidth + 2 * padW - kernelW) / strideW + 1
+-    val outputHeight = (inputHeight + 2 * padH - kernelH) / strideH + 1
++    val (outputWidth, outputHeight, inputWidth, inputHeight) =  calcOutputWH(input)
+ 
+     if (onesBias.dim() != 1 || onesBias.size(1) != outputHeight * outputWidth) {
+       onesBias.resize(Array(outputHeight * outputWidth)).fill(ev.fromType(1.0))
+@@ -128,7 +126,7 @@ class SpatialConvolution[T: ClassTag](
+       require(input.size(1) == nInputPlane)
+       require(input.isContiguous())
+       output.resize(Array(nOutputPlane, outputHeight, outputWidth))
+-      if (_1x1) {
++      if (_1x1 && !sharedFlag) {
+         fInput.set(input)
+         fInput.resize(Array(nGroup, kernelW * kernelH * nInputPlane / nGroup,
+           outputHeight * outputWidth))
+@@ -154,49 +152,113 @@ class SpatialConvolution[T: ClassTag](
+       require(input.size(2) == nInputPlane)
+       val batchSize = input.size(1)
+       output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
+-      if (_1x1) {
+-        fInput.set(input)
+-        fInput.resize(Array(batchSize, nGroup, kernelW * kernelH * nInputPlane / nGroup,
++
++      if (sharedFlag) {
++        val coresNum = Math.min(batchSize, Engine.coreNumber)
++        fInput.resize(Array(coresNum, nGroup, kernelW * kernelH * nInputPlane / nGroup,
+           outputHeight * outputWidth))
++
++        if (results == null || results.length != coresNum) {
++          results = new Array[Future[Unit]](coresNum)
++        }
++
++        var i, j = 0
++        val minJobNum: Int = batchSize / Engine.coreNumber
++        val remainJobNum: Int = batchSize - minJobNum * Engine.coreNumber
++
++        while (j < coresNum) {
++          val _j = j
++          results(j) = Engine.model.invoke(() => {
++            var _i = 1
++            val distJobNum: Int = minJobNum + (if (_j < remainJobNum) 1 else 0)
++            val indexStart: Int = _j * minJobNum + (if (_j < remainJobNum) _j else remainJobNum)
++            while (_i <= distJobNum) {
++              val inputT = input.select(1, _i + indexStart).contiguous()
++              val outputT = output.select(1, _i + indexStart)
++              val fInputT = fInput.select(1, _j + 1)
++              var g = 0
++              while (g < nGroup) {
++                updateOutputFrame(
++                  inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
++                  outputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
++                  weightMM.select(1, g + 1),
++                  bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
++                  fInputT.select(1, g + 1),
++                  kernelW, kernelH, strideW, strideH,
++                  padW, padH,
++                  nInputPlane / nGroup, inputWidth, inputHeight,
++                  nOutputPlane / nGroup, outputWidth, outputHeight)
++                g += 1
++              }
++              _i += 1
++            }
++          })
++          j += 1
++        }
++
++        i = 0
++        while (i < results.length) {
++          Await.result(results(i), Duration.Inf)
++          i += 1
++        }
+       } else {
+-        fInput.resize(Array(batchSize, nGroup, kernelW * kernelH * nInputPlane / nGroup,
+-          outputHeight * outputWidth))
+-      }
++        if (_1x1) {
++          fInput.set(input)
++          fInput.resize(Array(batchSize, nGroup, kernelW * kernelH * nInputPlane / nGroup,
++            outputHeight * outputWidth))
++        } else {
++          fInput.resize(Array(batchSize, nGroup, kernelW * kernelH * nInputPlane / nGroup,
++            outputHeight * outputWidth))
++        }
+ 
+-      if (results == null || results.length != batchSize) {
+-        results = new Array[Future[Unit]](batchSize)
+-      }
++        if (results == null || results.length != batchSize) {
++          results = new Array[Future[Unit]](batchSize)
++        }
+ 
+-      var i = 0
+-      while (i < batchSize) {
+-        val _i = i + 1
+-        results(i) = Engine.model.invoke(() => {
+-          val inputT = input.select(1, _i)
+-          require(inputT.isContiguous())
+-          val outputT = output.select(1, _i)
+-          val fInputT = fInput.select(1, _i)
+-          var g = 0
+-          while (g < nGroup) {
+-            updateOutputFrame(
+-              inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
+-              outputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+-              weightMM.select(1, g + 1),
+-              bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+-              fInputT.select(1, g + 1),
+-              kernelW, kernelH, strideW, strideH,
+-              padW, padH,
+-              nInputPlane / nGroup, inputWidth, inputHeight,
+-              nOutputPlane / nGroup, outputWidth, outputHeight)
+-            g += 1
+-          }
+-        })
+-        i += 1
++
++        var i = 0
++        while (i < batchSize) {
++          val _i = i + 1
++          results(i) = Engine.model.invoke(() => {
++            val inputT = input.select(1, _i)
++            require(inputT.isContiguous())
++            val outputT = output.select(1, _i)
++            val fInputT = fInput.select(1, _i)
++            var g = 0
++            while (g < nGroup) {
++              updateOutputFrame(
++                inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
++                outputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
++                weightMM.select(1, g + 1),
++                bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
++                fInputT.select(1, g + 1),
++                kernelW, kernelH, strideW, strideH,
++                padW, padH,
++                nInputPlane / nGroup, inputWidth, inputHeight,
++                nOutputPlane / nGroup, outputWidth, outputHeight)
++              g += 1
++            }
++          })
++          i += 1
++        }
++        Engine.model.sync(results)
+       }
+-      Engine.model.sync(results)
+     }
+     output
+   }
+ 
++  def calcOutputWH(input: Tensor[T]): (Int, Int, Int, Int) = {
++    val dimWidth = if (input.dim() == 3) 3 else 4
++    val dimHeight = if (input.dim() == 3) 2 else 3
++
++    val inputWidth = input.size(dimWidth)
++    val inputHeight = input.size(dimHeight)
++
++    val outputWidth = (inputWidth + 2 * padW - kernelW) / strideW + 1
++    val outputHeight = (inputHeight + 2 * padH - kernelH) / strideH + 1
++    (outputWidth, outputHeight, inputWidth, inputHeight)
++  }
++
+   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+     if (!propagateBack) {
+       return gradInput
+@@ -204,15 +266,17 @@ class SpatialConvolution[T: ClassTag](
+ 
+     require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
+     gradInput.resizeAs(input)
+-    if (_1x1) {
++    if(_1x1 && !sharedFlag) {
+       fGradInput.set(gradInput)
+       fGradInput.resizeAs(fInput)
+-    } else {
+-      fGradInput.resizeAs(fInput)
+     }
+ 
+     if (input.nDimension() == 3) {
+       require(gradOutput.isContiguous())
++      if (sharedFlag) {
++        val (outputWidth, outputHeight, _, _) = calcOutputWH(input)
++        fGradInput.resize(Array(nGroup, kernelW * kernelH * nInputPlane / nGroup, outputHeight * outputWidth))
++      } else { fGradInput.resizeAs(fInput) }
+       var g = 0
+       while (g < nGroup) {
+         updateGradInputFrame(
+@@ -225,30 +289,73 @@ class SpatialConvolution[T: ClassTag](
+       }
+     } else {
+       val batchSize = input.size(1)
+-      var i = 0
+-      while (i < batchSize) {
+-        val _i = i + 1
+-        results(i) = Engine.model.invoke(() => {
+-          val gradInputT = gradInput.select(1, _i)
+-          val gradOutputT = gradOutput.select(1, _i)
+-          require(gradOutputT.isContiguous())
+-          val fgradInputT = fGradInput.select(1, _i)
+-          var g = 0
+-          while (g < nGroup) {
+-            updateGradInputFrame(
+-              gradInputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
+-              gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+-              weightMM.select(1, g + 1).transpose(1, 2),
+-              fgradInputT.select(1, g + 1),
+-              kernelW, kernelH, strideW, strideH, padW, padH)
+-            g += 1
+-          }
+-        })
+-        i += 1
++      if (sharedFlag) {
++        val (outputWidth, outputHeight, _, _) = calcOutputWH(input)
++        fGradInput.resize(Array(Engine.coreNumber, nGroup, kernelW * kernelH * nInputPlane / nGroup,
++          outputHeight * outputWidth))
++
++        val coresNum = Math.min(batchSize, Engine.coreNumber)
++        if (results == null || results.length != coresNum) {
++          results = new Array[Future[Unit]](coresNum)
++        }
++
++        var i, j = 0
++        val minJobNum: Int = batchSize / Engine.coreNumber
++        val remainJobNum: Int = batchSize - minJobNum * Engine.coreNumber
++
++        while (j < coresNum) {
++          val _j = j
++          results(j) = Engine.model.invoke(() => {
++            var _i = 1
++            val distJobNum: Int = minJobNum + (if (_j < remainJobNum) 1 else 0)
++            val indexStart: Int = _j * minJobNum + (if (_j < remainJobNum) _j else remainJobNum)
++            while (_i <= distJobNum) {
++              val gradInputT = gradInput.select(1, _i + indexStart)
++              val gradOutputT = gradOutput.select(1, _i + indexStart).contiguous()
++              val fgradInputT = fGradInput.select(1, _j + 1)
++              var g = 0
++              while (g < nGroup) {
++                updateGradInputFrame(
++                  gradInputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
++                  gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
++                  weightMM.select(1, g + 1).transpose(1, 2),
++                  fgradInputT.select(1, g + 1),
++                  kernelW, kernelH, strideW, strideH, padW, padH)
++                g += 1
++              }
++              _i += 1
++            }
++          })
++          j += 1
++        }
++        Engine.model.sync(results)
++      } else {
++        fGradInput.resizeAs(fInput)
++
++        var i = 0
++        while (i < batchSize) {
++          val _i = i + 1
++          results(i) = Engine.model.invoke(() => {
++            val gradInputT = gradInput.select(1, _i)
++            val gradOutputT = gradOutput.select(1, _i)
++            require(gradOutputT.isContiguous())
++            val fgradInputT = fGradInput.select(1, _i)
++            var g = 0
++            while (g < nGroup) {
++              updateGradInputFrame(
++                gradInputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
++                gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
++                weightMM.select(1, g + 1).transpose(1, 2),
++                fgradInputT.select(1, g + 1),
++                kernelW, kernelH, strideW, strideH, padW, padH)
++              g += 1
++            }
++          })
++          i += 1
++        }
++        Engine.model.sync(results)
+       }
+-      Engine.model.sync(results)
+     }
+-
+     return gradInput
+   }
+ 
+@@ -262,15 +369,37 @@ class SpatialConvolution[T: ClassTag](
+         gradWeightMM = gradWeight.view(nGroup, nOutputPlane / nGroup,
+           nInputPlane * kernelH * kernelW / nGroup)
+       }
+-      var g = 0
+-      while (g < nGroup) {
+-        accGradParametersFrame(
+-          gradOutput.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+-          gradWeightMM.select(1, g + 1),
+-          gradBias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+-          fInput.select(1, g + 1),
+-          ev.fromType[Double](scale))
+-        g += 1
++      if (sharedFlag) {
++        val (outputWidth, outputHeight, inputWidth, inputHeight) =  calcOutputWH(input)
++        fInput.resize(Array(nGroup, kernelW * kernelH * nInputPlane / nGroup, outputHeight * outputWidth))
++        var g = 0
++        while (g < nGroup) {
++          write2fInput(
++            input.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
++            fInput.select(1, g + 1),
++            kernelW, kernelH, strideW, strideH,
++            padW, padH,
++            nInputPlane / nGroup, inputWidth, inputHeight,
++            nOutputPlane / nGroup, outputWidth, outputHeight)
++          accGradParametersFrame(
++            gradOutput.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
++            gradWeightMM.select(1, g + 1),
++            gradBias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
++            fInput.select(1, g + 1),
++            ev.fromType[Double](scale))
++          g += 1
++        }
++      } else {
++        var g = 0
++        while (g < nGroup) {
++          accGradParametersFrame(
++            gradOutput.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
++            gradWeightMM.select(1, g + 1),
++            gradBias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
++            fInput.select(1, g + 1),
++            ev.fromType[Double](scale))
++          g += 1
++        }
+       }
+     } else {
+       val batchSize = input.size(1)
+@@ -288,28 +417,77 @@ class SpatialConvolution[T: ClassTag](
+       if (onesBatch.dim() != 1 || onesBatch.size(1) != batchSize) {
+         onesBatch.resize(Array(batchSize)).fill(ev.fromType(1.0))
+       }
+-      var i = 0
+-      while (i < batchSize) {
+-        val _i = i + 1
+-        results(i) = Engine.model.invoke(() => {
+-          val gradOutputT = gradOutput.select(1, _i)
+-          val fInputT = fInput.select(1, _i)
+-          var g = 0
+-          while (g < nGroup) {
+-            calcGradParametersFrame(
+-              gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+-              gradWeightMMInBatch.select(1, _i).select(1, g + 1),
+-              gradientBiasMT.select(1, _i).narrow(1, g * nOutputPlane / nGroup + 1,
+-                nOutputPlane / nGroup),
+-              fInputT.select(1, g + 1),
+-              ev.fromType[Double](scale))
+-            g += 1
+-          }
+-        })
+-        i += 1
+-      }
+ 
+-      Engine.model.sync(results)
++      if (sharedFlag) {
++        val coresNum = Math.min(batchSize, Engine.coreNumber)
++        if (results == null || results.length != coresNum) {
++          results = new Array[Future[Unit]](coresNum)
++        }
++
++        var i, j = 0
++        val minJobNum: Int = batchSize / Engine.coreNumber
++        val remainJobNum: Int = batchSize - minJobNum * Engine.coreNumber
++        val (outputWidth, outputHeight, inputWidth, inputHeight) =  calcOutputWH(input)
++        fInput.resize(Array(Engine.coreNumber, nGroup, kernelW * kernelH * nInputPlane / nGroup,
++          outputHeight * outputWidth))
++        while (j < coresNum) {
++          val _j = j
++          results(j) = Engine.model.invoke(() => {
++            var _i = 1
++            val distJobNum: Int = minJobNum + (if (_j < remainJobNum) 1 else 0)
++            val indexStart: Int = _j * minJobNum + (if (_j < remainJobNum) _j else remainJobNum)
++            while (_i <= distJobNum) {
++              val gradOutputT = gradOutput.select(1, _i + indexStart)
++              val inputT = input.select(1, _i + indexStart).contiguous()
++              val fInputT = fInput.select(1, _j + 1)
++              var g = 0
++              while (g < nGroup) {
++                write2fInput(
++                  inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
++                  fInputT.select(1, g + 1),
++                  kernelW, kernelH, strideW, strideH,
++                  padW, padH,
++                  nInputPlane / nGroup, inputWidth, inputHeight,
++                  nOutputPlane / nGroup, outputWidth, outputHeight)
++                calcGradParametersFrame(
++                  gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
++                  gradWeightMMInBatch.select(1, _i + indexStart).select(1, g + 1),
++                  gradientBiasMT.select(1, _i + indexStart).narrow(1, g * nOutputPlane / nGroup + 1,
++                    nOutputPlane / nGroup),
++                  fInputT.select(1, g + 1),
++                  ev.fromType[Double](scale))
++                g += 1
++              }
++              _i += 1
++            }
++          })
++          j += 1
++        }
++        Engine.model.sync(results)
++      } else {
++        var i = 0
++        while (i < batchSize) {
++          val _i = i + 1
++          results(i) = Engine.model.invoke(() => {
++            val gradOutputT = gradOutput.select(1, _i)
++            val fInputT = fInput.select(1, _i)
++            var g = 0
++            while(g < nGroup) {
++              calcGradParametersFrame(
++                gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
++                gradWeightMMInBatch.select(1, _i).select(1, g + 1),
++                gradientBiasMT.select(1, _i).narrow(1, g * nOutputPlane / nGroup + 1,
++                  nOutputPlane / nGroup),
++                fInputT.select(1, g + 1),
++                ev.fromType[Double](scale))
++              g += 1
++            }
++          })
++          i += 1
++        }
++
++        Engine.model.sync(results)
++      }
+ 
+       val gradView = gradWeightMMInBatch.view(batchSize,
+         nOutputPlane * nInputPlane * kernelH * kernelW / nGroup).t
+@@ -398,6 +576,33 @@ class SpatialConvolution[T: ClassTag](
+       s" $kernelH, $strideW, $strideH, $padW, $padH)"
+   }
+ 
++
++  private def write2fInput(input: Tensor[T], fInput: Tensor[T],
++                                kW: Int, kH: Int, dW: Int, dH: Int, padW: Int, padH: Int,
++                                nInputPlane: Int, inputWidth: Int, inputHeight: Int,
++                                nOutputPlane: Int, outputWidth: Int, outputHeight: Int)(
++                                 implicit ev: TensorNumeric[T]): Unit = {
++
++    if (!_1x1) {
++      ev.getType() match {
++        case DoubleType =>
++          val before = System.nanoTime()
++          NNPrimitive.im2colDouble(fInput.asInstanceOf[Tensor[Double]],
++            input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH, nInputPlane,
++            inputWidth, inputHeight, outputWidth, outputHeight)
++          im2colTime += System.nanoTime() - before
++        case FloatType =>
++          val before = System.nanoTime()
++          NNPrimitive.im2colFloat(fInput.asInstanceOf[Tensor[Float]],
++            input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH, nInputPlane,
++            inputWidth, inputHeight, outputWidth, outputHeight)
++          im2colTime += System.nanoTime() - before
++        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
++      }
++    }
++  }
++
++
+   private def updateOutputFrame(input: Tensor[T], output: Tensor[T], weight: Tensor[T],
+     bias: Tensor[T], fInput: Tensor[T],
+     kW: Int, kH: Int, dW: Int, dH: Int, padW: Int, padH: Int,
+@@ -406,7 +611,7 @@ class SpatialConvolution[T: ClassTag](
+     implicit ev: TensorNumeric[T]): Unit = {
+ 
+     val output2d = output.view(nOutputPlane, outputHeight * outputWidth)
+-    if (!_1x1) {
++    if (!_1x1 || sharedFlag) {
+       ev.getType() match {
+         case DoubleType =>
+           val before = System.nanoTime()
+@@ -437,7 +642,7 @@ class SpatialConvolution[T: ClassTag](
+             gradOutput.size(2) * gradOutput.size(3)))
+         fgradInput.asInstanceOf[Tensor[Double]].addmm(0.0, fgradInput.asInstanceOf[Tensor[Double]],
+           1.0, weight.asInstanceOf[Tensor[Double]], gradOutput2d)
+-        if (!_1x1) {
++        if (!_1x1 || sharedFlag) {
+           gradInput.asInstanceOf[Tensor[Double]].zero()
+           val before = System.nanoTime()
+           NNPrimitive.col2imDouble(fgradInput.asInstanceOf[Tensor[Double]],
+@@ -452,7 +657,7 @@ class SpatialConvolution[T: ClassTag](
+           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
+         fgradInput.asInstanceOf[Tensor[Float]].addmm(0.0f, fgradInput.asInstanceOf[Tensor[Float]],
+           1.0f, weight.asInstanceOf[Tensor[Float]], gradOutput2d)
+-        if (!_1x1) {
++        if (!_1x1 || sharedFlag) {
+           gradInput.asInstanceOf[Tensor[Float]].zero()
+           val before = System.nanoTime()
+           NNPrimitive.col2imFloat(fgradInput.asInstanceOf[Tensor[Float]],
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/nn/SpatialConvolutionMap.scala b/dl/src/main/scala/com/intel/analytics/bigdl/nn/SpatialConvolutionMap.scala
+index eb92229..e6324d8 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/nn/SpatialConvolutionMap.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/nn/SpatialConvolutionMap.scala
+@@ -33,6 +33,8 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
+   val padH: Int = 0 // The additional zeros added per height to the input planes.
+ 
+ )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
++  val fInput = Tensor[T]()
++  val fGradInput = Tensor[T]()
+   val nInputPlane = ev.toType[Int](connTable.select(2, 1).max())
+   val nOutputPlane = ev.toType[Int](connTable.select(2, 2).max())
+   val weight: Tensor[T] = Tensor[T](connTable.size(1), kH, kW)
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/nn/Utils.scala b/dl/src/main/scala/com/intel/analytics/bigdl/nn/Utils.scala
+index 23a5d62..a00116f 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/nn/Utils.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/nn/Utils.scala
+@@ -17,11 +17,14 @@
+ 
+ package com.intel.analytics.bigdl.nn
+ 
++import com.intel.analytics.bigdl._
+ import com.intel.analytics.bigdl.nn.abstractnn.Activity
+-import com.intel.analytics.bigdl.tensor.Tensor
++import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
++import com.intel.analytics.bigdl.utils.RandomGenerator._
+ import com.intel.analytics.bigdl.utils.{T, Table}
+ 
++import scala.collection.mutable
+ import scala.reflect.ClassTag
+ 
+ object Utils {
+@@ -165,4 +168,75 @@ object Utils {
+     recursiveTensorApply1[T](x, t => t.fill(ev.fromType[Double](value)))
+   }
+ 
++  def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
++                                                             (implicit ev: TensorNumeric[T]): Unit = {
++    def sharingKey(m: Module[T]) = m.getClass.getName
++
++    val cache = mutable.Map[Any, Storage[T]]()
++    val packageName: String = model.getName().stripSuffix("Sequential")
++    //println("packageName = " + packageName)
++    cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
++    cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
++
++    var index = 0
++    def matchModels(model: Module[T]): Unit = {
++      model match {
++        case container: Container[Activity, Activity, T] => {
++          container.modules.foreach( m => {
++            if (m.gradInput.isInstanceOf[Tensor[T]] && !m.getClass.getName.equals(packageName + "ConcatTable")) {
++             // println("initial gradInput, not in ConcatTable")
++              val key = sharingKey(m)
++              if (!cache.contains(key)){
++                cache.put(key, Storage(Array(ev.fromType[Int](1))))
++              }
++              m.gradInput = Tensor(cache.get(key).get, 1, Array(0))
++            }
++            matchModels(m)
++          })
++        }
++        case concatTable if (concatTable.isInstanceOf[ConcatTable[T]]) => {
++          if (!cache.contains(index % 2)) {
++            cache.put(index % 2, Storage(Array(ev.fromType[Int](1))))
++          }
++          concatTable.gradInput = Tensor[T](cache.get(index % 2).get, 1, Array(0))
++          index = index + 1
++        }
++        case spatialConvolution if (spatialConvolution.isInstanceOf[SpatialConvolution[T]]) => {
++          val curModel = spatialConvolution.asInstanceOf[SpatialConvolution[T]]
++          curModel.setSharedVar
++          curModel.fInput = Tensor[T](cache.get("fInput").get)
++          curModel.fGradInput = Tensor[T](cache.get("fGradInput").get)
++        }
++        case _ => Unit
++      }
++    }
++    matchModels(model)
++  }
++
++  def findModules[@specialized(Float, Double) T: ClassTag](model: Module[T])
++                                                          (implicit ev: TensorNumeric[T]): Unit = {
++    model match {
++      case container: Container[Activity, Activity, T]
++      => container.modules.foreach(m => findModules(m))
++      case spatialConvolution if (spatialConvolution.isInstanceOf[SpatialConvolution[T]])
++      => {
++        val curModel = spatialConvolution.asInstanceOf[SpatialConvolution[T]]
++        val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane
++        curModel.weight.apply1(_ => ev.fromType[Float](RNG.normal(0, Math.sqrt(2.0f / n)).toFloat))
++        curModel.bias.apply1(_ => ev.fromType[Float](0))
++      }
++      case spatialBatchNormalization if (spatialBatchNormalization.isInstanceOf[SpatialBatchNormalization[T]])
++      => {
++        val curModel = spatialBatchNormalization.asInstanceOf[SpatialBatchNormalization[T]]
++        curModel.weight.apply1(_ => ev.fromType[Float](1.0f))
++        curModel.bias.apply1(_ => ev.fromType[Float](0.0f))
++      }
++      case linear if (linear.isInstanceOf[Linear[T]])
++      => {
++        linear.asInstanceOf[Linear[T]].bias.apply1(_ => ev.fromType[Float](0))
++      }
++      case _ => Unit
++    }
++  }
++
+ }
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/nn/abstractnn/AbstractModule.scala b/dl/src/main/scala/com/intel/analytics/bigdl/nn/abstractnn/AbstractModule.scala
+index 82d9242..97debbf 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/nn/abstractnn/AbstractModule.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/nn/abstractnn/AbstractModule.scala
+@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn.abstractnn
+ 
+ import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
+ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
++
+ import com.intel.analytics.bigdl.utils._
+ import com.intel.analytics.bigdl.nn.Module
+ import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
+@@ -51,7 +52,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
+    */
+   var gradInput: A = Activity[A, T]()
+ 
+-
+   /**
+    * Clear cached activities to save storage space or network bandwidth. Note that we use
+    * Tensor.set to keep some information like tensor share
+@@ -219,6 +219,25 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
+     this
+   }
+ 
++//  /**
++//   * Find a module by given a parameter offset
++//   *
++//   * @param paramOffset parameter offset in the (weight, grad) vector returned by the
++//   *                    getParamter function
++//   * @param indexes     ignore it
++//   * @return module ref, offset(ignore), indexes from the current module
++//   */
++//  def findModel(
++//    paramOffset: Int,
++//    indexes: Array[Int] = Array()):
++//  (Module[_ <: Activities, _ <: Activities, T], Int, Array[Int]) = (this, paramOffset, indexes)
++//
++//  def mapModules(f: Module[_ <: Activities, _ <: Activities, T] => Unit): Unit = {}
++//
++//  def findModules(name: String): ArrayBuffer[Module[_ <:Activities, _ <:Activities, T]]
++//    = {new ArrayBuffer[Module[_ <:Activities, _ <:Activities, T]]()}
++//
++
+   def evaluate(): this.type = {
+     train = false
+     this
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/optim/LocalOptimizer.scala b/dl/src/main/scala/com/intel/analytics/bigdl/optim/LocalOptimizer.scala
+index 5d38648..7999d94 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/optim/LocalOptimizer.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/optim/LocalOptimizer.scala
+@@ -81,6 +81,7 @@ class LocalOptimizer[T: ClassTag](
+   override def optimize(): Module[T] = {
+     var wallClockTime = 0L
+     var count = 0
++
+     optimMethod.clearHistory(state)
+     state("epoch") = state.get[Int]("epoch").getOrElse(1)
+     state("neval") = state.get[Int]("neval").getOrElse(1)
+@@ -104,6 +105,7 @@ class LocalOptimizer[T: ClassTag](
+           batch.labels.narrow(1, offset + 1, length))
+         b += 1
+       }
++
+       val dataFetchTime = System.nanoTime()
+ 
+       val lossSum = Engine.default.invokeAndWait(
+@@ -157,6 +159,7 @@ class LocalOptimizer[T: ClassTag](
+         s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} img / second")
+       state("neval") = state[Int]("neval") + 1
+ 
++
+       if (count >= dataset.size()) {
+         state("epoch") = state[Int]("epoch") + 1
+         dataset.shuffle()
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/optim/SGD.scala b/dl/src/main/scala/com/intel/analytics/bigdl/optim/SGD.scala
+index 2da9d79..87ca15f 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/optim/SGD.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/optim/SGD.scala
+@@ -17,6 +17,7 @@
+ 
+ package com.intel.analytics.bigdl.optim
+ 
++import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
+ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+ import com.intel.analytics.bigdl.tensor.Tensor
+ import com.intel.analytics.bigdl.utils.Table
+@@ -146,6 +147,21 @@ object SGD {
+     }
+   }
+ 
++  case class EpochDecay(dataset: DatasetType) extends LearningRateSchedule {
++    override def updateHyperParameter(config: Table, state: Table): Unit = {
++      val lr = config.get[Double]("learningRate").getOrElse(1e-1)
++      var clr = -lr
++      val epoch = config[Int]("epoch")
++      val decay = dataset match {
++        case DatasetType.ImageNet => math.floor ((epoch - 1) / 30)
++        case DatasetType.CIFAR10 => if (epoch >= 122) 2 else if (epoch >= 81) 1 else 0
++        case _ => 0
++      }
++      clr = clr * math.pow(0.1, decay)
++      config("clr") = clr
++    }
++  }
++
+   case class EpochStep(stepSize : Int, gamma : Double) extends LearningRateSchedule {
+     override def updateHyperParameter(config: Table, state: Table): Unit = {
+       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/tensor/DenseTensor.scala b/dl/src/main/scala/com/intel/analytics/bigdl/tensor/DenseTensor.scala
+index 4053a84..64c7ad7 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/tensor/DenseTensor.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/tensor/DenseTensor.scala
+@@ -1978,8 +1978,10 @@ object DenseTensor {
+         d -= 1
+       }
+       if (totalSize + self._storageOffset > 0) {
+-        if (self._storage == null || totalSize + self._storageOffset > self._storage.length) {
++        if (self._storage == null ) {
+           self._storage = new ArrayStorage(new Array[T](totalSize + self._storageOffset))
++        } else if (totalSize + self._storageOffset > self._storage.length) {
++          self._storage.resize(totalSize + self._storageOffset)
+         }
+       }
+     } else {
+diff --git a/dl/src/main/scala/com/intel/analytics/bigdl/tensor/Tensor.scala b/dl/src/main/scala/com/intel/analytics/bigdl/tensor/Tensor.scala
+index ac58943..5235c60 100644
+--- a/dl/src/main/scala/com/intel/analytics/bigdl/tensor/Tensor.scala
++++ b/dl/src/main/scala/com/intel/analytics/bigdl/tensor/Tensor.scala
+@@ -843,10 +843,12 @@ object Tensor {
+   def repeatTensor[T](tensor: Tensor[T], sizes: Int*): Tensor[T] =
+     tensor.repeatTensor(sizes.toArray)
+ 
++
+   def load[T](path : String) : Tensor[T] = {
+     File.load[Tensor[T]](path)
+   }
+ 
++
+   /**
+    * This is equivalent to DenseTensor.range(xmin, xmax, step)
+  *
+diff --git a/dl/src/main/scala/com/intel/analytics/sparkdl/models/ResNet.scala b/dl/src/main/scala/com/intel/analytics/sparkdl/models/ResNet.scala
+deleted file mode 100644
+index 1575001..0000000
+--- a/dl/src/main/scala/com/intel/analytics/sparkdl/models/ResNet.scala
++++ /dev/null
+@@ -1,111 +0,0 @@
+-package com.intel.analytics.sparkdl.models
+-
+-import com.intel.analytics.sparkdl.nn._
+-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+-import com.intel.analytics.sparkdl.utils.Table
+-
+-import scala.reflect.ClassTag
+-
+-/**
+-  * Created by ywan on 16-9-23.
+-  */
+-
+-object ResNet {
+-  def apply[T: ClassTag](opt: Table)(implicit ev: TensorNumeric[T]): Module[T] = {
+-
+-    val depth = opt.get("depth")
+-    val shortcutType = if (opt.get("shortcutType") != null) opt.get("shortcutType") else "B"
+-    var iChannels: Int = 0
+-
+-    def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[T] = {
+-      val useConv = shortcutType == "C" || (shortcutType == "B" && nInputPlane != nOutputPlane)
+-      val model = new Sequential[T]()
+-      if (useConv == true) {
+-        model.add(new SpatialConvolution[T](nInputPlane, nOutputPlane, 1, 1, stride, stride))
+-        model.add(new SpatialBatchNormalization(nOutputPlane))
+-        model
+-      } else if (nInputPlane != nOutputPlane) {
+-        model.add(new SpatialAveragePooling[T](1, 1, stride, stride))
+-        // sc.add(new Concat[T](2).add(Identity).add(MulConstant(0)) //  -- ZhangYao's code here
+-        model
+-      } // else { val sc = new Identity(); sc } //    -- ZhangYao's code here
+-      model
+-    }
+-
+-    def basicblock(n: Int, stride: Int): Module[T] = {
+-      var nInputPlane = iChannels
+-      iChannels       = n
+-
+-      val s = new Sequential[T]()
+-      s.add(new SpatialConvolution[T](nInputPlane, n, 3, 3, stride, stride, 1, 1))
+-      s.add(new SpatialBatchNormalization[T](n))
+-      s.add(new ReLU[T](true))
+-      s.add(new SpatialConvolution[T](n ,n, 3, 3, 1, 1, 1, 1))
+-      s.add(new SpatialBatchNormalization[T](n))
+-
+-      //val model = new Sequential[T]()
+-      //model.add(new ConcatTable().add(s).add(shortcut(nInputPlane, n, stride))) //   -- Zhang yao's code here
+-      //model.add(new CAddTable(true))
+-      //model.add(new ReLU(true))
+-      //model
+-    }
+-
+-    def bottleneck(n: Int, stride: Int): Module[T] = {
+-      var nInputPlane = iChannels
+-      iChannels       = n * 4
+-
+-      val s = new Sequential[T]()
+-      s.add(new SpatialConvolution[T](nInputPlane, n, 1, 1, 1, 1, 0, 0))
+-      s.add(new SpatialBatchNormalization[T](n))
+-      s.add(new ReLU[T](true))
+-      s.add(new SpatialConvolution[T](n, n*4, 1, 1, 1, 1, 0, 0))
+-      s.add(new SpatialBatchNormalization[T](n * 4))
+-
+-      //val model = new Sequential[T]()
+-      //model.add(new ConcatTable().add(s).add(shortcut(nInputPlane, n*4, stride))) -- Zhang yao's code
+-      //model.add(new CAddTable(true)) -- Zhangyao's code
+-      //model.add(new ReLU(true))
+-    }
+-
+-    def layer(block: String, features: Int, count: Int, stride: Int = 1): Module[T] = {
+-      val s = new Sequential[T]()
+-      for (i <- 1 to count) {
+-        block match {
+-          case "basicblock" => s.add(basicblock(features, if (i == 1) stride else 1))
+-          case "bottleneck" => s.add(bottleneck(features, if (i == 1) stride else 1))
+-          case _            => throw new NoSuchElementException("Invaid block call in layer")
+-        }
+-      }
+-      s
+-    }
+-
+-    val model = new Sequential[T]()
+-    if (opt.get("dataset") == "imagenet") {
+-
+-      // configuration for ResNet-50
+-      val block: String = "bottleneck"
+-      val loopConfig = Array(3, 4, 6, 3)
+-      val nFeatures  = 2048
+-
+-      iChannels = 64
+-      println(" | ResNet-" + depth + " ImageNet")
+-
+-      //-- The ResNet ImageNet Model
+-
+-      model.add(new SpatialConvolution[T](3, 64, 7, 7, 2, 2, 3, 3))
+-      model.add(new SpatialBatchNormalization[T](64))
+-      model.add(new ReLU[T](true))
+-      model.add(new SpatialMaxPooling[T](3, 3, 2, 2, 1, 1))
+-      model.add(layer(block, 64, loopConfig(0)))
+-      model.add(layer(block, 128, loopConfig(1), 2))
+-      model.add(layer(block, 256, loopConfig(2), 2))
+-      model.add(layer(block, 512, loopConfig(3), 2))
+-      model.add(new SpatialAveragePooling[T](7, 7, 1, 1))
+-      model.add(new View[T](nFeatures).setNumInputDims(3))
+-      model.add(new Linear[T](nFeatures, 1000))
+-
+-    }
+-    model
+-
+-  }
+-}
+\ No newline at end of file
+diff --git a/dl/src/main/scala/com/intel/analytics/sparkdl/nn/CrossEntropyCriterion.scala b/dl/src/main/scala/com/intel/analytics/sparkdl/nn/CrossEntropyCriterion.scala
+deleted file mode 100644
+index c1fc162..0000000
+--- a/dl/src/main/scala/com/intel/analytics/sparkdl/nn/CrossEntropyCriterion.scala
++++ /dev/null
+@@ -1,42 +0,0 @@
+-package com.intel.analytics.sparkdl.nn
+-
+-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+-
+-import scala.reflect.ClassTag
+-
+-
+-/**
+-  * Created by ywan on 16-9-21.
+-  */
+-class CrossEntropyCriterion[T: ClassTag](var weights: Tensor[T] = null)
+-                                        (implicit ev: TensorNumeric[T]) extends Criterion[T] {
+-  var gradInput: Tensor[T] = torch.Tensor[T]()
+-  var total_weight = ev.fromType[Int](0)
+-  //val eps = ev.fromType[Double](1e-12)
+-  if (weights != null) require(weights.dim() == 1, "weights input should be 1-D Tensor")
+-
+-  var nll = new ClassNLLCriterion(weights)
+-  var lsm = new LogSoftMax()
+-
+-  override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
+-
+-    var lsmOutput = lsm.updateOutput(input)
+-    return nll.updateOutput(lsmOutput, target)
+-  }
+-
+-  override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
+-    val size = input.size
+-    input.squeeze()
+-    target.squeeze()
+-    var lsmOutput = lsm.updateOutput(input)
+-    var nllGrad = nll.updateGradInput(lsmOutput, target)
+-    var lsmGrad = lsm.updateGradInput(input, nllGrad)
+-    this.gradInput = lsmGrad.view(size)
+-    this.gradInput
+-
+-  }
+-  override def toString(): String = {
+-    s"nn.CrossEntropy"
+-  }
+-}
+diff --git a/dl/src/test/scala/com/intel/analytics/bigdl/models/AlexNetSpec.scala b/dl/src/test/scala/com/intel/analytics/bigdl/models/AlexNetSpec.scala
+index dfc2625..2b1fcd6 100644
+--- a/dl/src/test/scala/com/intel/analytics/bigdl/models/AlexNetSpec.scala
++++ b/dl/src/test/scala/com/intel/analytics/bigdl/models/AlexNetSpec.scala
+@@ -63,7 +63,6 @@ feature:add(nn.ReLU())
+ feature:add(nn.SpatialConvolutionMM(256,256,3,3,1,1,1,1))      --  13 ->  13
+ feature:add(nn.ReLU())
+ feature:add(nn.SpatialMaxPooling(3,3,2,2))                   -- 13 -> 6
+-
+ -- 1.3. Create Classifier (fully connected layers)
+ local classifier = nn.Sequential()
+ classifier:add(nn.View(256*6*6))
+@@ -75,40 +74,31 @@ classifier:add(nn.Linear(4096, 4096))
+ classifier:add(nn.ReLU())
+ classifier:add(nn.Linear(4096, nClasses))
+ classifier:add(nn.LogSoftMax())
+-
+-
+ -- 1.4. Combine 1.1 and 1.3 to produce final model
+ model = nn.Sequential():add(feature):add(classifier)
+-
+ local parameters, gradParameters = model:getParameters()
+ model:zeroGradParameters()
+ parameters_initial = parameters : clone()
+ gradParameters_initial = gradParameters : clone()
+-
+ local criterion =  nn.ClassNLLCriterion()
+-
+ state = {
+   learningRate = 1e-2,
+   momentum = 0.9,
+   dampening = 0.0,
+   weightDecay = 5e-4
+ }
+-
+ feval = function(x)
+ model:zeroGradParameters()
+ model_initial = model : clone()
+-
+ local output1 = model:forward(input)
+ local err1 = criterion:forward(output1, labels)
+ local gradOutput1 = criterion:backward(output1, labels)
+ model:backward(input, gradOutput1)
+ return err1, gradParameters
+ end
+-
+ for i = 1,1,1 do
+   optim.sgd(feval, parameters, state)
+ end
+-
+ output=model.output
+ err=criterion.output
+ gradOutput=criterion.gradInput
+diff --git a/dl/src/test/scala/com/intel/analytics/bigdl/models/GoogleNetSpec.scala b/dl/src/test/scala/com/intel/analytics/bigdl/models/GoogleNetSpec.scala
+index f71e400..b74c9f7 100644
+--- a/dl/src/test/scala/com/intel/analytics/bigdl/models/GoogleNetSpec.scala
++++ b/dl/src/test/scala/com/intel/analytics/bigdl/models/GoogleNetSpec.scala
+@@ -15,6 +15,7 @@
+  * limitations under the License.
+  */
+ 
++
+ package com.intel.analytics.bigdl.models
+ 
+ import com.intel.analytics.bigdl.example.GoogleNet
+@@ -24,7 +25,8 @@ import com.intel.analytics.bigdl.optim.SGD
+ import com.intel.analytics.bigdl.tensor.Tensor
+ import com.intel.analytics.bigdl.torch.TH
+ import com.intel.analytics.bigdl.utils.RandomGenerator._
+-import com.intel.analytics.bigdl.utils.{T, Table}
++
++import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+ 
+ import scala.collection.mutable.HashMap
+@@ -32,7 +34,9 @@ import scala.math._
+ import scala.util.Random
+ 
+ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
++
+   "GoogleNet+bn" should "generate correct output" in {
++    Engine.setCoreNumber(4)
+     if (!TH.hasTorch()) {
+       cancel("Torch is not installed")
+     }
+@@ -216,6 +220,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
+   }
+ 
+   "GoogleNet" should "generate correct output" in {
++    Engine.setCoreNumber(4)
+     if (!TH.hasTorch()) {
+       cancel("Torch is not installed")
+     }
+diff --git a/dl/src/test/scala/com/intel/analytics/bigdl/models/ResNetSpec.scala b/dl/src/test/scala/com/intel/analytics/bigdl/models/ResNetSpec.scala
+new file mode 100644
+index 0000000..3a0156a
+--- /dev/null
++++ b/dl/src/test/scala/com/intel/analytics/bigdl/models/ResNetSpec.scala
+@@ -0,0 +1,317 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one or more
++ * contributor license agreements.  See the NOTICE file distributed with
++ * this work for additional information regarding copyright ownership.
++ * The ASF licenses this file to You under the Apache License, Version 2.0
++ * (the "License"); you may not use this file except in compliance with
++ * the License.  You may obtain a copy of the License at
++ *
++ *    http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.intel.analytics.bigdl.models
++
++import com.intel.analytics.bigdl.Module
++import com.intel.analytics.bigdl.models.resnet.ResNet
++import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
++import com.intel.analytics.bigdl.optim.SGD
++import com.intel.analytics.bigdl.tensor.Tensor
++import com.intel.analytics.bigdl.torch.TH
++import com.intel.analytics.bigdl.utils.{Engine, T}
++import com.intel.analytics.bigdl.nn._
++import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
++import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
++
++import scala.collection.immutable
++import scala.math._
++import scala.util.Random
++
++class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
++
++  "ResNet Float" should "generate correct output" in {
++    //System.setProperty("java.io.tmpdir", "/disk2/test");
++    Engine.setCoreNumber(4)
++    if (!TH.hasTorch()) {
++      cancel("Torch is not installed")
++    }
++
++    for (i <- 1 to 1) {
++      println(s"unitTest-${i}")
++      unitTest(i, i+100, 18, 4)
++    }
++    //println("test case when batchSize < Engine.coresNum")
++    //unitTest(1, 100, 18, 2)
++
++  }
++
++
++    def unitTest(inputSeed: Int, modelSeed: Int, depth: Int, batchSize: Int) {
++
++      Random.setSeed(inputSeed)
++      val classNum: Int = 1000
++
++      //val FloatInput = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
++      //val FloatLabel = Tensor[Float](batchSize).apply1(e => Random.nextInt(classNum))
++
++      val input = Tensor[Float](batchSize, 3, 224, 224).apply1( e => Random.nextFloat())
++      val labels = Tensor[Float](batchSize).apply1(e => Random.nextInt(classNum))
++//      for (i <- 0 until FloatInput.nElement()) {
++//        input.storage().array()(i) = FloatInput.storage().array()(i)
++//      }
++//      for (i <- 0 until FloatLabel.nElement()) {
++//        labels.storage().array()(i) = FloatLabel.storage().array()(i)
++//      }
++
++    val seed = modelSeed
++    RNG.setSeed(seed)
++    val model = ResNet(classNum, T("shortcutType" -> ShortcutType.B, "depth"->depth, "dataset" -> DatasetType.ImageNet))
++    model.zeroGradParameters()
++
++
++    val code =
++      "torch.setdefaulttensortype('torch.FloatTensor')" +
++      "torch.manualSeed(" + seed + ")\n" +
++        "local depth = " + depth + "\n" +
++      """
++        local Convolution = nn.SpatialConvolution
++        local Avg = nn.SpatialAveragePooling
++        local ReLU = nn.ReLU
++        local Max = nn.SpatialMaxPooling
++        local SBatchNorm = nn.SpatialBatchNormalization
++        local nClasses = 1000
++        local shortcutType = 'B'
++        local iChannels
++        local function shortcut(nInputPlane, nOutputPlane, stride)
++          local useConv = shortcutType == 'C' or
++                  (shortcutType == 'B' and nInputPlane ~= nOutputPlane)
++          if useConv then
++                 -- 1x1 convolution
++            return nn.Sequential()
++                    :add(Convolution(nInputPlane, nOutputPlane, 1, 1, stride, stride))
++                    :add(SBatchNorm(nOutputPlane))
++            elseif nInputPlane ~= nOutputPlane then
++                 -- Strided, zero-padded identity shortcut
++              return nn.Sequential()
++                    :add(nn.SpatialAveragePooling(1, 1, stride, stride))
++                    :add(nn.Concat(2)
++                       :add(nn.Identity())
++                       :add(nn.MulConstant(0)))
++            else
++              return nn.Identity()
++           end
++        end
++
++      local function basicblock(n, stride)
++          local nInputPlane = iChannels
++          iChannels = n
++
++          local s = nn.Sequential()
++          s:add(Convolution(nInputPlane,n,3,3,stride,stride,1,1))
++          s:add(SBatchNorm(n))
++          s:add(ReLU(true))
++          s:add(Convolution(n,n,3,3,1,1,1,1))
++          s:add(SBatchNorm(n))
++
++          return nn.Sequential()
++                 --:add(shortcut(nInputPlane, n, stride))
++                 --:add(s)
++                 :add(nn.ConcatTable()
++                    :add(s)
++                 --   :add(s))
++                    :add(shortcut(nInputPlane, n, stride)))
++                 :add(nn.CAddTable(true))
++                 :add(ReLU(true))
++        end
++
++        local function bottleneck(n, stride)
++          local nInputPlane = iChannels
++          iChannels = n * 4
++
++          local s = nn.Sequential()
++          s:add(Convolution(nInputPlane,n,1,1,1,1,0,0))
++          s:add(SBatchNorm(n))
++          s:add(ReLU(true))
++          s:add(Convolution(n,n,3,3,stride,stride,1,1))
++          s:add(SBatchNorm(n))
++          s:add(ReLU(true))
++          s:add(Convolution(n,n*4,1,1,1,1,0,0))
++          s:add(SBatchNorm(n * 4))
++
++          return nn.Sequential()
++                 :add(nn.ConcatTable()
++                   :add(s)
++                   :add(shortcut(nInputPlane, n * 4, stride)))
++                 :add(nn.CAddTable(true))
++                 :add(ReLU(true))
++        end
++
++
++        local function layer(block, features, count, stride)
++          local s = nn.Sequential()
++          for i=1,count do
++            s:add(block(features, i == 1 and stride or 1))
++          end
++          return s
++        end
++
++        local model = nn.Sequential()
++
++
++        local cfg = {
++                 --[10]  = {{1, 1, 1, 1}, 512, basicblock},
++                 [18]  = {{2, 2, 2, 2}, 512, basicblock},
++                 [34]  = {{3, 4, 6, 3}, 512, basicblock},
++                 [50]  = {{3, 4, 6, 3}, 2048, bottleneck},
++                 [101] = {{3, 4, 23, 3}, 2048, bottleneck},
++                 [152] = {{3, 8, 36, 3}, 2048, bottleneck},
++              }
++
++              assert(cfg[depth], 'Invalid depth: ' .. tostring(depth))
++              local def, nFeatures, block = table.unpack(cfg[depth])
++              iChannels = 64
++              --print(' | ResNet-' .. depth .. ' ImageNet')
++
++
++        -- The ResNet ImageNet model
++        model:add(Convolution(3,64,7,7,2,2,3,3))
++        model:add(SBatchNorm(64))
++        model:add(ReLU(true))
++        model:add(Max(3,3,2,2,1,1))
++        model:add(layer(block, 64, def[1]))
++        model:add(layer(block, 128, def[2], 2))
++        model:add(layer(block, 256, def[3], 2))
++        model:add(layer(block, 512, def[4], 2))
++        model:add(Avg(7, 7, 1, 1))
++        model:add(nn.View(nFeatures):setNumInputDims(3))
++        model:add(nn.Linear(nFeatures, nClasses))
++        --model:add(nn.LogSoftMax())
++
++        local parameters, gradParameters = model:getParameters()
++                parameters_initial = parameters : clone()
++                gradParameters_initial = gradParameters : clone()
++
++                --local criterion =  nn.ClassNLLCriterion()
++                local criterion = nn.CrossEntropyCriterion()
++                state = {
++                  learningRate = 1e-2,
++                  momentum = 0.9,
++                  dampening = 0.0,
++                  weightDecay = 5e-4
++                }
++
++         feval = function(x)
++              model:forward(input)
++              criterion:forward(model.output, labels)
++              model:zeroGradParameters()
++              criterion:backward(model.output, labels)
++              model:backward(input, criterion.gradInput)
++              return criterion.output, gradParameters
++           end
++
++             for i = 1, 1, 1 do
++              w, err = optim.sgd(feval, parameters, state)
++             end
++
++                output=model.output
++                gradOutput=criterion.gradInput
++                err = criterion.output
++                gradInput = model.gradInput
++
++      """
++
++    TH.runNM(code, immutable.Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
++      "parameters_initial", "gradParameters_initial", "gradInput", "model"))
++
++    ResNet.shareGradInput(model)
++
++    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Float]]
++    val parameters = model.getParameters()._1
++
++    for (i <- 0 until parameters.nElement()) {
++      if (abs(parameters.storage().array()(i) - parameterTorch.storage().array()(i)) > 1e-8) {
++        println(s"${parameters.storage().array()(i)} ${parameterTorch.storage().array()(i)}")
++      }
++    }
++
++    //val criterion = new ClassNLLCriterion[Float]()
++    val (weights, grad) = model.getParameters()
++    val criterion = CrossEntropyCriterion[Float]()
++
++    val state = T("learningRate" -> 1e-2, "momentum" -> 0.9, "weightDecay" -> 5e-4,
++      "dampening" -> 0.0)
++    val sgd = new SGD[Float]
++
++    def feval(x: Tensor[Float]): (Float, Tensor[Float]) = {
++      model.forward(input)
++      criterion.forward(model.output.asInstanceOf[Tensor[Float]], labels)
++      model.zeroGradParameters()
++      val gradOutputTest = criterion.backward(model.output.asInstanceOf[Tensor[Float]], labels)
++      model.backward(input, gradOutputTest)
++      (criterion.output, grad)
++    }
++    for (i <- 1 to 1) {
++      sgd.optimize(feval, weights, state)
++    }
++
++    val output = TH.map("output").asInstanceOf[Tensor[Float]]
++    val outputTest = model.output.toTensor[Float]
++    var abss = 0.0
++    for (i <- 0 until outputTest.nElement()) {
++      val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i).toFloat)
++      //println(outputTest.storage().array()(i) + " " + output.storage().array()(i).toFloat)
++      abss += tmp
++    }
++    println(s"outputAbs:$abss")
++    assert(abss < 1e-2)
++
++
++    val errTest = criterion.output
++    val err = TH.map("err").asInstanceOf[Double]
++    println(s"${abs(errTest - err)}")
++    assert(abs(errTest - err) < 1.5e-6)
++
++    val gradOutputTest = criterion.backward(outputTest, labels)
++    val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Float]]
++    abss = 0.0
++    for (i <- 0 until gradOutputTest.nElement()) {
++      val tmp = abs(gradOutputTest.storage().array()(i) - gradOutput.storage().array()(i).toFloat)
++      abss += tmp
++    }
++    assert(abss < 2e-6)
++    println(s"gradOutputTestAbs:$abss")
++
++    val gradInput = model.gradInput.asInstanceOf[Tensor[Float]] // model.backward(input, gradOutputTest)
++    val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Float]]
++
++    abss = 0.0
++    for (i <- 0 until gradInputTorch.nElement()) {
++      val tmp = abs(gradInputTorch.storage().array()(i) - gradInput.storage().array()(i))
++      abss += tmp
++    }
++    println(s"gradInputTestAbs:$abss")
++
++    //    val (weights, grad) = model.getParameters()
++    //    val modelTorch = TH.map("model").asInstanceOf[Module[Float]]
++    //    val (weightsTorch, gradTorch) = modelTorch.getParameters()
++    //    sgd.optimize(_ => (errTest, grad), weights, state, state)
++    //    abss = 0.0
++    //    for (i <- 0 until weights.nElement()) {
++    //      val tmp = abs(weights.storage().array()(i) - weightsTorch.storage().array()(i))
++    //      abss += tmp
++    //    }
++    //    assert(abss < 2e-2)
++  }
++
++
++
++
++
++
++
++}
+diff --git a/dl/src/test/scala/com/intel/analytics/bigdl/nn/CrossEntropyCriterionSpec.scala b/dl/src/test/scala/com/intel/analytics/bigdl/nn/CrossEntropyCriterionSpec.scala
+new file mode 100644
+index 0000000..4f12f41
+--- /dev/null
++++ b/dl/src/test/scala/com/intel/analytics/bigdl/nn/CrossEntropyCriterionSpec.scala
+@@ -0,0 +1,62 @@
++package com.intel.analytics.bigdl.nn
++
++import com.intel.analytics.bigdl.Module
++import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
++import com.intel.analytics.bigdl.optim.SGD
++import com.intel.analytics.bigdl.tensor.Tensor
++import com.intel.analytics.bigdl.utils.T
++import org.scalatest.{FlatSpec, Matchers}
++
++import scala.math._
++
++
++/**
++  * Created by ywan on 16-9-21.
++  */
++
++class CrossEntropyCriterionSpec extends FlatSpec with Matchers {
++
++  "CrossEntropyCriterion " should "return return right output and gradInput" in {
++    val criterion = new CrossEntropyCriterion[Double]()
++
++    val input = Tensor[Double](3, 3)
++    input(Array(1, 1)) = 0.33655226649716
++    input(Array(1, 2)) = 0.77367000770755
++    input(Array(1, 3)) = 0.031494265655056
++    input(Array(2, 1)) = 0.11129087698646
++    input(Array(2, 2)) = 0.14688249188475
++    input(Array(2, 3)) = 0.49454387230799
++    input(Array(3, 1)) = 0.45682632108219
++    input(Array(3, 2)) = 0.85653987620026
++    input(Array(3, 3)) = 0.42569971177727
++
++    val target = Tensor[Double](3)
++    target(Array(1)) = 1
++    target(Array(2)) = 2
++    target(Array(3)) = 3
++    //println("input.dim() = " + input.dim())
++
++    val expectedOutput = 1.2267281042702334
++
++    val loss = criterion.forward(input, target)
++    loss should be(expectedOutput +- 1e-8)
++
++    val expectedGrad = Tensor[Double](3, 3)
++    expectedGrad(Array(1, 1)) = -0.23187185
++    expectedGrad(Array(1, 2)) = 0.15708656
++    expectedGrad(Array(1, 3)) = 0.07478529
++    expectedGrad(Array(2, 1)) = 0.09514888
++    expectedGrad(Array(2, 2)) = -0.23473696
++    expectedGrad(Array(2, 3)) = 0.13958808
++    expectedGrad(Array(3, 1)) = 0.09631823
++    expectedGrad(Array(3, 2)) = 0.14364876
++    expectedGrad(Array(3, 3)) = -0.23996699
++    val gradInput = criterion.backward(input, target)
++
++    expectedGrad.map(gradInput, (v1, v2) => {
++      assert(abs(v1 - v2) < 1e-6);
++      v1
++    })
++
++  }
++}
+diff --git a/dl/src/test/scala/com/intel/analytics/bigdl/nn/IdentitySpec.scala b/dl/src/test/scala/com/intel/analytics/bigdl/nn/IdentitySpec.scala
+new file mode 100644
+index 0000000..77f9d4c
+--- /dev/null
++++ b/dl/src/test/scala/com/intel/analytics/bigdl/nn/IdentitySpec.scala
+@@ -0,0 +1,27 @@
++package com.intel.analytics.bigdl.nn
++
++import com.intel.analytics.bigdl.tensor.Tensor
++import org.scalatest.{FlatSpec, Matchers}
++
++/**
++  * Created by yao on 9/20/16.
++  */
++class IdentitySpec extends FlatSpec with Matchers {
++  "Identity" should "generate correct output and grad" in {
++    val batchN = 3
++    val inputN = 5
++    val outputN = inputN
++
++    val input = Tensor[Double](batchN, inputN)
++    input.rand()
++    val gradOutput = Tensor[Double](batchN, outputN)
++    gradOutput.rand()
++
++    val module = new Identity[Double]()
++    val output = module.forward(input)
++    assert(input equals output)
++
++    val gradInput = module.backward(input, gradOutput)
++    assert(gradInput equals gradOutput)
++  }
++}
+diff --git a/dl/src/test/scala/com/intel/analytics/bigdl/nn/MulConstantSpec.scala b/dl/src/test/scala/com/intel/analytics/bigdl/nn/MulConstantSpec.scala
+new file mode 100644
+index 0000000..0ffae78
+--- /dev/null
++++ b/dl/src/test/scala/com/intel/analytics/bigdl/nn/MulConstantSpec.scala
+@@ -0,0 +1,44 @@
++package com.intel.analytics.bigdl.nn
++
++import com.intel.analytics.bigdl.tensor.Tensor
++import org.scalatest.FlatSpec
++
++/**
++  * Created by yao on 9/21/16.
++  */
++class MulConstantSpec extends FlatSpec {
++  "MulConstant" should "generate correct output and grad" in {
++    val input = Tensor[Double](2, 2, 2).randn()
++    val scalar = 25.0
++    val expectedOutput = input.clone().apply1(_ * scalar)
++    val gradOutput = Tensor[Double](2, 2, 2).rand()
++    val expectedGrad = gradOutput.clone().apply1(_ * scalar)
++
++    val module = new MulConstant[Double](scalar)
++    val output = module.forward(input)
++    assert(expectedOutput equals output)
++
++    val gradInput = module.backward(input, gradOutput)
++    assert(gradInput equals expectedGrad )
++  }
++
++  "MulConstant with inPlace = true" should "generate correct output and grad" in {
++    var input = Tensor[Double](2, 2, 2).randn()
++    val scalar = 25.0
++    val expectedOutput = input.clone().apply1(_ * scalar)
++    val gradOutput = Tensor[Double](2, 2, 2).rand()
++    val expectedGrad = gradOutput.clone().apply1(_ * scalar)
++
++    // Test forward
++    val module = new MulConstant[Double](scalar, true)
++    val output = module.forward(input)
++    assert(expectedOutput equals output)
++
++    // Test backward
++    input = Tensor[Double](2, 2, 2).randn()
++    val expctedInput = input.clone().apply1(_ / scalar)
++    val gradInput = module.backward(input, gradOutput)
++    assert(gradInput equals expectedGrad)
++    assert(input equals expctedInput)
++  }
++}
+diff --git a/dl/src/test/scala/com/intel/analytics/bigdl/optim/EvaluatorSpec.scala b/dl/src/test/scala/com/intel/analytics/bigdl/optim/EvaluatorSpec.scala
+index b80d243..3454da8 100644
+--- a/dl/src/test/scala/com/intel/analytics/bigdl/optim/EvaluatorSpec.scala
++++ b/dl/src/test/scala/com/intel/analytics/bigdl/optim/EvaluatorSpec.scala
+@@ -26,8 +26,9 @@ import org.apache.log4j.{Level, Logger}
+ import org.apache.spark.SparkContext
+ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+ 
+-class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
++import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+ 
++class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter  {
+   var sc: SparkContext = null
+ 
+   after {
+@@ -36,6 +37,7 @@ class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
+     }
+   }
+ 
++
+   "accuracy on 2d tensor" should "be correct" in {
+     val output = Tensor(Storage(Array[Double](
+       0, 0, 0, 1,
+diff --git a/dl/src/test/scala/com/intel/analytics/bigdl/torch/CAddSpec.scala b/dl/src/test/scala/com/intel/analytics/bigdl/torch/CAddSpec.scala
+index fdfa3a1..2585bad 100644
+--- a/dl/src/test/scala/com/intel/analytics/bigdl/torch/CAddSpec.scala
++++ b/dl/src/test/scala/com/intel/analytics/bigdl/torch/CAddSpec.scala
+@@ -61,6 +61,7 @@ class CAddSpec extends FlatSpec with BeforeAndAfter with Matchers {
+ 
+     output should be (luaOutput)
+     gradInput should be (luaGradInput)
++    println(layer.gradBias)
+     layer.gradBias should be (luaGradBias)
+ 
+     println("Test case : CAdd, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+diff --git a/dl/src/test/scala/com/intel/analytics/bigdl/utils/SaveObjSpec.scala b/dl/src/test/scala/com/intel/analytics/bigdl/utils/SaveObjSpec.scala
+index cb4eecd..7fed87c 100644
+--- a/dl/src/test/scala/com/intel/analytics/bigdl/utils/SaveObjSpec.scala
++++ b/dl/src/test/scala/com/intel/analytics/bigdl/utils/SaveObjSpec.scala
+@@ -25,7 +25,8 @@ import org.scalatest.{FlatSpec, Matchers}
+ 
+ class SaveObjSpec extends FlatSpec with Matchers {
+   "A tensor load from saved file" should "be same with original tensor" in {
+-    val originTensor = Tensor[Float](3, 2, 4).rand()
++    Engine.setCoreNumber(4)
++    val originTensor = Tensor[Double](3, 2, 4).rand()
+     val filePath = java.io.File.createTempFile("SaveObjSpecTensor", ".obj").getAbsolutePath
+     File.save(originTensor, filePath, true)
+     val loadedTensor = File.load[Tensor[Float]](filePath)
+@@ -33,6 +34,7 @@ class SaveObjSpec extends FlatSpec with Matchers {
+   }
+ 
+   "Alexnet load from saved file" should "be same with the original one" in {
++    Engine.setCoreNumber(4)
+     val model = AlexNet(1000)
+     val filePath = java.io.File.createTempFile("SaveObjSpecAlexnet", ".obj").getAbsolutePath
+     model.forward(Tensor[Float](4, 3, 227, 227))
+@@ -43,7 +45,9 @@ class SaveObjSpec extends FlatSpec with Matchers {
+   }
+ 
+   "GoogleNet load from saved file" should "be same with the original one" in {
++    Engine.setCoreNumber(4)
+     val model = GoogleNet_v1(1000)
++
+     val filePath = java.io.File.createTempFile("SaveObjSpecGoogleNet", ".obj").getAbsolutePath
+     model.forward(Tensor[Float](4, 3, 224, 224))
+     File.save(model, filePath, true)
+@@ -53,6 +57,7 @@ class SaveObjSpec extends FlatSpec with Matchers {
+   }
+ 
+   "A table load from saved file" should "be same with original table" in {
++    Engine.setCoreNumber(4)
+     val table = T("test" -> "test2", "test3" -> 4)
+     val filePath = java.io.File.createTempFile("SaveObjSpecTable", ".obj").getAbsolutePath
+     File.save(table, filePath, true)
+diff --git a/dl/src/test/scala/com/intel/analytics/sparkdl/models/ResNetSpec.scala b/dl/src/test/scala/com/intel/analytics/sparkdl/models/ResNetSpec.scala
+deleted file mode 100644
+index 93291b8..0000000
+--- a/dl/src/test/scala/com/intel/analytics/sparkdl/models/ResNetSpec.scala
++++ /dev/null
+@@ -1,372 +0,0 @@
+-/*
+- * Licensed to the Apache Software Foundation (ASF) under one or more
+- * contributor license agreements.  See the NOTICE file distributed with
+- * this work for additional information regarding copyright ownership.
+- * The ASF licenses this file to You under the Apache License, Version 2.0
+- * (the "License"); you may not use this file except in compliance with
+- * the License.  You may obtain a copy of the License at
+- *
+- *    http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-
+-package com.intel.analytics.sparkdl.models
+-import com.intel.analytics.sparkdl.utils.Table
+-import com.intel.analytics.sparkdl.nn._
+-import com.intel.analytics.sparkdl.optim.SGD
+-import com.intel.analytics.sparkdl.tensor.TensorNumericMath.TensorNumeric
+-import com.intel.analytics.sparkdl.tensor._
+-import com.intel.analytics.sparkdl.torch.TH
+-import com.intel.analytics.sparkdl.utils.RandomGenerator._
+-import com.intel.analytics.sparkdl.utils.{RandomGenerator, T}
+-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+-
+-import scala.math._
+-import scala.reflect.ClassTag
+-import scala.util.Random
+-
+-class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
+-  "ResNet float" should "generate correct output" in {
+-    if (!TH.hasTorch()) {
+-      cancel("Torch is not installed")
+-    }
+-
+-    Random.setSeed(1)
+-    val input = torch.Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
+-    val labels = torch.Tensor[Double](8).apply1(e => Random.nextInt(100))
+-
+-    val seed = 100
+-    RNG.setSeed(seed)
+-    val opt: Table = new Table()
+-    opt("depth") = 50
+-    opt("shortcutType") = "C"
+-    opt("dataset") = "imagenet"
+-    val model = ResNet[Float](opt)
+-    //val model = getModel[Float](1000)
+-    model.zeroGradParameters()
+-
+-
+-    val code = "torch.manualSeed(" + seed + ")\n" +
+-      """local nClasses = 1000
+-local feature = nn.Sequential()
+-feature:add(nn.SpatialConvolutionMM(3,64,11,11,4,4,2,2))       -- 224 -> 55
+-feature:add(nn.ReLU())
+-feature:add(nn.SpatialMaxPooling(3,3,2,2))                   -- 55 ->  27
+-feature:add(nn.SpatialConvolutionMM(64,192,5,5,1,1,2,2))       --  27 -> 27
+-feature:add(nn.ReLU())
+-feature:add(nn.SpatialMaxPooling(3,3,2,2))                   --  27 ->  13
+-feature:add(nn.SpatialConvolutionMM(192,384,3,3,1,1,1,1))      --  13 ->  13
+-feature:add(nn.ReLU())
+-feature:add(nn.SpatialConvolutionMM(384,256,3,3,1,1,1,1))      --  13 ->  13
+-feature:add(nn.ReLU())
+-feature:add(nn.SpatialConvolutionMM(256,256,3,3,1,1,1,1))      --  13 ->  13
+-feature:add(nn.ReLU())
+-feature:add(nn.SpatialMaxPooling(3,3,2,2))                   -- 13 -> 6
+-
+--- 1.3. Create Classifier (fully connected layers)
+-local classifier = nn.Sequential()
+-classifier:add(nn.View(256*6*6))
+---classifier:add(nn.Dropout(0.5))
+-classifier:add(nn.Linear(256*6*6, 4096))
+-classifier:add(nn.Threshold(0, 1e-6))
+---classifier:add(nn.Dropout(0.5))
+-classifier:add(nn.Linear(4096, 4096))
+-classifier:add(nn.Threshold(0, 1e-6))
+-classifier:add(nn.Linear(4096, nClasses))
+-classifier:add(nn.LogSoftMax())
+-
+-
+--- 1.4. Combine 1.1 and 1.3 to produce final model
+-model = nn.Sequential():add(feature):add(classifier)
+-
+-local parameters, gradParameters = model:getParameters()
+-model:zeroGradParameters()
+-parameters_initial = parameters : clone()
+-gradParameters_initial = gradParameters : clone()
+-
+-local criterion =  nn.ClassNLLCriterion()
+-
+-state = {
+-  learningRate = 1e-2,
+-  momentum = 0.9,
+-  dampening = 0.0,
+-  weightDecay = 5e-4
+-}
+-
+-feval = function(x)
+-model:zeroGradParameters()
+-model_initial = model : clone()
+-
+-local output1 = model:forward(input)
+-local err1 = criterion:forward(output1, labels)
+-local gradOutput1 = criterion:backward(output1, labels)
+-model:backward(input, gradOutput1)
+-return err1, gradParameters
+-end
+-
+-for i = 1,1,1 do
+-  optim.sgd(feval, parameters, state)
+-end
+-
+-output=model.output
+-err=criterion.output
+-gradOutput=criterion.gradInput
+-gradInput = model.gradInput
+-      """
+-
+-    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
+-      "parameters_initial", "gradParameters_initial", "gradInput", "model"))
+-
+-    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
+-    val parameters = model.getParameters()._1.asInstanceOf[Tensor[Float]]
+-
+-    for (i <- 0 until parameters.nElement()) {
+-      if (abs(parameters.storage().array()(i) - parameterTorch.storage().array()(i)) > 1e-8) {
+-        println(s"${parameters.storage().array()(i)} ${parameterTorch.storage().array()(i)}")
+-      }
+-    }
+-
+-
+-    val criterion = new CrossEntropyCriterion[Float]()
+-    val state = T("learningRate" -> 1e-1, "momentum" -> 0.9, "weightDecay" -> 1e-4,
+-      "dampening" -> 0.0)
+-    val sgd = new SGD[Float]
+-
+-    val floatInput = torch.Tensor[Float](8, 3, 224, 224)
+-    val floatLabel = torch.Tensor[Float](8)
+-
+-    for (i <- 0 until floatInput.nElement()) {
+-      floatInput.storage().array()(i) = input.storage().array()(i).toFloat
+-    }
+-    for (i <- 0 until floatLabel.nElement()) {
+-      floatLabel.storage().array()(i) = labels.storage().array()(i).toFloat
+-    }
+-
+-    model.zeroGradParameters()
+-    val output = TH.map("output").asInstanceOf[Tensor[Double]]
+-    val outputTest = model.forward(floatInput)
+-    var abss = 0.0
+-    for (i <- 0 until outputTest.nElement()) {
+-      val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i))
+-      abss += tmp
+-    }
+-    assert(abss < 1e-2)
+-    println(s"outputAbs:$abss")
+-
+-    val errTest = criterion.forward(outputTest, floatLabel)
+-    val err = TH.map("err").asInstanceOf[Double]
+-    println(s"${abs(errTest - err)}")
+-    assert(abs(errTest - err) < 1e-6)
+-
+-    val gradOutputTest = criterion.backward(outputTest, floatLabel)
+-    val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
+-    abss = 0.0
+-    for (i <- 0 until gradOutputTest.nElement()) {
+-      val tmp = abs(gradOutputTest.storage().array()(i) - gradOutput.storage().array()(i))
+-      abss += tmp
+-    }
+-    assert(abss == 0.0)
+-    println(s"gradOutputTestAbs:$abss")
+-
+-    val gradInput = model.backward(floatInput, gradOutputTest)
+-    val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
+-
+-    abss = 0.0
+-    for (i <- 0 until gradInputTorch.nElement()) {
+-      val tmp = abs(gradInputTorch.storage().array()(i) - gradInput.storage().array()(i))
+-      abss += tmp
+-    }
+-    println(s"gradInputTestAbs:$abss")
+-
+-    val (weights, grad) = model.getParameters()
+-    val modelTorch = TH.map("model").asInstanceOf[Module[Double]]
+-    val (weightsTorch, gradTorch) = modelTorch.getParameters()
+-    sgd.optimize(_ => (errTest, grad), weights, state, state)
+-    abss = 0.0
+-    for (i <- 0 until weights.nElement()) {
+-      val tmp = abs(weights.storage().array()(i) - weightsTorch.storage().array()(i))
+-      abss += tmp
+-    }
+-    assert(abss < 2e-2)
+-    println(s"weightsAbs:$abss")
+-  }
+-/*
+-  "AlexNet" should "generate correct output" in {
+-    if (!TH.hasTorch()) {
+-      cancel("Torch is not installed")
+-    }
+-
+-    Random.setSeed(1)
+-    val input = torch.Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
+-    val labels = torch.Tensor[Double](8).apply1(e => Random.nextInt(100))
+-
+-    val seed = 100
+-    RNG.setSeed(seed)
+-
+-    val code = "torch.manualSeed(" + seed + ")\n" +
+-      """local nClasses = 1000
+-local feature = nn.Sequential()
+-feature:add(nn.SpatialConvolutionMM(3,64,11,11,4,4,2,2))       -- 224 -> 55
+-feature:add(nn.ReLU())
+-feature:add(nn.SpatialMaxPooling(3,3,2,2))                   -- 55 ->  27
+-feature:add(nn.SpatialConvolutionMM(64,192,5,5,1,1,2,2))       --  27 -> 27
+-feature:add(nn.ReLU())
+-feature:add(nn.SpatialMaxPooling(3,3,2,2))                   --  27 ->  13
+-feature:add(nn.SpatialConvolutionMM(192,384,3,3,1,1,1,1))      --  13 ->  13
+-feature:add(nn.ReLU())
+-feature:add(nn.SpatialConvolutionMM(384,256,3,3,1,1,1,1))      --  13 ->  13
+-feature:add(nn.ReLU())
+-feature:add(nn.SpatialConvolutionMM(256,256,3,3,1,1,1,1))      --  13 ->  13
+-feature:add(nn.ReLU())
+-feature:add(nn.SpatialMaxPooling(3,3,2,2))                   -- 13 -> 6
+--- 1.3. Create Classifier (fully connected layers)
+-local classifier = nn.Sequential()
+-classifier:add(nn.View(256*6*6))
+---classifier:add(nn.Dropout(0.5))
+-classifier:add(nn.Linear(256*6*6, 4096))
+-classifier:add(nn.Threshold(0, 1e-6))
+---classifier:add(nn.Dropout(0.5))
+-classifier:add(nn.Linear(4096, 4096))
+-classifier:add(nn.Threshold(0, 1e-6))
+-classifier:add(nn.Linear(4096, nClasses))
+-classifier:add(nn.LogSoftMax())
+--- 1.4. Combine 1.1 and 1.3 to produce final model
+-model = nn.Sequential():add(feature):add(classifier)
+-local parameters, gradParameters = model:getParameters()
+-model:zeroGradParameters()
+-parameters_initial = parameters : clone()
+-gradParameters_initial = gradParameters : clone()
+-local criterion =  nn.ClassNLLCriterion()
+-state = {
+-  learningRate = 1e-2,
+-  momentum = 0.9,
+-  dampening = 0.0,
+-  weightDecay = 5e-4
+-}
+-feval = function(x)
+-model:zeroGradParameters()
+-model_initial = model : clone()
+-local output1 = model:forward(input)
+-local err1 = criterion:forward(output1, labels)
+-local gradOutput1 = criterion:backward(output1, labels)
+-model:backward(input, gradOutput1)
+-return err1, gradParameters
+-end
+-for i = 1,5,1 do
+-  optim.sgd(feval, parameters, state)
+-end
+-local output = model:forward(input)
+-local err = criterion:forward(output, labels)
+-local gradOutput = criterion:backward(output, labels)
+---local stateDfdx = state.dfdx
+-gradInput = model:backward(input, gradOutput)
+-      """
+-
+-    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
+-      "parameters_initial", "gradParameters_initial", "gradInput", "model"))
+-
+-    val model = getModel[Double](1000)
+-    model.zeroGradParameters()
+-    val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
+-    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
+-    require(parameters == parameterTorch, "parameter compare failed")
+-
+-    val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
+-    val gradparameterTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
+-    require(gradparameters == gradparameterTorch, "gradparameter compare failed")
+-
+-    val (weights, grad) = model.getParameters()
+-    val criterion = new ClassNLLCriterion[Double]()
+-
+-    val state = T("learningRate" -> 1e-2, "momentum" -> 0.9, "weightDecay" -> 5e-4,
+-      "dampening" -> 0.0)
+-    val sgd = new SGD[Double]
+-
+-    for (i <- 1 to 5) {
+-      model.zeroGradParameters()
+-      val outputTest = model.forward(input)
+-      val loss = criterion.forward(outputTest, labels)
+-      val gradOutputTest = criterion.backward(outputTest, labels)
+-      model.backward(input, gradOutputTest)
+-      sgd.optimize(_ => (loss, grad), weights, state, state)
+-    }
+-
+-    model.zeroGradParameters()
+-    val outputTest = model.forward(input)
+-    val output = TH.map("output").asInstanceOf[Tensor[Double]]
+-    var abss = 0.0
+-    outputTest.map(output, (v1, v2) => {
+-      if (abs(v1 - v2) != 0) abss += abs(v1 - v2)
+-      v1
+-    })
+-    assert(abss < 1e-13)
+-    println(s"outputAbs:$abss")
+-
+-    val errTest = criterion.forward(outputTest, labels)
+-    val err = TH.map("err").asInstanceOf[Double]
+-    println(s"${abs(errTest - err)}")
+-    assert(abs(errTest - err) == 0)
+-
+-    val gradOutputTest = criterion.backward(outputTest, labels)
+-    val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
+-    abss = 0.0
+-    gradOutputTest.map(gradOutput, (v1, v2) => {
+-      if (abs(v1 - v2) != 0) abss += abs(v1 - v2)
+-      v1
+-    })
+-    assert(abss < 1e-13)
+-    println(s"gradOutputTestAbs:$abss")
+-
+-    val gradInput = model.backward(input, gradOutputTest)
+-    val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
+-    abss = 0.0
+-    gradInput.map(gradInputTorch, (v1, v2) => {
+-      if (abs(v1 - v2) != 0) abss += abs(v1 - v2)
+-      v1
+-    })
+-    assert(abss < 1e-13)
+-    println(s"gradInputTestAbs:$abss")
+-
+-  }*/
+-
+-  // alexnet without dropout
+-  def getModel[T: ClassTag](classNum: Int)(implicit ev: TensorNumeric[T]): Module[T] = {
+-    val feature = new Sequential[T]
+-    feature.add(new SpatialConvolution[T](3, 64, 11, 11, 4, 4, 2, 2))
+-    feature.add(new ReLU(true))
+-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
+-    feature.add(new SpatialConvolution(64, 192, 5, 5, 1, 1, 2, 2))
+-    feature.add(new ReLU(true))
+-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
+-    feature.add(new SpatialConvolution[T](192, 384, 3, 3, 1, 1, 1, 1))
+-    feature.add(new ReLU(true))
+-    feature.add(new SpatialConvolution[T](384, 256, 3, 3, 1, 1, 1, 1))
+-    feature.add(new ReLU(true))
+-    feature.add(new SpatialConvolution[T](256, 256, 3, 3, 1, 1, 1, 1))
+-    feature.add(new ReLU(true))
+-    feature.add(new SpatialMaxPooling[T](3, 3, 2, 2))
+-
+-
+-
+-    val classifier = new Sequential[T]
+-    classifier.add(new View[T](256 * 6 * 6))
+-    classifier.add(new Linear[T](256 * 6 * 6, 4096))
+-    classifier.add(new Threshold[T](0, 1e-6))
+-    classifier.add(new Linear[T](4096, 4096))
+-    classifier.add(new Threshold[T](0, 1e-6))
+-    classifier.add(new Linear[T](4096, classNum))
+-    classifier.add(new LogSoftMax[T])
+-
+-
+-    val model = new Sequential[T]
+-    model.add(feature).add(classifier)
+-
+-    model
+-  }
+-
+-}
+diff --git a/dl/src/test/scala/com/intel/analytics/sparkdl/nn/CrossEntropyCriterionSpec.scala b/dl/src/test/scala/com/intel/analytics/sparkdl/nn/CrossEntropyCriterionSpec.scala
+deleted file mode 100644
+index edbef02..0000000
+--- a/dl/src/test/scala/com/intel/analytics/sparkdl/nn/CrossEntropyCriterionSpec.scala
++++ /dev/null
+@@ -1,193 +0,0 @@
+-package com.intel.analytics.sparkdl.nn
+-
+-import com.intel.analytics.sparkdl.optim.SGD
+-import com.intel.analytics.sparkdl.tensor.{Tensor, torch}
+-import com.intel.analytics.sparkdl.utils.T
+-import org.scalatest.{FlatSpec, Matchers}
+-
+-import scala.math._
+-
+-
+-/**
+-  * Created by ywan on 16-9-21.
+-  */
+-
+-class CrossEntropyCriterionSpec extends FlatSpec with Matchers {
+-
+-  "CrossEntropyCriterion " should "return return right output and gradInput" in {
+-    val criterion = new CrossEntropyCriterion[Double]()
+-
+-    val input = torch.Tensor[Double](3, 3)
+-    input(Array(1, 1)) = 0.33655226649716
+-    input(Array(1, 2)) = 0.77367000770755
+-    input(Array(1, 3)) = 0.031494265655056
+-    input(Array(2, 1)) = 0.11129087698646
+-    input(Array(2, 2)) = 0.14688249188475
+-    input(Array(2, 3)) = 0.49454387230799
+-    input(Array(3, 1)) = 0.45682632108219
+-    input(Array(3, 2)) = 0.85653987620026
+-    input(Array(3, 3)) = 0.42569971177727
+-
+-    val target = torch.Tensor[Double](3)
+-    target(Array(1)) = 1
+-    target(Array(2)) = 2
+-    target(Array(3)) = 3
+-    println("input.dim() = " + input.dim())
+-
+-    val expectedOutput = 1.2267281042702334
+-
+-    val loss = criterion.forward(input, target)
+-    loss should be(expectedOutput +- 1e-8)
+-
+-    val expectedGrad = torch.Tensor[Double](3, 3)
+-    expectedGrad(Array(1, 1)) = -0.23187185
+-    expectedGrad(Array(1, 2)) = 0.15708656
+-    expectedGrad(Array(1, 3)) = 0.07478529
+-    expectedGrad(Array(2, 1)) = 0.09514888
+-    expectedGrad(Array(2, 2)) = -0.23473696
+-    expectedGrad(Array(2, 3)) = 0.13958808
+-    expectedGrad(Array(3, 1)) = 0.09631823
+-    expectedGrad(Array(3, 2)) = 0.14364876
+-    expectedGrad(Array(3, 3)) = -0.23996699
+-    val gradInput = criterion.backward(input, target)
+-
+-    expectedGrad.map(gradInput, (v1, v2) => {
+-      assert(abs(v1 - v2) < 1e-6);
+-      v1
+-    })
+-
+-  }
+-
+-  "Multi-Classification LR " should "converge correctly" in {
+-    def specifiedModel(): Module[Double] = {
+-      val model = new Sequential[Double]()
+-      val linear = new Linear[Double](3, 3)
+-      linear.weight(Array(1, 1)) = -0.3
+-      linear.weight(Array(1, 2)) =  1.6
+-      linear.weight(Array(1, 3)) =  -0.3
+-
+-      linear.weight(Array(2, 1)) = 1.4
+-      linear.weight(Array(2, 2)) = -0.4
+-      linear.weight(Array(2, 3)) = -0.6
+-
+-      linear.weight(Array(3, 1)) =  -0.3
+-      linear.weight(Array(3, 2)) = -0.2
+-      linear.weight(Array(3, 3)) =  1.9
+-
+-      linear.bias(Array(1)) = 0.0
+-      linear.bias(Array(2)) = 0.0
+-      linear.bias(Array(3)) = 0.0
+-      //linear.bias(Array(3)) = 0.02
+-
+-      model.add(linear)
+-      //model.add(new LogSoftMax[Double]())
+-      model.add(new Sigmoid())
+-      model
+-    }
+-
+-    def getTrainModel(): Module[Double] = {
+-      val model = new Sequential[Double]()
+-      model.add(new Linear[Double](3, 3))
+-      //model.add(new LogSoftMax[Double]())
+-      model.add(new Sigmoid[Double]())
+-      model
+-    }
+-
+-    def feval(grad: Tensor[Double], module: Module[Double], criterion: Criterion[Double],
+-              input: Tensor[Double], target: Tensor[Double])(weights: Tensor[Double])
+-    : (Double, Tensor[Double]) = {
+-      //println("enter feval")
+-      module.training()
+-      grad.zero()
+-      //val trainSize = input.size(1)
+-      //println("trainSize = " + trainSize)
+-      val output = module.forward(input)//.resize(Array(trainSize, 3))
+-      /*println("size2 = " + output.size(2))
+-      println("inputs:")
+-      for (i <- 1 to 10) {
+-        println(output(i))
+-      }
+-      println("targets:")
+-      for (i <- 1 to 10) {
+-        println(target(i))
+-      }
+-      println("output.nDimension() = " + output.nDimension())
+-      println("output.dim() = " + output.dim())
+-      println("target.nDimension() = " + target.nDimension())
+-      println("target.dim() = " + target.dim())
+-
+-      println("nClasses = " + output.size(output.dim()))*/
+-      //println("output target size")
+-      //val size = target.size(1)
+-      //println("target size1 = " + size + " size2 = " + target.size(2))
+-      //println("output size1 = " + output.size(1) + " size2 = " + output.size(2))
+-      /*for (i <- 1 to 10) {
+-          println( i + " " + target(i))
+-          println(output(i))
+-      }*/
+-
+-      val loss = criterion.forward(output, target)
+-      //println("loss = " + loss)
+-      val gradOut = criterion.backward(output, target)
+-      module.backward(input, gradOut)
+-      (loss, grad)
+-    }
+-
+-    val actualModel = specifiedModel()
+-    val trainSize = 100000
+-    val testSize = 1000
+-
+-    val inputs = torch.Tensor[Double](trainSize, 3)
+-    val r = new scala.util.Random(1)
+-    inputs.apply1(v => r.nextDouble())
+-
+-
+-
+-    //println(inputs(1))
+-    //val targets = actualModel.forward(inputs).resize(Array(trainSize)).apply1(v => 1 + Math.round(v))
+-    val targets = actualModel.forward(inputs).resize(Array(trainSize, 3)).max(2)._2.squeeze(2)
+-    println("targets size = " + targets.size(1))
+-
+-    val trainModel = getTrainModel()
+-    val criterion = new CrossEntropyCriterion[Double]()
+-    val (masterWeights, masterGrad) = trainModel.getParameters()
+-    val optm = new SGD[Double]()
+-    val config = T("learningRate" -> 10.0, "weightDecay" -> 0.0,
+-      "momentum" -> 0.0, "learningRateDecay" -> 0.0)
+-    //println("before training")
+-    val batchSize = 500
+-    var epoch = 1
+-    while (epoch < 100) {
+-      println("epoch = " + epoch)
+-      var i = 1
+-      var l = 0.0
+-      while (i <= inputs.size(1)) {
+-        val (grad, loss) = optm.optimize(feval(masterGrad, trainModel, criterion,
+-          inputs.narrow(1, i, batchSize), targets.narrow(1, i, batchSize)), masterWeights,
+-          config, config)
+-        l += loss(0)
+-        i += batchSize
+-      }
+-      println("loss: " + l)
+-      if (l / inputs.size(1) * batchSize < 6.3e-1) epoch += 1
+-    }
+-    //println("after training")
+-    val testData = torch.Tensor[Double](testSize, 3)
+-    testData.apply1(v => r.nextDouble())
+-    //val testTarget = actualModel.forward(testData).apply1(v => Math.round(v))
+-    val testTarget = actualModel.forward(testData).resize(Array(testSize, 3)).max(2)._2.squeeze(2)
+-
+-    val testResult = trainModel.forward(testData).max(2)._2.squeeze(2)
+-    //val testResult = trainModel.forward(testData).apply1(v => 1 + argmax(v))
+-
+-    var corrects = 0
+-    var i = 1
+-    while (i <= testSize) {
+-      //if (testTarget(Array(i, 1)) == testResult(Array(i, 1))) corrects += 1
+-      if (testTarget(Array(i)) == testResult(Array(i))) corrects += 1
+-      i += 1
+-    }
+-
+-    assert(abs(corrects - testSize) / testSize <  0.1 )
+-  }
+-}
+diff --git a/sparkdl-run.sh b/sparkdl-run.sh
+new file mode 100644
+index 0000000..a7ab8c7
+--- /dev/null
++++ b/sparkdl-run.sh
+@@ -0,0 +1 @@
++java -cp /home/ywan/Documents/Workflow/spark-dl/dl/target/bigdl_0.1-0.1.0-SNAPSHOT-jar-with-dependencies.jar:/opt/spark/lib/spark-assembly-1.5.1-hadoop2.6.0.jar com.intel.analytics.bigdl.dataset.ImageNetLocal -f /home/ywan/Documents/Workflow/imagedata -n resnet -c /home/ywan/Documents/Workflow/models --optnet true -p 1

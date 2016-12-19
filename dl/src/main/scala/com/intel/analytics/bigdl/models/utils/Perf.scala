@@ -17,14 +17,20 @@
 
 package com.intel.analytics.bigdl.models.utils
 
+
+import com.intel.analytics.bigdl.models.resnet.ResNet.ShortcutType
 import com.intel.analytics.bigdl.models.imagenet._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
+import com.intel.analytics.bigdl.models.lenet.LeNet5
+import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
 import scopt.OptionParser
+import spire.syntax.module
 
 import scala.reflect.ClassTag
 
@@ -59,7 +65,7 @@ object Perf {
       .action((v, p) => p.copy(module = v))
       .validate(v =>
         if (Set("alexnet", "alexnetowt", "googlenet_v1", "googlenet_v2", "vgg16", "vgg19",
-          "lenet5").
+          "lenet5", "resnet")
           contains(v.toLowerCase())) {
           success
         } else {
@@ -98,18 +104,28 @@ object Perf {
       case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "vgg16" => (Vgg_16(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
+      case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
+      case "resnet" => {
+        val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
+        ResNet.shareGradInput(curModel)
+        ResNet.modelInit(curModel)
+        (curModel, Tensor[T](param.batchSize, 3, 224, 224))
+      }
     }
     param.inputData match {
       case "constant" => input.fill(tn.fromType(0.01))
       case "random" => input.rand()
     }
     println(model)
-    val criterion = ClassNLLCriterion[T]()
+    val criterion = param.module match {
+      case "resnet" => CrossEntropyCriterion()
+      case _ => ClassNLLCriterion()
+    }
     val labels = Tensor[T](param.batchSize).fill(tn.fromType(1))
 
     for (i <- 1 to param.warmUp) {
       var time = System.nanoTime()
-      val output = model.forward(input)
+      val output = model.forward(input).asInstanceOf[Tensor[T]]
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       time = System.nanoTime()
@@ -125,7 +141,7 @@ object Perf {
     var totalBackwardTime = 0L
     for (i <- 1 to param.iteration) {
       var time = System.nanoTime()
-      val output = model.forward(input)
+      val output = model.forward(input).asInstanceOf[Tensor[T]]
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       totalForwardTime += forwardTime
@@ -154,9 +170,9 @@ object Perf {
 }
 
 case class PerfParams(
-  batchSize: Int = 128,
-  iteration: Int = 50,
-  warmUp: Int = 10,
+  batchSize: Int = 50,
+  iteration: Int = 10,
+  warmUp: Int = 3,
   dataType: String = "float",
   module: String = "alexnet",
   inputData: String = "random"
