@@ -106,7 +106,7 @@ object SparkTrain {
         //case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
         case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
       }
-      
+
       Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
       val conf = Engine.sparkConf()
         .setAppName("Train ResNet on Cifar10")
