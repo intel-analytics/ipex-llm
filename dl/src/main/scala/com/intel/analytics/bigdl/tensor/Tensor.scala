@@ -822,6 +822,7 @@ object Tensor {
    */
   def expand[T](tensor: Tensor[T], sizes: Int*): Tensor[T] = tensor.expand(sizes.toArray)
 
+
   /**
    * This is equivalent to tensor.expandAs(template)
    *
@@ -857,4 +858,34 @@ object Tensor {
    */
   def range[@specialized(Float, Double) T: ClassTag](xmin: Double, xmax: Double, step: Int = 1)(
     implicit ev: TensorNumeric[T]): Tensor[T] = DenseTensor.range[T](xmin, xmax, step)
+
+  /**
+   * return a tensor of sizes filled with 1.
+   * @param sizes
+   * @return a tensor
+   */
+  def ones[@specialized(Float, Double) T: ClassTag](sizes: Int*)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    DenseTensor.ones[T](sizes.toArray)
+  }
+
+  /**
+   * Returns a 1D Gaussian kernel of size size, mean mean and standard deviation sigma.
+   * @param size
+   * @param sigma
+   * @param amplitude
+   * @param normalize
+   * @param mean
+   * @param tensor If tensor is set, will discard size, and write result to tensor.
+   * @return
+   */
+  def gaussian1D[@specialized(Float, Double) T: ClassTag](
+      size: Int = 3,
+      sigma: Double = 0.25,
+      amplitude: Int = 1,
+      normalize: Boolean = false,
+      mean: Double = 0.5,
+      tensor: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    DenseTensor.gaussian1D[T](size, sigma, amplitude, normalize, mean, tensor)
+  }
 }
