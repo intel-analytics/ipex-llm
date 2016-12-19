@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.example
 import java.awt.color.ColorSpace
 import java.util
 
+import com.intel.analytics.bigdl.models.alexnet.AlexNet
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.ShortcutType
 import com.intel.analytics.bigdl.nn.CrossEntropyCriterion
@@ -88,7 +89,7 @@ object ImageNetLocal {
     varB /= samples*/
 
     val model = netType match {
-      case "alexnet" => AlexNet.getModel[Float](classNum)
+      //case "alexnet" => AlexNet.getModel[Float](classNum)
       case "googlenet" => GoogleNet.getModel[Float](classNum)
       case "googlenet-bn" => GoogleNet.getModel[Float](classNum, "googlenet-bn")
       case "googlenet-cf" => GoogleNet.getModelCaffe[Float](classNum)

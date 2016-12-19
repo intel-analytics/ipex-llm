@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.tensor
 
 import java.io.Serializable
 
+import scala.collection.mutable.{ArrayBuffer, Map}
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -578,7 +579,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @param dim the specific dimension, default is 1
    * @return this
    */
-  def addSingletonDimension(t: Tensor[T], dim: Int = 1): Tensor[T]
+  def addSingletonDimension(t: Tensor[T] = this, dim: Int = 1): Tensor[T]
 
   /**
    * create a new tensor without any change of the tensor
@@ -637,6 +638,39 @@ object Tensor {
 
   def apply[@specialized(Float, Double) T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int, d5: Int)(
     implicit ev: TensorNumeric[T]): Tensor[T] = new DenseTensor[T](d1, d2, d3, d4, d5)
+
+  /**
+   * Create a tensor with a table
+   * @param xs the table contains a multi-dimensional numbers
+   * @return a new Tensor
+   */
+  def apply[@specialized(Float, Double) T: ClassTag](xs : Table)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val map = xs.flatten().getState().asInstanceOf[Map[Int, T]]
+    val content = new Array[T](map.values.size)
+    var i = 1
+    for (i <- 1 to content.size) {
+      content(i - 1) = map(i)
+    }
+
+    val dims = new ArrayBuffer[Int]()
+
+    def getDims(xs: Table): ArrayBuffer[Int] = xs match {
+      case _ if xs.length() != 0 =>
+        dims.append(xs.length())
+        if (xs(1).isInstanceOf[Table]) {
+          getDims(xs(1))
+        }
+        dims
+      case otherwise => dims
+    }
+
+    getDims(xs)
+
+    new DenseTensor[T](
+      new ArrayStorage[T](content), 0, dims.toArray,
+      DenseTensor.size2Stride(dims.toArray), dims.length)
+  }
 
   /**
    * Create a tensor on given dimensions. The tensor size will be the product of dims

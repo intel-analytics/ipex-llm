@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator
 import scala.collection.Iterator
 
 object HFlip {
-  def apply(threshold: Double): HFlip = {
+  def apply(threshold: Double = 0.0): HFlip = {
     new HFlip(threshold)
   }
 }

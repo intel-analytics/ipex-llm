@@ -133,6 +133,27 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     println(output)
     output = bn.forward(input)
     println(output)
+  }
 
+  it should "generate correct output for no batch" in {
+    val bn = new BatchNormalization[Double](3)
+    bn.weight(1) = 0.1
+    bn.weight(2) = 0.2
+    bn.weight(3) = 0.3
+
+    bn.bias(1) = 0.1
+    bn.bias(2) = 0.2
+    bn.bias(3) = 0.3
+    bn.evaluate()
+
+    val input = Tensor[Double](3)
+    var i = 0
+    input.apply1(e => {
+      i += 1; i
+    })
+    val output = bn.forward(input)
+    output.valueAt(1) should be(0.2 +- 0.00001)
+    output.valueAt(2) should be(0.6 +- 0.00001)
+    output.valueAt(3) should be(1.2 +- 0.00001)
   }
 }

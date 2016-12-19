@@ -14,32 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.models.vgg
+package com.intel.analytics.bigdl.models.alexnet
 
 import java.nio.file.Path
 
+import com.intel.analytics.bigdl.dataset.{Batch, DataSet, LocalDataSet, SeqFileLocalPath}
 import com.intel.analytics.bigdl.dataset.image._
-import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.apache.spark.SparkContext
+import com.intel.analytics.bigdl.utils.Engine
 
-object DataSet {
-  def localDataSet(imagesFile: Path, looped: Boolean, batchSize : Int)
+object ImageNet2012 {
+  def apply(path: Path, imageSize: Int, batchSize: Int, size: Int)
   : LocalDataSet[Batch[Float]] = {
-    val ds = LocalImageFiles.localBytesDataSet(imagesFile, looped, 32)
-    val toImage = SampleToRGBImg()
-    val normalizer = RGBImgNormalizer(ds -> toImage)
-    val toBatch = new RGBImgToBatch(batchSize)
-    ds -> toImage -> normalizer -> toBatch
-  }
-
-  def distributedDataSet(imagesFile: Path, looped: Boolean, sc: SparkContext,
-    partitionNum: Int, batchSize : Int): DistributedDataSet[Batch[Float]] = {
-    val ds = LocalImageFiles.distriDataSet(imagesFile, looped, sc, partitionNum, 32)
-
-    val toImage = SampleToRGBImg()
-    val normalizer = RGBImgNormalizer(0.5, 0.5, 0.5, 1.0, 1.0, 1.0)
-    val toTensor = new RGBImgToBatch(batchSize)
-    ds -> toImage -> normalizer -> toTensor
+    DataSet.SequenceFolder.paths(path, size)
+      .transform(
+        MTLabeledRGBImgToBatch(
+          width = imageSize,
+          height = imageSize,
+          batchSize = batchSize,
+          transformer = (LocalSeqFileToBytes() -> SampleToRGBImg() ->
+            RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize) -> HFlip(0.5) ->
+            RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
+            )
+        )
+      )
   }
 }

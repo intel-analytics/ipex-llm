@@ -21,7 +21,7 @@ import java.nio.file.{Path, Paths}
 
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -63,7 +63,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val target = image1.content.map(e => (e - mean) / std)
 
     val dataSource = new LocalArrayDataSet[LabeledGreyImage](
-      Array(image1, image2, image3), looped = false)
+      Array(image1, image2, image3))
 
     val normalizer = GreyImgNormalizer(dataSource)
     val iter = normalizer.apply(Iterator.single(image1))
@@ -85,11 +85,11 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new LocalArrayDataSet[LabeledGreyImage](Array(image1, image2, image3), true)
+    val dataSource = new LocalArrayDataSet[LabeledGreyImage](Array(image1, image2, image3))
 
     val toTensor = new GreyImgToBatch(2)
     val tensorDataSource = dataSource -> toTensor
-    val iter = tensorDataSource.data()
+    val iter = tensorDataSource.data(looped = true)
     val batch = iter.next()
     batch.data.size(1) should be(2)
     batch.data.size(2) should be(32)
@@ -144,7 +144,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       while (y < 24) {
         var x = 0
         while (x < 24) {
-          resultContent((y * 24 + x) * 3 + c) should be(originContent((37 + y * 32 + x) * 3 +
+          resultContent((y * 24 + x) * 3 + c) should be(originContent(582 + (y * 32 + x) * 3 +
             c))
           x += 1
         }
@@ -182,12 +182,12 @@ class TransformersSpec extends FlatSpec with Matchers {
       r
     })
 
-    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3), false)
+    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3))
 
     val normalizer = RGBImgNormalizer(dataSource)
     val iter = normalizer.apply(Iterator.single(image1))
     val test = iter.next()
-    normalizer.getMean() should be((firstFrameMean, secondFrameMean, thirdFrameMean))
+    normalizer.getMean() should be((thirdFrameMean, secondFrameMean, firstFrameMean))
     val stds = normalizer.getStd()
     stds._1 should be(firstFrameStd.toDouble +- 1e-6)
     stds._2 should be(secondFrameStd.toDouble +- 1e-6)
@@ -207,11 +207,11 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3), true)
+    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3))
 
     val toTensor = new RGBImgToBatch(2)
     val tensorDataSource = dataSource -> toTensor
-    val iter = tensorDataSource.data()
+    val iter = tensorDataSource.data(looped = true)
     val batch1 = iter.next()
     batch1.data.size(1) should be(2)
     batch1.data.size(2) should be(3)
@@ -220,7 +220,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val content1 = image1.content
     var i = 0
     batch1.data.select(1, 1).select(1, 1).apply1(e => {
-      e should be(content1(i * 3))
+      e should be(content1(i * 3 + 2))
       i += 1
       e
     })
@@ -234,14 +234,14 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch1.data.select(1, 1).select(1, 3).apply1(e => {
-      e should be(content1(i * 3 + 2))
+      e should be(content1(i * 3))
       i += 1
       e
     })
     val content2 = image2.content
     i = 0
     batch1.data.select(1, 2).select(1, 1).apply1(e => {
-      e should be(content2(i * 3))
+      e should be(content2(i * 3 + 2))
       i += 1
       e
     })
@@ -255,7 +255,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch1.data.select(1, 2).select(1, 3).apply1(e => {
-      e should be(content2(i * 3 + 2))
+      e should be(content2(i * 3))
       i += 1
       e
     })
@@ -269,7 +269,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch.data.select(1, 1).select(1, 1).apply1(e => {
-      e should be(content3(i * 3))
+      e should be(content3(i * 3 + 2))
       i += 1
       e
     })
@@ -283,13 +283,13 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch.data.select(1, 1).select(1, 3).apply1(e => {
-      e should be(content3(i * 3 + 2))
+      e should be(content3(i * 3))
       i += 1
       e
     })
     i = 0
     batch.data.select(1, 2).select(1, 1).apply1(e => {
-      e should be(content1(i * 3))
+      e should be(content1(i * 3 + 2))
       i += 1
       e
     })
@@ -303,7 +303,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch.data.select(1, 2).select(1, 3).apply1(e => {
-      e should be(content1(i * 3 + 2))
+      e should be(content1(i * 3))
       i += 1
       e
     })
@@ -320,13 +320,14 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3), true)
-
-    val toTensor = new MTLabeledRGBImgToTensor[LabeledRGBImage](
-      width = 32, height = 32, threadNum = 1, batchSize = 2, transformer = Identity[LabeledRGBImage]
+    val core = Engine.coreNumber()
+    Engine.setCoreNumber(1)
+    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3))
+    val toTensor = new MTLabeledRGBImgToBatch[LabeledRGBImage](
+      width = 32, height = 32, batchSize = 2, transformer = Identity[LabeledRGBImage]
     )
     val tensorDataSource = dataSource -> toTensor
-    val iter = tensorDataSource.data()
+    val iter = tensorDataSource.data(looped = true)
     val batch = iter.next()
     batch.data.size(1) should be(2)
     batch.data.size(2) should be(3)
@@ -335,7 +336,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val content1 = image1.content
     var i = 0
     batch.data.select(1, 1).select(1, 1).apply1(e => {
-      e should be(content1(i * 3))
+      e should be(content1(i * 3 + 2))
       i += 1
       e
     })
@@ -349,14 +350,14 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch.data.select(1, 1).select(1, 3).apply1(e => {
-      e should be(content1(i * 3 + 2))
+      e should be(content1(i * 3))
       i += 1
       e
     })
     val content2 = image2.content
     i = 0
     batch.data.select(1, 2).select(1, 1).apply1(e => {
-      e should be(content2(i * 3))
+      e should be(content2(i * 3 + 2))
       i += 1
       e
     })
@@ -370,7 +371,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch.data.select(1, 2).select(1, 3).apply1(e => {
-      e should be(content2(i * 3 + 2))
+      e should be(content2(i * 3))
       i += 1
       e
     })
@@ -384,7 +385,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch2.data.select(1, 1).select(1, 1).apply1(e => {
-      e should be(content3(i * 3))
+      e should be(content3(i * 3 + 2))
       i += 1
       e
     })
@@ -398,13 +399,13 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch2.data.select(1, 1).select(1, 3).apply1(e => {
-      e should be(content3(i * 3 + 2))
+      e should be(content3(i * 3))
       i += 1
       e
     })
     i = 0
     batch2.data.select(1, 2).select(1, 1).apply1(e => {
-      e should be(content1(i * 3))
+      e should be(content1(i * 3 + 2))
       i += 1
       e
     })
@@ -418,18 +419,18 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     i = 0
     batch2.data.select(1, 2).select(1, 3).apply1(e => {
-      e should be(content1(i * 3 + 2))
+      e should be(content1(i * 3))
       i += 1
       e
     })
+    Engine.setCoreNumber(core)
   }
 
   "RGBImage To SeqFile" should "be good" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
     val pathToImage = LocalImgReader(RGBImage.NO_SCALE)
-    val dataSource = LocalImageFiles.localPathDataSet(
-      Paths.get(processPath(resource.getPath())),
-      looped = false
+    val dataSource = DataSet.ImageFolder.paths(
+      Paths.get(processPath(resource.getPath()))
     )
 
     RandomGenerator.RNG.setSeed(1000)
@@ -438,7 +439,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val tmpFile = Paths.get(java.io.File.createTempFile("UnitTest", "RGBImageToSeqFile").getPath)
     val seqWriter = RGBImgToLocalSeqFile(2, tmpFile)
     val writePipeline = dataSource -> pathToImage -> seqWriter
-    val iter = writePipeline.data()
+    val iter = writePipeline.data(looped = false)
     while (iter.hasNext) {
       println(s"writer file ${iter.next()}")
     }
@@ -450,11 +451,11 @@ class TransformersSpec extends FlatSpec with Matchers {
       SeqFileLocalPath(Paths.get(tmpFile + "_3.seq")),
       SeqFileLocalPath(Paths.get(tmpFile + "_4.seq")),
       SeqFileLocalPath(Paths.get(tmpFile + "_5.seq"))
-    ), false)
+    ))
     var count = 0
     val readPipeline = seqDataSource -> LocalSeqFileToBytes() -> SampleToRGBImg()
-    val readIter = readPipeline.data()
-    readIter.zip((dataSource -> pathToImage).data()).foreach { case (l, r) =>
+    val readIter = readPipeline.data(looped = false)
+    readIter.zip((dataSource -> pathToImage).data(looped = false)).foreach { case (l, r) =>
       l.label() should be(r.label())
       l.width() should be(r.width())
       l.height() should be(r.height())

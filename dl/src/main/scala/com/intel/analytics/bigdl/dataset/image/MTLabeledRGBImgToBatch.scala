@@ -24,16 +24,17 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 import scala.reflect.ClassTag
 
-object MTLabeledRGBImgToTensor {
-  def apply[A: ClassTag](width: Int, height: Int, threadNum: Int, batchSize: Int,
-    transformer: Transformer[A, LabeledRGBImage]): MTLabeledRGBImgToTensor[A] = {
-    new MTLabeledRGBImgToTensor[A](
-      width, height, threadNum, batchSize, transformer)
+object MTLabeledRGBImgToBatch {
+  def apply[A: ClassTag](width: Int, height: Int, batchSize: Int,
+    transformer: Transformer[A, LabeledRGBImage])
+  : MTLabeledRGBImgToBatch[A] = {
+    new MTLabeledRGBImgToBatch[A](
+      width, height, batchSize, transformer)
   }
 }
 
-class MTLabeledRGBImgToTensor[A: ClassTag](width: Int, height: Int,
-  threadNum: Int, batchSize: Int, transformer: Transformer[A, LabeledRGBImage])
+class MTLabeledRGBImgToBatch[A: ClassTag](width: Int, height: Int, batchSize: Int,
+  transformer: Transformer[A, LabeledRGBImage])
   extends Transformer[A, Batch[Float]] {
 
   private def getPosition(count: AtomicInteger): Int = {
@@ -41,7 +42,7 @@ class MTLabeledRGBImgToTensor[A: ClassTag](width: Int, height: Int,
     if (position < batchSize) position else -1
   }
 
-  private val transformers = (1 to threadNum).map(
+  private lazy val transformers = (1 to Engine.coreNumber()).map(
     _ => new PreFetch[A] -> transformer.cloneTransformer()
   ).toArray
 
@@ -61,7 +62,7 @@ class MTLabeledRGBImgToTensor[A: ClassTag](width: Int, height: Int,
 
       override def next(): Batch[Float] = {
         val count = new AtomicInteger(0)
-        val batch = Engine.default.invokeAndWait((0 until threadNum).map(tid => () => {
+        val batch = Engine.default.invokeAndWait((0 until Engine.coreNumber()).map(tid => () => {
           var position = 0
           var record = 0
           while (iterators(tid).hasNext && {

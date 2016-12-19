@@ -52,6 +52,29 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t.stride(1) should be(1)
   }
 
+  "Construct A Tensor with Table directly" should "work correclty " in {
+    val t: Tensor[Double] = Tensor[Double](
+      T(
+        T(
+          T(1.0, 2.0),
+          T(3.0, 4.0)
+        ),
+        T(
+          T(5.0, 6.0),
+          T(7.0, 8.0)
+        )
+      ))
+
+    t(Array(1, 1, 1)) should be(1)
+    t(Array(1, 1, 2)) should be(2)
+    t(Array(1, 2, 1)) should be(3)
+    t(Array(1, 2, 2)) should be(4)
+    t(Array(2, 1, 1)) should be(5)
+    t(Array(2, 1, 2)) should be(6)
+    t(Array(2, 2, 1)) should be(7)
+    t(Array(2, 2, 2)) should be(8)
+  }
+
   "Construct with another tensor" should "use same storage and separate views" in {
     val other = new DenseTensor[Double](1, 2, 3)
     val t: Tensor[Double] = new DenseTensor(other)
@@ -537,7 +560,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   }
 
   "Tensor to BreezeMatrix" should "correct" in {
-    val tensor = new DenseTensor(Storage[Double](Array(1.0, 2, 3, 4)), 1, Array(2, 2))
+    val tensor = new DenseTensor[Double](Storage[Double](Array(1.0, 2, 3, 4)), 1, Array(2, 2))
     val matrix = tensor.toBreezeMatrix()
     matrix.isTranspose should be(true)
     matrix(0, 0) should be(1.0)
@@ -572,7 +595,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   }
 
   "Tensor to BreezeVector" should "correct" in {
-    val tensor = new DenseTensor(Storage(Array(1.0, 2, 3, 4)))
+    val tensor = new DenseTensor[Double](Storage(Array(1.0, 2, 3, 4)))
     val vector = tensor.toBreezeVector()
     vector(0) should be(1.0)
     vector(1) should be(2.0)
@@ -649,6 +672,22 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     shape(0) should be(2)
     shape(1) should be(2)
     shape(2) should be(5)
+  }
+
+  "addSingletonDimension" should "works correclty" in {
+    val tensor = Tensor[Float](3, 4)
+    tensor.addSingletonDimension()
+    tensor.nDimension() should be(3)
+    tensor.size(1) should be(1)
+    tensor.size(2) should be(3)
+    tensor.size(3) should be(4)
+
+    tensor.addSingletonDimension(tensor, 3)
+    tensor.nDimension() should be(4)
+    tensor.size(1) should be(1)
+    tensor.size(2) should be(3)
+    tensor.size(3) should be(1)
+    tensor.size(4) should be(4)
   }
 
 }

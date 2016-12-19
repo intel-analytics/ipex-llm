@@ -21,7 +21,9 @@ import java.awt.color.ColorSpace
 import java.nio.file.{Files, Path, Paths}
 
 import com.intel.analytics.bigdl.dataset.{CachedDistriDataSet, _}
+import com.intel.analytics.bigdl.optim.LocalOptimizer._
 import org.apache.hadoop.io.Text
+import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 
 object LocalImageFiles {
@@ -30,31 +32,7 @@ object LocalImageFiles {
   Class.forName("sun.java2d.cmm.lcms.LCMS")
   ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
-  def localPathDataSet(path: Path, looped: Boolean)
-  : LocalDataSet[LabeledImageLocalPath] = {
-    val buffer = readPaths(path)
-    new LocalArrayDataSet[LabeledImageLocalPath](buffer, looped)
-  }
-
-  def localBytesDataSet(path: Path, looped: Boolean, scaleTo : Int)
-  : LocalDataSet[Sample] = {
-    val buffer = readPaths(path).map(imageFile => {
-      Sample(RGBImage.readImage(imageFile.path, scaleTo), imageFile.label)
-    })
-    new LocalArrayDataSet[Sample](buffer, looped)
-  }
-
-  def distriDataSet(path: Path, looped: Boolean, sc: SparkContext,
-    partitionNum: Int, scaleTo: Int = RGBImage.NO_SCALE)
-  : DistributedDataSet[Sample] = {
-    val paths = readPaths(path)
-    val buffer: Array[Sample] = {
-      paths.map(imageFile => {
-        Sample(RGBImage.readImage(imageFile.path, scaleTo), imageFile.label)
-      })
-    }
-    CachedDistriDataSet(buffer, sc, partitionNum, looped)
-  }
+  val logger = Logger.getLogger(getClass)
 
   /**
    * read the folder names, which are the class names, sort the name and convert to an integer
@@ -62,7 +40,7 @@ object LocalImageFiles {
    * @param path
    * @return
    */
-  private def readLabels(path: Path): Map[String, Int] = {
+  private[bigdl] def readLabels(path: Path): Map[String, Int] = {
     import scala.collection.JavaConverters._
     Files.newDirectoryStream(path).asScala.map(_.getFileName.toString)
       .toArray.sortWith(_ < _).zipWithIndex.map(c => c._1 -> (c._2 + 1)).toMap
@@ -74,7 +52,7 @@ object LocalImageFiles {
    * @param path
    * @return
    */
-  private def readPaths(path: Path): Array[LabeledImageLocalPath] = {
+  private[bigdl] def readPaths(path: Path): Array[LabeledImageLocalPath] = {
     val directoryStream = Files.newDirectoryStream(path)
     println(s"Start to read directories $path")
     val labelMap = readLabels(path)
@@ -90,38 +68,10 @@ object LocalImageFiles {
 }
 
 object SequenceFiles {
-  /**
-   * This dataset will manage imagenet2012 in Hadoop sequence file format store on your local disk.
-   *
-   * You can generate the sequence file by using ImageNetSeqFileGenerator.
-   *
-   * @param path
-   * @param totalSize
-   * @param looped
-   */
-  def localFiles(path: Path, totalSize: Long, looped: Boolean): LocalDataSet[SeqFileLocalPath] = {
-    val buffer: Array[SeqFileLocalPath] = findFiles(path)
-    new LocalArrayDataSet[SeqFileLocalPath](buffer, looped) {
-      override def size(): Long = {
-        totalSize
-      }
-    }
-  }
-
-  private def findFiles(path: Path): Array[SeqFileLocalPath] = {
+  private[bigdl] def findFiles(path: Path): Array[SeqFileLocalPath] = {
     val directoryStream = Files.newDirectoryStream(path)
     import scala.collection.JavaConverters._
     directoryStream.asScala.map(_.toAbsolutePath.toString)
       .filter(_.endsWith(".seq")).toArray.sortWith(_ < _).map(p => SeqFileLocalPath(Paths.get(p)))
   }
-
-  def hdfsFiles(url: String, sc: SparkContext, classNum: Int, looped: Boolean,
-    partitionNum: Int): DistributedDataSet[Sample] = {
-    val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text]).map(image => {
-      Sample(image._2.copyBytes(), image._1.toString.toFloat)
-    }).filter(_.label < classNum)
-
-    CachedDistriDataSet[Sample](rawData, partitionNum, looped)
-  }
-  // scalastyle:on methodName
 }

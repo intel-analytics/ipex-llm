@@ -20,11 +20,18 @@ package com.intel.analytics.bigdl.models.utils
 import java.util.concurrent.Executors
 
 import com.intel.analytics.bigdl._
+<<<<<<< HEAD
 import com.intel.analytics.bigdl.models.resnet.ResNet.ShortcutType
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.models.imagenet.{AlexNet, AlexNet_OWT, GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
+=======
+import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2}
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+>>>>>>> master
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.T

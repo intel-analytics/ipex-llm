@@ -713,6 +713,7 @@ object File {
     Storage(data)
   }
 
+  // TODO: support LongStroage
   private def readLongStorage(rawData: ByteBuffer): Array[Int] = {
     val storageLength = rawData.getLong.toInt
     val data = new Array[Int](storageLength)
@@ -823,7 +824,7 @@ object File {
     Tensor(storage, offset, sizes, strides)
   }
 
-  // Tensor long
+  // TODO: Support Long Tensor
   private def readLongTensor(
       rawData: ByteBuffer,
       objects: mutable.Map[Int, Any]): Tensor[Double] = {
@@ -846,14 +847,18 @@ object File {
 
     val longStorage = readObject(rawData, objects).asInstanceOf[Array[Int]]
 
-    val storageData : Array[Double] = new Array[Double](longStorage.length)
-    i = 0
-    while(i < storageData.length) {
-      storageData(i) = longStorage(i)
-      i += 1
+    if (null == longStorage) {
+      Tensor[Double](null, offset, sizes, strides)
+    } else {
+      val storageData: Array[Double] = new Array[Double](longStorage.length)
+      i = 0
+      while (i < storageData.length) {
+        storageData(i) = longStorage(i)
+        i += 1
+      }
+      val storage = Storage[Double](storageData)
+      Tensor(storage, offset, sizes, strides)
     }
-    val storage = Storage[Double](storageData)
-    Tensor(storage, offset, sizes, strides)
   }
 
   private def readSpatialMaxPoolingWithType[T: ClassTag](

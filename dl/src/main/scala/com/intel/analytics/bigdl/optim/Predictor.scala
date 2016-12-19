@@ -15,26 +15,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.mnist
+package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.nn.{LogSoftMax, _}
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
 
-object MLP {
-  val rowN = 28
-  val colN = 28
-  val featureSize = rowN * colN
-  val classNum = 10
-
-  def apply(classNum: Int): Module[Float] = {
-    val mlp = Sequential()
-    val nHidden = featureSize / 2
-    mlp.add(Reshape(Array(featureSize)))
-    mlp.add(Linear(featureSize, nHidden))
-    mlp.add(Tanh())
-    mlp.add(Linear(nHidden, classNum))
-    mlp.add(LogSoftMax())
-    mlp
-  }
+abstract class Predictor[T, DS1, DS2] {
+  def predict(dataSet : DataSource[DS1]) : DataSource[DS2]
 }
+

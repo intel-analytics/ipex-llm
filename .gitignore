@@ -22,3 +22,6 @@ dl/.idea/*
 # other
 *.txt
 *.csv
+nohup.out
+model.*
+state.*

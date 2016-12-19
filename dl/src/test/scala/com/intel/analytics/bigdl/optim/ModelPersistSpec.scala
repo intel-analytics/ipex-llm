@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.models.imagenet.{AlexNet, AlexNet_OWT}
+import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.nn.{Linear, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
