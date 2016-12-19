@@ -229,8 +229,7 @@ object DistriOptimizer {
       logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
         s"Throughput is ${recordsNum.value / ((end - start) / 1e9)} records/second. Loss is ${
           lossSum.value / stackCount.value
-        }. " +
-        s"Calculate time is ${(reduceBefore - start) / 1e9}seconds. ")
+        }. ")
       logger.debug("\n" + metrics.summary())
       driverState("neval") = driverState[Int]("neval") + 1
       if (accumulateCount >= dataset.size()) {
