@@ -101,7 +101,7 @@ object SparkTrain {
 
   def main(args: Array[String]): Unit = {
     trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
-      val batchSize = 64
+      val batchSize = 128
       val (imageSize, lrSchedule, maxEpoch, dataSet) = param.dataset match {
         //case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
         case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
