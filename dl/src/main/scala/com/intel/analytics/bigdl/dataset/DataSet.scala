@@ -260,7 +260,7 @@ object DataSet {
   def rdd[T: ClassTag](data: RDD[T], partitionNum: Int):
   DistributedDataSet[T] = {
     new CachedDistriDataSet[T](
-      data.coalesce(partitionNum, false)
+      data.coalesce(partitionNum, true)
         .mapPartitions(iter => {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")
