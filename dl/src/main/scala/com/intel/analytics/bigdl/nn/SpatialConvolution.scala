@@ -71,7 +71,6 @@ class SpatialConvolution[T: ClassTag](
     false
   }
   reset()
-  
   private var im2colTime = 0L
   private var col2imTime = 0L
 
@@ -85,7 +84,7 @@ class SpatialConvolution[T: ClassTag](
   }
 
   def setSharedVar(): Unit = sharedFlag = true
-  //def setGradWeightMM(sharedTensor: Tensor[T]): Unit = gradWeightMM = sharedTensor
+  // def setGradWeightMM(sharedTensor: Tensor[T]): Unit = gradWeightMM = sharedTensor
 
   @transient
   private var results: Array[Future[Unit]] = null
@@ -115,8 +114,7 @@ class SpatialConvolution[T: ClassTag](
       weightMM = weight.view(nGroup, nOutputPlane / nGroup,
         nInputPlane * kernelH * kernelW / nGroup)
     }
-    val (outputWidth, outputHeight, inputWidth, inputHeight) =  calcOutputWH(input)
-
+    val (outputWidth, outputHeight, inputWidth, inputHeight) = calcOutputWH(input)
     if (onesBias.dim() != 1 || onesBias.size(1) != outputHeight * outputWidth) {
       onesBias.resize(Array(outputHeight * outputWidth)).fill(ev.fromType(1.0))
     }
@@ -275,7 +273,8 @@ class SpatialConvolution[T: ClassTag](
       require(gradOutput.isContiguous())
       if (sharedFlag) {
         val (outputWidth, outputHeight, _, _) = calcOutputWH(input)
-        fGradInput.resize(Array(nGroup, kernelW * kernelH * nInputPlane / nGroup, outputHeight * outputWidth))
+        fGradInput.resize(Array(nGroup,
+          kernelW * kernelH * nInputPlane / nGroup, outputHeight * outputWidth))
       } else { fGradInput.resizeAs(fInput) }
       var g = 0
       while (g < nGroup) {
@@ -370,8 +369,9 @@ class SpatialConvolution[T: ClassTag](
           nInputPlane * kernelH * kernelW / nGroup)
       }
       if (sharedFlag) {
-        val (outputWidth, outputHeight, inputWidth, inputHeight) =  calcOutputWH(input)
-        fInput.resize(Array(nGroup, kernelW * kernelH * nInputPlane / nGroup, outputHeight * outputWidth))
+        val (outputWidth, outputHeight, inputWidth, inputHeight) = calcOutputWH(input)
+        fInput.resize(Array(nGroup,
+          kernelW * kernelH * nInputPlane / nGroup, outputHeight * outputWidth))
         var g = 0
         while (g < nGroup) {
           write2fInput(
@@ -427,7 +427,7 @@ class SpatialConvolution[T: ClassTag](
         var i, j = 0
         val minJobNum: Int = batchSize / Engine.coreNumber
         val remainJobNum: Int = batchSize - minJobNum * Engine.coreNumber
-        val (outputWidth, outputHeight, inputWidth, inputHeight) =  calcOutputWH(input)
+        val (outputWidth, outputHeight, inputWidth, inputHeight) = calcOutputWH(input)
         fInput.resize(Array(Engine.coreNumber, nGroup, kernelW * kernelH * nInputPlane / nGroup,
           outputHeight * outputWidth))
         while (j < coresNum) {

@@ -37,7 +37,7 @@ object LocalTrain {
 
       val batchSize = 32
       val (imageSize, lrSchedule, maxEpoch, dataSet) = param.dataset match {
-        //case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
+        // case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
         case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
       }
 
@@ -51,8 +51,10 @@ object LocalTrain {
         Module.load[Float](param.modelSnapshot.get)
       } else {
         val curModel = param.dataset match {
-        case "imagenet" => ResNet(classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
-        case _ => ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
+        case "imagenet" =>
+          ResNet(classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
+        case _ =>
+          ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
         }
         ResNet.shareGradInput(curModel)
         ResNet.modelInit(curModel)
@@ -103,7 +105,7 @@ object SparkTrain {
     trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
       val batchSize = 128
       val (imageSize, lrSchedule, maxEpoch, dataSet) = param.dataset match {
-        //case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
+        // case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
         case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
       }
 
@@ -115,17 +117,22 @@ object SparkTrain {
       val sc = new SparkContext(conf)
 
       val trainData = Paths.get(param.folder, "train")
-      val trainDataSet = dataSet.distributedTrainDataSet(trainData, sc, param.nodesNumber, imageSize, batchSize)
+      val trainDataSet =
+        dataSet.distributedTrainDataSet(trainData, sc, param.nodesNumber, imageSize, batchSize)
       val validationData = Paths.get(param.folder, "val")
-      val validateDataSet = dataSet.distributedValDataSet(validationData, sc, param.nodesNumber, imageSize, batchSize)
+      val validateDataSet =
+        dataSet.distributedValDataSet(validationData, sc, param.nodesNumber, imageSize, batchSize)
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
         val curModel = param.dataset match {
-          case "imagenet" => ResNet(classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
-          case _ => ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
+          case "imagenet" =>
+            ResNet(classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
+          case _ =>
+            ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
         }
+        ResNet.shareGradInput(curModel)
         ResNet.modelInit(curModel)
         curModel
       }
@@ -154,7 +161,8 @@ object SparkTrain {
         optimizer.setCache(param.cache.get, Trigger.everyEpoch)
       }
       optimizer
-        .setValidation(Trigger.everyEpoch, validateDataSet, Array(new Top1Accuracy[Float]))
+        .setValidation(Trigger.everyEpoch,
+          validateDataSet, Array(new Top1Accuracy[Float]))
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(maxEpoch))
         .optimize()

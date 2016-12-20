@@ -43,7 +43,8 @@ object ResNet {
     val dataset = dataSet.getOrElse(DatasetType.CIFAR10).asInstanceOf[DatasetType]
 
     def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[Float] = {
-      val useConv = shortcutType == ShortcutType.C || (shortcutType == ShortcutType.B && nInputPlane != nOutputPlane)
+      val useConv = shortcutType == ShortcutType.C ||
+        (shortcutType == ShortcutType.B && nInputPlane != nOutputPlane)
 
       if (useConv) {
         Sequential()
@@ -55,7 +56,7 @@ object ResNet {
           .add(Concat(2)
             .add(Identity())
             .add(MulConstant(0f)))
-      }  else {
+      } else {
         Identity()
       }
     }
@@ -68,7 +69,7 @@ object ResNet {
       s.add(SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1))
       s.add(SpatialBatchNormalization(n))
       s.add(ReLU(true))
-      s.add(SpatialConvolution(n ,n, 3, 3, 1, 1, 1, 1))
+      s.add(SpatialConvolution(n, n, 3, 3, 1, 1, 1, 1))
       s.add(SpatialBatchNormalization(n))
 
       Sequential()
@@ -101,7 +102,8 @@ object ResNet {
         .add(ReLU(true))
     }
 
-    def layer(block: (Int, Int) => Module[Float], features: Int, count: Int, stride: Int = 1): Module[Float] = {
+    def layer(block: (Int, Int) => Module[Float], features: Int,
+              count: Int, stride: Int = 1): Module[Float] = {
       val s = Sequential()
       for (i <- 1 to count) {
         s.add(block(features, if (i == 1) stride else 1))
@@ -110,15 +112,20 @@ object ResNet {
     }
 
     val model = Sequential()
-
     if (dataset == DatasetType.ImageNet) {
       val cfg = Map(
-        18 -> ((2, 2, 2, 2), 512, basicBlock: (Int, Int) => Module[Float]),
-        34 -> ((3, 4, 6, 3), 512, basicBlock: (Int, Int) => Module[Float]),
-        50 -> ((3, 4, 6, 3), 2048, bottleneck: (Int, Int) => Module[Float]),
-        101 -> ((3, 4, 23, 3), 2048, bottleneck: (Int, Int) => Module[Float]),
-        152 -> ((3, 8, 36, 3), 2048, bottleneck: (Int, Int) => Module[Float]),
-        200 -> ((3, 24, 36, 3), 2048, bottleneck: (Int, Int) => Module[Float])
+        18 -> ((2, 2, 2, 2), 512,
+          basicBlock: (Int, Int) => Module[Float]),
+        34 -> ((3, 4, 6, 3), 512,
+          basicBlock: (Int, Int) => Module[Float]),
+        50 -> ((3, 4, 6, 3), 2048,
+          bottleneck: (Int, Int) => Module[Float]),
+        101 -> ((3, 4, 23, 3), 2048,
+          bottleneck: (Int, Int) => Module[Float]),
+        152 -> ((3, 8, 36, 3), 2048,
+          bottleneck: (Int, Int) => Module[Float]),
+        200 -> ((3, 24, 36, 3), 2048,
+          bottleneck: (Int, Int) => Module[Float])
       )
 
       assert(cfg.keySet.contains(depth))
@@ -126,8 +133,6 @@ object ResNet {
       val (loopConfig, nFeatures, block) = cfg.get(depth).get
       iChannels = 64
       println(" | ResNet-" + depth + " ImageNet")
-
-      //-- The ResNet ImageNet Model
 
       model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3))
         .add(SpatialBatchNormalization(64))
@@ -141,7 +146,8 @@ object ResNet {
         .add(View(nFeatures).setNumInputDims(3))
         .add(Linear(nFeatures, classNum))
     } else if (dataset == DatasetType.CIFAR10) {
-      assert((depth-2)%6 == 0, "depth should be one of 20, 32, 44, 56, 110, 1202")
+      assert((depth-2)%6 == 0,
+        "depth should be one of 20, 32, 44, 56, 110, 1202")
       val n = (depth-2)/6
       iChannels = 16
       println(" | ResNet-" + depth + " CIFAR-10")
@@ -161,12 +167,15 @@ object ResNet {
     model
   }
 
-  sealed abstract class DatasetType(typeId: Int) extends Serializable
+  sealed abstract class DatasetType(typeId: Int)
+    extends Serializable
+
   object DatasetType {
     case object CIFAR10 extends DatasetType(0)
     case object ImageNet extends DatasetType(1)
   }
-  sealed abstract class ShortcutType(typeId: Int) extends Serializable
+  sealed abstract class ShortcutType(typeId: Int)
+    extends Serializable
 
   object ShortcutType{
     case object A extends ShortcutType(0)

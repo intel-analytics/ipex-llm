@@ -35,7 +35,7 @@ class RGBImgRdmCropper(cropHeight: Int, cropWidth: Int, padding: Int)
   override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
     prev.map(img => {
       val curImg = padding > 0 match {
-        case true => {
+        case true =>
           val widthTmp = img.width()
           val heightTmp = img.height()
           val sourceTmp = img.content
@@ -47,14 +47,16 @@ class RGBImgRdmCropper(cropHeight: Int, cropWidth: Int, padding: Int)
           val frameLength = widthTmp * heightTmp
           var i = 0
           while (i < frameLength) {
-            tempBuffer(startIndex + ((i / widthTmp) * padWidth + (i % widthTmp)) * 3 + 2) = sourceTmp(i * 3 + 2)
-            tempBuffer(startIndex + ((i / widthTmp) * padWidth + (i % widthTmp)) * 3 + 1) = sourceTmp(i * 3 + 1)
-            tempBuffer(startIndex + ((i / widthTmp) * padWidth + (i % widthTmp)) * 3) = sourceTmp(i * 3)
+            tempBuffer(startIndex +
+              ((i / widthTmp) * padWidth + (i % widthTmp)) * 3 + 2) = sourceTmp(i * 3 + 2)
+            tempBuffer(startIndex +
+              ((i / widthTmp) * padWidth + (i % widthTmp)) * 3 + 1) = sourceTmp(i * 3 + 1)
+            tempBuffer(startIndex +
+              ((i / widthTmp) * padWidth + (i % widthTmp)) * 3) = sourceTmp(i * 3)
             i += 1
           }
           temp.setLabel(img.label())
           temp
-        }
         case _ => img
       }
 
@@ -81,5 +83,4 @@ class RGBImgRdmCropper(cropHeight: Int, cropWidth: Int, padding: Int)
       buffer.setLabel(curImg.label())
     })
   }
-
 }
