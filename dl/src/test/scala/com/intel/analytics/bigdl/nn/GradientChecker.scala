@@ -66,13 +66,18 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
       }
     } else input.nElement()
 
+    println("check input length: " + length)
+    var scalaTime: Long = 0
+
     while (j <= length) {
       i = Random.nextInt(input.nElement()) + 1
       val curValue = perturbation.valueAt(i)
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) + stepSize))
       val positiveLoss = lossAndGradient(layer.forward(input).toTensor[T])._1
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) - stepSize))
+      val start = System.nanoTime()
       val negativeLoss = lossAndGradient(layer.forward(input).toTensor[T])._1
+      scalaTime = System.nanoTime() - start
       val estimatedGradient = (positiveLoss - negativeLoss) / stepSize / 2.0
 
       val errDiff = math.abs(estimatedGradient - ev.toType[Double](computedGrad.valueAt(i)))
@@ -86,6 +91,7 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
       j += 1
     }
 
+    println("forward time: " + scalaTime / 1e9 + " s")
     result
   }
 
@@ -120,6 +126,7 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
       }
     } else weights.nElement()
 
+    println("check weight length: " + length)
     while (j <= length) {
       i = Random.nextInt(weights.nElement()) + 1
       val curValue = perturbation.valueAt(i)
