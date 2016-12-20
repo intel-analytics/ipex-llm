@@ -33,8 +33,18 @@ object MTLabeledRGBImgToBatch {
   }
 }
 
-class MTLabeledRGBImgToBatch[A: ClassTag](width: Int, height: Int, batchSize: Int,
-  transformer: Transformer[A, LabeledRGBImage])
+object MTLabeledRGBImgToBatchMultiNode {
+  def apply[A: ClassTag](width: Int, height: Int, batchSize: Int,
+    transformer: Transformer[A, LabeledRGBImage], nodeNumber : Int)
+  : MTLabeledRGBImgToBatch[A] = {
+    require(batchSize % nodeNumber == 0, "batch size can't be divided by node number")
+    new MTLabeledRGBImgToBatch[A](
+      width, height, batchSize / nodeNumber, transformer)
+  }
+}
+
+class MTLabeledRGBImgToBatch[A: ClassTag] private[bigdl]
+(width: Int, height: Int, batchSize: Int, transformer: Transformer[A, LabeledRGBImage])
   extends Transformer[A, Batch[Float]] {
 
   private def getPosition(count: AtomicInteger): Int = {

@@ -24,24 +24,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.spark.SparkContext
 
 object ImageNet2012 {
-  def localFolder(path : Path, imageSize : Int, batchSize : Int, parallel: Int)
-  : LocalDataSet[Batch[Float]] = {
-    val ds = DataSet.SequenceFolder.paths(path, 1281167)
-    val fileTransformer = LocalSeqFileToBytes()
-    val arrayToImage = SampleToRGBImg()
-    val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
-    val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
-    val flipper = HFlip(0.5)
-    val multiThreadToTensor = MTLabeledRGBImgToBatch[SeqFileLocalPath](
-      width = imageSize,
-      height = imageSize,
-      batchSize = batchSize,
-      transformer = fileTransformer -> arrayToImage -> cropper -> flipper -> normalizer
-    )
-    ds -> multiThreadToTensor
-  }
-
-  def hdfs(
+  def apply(
     path : String,
     sc : SparkContext,
     imageSize : Int,
@@ -49,18 +32,15 @@ object ImageNet2012 {
     nodeNumber: Int,
     coresPerNode : Int)
   : DistributedDataSet[Batch[Float]] = {
-    require(batchSize % nodeNumber == 0, "batch size can't be divided by node number")
-    val ds = DataSet.SequenceFolder.files(path, sc, 1000, nodeNumber)
-    val arrayToImage = SampleToRGBImg()
-    val cropper = RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize)
-    val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
-    val flipper = HFlip(0.5)
-    val multiThreadToTensor = MTLabeledRGBImgToBatch[Sample](
-      width = imageSize,
-      height = imageSize,
-      batchSize = batchSize / nodeNumber,
-      transformer = arrayToImage -> cropper -> flipper -> normalizer
-    )
-    ds -> multiThreadToTensor
+    DataSet.SequenceFolder.files(path, sc, 1000, nodeNumber)
+      .transform(
+        MTLabeledRGBImgToBatchMultiNode[Sample](
+          width = imageSize,
+          height = imageSize,
+          batchSize = batchSize / nodeNumber,
+          transformer = (SampleToRGBImg() -> RGBImgCropper(imageSize, imageSize)
+            -> HFlip(0.5) -> RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)),
+          nodeNumber = nodeNumber
+        ))
   }
 }

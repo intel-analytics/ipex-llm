@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.models.vgg
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{RGBImgToBatch, RGBImgNormalizer, SampleToRGBImg, RGBImage}
+import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.nn.{Module, ClassNLLCriterion}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
@@ -107,7 +107,7 @@ object SparkTrain {
       val trainDataSet = DataSet.ImageFolder
         .images(Paths.get(param.folder, "/train"), sc, param.nodesNumber, 32)
         .transform(RGBImgNormalizer(trainMean, trainStd))
-        .transform(RGBImgToBatch(batchSize))
+        .transform(RGBImgToBatchMultiNode(batchSize, param.nodesNumber))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)

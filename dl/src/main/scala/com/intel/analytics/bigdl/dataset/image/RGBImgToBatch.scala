@@ -26,7 +26,14 @@ object RGBImgToBatch {
   def apply(batchSize: Int): RGBImgToBatch = new RGBImgToBatch(batchSize)
 }
 
-class RGBImgToBatch(batchSize: Int)
+object RGBImgToBatchMultiNode {
+  def apply(batchSize : Int, nodeNumber : Int) : RGBImgToBatch = {
+    require(batchSize % nodeNumber == 0, "batch size can't be divided by node number")
+    new RGBImgToBatch(batchSize / nodeNumber)
+  }
+}
+
+class RGBImgToBatch private[bigdl](batchSize: Int)
   extends Transformer[LabeledRGBImage, Batch[Float]] {
 
   override def apply(prev: Iterator[LabeledRGBImage]): Iterator[Batch[Float]] = {

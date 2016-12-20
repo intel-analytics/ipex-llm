@@ -79,6 +79,7 @@ object DistriOptimizer {
     val sc = dataset.data(looped = true).sparkContext
     val partitionNum = dataset.originRDD().partitions.length
     var wallClockTime = 0L
+    var lastEpochTime = 0L
     val driverState = T("epoch" -> state.get[Int]("epoch").getOrElse(1),
       "neval" -> state.get[Int]("neval").getOrElse(1))
     val _subModelNumber = Engine.getEngineType match {
@@ -213,7 +214,6 @@ object DistriOptimizer {
 
           Iterator.single(cached.buffer)
         })
-      val reduceBefore = System.nanoTime()
       val driverParNum = partitionNum * _subModelNumber
       pm.sumAndUpdate(resultRDD, (weights, gradients, state) => {
         gradients.div(ev.fromType[Int](driverParNum))
@@ -226,16 +226,17 @@ object DistriOptimizer {
 
       accumulateCount += recordsNum.value
       val end = System.nanoTime()
+      wallClockTime += end - start
       logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
         s"Throughput is ${recordsNum.value / ((end - start) / 1e9)} records/second. Loss is ${
           lossSum.value / stackCount.value
-        }. " +
-        s"Calculate time is ${(reduceBefore - start) / 1e9}seconds. ")
+        }. ")
       logger.debug("\n" + metrics.summary())
       driverState("neval") = driverState[Int]("neval") + 1
       if (accumulateCount >= dataset.size()) {
         val epochEnd = System.nanoTime()
-        wallClockTime = wallClockTime + epochEnd - epochStart
+        wallClockTime = lastEpochTime + epochEnd - epochStart
+        lastEpochTime = wallClockTime
         epochStart = System.nanoTime()
         logger.info(s"${_header} Epoch finished. Wall clock time is ${wallClockTime / 1e6}ms")
 
