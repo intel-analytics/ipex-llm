@@ -32,8 +32,6 @@ object ImageNet2012 {
     nodeNumber: Int,
     coresPerNode : Int)
   : DistributedDataSet[Batch[Float]] = {
-    require(batchSize % (nodeNumber * coresPerNode) == 0, s"batch size($batchSize) can't be " +
-      s"divided by node number * coresPerNode")
     DataSet.SequenceFolder.files(path, sc, 1000, nodeNumber)
       .transform(
         MTLabeledRGBImgToBatchMultiNode[Sample](
