@@ -65,6 +65,8 @@ class ThreadPool(private var poolSize: Int) {
     }
   }
 
+  def getPoolSize : Int = poolSize
+
   /**
    * Set MKL thread pool size
    *
@@ -201,7 +203,7 @@ object Engine {
 
   val default: ThreadPool = new ThreadPool(defaultPoolSize)
 
-  private var _model : ThreadPool = null
+  @volatile private var _model : ThreadPool = null
 
   def model : ThreadPool = {
     if (_model == null) {

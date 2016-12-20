@@ -18,10 +18,16 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
+import com.intel.analytics.bigdl.optim.DistriValidator._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
+import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
+
+object DistriValidator {
+  val logger = Logger.getLogger(this.getClass)
+}
 
 class DistriValidator[T](
   model: Module[T]
@@ -39,6 +45,7 @@ class DistriValidator[T](
     }
     rdd.mapPartitions(dataIter => {
       val localModel = broadcastModel.value
+      logger.info("model thread pool size is " + Engine.model.getPoolSize)
       val workingModels = (1 to _subModelNumber)
         .map(_ => localModel.cloneModule().evaluate()).toArray
       dataIter.map(batch => {

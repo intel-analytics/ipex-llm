@@ -54,7 +54,7 @@ object Options {
       .action((x, c) => c.copy(nodesNumber = x))
       .required()
     opt[Int]('b', "batchSize")
-      .text("batchi size")
+      .text("batch size")
       .action((x, c) => c.copy(batchSize = Some(x)))
   }
 

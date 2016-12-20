@@ -46,6 +46,7 @@ class LocalValidator[T](model: Module[T])
   ): Array[(ValidationResult, ValidationMethod[T])] = {
     val dataIter = dataSet.data(looped = false)
     var count = 0
+    logger.info("model thread pool size is " + Engine.model.getPoolSize)
     dataIter.map(batch => {
       require(batch.data.size(1) == batch.labels.size(1))
       val stackSize = batch.data.size(1) / subModelNumber
