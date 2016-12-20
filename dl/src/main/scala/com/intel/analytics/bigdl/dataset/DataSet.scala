@@ -100,7 +100,7 @@ trait LocalDataSet[T] extends DataSet[Iterator[T]] {
  *
  * @tparam T
  */
-class LocalArrayDataSet[T](buffer: Array[T]) extends LocalDataSet[T] {
+class LocalArrayDataSet[T] private[dataset](buffer: Array[T]) extends LocalDataSet[T] {
   override def shuffle(): Unit = {
     RandomGenerator.shuffle(buffer)
   }
@@ -179,7 +179,7 @@ trait DistributedDataSet[T] extends DataSet[RDD[T]] {
   def originRDD(): RDD[_]
 }
 
-class CachedDistriDataSet[T: ClassTag](buffer: RDD[Array[T]])
+class CachedDistriDataSet[T: ClassTag] private[dataset] (buffer: RDD[Array[T]])
   extends DistributedDataSet[T] {
 
   protected lazy val count: Long = buffer.mapPartitions(iter => {
