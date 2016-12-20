@@ -35,18 +35,18 @@ class ColorJitter extends Transformer[LabeledRGBImage, LabeledRGBImage] {
   def grayScale(dst: Array[Float], img: Array[Float]): Array[Float] = {
     var i = 0
     while (i < img.length) {
-      dst(i) = img(i)*0.299f + img(i+1)*0.587f + img(i+2)*0.114f
-      dst(i+1) = dst(i)
-      dst(i+2) = dst(i)
+      dst(i) = img(i)*0.299f + img(i + 1)*0.587f + img(i + 2)*0.114f
+      dst(i + 1) = dst(i)
+      dst(i + 2) = dst(i)
       i += 3
     }
     dst
   }
 
-  def blend(img1: Array[Float], img2: Array[Float], alpha: Float) =
-    (img1 zip img2) map {case (a,b) => a + (1-alpha)*b }
+  def blend(img1: Array[Float], img2: Array[Float], alpha: Float): Unit =
+    (img1 zip img2) map {case (a, b) => a + (1-alpha)*b }
 
-  def saturation(variance: Float)(input: Array[Float]) = {
+  def saturation(variance: Float)(input: Array[Float]): Array[Float] = {
     val gs = new Array[Float](input.length)
     grayScale(gs, input)
     val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
@@ -54,14 +54,14 @@ class ColorJitter extends Transformer[LabeledRGBImage, LabeledRGBImage] {
     input
   }
 
-  def brightness(variance: Float)(input: Array[Float])= {
+  def brightness(variance: Float)(input: Array[Float]): Array[Float] = {
     val gs = new Array[Float](input.length)
     val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
     blend(input, gs, alpha)
     input
   }
 
-  def contrast(variance: Float)(input: Array[Float]) = {
+  def contrast(variance: Float)(input: Array[Float]): Array[Float] = {
     val gs = new Array[Float](input.length)
     grayScale(gs, input)
     val mean = gs.sum / gs.length
@@ -73,7 +73,7 @@ class ColorJitter extends Transformer[LabeledRGBImage, LabeledRGBImage] {
 
   val ts = Map(
     "brightness" -> {brightness(bcsParameters.get("brightness").get)(_)},
-    "contrast"   -> {contrast(bcsParameters.get("contrast").get)(_)},
+    "contrast" -> {contrast(bcsParameters.get("contrast").get)(_)},
     "saturation" -> {saturation(bcsParameters.get("saturation").get)(_)}
   )
 

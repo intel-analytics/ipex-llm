@@ -111,13 +111,12 @@ object MultiModelPerf {
         ClassNLLCriterion[T](), Tensor[T](param.batchSize).fill(tn.fromType(1)))
       case "googlenet_v2" => (GoogleNet_v2(1000), Tensor[T](param.batchSize, 3, 224, 224).rand(),
         ClassNLLCriterion(), Tensor[T](param.batchSize).fill(tn.fromType(1)))
-      case "resnet" => {
-        val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
+      case "resnet" =>
+        val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth" -> 50))
         ResNet.shareGradInput(curModel)
         ResNet.modelInit(curModel)
         (curModel, Tensor[T](param.batchSize, 3, 224, 224).rand(),
           CrossEntropyCriterion(), Tensor(param.batchSize).fill(tn.fromType(1)))
-      }
     })
 
     val grads = tests.map(_._1.getParameters()._2).toArray

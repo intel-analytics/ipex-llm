@@ -202,44 +202,41 @@ object Utils {
   }
 
   def shareGradInput[@specialized(Float, Double) T: ClassTag](model: Module[T])
-                                                             (implicit ev: TensorNumeric[T]): Unit = {
+    (implicit ev: TensorNumeric[T]): Unit = {
     def sharingKey(m: Module[T]) = m.getClass.getName
 
     val cache = mutable.Map[Any, Storage[T]]()
     val packageName: String = model.getName().stripSuffix("Sequential")
-    //println("packageName = " + packageName)
     cache.put("fInput", Storage(Array(ev.fromType[Int](1))))
     cache.put("fGradInput", Storage(Array(ev.fromType[Int](1))))
 
     var index = 0
     def matchModels(model: Module[T]): Unit = {
       model match {
-        case container: Container[Activity, Activity, T] => {
+        case container: Container[Activity, Activity, T] =>
           container.modules.foreach( m => {
-            if (m.gradInput.isInstanceOf[Tensor[T]] && !m.getClass.getName.equals(packageName + "ConcatTable")) {
+            if (m.gradInput.isInstanceOf[Tensor[T]] &&
+              !m.getClass.getName.equals(packageName + "ConcatTable")) {
              // println("initial gradInput, not in ConcatTable")
               val key = sharingKey(m)
-              if (!cache.contains(key)){
+              if (!cache.contains(key)) {
                 cache.put(key, Storage(Array(ev.fromType[Int](1))))
               }
               m.gradInput = Tensor(cache.get(key).get, 1, Array(0))
             }
             matchModels(m)
           })
-        }
-        case concatTable if (concatTable.isInstanceOf[ConcatTable[T]]) => {
+        case concatTable if (concatTable.isInstanceOf[ConcatTable[T]]) =>
           if (!cache.contains(index % 2)) {
             cache.put(index % 2, Storage(Array(ev.fromType[Int](1))))
           }
           concatTable.gradInput = Tensor[T](cache.get(index % 2).get, 1, Array(0))
           index = index + 1
-        }
-        case spatialConvolution if (spatialConvolution.isInstanceOf[SpatialConvolution[T]]) => {
+        case spatialConvolution if (spatialConvolution.isInstanceOf[SpatialConvolution[T]]) =>
           val curModel = spatialConvolution.asInstanceOf[SpatialConvolution[T]]
           curModel.setSharedVar
           curModel.fInput = Tensor[T](cache.get("fInput").get)
           curModel.fGradInput = Tensor[T](cache.get("fGradInput").get)
-        }
         case _ => Unit
       }
     }
@@ -247,27 +244,22 @@ object Utils {
   }
 
   def findModules[@specialized(Float, Double) T: ClassTag](model: Module[T])
-                                                          (implicit ev: TensorNumeric[T]): Unit = {
+    (implicit ev: TensorNumeric[T]): Unit = {
     model match {
       case container: Container[Activity, Activity, T]
       => container.modules.foreach(m => findModules(m))
-      case spatialConvolution if (spatialConvolution.isInstanceOf[SpatialConvolution[T]])
-      => {
+      case spatialConvolution if (spatialConvolution.isInstanceOf[SpatialConvolution[T]]) =>
         val curModel = spatialConvolution.asInstanceOf[SpatialConvolution[T]]
         val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane
         curModel.weight.apply1(_ => ev.fromType[Float](RNG.normal(0, Math.sqrt(2.0f / n)).toFloat))
         curModel.bias.apply1(_ => ev.fromType[Float](0))
-      }
-      case spatialBatchNormalization if (spatialBatchNormalization.isInstanceOf[SpatialBatchNormalization[T]])
-      => {
+      case spatialBatchNormalization
+        if (spatialBatchNormalization.isInstanceOf[SpatialBatchNormalization[T]]) =>
         val curModel = spatialBatchNormalization.asInstanceOf[SpatialBatchNormalization[T]]
         curModel.weight.apply1(_ => ev.fromType[Float](1.0f))
         curModel.bias.apply1(_ => ev.fromType[Float](0.0f))
-      }
-      case linear if (linear.isInstanceOf[Linear[T]])
-      => {
+      case linear if (linear.isInstanceOf[Linear[T]]) =>
         linear.asInstanceOf[Linear[T]].bias.apply1(_ => ev.fromType[Float](0))
-      }
       case _ => Unit
     }
   }

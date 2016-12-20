@@ -27,71 +27,13 @@ trait ResNetDataSet {
   : LocalDataSet[Batch[Float]]
   def localValDataSet(path: Path, batchSize: Int, size: Int)
   : LocalDataSet[Batch[Float]]
-  def distributedValDataSet(path: Path, sc: SparkContext, partitionNum: Int, imageSize: Int, batchSize: Int)
+  def distributedValDataSet(path: Path, sc: SparkContext,
+    partitionNum: Int, imageSize: Int, batchSize: Int)
   : DistributedDataSet[Batch[Float]]
-  def distributedTrainDataSet(path: Path, sc: SparkContext, partitionNum: Int, imageSize: Int, batchSize: Int)
+  def distributedTrainDataSet(path: Path, sc: SparkContext,
+    partitionNum: Int, imageSize: Int, batchSize: Int)
     : DistributedDataSet[Batch[Float]]
 }
-
-
-
-/*object ImagenetDataSet extends ResNetDataSet {
-
-  override def localTrainDataSet(path: Path, batchSize: Int, size: Int)
-  : LocalDataSet[Batch[Float]] = {
-    DataSet.SequenceFolder.paths(path, size)
-      .transform(
-        MTLabeledRGBImgToBatch(
-          width = size,
-          height = size,
-          batchSize = batchSize,
-          transformer = (LocalSeqFileToBytes() -> SampleToRGBImg() ->
-            RGBImgCropper(cropWidth = 224, cropHeight = 224) ->
-            ColorJitter() -> Lighting() ->
-            RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) ->
-            HFlip(0.5)))
-      )
-  }
-
-  override def localValDataSet(path: Path, batchSize: Int, size: Int)
-  : LocalDataSet[Batch[Float]] = {
-    DataSet.SequenceFolder.paths(path, size)
-      .transform(
-        MTLabeledRGBImgToBatch(
-          width = size,
-          height = size,
-          batchSize = batchSize,
-          transformer = (LocalSeqFileToBytes() -> SampleToRGBImg() ->
-            RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) ->
-            RGBImgCropper(cropWidth = 224, cropHeight = 224))
-        )
-      )
-  }
-
-  override def distributedValDataSet(path: Path, sc: SparkContext, partitionNum: Int, imageSize: Int, batchSize: Int)
-  : DistributedDataSet[Batch[Float]] = {
-    val ds = LocalImageFiles.distriDataSet(imagesFile, looped, sc, partitionNum, 224)
-    val fileTransformer = LocalSeqFileToBytes()
-    val arrayToImage = SampleToRGBImg()
-    val cropper = RGBImgCropper(cropWidth = 224, cropHeight = 224)
-    val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
-    val toBatch = new RGBImgToBatch(batchSize)
-    ds -> arrayToImage -> normalizer -> cropper -> toBatch
-  }
-  override def distributedTrainDataSet(path: Path, sc: SparkContext, partitionNum: Int, imageSize: Int, batchSize: Int)
-  : DistributedDataSet[Batch[Float]] = {
-    val ds = LocalImageFiles.distriDataSet(imagesFile, looped, sc, partitionNum, 224)
-    val arrayToImage = SampleToRGBImg()
-    val cropper = RGBImgCropper(cropWidth = 224, cropHeight = 224)
-    val normalizer = RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
-    val flipper = HFlip(0.5)
-    val colorJitter = ColorJitter()
-    val lighting = Lighting()
-    val toBatch = new RGBImgToBatch(batchSize)
-    ds -> arrayToImage -> cropper -> colorJitter -> lighting -> normalizer -> toBatch
-  }
-
-}*/
 
 object Cifar10DataSet extends ResNetDataSet {
 
@@ -118,7 +60,8 @@ object Cifar10DataSet extends ResNetDataSet {
       .transform(RGBImgToBatch(batchSize))
   }
 
-  override def distributedValDataSet(path: Path, sc: SparkContext, partitionNum: Int, imageSize: Int, batchSize: Int)
+  override def distributedValDataSet(path: Path, sc: SparkContext,
+    partitionNum: Int, imageSize: Int, batchSize: Int)
   : DistributedDataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
@@ -126,7 +69,8 @@ object Cifar10DataSet extends ResNetDataSet {
       .transform(RGBImgToBatch(batchSize))
   }
 
-  override def distributedTrainDataSet(path: Path, sc: SparkContext, partitionNum: Int, imageSize: Int, batchSize: Int)
+  override def distributedTrainDataSet(path: Path, sc: SparkContext,
+    partitionNum: Int, imageSize: Int, batchSize: Int)
   : DistributedDataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)

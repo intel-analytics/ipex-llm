@@ -105,12 +105,11 @@ object Perf {
       case "vgg16" => (Vgg_16(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), Tensor[T](param.batchSize, 3, 224, 224))
       case "lenet5" => (LeNet5(10), Tensor[T](param.batchSize, 1, 28, 28))
-      case "resnet" => {
-        val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth"->50))
+      case "resnet" =>
+        val curModel = ResNet(1000, T("shortcutType" -> ShortcutType.B, "depth" -> 50))
         ResNet.shareGradInput(curModel)
         ResNet.modelInit(curModel)
         (curModel, Tensor[T](param.batchSize, 3, 224, 224))
-      }
     }
     param.inputData match {
       case "constant" => input.fill(tn.fromType(0.01))

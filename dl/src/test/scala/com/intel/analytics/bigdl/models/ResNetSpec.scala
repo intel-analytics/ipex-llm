@@ -35,7 +35,7 @@ import scala.util.Random
 class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "ResNet Float" should "generate correct output" in {
-    //System.setProperty("java.io.tmpdir", "/disk2/test");
+    // System.setProperty("java.io.tmpdir", "/disk2/test");
     Engine.setCoreNumber(4)
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
@@ -43,10 +43,8 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     for (i <- 1 to 1) {
       println(s"unitTest-${i}")
-      unitTest(i, i+100, 18, 4)
+      unitTest(i, i + 100, 18, 4)
     }
-    //println("test case when batchSize < Engine.coresNum")
-    //unitTest(1, 100, 18, 2)
 
   }
 
@@ -55,22 +53,13 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
       Random.setSeed(inputSeed)
       val classNum: Int = 1000
-
-      //val FloatInput = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
-      //val FloatLabel = Tensor[Float](batchSize).apply1(e => Random.nextInt(classNum))
-
       val input = Tensor[Float](batchSize, 3, 224, 224).apply1( e => Random.nextFloat())
       val labels = Tensor[Float](batchSize).apply1(e => Random.nextInt(classNum))
-//      for (i <- 0 until FloatInput.nElement()) {
-//        input.storage().array()(i) = FloatInput.storage().array()(i)
-//      }
-//      for (i <- 0 until FloatLabel.nElement()) {
-//        labels.storage().array()(i) = FloatLabel.storage().array()(i)
-//      }
 
     val seed = modelSeed
     RNG.setSeed(seed)
-    val model = ResNet(classNum, T("shortcutType" -> ShortcutType.B, "depth"->depth, "dataset" -> DatasetType.ImageNet))
+    val model = ResNet(classNum, T("shortcutType" -> ShortcutType.B,
+      "depth" -> depth, "dataset" -> DatasetType.ImageNet))
     model.zeroGradParameters()
 
 
@@ -225,8 +214,9 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
       """
 
-    TH.runNM(code, immutable.Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
-      "parameters_initial", "gradParameters_initial", "gradInput", "model"))
+    TH.runNM(code, immutable.Map("input" -> input, "labels" -> labels),
+      Array("output", "gradOutput", "err", "parameters_initial",
+        "gradParameters_initial", "gradInput", "model"))
 
     ResNet.shareGradInput(model)
 
@@ -239,7 +229,6 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
       }
     }
 
-    //val criterion = new ClassNLLCriterion[Float]()
     val (weights, grad) = model.getParameters()
     val criterion = CrossEntropyCriterion[Float]()
 
@@ -263,8 +252,7 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val outputTest = model.output.toTensor[Float]
     var abss = 0.0
     for (i <- 0 until outputTest.nElement()) {
-      val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i).toFloat)
-      //println(outputTest.storage().array()(i) + " " + output.storage().array()(i).toFloat)
+      val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i))
       abss += tmp
     }
     println(s"outputAbs:$abss")
@@ -280,13 +268,13 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val gradOutput = TH.map("gradOutput").asInstanceOf[Tensor[Float]]
     abss = 0.0
     for (i <- 0 until gradOutputTest.nElement()) {
-      val tmp = abs(gradOutputTest.storage().array()(i) - gradOutput.storage().array()(i).toFloat)
+      val tmp = abs(gradOutputTest.storage().array()(i) - gradOutput.storage().array()(i))
       abss += tmp
     }
     assert(abss < 2e-6)
     println(s"gradOutputTestAbs:$abss")
 
-    val gradInput = model.gradInput.asInstanceOf[Tensor[Float]] // model.backward(input, gradOutputTest)
+    val gradInput = model.gradInput.asInstanceOf[Tensor[Float]]
     val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Float]]
 
     abss = 0.0
@@ -296,22 +284,5 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
     println(s"gradInputTestAbs:$abss")
 
-    //    val (weights, grad) = model.getParameters()
-    //    val modelTorch = TH.map("model").asInstanceOf[Module[Float]]
-    //    val (weightsTorch, gradTorch) = modelTorch.getParameters()
-    //    sgd.optimize(_ => (errTest, grad), weights, state, state)
-    //    abss = 0.0
-    //    for (i <- 0 until weights.nElement()) {
-    //      val tmp = abs(weights.storage().array()(i) - weightsTorch.storage().array()(i))
-    //      abss += tmp
-    //    }
-    //    assert(abss < 2e-2)
   }
-
-
-
-
-
-
-
 }

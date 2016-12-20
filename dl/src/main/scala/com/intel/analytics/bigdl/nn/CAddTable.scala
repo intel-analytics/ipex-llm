@@ -32,23 +32,14 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = 
   override def updateOutput(input: Table): Tensor[T] = {
     if (inplace) {
       output.set(input[Tensor[T]](1))
-      //output = input[Tensor[T]](1)
     } else {
       output.resizeAs(input[Tensor[T]](1)).copy(input[Tensor[T]](1))
-     /* val input1 = input[Tensor[T]](1)
-      if (null == output) {
-        output = input1.clone()
-      } else {
-        output.resizeAs(input1).copy(input1)
-      }*/
     }
-
     var i = 2
     while (i <= input.length()) {
       output.add(input[Tensor[T]](i))
       i += 1
     }
-
     output
   }
 
@@ -57,10 +48,8 @@ class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = 
     while (i <= input.length()) {
       if (i > gradInput.length) gradInput.insert(i, Tensor[T]().resizeAs(input(1)))
       if (inplace) {
-        gradInput[Tensor[T]](i).set(gradOutput) // = gradOutput
+        gradInput[Tensor[T]](i).set(gradOutput)
       } else {
-//        if (gradInput.contains(i)) {
-//          gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
         gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
       }
       i += 1
