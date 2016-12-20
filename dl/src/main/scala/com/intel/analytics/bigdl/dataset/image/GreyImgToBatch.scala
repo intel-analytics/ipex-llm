@@ -28,7 +28,14 @@ object GreyImgToBatch {
   }
 }
 
-class GreyImgToBatch(batchSize: Int)
+object GreyImgToBatchMultiNode {
+  def apply(batchSize : Int, nodeNumber : Int) : GreyImgToBatch = {
+    require(batchSize % nodeNumber == 0, "batch size can't be divided by node number")
+    new GreyImgToBatch(batchSize / nodeNumber)
+  }
+}
+
+class GreyImgToBatch private[dataset](batchSize: Int)
   extends Transformer[LabeledGreyImage, Batch[Float]] {
 
   private def copyImage(img: GreyImage, storage: Array[Float], offset: Int): Unit = {
