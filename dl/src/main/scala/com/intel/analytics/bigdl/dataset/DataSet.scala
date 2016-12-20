@@ -141,9 +141,13 @@ trait DistributedDataSet[T] extends DataSet[RDD[T]] {
   def transform[C: ClassTag](transformer: Transformer[T, C]): DistributedDataSet[C] = {
     val preDataSource = this
 
-    val transformFunc: Iterator[T] => Iterator[C] = (d => {
-      transformer(d)
-    })
+    val broadcast = this.originRDD().sparkContext.broadcast(transformer)
+
+    val cachedTransformer =
+      preDataSource.originRDD().mapPartitions(_ => Iterator
+        .single(broadcast.value.cloneTransformer())
+      ).setName("Cached Transformer").persist()
+    cachedTransformer.count()
 
     new DistributedDataSet[C] {
       override def size(): Long = preDataSource.size()
@@ -151,7 +155,8 @@ trait DistributedDataSet[T] extends DataSet[RDD[T]] {
       override def shuffle(): Unit = preDataSource.shuffle()
 
       override def data(looped: Boolean): RDD[C] =
-        preDataSource.data(looped).mapPartitions(transformFunc)
+        preDataSource.data(looped).zipPartitions(cachedTransformer)(
+          (data, tran) => tran.next()(data))
 
       override def originRDD(): RDD[_] = preDataSource.originRDD()
     }
