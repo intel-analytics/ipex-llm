@@ -81,8 +81,8 @@ object GoogleNetv1_SparkTrain {
         criterion = new ClassNLLCriterion[Float]()
       )
 
-      if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.severalIteration(620))
+      if (param.checkpoint.isDefined) {
+        optimizer.setCache(param.checkpoint.get, Trigger.severalIteration(620))
       }
 
       optimizer
@@ -150,8 +150,8 @@ object GoogleNetv2_SparkTrain {
         criterion = new ClassNLLCriterion[Float]()
       )
 
-      if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      if (param.checkpoint.isDefined) {
+        optimizer.setCache(param.checkpoint.get, Trigger.everyEpoch)
       }
 
       optimizer
