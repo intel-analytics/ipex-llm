@@ -23,7 +23,7 @@ object Options {
 
   case class TrainParams(
     folder: String = "./",
-    cache: Option[String] = None,
+    checkpoint: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
     coreNumberPerNode: Int = -1,
@@ -31,7 +31,7 @@ object Options {
     batchSize: Option[Int] = None
   )
 
-  val trainParser = new OptionParser[TrainParams]("BigDL Lenet Example") {
+  val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
     head("Train GoogleNet model on Apache Spark")
     opt[String]('f', "folder")
       .text("url of hdfs folder store the hadoop sequence files")
@@ -42,9 +42,9 @@ object Options {
     opt[String]("state")
       .text("state snapshot location")
       .action((x, c) => c.copy(stateSnapshot = Some(x)))
-    opt[String]("cache")
+    opt[String]("checkpoint")
       .text("where to cache the model")
-      .action((x, c) => c.copy(cache = Some(x)))
+      .action((x, c) => c.copy(checkpoint = Some(x)))
     opt[Int]('c', "core")
       .text("cores number on each node")
       .action((x, c) => c.copy(coreNumberPerNode = x))
@@ -65,7 +65,7 @@ object Options {
     nodesNumber: Int = -1
   )
 
-  val testParser = new OptionParser[TestParams]("BigDL Googlenet Test Example") {
+  val testParser = new OptionParser[TestParams]("BigDL Inception Test Example") {
     opt[String]('f', "folder")
       .text("url of hdfs folder store the hadoop sequence files")
       .action((x, c) => c.copy(folder = x))
