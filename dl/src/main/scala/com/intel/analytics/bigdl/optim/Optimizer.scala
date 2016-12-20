@@ -42,6 +42,10 @@ abstract class Optimizer[T  : ClassTag, TDS, VDS](
   protected var validationTrigger: Option[Trigger] = None
   protected var validationMethods: Option[Array[ValidationMethod[T]]] = None
   protected var validationDataSet: Option[DataSource[VDS]] = None
+  
+  protected var dropPercentage: Double = 0.0
+  protected var comupteThresholdbatchSize: Int = 100
+  protected var ignoreIterationNum: Int = 200
 
   def optimize(): Module[T]
 
@@ -78,6 +82,14 @@ abstract class Optimizer[T  : ClassTag, TDS, VDS](
 
   def setEndWhen(endWhen: Trigger): this.type = {
     this.endWhen = endWhen
+    this
+  }
+  
+  def setDropMoudleProperty(dropPercentage: Double, batchsize: Int = 100,
+                            ignoreIteration: Int = 200): this.type = {
+    this.dropPercentage = dropPercentage
+    this.comupteThresholdbatchSize = batchsize
+    this.ignoreIterationNum = ignoreIteration
     this
   }
 }

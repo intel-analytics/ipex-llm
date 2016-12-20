@@ -88,13 +88,10 @@ class LocalOptimizer[T: ClassTag](
     state("neval") = state.get[Int]("neval").getOrElse(1)
     dataset.shuffle()
     var iter = dataset.data(looped = true)
-    var iteration = 0
-    val computeThresholdBatchsize = 100
-    val moduleIngorIteration = 200
-    var moduleTimeList = new Array[Long](subModelNumber * computeThresholdBatchsize)
-    var threshold = Long.MaxValue
-    val percentage = 0.04
-    val k = (percentage * computeThresholdBatchsize * subModelNumber).toInt
+    var iteration = 0    
+    var moduleTimeList = new Array[Long](subModelNumber * comupteThresholdbatchSize)
+    var threshold = Long.MaxValue    
+    val k = (dropPercentage * comupteThresholdbatchSize * subModelNumber).toInt
 
     while (!endWhen(state)) {
       val start = System.nanoTime()
@@ -120,7 +117,7 @@ class LocalOptimizer[T: ClassTag](
       // copy multi-model gradient to the buffer
       val losses = new Array[Double](parallelism)
       var lossSum = 0.0
-      val pre = iteration % computeThresholdBatchsize * subModelNumber
+      val pre = iteration % comupteThresholdbatchSize * subModelNumber
 
       val trainingTasks = Engine.default.invokeAndWait2(
         (0 until parallelism).map(i =>
@@ -142,7 +139,7 @@ class LocalOptimizer[T: ClassTag](
           }), threshold)
       val finishedTasks = trainingTasks.filter(!_.isCancelled).map(_.get())
 
-      if(finishedTasks.size > parallelism * 0.5) {
+      if(finishedTasks.size > parallelism * 0.5) {        
         finishedTasks.foreach(lossSum += losses(_))
         model.zeroGradParameters()
 
@@ -175,7 +172,8 @@ class LocalOptimizer[T: ClassTag](
           s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
           s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
           s"train time ${(end - dataFetchTime) / 1e9}s. " +
-          s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} img / second")
+          s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} img / second. " +
+          s"Drop module is ${parallelism - finishedTasks.size}")        
         state("neval") = state[Int]("neval") + 1
 
         if (count >= dataset.size()) {
@@ -189,9 +187,9 @@ class LocalOptimizer[T: ClassTag](
         checkpoint(wallClockTime)
         iteration += 1
 
-        if(iteration > moduleIngorIteration && iteration % computeThresholdBatchsize == 0) {
+        if(iteration > ignoreIterationNum && iteration % comupteThresholdbatchSize == 0) {
           threshold = Util.kthLargest(moduleTimeList, 0, moduleTimeList.length-1, k)
-          moduleTimeList = new Array[Long](subModelNumber * computeThresholdBatchsize)
+          moduleTimeList = new Array[Long](subModelNumber * comupteThresholdbatchSize)
           logger.info(s"threshold: $threshold")
         }
       }
