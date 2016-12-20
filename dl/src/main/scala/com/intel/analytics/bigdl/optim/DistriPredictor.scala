@@ -21,12 +21,19 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
+import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
+object DistriPredictor {
+  val logger = Logger.getLogger(this.getClass)
+}
+
 class DistriPredictor[T: ClassTag](model: Module[T])(implicit ev: TensorNumeric[T])
   extends Predictor[T, RDD[Tensor[T]], RDD[Tensor[T]]]{
+
+  import DistriPredictor._
 
   override def predict(dataSet: dataset.DataSet[RDD[Tensor[T]]])
   : dataset.DataSet[RDD[Tensor[T]]] = {
@@ -39,6 +46,7 @@ class DistriPredictor[T: ClassTag](model: Module[T])(implicit ev: TensorNumeric[
     val _ev = ev
     val result = rdd.mapPartitions(dataIter => {
       val localModel = broadcastModel.value
+      logger.info("model thread pool size is " + Engine.model.getPoolSize)
       val workingModels = (1 to _subModelNumber)
         .map(_ => localModel.cloneModule().evaluate()).toArray
       dataIter.map(batch => {

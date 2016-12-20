@@ -319,6 +319,8 @@ object DistriOptimizer {
         val (weights, grads) = localModel.getParameters()
         (localModel, weights, grads, localCriterion, localState)
       }.toArray
+      // init model thread pool
+      logger.info("model thread pool size is " + Engine.model.getPoolSize)
       Iterator(Cache(
         cached.map(_._1), // models
         cached.map(_._2), // weights

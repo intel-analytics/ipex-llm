@@ -48,6 +48,7 @@ class LocalPredictor[T : ClassTag](model: Module[T])(implicit ev: TensorNumeric[
   : dataset.DataSet[Iterator[Tensor[T]]] = {
     val dataIter = dataSet.data(looped = false)
     var count = 0
+    logger.info("model thread pool size is " + Engine.model.getPoolSize)
     val iter = dataIter.map(batch => {
       val stackSize = batch.size(1) / subModelNumber
       val extraSize = batch.size(1) % subModelNumber

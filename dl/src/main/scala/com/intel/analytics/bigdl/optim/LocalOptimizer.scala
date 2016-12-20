@@ -86,6 +86,7 @@ class LocalOptimizer[T: ClassTag](
     state("neval") = state.get[Int]("neval").getOrElse(1)
     dataset.shuffle()
     var iter = dataset.data(looped = true)
+    logger.info("model thread pool size is " + Engine.model.getPoolSize)
     while (!endWhen(state)) {
       val start = System.nanoTime()
 
