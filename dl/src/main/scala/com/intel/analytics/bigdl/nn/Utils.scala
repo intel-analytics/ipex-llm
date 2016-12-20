@@ -17,9 +17,12 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.models.RnnCell
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
@@ -196,6 +199,44 @@ object Utils {
   def recursiveFill[T](x: Activity, value : Double)(
     implicit ev: TensorNumeric[T]): Unit = {
     recursiveTensorApply1[T](x, t => t.fill(ev.fromType[Double](value)))
+  }
+
+
+  def rnnLayerInit[T](model: Module[T])
+               (implicit ev: TensorNumeric[T]): Unit = {
+
+    def recursive(model: Module[T]): Unit = {
+      model match {
+        case container if container.isInstanceOf[Container[Activity, Activity, T]] =>
+          container.asInstanceOf[Container[Activity, Activity, T]]
+            .modules.foreach(m => recursive(m))
+        case linear if (linear.isInstanceOf[Linear[T]]) =>
+          println("Initialize Linear")
+          val curModel = linear.asInstanceOf[Linear[T]]
+          val inputSize = curModel.weight.size(1).toFloat
+          val outputSize = curModel.weight.size(2).toFloat
+          curModel.weight.apply1(_ => ev.fromType[Float](
+            RNG.uniform(-Math.sqrt(6.0 / (inputSize + outputSize)),
+            Math.sqrt(6.0 / (inputSize + outputSize))).toFloat))
+          curModel.bias.apply1(_ => ev.fromType[Float](0f))
+        case rnnCell if (rnnCell.isInstanceOf[RnnCell[T]]) =>
+          println("Initialize RnnCell")
+          val curModel = rnnCell.asInstanceOf[RnnCell[T]]
+          val inputSize = curModel.i2h.weight.size(1)
+          val hiddenSize = curModel.i2h.weight.size(2)
+          curModel.i2h.weight.apply1(_ => ev.fromType[Float](
+            RNG.uniform(-Math.sqrt(6.0 / (inputSize + hiddenSize)),
+            Math.sqrt(6.0 / (inputSize + hiddenSize))).toFloat))
+          curModel.h2h.weight.apply1(_ => ev.fromType[Float](
+            RNG.uniform(-Math.sqrt(6.0 / (hiddenSize + hiddenSize)),
+            Math.sqrt(6.0 / (hiddenSize + hiddenSize))).toFloat))
+          curModel.i2h.bias.apply1(_ => ev.fromType[Float](0f))
+          curModel.h2h.bias.apply1(_ => ev.fromType[Float](0f))
+        case _ => Unit
+      }
+    }
+
+    recursive(model)
   }
 
 }
