@@ -35,7 +35,7 @@ object LocalTrain {
   def main(args: Array[String]): Unit = {
     trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
 
-      val batchSize = 128
+      val batchSize = 32
       val (imageSize, lrSchedule, maxEpoch, dataSet) = param.dataset match {
         //case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
         case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
@@ -97,7 +97,7 @@ object SparkTrain {
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.DEBUG)
 
   def main(args: Array[String]): Unit = {
     trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
