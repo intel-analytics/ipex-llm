@@ -17,16 +17,18 @@
 
 package com.intel.analytics.bigdl.utils
 
+import java.util
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{ConcurrentLinkedQueue, Executors, ThreadFactory}
+import java.util.concurrent._
 
 import com.intel.analytics.bigdl.mkl.MKL
 import org.apache.log4j.Logger
-import org.apache.spark.{SparkConf, Logging}
+import org.apache.spark.{Logging, SparkConf}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.collection.JavaConverters._
 
 sealed trait EngineType
 
@@ -41,6 +43,8 @@ class ThreadPool(private var poolSize: Int) {
 
   import ThreadPool._
 
+  private var threadPool: ExecutorService = null
+
   private var context = spawnThreadPool(poolSize)
 
   private def spawnThreadPool(poolSize: Int): ExecutionContext = {
@@ -48,13 +52,13 @@ class ThreadPool(private var poolSize: Int) {
       singleThreadPool
     } else {
       new ExecutionContext {
-        val threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
+        if (threadPool != null) threadPool.shutdown()
+        threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
           override def newThread(r: Runnable): Thread = {
             val t = Executors.defaultThreadFactory().newThread(r)
             t.setDaemon(true)
             t
-          }
-        })
+          }})
 
         def execute(runnable: Runnable) {
           threadPool.submit(runnable)
@@ -93,6 +97,16 @@ class ThreadPool(private var poolSize: Int) {
     tasks.map(task => Future {
       task()
     }(context)).map(future => Await.result(future, timeout))
+  }
+
+  def invokeAndWait2[T](tasks: IndexedSeq[Callable[T]], timeout: Long = Long.MaxValue,
+                        timeUnit: TimeUnit = TimeUnit.MILLISECONDS): 
+                        scala.collection.mutable.Buffer[java.util.concurrent.Future[T]] = {
+    threadPool.invokeAll(tasks.asJava, timeout, timeUnit).asScala
+  }
+
+  def invoke2[T](tasks: Array[Callable[T]]): Array[java.util.concurrent.Future[T]] = {
+    tasks.map(threadPool.submit(_))
   }
 
   /**

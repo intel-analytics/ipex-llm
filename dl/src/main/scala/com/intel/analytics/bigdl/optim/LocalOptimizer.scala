@@ -18,7 +18,9 @@
 package com.intel.analytics.bigdl.optim
 
 
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch, LocalDataSet}
+import java.util.concurrent.Callable
+
+import com.intel.analytics.bigdl.dataset.{Batch, LocalDataSet, DataSet => DataSource}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -86,6 +88,14 @@ class LocalOptimizer[T: ClassTag](
     state("neval") = state.get[Int]("neval").getOrElse(1)
     dataset.shuffle()
     var iter = dataset.data(looped = true)
+    var iteration = 0
+    val computeThresholdBatchsize = 100
+    val moduleIngorIteration = 200
+    var moduleTimeList = new Array[Long](subModelNumber * computeThresholdBatchsize)
+    var threshold = Long.MaxValue
+    val percentage = 0.04
+    val k = (percentage * computeThresholdBatchsize * subModelNumber).toInt
+
     while (!endWhen(state)) {
       val start = System.nanoTime()
 
@@ -97,6 +107,7 @@ class LocalOptimizer[T: ClassTag](
       val extraSize = batch.data.size(1) % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
       val tensorBuffer = new Array[(Tensor[T], Tensor[T])](parallelism)
+
       while (b < parallelism) {
         val offset = b * stackSize + math.min(b, extraSize)
         val length = stackSize + (if (b < extraSize) 1 else 0)
@@ -106,66 +117,84 @@ class LocalOptimizer[T: ClassTag](
       }
       val dataFetchTime = System.nanoTime()
 
-      val lossSum = Engine.default.invokeAndWait(
-        (0 until parallelism).map(i =>
-          () => {
-            val localModel = workingModels(i)
-            localModel.zeroGradParameters()
-            localModel.training()
-            val localCriterion = workingCriterion(i)
-            val (input, target) = tensorBuffer(i)
-            val output = localModel.forward(input)
-            val _loss = ev.toType[Double](localCriterion.forward(output, target))
-            val errors = localCriterion.backward(output, target)
-            localModel.backward(input, errors)
-            _loss
-          })
-      ).sum
-
       // copy multi-model gradient to the buffer
-      Engine.default.invokeAndWait(
-        (0 until syncGradParallelNum).map(tid =>
-          () => {
-            val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
-            val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
-            var i = 0
-            while (i < parallelism) {
-              if (i == 0) {
-                grad.narrow(1, offset + 1, length)
-                  .copy(workingModelWAndG(i)._2.narrow(1, offset + 1, length))
-              } else {
-                grad.narrow(1, offset + 1, length)
-                  .add(workingModelWAndG(i)._2.narrow(1, offset + 1, length))
-              }
-              i += 1
+      val losses = new Array[Double](parallelism)
+      var lossSum = 0.0
+      val pre = iteration % computeThresholdBatchsize * subModelNumber
+
+      val trainingTasks = Engine.default.invokeAndWait2(
+        (0 until parallelism).map(i =>
+          new Callable[Int] {
+            override def call(): Int = {
+              val start = System.nanoTime()
+              val localModel = workingModels(i)
+              localModel.zeroGradParameters()
+              localModel.training()
+              val localCriterion = workingCriterion(i)
+              val (input, target) = tensorBuffer(i)
+              val output = localModel.forward(input)
+              losses(i) = ev.toType[Double](localCriterion.forward(output, target))
+              val errors = localCriterion.backward(output, target)
+              localModel.backward(input, errors)
+              moduleTimeList(i + pre) = ((System.nanoTime() - start) / 1e6).toLong
+              i
             }
-          })
-      )
-      val loss = lossSum / parallelism
-      grad.div(ev.fromType(parallelism))
+          }), threshold)
+      val finishedTasks = trainingTasks.filter(!_.isCancelled).map(_.get())
 
-      optimMethod.optimize(_ => (ev.fromType(loss), grad), weight, state)
-      val end = System.nanoTime()
-      wallClockTime += end - start
-      count += batch.data.size(1)
-      val head =
-        header(state[Int]("epoch"), count, dataset.size(), state[Int]("neval"), wallClockTime)
-      logger.info(s"$head " +
-        s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
-        s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
-        s"train time ${(end - dataFetchTime) / 1e9}s. " +
-        s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} img / second")
-      state("neval") = state[Int]("neval") + 1
+      if(finishedTasks.size > parallelism * 0.5) {
+        finishedTasks.foreach(lossSum += losses(_))
+        model.zeroGradParameters()
 
-      if (count >= dataset.size()) {
-        state("epoch") = state[Int]("epoch") + 1
-        dataset.shuffle()
-        iter = dataset.data(looped = true)
-        count = 0
+        val finishedG = finishedTasks.map(index => workingModelWAndG(index)._2)
+
+        Engine.default.invokeAndWait2(
+          (0 until syncGradParallelNum).map(tid => new Callable[Int] {
+            override def call(): Int = {
+              val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
+              val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
+              var i = 0
+              while (i < finishedTasks.size) {
+                grad.narrow(1, offset + 1, length)
+                  .add(finishedG(i).narrow(1, offset + 1, length))
+                i += 1
+              }
+              tid
+            }
+          }))
+        val loss = lossSum / finishedTasks.size
+        grad.div(ev.fromType(finishedTasks.size))
+
+        optimMethod.optimize(_ => (ev.fromType(loss), grad), weight, state)
+        val end = System.nanoTime()
+        wallClockTime += end - start
+        count += batch.data.size(1)
+        val head =
+          header(state[Int]("epoch"), count, dataset.size(), state[Int]("neval"), wallClockTime)
+        logger.info(s"$head " +
+          s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
+          s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
+          s"train time ${(end - dataFetchTime) / 1e9}s. " +
+          s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} img / second")
+        state("neval") = state[Int]("neval") + 1
+
+        if (count >= dataset.size()) {
+          state("epoch") = state[Int]("epoch") + 1
+          dataset.shuffle()
+          iter = dataset.data(looped = true)
+          count = 0
+        }
+
+        validate(wallClockTime)
+        checkpoint(wallClockTime)
+        iteration += 1
+
+        if(iteration > moduleIngorIteration && iteration % computeThresholdBatchsize == 0) {
+          threshold = Util.kthLargest(moduleTimeList, 0, moduleTimeList.length-1, k)
+          moduleTimeList = new Array[Long](subModelNumber * computeThresholdBatchsize)
+          logger.info(s"threshold: $threshold")
+        }
       }
-
-      validate(wallClockTime)
-      checkpoint(wallClockTime)
     }
 
     model
