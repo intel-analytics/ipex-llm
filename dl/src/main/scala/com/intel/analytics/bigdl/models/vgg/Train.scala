@@ -108,7 +108,7 @@ object SparkTrain {
       val trainDataSet = DataSet.ImageFolder
         .images(Paths.get(param.folder, "/train"), sc, param.nodesNumber, 32)
         .transform(RGBImgNormalizer(trainMean, trainStd))
-        .transform(RGBImgToBatchMultiNode(batchSize, param.nodesNumber))
+        .transform(RGBImgToBatch(batchSize))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)

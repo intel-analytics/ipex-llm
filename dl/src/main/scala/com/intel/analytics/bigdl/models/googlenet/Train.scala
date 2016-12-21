@@ -87,7 +87,7 @@ object GoogleNetv1_SparkTrain {
 
       optimizer
         .setState(state)
-        .setValidation(Trigger.severalIteration(620),
+        .setValidation(Trigger.severalIteration(10),
           valSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
         .setEndWhen(Trigger.maxIteration(62000))
         .optimize()

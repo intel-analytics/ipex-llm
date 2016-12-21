@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{Batch, Transformer}
+import com.intel.analytics.bigdl.dataset.{Utils, Batch, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.collection.Iterator
@@ -28,14 +28,7 @@ object GreyImgToBatch {
   }
 }
 
-object GreyImgToBatchMultiNode {
-  def apply(batchSize : Int, nodeNumber : Int) : GreyImgToBatch = {
-    require(batchSize % nodeNumber == 0, "batch size can't be divided by node number")
-    new GreyImgToBatch(batchSize / nodeNumber)
-  }
-}
-
-class GreyImgToBatch private[dataset](batchSize: Int)
+class GreyImgToBatch private[dataset](totalBatchSize: Int)
   extends Transformer[LabeledGreyImage, Batch[Float]] {
 
   private def copyImage(img: GreyImage, storage: Array[Float], offset: Int): Unit = {
@@ -54,6 +47,7 @@ class GreyImgToBatch private[dataset](batchSize: Int)
       private val labelTensor: Tensor[Float] = Tensor[Float]()
       private var featureData: Array[Float] = null
       private var labelData: Array[Float] = null
+      private lazy val batchSize = Utils.getBatchSize(totalBatchSize)
       private var width = 0
       private var height = 0
 
