@@ -17,9 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
-
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag

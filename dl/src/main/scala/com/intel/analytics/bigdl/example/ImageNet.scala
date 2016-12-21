@@ -36,9 +36,9 @@ object ImageNetUtils {
   }
 
   def toTensorDouble(imgIter: Iterator[(Double, Array[Byte])], featureShape: Array[Int],
-                     labelShape: Array[Int], batchSize: Int, mean: (Double, Double, Double),
-                     std: (Double, Double, Double), input: Tensor[Double],
-                     target: Tensor[Double]): Iterator[(Tensor[Double], Tensor[Double])] = {
+    labelShape: Array[Int], batchSize: Int, mean: (Double, Double, Double),
+    std: (Double, Double, Double), input: Tensor[Double],
+    target: Tensor[Double]): Iterator[(Tensor[Double], Tensor[Double])] = {
     imgIter.grouped(batchSize).map(seq => {
       val size = seq.size
       require(input.nElement() >= size * featureShape.product)
@@ -57,9 +57,9 @@ object ImageNetUtils {
   }
 
   def toTensorFloat(imgIter: Iterator[(Float, Array[Byte])], featureShape: Array[Int],
-                    labelShape: Array[Int], batchSize: Int, mean: (Float, Float, Float),
-                    std: (Float, Float, Float), input: Tensor[Float],
-                    target: Tensor[Float]): Iterator[(Tensor[Float], Tensor[Float])] = {
+    labelShape: Array[Int], batchSize: Int, mean: (Float, Float, Float),
+    std: (Float, Float, Float), input: Tensor[Float],
+    target: Tensor[Float]): Iterator[(Tensor[Float], Tensor[Float])] = {
     imgIter.grouped(batchSize).map(seq => {
       val size = seq.size
       require(input.nElement() >= size * featureShape.product)
@@ -78,9 +78,8 @@ object ImageNetUtils {
   }
 
   def cropDouble(rawData: Array[Byte], cropWidth: Int, cropHeight: Int,
-                 mean: (Double, Double, Double), std: (Double, Double, Double),
-                 result: Array[Double],
-                 resultOffset: Int): Unit = {
+    mean: (Double, Double, Double), std: (Double, Double, Double), result: Array[Double],
+    resultOffset: Int): Unit = {
     val r = scala.util.Random
     r.nextBoolean()
     val buffer = ByteBuffer.wrap(rawData)
@@ -106,8 +105,8 @@ object ImageNetUtils {
   }
 
   def cropFloat(rawData: Array[Byte], cropWidth: Int, cropHeight: Int,
-                mean: (Float, Float, Float), std: (Float, Float, Float), result: Array[Float],
-                resultOffset: Int): Unit = {
+    mean: (Float, Float, Float), std: (Float, Float, Float), result: Array[Float],
+    resultOffset: Int): Unit = {
     val r = scala.util.Random
     r.nextBoolean()
     val buffer = ByteBuffer.wrap(rawData)
@@ -133,7 +132,7 @@ object ImageNetUtils {
   }
 
   def crop(rawData: Array[Byte], cropWidth: Int, cropHeight: Int,
-           result: Array[Byte]): Unit = {
+    result: Array[Byte]): Unit = {
     val r = scala.util.Random
     r.nextBoolean()
     val buffer = ByteBuffer.wrap(rawData)
@@ -158,8 +157,8 @@ object ImageNetUtils {
   }
 
   def normalizeDouble(rawData: Array[Byte], frameLength: Int,
-                      mean: (Double, Double, Double), std: (Double, Double, Double),
-                      result: Array[Double], resultOffset: Int): Unit = {
+    mean: (Double, Double, Double), std: (Double, Double, Double),
+    result: Array[Double], resultOffset: Int): Unit = {
     var i = 0
     while (i < frameLength) {
       result(resultOffset + i) = ((rawData(i) & 0xff) / 255.0 - mean._1) / std._1
@@ -172,8 +171,8 @@ object ImageNetUtils {
   }
 
   def normalizeFloat(rawData: Array[Byte], frameLength: Int,
-                     mean: (Float, Float, Float), std: (Float, Float, Float),
-                     result: Array[Float], resultOffset: Int): Unit = {
+    mean: (Float, Float, Float), std: (Float, Float, Float),
+    result: Array[Float], resultOffset: Int): Unit = {
     var i = 0
     while (i < frameLength) {
       result(resultOffset + i) = ((rawData(i) & 0xff) / 255.0f - mean._1) / std._1
@@ -200,7 +199,7 @@ object ImageNetUtils {
   }
 
   def computeVar(data: Array[Byte], meanR: Double, meanG: Double,
-                 meanB: Double, dataOffset: Int): (Double, Double, Double) = {
+    meanB: Double, dataOffset: Int): (Double, Double, Double) = {
     require((data.length - dataOffset) % 3 == 0, "invalid data")
     var (sumR, sumG, sumB) = (0.0, 0.0, 0.0)
     var i = dataOffset
@@ -354,3 +353,4 @@ class Donkey(parallelism: Int, dataSet: DataSets) extends Iterator[(Array[Byte],
 
   override def next(): (Array[Byte], Image) = pull
 }
+

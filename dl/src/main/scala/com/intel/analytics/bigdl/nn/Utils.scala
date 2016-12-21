@@ -217,7 +217,6 @@ object Utils {
           container.modules.foreach( m => {
             if (m.gradInput.isInstanceOf[Tensor[T]] &&
               !m.getClass.getName.equals(packageName + "ConcatTable")) {
-             // println("initial gradInput, not in ConcatTable")
               val key = sharingKey(m)
               if (!cache.contains(key)) {
                 cache.put(key, Storage(Array(ev.fromType[Int](1))))
