@@ -21,14 +21,11 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{GreyImgToBatch, GreyImgNormalizer, SampleToGreyImg}
-import com.intel.analytics.bigdl.nn.{Module, ClassNLLCriterion}
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.optim.DataSet
+import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToBatch, SampleToGreyImg}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
-import org.apache.spark.{SparkConf, SparkContext}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
 
 object Train {
@@ -41,10 +38,6 @@ object Train {
       val trainLabel = Paths.get(param.folder, "/train-labels.idx1-ubyte")
       val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
       val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
-
-      val trainSet = DataSet.array(load(trainData, trainLabel))
-        .transform(SampleToGreyImg(28, 28))
-      val normalizer = GreyImgNormalizer(trainSet)
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -60,24 +53,30 @@ object Train {
         )
       }
 
+      val trainSet = (DataSet.array(load(trainData, trainLabel))
+        -> SampleToGreyImg(28, 28))
+
       Engine.setCoreNumber(param.coreNumber)
-      val optimizer = new LocalOptimizer[Float](
+      val optimizer = new LocalOptimizer(
         model = model,
-        dataset = trainSet.transform(normalizer).transform(GreyImgToBatch(param.batchSize)),
-        criterion = new ClassNLLCriterion[Float]()
-      )
+        dataset = (trainSet
+          -> GreyImgNormalizer(trainSet)
+          -> GreyImgToBatch(param.batchSize)),
+        criterion = ClassNLLCriterion[Float]())
       if (param.cache.isDefined) {
         optimizer.setCache(param.cache.get, Trigger.everyEpoch)
       }
 
-      val validationSet = DataSet.array(load(validationData, validationLabel))
-        .transform(SampleToGreyImg(28, 28))
-      val normalizerVal = GreyImgNormalizer(validationSet)
-      val valSet = validationSet.transform(normalizerVal)
-        .transform(GreyImgToBatch(param.batchSize))
+      val validationSet = (DataSet.array(load(validationData, validationLabel))
+        -> SampleToGreyImg(28, 28))
 
       optimizer
-        .setValidation(Trigger.everyEpoch, valSet, Array(new Top1Accuracy[Float]))
+        .setValidation(
+          trigger = Trigger.everyEpoch,
+          dataset = (validationSet
+            -> GreyImgNormalizer(validationSet)
+            -> GreyImgToBatch(param.batchSize)),
+          Array(new Top1Accuracy))
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
