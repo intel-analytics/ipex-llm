@@ -61,7 +61,6 @@ class CAddSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     output should be (luaOutput)
     gradInput should be (luaGradInput)
-    println(layer.gradBias)
     layer.gradBias should be (luaGradBias)
 
     println("Test case : CAdd, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
