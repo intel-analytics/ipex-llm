@@ -92,6 +92,7 @@ object DistriOptimizerPerf {
   }
 
   def performance(param: DistriOptimizerPerfParam): Unit = {
+    Engine.setCluster(param.nodeNumber, param.corePerNode)
     val (_model, input) = param.module match {
       case "alexnet" => (AlexNet(1000), Tensor(param.batchSize, 3, 227, 227))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor(param.batchSize, 3, 224, 224))
@@ -125,7 +126,6 @@ object DistriOptimizerPerf {
       override def data(looped: Boolean): RDD[Batch[Float]] = rdd
     }
 
-    Engine.setCluster(param.nodeNumber, param.corePerNode)
     val optimizer = new DistriOptimizer[Float](
       model,
       dummyDataSet,
