@@ -47,7 +47,7 @@ class GreyImgToBatch private[dataset](totalBatchSize: Int)
       private val labelTensor: Tensor[Float] = Tensor[Float]()
       private var featureData: Array[Float] = null
       private var labelData: Array[Float] = null
-      private lazy val batchSize = Utils.getBatchSize(totalBatchSize)
+      private val batchSize = Utils.getBatchSize(totalBatchSize)
       private var width = 0
       private var height = 0
 

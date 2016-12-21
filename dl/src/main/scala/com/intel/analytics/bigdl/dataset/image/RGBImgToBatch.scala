@@ -38,7 +38,7 @@ class RGBImgToBatch private[bigdl](totalBatch: Int)
       private var labelData: Array[Float] = null
       private var width = 0
       private var height = 0
-      private lazy val batchSize = Utils.getBatchSize(totalBatch)
+      private val batchSize = Utils.getBatchSize(totalBatch)
 
       override def hasNext: Boolean = prev.hasNext
 
