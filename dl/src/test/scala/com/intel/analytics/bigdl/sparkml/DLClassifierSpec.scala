@@ -1,5 +1,6 @@
-package com.intel.analytics.bigdl.pipeline
+package com.intel.analytics.bigdl.sparkml
 
+import java.io.File
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset._
@@ -10,35 +11,35 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.{AnyType, MlTransform}
+import org.apache.spark.ml.{AnyType, DLClassifier}
 import org.apache.spark.sql.types.{StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
-import scala.util.Random
 
-class MlTransformSpec extends FlatSpec with Matchers{
+class DLClassifierSpec extends FlatSpec with Matchers{
 
-  "MlTransform for MNIST" should "get good result" in {
+  private def processPath(path: String): String = {
+    if (path.contains(":")) {
+      path.substring(1)
+    } else {
+      path
+    }
+  }
+
+  "DLClassifier for MNIST" should "get good result" in {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
-    val sc = new SparkContext("local[1]", "MlTransform")
+    val sc = new SparkContext("local[1]", "DLClassifier")
     val sqlContext = new SQLContext(sc)
 
-    // Generate test data
-    val input1: Array[Double] = Array(1 * 28 * 28)
-    input1.foreach(_ => Random.nextDouble())
-    val input2 : Array[Double] = Array(1 * 28 * 28)
-    input2.foreach(_ => Random.nextDouble())
-
-    val folder = "/home/zhangli/CodeSpace/forTrain"
-    val trainData = Paths.get(folder, "/train-images.idx3-ubyte")
-    val trainLabel = Paths.get(folder, "/train-labels.idx1-ubyte")
-    val validationData = Paths.get(folder, "/t10k-images.idx3-ubyte")
-    val validationLabel = Paths.get(folder, "/t10k-labels.idx1-ubyte")
-    val batchSize = 2
+    // read test data
+    val resource = getClass().getClassLoader().getResource("mnist")
+    val validationData = Paths.get(processPath(resource.getPath()) + File.separator, "t10k-images.idx3-ubyte")
+    val validationLabel = Paths.get(processPath(resource.getPath()) + File.separator, "t10k-labels.idx1-ubyte")
+    val batchSize = 10
     val classNum = 10
     val model = LeNet5(classNum)
 
@@ -50,7 +51,7 @@ class MlTransformSpec extends FlatSpec with Matchers{
     val valData = valSet.data(looped = false)
 
     // init
-    val valTrans = new MlTransform()
+    val valTrans = new DLClassifier()
       .setInputCol("features")
       .setOutputCol("predict")
 
@@ -72,13 +73,7 @@ class MlTransformSpec extends FlatSpec with Matchers{
 
       val rowRDD = sc.parallelize((tensorBuffer)).map(p => Row(p))
       val testData = sqlContext.createDataFrame(rowRDD, schema)
-      res = if (res == null) {
-        valTrans.transform(testData, params)
-      } else {
-        res.unionAll(valTrans.transform(testData, params))
-      }
-
-      res.printSchema()
+      res = valTrans.transform(testData, params)
       res.show()
 
       tensorBuffer.clear()

@@ -10,18 +10,16 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 
-class MlTransform(override val uid: String) extends Transformer with HasInputCol with HasOutputCol with DataParams{
+class DLClassifier(override val uid: String) extends Transformer with HasInputCol with HasOutputCol with DataParams{
 
-  def this() = this(Identifiable.randomUID("MlTransform"))
+  def this() = this(Identifiable.randomUID("DLClassifier"))
 
   def setInputCol(value: String): this.type = set(inputCol, value)
 
   def setOutputCol(value: String): this.type = set(outputCol, value)
 
-  def predict(features: Any): Float = {
-    val model = this.extractParamMap().get(modelTrain).getOrElse(null)
-
-    val result = model.forward(features.asInstanceOf[Tensor[Float]]).toTensor[Float]
+  private def predict(features: Tensor[Float]): Float = {
+    val result = $(modelTrain).forward(features).toTensor[Float]
     require(result.dim() == 1)
 
     if (result.size(1) == 1) {
@@ -34,9 +32,11 @@ class MlTransform(override val uid: String) extends Transformer with HasInputCol
   }
 
   override def transform(dataset: DataFrame): DataFrame = {
+    require(null != $(modelTrain), "model for predict must be not null")
+
     val predictUDF = udf {
       (features: Any) => {
-        predict(features)
+        predict(features.asInstanceOf[Tensor[Float]])
       }
     }
     dataset.withColumn($(outputCol), predictUDF(col($(inputCol))))
@@ -44,11 +44,11 @@ class MlTransform(override val uid: String) extends Transformer with HasInputCol
 
   override def transformSchema(schema: StructType): StructType = schema
 
-  override def copy(extra: ParamMap): MlTransform = defaultCopy(extra)
+  override def copy(extra: ParamMap): DLClassifier = defaultCopy(extra)
 }
 
 trait DataParams extends Params {
-  final val modelTrain = new Param[Module[Float]](this, "module factory", "neural network model")
+  final val modelTrain = new Param[Module[Float]](this, "module factory", "network model")
   final val batchNum = new IntParam(this, "batch number", "how many batches on one partition in one iteration")
 
   final def getModel = $(modelTrain)
