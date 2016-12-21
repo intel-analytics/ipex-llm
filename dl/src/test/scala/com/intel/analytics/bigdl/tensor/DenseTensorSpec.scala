@@ -298,6 +298,13 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t2.isSameSizeAs(t) should be(true)
   }
 
+  "resize as" should "get the correct tensor when resizing to a larger tensor" in {
+    val t1: Tensor[Double] = new DenseTensor[Double](3, 4)
+    val t: Tensor[Double] = new DenseTensor[Double](1, 1)
+    t.resizeAs(t1)
+    t.storage().size should be(t1.storage().size)
+  }
+
   "nElement" should "return correct value" in {
     val t: Tensor[Double] = new DenseTensor[Double](3, 4)
     t.nElement() should be(12)

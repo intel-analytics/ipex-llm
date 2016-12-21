@@ -32,6 +32,11 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
 object LocalTrain {
 
+  def imageNetDecay(epoch: Int): Double = math.floor((epoch - 1) / 30)
+  def cifar10Decay(epoch: Int): Double =
+    if (epoch >= 122) 2.0 else if (epoch >= 81) 1.0 else 0.0
+
+
   def main(args: Array[String]): Unit = {
     trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
 
@@ -70,7 +75,7 @@ object LocalTrain {
           "momentum" -> 0.9,
           "dampening" -> 0.0,
           "nesterov" -> true,
-          "learningRateSchedule" -> SGD.EpochDecay(lrSchedule)
+          "learningRateSchedule" -> SGD.EpochDecay(cifar10Decay)
         )
       }
 
@@ -100,6 +105,10 @@ object SparkTrain {
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.DEBUG)
+
+  def imageNetDecay(epoch: Int): Double = math.floor((epoch - 1) / 30)
+  def cifar10Decay(epoch: Int): Double =
+    if (epoch >= 122) 2.0 else if (epoch >= 81) 1.0 else 0.0
 
   def main(args: Array[String]): Unit = {
     trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
@@ -146,7 +155,7 @@ object SparkTrain {
           "momentum" -> 0.9,
           "dampening" -> 0.0,
           "nesterov" -> true,
-          "learningRateSchedule" -> SGD.EpochDecay(lrSchedule)
+          "learningRateSchedule" -> SGD.EpochDecay(cifar10Decay)
         )
       }
 

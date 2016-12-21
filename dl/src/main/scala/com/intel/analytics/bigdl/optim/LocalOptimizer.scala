@@ -81,7 +81,6 @@ class LocalOptimizer[T: ClassTag](
   override def optimize(): Module[T] = {
     var wallClockTime = 0L
     var count = 0
-
     optimMethod.clearHistory(state)
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
@@ -105,7 +104,6 @@ class LocalOptimizer[T: ClassTag](
           batch.labels.narrow(1, offset + 1, length))
         b += 1
       }
-
       val dataFetchTime = System.nanoTime()
 
       val lossSum = Engine.default.invokeAndWait(
@@ -158,7 +156,6 @@ class LocalOptimizer[T: ClassTag](
         s"train time ${(end - dataFetchTime) / 1e9}s. " +
         s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} img / second")
       state("neval") = state[Int]("neval") + 1
-
 
       if (count >= dataset.size()) {
         state("epoch") = state[Int]("epoch") + 1
