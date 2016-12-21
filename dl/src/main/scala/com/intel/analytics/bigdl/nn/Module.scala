@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.example.loadCaffe.CaffeLoader
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -31,6 +32,12 @@ object Module {
 
   def loadTorch[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
     File.loadTorch[AbstractModule[Activity, Activity, T]](path)
+  }
+
+  def loadCaffeParameters[T: ClassTag](model: AbstractModule[Activity, Activity, T],
+    defPath: String, modelPath: String, matchAll: Boolean = true)(
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    CaffeLoader.load[T](model, defPath, modelPath, matchAll)
   }
 
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(
