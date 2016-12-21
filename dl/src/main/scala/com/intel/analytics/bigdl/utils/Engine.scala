@@ -58,7 +58,8 @@ class ThreadPool(private var poolSize: Int) {
             val t = Executors.defaultThreadFactory().newThread(r)
             t.setDaemon(true)
             t
-          }})
+          }
+        })
 
         def execute(runnable: Runnable) {
           threadPool.submit(runnable)
@@ -99,14 +100,23 @@ class ThreadPool(private var poolSize: Int) {
     }(context)).map(future => Await.result(future, timeout))
   }
 
-  def invokeAndWait2[T](tasks: IndexedSeq[Callable[T]], timeout: Long = Long.MaxValue,
-                        timeUnit: TimeUnit = TimeUnit.MILLISECONDS): 
+  def invokeAndWait2[T](tasks: Seq[() => T], timeout: Long = Long.MaxValue,
+                        timeUnit: TimeUnit = TimeUnit.MILLISECONDS):
                         scala.collection.mutable.Buffer[java.util.concurrent.Future[T]] = {
-    threadPool.invokeAll(tasks.asJava, timeout, timeUnit).asScala
+    val callables = tasks.map(task => new Callable[T] {
+      override def call(): T = {
+        task()
+      }
+    })
+    threadPool.invokeAll(callables.asJava, timeout, timeUnit).asScala
   }
 
-  def invoke2[T](tasks: Array[Callable[T]]): Array[java.util.concurrent.Future[T]] = {
-    tasks.map(threadPool.submit(_))
+  def invoke2[T](tasks: Seq[() => T]): Seq[java.util.concurrent.Future[T]] = {
+    tasks.map(task => new Callable[T] {
+      override def call(): T = {
+        task()
+      }
+    }).map(threadPool.submit(_))
   }
 
   /**

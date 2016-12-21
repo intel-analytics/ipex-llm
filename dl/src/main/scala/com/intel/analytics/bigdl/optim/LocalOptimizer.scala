@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.optim
 
 
-import java.util.concurrent.Callable
+import java.util.concurrent.{Callable, TimeUnit}
 
 import com.intel.analytics.bigdl.dataset.{Batch, LocalDataSet, DataSet => DataSource}
 import com.intel.analytics.bigdl._
@@ -88,9 +88,9 @@ class LocalOptimizer[T: ClassTag](
     state("neval") = state.get[Int]("neval").getOrElse(1)
     dataset.shuffle()
     var iter = dataset.data(looped = true)
-    var iteration = 0    
+    var iteration = 0
     var moduleTimeList = new Array[Long](subModelNumber * comupteThresholdbatchSize)
-    var threshold = Long.MaxValue    
+    var threshold = Long.MaxValue
     val k = (dropPercentage * comupteThresholdbatchSize * subModelNumber).toInt
 
     while (!endWhen(state)) {
@@ -121,33 +121,31 @@ class LocalOptimizer[T: ClassTag](
 
       val trainingTasks = Engine.default.invokeAndWait2(
         (0 until parallelism).map(i =>
-          new Callable[Int] {
-            override def call(): Int = {
-              val start = System.nanoTime()
-              val localModel = workingModels(i)
-              localModel.zeroGradParameters()
-              localModel.training()
-              val localCriterion = workingCriterion(i)
-              val (input, target) = tensorBuffer(i)
-              val output = localModel.forward(input)
-              losses(i) = ev.toType[Double](localCriterion.forward(output, target))
-              val errors = localCriterion.backward(output, target)
-              localModel.backward(input, errors)
-              moduleTimeList(i + pre) = ((System.nanoTime() - start) / 1e6).toLong
-              i
-            }
-          }), threshold)
+          () => {
+            val start = System.nanoTime()
+            val localModel = workingModels(i)
+            localModel.zeroGradParameters()
+            localModel.training()
+            val localCriterion = workingCriterion(i)
+            val (input, target) = tensorBuffer(i)
+            val output = localModel.forward(input)
+            losses(i) = ev.toType[Double](localCriterion.forward(output, target))
+            val errors = localCriterion.backward(output, target)
+            localModel.backward(input, errors)
+            moduleTimeList(i + pre) = System.nanoTime() - start
+            i
+          }), threshold, TimeUnit.NANOSECONDS)
       val finishedTasks = trainingTasks.filter(!_.isCancelled).map(_.get())
 
-      if(finishedTasks.size > parallelism * 0.5) {        
+      if(finishedTasks.size > parallelism * 0.5) {
         finishedTasks.foreach(lossSum += losses(_))
         model.zeroGradParameters()
 
         val finishedG = finishedTasks.map(index => workingModelWAndG(index)._2)
 
         Engine.default.invokeAndWait2(
-          (0 until syncGradParallelNum).map(tid => new Callable[Int] {
-            override def call(): Int = {
+          (0 until syncGradParallelNum).map(tid =>
+            () => {
               val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
               val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
               var i = 0
@@ -158,7 +156,7 @@ class LocalOptimizer[T: ClassTag](
               }
               tid
             }
-          }))
+          ))
         val loss = lossSum / finishedTasks.size
         grad.div(ev.fromType(finishedTasks.size))
 
@@ -173,7 +171,7 @@ class LocalOptimizer[T: ClassTag](
           s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
           s"train time ${(end - dataFetchTime) / 1e9}s. " +
           s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} img / second. " +
-          s"Drop module is ${parallelism - finishedTasks.size}")        
+          s"Drop module is ${parallelism - finishedTasks.size}")
         state("neval") = state[Int]("neval") + 1
 
         if (count >= dataset.size()) {
