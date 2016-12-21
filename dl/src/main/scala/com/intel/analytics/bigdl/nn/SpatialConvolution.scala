@@ -84,7 +84,6 @@ class SpatialConvolution[T: ClassTag](
   }
 
   def setSharedVar(): Unit = sharedFlag = true
-  // def setGradWeightMM(sharedTensor: Tensor[T]): Unit = gradWeightMM = sharedTensor
 
   @transient
   private var results: Array[Future[Unit]] = null
@@ -193,12 +192,7 @@ class SpatialConvolution[T: ClassTag](
           })
           j += 1
         }
-
-        i = 0
-        while (i < results.length) {
-          Await.result(results(i), Duration.Inf)
-          i += 1
-        }
+        Engine.model.sync(results)
       } else {
         if (_1x1) {
           fInput.set(input)
@@ -245,7 +239,8 @@ class SpatialConvolution[T: ClassTag](
     output
   }
 
-  def calcOutputWH(input: Tensor[T]): (Int, Int, Int, Int) = {
+  @inline
+  private def calcOutputWH(input: Tensor[T]): (Int, Int, Int, Int) = {
     val dimWidth = if (input.dim() == 3) 3 else 4
     val dimHeight = if (input.dim() == 3) 2 else 3
 

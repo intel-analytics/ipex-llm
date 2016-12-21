@@ -17,7 +17,6 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Table
@@ -147,16 +146,12 @@ object SGD {
     }
   }
 
-  case class EpochDecay(dataset: DatasetType) extends LearningRateSchedule {
+  case class EpochDecay(decayType: (Int) => Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-1)
       var clr = -lr
       val epoch = config[Int]("epoch")
-      val decay = dataset match {
-        case DatasetType.ImageNet => math.floor ((epoch - 1) / 30)
-        case DatasetType.CIFAR10 => if (epoch >= 122) 2 else if (epoch >= 81) 1 else 0
-        case _ => 0
-      }
+      val decay = decayType(epoch)
       clr = clr * math.pow(0.1, decay)
       config("clr") = clr
     }
