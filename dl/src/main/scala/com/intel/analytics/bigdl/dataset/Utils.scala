@@ -25,7 +25,7 @@ object Utils {
     if(Engine.nodeNumber().isDefined) {
       val nodeNumber = Engine.nodeNumber().get
       require(totalBatch % nodeNumber == 0 && totalBatch > nodeNumber
-        , "batch size can't be divided by node number")
+        , "batch size can't be divided by node number or is smaller than node number")
       totalBatch / nodeNumber
     } else {
       totalBatch

@@ -37,7 +37,7 @@ class MTLabeledRGBImgToBatch[A: ClassTag] private[bigdl]
 (width: Int, height: Int, totalBatchSize: Int, transformer: Transformer[A, LabeledRGBImage])
   extends Transformer[A, Batch[Float]] {
 
-  private lazy val batchSize = Utils.getBatchSize(totalBatchSize)
+  private val batchSize = Utils.getBatchSize(totalBatchSize)
 
   private def getPosition(count: AtomicInteger): Int = {
     val position = count.getAndIncrement()
@@ -49,8 +49,8 @@ class MTLabeledRGBImgToBatch[A: ClassTag] private[bigdl]
   ).toArray
 
   private val frameLength = height * width
-  private lazy val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
-  private lazy val labelData: Array[Float] = new Array[Float](batchSize)
+  private val featureData: Array[Float] = new Array[Float](batchSize * frameLength * 3)
+  private val labelData: Array[Float] = new Array[Float](batchSize)
   private val featureTensor: Tensor[Float] = Tensor[Float]()
   private val labelTensor: Tensor[Float] = Tensor[Float]()
 
