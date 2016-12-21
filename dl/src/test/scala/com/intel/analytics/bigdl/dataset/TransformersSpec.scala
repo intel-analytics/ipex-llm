@@ -324,7 +324,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     Engine.setCoreNumber(1)
     val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3))
     val toTensor = new MTLabeledRGBImgToBatch[LabeledRGBImage](
-      width = 32, height = 32, batchSize = 2, transformer = Identity[LabeledRGBImage]
+      width = 32, height = 32, totalBatchSize = 2, transformer = Identity[LabeledRGBImage]
     )
     val tensorDataSource = dataSource -> toTensor
     val iter = tensorDataSource.data(looped = true)
