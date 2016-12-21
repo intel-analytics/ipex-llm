@@ -92,6 +92,7 @@ class LocalOptimizer[T: ClassTag](
     var moduleTimeList = new Array[Long](subModelNumber * comupteThresholdbatchSize)
     var threshold = Long.MaxValue
     val k = (dropPercentage * comupteThresholdbatchSize * subModelNumber).toInt
+    var dropModuleNum = 0
 
     while (!endWhen(state)) {
       val start = System.nanoTime()
@@ -148,6 +149,7 @@ class LocalOptimizer[T: ClassTag](
         model.zeroGradParameters()
 
         val finishedG = finishedTasks.map(index => workingModelWAndG(index)._2)
+        dropModuleNum += (parallelism - finishedG.size)
 
         Engine.default.invokeAndWait2(
           (0 until syncGradParallelNum).map(tid =>
@@ -192,8 +194,14 @@ class LocalOptimizer[T: ClassTag](
         iteration += 1
 
         if(iteration > ignoreIterationNum && iteration % comupteThresholdbatchSize == 0) {
-          threshold = Util.kthLargest(moduleTimeList, 0, moduleTimeList.length-1, k)
+          if (k - dropModuleNum > 0) {
+            threshold = Util.kthLargest(moduleTimeList, 0, moduleTimeList.length-1,
+              k - dropModuleNum)
+          } else {
+            threshold = (threshold * 1.01).toLong
+          }
           moduleTimeList = new Array[Long](subModelNumber * comupteThresholdbatchSize)
+          dropModuleNum = 0
           logger.info(s"threshold: $threshold")
         }
       }
