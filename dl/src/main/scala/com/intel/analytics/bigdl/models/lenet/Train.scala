@@ -76,7 +76,7 @@ object Train {
           dataset = (validationSet
             -> GreyImgNormalizer(validationSet)
             -> GreyImgToBatch(param.batchSize)),
-          Array(new Top1Accuracy))
+          vMethods = Array(new Top1Accuracy))
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
