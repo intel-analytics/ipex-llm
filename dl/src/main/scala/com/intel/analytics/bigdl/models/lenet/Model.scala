@@ -17,27 +17,23 @@
 
 package com.intel.analytics.bigdl.models.lenet
 
-import com.intel.analytics.bigdl.nn.{Linear, LogSoftMax, SpatialMaxPooling, _}
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
-
-import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.nn._
 
 object LeNet5 {
   def apply(classNum: Int): Module[Float] = {
     val model = Sequential[Float]()
     model.add(Reshape(Array(1, 28, 28)))
-    model.add(SpatialConvolution(1, 6, 5, 5))
-    model.add(Tanh())
-    model.add(SpatialMaxPooling(2, 2, 2, 2))
-    model.add(Tanh())
-    model.add(SpatialConvolution(6, 12, 5, 5))
-    model.add(SpatialMaxPooling(2, 2, 2, 2))
-    model.add(Reshape(Array(12 * 4 * 4)))
-    model.add(Linear(12 * 4 * 4, 100))
-    model.add(Tanh())
-    model.add(Linear(100, classNum))
-    model.add(LogSoftMax())
-    model
+      .add(SpatialConvolution(1, 6, 5, 5))
+      .add(Tanh())
+      .add(SpatialMaxPooling(2, 2, 2, 2))
+      .add(Tanh())
+      .add(SpatialConvolution(6, 12, 5, 5))
+      .add(SpatialMaxPooling(2, 2, 2, 2))
+      .add(Reshape(Array(12 * 4 * 4)))
+      .add(Linear(12 * 4 * 4, 100))
+      .add(Tanh())
+      .add(Linear(100, classNum))
+      .add(LogSoftMax())
   }
 }
