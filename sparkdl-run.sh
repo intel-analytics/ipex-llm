@@ -1,1 +1,0 @@
-java -cp /home/ywan/Documents/Workflow/spark-dl/dl/target/bigdl_0.1-0.1.0-SNAPSHOT-jar-with-dependencies.jar:/opt/spark/lib/spark-assembly-1.5.1-hadoop2.6.0.jar com.intel.analytics.bigdl.dataset.ImageNetLocal -f /home/ywan/Documents/Workflow/imagedata -n resnet -c /home/ywan/Documents/Workflow/models --optnet true -p 1

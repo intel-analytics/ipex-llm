@@ -124,7 +124,7 @@ object Perf {
 
     for (i <- 1 to param.warmUp) {
       var time = System.nanoTime()
-      val output = model.forward(input).asInstanceOf[Tensor[T]]
+      val output = model.forward(input)
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       time = System.nanoTime()
@@ -140,7 +140,7 @@ object Perf {
     var totalBackwardTime = 0L
     for (i <- 1 to param.iteration) {
       var time = System.nanoTime()
-      val output = model.forward(input).asInstanceOf[Tensor[T]]
+      val output = model.forward(input)
       criterion.forward(output, labels)
       val forwardTime = System.nanoTime() - time
       totalForwardTime += forwardTime
@@ -169,9 +169,9 @@ object Perf {
 }
 
 case class PerfParams(
-  batchSize: Int = 50,
-  iteration: Int = 10,
-  warmUp: Int = 3,
+  batchSize: Int = 128,
+  iteration: Int = 50,
+  warmUp: Int = 10,
   dataType: String = "float",
   module: String = "alexnet",
   inputData: String = "random"

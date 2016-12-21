@@ -27,8 +27,6 @@ import scala.reflect._
 class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
-  gradInput = T()
-
   override def updateOutput(input: Table): Tensor[T] = {
     if (inplace) {
       output.set(input[Tensor[T]](1))

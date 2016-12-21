@@ -196,8 +196,8 @@ object MultiModelPerf {
 }
 
 case class MultiModelPerfParams(
-  batchSize: Int = 2,
-  iteration: Int = 20,
+  batchSize: Int = 128,
+  iteration: Int = 50,
   cores: Int = 28,
   warmUp: Int = 10,
   dataType: String = "float",

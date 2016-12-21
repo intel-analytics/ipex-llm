@@ -26,7 +26,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class SaveObjSpec extends FlatSpec with Matchers {
   "A tensor load from saved file" should "be same with original tensor" in {
     Engine.setCoreNumber(4)
-    val originTensor = Tensor[Double](3, 2, 4).rand()
+    val originTensor = Tensor[Float](3, 2, 4).rand()
     val filePath = java.io.File.createTempFile("SaveObjSpecTensor", ".obj").getAbsolutePath
     File.save(originTensor, filePath, true)
     val loadedTensor = File.load[Tensor[Float]](filePath)

@@ -21,15 +21,17 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.{MulConstant, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Table
+import org.apache.log4j.Logger
 
 object ResNet {
+  val logger = Logger.getLogger(getClass)
 
   def shareGradInput(model: Module[Float]): Unit = {
-    println("Share gradients in ResNet")
+    logger.info("Share gradients in ResNet")
     Utils.shareGradInput(model)
   }
   def modelInit(model: Module[Float]): Unit = {
-    println("Initialize ResNet")
+    logger.info("Initialize ResNet")
     Utils.findModules(model)
   }
 
@@ -128,11 +130,11 @@ object ResNet {
           bottleneck: (Int, Int) => Module[Float])
       )
 
-      assert(cfg.keySet.contains(depth))
+      require(cfg.keySet.contains(depth), s"Invalid depth ${depth}")
 
       val (loopConfig, nFeatures, block) = cfg.get(depth).get
       iChannels = 64
-      println(" | ResNet-" + depth + " ImageNet")
+      logger.info(" | ResNet-" + depth + " ImageNet")
 
       model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3))
         .add(SpatialBatchNormalization(64))
@@ -146,11 +148,11 @@ object ResNet {
         .add(View(nFeatures).setNumInputDims(3))
         .add(Linear(nFeatures, classNum))
     } else if (dataset == DatasetType.CIFAR10) {
-      assert((depth-2)%6 == 0,
+      require((depth - 2)%6 == 0,
         "depth should be one of 20, 32, 44, 56, 110, 1202")
       val n = (depth-2)/6
       iChannels = 16
-      println(" | ResNet-" + depth + " CIFAR-10")
+      logger.info(" | ResNet-" + depth + " CIFAR-10")
 
       model.add(SpatialConvolution(3, 16, 3, 3, 1, 1, 1, 1))
       model.add(SpatialBatchNormalization(16))
@@ -162,7 +164,7 @@ object ResNet {
       model.add(View(64).setNumInputDims(3))
       model.add(Linear(64, 10))
     } else {
-      sys.error("invalid dataset: " + dataset)
+      throw new IllegalArgumentException(s"Invalid dataset ${dataset}")
     }
     model
   }
