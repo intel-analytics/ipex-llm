@@ -116,7 +116,9 @@ class LocalOptimizer[T: ClassTag](
 
       // copy multi-model gradient to the buffer
       val losses = new Array[Double](parallelism)
+      val records = new Array[Int](parallelism)
       var lossSum = 0.0
+      var recordsNum = 0
       val pre = iteration % comupteThresholdbatchSize * subModelNumber
 
       val trainingTasks = Engine.default.invokeAndWait2(
@@ -133,12 +135,16 @@ class LocalOptimizer[T: ClassTag](
             val errors = localCriterion.backward(output, target)
             localModel.backward(input, errors)
             moduleTimeList(i + pre) = System.nanoTime() - start
+            records(i) = target.size(1)
             i
           }), threshold, TimeUnit.NANOSECONDS)
       val finishedTasks = trainingTasks.filter(!_.isCancelled).map(_.get())
 
       if(finishedTasks.size > parallelism * 0.5) {
-        finishedTasks.foreach(lossSum += losses(_))
+        finishedTasks.foreach { index =>
+          lossSum += losses(index)
+          recordsNum += records(index)
+        }
         model.zeroGradParameters()
 
         val finishedG = finishedTasks.map(index => workingModelWAndG(index)._2)
@@ -163,14 +169,14 @@ class LocalOptimizer[T: ClassTag](
         optimMethod.optimize(_ => (ev.fromType(loss), grad), weight, state)
         val end = System.nanoTime()
         wallClockTime += end - start
-        count += batch.data.size(1)
+        count += recordsNum
         val head =
           header(state[Int]("epoch"), count, dataset.size(), state[Int]("neval"), wallClockTime)
         logger.info(s"$head " +
           s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
           s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
           s"train time ${(end - dataFetchTime) / 1e9}s. " +
-          s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} img / second. " +
+          s"Throughput is ${recordsNum.toDouble / (end - start) * 1e9} img / second. " +
           s"Drop module is ${parallelism - finishedTasks.size}")
         state("neval") = state[Int]("neval") + 1
 
