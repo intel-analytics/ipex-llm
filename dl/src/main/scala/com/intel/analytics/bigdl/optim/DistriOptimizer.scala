@@ -292,7 +292,7 @@ object DistriOptimizer {
     nodeNumber: Int,
     coresPerNode: Int,
     checkSingleton: Boolean
-  )(implicit ev: TensorNumeric[T])  = {
+  )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
     val broadcast = sc.broadcast((model, criterion, state))
     val _subModelNumber = Engine.getEngineType match {
@@ -322,7 +322,7 @@ object DistriOptimizer {
 
       val weights = cached.head._2
       cached.map(c =>
-        if(!c._2.eq(weights)) {
+        if (!c._2.eq(weights)) {
           c._2.storage().set(weights.storage())
         }
       )

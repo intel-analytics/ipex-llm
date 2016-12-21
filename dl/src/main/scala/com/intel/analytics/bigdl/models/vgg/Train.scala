@@ -97,7 +97,6 @@ object SparkTrain {
   def main(args: Array[String]): Unit = {
     trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
       Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
-      
       val batchSize = 128
       val maxEpoch = 90
 
