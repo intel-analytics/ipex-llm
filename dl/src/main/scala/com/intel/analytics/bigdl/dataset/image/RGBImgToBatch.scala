@@ -24,10 +24,11 @@ import com.intel.analytics.bigdl.utils.Engine
 import scala.collection.Iterator
 
 object RGBImgToBatch {
-  def apply(batchSize: Int): RGBImgToBatch = new RGBImgToBatch(batchSize)
+  def apply(batchSize: Int, swapChannel : Boolean = true): RGBImgToBatch
+    = new RGBImgToBatch(batchSize, swapChannel)
 }
 
-class RGBImgToBatch private[bigdl](totalBatch: Int)
+class RGBImgToBatch(totalBatch: Int, swapChannel : Boolean = true)
   extends Transformer[LabeledRGBImage, Batch[Float]] {
 
   override def apply(prev: Iterator[LabeledRGBImage]): Iterator[Batch[Float]] = {
@@ -53,7 +54,7 @@ class RGBImgToBatch private[bigdl](totalBatch: Int)
               height = img.height()
               width = img.width()
             }
-            img.copyTo(featureData, i * img.width() * img.height() * 3)
+            img.copyTo(featureData, i * img.width() * img.height() * 3, swapChannel)
             labelData(i) = img.label()
             i += 1
           }
