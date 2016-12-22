@@ -70,7 +70,8 @@ class SoftMarginCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers
     val end = System.nanoTime()
     val scalaTime = end - start
 
-    val code = "module = nn.SoftMarginCriterion(false)\n" +
+    val code = "module = nn.SoftMarginCriterion()\n" +
+      "module.sizeAverage = false\n " +
       "output = module:forward(input, target)\n " +
       "gradInput = module:backward(input, target)"
 
