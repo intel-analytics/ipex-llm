@@ -17,7 +17,6 @@
 
 package com.intel.analytics.bigdl.models
 
-import com.intel.analytics.bigdl.example.GoogleNet
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Concat, Sequential}
 import com.intel.analytics.bigdl.optim.SGD
