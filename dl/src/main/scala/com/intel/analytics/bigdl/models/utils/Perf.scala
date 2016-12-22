@@ -19,10 +19,10 @@ package com.intel.analytics.bigdl.models.utils
 
 
 import com.intel.analytics.bigdl.models.resnet.ResNet.ShortcutType
-import com.intel.analytics.bigdl.models.imagenet._
-import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
+import com.intel.analytics.bigdl.models.googlenet.{GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
