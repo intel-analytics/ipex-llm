@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
+import org.apache.spark.storage.BlockManagerWrapper
 
 import scala.reflect.ClassTag
 
@@ -135,9 +136,11 @@ class GradAggEpochOptimizer[T: ClassTag](
         val driverEV = ev
         val optM = optm
         val configDriver = config
+        val _partitionNum = partitionNum
         pm.sumAndUpdate(resultRDD, (weights, gradients, state) => {
-          gradients.div(driverEV.fromType[Int](stackCount.value))
-          optM.optimize(_ => (driverEV.fromType(lossSum.value / stackCount.value), gradients),
+          gradients.div(driverEV.fromType[Int](_partitionNum))
+          // use a constant number to replace the lossSum.value / stackCount.value
+          optM.optimize(_ => (driverEV.fromType(0.0), gradients),
             weights, configDriver, state)
         })
         val reduceAfter = System.nanoTime()

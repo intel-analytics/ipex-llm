@@ -9,33 +9,17 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>bigdl_0.1</artifactId>
+    <artifactId>bigdl</artifactId>
     <packaging>jar</packaging>
 
     <properties>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <scoverage.scalacPluginVersion>1.1.1</scoverage.scalacPluginVersion>
         <scoverage.aggregate>true</scoverage.aggregate>
+        <spark-version.version>1.5-plus</spark-version.version>
+        <spark.version>1.5.1</spark.version>
+        <spark-scope>provided</spark-scope>
     </properties>
-
-
-    <profiles>
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <spark-scope>provided</spark-scope>
-            </properties>
-        </profile>
-        <profile>
-            <id>all-in-one</id>
-            <properties>
-                <spark-scope>compile</spark-scope>
-            </properties>
-        </profile>
-    </profiles>
 
     <dependencies>
         <dependency>
@@ -63,14 +47,19 @@
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>
-            <version>1.5.1</version>
+            <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-mllib_2.10</artifactId>
-            <version>1.5.1</version>
+            <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.intel.analytics.bigdl.spark-version</groupId>
+            <artifactId>${spark-version.version}</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.scalanlp</groupId>
@@ -110,8 +99,12 @@
             <artifactId>fastutil</artifactId>
             <version>7.0.2</version>
         </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
     </dependencies>
-
 
     <build>
         <plugins>
@@ -188,7 +181,7 @@
                     <failOnWarning>false</failOnWarning>
                     <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
                     <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
-                    <configLocation>${basedir}/scalastyle_config.xml</configLocation>
+                    <configLocation>${project.parent.basedir}/scalastyle_config.xml</configLocation>
                     <outputFile>${project.build.directory}/stylecheck/scalastyle-output.xml</outputFile>
                     <outputEncoding>UTF-8</outputEncoding>
                 </configuration>
@@ -220,4 +213,45 @@
             </plugin>
         </plugins>
     </reporting>
+
+    <profiles>
+        <profile>
+            <id>default</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <spark-scope>provided</spark-scope>
+            </properties>
+        </profile>
+        <profile>
+            <id>all-in-one</id>
+            <properties>
+                <spark-scope>compile</spark-scope>
+            </properties>
+        </profile>
+        <profile>
+            <id>dist</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>1.5-plus</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <spark-version.version>1.5-plus</spark-version.version>
+                <spark.version>1.5.1</spark.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>2.0</id>
+            <properties>
+                <spark-version.version>2.0</spark-version.version>
+                <spark.version>2.0.0</spark.version>
+            </properties>
+        </profile>
+    </profiles>
 </project>

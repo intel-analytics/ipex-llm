@@ -252,7 +252,8 @@ class BetterGradAggEpochOptimizer[T: ClassTag](
         val driverParNum = partitionNum * _subModuleNumber
         pm.sumAndUpdate(resultRDD, (weights, gradients, state) => {
           gradients.div(driverEV.fromType[Int](driverParNum))
-          optM.optimize(_ => (driverEV.fromType(lossSum.value / stackCount.value), gradients),
+          // use a constant number to replace the lossSum.value / stackCount.value
+          optM.optimize(_ => (driverEV.fromType(0.0), gradients),
             weights, configDriver, state)
         })
         val reduceAfter = System.nanoTime()
