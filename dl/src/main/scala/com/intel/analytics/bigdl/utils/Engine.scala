@@ -177,7 +177,11 @@ object Engine {
   }
 
   // Set node number
-  private var nodeNum: Option[Int] = None
+  private var nodeNum: Option[Int] = if (System.getenv("DL_NODE_NUMBER") == null) {
+    None
+  } else {
+    Some(System.getenv("DL_NODE_NUMBER").toInt)
+  }
 
   private val ERROR = "Please use bigdlvars.sh set the env. For spark application, please use" +
     "Engine.sparkConf() to initialize your sparkConf"
@@ -286,14 +290,6 @@ object Engine {
   }
 
   def nodeNumber(): Option[Int] = nodeNum
-
-  def exectuorNodeNumber(): Option[Int] = {
-    if (System.getenv("DL_NODE_NUMBER") == null) {
-      None
-    } else {
-      Some(System.getenv("DL_NODE_NUMBER").toInt)
-    }
-  }
 
   def setCluster(n: Int, c: Int): Unit = {
     require(n > 0)

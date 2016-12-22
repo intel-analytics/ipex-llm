@@ -58,7 +58,8 @@ object Utils {
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
     coreNumberPerNode: Int = -1,
-    nodesNumber: Int = -1
+    nodesNumber: Int = -1,
+    batchSize: Option[Int] = None
   )
 
   val trainSparkParser = new OptionParser[TrainSparkParams]("BigDL Vgg on Cifar Example") {
@@ -83,6 +84,9 @@ object Utils {
       .text("nodes number to train the model")
       .action((x, c) => c.copy(nodesNumber = x))
       .required()
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = Some(x)))
   }
 
   case class TestLocalParams(

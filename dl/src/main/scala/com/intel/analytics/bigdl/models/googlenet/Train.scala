@@ -48,19 +48,23 @@ object GoogleNetv1_SparkTrain {
         imageSize,
         batchSize,
         param.nodesNumber,
-        param.coreNumberPerNode)
+        param.coreNumberPerNode,
+        param.classNumber
+      )
       val valSet = ImageNet2012(
         param.folder + "/val",
         sc,
         imageSize,
         batchSize,
         param.nodesNumber,
-        param.coreNumberPerNode)
+        param.coreNumberPerNode,
+        param.classNumber
+      )
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        GoogleNet_v1_NoAuxClassifier(classNum = 1000)
+        GoogleNet_v1_NoAuxClassifier(classNum = param.classNumber)
       }
 
       val state = if (param.stateSnapshot.isDefined) {
@@ -117,19 +121,23 @@ object GoogleNetv2_SparkTrain {
         imageSize,
         batchSize,
         param.nodesNumber,
-        param.coreNumberPerNode)
+        param.coreNumberPerNode,
+        param.classNumber
+      )
       val valSet = ImageNet2012(
         param.folder + "/val",
         sc,
         imageSize,
         batchSize,
         param.nodesNumber,
-        param.coreNumberPerNode)
+        param.coreNumberPerNode,
+        param.classNumber
+      )
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        GoogleNet_v2_NoAuxClassifier(classNum = 1000)
+        GoogleNet_v2_NoAuxClassifier(classNum = param.classNumber)
       }
 
       val state = if (param.stateSnapshot.isDefined) {
