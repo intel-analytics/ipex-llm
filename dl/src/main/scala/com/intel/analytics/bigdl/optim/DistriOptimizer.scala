@@ -136,13 +136,6 @@ object DistriOptimizer {
           getWeightsTasks.foreach(_.get())
           tasks.clear()
 
-          Engine.default.invokeAndWait(
-            (0 until _subModelNumber).map(i =>
-              () => {
-                cached.modelWeights(i).copy(cached.buffer)
-              }
-            )
-          )
           driverMetrics.add("prepare time", System.nanoTime() - time)
 
           if (lossArray == null || lossArray.length < _subModelNumber) {
