@@ -24,11 +24,11 @@ import com.intel.analytics.bigdl.dataset.Transformer
 import scala.collection.Iterator
 
 object LocalImgReader {
-  def apply(scaleTo: Int = RGBImage.NO_SCALE, normalize: Float = 255f): LocalImgReader
+  def apply(scaleTo: Any = RGBImage.NO_SCALE, normalize: Float = 255f): LocalImgReader
   = new LocalImgReader(scaleTo, normalize)
 }
 
-class LocalImgReader(scaleTo: Int, normalize: Float)
+class LocalImgReader(scaleTo: Any, normalize: Float)
   extends Transformer[LabeledImageLocalPath, LabeledRGBImage] {
   Class.forName("javax.imageio.ImageIO")
   Class.forName("java.awt.color.ICC_ColorSpace")
@@ -39,7 +39,10 @@ class LocalImgReader(scaleTo: Int, normalize: Float)
 
   override def apply(prev: Iterator[LabeledImageLocalPath]): Iterator[LabeledRGBImage] = {
     prev.map(data => {
-      val imgData = RGBImage.readImage(data.path, scaleTo)
+      val imgData = scaleTo match {
+        case scaleValue: Int => RGBImage.readImage(data.path, scaleValue)
+        case (resizeW: Int, resizeH: Int) => RGBImage.readImage(data.path, resizeW, resizeH)
+      }
       val label = data.label
       buffer.copy(imgData, normalize).setLabel(label)
     })
