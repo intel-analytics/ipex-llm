@@ -22,10 +22,15 @@ import com.intel.analytics.bigdl.utils.Engine
 object Utils {
 
   def getBatchSize(totalBatch : Int): Int = {
-    if (Engine.nodeNumber().isDefined || Engine.exectuorNodeNumber().isDefined) {
-      val nodeNumber = Engine.nodeNumber().getOrElse(Engine.exectuorNodeNumber().get)
-      require(totalBatch % nodeNumber == 0 && totalBatch > nodeNumber
-        , "batch size can't be divided by node number or is smaller than node number")
+    if (Engine.nodeNumber().isDefined) {
+      val nodeNumber = Engine.nodeNumber().get
+      val coreNumber = Engine.coreNumber()
+      require(totalBatch % (nodeNumber * coreNumber) == 0
+        , s"total batch size($totalBatch) can't be divided by node number($nodeNumber) * " +
+          s"core number($coreNumber), please change your batch size")
+      require(totalBatch > nodeNumber * coreNumber * 2
+        , s"total batch size($totalBatch) should be at least two times of node number" +
+          s"($nodeNumber) * core number($coreNumber), please change your batch size")
       totalBatch / nodeNumber
     } else {
       totalBatch

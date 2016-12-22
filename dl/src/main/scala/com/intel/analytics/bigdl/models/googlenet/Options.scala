@@ -28,6 +28,7 @@ object Options {
     stateSnapshot: Option[String] = None,
     coreNumberPerNode: Int = -1,
     nodesNumber: Int = -1,
+    classNumber: Int = 1000,
     batchSize: Option[Int] = None
   )
 
@@ -56,6 +57,9 @@ object Options {
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = Some(x)))
+    opt[Int]("classNum")
+      .text("class number")
+      .action((x, c) => c.copy(classNumber = x))
   }
 
   case class TestParams(

@@ -30,9 +30,11 @@ object ImageNet2012 {
     imageSize : Int,
     batchSize : Int,
     nodeNumber: Int,
-    coresPerNode : Int)
+    coresPerNode: Int,
+    classNumber: Int
+  )
   : DistributedDataSet[Batch[Float]] = {
-    DataSet.SequenceFolder.files(path, sc, 1000, nodeNumber)
+    DataSet.SequenceFolder.files(path, sc, classNumber, nodeNumber)
       .transform(
         MTLabeledRGBImgToBatch[Sample](
           width = imageSize,
