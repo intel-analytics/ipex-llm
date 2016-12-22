@@ -61,7 +61,6 @@ object Test {
       val imageSize = param.modelType match {
         case "alexnet" => 227
         case "googlenet" => 224
-        case "vgg16" => 224
       }
 
       val (module, validateDataSet) = param.modelType match {
