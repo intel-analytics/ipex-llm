@@ -21,8 +21,8 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{GreyImgToBatch, GreyImgNormalizer, SampleToGreyImg}
-import com.intel.analytics.bigdl.nn.{Module, ClassNLLCriterion}
+import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToAEBatch, GreyImgToBatch, SampleToGreyImg}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, MSECriterion, Module}
 import com.intel.analytics.bigdl.optim.DataSet
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
@@ -46,7 +46,7 @@ object Train {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        AE(classNum = 10)
+        AE(classNum = 32)
       }
 
       val state = if (param.stateSnapshot.isDefined) {
@@ -60,16 +60,16 @@ object Train {
       Engine.setCoreNumber(param.coreNumber)
       val optimizer = new LocalOptimizer[Float](
         model = model,
-        dataset = trainSet.transform(normalizer).transform(GreyImgToBatch(param.batchSize)),
-        criterion = new ClassNLLCriterion[Float]()
+        dataset = trainSet.transform(normalizer).transform(GreyImgToAEBatch(param.batchSize)),
+        criterion = new MSECriterion[Float]()
       )
       if (param.cache.isDefined) {
         optimizer.setCache(param.cache.get, Trigger.everyEpoch)
       }
 
       optimizer
-        .setValidation(Trigger.maxEpoch(param.maxEpoch + 1), null , Array(new Top1Accuracy[Float]))
         .setState(state)
+        .setOptimMethod(new Adagrad[Float]())
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
     })
