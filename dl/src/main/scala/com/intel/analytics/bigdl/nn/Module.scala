@@ -16,12 +16,11 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.example.loadCaffe.CaffeLoader
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.File
+import com.intel.analytics.bigdl.utils.{CaffeLoader, File}
 
 import scala.reflect.ClassTag
 
