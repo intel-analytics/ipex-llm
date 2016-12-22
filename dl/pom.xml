@@ -19,6 +19,7 @@
         <spark-version.version>1.5-plus</spark-version.version>
         <spark.version>1.5.1</spark.version>
         <spark-scope>provided</spark-scope>
+        <jar-with-dependencies-name>${artifactId}-${version}</jar-with-dependencies-name>
     </properties>
 
     <dependencies>
@@ -133,6 +134,7 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
+                    <finalName>${jar-with-dependencies-name}</finalName>
                 </configuration>
                 <executions>
                     <execution>
@@ -228,6 +230,7 @@
             <id>all-in-one</id>
             <properties>
                 <spark-scope>compile</spark-scope>
+                <jar-with-dependencies-name>${artifactId}-${version}-${id}</jar-with-dependencies-name>
             </properties>
         </profile>
         <profile>
