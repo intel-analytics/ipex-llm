@@ -17,173 +17,42 @@
 
 package com.intel.analytics.bigdl.example.loadCaffe
 
-import java.awt.Color
-import java.awt.color.ColorSpace
-import java.awt.image.{BufferedImage, DataBufferByte}
-import java.io.{ByteArrayInputStream, ByteArrayOutputStream, FileInputStream}
-import java.nio.ByteBuffer
-import java.nio.channels.Channels
 import java.nio.file.Path
-import javax.imageio.ImageIO
 
 import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.dataset.image._
+import com.intel.analytics.bigdl.dataset.image.{RGBImgCropper, RGBImgNormalizer, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.File
 
-import scala.collection.Iterator
-
-object RGBImgCropperCenter {
-  def apply(cropWidth: Int, cropHeight: Int): Transformer[LabeledRGBImage, LabeledRGBImage]
-  = new RGBImgCropperCenter(cropWidth, cropHeight)
-}
-
-class RGBImgCropperCenter(cropWidth: Int, cropHeight: Int)
-  extends Transformer[LabeledRGBImage, LabeledRGBImage] {
-
-  private val buffer = new LabeledRGBImage(cropWidth, cropHeight)
-
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
-    prev.map(img => {
-      val width = img.width()
-      val height = img.height()
-      val startW = (width - cropWidth) / 2
-      val startH = (height - cropHeight) / 2
-      val startIndex = (startW + startH * width) * 3
-      val frameLength = cropWidth * cropHeight
-      val source = img.content
-      val target = buffer.content
-      var i = 0
-      while (i < frameLength) {
-        target(i * 3 + 2) =
-          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3 + 2)
-        target(i * 3 + 1) =
-          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3 + 1)
-        target(i * 3) =
-          source(startIndex + ((i / cropWidth) * width + (i % cropWidth)) * 3)
-        i += 1
-      }
-      buffer.setLabel(img.label())
-    })
+object Preprocessor {
+  def apply(path: Path, imageSize: Int, batchSize: Int,
+    transformers: Transformer[LabeledImageLocalPath, LabeledRGBImage])
+  : LocalDataSet[Batch[Float]] = {
+    DataSet.ImageFolder.paths(path).transform(
+      MTLabeledRGBImgToBatch(
+        width = imageSize,
+        height = imageSize,
+        batchSize = batchSize,
+        transformer = transformers, swapChannel = false))
   }
 }
 
-object RGBImgNormalizerWithMeanFile {
-  def apply(means: Tensor[Float]): RGBImgNormalizerWithMeanFile
-  = new RGBImgNormalizerWithMeanFile(means)
-}
-
-class RGBImgNormalizerWithMeanFile(means: Tensor[Float])
-  extends Transformer[LabeledRGBImage, LabeledRGBImage] {
-
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
-    prev.map(img => {
-      val content = img.content
-      val meansData = means.storage().array()
-      require(content.length % 3 == 0)
-      require(content.length == means.nElement())
-      var i = 0
-      while (i < content.length) {
-        content(i + 2) = content(i + 2) - meansData(i + 2)
-        content(i + 1) = content(i + 1) - meansData(i + 1)
-        content(i + 0) = content(i + 0) - meansData(i + 0)
-        i += 3
-      }
-      img
-    })
-  }
-}
-
-object LocalImgReader {
-  def apply(scaleTo: Int): LocalImgReader = new LocalImgReader(scaleTo)
-}
-
-class LocalImgReader(scaleTo: Int)
-  extends Transformer[LabeledImageLocalPath, LabeledRGBImage] {
-  Class.forName("javax.imageio.ImageIO")
-  Class.forName("java.awt.color.ICC_ColorSpace")
-  Class.forName("sun.java2d.cmm.lcms.LCMS")
-  ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
-
-  private val buffer = new LabeledRGBImage()
-
-  override def apply(prev: Iterator[LabeledImageLocalPath]): Iterator[LabeledRGBImage] = {
-    prev.map(data => {
-      val imgData = readImage(data.path, scaleTo, scaleTo)
-      val label = data.label
-      buffer.copy(imgData, 1f).setLabel(label)
-    })
-  }
-
-  def readImage(path: Path, scaleHTo: Int, scaledWTo: Int): Array[Byte] = {
-    var fis: FileInputStream = null
-    try {
-      fis = new FileInputStream(path.toString)
-      val channel = fis.getChannel
-      val byteArrayOutputStream = new ByteArrayOutputStream
-      channel.transferTo(0, channel.size, Channels.newChannel(byteArrayOutputStream))
-      val img = ImageIO.read(new ByteArrayInputStream(byteArrayOutputStream.toByteArray))
-      var scaledImage: java.awt.Image = null
-
-      scaledImage =
-        img.getScaledInstance(scaledWTo, scaleHTo, java.awt.Image.SCALE_SMOOTH)
-
-      val imageBuff: BufferedImage =
-        new BufferedImage(scaledWTo, scaleHTo, BufferedImage.TYPE_3BYTE_BGR)
-      imageBuff.getGraphics.drawImage(scaledImage, 0, 0, new Color(0, 0, 0), null)
-      val pixels: Array[Byte] =
-        imageBuff.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData
-      require(pixels.length % 3 == 0)
-
-      val bytes = new Array[Byte](8 + pixels.length)
-      val byteBuffer = ByteBuffer.wrap(bytes)
-      require(imageBuff.getWidth * imageBuff.getHeight * 3 == pixels.length)
-      byteBuffer.putInt(imageBuff.getWidth)
-      byteBuffer.putInt(imageBuff.getHeight)
-      System.arraycopy(pixels, 0, bytes, 8, pixels.length)
-      bytes
-    } catch {
-      case ex: Exception =>
-        ex.printStackTrace()
-        System.err.println("Can't read file " + path)
-        throw ex
-    } finally {
-      if (fis != null) {
-        fis.close()
-      }
-    }
-  }
-}
-
-object LocalDataSetAlexnet {
+object AlexNetPreprocessor {
   def apply(path: Path, imageSize: Int, batchSize: Int, meanFile: String)
   : LocalDataSet[Batch[Float]] = {
     val means = File.load[Tensor[Float]](meanFile)
-
-    DataSet.ImageFolder.paths(path).transform(
-      MTLabeledRGBImgToBatch(
-        width = imageSize,
-        height = imageSize,
-        batchSize = batchSize,
-        transformer = (LocalImgReader(scaleTo = 256) -> RGBImgNormalizerWithMeanFile(means)
-          -> RGBImgCropperCenter(cropWidth = imageSize, cropHeight = imageSize)),
-        swapChannel = false)
-    )
+    val transformers = (LocalImgReader((256, 256), normalize = 1f) -> RGBImgPixelNormalizer(means)
+      -> RGBImgCropper(imageSize, imageSize, isRandom = false))
+    Preprocessor(path, imageSize, batchSize, transformers)
   }
 }
 
-object LocalDatasetGooglenet {
+object GoogleNetPreprocessor {
   def apply(path: Path, imageSize: Int, batchSize: Int): LocalDataSet[Batch[Float]] = {
-    DataSet.ImageFolder.paths(path).transform(
-      MTLabeledRGBImgToBatch(
-        width = imageSize,
-        height = imageSize,
-        batchSize = batchSize,
-        transformer = (LocalImgReader(scaleTo = 256)
-          -> RGBImgCropperCenter(cropWidth = imageSize, cropHeight = imageSize)
-          -> RGBImgNormalizer(123, 117, 104, 1, 1, 1)),
-        swapChannel = false)
-    )
+    val transformers = (LocalImgReader((256, 256), normalize = 1f)
+      -> RGBImgCropper(imageSize, imageSize, isRandom = false)
+      -> RGBImgNormalizer(123, 117, 104, 1, 1, 1))
+    Preprocessor(path, imageSize, batchSize, transformers)
   }
 }
 
