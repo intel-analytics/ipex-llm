@@ -33,7 +33,8 @@ object Test {
     modelType: String = "alexnet",
     caffeDefPath: String = "",
     caffeModelPath: String = "",
-    batchSize: Int = 32
+    batchSize: Int = 32,
+    meanFile: Option[String] = None
   )
 
   val testLocalParser = new OptionParser[TestLocalParams]("BigDL LoadCaffe Example") {
@@ -53,6 +54,9 @@ object Test {
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
+    opt[String]('m', "meanFile")
+      .text("mean file")
+      .action((x, c) => c.copy(meanFile = Some(x)))
   }
 
   def main(args: Array[String]): Unit = {
@@ -65,7 +69,8 @@ object Test {
 
       val (module, validateDataSet) = param.modelType match {
         case "alexnet" =>
-          (AlexNet(1000), LocalDataSetAlexnet(valPath, imageSize, param.batchSize))
+          (AlexNet(1000), LocalDataSetAlexnet(valPath, imageSize,
+            param.batchSize, param.meanFile.get))
         case "googlenet" =>
           (GoogleNet_v1_NoAuxClassifier(1000),
             LocalDatasetGooglenet(valPath, imageSize, param.batchSize))
