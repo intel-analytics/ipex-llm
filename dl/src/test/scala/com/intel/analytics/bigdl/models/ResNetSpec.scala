@@ -219,7 +219,6 @@ class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
         "gradParameters_initial", "gradInput", "model"))
 
     ResNet.shareGradInput(model)
-
     val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Float]]
     val parameters = model.getParameters()._1
 

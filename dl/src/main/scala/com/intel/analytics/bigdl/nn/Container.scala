@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-private[nn] abstract class Container[A <: Activity : ClassTag,
+abstract class Container[A <: Activity : ClassTag,
     B <: Activity : ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T] {
 

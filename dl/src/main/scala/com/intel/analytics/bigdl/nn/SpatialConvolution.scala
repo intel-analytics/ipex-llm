@@ -52,27 +52,25 @@ class SpatialConvolution[T: ClassTag](
     kernelH, kernelW)
   val gradBias: Tensor[T] = Tensor[T](nOutputPlane)
 
-  private var sharedFlag: Boolean = false
-
   var fInput = Tensor[T]()
   var fGradInput = Tensor[T]()
-  private val ones = Tensor[T]()
-  private val onesBatch = Tensor[T]()
-  private val onesBias = Tensor[T]()
-  private var weightMM: Tensor[T] = null
-  private var gradientBiasMT: Tensor[T] = Tensor[T]()
-  private var gradWeightMM: Tensor[T] = null
+  protected val ones = Tensor[T]()
+  protected val onesBatch = Tensor[T]()
+  protected val onesBias = Tensor[T]()
+  protected var weightMM: Tensor[T] = null
+  protected var gradientBiasMT: Tensor[T] = Tensor[T]()
+  protected var gradWeightMM: Tensor[T] = null
   @transient
-  private var gradWeightMMInBatch: Tensor[T] = null
-  private val _1x1 = if (kernelH == 1 && kernelW == 1 && strideW == 1 && strideH == 1
+  protected var gradWeightMMInBatch: Tensor[T] = null
+  protected val _1x1 = if (kernelH == 1 && kernelW == 1 && strideW == 1 && strideH == 1
     && padH == 0 && padW == 0) {
     true
   } else {
     false
   }
   reset()
-  private var im2colTime = 0L
-  private var col2imTime = 0L
+  protected var im2colTime = 0L
+  protected var col2imTime = 0L
 
   def getIm2ColTime(): Double = im2colTime
 
@@ -83,10 +81,8 @@ class SpatialConvolution[T: ClassTag](
     this
   }
 
-  def setSharedVar(): Unit = sharedFlag = true
-
   @transient
-  private var results: Array[Future[Unit]] = null
+  protected var results: Array[Future[Unit]] = null
 
   override def reset(): Unit = {
     initMethod match {
@@ -113,7 +109,15 @@ class SpatialConvolution[T: ClassTag](
       weightMM = weight.view(nGroup, nOutputPlane / nGroup,
         nInputPlane * kernelH * kernelW / nGroup)
     }
-    val (outputWidth, outputHeight, inputWidth, inputHeight) = calcOutputWH(input)
+    val dimWidth = if (input.dim() == 3) 3 else 4
+    val dimHeight = if (input.dim() == 3) 2 else 3
+
+    val inputWidth = input.size(dimWidth)
+    val inputHeight = input.size(dimHeight)
+
+    val outputWidth = (inputWidth + 2 * padW - kernelW) / strideW + 1
+    val outputHeight = (inputHeight + 2 * padH - kernelH) / strideH + 1
+
     if (onesBias.dim() != 1 || onesBias.size(1) != outputHeight * outputWidth) {
       onesBias.resize(Array(outputHeight * outputWidth)).fill(ev.fromType(1.0))
     }
@@ -123,7 +127,7 @@ class SpatialConvolution[T: ClassTag](
       require(input.size(1) == nInputPlane)
       require(input.isContiguous())
       output.resize(Array(nOutputPlane, outputHeight, outputWidth))
-      if (_1x1 && !sharedFlag) {
+      if (_1x1) {
         fInput.set(input)
         fInput.resize(Array(nGroup, kernelW * kernelH * nInputPlane / nGroup,
           outputHeight * outputWidth))
@@ -149,107 +153,47 @@ class SpatialConvolution[T: ClassTag](
       require(input.size(2) == nInputPlane)
       val batchSize = input.size(1)
       output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
-
-      if (sharedFlag) {
-        val coresNum = Math.min(batchSize, Engine.coreNumber)
-        fInput.resize(Array(coresNum, nGroup, kernelW * kernelH * nInputPlane / nGroup,
+      if (_1x1) {
+        fInput.set(input)
+        fInput.resize(Array(batchSize, nGroup, kernelW * kernelH * nInputPlane / nGroup,
           outputHeight * outputWidth))
-
-        if (results == null || results.length != coresNum) {
-          results = new Array[Future[Unit]](coresNum)
-        }
-
-        var i, j = 0
-        val minJobNum: Int = batchSize / Engine.coreNumber
-        val remainJobNum: Int = batchSize - minJobNum * Engine.coreNumber
-
-        while (j < coresNum) {
-          val _j = j
-          results(j) = Engine.model.invoke(() => {
-            var _i = 1
-            val distJobNum: Int = minJobNum + (if (_j < remainJobNum) 1 else 0)
-            val indexStart: Int = _j * minJobNum + (if (_j < remainJobNum) _j else remainJobNum)
-            while (_i <= distJobNum) {
-              val inputT = input.select(1, _i + indexStart).contiguous()
-              val outputT = output.select(1, _i + indexStart)
-              val fInputT = fInput.select(1, _j + 1)
-              var g = 0
-              while (g < nGroup) {
-                updateOutputFrame(
-                  inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
-                  outputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
-                  weightMM.select(1, g + 1),
-                  bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
-                  fInputT.select(1, g + 1),
-                  kernelW, kernelH, strideW, strideH,
-                  padW, padH,
-                  nInputPlane / nGroup, inputWidth, inputHeight,
-                  nOutputPlane / nGroup, outputWidth, outputHeight)
-                g += 1
-              }
-              _i += 1
-            }
-          })
-          j += 1
-        }
-        Engine.model.sync(results)
       } else {
-        if (_1x1) {
-          fInput.set(input)
-          fInput.resize(Array(batchSize, nGroup, kernelW * kernelH * nInputPlane / nGroup,
-            outputHeight * outputWidth))
-        } else {
-          fInput.resize(Array(batchSize, nGroup, kernelW * kernelH * nInputPlane / nGroup,
-            outputHeight * outputWidth))
-        }
-
-        if (results == null || results.length != batchSize) {
-          results = new Array[Future[Unit]](batchSize)
-        }
-
-
-        var i = 0
-        while (i < batchSize) {
-          val _i = i + 1
-          results(i) = Engine.model.invoke(() => {
-            val inputT = input.select(1, _i)
-            require(inputT.isContiguous())
-            val outputT = output.select(1, _i)
-            val fInputT = fInput.select(1, _i)
-            var g = 0
-            while (g < nGroup) {
-              updateOutputFrame(
-                inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
-                outputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
-                weightMM.select(1, g + 1),
-                bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
-                fInputT.select(1, g + 1),
-                kernelW, kernelH, strideW, strideH,
-                padW, padH,
-                nInputPlane / nGroup, inputWidth, inputHeight,
-                nOutputPlane / nGroup, outputWidth, outputHeight)
-              g += 1
-            }
-          })
-          i += 1
-        }
-        Engine.model.sync(results)
+        fInput.resize(Array(batchSize, nGroup, kernelW * kernelH * nInputPlane / nGroup,
+          outputHeight * outputWidth))
       }
+
+      if (results == null || results.length != batchSize) {
+        results = new Array[Future[Unit]](batchSize)
+      }
+
+      var i = 0
+      while (i < batchSize) {
+        val _i = i + 1
+        results(i) = Engine.model.invoke(() => {
+          val inputT = input.select(1, _i)
+          require(inputT.isContiguous())
+          val outputT = output.select(1, _i)
+          val fInputT = fInput.select(1, _i)
+          var g = 0
+          while (g < nGroup) {
+            updateOutputFrame(
+              inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
+              outputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+              weightMM.select(1, g + 1),
+              bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+              fInputT.select(1, g + 1),
+              kernelW, kernelH, strideW, strideH,
+              padW, padH,
+              nInputPlane / nGroup, inputWidth, inputHeight,
+              nOutputPlane / nGroup, outputWidth, outputHeight)
+            g += 1
+          }
+        })
+        i += 1
+      }
+      Engine.model.sync(results)
     }
     output
-  }
-
-  @inline
-  private def calcOutputWH(input: Tensor[T]): (Int, Int, Int, Int) = {
-    val dimWidth = if (input.dim() == 3) 3 else 4
-    val dimHeight = if (input.dim() == 3) 2 else 3
-
-    val inputWidth = input.size(dimWidth)
-    val inputHeight = input.size(dimHeight)
-
-    val outputWidth = (inputWidth + 2 * padW - kernelW) / strideW + 1
-    val outputHeight = (inputHeight + 2 * padH - kernelH) / strideH + 1
-    (outputWidth, outputHeight, inputWidth, inputHeight)
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
@@ -259,18 +203,15 @@ class SpatialConvolution[T: ClassTag](
 
     require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
     gradInput.resizeAs(input)
-    if(_1x1 && !sharedFlag) {
+    if (_1x1) {
       fGradInput.set(gradInput)
+      fGradInput.resizeAs(fInput)
+    } else {
       fGradInput.resizeAs(fInput)
     }
 
     if (input.nDimension() == 3) {
       require(gradOutput.isContiguous())
-      if (sharedFlag) {
-        val (outputWidth, outputHeight, _, _) = calcOutputWH(input)
-        fGradInput.resize(Array(nGroup,
-          kernelW * kernelH * nInputPlane / nGroup, outputHeight * outputWidth))
-      } else { fGradInput.resizeAs(fInput) }
       var g = 0
       while (g < nGroup) {
         updateGradInputFrame(
@@ -283,73 +224,30 @@ class SpatialConvolution[T: ClassTag](
       }
     } else {
       val batchSize = input.size(1)
-      if (sharedFlag) {
-        val (outputWidth, outputHeight, _, _) = calcOutputWH(input)
-        fGradInput.resize(Array(Engine.coreNumber, nGroup, kernelW * kernelH * nInputPlane / nGroup,
-          outputHeight * outputWidth))
-
-        val coresNum = Math.min(batchSize, Engine.coreNumber)
-        if (results == null || results.length != coresNum) {
-          results = new Array[Future[Unit]](coresNum)
-        }
-
-        var i, j = 0
-        val minJobNum: Int = batchSize / Engine.coreNumber
-        val remainJobNum: Int = batchSize - minJobNum * Engine.coreNumber
-
-        while (j < coresNum) {
-          val _j = j
-          results(j) = Engine.model.invoke(() => {
-            var _i = 1
-            val distJobNum: Int = minJobNum + (if (_j < remainJobNum) 1 else 0)
-            val indexStart: Int = _j * minJobNum + (if (_j < remainJobNum) _j else remainJobNum)
-            while (_i <= distJobNum) {
-              val gradInputT = gradInput.select(1, _i + indexStart)
-              val gradOutputT = gradOutput.select(1, _i + indexStart).contiguous()
-              val fgradInputT = fGradInput.select(1, _j + 1)
-              var g = 0
-              while (g < nGroup) {
-                updateGradInputFrame(
-                  gradInputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
-                  gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
-                  weightMM.select(1, g + 1).transpose(1, 2),
-                  fgradInputT.select(1, g + 1),
-                  kernelW, kernelH, strideW, strideH, padW, padH)
-                g += 1
-              }
-              _i += 1
-            }
-          })
-          j += 1
-        }
-        Engine.model.sync(results)
-      } else {
-        fGradInput.resizeAs(fInput)
-
-        var i = 0
-        while (i < batchSize) {
-          val _i = i + 1
-          results(i) = Engine.model.invoke(() => {
-            val gradInputT = gradInput.select(1, _i)
-            val gradOutputT = gradOutput.select(1, _i)
-            require(gradOutputT.isContiguous())
-            val fgradInputT = fGradInput.select(1, _i)
-            var g = 0
-            while (g < nGroup) {
-              updateGradInputFrame(
-                gradInputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
-                gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
-                weightMM.select(1, g + 1).transpose(1, 2),
-                fgradInputT.select(1, g + 1),
-                kernelW, kernelH, strideW, strideH, padW, padH)
-              g += 1
-            }
-          })
-          i += 1
-        }
-        Engine.model.sync(results)
+      var i = 0
+      while (i < batchSize) {
+        val _i = i + 1
+        results(i) = Engine.model.invoke(() => {
+          val gradInputT = gradInput.select(1, _i)
+          val gradOutputT = gradOutput.select(1, _i)
+          require(gradOutputT.isContiguous())
+          val fgradInputT = fGradInput.select(1, _i)
+          var g = 0
+          while (g < nGroup) {
+            updateGradInputFrame(
+              gradInputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
+              gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+              weightMM.select(1, g + 1).transpose(1, 2),
+              fgradInputT.select(1, g + 1),
+              kernelW, kernelH, strideW, strideH, padW, padH)
+            g += 1
+          }
+        })
+        i += 1
       }
+      Engine.model.sync(results)
     }
+
     return gradInput
   }
 
@@ -363,38 +261,15 @@ class SpatialConvolution[T: ClassTag](
         gradWeightMM = gradWeight.view(nGroup, nOutputPlane / nGroup,
           nInputPlane * kernelH * kernelW / nGroup)
       }
-      if (sharedFlag) {
-        val (outputWidth, outputHeight, inputWidth, inputHeight) = calcOutputWH(input)
-        fInput.resize(Array(nGroup,
-          kernelW * kernelH * nInputPlane / nGroup, outputHeight * outputWidth))
-        var g = 0
-        while (g < nGroup) {
-          write2fInput(
-            input.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
-            fInput.select(1, g + 1),
-            kernelW, kernelH, strideW, strideH,
-            padW, padH,
-            nInputPlane / nGroup, inputWidth, inputHeight,
-            nOutputPlane / nGroup, outputWidth, outputHeight)
-          accGradParametersFrame(
-            gradOutput.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
-            gradWeightMM.select(1, g + 1),
-            gradBias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
-            fInput.select(1, g + 1),
-            ev.fromType[Double](scale))
-          g += 1
-        }
-      } else {
-        var g = 0
-        while (g < nGroup) {
-          accGradParametersFrame(
-            gradOutput.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
-            gradWeightMM.select(1, g + 1),
-            gradBias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
-            fInput.select(1, g + 1),
-            ev.fromType[Double](scale))
-          g += 1
-        }
+      var g = 0
+      while (g < nGroup) {
+        accGradParametersFrame(
+          gradOutput.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+          gradWeightMM.select(1, g + 1),
+          gradBias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+          fInput.select(1, g + 1),
+          ev.fromType[Double](scale))
+        g += 1
       }
     } else {
       val batchSize = input.size(1)
@@ -412,77 +287,28 @@ class SpatialConvolution[T: ClassTag](
       if (onesBatch.dim() != 1 || onesBatch.size(1) != batchSize) {
         onesBatch.resize(Array(batchSize)).fill(ev.fromType(1.0))
       }
-
-      if (sharedFlag) {
-        val coresNum = Math.min(batchSize, Engine.coreNumber)
-        if (results == null || results.length != coresNum) {
-          results = new Array[Future[Unit]](coresNum)
-        }
-
-        var i, j = 0
-        val minJobNum: Int = batchSize / Engine.coreNumber
-        val remainJobNum: Int = batchSize - minJobNum * Engine.coreNumber
-        val (outputWidth, outputHeight, inputWidth, inputHeight) = calcOutputWH(input)
-        fInput.resize(Array(Engine.coreNumber, nGroup, kernelW * kernelH * nInputPlane / nGroup,
-          outputHeight * outputWidth))
-        while (j < coresNum) {
-          val _j = j
-          results(j) = Engine.model.invoke(() => {
-            var _i = 1
-            val distJobNum: Int = minJobNum + (if (_j < remainJobNum) 1 else 0)
-            val indexStart: Int = _j * minJobNum + (if (_j < remainJobNum) _j else remainJobNum)
-            while (_i <= distJobNum) {
-              val gradOutputT = gradOutput.select(1, _i + indexStart)
-              val inputT = input.select(1, _i + indexStart).contiguous()
-              val fInputT = fInput.select(1, _j + 1)
-              var g = 0
-              while (g < nGroup) {
-                write2fInput(
-                  inputT.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
-                  fInputT.select(1, g + 1),
-                  kernelW, kernelH, strideW, strideH,
-                  padW, padH,
-                  nInputPlane / nGroup, inputWidth, inputHeight,
-                  nOutputPlane / nGroup, outputWidth, outputHeight)
-                calcGradParametersFrame(
-                  gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
-                  gradWeightMMInBatch.select(1, _i + indexStart).select(1, g + 1),
-                  gradientBiasMT.select(1, _i + indexStart).narrow(1, g * nOutputPlane / nGroup + 1,
-                    nOutputPlane / nGroup),
-                  fInputT.select(1, g + 1),
-                  ev.fromType[Double](scale))
-                g += 1
-              }
-              _i += 1
-            }
-          })
-          j += 1
-        }
-        Engine.model.sync(results)
-      } else {
-        var i = 0
-        while (i < batchSize) {
-          val _i = i + 1
-          results(i) = Engine.model.invoke(() => {
-            val gradOutputT = gradOutput.select(1, _i)
-            val fInputT = fInput.select(1, _i)
-            var g = 0
-            while(g < nGroup) {
-              calcGradParametersFrame(
-                gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
-                gradWeightMMInBatch.select(1, _i).select(1, g + 1),
-                gradientBiasMT.select(1, _i).narrow(1, g * nOutputPlane / nGroup + 1,
-                  nOutputPlane / nGroup),
-                fInputT.select(1, g + 1),
-                ev.fromType[Double](scale))
-              g += 1
-            }
-          })
-          i += 1
-        }
-
-        Engine.model.sync(results)
+      var i = 0
+      while (i < batchSize) {
+        val _i = i + 1
+        results(i) = Engine.model.invoke(() => {
+          val gradOutputT = gradOutput.select(1, _i)
+          val fInputT = fInput.select(1, _i)
+          var g = 0
+          while (g < nGroup) {
+            calcGradParametersFrame(
+              gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+              gradWeightMMInBatch.select(1, _i).select(1, g + 1),
+              gradientBiasMT.select(1, _i).narrow(1, g * nOutputPlane / nGroup + 1,
+                nOutputPlane / nGroup),
+              fInputT.select(1, g + 1),
+              ev.fromType[Double](scale))
+            g += 1
+          }
+        })
+        i += 1
       }
+
+      Engine.model.sync(results)
 
       val gradView = gradWeightMMInBatch.view(batchSize,
         nOutputPlane * nInputPlane * kernelH * kernelW / nGroup).t
@@ -571,34 +397,7 @@ class SpatialConvolution[T: ClassTag](
       s" $kernelH, $strideW, $strideH, $padW, $padH)"
   }
 
-
-  private def write2fInput(input: Tensor[T], fInput: Tensor[T],
-                                kW: Int, kH: Int, dW: Int, dH: Int, padW: Int, padH: Int,
-                                nInputPlane: Int, inputWidth: Int, inputHeight: Int,
-                                nOutputPlane: Int, outputWidth: Int, outputHeight: Int)(
-                                 implicit ev: TensorNumeric[T]): Unit = {
-
-    if (!_1x1) {
-      ev.getType() match {
-        case DoubleType =>
-          val before = System.nanoTime()
-          NNPrimitive.im2colDouble(fInput.asInstanceOf[Tensor[Double]],
-            input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH, nInputPlane,
-            inputWidth, inputHeight, outputWidth, outputHeight)
-          im2colTime += System.nanoTime() - before
-        case FloatType =>
-          val before = System.nanoTime()
-          NNPrimitive.im2colFloat(fInput.asInstanceOf[Tensor[Float]],
-            input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH, nInputPlane,
-            inputWidth, inputHeight, outputWidth, outputHeight)
-          im2colTime += System.nanoTime() - before
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
-      }
-    }
-  }
-
-
-  private def updateOutputFrame(input: Tensor[T], output: Tensor[T], weight: Tensor[T],
+  protected def updateOutputFrame(input: Tensor[T], output: Tensor[T], weight: Tensor[T],
     bias: Tensor[T], fInput: Tensor[T],
     kW: Int, kH: Int, dW: Int, dH: Int, padW: Int, padH: Int,
     nInputPlane: Int, inputWidth: Int, inputHeight: Int,
@@ -606,7 +405,7 @@ class SpatialConvolution[T: ClassTag](
     implicit ev: TensorNumeric[T]): Unit = {
 
     val output2d = output.view(nOutputPlane, outputHeight * outputWidth)
-    if (!_1x1 || sharedFlag) {
+    if (!_1x1) {
       ev.getType() match {
         case DoubleType =>
           val before = System.nanoTime()
@@ -627,7 +426,7 @@ class SpatialConvolution[T: ClassTag](
     output2d.addr(ev.fromType(1), bias, onesBias)
   }
 
-  private def updateGradInputFrame(gradInput: Tensor[T], gradOutput: Tensor[T],
+  protected def updateGradInputFrame(gradInput: Tensor[T], gradOutput: Tensor[T],
     weight: Tensor[T], fgradInput: Tensor[T], kW: Int, kH: Int, dW: Int, dH: Int,
     padW: Int, padH: Int)(implicit ev: TensorNumeric[T]): Unit = {
     ev.getType() match {
@@ -637,7 +436,7 @@ class SpatialConvolution[T: ClassTag](
             gradOutput.size(2) * gradOutput.size(3)))
         fgradInput.asInstanceOf[Tensor[Double]].addmm(0.0, fgradInput.asInstanceOf[Tensor[Double]],
           1.0, weight.asInstanceOf[Tensor[Double]], gradOutput2d)
-        if (!_1x1 || sharedFlag) {
+        if (!_1x1) {
           gradInput.asInstanceOf[Tensor[Double]].zero()
           val before = System.nanoTime()
           NNPrimitive.col2imDouble(fgradInput.asInstanceOf[Tensor[Double]],
@@ -652,7 +451,7 @@ class SpatialConvolution[T: ClassTag](
           Array(gradOutput.size(1), gradOutput.size(2) * gradOutput.size(3)))
         fgradInput.asInstanceOf[Tensor[Float]].addmm(0.0f, fgradInput.asInstanceOf[Tensor[Float]],
           1.0f, weight.asInstanceOf[Tensor[Float]], gradOutput2d)
-        if (!_1x1 || sharedFlag) {
+        if (!_1x1) {
           gradInput.asInstanceOf[Tensor[Float]].zero()
           val before = System.nanoTime()
           NNPrimitive.col2imFloat(fgradInput.asInstanceOf[Tensor[Float]],
@@ -665,7 +464,7 @@ class SpatialConvolution[T: ClassTag](
     }
   }
 
-  private def accGradParametersFrame(gradOutput: Tensor[T], gradWeight: Tensor[T],
+  protected def accGradParametersFrame(gradOutput: Tensor[T], gradWeight: Tensor[T],
     gradBias: Tensor[T], fInput: Tensor[T], scale: T)(implicit ev: TensorNumeric[T]): Unit = {
 
     ev.getType() match {
@@ -721,7 +520,7 @@ class SpatialConvolution[T: ClassTag](
     }
   }
 
-  private def calcGradParametersFrame(gradOutput: Tensor[T], gradWeight: Tensor[T],
+  protected def calcGradParametersFrame(gradOutput: Tensor[T], gradWeight: Tensor[T],
     gradBias: Tensor[T],
     fInput: Tensor[T], scale: T)(implicit ev: TensorNumeric[T]): Unit = {
 
