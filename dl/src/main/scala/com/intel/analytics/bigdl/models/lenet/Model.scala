@@ -18,11 +18,12 @@
 package com.intel.analytics.bigdl.models.lenet
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
 
 object LeNet5 {
   def apply(classNum: Int): Module[Float] = {
-    val model = Sequential[Float]()
+    val model = Sequential()
     model.add(Reshape(Array(1, 28, 28)))
       .add(SpatialConvolution(1, 6, 5, 5))
       .add(Tanh())
