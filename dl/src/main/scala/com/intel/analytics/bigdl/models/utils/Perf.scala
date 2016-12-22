@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.models.resnet.ResNet.ShortcutType
 import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
-import com.intel.analytics.bigdl.models.googlenet.{GoogleNet_v1, GoogleNet_v2}
+import com.intel.analytics.bigdl.models.inception.{GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.resnet.ResNet
