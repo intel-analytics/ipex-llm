@@ -18,21 +18,80 @@
 package com.intel.analytics.bigdl.models.resnet
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.{MulConstant, _}
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.{SpatialConvolution => _, _}
+import com.intel.analytics.bigdl.nn.{SpatialShareConvolution => SpatialConvolution}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.log4j.Logger
+
+import scala.collection.mutable
 
 object ResNet {
   val logger = Logger.getLogger(getClass)
 
   def shareGradInput(model: Module[Float]): Unit = {
     logger.info("Share gradients in ResNet")
-    Utils.shareGradInput(model)
+    def sharingKey(m: Module[Float]) = m.getClass.getName
+    val cache = mutable.Map[Any, Storage[Float]]()
+    val packageName: String = model.getName().stripSuffix("Sequential")
+    cache.put("fInput", Storage(Array(1.0f)))
+    cache.put("fGradInput", Storage(Array(1.0f)))
+
+    var index = 0
+    def matchModels(model: Module[Float]): Unit = {
+      model match {
+        case container: Container[Activity, Activity, Float] =>
+          container.modules.foreach( m => {
+            if (m.gradInput.isInstanceOf[Tensor[Float]] &&
+              !m.getClass.getName.equals(packageName + "ConcatTable")) {
+              val key = sharingKey(m)
+              if (!cache.contains(key)) {
+                cache.put(key, Storage(Array(1.0f)))
+              }
+              m.gradInput = Tensor(cache.get(key).get, 1, Array(0))
+            }
+            matchModels(m)
+          })
+        case concatTable if (concatTable.isInstanceOf[ConcatTable[Float]]) =>
+          if (!cache.contains(index % 2)) {
+            cache.put(index % 2, Storage(Array(1.0f)))
+          }
+          concatTable.gradInput = Tensor[Float](cache.get(index % 2).get, 1, Array(0))
+          index = index + 1
+        case spatialConvolution if (spatialConvolution.isInstanceOf[SpatialConvolution[Float]]) =>
+          val curModel = spatialConvolution.asInstanceOf[SpatialConvolution[Float]]
+          curModel.fInput = Tensor[Float](cache.get("fInput").get)
+          curModel.fGradInput = Tensor[Float](cache.get("fGradInput").get)
+        case _ => Unit
+      }
+    }
+    matchModels(model)
   }
+
   def modelInit(model: Module[Float]): Unit = {
     logger.info("Initialize ResNet")
-    Utils.initModules(model)
+    def initModules(model: Module[Float]): Unit = {
+      model match {
+        case container: Container[Activity, Activity, Float]
+        => container.modules.foreach(m => initModules(m))
+        case spatialConvolution if (spatialConvolution.isInstanceOf[SpatialConvolution[Float]]) =>
+          val curModel = spatialConvolution.asInstanceOf[SpatialConvolution[Float]]
+          val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane
+          curModel.weight.apply1(_ => RNG.normal(0, Math.sqrt(2.0f / n)).toFloat)
+          curModel.bias.apply1(_ => 0.0f)
+        case spatialBatchNormalization
+          if (spatialBatchNormalization.isInstanceOf[SpatialBatchNormalization[Float]]) =>
+          val curModel = spatialBatchNormalization.asInstanceOf[SpatialBatchNormalization[Float]]
+          curModel.weight.apply1(_ => 1.0f)
+          curModel.bias.apply1(_ => 0.0f)
+        case linear if (linear.isInstanceOf[Linear[Float]]) =>
+          linear.asInstanceOf[Linear[Float]].bias.apply1(_ => 0.0f)
+        case _ => Unit
+      }
+    }
   }
 
   var iChannels = 0

@@ -25,7 +25,6 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class SaveObjSpec extends FlatSpec with Matchers {
   "A tensor load from saved file" should "be same with original tensor" in {
-    Engine.setCoreNumber(4)
     val originTensor = Tensor[Float](3, 2, 4).rand()
     val filePath = java.io.File.createTempFile("SaveObjSpecTensor", ".obj").getAbsolutePath
     File.save(originTensor, filePath, true)
@@ -34,7 +33,6 @@ class SaveObjSpec extends FlatSpec with Matchers {
   }
 
   "Alexnet load from saved file" should "be same with the original one" in {
-    Engine.setCoreNumber(4)
     val model = AlexNet(1000)
     val filePath = java.io.File.createTempFile("SaveObjSpecAlexnet", ".obj").getAbsolutePath
     model.forward(Tensor[Float](4, 3, 227, 227))
@@ -45,7 +43,6 @@ class SaveObjSpec extends FlatSpec with Matchers {
   }
 
   "GoogleNet load from saved file" should "be same with the original one" in {
-    Engine.setCoreNumber(4)
     val model = GoogleNet_v1(1000)
 
     val filePath = java.io.File.createTempFile("SaveObjSpecGoogleNet", ".obj").getAbsolutePath
@@ -57,7 +54,6 @@ class SaveObjSpec extends FlatSpec with Matchers {
   }
 
   "A table load from saved file" should "be same with original table" in {
-    Engine.setCoreNumber(4)
     val table = T("test" -> "test2", "test3" -> 4)
     val filePath = java.io.File.createTempFile("SaveObjSpecTable", ".obj").getAbsolutePath
     File.save(table, filePath, true)
