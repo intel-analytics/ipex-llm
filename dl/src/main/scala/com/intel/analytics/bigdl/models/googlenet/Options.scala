@@ -66,7 +66,8 @@ object Options {
     folder: String = "./",
     model: String = "",
     coreNumberPerNode: Int = -1,
-    nodesNumber: Int = -1
+    nodesNumber: Int = -1,
+    batchSize: Option[Int] = None
   )
 
   val testParser = new OptionParser[TestParams]("BigDL Inception Test Example") {
@@ -85,5 +86,8 @@ object Options {
       .text("nodes number to train the model")
       .action((x, c) => c.copy(nodesNumber = x))
       .required()
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = Some(x)))
   }
 }
