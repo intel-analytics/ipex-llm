@@ -33,6 +33,10 @@ import com.intel.analytics.bigdl.utils.File
 
 import scala.collection.Iterator
 
+object RGBImgCropperCenter {
+  def apply(cropWidth: Int, cropHeight: Int): Transformer[LabeledRGBImage, LabeledRGBImage]
+  = new RGBImgCropperCenter(cropWidth, cropHeight)
+}
 
 class RGBImgCropperCenter(cropWidth: Int, cropHeight: Int)
   extends Transformer[LabeledRGBImage, LabeledRGBImage] {
@@ -64,7 +68,12 @@ class RGBImgCropperCenter(cropWidth: Int, cropHeight: Int)
   }
 }
 
-class RGBImgNormalizer(means: Tensor[Float])
+object RGBImgNormalizerWithMeanFile {
+  def apply(means: Tensor[Float]): RGBImgNormalizerWithMeanFile
+  = new RGBImgNormalizerWithMeanFile(means)
+}
+
+class RGBImgNormalizerWithMeanFile(means: Tensor[Float])
   extends Transformer[LabeledRGBImage, LabeledRGBImage] {
 
   override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
@@ -83,6 +92,10 @@ class RGBImgNormalizer(means: Tensor[Float])
       img
     })
   }
+}
+
+object LocalImgReader {
+  def apply(scaleTo: Int): LocalImgReader = new LocalImgReader(scaleTo)
 }
 
 class LocalImgReader(scaleTo: Int)
@@ -143,28 +156,34 @@ class LocalImgReader(scaleTo: Int)
 }
 
 object LocalDataSetAlexnet {
-  def apply(path: Path, imageSize: Int, batchSize: Int)
+  def apply(path: Path, imageSize: Int, batchSize: Int, meanFile: String)
   : LocalDataSet[Batch[Float]] = {
-    val means = File.load[Tensor[Float]](
-      getClass.getClassLoader.getResource("caffe/means.obj").getPath)
-    val ds = DataSet.ImageFolder.paths(path)
-    val imgReader = new LocalImgReader(scaleTo = 256)
-    val normalizer = new RGBImgNormalizer(means)
-    val cropper = new RGBImgCropperCenter(cropWidth = imageSize, cropHeight = imageSize)
-    val imgToBatch = RGBImgToBatch(batchSize)
-    ds -> imgReader -> normalizer -> cropper -> imgToBatch
+    val means = File.load[Tensor[Float]](meanFile)
+
+    DataSet.ImageFolder.paths(path).transform(
+      MTLabeledRGBImgToBatch(
+        width = imageSize,
+        height = imageSize,
+        batchSize = batchSize,
+        transformer = (LocalImgReader(scaleTo = 256) -> RGBImgNormalizerWithMeanFile(means)
+          -> RGBImgCropperCenter(cropWidth = imageSize, cropHeight = imageSize)),
+        swapChannel = false)
+    )
   }
 }
 
 object LocalDatasetGooglenet {
-  def apply(path: Path, imageSize: Int, batchSize: Int)
-  : LocalDataSet[Batch[Float]] = {
-    val ds = DataSet.ImageFolder.paths(path)
-    val imgReader = new LocalImgReader(scaleTo = 256)
-    val cropper = new RGBImgCropperCenter(cropWidth = imageSize, cropHeight = imageSize)
-    val normalizer = RGBImgNormalizer(123, 117, 104, 1, 1, 1)
-    val imgToBatch = RGBImgToBatch(batchSize)
-    ds -> imgReader -> cropper -> normalizer -> imgToBatch
+  def apply(path: Path, imageSize: Int, batchSize: Int): LocalDataSet[Batch[Float]] = {
+    DataSet.ImageFolder.paths(path).transform(
+      MTLabeledRGBImgToBatch(
+        width = imageSize,
+        height = imageSize,
+        batchSize = batchSize,
+        transformer = (LocalImgReader(scaleTo = 256)
+          -> RGBImgCropperCenter(cropWidth = imageSize, cropHeight = imageSize)
+          -> RGBImgNormalizer(123, 117, 104, 1, 1, 1)),
+        swapChannel = false)
+    )
   }
 }
 
