@@ -19,6 +19,11 @@ Here's the summary of core features:
 2. Prepare MKL build environment<br>  <code>source PATH_TO_MKL/bin/mklvars.sh intel64</code><br> If Intel MKL doesn't install to default path /opt/intel, please link your libiomp5.so to project.<br> <code>ln -sf PATH_TO_INTEL_HOME/lib/intel64/libiomp5.so BIGDL_HOME/native/jni/src/main/resources/intel64</code>
 3. Full build <br>  <code>mvn clean package -DskipTests -P full-build</code>
 
+####Build package support Spark 2.0 version
+The generated package supports spark 1.5 plus version by default. If you want to build a package which supports spark 2.0, run following command.
+
+<code>mvn clean package -DskipTests -P 2.0</code><br>
+
 ##Example
 * MNIST example
 * Cifar10 example

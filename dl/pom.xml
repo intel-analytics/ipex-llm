@@ -16,10 +16,11 @@
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <scoverage.scalacPluginVersion>1.1.1</scoverage.scalacPluginVersion>
         <scoverage.aggregate>true</scoverage.aggregate>
+        <!--> this is the version of spark-version project<-->
         <spark-version.version>1.5-plus</spark-version.version>
         <spark.version>1.5.1</spark.version>
         <spark-scope>provided</spark-scope>
-        <jar-with-dependencies-name>${artifactId}-${version}</jar-with-dependencies-name>
+        <jar-with-dependencies.name>${artifactId}-${version}</jar-with-dependencies.name>
     </properties>
 
     <dependencies>
@@ -134,7 +135,7 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <finalName>${jar-with-dependencies-name}</finalName>
+                    <finalName>${jar-with-dependencies.name}</finalName>
                 </configuration>
                 <executions>
                     <execution>
@@ -230,7 +231,7 @@
             <id>all-in-one</id>
             <properties>
                 <spark-scope>compile</spark-scope>
-                <jar-with-dependencies-name>${artifactId}-${version}-${id}</jar-with-dependencies-name>
+                <jar-with-dependencies.name>${artifactId}-${version}-all-in-one</jar-with-dependencies.name>
             </properties>
         </profile>
         <profile>
