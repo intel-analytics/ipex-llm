@@ -35,12 +35,12 @@ object Test {
 
   import Options._
 
-  val batchSize = 128
   val imageSize = 224
 
   def main(args: Array[String]) {
     testParser.parse(args, new TestParams()).map(param => {
       Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
+      val batchSize = param.batchSize.getOrElse(128)
 
       val conf = Engine.sparkConf()
         .setAppName("Test Googlenet on ImageNet")
@@ -51,7 +51,9 @@ object Test {
         imageSize,
         batchSize,
         param.nodesNumber,
-        param.coreNumberPerNode)
+        param.coreNumberPerNode,
+        1000
+      )
 
       val model = Module.load[Float](param.model)
       val validator = new DistriValidator[Float](model)
