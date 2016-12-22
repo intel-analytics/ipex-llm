@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 class CaffeLoader[@specialized(Float, Double) T: ClassTag](defName: String, modelName: String,
-  matchAll: Boolean = true //if match all modules with parameters
+  matchAll: Boolean = true // if match all modules with parameters
 )(implicit ev: TensorNumeric[T]) {
   private var netparam: Caffe.NetParameter = _
   private var name2LayerV1: Map[String, V1LayerParameter] = _
@@ -41,15 +41,11 @@ class CaffeLoader[@specialized(Float, Double) T: ClassTag](defName: String, mode
       netparam = loadBinary(prototxtName, modelName)
       name2LayerV2 = Map[String, LayerParameter]()
       name2LayerV1 = Map[String, V1LayerParameter]()
-      import scala.collection.JavaConversions._
+      import scala.collection.JavaConverters._
       // V1LayerParameter
-      netparam.getLayersList.foreach(layer => {
-        name2LayerV1 += (layer.getName -> layer)
-      })
+      netparam.getLayersList.asScala.foreach(layer => name2LayerV1 += (layer.getName -> layer))
       // V2LayerParameter
-      netparam.getLayerList.foreach(layer => {
-        name2LayerV2 += (layer.getName -> layer)
-      })
+      netparam.getLayerList.asScala.foreach(layer => name2LayerV2 += (layer.getName -> layer))
     }
   }
 
