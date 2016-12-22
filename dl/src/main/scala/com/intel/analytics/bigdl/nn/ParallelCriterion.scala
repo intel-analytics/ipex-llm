@@ -37,12 +37,14 @@ class ParallelCriterion[T: ClassTag](val repeatTarget: Boolean = false)
   // list of sub criterions
   val criterions = T()
   val weights = T()
+  val outputs = T()
 
   def add(
     criterion: AbstractCriterion[_ <: Activity, _ <: Activity, T],
     weight : Double = 1.0): this.type = {
     criterions.insert(criterion)
-    weights.insert(weight)
+    weights.insert(ev.fromType(weight))
+    outputs.insert(ev.fromType(0))
     this
   }
 
@@ -52,9 +54,8 @@ class ParallelCriterion[T: ClassTag](val repeatTarget: Boolean = false)
     while(i <= criterions.length()) {
       val currentCriterion = criterions[AbstractCriterion[Activity, Activity, T]](i)
       val currentTarget: Activity = if (repeatTarget) target else target(i)
-      output = ev.plus(output, ev.times(weights[T](i),
-        currentCriterion.forward(input(i), currentTarget))
-      )
+      outputs(i) = currentCriterion.forward(input(i), currentTarget)
+      output = ev.plus(output, ev.times(weights[T](i), outputs(i)))
       i += 1
     }
 
@@ -68,7 +69,7 @@ class ParallelCriterion[T: ClassTag](val repeatTarget: Boolean = false)
     while (i <= criterions.length()) {
       val currentCriterion = criterions[AbstractCriterion[Activity, Activity, T]](i)
       val currentTarget: Activity = if (repeatTarget) target else target(i)
-      Utils.recursiveAdd[T](gradInput(i), weights(i),
+      Utils.recursiveAdd[T](gradInput(i), ev.toType[Double](weights(i)),
         currentCriterion.updateGradInput(input(i), currentTarget))
       i += 1
     }
