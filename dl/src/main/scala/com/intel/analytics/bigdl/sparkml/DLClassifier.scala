@@ -2,15 +2,20 @@
 package org.apache.spark.ml
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.apache.spark.ml.param._
 import org.apache.spark.ml.param.shared.{HasInputCol, HasOutputCol}
 import org.apache.spark.ml.util.Identifiable
-import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.functions._
+import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.{DataFrame, Row}
 
-class DLClassifier(override val uid: String) extends Transformer with HasInputCol with HasOutputCol with DataParams{
+import scala.collection.mutable.ArrayBuffer
+
+class DLClassifier(override val uid: String) extends Transformer with
+  HasInputCol with HasOutputCol with DataParams{
+
+  var tensorBuffer: Tensor[Float] = null
 
   def this() = this(Identifiable.randomUID("DLClassifier"))
 
@@ -18,45 +23,75 @@ class DLClassifier(override val uid: String) extends Transformer with HasInputCo
 
   def setOutputCol(value: String): this.type = set(outputCol, value)
 
-  private def predict(features: Tensor[Float]): Float = {
-    val result = $(modelTrain).forward(features).toTensor[Float]
-    require(result.dim() == 1)
-
-    if (result.size(1) == 1) {
-      result(Array(1))
-    } else {
-      val maxVal = result.max(1)._2
-      require(maxVal.nDimension() == 1 && maxVal.size(1) == 1)
-      maxVal(Array(1)) - 1
-    }
-  }
-
   override def transform(dataset: DataFrame): DataFrame = {
-    require(null != $(modelTrain), "model for predict must be not null")
+    require(null != $(modelTrain), "model for predict must not be null")
+    require(null != $(batchSize), "batchSize for predict must not be null")
 
-    val predictUDF = udf {
-      (features: Any) => {
-        predict(features.asInstanceOf[Tensor[Float]])
-      }
-    }
-    dataset.withColumn($(outputCol), predictUDF(col($(inputCol))))
+    DLClassifier.transform($(batchSize), $(modelTrain), $(inputCol), $(outputCol), dataset)
   }
 
   override def transformSchema(schema: StructType): StructType = schema
 
-  override def copy(extra: ParamMap): DLClassifier = defaultCopy(extra)
+  override def copy(extra: ParamMap): DLClassifier = {
+    copyValues(new DLClassifier(uid), extra)
+  }
 }
 
 trait DataParams extends Params {
   final val modelTrain = new Param[Module[Float]](this, "module factory", "network model")
-  final val batchNum = new IntParam(this, "batch number", "how many batches on one partition in one iteration")
+  final val batchSize = new Param[Array[Int]](this, "batch size", "batch size for input")
 
-  final def getModel = $(modelTrain)
-  final def getBatchNum = $(batchNum)
+  final def getModel: Module[Float] = $(modelTrain)
+  final def getBatchSize: Array[Int] = $(batchSize)
 }
 
-case object AnyType extends AnyType
-class AnyType extends DataType {
-  override def defaultSize: Int = 1
-  override def asNullable: AnyType = this
+object DLClassifier {
+  private[DLClassifier] def transform
+    (batchSize: Array[Int],
+    modelTrain: Module[Float],
+    inputCol: String,
+    outputCol: String,
+    dataset: DataFrame): DataFrame = {
+
+    val batchS = batchSize
+    val model = modelTrain.evaluate()
+
+    val modelBroadCast = dataset.sqlContext.sparkContext.broadcast(model)
+
+    val predictRdd = dataset.toDF().rdd.mapPartitions{ rows =>
+      val result = new ArrayBuffer[Row]()
+      val localModel = modelBroadCast.value
+      val tensorBuffer = Tensor[Float](batchS)
+      val batches = rows.grouped(batchS(0))
+
+      var r = 0
+      while (batches.hasNext) {
+        val batch = batches.next()
+        var i = 1
+        batch.foreach{ row =>
+          tensorBuffer.select(1, i).copy(
+            Tensor(Storage(row.getAs[DenseVector](inputCol).values.map(_.toFloat))))
+          i += 1
+        }
+        val output = localModel.forward(tensorBuffer).toTensor[Float]
+        val predict = if (output.dim == 2) {
+          output.max(2)._2.squeeze().storage().array()
+        } else if (output.dim == 1) {
+          output.max(1)._2.squeeze().storage().array()
+        } else {
+          throw new IllegalArgumentException
+        }
+
+        i = 0
+        batch.foreach{ row =>
+          result.append(Row.fromSeq(row.toSeq ++ Array[Int](predict(i).toInt)))
+          i += 1
+        }
+        r += batch.length
+      }
+      result.toIterator
+    }
+    val predictSchema = dataset.schema.add(outputCol, IntegerType)
+    dataset.sqlContext.createDataFrame(predictRdd, predictSchema)
+  }
 }
