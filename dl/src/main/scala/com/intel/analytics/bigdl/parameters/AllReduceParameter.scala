@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.spark.sparkExtension.SparkExtension
 import org.apache.spark.{SparkEnv, TaskContext}
-import org.apache.spark.storage.{StorageLevel, TaskResultBlockId}
+import org.apache.spark.storage.{BlockManagerWrapper, StorageLevel, TaskResultBlockId}
 
 import scala.collection.JavaConverters._
 import scala.reflect._
@@ -62,7 +62,7 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
 
   def readWeights(): Tensor[T] = {
     val blockId = SparkExtension.getLocalBlockId("weights" + TaskContext.getPartitionId())
-    SparkEnv.get.blockManager.getLocal(blockId).map(_.data.next()) match {
+    BlockManagerWrapper.getLocal(blockId).map(_.data.next()) match {
       case Some(x) =>
         x.asInstanceOf[Tensor[T]]
 
@@ -73,7 +73,7 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
 
   def readGradients(): Tensor[T] = {
     val blockId = SparkExtension.getLocalBlockId("gradients" + TaskContext.getPartitionId())
-    SparkEnv.get.blockManager.getLocal(blockId).map(_.data.next()) match {
+    BlockManagerWrapper.getLocal(blockId).map(_.data.next()) match {
       case Some(x) =>
         x.asInstanceOf[Tensor[T]]
 
@@ -84,7 +84,7 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
 
   def readState(): Table = {
     val blockId = SparkExtension.getLocalBlockId("state" + TaskContext.getPartitionId())
-    SparkEnv.get.blockManager.getLocal(blockId).map(_.data.next()) match {
+    BlockManagerWrapper.getLocal(blockId).map(_.data.next()) match {
       case Some(x) =>
         x.asInstanceOf[Table]
 
@@ -112,7 +112,7 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
     val blockId = getWeightBlockId(curPid)
     val fp16param = new FP16CompressedTensor[T](length)(_classTag)
     fp16param.compress(0, parameter, start, length)
-    SparkEnv.get.blockManager.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
+    BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
 
   def getWeightBlockId(pid : Int): TaskResultBlockId = {
@@ -130,11 +130,13 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
       syncPool.submit(new Callable[Int] {
         override def call(): Int = {
           val blockId = getWeightBlockId(pid)
-          val localBuffer = bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId).get)
+          val localBuffer = BlockManagerWrapper.byteBufferConvert(
+            bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId).get))
           val start = pid * taskSize + math.min(pid, extraSize)
           val length = taskSize + (if (pid < extraSize) 1 else 0)
           require(localBuffer.array().length == length * 2)
           SerializerInstance.serialize(localBuffer).deCompress(0, localParameter, start, length)
+          BlockManagerWrapper.unlock(blockId)
           pid
         }
       })
@@ -150,11 +152,12 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
       new Callable[Int] {
         override def call(): Int = {
           val blockId = getGradientBlockId(pid, curPid)
-          val tmp = bm.getLocalBytes(blockId)
+          val tmp = BlockManagerWrapper.byteBufferConvert(bm.getLocalBytes(blockId)
             .getOrElse(bm.getRemoteBytes(blockId).getOrElse(
               throw new IllegalArgumentException(s"Can't get the block(${blockId})")
-            ))
+            )))
           params(pid) = SerializerInstance.serialize(tmp)
+          BlockManagerWrapper.unlock(blockId)
           pid
         }
       }
@@ -188,8 +191,7 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
       val start = pid * taskSize + math.min(pid, extraSize)
       val length = taskSize + (if (pid < extraSize) 1 else 0)
       val blockId = getGradientBlockId(curPid, pid)
-      bm.removeBlock(blockId)
-      bm.putBytes(
+      BlockManagerWrapper.putBytes(
         blockId, parameterBuffer.bytes(start, length),
         StorageLevel.MEMORY_ONLY_SER)
       pid += 1
@@ -205,13 +207,15 @@ class AllReduceParameter[T: ClassTag]() extends Serializable {
     require(state != null)
     val bm = SparkEnv.get.blockManager
     bm.removeBlock(blockId)
+    BlockManagerWrapper.unlock(weightsId)
     bm.removeBlock(weightsId)
     bm.putSingle((weightsId),
       partialWeights, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
+    BlockManagerWrapper.unlock(stateId)
     bm.removeBlock(stateId)
     bm.putSingle((stateId),
       state, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
-    bm.putBytes(blockId,
+    BlockManagerWrapper.putBytes(blockId,
       SerializerInstance.serialize(partialWeights).bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
 }

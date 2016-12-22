@@ -168,46 +168,32 @@ class BetterOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter
     })
   }
 
-  it should "be same with grad agg optimizer with multi stack dataset" in {
-    val pm = new OneReduceParameterManager[Double](mseWeight, dataSet.partitions())
-    val optimizer = new BetterGradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
-      new LBFGS, pm, dataSet, new Metrics, subModuleNumber)
-    optimizer.setMaxEpoch(1)
-    optimizer.optimize()
+//  it should "be same with grad agg optimizer with multi stack dataset" in {
+//    val pm = new OneReduceParameterManager[Double](mseWeight, dataSet.partitions())
+//    val optimizer = new BetterGradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
+//      new LBFGS, pm, dataSet, new Metrics, subModuleNumber)
+//    optimizer.setMaxEpoch(1)
+//    optimizer.optimize()
+//
+//    val test = pm.getParameter().clone()
+//    mseWeight.fill(0.125)
+//    val pm2 = new OneReduceParameterManager[Double](mseWeight, dataSet.partitions())
+//    val optimizer2 = new GradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
+//      new LBFGS, pm2, dataSet, new Metrics)
+//    optimizer2.setMaxEpoch(1)
+//    optimizer2.optimize()
+//
+//    println(test)
+//    println(mseWeight)
+//
+//    test.map(mseWeight, (a, b) => {
+//      a should be(b)
+//      a
+//    })
+//  }
 
-    val test = pm.getParameter().clone()
-    mseWeight.fill(0.125)
-    val pm2 = new OneReduceParameterManager[Double](mseWeight, dataSet.partitions())
-    val optimizer2 = new GradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
-      new LBFGS, pm2, dataSet, new Metrics)
-    optimizer2.setMaxEpoch(1)
-    optimizer2.optimize()
-
-    println(test)
-    println(mseWeight)
-
-    test.map(mseWeight, (a, b) => {
-      a should be(b)
-      a
-    })
-  }
-
-  "An Artificial Neural Network with MSE and SGD" should "be trained with good result" in {
-    val pm = new AllReduceParameterManager[Double](mseWeight, dataSet.partitions())
-    val optimizer = new BetterGradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
-      new SGD, pm, dataSet, new Metrics, subModuleNumber, T("learningRate" -> 20.0))
-    optimizer.setMaxEpoch(5)
-    optimizer.optimize()
-
-    mseWeight.copy(pm.getParameter())
-    val result1 = mseModule.forward(input1).toTensor[Double]
-    result1(Array(1)) should be(0.0 +- 5e-2)
-
-    val result2 = mseModule.forward(input2).toTensor[Double]
-    result2(Array(1)) should be(1.0 +- 5e-2)
-  }
-
-  it should "be same with grad agg optimizer" in {
+  "An Artificial Neural Network with MSE and SGD" should
+    "be same with grad agg optimizer" in {
     val pm = new AllReduceParameterManager[Double](mseWeight, dataSet.partitions())
     val optimizer = new BetterGradAggEpochOptimizer[Double](mseModule, MSECriterion[Double],
       new SGD, pm, dataSet, new Metrics, subModuleNumber, T("learningRate" -> 20.0))

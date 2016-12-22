@@ -22,7 +22,8 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.example.Utils._
 import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
-import com.intel.analytics.bigdl.optim.{GradAggEpochOptimizer, Metrics, ShuffleBatchDataSet}
+
+import com.intel.analytics.bigdl.optim.{BetterGradAggEpochOptimizer, Metrics, ShuffleBatchDataSet}
 import com.intel.analytics.bigdl.parameters.{AllReduceParameterManager, OneReduceParameterManager}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -56,7 +57,7 @@ object TestModelParallel {
     conf.set("spark.task.cpus", params.parallelism.toString)
     val sc = new SparkContext(conf)
 
-    val classNum = 1000
+    val classNum = params.classNum
     val netType = params.net
     println("cache data")
     val trainData = sc.parallelize(1 to params.partitionNum * 10000, params.partitionNum).cache()
@@ -85,8 +86,8 @@ object TestModelParallel {
       throw new IllegalArgumentException()
     }
 
-    val optimizer = new GradAggEpochOptimizer[Float](model, criterion, optM,
-      pm, dataSets, metrics, params.masterConfig)
+    val optimizer = new BetterGradAggEpochOptimizer[Float](model, criterion, optM,
+      pm, dataSets, metrics, 28, params.masterConfig)
     optimizer.setMaxEpoch(100)
 
     optimizer.optimize()

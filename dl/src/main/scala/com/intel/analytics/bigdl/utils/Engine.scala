@@ -22,7 +22,7 @@ import java.util.concurrent.{ConcurrentLinkedQueue, Executors, ThreadFactory}
 
 import com.intel.analytics.bigdl.mkl.MKL
 import org.apache.log4j.Logger
-import org.apache.spark.{SparkConf, Logging}
+import org.apache.spark.SparkConf
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.Duration

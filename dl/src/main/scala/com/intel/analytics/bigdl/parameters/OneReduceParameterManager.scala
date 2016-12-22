@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.{StorageLevel, TaskResultBlockId}
+import org.apache.spark.storage.BlockManagerWrapper
 import org.apache.spark.{SparkContext, SparkEnv, TaskContext}
 
 import scala.concurrent.duration.Duration
@@ -101,7 +102,7 @@ class OneReduceParameterManager[T: ClassTag](
 
       before = System.nanoTime()
       val blockId = TaskResultBlockId(TaskContext.get().taskAttemptId())
-      SparkEnv.get.blockManager.putBytes(
+      BlockManagerWrapper.putBytes(
         blockId, localBuffer.bytes(), StorageLevel.MEMORY_AND_DISK_SER)
       driverMetrics.add("worker serialization", System.nanoTime() - before)
 
@@ -113,8 +114,8 @@ class OneReduceParameterManager[T: ClassTag](
     before = System.nanoTime()
     val collectedParameters = Engine.default.invokeAndWait[CompressedTensor[T]](
       blockids.map(blockId => () => {
-        val result = SerializerInstance.serialize[T](
-          sparkEnv.blockManager.getRemoteBytes(blockId).get)
+        val result = SerializerInstance.serialize[T](BlockManagerWrapper.byteBufferConvert(
+          sparkEnv.blockManager.getRemoteBytes(blockId).get))
         sparkEnv.blockManager.master.removeBlock(blockId)
         result
       })

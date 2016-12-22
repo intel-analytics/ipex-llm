@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.parameters
 
+import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 
 import com.intel.analytics.bigdl.optim.Metrics
@@ -24,13 +25,14 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.storage.{StorageLevel, TaskResultBlockId}
+import org.apache.spark.storage.{BlockId, StorageLevel, TaskResultBlockId}
 import org.apache.spark.{SparkContext, SparkEnv, TaskContext}
 
 import scala.collection.mutable
 import scala.concurrent.duration.Duration
-import scala.concurrent.{ExecutionContext, Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.reflect._
+import org.apache.spark.storage.BlockManagerWrapper
 
 object AllReduceParameterManager {
   var task1InnerTime: Long = 0L
@@ -104,8 +106,7 @@ class AllReduceParameterManager[T: ClassTag](
       val fp16param = new FP16CompressedTensor[T](length)(_classTag)
       fp16param.compress(0, taskParameter, start, length)
       val blockId = getWeightBlockId(pid)
-      SparkEnv.get.blockManager.removeBlock(blockId)
-      SparkEnv.get.blockManager.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
+      BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
       Iterator.single((paramBuffer, localWeight, localGradient, localState))
     }).setName("Parameter Manager Buffers").persist()
     buffers.count()
@@ -136,12 +137,13 @@ class AllReduceParameterManager[T: ClassTag](
       (0 until _partitionNum).map(pid => {
         Future {
           val blockId = getWeightBlockId(pid)
-          val localBuffer = bm.getRemoteBytes(blockId).get
+          val localBuffer = BlockManagerWrapper.byteBufferConvert(bm.getRemoteBytes(blockId).get)
           val start = pid * _taskSize + math.min(pid, _extraSize)
           val length = _taskSize + (if (pid < _extraSize) 1 else 0)
           require(localBuffer.array().length == length * 2)
-          SerializerInstance.serialize(localBuffer)(_classTag)
+          val res = SerializerInstance.serialize(localBuffer)(_classTag)
             .deCompress(0, localParameter, start, length)
+          res
         }(context)
       }).map(Await.result(_, Duration.Inf))
 
@@ -186,8 +188,7 @@ class AllReduceParameterManager[T: ClassTag](
         val start = pid * _taskSize + math.min(pid, _extraSize)
         val length = _taskSize + (if (pid < _extraSize) 1 else 0)
         val blockId = getGradientBlockId(curPid, pid)
-        env.blockManager.removeBlock(blockId)
-        env.blockManager.putBytes(
+        BlockManagerWrapper.putBytes(
           blockId, localBuffer.bytes(start, length),
           StorageLevel.MEMORY_ONLY_SER)
         pid += 1
@@ -199,7 +200,6 @@ class AllReduceParameterManager[T: ClassTag](
       Iterator.empty
     }).count()
     metrics.set("task1 time from driver", System.nanoTime() - task1Before)
-
     val task2Before = System.nanoTime()
     metrics.set("gradient sync average", 0.0, sc, partitionNum)
     metrics.set("gradient sync for each node", mutable.ArrayBuffer[Double](), sc)
@@ -209,7 +209,8 @@ class AllReduceParameterManager[T: ClassTag](
     metrics.set("worker update", 0.0, sc, partitionNum)
     metrics.set("worker serialize weight", 0.0, sc, partitionNum)
     metrics.set("task2 time from worker", mutable.ArrayBuffer[Double](), sc)
-    val broadcastUpdate = sc.broadcast(update)
+
+    val _update = update
     buffers.mapPartitions(iter => {
       val task2InnerBefore = System.nanoTime()
       var before = System.nanoTime()
@@ -222,11 +223,13 @@ class AllReduceParameterManager[T: ClassTag](
           val start = pid * _taskSize + math.min(pid, _extraSize)
           val length = _taskSize + (if (pid < _extraSize) 1 else 0)
           val blockId = getGradientBlockId(pid, curPid)
-          SerializerInstance.serialize(
+            val res = SerializerInstance.serialize(BlockManagerWrapper.byteBufferConvert(
             bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId)
             .getOrElse(
               throw new IllegalArgumentException(s"Can't get the block(${blockId})")
-            )))(_classTag)
+            ))))(_classTag)
+          BlockManagerWrapper.unlock(blockId)
+          res
         }(context)
       }).map(Await.result(_, Duration.Inf))
       val syncGradient = System.nanoTime() - before
@@ -253,15 +256,13 @@ class AllReduceParameterManager[T: ClassTag](
       _metrics.add("worker gradient extract", System.nanoTime() - before)
 
       before = System.nanoTime()
-      val workerUpdate = broadcastUpdate.value
-      workerUpdate(localParam, localGradient, localState)
+      _update(localParam, localGradient, localState)
       _metrics.add("worker update", System.nanoTime() - before)
 
       before = System.nanoTime()
 
       val blockId = getWeightBlockId(curPid)
-      SparkEnv.get.blockManager.removeBlock(blockId)
-      SparkEnv.get.blockManager.putBytes(
+      BlockManagerWrapper.putBytes(
         blockId,
         SerializerInstance.serialize(localParam)(_classTag).bytes(), StorageLevel.MEMORY_ONLY_SER)
       _metrics.add("worker serialize weight", System.nanoTime() - before)

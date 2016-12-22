@@ -283,7 +283,6 @@ class DropSlowModuleGradAggEpochOptimizer[T: ClassTag](
           Iterator(finishedThreads.size)
         }).reduce(_ + _)
         metrics.set("task1 time from driver", System.nanoTime() - start)
-
         if(finishedModuleNum >= idealSubModulesNum * 0.5) {
           val finishedModuleNumGType = ev.fromType[Int](finishedModuleNum)
           val value = ev.fromType(lossSum.value / stackCount.value)
