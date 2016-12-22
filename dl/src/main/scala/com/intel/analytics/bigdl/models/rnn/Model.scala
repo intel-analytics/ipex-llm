@@ -17,9 +17,8 @@
 
 package com.intel.analytics.bigdl.models.rnn
 
-import com.intel.analytics.bigdl.nn.{Linear, LogSoftMax, SpatialMaxPooling, _}
-import com.intel.analytics.bigdl._
-
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn._
 
 object SimpleRNN {
   def apply(
@@ -28,7 +27,6 @@ object SimpleRNN {
   outputSize: Int,
   bpttTruncate: Int = 4)
   : Module[Float] = {
-
     val model = Sequential[Float]()
     model.add(Recurrent[Float](hiddenSize, bpttTruncate)
       .add(RnnCell[Float](inputSize, hiddenSize))
