@@ -21,7 +21,7 @@ package com.intel.analytics.bigdl.example.loadCaffe
 import com.intel.analytics.bigdl.models.googlenet.GoogleNet_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.File
+import com.intel.analytics.bigdl.utils.{CaffeLoader, File}
 import org.scalatest.{FlatSpec, Matchers}
 
 class CaffeLoaderSpec extends FlatSpec with Matchers {
