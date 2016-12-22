@@ -21,6 +21,7 @@ import java.nio.ByteBuffer
 import java.nio.file.{Files, Path}
 
 import com.intel.analytics.bigdl.dataset.Sample
+
 import scopt.OptionParser
 
 object Utils {
@@ -29,9 +30,9 @@ object Utils {
     cache: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
-    batchSize: Int = 10,
+    batchSize: Int = 150,
     learningRate: Double = 0.05,
-    maxEpoch: Int = 15,
+    maxEpoch: Int = 10,
     coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
   )
 
