@@ -26,15 +26,15 @@ import scala.reflect.ClassTag
 
 object MTLabeledRGBImgToBatch {
   def apply[A: ClassTag](width: Int, height: Int, batchSize: Int,
-    transformer: Transformer[A, LabeledRGBImage])
+    transformer: Transformer[A, LabeledRGBImage], swapChannel : Boolean = true)
   : MTLabeledRGBImgToBatch[A] = {
     new MTLabeledRGBImgToBatch[A](
-      width, height, batchSize, transformer)
+      width, height, batchSize, transformer, swapChannel)
   }
 }
 
-class MTLabeledRGBImgToBatch[A: ClassTag] private[bigdl]
-(width: Int, height: Int, totalBatchSize: Int, transformer: Transformer[A, LabeledRGBImage])
+class MTLabeledRGBImgToBatch[A: ClassTag] private[bigdl](width: Int, height: Int,
+  totalBatchSize: Int, transformer: Transformer[A, LabeledRGBImage], swapChannel : Boolean = true)
   extends Transformer[A, Batch[Float]] {
 
   private val batchSize = Utils.getBatchSize(totalBatchSize)
@@ -72,7 +72,7 @@ class MTLabeledRGBImgToBatch[A: ClassTag] private[bigdl]
             position != -1
           }) {
             val img = iterators(tid).next()
-            img.copyTo(featureData, position * frameLength * 3)
+            img.copyTo(featureData, position * frameLength * 3, swapChannel)
             labelData(position) = img.label()
             record += 1
           }
