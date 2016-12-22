@@ -31,20 +31,25 @@ class Recurrent[T : ClassTag] (
   val hidden = T(Tensor[T](hiddenSize))
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    assert(input.dim == 2, "input should be a two dimension Tensor")
-    assert(modules.length == 2, "rnn container must include a cell and a non-linear layer")
+    require(input.dim == 2, "input should be a two dimension Tensor")
+    require(modules.length == 2, "rnn container must include a cell and a non-linear layer")
 
     val module = modules(0)
     val transform = modules(1)
 
-    val (numOfWords, inputSize) = (input.size(1), input.size(2))
+    val numOfWords = input.size(1)
     output.resize(Array(numOfWords, hiddenSize))
-    for (i <- 1 to numOfWords) {
+
+    var i = 1
+    while (i <= numOfWords) {
       val curInput = T(input(i), hidden(i).asInstanceOf[Tensor[T]])
       val currentOutput = module.updateOutput(curInput)
       transform.updateOutput(currentOutput)
-      output.update(i, transform.output.asInstanceOf[Tensor[T]].clone)
-      hidden(i + 1) = transform.output.asInstanceOf[Tensor[T]].clone
+      output.update(i, transform.output.asInstanceOf[Tensor[T]])
+      hidden(i + 1) = Tensor[T]()
+        .resizeAs(transform.output.asInstanceOf[Tensor[T]])
+        .copy(transform.output.asInstanceOf[Tensor[T]])
+      i += 1
     }
     output
   }
@@ -54,18 +59,22 @@ class Recurrent[T : ClassTag] (
     val module = modules(0)
     val transform = modules(1)
 
-    for (i <- input.size(1) to 1 by -1) {
-      transform.output = hidden(i + 1).asInstanceOf[Tensor[T]].clone
+    val numOfWords = input.size(1)
+    var i = numOfWords
+    while (i >= 1) {
+      transform.output = hidden(i + 1).asInstanceOf[Tensor[T]]
       var deltaHidden = transform.updateGradInput(hidden(i), gradOutput(i))
-
-      for (bpttStep <- i to Math.max(1, i - bpttTruncate) by -1) {
-       val curInput = T(input(bpttStep), hidden(bpttStep).asInstanceOf[Tensor[T]])
+      var bpttStep = i
+      while (bpttStep >= Math.max(1, i - bpttTruncate)) {
+        val curInput = T(input(bpttStep), hidden(bpttStep).asInstanceOf[Tensor[T]])
         module.accGradParameters(curInput, deltaHidden)
-        transform.output = hidden(bpttStep).asInstanceOf[Tensor[T]].clone
+        transform.output.asInstanceOf[Tensor[T]]
+          .copy(hidden(bpttStep).asInstanceOf[Tensor[T]])
         deltaHidden = transform.updateGradInput(Tensor(),
           module.updateGradInput(curInput, deltaHidden).toTable(2))
+        bpttStep -= 1
       }
-
+      i -= 1
     }
   }
 
@@ -73,35 +82,28 @@ class Recurrent[T : ClassTag] (
     val module = modules(0)
     val transform = modules(1)
 
-    gradInput.resize(input.size)
-    gradInput.zero()
+    gradInput.resize(input.size).zero
 
-    for (i <- input.size(1) to 1 by -1) {
-      transform.output = hidden(i + 1).asInstanceOf[Tensor[T]].clone
+    val numOfWords = input.size(1)
+    var i = numOfWords
+    while (i >= 1) {
+      transform.output.asInstanceOf[Tensor[T]]
+        .copy(hidden(i + 1).asInstanceOf[Tensor[T]])
       var deltaHidden = transform.updateGradInput(hidden(i), gradOutput(i))
-
-      for (bpttStep <- i to Math.max(1, i - bpttTruncate) by -1) {
+      var bpttStep = i
+      while (bpttStep >= Math.max(1, i - bpttTruncate)) {
         val curInput = T(input(bpttStep), hidden(bpttStep).asInstanceOf[Tensor[T]])
         val gradInputBundle = module.updateGradInput(curInput, deltaHidden).toTable
-        gradInput(bpttStep).add(gradInputBundle(1).asInstanceOf[Tensor[T]].clone)
-        transform.output = hidden(bpttStep).asInstanceOf[Tensor[T]].clone
+        gradInput(bpttStep).add(gradInputBundle(1).asInstanceOf[Tensor[T]])
+        transform.output.asInstanceOf[Tensor[T]]
+          .copy(hidden(bpttStep).asInstanceOf[Tensor[T]])
         deltaHidden = transform.updateGradInput(Tensor(), gradInputBundle(2))
+        bpttStep -= 1
       }
-
+      i -= 1
     }
+
     gradInput
-  }
-
-  override def updateParameters(learningRate: T): Unit = {
-    modules(0).updateParameters(learningRate)
-  }
-
-  override def zeroGradParameters(): Unit = {
-    modules(0).zeroGradParameters()
-  }
-
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    modules(0).parameters()
   }
 
   override def toString(): String = {

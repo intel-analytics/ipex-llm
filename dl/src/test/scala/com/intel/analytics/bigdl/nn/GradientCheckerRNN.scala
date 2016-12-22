@@ -36,7 +36,7 @@ class GradientCheckerRNN(stepSize: Double = 0.01, threshold: Double = 0.01) {
     val criterion = new CrossEntropyCriterion[Double]()
     val (weights, grad) = layer.getParameters()
 
-    val state = T("learningRate" -> 0.05, "momentum" -> 0.9, "weightDecay" -> 5e-4,
+    val state = T("learningRate" -> 0.05, "momentum" -> 0.0, "weightDecay" -> 0.0,
       "dampening" -> 0.0)
     val sgd = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {

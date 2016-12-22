@@ -26,13 +26,12 @@ import java.io._
 import java.math.MathContext
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.models.RnnCell
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
 class RecurrentSpec extends FlatSpec {
-/*
+
 
   "A Recurrent Module " should "generate correct output and grad" in {
 
@@ -298,7 +297,7 @@ class RecurrentSpec extends FlatSpec {
     // 26220, 6557
   }
 
-*/
+
 
 
 
@@ -375,9 +374,6 @@ class RecurrentSpec extends FlatSpec {
 
 
   "A Recurrent Module " should "perform correct gradient check" in {
-    def layerInit(model: Module[Double]): Unit = {
-      Utils.rnnLayerInit(model)
-    }
 
     val hiddenSize = 4
     val inputSize = 5
@@ -391,30 +387,30 @@ class RecurrentSpec extends FlatSpec {
       .add(Tanh[Double]()))
       .add(Linear[Double](hiddenSize, outputSize))
 
+    model.reset()
     val packageName: String = model.getName().stripSuffix("Sequential")
-    layerInit(model)
-    // val input = Tensor[Double](4, inputSize).randn
+
     val input = Tensor[Double](5, inputSize)
     val labels = Tensor[Double](5)
-    for (i <- 1 to 5) {
-      val rdmLabel = Math.ceil(Math.random()*inputSize).toInt
-      val rdmInput = Math.ceil(Math.random()*inputSize).toInt
-      input.setValue(i, rdmInput, 1.0)
-      labels.setValue(i, rdmLabel)
-    }
+//    for (i <- 1 to 5) {
+//      val rdmLabel = Math.ceil(Math.random()*inputSize).toInt
+//      val rdmInput = Math.ceil(Math.random()*inputSize).toInt
+//      input.setValue(i, rdmInput, 1.0)
+//      labels.setValue(i, rdmLabel)
+//    }
 
 
-//        input.setValue(1, 3, 1.0)
-//        input.setValue(2, 5, 1.0)
-//        input.setValue(3, 4, 1.0)
-//        input.setValue(4, 4, 1.0)
-//        input.setValue(5, 3, 1.0)
-//
-//        labels.setValue(1, 3)
-//        labels.setValue(2, 5)
-//        labels.setValue(3, 3)
-//        labels.setValue(4, 2)
-//        labels.setValue(5, 3)
+        input.setValue(1, 3, 1.0)
+        input.setValue(2, 5, 1.0)
+        input.setValue(3, 4, 1.0)
+        input.setValue(4, 4, 1.0)
+        input.setValue(5, 3, 1.0)
+
+        labels.setValue(1, 3)
+        labels.setValue(2, 5)
+        labels.setValue(3, 3)
+        labels.setValue(4, 2)
+        labels.setValue(5, 3)
 
 
 

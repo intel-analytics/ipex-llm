@@ -46,7 +46,7 @@ class GradientChecker(stepSize: Double, threshold: Double) {
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) - stepSize))
       val negativeLoss = lossAndGradient(layer.updateOutput(input).toTensor[T])._1
       val estimatedGradient = (positiveLoss - negativeLoss) / stepSize / 2.0
-
+      println(s"parameter ${i}, EstimatedGradient = ${estimatedGradient}, BackpropGradient = ${computedGrad.valueAt(i)}")
       result = result & (math.abs(estimatedGradient -
         ev.toType[Double](computedGrad.valueAt(i))) < epsilon)
       perturbation.setValue(i, curValue)

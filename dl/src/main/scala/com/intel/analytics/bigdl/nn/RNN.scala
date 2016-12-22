@@ -15,54 +15,75 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models
+package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
 class RnnCell[T : ClassTag] (
   inputSize: Int = 4,
-  hiddenSize: Int = 3) (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
+  hiddenSize: Int = 3,
+  private var initMethod: InitializationMethod = Default)
+  (implicit ev: TensorNumeric[T])
+  extends AbstractModule[Table, Tensor[T], T] {
 
-  val i2h = new Linear[T](inputSize, hiddenSize)
-  val h2h = new Linear[T](hiddenSize, hiddenSize)
-  val cAddTable = new CAddTable[T](false)
-  gradInput = T()
+  val parallelTable = ParallelTable[T]()
+  val i2h = Linear[T](inputSize, hiddenSize)
+  val h2h = Linear[T](hiddenSize, hiddenSize)
+  parallelTable.add(i2h)
+  parallelTable.add(h2h)
+  val cAddTable = CAddTable[T]()
+
+  def setInitMethod(initMethod: InitializationMethod): this.type = {
+    this.initMethod = initMethod
+    this
+  }
+
+  override def reset(): Unit = {
+    initMethod match {
+      case Default =>
+        parallelTable.modules.foreach( m => {
+          val inputSize = m.asInstanceOf[Linear[T]].weight.size(1).toFloat
+          val outputSize = m.asInstanceOf[Linear[T]].weight.size(2).toFloat
+          val stdv = 6.0 / (inputSize + outputSize)
+          m.asInstanceOf[Linear[T]].weight.apply1( _ =>
+            ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
+          m.asInstanceOf[Linear[T]].bias.apply1( _ => ev.fromType[Double](0.0))
+        })
+    }
+    zeroGradParameters()
+  }
+
 
   override def updateOutput(input: Table): Tensor[T] = {
-    output = cAddTable.updateOutput(
-      T(i2h.updateOutput(input(1)), h2h.updateOutput(input(2))))
+    output = cAddTable.updateOutput(parallelTable.updateOutput(input))
     output
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    gradInput(1) = i2h.updateGradInput(input(1), gradOutput)
-    gradInput(2) = h2h.updateGradInput(input(2), gradOutput)
-    gradInput
+    val _gradOutput = cAddTable.updateGradInput(input, gradOutput)
+    parallelTable.updateGradInput(input, _gradOutput)
   }
   override def accGradParameters(input: Table, gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
-    i2h.accGradParameters(input(1), gradOutput)
-    h2h.accGradParameters(input(2), gradOutput)
+    parallelTable.accGradParameters(input,
+      cAddTable.updateGradInput(input, gradOutput))
   }
   override def updateParameters(learningRate: T): Unit = {
-    i2h.updateParameters(learningRate)
-    h2h.updateParameters(learningRate)
+    parallelTable.updateParameters(learningRate)
   }
 
   override def zeroGradParameters(): Unit = {
-    i2h.zeroGradParameters()
-    h2h.zeroGradParameters()
+    parallelTable.zeroGradParameters()
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(i2h.weight, i2h.bias, h2h.weight, h2h.bias),
-      Array(i2h.gradWeight, i2h.gradBias, h2h.gradWeight, h2h.gradBias))
+    parallelTable.parameters()
   }
 
 
