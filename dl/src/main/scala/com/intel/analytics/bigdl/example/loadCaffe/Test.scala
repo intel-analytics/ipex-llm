@@ -23,10 +23,13 @@ import com.intel.analytics.bigdl.models.alexnet.AlexNet
 import com.intel.analytics.bigdl.models.googlenet.GoogleNet_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{LocalValidator, Top1Accuracy, Top5Accuracy}
+import org.apache.log4j.Logger
 import scopt.OptionParser
 
 
 object Test {
+
+  val logger = Logger.getLogger(getClass)
 
   case class TestLocalParams(
     folder: String = "./",
@@ -69,11 +72,11 @@ object Test {
 
       val (module, validateDataSet) = param.modelType match {
         case "alexnet" =>
-          (AlexNet(1000), LocalDataSetAlexnet(valPath, imageSize,
+          (AlexNet(1000), AlexNetPreprocessor(valPath, imageSize,
             param.batchSize, param.meanFile.get))
         case "googlenet" =>
           (GoogleNet_v1_NoAuxClassifier(1000),
-            LocalDatasetGooglenet(valPath, imageSize, param.batchSize))
+            GoogleNetPreprocessor(valPath, imageSize, param.batchSize))
       }
 
       val model = Module.loadCaffeParameters[Float](module,
@@ -83,7 +86,7 @@ object Test {
       val result = validator.test(validateDataSet, Array(new Top1Accuracy[Float],
         new Top5Accuracy[Float]))
       result.foreach(r => {
-        println(s"${r._2} is ${r._1}")
+        logger.info(s"${r._2} is ${r._1}")
       })
     })
   }
