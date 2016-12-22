@@ -255,7 +255,8 @@ object DataSet {
   : DistributedDataSet[T] = {
     new CachedDistriDataSet[T](
       sc.parallelize(localData, partitionNum)
-        .coalesce(partitionNum, true)  // Keep this line, or the array will be send to worker every time
+        // Keep this line, or the array will be send to worker every time
+        .coalesce(partitionNum, true)
         .mapPartitions(iter => {
           Iterator.single(iter.toArray)
         }).setName("cached dataset")
