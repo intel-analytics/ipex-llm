@@ -21,8 +21,8 @@ import java.util.concurrent.Executors
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
+import com.intel.analytics.bigdl.models.googlenet.{GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.models.imagenet.{GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.ShortcutType
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion}
