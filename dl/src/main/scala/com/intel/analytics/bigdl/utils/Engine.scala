@@ -240,6 +240,7 @@ object Engine {
         .setExecutorEnv("OMP_WAIT_POLICY", "passive")
         .setExecutorEnv("OMP_NUM_THREADS", "1")
         .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
+        .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
         .set("spark.task.maxFailures", "1")
         .set("spark.shuffle.blockTransferService", "nio")
         .set("spark.akka.frameSize", "10")
@@ -247,6 +248,7 @@ object Engine {
       new SparkConf().setExecutorEnv("DL_ENGINE_TYPE", "mkldnn")
         .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
         .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
+        .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
         .set("spark.task.maxFailures", "1")
         .set("spark.shuffle.blockTransferService", "nio")
         .set("spark.akka.frameSize", "10")
@@ -284,6 +286,14 @@ object Engine {
   }
 
   def nodeNumber(): Option[Int] = nodeNum
+
+  def exectuorNodeNumber(): Option[Int] = {
+    if (System.getenv("DL_NODE_NUMBER") == null) {
+      None
+    } else {
+      Some(System.getenv("DL_NODE_NUMBER").toInt)
+    }
+  }
 
   def setCluster(n: Int, c: Int): Unit = {
     require(n > 0)

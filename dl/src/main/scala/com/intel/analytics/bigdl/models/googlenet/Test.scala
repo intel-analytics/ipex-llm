@@ -46,7 +46,7 @@ object Test {
         .setAppName("Test Googlenet on ImageNet")
       val sc = new SparkContext(conf)
       val valSet = ImageNet2012(
-        param.folder + "/val",
+        param.folder,
         sc,
         imageSize,
         batchSize,
