@@ -22,8 +22,8 @@ import com.intel.analytics.bigdl.utils.Engine
 object Utils {
 
   def getBatchSize(totalBatch : Int): Int = {
-    if (Engine.nodeNumber().isDefined) {
-      val nodeNumber = Engine.nodeNumber().get
+    if (Engine.nodeNumber().isDefined || Engine.exectuorNodeNumber().isDefined) {
+      val nodeNumber = Engine.nodeNumber().getOrElse(Engine.exectuorNodeNumber().get)
       require(totalBatch % nodeNumber == 0 && totalBatch > nodeNumber
         , "batch size can't be divided by node number or is smaller than node number")
       totalBatch / nodeNumber
