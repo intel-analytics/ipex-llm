@@ -242,11 +242,11 @@ object Utils {
     matchModels(model)
   }
 
-  def findModules[@specialized(Float, Double) T: ClassTag](model: Module[T])
+  def initModules[@specialized(Float, Double) T: ClassTag](model: Module[T])
     (implicit ev: TensorNumeric[T]): Unit = {
     model match {
       case container: Container[Activity, Activity, T]
-      => container.modules.foreach(m => findModules(m))
+      => container.modules.foreach(m => initModules(m))
       case spatialConvolution if (spatialConvolution.isInstanceOf[SpatialConvolution[T]]) =>
         val curModel = spatialConvolution.asInstanceOf[SpatialConvolution[T]]
         val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane

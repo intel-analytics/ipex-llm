@@ -32,7 +32,7 @@ object ResNet {
   }
   def modelInit(model: Module[Float]): Unit = {
     logger.info("Initialize ResNet")
-    Utils.findModules(model)
+    Utils.initModules(model)
   }
 
   var iChannels = 0
