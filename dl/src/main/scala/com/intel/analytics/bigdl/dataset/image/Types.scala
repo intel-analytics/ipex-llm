@@ -296,53 +296,29 @@ object RGBImage {
     }
   }
 
-  val NO_SCALE = -1
+  def getWidthHeightAfterRatioScale(oriHeight: Int, oriWidth: Int, scaleTo: Int): (Int, Int) = {
+    if (NO_SCALE == scaleTo) {
+      (oriHeight, oriWidth)
+    } else {
+      if (oriWidth < oriHeight) {
+        (scaleTo * oriHeight / oriWidth, scaleTo)
+      } else {
+        (scaleTo, scaleTo * oriWidth / oriHeight)
+      }
+    }
+  }
 
-  def readImage(path: Path, scaleTo: Int): Array[Byte] = {
+  def readRawImage(path: Path): BufferedImage = {
     var fis: FileInputStream = null
     try {
       fis = new FileInputStream(path.toString)
       val channel = fis.getChannel
       val byteArrayOutputStream = new ByteArrayOutputStream
       channel.transferTo(0, channel.size, Channels.newChannel(byteArrayOutputStream))
-      val img = ImageIO.read(new ByteArrayInputStream(byteArrayOutputStream.toByteArray))
-      var heightAfterScale = 0
-      var widthAfterScale = 0
-      var scaledImage: java.awt.Image = null
-      // no scale
-      if (NO_SCALE == scaleTo) {
-        heightAfterScale = img.getHeight
-        widthAfterScale = img.getWidth
-        scaledImage = img
-      } else {
-        if (img.getWidth < img.getHeight) {
-          heightAfterScale = scaleTo * img.getHeight / img.getWidth
-          widthAfterScale = scaleTo
-        } else {
-          heightAfterScale = scaleTo
-          widthAfterScale = scaleTo * img.getWidth / img.getHeight
-        }
-        scaledImage =
-          img.getScaledInstance(widthAfterScale, heightAfterScale, java.awt.Image.SCALE_SMOOTH)
-      }
-
-      val imageBuff: BufferedImage =
-        new BufferedImage(widthAfterScale, heightAfterScale, BufferedImage.TYPE_3BYTE_BGR)
-      imageBuff.getGraphics.drawImage(scaledImage, 0, 0, new Color(0, 0, 0), null)
-      val pixels: Array[Byte] =
-        (imageBuff.getRaster.getDataBuffer.asInstanceOf[DataBufferByte]).getData
-      require(pixels.length % 3 == 0)
-
-      val bytes = new Array[Byte](8 + pixels.length)
-      val byteBuffer = ByteBuffer.wrap(bytes)
-      require(imageBuff.getWidth * imageBuff.getHeight * 3 == pixels.length)
-      byteBuffer.putInt(imageBuff.getWidth)
-      byteBuffer.putInt(imageBuff.getHeight)
-      System.arraycopy(pixels, 0, bytes, 8, pixels.length)
-      bytes
+      ImageIO.read(new ByteArrayInputStream(byteArrayOutputStream.toByteArray))
     } catch {
       case ex: Exception =>
-        ex.printStackTrace
+        ex.printStackTrace()
         System.err.println("Can't read file " + path)
         throw ex
     } finally {
@@ -350,5 +326,45 @@ object RGBImage {
         fis.close()
       }
     }
+  }
+
+  val NO_SCALE = -1
+
+  def resizeImage(img: BufferedImage, resizeWidth: Int, resizeHeight: Int): Array[Byte] = {
+    var scaledImage: java.awt.Image = null
+    // no scale
+    if ((resizeHeight == img.getHeight) && (resizeWidth == img.getWidth)) {
+      scaledImage = img
+    } else {
+      scaledImage =
+        img.getScaledInstance(resizeWidth, resizeHeight, java.awt.Image.SCALE_SMOOTH)
+    }
+
+    val imageBuff: BufferedImage =
+      new BufferedImage(resizeWidth, resizeHeight, BufferedImage.TYPE_3BYTE_BGR)
+    imageBuff.getGraphics.drawImage(scaledImage, 0, 0, new Color(0, 0, 0), null)
+    val pixels: Array[Byte] =
+      imageBuff.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData
+    require(pixels.length % 3 == 0)
+
+    val bytes = new Array[Byte](8 + pixels.length)
+    val byteBuffer = ByteBuffer.wrap(bytes)
+    require(imageBuff.getWidth * imageBuff.getHeight * 3 == pixels.length)
+    byteBuffer.putInt(imageBuff.getWidth)
+    byteBuffer.putInt(imageBuff.getHeight)
+    System.arraycopy(pixels, 0, bytes, 8, pixels.length)
+    bytes
+  }
+
+  def readImage(path: Path, scaleTo: Int): Array[Byte] = {
+    val img: BufferedImage = readRawImage(path)
+    val (heightAfterScale, widthAfterScale) =
+      getWidthHeightAfterRatioScale(img.getHeight, img.getWidth, scaleTo)
+    resizeImage(img, widthAfterScale, heightAfterScale)
+  }
+
+  def readImage(path: Path, resizeWidth: Int, resizeHeight: Int): Array[Byte] = {
+    val img: BufferedImage = readRawImage(path)
+    resizeImage(img, resizeWidth, resizeHeight)
   }
 }
