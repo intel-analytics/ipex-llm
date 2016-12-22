@@ -17,32 +17,28 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.tensor.Tensor
+import org.scalatest.{FlatSpec, Matchers}
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
+  /**
+  * Created by yao on 9/20/16.
+  */
+class IdentitySpec extends FlatSpec with Matchers {
+  "Identity" should "generate correct output and grad" in {
+    val batchN = 3
+    val inputN = 5
+    val outputN = inputN
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+    val input = Tensor[Double](batchN, inputN)
+    input.rand()
+    val gradOutput = Tensor[Double](batchN, outputN)
+    gradOutput.rand()
 
-import scala.reflect.ClassTag
+    val module = new Identity[Double]()
+    val output = module.forward(input)
+    assert(input equals output)
 
-class Identity[@specialized(Float, Double) T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Activity, T] {
-
-  override def updateOutput(input: Activity): Activity = {
-    output = input
-    output
-  }
-
-  override def updateGradInput(input: Activity,
-    gradOutput: Activity): Activity = {
-
-    gradInput = gradOutput
-    gradInput
-  }
-}
-
-object Identity {
-  def apply[@specialized(Float, Double) T: ClassTag]()
-      (implicit ev: TensorNumeric[T]) : Identity[T] = {
-    new Identity[T]()
+    val gradInput = module.backward(input, gradOutput)
+    assert(gradInput equals gradOutput)
   }
 }

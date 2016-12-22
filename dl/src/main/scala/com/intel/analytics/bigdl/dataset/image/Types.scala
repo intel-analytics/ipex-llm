@@ -17,6 +17,8 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+
 import java.awt.Color
 import java.awt.image.{BufferedImage, DataBufferByte}
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, File, FileInputStream}
@@ -300,6 +302,7 @@ object RGBImage {
       var heightAfterScale = 0
       var widthAfterScale = 0
       var scaledImage: java.awt.Image = null
+
       // no scale
       if (NO_SCALE == scaleTo) {
         heightAfterScale = img.getHeight

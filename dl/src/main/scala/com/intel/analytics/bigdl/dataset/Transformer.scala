@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.dataset
 
+
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.collection.Iterator
@@ -44,6 +45,7 @@ trait Transformer[A, B] extends Serializable {
 
 class ChainedTransformer[A, B, C](first: Transformer[A, B], last: Transformer[B, C])
   extends Transformer[A, C] {
+
   override def apply(prev: Iterator[A]): Iterator[C] = {
     last(first(prev))
   }

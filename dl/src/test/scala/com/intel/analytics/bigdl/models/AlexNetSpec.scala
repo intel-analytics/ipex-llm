@@ -63,7 +63,6 @@ feature:add(nn.ReLU())
 feature:add(nn.SpatialConvolutionMM(256,256,3,3,1,1,1,1))      --  13 ->  13
 feature:add(nn.ReLU())
 feature:add(nn.SpatialMaxPooling(3,3,2,2))                   -- 13 -> 6
-
 -- 1.3. Create Classifier (fully connected layers)
 local classifier = nn.Sequential()
 classifier:add(nn.View(256*6*6))
@@ -75,40 +74,31 @@ classifier:add(nn.Linear(4096, 4096))
 classifier:add(nn.ReLU())
 classifier:add(nn.Linear(4096, nClasses))
 classifier:add(nn.LogSoftMax())
-
-
 -- 1.4. Combine 1.1 and 1.3 to produce final model
 model = nn.Sequential():add(feature):add(classifier)
-
 local parameters, gradParameters = model:getParameters()
 model:zeroGradParameters()
 parameters_initial = parameters : clone()
 gradParameters_initial = gradParameters : clone()
-
 local criterion =  nn.ClassNLLCriterion()
-
 state = {
   learningRate = 1e-2,
   momentum = 0.9,
   dampening = 0.0,
   weightDecay = 5e-4
 }
-
 feval = function(x)
 model:zeroGradParameters()
 model_initial = model : clone()
-
 local output1 = model:forward(input)
 local err1 = criterion:forward(output1, labels)
 local gradOutput1 = criterion:backward(output1, labels)
 model:backward(input, gradOutput1)
 return err1, gradParameters
 end
-
 for i = 1,1,1 do
   optim.sgd(feval, parameters, state)
 end
-
 output=model.output
 err=criterion.output
 gradOutput=criterion.gradInput
