@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.alexnet.AlexNet
-import com.intel.analytics.bigdl.models.googlenet.GoogleNet_v1
+import com.intel.analytics.bigdl.models.inception.GoogleNet_v1
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
