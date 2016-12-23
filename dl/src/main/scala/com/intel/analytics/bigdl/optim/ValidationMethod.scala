@@ -17,8 +17,12 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, LogSoftMax}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+
+import scala.reflect.ClassTag
 
 trait ValidationMethod[T] extends Serializable {
   def apply(output: Activity, target: Activity): ValidationResult
@@ -151,4 +155,59 @@ class Top5Accuracy[T] extends ValidationMethod[T] {
   }
 
   override def format(): String = "top5 accuracy"
+}
+
+class LossResult(private var loss: Float, private var count: Int)
+  extends ValidationResult {
+
+  // scalastyle:off methodName
+  override def +(other: ValidationResult): ValidationResult = {
+    val otherResult = other.asInstanceOf[LossResult]
+    this.loss += otherResult.loss
+    this.count += otherResult.count
+    this
+  }
+
+  // scalastyle:on methodName
+
+  override protected def format(): String = {
+    s"(Loss: $loss, count: $count, Average Loss: ${loss.toFloat / count})"
+  }
+
+  override def equals(obj: Any): Boolean = {
+    if (obj == null) {
+      return false
+    }
+    if (!obj.isInstanceOf[LossResult]) {
+      return false
+    }
+    val other = obj.asInstanceOf[LossResult]
+    if (this.eq(other)) {
+      return true
+    }
+    this.loss == other.loss && this.count == other.count
+  }
+
+  override def hashCode(): Int = {
+    val seed = 37
+    var hash = 1
+    hash = hash * seed + this.loss.toInt
+    hash = hash * seed + this.count
+    hash
+  }
+}
+
+class Loss[@specialized(Float, Double)T: ClassTag]
+(implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
+  val criterion = CrossEntropyCriterion[T]()
+  override def apply(output: Activity, target: Activity): LossResult = {
+    val _output = output.asInstanceOf[Tensor[T]].squeeze()
+    val _target = target.asInstanceOf[Tensor[T]].squeeze()
+    val loss = criterion.forward(_output, _target).asInstanceOf[Float]
+    var count = 1
+
+    new LossResult(loss, count)
+  }
+
+  override def format(): String = "language model Loss "
 }
