@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import org.apache.spark.sparkExtension.SparkExtension
 import org.apache.spark.{SparkEnv, TaskContext}
-import org.apache.spark.storage.{BlockManagerWrapper, StorageLevel, TaskResultBlockId}
+import org.apache.spark.storage.{BlockId, BlockManagerWrapper, StorageLevel, TaskResultBlockId}
 
 import scala.collection.JavaConverters._
 import scala.reflect._
@@ -31,9 +31,6 @@ import scala.reflect._
 object AllReduceParameter {
   private val syncPoolSize: Int = System.getProperty(
     "bigdl.Parameter.syncPoolSize", "4").toInt
-
-  private val maxClusterSize = System.getProperty(
-    "bigdl.Parameter.maxClusterSize", "10000").toInt
 
   val syncPool = Executors.newFixedThreadPool(syncPoolSize)
 }
@@ -115,12 +112,12 @@ class AllReduceParameter[T: ClassTag](id: Int) extends Serializable {
     BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
 
-  def getWeightBlockId(pid : Int): TaskResultBlockId = {
-    TaskResultBlockId(maxClusterSize + pid)
+  def getWeightBlockId(pid : Int): BlockId = {
+    SparkExtension.getLocalBlockId(id + "weightBytes" + pid)
   }
 
-  def getGradientBlockId(pidFrom : Int, pidTo : Int): TaskResultBlockId = {
-    TaskResultBlockId(pidTo + pidFrom * maxClusterSize * 10)
+  def getGradientBlockId(pidFrom : Int, pidTo : Int): BlockId = {
+    SparkExtension.getLocalBlockId(id.toString + pidTo + "gradientBytes" + pidFrom)
   }
 
   def getWeights(localParameter: Tensor[T]): FutureResult[Int] = {
