@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import org.scalatest.{FlatSpec, Matchers}
 
 class TransformersSpec extends FlatSpec with Matchers {
-  import Utils._
+  import TestUtils._
 
   "Grey Image Cropper" should "crop image correct" in {
     val image = new LabeledGreyImage(32, 32)
