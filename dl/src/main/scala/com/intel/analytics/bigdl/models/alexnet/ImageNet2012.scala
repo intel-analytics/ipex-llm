@@ -28,13 +28,13 @@ object ImageNet2012 {
   : LocalDataSet[Batch[Float]] = {
     DataSet.SequenceFolder.paths(path, size)
       .transform(
-        MTLabeledRGBImgToBatch(
+        MTLabeledBGRImgToBatch(
           width = imageSize,
           height = imageSize,
           batchSize = batchSize,
-          transformer = (LocalSeqFileToBytes() -> SampleToRGBImg() ->
-            RGBImgCropper(cropWidth = imageSize, cropHeight = imageSize) -> HFlip(0.5) ->
-            RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
+          transformer = (LocalSeqFileToBytes() -> SampleToBGRImg() ->
+            BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize) -> HFlip(0.5) ->
+            BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
             )
         )
       )

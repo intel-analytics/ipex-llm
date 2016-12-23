@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.models.vgg
 
 import java.nio.file.Paths
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{RGBImgToBatch, RGBImgNormalizer}
+import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, BGRImgNormalizer}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{DistriValidator, Top1Accuracy, LocalValidator}
 import com.intel.analytics.bigdl.utils.Engine
@@ -36,8 +36,8 @@ object LocalTest {
       Engine.setCoreNumber(param.coreNumber)
       val validationSet = DataSet.ImageFolder
         .images(Paths.get(param.folder), 32)
-        .transform(RGBImgNormalizer(testMean, testStd))
-        .transform(RGBImgToBatch(batchSize))
+        .transform(BGRImgNormalizer(testMean, testStd))
+        .transform(BGRImgToBatch(batchSize))
 
       val model = Module.load[Float](param.model)
       val validator = new LocalValidator[Float](model)
@@ -68,8 +68,8 @@ object SparkTest {
       val sc = new SparkContext(conf)
       val validationSet = DataSet.ImageFolder
         .images(Paths.get(param.folder), sc, param.nodesNumber, 32)
-        .transform(RGBImgNormalizer(testMean, testStd))
-        .transform(RGBImgToBatch(batchSize))
+        .transform(BGRImgNormalizer(testMean, testStd))
+        .transform(BGRImgToBatch(batchSize))
 
       val model = Module.load[Float](param.model)
       val validator = new DistriValidator[Float](model)

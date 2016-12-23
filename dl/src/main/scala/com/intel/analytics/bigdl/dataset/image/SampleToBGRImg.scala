@@ -21,16 +21,16 @@ import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
 
 import scala.collection.Iterator
 
-object SampleToRGBImg {
-  def apply(normalize: Float = 255f): SampleToRGBImg =
-    new SampleToRGBImg(normalize)
+object SampleToBGRImg {
+  def apply(normalize: Float = 255f): SampleToBGRImg =
+    new SampleToBGRImg(normalize)
 }
 
-class SampleToRGBImg(normalize: Float)
-  extends Transformer[Sample, LabeledRGBImage] {
-  private val buffer = new LabeledRGBImage()
+class SampleToBGRImg(normalize: Float)
+  extends Transformer[Sample, LabeledBGRImage] {
+  private val buffer = new LabeledBGRImage()
 
-  override def apply(prev: Iterator[Sample]): Iterator[LabeledRGBImage] = {
+  override def apply(prev: Iterator[Sample]): Iterator[LabeledBGRImage] = {
     prev.map(rawData => {
       buffer.copy(rawData.data, normalize).setLabel(rawData.label)
     })

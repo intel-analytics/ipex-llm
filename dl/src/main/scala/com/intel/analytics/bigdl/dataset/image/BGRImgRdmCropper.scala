@@ -21,18 +21,18 @@ import com.intel.analytics.bigdl.dataset.Transformer
 
 import scala.collection.Iterator
 
-object RGBImgRdmCropper {
-  def apply(cropWidth: Int, cropHeight: Int, padding: Int): RGBImgRdmCropper =
-    new RGBImgRdmCropper(cropHeight, cropWidth, padding)
+object BGRImgRdmCropper {
+  def apply(cropWidth: Int, cropHeight: Int, padding: Int): BGRImgRdmCropper =
+    new BGRImgRdmCropper(cropHeight, cropWidth, padding)
 }
 
-class RGBImgRdmCropper(cropHeight: Int, cropWidth: Int, padding: Int)
-  extends Transformer[LabeledRGBImage, LabeledRGBImage] {
+class BGRImgRdmCropper(cropHeight: Int, cropWidth: Int, padding: Int)
+  extends Transformer[LabeledBGRImage, LabeledBGRImage] {
   import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
-  private val buffer = new LabeledRGBImage(cropWidth, cropHeight)
+  private val buffer = new LabeledBGRImage(cropWidth, cropHeight)
 
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
+  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[LabeledBGRImage] = {
     prev.map(img => {
       val curImg = padding > 0 match {
         case true =>
@@ -41,7 +41,7 @@ class RGBImgRdmCropper(cropHeight: Int, cropWidth: Int, padding: Int)
           val sourceTmp = img.content
           val padWidth = widthTmp + 2 * padding
           val padHeight = heightTmp + 2 * padding
-          val temp = new LabeledRGBImage(padWidth, padHeight)
+          val temp = new LabeledBGRImage(padWidth, padHeight)
           val tempBuffer = temp.content
           val startIndex = (padding + 1 + (padding + 1) * padWidth) * 3
           val frameLength = widthTmp * heightTmp

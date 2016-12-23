@@ -29,24 +29,24 @@ object LocalImgReader {
   Class.forName("sun.java2d.cmm.lcms.LCMS")
   ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
-  def apply(scaleTo: Int = RGBImage.NO_SCALE, normalize: Float = 255f)
-  : Transformer[LabeledImageLocalPath, LabeledRGBImage]
+  def apply(scaleTo: Int = BGRImage.NO_SCALE, normalize: Float = 255f)
+  : Transformer[LabeledImageLocalPath, LabeledBGRImage]
   = new LocalScaleImgReader(scaleTo, normalize)
 
   def apply(resizeW: Int, resizeH: Int, normalize: Float)
-  : Transformer[LabeledImageLocalPath, LabeledRGBImage]
+  : Transformer[LabeledImageLocalPath, LabeledBGRImage]
   = new LocalResizeImgReader(resizeW, resizeH, normalize)
 }
 
 class LocalScaleImgReader private[dataset](scaleTo: Int, normalize: Float)
-  extends Transformer[LabeledImageLocalPath, LabeledRGBImage] {
+  extends Transformer[LabeledImageLocalPath, LabeledBGRImage] {
 
 
-  private val buffer = new LabeledRGBImage()
+  private val buffer = new LabeledBGRImage()
 
-  override def apply(prev: Iterator[LabeledImageLocalPath]): Iterator[LabeledRGBImage] = {
+  override def apply(prev: Iterator[LabeledImageLocalPath]): Iterator[LabeledBGRImage] = {
     prev.map(data => {
-      val imgData = RGBImage.readImage(data.path, scaleTo)
+      val imgData = BGRImage.readImage(data.path, scaleTo)
       val label = data.label
       buffer.copy(imgData, normalize).setLabel(label)
     })
@@ -54,14 +54,14 @@ class LocalScaleImgReader private[dataset](scaleTo: Int, normalize: Float)
 }
 
 class LocalResizeImgReader private[dataset](resizeW: Int, resizeH: Int, normalize: Float)
-  extends Transformer[LabeledImageLocalPath, LabeledRGBImage] {
+  extends Transformer[LabeledImageLocalPath, LabeledBGRImage] {
 
 
-  private val buffer = new LabeledRGBImage()
+  private val buffer = new LabeledBGRImage()
 
-  override def apply(prev: Iterator[LabeledImageLocalPath]): Iterator[LabeledRGBImage] = {
+  override def apply(prev: Iterator[LabeledImageLocalPath]): Iterator[LabeledBGRImage] = {
     prev.map(data => {
-      val imgData = RGBImage.readImage(data.path, resizeW, resizeH)
+      val imgData = BGRImage.readImage(data.path, resizeW, resizeH)
       val label = data.label
       buffer.copy(imgData, normalize).setLabel(label)
     })

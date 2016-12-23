@@ -46,18 +46,18 @@ object Cifar10DataSet extends ResNetDataSet {
   : LocalDataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, size)
-      .transform(RGBImgNormalizer(trainMean, trainStd))
+      .transform(BGRImgNormalizer(trainMean, trainStd))
       .transform(HFlip(0.5))
-      .transform(RGBImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))
-      .transform(RGBImgToBatch(batchSize))
+      .transform(BGRImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))
+      .transform(BGRImgToBatch(batchSize))
   }
 
   override def localValDataSet(path: Path, batchSize: Int, size: Int)
   : LocalDataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, size)
-      .transform(RGBImgNormalizer(testMean, testStd))
-      .transform(RGBImgToBatch(batchSize))
+      .transform(BGRImgNormalizer(testMean, testStd))
+      .transform(BGRImgToBatch(batchSize))
   }
 
   override def distributedValDataSet(path: Path, sc: SparkContext,
@@ -65,8 +65,8 @@ object Cifar10DataSet extends ResNetDataSet {
   : DistributedDataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
-      .transform(RGBImgNormalizer(trainMean, trainStd))
-      .transform(RGBImgToBatch(batchSize))
+      .transform(BGRImgNormalizer(trainMean, trainStd))
+      .transform(BGRImgToBatch(batchSize))
   }
 
   override def distributedTrainDataSet(path: Path, sc: SparkContext,
@@ -74,9 +74,9 @@ object Cifar10DataSet extends ResNetDataSet {
   : DistributedDataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
-      .transform(RGBImgNormalizer(testMean, testStd))
+      .transform(BGRImgNormalizer(testMean, testStd))
       .transform(HFlip(0.5))
-      .transform(RGBImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))
-      .transform(RGBImgToBatch(batchSize))
+      .transform(BGRImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))
+      .transform(BGRImgToBatch(batchSize))
   }
 }

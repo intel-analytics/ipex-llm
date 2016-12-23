@@ -29,7 +29,7 @@ object Lighting {
   }
 }
 
-class Lighting extends Transformer[LabeledRGBImage, LabeledRGBImage] {
+class Lighting extends Transformer[LabeledBGRImage, LabeledBGRImage] {
   val alphastd = 0.1f
   val eigval = Tensor[Float](Storage(Array(0.2175f, 0.0188f, 0.0045f)), 1, Array(3))
   val eigvec = Tensor[Float](Storage(Array(-0.5675f, 0.7192f, 0.4009f,
@@ -53,7 +53,7 @@ class Lighting extends Transformer[LabeledRGBImage, LabeledRGBImage] {
     }
   }
 
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
+  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[LabeledBGRImage] = {
     prev.map(img => {
       lighting(img.content)
       img
