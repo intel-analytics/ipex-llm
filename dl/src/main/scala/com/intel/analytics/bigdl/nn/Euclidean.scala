@@ -177,8 +177,10 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
 }
 
 object Euclidean {
-  def apply[@specialized(Float, Double) T: ClassTag](inputSize: Int, outputSize: Int,
-    fastBackward: Boolean = true)(implicit ev: TensorNumeric[T]): Euclidean[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    inputSize: Int,
+    outputSize: Int,
+    fastBackward: Boolean = true)(implicit ev: TensorNumeric[T]) : Euclidean[T] = {
     new Euclidean[T](inputSize, outputSize, fastBackward)
   }
 }
