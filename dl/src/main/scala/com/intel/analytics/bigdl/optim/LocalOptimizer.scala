@@ -43,10 +43,10 @@ object LocalOptimizer {
  */
 class LocalOptimizer[T: ClassTag] private[optim](
   model: Module[T],
-  dataset: DataSource[Iterator[Batch[T]]],
+  dataset: DataSource[Batch[T], Iterator[Batch[T]]],
   criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T])
-  extends Optimizer[T, Iterator[Batch[T]], Iterator[Batch[T]]](
+  extends Optimizer[T, Batch[T], Iterator[Batch[T]], Iterator[Batch[T]]](
     model, dataset, criterion) {
 
   import LocalOptimizer._

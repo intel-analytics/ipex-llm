@@ -31,7 +31,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
   val model = new Sequential[Float]()
 
   "Optimizer" should "end with maxEpoch" in {
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         val state = T("epoch" -> 9)
         endWhen(state) should be(false)
@@ -46,7 +46,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
   }
 
   it should "end with iteration" in {
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         val state = T("neval" -> 999)
         endWhen(state) should be(false)
@@ -61,7 +61,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
   }
 
   it should "be triggered every epoch" in {
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         val state = T("epoch" -> 9)
         validationTrigger.get(state) should be(false)
@@ -84,7 +84,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
   }
 
   it should "be triggered every 5 iterations" in {
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         val state = T("neval" -> 1)
         validationTrigger.get(state) should be(false)
@@ -108,7 +108,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
     Files.delete(Paths.get(filePath))
     Files.createDirectory(Paths.get(filePath))
     val model = AlexNet(1000)
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         Optimizer.saveModel(model, this.cachePath, this.isOverWrite)
         model
@@ -127,7 +127,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
     Files.delete(Paths.get(filePath))
     Files.createDirectory(Paths.get(filePath))
     val model = AlexNet(1000)
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         Optimizer.saveModel(model, this.cachePath, this.isOverWrite, ".test")
         model
@@ -147,7 +147,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
     Files.delete(Paths.get(filePath))
     Files.createDirectory(Paths.get(filePath))
     val state = T("test" -> 123)
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         Optimizer.saveState(state, this.cachePath, this.isOverWrite)
         model
@@ -165,7 +165,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
     Files.delete(Paths.get(filePath))
     Files.createDirectory(Paths.get(filePath))
     val state = T("test" -> 123)
-    val dummyOptimizer = new Optimizer[Float, Float, Float](model, null, null) {
+    val dummyOptimizer = new Optimizer[Float, Float, Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
         Optimizer.saveState(state, this.cachePath, this.isOverWrite, ".post")
         model

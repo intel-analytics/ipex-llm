@@ -32,9 +32,9 @@ import scala.reflect.ClassTag
  */
 class RefDistriOptimizer[T: ClassTag](
   model: Module[T],
-  dataset: DataSource[RDD[Batch[T]]],
+  dataset: DataSource[Batch[T], RDD[Batch[T]]],
   criterion: Criterion[T])(implicit ev: TensorNumeric[T])
-  extends Optimizer[T, RDD[Batch[T]], RDD[Batch[T]]](
+  extends Optimizer[T, Batch[T], RDD[Batch[T]], RDD[Batch[T]]](
     model, dataset, criterion
   ) {
 
@@ -54,7 +54,7 @@ class RefDistriOptimizer[T: ClassTag](
 object RefDistriOptimizer {
   def optimize[T: ClassTag](
     model: Module[T],
-    dataset: DataSource[RDD[Batch[T]]],
+    dataset: DataSource[Batch[T], RDD[Batch[T]]],
     criterion: Criterion[T],
     optimMethod: OptimMethod[T],
     state: Table,

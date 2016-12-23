@@ -28,9 +28,9 @@ import scala.reflect.ClassTag
  */
 class RefLocalOptimizer[T: ClassTag](
   model: Module[T],
-  dataset: DataSource[Iterator[Batch[T]]],
+  dataset: DataSource[Batch[T], Iterator[Batch[T]]],
   criterion: Criterion[T]
-)(implicit ev: TensorNumeric[T]) extends Optimizer[T, Iterator[Batch[T]],
+)(implicit ev: TensorNumeric[T]) extends Optimizer[T, Batch[T], Iterator[Batch[T]],
   Iterator[Batch[T]]](model, dataset, criterion) {
 
   val (w, g) = model.getParameters()

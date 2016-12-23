@@ -39,7 +39,7 @@ import scala.reflect._
  *
  * @tparam DataSequence Represent a sequence of data
  */
-trait DataSet[DataSequence] {
+trait DataSet[D, DataSequence] {
   /**
    * Get a sequence of data
    *
@@ -59,6 +59,8 @@ trait DataSet[DataSequence] {
    * @return
    */
   def size(): Long
+
+  def transform[C, DataSequence2](transformer: Transformer[D, C]): DataSet[C, DataSequence2]
 }
 
 /**
@@ -66,8 +68,8 @@ trait DataSet[DataSequence] {
  *
  * @tparam T
  */
-trait LocalDataSet[T] extends DataSet[Iterator[T]] {
-  def transform[C](transformer: Transformer[T, C]): LocalDataSet[C] = {
+trait LocalDataSet[T] extends DataSet[T, Iterator[T]] {
+  override def transform[C, K](transformer: Transformer[T, C]): DataSet[C, Iterator[C]] = {
     val preDataSource = this
     new LocalDataSet[C] {
       override def shuffle(): Unit = preDataSource.shuffle
@@ -87,7 +89,7 @@ trait LocalDataSet[T] extends DataSet[Iterator[T]] {
    * @tparam C
    * @return
    */
-  def -> [C](transformer: Transformer[T, C]): LocalDataSet[C] = {
+  def -> [C](transformer: Transformer[T, C]): DataSet[C, Iterator[C]] = {
     this.transform(transformer)
   }
 
@@ -136,9 +138,9 @@ class LocalArrayDataSet[T] private[dataset](buffer: Array[T]) extends LocalDataS
  *
  * @tparam T
  */
-trait DistributedDataSet[T] extends DataSet[RDD[T]] {
+trait DistributedDataSet[T] extends DataSet[T, RDD[T]] {
 
-  def transform[C: ClassTag](transformer: Transformer[T, C]): DistributedDataSet[C] = {
+  override def transform[C: ClassTag, K](transformer: Transformer[T, C]): DataSet[C, RDD[C]] = {
     val preDataSource = this
 
     val broadcast = this.originRDD().sparkContext.broadcast(transformer)
@@ -164,7 +166,7 @@ trait DistributedDataSet[T] extends DataSet[RDD[T]] {
 
   // scalastyle:off methodName
   // scalastyle:off noSpaceBeforeLeftBracket
-  def -> [C: ClassTag](transformer: Transformer[T, C]): DistributedDataSet[C] = {
+  def -> [C: ClassTag](transformer: Transformer[T, C]): DataSet[C, RDD[C]] = {
     this.transform(transformer)
   }
 

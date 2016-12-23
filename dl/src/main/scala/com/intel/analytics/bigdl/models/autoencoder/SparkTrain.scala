@@ -76,7 +76,7 @@ object SparkTrain {
         )
       }
 
-      val optimizer = new DistriOptimizer[Float](
+      val optimizer = Optimizer(
         model = model,
         dataset = trainDataSet,
         criterion = new MSECriterion[Float]()

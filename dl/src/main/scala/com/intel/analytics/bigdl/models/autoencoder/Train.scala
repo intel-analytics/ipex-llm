@@ -58,7 +58,7 @@ object Train {
       }
 
       Engine.setCoreNumber(param.coreNumber)
-      val optimizer = new LocalOptimizer[Float](
+      val optimizer = Optimizer(
         model = model,
         dataset = trainSet.transform(normalizer).transform(GreyImgToAEBatch(param.batchSize)),
         criterion = new MSECriterion[Float]()
