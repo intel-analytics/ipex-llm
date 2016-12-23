@@ -152,3 +152,24 @@ class Top5Accuracy[T] extends ValidationMethod[T] {
 
   override def format(): String = "top5 accuracy"
 }
+
+class Accuracy[T] extends ValidationMethod[T] {
+  override def apply(output: Activity, target: Activity): AccuracyResult = {
+    val _output = output.asInstanceOf[Tensor[T]].squeeze()
+    val _target = target.asInstanceOf[Tensor[T]].squeeze()
+    var correct = 0
+    var count = 0
+    require(_output.dim == 1, "output dimension should be one")
+    var i = 1
+    while (i <= _target.size(1)) {
+      if (_output.valueAt(i) == _target.valueAt(i))
+        correct += 1
+      i += 1
+    }
+    count += _target.size(1)
+
+    new AccuracyResult(correct, count)
+  }
+
+  override def format(): String = "language model accuracy"
+}

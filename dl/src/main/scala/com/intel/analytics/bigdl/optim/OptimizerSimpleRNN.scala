@@ -94,7 +94,7 @@ class OptimizerSimpleRNN[T : ClassTag](
 
   val logger = Logger.getLogger(getClass)
 
-  def validate(): Double = {
+  private def validate(): Double = {
     var i = 0
     var accLoss = 0.0
     val valNumOfSents = valDataSet.length
@@ -206,7 +206,14 @@ class OptimizerSimpleRNN[T : ClassTag](
       }
       state("epoch") = state[Int]("epoch") + 1
     }
-  model
+    model
+  }
+
+  def saveModel[T](model: Module[T], cachePath : Option[String], overWrite : Boolean,
+    postfix: String = ""): Unit = {
+    if (cachePath.isDefined) {
+      model.save(s"${cachePath.get}/model$postfix", overWrite)
+    }
   }
 
 }

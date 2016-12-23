@@ -31,6 +31,7 @@ import java.io._
 import org.apache.spark.ml.feature.RegexTokenizer
 
 import scala.collection.mutable.ArrayBuffer
+import scala.util.Random
 
 object Utils {
   case class TrainParams(
@@ -154,16 +155,28 @@ object Utils {
     }
   }
 
-  private[bigdl] def readSentence(filename: String, dictionarySize: Int,
-    sc: SparkContext): Array[Seq[Int]] = {
-    val logData = sc.textFile(filename, 2).filter(!_.isEmpty).cache
+  private[bigdl] def readSentence(filedirect: String, dictionarySize: Int,
+    sc: SparkContext)
+  : (Array[(Seq[Int], Seq[Int])], Array[(Seq[Int], Seq[Int])]) = {
+    val logData = sc.textFile(filedirect + "/mapped_data.txt", 2).filter(!_.isEmpty).cache
     val sQLContext = new SQLContext(sc)
     import sQLContext.implicits._
     val input_df = logData.toDF("sentence")
 
-    val inputSeq = input_df.select("sentence").rdd.map(x =>
-      x(0).asInstanceOf[String].split(",").toList.asInstanceOf[Seq[Int]]).collect()
-    inputSeq
+    val data_df = input_df.select("sentence").rdd.map(x => {
+      val seq = x(0).asInstanceOf[String].split(",").toList.asInstanceOf[Seq[Int]]
+      (seq.take(seq.length-1), seq.drop(1))
+    }).collect()
+
+    val length = data_df.length
+    val seq = Random.shuffle((1 to length).toList)
+    val seqTrain = seq.take(Math.floor(seq.length*0.8).toInt).toArray
+    val seqVal   = seq.drop(Math.floor(seq.length*0.8).toInt).toArray
+
+    val trainData = seqTrain.collect(data_df)
+    val valData = seqVal.collect(data_df)
+
+    (trainData, valData)
   }
 
 //  private[bigdl] def predict(model: Module[Float], input: Tensor[Float]): Array[Int] = {
