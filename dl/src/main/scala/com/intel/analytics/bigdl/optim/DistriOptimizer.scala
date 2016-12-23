@@ -71,7 +71,7 @@ object DistriOptimizer {
     model: Module[T],
     optimMethod: OptimMethod[T],
     validationTrigger: Option[Trigger],
-    validationDataSet: Option[DataSource[RDD[Batch[T]]]],
+    validationDataSet: Option[DataSource[Batch[T], RDD[Batch[T]]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
     cacheTrigger: Option[Trigger],
     cachePath: Option[String],
@@ -356,7 +356,7 @@ object DistriOptimizer {
 
   private def validate[T](
     validationTrigger: Option[Trigger],
-    validationDataSet: Option[DataSource[RDD[Batch[T]]]],
+    validationDataSet: Option[DataSource[Batch[T], RDD[Batch[T]]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
     coresPerNode: Int,
     models: RDD[Cache[T]],
@@ -446,7 +446,7 @@ class DistriOptimizer[T: ClassTag] private[optim](
   criterion: Criterion[T]
 )
   (implicit ev: TensorNumeric[T])
-  extends Optimizer[T, RDD[Batch[T]], RDD[Batch[T]]](
+  extends Optimizer[T, Batch[T], RDD[Batch[T]], RDD[Batch[T]]](
     model, dataset, criterion) {
 
   def disableCheckSingleton(): this.type = {

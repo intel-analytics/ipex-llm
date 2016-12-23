@@ -68,7 +68,7 @@ object Train {
 
       Engine.setCoreNumber(1)
       Engine.model.setPoolSize(param.coreNumber)
-      val optimizer = new LocalOptimizer[Float](
+      val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
         criterion = new CrossEntropyCriterion[Float]()

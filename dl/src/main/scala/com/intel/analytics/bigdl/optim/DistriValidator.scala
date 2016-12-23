@@ -31,10 +31,10 @@ object DistriValidator {
 
 class DistriValidator[T](
   model: Module[T]
-) extends Validator[T, RDD[Batch[T]]](model) {
+) extends Validator[T, Batch[T], RDD[Batch[T]]](model) {
 
   override def test(
-    dataSet: DataSource[RDD[Batch[T]]],
+    dataSet: DataSource[Batch[T], RDD[Batch[T]]],
     vMethods: Array[ValidationMethod[T]])
   : Array[(ValidationResult, ValidationMethod[T])] = {
     val rdd = dataSet.data(looped = false)

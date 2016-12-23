@@ -26,9 +26,9 @@ import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, LocalDataSet, B
 
 import scala.reflect.ClassTag
 
-abstract class Optimizer[T  : ClassTag, TDS, VDS](
+abstract class Optimizer[T  : ClassTag, D, TDS, VDS](
     protected val model: Module[T],
-    protected val dataset: DataSource[TDS],
+    protected val dataset: DataSource[D, TDS],
     protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
 {
   protected var state: Table = T()
@@ -41,11 +41,11 @@ abstract class Optimizer[T  : ClassTag, TDS, VDS](
 
   protected var validationTrigger: Option[Trigger] = None
   protected var validationMethods: Option[Array[ValidationMethod[T]]] = None
-  protected var validationDataSet: Option[DataSource[VDS]] = None
+  protected var validationDataSet: Option[DataSource[D, VDS]] = None
 
   def optimize(): Module[T]
 
-  def setValidation(trigger: Trigger, dataset: DataSource[VDS],
+  def setValidation(trigger: Trigger, dataset: DataSource[D, VDS],
     vMethods : Array[ValidationMethod[T]])
   : this.type = {
     this.validationTrigger = Some(trigger)
@@ -102,24 +102,24 @@ object Optimizer {
     }
   }
 
-  def apply[T: ClassTag, DS](
+  def apply[T: ClassTag, D, DS](
     model: Module[T],
-    dataset: DataSource[DS],
+    dataset: DataSource[D, DS],
     criterion: Criterion[T]
-  )(implicit ev: TensorNumeric[T]): Optimizer[T, DS, DS] = {
+  )(implicit ev: TensorNumeric[T]): Optimizer[T, D, DS, DS] = {
     dataset match {
       case d: DistributedDataSet[Batch[T]] =>
         new DistriOptimizer[T](
           model = model,
           dataset = d,
           criterion = criterion
-        ).asInstanceOf[Optimizer[T, DS, DS]]
+        ).asInstanceOf[Optimizer[T, D, DS, DS]]
       case d: LocalDataSet[Batch[T]] =>
         new LocalOptimizer[T](
           model = model,
           dataset = d,
           criterion = criterion
-        ).asInstanceOf[Optimizer[T, DS, DS]]
+        ).asInstanceOf[Optimizer[T, D, DS, DS]]
       case _ =>
         throw new UnsupportedOperationException
     }
