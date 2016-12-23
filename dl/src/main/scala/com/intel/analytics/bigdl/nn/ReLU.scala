@@ -21,8 +21,10 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(1208478077576570643L)
 class ReLU[T: ClassTag](ip: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends Threshold[T](0, 0, ip) {
+
   override def toString(): String = {
     s"nn.ReLU"
   }

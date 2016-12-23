@@ -28,6 +28,7 @@ import scala.reflect.ClassTag
  *
  * @param inputSize size of input data
  */
+@SerialVersionUID(4268487849759172896L)
 class Add[T: ClassTag](inputSize: Int
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 

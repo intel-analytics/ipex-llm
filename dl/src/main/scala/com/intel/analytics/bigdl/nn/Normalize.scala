@@ -27,6 +27,7 @@ import scala.reflect.ClassTag
  * division by zero when the input contains all zero elements (default = 1e-10).
  * p can be Double.MaxValue
  */
+@SerialVersionUID(1504221556573977764L)
 class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   require(p > 0, s"$p-norm not supported")

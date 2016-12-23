@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(6235868252238790276L)
 class Copy[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

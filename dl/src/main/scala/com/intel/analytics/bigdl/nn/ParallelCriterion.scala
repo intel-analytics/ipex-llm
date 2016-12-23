@@ -31,6 +31,8 @@ import scala.reflect.ClassTag
  *
  * @param repeatTarget Whether to share the target for all criterions.
  */
+
+@SerialVersionUID(- 556839979002442525L)
 class ParallelCriterion[T: ClassTag](val repeatTarget: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Table, T] {
 

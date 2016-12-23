@@ -30,6 +30,8 @@ import scala.reflect.ClassTag
  *
  * @param margin
  */
+
+@SerialVersionUID(- 1765228642089353823L)
 class L1HingeEmbeddingCriterion[T: ClassTag](val margin: Double = 1)
  (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Table, T]{
 

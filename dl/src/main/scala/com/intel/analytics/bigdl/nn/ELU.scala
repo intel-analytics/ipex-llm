@@ -27,6 +27,8 @@ import scala.reflect.ClassTag
  * Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
  *   [http://arxiv.org/pdf/1511.07289.pdf]
  */
+
+@SerialVersionUID( - 3525781855978085005L)
 class ELU[T: ClassTag](
   alpha: Double = 1.0,
   inplace: Boolean = false)(

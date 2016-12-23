@@ -27,6 +27,8 @@ import scala.reflect.ClassTag
  * (potentially nested) as input and a table of Tensors without any nested
  * table will be produced
  */
+
+@SerialVersionUID(7620301574431959449L)
 class FlattenTable[T: ClassTag] (implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
   @transient private var inputMap: Table = null

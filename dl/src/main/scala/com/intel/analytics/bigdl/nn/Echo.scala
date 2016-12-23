@@ -31,6 +31,8 @@ import scala.reflect.ClassTag
  * @param ev
  * @tparam T
  */
+
+@SerialVersionUID(6735245897546687343L)
 class Echo[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T])
   extends TensorModule[T]  {
 

@@ -25,6 +25,8 @@ import scala.reflect.ClassTag
  * It is a container module that applies the i-th member module to the i-th
  * input, and outputs an output in the form of Table
  */
+
+@SerialVersionUID(- 1197848941394786045L)
 class ParallelTable[T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T] {
 

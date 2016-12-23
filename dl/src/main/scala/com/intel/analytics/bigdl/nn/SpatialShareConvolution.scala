@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.utils.Engine
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
+@SerialVersionUID(4479683852714800631L)
 class SpatialShareConvolution[T: ClassTag](
   nInputPlane: Int, // The number of expected input planes in the image given into forward()
   nOutputPlane: Int, // The number of output planes the convolution layer will produce.

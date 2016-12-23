@@ -26,6 +26,7 @@ import scala.reflect.ClassTag
  * This module adds pad units of padding to dimension dim of the input. If pad is negative,
  * padding is added to the left, otherwise, it is added to the right of the dimension.
  */
+@SerialVersionUID(- 3401298839313169602L)
 class Padding[T: ClassTag](
   val dim: Int,
   val pad: Int,
@@ -102,6 +103,7 @@ class Padding[T: ClassTag](
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
 object Padding{
   def apply[@specialized(Float, Double) T: ClassTag](
     dim: Int,

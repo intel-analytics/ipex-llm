@@ -29,6 +29,8 @@ import scala.reflect.ClassTag
  * @param dim Optional. The dimension to be delete. Default: delete all dimensions.
  * @param numInputDims Optional. If in a batch model, set to the inputDims.
  */
+
+@SerialVersionUID(7998127436291978408L)
 class Squeeze[@specialized(Float, Double) T: ClassTag](
   var dim : Int = Int.MinValue,
   var numInputDims: Int = Int.MinValue

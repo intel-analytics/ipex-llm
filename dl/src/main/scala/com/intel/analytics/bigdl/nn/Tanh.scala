@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.tensor._
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(9062199894710333035L)
 class Tanh[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

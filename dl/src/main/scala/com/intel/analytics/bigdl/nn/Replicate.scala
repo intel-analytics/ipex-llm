@@ -31,6 +31,8 @@ import scala.reflect.ClassTag
  * @param dim dimension to be replicated.
  * @param nDim specify the number of non-batch dimensions.
  */
+
+@SerialVersionUID( - 7255265230723863741L)
 class Replicate[@specialized(Float, Double) T: ClassTag](
   val nFeatures : Int,
   val dim : Int = 1,

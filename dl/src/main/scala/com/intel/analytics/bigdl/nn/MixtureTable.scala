@@ -33,6 +33,8 @@ import scala.reflect.ClassTag
  * @param dim
  * @tparam T Numeric type. Only support float/double now
  */
+
+@SerialVersionUID( - 114773362363268868L)
 class MixtureTable[T: ClassTag](var dim: Int = Int.MaxValue)
  (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 

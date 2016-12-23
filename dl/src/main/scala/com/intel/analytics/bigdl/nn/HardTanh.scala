@@ -25,6 +25,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 8953866090802444183L)
 class HardTanh[T: ClassTag](
   val minValue: Double = -1,
   val maxValue: Double = 1,

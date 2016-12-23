@@ -37,6 +37,8 @@ import scala.reflect.ClassTag
  *
  * @param nOutputPlane input map number. Default is 0.
  */
+
+@SerialVersionUID(- 877259619727212424L)
 class PReLU[T: ClassTag](
   val nOutputPlane: Int = 0)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {

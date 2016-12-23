@@ -32,6 +32,8 @@ import scala.reflect.ClassTag
  *
  * @param lambda: a threshold value whose default value is 0.5
  */
+
+@SerialVersionUID( 3551967457354343585L)
 class HardShrink[T: ClassTag](lambda: Double = 0.5)
   (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {

@@ -29,6 +29,8 @@ import scala.reflect.ClassTag
  *
  * @param module
  */
+
+@SerialVersionUID( 4403280698280280268L)
 class MapTable[T: ClassTag](
   var module: AbstractModule[_ <: Activity, _ <: Activity, T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T]  {

@@ -33,6 +33,8 @@ import scala.reflect.ClassTag
  *
  * @param lamda Default is 0.5.
  */
+
+@SerialVersionUID(- 2868096135424517459L)
 class SoftShrink[T: ClassTag](
     val lamda: Double = 0.5
   )( implicit ev: TensorNumeric[T]) extends TensorModule[T] {
