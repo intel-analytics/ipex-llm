@@ -56,15 +56,8 @@ object SparkTrain {
 
       val trainDataSet = DataSet.array(load(trainData, trainLabel), sc, param.nodesNumber)
         .transform(SampleToGreyImg(28, 28))
-        .transform(GreyImgNormalizer(trainDataSet))
+        .transform(GreyImgNormalizer(trainMean, trainStd))
         .transform(GreyImgToAEBatch(batchSize))
-
-//      val normalizer = GreyImgNormalizer(trainDataSet)
-
-//      val trainDataSet = DataSet.ImageFolder
-//        .images(Paths.get(param.folder, "/train"), sc, param.nodesNumber, 32)
-//        .transform(RGBImgNormalizer(trainMean, trainStd))
-//        .transform(RGBImgToBatch(batchSize))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -80,7 +73,6 @@ object SparkTrain {
           "weightDecay" -> 0.0005,
           "momentum" -> 0.9,
           "dampening" -> 0.0
-//          "learningRateSchedule" -> SGD.EpochStep(25, 0.5)
         )
       }
 
