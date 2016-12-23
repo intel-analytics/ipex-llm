@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -79,7 +79,7 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
     val nbatch = if (input.nDimension() == 4) input.size(1) else 1
     require(input.size(dimc) >= nInputPlane, "invalid number of input planes")
     require(input.size(dimw) >= kW && input.size(dimh) >= kH,
-      "input image smaller than kernel size")
+      "input smaller than kernel size")
 
     val inputW = input.size(dimw)
     val inputH = input.size(dimh)

@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -20,19 +20,27 @@ package com.intel.analytics.bigdl.models.lenet
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Path}
 
-import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.dataset.ByteRecord
 import scopt.OptionParser
 
 object Utils {
+  val trainMean = 0.13066047740239506
+  val trainStd = 0.3081078
+
+  val testMean = 0.13251460696903547
+  val testStd = 0.31048024
+
   case class TrainParams(
     folder: String = "./",
-    cache: Option[String] = None,
+    checkpoint: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
-    batchSize: Int = 10,
+    batchSize: Int = 12,
     learningRate: Double = 0.05,
     maxEpoch: Int = 15,
-    coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
+    coreNumber: Int = -1,
+    nodeNumber: Int = -1,
+    env: String = "local"
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Lenet Train Example") {
@@ -51,9 +59,9 @@ object Utils {
       .text("state snapshot location")
       .action((x, c) => c.copy(stateSnapshot = Some(x)))
 
-    opt[String]("cache")
+    opt[String]("checkpoint")
       .text("where to cache the model")
-      .action((x, c) => c.copy(cache = Some(x)))
+      .action((x, c) => c.copy(checkpoint = Some(x)))
 
     opt[Double]('r', "learningRate")
       .text("learning rate")
@@ -64,14 +72,36 @@ object Utils {
       .action((x, c) => c.copy(maxEpoch = x))
 
     opt[Int]('c', "core")
-      .text("cores number to train the model")
+      .text("cores number on each node")
       .action((x, c) => c.copy(coreNumber = x))
+      .required()
+    opt[Int]('n', "node")
+      .text("node number to train the model")
+      .action((x, c) => c.copy(nodeNumber = x))
+      .required()
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = x))
+    opt[String]("env")
+      .text("execution environment")
+      .validate(x => {
+        if (Set("local", "spark").contains(x.toLowerCase)) {
+          success
+        } else {
+          failure("env only support local|spark")
+        }
+      })
+      .action((x, c) => c.copy(env = x.toLowerCase()))
+      .required()
   }
 
   case class TestParams(
     folder: String = "./",
     model: String = "",
-    coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
+    coreNumber: Int = -1,
+    nodeNumber: Int = -1,
+    batchSize: Int = 128,
+    env: String = "local"
   )
 
   val testParser = new OptionParser[TestParams]("BigDL Lenet Test Example") {
@@ -83,9 +113,31 @@ object Utils {
       .text("model snapshot location")
       .action((x, c) => c.copy(model = x))
       .required()
+    opt[Int]('c', "core")
+      .text("cores number on each node")
+      .action((x, c) => c.copy(coreNumber = x))
+      .required()
+    opt[Int]('n', "nodeNumber")
+      .text("nodes number to train the model")
+      .action((x, c) => c.copy(nodeNumber = x))
+      .required()
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = x))
+    opt[String]("env")
+      .text("execution environment")
+      .validate(x => {
+        if (Set("local", "spark").contains(x.toLowerCase)) {
+          success
+        } else {
+          failure("env only support local|spark")
+        }
+      })
+      .action((x, c) => c.copy(env = x.toLowerCase()))
+      .required()
   }
 
-  private[bigdl] def load(featureFile: Path, labelFile: Path): Array[Sample] = {
+  private[bigdl] def load(featureFile: Path, labelFile: Path): Array[ByteRecord] = {
     val labelBuffer = ByteBuffer.wrap(Files.readAllBytes(labelFile))
     val featureBuffer = ByteBuffer.wrap(Files.readAllBytes(featureFile))
     val labelMagicNumber = labelBuffer.getInt()
@@ -101,7 +153,7 @@ object Utils {
     val rowNum = featureBuffer.getInt()
     val colNum = featureBuffer.getInt()
 
-    val result = new Array[Sample](featureCount)
+    val result = new Array[ByteRecord](featureCount)
     var i = 0
     while (i < featureCount) {
       val img = new Array[Byte]((rowNum * colNum))
@@ -114,7 +166,7 @@ object Utils {
         }
         y += 1
       }
-      result(i) = Sample(img, labelBuffer.get().toFloat + 1.0f)
+      result(i) = ByteRecord(img, labelBuffer.get().toFloat + 1.0f)
       i += 1
     }
 

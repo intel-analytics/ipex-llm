@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.alexnet.AlexNet
-import com.intel.analytics.bigdl.models.inception.GoogleNet_v1
+import com.intel.analytics.bigdl.models.inception.Inception_v1
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -42,10 +42,10 @@ class SaveObjSpec extends FlatSpec with Matchers {
     loadedModel.forward(Tensor[Float](4, 3, 227, 227))
   }
 
-  "GoogleNet load from saved file" should "be same with the original one" in {
-    val model = GoogleNet_v1(1000)
+  "Inception load from saved file" should "be same with the original one" in {
+    val model = Inception_v1(1000)
 
-    val filePath = java.io.File.createTempFile("SaveObjSpecGoogleNet", ".obj").getAbsolutePath
+    val filePath = java.io.File.createTempFile("SaveObjSpecInception", ".obj").getAbsolutePath
     model.forward(Tensor[Float](4, 3, 224, 224))
     File.save(model, filePath, true)
     val loadedModel = File.load[Module[Float]](filePath)

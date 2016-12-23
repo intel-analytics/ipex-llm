@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -30,11 +30,11 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 5446858218997354022L)
 class CrossEntropyCriterion[T: ClassTag](
-   val weights: Tensor[T] = null, squeezeFlag: Boolean = false)
+   val weights: Tensor[T] = null,
+   val squeezeFlag: Boolean = false)
    (implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{
-
-  private val lsm = LogSoftMax[T]()
-  private val nll = ClassNLLCriterion[T](weights)
+  private val lsm = new LogSoftMax[T]()
+  private val nll = new ClassNLLCriterion[T](weights)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     if (squeezeFlag) input.squeeze()
@@ -75,7 +75,9 @@ class CrossEntropyCriterion[T: ClassTag](
 
 object CrossEntropyCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
-      weights: Tensor[T] = null)(implicit ev: TensorNumeric[T]) : CrossEntropyCriterion[T] = {
-    new CrossEntropyCriterion[T](weights)
+      weights: Tensor[T] = null,
+      squeezeFlag: Boolean = false)
+      (implicit ev: TensorNumeric[T]) : CrossEntropyCriterion[T] = {
+    new CrossEntropyCriterion[T](weights, squeezeFlag)
   }
 }

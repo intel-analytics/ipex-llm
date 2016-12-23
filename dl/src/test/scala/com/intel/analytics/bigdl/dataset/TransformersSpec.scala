@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -62,10 +62,10 @@ class TransformersSpec extends FlatSpec with Matchers {
     val std = math.sqrt((1 to 27).map(e => (e - mean) * (e - mean)).sum / 27f).toFloat
     val target = image1.content.map(e => (e - mean) / std)
 
-    val dataSource = new LocalArrayDataSet[LabeledGreyImage](
+    val dataSet = new LocalArrayDataSet[LabeledGreyImage](
       Array(image1, image2, image3))
 
-    val normalizer = GreyImgNormalizer(dataSource)
+    val normalizer = GreyImgNormalizer(dataSet)
     val iter = normalizer.apply(Iterator.single(image1))
     val test = iter.next()
     normalizer.getMean() should be(mean)
@@ -86,11 +86,11 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new LocalArrayDataSet[LabeledGreyImage](Array(image1, image2, image3))
+    val dataSet = new LocalArrayDataSet[LabeledGreyImage](Array(image1, image2, image3))
 
     val toTensor = new GreyImgToBatch(2)
-    val tensorDataSource = dataSource -> toTensor
-    val iter = tensorDataSource.data(looped = true)
+    val tensorDataSet = dataSet -> toTensor
+    val iter = tensorDataSet.toLocal().data(train = true)
     val batch = iter.next()
     batch.data.size(1) should be(2)
     batch.data.size(2) should be(32)
@@ -183,9 +183,9 @@ class TransformersSpec extends FlatSpec with Matchers {
       r
     })
 
-    val dataSource = new LocalArrayDataSet[LabeledBGRImage](Array(image1, image2, image3))
+    val dataSet = new LocalArrayDataSet[LabeledBGRImage](Array(image1, image2, image3))
 
-    val normalizer = BGRImgNormalizer(dataSource)
+    val normalizer = BGRImgNormalizer(dataSet)
     val iter = normalizer.apply(Iterator.single(image1))
     val test = iter.next()
     normalizer.getMean() should be((thirdFrameMean, secondFrameMean, firstFrameMean))
@@ -209,11 +209,11 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new LocalArrayDataSet[LabeledBGRImage](Array(image1, image2, image3))
+    val dataSet = new LocalArrayDataSet[LabeledBGRImage](Array(image1, image2, image3))
 
     val toTensor = new BGRImgToBatch(2)
-    val tensorDataSource = dataSource -> toTensor
-    val iter = tensorDataSource.data(looped = true)
+    val tensorDataSet = dataSet -> toTensor
+    val iter = tensorDataSet.toLocal().data(train = true)
     val batch1 = iter.next()
     batch1.data.size(1) should be(2)
     batch1.data.size(2) should be(3)
@@ -325,12 +325,12 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     val core = Engine.coreNumber()
     Engine.setCoreNumber(1)
-    val dataSource = new LocalArrayDataSet[LabeledBGRImage](Array(image1, image2, image3))
+    val dataSet = new LocalArrayDataSet[LabeledBGRImage](Array(image1, image2, image3))
     val toTensor = new MTLabeledBGRImgToBatch[LabeledBGRImage](
       width = 32, height = 32, totalBatchSize = 2, transformer = Identity[LabeledBGRImage]
     )
-    val tensorDataSource = dataSource -> toTensor
-    val iter = tensorDataSource.data(looped = true)
+    val tensorDataSet = dataSet -> toTensor
+    val iter = tensorDataSet.toLocal().data(train = true)
     val batch = iter.next()
     batch.data.size(1) should be(2)
     batch.data.size(2) should be(3)
@@ -432,33 +432,34 @@ class TransformersSpec extends FlatSpec with Matchers {
   "RGBImage To SeqFile" should "be good" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
     val pathToImage = LocalImgReader(BGRImage.NO_SCALE)
-    val dataSource = DataSet.ImageFolder.paths(
+    val dataSet = DataSet.ImageFolder.paths(
       Paths.get(processPath(resource.getPath()))
     )
 
     RandomGenerator.RNG.setSeed(1000)
 
-    dataSource.shuffle()
+    dataSet.shuffle()
     val tmpFile = Paths.get(java.io.File.createTempFile("UnitTest", "RGBImageToSeqFile").getPath)
     val seqWriter = BGRImgToLocalSeqFile(2, tmpFile)
-    val writePipeline = dataSource -> pathToImage -> seqWriter
-    val iter = writePipeline.data(looped = false)
+    val writePipeline = dataSet -> pathToImage -> seqWriter
+    val iter = writePipeline.toLocal().data(train = false)
     while (iter.hasNext) {
       println(s"writer file ${iter.next()}")
     }
 
-    val seqDataSource = new LocalArrayDataSet[SeqFileLocalPath](Array(
-      SeqFileLocalPath(Paths.get(tmpFile + "_0.seq")),
-      SeqFileLocalPath(Paths.get(tmpFile + "_1.seq")),
-      SeqFileLocalPath(Paths.get(tmpFile + "_2.seq")),
-      SeqFileLocalPath(Paths.get(tmpFile + "_3.seq")),
-      SeqFileLocalPath(Paths.get(tmpFile + "_4.seq")),
-      SeqFileLocalPath(Paths.get(tmpFile + "_5.seq"))
+    val seqDataSet = new LocalArrayDataSet[LocalSeqFilePath](Array(
+      LocalSeqFilePath(Paths.get(tmpFile + "_0.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_1.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_2.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_3.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_4.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_5.seq"))
     ))
     var count = 0
-    val readPipeline = seqDataSource -> LocalSeqFileToBytes() -> SampleToBGRImg()
-    val readIter = readPipeline.data(looped = false)
-    readIter.zip((dataSource -> pathToImage).data(looped = false)).foreach { case (l, r) =>
+    val readPipeline = seqDataSet -> LocalSeqFileToBytes() -> SampleToBGRImg()
+    val readIter = readPipeline.toLocal().data(train = false)
+    readIter.zip((dataSet -> pathToImage).toLocal().data(train = false))
+      .foreach { case (l, r) =>
       l.label() should be(r.label())
       l.width() should be(r.width())
       l.height() should be(r.height())

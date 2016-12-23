@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,14 +16,14 @@
  */
 package com.intel.analytics.bigdl.models.utils
 
-import com.intel.analytics.bigdl.dataset.{Batch, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, LocalDataSet}
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
-import com.intel.analytics.bigdl.models.inception.{GoogleNet_v1, GoogleNet_v2}
+import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
-import com.intel.analytics.bigdl.optim.{LocalOptimizer, Trigger}
+import com.intel.analytics.bigdl.optim.{Optimizer, LocalOptimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
@@ -44,16 +44,16 @@ object LocalOptimizerPerf {
       .text("Iteration of perf test. The result will be average of each iteration time cost")
       .action((v, p) => p.copy(iteration = v))
     opt[String]('m', "model")
-      .text("Model name. It can be alexnet | alexnetowt | googlenet_v1 | vgg16 | vgg19 | lenet5")
+      .text("Model name. It can be alexnet | alexnetowt | inception_v1 | vgg16 | vgg19 | " +
+        "inception_v2")
       .action((v, p) => p.copy(module = v))
       .validate(v =>
-        if (Set("alexnet", "alexnetowt", "googlenet_v1", "googlenet_v2", "vgg16", "vgg19",
-          "lenet5").
+        if (Set("alexnet", "alexnetowt", "inception_v1", "inception_v2", "vgg16", "vgg19").
           contains(v.toLowerCase())) {
           success
         } else {
-          failure("Data type can only be alexnet | alexnetowt | googlenet_v1 | " +
-            "vgg16 | vgg19 | lenet5 now")
+          failure("Data type can only be alexnet | alexnetowt | inception_v1 | " +
+            "vgg16 | vgg19 | inception_v2 now")
         }
       )
     opt[String]('d', "inputdata")
@@ -79,8 +79,8 @@ object LocalOptimizerPerf {
     val (_model, input) = param.module match {
       case "alexnet" => (AlexNet(1000), Tensor(param.batchSize, 3, 227, 227))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor(param.batchSize, 3, 224, 224))
-      case "googlenet_v1" => (GoogleNet_v1(1000), Tensor(param.batchSize, 3, 224, 224))
-      case "googlenet_v2" => (GoogleNet_v2(1000), Tensor(param.batchSize, 3, 224, 224))
+      case "inception_v1" => (Inception_v1(1000), Tensor(param.batchSize, 3, 224, 224))
+      case "inception_v2" => (Inception_v2(1000), Tensor(param.batchSize, 3, 224, 224))
       case "vgg16" => (Vgg_16(1000), Tensor(param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), Tensor(param.batchSize, 3, 224, 224))
     }
@@ -92,13 +92,13 @@ object LocalOptimizerPerf {
     println(model)
     val criterion = ClassNLLCriterion()
     val labels = Tensor(param.batchSize).fill(1)
-    val dummyDataSet = new LocalDataSet[Batch[Float]] {
-      override def data(looped : Boolean): Iterator[Batch[Float]] = {
-        new Iterator[Batch[Float]] {
+    val dummyDataSet = new LocalDataSet[MiniBatch[Float]] {
+      override def data(train : Boolean): Iterator[MiniBatch[Float]] = {
+        new Iterator[MiniBatch[Float]] {
           override def hasNext: Boolean = true
 
-          override def next(): Batch[Float] = {
-            Batch(input, labels)
+          override def next(): MiniBatch[Float] = {
+            MiniBatch(input, labels)
           }
         }
       }
@@ -107,7 +107,7 @@ object LocalOptimizerPerf {
     }
 
     Engine.setCoreNumber(param.coreNumber)
-    val optimizer = new LocalOptimizer[Float](model, dummyDataSet, criterion)
+    val optimizer = Optimizer(model, dummyDataSet, criterion)
     optimizer.setEndWhen(Trigger.maxIteration(param.iteration)).optimize()
   }
 }

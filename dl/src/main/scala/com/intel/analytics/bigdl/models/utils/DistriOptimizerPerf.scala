@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,14 +16,14 @@
  */
 package com.intel.analytics.bigdl.models.utils
 
-import com.intel.analytics.bigdl.dataset.{Batch, DistributedDataSet}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, DistributedDataSet}
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
-import com.intel.analytics.bigdl.optim.{DistriOptimizer, Trigger}
+import com.intel.analytics.bigdl.optim.{Optimizer, DistriOptimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
-import com.intel.analytics.bigdl.models.inception.{GoogleNet_v1, GoogleNet_v2}
+import com.intel.analytics.bigdl.models.inception.{Inception_v2, Inception_v1}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
@@ -66,16 +66,16 @@ object DistriOptimizerPerf {
         }
       )
     opt[String]('m', "model")
-      .text("Model name. It can be alexnet | alexnetowt | googlenet_v1 | vgg16 | vgg19 | lenet5")
+      .text("Model name. It can be alexnet | alexnetowt | inception_v1 | inception_v2 | vgg16 | " +
+        "vgg19")
       .action((v, p) => p.copy(module = v))
       .validate(v =>
-        if (Set("alexnet", "alexnetowt", "googlenet_v1", "googlenet_v2", "vgg16", "vgg19",
-          "lenet5").
+        if (Set("alexnet", "alexnetowt", "inception_v1", "inception_v2", "vgg16", "vgg19").
           contains(v.toLowerCase())) {
           success
         } else {
-          failure("Data type can only be alexnet | alexnetowt | googlenet_v1 | " +
-            "vgg16 | vgg19 | lenet5 now")
+          failure("Data type can only be alexnet | alexnetowt | inception_v1 | " +
+            "vgg16 | vgg19 | inception_v2 now")
         }
       )
     opt[String]('d', "inputdata")
@@ -98,12 +98,15 @@ object DistriOptimizerPerf {
   }
 
   def performance(param: DistriOptimizerPerfParam): Unit = {
-    Engine.setCluster(param.nodeNumber, param.corePerNode)
+    val conf = Engine.init(param.nodeNumber, param.corePerNode, true).get
+      .setAppName("DistriOptimizer Performance Test")
+      .set("spark.task.cpus", param.corePerNode.toString)
+
     val (_model, input) = param.module match {
       case "alexnet" => (AlexNet(1000), Tensor(param.batchSize, 3, 227, 227))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor(param.batchSize, 3, 224, 224))
-      case "googlenet_v1" => (GoogleNet_v1(1000), Tensor(param.batchSize, 3, 224, 224))
-      case "googlenet_v2" => (GoogleNet_v2(1000), Tensor(param.batchSize, 3, 224, 224))
+      case "inception_v1" => (Inception_v1(1000), Tensor(param.batchSize, 3, 224, 224))
+      case "inception_v2" => (Inception_v2(1000), Tensor(param.batchSize, 3, 224, 224))
       case "vgg16" => (Vgg_16(1000), Tensor(param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), Tensor(param.batchSize, 3, 224, 224))
     }
@@ -116,24 +119,21 @@ object DistriOptimizerPerf {
     val criterion = ClassNLLCriterion[Float]()
     val labels = Tensor(param.batchSize).fill(1)
 
-    Engine.setCluster(param.nodeNumber, param.corePerNode)
-    val conf = Engine.sparkConf().setAppName("DistriOptimizer Performance Test")
-      .set("spark.task.cpus", param.corePerNode.toString)
     val sc = new SparkContext(conf)
-    val broadcast = sc.broadcast(Batch(input, labels))
+    val broadcast = sc.broadcast(MiniBatch(input, labels))
     val rdd = sc.parallelize((1 to param.nodeNumber), param.nodeNumber)
       .mapPartitions(iter => {
         Iterator.single((broadcast.value))
       }).persist()
     rdd.count()
-    val dummyDataSet = new DistributedDataSet[Batch[Float]] {
+    val dummyDataSet = new DistributedDataSet[MiniBatch[Float]] {
       override def size(): Long = 100000
       override def shuffle(): Unit = {}
       override def originRDD(): RDD[_] = rdd
-      override def data(looped: Boolean): RDD[Batch[Float]] = rdd
+      override def data(train: Boolean): RDD[MiniBatch[Float]] = rdd
     }
 
-    val optimizer = new DistriOptimizer[Float](
+    val optimizer = Optimizer(
       model,
       dummyDataSet,
       criterion

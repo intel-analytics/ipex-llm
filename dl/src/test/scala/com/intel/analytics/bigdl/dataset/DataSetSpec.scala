@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FlatSpec, Matchers}
 
 class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -50,42 +51,42 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "mnist data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("mnist")
 
-    val dataSource = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
+    val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
       Paths.get(processPath(resource.getPath()) + File.separator, "t10k-images.idx3-ubyte"),
       Paths.get(processPath(resource.getPath()) + File.separator, "t10k-labels.idx1-ubyte")
     ))
-    dataSource.size() should be(10000)
-    var iter = dataSource.data(looped = false)
+    dataSet.size() should be(10000)
+    var iter = dataSet.data(train = false)
     iter.map(_.label).min should be(1.0f)
-    iter = dataSource.data(looped = false)
+    iter = dataSet.data(train = false)
     iter.map(_.label).max should be(10.0f)
   }
 
   "mnist rdd data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("mnist")
 
-    val dataSource = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
+    val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
       Paths.get(processPath(resource.getPath()) + File.separator, "t10k-images.idx3-ubyte"),
       Paths.get(processPath(resource.getPath()) + File.separator, "t10k-labels.idx1-ubyte")
     ), sc, 4)
 
-    dataSource.size() should be(10000)
-    var rdd = dataSource.data(looped = false)
+    dataSet.size() should be(10000)
+    var rdd = dataSet.data(train = false)
     rdd.map(_.label).min should be(1.0f)
-    rdd = dataSource.data(looped = false)
+    rdd = dataSet.data(train = false)
     rdd.map(_.label).max should be(10.0f)
   }
 
   "cifar data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("cifar")
-    val dataSource = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
+    val dataSet = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
       BGRImage.NO_SCALE)
-    dataSource.size() should be(7)
+    dataSet.size() should be(7)
     val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
     labelMap("airplane") should be(1)
     labelMap("deer") should be(2)
 
-    val iter = dataSource.data(looped = false)
+    val iter = dataSet.toLocal().data(train = false)
     val img1 = iter.next()
     img1.label() should be(1f)
     img1.content(2) should be(234 / 255f)
@@ -113,14 +114,14 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "cifar rdd data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("cifar")
-    val dataSource = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
+    val dataSet = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
       sc, 4, BGRImage.NO_SCALE)
-    dataSource.size() should be(7)
+    dataSet.size() should be(7)
     val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
     labelMap("airplane") should be(1)
     labelMap("deer") should be(2)
 
-    val rdd = dataSource.data(looped = false)
+    val rdd = dataSet.toDistributed().data(train = false)
     rdd.filter(_.label() == 1f).count() should be(3)
     rdd.filter(_.label() == 2f).count() should be(4)
     val images = rdd.map(_.clone())
@@ -149,8 +150,8 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "imagenet data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
-    val dataSource = DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
-    dataSource.size() should be(11)
+    val dataSet = DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
+    dataSet.size() should be(11)
 
     val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
     labelMap("n02110063") should be(1)
@@ -159,9 +160,9 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     labelMap("n99999999") should be(4)
 
     val pathToImage = LocalImgReader(BGRImage.NO_SCALE)
-    val imageDataSource = dataSource -> pathToImage
+    val imageDataSet = dataSet -> pathToImage
 
-    val images = imageDataSource.data(looped = false)
+    val images = imageDataSet.toLocal().data(train = false)
       .map(_.clone())
       .toArray
       .sortWith(_.content(0) < _.content(0))
@@ -193,15 +194,15 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val files = (DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
       -> LocalImgReader(BGRImage.NO_SCALE)
       -> BGRImgToLocalSeqFile(2, Paths.get(tmpFile.getAbsolutePath(), "imagenet"))
-      ).data(looped = false).map(s => {
+      ).toLocal().data(train = false).map(s => {
       println(s);
       s
     }).toArray
 
     files.length should be(6)
 
-    val imageIter = (DataSet.SequenceFolder.paths(Paths.get(tmpFile.getAbsolutePath()), 11)
-      -> LocalSeqFileToBytes() -> SampleToBGRImg()).data(looped = false)
+    val imageIter = (DataSet.SeqFileFolder.paths(Paths.get(tmpFile.getAbsolutePath()), 11)
+      -> LocalSeqFileToBytes() -> SampleToBGRImg()).toLocal().data(train = false)
 
     val img = imageIter.next()
     img.label() should be(4f)
@@ -230,13 +231,13 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val resourceImageNet = getClass().getClassLoader().getResource("imagenet")
     def test(imgFolder: String, imgFileName: String, tensorFile: String): Unit = {
       val img1Path = Paths.get(processPath(resourceImageNet.getPath()), imgFolder, imgFileName)
-      val iter = (DataSet.array(Array(LabeledImageLocalPath(1.0f, img1Path)))
+      val iter = (DataSet.array(Array(LocalLabeledImagePath(1.0f, img1Path)))
         -> LocalImgReader()
         -> BGRImgCropper(224, 224)
         -> HFlip()
         -> BGRImgNormalizer((0.4, 0.5, 0.6), (0.1, 0.2, 0.3))
         -> BGRImgToBatch(1)
-        ).data(looped = false)
+        ).toLocal().data(train = false)
       val image1 = iter.next().data
 
       val resourceTorch = getClass().getClassLoader().getResource("torch")
@@ -257,5 +258,25 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     test("n15075141", "n15075141_38508.JPEG", "n15075141_38508.t7")
     RandomGenerator.RNG.setSeed(100)
     test("n99999999", "n03000134_4970.JPEG", "n03000134_4970.t7")
+  }
+
+  "RDD from DataSet" should "give different position every time" in {
+    val data = (1 to 4).toArray
+    val trainRDD = DataSet.rdd(sc.parallelize(data, 1).mapPartitions(_ => {
+      RandomGenerator.RNG.setSeed(100)
+      (1 to 100).iterator
+    }), 1).data(train = true)
+    trainRDD.mapPartitions(iter => {
+      Iterator.single(iter.next())
+    }).collect()(0) should be(22)
+
+    trainRDD.mapPartitions(iter => {
+      Iterator.single(iter.next())
+    }).collect()(0) should be(41)
+
+    trainRDD.mapPartitions(iter => {
+      Iterator.single(iter.next())
+    }).collect()(0) should be(62)
+
   }
 }

@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -17,12 +17,12 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.models.inception.GoogleNet_v2
+import com.intel.analytics.bigdl.models.inception.Inception_v2
 import org.scalatest.{FlatSpec, Matchers}
 
 class EngineTypeSpec extends FlatSpec with Matchers {
   "checkEngineType" should "return right result" in {
-    val model = GoogleNet_v2(1000)
+    val model = Inception_v2(1000)
     model.checkEngineType()
   }
 }

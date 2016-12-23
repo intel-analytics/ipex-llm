@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -18,21 +18,22 @@ package com.intel.analytics.bigdl.models.resnet
 
 import java.nio.file.{Path, Paths}
 
+import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.dataset.image._
 import org.apache.spark.SparkContext
 
 trait ResNetDataSet {
-  def localTrainDataSet(path: Path, batchSize: Int, size: Int)
-  : LocalDataSet[Batch[Float]]
-  def localValDataSet(path: Path, batchSize: Int, size: Int)
-  : LocalDataSet[Batch[Float]]
-  def distributedValDataSet(path: Path, sc: SparkContext,
+  def trainDataSet(path: Path, batchSize: Int, size: Int)
+  : DataSet[MiniBatch[Float]]
+  def valDataSet(path: Path, batchSize: Int, size: Int)
+  : DataSet[MiniBatch[Float]]
+  def valDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
-  : DistributedDataSet[Batch[Float]]
-  def distributedTrainDataSet(path: Path, sc: SparkContext,
+  : DataSet[MiniBatch[Float]]
+  def trainDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
-    : DistributedDataSet[Batch[Float]]
+  : DataSet[MiniBatch[Float]]
 }
 
 object Cifar10DataSet extends ResNetDataSet {
@@ -42,8 +43,8 @@ object Cifar10DataSet extends ResNetDataSet {
   val testMean = (0.4942142913295297, 0.4851314002725445, 0.45040910258647154)
   val testStd = (0.2466525177466614, 0.2428922662655766, 0.26159238066790275)
 
-  override def localTrainDataSet(path: Path, batchSize: Int, size: Int)
-  : LocalDataSet[Batch[Float]] = {
+  override def trainDataSet(path: Path, batchSize: Int, size: Int)
+  : DataSet[MiniBatch[Float]] = {
 
     DataSet.ImageFolder.images(path, size)
       .transform(BGRImgNormalizer(trainMean, trainStd))
@@ -52,26 +53,26 @@ object Cifar10DataSet extends ResNetDataSet {
       .transform(BGRImgToBatch(batchSize))
   }
 
-  override def localValDataSet(path: Path, batchSize: Int, size: Int)
-  : LocalDataSet[Batch[Float]] = {
+  override def valDataSet(path: Path, batchSize: Int, size: Int)
+  : DataSet[MiniBatch[Float]] = {
 
     DataSet.ImageFolder.images(path, size)
       .transform(BGRImgNormalizer(testMean, testStd))
       .transform(BGRImgToBatch(batchSize))
   }
 
-  override def distributedValDataSet(path: Path, sc: SparkContext,
+  override def valDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
-  : DistributedDataSet[Batch[Float]] = {
+  : DataSet[MiniBatch[Float]] = {
 
     DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
       .transform(BGRImgNormalizer(trainMean, trainStd))
       .transform(BGRImgToBatch(batchSize))
   }
 
-  override def distributedTrainDataSet(path: Path, sc: SparkContext,
+  override def trainDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
-  : DistributedDataSet[Batch[Float]] = {
+  : DataSet[MiniBatch[Float]] = {
 
     DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
       .transform(BGRImgNormalizer(testMean, testStd))

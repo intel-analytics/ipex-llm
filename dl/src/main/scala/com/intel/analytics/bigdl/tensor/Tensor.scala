@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -379,7 +379,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   /**
    * The Tensor is now going to "view" the given storage, starting at position storageOffset (>=1)
    * with the given dimension sizes and the optional given strides. As the result, any
-   * modification in the elements of the Storage will have a impact on the elements of the Tensor,
+   * modification in the elements of the Storage will have an impact on the elements of the Tensor,
    * and vice-versa. This is an efficient method, as there is no memory copy!
    *
    * If only storage is provided, the whole storage will be viewed as a 1D Tensor.

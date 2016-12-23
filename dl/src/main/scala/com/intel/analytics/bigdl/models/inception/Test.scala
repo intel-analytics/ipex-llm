@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -22,7 +22,7 @@ import java.nio.file.Paths
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{BGRImgNormalizer, BGRImgToBatch}
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{DistriValidator, Top1Accuracy, Top5Accuracy}
+import com.intel.analytics.bigdl.optim.{DistriValidator, Top1Accuracy, Top5Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -39,25 +39,26 @@ object Test {
 
   def main(args: Array[String]) {
     testParser.parse(args, new TestParams()).map(param => {
-      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
       val batchSize = param.batchSize.getOrElse(128)
-
-      val conf = Engine.sparkConf()
-        .setAppName("Test Googlenet on ImageNet")
-      val sc = new SparkContext(conf)
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
+        .map(conf => {
+          conf.setAppName("Test Inception on ImageNet")
+          new SparkContext(conf)
+        })
       val valSet = ImageNet2012(
         param.folder,
         sc,
         imageSize,
         batchSize,
-        param.nodesNumber,
-        param.coreNumberPerNode,
-        1000
+        param.nodeNumber,
+        param.coreNumber,
+        1000,
+        50000
       )
 
       val model = Module.load[Float](param.model)
-      val validator = new DistriValidator[Float](model)
-      val result = validator.test(valSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
+      val validator = Validator(model, valSet)
+      val result = validator.test(Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
       result.foreach(r => {
         println(s"${r._2} is ${r._1}")
       })

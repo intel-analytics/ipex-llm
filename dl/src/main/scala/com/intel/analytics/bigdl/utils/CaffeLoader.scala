@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -68,9 +68,9 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def getBlob(name: String, ind: Int): Option[Caffe.BlobProto] = {
-    if (name2LayerV2(name).getBlobsCount != 0) {
+    if (name2LayerV2.contains(name) && name2LayerV2(name).getBlobsCount != 0) {
       Some(name2LayerV2(name).getBlobs(ind))
-    } else if (name2LayerV1(name).getBlobsCount != 0) {
+    } else if (name2LayerV1.contains(name) && name2LayerV1(name).getBlobsCount != 0) {
       Some(name2LayerV1(name).getBlobs(ind))
     } else {
       None
@@ -80,7 +80,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   private def loadParameters(name: String, destPara: Array[Tensor[T]]):
   (Tensor[T], Tensor[T]) = {
     val caffeWeight = getBlob(name, 0)
-    if(caffeWeight == None) return (null, null)
+    if (caffeWeight.isEmpty) return (null, null)
     val weightList = caffeWeight.get.getDataList
     require(destPara != null && destPara(0).nElement() == weightList.size(),
       s"weight element must be equal in module $name")
@@ -92,7 +92,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
     if (destPara.length > 1) {
       val caffeBias = getBlob(name, 1)
-      if(caffeBias == None) return (destPara(1), null)
+      if (caffeBias.isEmpty) return (destPara(1), null)
       val biasList = caffeBias.get.getDataList
       require(destPara(1).nElement() == biasList.size(),
         s"bias element must be equal in module $name")

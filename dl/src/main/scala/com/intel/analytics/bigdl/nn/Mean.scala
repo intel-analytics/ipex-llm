@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -22,11 +22,11 @@ import scala.reflect.ClassTag
 
 /**
  * It is a simple layer which applies a mean operation over the given dimension.
- * When nInputDims is provided, the input will be considered as a batches.
+ * When nInputDims is provided, the input will be considered as batches.
  * Then the mean operation will be applied in (dimension + 1)
  *
  * @param dimension the dimension to be applied mean operation
- * @param nInputDims the number of dimensions of the give input
+ * @param nInputDims the number of dimensions of the given input
  */
 
 @SerialVersionUID(2995626598003841724L)

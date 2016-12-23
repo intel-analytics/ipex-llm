@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{Utils, Batch, Transformer}
+import com.intel.analytics.bigdl.dataset.{Utils, MiniBatch, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 
@@ -29,10 +29,10 @@ object BGRImgToBatch {
 }
 
 class BGRImgToBatch(totalBatch: Int, toRGB: Boolean = true)
-  extends Transformer[LabeledBGRImage, Batch[Float]] {
+  extends Transformer[LabeledBGRImage, MiniBatch[Float]] {
 
-  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[Batch[Float]] = {
-    new Iterator[Batch[Float]] {
+  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[MiniBatch[Float]] = {
+    new Iterator[MiniBatch[Float]] {
       private val featureTensor: Tensor[Float] = Tensor[Float]()
       private val labelTensor: Tensor[Float] = Tensor[Float]()
       private var featureData: Array[Float] = null
@@ -43,7 +43,7 @@ class BGRImgToBatch(totalBatch: Int, toRGB: Boolean = true)
 
       override def hasNext: Boolean = prev.hasNext
 
-      override def next(): Batch[Float] = {
+      override def next(): MiniBatch[Float] = {
         if (prev.hasNext) {
           var i = 0
           while (i < batchSize && prev.hasNext) {
@@ -66,7 +66,7 @@ class BGRImgToBatch(totalBatch: Int, toRGB: Boolean = true)
               storageOffset = 1, sizes = Array(i))
           }
 
-          Batch(featureTensor, labelTensor)
+          MiniBatch(featureTensor, labelTensor)
         } else {
           null
         }

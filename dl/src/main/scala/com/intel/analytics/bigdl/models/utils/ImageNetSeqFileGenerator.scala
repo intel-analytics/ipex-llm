@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -64,17 +64,17 @@ object ImageNetSeqFileGenerator {
         val trainFolderPath = Paths.get(param.folder, "train")
         require(Files.isDirectory(trainFolderPath),
           s"${trainFolderPath} is not valid")
-        val trainDataSource = DataSet.ImageFolder.paths(trainFolderPath)
-        trainDataSource.shuffle()
+        val trainDataSet = DataSet.ImageFolder.paths(trainFolderPath)
+        trainDataSet.shuffle()
+        val iter = trainDataSet.data(train = false)
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
-              val pipeline = trainDataSource -> LocalImgReader(256) ->
-                BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "train",
-                  s"imagenet-seq-$tid"))
-              val iter = pipeline.data(looped = false)
-              while (iter.hasNext) {
-                println(s"Generated file ${iter.next()}")
+              val imageIter = LocalImgReader(256)(iter)
+              val fileIter = BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "train",
+                  s"imagenet-seq-$tid"))(imageIter)
+              while (fileIter.hasNext) {
+                println(s"Generated file ${fileIter.next()}")
               }
             }
           })
@@ -91,17 +91,17 @@ object ImageNetSeqFileGenerator {
         require(Files.isDirectory(validationFolderPath),
           s"${validationFolderPath} is not valid")
 
-        val validationDataSource = DataSet.ImageFolder.paths(validationFolderPath)
-        validationDataSource.shuffle()
+        val validationDataSet = DataSet.ImageFolder.paths(validationFolderPath)
+        validationDataSet.shuffle()
+        val iter = validationDataSet.data(train = false)
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
-              val pipeline = validationDataSource -> LocalImgReader(256) ->
-                BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "val",
-                  s"imagenet-seq-$tid"))
-              val iter = pipeline.data(looped = false)
-              while (iter.hasNext) {
-                println(s"Generated file ${iter.next()}")
+              val imageIter = LocalImgReader(256)(iter)
+              val fileIter = BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "val",
+                  s"imagenet-seq-$tid"))(imageIter)
+              while (fileIter.hasNext) {
+                println(s"Generated file ${fileIter.next()}")
               }
             }
           })

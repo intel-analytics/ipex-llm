@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
+import com.intel.analytics.bigdl.dataset.{ByteRecord, Transformer}
 
 import scala.collection.Iterator
 
@@ -27,10 +27,10 @@ object SampleToGreyImg {
 }
 
 class SampleToGreyImg(row: Int, col: Int)
-  extends Transformer[Sample, LabeledGreyImage] {
+  extends Transformer[ByteRecord, LabeledGreyImage] {
   private val buffer = new LabeledGreyImage(row, col)
 
-  override def apply(prev: Iterator[Sample]): Iterator[LabeledGreyImage] = {
+  override def apply(prev: Iterator[ByteRecord]): Iterator[LabeledGreyImage] = {
     prev.map(rawData => {
       require(row * col == rawData.data.length)
       require(rawData.label >= 1)

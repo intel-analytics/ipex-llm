@@ -3,7 +3,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>bigdl-parent_0.1</artifactId>
+        <artifactId>bigdl-parent</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
@@ -19,6 +19,7 @@
         <!--> this is the version of spark-version project<-->
         <spark-version.version>1.5-plus</spark-version.version>
         <spark.version>1.5.1</spark.version>
+        <spark-scope>provided</spark-scope>
     </properties>
 
     <dependencies>
@@ -31,7 +32,7 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>2.7.1</version>
-            <scope>provided</scope>
+            <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -41,20 +42,20 @@
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl.native</groupId>
-            <artifactId>mkl-java_0.1</artifactId>
+            <artifactId>mkl-java</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>
             <version>${spark.version}</version>
-            <scope>provided</scope>
+            <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-mllib_2.10</artifactId>
             <version>${spark.version}</version>
-            <scope>provided</scope>
+            <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl.spark-version</groupId>
@@ -156,7 +157,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <descriptors>
-                        <descriptor>/src/main/resources/assemblies/all-in-one.xml</descriptor>
+                        <descriptor>${project.basedir}/src/assembly/all-in-one.xml</descriptor>
                     </descriptors>
                 </configuration>
                 <executions>
@@ -255,6 +256,12 @@
             <properties>
                 <spark-version.version>2.0</spark-version.version>
                 <spark.version>2.0.0</spark.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>all-in-one</id>
+            <properties>
+                <spark-scope>compile</spark-scope>
             </properties>
         </profile>
     </profiles>

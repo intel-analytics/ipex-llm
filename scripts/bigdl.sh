@@ -1,10 +1,10 @@
 #!/bin/sh
 
 #
-# Licensed to the Apache Software Foundation (ASF) under one or more                                                                   
+# Licensed to Intel Corporation under one or more                                                                   
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
+# Intel Corporation licenses this file to You under the Apache License, Version 2.0
 # (the "License"); you may not use this file except in compliance with
 # the License.  You may obtain a copy of the License at
 #
@@ -25,14 +25,6 @@ set_mkl_blas() {
     export DL_ENGINE_TYPE=mklblas
 }
 
-set_mkl_dnn() {
-    echo "Set engine type to mkl_dnn"
-    unset OMP_NUM_THREADS
-    unset KMP_BLOCKTIME
-    unset OMP_WAIT_POLICY
-    export DL_ENGINE_TYPE=mkldnn
-}
-
 if [ -z "$1" ]
 then
     set_mkl_blas
@@ -43,18 +35,12 @@ else
             shift 2
             eval $*
         fi
-    elif [ "$1" = "mkl_dnn" ]; then
-        set_mkl_dnn
-        if [ "$2" = "--" ]; then
-            shift 2
-            eval $*
-        fi
     elif [ "$1" = "--" ]; then
         set_mkl_blas
         shift
         eval $*
     else
-        echo "Invalid engine type. Only support mkl_blas and mkl_dnn now"
+        echo "Invalid engine type. Only support mkl_blas now"
     fi
 fi
 

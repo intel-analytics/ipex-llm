@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -54,7 +54,7 @@ class SpatialMaxPooling[T: ClassTag](
     val dimw = input.dim()
     val dimh = input.dim() - 1
     require(input.size(dimw) >= kW - padW && input.size(dimh) >= kH - padH,
-      "input image smaller than kernel size")
+      "input smaller than kernel size")
     require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size")
     val nslices = input.size(dimh - 1)
     val iheight = input.size(dimh)
@@ -146,7 +146,7 @@ class SpatialMaxPooling[T: ClassTag](
     val dimw = input.dim()
     val dimh = input.dim() - 1
     require(input.size(dimw) >= kW - padW && input.size(dimh) >= kH - padH,
-      "input image smaller than kernel size")
+      "input smaller than kernel size")
     require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size")
     val nslices = input.size(dimh - 1)
     val iheight = input.size(dimh)

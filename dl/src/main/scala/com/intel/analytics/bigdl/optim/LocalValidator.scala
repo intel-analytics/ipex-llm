@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -17,34 +17,32 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.DistriOptimizer._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 import org.apache.log4j.Logger
 
 object LocalValidator {
   val logger = Logger.getLogger(getClass)
 }
 
-class LocalValidator[T](model: Module[T])
-  extends Validator[T, Iterator[Batch[T]]](model) {
+class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[MiniBatch[T]])
+  extends Validator[T, MiniBatch[T]](model, dataSet) {
 
   private val coreNumber = Engine.coreNumber()
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
-    case MklDnn => 1
+    case _ => throw new IllegalArgumentException
   }
 
   private val workingModels = (1 to subModelNumber).map(_ => model.cloneModule().evaluate()).toArray
 
-  override def test(
-    dataSet: DataSource[Iterator[Batch[T]]],
-    vMethods: Array[ValidationMethod[T]]
-  ): Array[(ValidationResult, ValidationMethod[T])] = {
-    val dataIter = dataSet.data(looped = false)
+  override def test(vMethods: Array[ValidationMethod[T]])
+  : Array[(ValidationResult, ValidationMethod[T])] = {
+    val dataIter = dataSet.data (train = false)
     var count = 0
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     dataIter.map(batch => {

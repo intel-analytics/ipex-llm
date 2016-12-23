@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -37,14 +37,14 @@ abstract class Image extends Serializable {
  *
  * @param path
  */
-class ImageLocalPath(val path : Path)
+class LocalImagePath(val path : Path)
 
 /**
  * Represent a local file path of a hadoop sequence file
  *
  * @param path
  */
-case class SeqFileLocalPath(val path: Path)
+case class LocalSeqFilePath(val path: Path)
 
 /**
  * Represent a label
@@ -56,6 +56,6 @@ trait Label[T] {
   def label(): T
 }
 
-case class Batch[T](data: Tensor[T], labels: Tensor[T])
+case class MiniBatch[T](data: Tensor[T], labels: Tensor[T])
 
-case class Sample(data: Array[Byte], label: Float)
+case class ByteRecord(data: Array[Byte], label: Float)

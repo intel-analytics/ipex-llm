@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -16,7 +16,8 @@
  */
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
+import com.intel.analytics.bigdl.DataSet
+import com.intel.analytics.bigdl.dataset.MiniBatch
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -28,15 +29,14 @@ import scala.reflect.ClassTag
  */
 class RefLocalOptimizer[T: ClassTag](
   model: Module[T],
-  dataset: DataSource[Iterator[Batch[T]]],
+  dataset: DataSet[MiniBatch[T]],
   criterion: Criterion[T]
-)(implicit ev: TensorNumeric[T]) extends Optimizer[T, Iterator[Batch[T]],
-  Iterator[Batch[T]]](model, dataset, criterion) {
+)(implicit ev: TensorNumeric[T]) extends Optimizer[T, MiniBatch[T]](model, dataset, criterion) {
 
   val (w, g) = model.getParameters()
 
   override def optimize(): Module[T] = {
-    val data = dataset.data(looped = true)
+    val data = dataset.toLocal().data(train = true)
     var count = 0
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)

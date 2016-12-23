@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -17,10 +17,9 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{Batch, DistributedDataSet}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, DistributedDataSet}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.parameters.{AllReduceParameterManager, OneReduceParameterManager}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import org.apache.log4j.{Level, Logger}
@@ -36,11 +35,11 @@ object DistriOptimizerSpec {
   var plusOne = 0.0
   val nodeNumber = 4
   val coreNumber = 4
-  Engine.setCluster(nodeNumber, coreNumber)
+  Engine.init(nodeNumber, coreNumber, true)
 
   val batchSize = 2 * coreNumber
 
-  val prepareData: Int => (Batch[Double]) = index => {
+  val prepareData: Int => (MiniBatch[Double]) = index => {
     val input = Tensor[Double]().resize(batchSize, 4)
     val target = Tensor[Double]().resize(batchSize)
     var i = 0
@@ -54,7 +53,7 @@ object DistriOptimizerSpec {
       }
       i += 1
     }
-    Batch(input, target)
+    MiniBatch(input, target)
   }
 }
 
@@ -86,19 +85,17 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   var sc: SparkContext = null
 
-  var dataSet: DistributedDataSet[Batch[Double]] = null
-
-  var dataSet2: ShuffleBatchDataSet[(Int), Double] = null
+  var dataSet: DistributedDataSet[MiniBatch[Double]] = null
 
   before {
     sc = new SparkContext("local[1]", "RDDOptimizerSpec")
 
     val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber).map(prepareData)
 
-    dataSet = new DistributedDataSet[Batch[Double]] {
+    dataSet = new DistributedDataSet[MiniBatch[Double]] {
       override def originRDD(): RDD[_] = rdd
 
-      override def data(looped : Boolean): RDD[Batch[Double]] = rdd
+      override def data(train : Boolean): RDD[MiniBatch[Double]] = rdd
 
       override def size(): Long = 256 * nodeNumber
 

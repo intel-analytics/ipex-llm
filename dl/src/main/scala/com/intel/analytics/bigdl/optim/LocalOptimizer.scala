@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -17,8 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, LocalDataSet}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -41,12 +40,12 @@ object LocalOptimizer {
  * @param ev
  * @tparam T
  */
-class LocalOptimizer[T: ClassTag](
+class LocalOptimizer[T: ClassTag] private[optim](
   model: Module[T],
-  dataset: DataSource[Iterator[Batch[T]]],
+  dataset: LocalDataSet[MiniBatch[T]],
   criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T])
-  extends Optimizer[T, Iterator[Batch[T]], Iterator[Batch[T]]](
+  extends Optimizer[T, MiniBatch[T]](
     model, dataset, criterion) {
 
   import LocalOptimizer._
@@ -56,7 +55,7 @@ class LocalOptimizer[T: ClassTag](
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
-    case MklDnn => 1
+    case _ => throw new IllegalArgumentException
   }
 
   private val (weight, grad) = model.getParameters()
@@ -85,7 +84,7 @@ class LocalOptimizer[T: ClassTag](
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     dataset.shuffle()
-    var iter = dataset.data(looped = true)
+    var iter = dataset.data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     while (!endWhen(state)) {
       val start = System.nanoTime()
@@ -161,7 +160,7 @@ class LocalOptimizer[T: ClassTag](
       if (count >= dataset.size()) {
         state("epoch") = state[Int]("epoch") + 1
         dataset.shuffle()
-        iter = dataset.data(looped = true)
+        iter = dataset.toLocal().data(train = true)
         count = 0
       }
 
@@ -173,15 +172,15 @@ class LocalOptimizer[T: ClassTag](
   }
 
   private def checkpoint(wallClockTime: Long): Unit = {
-    if (cacheTrigger.isEmpty || cachePath.isEmpty) {
+    if (checkpointTrigger.isEmpty || checkpointPath.isEmpty) {
       return
     }
 
-    val trigger = cacheTrigger.get
-    if (trigger(state) && cachePath.isDefined) {
+    val trigger = checkpointTrigger.get
+    if (trigger(state) && checkpointPath.isDefined) {
       logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to path")
-      saveModel(workingModels.head, cachePath, isOverWrite, s".${state[Int]("neval")}")
-      saveState(state, cachePath, isOverWrite, s".${state[Int]("neval")}")
+      saveModel(workingModels.head, checkpointPath, isOverWrite, s".${state[Int]("neval")}")
+      saveState(state, checkpointPath, isOverWrite, s".${state[Int]("neval")}")
     }
   }
 
@@ -194,7 +193,7 @@ class LocalOptimizer[T: ClassTag](
       return
     }
     val vMethods = validationMethods.get
-    val dataIter = validationDataSet.get.asInstanceOf[LocalDataSet[Batch[T]]].data(looped = false)
+    val dataIter = validationDataSet.get.toLocal().data(train = false)
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
 
     workingModels.foreach(_.evaluate())

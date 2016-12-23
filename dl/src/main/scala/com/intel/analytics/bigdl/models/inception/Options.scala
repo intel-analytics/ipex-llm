@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -26,14 +26,15 @@ object Options {
     checkpoint: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
-    coreNumberPerNode: Int = -1,
-    nodesNumber: Int = -1,
+    coreNumber: Int = -1,
+    nodeNumber: Int = -1,
     classNumber: Int = 1000,
-    batchSize: Option[Int] = None
+    batchSize: Int = -1,
+    learningRate: Double = 0.01,
+    env: String = "local"
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
-    head("Train GoogleNet model on Apache Spark")
     opt[String]('f', "folder")
       .text("url of hdfs folder store the hadoop sequence files")
       .action((x, c) => c.copy(folder = x))
@@ -48,26 +49,43 @@ object Options {
       .action((x, c) => c.copy(checkpoint = Some(x)))
     opt[Int]('c', "core")
       .text("cores number on each node")
-      .action((x, c) => c.copy(coreNumberPerNode = x))
+      .action((x, c) => c.copy(coreNumber = x))
       .required()
     opt[Int]('n', "nodeNumber")
       .text("nodes number to train the model")
-      .action((x, c) => c.copy(nodesNumber = x))
+      .action((x, c) => c.copy(nodeNumber = x))
+      .required()
+    opt[Double]('l', "learningRate")
+      .text("inital learning rate")
+      .action((x, c) => c.copy(learningRate = x))
       .required()
     opt[Int]('b', "batchSize")
       .text("batch size")
-      .action((x, c) => c.copy(batchSize = Some(x)))
+      .action((x, c) => c.copy(batchSize = x))
+      .required()
     opt[Int]("classNum")
       .text("class number")
       .action((x, c) => c.copy(classNumber = x))
+    opt[String]("env")
+      .text("execution environment")
+      .validate(x => {
+        if (Set("local", "spark").contains(x.toLowerCase)) {
+          success
+        } else {
+          failure("env only support local|spark")
+        }
+      })
+      .action((x, c) => c.copy(env = x.toLowerCase()))
+      .required()
   }
 
   case class TestParams(
     folder: String = "./",
     model: String = "",
-    coreNumberPerNode: Int = -1,
-    nodesNumber: Int = -1,
-    batchSize: Option[Int] = None
+    coreNumber: Int = -1,
+    nodeNumber: Int = -1,
+    batchSize: Option[Int] = None,
+    env: String = "local"
   )
 
   val testParser = new OptionParser[TestParams]("BigDL Inception Test Example") {
@@ -80,14 +98,25 @@ object Options {
       .required()
     opt[Int]('c', "core")
       .text("cores number on each node")
-      .action((x, c) => c.copy(coreNumberPerNode = x))
+      .action((x, c) => c.copy(coreNumber = x))
       .required()
     opt[Int]('n', "nodeNumber")
       .text("nodes number to train the model")
-      .action((x, c) => c.copy(nodesNumber = x))
+      .action((x, c) => c.copy(nodeNumber = x))
       .required()
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = Some(x)))
+    opt[String]("env")
+      .text("execution environment")
+      .validate(x => {
+        if (Set("local", "spark").contains(x.toLowerCase)) {
+          success
+        } else {
+          failure("env only support local|spark")
+        }
+      })
+      .action((x, c) => c.copy(env = x.toLowerCase()))
+      .required()
   }
 }

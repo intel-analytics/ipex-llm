@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
 #
-# Licensed to the Apache Software Foundation (ASF) under one or more
+# Licensed to Intel Corporation under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
-# The ASF licenses this file to You under the Apache License, Version 2.0
+# Intel Corporation licenses this file to You under the Apache License, Version 2.0
 # (the "License"); you may not use this file except in compliance with
 # the License.  You may obtain a copy of the License at
 #
@@ -32,9 +32,11 @@ VERSION=0.1.0-SNAPSHOT
 if [ ! -d "$DIST_DIR" ]
 then
   mkdir $DIST_DIR
+else
+  rm -r $DIST_DIR
+  mkdir $DIST_DIR
 fi
 
-rm -r $DIST_DIR/*
 mkdir $BIN_DIR
 mkdir $LIB_DIR
 
@@ -48,8 +50,8 @@ fi
 
 if [[ "$_java" ]]; then
     version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
-    if [[ "$version" < "1.8" ]]; then
-        echo Require a java version higher than 1.8
+    if [[ "$version" < "1.7" ]]; then
+        echo Require a java version not lower than 1.7
         exit 1
     fi
 fi
@@ -61,10 +63,10 @@ if [ $MVN_INSTALL -eq 0 ]; then
   exit 1
 fi
 
-cp $BASEDIR/scripts/bigdlvars.sh $BIN_DIR/
+cp $BASEDIR/scripts/bigdl.sh $BIN_DIR/
+cp $BASEDIR/scripts/classes.lst $BIN_DIR/
+cp $BASEDIR/scripts/img_class.lst $BIN_DIR/
 
 mvn clean package -DskipTests $*
-cp $BASEDIR/dl/target/bigdl_0.1-$VERSION-jar-with-dependencies.jar $LIB_DIR/bigdl_0.1-$VERSION-assembly-spark.jar
-
-mvn package -DskipTests -P all-in-one $*
-cp $BASEDIR/dl/target/bigdl_0.1-$VERSION-jar-with-dependencies.jar $LIB_DIR/bigdl_0.1-$VERSION-assembly-all-in-one.jar
+cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies.jar $LIB_DIR/
+cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies-and-spark.jar $LIB_DIR/

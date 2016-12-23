@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -35,6 +35,17 @@ object BlockManagerWrapper {
 
   def getLocal(blockId: BlockId): Option[BlockResult] = {
     SparkEnv.get.blockManager.getLocalValues(blockId)
+  }
+
+  def putSingle(blockId: BlockId,
+    value: Any,
+    level: StorageLevel,
+    tellMaster: Boolean = true): Unit = {
+    SparkEnv.get.blockManager.putSingle(blockId, value, level, tellMaster)
+  }
+
+  def removeBlock(blockId: BlockId): Unit = {
+    SparkEnv.get.blockManager.removeBlock(blockId)
   }
 
   def byteBufferConvert(chunkedByteBuffer: ChunkedByteBuffer): ByteBuffer = {

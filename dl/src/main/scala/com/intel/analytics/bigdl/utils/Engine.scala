@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -17,22 +17,22 @@
 
 package com.intel.analytics.bigdl.utils
 
+import java.lang.Thread.UncaughtExceptionHandler
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{ConcurrentLinkedQueue, Executors, ThreadFactory}
+import java.util.concurrent._
 
 import com.intel.analytics.bigdl.mkl.MKL
+import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 import org.apache.spark.SparkConf
 
-import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.collection.JavaConverters._
 
 sealed trait EngineType
 
 case object MklBlas extends EngineType
-
-case object MklDnn extends EngineType
 
 /**
  * A thread pool wrapper, provide some helper functions for multi-threading
@@ -41,6 +41,10 @@ class ThreadPool(private var poolSize: Int) {
 
   import ThreadPool._
 
+
+  private var mklPoolSize : Option[Int] = None
+  private var threadPool: ExecutorService = null
+
   private var context = spawnThreadPool(poolSize)
 
   private def spawnThreadPool(poolSize: Int): ExecutionContext = {
@@ -48,7 +52,8 @@ class ThreadPool(private var poolSize: Int) {
       singleThreadPool
     } else {
       new ExecutionContext {
-        val threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
+        if (threadPool != null) threadPool.shutdown()
+        threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
           override def newThread(r: Runnable): Thread = {
             val t = Executors.defaultThreadFactory().newThread(r)
             t.setDaemon(true)
@@ -75,10 +80,11 @@ class ThreadPool(private var poolSize: Int) {
    */
   def setMKLThread(size: Int): this.type = {
     require(MKL.isMKLLoaded)
+    mklPoolSize = Some(size)
     (1 to poolSize).map(i => Future {
       MKL.setNumThreads(size)
       val tid = Thread.currentThread().getId()
-      logger.info(s"Set mkl threads to 1 on thread $tid")
+      logger.info(s"Set mkl threads to $size on thread $tid")
     }(context)).foreach(Await.result(_, Duration.Inf))
     this
   }
@@ -93,8 +99,35 @@ class ThreadPool(private var poolSize: Int) {
    */
   def invokeAndWait[T](tasks: Seq[() => T], timeout: Duration = Duration.Inf): Seq[T] = {
     tasks.map(task => Future {
-      task()
-    }(context)).map(future => Await.result(future, timeout))
+      try {
+        task()
+      } catch {
+        case t : Throwable =>
+            logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+            throw t
+      }
+    }(context)).map(future => {
+      Await.result(future, timeout)
+    })
+  }
+
+  def invokeAndWait2[T](tasks: Seq[() => T], timeout: Long = Long.MaxValue,
+                        timeUnit: TimeUnit = TimeUnit.NANOSECONDS):
+                        scala.collection.mutable.Buffer[java.util.concurrent.Future[T]] = {
+    val callables = tasks.map(task => new Callable[T] {
+      override def call(): T = {
+        task()
+      }
+    })
+    threadPool.invokeAll(callables.asJava, timeout, timeUnit).asScala
+  }
+
+  def invoke2[T](tasks: Seq[() => T]): Seq[java.util.concurrent.Future[T]] = {
+    tasks.map(task => new Callable[T] {
+      override def call(): T = {
+        task()
+      }
+    }).map(threadPool.submit(_))
   }
 
   /**
@@ -104,7 +137,13 @@ class ThreadPool(private var poolSize: Int) {
    */
   def invoke[T](tasks: Seq[() => T]): Seq[Future[T]] = {
     tasks.map(task => Future {
-      task()
+      try {
+        task()
+      } catch {
+        case t : Throwable =>
+          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+          throw t
+      }
     }(context))
   }
 
@@ -140,6 +179,9 @@ class ThreadPool(private var poolSize: Int) {
     if (size != poolSize) {
       context = spawnThreadPool(size)
       poolSize = size
+      if(mklPoolSize.isDefined) {
+        this.setMKLThread(mklPoolSize.get)
+      }
     }
     this
   }
@@ -157,13 +199,20 @@ object ThreadPool {
   private val logger = Logger.getLogger(getClass)
 }
 
-/**
- * Mange thread parallel behavior
- */
 object Engine {
   private val logger = Logger.getLogger(getClass)
 
   private val singletonCounter: AtomicInteger = new AtomicInteger(0)
+
+  /**
+   * Check if current execution is a singleton on the JVM
+   *
+   * @return
+   */
+  def checkSingleton(): Boolean = {
+    val count = singletonCounter.incrementAndGet()
+    (count == 1)
+  }
 
   private var physicalCoreNumber = {
     val env = System.getenv("DL_CORE_NUMBER")
@@ -176,6 +225,14 @@ object Engine {
     }
   }
 
+  def coreNumber(): Int = physicalCoreNumber
+
+  def setCoreNumber(n: Int): Unit = {
+    require(n > 0)
+    physicalCoreNumber = n
+    _model = initModelThreadPool()
+  }
+
   // Set node number
   private var nodeNum: Option[Int] = if (System.getenv("DL_NODE_NUMBER") == null) {
     None
@@ -183,11 +240,13 @@ object Engine {
     Some(System.getenv("DL_NODE_NUMBER").toInt)
   }
 
+  def nodeNumber(): Option[Int] = nodeNum
+
   def setNodeNumber(n : Option[Int]): Unit = {
     nodeNum = n
   }
 
-  private val ERROR = "Please use bigdlvars.sh set the env. For spark application, please use" +
+  private val ERROR = "Please use bigdl.sh set the env. For spark application, please use" +
     "Engine.sparkConf() to initialize your sparkConf"
 
   /**
@@ -199,67 +258,8 @@ object Engine {
 
     if (dlEngineType == null || dlEngineType.toLowerCase == "mklblas") {
       MklBlas
-    } else if (dlEngineType.toLowerCase == "mkldnn") {
-      MklDnn
     } else {
       throw new Error(s"Unkown DL_ENGINE_TYPE. $ERROR")
-    }
-  }
-
-  private val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
-    (Runtime.getRuntime().availableProcessors() / 2 * 50).toString).toInt
-
-  val default: ThreadPool = new ThreadPool(defaultPoolSize)
-
-  @volatile private var _model : ThreadPool = null
-
-  def model : ThreadPool = {
-    if (_model == null) {
-      val modelPoolSize: Int = if (engineType == MklBlas) {
-        1
-      } else {
-        physicalCoreNumber
-      }
-
-      _model = new ThreadPool(modelPoolSize)
-      _model.setMKLThread(1)
-    }
-    _model
-  }
-
-  /**
-   * Check if current execution is a singleton on the JVM
-   *
-   * @return
-   */
-  def checkSingleton(): Boolean = {
-    val count = singletonCounter.incrementAndGet()
-    (count == 1)
-  }
-
-  // Set spark envs
-  def sparkConf(): SparkConf = {
-    require(nodeNum.isDefined, "Please set node number and core number per node by Engine" +
-      ".setCluster()")
-    if (engineType == MklBlas) {
-      new SparkConf().setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
-        .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
-        .setExecutorEnv("KMP_BLOCKTIME", "0")
-        .setExecutorEnv("OMP_WAIT_POLICY", "passive")
-        .setExecutorEnv("OMP_NUM_THREADS", "1")
-        .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
-        .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
-        .set("spark.task.maxFailures", "1")
-        .set("spark.shuffle.blockTransferService", "nio")
-        .set("spark.akka.frameSize", "10")
-    } else {
-      new SparkConf().setExecutorEnv("DL_ENGINE_TYPE", "mkldnn")
-        .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
-        .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
-        .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
-        .set("spark.task.maxFailures", "1")
-        .set("spark.shuffle.blockTransferService", "nio")
-        .set("spark.akka.frameSize", "10")
     }
   }
 
@@ -271,6 +271,57 @@ object Engine {
     this.engineType
   }
 
+  private val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
+    (physicalCoreNumber * 50).toString).toInt
+
+  val default: ThreadPool = new ThreadPool(defaultPoolSize)
+
+  @volatile private var _model: ThreadPool = initModelThreadPool()
+
+  def model: ThreadPool = _model
+
+  private def initModelThreadPool() = {
+    val modelPoolSize: Int = if (engineType == MklBlas) {
+      1
+    } else {
+      physicalCoreNumber
+    }
+
+    val model = new ThreadPool(modelPoolSize)
+    model.setMKLThread(1)
+    model
+  }
+
+  def init(
+    node: Int,
+    cores: Int,
+    onSpark: Boolean = false
+  ): Option[SparkConf] = {
+    if (onSpark) {
+      nodeNum = Some(node)
+      physicalCoreNumber = cores
+      _model = initModelThreadPool()
+      val sc = if (engineType == MklBlas) {
+        new SparkConf()
+          .setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
+          .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
+          .setExecutorEnv("KMP_BLOCKTIME", "0")
+          .setExecutorEnv("OMP_WAIT_POLICY", "passive")
+          .setExecutorEnv("OMP_NUM_THREADS", "1")
+          .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
+          .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
+          .set("spark.shuffle.blockTransferService", "nio")
+          .set("spark.akka.frameSize", "10")
+      } else {
+        throw new IllegalArgumentException(engineType.toString)
+      }
+      Some(sc)
+    } else {
+      physicalCoreNumber = cores
+      None
+    }
+  }
+
   // Check envs
   if (Engine.getEngineType() == MklBlas) {
     if (System.getenv("OMP_NUM_THREADS") != "1"
@@ -278,26 +329,7 @@ object Engine {
       || System.getenv("KMP_BLOCKTIME") != "0") {
       logger.warn("Invalid env setting. " + ERROR)
     }
-  } else if (Engine.getEngineType() == MklDnn) {
-    if (System.getenv("OMP_NUM_THREADS") != null
-      || System.getenv("OMP_WAIT_POLICY") != null
-      || System.getenv("KMP_BLOCKTIME") != null) {
-      logger.warn("Invalid env setting. " + ERROR)
-    }
-  }
-
-  def coreNumber(): Int = physicalCoreNumber
-
-  def setCoreNumber(n: Int): Unit = {
-    require(n > 0)
-    physicalCoreNumber = n
-  }
-
-  def nodeNumber(): Option[Int] = nodeNum
-
-  def setCluster(n: Int, c: Int): Unit = {
-    require(n > 0)
-    nodeNum = Some(n)
-    physicalCoreNumber = c
+  } else {
+    throw new IllegalArgumentException(engineType.toString)
   }
 }

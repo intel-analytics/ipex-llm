@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -26,18 +26,31 @@ import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
+import org.apache.log4j.{Level, Logger}
+import org.apache.spark.SparkContext
 
 
 object Train {
+  Logger.getLogger("org").setLevel(Level.ERROR)
+  Logger.getLogger("akka").setLevel(Level.ERROR)
+  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
 
   import Utils._
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      val trainData = Paths.get(param.folder, "/train-images.idx3-ubyte")
-      val trainLabel = Paths.get(param.folder, "/train-labels.idx1-ubyte")
-      val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
-      val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark").map(conf => {
+        conf.setAppName("Train Lenet on MNIST")
+          .set("spark.akka.frameSize", 64.toString)
+          .set("spark.task.maxFailures", "1")
+        new SparkContext(conf)
+      })
+
+      val trainData = Paths.get(param.folder, "/train-images-idx3-ubyte")
+      val trainLabel = Paths.get(param.folder, "/train-labels-idx1-ubyte")
+      val validationData = Paths.get(param.folder, "/t10k-images-idx3-ubyte")
+      val validationLabel = Paths.get(param.folder, "/t10k-labels-idx1-ubyte")
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -53,29 +66,32 @@ object Train {
         )
       }
 
-      val trainSet = (DataSet.array(load(trainData, trainLabel))
-        -> SampleToGreyImg(28, 28))
+      val trainSet = (if (sc.isDefined) {
+        DataSet.array(load(trainData, trainLabel), sc.get, param.nodeNumber)
+      } else {
+        DataSet.array(load(trainData, trainLabel))
+      }) -> SampleToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
+        param.batchSize)
 
-      Engine.setCoreNumber(param.coreNumber)
-      val optimizer = new LocalOptimizer(
+      val optimizer = Optimizer(
         model = model,
-        dataset = (trainSet
-          -> GreyImgNormalizer(trainSet)
-          -> GreyImgToBatch(param.batchSize)),
+        dataset = trainSet,
         criterion = ClassNLLCriterion[Float]())
-      if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      if (param.checkpoint.isDefined) {
+        optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
 
-      val validationSet = (DataSet.array(load(validationData, validationLabel))
-        -> SampleToGreyImg(28, 28))
+      val validationSet = (if (sc.isDefined) {
+        DataSet.array(load(validationData, validationLabel), sc.get, param.nodeNumber)
+      } else {
+        DataSet.array(load(validationData, validationLabel))
+      }) -> SampleToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(
+        param.batchSize)
 
       optimizer
         .setValidation(
           trigger = Trigger.everyEpoch,
-          dataset = (validationSet
-            -> GreyImgNormalizer(validationSet)
-            -> GreyImgToBatch(param.batchSize)),
+          dataset = validationSet,
           vMethods = Array(new Top1Accuracy))
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))

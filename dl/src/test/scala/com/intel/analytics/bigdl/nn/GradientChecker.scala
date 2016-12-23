@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -46,7 +46,8 @@ class GradientChecker(stepSize: Double, threshold: Double) {
       perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) - stepSize))
       val negativeLoss = lossAndGradient(layer.updateOutput(input).toTensor[T])._1
       val estimatedGradient = (positiveLoss - negativeLoss) / stepSize / 2.0
-
+      println(s"parameter ${i}, EstimatedGradient = ${estimatedGradient}," +
+        s"BackpropGradient = ${computedGrad.valueAt(i)}")
       result = result & (math.abs(estimatedGradient -
         ev.toType[Double](computedGrad.valueAt(i))) < epsilon)
       perturbation.setValue(i, curValue)

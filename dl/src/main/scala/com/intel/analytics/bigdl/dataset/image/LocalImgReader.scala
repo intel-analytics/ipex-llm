@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -26,25 +26,25 @@ import scala.collection.Iterator
 object LocalImgReader {
   Class.forName("javax.imageio.ImageIO")
   Class.forName("java.awt.color.ICC_ColorSpace")
-  Class.forName("sun.java2d.cmm.lcms.LCMS")
+  // Class.forName("sun.java2d.cmm.lcms.LCMS")
   ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
   def apply(scaleTo: Int = BGRImage.NO_SCALE, normalize: Float = 255f)
-  : Transformer[LabeledImageLocalPath, LabeledBGRImage]
+  : Transformer[LocalLabeledImagePath, LabeledBGRImage]
   = new LocalScaleImgReader(scaleTo, normalize)
 
   def apply(resizeW: Int, resizeH: Int, normalize: Float)
-  : Transformer[LabeledImageLocalPath, LabeledBGRImage]
+  : Transformer[LocalLabeledImagePath, LabeledBGRImage]
   = new LocalResizeImgReader(resizeW, resizeH, normalize)
 }
 
 class LocalScaleImgReader private[dataset](scaleTo: Int, normalize: Float)
-  extends Transformer[LabeledImageLocalPath, LabeledBGRImage] {
+  extends Transformer[LocalLabeledImagePath, LabeledBGRImage] {
 
 
   private val buffer = new LabeledBGRImage()
 
-  override def apply(prev: Iterator[LabeledImageLocalPath]): Iterator[LabeledBGRImage] = {
+  override def apply(prev: Iterator[LocalLabeledImagePath]): Iterator[LabeledBGRImage] = {
     prev.map(data => {
       val imgData = BGRImage.readImage(data.path, scaleTo)
       val label = data.label
@@ -54,12 +54,12 @@ class LocalScaleImgReader private[dataset](scaleTo: Int, normalize: Float)
 }
 
 class LocalResizeImgReader private[dataset](resizeW: Int, resizeH: Int, normalize: Float)
-  extends Transformer[LabeledImageLocalPath, LabeledBGRImage] {
+  extends Transformer[LocalLabeledImagePath, LabeledBGRImage] {
 
 
   private val buffer = new LabeledBGRImage()
 
-  override def apply(prev: Iterator[LabeledImageLocalPath]): Iterator[LabeledBGRImage] = {
+  override def apply(prev: Iterator[LocalLabeledImagePath]): Iterator[LabeledBGRImage] = {
     prev.map(data => {
       val imgData = BGRImage.readImage(data.path, resizeW, resizeH)
       val label = data.label

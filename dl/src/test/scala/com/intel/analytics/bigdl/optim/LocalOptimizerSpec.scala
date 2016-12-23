@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -17,23 +17,23 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{Batch, DataSet, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, DataSet, LocalDataSet}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import org.scalatest.{FlatSpec, Matchers}
 
-object DummyDataSet extends LocalDataSet[Batch[Float]] {
+object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {
   val totalSize = 10
   var isCrossEntropy = true
 
-  def creDataSet: LocalDataSet[Batch[Float]] = {
+  def creDataSet: LocalDataSet[MiniBatch[Float]] = {
     isCrossEntropy = true
     DummyDataSet
   }
 
-  def mseDataSet: LocalDataSet[Batch[Float]] = {
+  def mseDataSet: LocalDataSet[MiniBatch[Float]] = {
     isCrossEntropy = false
     DummyDataSet
   }
@@ -80,15 +80,15 @@ object DummyDataSet extends LocalDataSet[Batch[Float]] {
 
   override def shuffle(): Unit = {}
 
-  override def data(looped : Boolean): Iterator[Batch[Float]] = {
-    new Iterator[Batch[Float]] {
+  override def data(train : Boolean): Iterator[MiniBatch[Float]] = {
+    new Iterator[MiniBatch[Float]] {
       var i = 0
 
       override def hasNext: Boolean = true
 
-      override def next(): Batch[Float] = {
+      override def next(): MiniBatch[Float] = {
         i += 1
-        Batch(feature, if (isCrossEntropy) labelCrossEntropy else labelMSE)
+        MiniBatch(feature, if (isCrossEntropy) labelCrossEntropy else labelMSE)
       }
     }
   }
