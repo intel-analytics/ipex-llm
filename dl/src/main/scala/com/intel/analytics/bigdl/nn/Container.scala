@@ -25,7 +25,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 2120105647780417237L)
-private[nn] abstract class Container[A <: Activity : ClassTag,
+abstract class Container[A <: Activity : ClassTag,
     B <: Activity : ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T] {
 
