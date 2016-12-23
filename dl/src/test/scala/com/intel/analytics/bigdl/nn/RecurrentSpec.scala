@@ -96,28 +96,12 @@ class RecurrentSpec extends FlatSpec with Matchers {
 
     val input = Tensor[Double](5, inputSize)
     val labels = Tensor[Double](5)
-//    for (i <- 1 to 5) {
-//      val rdmLabel = Math.ceil(Math.random()*inputSize).toInt
-//      val rdmInput = Math.ceil(Math.random()*inputSize).toInt
-//      input.setValue(i, rdmInput, 1.0)
-//      labels.setValue(i, rdmLabel)
-//    }
-
-
-        input.setValue(1, 3, 1.0)
-        input.setValue(2, 5, 1.0)
-        input.setValue(3, 4, 1.0)
-        input.setValue(4, 4, 1.0)
-        input.setValue(5, 3, 1.0)
-
-        labels.setValue(1, 3)
-        labels.setValue(2, 5)
-        labels.setValue(3, 3)
-        labels.setValue(4, 2)
-        labels.setValue(5, 3)
-
-
-
+    for (i <- 1 to 5) {
+      val rdmLabel = Math.ceil(Math.random()*inputSize).toInt
+      val rdmInput = Math.ceil(Math.random()*inputSize).toInt
+      input.setValue(i, rdmInput, 1.0)
+      labels.setValue(i, rdmLabel)
+    }
 
     println("gradient check for input")
     val gradCheckerInput = new GradientChecker(1e-2, 1)

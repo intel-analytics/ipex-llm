@@ -65,7 +65,9 @@ object Train {
       val state = T("learningRate" -> param.learningRate, "momentum" -> 0.0,
         "weightDecay" -> 0.0, "dampening" -> 0.0)
 
-      Engine.setCoreNumber(param.coreNumber)
+
+      Engine.setCoreNumber(1)
+      Engine.model.setPoolSize(param.coreNumber)
       val optimizer = new LocalOptimizer[Float](
         model = model,
         dataset = trainSet,
