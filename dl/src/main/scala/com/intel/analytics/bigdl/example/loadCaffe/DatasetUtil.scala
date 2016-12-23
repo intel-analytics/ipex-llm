@@ -41,16 +41,16 @@ object AlexNetPreprocessor {
   def apply(path: Path, imageSize: Int, batchSize: Int, meanFile: String)
   : LocalDataSet[Batch[Float]] = {
     val means = File.load[Tensor[Float]](meanFile)
-    val transformers = (LocalImgReader((256, 256), normalize = 1f) -> RGBImgPixelNormalizer(means)
-      -> RGBImgCropper(imageSize, imageSize, isRandom = false))
+    val transformers = (LocalImgReader(256, 256, normalize = 1f) -> RGBImgPixelNormalizer(means)
+      -> RGBImgCropper(imageSize, imageSize, CropCenter))
     Preprocessor(path, imageSize, batchSize, transformers)
   }
 }
 
 object GoogleNetPreprocessor {
   def apply(path: Path, imageSize: Int, batchSize: Int): LocalDataSet[Batch[Float]] = {
-    val transformers = (LocalImgReader((256, 256), normalize = 1f)
-      -> RGBImgCropper(imageSize, imageSize, isRandom = false)
+    val transformers = (LocalImgReader(256, 256, normalize = 1f)
+      -> RGBImgCropper(imageSize, imageSize, CropCenter)
       -> RGBImgNormalizer(123, 117, 104, 1, 1, 1))
     Preprocessor(path, imageSize, batchSize, transformers)
   }
