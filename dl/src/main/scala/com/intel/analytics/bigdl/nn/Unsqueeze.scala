@@ -30,6 +30,8 @@ import scala.reflect.ClassTag
  * @param pos The position will be insert singleton.
  * @param numInputDims Optional. If in a batch model, set to the inputDims.
  */
+
+@SerialVersionUID(- 5180889605872472241L)
 class Unsqueeze[T: ClassTag](
   val pos: Int,
   var numInputDims: Int = Int.MinValue

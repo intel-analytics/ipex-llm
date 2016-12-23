@@ -27,6 +27,8 @@ import scala.reflect.ClassTag
  * during the forward process:
  *    [f(x) = tanh(x) - 1]
  */
+
+@SerialVersionUID(7783278258985544682L)
 class TanhShrink[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   private val tanh = new Tanh[T]()

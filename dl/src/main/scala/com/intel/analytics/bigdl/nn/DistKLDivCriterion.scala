@@ -26,6 +26,8 @@ import scala.reflect.ClassTag
  * The Kullback–Leibler divergence criterion
  * @param sizeAverage
  */
+
+@SerialVersionUID(5018120506588694055L)
 class DistKLDivCriterion[T: ClassTag](sizeAverage: Boolean = true)
  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
@@ -87,8 +89,8 @@ class DistKLDivCriterion[T: ClassTag](sizeAverage: Boolean = true)
 }
 
 object DistKLDivCriterion {
-  def apply[@specialized(Float, Double) T: ClassTag](
-    sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : DistKLDivCriterion[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean = true)
+    (implicit ev: TensorNumeric[T]): DistKLDivCriterion[T] = {
     new DistKLDivCriterion[T](sizeAverage)
   }
 }

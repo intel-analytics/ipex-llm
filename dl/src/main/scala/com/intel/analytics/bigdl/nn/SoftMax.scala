@@ -26,6 +26,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 7842335603491194236L)
 class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
   @transient

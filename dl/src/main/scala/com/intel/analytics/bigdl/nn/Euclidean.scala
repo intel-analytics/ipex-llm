@@ -29,6 +29,8 @@ import scala.reflect.ClassTag
  * @param outputSize outputSize
  * @tparam T Numeric type. Only support float/double now
  */
+
+@SerialVersionUID(1438188993718795033L)
 class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
   val fastBackward: Boolean = true)(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
@@ -175,10 +177,8 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
 }
 
 object Euclidean {
-  def apply[@specialized(Float, Double) T: ClassTag](
-    inputSize: Int,
-    outputSize: Int,
-    fastBackward: Boolean = true)(implicit ev: TensorNumeric[T]) : Euclidean[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](inputSize: Int, outputSize: Int,
+    fastBackward: Boolean = true)(implicit ev: TensorNumeric[T]): Euclidean[T] = {
     new Euclidean[T](inputSize, outputSize, fastBackward)
   }
 }

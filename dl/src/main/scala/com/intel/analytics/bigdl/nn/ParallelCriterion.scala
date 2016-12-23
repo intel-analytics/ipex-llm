@@ -31,20 +31,20 @@ import scala.reflect.ClassTag
  *
  * @param repeatTarget Whether to share the target for all criterions.
  */
+
+@SerialVersionUID(- 556839979002442525L)
 class ParallelCriterion[T: ClassTag](val repeatTarget: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Table, T] {
 
   // list of sub criterions
   val criterions = T()
   val weights = T()
-  val outputs = T()
 
   def add(
     criterion: AbstractCriterion[_ <: Activity, _ <: Activity, T],
     weight : Double = 1.0): this.type = {
     criterions.insert(criterion)
-    weights.insert(ev.fromType(weight))
-    outputs.insert(ev.fromType(0))
+    weights.insert(weight)
     this
   }
 
@@ -54,8 +54,9 @@ class ParallelCriterion[T: ClassTag](val repeatTarget: Boolean = false)
     while(i <= criterions.length()) {
       val currentCriterion = criterions[AbstractCriterion[Activity, Activity, T]](i)
       val currentTarget: Activity = if (repeatTarget) target else target(i)
-      outputs(i) = currentCriterion.forward(input(i), currentTarget)
-      output = ev.plus(output, ev.times(weights[T](i), outputs(i)))
+      output = ev.plus(output, ev.times(weights[T](i),
+        currentCriterion.forward(input(i), currentTarget))
+      )
       i += 1
     }
 
@@ -69,7 +70,7 @@ class ParallelCriterion[T: ClassTag](val repeatTarget: Boolean = false)
     while (i <= criterions.length()) {
       val currentCriterion = criterions[AbstractCriterion[Activity, Activity, T]](i)
       val currentTarget: Activity = if (repeatTarget) target else target(i)
-      Utils.recursiveAdd[T](gradInput(i), ev.toType[Double](weights(i)),
+      Utils.recursiveAdd[T](gradInput(i), weights(i),
         currentCriterion.updateGradInput(input(i), currentTarget))
       i += 1
     }

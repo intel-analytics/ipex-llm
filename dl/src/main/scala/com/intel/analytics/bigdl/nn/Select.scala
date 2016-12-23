@@ -28,6 +28,8 @@ import scala.reflect.ClassTag
  * @param dimension the dimension to select
  * @param index the index of the dimension to be selected
  */
+
+@SerialVersionUID(1581502108010704056L)
 class Select[T: ClassTag](
   dimension: Int,
   index: Int

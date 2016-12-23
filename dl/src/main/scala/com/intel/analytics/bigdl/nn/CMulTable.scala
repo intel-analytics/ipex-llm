@@ -26,6 +26,8 @@ import scala.reflect.ClassTag
 /**
  * Takes a table of Tensors and outputs the multiplication of all of them.
  */
+
+@SerialVersionUID(8888147326550637025L)
 class CMulTable[T: ClassTag]()(
   implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T]{
   override def updateOutput(input: Table): Tensor[T] = {

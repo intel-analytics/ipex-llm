@@ -30,6 +30,8 @@ import scala.reflect.ClassTag
  * @param transA specifying whether or not transpose the first input matrix
  * @param transB specifying whether or not transpose the second input matrix
  */
+
+@SerialVersionUID(8315388141765786231L)
 class MM[T: ClassTag](
   val transA: Boolean = false,
   val transB: Boolean = false)

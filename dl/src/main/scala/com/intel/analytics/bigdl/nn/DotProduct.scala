@@ -27,6 +27,8 @@ import scala.reflect.ClassTag
  * This is a simple table layer which takes a table of two tensors as input
  * and calculate the dot product between them as outputs
  */
+
+@SerialVersionUID(2455897411271580599L)
 class DotProduct[T: ClassTag] (implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Tensor[T], T] {
   gradInput = T(Tensor[T](), Tensor[T]())

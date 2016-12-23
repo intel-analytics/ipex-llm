@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(1238814703013238333L)
 class View[T: ClassTag](sizes: Array[Int])(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 

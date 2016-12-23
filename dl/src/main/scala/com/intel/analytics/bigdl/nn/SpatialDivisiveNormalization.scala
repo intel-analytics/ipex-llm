@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.utils.T
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(6036047576084619110L)
 class SpatialDivisiveNormalization[T: ClassTag](
   val nInputPlane: Int = 1,
   var kernel: Tensor[T] = null,

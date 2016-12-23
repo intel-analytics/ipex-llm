@@ -30,6 +30,8 @@ import scala.reflect.ClassTag
  *
  * @param norm the norm of distance
  */
+
+@SerialVersionUID(- 4377017408738399127L)
 class PairwiseDistance[@specialized(Float, Double) T: ClassTag](
   val norm : Int = 2)
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {

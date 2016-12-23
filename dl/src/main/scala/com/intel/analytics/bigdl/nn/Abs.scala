@@ -25,6 +25,7 @@ import scala.reflect.ClassTag
 /**
  *  an element-wise abs operation
  */
+@SerialVersionUID(3070101246787506364L)
 class Abs[T: ClassTag]
  (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 

@@ -29,6 +29,8 @@ import scala.reflect.ClassTag
  *
  * @param trans whether make matrix transpose before multiplication
  */
+
+@SerialVersionUID(- 555327285289166316L)
 class MV[T: ClassTag](val trans: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
   gradInput = T(Tensor[T], Tensor[T]())

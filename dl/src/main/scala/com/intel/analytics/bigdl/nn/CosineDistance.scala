@@ -26,6 +26,8 @@ import scala.reflect.ClassTag
 /**
  * outputs the cosine distance between inputs
  */
+
+@SerialVersionUID(6222745688491827785L)
 class CosineDistance[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 

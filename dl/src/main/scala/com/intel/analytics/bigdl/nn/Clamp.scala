@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 3787689437971361185L)
 class Clamp[T: ClassTag](min: Int, max: Int)(
   implicit ev: TensorNumeric[T]) extends HardTanh[T](min, max) {
   override def toString(): String = {

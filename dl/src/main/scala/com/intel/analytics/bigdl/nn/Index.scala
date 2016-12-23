@@ -28,6 +28,8 @@ import scala.reflect.ClassTag
  *
  * @param dimension
  */
+
+@SerialVersionUID(2608373524149209793L)
 class Index[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Tensor[T], T]{
 

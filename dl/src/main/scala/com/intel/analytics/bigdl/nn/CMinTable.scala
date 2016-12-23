@@ -26,6 +26,8 @@ import scala.reflect.ClassTag
 /**
  * Takes a table of Tensors and outputs the min of all of them.
  */
+
+@SerialVersionUID(8888147326550637025L)
 class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Tensor[T], T]{
 

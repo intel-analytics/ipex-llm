@@ -27,6 +27,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect._
 
+@SerialVersionUID(2277597677473874749L)
 class SpatialMaxPooling[T: ClassTag](
   val kW: Int, val kH: Int, val dW: Int, val dH: Int, val padW: Int = 0, val padH: Int = 0)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
