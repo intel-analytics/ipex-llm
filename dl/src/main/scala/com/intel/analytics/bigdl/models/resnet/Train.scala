@@ -80,7 +80,7 @@ object LocalTrain {
       }
 
       Engine.setCoreNumber(param.coreNumber)
-      val optimizer = new LocalOptimizer[Float](
+      val optimizer = Optimizer(
         model = model,
         dataset = trainDataSet,
         criterion = new CrossEntropyCriterion[Float]()
@@ -160,7 +160,7 @@ object SparkTrain {
       }
 
 
-      val optimizer = new DistriOptimizer[Float](
+      val optimizer = Optimizer(
         model = model,
         dataset = trainDataSet,
         criterion = new CrossEntropyCriterion[Float]()

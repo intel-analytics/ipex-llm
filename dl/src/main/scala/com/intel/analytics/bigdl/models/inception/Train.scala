@@ -79,7 +79,7 @@ object GoogleNetv1_SparkTrain {
         )
       }
 
-      val optimizer = new DistriOptimizer[Float](
+      val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
         criterion = new ClassNLLCriterion[Float]()
@@ -152,7 +152,7 @@ object GoogleNetv2_SparkTrain {
         )
       }
 
-      val optimizer = new DistriOptimizer[Float](
+      val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
         criterion = new ClassNLLCriterion[Float]()

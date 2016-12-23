@@ -22,7 +22,7 @@ import java.nio.file.{Paths, Files}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, LocalDataSet, Batch, DistributedDataSet}
 
 import scala.reflect.ClassTag
 
@@ -99,6 +99,29 @@ object Optimizer {
     postfix: String = ""): Unit = {
     if (cachePath.isDefined) {
       state.save(s"${cachePath.get}/state$postfix", overWrite)
+    }
+  }
+
+  def apply[T: ClassTag, DS](
+    model: Module[T],
+    dataset: DataSource[DS],
+    criterion: Criterion[T]
+  )(implicit ev: TensorNumeric[T]): Optimizer[T, DS, DS] = {
+    dataset match {
+      case d: DistributedDataSet[Batch[T]] =>
+        new DistriOptimizer[T](
+          model = model,
+          dataset = d,
+          criterion = criterion
+        ).asInstanceOf[Optimizer[T, DS, DS]]
+      case d: LocalDataSet[Batch[T]] =>
+        new LocalOptimizer[T](
+          model = model,
+          dataset = d,
+          criterion = criterion
+        ).asInstanceOf[Optimizer[T, DS, DS]]
+      case _ =>
+        throw new UnsupportedOperationException
     }
   }
 }

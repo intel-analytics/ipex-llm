@@ -41,7 +41,7 @@ object LocalOptimizer {
  * @param ev
  * @tparam T
  */
-class LocalOptimizer[T: ClassTag](
+class LocalOptimizer[T: ClassTag] private[optim](
   model: Module[T],
   dataset: DataSource[Iterator[Batch[T]]],
   criterion: Criterion[T]

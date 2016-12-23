@@ -19,10 +19,12 @@ package com.intel.analytics.bigdl.optim
 
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.nn.Sequential
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, DistributedDataSet}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, Sequential}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.alexnet.AlexNet
 import com.intel.analytics.bigdl.utils.{File, T, Table}
+import org.apache.spark.rdd.RDD
 import org.scalatest.{FlatSpec, Matchers}
 
 class OptimizerSpec extends FlatSpec with Matchers {
@@ -174,5 +176,35 @@ class OptimizerSpec extends FlatSpec with Matchers {
 
     val loadedState = File.load[Table](filePath + "/state.post")
     loadedState should be(state)
+  }
+
+  "A Distributed dataset" should "spawn a distributed optimizer" in {
+    val ds = new DistributedDataSet[Float] {
+      override def originRDD(): RDD[_] = null
+      override def data(looped: Boolean): RDD[Float] = null
+      override def size(): Long = 0
+      override def shuffle(): Unit = {}
+    }
+
+    val model = Linear[Float](4, 3)
+    val criterion = ClassNLLCriterion[Float]()
+    val res = Optimizer(model, ds, criterion)
+    res.isInstanceOf[DistriOptimizer[Float]] should be(true)
+    res.isInstanceOf[LocalOptimizer[Float]] should be(false)
+  }
+
+  "A Local dataset" should "spawn a local optimizer" in {
+    val ds = new LocalDataSet[Float] {
+      override def data(looped: Boolean): Iterator[Float] = null
+      override def size(): Long = 0
+      override def shuffle(): Unit = {}
+    }
+
+    val model = Linear[Float](4, 3)
+    val criterion = ClassNLLCriterion[Float]()
+
+    val res = Optimizer(model, ds, criterion)
+    res.isInstanceOf[DistriOptimizer[Float]] should be(false)
+    res.isInstanceOf[LocalOptimizer[Float]] should be(true)
   }
 }
