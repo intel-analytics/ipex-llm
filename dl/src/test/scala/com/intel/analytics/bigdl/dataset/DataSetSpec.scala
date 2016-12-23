@@ -22,7 +22,7 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FlatSpec, Matchers}
 
@@ -226,6 +226,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "image preprocess" should "be same with torch result" in {
+    Engine.setNodeNumber(None)
     val resourceImageNet = getClass().getClassLoader().getResource("imagenet")
     def test(imgFolder: String, imgFileName: String, tensorFile: String): Unit = {
       val img1Path = Paths.get(processPath(resourceImageNet.getPath()), imgFolder, imgFileName)

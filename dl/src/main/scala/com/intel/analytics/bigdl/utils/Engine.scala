@@ -183,6 +183,10 @@ object Engine {
     Some(System.getenv("DL_NODE_NUMBER").toInt)
   }
 
+  def setNodeNumber(n : Option[Int]): Unit = {
+    nodeNum = n
+  }
+
   private val ERROR = "Please use bigdlvars.sh set the env. For spark application, please use" +
     "Engine.sparkConf() to initialize your sparkConf"
 
