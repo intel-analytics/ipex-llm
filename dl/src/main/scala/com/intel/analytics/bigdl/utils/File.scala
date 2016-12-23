@@ -159,7 +159,12 @@ object File {
   private def readModuleWithType[T: ClassTag](
       moduleName: String,
       elements: Table)(implicit ev: TensorNumeric[T]): Any = {
-    val module = moduleName match {
+    val bigdlName = if (moduleName.matches("cudnn.*")) {
+      moduleName.replace("cudnn", "nn") }
+    else {
+      moduleName
+    }
+    val module = bigdlName match {
       case "nn.BatchNormalization" => readBatchNormalizationWithType(elements)
       case "nn.CAddTable" => CAddTable(elements.getOrElse("inplace", false))
       case "nn.Concat" => readConcatWithType(elements)
@@ -180,7 +185,11 @@ object File {
       case "nn.View" => readViewWithType(elements)
       case _ => try {
         val classTag =
-          if (elements("_type") == "torch.FloatTensor") ClassTag.Float else ClassTag.Double
+          if (elements("_type") == "torch.FloatTensor" || elements("_type") == "torch.CudaTensor") {
+            ClassTag.Float
+          } else {
+            ClassTag.Double
+          }
         val bigDlName = "com.intel.analytics.bigdl." + moduleName
         // Use reflection to load all parameter-free module
         val args: Array[(Class[_], AnyRef)] = Array((classOf[ClassTag[_]], classTag),
@@ -199,9 +208,9 @@ object File {
     objects: mutable.Map[Int, Any]): Any = {
     val elements = readObject(rawData, objects).asInstanceOf[Table]
     val moduleType = elements.getOrElse("_type", "")
-    if(moduleType == "torch.FloatTensor") {
+    if(moduleType == "torch.FloatTensor" || moduleType == "torch.CudaTensor") {
       readModuleWithType[Float](moduleName, elements)
-    } else if (moduleType == "torch.DoubleTensor") {
+    } else if (moduleType == "torch.DoubleTensor" || moduleType == "torch.CudaDoubleTensor") {
       readModuleWithType[Double](moduleName, elements)
     } else {
       throw new Error(s"unkown module type $moduleType")
@@ -230,14 +239,22 @@ object File {
           objects(indexId)
         } else {
           val (versionNumber, className) = readVersionAndClass(rawData)
-          // Todo: Use reflection to do this is better
           val result = className match {
+              // read torch data
             case "torch.FloatTensor" => readFloatTensor(rawData, objects)
             case "torch.DoubleTensor" => readDoubleTensor(rawData, objects)
             case "torch.LongTensor" => readLongTensor(rawData, objects)
-            case "torch.DoubleStorage" => readDoubleStorage(rawData)
             case "torch.FloatStorage" => readFloatStorage(rawData)
+            case "torch.DoubleStorage" => readDoubleStorage(rawData)
             case "torch.LongStorage" => readLongStorage(rawData)
+              // read cuda data
+            case "torch.CudaTensor" => readFloatTensor(rawData, objects)
+            case "torch.CudaDoubleTensor" => readDoubleTensor(rawData, objects)
+            case "torch.CudaLongTensor" => readLongTensor(rawData, objects)
+            case "torch.CudaStorage" => readFloatStorage(rawData)
+            case "torch.CudaDoubleStorage" => readDoubleStorage(rawData)
+            case "torch.CudaLongStorage" => readLongStorage(rawData)
+              // read modules
             case _ => readModule(className, rawData, objects)
           }
           objects.put(indexId, result)

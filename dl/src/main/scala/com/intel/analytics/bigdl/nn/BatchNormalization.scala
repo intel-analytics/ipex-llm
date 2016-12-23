@@ -586,7 +586,7 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.BatchNormalization[${ev.getType()}]($nOutput, $eps, $momentum, $affine)"
+    s"nn.BatchNormalization($nOutput, $eps, $momentum, $affine)"
   }
 
 }
