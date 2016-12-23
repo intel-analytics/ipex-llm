@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.Module
+
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -199,23 +199,4 @@ object Utils {
     recursiveTensorApply1[T](x, t => t.fill(ev.fromType[Double](value)))
   }
 
-  /**
-   * get all modules and map by name
-   *
-   * @param model
-   * @tparam T
-   * @return
-   */
-  def getNamedModules[T](model: Module[T]): Map[String, Module[T]] = {
-    var namedModules: Map[String, Module[T]] = Map()
-    def getModules(module: Module[T]): Unit = {
-      module match {
-        case m: Container[_, _, T] =>
-          for (m <- module.asInstanceOf[Container[_, _, T]].modules) getModules(m)
-        case _ => namedModules += (module.getName() -> module)
-      }
-    }
-    getModules(model)
-    namedModules
-  }
 }
