@@ -26,8 +26,8 @@ import com.intel.analytics.bigdl.utils.File
 
 object Preprocessor {
   def apply(path: Path, imageSize: Int, batchSize: Int,
-    transformers: Transformer[LabeledImageLocalPath, LabeledRGBImage])
-  : LocalDataSet[Batch[Float]] = {
+    transformers: Transformer[LocalLabeledImagePath, LabeledRGBImage])
+  : LocalDataSet[MiniBatch[Float]] = {
     DataSet.ImageFolder.paths(path).transform(
       MTLabeledRGBImgToBatch(
         width = imageSize,
@@ -39,7 +39,7 @@ object Preprocessor {
 
 object AlexNetPreprocessor {
   def apply(path: Path, imageSize: Int, batchSize: Int, meanFile: String)
-  : LocalDataSet[Batch[Float]] = {
+  : LocalDataSet[MiniBatch[Float]] = {
     val means = File.load[Tensor[Float]](meanFile)
     val transformers = (LocalImgReader(256, 256, normalize = 1f) -> RGBImgPixelNormalizer(means)
       -> RGBImgCropper(imageSize, imageSize, CropCenter))
@@ -48,7 +48,7 @@ object AlexNetPreprocessor {
 }
 
 object GoogleNetPreprocessor {
-  def apply(path: Path, imageSize: Int, batchSize: Int): LocalDataSet[Batch[Float]] = {
+  def apply(path: Path, imageSize: Int, batchSize: Int): LocalDataSet[MiniBatch[Float]] = {
     val transformers = (LocalImgReader(256, 256, normalize = 1f)
       -> RGBImgCropper(imageSize, imageSize, CropCenter)
       -> RGBImgNormalizer(123, 117, 104, 1, 1, 1))

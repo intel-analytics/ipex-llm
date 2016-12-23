@@ -86,7 +86,7 @@ object GoogleNetv1_SparkTrain {
       )
 
       if (param.checkpoint.isDefined) {
-        optimizer.setCache(param.checkpoint.get, Trigger.severalIteration(620))
+        optimizer.setCheckpoint(param.checkpoint.get, Trigger.severalIteration(620))
       }
 
       optimizer
@@ -159,7 +159,7 @@ object GoogleNetv2_SparkTrain {
       )
 
       if (param.checkpoint.isDefined) {
-        optimizer.setCache(param.checkpoint.get, Trigger.everyEpoch)
+        optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
 
       optimizer

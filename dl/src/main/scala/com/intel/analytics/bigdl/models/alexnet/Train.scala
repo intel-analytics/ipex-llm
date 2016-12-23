@@ -68,8 +68,8 @@ object Train {
         dataset = trainSet,
         criterion = new ClassNLLCriterion[Float]()
       )
-      if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      if (param.checkpointPath.isDefined) {
+        optimizer.setCheckpoint(param.checkpointPath.get, Trigger.everyEpoch)
       }
       optimizer
         .setState(state)

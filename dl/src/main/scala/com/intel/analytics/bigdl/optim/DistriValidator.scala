@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, MiniBatch}
 import com.intel.analytics.bigdl.optim.DistriValidator._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
@@ -31,10 +31,10 @@ object DistriValidator {
 
 class DistriValidator[T](
   model: Module[T]
-) extends Validator[T, RDD[Batch[T]]](model) {
+) extends Validator[T, RDD[MiniBatch[T]]](model) {
 
   override def test(
-    dataSet: DataSource[RDD[Batch[T]]],
+    dataSet: DataSource[RDD[MiniBatch[T]]],
     vMethods: Array[ValidationMethod[T]])
   : Array[(ValidationResult, ValidationMethod[T])] = {
     val rdd = dataSet.data(looped = false)

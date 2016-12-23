@@ -33,7 +33,7 @@ object ImageNet2012 {
     coresPerNode: Int,
     classNumber: Int
   )
-  : DistributedDataSet[Batch[Float]] = {
+  : DistributedDataSet[MiniBatch[Float]] = {
     DataSet.SequenceFolder.files(path, sc, classNumber, nodeNumber)
       .transform(
         MTLabeledRGBImgToBatch[Sample](

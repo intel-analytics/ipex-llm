@@ -63,8 +63,8 @@ object Train {
           -> GreyImgNormalizer(trainSet)
           -> GreyImgToBatch(param.batchSize)),
         criterion = ClassNLLCriterion[Float]())
-      if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      if (param.checkpointPath.isDefined) {
+        optimizer.setCheckpoint(param.checkpointPath.get, Trigger.everyEpoch)
       }
 
       val validationSet = (DataSet.array(load(validationData, validationLabel))

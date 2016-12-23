@@ -68,8 +68,8 @@ object LocalTrain {
         criterion = new ClassNLLCriterion[Float]()
       )
 
-      if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      if (param.checkpointPath.isDefined) {
+        optimizer.setCheckpoint(param.checkpointPath.get, Trigger.everyEpoch)
       }
 
       val validationSet = DataSet.ImageFolder.images(Paths.get(param.folder, "/val"), 32)
@@ -139,8 +139,8 @@ object SparkTrain {
         .transform(RGBImgNormalizer(testMean, testStd))
         .transform(RGBImgToBatch(batchSize))
 
-      if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      if (param.checkpointPath.isDefined) {
+        optimizer.setCheckpoint(param.checkpointPath.get, Trigger.everyEpoch)
       }
       optimizer
         .setValidation(Trigger.everyEpoch, validateSet, Array(new Top1Accuracy[Float]))

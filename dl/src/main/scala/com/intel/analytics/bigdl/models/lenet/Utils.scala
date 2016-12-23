@@ -26,7 +26,7 @@ import scopt.OptionParser
 object Utils {
   case class TrainParams(
     folder: String = "./",
-    cache: Option[String] = None,
+    checkpointPath: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
     batchSize: Int = 10,
@@ -51,9 +51,9 @@ object Utils {
       .text("state snapshot location")
       .action((x, c) => c.copy(stateSnapshot = Some(x)))
 
-    opt[String]("cache")
+    opt[String]("checkpoint")
       .text("where to cache the model")
-      .action((x, c) => c.copy(cache = Some(x)))
+      .action((x, c) => c.copy(checkpointPath = Some(x)))
 
     opt[Double]('r', "learningRate")
       .text("learning rate")

@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{Batch, DistributedDataSet}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, DistributedDataSet}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.parameters.{AllReduceParameterManager, OneReduceParameterManager}
@@ -40,7 +40,7 @@ object DistriOptimizerSpec {
 
   val batchSize = 2 * coreNumber
 
-  val prepareData: Int => (Batch[Double]) = index => {
+  val prepareData: Int => (MiniBatch[Double]) = index => {
     val input = Tensor[Double]().resize(batchSize, 4)
     val target = Tensor[Double]().resize(batchSize)
     var i = 0
@@ -54,7 +54,7 @@ object DistriOptimizerSpec {
       }
       i += 1
     }
-    Batch(input, target)
+    MiniBatch(input, target)
   }
 }
 
@@ -86,7 +86,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   var sc: SparkContext = null
 
-  var dataSet: DistributedDataSet[Batch[Double]] = null
+  var dataSet: DistributedDataSet[MiniBatch[Double]] = null
 
   var dataSet2: ShuffleBatchDataSet[(Int), Double] = null
 
@@ -95,10 +95,10 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber).map(prepareData)
 
-    dataSet = new DistributedDataSet[Batch[Double]] {
+    dataSet = new DistributedDataSet[MiniBatch[Double]] {
       override def originRDD(): RDD[_] = rdd
 
-      override def data(looped : Boolean): RDD[Batch[Double]] = rdd
+      override def data(looped : Boolean): RDD[MiniBatch[Double]] = rdd
 
       override def size(): Long = 256 * nodeNumber
 

@@ -18,14 +18,14 @@ package com.intel.analytics.bigdl.models.alexnet
 
 import java.nio.file.Path
 
-import com.intel.analytics.bigdl.dataset.{Batch, DataSet, LocalDataSet, SeqFileLocalPath}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, DataSet, LocalDataSet, LocalSeqFilePath}
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 
 object ImageNet2012 {
   def apply(path: Path, imageSize: Int, batchSize: Int, size: Int)
-  : LocalDataSet[Batch[Float]] = {
+  : LocalDataSet[MiniBatch[Float]] = {
     DataSet.SequenceFolder.paths(path, size)
       .transform(
         MTLabeledRGBImgToBatch(

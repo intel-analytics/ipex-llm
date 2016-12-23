@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, MiniBatch}
 import com.intel.analytics.bigdl.parameters.FP16CompressedTensor
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -32,9 +32,9 @@ import scala.reflect.ClassTag
  */
 class RefDistriOptimizer[T: ClassTag](
   model: Module[T],
-  dataset: DataSource[RDD[Batch[T]]],
+  dataset: DataSource[RDD[MiniBatch[T]]],
   criterion: Criterion[T])(implicit ev: TensorNumeric[T])
-  extends Optimizer[T, RDD[Batch[T]], RDD[Batch[T]]](
+  extends Optimizer[T, RDD[MiniBatch[T]], RDD[MiniBatch[T]]](
     model, dataset, criterion
   ) {
 
@@ -54,7 +54,7 @@ class RefDistriOptimizer[T: ClassTag](
 object RefDistriOptimizer {
   def optimize[T: ClassTag](
     model: Module[T],
-    dataset: DataSource[RDD[Batch[T]]],
+    dataset: DataSource[RDD[MiniBatch[T]]],
     criterion: Criterion[T],
     optimMethod: OptimMethod[T],
     state: Table,

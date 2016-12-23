@@ -17,16 +17,16 @@
 
 package com.intel.analytics.bigdl.optim
 
-import java.nio.file.{Paths, Files}
+import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
 
 import scala.reflect.ClassTag
 
-abstract class Optimizer[T  : ClassTag, TDS, VDS](
+abstract class Optimizer[T: ClassTag, TDS, VDS](
     protected val model: Module[T],
     protected val dataset: DataSource[TDS],
     protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
@@ -35,8 +35,8 @@ abstract class Optimizer[T  : ClassTag, TDS, VDS](
   protected var optimMethod: OptimMethod[T] = new SGD[T]()
   protected var endWhen: Trigger = Trigger.maxIteration(100)
 
-  protected var cacheTrigger: Option[Trigger] = None
-  protected var cachePath: Option[String] = None
+  protected var checkpointTrigger: Option[Trigger] = None
+  protected var checkpointPath: Option[String] = None
   protected var isOverWrite: Boolean = false
 
   protected var validationTrigger: Option[Trigger] = None
@@ -54,14 +54,14 @@ abstract class Optimizer[T  : ClassTag, TDS, VDS](
     this
   }
 
-  def setCache(path: String, trigger: Trigger): this.type = {
+  def setCheckpoint(path: String, trigger: Trigger): this.type = {
     require(Files.isDirectory(Paths.get(path)), s"$path is not a folder")
-    this.cachePath = Some(path)
-    this.cacheTrigger = Some(trigger)
+    this.checkpointPath = Some(path)
+    this.checkpointTrigger = Some(trigger)
     this
   }
 
-  def overWriteCache() : this.type = {
+  def overwriteCheckpoint() : this.type = {
     isOverWrite = true
     this
   }
@@ -88,17 +88,17 @@ object Optimizer {
     s"[Epoch $epoch $count/$total][Iteration $iter][Wall Clock ${wallClockTime / 1e9}s]"
   }
 
-  private[bigdl] def saveModel[T](model: Module[T], cachePath : Option[String], overWrite : Boolean,
-    postfix: String = ""): Unit = {
-    if (cachePath.isDefined) {
-      model.save(s"${cachePath.get}/model$postfix", overWrite)
+  private[bigdl] def saveModel[T](model: Module[T], checkpointPath: Option[String],
+    overWrite: Boolean, postfix: String = ""): Unit = {
+    if (checkpointPath.isDefined) {
+      model.save(s"${checkpointPath.get}/model$postfix", overWrite)
     }
   }
 
-  private[bigdl] def saveState(state: Table, cachePath : Option[String], overWrite : Boolean,
+  private[bigdl] def saveState(state: Table, checkpointPath : Option[String], overWrite : Boolean,
     postfix: String = ""): Unit = {
-    if (cachePath.isDefined) {
-      state.save(s"${cachePath.get}/state$postfix", overWrite)
+    if (checkpointPath.isDefined) {
+      state.save(s"${checkpointPath.get}/state$postfix", overWrite)
     }
   }
 }

@@ -17,45 +17,13 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import java.nio.file.Path
+import java.nio.file.{Files, Path, Paths}
 
-import com.intel.analytics.bigdl.tensor.Tensor
-
-/**
- * Represent an image
- */
-abstract class Image extends Serializable {
-  def width(): Int
-
-  def height(): Int
-
-  def content: Array[Float]
+object SequenceFiles {
+  private[bigdl] def findFiles(path: Path): Array[LocalSeqFilePath] = {
+    val directoryStream = Files.newDirectoryStream(path)
+    import scala.collection.JavaConverters._
+    directoryStream.asScala.map(_.toAbsolutePath.toString)
+      .filter(_.endsWith(".seq")).toArray.sortWith(_ < _).map(p => LocalSeqFilePath(Paths.get(p)))
+  }
 }
-
-/**
- * Represent a local file path of an image file
- *
- * @param path
- */
-class LocalImagePath(val path : Path)
-
-/**
- * Represent a local file path of a hadoop sequence file
- *
- * @param path
- */
-case class LocalSeqFilePath(val path: Path)
-
-/**
- * Represent a label
- *
- * @tparam T
- */
-trait Label[T] {
-  def setLabel(label: T): this.type
-  def label(): T
-}
-
-case class MiniBatch[T](data: Tensor[T], labels: Tensor[T])
-
-case class Sample(data: Array[Byte], label: Float)

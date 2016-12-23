@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dataset.image
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.intel.analytics.bigdl.dataset.{Utils, Batch, Transformer}
+import com.intel.analytics.bigdl.dataset.{Utils, MiniBatch, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 import scala.reflect.ClassTag
@@ -35,7 +35,7 @@ object MTLabeledRGBImgToBatch {
 
 class MTLabeledRGBImgToBatch[A: ClassTag] private[bigdl](width: Int, height: Int,
   totalBatchSize: Int, transformer: Transformer[A, LabeledRGBImage], swapChannel : Boolean = true)
-  extends Transformer[A, Batch[Float]] {
+  extends Transformer[A, MiniBatch[Float]] {
 
   private val batchSize = Utils.getBatchSize(totalBatchSize)
 
@@ -54,15 +54,15 @@ class MTLabeledRGBImgToBatch[A: ClassTag] private[bigdl](width: Int, height: Int
   private val featureTensor: Tensor[Float] = Tensor[Float]()
   private val labelTensor: Tensor[Float] = Tensor[Float]()
 
-  override def apply(prev: Iterator[A]): Iterator[Batch[Float]] = {
+  override def apply(prev: Iterator[A]): Iterator[MiniBatch[Float]] = {
     val iterators = transformers.map(_.apply(prev))
 
-    new Iterator[Batch[Float]] {
+    new Iterator[MiniBatch[Float]] {
       override def hasNext: Boolean = {
         iterators.map(_.hasNext).reduce(_ || _)
       }
 
-      override def next(): Batch[Float] = {
+      override def next(): MiniBatch[Float] = {
         val count = new AtomicInteger(0)
         val batch = Engine.default.invokeAndWait((0 until Engine.coreNumber()).map(tid => () => {
           var position = 0
@@ -86,7 +86,7 @@ class MTLabeledRGBImgToBatch[A: ClassTag] private[bigdl](width: Int, height: Int
             storageOffset = 1, sizes = Array(batch))
         }
 
-        Batch(featureTensor, labelTensor)
+        MiniBatch(featureTensor, labelTensor)
       }
     }
   }

@@ -25,15 +25,15 @@ import java.nio.channels.Channels
 import java.nio.file.Path
 import javax.imageio.ImageIO
 
-import com.intel.analytics.bigdl.dataset.{Image, ImageLocalPath, Label}
+import com.intel.analytics.bigdl.dataset.{Image, LocalImagePath, Label}
 
 /**
  * Represent a local file path of a image file with a float label
  * @param label
  * @param p
  */
-case class LabeledImageLocalPath(var label : Float, p : Path)
-  extends ImageLocalPath(p) with Label[Float] {
+case class LocalLabeledImagePath(var label : Float, p : Path)
+  extends LocalImagePath(p) with Label[Float] {
 
   override def setLabel(label: Float): this.type = {
     this.label = label

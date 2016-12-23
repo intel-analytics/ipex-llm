@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{Utils, Batch, Transformer}
+import com.intel.analytics.bigdl.dataset.{Utils, MiniBatch, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 
@@ -29,10 +29,10 @@ object RGBImgToBatch {
 }
 
 class RGBImgToBatch(totalBatch: Int, swapChannel : Boolean = true)
-  extends Transformer[LabeledRGBImage, Batch[Float]] {
+  extends Transformer[LabeledRGBImage, MiniBatch[Float]] {
 
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[Batch[Float]] = {
-    new Iterator[Batch[Float]] {
+  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[MiniBatch[Float]] = {
+    new Iterator[MiniBatch[Float]] {
       private val featureTensor: Tensor[Float] = Tensor[Float]()
       private val labelTensor: Tensor[Float] = Tensor[Float]()
       private var featureData: Array[Float] = null
@@ -43,7 +43,7 @@ class RGBImgToBatch(totalBatch: Int, swapChannel : Boolean = true)
 
       override def hasNext: Boolean = prev.hasNext
 
-      override def next(): Batch[Float] = {
+      override def next(): MiniBatch[Float] = {
         if (prev.hasNext) {
           var i = 0
           while (i < batchSize && prev.hasNext) {
@@ -66,7 +66,7 @@ class RGBImgToBatch(totalBatch: Int, swapChannel : Boolean = true)
               storageOffset = 1, sizes = Array(i))
           }
 
-          Batch(featureTensor, labelTensor)
+          MiniBatch(featureTensor, labelTensor)
         } else {
           null
         }
