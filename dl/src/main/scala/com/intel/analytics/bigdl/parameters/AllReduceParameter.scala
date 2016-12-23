@@ -20,7 +20,7 @@ import java.util.concurrent.{Callable, Executors, Future}
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import org.apache.spark.sparkExtension.SparkExtension
 import org.apache.spark.{SparkEnv, TaskContext}
 import org.apache.spark.storage.{BlockManagerWrapper, StorageLevel, TaskResultBlockId}
@@ -32,16 +32,10 @@ object AllReduceParameter {
   private val syncPoolSize: Int = System.getProperty(
     "bigdl.Parameter.syncPoolSize", "4").toInt
 
-  private val computePoolSize: Int = System.getProperty(
-    "bigdl.Parameter.computePoolSize",
-    (Runtime.getRuntime().availableProcessors() / 2).toString()).toInt
-
   private val maxClusterSize = System.getProperty(
     "bigdl.Parameter.maxClusterSize", "10000").toInt
 
   val syncPool = Executors.newFixedThreadPool(syncPoolSize)
-  // TODO: Replace it with Engine.threadpool
-  val computePool = Executors.newFixedThreadPool(computePoolSize)
 }
 
 class AllReduceParameter[T: ClassTag](id: Int) extends Serializable {
@@ -170,19 +164,18 @@ class AllReduceParameter[T: ClassTag](id: Int) extends Serializable {
     syncPool.invokeAll(sgThreads.asJava)
 
     val length = taskSize + (if (partitionId < extraSize) 1 else 0)
-    val innerTaskSize = length / computePoolSize
-    val innerExtraSize = length % computePoolSize
-    val availableTask = if (innerTaskSize == 0) innerExtraSize else computePoolSize
-    val tasks = (0 until availableTask).map(tid => new Callable[Int] {
-        override def call(): Int = {
-          val innerStart = tid * innerTaskSize + math.min(innerExtraSize, tid)
-          val innerLength = innerTaskSize + (if (tid < innerExtraSize) 1 else 0)
-          params.reduce((l, r) => l.add(r.bytes(innerStart, innerLength), innerStart,
-            innerLength))
-          tid
-        }
-    })
-    computePool.invokeAll(tasks.asJava)
+    val poolSize = Engine.default.getPoolSize
+    val innerTaskSize = length / poolSize
+    val innerExtraSize = length % poolSize
+    val availableTask = if (innerTaskSize == 0) innerExtraSize else poolSize
+    Engine.default.invokeAndWait2((0 until availableTask).map(tid => () => {
+      val innerStart = tid * innerTaskSize + math.min(innerExtraSize, tid)
+      val innerLength = innerTaskSize + (if (tid < innerExtraSize) 1 else 0)
+      params.reduce((l, r) => l.add(r.bytes(innerStart, innerLength), innerStart,
+        innerLength))
+      tid
+    }))
+    
     params.head.deCompress(gradientPartition)
   }
 
