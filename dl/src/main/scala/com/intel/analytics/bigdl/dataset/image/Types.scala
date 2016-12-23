@@ -296,7 +296,8 @@ object RGBImage {
     }
   }
 
-  def getWidthHeightAfterRatioScale(oriHeight: Int, oriWidth: Int, scaleTo: Int): (Int, Int) = {
+  private def getWidthHeightAfterRatioScale(oriHeight: Int, oriWidth: Int,
+    scaleTo: Int): (Int, Int) = {
     if (NO_SCALE == scaleTo) {
       (oriHeight, oriWidth)
     } else {
@@ -308,7 +309,7 @@ object RGBImage {
     }
   }
 
-  def readRawImage(path: Path): BufferedImage = {
+  private def readRawImage(path: Path): BufferedImage = {
     var fis: FileInputStream = null
     try {
       fis = new FileInputStream(path.toString)
