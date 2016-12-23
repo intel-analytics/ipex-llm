@@ -178,15 +178,4 @@ object Utils {
 
     (trainData, valData)
   }
-
-//  private[bigdl] def predict(model: Module[Float], input: Tensor[Float]): Array[Int] = {
-//    val logSoftMax = LogSoftMax[Float]()
-//    val _output = model.forward(input).asInstanceOf[Tensor[Float]]
-//    val output = logSoftMax.forward(_output)
-//
-//    val outputIndex = output.max(2)._2
-//        .storage.array
-//        .map(_.toInt)
-//    outputIndex
-//  }
 }

@@ -160,12 +160,9 @@ class Accuracy[T] extends ValidationMethod[T] {
     var correct = 0
     var count = 0
     require(_output.dim == 1, "output dimension should be one")
-    var i = 1
-    while (i <= _target.size(1)) {
-      if (_output.valueAt(i) == _target.valueAt(i))
-        correct += 1
-      i += 1
-    }
+    correct = Set(_output.storage().array())
+      .intersect(Set(_target.storage().array()))
+      .size
     count += _target.size(1)
 
     new AccuracyResult(correct, count)

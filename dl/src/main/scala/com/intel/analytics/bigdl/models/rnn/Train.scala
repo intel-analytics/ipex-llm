@@ -19,17 +19,13 @@ package com.intel.analytics.bigdl.models.rnn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToBatch, SampleToGreyImg}
 import com.intel.analytics.bigdl.dataset.text.{TensorSeqToBatch, TextSeqToTensorSeq}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion, Module}
+import com.intel.analytics.bigdl.nn.CrossEntropyCriterion
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.spark.{SparkConf, SparkContext}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import org.apache.log4j.Logger
-import org.apache.spark
-
-import scala.util.Random
 
 object Train {
 
@@ -59,20 +55,6 @@ object Train {
         .transform(TextSeqToTensorSeq(dictionaryLength))
         .transform(TensorSeqToBatch())
 
-//      val seq = Random.shuffle((1 to dataArray.length).toList)
-//      val seqTrain = seq.take(Math.floor(seq.length*0.8).toInt).toArray
-//      val seqVal   = seq.drop(Math.floor(seq.length*0.8).toInt).toArray
-//
-//      val trainDataArray = seqTrain.collect(dataArray)
-//      val trainLabelArray = seqTrain.collect(labelSeq)
-//      val valDataArray = seqVal.collect(dataArray)
-//      val valLabelArray = seqVal.collect(labelSeq)
-//
-//      logger.info("train: input size = " + trainDataArray.length)
-//      logger.info("train: label size = " + trainLabelArray.length)
-//      logger.info("test: input size = " + valDataArray.length)
-//      logger.info("test: label size = " + valLabelArray.length)
-//
       val model = SimpleRNN(
         inputSize = dictionaryLength,
         hiddenSize = 40,
@@ -95,21 +77,6 @@ object Train {
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
-
-      //
-//     val optimizer = new OptimizerSimpleRNN[Float](
-//        model = model,
-//        criterion = CrossEntropyCriterion[Float](),
-//        dictionaryLength = dictionaryLength
-//      )
-//
-//      optimizer
-//        .setTrain(trainDataArray, trainLabelArray)
-//        .setValidation(Trigger.everyEpoch, valDataArray, valLabelArray)
-//        .setState(state)
-//        .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
-//        .optimize()
-
 
 //      val (sampleInput, sampleLabel) = optimizer.convert(valDataArray(5), valLabelArray(5))
 //      val sampleOutput = predict(model, sampleInput)
