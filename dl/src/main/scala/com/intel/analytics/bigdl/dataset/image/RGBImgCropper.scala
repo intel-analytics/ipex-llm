@@ -21,12 +21,19 @@ import com.intel.analytics.bigdl.dataset.Transformer
 
 import scala.collection.Iterator
 
+sealed trait CropperMethod
+
+case object CropRandom extends CropperMethod
+
+case object CropCenter extends CropperMethod
+
 object RGBImgCropper {
-  def apply(cropWidth: Int, cropHeight: Int, isRandom: Boolean = true): RGBImgCropper =
-    new RGBImgCropper(cropWidth, cropHeight, isRandom)
+  def apply(cropWidth: Int, cropHeight: Int,
+    cropperMethod: CropperMethod = CropRandom): RGBImgCropper =
+    new RGBImgCropper(cropWidth, cropHeight, cropperMethod)
 }
 
-class RGBImgCropper(cropWidth: Int, cropHeight: Int, isRandom: Boolean = true)
+class RGBImgCropper(cropWidth: Int, cropHeight: Int, cropperMethod: CropperMethod = CropRandom)
   extends Transformer[LabeledRGBImage, LabeledRGBImage] {
 
   import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
@@ -37,12 +44,12 @@ class RGBImgCropper(cropWidth: Int, cropHeight: Int, isRandom: Boolean = true)
     prev.map(img => {
       val width = img.width()
       val height = img.height()
-      val (startH, startW) = if (isRandom) {
-        (math.ceil(RNG.uniform(1e-2, height - cropHeight)).toInt,
-          math.ceil(RNG.uniform(1e-2, width - cropWidth)).toInt)
-      }
-      else { // center crop
-        ((height - cropHeight) / 2, (width - cropWidth) / 2)
+      val (startH, startW) = cropperMethod match {
+        case CropRandom =>
+          (math.ceil(RNG.uniform(1e-2, height - cropHeight)).toInt,
+            math.ceil(RNG.uniform(1e-2, width - cropWidth)).toInt)
+        case CropCenter =>
+          ((height - cropHeight) / 2, (width - cropWidth) / 2)
       }
       val startIndex = (startW + startH * width) * 3
       val frameLength = cropWidth * cropHeight
