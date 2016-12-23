@@ -121,7 +121,7 @@ object ImageClassifier {
 
         case _ => throw new IllegalArgumentException(s"${param.modelType}")
       }
-
+      
       val validator = Validator(model, validateDataSet)
       val evaluator = Array(new Top1Accuracy[Float](), new Top5Accuracy[Float]())
       val result = validator.test(evaluator)
