@@ -30,11 +30,11 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 5446858218997354022L)
 class CrossEntropyCriterion[T: ClassTag](
-   val weights: Tensor[T] = null, squeezeFlag: Boolean = false)
+   val weights: Tensor[T] = null,
+   val squeezeFlag: Boolean = false)
    (implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{
-
-  private val lsm = LogSoftMax[T]()
-  private val nll = ClassNLLCriterion[T](weights)
+  private val lsm = new LogSoftMax[T]()
+  private val nll = new ClassNLLCriterion[T](weights)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     if (squeezeFlag) input.squeeze()
@@ -75,7 +75,9 @@ class CrossEntropyCriterion[T: ClassTag](
 
 object CrossEntropyCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
-      weights: Tensor[T] = null)(implicit ev: TensorNumeric[T]) : CrossEntropyCriterion[T] = {
-    new CrossEntropyCriterion[T](weights)
+      weights: Tensor[T] = null,
+      squeezeFlag: Boolean = false)
+      (implicit ev: TensorNumeric[T]) : CrossEntropyCriterion[T] = {
+    new CrossEntropyCriterion[T](weights, squeezeFlag)
   }
 }
