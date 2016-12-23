@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset
 
-object Utils {
+object TestUtils {
   def processPath(path: String): String = {
     if (path.contains(":")) {
       path.substring(1)
