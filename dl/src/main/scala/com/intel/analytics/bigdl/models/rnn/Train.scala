@@ -73,7 +73,7 @@ object Train {
       )
 
       optimizer
-        .setValidation(Trigger.everyEpoch, validationSet, Array(new Accuracy[Float]))
+        .setValidation(Trigger.everyEpoch, validationSet, Array(new Loss[Float]))
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
