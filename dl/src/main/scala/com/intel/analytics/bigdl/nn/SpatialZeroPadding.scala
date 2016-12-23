@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 5144173515559923276L)
 class SpatialZeroPadding[@specialized(Float, Double) T: ClassTag](
   padLeft: Int, padRight: Int, padTop: Int, padBottom: Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {

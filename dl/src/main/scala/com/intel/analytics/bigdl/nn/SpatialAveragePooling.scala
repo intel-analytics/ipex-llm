@@ -26,6 +26,7 @@ import scala.concurrent.{Await, Future}
 import scala.reflect._
 import com.intel.analytics.bigdl.utils.Engine
 
+@SerialVersionUID(4533142511857387857L)
 class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
   val kW: Int,
   val kH: Int,

@@ -32,6 +32,8 @@ import scala.reflect.ClassTag
  * @param sizeAverage
  * @param provideOutput
  */
+
+@SerialVersionUID(- 6261350003722613506L)
 class L1Penalty[T: ClassTag]
  (val l1weight: Int, val sizeAverage: Boolean = false,
  val provideOutput: Boolean = true)

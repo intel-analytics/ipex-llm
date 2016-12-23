@@ -30,6 +30,7 @@ import scala.reflect.ClassTag
  * internally to do so is recursive.
  * @param index the index to be selected
  */
+@SerialVersionUID(8787233248773612598L)
 class SelectTable[T: ClassTag](
   val index: Int)
   (implicit ev: TensorNumeric[T]) extends Container[Table, Activity, T]  {

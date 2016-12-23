@@ -29,6 +29,7 @@ import scala.reflect.ClassTag
  * with the input on the forward and backward passes.
  */
 
+@SerialVersionUID(8596309896021196822L)
 class MaskedSelect[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T]{
 

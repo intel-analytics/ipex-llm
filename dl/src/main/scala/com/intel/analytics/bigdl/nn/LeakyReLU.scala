@@ -32,6 +32,8 @@ import scala.reflect.ClassTag
  * @param inplace if it is true, doing the operation in-place without
  *                using extra state memory
  */
+
+@SerialVersionUID(- 6870619109313859155L)
 class LeakyReLU[T: ClassTag](
   negval: Double = 0.01,
   var inplace: Boolean = false)(

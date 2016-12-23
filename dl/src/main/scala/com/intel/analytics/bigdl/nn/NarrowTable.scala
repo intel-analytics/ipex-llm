@@ -31,6 +31,8 @@ import scala.reflect.ClassTag
  * @param offset
  * @param length
  */
+
+@SerialVersionUID(8046335768231475724L)
 class NarrowTable[T: ClassTag](val offset: Int, val length: Int = 1)
  (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Table, T]{
 

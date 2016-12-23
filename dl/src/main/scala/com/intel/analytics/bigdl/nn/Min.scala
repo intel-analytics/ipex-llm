@@ -29,6 +29,8 @@ import scala.reflect.ClassTag
  * @param dim
  * @param numInputDims Optional. If in a batch model, set to the inputDims.
  */
+
+@SerialVersionUID(8958076163182151950L)
 class Min[@specialized(Float, Double) T: ClassTag](
   var dim : Int = 1,
   var numInputDims: Int = Int.MinValue

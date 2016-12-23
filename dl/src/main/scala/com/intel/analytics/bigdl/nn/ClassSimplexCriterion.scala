@@ -26,6 +26,8 @@ import scala.reflect.ClassTag
  * point on an (N-1)-dimensional simplex, where N is the number of classes.
  * @param nClasses
  */
+
+@SerialVersionUID(- 8696382776046599502L)
 class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
  (implicit ev: TensorNumeric[T]) extends MSECriterion[T] {
 

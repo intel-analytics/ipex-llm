@@ -25,6 +25,7 @@ import scala.reflect.ClassTag
 import RandomGenerator._
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 
+@SerialVersionUID( 359656776803598943L)
 class Linear[T: ClassTag](
   inputSize: Int,
   outputSize: Int,

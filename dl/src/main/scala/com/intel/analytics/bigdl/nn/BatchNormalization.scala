@@ -28,6 +28,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 3181824540272906068L)
 class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   val nOutput: Int, // output feature map number
   val eps: Double = 1e-5, // avoid divde zero

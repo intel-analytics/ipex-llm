@@ -32,6 +32,8 @@ import scala.reflect.ClassTag
  *                   If it is more than the dimension of input tensors, the first dimension
  *                   would be considered as batch size
  */
+
+@SerialVersionUID(- 8435694717504118735L)
 class JoinTable[T: ClassTag] (
   val dimension: Int,
   val nInputDims: Int

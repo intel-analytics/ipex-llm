@@ -26,6 +26,7 @@ import scala.concurrent.{Await, Future}
 import scala.reflect._
 import com.intel.analytics.bigdl.utils.Engine
 
+@SerialVersionUID(3641570491004969703L)
 class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
 (val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75, val k: Double = 1.0)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {

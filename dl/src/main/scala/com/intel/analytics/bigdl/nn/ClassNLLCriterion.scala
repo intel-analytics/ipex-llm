@@ -26,6 +26,7 @@ import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.utils.Engine
 
+@SerialVersionUID(- 8696382776046599502L)
 class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   private var total_weight = ev.fromType[Int](0)

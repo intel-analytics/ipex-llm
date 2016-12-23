@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(8169462538025916360L)
 class ReLU6[T: ClassTag](inplace: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends HardTanh[T](0, 6, inplace) {
 

@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 9012115082607155821L)
 class RReLU[T: ClassTag](
   lower: Double = 1.0/8,
   upper: Double = 1.0/3,

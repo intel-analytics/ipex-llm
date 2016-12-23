@@ -26,6 +26,8 @@ import scala.reflect.ClassTag
 /**
  * multiply a single scalar factor to the incoming data
  */
+
+@SerialVersionUID(7706562484586989118L)
 class Mul[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val weight = Tensor[T](1)

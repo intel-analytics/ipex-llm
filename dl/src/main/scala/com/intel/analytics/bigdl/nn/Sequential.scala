@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(5375403296928513267L)
 class Sequential[T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
 

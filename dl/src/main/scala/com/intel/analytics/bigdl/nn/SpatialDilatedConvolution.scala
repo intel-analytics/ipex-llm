@@ -48,6 +48,8 @@ import scala.reflect.ClassTag
  * @param dilationH The number of pixels to skip. Default is 1.
  * @param initMethod Init method, Default, Xavier.
  */
+
+@SerialVersionUID(- 933818099759912492L)
 class SpatialDilatedConvolution[T: ClassTag](
   val nInputPlane: Int,
   val nOutputPlane: Int,

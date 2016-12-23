@@ -28,6 +28,8 @@ import scala.reflect.ClassTag
  *
  * SoftSign function: f_i(x) = x_i / (1+|x_i|)
  */
+
+@SerialVersionUID(- 3936698382129844874L)
 class SoftSign[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   @transient private var temp: Tensor[T] = null

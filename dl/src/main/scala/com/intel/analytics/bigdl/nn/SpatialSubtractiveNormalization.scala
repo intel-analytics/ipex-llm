@@ -41,6 +41,7 @@ import scala.reflect.ClassTag
  * @param nInputPlane number of input plane, default is 1.
  * @param kernel kernel tensor, default is a 9 x 9 tensor.
  */
+@SerialVersionUID(2522324984775526595L)
 class SpatialSubtractiveNormalization[T: ClassTag](
   val nInputPlane: Int = 1,
   var kernel: Tensor[T] = null
