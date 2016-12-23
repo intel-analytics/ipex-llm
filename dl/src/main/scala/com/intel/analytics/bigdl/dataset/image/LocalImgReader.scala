@@ -24,25 +24,44 @@ import com.intel.analytics.bigdl.dataset.Transformer
 import scala.collection.Iterator
 
 object LocalImgReader {
-  def apply(scaleTo: Any = RGBImage.NO_SCALE, normalize: Float = 255f): LocalImgReader
-  = new LocalImgReader(scaleTo, normalize)
-}
-
-class LocalImgReader(scaleTo: Any, normalize: Float)
-  extends Transformer[LabeledImageLocalPath, LabeledRGBImage] {
   Class.forName("javax.imageio.ImageIO")
   Class.forName("java.awt.color.ICC_ColorSpace")
   Class.forName("sun.java2d.cmm.lcms.LCMS")
   ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
+  def apply(scaleTo: Int = RGBImage.NO_SCALE, normalize: Float = 255f)
+  : Transformer[LabeledImageLocalPath, LabeledRGBImage]
+  = new LocalScaleImgReader(scaleTo, normalize)
+
+  def apply(resizeW: Int, resizeH: Int, normalize: Float)
+  : Transformer[LabeledImageLocalPath, LabeledRGBImage]
+  = new LocalResizeImgReader(resizeW, resizeH, normalize)
+}
+
+class LocalScaleImgReader private[dataset](scaleTo: Int, normalize: Float)
+  extends Transformer[LabeledImageLocalPath, LabeledRGBImage] {
+
+
   private val buffer = new LabeledRGBImage()
 
   override def apply(prev: Iterator[LabeledImageLocalPath]): Iterator[LabeledRGBImage] = {
     prev.map(data => {
-      val imgData = scaleTo match {
-        case scaleValue: Int => RGBImage.readImage(data.path, scaleValue)
-        case (resizeW: Int, resizeH: Int) => RGBImage.readImage(data.path, resizeW, resizeH)
-      }
+      val imgData = RGBImage.readImage(data.path, scaleTo)
+      val label = data.label
+      buffer.copy(imgData, normalize).setLabel(label)
+    })
+  }
+}
+
+class LocalResizeImgReader private[dataset](resizeW: Int, resizeH: Int, normalize: Float)
+  extends Transformer[LabeledImageLocalPath, LabeledRGBImage] {
+
+
+  private val buffer = new LabeledRGBImage()
+
+  override def apply(prev: Iterator[LabeledImageLocalPath]): Iterator[LabeledRGBImage] = {
+    prev.map(data => {
+      val imgData = RGBImage.readImage(data.path, resizeW, resizeH)
       val label = data.label
       buffer.copy(imgData, normalize).setLabel(label)
     })
