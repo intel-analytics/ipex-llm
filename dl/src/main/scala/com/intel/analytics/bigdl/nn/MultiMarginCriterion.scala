@@ -31,6 +31,8 @@ import scala.reflect.ClassTag
  * @param margin
  * @param sizeAverage
  */
+
+@SerialVersionUID(- 5690966547738588572L)
 class MultiMarginCriterion[T: ClassTag](val p: Int = 1,
  val weights: Tensor[T] = null, margin: Double = 1.0, val sizeAverage: Boolean = true)
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {

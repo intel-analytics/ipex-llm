@@ -42,6 +42,8 @@ import scala.reflect.ClassTag
  * @param margin
  * @param sizeAverage
  */
+
+@SerialVersionUID(117094129660790270L)
 class HingeEmbeddingCriterion[T: ClassTag](
   margin: Double = 1,
   sizeAverage: Boolean = true

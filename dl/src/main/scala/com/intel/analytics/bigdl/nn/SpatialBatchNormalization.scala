@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 9106336963903528047L)
 class SpatialBatchNormalization[T: ClassTag](
   nOutput: Int, eps: Double = 1e-5, momentum: Double = 0.1, affine: Boolean = true)(
   implicit ev: TensorNumeric[T])

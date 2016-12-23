@@ -27,6 +27,7 @@ import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.utils.Engine
 
+@SerialVersionUID(3953292249027271493L)
 class Threshold[@specialized(Float, Double) T: ClassTag](
   th: Double = 1e-6, v: Double = 0.0, ip: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {

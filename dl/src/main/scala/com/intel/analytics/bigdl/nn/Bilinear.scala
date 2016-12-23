@@ -34,6 +34,8 @@ import scala.reflect.ClassTag
  * @param outputSize
  * @param biasRes  The layer can be trained without biases by setting bias = false. otherwise true
  */
+
+@SerialVersionUID(- 4838965135083645415L)
 class Bilinear[T: ClassTag](inputSize1: Int,
   inputSize2: Int,
   outputSize: Int,
@@ -181,6 +183,7 @@ class Bilinear[T: ClassTag](inputSize1: Int,
   override def toString(): String = {
     s"nn.Bilinear($inputSize1, $inputSize2, $outputSize, $biasRes)"
   }
+
 }
 
 object Bilinear {

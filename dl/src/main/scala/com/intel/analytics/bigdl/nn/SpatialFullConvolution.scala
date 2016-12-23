@@ -59,6 +59,8 @@ import scala.reflect.ClassTag
  * @param noBias If bias is needed.
  * @param initMethod Init method, Default, Xavier, Bilinear.
  */
+
+@SerialVersionUID(- 3110412775551642284L)
 class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   val nInputPlane: Int,
   val nOutputPlane: Int,

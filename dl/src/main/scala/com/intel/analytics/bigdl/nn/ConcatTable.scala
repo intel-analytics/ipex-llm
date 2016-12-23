@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 704681653938468956L)
 class ConcatTable[T : ClassTag]
   (implicit ev: TensorNumeric[T]) extends Container[Activity, Table, T] {
   override def updateOutput(input: Activity): Table = {

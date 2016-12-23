@@ -25,6 +25,8 @@ import scala.reflect.ClassTag
 /**
  * compute L1 norm for input, and sign of input
  */
+
+@SerialVersionUID(3544342765989460298L)
 class L1Cost[T: ClassTag]()
  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 

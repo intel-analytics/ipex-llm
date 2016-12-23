@@ -26,6 +26,8 @@ import scala.reflect.ClassTag
 /**
  * Takes a table with two Tensor and returns the component-wise subtraction between them.
  */
+
+@SerialVersionUID( - 7694575573537075609L)
 class CSubTable[T: ClassTag]()(
   implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T]{
 

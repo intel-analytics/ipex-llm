@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.utils.Engine
 
 import scala.collection.mutable.ArrayBuffer
 
+@SerialVersionUID(- 5218461876031660707L)
 class Concat[T: ClassTag](val dimension: Int)(
   implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
   private var size: Array[Int] = null

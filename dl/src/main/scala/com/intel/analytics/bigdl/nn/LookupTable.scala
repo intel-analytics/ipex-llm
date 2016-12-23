@@ -27,6 +27,8 @@ import scala.reflect.ClassTag
 /**
  * a convolution of width 1, commonly used for word embeddings;
  */
+
+@SerialVersionUID( - 4832171200145114633L)
 class LookupTable[T: ClassTag]
 (val nIndex: Int, val nOutput: Int, val paddingValue: Double = 0,
  val maxNorm: Double = Double.MaxValue,

@@ -26,6 +26,8 @@ import scala.reflect.ClassTag
 /**
  * Takes a table of Tensors and outputs the max of all of them.
  */
+
+@SerialVersionUID(8594258233874356842L)
 class CMaxTable[T: ClassTag](implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Tensor[T], T]{
 

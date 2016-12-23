@@ -28,6 +28,7 @@ import scala.reflect.ClassTag
  * @param constant_scalar constant value
  * @param inplace Can optionally do its operation in-place without using extra state memory
  */
+@SerialVersionUID(- 1572711921601326233L)
 class AddConstant[T: ClassTag](
    val constant_scalar: T,
    val inplace: Boolean = false

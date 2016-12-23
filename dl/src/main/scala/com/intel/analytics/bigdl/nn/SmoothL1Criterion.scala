@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(3385326223989333522L)
 class SmoothL1Criterion[T: ClassTag](sizeAverage: Boolean = true)
                                     (implicit ev: TensorNumeric[T])
   extends TensorCriterion[T] {

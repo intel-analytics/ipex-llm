@@ -26,6 +26,8 @@ import scala.reflect.ClassTag
 /**
  * Takes a table with two Tensor and returns the component-wise division between them.
  */
+
+@SerialVersionUID(- 3746356029327536265L)
 class CDivTable[T: ClassTag](implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Tensor[T], T]{
 

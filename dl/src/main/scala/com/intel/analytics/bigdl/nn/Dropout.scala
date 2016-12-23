@@ -27,6 +27,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 4636332259181125718L)
 class Dropout[T: ClassTag](
   val initP: Double = 0.5, val inplace: Boolean = false, var scale: Boolean = true)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {

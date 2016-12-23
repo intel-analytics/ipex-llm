@@ -33,6 +33,8 @@ import scala.reflect.ClassTag
  * and with weights:
  * l(x,y) = - sum_i weights[i] (y[i] * log(p[i]) + (1 - y[i]) * log (1 - p[i]))
  */
+
+@SerialVersionUID(6780540545644361024L)
 class MultiLabelSoftMarginCriterion[T: ClassTag]
 (var weights: Tensor[T] = null, sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {

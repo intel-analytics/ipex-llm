@@ -27,6 +27,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 8446523046224797382L)
 class SpatialConvolution[T: ClassTag](
   val nInputPlane: Int, // The number of expected input planes in the image given into forward()
   val nOutputPlane: Int, // The number of output planes the convolution layer will produce.

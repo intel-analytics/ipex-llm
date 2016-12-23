@@ -28,6 +28,7 @@ import scala.reflect.ClassTag
  * @param weights A tensor assigning weight to each of the classes
  */
 
+@SerialVersionUID(- 5446858218997354022L)
 class CrossEntropyCriterion[T: ClassTag](
    val weights: Tensor[T] = null, squeezeFlag: Boolean = false)
    (implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{
