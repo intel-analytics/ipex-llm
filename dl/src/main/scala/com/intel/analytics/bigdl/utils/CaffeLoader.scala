@@ -80,9 +80,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   private def loadParameters(name: String, destPara: Array[Tensor[T]]):
   (Tensor[T], Tensor[T]) = {
     val caffeWeight = getBlob(name, 0)
-    caffeWeight match {
-      case None => return (null, null)
-    }
+    if(caffeWeight == None) return (null, null)
     val weightList = caffeWeight.get.getDataList
     require(destPara != null && destPara(0).nElement() == weightList.size(),
       s"weight element must be equal in module $name")
@@ -94,9 +92,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
     if (destPara.length > 1) {
       val caffeBias = getBlob(name, 1)
-      caffeBias match {
-        case None => return (destPara(1), null)
-      }
+      if(caffeBias == None) return (destPara(1), null)
       val biasList = caffeBias.get.getDataList
       require(destPara(1).nElement() == biasList.size(),
         s"bias element must be equal in module $name")
