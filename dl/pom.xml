@@ -19,8 +19,6 @@
         <!--> this is the version of spark-version project<-->
         <spark-version.version>1.5-plus</spark-version.version>
         <spark.version>1.5.1</spark.version>
-        <spark-scope>provided</spark-scope>
-        <jar-with-dependencies.name>test</jar-with-dependencies.name>
     </properties>
 
     <dependencies>
@@ -33,7 +31,7 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>2.7.1</version>
-            <scope>${spark-scope}</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -50,13 +48,13 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>
             <version>${spark.version}</version>
-            <scope>${spark-scope}</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-mllib_2.10</artifactId>
             <version>${spark.version}</version>
-            <scope>${spark-scope}</scope>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl.spark-version</groupId>
@@ -136,7 +134,6 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <classifier>${jar-with-dependencies.name}</classifier>
                 </configuration>
                 <executions>
                     <execution>
@@ -169,9 +166,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <classifier>${jar-with-dependencies.name}</classifier>
-                </configuration>
             </plugin>
 
             <plugin><!-- for scoverage-->
@@ -245,28 +239,6 @@
     </reporting>
 
     <profiles>
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <spark-scope>provided</spark-scope>
-            </properties>
-        </profile>
-        <profile>
-            <id>all-in-one</id>
-            <properties>
-                <spark-scope>compile</spark-scope>
-                <jar-with-dependencies.name>all-in-one</jar-with-dependencies.name>
-            </properties>
-        </profile>
-        <profile>
-            <id>dist</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-        </profile>
         <profile>
             <id>1.5-plus</id>
             <activation>
