@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.loadCaffe
+package com.intel.analytics.bigdl.example.classifier
 
 import java.nio.file.Path
 
@@ -56,5 +56,21 @@ object GoogleNetPreprocessor {
   }
 }
 
+object ResNetPreprocessor {
+  def apply(path: Path, imageSize: Int, batchSize: Int)
+  : LocalDataSet[Batch[Float]] = {
+    DataSet.ImageFolder.paths(path)
+      .transform(
+        MTLabeledBGRImgToBatch(
+          width = imageSize,
+          height = imageSize,
+          batchSize = batchSize,
+          transformer = LocalImgReader(256) ->
+            BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize, CropCenter) ->
+            BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
 
+        )
+      )
+  }
+}
 
