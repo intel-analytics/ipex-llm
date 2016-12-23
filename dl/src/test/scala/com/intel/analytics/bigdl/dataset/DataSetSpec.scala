@@ -230,7 +230,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val resourceImageNet = getClass().getClassLoader().getResource("imagenet")
     def test(imgFolder: String, imgFileName: String, tensorFile: String): Unit = {
       val img1Path = Paths.get(processPath(resourceImageNet.getPath()), imgFolder, imgFileName)
-      val iter = (DataSet.array(Array(LabeledImageLocalPath(1.0f, img1Path)))
+      val iter = (DataSet.array(Array(LocalLabeledImagePath(1.0f, img1Path)))
         -> LocalImgReader()
         -> RGBImgCropper(224, 224)
         -> HFlip()

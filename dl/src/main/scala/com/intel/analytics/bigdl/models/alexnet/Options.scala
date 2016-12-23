@@ -23,7 +23,7 @@ object Options {
 
   case class TrainParams(
     folder: String = "./",
-    cache: Option[String] = None,
+    checkpointPath: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
     coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
@@ -43,9 +43,9 @@ object Options {
     opt[Int]('c', "core")
       .text("cores number to train the model")
       .action((x, c) => c.copy(coreNumber = x))
-    opt[String]("cache")
+    opt[String]("checkpoint")
       .text("where to cache the model")
-      .action((x, c) => c.copy(cache = Some(x)))
+      .action((x, c) => c.copy(checkpointPath = Some(x)))
   }
 
   case class TestParams(

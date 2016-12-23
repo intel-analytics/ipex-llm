@@ -52,7 +52,7 @@ object LocalImageFiles {
    * @param path
    * @return
    */
-  private[bigdl] def readPaths(path: Path): Array[LabeledImageLocalPath] = {
+  private[bigdl] def readPaths(path: Path): Array[LocalLabeledImagePath] = {
     val directoryStream = Files.newDirectoryStream(path)
     println(s"Start to read directories $path")
     val labelMap = readLabels(path)
@@ -60,18 +60,11 @@ object LocalImageFiles {
     directoryStream.asScala.flatMap(dir => {
       println(s"Find class ${dir.getFileName} -> ${labelMap(dir.getFileName.toString)}")
       Files.newDirectoryStream(dir).asScala.map(p =>
-        LabeledImageLocalPath(labelMap(dir.getFileName.toString).toFloat, p)).toSeq
+        LocalLabeledImagePath(labelMap(dir.getFileName.toString).toFloat, p)).toSeq
     }).toArray.sortWith(
       _.path.getFileName.toString < _.path.getFileName.toString
     )
   }
 }
 
-object SequenceFiles {
-  private[bigdl] def findFiles(path: Path): Array[SeqFileLocalPath] = {
-    val directoryStream = Files.newDirectoryStream(path)
-    import scala.collection.JavaConverters._
-    directoryStream.asScala.map(_.toAbsolutePath.toString)
-      .filter(_.endsWith(".seq")).toArray.sortWith(_ < _).map(p => SeqFileLocalPath(Paths.get(p)))
-  }
-}
+

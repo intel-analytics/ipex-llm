@@ -447,13 +447,13 @@ class TransformersSpec extends FlatSpec with Matchers {
       println(s"writer file ${iter.next()}")
     }
 
-    val seqDataSource = new LocalArrayDataSet[SeqFileLocalPath](Array(
-      SeqFileLocalPath(Paths.get(tmpFile + "_0.seq")),
-      SeqFileLocalPath(Paths.get(tmpFile + "_1.seq")),
-      SeqFileLocalPath(Paths.get(tmpFile + "_2.seq")),
-      SeqFileLocalPath(Paths.get(tmpFile + "_3.seq")),
-      SeqFileLocalPath(Paths.get(tmpFile + "_4.seq")),
-      SeqFileLocalPath(Paths.get(tmpFile + "_5.seq"))
+    val seqDataSource = new LocalArrayDataSet[LocalSeqFilePath](Array(
+      LocalSeqFilePath(Paths.get(tmpFile + "_0.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_1.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_2.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_3.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_4.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_5.seq"))
     ))
     var count = 0
     val readPipeline = seqDataSource -> LocalSeqFileToBytes() -> SampleToRGBImg()

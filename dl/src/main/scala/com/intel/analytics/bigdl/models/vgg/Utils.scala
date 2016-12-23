@@ -27,7 +27,7 @@ object Utils {
 
   case class TrainLocalParams(
     folder: String = "./",
-    cache: Option[String] = None,
+    checkpointPath: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
     coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
@@ -44,9 +44,9 @@ object Utils {
     opt[String]("state")
       .text("state snapshot location")
       .action((x, c) => c.copy(stateSnapshot = Some(x)))
-    opt[String]("cache")
+    opt[String]("checkpoint")
       .text("where to cache the model")
-      .action((x, c) => c.copy(cache = Some(x)))
+      .action((x, c) => c.copy(checkpointPath = Some(x)))
     opt[Int]('c', "core")
       .text("cores number to train the model")
       .action((x, c) => c.copy(coreNumber = x))
@@ -54,7 +54,7 @@ object Utils {
 
   case class TrainSparkParams(
     folder: String = "./",
-    cache: Option[String] = None,
+    checkpointPath: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
     coreNumberPerNode: Int = -1,
@@ -73,9 +73,9 @@ object Utils {
     opt[String]("state")
       .text("state snapshot location")
       .action((x, c) => c.copy(stateSnapshot = Some(x)))
-    opt[String]("cache")
+    opt[String]("checkpoint")
       .text("where to cache the model")
-      .action((x, c) => c.copy(cache = Some(x)))
+      .action((x, c) => c.copy(checkpointPath = Some(x)))
     opt[Int]('c', "core")
       .text("cores number on each node")
       .action((x, c) => c.copy(coreNumberPerNode = x))

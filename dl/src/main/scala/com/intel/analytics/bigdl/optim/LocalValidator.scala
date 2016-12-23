@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
+import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.DistriOptimizer._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -29,7 +29,7 @@ object LocalValidator {
 }
 
 class LocalValidator[T](model: Module[T])
-  extends Validator[T, Iterator[Batch[T]]](model) {
+  extends Validator[T, Iterator[MiniBatch[T]]](model) {
 
   private val coreNumber = Engine.coreNumber()
 
@@ -41,7 +41,7 @@ class LocalValidator[T](model: Module[T])
   private val workingModels = (1 to subModelNumber).map(_ => model.cloneModule().evaluate()).toArray
 
   override def test(
-    dataSet: DataSource[Iterator[Batch[T]]],
+    dataSet: DataSource[Iterator[MiniBatch[T]]],
     vMethods: Array[ValidationMethod[T]]
   ): Array[(ValidationResult, ValidationMethod[T])] = {
     val dataIter = dataSet.data(looped = false)
