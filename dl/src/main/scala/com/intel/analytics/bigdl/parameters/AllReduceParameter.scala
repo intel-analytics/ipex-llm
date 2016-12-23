@@ -50,15 +50,15 @@ class AllReduceParameter[T: ClassTag](id: Int) extends Serializable {
   var partitionNum = 0
   var tlength = 0
 
-  @transient lazy val taskSize = tlength / partitionNum
-  @transient lazy val extraSize = tlength % partitionNum
-  @transient lazy private val partitionId = TaskContext.getPartitionId()
+  @transient lazy private val taskSize = tlength / partitionNum
+  @transient lazy private val extraSize = tlength % partitionNum
+  @transient lazy private val partitionId: Int = TaskContext.getPartitionId()
   
   @transient lazy val parameterBuffer: CompressedTensor[T] = readParameterBuffer()
   @transient lazy val weightPartition: Tensor[T] = readWeights()
   @transient lazy val gradientPartition: Tensor[T] = readGradients()
   @transient lazy val state = readState()
-
+  
   def readParameterBuffer(): CompressedTensor[T] = {
     new FP16SplitsCompressedTensor[T](tlength,
       partitionNum).asInstanceOf[CompressedTensor[T]]
@@ -151,6 +151,7 @@ class AllReduceParameter[T: ClassTag](id: Int) extends Serializable {
 
   def aggregrateGradientParition(): Unit = {
     val bm = SparkEnv.get.blockManager
+    require(partitionId < partitionNum)
     val params = new Array[CompressedTensor[T]](partitionNum)
     val sgThreads = (0 until partitionNum).map(pid => {
       new Callable[Int] {
@@ -188,7 +189,6 @@ class AllReduceParameter[T: ClassTag](id: Int) extends Serializable {
   def putGradients(parameter: Tensor[T]): Unit = {
     var pid = 0
     val bm = SparkEnv.get.blockManager
-
     require(parameterBuffer != null)
     parameterBuffer.compress(parameter)
     while (pid < partitionNum) {
