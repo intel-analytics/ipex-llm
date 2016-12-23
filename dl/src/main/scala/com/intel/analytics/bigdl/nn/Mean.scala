@@ -22,11 +22,11 @@ import scala.reflect.ClassTag
 
 /**
  * It is a simple layer which applies a mean operation over the given dimension.
- * When nInputDims is provided, the input will be considered as a batches.
+ * When nInputDims is provided, the input will be considered as batches.
  * Then the mean operation will be applied in (dimension + 1)
  *
  * @param dimension the dimension to be applied mean operation
- * @param nInputDims the number of dimensions of the give input
+ * @param nInputDims the number of dimensions of the given input
  */
 
 @SerialVersionUID(2995626598003841724L)
