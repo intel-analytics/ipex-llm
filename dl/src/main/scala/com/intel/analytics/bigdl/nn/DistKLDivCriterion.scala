@@ -89,8 +89,8 @@ class DistKLDivCriterion[T: ClassTag](sizeAverage: Boolean = true)
 }
 
 object DistKLDivCriterion {
-  def apply[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean = true)
-    (implicit ev: TensorNumeric[T]): DistKLDivCriterion[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : DistKLDivCriterion[T] = {
     new DistKLDivCriterion[T](sizeAverage)
   }
 }
