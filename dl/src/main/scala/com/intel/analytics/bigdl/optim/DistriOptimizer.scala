@@ -197,12 +197,20 @@ object DistriOptimizer {
             i += 1
           }
           
-          
           if (finishedThreads.size > 0) {
             time = System.nanoTime()
             val gradLength = cached.modelGradients(0).nElement()
             val taskSize = gradLength / _subModelNumber
             val extraTask = gradLength % _subModelNumber
+                        
+//            var i = 0
+//            while (i < _subModelNumber) {
+//              if (!finishedThreads.contains(i)) {
+//                cached.modelGradients(i).zero()
+//              }
+//              i += 1
+//            }
+
             (0 until _subModelNumber).diff(finishedThreads).foreach(i =>
               cached.modelGradients(i).zero()
             )
