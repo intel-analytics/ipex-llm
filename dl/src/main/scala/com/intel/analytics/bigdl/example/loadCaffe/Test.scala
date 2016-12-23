@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.example.loadCaffe
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.models.alexnet.AlexNet
-import com.intel.analytics.bigdl.models.googlenet.GoogleNet_v1_NoAuxClassifier
+import com.intel.analytics.bigdl.models.inception.GoogleNet_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{LocalValidator, Top1Accuracy, Top5Accuracy}
 import org.apache.log4j.Logger
