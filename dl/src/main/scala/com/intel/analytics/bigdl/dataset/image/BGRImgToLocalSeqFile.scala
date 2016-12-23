@@ -27,19 +27,19 @@ import org.apache.hadoop.io.{SequenceFile, Text}
 
 import scala.collection.Iterator
 
-object RGBImgToLocalSeqFile {
-  def apply(blockSize: Int, baseFileName: Path): RGBImgToLocalSeqFile = {
-    new RGBImgToLocalSeqFile(blockSize, baseFileName)
+object BGRImgToLocalSeqFile {
+  def apply(blockSize: Int, baseFileName: Path): BGRImgToLocalSeqFile = {
+    new BGRImgToLocalSeqFile(blockSize, baseFileName)
   }
 }
 
-class RGBImgToLocalSeqFile(blockSize: Int, baseFileName: Path) extends
-  Transformer[LabeledRGBImage, String] {
+class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path) extends
+  Transformer[LabeledBGRImage, String] {
   private val conf: Configuration = new Configuration
   private var index = 0
   private val preBuffer: ByteBuffer = ByteBuffer.allocate(4 * 2)
 
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[String] = {
+  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[String] = {
     new Iterator[String] {
       override def hasNext: Boolean = prev.hasNext
 

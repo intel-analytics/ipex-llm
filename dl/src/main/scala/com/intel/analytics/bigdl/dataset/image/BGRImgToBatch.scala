@@ -23,15 +23,15 @@ import com.intel.analytics.bigdl.utils.Engine
 
 import scala.collection.Iterator
 
-object RGBImgToBatch {
-  def apply(batchSize: Int, swapChannel : Boolean = true): RGBImgToBatch
-    = new RGBImgToBatch(batchSize, swapChannel)
+object BGRImgToBatch {
+  def apply(batchSize: Int, toRGB: Boolean = true): BGRImgToBatch
+    = new BGRImgToBatch(batchSize, toRGB)
 }
 
-class RGBImgToBatch(totalBatch: Int, swapChannel : Boolean = true)
-  extends Transformer[LabeledRGBImage, Batch[Float]] {
+class BGRImgToBatch(totalBatch: Int, toRGB: Boolean = true)
+  extends Transformer[LabeledBGRImage, Batch[Float]] {
 
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[Batch[Float]] = {
+  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[Batch[Float]] = {
     new Iterator[Batch[Float]] {
       private val featureTensor: Tensor[Float] = Tensor[Float]()
       private val labelTensor: Tensor[Float] = Tensor[Float]()
@@ -54,7 +54,7 @@ class RGBImgToBatch(totalBatch: Int, swapChannel : Boolean = true)
               height = img.height()
               width = img.width()
             }
-            img.copyTo(featureData, i * img.width() * img.height() * 3, swapChannel)
+            img.copyTo(featureData, i * img.width() * img.height() * 3, toRGB)
             labelData(i) = img.label()
             i += 1
           }

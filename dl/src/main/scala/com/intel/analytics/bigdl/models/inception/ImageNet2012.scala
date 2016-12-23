@@ -36,12 +36,12 @@ object ImageNet2012 {
   : DistributedDataSet[Batch[Float]] = {
     DataSet.SequenceFolder.files(path, sc, classNumber, nodeNumber)
       .transform(
-        MTLabeledRGBImgToBatch[Sample](
+        MTLabeledBGRImgToBatch[Sample](
           width = imageSize,
           height = imageSize,
           batchSize = batchSize,
-          transformer = (SampleToRGBImg() -> RGBImgCropper(imageSize, imageSize)
-            -> HFlip(0.5) -> RGBImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225))
+          transformer = (SampleToBGRImg() -> BGRImgCropper(imageSize, imageSize)
+            -> HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225))
         ))
   }
 }

@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.models.inception
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{RGBImgNormalizer, RGBImgToBatch}
+import com.intel.analytics.bigdl.dataset.image.{BGRImgNormalizer, BGRImgToBatch}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{DistriValidator, Top1Accuracy, Top5Accuracy}
 import com.intel.analytics.bigdl.utils.Engine

@@ -29,7 +29,7 @@ object ColorJitter {
   }
 }
 
-class ColorJitter extends Transformer[LabeledRGBImage, LabeledRGBImage] {
+class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
   val bcsParameters = Map("brightness" -> 0.4f, "contrast" -> 0.4f, "saturation" -> 0.4f)
 
   def grayScale(dst: Array[Float], img: Array[Float]): Array[Float] = {
@@ -82,7 +82,7 @@ class ColorJitter extends Transformer[LabeledRGBImage, LabeledRGBImage] {
     randOrder.map( x => ts(x))
   }
 
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
+  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[LabeledBGRImage] = {
     prev.map(img => {
       val content = img.content
       require(content.length % 3 == 0)

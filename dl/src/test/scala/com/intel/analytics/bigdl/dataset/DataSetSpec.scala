@@ -79,7 +79,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "cifar data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("cifar")
     val dataSource = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
-      RGBImage.NO_SCALE)
+      BGRImage.NO_SCALE)
     dataSource.size() should be(7)
     val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
     labelMap("airplane") should be(1)
@@ -114,7 +114,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "cifar rdd data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("cifar")
     val dataSource = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
-      sc, 4, RGBImage.NO_SCALE)
+      sc, 4, BGRImage.NO_SCALE)
     dataSource.size() should be(7)
     val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
     labelMap("airplane") should be(1)
@@ -158,7 +158,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     labelMap("n15075141") should be(3)
     labelMap("n99999999") should be(4)
 
-    val pathToImage = LocalImgReader(RGBImage.NO_SCALE)
+    val pathToImage = LocalImgReader(BGRImage.NO_SCALE)
     val imageDataSource = dataSource -> pathToImage
 
     val images = imageDataSource.data(looped = false)
@@ -191,8 +191,8 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     // Convert the test imagenet files to seq files
     val files = (DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
-      -> LocalImgReader(RGBImage.NO_SCALE)
-      -> RGBImgToLocalSeqFile(2, Paths.get(tmpFile.getAbsolutePath(), "imagenet"))
+      -> LocalImgReader(BGRImage.NO_SCALE)
+      -> BGRImgToLocalSeqFile(2, Paths.get(tmpFile.getAbsolutePath(), "imagenet"))
       ).data(looped = false).map(s => {
       println(s);
       s
@@ -201,7 +201,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     files.length should be(6)
 
     val imageIter = (DataSet.SequenceFolder.paths(Paths.get(tmpFile.getAbsolutePath()), 11)
-      -> LocalSeqFileToBytes() -> SampleToRGBImg()).data(looped = false)
+      -> LocalSeqFileToBytes() -> SampleToBGRImg()).data(looped = false)
 
     val img = imageIter.next()
     img.label() should be(4f)
@@ -232,10 +232,10 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val img1Path = Paths.get(processPath(resourceImageNet.getPath()), imgFolder, imgFileName)
       val iter = (DataSet.array(Array(LabeledImageLocalPath(1.0f, img1Path)))
         -> LocalImgReader()
-        -> RGBImgCropper(224, 224)
+        -> BGRImgCropper(224, 224)
         -> HFlip()
-        -> RGBImgNormalizer((0.4, 0.5, 0.6), (0.1, 0.2, 0.3))
-        -> RGBImgToBatch(1)
+        -> BGRImgNormalizer((0.4, 0.5, 0.6), (0.1, 0.2, 0.3))
+        -> BGRImgToBatch(1)
         ).data(looped = false)
       val image1 = iter.next().data
 

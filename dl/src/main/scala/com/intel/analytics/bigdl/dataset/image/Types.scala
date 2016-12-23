@@ -116,12 +116,12 @@ class LabeledGreyImage(d: Array[Float], w: Int, h: Int,
 }
 
 /**
- * Represent a RGB image
+ * Represent a BGR image
  * @param data
  * @param _width
  * @param _height
  */
-class RGBImage(
+class BGRImage(
   protected var data: Array[Float],
   protected var _width: Int,
   protected var _height: Int
@@ -148,11 +148,11 @@ class RGBImage(
     this
   }
 
-  def copyTo(storage: Array[Float], offset: Int, swapChannel : Boolean = true): Unit = {
+  def copyTo(storage: Array[Float], offset: Int, toRGB: Boolean = true): Unit = {
     val frameLength = width() * height()
     require(frameLength * 3 + offset <= storage.length)
     var j = 0
-    if(swapChannel) {
+    if(toRGB) {
       while (j < frameLength) {
         storage(offset + j) = content(j * 3 + 2)
         storage(offset + j + frameLength) = content(j * 3 + 1)
@@ -187,7 +187,7 @@ class RGBImage(
     ImageIO.write(image, "jpg", new File(path))
   }
 
-  def copy(other: RGBImage): RGBImage = {
+  def copy(other: BGRImage): BGRImage = {
     this._width = other._width
     this._height = other._height
     if (this.data.length < this._width * this._height * 3) {
@@ -207,8 +207,8 @@ class RGBImage(
    *
    * @return
    */
-  def hflip(): RGBImage = {
-    RGBImage.hflip(data, height(), width())
+  def hflip(): BGRImage = {
+    BGRImage.hflip(data, height(), width())
     this
   }
 
@@ -228,8 +228,8 @@ class RGBImage(
     res
   }
 
-  override def clone(): RGBImage = {
-    new RGBImage().copy(this)
+  override def clone(): BGRImage = {
+    new BGRImage().copy(this)
   }
 
   override def width(): Int = _width
@@ -240,8 +240,8 @@ class RGBImage(
 }
 
 
-class LabeledRGBImage(d: Array[Float], w: Int, h: Int,
-  protected var _label : Float) extends RGBImage(d, w, h) with Label[Float] {
+class LabeledBGRImage(d: Array[Float], w: Int, h: Int,
+  protected var _label : Float) extends BGRImage(d, w, h) with Label[Float] {
 
   def this() = this(new Array[Float](0), 0, 0, 0.0f)
 
@@ -253,26 +253,26 @@ class LabeledRGBImage(d: Array[Float], w: Int, h: Int,
     this
   }
 
-  override def hflip(): LabeledRGBImage = {
+  override def hflip(): LabeledBGRImage = {
     super.hflip()
     this
   }
 
   override def label(): Float = _label
 
-  def copy(other: LabeledRGBImage): LabeledRGBImage = {
-    this.copy(other.asInstanceOf[RGBImage])
+  def copy(other: LabeledBGRImage): LabeledBGRImage = {
+    this.copy(other.asInstanceOf[BGRImage])
     this._label = other._label
     this
   }
 
-  override def clone(): LabeledRGBImage = {
-    new LabeledRGBImage().copy(this)
+  override def clone(): LabeledBGRImage = {
+    new LabeledBGRImage().copy(this)
   }
 
 }
 
-object RGBImage {
+object BGRImage {
   def hflip(data : Array[Float], height : Int, width : Int): Unit = {
     var y = 0
     while (y < height) {

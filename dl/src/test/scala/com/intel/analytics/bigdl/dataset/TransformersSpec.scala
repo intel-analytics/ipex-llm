@@ -126,11 +126,11 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "RGB Image Cropper" should "crop image correct" in {
-    val image = new LabeledRGBImage(32, 32)
+    val image = new LabeledBGRImage(32, 32)
     val tensor = Tensor[Float](Storage[Float](image.content), 1, Array(3, 32, 32))
     tensor.rand()
     RNG.setSeed(1000)
-    val cropper = new RGBImgCropper(24, 24)
+    val cropper = new BGRImgCropper(24, 24)
     val iter = cropper.apply(Iterator.single(image))
     val result = iter.next()
 
@@ -156,9 +156,9 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "RGB Image Normalizer" should "normalize image correctly" in {
-    val image1 = new LabeledRGBImage((1 to 27).map(_.toFloat).toArray, 3, 3, 0)
-    val image2 = new LabeledRGBImage((2 to 28).map(_.toFloat).toArray, 3, 3, 0)
-    val image3 = new LabeledRGBImage((3 to 29).map(_.toFloat).toArray, 3, 3, 0)
+    val image1 = new LabeledBGRImage((1 to 27).map(_.toFloat).toArray, 3, 3, 0)
+    val image2 = new LabeledBGRImage((2 to 28).map(_.toFloat).toArray, 3, 3, 0)
+    val image3 = new LabeledBGRImage((3 to 29).map(_.toFloat).toArray, 3, 3, 0)
 
     val firstFrameMean = (1 to 27).sum.toFloat / 27
     val firstFrameStd = math.sqrt((1 to 27).map(e => (e - firstFrameMean) * (e - firstFrameMean))
@@ -183,9 +183,9 @@ class TransformersSpec extends FlatSpec with Matchers {
       r
     })
 
-    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3))
+    val dataSource = new LocalArrayDataSet[LabeledBGRImage](Array(image1, image2, image3))
 
-    val normalizer = RGBImgNormalizer(dataSource)
+    val normalizer = BGRImgNormalizer(dataSource)
     val iter = normalizer.apply(Iterator.single(image1))
     val test = iter.next()
     normalizer.getMean() should be((thirdFrameMean, secondFrameMean, firstFrameMean))
@@ -199,9 +199,9 @@ class TransformersSpec extends FlatSpec with Matchers {
 
   "RGB Image toTensor" should "convert correctly" in {
     Engine.setNodeNumber(None)
-    val image1 = new LabeledRGBImage(32, 32)
-    val image2 = new LabeledRGBImage(32, 32)
-    val image3 = new LabeledRGBImage(32, 32)
+    val image1 = new LabeledBGRImage(32, 32)
+    val image2 = new LabeledBGRImage(32, 32)
+    val image3 = new LabeledBGRImage(32, 32)
     val tensor1 = Tensor[Float](Storage[Float](image1.content), 1, Array(3, 32, 32))
     val tensor2 = Tensor[Float](Storage[Float](image2.content), 1, Array(3, 32, 32))
     val tensor3 = Tensor[Float](Storage[Float](image3.content), 1, Array(3, 32, 32))
@@ -209,9 +209,9 @@ class TransformersSpec extends FlatSpec with Matchers {
     tensor2.rand()
     tensor3.rand()
 
-    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3))
+    val dataSource = new LocalArrayDataSet[LabeledBGRImage](Array(image1, image2, image3))
 
-    val toTensor = new RGBImgToBatch(2)
+    val toTensor = new BGRImgToBatch(2)
     val tensorDataSource = dataSource -> toTensor
     val iter = tensorDataSource.data(looped = true)
     val batch1 = iter.next()
@@ -313,9 +313,9 @@ class TransformersSpec extends FlatSpec with Matchers {
 
   "Multi thread RGB Image toTensor" should "convert correctly" in {
     Engine.setNodeNumber(None)
-    val image1 = new LabeledRGBImage(32, 32)
-    val image2 = new LabeledRGBImage(32, 32)
-    val image3 = new LabeledRGBImage(32, 32)
+    val image1 = new LabeledBGRImage(32, 32)
+    val image2 = new LabeledBGRImage(32, 32)
+    val image3 = new LabeledBGRImage(32, 32)
     val tensor1 = Tensor[Float](Storage[Float](image1.content), 1, Array(3, 32, 32))
     val tensor2 = Tensor[Float](Storage[Float](image2.content), 1, Array(3, 32, 32))
     val tensor3 = Tensor[Float](Storage[Float](image3.content), 1, Array(3, 32, 32))
@@ -325,9 +325,9 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     val core = Engine.coreNumber()
     Engine.setCoreNumber(1)
-    val dataSource = new LocalArrayDataSet[LabeledRGBImage](Array(image1, image2, image3))
-    val toTensor = new MTLabeledRGBImgToBatch[LabeledRGBImage](
-      width = 32, height = 32, totalBatchSize = 2, transformer = Identity[LabeledRGBImage]
+    val dataSource = new LocalArrayDataSet[LabeledBGRImage](Array(image1, image2, image3))
+    val toTensor = new MTLabeledBGRImgToBatch[LabeledBGRImage](
+      width = 32, height = 32, totalBatchSize = 2, transformer = Identity[LabeledBGRImage]
     )
     val tensorDataSource = dataSource -> toTensor
     val iter = tensorDataSource.data(looped = true)
@@ -431,7 +431,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
   "RGBImage To SeqFile" should "be good" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
-    val pathToImage = LocalImgReader(RGBImage.NO_SCALE)
+    val pathToImage = LocalImgReader(BGRImage.NO_SCALE)
     val dataSource = DataSet.ImageFolder.paths(
       Paths.get(processPath(resource.getPath()))
     )
@@ -440,7 +440,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     dataSource.shuffle()
     val tmpFile = Paths.get(java.io.File.createTempFile("UnitTest", "RGBImageToSeqFile").getPath)
-    val seqWriter = RGBImgToLocalSeqFile(2, tmpFile)
+    val seqWriter = BGRImgToLocalSeqFile(2, tmpFile)
     val writePipeline = dataSource -> pathToImage -> seqWriter
     val iter = writePipeline.data(looped = false)
     while (iter.hasNext) {
@@ -456,7 +456,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       SeqFileLocalPath(Paths.get(tmpFile + "_5.seq"))
     ))
     var count = 0
-    val readPipeline = seqDataSource -> LocalSeqFileToBytes() -> SampleToRGBImg()
+    val readPipeline = seqDataSource -> LocalSeqFileToBytes() -> SampleToBGRImg()
     val readIter = readPipeline.data(looped = false)
     readIter.zip((dataSource -> pathToImage).data(looped = false)).foreach { case (l, r) =>
       l.label() should be(r.label())
