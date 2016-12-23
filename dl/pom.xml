@@ -20,7 +20,7 @@
         <spark-version.version>1.5-plus</spark-version.version>
         <spark.version>1.5.1</spark.version>
         <spark-scope>provided</spark-scope>
-        <jar-with-dependencies.name>${artifactId}-${version}</jar-with-dependencies.name>
+        <jar-with-dependencies.name>test</jar-with-dependencies.name>
     </properties>
 
     <dependencies>
@@ -128,6 +128,7 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -135,7 +136,7 @@
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
-                    <finalName>${jar-with-dependencies.name}</finalName>
+                    <classifier>${jar-with-dependencies.name}</classifier>
                 </configuration>
                 <executions>
                     <execution>
@@ -145,6 +146,32 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <configuration>
+                <descriptors>
+                    <descriptor>/src/main/resources/assemblies/all-in-one.xml</descriptor>
+                </descriptors>
+            </configuration>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>single</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <classifier>${jar-with-dependencies.name}</classifier>
+                </configuration>
             </plugin>
 
             <plugin><!-- for scoverage-->
@@ -231,7 +258,7 @@
             <id>all-in-one</id>
             <properties>
                 <spark-scope>compile</spark-scope>
-                <jar-with-dependencies.name>${artifactId}-${version}-all-in-one</jar-with-dependencies.name>
+                <jar-with-dependencies.name>all-in-one</jar-with-dependencies.name>
             </properties>
         </profile>
         <profile>
