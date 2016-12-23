@@ -31,8 +31,9 @@ class RecurrentSpec extends FlatSpec with Matchers {
     val inputSize = 5
     val outputSize = 5
     val bpttTruncate = 3
-
-
+    
+    val seed = 100
+    RNG.setSeed(seed)
     val model = Sequential[Double]()
     model.add(Recurrent[Double](hiddenSize, bpttTruncate)
       .add(RnnCell[Double](inputSize, hiddenSize))
