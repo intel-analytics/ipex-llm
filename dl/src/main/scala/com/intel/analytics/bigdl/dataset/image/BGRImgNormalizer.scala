@@ -23,27 +23,27 @@ import org.apache.log4j.Logger
 
 import scala.collection.Iterator
 
-object RGBImgNormalizer {
+object BGRImgNormalizer {
   val logger = Logger.getLogger(getClass)
 
   def apply(meanR: Double, meanG: Double, meanB: Double,
-    stdR: Double, stdG: Double, stdB: Double): RGBImgNormalizer = {
+    stdR: Double, stdG: Double, stdB: Double): BGRImgNormalizer = {
 
-    new RGBImgNormalizer(meanR, meanG, meanB, stdR, stdG, stdB)
+    new BGRImgNormalizer(meanR, meanG, meanB, stdR, stdG, stdB)
   }
 
-  def apply(mean: (Double, Double, Double), std: (Double, Double, Double)): RGBImgNormalizer = {
-    new RGBImgNormalizer(mean._1, mean._2, mean._3, std._1, std._2, std._3)
+  def apply(mean: (Double, Double, Double), std: (Double, Double, Double)): BGRImgNormalizer = {
+    new BGRImgNormalizer(mean._1, mean._2, mean._3, std._1, std._2, std._3)
   }
 
-  def apply(dataSource: LocalDataSet[LabeledRGBImage])
-  : RGBImgNormalizer = {
+  def apply(dataSource: LocalDataSet[LabeledBGRImage])
+  : BGRImgNormalizer = {
     apply(dataSource, -1)
   }
 
 
-  def apply(dataSource: LocalDataSet[LabeledRGBImage], samples: Int)
-  : RGBImgNormalizer = {
+  def apply(dataSource: LocalDataSet[LabeledBGRImage], samples: Int)
+  : BGRImgNormalizer = {
     var sumR: Double = 0
     var sumG: Double = 0
     var sumB: Double = 0
@@ -93,19 +93,19 @@ object RGBImgNormalizer {
     val stdR = math.sqrt(sumR / total)
     val stdG = math.sqrt(sumG / total)
     val stdB = math.sqrt(sumB / total)
-    new RGBImgNormalizer(meanR, meanG, meanB, stdR, stdG, stdB)
+    new BGRImgNormalizer(meanR, meanG, meanB, stdR, stdG, stdB)
   }
 }
 
-class RGBImgNormalizer(meanR: Double, meanG: Double, meanB: Double,
+class BGRImgNormalizer(meanR: Double, meanG: Double, meanB: Double,
   stdR: Double, stdG: Double, stdB: Double)
-  extends Transformer[LabeledRGBImage, LabeledRGBImage] {
+  extends Transformer[LabeledBGRImage, LabeledBGRImage] {
 
   def getMean(): (Double, Double, Double) = (meanR, meanG, meanB)
 
   def getStd(): (Double, Double, Double) = (stdR, stdG, stdB)
 
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
+  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[LabeledBGRImage] = {
     prev.map(img => {
       val content = img.content
       require(content.length % 3 == 0)

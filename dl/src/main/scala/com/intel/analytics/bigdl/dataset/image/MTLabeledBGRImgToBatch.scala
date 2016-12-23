@@ -24,17 +24,17 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 import scala.reflect.ClassTag
 
-object MTLabeledRGBImgToBatch {
+object MTLabeledBGRImgToBatch {
   def apply[A: ClassTag](width: Int, height: Int, batchSize: Int,
-    transformer: Transformer[A, LabeledRGBImage], swapChannel : Boolean = true)
-  : MTLabeledRGBImgToBatch[A] = {
-    new MTLabeledRGBImgToBatch[A](
-      width, height, batchSize, transformer, swapChannel)
+    transformer: Transformer[A, LabeledBGRImage], toRGB: Boolean = true)
+  : MTLabeledBGRImgToBatch[A] = {
+    new MTLabeledBGRImgToBatch[A](
+      width, height, batchSize, transformer, toRGB)
   }
 }
 
-class MTLabeledRGBImgToBatch[A: ClassTag] private[bigdl](width: Int, height: Int,
-  totalBatchSize: Int, transformer: Transformer[A, LabeledRGBImage], swapChannel : Boolean = true)
+class MTLabeledBGRImgToBatch[A: ClassTag] private[bigdl](width: Int, height: Int,
+  totalBatchSize: Int, transformer: Transformer[A, LabeledBGRImage], toRGB: Boolean = true)
   extends Transformer[A, Batch[Float]] {
 
   private val batchSize = Utils.getBatchSize(totalBatchSize)
@@ -72,7 +72,7 @@ class MTLabeledRGBImgToBatch[A: ClassTag] private[bigdl](width: Int, height: Int
             position != -1
           }) {
             val img = iterators(tid).next()
-            img.copyTo(featureData, position * frameLength * 3, swapChannel)
+            img.copyTo(featureData, position * frameLength * 3, toRGB)
             labelData(position) = img.label()
             record += 1
           }

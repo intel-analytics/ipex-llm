@@ -20,15 +20,15 @@ package com.intel.analytics.bigdl.dataset.image
 import com.intel.analytics.bigdl.dataset.Transformer
 import com.intel.analytics.bigdl.tensor.Tensor
 
-object RGBImgPixelNormalizer {
-  def apply(means: Tensor[Float]): RGBImgPixelNormalizer
-  = new RGBImgPixelNormalizer(means)
+object BGRImgPixelNormalizer {
+  def apply(means: Tensor[Float]): BGRImgPixelNormalizer
+  = new BGRImgPixelNormalizer(means)
 }
 
-class RGBImgPixelNormalizer(means: Tensor[Float])
-  extends Transformer[LabeledRGBImage, LabeledRGBImage] {
+class BGRImgPixelNormalizer(means: Tensor[Float])
+  extends Transformer[LabeledBGRImage, LabeledBGRImage] {
 
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
+  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[LabeledBGRImage] = {
     prev.map(img => {
       val content = img.content
       val meansData = means.storage().array()

@@ -79,7 +79,7 @@ object Test {
             GoogleNetPreprocessor(valPath, imageSize, param.batchSize))
       }
 
-      val model = Module.loadCaffeParameters[Float](module,
+      val model = Module.loadCaffe[Float](module,
         param.caffeDefPath, param.caffeModelPath)
       model.evaluate()
       val validator = new LocalValidator[Float](model)

@@ -281,27 +281,27 @@ object DataSet {
       new LocalArrayDataSet[LabeledImageLocalPath](buffer)
     }
 
-    def images(path: Path, scaleTo: Int): LocalDataSet[LabeledRGBImage] = {
+    def images(path: Path, scaleTo: Int): LocalDataSet[LabeledBGRImage] = {
       val paths = LocalImageFiles.readPaths(path)
       val total = paths.length
       var count = 1
       val buffer = paths.map(imageFile => {
         logger.info(s"Cache image $count/$total")
         count += 1
-        Sample(RGBImage.readImage(imageFile.path, scaleTo), imageFile.label)
+        Sample(BGRImage.readImage(imageFile.path, scaleTo), imageFile.label)
       })
-      new LocalArrayDataSet[Sample](buffer) -> SampleToRGBImg()
+      new LocalArrayDataSet[Sample](buffer) -> SampleToBGRImg()
     }
 
     def images(path: Path, sc: SparkContext, partitionNum: Int, scaleTo: Int)
-    : DistributedDataSet[LabeledRGBImage] = {
+    : DistributedDataSet[LabeledBGRImage] = {
       val paths = LocalImageFiles.readPaths(path)
       val buffer: Array[Sample] = {
         paths.map(imageFile => {
-          Sample(RGBImage.readImage(imageFile.path, scaleTo), imageFile.label)
+          Sample(BGRImage.readImage(imageFile.path, scaleTo), imageFile.label)
         })
       }
-      array(buffer, sc, partitionNum) -> SampleToRGBImg()
+      array(buffer, sc, partitionNum) -> SampleToBGRImg()
     }
   }
 

@@ -28,8 +28,8 @@ object HFlip {
   }
 }
 
-class HFlip(threshold: Double) extends Transformer[LabeledRGBImage, LabeledRGBImage] {
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
+class HFlip(threshold: Double) extends Transformer[LabeledBGRImage, LabeledBGRImage] {
+  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[LabeledBGRImage] = {
     prev.map(img => {
       if (RandomGenerator.RNG.uniform(0, 1) >= threshold) {
         img.hflip()
