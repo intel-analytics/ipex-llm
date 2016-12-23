@@ -27,20 +27,20 @@ case object CropRandom extends CropperMethod
 
 case object CropCenter extends CropperMethod
 
-object RGBImgCropper {
+object BGRImgCropper {
   def apply(cropWidth: Int, cropHeight: Int,
-    cropperMethod: CropperMethod = CropRandom): RGBImgCropper =
-    new RGBImgCropper(cropWidth, cropHeight, cropperMethod)
+    cropperMethod: CropperMethod = CropRandom): BGRImgCropper =
+    new BGRImgCropper(cropWidth, cropHeight, cropperMethod)
 }
 
-class RGBImgCropper(cropWidth: Int, cropHeight: Int, cropperMethod: CropperMethod = CropRandom)
-  extends Transformer[LabeledRGBImage, LabeledRGBImage] {
+class BGRImgCropper(cropWidth: Int, cropHeight: Int, cropperMethod: CropperMethod = CropRandom)
+  extends Transformer[LabeledBGRImage, LabeledBGRImage] {
 
   import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
-  private val buffer = new LabeledRGBImage(cropWidth, cropHeight)
+  private val buffer = new LabeledBGRImage(cropWidth, cropHeight)
 
-  override def apply(prev: Iterator[LabeledRGBImage]): Iterator[LabeledRGBImage] = {
+  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[LabeledBGRImage] = {
     prev.map(img => {
       val width = img.width()
       val height = img.height()

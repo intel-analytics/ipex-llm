@@ -33,7 +33,7 @@ object Module {
     File.loadTorch[AbstractModule[Activity, Activity, T]](path)
   }
 
-  def loadCaffeParameters[T: ClassTag](model: AbstractModule[Activity, Activity, T],
+  def loadCaffe[T: ClassTag](model: AbstractModule[Activity, Activity, T],
     defPath: String, modelPath: String, matchAll: Boolean = true)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
     CaffeLoader.load[T](model, defPath, modelPath, matchAll)

@@ -40,8 +40,8 @@ object LocalTrain {
       val maxEpoch = 90
 
       val trainSet = DataSet.ImageFolder.images(Paths.get(param.folder, "/train"), 32)
-        .transform(RGBImgNormalizer(trainMean, trainStd))
-        .transform(RGBImgToBatch(batchSize))
+        .transform(BGRImgNormalizer(trainMean, trainStd))
+        .transform(BGRImgToBatch(batchSize))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -73,8 +73,8 @@ object LocalTrain {
       }
 
       val validationSet = DataSet.ImageFolder.images(Paths.get(param.folder, "/val"), 32)
-        .transform(RGBImgNormalizer(testMean, testStd))
-        .transform(RGBImgToBatch(batchSize))
+        .transform(BGRImgNormalizer(testMean, testStd))
+        .transform(BGRImgToBatch(batchSize))
 
       optimizer
         .setValidation(Trigger.everyEpoch, validationSet, Array(new Top1Accuracy[Float]))
@@ -107,8 +107,8 @@ object SparkTrain {
 
       val trainDataSet = DataSet.ImageFolder
         .images(Paths.get(param.folder, "/train"), sc, param.nodesNumber, 32)
-        .transform(RGBImgNormalizer(trainMean, trainStd))
-        .transform(RGBImgToBatch(batchSize))
+        .transform(BGRImgNormalizer(trainMean, trainStd))
+        .transform(BGRImgToBatch(batchSize))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -136,8 +136,8 @@ object SparkTrain {
 
       val validateSet = DataSet.ImageFolder
         .images(Paths.get(param.folder, "/val"), sc, param.nodesNumber, 32)
-        .transform(RGBImgNormalizer(testMean, testStd))
-        .transform(RGBImgToBatch(batchSize))
+        .transform(BGRImgNormalizer(testMean, testStd))
+        .transform(BGRImgToBatch(batchSize))
 
       if (param.cache.isDefined) {
         optimizer.setCache(param.cache.get, Trigger.everyEpoch)
