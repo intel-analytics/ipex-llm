@@ -180,7 +180,7 @@ class LocalOptimizer[T: ClassTag](
     val trigger = checkpointTrigger.get
     if (trigger(state) && checkpointPath.isDefined) {
       logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to path")
-      saveModel(workingModels.head, checkpointPath, isOverWrite, s".${[Int]("neval")}")
+      saveModel(workingModels.head, checkpointPath, isOverWrite, s".${state[Int]("neval")}")
       saveState(state, checkpointPath, isOverWrite, s".${state[Int]("neval")}")
     }
   }
