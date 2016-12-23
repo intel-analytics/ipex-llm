@@ -34,7 +34,8 @@ object TextSeqToTensorSeq {
 class TextSeqToTensorSeq(dictionaryLength: Int)
   extends Transformer[(Seq[Int], Seq[Int]), (Tensor[Float], Tensor[Float])] {
 
-  override def apply(prev: Iterator[(Seq[Int], Seq[Int])]): Iterator[(Tensor[Float], Tensor[Float])] = {
+  override def apply(prev: Iterator[(Seq[Int], Seq[Int])])
+  : Iterator[(Tensor[Float], Tensor[Float])] = {
     prev.map(x => {
       val data = x._1
       val label = x._2

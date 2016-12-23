@@ -30,7 +30,6 @@ import java.io._
 
 import org.apache.spark.ml.feature.RegexTokenizer
 
-import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
 object Utils {
@@ -102,7 +101,9 @@ object Utils {
 
         // Append Sentence Start and End to Each Sentence
         val appendSentence = udf { (sentence: String) =>
-          if (!sentence.isEmpty) sentence_start_token + " " + sentence + " " + sentence_end_token else sentence
+          if (!sentence.isEmpty) {
+            sentence_start_token + " " + sentence + " " + sentence_end_token
+          } else sentence
         }
         val new_df = input_df.withColumn("sentence", appendSentence(input_df("sentence")))
 
@@ -111,13 +112,16 @@ object Utils {
           .setOutputCol("words").setPattern("\\W+").setMinTokenLength(0)
         val regexTokenized = regexTokenizer.transform(new_df)
         val countTokens = udf { (words: Seq[String]) => words.length }
-        regexTokenized.select("sentence", "words").withColumn("tokens", countTokens(col("words"))).show(false)
-        val token_df = regexTokenized.select("sentence", "words").withColumn("tokens", countTokens(col("words")))
+        regexTokenized.select("sentence", "words")
+          .withColumn("tokens", countTokens(col("words"))).show(false)
+        val token_df = regexTokenized.select("sentence", "words")
+          .withColumn("tokens", countTokens(col("words")))
 
         // Create Frequency Dictionary
         val tokens = logData.flatMap(_.split("\\W+"))
         val freq_dict = tokens.filter(_.length > 0).map(word =>
-          (word, 1)).reduceByKey((a, b) => a + b).sortBy[Int]((pair: Tuple2[String, Int]) => -pair._2)
+          (word, 1)).reduceByKey((a, b) => a + b)
+          .sortBy[Int]((pair: Tuple2[String, Int]) => -pair._2)
 
         // Selecting Most Common Words According to Vocabulary
         val vocabulary_size = dictionaryLength
@@ -137,7 +141,8 @@ object Utils {
           words.map((word: String) => index_dict.getOrElse(word, vocabulary_size))
         }
         val mapped_df = regexTokenized.withColumn("vectors", word_match(col("words")))
-        val mapped_vector = mapped_df.select("vectors").rdd.map(x => x(0).asInstanceOf[Seq[Int]]).collect()
+        val mapped_vector = mapped_df.select("vectors")
+          .rdd.map(x => x(0).asInstanceOf[Seq[Int]]).collect()
         new PrintWriter(saveDirectory + "/mapped_data.txt") {
           write(mapped_vector.map(_.mkString(",")).mkString("\n")); close
         }
@@ -165,13 +170,13 @@ object Utils {
 
     val data_df = input_df.select("sentence").rdd.map(x => {
       val seq = x(0).asInstanceOf[String].split(",").toList.asInstanceOf[Seq[Int]]
-      (seq.take(seq.length-1), seq.drop(1))
+      (seq.take(seq.length - 1), seq.drop(1))
     }).collect()
 
     val length = data_df.length
     val seq = Random.shuffle((1 to length).toList)
     val seqTrain = seq.take(Math.floor(seq.length*0.8).toInt).toArray
-    val seqVal   = seq.drop(Math.floor(seq.length*0.8).toInt).toArray
+    val seqVal = seq.drop(Math.floor(seq.length*0.8).toInt).toArray
 
     val trainData = seqTrain.collect(data_df)
     val valData = seqVal.collect(data_df)

@@ -35,7 +35,7 @@ object Train {
     trainParser.parse(args, new TrainParams()).map(param => {
 
       val sc = new SparkContext("local[1]", "train rnn")
-      val dictionaryLength = 4000+1
+      val dictionaryLength = 4000 + 1
       val wt = new WordTokenizer(
         param.folder + "/input.txt",
         param.folder,
