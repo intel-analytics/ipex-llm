@@ -77,13 +77,6 @@ object Train {
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
-
-//      val (sampleInput, sampleLabel) = optimizer.convert(valDataArray(5), valLabelArray(5))
-//      val sampleOutput = predict(model, sampleInput)
-//      logger.info(s"sampleInput = ${valDataArray(5).mkString(",")}")
-//      logger.info(s"sampleLabel = ${valLabelArray(5).mkString(",")}")
-//      logger.info(s"sampleOutput = ${sampleOutput.mkString(",")}")
-
     })
   }
 }

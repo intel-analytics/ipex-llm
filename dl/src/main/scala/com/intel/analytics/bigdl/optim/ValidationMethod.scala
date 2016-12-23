@@ -163,7 +163,7 @@ class Accuracy[T] extends ValidationMethod[T] {
     correct = Set(_output.storage().array())
       .intersect(Set(_target.storage().array()))
       .size
-    count += _target.size(1)
+    count += 1
 
     new AccuracyResult(correct, count)
   }
