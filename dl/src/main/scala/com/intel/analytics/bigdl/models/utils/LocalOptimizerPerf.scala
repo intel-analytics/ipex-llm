@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
 import com.intel.analytics.bigdl.models.inception.{GoogleNet_v1, GoogleNet_v2}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
-import com.intel.analytics.bigdl.optim.{LocalOptimizer, Trigger}
+import com.intel.analytics.bigdl.optim.{Optimizer, LocalOptimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
@@ -107,7 +107,7 @@ object LocalOptimizerPerf {
     }
 
     Engine.setCoreNumber(param.coreNumber)
-    val optimizer = new LocalOptimizer[Float](model, dummyDataSet, criterion)
+    val optimizer = Optimizer(model, dummyDataSet, criterion)
     optimizer.setEndWhen(Trigger.maxIteration(param.iteration)).optimize()
   }
 }

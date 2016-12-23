@@ -57,7 +57,7 @@ object Train {
         -> SampleToGreyImg(28, 28))
 
       Engine.setCoreNumber(param.coreNumber)
-      val optimizer = new LocalOptimizer(
+      val optimizer = Optimizer(
         model = model,
         dataset = (trainSet
           -> GreyImgNormalizer(trainSet)

@@ -63,7 +63,7 @@ object Train {
         )
       }
 
-      val optimizer = new LocalOptimizer[Float](
+      val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
         criterion = new ClassNLLCriterion[Float]()

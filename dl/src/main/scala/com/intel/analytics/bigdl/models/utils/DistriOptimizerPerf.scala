@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.models.utils
 import com.intel.analytics.bigdl.dataset.{Batch, DistributedDataSet}
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
-import com.intel.analytics.bigdl.optim.{DistriOptimizer, Trigger}
+import com.intel.analytics.bigdl.optim.{Optimizer, DistriOptimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
@@ -133,7 +133,7 @@ object DistriOptimizerPerf {
       override def data(looped: Boolean): RDD[Batch[Float]] = rdd
     }
 
-    val optimizer = new DistriOptimizer[Float](
+    val optimizer = Optimizer(
       model,
       dummyDataSet,
       criterion

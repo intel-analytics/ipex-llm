@@ -440,7 +440,7 @@ object DistriOptimizer {
   }
 }
 
-class DistriOptimizer[T: ClassTag](
+class DistriOptimizer[T: ClassTag] private[optim](
   model: Module[T],
   dataset: DistributedDataSet[Batch[T]],
   criterion: Criterion[T]
