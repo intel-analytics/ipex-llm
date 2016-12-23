@@ -32,6 +32,8 @@ import scala.reflect.ClassTag
  *
  * @param lambda hyper-parameter lambda can be set dynamically during training
  */
+
+@SerialVersionUID(- 5518750357832311906L)
 class GradientReversal[T: ClassTag](var lambda: Double = 1) (implicit ev: TensorNumeric[T])
 
   extends TensorModule[T] {

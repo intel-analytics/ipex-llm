@@ -28,6 +28,8 @@ import scala.reflect.ClassTag
  *
  * @param sizeAverage
  */
+
+@SerialVersionUID(9034717449427139574L)
 class MultiLabelMarginCriterion[T: ClassTag]
 (val sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 

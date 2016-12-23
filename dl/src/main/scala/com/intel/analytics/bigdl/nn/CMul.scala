@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(8888147326550637025L)
 class CMul[@specialized(Float, Double) T: ClassTag](
   val size: Array[Int])(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {

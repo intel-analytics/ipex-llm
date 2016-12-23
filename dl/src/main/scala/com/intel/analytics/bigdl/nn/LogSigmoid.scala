@@ -26,6 +26,8 @@ import scala.reflect.ClassTag
  * This class is a transform layer corresponding to the sigmoid function:
  *  f(x) = Log(1 / (1 + e ^^ (-x)))
  */
+
+@SerialVersionUID(884823114984663135L)
 class LogSigmoid[T: ClassTag] (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
   @transient private var buffer: Tensor[T] = null

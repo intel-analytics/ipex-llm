@@ -29,6 +29,8 @@ import scala.reflect.ClassTag
  * @param scalar scalar constant
  * @param inplace Can optionally do its operation in-place without using extra state memory
  */
+
+@SerialVersionUID(- 8747642888169310696L)
 class MulConstant[@specialized(Float, Double) T: ClassTag](
   val scalar : T, val inplace : Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {

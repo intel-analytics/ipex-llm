@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 8738615460960887232L)
 class SoftMin[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
   @transient

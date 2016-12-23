@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(3917196591309935383L)
 class CAdd[@specialized(Float, Double) T: ClassTag](
   val size: Array[Int])(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {

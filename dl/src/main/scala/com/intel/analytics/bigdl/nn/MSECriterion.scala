@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 7078521754128606735L)
 class MSECriterion[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   var sizeAverage = true
 

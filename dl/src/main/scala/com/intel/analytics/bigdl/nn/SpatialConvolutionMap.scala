@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.{DenseTensorConv, Storage, Tensor}
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(5288662921102331388L)
 class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val connTable: Tensor[T],
   val kW: Int, // The kernel width of the convolution

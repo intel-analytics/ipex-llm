@@ -28,6 +28,8 @@ import scala.reflect.ClassTag
  * @param dimension the dimension to be applied mean operation
  * @param nInputDims the number of dimensions of the give input
  */
+
+@SerialVersionUID(2995626598003841724L)
 class Mean[T: ClassTag](
   dimension: Int = 1,
   nInputDims: Int = -1)

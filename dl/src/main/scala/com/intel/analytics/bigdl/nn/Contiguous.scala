@@ -25,6 +25,8 @@ import scala.reflect.ClassTag
 /**
  * used to make input, gradOutput both contiguous
  */
+
+@SerialVersionUID(- 4704727587714736531L)
 class Contiguous[@specialized(Float, Double) T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 

@@ -31,6 +31,8 @@ import scala.reflect.ClassTag
  * @param nInputDims the number of dimensions of the give input
  * @param sizeAverage default is false, if it is true, it will return the mean instead
  */
+
+@SerialVersionUID(- 8025422596092583688L)
 class Sum[T: ClassTag](
   dimension: Int = 1,
   nInputDims: Int = -1,

@@ -30,6 +30,8 @@ import scala.reflect.ClassTag
  *
  * @param beta Controls sharpness of transfer function
  */
+
+@SerialVersionUID(- 6938956677043843473L)
 class SoftPlus[T: ClassTag](
     val beta: Double = 1.0
   )( implicit ev: TensorNumeric[T]) extends TensorModule[T] {

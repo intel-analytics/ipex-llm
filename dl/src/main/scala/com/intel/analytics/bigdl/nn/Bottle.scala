@@ -30,6 +30,8 @@ import scala.reflect.ClassTag
  * @param nInputDim nInputDim dimensions of module
  * @param nOutputDim1 output of nOutputDim dimensions
  */
+
+@SerialVersionUID(8522437491532919144L)
 class Bottle[T: ClassTag](
   val module: Module[T],
   val nInputDim: Int = 2,

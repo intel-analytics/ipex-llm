@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 8429221694319933625L)
 class Identity[@specialized(Float, Double) T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Activity, T] {
 

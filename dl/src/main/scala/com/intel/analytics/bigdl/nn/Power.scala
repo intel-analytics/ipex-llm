@@ -32,6 +32,8 @@ import scala.reflect.ClassTag
  * @param scale Default is 1.
  * @param shift Default is 0.
  */
+
+@SerialVersionUID(- 6637789603381436472L)
 class Power[@specialized(Float, Double) T: ClassTag](
   val power: Double,
   val scale : Double = 1,

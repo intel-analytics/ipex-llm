@@ -27,6 +27,7 @@ import scala.concurrent.{Await, Future}
 import scala.math.exp
 import scala.reflect.ClassTag
 
+@SerialVersionUID(- 2954501946670913825L)
 class LogSoftMax[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   @transient

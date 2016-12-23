@@ -32,6 +32,8 @@ import scala.reflect.ClassTag
  * @param ev
  * @tparam T
  */
+
+@SerialVersionUID(- 8739169489135761430L)
 class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 

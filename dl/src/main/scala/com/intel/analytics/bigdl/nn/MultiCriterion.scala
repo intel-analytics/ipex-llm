@@ -26,6 +26,8 @@ import scala.reflect.ClassTag
 /**
  * a weighted sum of other criterions each applied to the same input and target;
  */
+
+@SerialVersionUID(- 8679064077837483164L)
 class MultiCriterion[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Activity, Activity, T] {
 

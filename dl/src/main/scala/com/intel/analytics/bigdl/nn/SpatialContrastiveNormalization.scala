@@ -31,6 +31,7 @@ import scala.reflect.ClassTag
  * @param threshold
  * @param thresval
  */
+@SerialVersionUID(- 5339890039498187188L)
 class SpatialContrastiveNormalization[T: ClassTag](
   val nInputPlane: Int = 1,
   var kernel: Tensor[T] = null,

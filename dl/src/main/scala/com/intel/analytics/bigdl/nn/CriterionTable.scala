@@ -27,6 +27,8 @@ import scala.reflect.ClassTag
  *
  * @param criterion Criterion module
  */
+
+@SerialVersionUID(- 4523512241932683396L)
 class CriterionTable[T: ClassTag](val criterion: TensorCriterion[T])
  (implicit ev: TensorNumeric[T]) extends  TensorCriterion[T] {
 

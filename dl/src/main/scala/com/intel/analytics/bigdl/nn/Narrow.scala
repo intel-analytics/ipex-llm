@@ -26,6 +26,7 @@ import scala.reflect.ClassTag
  * Narrow is application of narrow operation in a module.
  * The module further supports a negative length in order to handle inputs with an unknown size.
  */
+@SerialVersionUID(988790441682879293L)
 class Narrow[T: ClassTag](dimension: Int, offset: Int, length: Int = 1)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
