@@ -78,6 +78,7 @@ object Utils {
     model: String = "",
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
+    batchSize: Int = 128,
     env: String = "local"
   )
 
@@ -97,6 +98,9 @@ object Utils {
       .text("nodes number to train the model")
       .action((x, c) => c.copy(nodeNumber = x))
       .required()
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = x))
     opt[String]("env")
       .text("execution environment")
       .validate(x => {
