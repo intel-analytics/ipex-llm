@@ -36,7 +36,6 @@ object GoogleNetv1_SparkTrain {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      val batchSize = param.batchSize.getOrElse(1568)
       val imageSize = 224
       val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
         .map(conf => {
@@ -49,7 +48,7 @@ object GoogleNetv1_SparkTrain {
         param.folder + "/train",
         sc,
         imageSize,
-        batchSize,
+        param.batchSize,
         param.nodeNumber,
         param.coreNumber,
         param.classNumber
@@ -58,7 +57,7 @@ object GoogleNetv1_SparkTrain {
         param.folder + "/val",
         sc,
         imageSize,
-        batchSize,
+        param.batchSize,
         param.nodeNumber,
         param.coreNumber,
         param.classNumber
@@ -74,7 +73,7 @@ object GoogleNetv1_SparkTrain {
         T.load(param.stateSnapshot.get)
       } else {
         T(
-          "learningRate" -> 0.0898,
+          "learningRate" -> param.learningRate,
           "weightDecay" -> 0.0001,
           "momentum" -> 0.9,
           "dampening" -> 0.0,
@@ -112,7 +111,6 @@ object GoogleNetv2_SparkTrain {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      val batchSize = param.batchSize.getOrElse(1344)
       val imageSize = 224
       val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
         .map(conf => {
@@ -124,7 +122,7 @@ object GoogleNetv2_SparkTrain {
         param.folder + "/train",
         sc,
         imageSize,
-        batchSize,
+        param.batchSize,
         param.nodeNumber,
         param.coreNumber,
         param.classNumber
@@ -133,7 +131,7 @@ object GoogleNetv2_SparkTrain {
         param.folder + "/val",
         sc,
         imageSize,
-        batchSize,
+        param.batchSize,
         param.nodeNumber,
         param.coreNumber,
         param.classNumber
@@ -149,7 +147,7 @@ object GoogleNetv2_SparkTrain {
         T.load(param.stateSnapshot.get)
       } else {
         T(
-          "learningRate" -> 0.1,
+          "learningRate" -> param.learningRate,
           "weightDecay" -> 0.0002,
           "momentum" -> 0.9,
           "dampening" -> 0.0,
