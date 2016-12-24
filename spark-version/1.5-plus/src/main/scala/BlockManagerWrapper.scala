@@ -24,13 +24,24 @@ import org.apache.spark.SparkEnv
 object BlockManagerWrapper {
 
   def putBytes( blockId: BlockId,
-                bytes: ByteBuffer,
-                level: StorageLevel): Unit = {
+    bytes: ByteBuffer,
+    level: StorageLevel): Unit = {
     require(bytes != null, "Bytes is null")
     SparkEnv.get.blockManager.removeBlock(blockId)
     SparkEnv.get.blockManager.putBytes(blockId, bytes, level)
   }
+  
+  def putSingle(blockId: BlockId,
+    value: Any,
+    level: StorageLevel,
+    tellMaster: Boolean = true): Unit = {
+    SparkEnv.get.blcokManager.putSingle(blockId, value, level, tellMaster)
+  }
 
+  def removeBlock(blockId: BlockId): Unit = {
+    SparkEnv.get.blcokManager.removeBlock(blockId)
+  }
+  
   def getLocal(blockId: BlockId): Option[BlockResult] = {
     SparkEnv.get.blockManager.getLocal(blockId)
   }

@@ -37,6 +37,17 @@ object BlockManagerWrapper {
     SparkEnv.get.blockManager.getLocalValues(blockId)
   }
 
+  def putSingle(blockId: BlockId,
+    value: Any,
+    level: StorageLevel,
+    tellMaster: Boolean = true): Unit = {
+    SparkEnv.get.blcokManager.putSingle(blockId, value, level, tellMaster)
+  }
+
+  def removeBlock(blockId: BlockId): Unit = {
+    SparkEnv.get.blcokManager.removeBlock(blockId)
+  }
+  
   def byteBufferConvert(chunkedByteBuffer: ChunkedByteBuffer): ByteBuffer = {
     ByteBuffer.wrap(chunkedByteBuffer.toArray)
   }
