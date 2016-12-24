@@ -22,9 +22,14 @@ import java.nio.file.Paths
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{LocalValidator, Top1Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
 object Test {
+  Logger.getLogger("org").setLevel(Level.ERROR)
+  Logger.getLogger("akka").setLevel(Level.ERROR)
+  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
 
   import Options._
 
