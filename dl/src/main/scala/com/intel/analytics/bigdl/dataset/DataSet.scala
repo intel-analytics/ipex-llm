@@ -72,7 +72,7 @@ trait AbstractDataSet[D, DataSequence] {
    * @tparam C
    * @return
    */
-  def ->[C: ClassTag](transformer: Transformer[D, C]): DataSet[C] = {
+  def -> [C: ClassTag](transformer: Transformer[D, C]): DataSet[C] = {
     this.transform(transformer)
   }
 
