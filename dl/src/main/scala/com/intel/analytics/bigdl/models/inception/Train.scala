@@ -51,7 +51,8 @@ object TrainGoogleNetV1 {
         param.batchSize,
         param.nodeNumber,
         param.coreNumber,
-        param.classNumber
+        param.classNumber,
+        1281167
       )
       val valSet = ImageNet2012(
         param.folder + "/val",
@@ -60,7 +61,8 @@ object TrainGoogleNetV1 {
         param.batchSize,
         param.nodeNumber,
         param.coreNumber,
-        param.classNumber
+        param.classNumber,
+        50000
       )
 
       val model = if (param.modelSnapshot.isDefined) {
@@ -125,7 +127,8 @@ object TrainGoogleNetV2 {
         param.batchSize,
         param.nodeNumber,
         param.coreNumber,
-        param.classNumber
+        param.classNumber,
+        1281167
       )
       val valSet = ImageNet2012(
         param.folder + "/val",
@@ -134,7 +137,8 @@ object TrainGoogleNetV2 {
         param.batchSize,
         param.nodeNumber,
         param.coreNumber,
-        param.classNumber
+        param.classNumber,
+        50000
       )
 
       val model = if (param.modelSnapshot.isDefined) {
