@@ -17,8 +17,8 @@
 
 package com.intel.analytics.bigdl.optim
 
-
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{Batch, LocalDataSet}
+import com.intel.analytics.bigdl.{DataSet => DataSource}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -43,10 +43,10 @@ object LocalOptimizer {
  */
 class LocalOptimizer[T: ClassTag] private[optim](
   model: Module[T],
-  dataset: DataSource[Batch[T], Iterator[Batch[T]]],
+  dataset: DataSource[Batch[T]],
   criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T])
-  extends Optimizer[T, Batch[T], Iterator[Batch[T]], Iterator[Batch[T]]](
+  extends Optimizer[T, Batch[T]](
     model, dataset, criterion) {
 
   import LocalOptimizer._
@@ -85,7 +85,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     dataset.shuffle()
-    var iter = dataset.data(looped = true)
+    var iter = dataset.toLocal().data(looped = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     while (!endWhen(state)) {
       val start = System.nanoTime()
@@ -161,7 +161,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
       if (count >= dataset.size()) {
         state("epoch") = state[Int]("epoch") + 1
         dataset.shuffle()
-        iter = dataset.data(looped = true)
+        iter = dataset.toLocal().data(looped = true)
         count = 0
       }
 

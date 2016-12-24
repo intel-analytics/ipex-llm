@@ -22,6 +22,7 @@ import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset.image.LocalImageFiles._
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.utils.RandomGenerator
@@ -39,7 +40,7 @@ import scala.reflect._
  *
  * @tparam DataSequence Represent a sequence of data
  */
-trait DataSet[D, DataSequence] {
+trait AbstractDataSet[D, DataSequence] {
   /**
    * Get a sequence of data
    *
@@ -60,25 +61,7 @@ trait DataSet[D, DataSequence] {
    */
   def size(): Long
 
-  def transform[C, DataSequence2](transformer: Transformer[D, C]): DataSet[C, DataSequence2]
-}
-
-/**
- * Mange some 'local' data set, e.g. data in files or memory. We use iterator to access the data
- *
- * @tparam T
- */
-trait LocalDataSet[T] extends DataSet[T, Iterator[T]] {
-  override def transform[C, K](transformer: Transformer[T, C]): DataSet[C, Iterator[C]] = {
-    val preDataSource = this
-    new LocalDataSet[C] {
-      override def shuffle(): Unit = preDataSource.shuffle
-
-      override def size(): Long = preDataSource.size()
-
-      override def data(looped: Boolean): Iterator[C] = transformer(preDataSource.data(looped))
-    }
-  }
+  def transform[C: ClassTag](transformer: Transformer[D, C]): DataSet[C]
 
   // scalastyle:off methodName
   // scalastyle:off noSpaceBeforeLeftBracket
@@ -89,12 +72,34 @@ trait LocalDataSet[T] extends DataSet[T, Iterator[T]] {
    * @tparam C
    * @return
    */
-  def -> [C](transformer: Transformer[T, C]): DataSet[C, Iterator[C]] = {
+  def ->[C: ClassTag](transformer: Transformer[D, C]): DataSet[C] = {
     this.transform(transformer)
   }
 
   // scalastyle:on noSpaceBeforeLeftBracket
   // scalastyle:on methodName
+
+  def toLocal(): LocalDataSet[D] = this.asInstanceOf[LocalDataSet[D]]
+
+  def toDistribute(): DistributedDataSet[D] = this.asInstanceOf[DistributedDataSet[D]]
+}
+
+/**
+ * Mange some 'local' data set, e.g. data in files or memory. We use iterator to access the data
+ *
+ * @tparam T
+ */
+trait LocalDataSet[T] extends AbstractDataSet[T, Iterator[T]] {
+  override def transform[C: ClassTag](transformer: Transformer[T, C]): DataSet[C] = {
+    val preDataSource = this
+    new LocalDataSet[C] {
+      override def shuffle(): Unit = preDataSource.shuffle
+
+      override def size(): Long = preDataSource.size()
+
+      override def data(looped: Boolean): Iterator[C] = transformer(preDataSource.data(looped))
+    }
+  }
 }
 
 /**
@@ -138,9 +143,9 @@ class LocalArrayDataSet[T] private[dataset](buffer: Array[T]) extends LocalDataS
  *
  * @tparam T
  */
-trait DistributedDataSet[T] extends DataSet[T, RDD[T]] {
+trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
 
-  override def transform[C: ClassTag, K](transformer: Transformer[T, C]): DataSet[C, RDD[C]] = {
+  override def transform[C: ClassTag](transformer: Transformer[T, C]): DataSet[C] = {
     val preDataSource = this
 
     val broadcast = this.originRDD().sparkContext.broadcast(transformer)
@@ -163,15 +168,6 @@ trait DistributedDataSet[T] extends DataSet[T, RDD[T]] {
       override def originRDD(): RDD[_] = preDataSource.originRDD()
     }
   }
-
-  // scalastyle:off methodName
-  // scalastyle:off noSpaceBeforeLeftBracket
-  def -> [C: ClassTag](transformer: Transformer[T, C]): DataSet[C, RDD[C]] = {
-    this.transform(transformer)
-  }
-
-  // scalastyle:on noSpaceBeforeLeftBracket
-  // scalastyle:on methodName
 
   /**
    * Get the 'origin' RDD of the dataset.
@@ -283,7 +279,7 @@ object DataSet {
       new LocalArrayDataSet[LabeledImageLocalPath](buffer)
     }
 
-    def images(path: Path, scaleTo: Int): LocalDataSet[LabeledBGRImage] = {
+    def images(path: Path, scaleTo: Int): DataSet[LabeledBGRImage] = {
       val paths = LocalImageFiles.readPaths(path)
       val total = paths.length
       var count = 1
@@ -296,7 +292,7 @@ object DataSet {
     }
 
     def images(path: Path, sc: SparkContext, partitionNum: Int, scaleTo: Int)
-    : DistributedDataSet[LabeledBGRImage] = {
+    : DataSet[LabeledBGRImage] = {
       val paths = LocalImageFiles.readPaths(path)
       val buffer: Array[Sample] = {
         paths.map(imageFile => {

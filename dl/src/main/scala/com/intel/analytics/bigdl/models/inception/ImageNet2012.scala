@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.models.inception
 
 import java.nio.file.Path
 
+import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -33,7 +34,7 @@ object ImageNet2012 {
     coresPerNode: Int,
     classNumber: Int
   )
-  : DistributedDataSet[Batch[Float]] = {
+  : DataSet[Batch[Float]] = {
     DataSet.SequenceFolder.files(path, sc, classNumber, nodeNumber)
       .transform(
         MTLabeledBGRImgToBatch[Sample](

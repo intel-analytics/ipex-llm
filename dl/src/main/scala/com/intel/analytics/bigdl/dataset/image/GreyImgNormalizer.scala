@@ -17,17 +17,18 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, Transformer}
+import com.intel.analytics.bigdl.DataSet
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, Transformer}
 
 import scala.collection.Iterator
 
 object GreyImgNormalizer {
-  def apply(dataSource: LocalDataSet[LabeledGreyImage], samples: Int = Int.MaxValue)
+  def apply(dataSource: DataSet[LabeledGreyImage], samples: Int = Int.MaxValue)
   : GreyImgNormalizer = {
     var sum: Double = 0
     var total: Int = 0
     dataSource.shuffle()
-    var iter = dataSource.data(looped = false)
+    var iter = dataSource.toLocal().data(looped = false)
     var i = 0
     while (i < math.min(samples, dataSource.size())) {
       val img = iter.next()
@@ -42,7 +43,7 @@ object GreyImgNormalizer {
 
     sum = 0
     i = 0
-    iter = dataSource.data(looped = false)
+    iter = dataSource.toLocal().data(looped = false)
     while (i < math.min(samples, dataSource.size())) {
       val img = iter.next()
       img.content.foreach(e => {
