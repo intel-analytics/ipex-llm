@@ -24,6 +24,12 @@ import com.intel.analytics.bigdl.dataset.Sample
 import scopt.OptionParser
 
 object Utils {
+  val trainMean = 0.13066047740239506
+  val trainStd = 0.3081078
+
+  val testMean = 0.13251460696903547
+  val testStd = 0.31048024
+
   case class TrainParams(
     folder: String = "./",
     checkpoint: Option[String] = None,
