@@ -85,7 +85,7 @@ object Train {
           .images(Paths.get(param.folder, "/val"), sc.get, param.nodeNumber, 32)
       } else {
         DataSet.ImageFolder
-          .images(Paths.get(param.folder, "/val"), sc.get, param.nodeNumber, 32)
+          .images(Paths.get(param.folder, "/val"), 32)
       }) -> BGRImgNormalizer(testMean, testStd) -> BGRImgToBatch(param.batchSize)
 
       if (param.checkpoint.isDefined) {
