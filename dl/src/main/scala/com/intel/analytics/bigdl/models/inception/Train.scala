@@ -36,20 +36,22 @@ object GoogleNetv1_SparkTrain {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      val conf = Engine.init(param.nodesNumber, param.coreNumberPerNode, true).get
       val batchSize = param.batchSize.getOrElse(1568)
       val imageSize = 224
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
+        .map(conf => {
+          conf.setAppName("BigDL Inception v1 Train Example")
+            .set("spark.task.maxFailures", "1")
+          new SparkContext(conf)
+        })
 
-      conf.setAppName("BigDL GoogleNet v1 Train Example")
-        .set("spark.task.maxFailures", "1")
-      val sc = new SparkContext(conf)
       val trainSet = ImageNet2012(
         param.folder + "/train",
         sc,
         imageSize,
         batchSize,
-        param.nodesNumber,
-        param.coreNumberPerNode,
+        param.nodeNumber,
+        param.coreNumber,
         param.classNumber
       )
       val valSet = ImageNet2012(
@@ -57,8 +59,8 @@ object GoogleNetv1_SparkTrain {
         sc,
         imageSize,
         batchSize,
-        param.nodesNumber,
-        param.coreNumberPerNode,
+        param.nodeNumber,
+        param.coreNumber,
         param.classNumber
       )
 
@@ -110,20 +112,21 @@ object GoogleNetv2_SparkTrain {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      val conf = Engine.init(param.nodesNumber, param.coreNumberPerNode, true).get
       val batchSize = param.batchSize.getOrElse(1344)
       val imageSize = 224
-
-      conf.setAppName("BigDL GoogleNet v2 Train Example")
-        .set("spark.task.maxFailures", "1")
-      val sc = new SparkContext(conf)
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
+        .map(conf => {
+          conf.setAppName("BigDL Inception v1 Train Example")
+            .set("spark.task.maxFailures", "1")
+          new SparkContext(conf)
+        })
       val trainSet = ImageNet2012(
         param.folder + "/train",
         sc,
         imageSize,
         batchSize,
-        param.nodesNumber,
-        param.coreNumberPerNode,
+        param.nodeNumber,
+        param.coreNumber,
         param.classNumber
       )
       val valSet = ImageNet2012(
@@ -131,8 +134,8 @@ object GoogleNetv2_SparkTrain {
         sc,
         imageSize,
         batchSize,
-        param.nodesNumber,
-        param.coreNumberPerNode,
+        param.nodeNumber,
+        param.coreNumber,
         param.classNumber
       )
 

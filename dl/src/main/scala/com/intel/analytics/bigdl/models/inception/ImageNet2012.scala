@@ -16,7 +16,7 @@
  */
 package com.intel.analytics.bigdl.models.inception
 
-import java.nio.file.Path
+import java.nio.file.{Path, Paths}
 
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset._
@@ -27,16 +27,17 @@ import org.apache.spark.SparkContext
 object ImageNet2012 {
   def apply(
     path : String,
-    sc : SparkContext,
+    sc: Option[SparkContext],
     imageSize : Int,
     batchSize : Int,
     nodeNumber: Int,
     coresPerNode: Int,
-    classNumber: Int
+    classNumber: Int,
+    size: Int = -1
   )
   : DataSet[Batch[Float]] = {
-    DataSet.SequenceFolder.files(path, sc, classNumber, nodeNumber)
-      .transform(
+    (if (sc.isDefined) {
+      DataSet.SequenceFolder.files(path, sc.get, classNumber, nodeNumber).transform(
         MTLabeledBGRImgToBatch[Sample](
           width = imageSize,
           height = imageSize,
@@ -44,5 +45,19 @@ object ImageNet2012 {
           transformer = (SampleToBGRImg() -> BGRImgCropper(imageSize, imageSize)
             -> HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225))
         ))
+    } else {
+      DataSet.SequenceFolder.paths(Paths.get(path), size)
+        .transform(
+          MTLabeledBGRImgToBatch(
+            width = imageSize,
+            height = imageSize,
+            batchSize = batchSize,
+            transformer = (LocalSeqFileToBytes() -> SampleToBGRImg() ->
+              BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize) -> HFlip(0.5) ->
+              BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
+              )
+          )
+        )
+    })
   }
 }
