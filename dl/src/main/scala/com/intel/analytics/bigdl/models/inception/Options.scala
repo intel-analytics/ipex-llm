@@ -29,7 +29,8 @@ object Options {
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
     classNumber: Int = 1000,
-    batchSize: Option[Int] = None,
+    batchSize: Int = -1,
+    learningRate: Double = 0.01,
     env: String = "local"
   )
 
@@ -54,9 +55,14 @@ object Options {
       .text("nodes number to train the model")
       .action((x, c) => c.copy(nodeNumber = x))
       .required()
+    opt[Double]('l', "learningRate")
+      .text("inital learning rate")
+      .action((x, c) => c.copy(learningRate = x))
+      .required()
     opt[Int]('b', "batchSize")
       .text("batch size")
-      .action((x, c) => c.copy(batchSize = Some(x)))
+      .action((x, c) => c.copy(batchSize = x))
+      .required()
     opt[Int]("classNum")
       .text("class number")
       .action((x, c) => c.copy(classNumber = x))
