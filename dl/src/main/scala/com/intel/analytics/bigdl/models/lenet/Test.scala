@@ -43,9 +43,9 @@ object Test {
       val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
 
       val validationSet = (if (sc.isDefined) {
-        DataSet.array(load(validationData, validationLabel))
-      } else {
         DataSet.array(load(validationData, validationLabel), sc.get, param.nodeNumber)
+      } else {
+        DataSet.array(load(validationData, validationLabel))
       }) -> SampleToGreyImg(28, 28)
 
       val normalizerVal = GreyImgNormalizer(validationSet)
