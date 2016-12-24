@@ -39,17 +39,19 @@ object Test {
 
   def main(args: Array[String]) {
     testParser.parse(args, new TestParams()).map(param => {
-      val conf = Engine.init(param.nodesNumber, param.coreNumberPerNode, true).get
-      conf.setAppName("Test Googlenet on ImageNet")
       val batchSize = param.batchSize.getOrElse(128)
-      val sc = new SparkContext(conf)
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
+        .map(conf => {
+          conf.setAppName("Test Googlenet on ImageNet")
+          new SparkContext(conf)
+        })
       val valSet = ImageNet2012(
         param.folder,
         sc,
         imageSize,
         batchSize,
-        param.nodesNumber,
-        param.coreNumberPerNode,
+        param.nodeNumber,
+        param.coreNumber,
         1000
       )
 
