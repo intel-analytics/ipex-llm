@@ -26,20 +26,41 @@ import com.intel.analytics.bigdl.optim.SGD.Regime
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
+import org.apache.spark.SparkContext
 
 object Train {
 
   import Options._
 
-  val batchSize = 128
   val imageSize = 224
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      Engine.setCoreNumber(param.coreNumber)
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
+        .map(conf => {
+          conf.setAppName("BigDL AlexNet Train Example")
+            .set("spark.task.maxFailures", "1")
+          new SparkContext(conf)
+        })
 
-      val trainSet = ImageNet2012(Paths.get(param.folder, "train"), imageSize, batchSize, 1281167)
-      val valSet = ImageNet2012(Paths.get(param.folder, "val"), imageSize, batchSize, 50000)
+      val trainSet = ImageNet2012(
+        param.folder + "/train",
+        sc,
+        imageSize,
+        param.batchSize,
+        param.nodeNumber,
+        param.coreNumber,
+        param.classNumber,
+        1281167)
+      val valSet = ImageNet2012(
+        param.folder + "/val",
+        sc,
+        imageSize,
+        param.batchSize,
+        param.nodeNumber,
+        param.coreNumber,
+        param.classNumber,
+        50000)
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -63,15 +84,13 @@ object Train {
         )
       }
 
-      Engine.setCoreNumber(1)
-      Engine.model.setPoolSize(param.coreNumber)
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
         criterion = new ClassNLLCriterion[Float]()
       )
-      if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      if (param.checkpoint.isDefined) {
+        optimizer.setCache(param.checkpoint.get, Trigger.everyEpoch)
       }
       optimizer
         .setState(state)

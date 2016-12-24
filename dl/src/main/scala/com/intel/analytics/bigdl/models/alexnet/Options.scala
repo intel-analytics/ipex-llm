@@ -23,16 +23,19 @@ object Options {
 
   case class TrainParams(
     folder: String = "./",
-    cache: Option[String] = None,
+    checkpoint: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
-    coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
+    coreNumber: Int = -1,
+    nodeNumber: Int = -1,
+    classNumber: Int = 1000,
+    batchSize: Int = -1,
+    env: String = "local"
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL AlexNet Example") {
-    head("Train AlexNet model on single node")
     opt[String]('f', "folder")
-      .text("where you put your local hadoop sequence files")
+      .text("url of hdfs folder store the hadoop sequence files")
       .action((x, c) => c.copy(folder = x))
     opt[String]("model")
       .text("model snapshot location")
@@ -40,28 +43,75 @@ object Options {
     opt[String]("state")
       .text("state snapshot location")
       .action((x, c) => c.copy(stateSnapshot = Some(x)))
-    opt[Int]('c', "core")
-      .text("cores number to train the model")
-      .action((x, c) => c.copy(coreNumber = x))
-    opt[String]("cache")
+    opt[String]("checkpoint")
       .text("where to cache the model")
-      .action((x, c) => c.copy(cache = Some(x)))
+      .action((x, c) => c.copy(checkpoint = Some(x)))
+    opt[Int]('c', "core")
+      .text("cores number on each node")
+      .action((x, c) => c.copy(coreNumber = x))
+      .required()
+    opt[Int]('n', "nodeNumber")
+      .text("nodes number to train the model")
+      .action((x, c) => c.copy(nodeNumber = x))
+      .required()
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = x))
+      .required()
+    opt[Int]("classNum")
+      .text("class number")
+      .action((x, c) => c.copy(classNumber = x))
+    opt[String]("env")
+      .text("execution environment")
+      .validate(x => {
+        if (Set("local", "spark").contains(x.toLowerCase)) {
+          success
+        } else {
+          failure("env only support local|spark")
+        }
+      })
+      .action((x, c) => c.copy(env = x.toLowerCase()))
+      .required()
   }
 
   case class TestParams(
     folder: String = "./",
     model: String = "",
-    coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
+    coreNumber: Int = -1,
+    nodeNumber: Int = -1,
+    batchSize: Option[Int] = None,
+    env: String = "local"
   )
 
   val testParser = new OptionParser[TestParams]("BigDL AlexNet Test Example") {
     opt[String]('f', "folder")
-      .text("where you put your local hadoop sequence files")
+      .text("url of hdfs folder store the hadoop sequence files")
       .action((x, c) => c.copy(folder = x))
-
     opt[String]("model")
       .text("model snapshot location")
       .action((x, c) => c.copy(model = x))
+      .required()
+    opt[Int]('c', "core")
+      .text("cores number on each node")
+      .action((x, c) => c.copy(coreNumber = x))
+      .required()
+    opt[Int]('n', "nodeNumber")
+      .text("nodes number to train the model")
+      .action((x, c) => c.copy(nodeNumber = x))
+      .required()
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = Some(x)))
+    opt[String]("env")
+      .text("execution environment")
+      .validate(x => {
+        if (Set("local", "spark").contains(x.toLowerCase)) {
+          success
+        } else {
+          failure("env only support local|spark")
+        }
+      })
+      .action((x, c) => c.copy(env = x.toLowerCase()))
       .required()
   }
 }
