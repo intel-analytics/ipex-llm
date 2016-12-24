@@ -104,6 +104,7 @@ object DistriOptimizer {
     val iterationIgnoredNum = state.get[Int]("iterationIgnoredNum").get
     val comupteThresholdbatchSize = state.get[Int]("comupteThresholdbatchSize").get
     val driverSubModelNum = partitionNum * _subModelNumber
+    var dropModelNumBatch = 0
     
     var epochStart = System.nanoTime()
     while (!endWhen(driverState)) {
@@ -245,7 +246,8 @@ object DistriOptimizer {
         }).reduce(_ + _)
       metrics.add("task1 time from driver", System.nanoTime() - start)
 
-      if (finishedModelNum > driverSubModelNum * 0.5) {
+      dropModelNumBatch += (driverSubModelNum - finishedModelNum)
+      if (finishedModelNum > driverSubModelNum * 0.7) {
         val task2Start = System.nanoTime()
         val value = lossSum.value / finishedModelNum
         models.mapPartitions(modelIter => {
@@ -262,7 +264,8 @@ object DistriOptimizer {
           parameters.gradientPartition.div(ev.fromType(finishedModelNum))
           modelCache.localStates.head("neval") = driverState[Int]("neval")
           modelCache.localStates.head("epoch") = driverState[Int]("epoch")
-          optimMethod.optimize(_ => (ev.fromType(0.0), parameters.gradientPartition),
+          optimMethod.optimize(_ => (ev.fromType(value),
+            parameters.gradientPartition),
             parameters.weightPartition, modelCache.localStates.head, modelCache.localStates.head)
 
           parameters.sendWeightPartition()
@@ -291,7 +294,7 @@ object DistriOptimizer {
           }.collect()
 
           val k = (dropPercentage * comupteThresholdbatchSize * driverSubModelNum).toInt
-          val dropModelsNum = driverSubModelNum - finishedModelNum
+          val dropModelsNum = driverSubModelNum - dropModelNumBatch
           if (k > dropModelsNum) {
             threshold = Util.kthLargest(moduleTimeList, 0, moduleTimeList.length-1,
               k - dropModelsNum)
@@ -305,6 +308,7 @@ object DistriOptimizer {
             new Array[Long](_subModelNumber * comupteThresholdbatchSize)
             Iterator.empty
           }.count()
+          dropModelNumBatch = 0
         }
         
         driverState("neval") = driverState[Int]("neval") + 1
