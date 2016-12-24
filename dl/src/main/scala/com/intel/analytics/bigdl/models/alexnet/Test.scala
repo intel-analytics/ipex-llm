@@ -22,18 +22,31 @@ import java.nio.file.Paths
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{LocalValidator, Top1Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
+import org.apache.spark.SparkContext
 
 object Test {
 
   import Options._
 
-  val batchSize = 128
   val imageSize = 224
 
   def main(args: Array[String]): Unit = {
     testParser.parse(args, new TestParams()).map(param => {
-      Engine.setCoreNumber(param.coreNumber)
-      val valSet = ImageNet2012(Paths.get(param.folder), imageSize, batchSize, 50000)
+      val batchSize = param.batchSize.getOrElse(128)
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
+        .map(conf => {
+          conf.setAppName("Test AlexNet on ImageNet")
+          new SparkContext(conf)
+        })
+      val valSet = ImageNet2012(
+        param.folder,
+        sc,
+        imageSize,
+        batchSize,
+        param.nodeNumber,
+        param.coreNumber,
+        1000,
+        50000)
       val model = Module.load[Float](param.model)
       Engine.setCoreNumber(param.coreNumber)
       val validator = Validator(model, valSet)
