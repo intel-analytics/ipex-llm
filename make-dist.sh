@@ -34,6 +34,7 @@ then
   mkdir $DIST_DIR
 else
   rm -r $DIST_DIR/*
+  mkdir $DIST_DIR
 fi
 
 mkdir $BIN_DIR
