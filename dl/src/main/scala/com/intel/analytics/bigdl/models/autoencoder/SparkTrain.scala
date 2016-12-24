@@ -42,11 +42,10 @@ object SparkTrain {
 
   def main(args: Array[String]): Unit = {
     trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
-      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
       val batchSize = 150
       val maxEpoch = 10
 
-      val conf = Engine.sparkConf()
+      val conf = Engine.init(param.nodesNumber, param.coreNumberPerNode, true).get
         .setAppName("Train Autoencoder on MNIST")
         .set("spark.akka.frameSize", 64.toString)
       val sc = new SparkContext(conf)

@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dataset.Batch
 import com.intel.analytics.bigdl.optim.DistriValidator._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
@@ -30,19 +30,18 @@ object DistriValidator {
   val logger = Logger.getLogger(this.getClass)
 }
 
-class DistriValidator[T](
-  model: Module[T]
-) extends Validator[T, Batch[T]](model) {
+class DistriValidator[T] private[optim](
+  model: Module[T],
+  dataSet: DataSource[Batch[T]]
+) extends Validator[T, Batch[T]](model, dataSet) {
 
-  override def test(
-    dataSet: DataSource[Batch[T]],
-    vMethods: Array[ValidationMethod[T]])
+  override def test(vMethods: Array[ValidationMethod[T]])
   : Array[(ValidationResult, ValidationMethod[T])] = {
     val rdd = dataSet.toDistribute().data(looped = false)
     val broadcastModel = rdd.sparkContext.broadcast(model.evaluate())
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => Engine.coreNumber()
-      case MklDnn => 1
+      case _ => throw new IllegalArgumentException
     }
     rdd.mapPartitions(dataIter => {
       val localModel = broadcastModel.value

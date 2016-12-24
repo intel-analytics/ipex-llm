@@ -20,9 +20,9 @@ package com.intel.analytics.bigdl.models.lenet
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{GreyImgToBatch, GreyImgNormalizer, SampleToGreyImg}
+import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToBatch, SampleToGreyImg}
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{Top1Accuracy, LocalValidator}
+import com.intel.analytics.bigdl.optim.{LocalValidator, Top1Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
 
 object Test {
@@ -42,8 +42,8 @@ object Test {
 
       val model = Module.load[Float](param.model)
       Engine.setCoreNumber(param.coreNumber)
-      val validator = new LocalValidator[Float](model)
-      val result = validator.test(valSet, Array(new Top1Accuracy[Float]))
+      val validator = Validator(model, valSet)
+      val result = validator.test(Array(new Top1Accuracy[Float]))
       result.foreach(r => {
         println(s"${r._2} is ${r._1}")
       })

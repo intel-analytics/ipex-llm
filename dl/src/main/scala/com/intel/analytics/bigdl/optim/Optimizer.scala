@@ -103,7 +103,7 @@ object Optimizer {
     }
   }
 
-  def apply[T: ClassTag, D, DS](
+  def apply[T: ClassTag, D](
     model: Module[T],
     dataset: DataSource[D],
     criterion: Criterion[T]

@@ -22,7 +22,7 @@ import java.nio.file.Paths
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{BGRImgNormalizer, BGRImgToBatch}
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{DistriValidator, Top1Accuracy, Top5Accuracy}
+import com.intel.analytics.bigdl.optim.{DistriValidator, Top1Accuracy, Top5Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -39,11 +39,9 @@ object Test {
 
   def main(args: Array[String]) {
     testParser.parse(args, new TestParams()).map(param => {
-      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
+      val conf = Engine.init(param.nodesNumber, param.coreNumberPerNode, true).get
+      conf.setAppName("Test Googlenet on ImageNet")
       val batchSize = param.batchSize.getOrElse(128)
-
-      val conf = Engine.sparkConf()
-        .setAppName("Test Googlenet on ImageNet")
       val sc = new SparkContext(conf)
       val valSet = ImageNet2012(
         param.folder,
@@ -56,8 +54,8 @@ object Test {
       )
 
       val model = Module.load[Float](param.model)
-      val validator = new DistriValidator[Float](model)
-      val result = validator.test(valSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
+      val validator = Validator(model, valSet)
+      val result = validator.test(Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
       result.foreach(r => {
         println(s"${r._2} is ${r._1}")
       })

@@ -112,16 +112,14 @@ object SparkTrain {
 
   def main(args: Array[String]): Unit = {
     trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
+      val conf = Engine.init(param.nodesNumber, param.coreNumberPerNode, true).get
+        .setAppName("Train ResNet on Cifar10")
+        .set("spark.akka.frameSize", 64.toString)
       val batchSize = 128
       val (imageSize, lrSchedule, maxEpoch, dataSet) = param.dataset match {
         // case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
         case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
       }
-
-      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
-      val conf = Engine.sparkConf()
-        .setAppName("Train ResNet on Cifar10")
-        .set("spark.akka.frameSize", 64.toString)
 
       val sc = new SparkContext(conf)
 

@@ -63,6 +63,8 @@ object Train {
         )
       }
 
+      Engine.setCoreNumber(1)
+      Engine.model.setPoolSize(param.coreNumber)
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,

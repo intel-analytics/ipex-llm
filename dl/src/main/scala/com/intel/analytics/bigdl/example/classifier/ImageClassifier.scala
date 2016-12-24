@@ -22,7 +22,7 @@ import java.nio.file.Paths
 import com.intel.analytics.bigdl.models.alexnet.AlexNet
 import com.intel.analytics.bigdl.models.inception.GoogleNet_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{LocalValidator, Top1Accuracy, Top5Accuracy}
+import com.intel.analytics.bigdl.optim.{LocalValidator, Top1Accuracy, Top5Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.Logger
 import scopt.OptionParser
@@ -122,9 +122,9 @@ object ImageClassifier {
         case _ => throw new IllegalArgumentException(s"${param.modelType}")
       }
 
-      val validator = new LocalValidator[Float](model)
+      val validator = Validator(model, validateDataSet)
       val evaluator = Array(new Top1Accuracy[Float](), new Top5Accuracy[Float]())
-      val result = validator.test(validateDataSet, evaluator)
+      val result = validator.test(evaluator)
       result.foreach(r => {
         logger.info(s"${r._2} is ${r._1}")
       })

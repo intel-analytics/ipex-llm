@@ -18,38 +18,16 @@
 package com.intel.analytics.bigdl.models.vgg
 
 import java.nio.file.Paths
+
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, BGRImgNormalizer}
+import com.intel.analytics.bigdl.dataset.image.{BGRImgNormalizer, BGRImgToBatch}
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{DistriValidator, Top1Accuracy, LocalValidator}
+import com.intel.analytics.bigdl.optim.{DistriValidator, LocalValidator, Top1Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
-object LocalTest {
-
-  import Utils._
-
-  def main(args: Array[String]) {
-    val batchSize = 128
-    testLocalParser.parse(args, new TestLocalParams()).map(param => {
-      Engine.setCoreNumber(param.coreNumber)
-      val validationSet = DataSet.ImageFolder
-        .images(Paths.get(param.folder), 32)
-        .transform(BGRImgNormalizer(testMean, testStd))
-        .transform(BGRImgToBatch(batchSize))
-
-      val model = Module.load[Float](param.model)
-      val validator = new LocalValidator[Float](model)
-      val result = validator.test(validationSet, Array(new Top1Accuracy[Float]))
-      result.foreach(r => {
-        println(s"${r._2} is ${r._1}")
-      })
-    })
-  }
-}
-
-object SparkTest {
+object Test {
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
@@ -59,21 +37,25 @@ object SparkTest {
 
   def main(args: Array[String]) {
     val batchSize = 128
-    testSparkParser.parse(args, new TestSparkParams()).map(param => {
-      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
+    testParser.parse(args, new TestParams()).map(param => {
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
+        .map(conf => {
+          conf.setAppName("Test Vgg on Cifar10")
+            .set("spark.akka.frameSize", 64.toString)
+          new SparkContext(conf)
+        })
 
-      val conf = Engine.sparkConf()
-        .setAppName("Test Vgg on Cifar10")
-        .set("spark.akka.frameSize", 64.toString)
-      val sc = new SparkContext(conf)
-      val validationSet = DataSet.ImageFolder
-        .images(Paths.get(param.folder), sc, param.nodesNumber, 32)
-        .transform(BGRImgNormalizer(testMean, testStd))
-        .transform(BGRImgToBatch(batchSize))
+      val validationSet = (if (sc.isDefined) {
+        DataSet.ImageFolder
+          .images(Paths.get(param.folder), sc.get, param.nodeNumber, 32)
+      } else {
+        DataSet.ImageFolder
+          .images(Paths.get(param.folder), 32)
+      }) -> BGRImgNormalizer(testMean, testStd) -> BGRImgToBatch(batchSize)
 
       val model = Module.load[Float](param.model)
-      val validator = new DistriValidator[Float](model)
-      val result = validator.test(validationSet, Array(new Top1Accuracy[Float]))
+      val validator = Validator(model, validationSet)
+      val result = validator.test(Array(new Top1Accuracy[Float]))
       result.foreach(r => {
         println(s"${r._2} is ${r._1}")
       })

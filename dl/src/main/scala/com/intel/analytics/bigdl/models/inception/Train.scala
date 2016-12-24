@@ -36,11 +36,12 @@ object GoogleNetv1_SparkTrain {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
+      val conf = Engine.init(param.nodesNumber, param.coreNumberPerNode, true).get
       val batchSize = param.batchSize.getOrElse(1568)
       val imageSize = 224
 
-      val conf = Engine.sparkConf().setAppName("BigDL GoogleNet v1 Train Example")
+      conf.setAppName("BigDL GoogleNet v1 Train Example")
+        .set("spark.task.maxFailures", "1")
       val sc = new SparkContext(conf)
       val trainSet = ImageNet2012(
         param.folder + "/train",
@@ -109,11 +110,12 @@ object GoogleNetv2_SparkTrain {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
+      val conf = Engine.init(param.nodesNumber, param.coreNumberPerNode, true).get
       val batchSize = param.batchSize.getOrElse(1344)
       val imageSize = 224
 
-      val conf = Engine.sparkConf().setAppName("BigDL GoogleNet v2 Train Example")
+      conf.setAppName("BigDL GoogleNet v2 Train Example")
+        .set("spark.task.maxFailures", "1")
       val sc = new SparkContext(conf)
       val trainSet = ImageNet2012(
         param.folder + "/train",
