@@ -65,13 +65,12 @@ object Train {
         DataSet.array(load(trainData, trainLabel), sc.get, param.nodeNumber)
       } else {
         DataSet.array(load(trainData, trainLabel))
-      }) -> SampleToGreyImg(28, 28)
+      }) -> SampleToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
+        param.batchSize)
 
       val optimizer = Optimizer(
         model = model,
-        dataset = (trainSet
-          -> GreyImgNormalizer(trainSet)
-          -> GreyImgToBatch(param.batchSize)),
+        dataset = trainSet,
         criterion = ClassNLLCriterion[Float]())
       if (param.checkpoint.isDefined) {
         optimizer.setCache(param.checkpoint.get, Trigger.everyEpoch)
@@ -81,14 +80,13 @@ object Train {
         DataSet.array(load(validationData, validationLabel), sc.get, param.nodeNumber)
       } else {
         DataSet.array(load(validationData, validationLabel))
-      }) -> SampleToGreyImg(28, 28)
+      }) -> SampleToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(
+        param.batchSize)
 
       optimizer
         .setValidation(
           trigger = Trigger.everyEpoch,
-          dataset = (validationSet
-            -> GreyImgNormalizer(validationSet)
-            -> GreyImgToBatch(param.batchSize)),
+          dataset = validationSet,
           vMethods = Array(new Top1Accuracy))
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
