@@ -43,7 +43,9 @@ abstract class Optimizer[T: ClassTag, D](
   protected var validationMethods: Option[Array[ValidationMethod[T]]] = None
   protected var validationDataSet: Option[DataSet[D]] = None
 
-  protected var dropPercentage: Double = 0.04
+  // To achieve better performance, please set dropPercentage as 0.04
+  protected var dropPercentage: Double = 0.0
+  protected var maxDropPercentage: Double = 0.0
   protected var comupteThresholdbatchSize: Int = 100
   protected var ignoreIterationNum: Int = 200
 
@@ -85,11 +87,13 @@ abstract class Optimizer[T: ClassTag, D](
     this
   }
 
-  def setDropMoudleProperty(dropPercentage: Double, batchsize: Int = 100,
-                            ignoreIteration: Int = 200): this.type = {
+  def setDropMoudleProperty(dropPercentage: Double, maxDropPercentage: Double,
+    batchsize: Int = 100, warmupIteration: Int = 200): this.type = {
     this.dropPercentage = dropPercentage
+    this.maxDropPercentage = maxDropPercentage
+    require(dropPercentage >= 0 && dropPercentage < maxDropPercentage)
     this.comupteThresholdbatchSize = batchsize
-    this.ignoreIterationNum = ignoreIteration
+    this.warmupIterationNum = warmupIteration
     this
   }
 }

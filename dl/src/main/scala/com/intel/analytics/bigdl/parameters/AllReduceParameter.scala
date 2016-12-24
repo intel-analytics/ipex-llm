@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.parameters
 
+import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{Callable, Executors, Future}
 
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -33,30 +34,33 @@ object AllReduceParameter {
     "bigdl.Parameter.syncPoolSize", "4").toInt
 
   val syncPool = Executors.newFixedThreadPool(syncPoolSize)
+
+  private val nextId = new AtomicLong(0)
+
+  def newParameter[T: ClassTag](parationNum: Int, size: Int): AllReduceParameter[T] = {
+    new AllReduceParameter(nextId.getAndIncrement(), parationNum, size)
+  }
 }
 
-class AllReduceParameter[T: ClassTag](id: Int) extends Serializable {
+class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
+  size: Int) extends Serializable {
   import AllReduceParameter._
-  
-  var partitionNum = 0
-  var tlength = 0
 
-  @transient lazy private val taskSize = tlength / partitionNum
-  @transient lazy private val extraSize = tlength % partitionNum
+  @transient lazy private val taskSize = size / partitionNum
+  @transient lazy private val extraSize = size % partitionNum
   @transient lazy private val partitionId: Int = TaskContext.getPartitionId()
   
   @transient lazy val parameterBuffer: CompressedTensor[T] = readParameterBuffer()
-  @transient lazy val weightPartition: Tensor[T] = readWeights()
-  @transient lazy val gradientPartition: Tensor[T] = readGradients()
-  @transient lazy val state = readState()
+  @transient lazy val weightPartition: Tensor[T] = readWeightParititon()
+  @transient lazy val gradientPartition: Tensor[T] = readGradientPartition()
   
   def readParameterBuffer(): CompressedTensor[T] = {
-    new FP16SplitsCompressedTensor[T](tlength,
+    new FP16SplitsCompressedTensor[T](size,
       partitionNum).asInstanceOf[CompressedTensor[T]]
   }
 
-  def readWeights(): Tensor[T] = {
-    val blockId = SparkExtension.getLocalBlockId(id + "weights" + partitionId)
+  def readWeightParititon(): Tensor[T] = {
+    val blockId = getWeightPartitionId()
     BlockManagerWrapper.getLocal(blockId).map(_.data.next()) match {
       case Some(x) =>
         x.asInstanceOf[Tensor[T]]
@@ -66,22 +70,11 @@ class AllReduceParameter[T: ClassTag](id: Int) extends Serializable {
     }
   }
 
-  def readGradients(): Tensor[T] = {
-    val blockId = SparkExtension.getLocalBlockId(id + "gradients" + partitionId)
+  def readGradientPartition(): Tensor[T] = {
+    val blockId = getGradientPartitionId()
     BlockManagerWrapper.getLocal(blockId).map(_.data.next()) match {
       case Some(x) =>
         x.asInstanceOf[Tensor[T]]
-
-      case None =>
-        throw new Exception("Please initialize AllReduceParameter first!!")
-    }
-  }
-
-  def readState(): Table = {
-    val blockId = SparkExtension.getLocalBlockId(id + "state" + partitionId)
-    BlockManagerWrapper.getLocal(blockId).map(_.data.next()) match {
-      case Some(x) =>
-        x.asInstanceOf[Table]
 
       case None =>
         throw new Exception("Please initialize AllReduceParameter first!!")
@@ -97,15 +90,10 @@ class AllReduceParameter[T: ClassTag](id: Int) extends Serializable {
       start + 1, length))
     val _gradients = Tensor[T](length)(_classTag, ev)
 
-    SparkEnv.get.blockManager.putSingle(
-      SparkExtension.getLocalBlockId(id + "weights" + partitionId),
+    BlockManagerWrapper.putSingle(getWeightPartitionId(),
       _weights, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
-    SparkEnv.get.blockManager.putSingle(
-      SparkExtension.getLocalBlockId(id + "gradients" + partitionId),
+    BlockManagerWrapper.putSingle(getGradientPartitionId(),
       _gradients, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
-    SparkEnv.get.blockManager.putSingle(
-      SparkExtension.getLocalBlockId(id + "state" + partitionId),
-      T(), StorageLevel.MEMORY_AND_DISK, tellMaster = false)
     val blockId = getWeightBlockId(partitionId)
     val fp16param = new FP16CompressedTensor[T](length)(_classTag)
     fp16param.compress(0, parameter, start, length)
@@ -114,6 +102,14 @@ class AllReduceParameter[T: ClassTag](id: Int) extends Serializable {
 
   def getWeightBlockId(pid : Int): BlockId = {
     SparkExtension.getLocalBlockId(id + "weightBytes" + pid)
+  }
+
+  def getWeightPartitionId(): BlockId = {
+    SparkExtension.getLocalBlockId(id + "weights" + partitionId)
+  }
+
+  def getGradientPartitionId(): BlockId = {
+    SparkExtension.getLocalBlockId(id + "gradients" + partitionId)
   }
 
   def getGradientBlockId(pidFrom : Int, pidTo : Int): BlockId = {
@@ -194,20 +190,13 @@ class AllReduceParameter[T: ClassTag](id: Int) extends Serializable {
 
   def sendWeightPartition(): Unit = {
     val blockId = getWeightBlockId(partitionId)
-    val weightsId = SparkExtension.getLocalBlockId(id + "weights" + partitionId)
-    val stateId = SparkExtension.getLocalBlockId(id + "state" + partitionId)
+    val weightsId = getWeightPartitionId()
     require(weightPartition != null)
-    require(state != null)
-    val bm = SparkEnv.get.blockManager
-    bm.removeBlock(blockId)
+    BlockManagerWrapper.removeBlock(blockId)
     BlockManagerWrapper.unlock(weightsId)
-    bm.removeBlock(weightsId)
-    bm.putSingle((weightsId),
+    BlockManagerWrapper.removeBlock(weightsId)
+    BlockManagerWrapper.putSingle((weightsId),
       weightPartition, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
-    BlockManagerWrapper.unlock(stateId)
-    bm.removeBlock(stateId)
-    bm.putSingle((stateId),
-      state, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
     BlockManagerWrapper.putBytes(blockId,
       SerializerInstance.serialize(weightPartition).bytes(), StorageLevel.MEMORY_ONLY_SER)
   }

@@ -18,9 +18,8 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.{MiniBatch, DistributedDataSet}
-import com.intel.analytics.bigdl.parameters.{CompressedTensor, AllReduceParameter}
+import com.intel.analytics.bigdl.dataset.{Batch, DistributedDataSet, MiniBatch, DataSet => DataSource}
+import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -35,9 +34,7 @@ import scala.reflect.ClassTag
 
 object DistriOptimizer {
   import Optimizer._
-
-  private var lossArray: Array[Double] = null
-  private var recordsArray: Array[Int] = null
+  
   private var tasks: ArrayBuffer[Future[_]] = new ArrayBuffer()
 
   val logger = Logger.getLogger(getClass)
@@ -74,12 +71,13 @@ object DistriOptimizer {
     optimMethod: OptimMethod[T],
     validationTrigger: Option[Trigger],
     validationDataSet: Option[DataSet[MiniBatch[T]]],
+    parameters: AllReduceParameter[T],    
     validationMethods: Option[Array[ValidationMethod[T]]],
     cacheTrigger: Option[Trigger],
     cachePath: Option[String],
     isOverWrite: Boolean
   )(implicit ev: TensorNumeric[T]) = {
-    val sc = dataset.data(train = true).sparkContext
+    val sc = dataset.originRDD().sparkContext
     val partitionNum = dataset.originRDD().partitions.length
     var wallClockTime = 0L
     var lastEpochTime = 0L
@@ -105,6 +103,7 @@ object DistriOptimizer {
     val comupteThresholdbatchSize = state.get[Int]("comupteThresholdbatchSize").get
     val driverSubModelNum = partitionNum * _subModelNumber
     var dropModelNumBatch = 0
+    var lossArray = new Array[Double](_subModelNumber)
     
     var epochStart = System.nanoTime()
     while (!endWhen(driverState)) {
@@ -147,23 +146,17 @@ object DistriOptimizer {
               b += 1
             }
           })
+          tasks ++= Engine.default.invoke((0 until _subModelNumber).map(i => () => {
+            cached.localModels(i).training()
+            cached.localModels(i).zeroGradParameters()
+          }))
           Engine.default.sync(tasks)
           weightsResult.waits()
           val weightSyncTime = System.nanoTime() - syWStart
           driverMetrics.add("get weights average", weightSyncTime)
           driverMetrics.add("get weights for each node", weightSyncTime)
           tasks.clear()
-
           
-
-          if (lossArray == null || lossArray.length < _subModelNumber) {
-            lossArray = new Array[Double](_subModelNumber)
-          }
-
-          if (recordsArray == null || recordsArray.length < _subModelNumber) {
-            recordsArray = new Array[Int](_subModelNumber)
-          }
-
           // ======================Start train models===================================
           var time = System.nanoTime()
           if(iteration > iterationIgnoredNum + comupteThresholdbatchSize - 1) {
@@ -181,7 +174,6 @@ object DistriOptimizer {
               lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
               val errors = localCriterion.backward(output, target)
               localModel.backward(input, errors)
-              recordsArray(i) = target.size(1)
               cached.moduleTimeList(i + pre) = System.nanoTime() - trainStart + weightSyncTime
               i
             }
@@ -191,10 +183,10 @@ object DistriOptimizer {
           driverMetrics.add("computing time for each node", computingTime)
 
           val finishedThreads = trainingThreads.filter(!_.isCancelled).map(_.get())
+          recordsNum += finishedThreads.size * tensorBuffer.head._2.size(1)
           var i = 0
           while (i < finishedThreads.size) {
             lossSum += lossArray(finishedThreads(i))
-            recordsNum += recordsArray(finishedThreads(i))
             i += 1
           }
           
@@ -237,10 +229,6 @@ object DistriOptimizer {
           }
 
           parameters.putGradients(cached.buffer)
-          tasks ++= Engine.default.invoke((0 until _subModelNumber).map(i => () => {
-            cached.localModels(i).training()
-            cached.localModels(i).zeroGradParameters()
-          }))
           driverMetrics.add("task1 time from worker", System.nanoTime() - task1WorkStart)
           Iterator(finishedThreads.size)
         }).reduce(_ + _)
@@ -285,6 +273,7 @@ object DistriOptimizer {
           }. ")
         logger.debug("\n" + metrics.summary())
         logger.info("Dropped modules: " + (driverSubModelNum - finishedModelNum))
+        lossArray = new Array[Double](_subModelNumber)
 
         // compute threshold
         iteration += 1
@@ -358,7 +347,8 @@ object DistriOptimizer {
     wallClockTime: Long,
     models: RDD[Cache[T]],
     model: Module[T],
-    state: Table)
+    state: Table,
+    parameters: AllReduceParameter[T])
   : Unit = {
     if (cacheTrigger.isDefined) {
       val trigger = cacheTrigger.get
@@ -374,13 +364,14 @@ object DistriOptimizer {
 
   private def initThreadModels[T: ClassTag](
     model: Module[T],
-    dataset: DistributedDataSet[MiniBatch[T]],
+    dataset: DistributedDataSet[Batch[T]],
     criterion: Criterion[T],
     state: Table,
     nodeNumber: Int,
     coresPerNode: Int,
-    checkSingleton: Boolean
-  )(implicit ev: TensorNumeric[T]) = {
+    checkSingleton: Boolean,
+    parameters: AllReduceParameter[T]
+    )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
     val broadcast = sc.broadcast((model, criterion, state))
     val _subModelNumber = Engine.getEngineType match {
@@ -394,8 +385,6 @@ object DistriOptimizer {
 
     val partitionNum = dataset.originRDD().partitions.length
     val comupteThresholdbatchSize = state.get[Int]("comupteThresholdbatchSize").get
-    parameters.partitionNum = partitionNum
-    parameters.tlength = model.getParameters()._1.nElement()
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastModel, broadcastCriterion, broadcastState) = broadcast.value
       if (checkSingleton) {
@@ -497,9 +486,9 @@ object DistriOptimizer {
     })
   }
 
-  private def getModel[T: ClassTag](
-    models: RDD[Cache[T]], model: Module[T]): Module[T] = {
-    val _ps = new AllReduceParameter[T]()
+
+  private def getModel[T: ClassTag](models: RDD[Cache[T]], model: Module[T],
+    parameters: AllReduceParameter[T]): Module[T] = {
     val partitionNum = models.partitions.length
     val weights = models.mapPartitions(iter => {
       val cached = iter.next()
@@ -519,8 +508,7 @@ object DistriOptimizer {
       parameter.narrow(1, start + 1, length).copy(weights(pid))
     })
 
-    model
-  }
+    model  
 }
 
 class DistriOptimizer[T: ClassTag] private[optim](
@@ -553,7 +541,9 @@ class DistriOptimizer[T: ClassTag] private[optim](
     val nodeNumber = Engine.nodeNumber().get
     val coresPerNode = Engine.coreNumber()
 
-    val parameters = new AllReduceParameter[T](scala.util.Random.nextInt())
+    val partitionNum = dataset.originRDD().partitions.length
+    val size = model.getParameters()._1.nElement()
+    val parameters = AllReduceParameter.newParameter(partitionNum, size)
     
     models = DistriOptimizer.initThreadModels(
       model, dataset, criterion, state, nodeNumber, coresPerNode, checkSingleton, parameters)
