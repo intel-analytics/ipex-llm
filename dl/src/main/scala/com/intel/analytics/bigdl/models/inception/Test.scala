@@ -52,7 +52,8 @@ object Test {
         batchSize,
         param.nodeNumber,
         param.coreNumber,
-        1000
+        1000,
+        50000
       )
 
       val model = Module.load[Float](param.model)
