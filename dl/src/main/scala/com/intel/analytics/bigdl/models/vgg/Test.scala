@@ -36,7 +36,6 @@ object Test {
   import Utils._
 
   def main(args: Array[String]) {
-    val batchSize = 128
     testParser.parse(args, new TestParams()).map(param => {
       val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
         .map(conf => {
@@ -51,7 +50,7 @@ object Test {
       } else {
         DataSet.ImageFolder
           .images(Paths.get(param.folder), 32)
-      }) -> BGRImgNormalizer(testMean, testStd) -> BGRImgToBatch(batchSize)
+      }) -> BGRImgNormalizer(testMean, testStd) -> BGRImgToBatch(param.batchSize)
 
       val model = Module.load[Float](param.model)
       val validator = Validator(model, validationSet)
