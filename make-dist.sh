@@ -33,7 +33,7 @@ if [ ! -d "$DIST_DIR" ]
 then
   mkdir $DIST_DIR
 else
-  rm -r $DIST_DIR/*
+  rm -r $DIST_DIR
   mkdir $DIST_DIR
 fi
 
