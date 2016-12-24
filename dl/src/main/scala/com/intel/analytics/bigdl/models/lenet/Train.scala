@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
+import org.apache.spark.SparkContext
 
 
 object Train {
@@ -34,6 +35,13 @@ object Train {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark").map(conf => {
+        conf.setAppName("Train Lenet on MNIST")
+          .set("spark.akka.frameSize", 64.toString)
+          .set("spark.task.maxFailures", "1")
+        new SparkContext(conf)
+      })
+
       val trainData = Paths.get(param.folder, "/train-images.idx3-ubyte")
       val trainLabel = Paths.get(param.folder, "/train-labels.idx1-ubyte")
       val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
@@ -53,22 +61,27 @@ object Train {
         )
       }
 
-      val trainSet = (DataSet.array(load(trainData, trainLabel))
-        -> SampleToGreyImg(28, 28))
+      val trainSet = (if (sc.isDefined) {
+        DataSet.array(load(trainData, trainLabel))
+      } else {
+        DataSet.array(load(trainData, trainLabel), sc.get, param.nodeNumber)
+      }) -> SampleToGreyImg(28, 28)
 
-      Engine.setCoreNumber(param.coreNumber)
       val optimizer = Optimizer(
         model = model,
         dataset = (trainSet
           -> GreyImgNormalizer(trainSet)
           -> GreyImgToBatch(param.batchSize)),
         criterion = ClassNLLCriterion[Float]())
-      if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      if (param.checkpoint.isDefined) {
+        optimizer.setCache(param.checkpoint.get, Trigger.everyEpoch)
       }
 
-      val validationSet = (DataSet.array(load(validationData, validationLabel))
-        -> SampleToGreyImg(28, 28))
+      val validationSet = (if (sc.isDefined) {
+        DataSet.array(load(validationData, validationLabel))
+      } else {
+        DataSet.array(load(validationData, validationLabel), sc.get, param.nodeNumber)
+      }) -> SampleToGreyImg(28, 28)
 
       optimizer
         .setValidation(

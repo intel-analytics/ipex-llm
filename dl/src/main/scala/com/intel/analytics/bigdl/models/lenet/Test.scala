@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToBatc
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{LocalValidator, Top1Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
+import org.apache.spark.SparkContext
 
 object Test {
   import Utils._
@@ -31,11 +32,22 @@ object Test {
   def main(args: Array[String]): Unit = {
     val batchSize = 32
     testParser.parse(args, new TestParams()).map(param => {
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark").map(conf => {
+        conf.setAppName("Test Lenet on MNIST")
+          .set("spark.akka.frameSize", 64.toString)
+          .set("spark.task.maxFailures", "1")
+        new SparkContext(conf)
+      })
+
       val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
       val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
 
-      val validationSet = DataSet.array(load(validationData, validationLabel))
-        .transform(SampleToGreyImg(28, 28))
+      val validationSet = (if (sc.isDefined) {
+        DataSet.array(load(validationData, validationLabel))
+      } else {
+        DataSet.array(load(validationData, validationLabel), sc.get, param.nodeNumber)
+      }) -> SampleToGreyImg(28, 28)
+
       val normalizerVal = GreyImgNormalizer(validationSet)
       val valSet = validationSet.transform(normalizerVal)
         .transform(GreyImgToBatch(batchSize))
