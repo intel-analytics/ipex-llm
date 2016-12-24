@@ -33,7 +33,7 @@ object ImageNet2012 {
     nodeNumber: Int,
     coresPerNode: Int,
     classNumber: Int,
-    size: Int = -1
+    size: Int
   )
   : DataSet[Batch[Float]] = {
     (if (sc.isDefined) {
