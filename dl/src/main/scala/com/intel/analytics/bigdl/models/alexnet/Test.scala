@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.models.alexnet
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{LocalValidator, Top1Accuracy}
+import com.intel.analytics.bigdl.optim.{LocalValidator, Top1Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
 
 object Test {
@@ -36,8 +36,8 @@ object Test {
       val valSet = ImageNet2012(Paths.get(param.folder), imageSize, batchSize, 50000)
       val model = Module.load[Float](param.model)
       Engine.setCoreNumber(param.coreNumber)
-      val validator = new LocalValidator[Float](model)
-      val result = validator.test(valSet, Array(new Top1Accuracy[Float]))
+      val validator = Validator(model, valSet)
+      val result = validator.test(Array(new Top1Accuracy[Float]))
       result.foreach(r => {
         println(s"${r._2} is ${r._1}")
       })

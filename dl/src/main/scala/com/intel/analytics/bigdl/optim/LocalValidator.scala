@@ -22,29 +22,27 @@ import com.intel.analytics.bigdl.dataset.Batch
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.DistriOptimizer._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 import org.apache.log4j.Logger
 
 object LocalValidator {
   val logger = Logger.getLogger(getClass)
 }
 
-class LocalValidator[T](model: Module[T])
-  extends Validator[T, Batch[T]](model) {
+class LocalValidator[T] private[optim](model: Module[T], dataSet: DataSource[Batch[T]])
+  extends Validator[T, Batch[T]](model, dataSet) {
 
   private val coreNumber = Engine.coreNumber()
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
-    case MklDnn => 1
+    case _ => throw new IllegalArgumentException
   }
 
   private val workingModels = (1 to subModelNumber).map(_ => model.cloneModule().evaluate()).toArray
 
-  override def test(
-    dataSet: DataSource[Batch[T]],
-    vMethods: Array[ValidationMethod[T]]
-  ): Array[(ValidationResult, ValidationMethod[T])] = {
+  override def test(vMethods: Array[ValidationMethod[T]])
+  : Array[(ValidationResult, ValidationMethod[T])] = {
     val dataIter = dataSet.toLocal() data (looped = false)
     var count = 0
     logger.info("model thread pool size is " + Engine.model.getPoolSize)

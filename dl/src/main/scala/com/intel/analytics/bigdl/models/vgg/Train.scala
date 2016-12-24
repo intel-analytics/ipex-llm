@@ -30,85 +30,31 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
-
-object LocalTrain {
-  import Utils._
-
-  def main(args: Array[String]): Unit = {
-    trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
-      val batchSize = 128
-      val maxEpoch = 90
-
-      val trainSet = DataSet.ImageFolder.images(Paths.get(param.folder, "/train"), 32)
-        .transform(BGRImgNormalizer(trainMean, trainStd))
-        .transform(BGRImgToBatch(batchSize))
-
-      val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
-      } else {
-        VggForCifar10(classNum = 10)
-      }
-
-      val state = if (param.stateSnapshot.isDefined) {
-        T.load(param.stateSnapshot.get)
-      } else {
-        T(
-          "learningRate" -> 0.01,
-          "weightDecay" -> 0.0005,
-          "momentum" -> 0.9,
-          "dampening" -> 0.0,
-          "learningRateSchedule" -> SGD.EpochStep(25, 0.5)
-        )
-      }
-
-      Engine.setCoreNumber(param.coreNumber)
-      val optimizer = Optimizer(
-        model = model,
-        dataset = trainSet,
-        criterion = new ClassNLLCriterion[Float]()
-      )
-
-      if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
-      }
-
-      val validationSet = DataSet.ImageFolder.images(Paths.get(param.folder, "/val"), 32)
-        .transform(BGRImgNormalizer(testMean, testStd))
-        .transform(BGRImgToBatch(batchSize))
-
-      optimizer
-        .setValidation(Trigger.everyEpoch, validationSet, Array(new Top1Accuracy[Float]))
-        .setState(state)
-        .setEndWhen(Trigger.maxEpoch(maxEpoch))
-        .optimize()
-    })
-  }
-}
-
-object SparkTrain {
+object Train {
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
 
-
   import Utils._
 
   def main(args: Array[String]): Unit = {
-    trainSparkParser.parse(args, new TrainSparkParams()).map(param => {
-      Engine.setCluster(param.nodesNumber, param.coreNumberPerNode)
-      val batchSize = param.batchSize.getOrElse(128)
+    trainParser.parse(args, new TrainParams()).map(param => {
       val maxEpoch = 90
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark").map(conf => {
+        conf.setAppName("Train Vgg on Cifar10")
+          .set("spark.akka.frameSize", 64.toString)
+          .set("spark.task.maxFailures", "1")
+        new SparkContext(conf)
+      })
 
-      val conf = Engine.sparkConf()
-        .setAppName("Train Vgg on Cifar10")
-        .set("spark.akka.frameSize", 64.toString)
-      val sc = new SparkContext(conf)
-
-      val trainDataSet = DataSet.ImageFolder
-        .images(Paths.get(param.folder, "/train"), sc, param.nodesNumber, 32)
-        .transform(BGRImgNormalizer(trainMean, trainStd))
-        .transform(BGRImgToBatch(batchSize))
+      val trainDataSet = (if (sc.isDefined) {
+        DataSet.ImageFolder
+          .images(Paths.get(param.folder, "/train"), sc.get, param.nodeNumber, 32)
+      } else {
+        DataSet.ImageFolder
+          .images(Paths.get(param.folder, "/train"), 32)
+      }) -> BGRImgNormalizer(trainMean, trainStd) -> BGRImgToBatch(param.batchSize)
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -134,13 +80,16 @@ object SparkTrain {
         criterion = new ClassNLLCriterion[Float]()
       )
 
-      val validateSet = DataSet.ImageFolder
-        .images(Paths.get(param.folder, "/val"), sc, param.nodesNumber, 32)
-        .transform(BGRImgNormalizer(testMean, testStd))
-        .transform(BGRImgToBatch(batchSize))
+      val validateSet = (if (sc.isDefined) {
+        DataSet.ImageFolder
+          .images(Paths.get(param.folder, "/val"), sc.get, param.nodeNumber, 32)
+      } else {
+        DataSet.ImageFolder
+          .images(Paths.get(param.folder, "/val"), sc.get, param.nodeNumber, 32)
+      }) -> BGRImgNormalizer(testMean, testStd) -> BGRImgToBatch(param.batchSize)
 
-      if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      if (param.checkpoint.isDefined) {
+        optimizer.setCache(param.checkpoint.get, Trigger.everyEpoch)
       }
       optimizer
         .setValidation(Trigger.everyEpoch, validateSet, Array(new Top1Accuracy[Float]))

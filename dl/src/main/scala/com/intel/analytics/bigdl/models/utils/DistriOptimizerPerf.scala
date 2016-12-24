@@ -98,7 +98,10 @@ object DistriOptimizerPerf {
   }
 
   def performance(param: DistriOptimizerPerfParam): Unit = {
-    Engine.setCluster(param.nodeNumber, param.corePerNode)
+    val conf = Engine.init(param.nodeNumber, param.corePerNode, true).get
+      .setAppName("DistriOptimizer Performance Test")
+      .set("spark.task.cpus", param.corePerNode.toString)
+
     val (_model, input) = param.module match {
       case "alexnet" => (AlexNet(1000), Tensor(param.batchSize, 3, 227, 227))
       case "alexnetowt" => (AlexNet_OWT(1000), Tensor(param.batchSize, 3, 224, 224))
@@ -116,9 +119,6 @@ object DistriOptimizerPerf {
     val criterion = ClassNLLCriterion[Float]()
     val labels = Tensor(param.batchSize).fill(1)
 
-    Engine.setCluster(param.nodeNumber, param.corePerNode)
-    val conf = Engine.sparkConf().setAppName("DistriOptimizer Performance Test")
-      .set("spark.task.cpus", param.corePerNode.toString)
     val sc = new SparkContext(conf)
     val broadcast = sc.broadcast(Batch(input, labels))
     val rdd = sc.parallelize((1 to param.nodeNumber), param.nodeNumber)
