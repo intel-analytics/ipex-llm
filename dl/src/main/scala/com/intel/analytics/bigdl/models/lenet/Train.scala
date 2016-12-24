@@ -62,9 +62,9 @@ object Train {
       }
 
       val trainSet = (if (sc.isDefined) {
-        DataSet.array(load(trainData, trainLabel))
-      } else {
         DataSet.array(load(trainData, trainLabel), sc.get, param.nodeNumber)
+      } else {
+        DataSet.array(load(trainData, trainLabel))
       }) -> SampleToGreyImg(28, 28)
 
       val optimizer = Optimizer(
@@ -78,9 +78,9 @@ object Train {
       }
 
       val validationSet = (if (sc.isDefined) {
-        DataSet.array(load(validationData, validationLabel))
-      } else {
         DataSet.array(load(validationData, validationLabel), sc.get, param.nodeNumber)
+      } else {
+        DataSet.array(load(validationData, validationLabel))
       }) -> SampleToGreyImg(28, 28)
 
       optimizer
