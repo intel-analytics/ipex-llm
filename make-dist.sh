@@ -32,9 +32,10 @@ VERSION=0.1.0-SNAPSHOT
 if [ ! -d "$DIST_DIR" ]
 then
   mkdir $DIST_DIR
+else
+  rm -r $DIST_DIR/*
 fi
 
-rm -r $DIST_DIR/*
 mkdir $BIN_DIR
 mkdir $LIB_DIR
 
@@ -61,10 +62,8 @@ if [ $MVN_INSTALL -eq 0 ]; then
   exit 1
 fi
 
-cp $BASEDIR/scripts/bigdlvars.sh $BIN_DIR/
+cp $BASEDIR/scripts/bigdl.sh $BIN_DIR/
 
 mvn clean package -DskipTests $*
-cp $BASEDIR/dl/target/bigdl_0.1-$VERSION-jar-with-dependencies.jar $LIB_DIR/bigdl_0.1-$VERSION-assembly-spark.jar
-
-mvn package -DskipTests -P all-in-one $*
-cp $BASEDIR/dl/target/bigdl_0.1-$VERSION-jar-with-dependencies.jar $LIB_DIR/bigdl_0.1-$VERSION-assembly-all-in-one.jar
+cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies.jar $LIB_DIR/
+cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies-all-in-one.jar $LIB_DIR/
