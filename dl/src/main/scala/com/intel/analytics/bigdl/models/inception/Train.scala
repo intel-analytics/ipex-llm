@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
-object GoogleNetv1_SparkTrain {
+object TrainGoogleNetV1 {
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
@@ -101,7 +101,7 @@ object GoogleNetv1_SparkTrain {
   }
 }
 
-object GoogleNetv2_SparkTrain {
+object TrainGoogleNetV2 {
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
