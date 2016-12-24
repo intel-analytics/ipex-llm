@@ -17,7 +17,8 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
+import com.intel.analytics.bigdl.{DataSet => DataSource}
+import com.intel.analytics.bigdl.dataset.{Batch}
 import com.intel.analytics.bigdl.parameters.FP16CompressedTensor
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -32,9 +33,9 @@ import scala.reflect.ClassTag
  */
 class RefDistriOptimizer[T: ClassTag](
   model: Module[T],
-  dataset: DataSource[Batch[T], RDD[Batch[T]]],
+  dataset: DataSource[Batch[T]],
   criterion: Criterion[T])(implicit ev: TensorNumeric[T])
-  extends Optimizer[T, Batch[T], RDD[Batch[T]], RDD[Batch[T]]](
+  extends Optimizer[T, Batch[T]](
     model, dataset, criterion
   ) {
 
@@ -54,7 +55,7 @@ class RefDistriOptimizer[T: ClassTag](
 object RefDistriOptimizer {
   def optimize[T: ClassTag](
     model: Module[T],
-    dataset: DataSource[Batch[T], RDD[Batch[T]]],
+    dataset: DataSource[Batch[T]],
     criterion: Criterion[T],
     optimMethod: OptimMethod[T],
     state: Table,
@@ -65,10 +66,10 @@ object RefDistriOptimizer {
     var count = 0
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
-    val partitionNum = dataset.data(looped = true).partitions.length
+    val partitionNum = dataset.toDistribute().data(looped = true).partitions.length
     model.training()
     while (!endWhen(state)) {
-      val data = dataset.data(looped = true)
+      val data = dataset.toDistribute().data(looped = true)
       val (lossSum, grad, batch) = data.mapPartitions(iter => {
         val (localW, localG) = model.getParameters()
         model.zeroGradParameters()

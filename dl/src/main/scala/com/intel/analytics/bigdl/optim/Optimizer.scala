@@ -22,13 +22,14 @@ import java.nio.file.{Paths, Files}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, LocalDataSet, Batch, DistributedDataSet}
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, Batch, DistributedDataSet}
+import com.intel.analytics.bigdl.{DataSet => DataSource}
 
 import scala.reflect.ClassTag
 
-abstract class Optimizer[T  : ClassTag, D, TDS, VDS](
+abstract class Optimizer[T: ClassTag, D](
     protected val model: Module[T],
-    protected val dataset: DataSource[D, TDS],
+  protected val dataset: DataSource[D],
     protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
 {
   protected var state: Table = T()
@@ -41,11 +42,11 @@ abstract class Optimizer[T  : ClassTag, D, TDS, VDS](
 
   protected var validationTrigger: Option[Trigger] = None
   protected var validationMethods: Option[Array[ValidationMethod[T]]] = None
-  protected var validationDataSet: Option[DataSource[D, VDS]] = None
+  protected var validationDataSet: Option[DataSource[D]] = None
 
   def optimize(): Module[T]
 
-  def setValidation(trigger: Trigger, dataset: DataSource[D, VDS],
+  def setValidation(trigger: Trigger, dataset: DataSource[D],
     vMethods : Array[ValidationMethod[T]])
   : this.type = {
     this.validationTrigger = Some(trigger)
@@ -104,22 +105,22 @@ object Optimizer {
 
   def apply[T: ClassTag, D, DS](
     model: Module[T],
-    dataset: DataSource[D, DS],
+    dataset: DataSource[D],
     criterion: Criterion[T]
-  )(implicit ev: TensorNumeric[T]): Optimizer[T, D, DS, DS] = {
+  )(implicit ev: TensorNumeric[T]): Optimizer[T, D] = {
     dataset match {
       case d: DistributedDataSet[Batch[T]] =>
         new DistriOptimizer[T](
           model = model,
           dataset = d,
           criterion = criterion
-        ).asInstanceOf[Optimizer[T, D, DS, DS]]
+        ).asInstanceOf[Optimizer[T, D]]
       case d: LocalDataSet[Batch[T]] =>
         new LocalOptimizer[T](
           model = model,
           dataset = d,
           criterion = criterion
-        ).asInstanceOf[Optimizer[T, D, DS, DS]]
+        ).asInstanceOf[Optimizer[T, D]]
       case _ =>
         throw new UnsupportedOperationException
     }

@@ -16,6 +16,7 @@
  */
 package com.intel.analytics
 
+import com.intel.analytics.bigdl.dataset.AbstractDataSet
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -36,4 +37,6 @@ package object bigdl {
   ): Criterion[T] = criterion.asInstanceOf[Criterion[T]]
 
   val numeric = com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+
+  type DataSet[D] = AbstractDataSet[D, _]
 }

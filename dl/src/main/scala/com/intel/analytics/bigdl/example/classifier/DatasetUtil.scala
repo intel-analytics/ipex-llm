@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.example.classifier
 
 import java.nio.file.Path
 
+import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.dataset.image.{BGRImgCropper, BGRImgNormalizer, _}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -27,7 +28,7 @@ import com.intel.analytics.bigdl.utils.File
 object Preprocessor {
   def apply(path: Path, imageSize: Int, batchSize: Int,
     transformers: Transformer[LabeledImageLocalPath, LabeledBGRImage])
-  : LocalDataSet[Batch[Float]] = {
+  : DataSet[Batch[Float]] = {
     DataSet.ImageFolder.paths(path).transform(
       MTLabeledBGRImgToBatch(
         width = imageSize,
@@ -39,7 +40,7 @@ object Preprocessor {
 
 object AlexNetPreprocessor {
   def apply(path: Path, imageSize: Int, batchSize: Int, meanFile: String)
-  : LocalDataSet[Batch[Float]] = {
+  : DataSet[Batch[Float]] = {
     val means = File.load[Tensor[Float]](meanFile)
     val transformers = (LocalImgReader(256, 256, normalize = 1f) -> BGRImgPixelNormalizer(means)
       -> BGRImgCropper(imageSize, imageSize, CropCenter))
@@ -48,7 +49,7 @@ object AlexNetPreprocessor {
 }
 
 object GoogleNetPreprocessor {
-  def apply(path: Path, imageSize: Int, batchSize: Int): LocalDataSet[Batch[Float]] = {
+  def apply(path: Path, imageSize: Int, batchSize: Int): DataSet[Batch[Float]] = {
     val transformers = (LocalImgReader(256, 256, normalize = 1f)
       -> BGRImgCropper(imageSize, imageSize, CropCenter)
       -> BGRImgNormalizer(123, 117, 104, 1, 1, 1))
@@ -58,7 +59,7 @@ object GoogleNetPreprocessor {
 
 object ResNetPreprocessor {
   def apply(path: Path, imageSize: Int, batchSize: Int)
-  : LocalDataSet[Batch[Float]] = {
+  : DataSet[Batch[Float]] = {
     DataSet.ImageFolder.paths(path)
       .transform(
         MTLabeledBGRImgToBatch(

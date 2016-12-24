@@ -18,21 +18,22 @@ package com.intel.analytics.bigdl.models.resnet
 
 import java.nio.file.{Path, Paths}
 
+import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.dataset.image._
 import org.apache.spark.SparkContext
 
 trait ResNetDataSet {
   def localTrainDataSet(path: Path, batchSize: Int, size: Int)
-  : LocalDataSet[Batch[Float]]
+  : DataSet[Batch[Float]]
   def localValDataSet(path: Path, batchSize: Int, size: Int)
-  : LocalDataSet[Batch[Float]]
+  : DataSet[Batch[Float]]
   def distributedValDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
-  : DistributedDataSet[Batch[Float]]
+  : DataSet[Batch[Float]]
   def distributedTrainDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
-    : DistributedDataSet[Batch[Float]]
+  : DataSet[Batch[Float]]
 }
 
 object Cifar10DataSet extends ResNetDataSet {
@@ -43,7 +44,7 @@ object Cifar10DataSet extends ResNetDataSet {
   val testStd = (0.2466525177466614, 0.2428922662655766, 0.26159238066790275)
 
   override def localTrainDataSet(path: Path, batchSize: Int, size: Int)
-  : LocalDataSet[Batch[Float]] = {
+  : DataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, size)
       .transform(BGRImgNormalizer(trainMean, trainStd))
@@ -53,7 +54,7 @@ object Cifar10DataSet extends ResNetDataSet {
   }
 
   override def localValDataSet(path: Path, batchSize: Int, size: Int)
-  : LocalDataSet[Batch[Float]] = {
+  : DataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, size)
       .transform(BGRImgNormalizer(testMean, testStd))
@@ -62,7 +63,7 @@ object Cifar10DataSet extends ResNetDataSet {
 
   override def distributedValDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
-  : DistributedDataSet[Batch[Float]] = {
+  : DataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
       .transform(BGRImgNormalizer(trainMean, trainStd))
@@ -71,7 +72,7 @@ object Cifar10DataSet extends ResNetDataSet {
 
   override def distributedTrainDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
-  : DistributedDataSet[Batch[Float]] = {
+  : DataSet[Batch[Float]] = {
 
     DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
       .transform(BGRImgNormalizer(testMean, testStd))

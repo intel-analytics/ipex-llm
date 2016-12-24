@@ -18,8 +18,9 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch, DistributedDataSet}
-import com.intel.analytics.bigdl.parameters.{CompressedTensor, AllReduceParameter, AllReduceParameterManager, ParameterManager}
+import com.intel.analytics.bigdl.{DataSet => DataSource}
+import com.intel.analytics.bigdl.dataset.{Batch, DistributedDataSet}
+import com.intel.analytics.bigdl.parameters.{CompressedTensor, AllReduceParameter}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -71,7 +72,7 @@ object DistriOptimizer {
     model: Module[T],
     optimMethod: OptimMethod[T],
     validationTrigger: Option[Trigger],
-    validationDataSet: Option[DataSource[Batch[T], RDD[Batch[T]]]],
+    validationDataSet: Option[DataSource[Batch[T]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
     cacheTrigger: Option[Trigger],
     cachePath: Option[String],
@@ -356,7 +357,7 @@ object DistriOptimizer {
 
   private def validate[T](
     validationTrigger: Option[Trigger],
-    validationDataSet: Option[DataSource[Batch[T], RDD[Batch[T]]]],
+    validationDataSet: Option[DataSource[Batch[T]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
     coresPerNode: Int,
     models: RDD[Cache[T]],
@@ -371,7 +372,7 @@ object DistriOptimizer {
       return
     }
     val vMethods = validationMethods.get
-    val validateRDD = validationDataSet.get.data(looped = false)
+    val validateRDD = validationDataSet.get.toDistribute().data(looped = false)
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
@@ -446,7 +447,7 @@ class DistriOptimizer[T: ClassTag] private[optim](
   criterion: Criterion[T]
 )
   (implicit ev: TensorNumeric[T])
-  extends Optimizer[T, Batch[T], RDD[Batch[T]], RDD[Batch[T]]](
+  extends Optimizer[T, Batch[T]](
     model, dataset, criterion) {
 
   def disableCheckSingleton(): this.type = {

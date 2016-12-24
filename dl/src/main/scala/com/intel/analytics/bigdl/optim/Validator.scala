@@ -18,11 +18,11 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource}
+import com.intel.analytics.bigdl.{DataSet => DataSource}
 
-abstract class Validator[T, D, DS](
+abstract class Validator[T, D](
   model: Module[T]
 ) {
-  def test(dataSet : DataSource[D, DS],
+  def test(dataSet: DataSource[D],
     vMethods : Array[ValidationMethod[T]]) : Array[(ValidationResult, ValidationMethod[T])]
 }

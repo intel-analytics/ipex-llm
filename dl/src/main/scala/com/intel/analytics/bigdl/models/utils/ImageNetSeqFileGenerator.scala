@@ -72,7 +72,7 @@ object ImageNetSeqFileGenerator {
               val pipeline = trainDataSource -> LocalImgReader(256) ->
                 BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "train",
                   s"imagenet-seq-$tid"))
-              val iter = pipeline.data(looped = false)
+              val iter = pipeline.toLocal().data(looped = false)
               while (iter.hasNext) {
                 println(s"Generated file ${iter.next()}")
               }

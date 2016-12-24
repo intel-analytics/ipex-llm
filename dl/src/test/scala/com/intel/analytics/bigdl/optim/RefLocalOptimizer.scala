@@ -16,7 +16,8 @@
  */
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet => DataSource, Batch}
+import com.intel.analytics.bigdl.{DataSet => DataSource}
+import com.intel.analytics.bigdl.dataset.Batch
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -28,15 +29,14 @@ import scala.reflect.ClassTag
  */
 class RefLocalOptimizer[T: ClassTag](
   model: Module[T],
-  dataset: DataSource[Batch[T], Iterator[Batch[T]]],
+  dataset: DataSource[Batch[T]],
   criterion: Criterion[T]
-)(implicit ev: TensorNumeric[T]) extends Optimizer[T, Batch[T], Iterator[Batch[T]],
-  Iterator[Batch[T]]](model, dataset, criterion) {
+)(implicit ev: TensorNumeric[T]) extends Optimizer[T, Batch[T]](model, dataset, criterion) {
 
   val (w, g) = model.getParameters()
 
   override def optimize(): Module[T] = {
-    val data = dataset.data(looped = true)
+    val data = dataset.toLocal().data(looped = true)
     var count = 0
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
