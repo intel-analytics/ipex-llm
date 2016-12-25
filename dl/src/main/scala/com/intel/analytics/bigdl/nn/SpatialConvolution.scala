@@ -119,11 +119,12 @@ class SpatialConvolution[T: ClassTag](
     val outputWidth = (inputWidth + 2 * padW - kernelW) / strideW + 1
     val outputHeight = (inputHeight + 2 * padH - kernelH) / strideH + 1
 
+    require(outputWidth >= 1 && outputHeight >= 1, "output size is too small")
+
     if (onesBias.dim() != 1 || onesBias.size(1) != outputHeight * outputWidth) {
       onesBias.resize(Array(outputHeight * outputWidth)).fill(ev.fromType(1.0))
     }
 
-    require(outputWidth >= 1 && outputHeight >= 1, "output size is too small")
     if (input.dim() == 3) {
       require(input.size(1) == nInputPlane)
       require(input.isContiguous())
