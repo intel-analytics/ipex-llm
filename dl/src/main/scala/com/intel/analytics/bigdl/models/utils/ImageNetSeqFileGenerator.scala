@@ -72,7 +72,7 @@ object ImageNetSeqFileGenerator {
               val pipeline = trainDataSource -> LocalImgReader(256) ->
                 BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "train",
                   s"imagenet-seq-$tid"))
-              val iter = pipeline.toLocal().data(looped = false)
+              val iter = pipeline.toLocal().data(train = false)
               while (iter.hasNext) {
                 println(s"Generated file ${iter.next()}")
               }
@@ -93,7 +93,7 @@ object ImageNetSeqFileGenerator {
 
         val validationDataSource = DataSet.ImageFolder.paths(validationFolderPath)
         validationDataSource.shuffle()
-        val iter = validationDataSource.data(looped = false)
+        val iter = validationDataSource.data(train = false)
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {

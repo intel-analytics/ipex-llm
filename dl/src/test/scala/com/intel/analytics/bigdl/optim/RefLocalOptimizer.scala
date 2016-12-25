@@ -36,7 +36,7 @@ class RefLocalOptimizer[T: ClassTag](
   val (w, g) = model.getParameters()
 
   override def optimize(): Module[T] = {
-    val data = dataset.toLocal().data(looped = true)
+    val data = dataset.toLocal().data(train = true)
     var count = 0
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)

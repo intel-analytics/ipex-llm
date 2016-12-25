@@ -44,10 +44,10 @@ trait AbstractDataSet[D, DataSequence] {
   /**
    * Get a sequence of data
    *
-   * @param looped if the data is looped
+   * @param train if the data is used in train
    * @return
    */
-  def data(looped: Boolean): DataSequence
+  def data(train: Boolean): DataSequence
 
   /**
    * Change the sequence of data flow from the data set
@@ -81,7 +81,7 @@ trait AbstractDataSet[D, DataSequence] {
 
   def toLocal(): LocalDataSet[D] = this.asInstanceOf[LocalDataSet[D]]
 
-  def toDistribute(): DistributedDataSet[D] = this.asInstanceOf[DistributedDataSet[D]]
+  def toDistributed(): DistributedDataSet[D] = this.asInstanceOf[DistributedDataSet[D]]
 }
 
 /**

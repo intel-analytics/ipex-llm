@@ -66,10 +66,10 @@ object RefDistriOptimizer {
     var count = 0
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
-    val partitionNum = dataset.toDistribute().data(looped = true).partitions.length
+    val partitionNum = dataset.toDistributed().data(train = true).partitions.length
     model.training()
     while (!endWhen(state)) {
-      val data = dataset.toDistribute().data(looped = true)
+      val data = dataset.toDistributed().data(train = true)
       val (lossSum, grad, batch) = data.mapPartitions(iter => {
         val (localW, localG) = model.getParameters()
         model.zeroGradParameters()
