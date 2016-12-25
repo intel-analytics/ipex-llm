@@ -313,7 +313,7 @@ object DataSet {
     }
   }
 
-  object SequenceFolder {
+  object SeqFileFolder {
     val logger = Logger.getLogger(getClass)
     def paths(path: Path, totalSize: Long): LocalDataSet[LocalSeqFilePath] = {
       logger.info(s"Read sequence files folder $path")
