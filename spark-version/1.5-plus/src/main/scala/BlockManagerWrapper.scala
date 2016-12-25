@@ -30,7 +30,7 @@ object BlockManagerWrapper {
     SparkEnv.get.blockManager.removeBlock(blockId)
     SparkEnv.get.blockManager.putBytes(blockId, bytes, level)
   }
-  
+
   def putSingle(blockId: BlockId,
     value: Any,
     level: StorageLevel,
@@ -41,7 +41,7 @@ object BlockManagerWrapper {
   def removeBlock(blockId: BlockId): Unit = {
     SparkEnv.get.blockManager.removeBlock(blockId)
   }
-  
+
   def getLocal(blockId: BlockId): Option[BlockResult] = {
     SparkEnv.get.blockManager.getLocal(blockId)
   }
