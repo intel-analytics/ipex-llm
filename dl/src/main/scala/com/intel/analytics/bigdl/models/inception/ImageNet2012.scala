@@ -40,7 +40,7 @@ object ImageNet2012 {
   : DataSet[MiniBatch[Float]] = {
     (if (sc.isDefined) {
       DataSet.SequenceFolder.files(path, sc.get, classNumber, nodeNumber,
-        (if(ds == null) null else ds.toDistributed().originRDD())).transform(
+        (if (ds == null) null else ds.toDistributed().originRDD())).transform(
         MTLabeledBGRImgToBatch[Sample](
           width = imageSize,
           height = imageSize,
