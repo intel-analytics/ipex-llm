@@ -20,7 +20,6 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.dataset.{MiniBatch, DistributedDataSet}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.parameters.{AllReduceParameterManager, OneReduceParameterManager}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import org.apache.log4j.{Level, Logger}
@@ -87,7 +86,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc: SparkContext = null
 
   var dataSet: DistributedDataSet[MiniBatch[Double]] = null
-  
+
   before {
     sc = new SparkContext("local[1]", "RDDOptimizerSpec")
 

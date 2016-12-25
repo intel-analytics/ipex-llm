@@ -22,8 +22,6 @@ import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.nn.{Module, ClassNLLCriterion}
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.optim.DataSet
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.log4j.{Level, Logger}
