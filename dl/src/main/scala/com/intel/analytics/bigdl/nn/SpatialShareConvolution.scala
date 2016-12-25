@@ -345,6 +345,9 @@ class SpatialShareConvolution[T: ClassTag](
 
     val outputWidth = (inputWidth + 2 * padW - kernelW) / strideW + 1
     val outputHeight = (inputHeight + 2 * padH - kernelH) / strideH + 1
+
+    require(outputWidth >= 1 && outputHeight >= 1, "output size is too small")
+
     (outputWidth, outputHeight, inputWidth, inputHeight)
   }
 
