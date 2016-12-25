@@ -376,7 +376,7 @@ object NNPrimitive {
           hstart = math.max(hstart, 0)
           wstart = math.max(wstart, 0)
 
-          var maxindex = -1
+          var maxindex = 0  // default is 0
           var maxval = Double.MinValue
           var tcntr = 0
           var y = hstart
@@ -425,7 +425,7 @@ object NNPrimitive {
           hstart = math.max(hstart, 0)
           wstart = math.max(wstart, 0)
 
-          var maxindex = -1
+          var maxindex = 0  // default is 0
           var maxval = Float.MinValue
           var tcntr = 0
           var y = hstart
