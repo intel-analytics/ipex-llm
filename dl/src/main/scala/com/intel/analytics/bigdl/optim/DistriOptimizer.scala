@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{Batch, DistributedDataSet, MiniBatch, DataSet => DataSource}
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, DataSet => DataSource}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -34,8 +34,6 @@ import scala.reflect.ClassTag
 
 object DistriOptimizer {
   import Optimizer._
-  
-  private var tasks: ArrayBuffer[Future[_]] = new ArrayBuffer()
 
   val logger = Logger.getLogger(getClass)
   
@@ -47,7 +45,7 @@ object DistriOptimizer {
    * @param modelGradients gradients of the cached models
    * @param localCriterions cached criterion
    * @param localStates cached state
-   * @param buffer tensor buffer
+   * @param gradient tensor buffer
    * @tparam T
    */
   case class Cache[T](
@@ -56,7 +54,7 @@ object DistriOptimizer {
     modelGradients: Array[Tensor[T]],
     localCriterions: Array[Criterion[T]],
     localStates: Array[Table],
-    buffer: Tensor[T],
+    gradient: Tensor[T],
     var moduleTimeList: Array[Long] = null
   )
 
@@ -69,9 +67,9 @@ object DistriOptimizer {
     models: RDD[Cache[T]],
     model: Module[T],
     optimMethod: OptimMethod[T],
+    parameters: AllReduceParameter[T],
     validationTrigger: Option[Trigger],
     validationDataSet: Option[DataSet[MiniBatch[T]]],
-    parameters: AllReduceParameter[T],    
     validationMethods: Option[Array[ValidationMethod[T]]],
     cacheTrigger: Option[Trigger],
     cachePath: Option[String],
@@ -95,11 +93,12 @@ object DistriOptimizer {
     val shuffleEnd = System.nanoTime()
     logger.info(s"Shuffle data complete. Takes ${(shuffleEnd - shuffleBefore) / 1e9}s")
 
-    var threshold = 0L
+    var tasks: ArrayBuffer[Future[_]] = new ArrayBuffer()
+    var threshold = Long.MaxValue
     var timeout = Long.MaxValue
     var iteration = 0
     val dropPercentage = state.get[Double]("dropPercentage").get
-    val iterationIgnoredNum = state.get[Int]("iterationIgnoredNum").get
+    val warmupIterationNum = state.get[Int]("warmupIterationNum").get
     val comupteThresholdbatchSize = state.get[Int]("comupteThresholdbatchSize").get
     val driverSubModelNum = partitionNum * _subModelNumber
     var dropModelNumBatch = 0
@@ -151,7 +150,7 @@ object DistriOptimizer {
             cached.localModels(i).zeroGradParameters()
           }))
           Engine.default.sync(tasks)
-          weightsResult.waits()
+          weightsResult.waitResult()
           val weightSyncTime = System.nanoTime() - syWStart
           driverMetrics.add("get weights average", weightSyncTime)
           driverMetrics.add("get weights for each node", weightSyncTime)
@@ -159,7 +158,7 @@ object DistriOptimizer {
           
           // ======================Start train models===================================
           var time = System.nanoTime()
-          if(iteration > iterationIgnoredNum + comupteThresholdbatchSize - 1) {
+          if(iteration > warmupIterationNum + comupteThresholdbatchSize - 1) {
             timeout = threshold - weightSyncTime
           }
           val pre = (iteration % comupteThresholdbatchSize) * _subModelNumber
@@ -195,14 +194,6 @@ object DistriOptimizer {
             val gradLength = cached.modelGradients(0).nElement()
             val taskSize = gradLength / _subModelNumber
             val extraTask = gradLength % _subModelNumber
-                        
-//            var i = 0
-//            while (i < _subModelNumber) {
-//              if (!finishedThreads.contains(i)) {
-//                cached.modelGradients(i).zero()
-//              }
-//              i += 1
-//            }
 
             (0 until _subModelNumber).diff(finishedThreads).foreach(i =>
               cached.modelGradients(i).zero()
@@ -216,10 +207,10 @@ object DistriOptimizer {
               var i = 0
               while (i < cached.modelGradients.length) {
                 if (i == 0) {
-                  cached.buffer.narrow(1, offset + 1, length)
+                  cached.gradient.narrow(1, offset + 1, length)
                     .copy(cached.modelGradients(i).narrow(1, offset + 1, length))
                 } else {
-                  cached.buffer.narrow(1, offset + 1, length)
+                  cached.gradient.narrow(1, offset + 1, length)
                     .add(cached.modelGradients(i).narrow(1, offset + 1, length))
                 }
                 i += 1
@@ -228,7 +219,7 @@ object DistriOptimizer {
             driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
           }
 
-          parameters.putGradients(cached.buffer)
+          parameters.putGradients(cached.gradient)
           driverMetrics.add("task1 time from worker", System.nanoTime() - task1WorkStart)
           Iterator(finishedThreads.size)
         }).reduce(_ + _)
@@ -243,7 +234,6 @@ object DistriOptimizer {
           val modelCache = modelIter.next()
           
           val getGstart = System.nanoTime()
-
           parameters.aggregrateGradientParition()
           val getGTime = System.nanoTime() - getGstart
           driverMetrics.add("get gradients average", getGTime)
@@ -252,8 +242,7 @@ object DistriOptimizer {
           parameters.gradientPartition.div(ev.fromType(finishedModelNum))
           modelCache.localStates.head("neval") = driverState[Int]("neval")
           modelCache.localStates.head("epoch") = driverState[Int]("epoch")
-          optimMethod.optimize(_ => (ev.fromType(value),
-            parameters.gradientPartition),
+          optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
             parameters.weightPartition, modelCache.localStates.head, modelCache.localStates.head)
 
           parameters.sendWeightPartition()
@@ -277,7 +266,7 @@ object DistriOptimizer {
 
         // compute threshold
         iteration += 1
-        if (iteration > iterationIgnoredNum && iteration % comupteThresholdbatchSize == 0) {
+        if (iteration > warmupIterationNum && iteration % comupteThresholdbatchSize == 0) {
           val moduleTimeList = models.mapPartitions { iter =>
             iter.next().moduleTimeList.iterator
           }.collect()
@@ -293,8 +282,13 @@ object DistriOptimizer {
           logger.info("threshold: " + threshold)
 
           // clear moduleTimeList in each node
-          models.mapPartitions { iter => iter.next.moduleTimeList =
-            new Array[Long](_subModelNumber * comupteThresholdbatchSize)
+          models.mapPartitions { iter => 
+            val timeList = iter.next.moduleTimeList
+            var i = 0
+            while (i < timeList.length) {
+              timeList(i) = 0
+              i += 1
+            }
             Iterator.empty
           }.count()
           dropModelNumBatch = 0
@@ -333,7 +327,7 @@ object DistriOptimizer {
           parameters
         )
       } else {
-        logger.info(s"Warning!!! Ignore this iteration as more than half " +
+        logger.info(s"Warning!!! Ignore this iteration as more than 30% " +
           s"module is dropped!! Finished modules number: ${finishedModelNum}")
       }
     }
@@ -364,7 +358,7 @@ object DistriOptimizer {
 
   private def initThreadModels[T: ClassTag](
     model: Module[T],
-    dataset: DistributedDataSet[Batch[T]],
+    dataset: DistributedDataSet[MiniBatch[T]],
     criterion: Criterion[T],
     state: Table,
     nodeNumber: Int,
@@ -508,7 +502,8 @@ object DistriOptimizer {
       parameter.narrow(1, start + 1, length).copy(weights(pid))
     })
 
-    model  
+    model
+  }
 }
 
 class DistriOptimizer[T: ClassTag] private[optim](
@@ -534,7 +529,7 @@ class DistriOptimizer[T: ClassTag] private[optim](
   override def optimize(): Module[T] = {
     optimMethod.clearHistory(state)
     state("dropPercentage") = dropPercentage
-    state("iterationIgnoredNum") = ignoreIterationNum
+    state("warmupIterationNum") = warmupIterationNum
     state("comupteThresholdbatchSize") = comupteThresholdbatchSize
 
     require(Engine.nodeNumber().isDefined, "Node number is not set")
@@ -547,6 +542,7 @@ class DistriOptimizer[T: ClassTag] private[optim](
     
     models = DistriOptimizer.initThreadModels(
       model, dataset, criterion, state, nodeNumber, coresPerNode, checkSingleton, parameters)
+
 
     DistriOptimizer.optimize(
       dataset,
