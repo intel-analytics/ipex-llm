@@ -47,7 +47,7 @@ object BlockManagerWrapper {
   def removeBlock(blockId: BlockId): Unit = {
     SparkEnv.get.blockManager.removeBlock(blockId)
   }
-  
+
   def byteBufferConvert(chunkedByteBuffer: ChunkedByteBuffer): ByteBuffer = {
     ByteBuffer.wrap(chunkedByteBuffer.toArray)
   }
