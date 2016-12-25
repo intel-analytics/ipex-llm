@@ -65,7 +65,9 @@ object Train {
         param.nodeNumber,
         param.coreNumber,
         param.classNumber,
-        50000)
+        50000,
+        trainSet
+      )
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
