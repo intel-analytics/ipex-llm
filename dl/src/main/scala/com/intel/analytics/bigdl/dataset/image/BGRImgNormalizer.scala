@@ -36,21 +36,21 @@ object BGRImgNormalizer {
     new BGRImgNormalizer(mean._1, mean._2, mean._3, std._1, std._2, std._3)
   }
 
-  def apply(dataSource: LocalDataSet[LabeledBGRImage])
+  def apply(dataSet: LocalDataSet[LabeledBGRImage])
   : BGRImgNormalizer = {
-    apply(dataSource, -1)
+    apply(dataSet, -1)
   }
 
 
-  def apply(dataSource: LocalDataSet[LabeledBGRImage], samples: Int)
+  def apply(dataSet: LocalDataSet[LabeledBGRImage], samples: Int)
   : BGRImgNormalizer = {
     var sumR: Double = 0
     var sumG: Double = 0
     var sumB: Double = 0
     var total: Long = 0
-    dataSource.shuffle()
-    var iter = dataSource.data(train = false)
-    val totalCount = if (samples < 0) dataSource.size() else samples
+    dataSet.shuffle()
+    var iter = dataSet.data(train = false)
+    val totalCount = if (samples < 0) dataSet.size() else samples
     var i = 1
     while (i <= totalCount) {
       val content = iter.next().content
@@ -74,7 +74,7 @@ object BGRImgNormalizer {
     sumG = 0
     sumB = 0
     i = 1
-    iter = dataSource.data(train = false)
+    iter = dataSet.data(train = false)
     while (i <= totalCount) {
       val content = iter.next().content
       var j = 0

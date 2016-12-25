@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.{DataSet => DataSource}
+import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset.{MiniBatch, DistributedDataSet}
 import com.intel.analytics.bigdl.parameters.{CompressedTensor, AllReduceParameter}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -72,7 +72,7 @@ object DistriOptimizer {
     model: Module[T],
     optimMethod: OptimMethod[T],
     validationTrigger: Option[Trigger],
-    validationDataSet: Option[DataSource[MiniBatch[T]]],
+    validationDataSet: Option[DataSet[MiniBatch[T]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
     cacheTrigger: Option[Trigger],
     cachePath: Option[String],
@@ -356,7 +356,7 @@ object DistriOptimizer {
 
   private def validate[T](
     validationTrigger: Option[Trigger],
-    validationDataSet: Option[DataSource[MiniBatch[T]]],
+    validationDataSet: Option[DataSet[MiniBatch[T]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
     coresPerNode: Int,
     models: RDD[Cache[T]],

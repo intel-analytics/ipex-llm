@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.{DataSet => DataSource}
+import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset.MiniBatch
 import com.intel.analytics.bigdl.optim.DistriValidator._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -32,7 +32,7 @@ object DistriValidator {
 
 class DistriValidator[T] private[optim](
   model: Module[T],
-  dataSet: DataSource[MiniBatch[T]]
+  dataSet: DataSet[MiniBatch[T]]
 ) extends Validator[T, MiniBatch[T]](model, dataSet) {
 
   override def test(vMethods: Array[ValidationMethod[T]])

@@ -23,13 +23,12 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, DistributedDataSet}
-import com.intel.analytics.bigdl.{DataSet => DataSource}
 
 import scala.reflect.ClassTag
 
 abstract class Optimizer[T: ClassTag, D](
     protected val model: Module[T],
-  protected val dataset: DataSource[D],
+  protected val dataset: DataSet[D],
     protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
 {
   protected var state: Table = T()
@@ -42,11 +41,11 @@ abstract class Optimizer[T: ClassTag, D](
 
   protected var validationTrigger: Option[Trigger] = None
   protected var validationMethods: Option[Array[ValidationMethod[T]]] = None
-  protected var validationDataSet: Option[DataSource[D]] = None
+  protected var validationDataSet: Option[DataSet[D]] = None
 
   def optimize(): Module[T]
 
-  def setValidation(trigger: Trigger, dataset: DataSource[D],
+  def setValidation(trigger: Trigger, dataset: DataSet[D],
     vMethods : Array[ValidationMethod[T]])
   : this.type = {
     this.validationTrigger = Some(trigger)
@@ -105,7 +104,7 @@ object Optimizer {
 
   def apply[T: ClassTag, D](
     model: Module[T],
-    dataset: DataSource[D],
+    dataset: DataSet[D],
     criterion: Criterion[T]
   )(implicit ev: TensorNumeric[T]): Optimizer[T, D] = {
     dataset match {

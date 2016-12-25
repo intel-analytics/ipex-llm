@@ -91,13 +91,13 @@ trait AbstractDataSet[D, DataSequence] {
  */
 trait LocalDataSet[T] extends AbstractDataSet[T, Iterator[T]] {
   override def transform[C: ClassTag](transformer: Transformer[T, C]): DataSet[C] = {
-    val preDataSource = this
+    val preDataSet = this
     new LocalDataSet[C] {
-      override def shuffle(): Unit = preDataSource.shuffle
+      override def shuffle(): Unit = preDataSet.shuffle
 
-      override def size(): Long = preDataSource.size()
+      override def size(): Long = preDataSet.size()
 
-      override def data(looped: Boolean): Iterator[C] = transformer(preDataSource.data(looped))
+      override def data(looped: Boolean): Iterator[C] = transformer(preDataSet.data(looped))
     }
   }
 }
@@ -146,26 +146,26 @@ class LocalArrayDataSet[T] private[dataset](buffer: Array[T]) extends LocalDataS
 trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
 
   override def transform[C: ClassTag](transformer: Transformer[T, C]): DataSet[C] = {
-    val preDataSource = this
+    val preDataSet = this
 
     val broadcast = this.originRDD().sparkContext.broadcast(transformer)
 
     val cachedTransformer =
-      preDataSource.originRDD().mapPartitions(_ => Iterator
+      preDataSet.originRDD().mapPartitions(_ => Iterator
         .single(broadcast.value.cloneTransformer())
       ).setName("Cached Transformer").persist()
     cachedTransformer.count()
 
     new DistributedDataSet[C] {
-      override def size(): Long = preDataSource.size()
+      override def size(): Long = preDataSet.size()
 
-      override def shuffle(): Unit = preDataSource.shuffle()
+      override def shuffle(): Unit = preDataSet.shuffle()
 
       override def data(looped: Boolean): RDD[C] =
-        preDataSource.data(looped).zipPartitions(cachedTransformer)(
+        preDataSet.data(looped).zipPartitions(cachedTransformer)(
           (data, tran) => tran.next()(data))
 
-      override def originRDD(): RDD[_] = preDataSource.originRDD()
+      override def originRDD(): RDD[_] = preDataSet.originRDD()
     }
   }
 

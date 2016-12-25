@@ -51,42 +51,42 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "mnist data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("mnist")
 
-    val dataSource = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
+    val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
       Paths.get(processPath(resource.getPath()) + File.separator, "t10k-images.idx3-ubyte"),
       Paths.get(processPath(resource.getPath()) + File.separator, "t10k-labels.idx1-ubyte")
     ))
-    dataSource.size() should be(10000)
-    var iter = dataSource.data(looped = false)
+    dataSet.size() should be(10000)
+    var iter = dataSet.data(looped = false)
     iter.map(_.label).min should be(1.0f)
-    iter = dataSource.data(looped = false)
+    iter = dataSet.data(looped = false)
     iter.map(_.label).max should be(10.0f)
   }
 
   "mnist rdd data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("mnist")
 
-    val dataSource = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
+    val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
       Paths.get(processPath(resource.getPath()) + File.separator, "t10k-images.idx3-ubyte"),
       Paths.get(processPath(resource.getPath()) + File.separator, "t10k-labels.idx1-ubyte")
     ), sc, 4)
 
-    dataSource.size() should be(10000)
-    var rdd = dataSource.data(train = false)
+    dataSet.size() should be(10000)
+    var rdd = dataSet.data(train = false)
     rdd.map(_.label).min should be(1.0f)
-    rdd = dataSource.data(train = false)
+    rdd = dataSet.data(train = false)
     rdd.map(_.label).max should be(10.0f)
   }
 
   "cifar data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("cifar")
-    val dataSource = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
+    val dataSet = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
       BGRImage.NO_SCALE)
-    dataSource.size() should be(7)
+    dataSet.size() should be(7)
     val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
     labelMap("airplane") should be(1)
     labelMap("deer") should be(2)
 
-    val iter = dataSource.toLocal().data(train = false)
+    val iter = dataSet.toLocal().data(train = false)
     val img1 = iter.next()
     img1.label() should be(1f)
     img1.content(2) should be(234 / 255f)
@@ -114,14 +114,14 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "cifar rdd data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("cifar")
-    val dataSource = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
+    val dataSet = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
       sc, 4, BGRImage.NO_SCALE)
-    dataSource.size() should be(7)
+    dataSet.size() should be(7)
     val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
     labelMap("airplane") should be(1)
     labelMap("deer") should be(2)
 
-    val rdd = dataSource.toDistributed().data(train = false)
+    val rdd = dataSet.toDistributed().data(train = false)
     rdd.filter(_.label() == 1f).count() should be(3)
     rdd.filter(_.label() == 2f).count() should be(4)
     val images = rdd.map(_.clone())
@@ -150,8 +150,8 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "imagenet data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
-    val dataSource = DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
-    dataSource.size() should be(11)
+    val dataSet = DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
+    dataSet.size() should be(11)
 
     val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
     labelMap("n02110063") should be(1)
@@ -160,9 +160,9 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     labelMap("n99999999") should be(4)
 
     val pathToImage = LocalImgReader(BGRImage.NO_SCALE)
-    val imageDataSource = dataSource -> pathToImage
+    val imageDataSet = dataSet -> pathToImage
 
-    val images = imageDataSource.toLocal().data(train = false)
+    val images = imageDataSet.toLocal().data(train = false)
       .map(_.clone())
       .toArray
       .sortWith(_.content(0) < _.content(0))
