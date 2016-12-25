@@ -41,7 +41,7 @@ object ImageNet2012 {
     (if (sc.isDefined) {
       DataSet.SeqFileFolder.files(path, sc.get, classNumber, nodeNumber,
         (if (ds == null) null else ds.toDistributed().originRDD())).transform(
-        MTLabeledBGRImgToBatch[Sample](
+        MTLabeledBGRImgToBatch[ByteRecord](
           width = imageSize,
           height = imageSize,
           batchSize = batchSize,

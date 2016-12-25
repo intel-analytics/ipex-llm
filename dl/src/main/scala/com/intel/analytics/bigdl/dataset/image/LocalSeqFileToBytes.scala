@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{Sample, LocalSeqFilePath, Transformer}
+import com.intel.analytics.bigdl.dataset.{ByteRecord, LocalSeqFilePath, Transformer}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.SequenceFile.Reader
 import org.apache.hadoop.io.{SequenceFile, Text}
@@ -28,7 +28,7 @@ object LocalSeqFileToBytes {
   def apply(): LocalSeqFileToBytes = new LocalSeqFileToBytes()
 }
 
-class LocalSeqFileToBytes extends Transformer[LocalSeqFilePath, Sample] {
+class LocalSeqFileToBytes extends Transformer[LocalSeqFilePath, ByteRecord] {
 
   import org.apache.hadoop.fs.{Path => hPath}
 
@@ -43,11 +43,11 @@ class LocalSeqFileToBytes extends Transformer[LocalSeqFilePath, Sample] {
   private var reader: SequenceFile.Reader = null
 
   @transient
-  private var oneRecordBuffer: Sample = null
+  private var oneRecordBuffer: ByteRecord = null
 
-  override def apply(prev: Iterator[LocalSeqFilePath]): Iterator[Sample] = {
-    new Iterator[Sample] {
-      override def next(): Sample = {
+  override def apply(prev: Iterator[LocalSeqFilePath]): Iterator[ByteRecord] = {
+    new Iterator[ByteRecord] {
+      override def next(): ByteRecord = {
         if (oneRecordBuffer != null) {
           val res = oneRecordBuffer
           oneRecordBuffer = null
@@ -70,7 +70,7 @@ class LocalSeqFileToBytes extends Transformer[LocalSeqFilePath, Sample] {
           reader.next(key, value)
         }
 
-        Sample(value.copyBytes(), key.toString.toFloat)
+        ByteRecord(value.copyBytes(), key.toString.toFloat)
       }
 
       override def hasNext: Boolean = {
@@ -80,7 +80,7 @@ class LocalSeqFileToBytes extends Transformer[LocalSeqFilePath, Sample] {
           prev.hasNext
         } else {
           if (reader.next(key, value)) {
-            oneRecordBuffer = Sample(value.copyBytes(), key.toString.toFloat)
+            oneRecordBuffer = ByteRecord(value.copyBytes(), key.toString.toFloat)
             return true
           } else {
             prev.hasNext

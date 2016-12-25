@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
+import com.intel.analytics.bigdl.dataset.{ByteRecord, Transformer}
 
 import scala.collection.Iterator
 
@@ -27,10 +27,10 @@ object SampleToBGRImg {
 }
 
 class SampleToBGRImg(normalize: Float)
-  extends Transformer[Sample, LabeledBGRImage] {
+  extends Transformer[ByteRecord, LabeledBGRImage] {
   private val buffer = new LabeledBGRImage()
 
-  override def apply(prev: Iterator[Sample]): Iterator[LabeledBGRImage] = {
+  override def apply(prev: Iterator[ByteRecord]): Iterator[LabeledBGRImage] = {
     prev.map(rawData => {
       buffer.copy(rawData.data, normalize).setLabel(rawData.label)
     })

@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
+import com.intel.analytics.bigdl.dataset.{ByteRecord, Transformer}
 
 import scala.collection.Iterator
 
@@ -27,10 +27,10 @@ object SampleToGreyImg {
 }
 
 class SampleToGreyImg(row: Int, col: Int)
-  extends Transformer[Sample, LabeledGreyImage] {
+  extends Transformer[ByteRecord, LabeledGreyImage] {
   private val buffer = new LabeledGreyImage(row, col)
 
-  override def apply(prev: Iterator[Sample]): Iterator[LabeledGreyImage] = {
+  override def apply(prev: Iterator[ByteRecord]): Iterator[LabeledGreyImage] = {
     prev.map(rawData => {
       require(row * col == rawData.data.length)
       require(rawData.label >= 1)
