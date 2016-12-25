@@ -274,9 +274,9 @@ object DataSet {
   }
 
   object ImageFolder {
-    def paths(path: Path): LocalDataSet[LabeledImageLocalPath] = {
+    def paths(path: Path): LocalDataSet[LocalLabeledImagePath] = {
       val buffer = LocalImageFiles.readPaths(path)
-      new LocalArrayDataSet[LabeledImageLocalPath](buffer)
+      new LocalArrayDataSet[LocalLabeledImagePath](buffer)
     }
 
     def images(path: Path, scaleTo: Int): DataSet[LabeledBGRImage] = {
@@ -305,12 +305,12 @@ object DataSet {
 
   object SequenceFolder {
     val logger = Logger.getLogger(getClass)
-    def paths(path: Path, totalSize: Long): LocalDataSet[SeqFileLocalPath] = {
+    def paths(path: Path, totalSize: Long): LocalDataSet[LocalSeqFilePath] = {
       logger.info(s"Read sequence files folder $path")
-      val buffer: Array[SeqFileLocalPath] = SequenceFiles.findFiles(path)
+      val buffer: Array[LocalSeqFilePath] = findFiles(path)
       logger.info(s"Find ${buffer.length} sequence files")
       require(buffer.length > 0, s"Can't find any sequence files under $path")
-      new LocalArrayDataSet[SeqFileLocalPath](buffer) {
+      new LocalArrayDataSet[LocalSeqFilePath](buffer) {
         override def size(): Long = {
           totalSize
         }
@@ -324,6 +324,13 @@ object DataSet {
       }).filter(_.label < classNum)
 
       rdd[Sample](rawData, partitionNum)
+    }
+
+    private[bigdl] def findFiles(path: Path): Array[LocalSeqFilePath] = {
+      val directoryStream = Files.newDirectoryStream(path)
+      import scala.collection.JavaConverters._
+      directoryStream.asScala.map(_.toAbsolutePath.toString)
+        .filter(_.endsWith(".seq")).toArray.sortWith(_ < _).map(p => LocalSeqFilePath(Paths.get(p)))
     }
   }
 

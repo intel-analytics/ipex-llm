@@ -65,21 +65,21 @@ class OptimizerSpec extends FlatSpec with Matchers {
       override def optimize(): Module[Float] = {
         val state = T("epoch" -> 9)
         validationTrigger.get(state) should be(false)
-        cacheTrigger.get(state) should be(false)
+        checkpointTrigger.get(state) should be(false)
         state("epoch") = 10
         validationTrigger.get(state) should be(true)
-        cacheTrigger.get(state) should be(true)
+        checkpointTrigger.get(state) should be(true)
         validationTrigger.get(state) should be(false)
-        cacheTrigger.get(state) should be(false)
+        checkpointTrigger.get(state) should be(false)
         state("epoch") = 11
         validationTrigger.get(state) should be(true)
-        cacheTrigger.get(state) should be(true)
-        cachePath.isDefined should be(true)
+        checkpointTrigger.get(state) should be(true)
+        checkpointPath.isDefined should be(true)
         model
       }
     }
     dummyOptimizer.setValidation(Trigger.everyEpoch, null, null)
-    dummyOptimizer.setCache("", Trigger.everyEpoch)
+    dummyOptimizer.setCheckpoint("", Trigger.everyEpoch)
     dummyOptimizer.optimize()
   }
 
@@ -88,18 +88,18 @@ class OptimizerSpec extends FlatSpec with Matchers {
       override def optimize(): Module[Float] = {
         val state = T("neval" -> 1)
         validationTrigger.get(state) should be(false)
-        cacheTrigger.get(state) should be(false)
+        checkpointTrigger.get(state) should be(false)
         state("neval") = 4
         validationTrigger.get(state) should be(false)
-        cacheTrigger.get(state) should be(false)
+        checkpointTrigger.get(state) should be(false)
         state("neval") = 5
         validationTrigger.get(state) should be(true)
-        cacheTrigger.get(state) should be(true)
+        checkpointTrigger.get(state) should be(true)
         model
       }
     }
     dummyOptimizer.setValidation(Trigger.severalIteration(5), null, null)
-    dummyOptimizer.setCache("", Trigger.severalIteration(5))
+    dummyOptimizer.setCheckpoint("", Trigger.severalIteration(5))
     dummyOptimizer.optimize()
   }
 
@@ -110,11 +110,11 @@ class OptimizerSpec extends FlatSpec with Matchers {
     val model = AlexNet(1000)
     val dummyOptimizer = new Optimizer[Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        Optimizer.saveModel(model, this.cachePath, this.isOverWrite)
+        Optimizer.saveModel(model, this.checkpointPath, this.isOverWrite)
         model
       }
     }
-    dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
+    dummyOptimizer.setCheckpoint(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 
     model.clearState()
@@ -129,11 +129,11 @@ class OptimizerSpec extends FlatSpec with Matchers {
     val model = AlexNet(1000)
     val dummyOptimizer = new Optimizer[Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        Optimizer.saveModel(model, this.cachePath, this.isOverWrite, ".test")
+        Optimizer.saveModel(model, this.checkpointPath, this.isOverWrite, ".test")
         model
       }
     }
-    dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
+    dummyOptimizer.setCheckpoint(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 
     model.clearState()
@@ -149,11 +149,11 @@ class OptimizerSpec extends FlatSpec with Matchers {
     val state = T("test" -> 123)
     val dummyOptimizer = new Optimizer[Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        Optimizer.saveState(state, this.cachePath, this.isOverWrite)
+        Optimizer.saveState(state, this.checkpointPath, this.isOverWrite)
         model
       }
     }.setState(state)
-    dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
+    dummyOptimizer.setCheckpoint(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 
     val loadedState = File.load[Table](filePath + "/state")
@@ -167,11 +167,11 @@ class OptimizerSpec extends FlatSpec with Matchers {
     val state = T("test" -> 123)
     val dummyOptimizer = new Optimizer[Float, Float](model, null, null) {
       override def optimize(): Module[Float] = {
-        Optimizer.saveState(state, this.cachePath, this.isOverWrite, ".post")
+        Optimizer.saveState(state, this.checkpointPath, this.isOverWrite, ".post")
         model
       }
     }.setState(state)
-    dummyOptimizer.setCache(filePath, Trigger.everyEpoch)
+    dummyOptimizer.setCheckpoint(filePath, Trigger.everyEpoch)
     dummyOptimizer.optimize()
 
     val loadedState = File.load[Table](filePath + "/state.post")

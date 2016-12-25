@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.{DataSet => DataSource}
-import com.intel.analytics.bigdl.dataset.Batch
+import com.intel.analytics.bigdl.dataset.MiniBatch
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -29,9 +29,9 @@ import scala.reflect.ClassTag
  */
 class RefLocalOptimizer[T: ClassTag](
   model: Module[T],
-  dataset: DataSource[Batch[T]],
+  dataset: DataSource[MiniBatch[T]],
   criterion: Criterion[T]
-)(implicit ev: TensorNumeric[T]) extends Optimizer[T, Batch[T]](model, dataset, criterion) {
+)(implicit ev: TensorNumeric[T]) extends Optimizer[T, MiniBatch[T]](model, dataset, criterion) {
 
   val (w, g) = model.getParameters()
 

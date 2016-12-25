@@ -25,15 +25,15 @@ import org.apache.spark.SparkContext
 
 trait ResNetDataSet {
   def localTrainDataSet(path: Path, batchSize: Int, size: Int)
-  : DataSet[Batch[Float]]
+  : DataSet[MiniBatch[Float]]
   def localValDataSet(path: Path, batchSize: Int, size: Int)
-  : DataSet[Batch[Float]]
+  : DataSet[MiniBatch[Float]]
   def distributedValDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
-  : DataSet[Batch[Float]]
+  : DataSet[MiniBatch[Float]]
   def distributedTrainDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
-  : DataSet[Batch[Float]]
+  : DataSet[MiniBatch[Float]]
 }
 
 object Cifar10DataSet extends ResNetDataSet {
@@ -44,7 +44,7 @@ object Cifar10DataSet extends ResNetDataSet {
   val testStd = (0.2466525177466614, 0.2428922662655766, 0.26159238066790275)
 
   override def localTrainDataSet(path: Path, batchSize: Int, size: Int)
-  : DataSet[Batch[Float]] = {
+  : DataSet[MiniBatch[Float]] = {
 
     DataSet.ImageFolder.images(path, size)
       .transform(BGRImgNormalizer(trainMean, trainStd))
@@ -54,7 +54,7 @@ object Cifar10DataSet extends ResNetDataSet {
   }
 
   override def localValDataSet(path: Path, batchSize: Int, size: Int)
-  : DataSet[Batch[Float]] = {
+  : DataSet[MiniBatch[Float]] = {
 
     DataSet.ImageFolder.images(path, size)
       .transform(BGRImgNormalizer(testMean, testStd))
@@ -63,7 +63,7 @@ object Cifar10DataSet extends ResNetDataSet {
 
   override def distributedValDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
-  : DataSet[Batch[Float]] = {
+  : DataSet[MiniBatch[Float]] = {
 
     DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
       .transform(BGRImgNormalizer(trainMean, trainStd))
@@ -72,7 +72,7 @@ object Cifar10DataSet extends ResNetDataSet {
 
   override def distributedTrainDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
-  : DataSet[Batch[Float]] = {
+  : DataSet[MiniBatch[Float]] = {
 
     DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
       .transform(BGRImgNormalizer(testMean, testStd))

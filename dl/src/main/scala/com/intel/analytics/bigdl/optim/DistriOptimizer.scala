@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.{DataSet => DataSource}
-import com.intel.analytics.bigdl.dataset.{Batch, DistributedDataSet}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, DistributedDataSet}
 import com.intel.analytics.bigdl.parameters.{CompressedTensor, AllReduceParameter}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -63,7 +63,7 @@ object DistriOptimizer {
   )
 
   private[optim] def optimize[T: ClassTag](
-    dataset: DistributedDataSet[Batch[T]],
+    dataset: DistributedDataSet[MiniBatch[T]],
     coresPerNode: Int,
     state: Table,
     endWhen: Trigger,
@@ -72,7 +72,7 @@ object DistriOptimizer {
     model: Module[T],
     optimMethod: OptimMethod[T],
     validationTrigger: Option[Trigger],
-    validationDataSet: Option[DataSource[Batch[T]]],
+    validationDataSet: Option[DataSource[MiniBatch[T]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
     cacheTrigger: Option[Trigger],
     cachePath: Option[String],
@@ -289,7 +289,7 @@ object DistriOptimizer {
 
   private def initThreadModels[T: ClassTag](
     model: Module[T],
-    dataset: DistributedDataSet[Batch[T]],
+    dataset: DistributedDataSet[MiniBatch[T]],
     criterion: Criterion[T],
     state: Table,
     nodeNumber: Int,
@@ -356,7 +356,7 @@ object DistriOptimizer {
 
   private def validate[T](
     validationTrigger: Option[Trigger],
-    validationDataSet: Option[DataSource[Batch[T]]],
+    validationDataSet: Option[DataSource[MiniBatch[T]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
     coresPerNode: Int,
     models: RDD[Cache[T]],
@@ -442,11 +442,11 @@ object DistriOptimizer {
 
 class DistriOptimizer[T: ClassTag] private[optim](
   model: Module[T],
-  dataset: DistributedDataSet[Batch[T]],
+  dataset: DistributedDataSet[MiniBatch[T]],
   criterion: Criterion[T]
 )
   (implicit ev: TensorNumeric[T])
-  extends Optimizer[T, Batch[T]](
+  extends Optimizer[T, MiniBatch[T]](
     model, dataset, criterion) {
 
   def disableCheckSingleton(): this.type = {
@@ -482,8 +482,8 @@ class DistriOptimizer[T: ClassTag] private[optim](
       validationTrigger,
       validationDataSet,
       validationMethods,
-      cacheTrigger,
-      cachePath,
+      checkpointTrigger,
+      checkpointPath,
       isOverWrite
     )
 

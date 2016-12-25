@@ -37,14 +37,14 @@ abstract class Image extends Serializable {
  *
  * @param path
  */
-class ImageLocalPath(val path : Path)
+class LocalImagePath(val path : Path)
 
 /**
  * Represent a local file path of a hadoop sequence file
  *
  * @param path
  */
-case class SeqFileLocalPath(val path: Path)
+case class LocalSeqFilePath(val path: Path)
 
 /**
  * Represent a label
@@ -56,6 +56,6 @@ trait Label[T] {
   def label(): T
 }
 
-case class Batch[T](data: Tensor[T], labels: Tensor[T])
+case class MiniBatch[T](data: Tensor[T], labels: Tensor[T])
 
 case class Sample(data: Array[Byte], label: Float)

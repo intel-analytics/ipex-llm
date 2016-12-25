@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{Utils, Batch, Transformer}
+import com.intel.analytics.bigdl.dataset.{Utils, MiniBatch, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.collection.Iterator
@@ -29,7 +29,7 @@ object GreyImgToBatch {
 }
 
 class GreyImgToBatch private[dataset](totalBatchSize: Int)
-  extends Transformer[LabeledGreyImage, Batch[Float]] {
+  extends Transformer[LabeledGreyImage, MiniBatch[Float]] {
 
   private def copyImage(img: GreyImage, storage: Array[Float], offset: Int): Unit = {
     val content = img.content
@@ -41,8 +41,8 @@ class GreyImgToBatch private[dataset](totalBatchSize: Int)
     }
   }
 
-  override def apply(prev: Iterator[LabeledGreyImage]): Iterator[Batch[Float]] = {
-    new Iterator[Batch[Float]] {
+  override def apply(prev: Iterator[LabeledGreyImage]): Iterator[MiniBatch[Float]] = {
+    new Iterator[MiniBatch[Float]] {
       private val featureTensor: Tensor[Float] = Tensor[Float]()
       private val labelTensor: Tensor[Float] = Tensor[Float]()
       private var featureData: Array[Float] = null
@@ -53,7 +53,7 @@ class GreyImgToBatch private[dataset](totalBatchSize: Int)
 
       override def hasNext: Boolean = prev.hasNext
 
-      override def next(): Batch[Float] = {
+      override def next(): MiniBatch[Float] = {
         if (prev.hasNext) {
           var i = 0
           while (i < batchSize && prev.hasNext) {
@@ -74,7 +74,7 @@ class GreyImgToBatch private[dataset](totalBatchSize: Int)
             labelTensor.set(Storage[Float](labelData),
               storageOffset = 1, sizes = Array(i))
           }
-          Batch(featureTensor, labelTensor)
+          MiniBatch(featureTensor, labelTensor)
         } else {
           null
         }

@@ -63,8 +63,8 @@ object Train {
         dataset = trainSet.transform(normalizer).transform(GreyImgToAEBatch(param.batchSize)),
         criterion = new MSECriterion[Float]()
       )
-      if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      if (param.checkpoint.isDefined) {
+        optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
 
       optimizer
