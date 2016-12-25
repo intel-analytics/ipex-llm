@@ -79,7 +79,7 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
     val nbatch = if (input.nDimension() == 4) input.size(1) else 1
     require(input.size(dimc) >= nInputPlane, "invalid number of input planes")
     require(input.size(dimw) >= kW && input.size(dimh) >= kH,
-      "input image smaller than kernel size")
+      "input smaller than kernel size")
 
     val inputW = input.size(dimw)
     val inputH = input.size(dimh)
