@@ -344,6 +344,8 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
   }
 
   it should "be correct in serialize version" in {
+    val old = Engine.default.getPoolSize
+    Engine.default.setPoolSize(1)
     val tensor1 = Tensor[Float](5)
     tensor1.setValue(1, 1.0f)
     tensor1.setValue(2, 2.0f)
@@ -364,6 +366,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     param1.add(param2.bytes())
     param1.deCompress(tensor1)
     tensor1 should be(test)
+    Engine.default.setPoolSize(old)
   }
 
   it should "be correct with slice" in {
