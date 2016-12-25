@@ -35,11 +35,11 @@ object BlockManagerWrapper {
     value: Any,
     level: StorageLevel,
     tellMaster: Boolean = true): Unit = {
-    SparkEnv.get.blcokManager.putSingle(blockId, value, level, tellMaster)
+    SparkEnv.get.blockManager.putSingle(blockId, value, level, tellMaster)
   }
 
   def removeBlock(blockId: BlockId): Unit = {
-    SparkEnv.get.blcokManager.removeBlock(blockId)
+    SparkEnv.get.blockManager.removeBlock(blockId)
   }
   
   def getLocal(blockId: BlockId): Option[BlockResult] = {

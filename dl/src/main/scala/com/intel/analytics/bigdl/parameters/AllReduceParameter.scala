@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import org.apache.spark.sparkExtension.SparkExtension
 import org.apache.spark.{SparkEnv, TaskContext}
-import org.apache.spark.storage.{BlockId, BlockManagerWrapper, StorageLevel, TaskResultBlockId}
+import org.apache.spark.storage.{BlockId, BlockManagerWrapper, StorageLevel}
 
 import scala.collection.JavaConverters._
 import scala.reflect._
@@ -203,7 +203,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
 }
 
 class FutureResult[T](private val futures: Seq[Future[T]]) {
-  def waits(): Seq[T] = {
+  def waitResult(): Seq[T] = {
     futures.map(_.get())
   }
 }

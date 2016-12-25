@@ -17,12 +17,12 @@
 
 package com.intel.analytics.bigdl.optim
 
-import java.nio.file.{Paths, Files}
+import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, DistributedDataSet}
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet, MiniBatch}
 
 import scala.reflect.ClassTag
 
@@ -47,7 +47,7 @@ abstract class Optimizer[T: ClassTag, D](
   protected var dropPercentage: Double = 0.0
   protected var maxDropPercentage: Double = 0.0
   protected var comupteThresholdbatchSize: Int = 100
-  protected var ignoreIterationNum: Int = 200
+  protected var warmupIterationNum: Int = 200
 
   def optimize(): Module[T]
 
@@ -91,7 +91,7 @@ abstract class Optimizer[T: ClassTag, D](
     batchsize: Int = 100, warmupIteration: Int = 200): this.type = {
     this.dropPercentage = dropPercentage
     this.maxDropPercentage = maxDropPercentage
-    require(dropPercentage >= 0 && dropPercentage < maxDropPercentage)
+    require(dropPercentage >= 0 && dropPercentage <= maxDropPercentage)
     this.comupteThresholdbatchSize = batchsize
     this.warmupIterationNum = warmupIteration
     this

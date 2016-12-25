@@ -69,7 +69,7 @@ object TrainGoogleNetV1 {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        GoogleNet_v1_NoAuxClassifier(classNum = param.classNumber)
+        GoogleNet_v1(classNum = param.classNumber)
       }
 
       val state = if (param.stateSnapshot.isDefined) {
@@ -145,7 +145,7 @@ object TrainGoogleNetV2 {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        GoogleNet_v2_NoAuxClassifier(classNum = param.classNumber)
+        GoogleNet_v2(classNum = param.classNumber)
       }
 
       val state = if (param.stateSnapshot.isDefined) {
