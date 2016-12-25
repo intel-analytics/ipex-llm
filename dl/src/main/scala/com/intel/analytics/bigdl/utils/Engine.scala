@@ -17,14 +17,15 @@
 
 package com.intel.analytics.bigdl.utils
 
+import java.lang.Thread.UncaughtExceptionHandler
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{ConcurrentLinkedQueue, Executors, ThreadFactory}
+import java.util.concurrent.{Executors, ThreadFactory}
 
 import com.intel.analytics.bigdl.mkl.MKL
+import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 import org.apache.spark.SparkConf
 
-import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
@@ -52,6 +53,11 @@ class ThreadPool(private var poolSize: Int) {
           override def newThread(r: Runnable): Thread = {
             val t = Executors.defaultThreadFactory().newThread(r)
             t.setDaemon(true)
+            t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+              override def uncaughtException(thread: Thread, throwable: Throwable): Unit = {
+                logger.error("Error: " + ExceptionUtils.getStackTrace(throwable))
+              }
+            })
             t
           }
         })
