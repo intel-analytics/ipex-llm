@@ -90,7 +90,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     val toTensor = new GreyImgToBatch(2)
     val tensorDataSource = dataSource -> toTensor
-    val iter = tensorDataSource.toLocal().data(looped = true)
+    val iter = tensorDataSource.toLocal().data(train = true)
     val batch = iter.next()
     batch.data.size(1) should be(2)
     batch.data.size(2) should be(32)
@@ -213,7 +213,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     val toTensor = new BGRImgToBatch(2)
     val tensorDataSource = dataSource -> toTensor
-    val iter = tensorDataSource.toLocal().data(looped = true)
+    val iter = tensorDataSource.toLocal().data(train = true)
     val batch1 = iter.next()
     batch1.data.size(1) should be(2)
     batch1.data.size(2) should be(3)
@@ -330,7 +330,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       width = 32, height = 32, totalBatchSize = 2, transformer = Identity[LabeledBGRImage]
     )
     val tensorDataSource = dataSource -> toTensor
-    val iter = tensorDataSource.toLocal().data(looped = true)
+    val iter = tensorDataSource.toLocal().data(train = true)
     val batch = iter.next()
     batch.data.size(1) should be(2)
     batch.data.size(2) should be(3)
@@ -442,7 +442,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val tmpFile = Paths.get(java.io.File.createTempFile("UnitTest", "RGBImageToSeqFile").getPath)
     val seqWriter = BGRImgToLocalSeqFile(2, tmpFile)
     val writePipeline = dataSource -> pathToImage -> seqWriter
-    val iter = writePipeline.toLocal().data(looped = false)
+    val iter = writePipeline.toLocal().data(train = false)
     while (iter.hasNext) {
       println(s"writer file ${iter.next()}")
     }
@@ -457,8 +457,8 @@ class TransformersSpec extends FlatSpec with Matchers {
     ))
     var count = 0
     val readPipeline = seqDataSource -> LocalSeqFileToBytes() -> SampleToBGRImg()
-    val readIter = readPipeline.toLocal().data(looped = false)
-    readIter.zip((dataSource -> pathToImage).toLocal().data(looped = false))
+    val readIter = readPipeline.toLocal().data(train = false)
+    readIter.zip((dataSource -> pathToImage).toLocal().data(train = false))
       .foreach { case (l, r) =>
       l.label() should be(r.label())
       l.width() should be(r.width())

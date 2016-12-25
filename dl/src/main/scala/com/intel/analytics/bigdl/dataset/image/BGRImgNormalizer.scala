@@ -49,7 +49,7 @@ object BGRImgNormalizer {
     var sumB: Double = 0
     var total: Long = 0
     dataSource.shuffle()
-    var iter = dataSource.data(looped = false)
+    var iter = dataSource.data(train = false)
     val totalCount = if (samples < 0) dataSource.size() else samples
     var i = 1
     while (i <= totalCount) {
@@ -74,7 +74,7 @@ object BGRImgNormalizer {
     sumG = 0
     sumB = 0
     i = 1
-    iter = dataSource.data(looped = false)
+    iter = dataSource.data(train = false)
     while (i <= totalCount) {
       val content = iter.next().content
       var j = 0

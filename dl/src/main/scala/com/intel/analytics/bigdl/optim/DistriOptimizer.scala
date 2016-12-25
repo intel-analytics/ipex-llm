@@ -78,7 +78,7 @@ object DistriOptimizer {
     cachePath: Option[String],
     isOverWrite: Boolean
   )(implicit ev: TensorNumeric[T]) = {
-    val sc = dataset.data(looped = true).sparkContext
+    val sc = dataset.data(train = true).sparkContext
     val partitionNum = dataset.originRDD().partitions.length
     var wallClockTime = 0L
     var lastEpochTime = 0L
@@ -113,7 +113,7 @@ object DistriOptimizer {
       val driverMetrics = metrics
       val start = System.nanoTime()
       val _ps = new AllReduceParameter[T]()
-      dataset.data(looped = true).zipPartitions(
+      dataset.data(train = true).zipPartitions(
         models, true)(
         (data, modelIter) => {
           var time = System.nanoTime()
@@ -371,7 +371,7 @@ object DistriOptimizer {
       return
     }
     val vMethods = validationMethods.get
-    val validateRDD = validationDataSet.get.toDistribute().data(looped = false)
+    val validateRDD = validationDataSet.get.toDistributed().data(train = false)
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode

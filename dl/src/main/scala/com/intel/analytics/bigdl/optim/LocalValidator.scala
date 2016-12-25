@@ -43,7 +43,7 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: DataSource[Min
 
   override def test(vMethods: Array[ValidationMethod[T]])
   : Array[(ValidationResult, ValidationMethod[T])] = {
-    val dataIter = dataSet.toLocal() data (looped = false)
+    val dataIter = dataSet.toLocal() data (train = false)
     var count = 0
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     dataIter.map(batch => {

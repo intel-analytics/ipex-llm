@@ -37,7 +37,7 @@ class DistriValidator[T] private[optim](
 
   override def test(vMethods: Array[ValidationMethod[T]])
   : Array[(ValidationResult, ValidationMethod[T])] = {
-    val rdd = dataSet.toDistribute().data(looped = false)
+    val rdd = dataSet.toDistributed().data(train = false)
     val broadcastModel = rdd.sparkContext.broadcast(model.evaluate())
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => Engine.coreNumber()

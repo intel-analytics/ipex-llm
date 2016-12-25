@@ -85,7 +85,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     dataset.shuffle()
-    var iter = dataset.toLocal().data(looped = true)
+    var iter = dataset.toLocal().data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     while (!endWhen(state)) {
       val start = System.nanoTime()
@@ -161,7 +161,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
       if (count >= dataset.size()) {
         state("epoch") = state[Int]("epoch") + 1
         dataset.shuffle()
-        iter = dataset.toLocal().data(looped = true)
+        iter = dataset.toLocal().data(train = true)
         count = 0
       }
 
@@ -194,7 +194,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
       return
     }
     val vMethods = validationMethods.get
-    val dataIter = validationDataSet.get.asInstanceOf[LocalDataSet[MiniBatch[T]]].data(looped = false)
+    val dataIter = validationDataSet.get.asInstanceOf[LocalDataSet[MiniBatch[T]]].data(train = false)
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
 
     workingModels.foreach(_.evaluate())

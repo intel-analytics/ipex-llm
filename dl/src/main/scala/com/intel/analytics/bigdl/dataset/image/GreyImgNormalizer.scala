@@ -28,7 +28,7 @@ object GreyImgNormalizer {
     var sum: Double = 0
     var total: Int = 0
     dataSource.shuffle()
-    var iter = dataSource.toLocal().data(looped = false)
+    var iter = dataSource.toLocal().data(train = false)
     var i = 0
     while (i < math.min(samples, dataSource.size())) {
       val img = iter.next()
@@ -43,7 +43,7 @@ object GreyImgNormalizer {
 
     sum = 0
     i = 0
-    iter = dataSource.toLocal().data(looped = false)
+    iter = dataSource.toLocal().data(train = false)
     while (i < math.min(samples, dataSource.size())) {
       val img = iter.next()
       img.content.foreach(e => {
