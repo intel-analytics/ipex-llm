@@ -39,7 +39,7 @@ object ImageNet2012 {
   )
   : DataSet[MiniBatch[Float]] = {
     (if (sc.isDefined) {
-      DataSet.SequenceFolder.files(path, sc.get, classNumber, nodeNumber,
+      DataSet.SeqFileFolder.files(path, sc.get, classNumber, nodeNumber,
         (if (ds == null) null else ds.toDistributed().originRDD())).transform(
         MTLabeledBGRImgToBatch[Sample](
           width = imageSize,
@@ -49,7 +49,7 @@ object ImageNet2012 {
             -> HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225))
         ))
     } else {
-      DataSet.SequenceFolder.paths(Paths.get(path), size)
+      DataSet.SeqFileFolder.paths(Paths.get(path), size)
         .transform(
           MTLabeledBGRImgToBatch(
             width = imageSize,
