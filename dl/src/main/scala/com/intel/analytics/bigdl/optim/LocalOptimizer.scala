@@ -194,7 +194,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
       return
     }
     val vMethods = validationMethods.get
-    val dataIter = validationDataSet.get.asInstanceOf[LocalDataSet[MiniBatch[T]]].data(train = false)
+    val dataIter = validationDataSet.get.toLocal().data(train = false)
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
 
     workingModels.foreach(_.evaluate())

@@ -394,7 +394,7 @@ object DistriOptimizer {
               val target = batch.labels.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)
               vMethods.map(validation => {
-                validation(output.asInstanceOf[Tensor[T]], target)
+                validation(output, target)
               })
             }
           )
