@@ -17,7 +17,6 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.{DataSet => DataSource}
 import com.intel.analytics.bigdl.dataset.MiniBatch
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.DistriOptimizer._
@@ -29,7 +28,7 @@ object LocalValidator {
   val logger = Logger.getLogger(getClass)
 }
 
-class LocalValidator[T] private[optim](model: Module[T], dataSet: DataSource[MiniBatch[T]])
+class LocalValidator[T] private[optim](model: Module[T], dataSet: DataSet[MiniBatch[T]])
   extends Validator[T, MiniBatch[T]](model, dataSet) {
 
   private val coreNumber = Engine.coreNumber()

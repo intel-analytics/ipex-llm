@@ -87,9 +87,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc: SparkContext = null
 
   var dataSet: DistributedDataSet[MiniBatch[Double]] = null
-
-  var dataSet2: ShuffleBatchDataSet[(Int), Double] = null
-
+  
   before {
     sc = new SparkContext("local[1]", "RDDOptimizerSpec")
 
