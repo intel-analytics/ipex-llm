@@ -103,11 +103,13 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor.setValue(4, 4.0)
     tensor.setValue(5, 5.0)
 
-    Engine.model.setPoolSize(1)
+    val old = Engine.default.getPoolSize
+    Engine.default.setPoolSize(1)
     val param = new FP16CompressedTensor(tensor)
 
     val test = tensor.clone().zero
     param.deCompress(test)
+    Engine.default.setPoolSize(old)
 
     test should be(tensor)
   }
@@ -120,11 +122,13 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor.setValue(4, 4.0)
     tensor.setValue(5, 5.0)
 
-    Engine.model.setPoolSize(500)
+    val old = Engine.default.getPoolSize
+    Engine.default.setPoolSize(500)
     val param = new FP16CompressedTensor(tensor)
 
     val test = tensor.clone().zero
     param.deCompress(test)
+    Engine.default.setPoolSize(old)
 
     test should be(tensor)
   }
@@ -208,12 +212,14 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor.setValue(4, 4.0f)
     tensor.setValue(5, 5.0f)
 
-    Engine.model.setPoolSize(1)
+    val old = Engine.default.getPoolSize
+    Engine.default.setPoolSize(1)
     val param = new FP16CompressedTensor(tensor)
 
     val test = tensor.clone().zero
     param.deCompress(test)
 
+    Engine.default.setPoolSize(old)
     test should be(tensor)
   }
 
@@ -225,12 +231,13 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor.setValue(4, 4.0f)
     tensor.setValue(5, 5.0f)
 
-    Engine.model.setPoolSize(500)
+    val old = Engine.default.getPoolSize
+    Engine.default.setPoolSize(500)
     val param = new FP16CompressedTensor(tensor)
 
     val test = tensor.clone().zero
     param.deCompress(test)
-
+    Engine.default.setPoolSize(old)
     test should be(tensor)
   }
 
@@ -398,7 +405,8 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor1.setValue(4, 4.0f)
     tensor1.setValue(5, 5.0f)
 
-    Engine.model.setPoolSize(1)
+    val old = Engine.default.getPoolSize
+    Engine.default.setPoolSize(1)
     val param1 = new FP16CompressedTensor(tensor1)
 
     val tensor2 = Tensor[Float](5)
@@ -418,7 +426,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
 
     param1.parAdd(param2.bytes(1, 2), 1, 2)
     param1.deCompress(tensor1)
-
+    Engine.default.setPoolSize(old)
     tensor1 should be(test)
   }
 
@@ -430,7 +438,8 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     tensor1.setValue(4, 4.0f)
     tensor1.setValue(5, 5.0f)
 
-    Engine.model.setPoolSize(100)
+    val old = Engine.default.getPoolSize
+    Engine.default.setPoolSize(100)
     val param1 = new FP16CompressedTensor(tensor1)
 
     val tensor2 = Tensor[Float](5)
@@ -451,6 +460,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers {
     param1.parAdd(param2.bytes(1, 2), 1, 2)
     param1.deCompress(tensor1)
 
+    Engine.default.setPoolSize(old)
     tensor1 should be(test)
   }
 
