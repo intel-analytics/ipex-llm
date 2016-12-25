@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 object ImageNet2012 {
   def apply(
@@ -33,11 +34,13 @@ object ImageNet2012 {
     nodeNumber: Int,
     coresPerNode: Int,
     classNumber: Int,
-    size: Int
+    size: Int,
+    ds: DataSet[_] = null
   )
   : DataSet[MiniBatch[Float]] = {
     (if (sc.isDefined) {
-      DataSet.SequenceFolder.files(path, sc.get, classNumber, nodeNumber).transform(
+      DataSet.SequenceFolder.files(path, sc.get, classNumber, nodeNumber,
+        ds.toDistributed().originRDD()).transform(
         MTLabeledBGRImgToBatch[Sample](
           width = imageSize,
           height = imageSize,

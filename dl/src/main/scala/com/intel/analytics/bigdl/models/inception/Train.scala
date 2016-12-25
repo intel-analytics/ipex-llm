@@ -62,7 +62,8 @@ object TrainGoogleNetV1 {
         param.nodeNumber,
         param.coreNumber,
         param.classNumber,
-        50000
+        50000,
+        trainSet
       )
 
       val model = if (param.modelSnapshot.isDefined) {
