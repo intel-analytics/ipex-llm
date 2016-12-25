@@ -22,11 +22,9 @@ import java.nio.file.Paths
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToAEBatch, GreyImgToBatch, SampleToGreyImg}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, MSECriterion, Module}
-import com.intel.analytics.bigdl.optim.DataSet
+import com.intel.analytics.bigdl.nn.{MSECriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
-import org.apache.spark.{SparkConf, SparkContext}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
 

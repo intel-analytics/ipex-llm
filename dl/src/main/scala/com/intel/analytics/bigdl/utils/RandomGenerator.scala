@@ -21,8 +21,6 @@ import java.io.{BufferedInputStream, FileInputStream}
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.optim.DropSlowModuleGradAggEpochOptimizer
-
 object RandomGenerator {
   val generators = new ThreadLocal[RandomGenerator]()
 

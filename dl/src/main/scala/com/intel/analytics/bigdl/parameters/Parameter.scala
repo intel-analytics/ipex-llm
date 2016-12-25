@@ -19,24 +19,9 @@ package com.intel.analytics.bigdl.parameters
 
 import java.nio.ByteBuffer
 
-import com.intel.analytics.bigdl.optim.DistributedOptimizer.CachedModel
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Table
-import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
-
-trait ParameterManager[T] extends Serializable {
-
-  def sync(parameters: RDD[Tensor[T]]): RDD[Tensor[T]]
-
-  def sumAndUpdate(parameters: RDD[Tensor[T]],
-    update: (Tensor[T], Tensor[T], Table) => Unit): Unit
-
-  def getParameter(): Tensor[T]
-
-  def getState(): Table
-}
 
 abstract trait CompressedTensor[T] extends Serializable {
 
