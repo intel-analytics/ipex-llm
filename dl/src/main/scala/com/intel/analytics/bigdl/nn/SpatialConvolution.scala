@@ -125,7 +125,7 @@ class SpatialConvolution[T: ClassTag](
     require(outputWidth >= 1 && outputHeight >= 1, "output size is too small")
     if (input.dim() == 3) {
       require(input.size(1) == nInputPlane)
-      require(input.isContiguous())
+      require(input.isContiguous(), "input should be contiguous")
       output.resize(Array(nOutputPlane, outputHeight, outputWidth))
       if (_1x1) {
         fInput.set(input)

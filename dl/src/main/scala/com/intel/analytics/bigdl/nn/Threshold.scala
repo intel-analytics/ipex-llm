@@ -36,7 +36,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
   validateParameters()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.isContiguous())
+    require(input.isContiguous(), "input should be continuous here")
     validateParameters()
 
     val taskSize = input.nElement() / Engine.coreNumber()
