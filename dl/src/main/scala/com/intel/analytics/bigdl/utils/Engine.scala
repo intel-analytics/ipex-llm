@@ -39,6 +39,8 @@ class ThreadPool(private var poolSize: Int) {
 
   import ThreadPool._
 
+  private var mklPoolSize : Option[Int] = None
+
   private var context = spawnThreadPool(poolSize)
 
   private def spawnThreadPool(poolSize: Int): ExecutionContext = {
@@ -73,10 +75,11 @@ class ThreadPool(private var poolSize: Int) {
    */
   def setMKLThread(size: Int): this.type = {
     require(MKL.isMKLLoaded)
+    mklPoolSize = Some(size)
     (1 to poolSize).map(i => Future {
       MKL.setNumThreads(size)
       val tid = Thread.currentThread().getId()
-      logger.info(s"Set mkl threads to 1 on thread $tid")
+      logger.info(s"Set mkl threads to $size on thread $tid")
     }(context)).foreach(Await.result(_, Duration.Inf))
     this
   }
@@ -138,6 +141,9 @@ class ThreadPool(private var poolSize: Int) {
     if (size != poolSize) {
       context = spawnThreadPool(size)
       poolSize = size
+      if(mklPoolSize.isDefined) {
+        this.setMKLThread(mklPoolSize.get)
+      }
     }
     this
   }
@@ -228,7 +234,7 @@ object Engine {
   }
 
   private val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
-    (Runtime.getRuntime().availableProcessors() / 2 * 50).toString).toInt
+    (physicalCoreNumber * 50).toString).toInt
 
   val default: ThreadPool = new ThreadPool(defaultPoolSize)
 
