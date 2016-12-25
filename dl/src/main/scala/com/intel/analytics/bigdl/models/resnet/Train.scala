@@ -85,8 +85,8 @@ object LocalTrain {
         dataset = trainDataSet,
         criterion = new CrossEntropyCriterion[Float]()
       )
-      if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+      if (param.checkpoint.isDefined) {
+        optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
 
       optimizer
@@ -165,7 +165,7 @@ object SparkTrain {
       )
 
       if (param.cache.isDefined) {
-        optimizer.setCache(param.cache.get, Trigger.everyEpoch)
+        optimizer.setCheckpoint(param.cache.get, Trigger.everyEpoch)
       }
       optimizer
         .setValidation(Trigger.everyEpoch,

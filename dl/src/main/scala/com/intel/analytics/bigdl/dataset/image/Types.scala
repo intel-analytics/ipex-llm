@@ -25,15 +25,16 @@ import java.nio.channels.Channels
 import java.nio.file.Path
 import javax.imageio.ImageIO
 
-import com.intel.analytics.bigdl.dataset.{Image, ImageLocalPath, Label}
+import com.intel.analytics.bigdl.dataset.{Image, LocalImagePath, Label}
 
 /**
  * Represent a local file path of a image file with a float label
+ *
  * @param label
  * @param p
  */
-case class LabeledImageLocalPath(var label : Float, p : Path)
-  extends ImageLocalPath(p) with Label[Float] {
+case class LocalLabeledImagePath(var label : Float, p : Path)
+  extends LocalImagePath(p) with Label[Float] {
 
   override def setLabel(label: Float): this.type = {
     this.label = label
@@ -43,6 +44,7 @@ case class LabeledImageLocalPath(var label : Float, p : Path)
 
 /**
  * Represent a grey image
+ *
  * @param data
  * @param _width
  * @param _height
@@ -87,6 +89,7 @@ class GreyImage(
 
 /**
  * A grey image with a float label
+ *
  * @param d
  * @param w
  * @param h
@@ -117,6 +120,7 @@ class LabeledGreyImage(d: Array[Float], w: Int, h: Int,
 
 /**
  * Represent a BGR image
+ *
  * @param data
  * @param _width
  * @param _height

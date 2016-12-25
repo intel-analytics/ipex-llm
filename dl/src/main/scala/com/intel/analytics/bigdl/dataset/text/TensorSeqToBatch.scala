@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.text
 
-import com.intel.analytics.bigdl.dataset.{Batch, Transformer}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.collection.Iterator
@@ -27,17 +27,17 @@ object TensorSeqToBatch {
 }
 
 class TensorSeqToBatch(batchSize: Int = 1)
-  extends Transformer[(Tensor[Float], Tensor[Float]), Batch[Float]] {
+  extends Transformer[(Tensor[Float], Tensor[Float]), MiniBatch[Float]] {
 
-  override def apply(prev: Iterator[(Tensor[Float], Tensor[Float])]): Iterator[Batch[Float]] = {
-    new Iterator[Batch[Float]] {
+  override def apply(prev: Iterator[(Tensor[Float], Tensor[Float])]): Iterator[MiniBatch[Float]] = {
+    new Iterator[MiniBatch[Float]] {
 
       override def hasNext: Boolean = prev.hasNext
 
-      override def next(): Batch[Float] = {
+      override def next(): MiniBatch[Float] = {
         if (prev.hasNext) {
           val data = prev.next()
-          Batch(data._1, data._2)
+          MiniBatch(data._1, data._2)
         } else {
           null
         }

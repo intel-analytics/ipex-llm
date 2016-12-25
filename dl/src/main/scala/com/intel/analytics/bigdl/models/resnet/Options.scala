@@ -22,7 +22,7 @@ import scopt.OptionParser
 object Options {
   case class TrainLocalParams(
   folder: String = "./",
-  cache: Option[String] = None,
+  checkpoint: Option[String] = None,
   modelSnapshot: Option[String] = None,
   stateSnapshot: Option[String] = None,
   optnet: Boolean = false,
@@ -45,7 +45,7 @@ object Options {
       .action((x, c) => c.copy(coreNumber = x))
     opt[String]("cache")
       .text("where to cache the model")
-      .action((x, c) => c.copy(cache = Some(x)))
+      .action((x, c) => c.copy(checkpoint = Some(x)))
     opt[Boolean]("optnet")
       .text("shared gradients and caches to reduce memory usage")
       .action((x, c) => c.copy(optnet = x))

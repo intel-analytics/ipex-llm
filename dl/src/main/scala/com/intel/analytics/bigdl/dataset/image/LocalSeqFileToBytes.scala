@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{Sample, SeqFileLocalPath, Transformer}
+import com.intel.analytics.bigdl.dataset.{Sample, LocalSeqFilePath, Transformer}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.SequenceFile.Reader
 import org.apache.hadoop.io.{SequenceFile, Text}
@@ -28,7 +28,7 @@ object LocalSeqFileToBytes {
   def apply(): LocalSeqFileToBytes = new LocalSeqFileToBytes()
 }
 
-class LocalSeqFileToBytes extends Transformer[SeqFileLocalPath, Sample] {
+class LocalSeqFileToBytes extends Transformer[LocalSeqFilePath, Sample] {
 
   import org.apache.hadoop.fs.{Path => hPath}
 
@@ -45,7 +45,7 @@ class LocalSeqFileToBytes extends Transformer[SeqFileLocalPath, Sample] {
   @transient
   private var oneRecordBuffer: Sample = null
 
-  override def apply(prev: Iterator[SeqFileLocalPath]): Iterator[Sample] = {
+  override def apply(prev: Iterator[LocalSeqFilePath]): Iterator[Sample] = {
     new Iterator[Sample] {
       override def next(): Sample = {
         if (oneRecordBuffer != null) {

@@ -36,7 +36,7 @@ object ImageNet2012 {
     classNumber: Int,
     size: Int
   )
-  : DataSet[Batch[Float]] = {
+  : DataSet[MiniBatch[Float]] = {
     (if (sc.isDefined) {
       DataSet.SequenceFolder.files(path, sc.get, classNumber, nodeNumber).transform(
         MTLabeledBGRImgToBatch[Sample](

@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{Batch, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, LocalDataSet}
 import com.intel.analytics.bigdl.{DataSet => DataSource}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -43,10 +43,10 @@ object LocalOptimizer {
  */
 class LocalOptimizer[T: ClassTag] private[optim](
   model: Module[T],
-  dataset: DataSource[Batch[T]],
+  dataset: DataSource[MiniBatch[T]],
   criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T])
-  extends Optimizer[T, Batch[T]](
+  extends Optimizer[T, MiniBatch[T]](
     model, dataset, criterion) {
 
   import LocalOptimizer._
@@ -173,15 +173,15 @@ class LocalOptimizer[T: ClassTag] private[optim](
   }
 
   private def checkpoint(wallClockTime: Long): Unit = {
-    if (cacheTrigger.isEmpty || cachePath.isEmpty) {
+    if (checkpointTrigger.isEmpty || checkpointPath.isEmpty) {
       return
     }
 
-    val trigger = cacheTrigger.get
-    if (trigger(state) && cachePath.isDefined) {
+    val trigger = checkpointTrigger.get
+    if (trigger(state) && checkpointPath.isDefined) {
       logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to path")
-      saveModel(workingModels.head, cachePath, isOverWrite, s".${state[Int]("neval")}")
-      saveState(state, cachePath, isOverWrite, s".${state[Int]("neval")}")
+      saveModel(workingModels.head, checkpointPath, isOverWrite, s".${state[Int]("neval")}")
+      saveState(state, checkpointPath, isOverWrite, s".${state[Int]("neval")}")
     }
   }
 
@@ -194,7 +194,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
       return
     }
     val vMethods = validationMethods.get
-    val dataIter = validationDataSet.get.asInstanceOf[LocalDataSet[Batch[T]]].data(looped = false)
+    val dataIter = validationDataSet.get.asInstanceOf[LocalDataSet[MiniBatch[T]]].data(looped = false)
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
 
     workingModels.foreach(_.evaluate())

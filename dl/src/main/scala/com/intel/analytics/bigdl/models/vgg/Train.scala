@@ -89,7 +89,7 @@ object Train {
       }) -> BGRImgNormalizer(testMean, testStd) -> BGRImgToBatch(param.batchSize)
 
       if (param.checkpoint.isDefined) {
-        optimizer.setCache(param.checkpoint.get, Trigger.everyEpoch)
+        optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
       optimizer
         .setValidation(Trigger.everyEpoch, validateSet, Array(new Top1Accuracy[Float]))

@@ -95,7 +95,7 @@ object Train {
         criterion = new ClassNLLCriterion[Float]()
       )
       if (param.checkpoint.isDefined) {
-        optimizer.setCache(param.checkpoint.get, Trigger.everyEpoch)
+        optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
       optimizer
         .setState(state)

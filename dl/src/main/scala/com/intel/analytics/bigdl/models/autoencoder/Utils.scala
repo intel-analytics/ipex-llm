@@ -30,7 +30,7 @@ object Utils {
 
   case class TrainParams(
     folder: String = "./",
-    cache: Option[String] = None,
+    checkpoint: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
     batchSize: Int = 150,
@@ -57,7 +57,7 @@ object Utils {
 
     opt[String]("cache")
       .text("where to cache the model")
-      .action((x, c) => c.copy(cache = Some(x)))
+      .action((x, c) => c.copy(checkpoint = Some(x)))
 
     opt[Double]('r', "learningRate")
       .text("learning rate")
@@ -74,7 +74,7 @@ object Utils {
 
   case class TrainSparkParams(
     folder: String = "./",
-    cache: Option[String] = None,
+    checkpoint: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
     coreNumberPerNode: Int = -1,
@@ -94,7 +94,7 @@ object Utils {
       .action((x, c) => c.copy(stateSnapshot = Some(x)))
     opt[String]("cache")
       .text("where to cache the model")
-      .action((x, c) => c.copy(cache = Some(x)))
+      .action((x, c) => c.copy(checkpoint = Some(x)))
     opt[Int]('c', "core")
       .text("cores number on each node")
       .action((x, c) => c.copy(coreNumberPerNode = x))
