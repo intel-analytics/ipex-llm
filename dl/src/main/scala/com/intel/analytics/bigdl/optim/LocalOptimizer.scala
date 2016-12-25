@@ -42,7 +42,7 @@ object LocalOptimizer {
  */
 class LocalOptimizer[T: ClassTag] private[optim](
   model: Module[T],
-  dataset: DataSet[MiniBatch[T]],
+  dataset: LocalDataSet[MiniBatch[T]],
   criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
@@ -84,7 +84,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     dataset.shuffle()
-    var iter = dataset.toLocal().data(train = true)
+    var iter = dataset.data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     while (!endWhen(state)) {
       val start = System.nanoTime()

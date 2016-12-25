@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.MiniBatch
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.optim.DistriValidator._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
@@ -32,12 +32,12 @@ object DistriValidator {
 
 class DistriValidator[T] private[optim](
   model: Module[T],
-  dataSet: DataSet[MiniBatch[T]]
+  dataSet: DistributedDataSet[MiniBatch[T]]
 ) extends Validator[T, MiniBatch[T]](model, dataSet) {
 
   override def test(vMethods: Array[ValidationMethod[T]])
   : Array[(ValidationResult, ValidationMethod[T])] = {
-    val rdd = dataSet.toDistributed().data(train = false)
+    val rdd = dataSet.data(train = false)
     val broadcastModel = rdd.sparkContext.broadcast(model.evaluate())
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => Engine.coreNumber()

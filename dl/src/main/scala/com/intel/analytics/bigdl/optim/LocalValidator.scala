@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.MiniBatch
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.DistriOptimizer._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -28,7 +28,7 @@ object LocalValidator {
   val logger = Logger.getLogger(getClass)
 }
 
-class LocalValidator[T] private[optim](model: Module[T], dataSet: DataSet[MiniBatch[T]])
+class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[MiniBatch[T]])
   extends Validator[T, MiniBatch[T]](model, dataSet) {
 
   private val coreNumber = Engine.coreNumber()
@@ -42,7 +42,7 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: DataSet[MiniBa
 
   override def test(vMethods: Array[ValidationMethod[T]])
   : Array[(ValidationResult, ValidationMethod[T])] = {
-    val dataIter = dataSet.toLocal() data (train = false)
+    val dataIter = dataSet.data (train = false)
     var count = 0
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     dataIter.map(batch => {
