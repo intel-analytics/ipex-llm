@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.models.autoencoder
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Path}
 
-import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.dataset.ByteRecord
 
 import scopt.OptionParser
 
@@ -112,7 +112,7 @@ object Utils {
   )
 
 
-  private[bigdl] def load(featureFile: Path, labelFile: Path): Array[Sample] = {
+  private[bigdl] def load(featureFile: Path, labelFile: Path): Array[ByteRecord] = {
     val labelBuffer = ByteBuffer.wrap(Files.readAllBytes(labelFile))
     val featureBuffer = ByteBuffer.wrap(Files.readAllBytes(featureFile))
     val labelMagicNumber = labelBuffer.getInt()
@@ -128,7 +128,7 @@ object Utils {
     val rowNum = featureBuffer.getInt()
     val colNum = featureBuffer.getInt()
 
-    val result = new Array[Sample](featureCount)
+    val result = new Array[ByteRecord](featureCount)
     var i = 0
     while (i < featureCount) {
       val img = new Array[Byte]((rowNum * colNum))
@@ -141,7 +141,7 @@ object Utils {
         }
         y += 1
       }
-      result(i) = Sample(img, labelBuffer.get().toFloat + 1.0f)
+      result(i) = ByteRecord(img, labelBuffer.get().toFloat + 1.0f)
       i += 1
     }
 

@@ -296,17 +296,17 @@ object DataSet {
       val buffer = paths.map(imageFile => {
         logger.info(s"Cache image $count/$total")
         count += 1
-        Sample(BGRImage.readImage(imageFile.path, scaleTo), imageFile.label)
+        ByteRecord(BGRImage.readImage(imageFile.path, scaleTo), imageFile.label)
       })
-      new LocalArrayDataSet[Sample](buffer) -> SampleToBGRImg()
+      new LocalArrayDataSet[ByteRecord](buffer) -> SampleToBGRImg()
     }
 
     def images(path: Path, sc: SparkContext, partitionNum: Int, scaleTo: Int)
     : DataSet[LabeledBGRImage] = {
       val paths = LocalImageFiles.readPaths(path)
-      val buffer: Array[Sample] = {
+      val buffer: Array[ByteRecord] = {
         paths.map(imageFile => {
-          Sample(BGRImage.readImage(imageFile.path, scaleTo), imageFile.label)
+          ByteRecord(BGRImage.readImage(imageFile.path, scaleTo), imageFile.label)
         })
       }
       array(buffer, sc, partitionNum) -> SampleToBGRImg()
@@ -328,12 +328,12 @@ object DataSet {
     }
 
     def files(url: String, sc: SparkContext, classNum: Int,
-      partitionNum: Int, otherRDD: RDD[_] = null): DistributedDataSet[Sample] = {
+      partitionNum: Int, otherRDD: RDD[_] = null): DistributedDataSet[ByteRecord] = {
       val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text]).map(image => {
-        Sample(image._2.copyBytes(), image._1.toString.toFloat)
+        ByteRecord(image._2.copyBytes(), image._1.toString.toFloat)
       }).filter(_.label < classNum)
 
-      rdd[Sample](rawData, partitionNum, otherRDD)
+      rdd[ByteRecord](rawData, partitionNum, otherRDD)
     }
 
     private[bigdl] def findFiles(path: Path): Array[LocalSeqFilePath] = {

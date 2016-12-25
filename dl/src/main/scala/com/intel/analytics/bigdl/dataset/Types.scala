@@ -58,4 +58,4 @@ trait Label[T] {
 
 case class MiniBatch[T](data: Tensor[T], labels: Tensor[T])
 
-case class Sample(data: Array[Byte], label: Float)
+case class ByteRecord(data: Array[Byte], label: Float)
