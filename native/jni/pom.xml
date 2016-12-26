@@ -50,7 +50,7 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>com.intel.analytics.bigdl.native</groupId>
-                                    <artifactId>mkl-native_0.1</artifactId>
+                                    <artifactId>mkl-native</artifactId>
                                     <version>${pom.version}</version>
                                     <type>so</type>
                                     <overWrite>false</overWrite>
