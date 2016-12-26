@@ -41,7 +41,7 @@
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl.native</groupId>
-            <artifactId>mkl-java_0.1</artifactId>
+            <artifactId>mkl-java</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
