@@ -40,7 +40,6 @@ object Train {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      val maxEpoch = 10
 
       val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark").map(conf => {
         conf.setAppName("Train Autoencoder on MNIST")
@@ -90,7 +89,7 @@ object Train {
       optimizer
         .setState(state)
         .setOptimMethod(new Adagrad[Float]())
-        .setEndWhen(Trigger.maxEpoch(maxEpoch))
+        .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
     })
   }

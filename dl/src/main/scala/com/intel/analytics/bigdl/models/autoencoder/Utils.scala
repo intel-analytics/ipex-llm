@@ -36,6 +36,7 @@ object Utils {
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
     batchSize: Int = 150,
+    maxEpoch: Int = 10,
     env: String = "local"
   )
 
@@ -63,6 +64,9 @@ object Utils {
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
+    opt[Int]('b', "maxEpoch")
+      .text("max epoch")
+      .action((x, c) => c.copy(maxEpoch = x))
     opt[String]("env")
       .text("execution environment")
       .validate(x => {
