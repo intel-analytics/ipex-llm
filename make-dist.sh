@@ -67,4 +67,4 @@ cp $BASEDIR/scripts/bigdl.sh $BIN_DIR/
 
 mvn clean package -DskipTests $*
 cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies.jar $LIB_DIR/
-cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies-all-in-one.jar $LIB_DIR/
+cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies-and-spark.jar $LIB_DIR/
