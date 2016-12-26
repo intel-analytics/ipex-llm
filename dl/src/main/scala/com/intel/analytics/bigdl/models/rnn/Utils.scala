@@ -17,11 +17,6 @@
 
 package com.intel.analytics.bigdl.models.rnn
 
-import java.io._
-
-import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.LogSoftMax
-import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.spark.sql.SQLContext
 import scopt.OptionParser
 import org.apache.spark.SparkContext
@@ -35,7 +30,7 @@ import scala.util.Random
 object Utils {
   case class TrainParams(
     folder: String =
-      "/home/ywan/Documents/data/shakespeare/spark",
+      "./",
     cache: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
@@ -46,7 +41,7 @@ object Utils {
 
   val trainParser = new OptionParser[TrainParams]("BigDL SimpleRNN Train Example") {
     opt[String]('f', "folder")
-      .text("where you put the MNIST data")
+      .text("where you put the text data")
       .action((x, c) => c.copy(folder = x))
 
     opt[String]("model")
