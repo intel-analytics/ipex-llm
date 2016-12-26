@@ -114,7 +114,7 @@ class Concat[T: ClassTag](val dimension: Int)(
       if (currentGradInput != null) {
         if (i == 0) {
           require(this.gradInput.isContiguous(), "gradInput should be contiguous here")
-          eequire(currentGradInput.isContiguous(), "currentGradInput should be contiguous here")
+          require(currentGradInput.isContiguous(), "currentGradInput should be contiguous here")
           this.gradInput.copy(currentGradInput)
         } else {
           this.gradInput.add(currentGradInput)
