@@ -49,7 +49,7 @@ object Module {
     var length = 0
     while (i < parameters.length) {
       require(parameters(i).isContiguous(),
-        s"parameters($i) should be contiguous here")
+        s"parameters should be contiguous here")
       length += parameters(i).nElement()
       i += 1
     }
