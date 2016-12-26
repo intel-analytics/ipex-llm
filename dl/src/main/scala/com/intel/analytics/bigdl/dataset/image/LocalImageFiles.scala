@@ -27,9 +27,9 @@ import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 
 object LocalImageFiles {
-  Class.forName("javax.imageio.ImageIO")
-  Class.forName("java.awt.color.ICC_ColorSpace")
-  Class.forName("sun.java2d.cmm.lcms.LCMS")
+  // Class.forName("javax.imageio.ImageIO")
+  // Class.forName("java.awt.color.ICC_ColorSpace")
+  // Class.forName("sun.java2d.cmm.lcms.LCMS")
   ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
   val logger = Logger.getLogger(getClass)
