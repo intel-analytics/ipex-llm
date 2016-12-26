@@ -33,56 +33,13 @@ object Utils {
     checkpoint: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
+    coreNumber: Int = -1,
+    nodeNumber: Int = -1,
     batchSize: Int = 150,
-    learningRate: Double = 0.05,
-    maxEpoch: Int = 10,
-    coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
+    env: String = "local"
   )
 
-  val trainParser = new OptionParser[TrainParams]("BigDL Autoencoder Train Example") {
-    opt[String]('f', "folder")
-      .text("where you put the MNIST data")
-      .action((x, c) => c.copy(folder = x))
-
-    opt[Int]('b', "batchSize")
-      .text("batch size")
-      .action((x, c) => c.copy(batchSize = x))
-
-    opt[String]("model")
-      .text("model snapshot location")
-      .action((x, c) => c.copy(modelSnapshot = Some(x)))
-    opt[String]("state")
-      .text("state snapshot location")
-      .action((x, c) => c.copy(stateSnapshot = Some(x)))
-
-    opt[String]("cache")
-      .text("where to cache the model")
-      .action((x, c) => c.copy(checkpoint = Some(x)))
-
-    opt[Double]('r', "learningRate")
-      .text("learning rate")
-      .action((x, c) => c.copy(learningRate = x))
-
-    opt[Int]('e', "maxEpoch")
-      .text("epoch numbers")
-      .action((x, c) => c.copy(maxEpoch = x))
-
-    opt[Int]('c', "core")
-      .text("cores number to train the model")
-      .action((x, c) => c.copy(coreNumber = x))
-  }
-
-  case class TrainSparkParams(
-    folder: String = "./",
-    checkpoint: Option[String] = None,
-    modelSnapshot: Option[String] = None,
-    stateSnapshot: Option[String] = None,
-    coreNumberPerNode: Int = -1,
-    nodesNumber: Int = -1
-  )
-
-  val trainSparkParser = new OptionParser[TrainSparkParams]("BigDL Autoencoder Train on MNIST") {
-    head("Train Autoencoder model on Apache Spark")
+  val trainParser = new OptionParser[TrainParams]("BigDL Autoencoder on MNIST") {
     opt[String]('f', "folder")
       .text("where you put the MNIST data")
       .action((x, c) => c.copy(folder = x))
@@ -92,25 +49,32 @@ object Utils {
     opt[String]("state")
       .text("state snapshot location")
       .action((x, c) => c.copy(stateSnapshot = Some(x)))
-    opt[String]("cache")
-      .text("where to cache the model")
+    opt[String]("checkpoint")
+      .text("where to cache the model and state")
       .action((x, c) => c.copy(checkpoint = Some(x)))
     opt[Int]('c', "core")
       .text("cores number on each node")
-      .action((x, c) => c.copy(coreNumberPerNode = x))
+      .action((x, c) => c.copy(coreNumber = x))
       .required()
-    opt[Int]('n', "nodeNumber")
-      .text("nodes number to train the model")
-      .action((x, c) => c.copy(nodesNumber = x))
+    opt[Int]('n', "node")
+      .text("node number to train the model")
+      .action((x, c) => c.copy(nodeNumber = x))
+      .required()
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = x))
+    opt[String]("env")
+      .text("execution environment")
+      .validate(x => {
+        if (Set("local", "spark").contains(x.toLowerCase)) {
+          success
+        } else {
+          failure("env only support local|spark")
+        }
+      })
+      .action((x, c) => c.copy(env = x.toLowerCase()))
       .required()
   }
-
-  case class TestParams(
-    folder: String = "./",
-    model: String = "",
-    coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2)
-  )
-
 
   private[bigdl] def load(featureFile: Path, labelFile: Path): Array[ByteRecord] = {
     val labelBuffer = ByteBuffer.wrap(Files.readAllBytes(labelFile))

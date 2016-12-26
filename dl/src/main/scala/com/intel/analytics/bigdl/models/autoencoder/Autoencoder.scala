@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.utils.T
 
 import scala.reflect.ClassTag
 
-object AE {
+object Autoencoder {
   val rowN = 28
   val colN = 28
   val featureSize = rowN * colN
