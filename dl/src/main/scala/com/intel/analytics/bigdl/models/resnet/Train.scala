@@ -40,7 +40,7 @@ object LocalTrain {
   def main(args: Array[String]): Unit = {
     trainLocalParser.parse(args, new TrainLocalParams()).map(param => {
 
-      val batchSize = 32
+      val batchSize = param.batchSize
       val (imageSize, lrSchedule, maxEpoch, dataSet) = param.dataset match {
         // case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
         case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
@@ -57,9 +57,9 @@ object LocalTrain {
       } else {
         val curModel = param.dataset match {
         case "imagenet" =>
-          ResNet(classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
+          ResNet(classNum = 1000, T("shortcutType" -> ShortcutType.B, "depth" -> param.depth))
         case _ =>
-          ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
+          ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> param.depth))
         }
         ResNet.shareGradInput(curModel)
         ResNet.modelInit(curModel)
@@ -115,7 +115,7 @@ object SparkTrain {
       val conf = Engine.init(param.nodesNumber, param.coreNumberPerNode, true).get
         .setAppName("Train ResNet on Cifar10")
         .set("spark.akka.frameSize", 64.toString)
-      val batchSize = 128
+      val batchSize = param.batchSize
       val (imageSize, lrSchedule, maxEpoch, dataSet) = param.dataset match {
         // case "imagenet" => (224, DatasetType.ImageNet, 90, ImagenetDataSet)
         case _ => (32, DatasetType.CIFAR10, 165, Cifar10DataSet)
@@ -135,9 +135,9 @@ object SparkTrain {
       } else {
         val curModel = param.dataset match {
           case "imagenet" =>
-            ResNet(classNum = 100, T("shortcutType" -> ShortcutType.B, "depth" -> 18))
+            ResNet(classNum = 1000, T("shortcutType" -> ShortcutType.B, "depth" -> param.depth))
           case _ =>
-            ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> 20))
+            ResNet(classNum = 10, T("shortcutType" -> ShortcutType.A, "depth" -> param.depth))
         }
         ResNet.shareGradInput(curModel)
         ResNet.modelInit(curModel)

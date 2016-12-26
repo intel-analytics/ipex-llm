@@ -27,12 +27,14 @@ object Options {
   stateSnapshot: Option[String] = None,
   optnet: Boolean = false,
   dataset: String = "",
+  depth: Int = 18,
+  batchSize: Int = 128,
   coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2))
 
   val trainLocalParser = new OptionParser[TrainLocalParams]("BigDL ResNet Example") {
     head("Train ResNet model on single node")
     opt[String]('f', "folder")
-      .text("where you put your local hadoop sequence files")
+      .text("where you put your training files")
       .action((x, c) => c.copy(folder = x))
     opt[String]("model")
       .text("model snapshot location")
@@ -52,6 +54,12 @@ object Options {
     opt[String]("dataset")
       .text("datasets: imagenet | cifar-10")
       .action((x, c) => c.copy(dataset = x))
+    opt[Int]("depth")
+      .text("depth of ResNet, 18 | 20 | 34 | 50 | 101 | 152 | 200")
+      .action((x, c) => c.copy(depth = x))
+    opt[Int]("batchSize")
+      .text("batchSize of ResNet, 64 | 128 | 256 | .. ")
+      .action((x, c) => c.copy(batchSize = x))
   }
 
   case class TrainSparkParams(
@@ -63,6 +71,8 @@ object Options {
      nodesNumber: Int = -1,
      optnet: Boolean = false,
      dataset: String = "",
+     depth: Int = 18,
+     batchSize: Int = 128,
      coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2))
 
   val trainSparkParser = new OptionParser[TrainSparkParams]("BigDL ResNet Example") {
@@ -93,6 +103,12 @@ object Options {
     opt[String]("dataset")
       .text("datasets: imagenet | cifar-10")
       .action((x, c) => c.copy(dataset = x))
+    opt[Int]("depth")
+      .text("depth of ResNet, 18 | 20 | 34 | 50 | 101 | 152 | 200")
+      .action((x, c) => c.copy(depth = x))
+    opt[Int]("batchSize")
+      .text("batchSize of ResNet, 64 | 128 | 256 | .. ")
+      .action((x, c) => c.copy(batchSize = x))
   }
 
 }
