@@ -157,7 +157,7 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <descriptors>
-                        <descriptor>/src/main/resources/assemblies/all-in-one.xml</descriptor>
+                        <descriptor>${project.basedir}/src/assembly/all-in-one.xml</descriptor>
                     </descriptors>
                 </configuration>
                 <executions>
