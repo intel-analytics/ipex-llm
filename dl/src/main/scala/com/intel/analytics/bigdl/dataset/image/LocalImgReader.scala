@@ -26,7 +26,7 @@ import scala.collection.Iterator
 object LocalImgReader {
   Class.forName("javax.imageio.ImageIO")
   Class.forName("java.awt.color.ICC_ColorSpace")
-  Class.forName("sun.java2d.cmm.lcms.LCMS")
+  // Class.forName("sun.java2d.cmm.lcms.LCMS")
   ColorSpace.getInstance(ColorSpace.CS_sRGB).toRGB(Array[Float](0, 0, 0))
 
   def apply(scaleTo: Int = BGRImage.NO_SCALE, normalize: Float = 255f)
