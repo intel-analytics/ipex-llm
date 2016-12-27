@@ -47,6 +47,7 @@ object MTLabeledBGRImgToBatch {
 class MTLabeledBGRImgToBatch[A: ClassTag] private[bigdl](width: Int, height: Int,
   totalBatchSize: Int, transformer: Transformer[A, LabeledBGRImage], toRGB: Boolean = true)
   extends Transformer[A, MiniBatch[Float]] {
+
   private val batchSize = Utils.getBatchSize(totalBatchSize)
 
   private def getPosition(count: AtomicInteger): Int = {
