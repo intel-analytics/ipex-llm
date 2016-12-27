@@ -37,10 +37,7 @@ object Utils {
     vocabSize: Int = 4000,
     bptt: Int = 4,
     nEpochs: Int = 30,
-    coreNumber: Int = -1,
-    nodeNumber: Int = -1,
-    batchSize: Int = 128,
-    env: String = "local")
+    coreNumber: Int = -1)
 
   val trainParser = new OptionParser[TrainParams]("BigDL SimpleRNN Train Example") {
     opt[String]('f', "folder")
@@ -98,25 +95,6 @@ object Utils {
       .text("cores number to train the model")
       .action((x, c) => c.copy(coreNumber = x))
       .required()
-
-    opt[Int]('n', "node")
-      .text("node number to train the model")
-      .action((x, c) => c.copy(nodeNumber = x))
-
-    opt[Int]('b', "batchSize")
-      .text("batch size")
-      .action((x, c) => c.copy(batchSize = x))
-
-    opt[String]("env")
-      .text("execution environment")
-      .validate(x => {
-        if (Set("local", "spark").contains(x.toLowerCase)) {
-          success
-        } else {
-          failure("env only support local|spark")
-        }
-      })
-      .action((x, c) => c.copy(env = x.toLowerCase()))
   }
 
   class WordTokenizer(
