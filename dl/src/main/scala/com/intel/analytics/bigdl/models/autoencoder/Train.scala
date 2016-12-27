@@ -29,11 +29,11 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
-object toAE {
-  def apply(): toAE[Float] = new toAE[Float]()
+object toAutoencoderBatch {
+  def apply(): toAutoencoderBatch[Float] = new toAutoencoderBatch[Float]()
 }
 
-class toAE[T] extends Transformer[MiniBatch[T], MiniBatch[T]] {
+class toAutoencoderBatch[T] extends Transformer[MiniBatch[T], MiniBatch[T]] {
   override def apply(prev: Iterator[MiniBatch[T]]): Iterator[MiniBatch[T]] = {
     prev.map(batch => {
       MiniBatch(batch.data, batch.data)
