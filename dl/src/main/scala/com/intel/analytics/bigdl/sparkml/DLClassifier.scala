@@ -87,7 +87,7 @@ object DLClassifier{
           tensorBuffer.select(1, i).copy(
               Tensor(Storage(row.getAs[DenseVector](inputCol).toArray.map(ev.fromType(_)))))
         }
-        val output = localModel.forward(tensorBuffer).toTensor[T]
+        val output = localModel.forward(tensorBuffer).toTensor[T]git r
         val predict = if (output.dim == 2) {
           output.max(2)._2.squeeze().storage().array()
         } else if (output.dim == 1) {
