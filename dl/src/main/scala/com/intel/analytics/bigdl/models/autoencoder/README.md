@@ -20,3 +20,4 @@ You can download them at [MNIST](http://yann.lecun.com/exdb/mnist/) and put them
 ## Train on Local:
 
 `java -cp bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.autoencoder.Train --core 1 -node 1 --env local`
+
