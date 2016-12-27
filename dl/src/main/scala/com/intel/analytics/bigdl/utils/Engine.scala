@@ -57,11 +57,6 @@ class ThreadPool(private var poolSize: Int) {
           override def newThread(r: Runnable): Thread = {
             val t = Executors.defaultThreadFactory().newThread(r)
             t.setDaemon(true)
-            t.setUncaughtExceptionHandler(new UncaughtExceptionHandler() {
-              override def uncaughtException(thread: Thread, throwable: Throwable): Unit = {
-                logger.error("Error: " + ExceptionUtils.getStackTrace(throwable))
-              }
-            })
             t
           }
         })
@@ -104,8 +99,16 @@ class ThreadPool(private var poolSize: Int) {
    */
   def invokeAndWait[T](tasks: Seq[() => T], timeout: Duration = Duration.Inf): Seq[T] = {
     tasks.map(task => Future {
-      task()
-    }(context)).map(future => Await.result(future, timeout))
+      try {
+        task()
+      } catch {
+        case t : Throwable =>
+            logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+            throw t
+      }
+    }(context)).map(future => {
+      Await.result(future, timeout)
+    })
   }
 
   def invokeAndWait2[T](tasks: Seq[() => T], timeout: Long = Long.MaxValue,
@@ -134,7 +137,13 @@ class ThreadPool(private var poolSize: Int) {
    */
   def invoke[T](tasks: Seq[() => T]): Seq[Future[T]] = {
     tasks.map(task => Future {
-      task()
+      try {
+        task()
+      } catch {
+        case t : Throwable =>
+          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+          throw t
+      }
     }(context))
   }
 
