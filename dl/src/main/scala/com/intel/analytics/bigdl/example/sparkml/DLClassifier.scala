@@ -16,39 +16,33 @@
  */
 package com.intel.analytics.bigdl.example.sparkml
 
-import java.nio.file.Paths
-
-import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToBatch, SampleToGreyImg}
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
-import com.intel.analytics.bigdl.example.sparkml.MlUtils.{PredictParams, predictParser}
-import com.intel.analytics.bigdl.models.lenet.Utils._
+import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset.image.{BGRImgNormalizer, BGRImgToLabeledPoint, SampleToBGRImg}
+import com.intel.analytics.bigdl.example.sparkml.MlUtils._
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.DLClassifier
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.sql.{DataFrame, SQLContext}
-
-import scala.collection.mutable.ArrayBuffer
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{Row, SQLContext}
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 /**
- * An example to show how to use DLClassifier Transform, and the test data is mnist
+ * An example to show how to use DLClassifier Transform, and the test data is cifar10
  */
 object DLClassifier {
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+  Logger.getLogger("com.intel.analytics.bigdl.example").setLevel(Level.INFO)
 
   def main(args: Array[String]): Unit = {
-    val batchSize = 10
-
     predictParser.parse(args, new PredictParams()).map(param => {
       val scc = Engine.init(param.nodeNumber, param.coreNumber, true).map(conf => {
-        conf.setAppName("Predict MNIST with trained model")
+        conf.setAppName("Predict with trained model")
           .set("spark.akka.frameSize", 64.toString)
           .set("spark.task.maxFailures", "1")
         new SparkContext(conf)
@@ -56,45 +50,31 @@ object DLClassifier {
 
       val sc = scc.get
       val sqlContext = new SQLContext(sc)
-
       val model = Module.load[Float](param.model)
-      val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
-      val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
 
-      val validationSet = DataSet.array(load(validationData, validationLabel))
-        .transform(SampleToGreyImg(28, 28))
-      val normalizerVal = GreyImgNormalizer(validationSet)
-      val valSet = validationSet.transform(normalizerVal)
-        .transform(GreyImgToBatch(batchSize))
-      val valData = valSet.data(train = false).asInstanceOf[Iterator[MiniBatch[Float]]]
+      val valTrans = new DLClassifier()
+        .setInputCol("features")
+        .setOutputCol("predict")
 
-      // init
-      val valTrans = new DLClassifier[Float]().setInputCol("features").setOutputCol("predict")
-      val paramsTrans = ParamMap(valTrans.modelTrain -> model,
-        valTrans.batchSize -> Array(10, 28, 28))
-      val tensorBuffer = new ArrayBuffer[LabeledPoint]()
-      var res: DataFrame = null
+      val paramsTrans = ParamMap(
+        valTrans.modelTrain -> model,
+        valTrans.batchSize ->
+        Array(param.batchSize, 3, imageSize, imageSize))
 
-      while (valData.hasNext) {
-        val batch = valData.next()
+      val valSet = DataSet.SeqFileFolder.
+        files(param.folder, sc, param.classNum, param.nodeNumber, null) ->
+        SampleToBGRImg(imageSize) ->
+        BGRImgNormalizer(testMean, testStd) ->
+        BGRImgToLabeledPoint()
 
-        val input = batch.data.storage().array()
-        val target = batch.labels.storage().array()
-
-        var i = 0
-        while (i < batchSize) {
-          tensorBuffer.append(new LabeledPoint(target(i),
-            new DenseVector(input.slice(i * 28 * 28, (i + 1 ) * 28 * 28).map(_.toDouble))))
-          i += 1
+      val rowRDD = valSet.data(train = false).asInstanceOf[RDD[LabeledPoint]]
+      val testData = sqlContext.createDataFrame(rowRDD)
+      valTrans.transform(testData, paramsTrans)
+        .select("label", "predict")
+        .collect()
+        .foreach { case Row(label: Double, predict: Int) =>
+          println(label + " " + predict)
         }
-
-        val rowRDD = sc.parallelize(tensorBuffer)
-        val testData = sqlContext.createDataFrame(rowRDD)
-        res = valTrans.transform(testData, paramsTrans)
-        res.select("label", "predict").show()
-
-        tensorBuffer.clear()
-      }
       sc.stop()
     })
   }
