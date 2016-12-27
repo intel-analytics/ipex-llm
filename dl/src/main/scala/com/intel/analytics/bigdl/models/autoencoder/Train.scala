@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.models.autoencoder
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.dataset.{DataSet, image}
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Transformer, image}
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.nn.{MSECriterion, Module}
 import com.intel.analytics.bigdl._
@@ -29,6 +29,17 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
+object toAE {
+  def apply(): toAE[Float] = new toAE[Float]()
+}
+
+class toAE[T] extends Transformer[MiniBatch[T], MiniBatch[T]] {
+  override def apply(prev: Iterator[MiniBatch[T]]): Iterator[MiniBatch[T]] = {
+    prev.map(batch => {
+      MiniBatch(batch.data, batch.data)
+    })
+  }
+}
 
 object Train {
   Logger.getLogger("org").setLevel(Level.ERROR)
@@ -48,17 +59,15 @@ object Train {
         new SparkContext(conf)
       })
 
-      val trainData = Paths.get(param.folder, "/train-images.idx3-ubyte")
-      val trainLabel = Paths.get(param.folder, "/train-labels.idx1-ubyte")
+      val trainData = Paths.get(param.folder, "/train-images-idx3-ubyte")
+      val trainLabel = Paths.get(param.folder, "/train-labels-idx1-ubyte")
 
       val trainDataSet = (if (sc.isDefined) {
         DataSet.array(load(trainData, trainLabel), sc.get, param.nodeNumber)
       } else {
         DataSet.array(load(trainData, trainLabel))
-      })
-        .transform(SampleToGreyImg(28, 28))
-        .transform(GreyImgNormalizer(trainMean, trainStd))
-        .transform(GreyImgToAEBatch(param.batchSize))
+      }) -> SampleToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
+        param.batchSize) -> toAE()
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
