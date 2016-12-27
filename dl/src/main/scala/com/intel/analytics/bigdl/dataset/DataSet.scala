@@ -333,7 +333,7 @@ object DataSet {
       partitionNum: Int, otherRDD: RDD[_] = null): DistributedDataSet[ByteRecord] = {
       val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text]).map(image => {
         ByteRecord(image._2.copyBytes(), image._1.toString.toFloat)
-      }).filter(_.label < classNum)
+      }).filter(_.label <= classNum)
 
       rdd[ByteRecord](rawData, partitionNum, otherRDD)
     }

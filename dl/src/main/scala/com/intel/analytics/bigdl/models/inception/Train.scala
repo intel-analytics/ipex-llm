@@ -69,7 +69,7 @@ object TrainInceptionV1 {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        Inception_v1(classNum = param.classNumber)
+        Inception_v1_NoAuxClassifier(classNum = param.classNumber)
       }
 
       val state = if (param.stateSnapshot.isDefined) {
