@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.classifier
+package com.intel.analytics.bigdl.example.ImageClassification
 
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.models.alexnet.AlexNet
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{LocalValidator, Top1Accuracy, Top5Accuracy, Validator}
+import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.Logger
 import scopt.OptionParser
@@ -44,17 +44,17 @@ object ImageClassifier {
     folder: String = "./",
     modelType: ModelType = null,
     modelName: String = "",
-    caffeDefPath: String = "",
+    caffeDefPath: Option[String] = None,
     modelPath: String = "",
     batchSize: Int = 32,
     meanFile: Option[String] = None,
     coreNumber: Int = Runtime.getRuntime().availableProcessors() / 2
   )
 
-  val testLocalParser = new OptionParser[TestLocalParams]("BigDL LoadCaffe Example") {
-    head("LoadCaffe example")
+  val testLocalParser = new OptionParser[TestLocalParams]("BigDL Image Classifier Example") {
+    head("BigDL Image Classifier Example")
     opt[String]('f', "folder")
-      .text("where you put your local hadoop sequence files")
+      .text("where you put your local image files")
       .action((x, c) => c.copy(folder = x))
     opt[String]('m', "modelName")
       .text("the model name you want to test")
@@ -74,18 +74,18 @@ object ImageClassifier {
       )
     opt[String]("caffeDefPath")
       .text("caffe define path")
-      .action((x, c) => c.copy(caffeDefPath = x))
+      .action((x, c) => c.copy(caffeDefPath = Some(x)))
     opt[String]("modelPath")
       .text("model path")
       .action((x, c) => c.copy(modelPath = x))
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
-    opt[String]('m', "meanFile")
+    opt[String]("meanFile")
       .text("mean file")
       .action((x, c) => c.copy(meanFile = Some(x)))
     opt[Int]('c', "core")
-      .text("cores number to train the model")
+      .text("cores number to test the model")
       .action((x, c) => c.copy(coreNumber = x))
   }
 
@@ -93,30 +93,25 @@ object ImageClassifier {
     testLocalParser.parse(args, TestLocalParams()).foreach(param => {
       Engine.setCoreNumber(param.coreNumber)
       val valPath = Paths.get(param.folder, "val")
-      val imageSize = param.modelName match {
-        case "alexnet" => 227
-        case "googlenet" => 224
-        case "resnet" => 224
-      }
 
       val (model, validateDataSet) = param.modelType match {
         case CaffeModel =>
           param.modelName match {
             case "alexnet" =>
               (Module.loadCaffe[Float](AlexNet(1000),
-                param.caffeDefPath, param.modelPath),
-                AlexNetPreprocessor(valPath, imageSize, param.batchSize, param.meanFile.get))
+                param.caffeDefPath.get, param.modelPath),
+                AlexNetPreprocessor(valPath, param.batchSize, param.meanFile.get))
             case "googlenet" =>
               (Module.loadCaffe[Float](Inception_v1_NoAuxClassifier(1000),
-                param.caffeDefPath, param.modelPath),
-                GoogleNetPreprocessor(valPath, imageSize, param.batchSize))
+                param.caffeDefPath.get, param.modelPath),
+                InceptionPreprocessor(valPath, param.batchSize))
           }
 
         case TorchModel =>
           param.modelName match {
             case "resnet" =>
               (Module.loadTorch[Float](param.modelPath),
-                ResNetPreprocessor(valPath, imageSize, param.batchSize))
+                ResNetPreprocessor(valPath, param.batchSize))
           }
 
         case _ => throw new IllegalArgumentException(s"${param.modelType}")
