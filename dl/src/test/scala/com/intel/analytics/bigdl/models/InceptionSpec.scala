@@ -30,8 +30,8 @@ import scala.collection.mutable.HashMap
 import scala.math._
 import scala.util.Random
 
-class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  "GoogleNet+bn" should "generate correct output" in {
+class InceptionSpec extends FlatSpec with BeforeAndAfter with Matchers {
+  "Inception+bn" should "generate correct output" in {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -165,7 +165,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
       "parameters_initial", "gradParameters_initial", "gradParameters", "parameters", "model2"))
 
-    val model = GoogleNet.getModel[Double](1000, "googlenet-bn")
+    val model = Inception.getModel[Double](1000, "inception-bn")
 
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     println(s"model size: ${parameters.nElement()}")
@@ -214,7 +214,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     grad should be equals gradParametersTorch
   }
 
-  "GoogleNet" should "generate correct output" in {
+  "Inception" should "generate correct output" in {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -225,7 +225,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val seed = 100
     RNG.setSeed(seed)
-    val model = GoogleNet.getModel[Double](1000, "googlenet")
+    val model = Inception.getModel[Double](1000, "inception")
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       """
@@ -417,7 +417,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     sgd.optimize(_ => (errTest, grad), weights, state, state)
   }
 
-  "load torch's GoogleNet+bn" should "generate correct output" in {
+  "load torch's Inception+bn" should "generate correct output" in {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -603,7 +603,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
     grad should be equals gradParametersTorch
   }
 
-  "load torch's GoogleNet+bn float version" should "generate correct output" in {
+  "load torch's Inception+bn float version" should "generate correct output" in {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -730,7 +730,7 @@ class GoogleNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("initModel"))
 
-    val model = GoogleNet.getModel[Float](1000, "googlenet-bn")
+    val model = Inception.getModel[Float](1000, "inception-bn")
     val model2 = TH.map("initModel").
       asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]]
     model2 should be (model)
