@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
+
 class RecurrentSpec extends FlatSpec with Matchers {
 
   "A Recurrent Module " should "converge" in {
@@ -47,8 +48,8 @@ class RecurrentSpec extends FlatSpec with Matchers {
     val input = Tensor[Double](5, inputSize)
     val labels = Tensor[Double](5)
     for (i <- 1 to 5) {
-      val rdmLabel = Math.ceil(Math.random()*inputSize).toInt
-      val rdmInput = Math.ceil(Math.random()*inputSize).toInt
+      val rdmLabel = Math.ceil(RNG.uniform(0.0, 1.0)*inputSize).toInt
+      val rdmInput = Math.ceil(RNG.uniform(0.0, 1.0)*inputSize).toInt
       input.setValue(i, rdmInput, 1.0)
       labels.setValue(i, rdmLabel)
     }
