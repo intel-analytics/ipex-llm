@@ -178,7 +178,7 @@ object FP16CompressedTensor {
     val taskSize = length / Engine.coreNumber()
     val extraSize = length % Engine.coreNumber()
     val availableTask = if (taskSize == 0) extraSize else Engine.coreNumber()
-    Engine.default.invoke(
+    Engine.default.invokeAndWait(
       (0 until availableTask).map(tid => () => {
         val start = tid * taskSize + math.min(extraSize, tid)
         val end = (tid + 1) * taskSize + math.min(extraSize, tid + 1)
