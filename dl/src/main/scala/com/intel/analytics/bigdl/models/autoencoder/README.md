@@ -11,7 +11,7 @@ You can download them at [MNIST](http://yann.lecun.com/exdb/mnist/) and put them
 
 ## Build:
 
-mvn clean package -DskipTests
+`mvn clean package -DskipTests`
 
 ## Train on Spark:
 
