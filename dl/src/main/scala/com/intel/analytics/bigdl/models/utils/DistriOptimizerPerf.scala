@@ -130,7 +130,7 @@ object DistriOptimizerPerf {
       override def size(): Long = 100000
       override def shuffle(): Unit = {}
       override def originRDD(): RDD[_] = rdd
-      override def data(looped: Boolean): RDD[MiniBatch[Float]] = rdd
+      override def data(train: Boolean): RDD[MiniBatch[Float]] = rdd
     }
 
     val optimizer = Optimizer(

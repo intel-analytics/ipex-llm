@@ -97,7 +97,7 @@ trait LocalDataSet[T] extends AbstractDataSet[T, Iterator[T]] {
 
       override def size(): Long = preDataSet.size()
 
-      override def data(looped: Boolean): Iterator[C] = transformer(preDataSet.data(looped))
+      override def data(train: Boolean): Iterator[C] = transformer(preDataSet.data(train))
     }
   }
 }
@@ -112,12 +112,12 @@ class LocalArrayDataSet[T] private[dataset](buffer: Array[T]) extends LocalDataS
     RandomGenerator.shuffle(buffer)
   }
 
-  override def data(looped: Boolean): Iterator[T] = {
+  override def data(train: Boolean): Iterator[T] = {
     new Iterator[T] {
       private val index = new AtomicInteger()
 
       override def hasNext: Boolean = {
-        if (looped) {
+        if (train) {
           true
         } else {
           index.get() < buffer.length
@@ -126,8 +126,8 @@ class LocalArrayDataSet[T] private[dataset](buffer: Array[T]) extends LocalDataS
 
       override def next(): T = {
         val curIndex = index.getAndIncrement()
-        if (looped || curIndex < buffer.length) {
-          buffer(if (looped) (curIndex % buffer.length) else curIndex)
+        if (train || curIndex < buffer.length) {
+          buffer(if (train) (curIndex % buffer.length) else curIndex)
         } else {
           null.asInstanceOf[T]
         }
@@ -161,8 +161,8 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
 
       override def shuffle(): Unit = preDataSet.shuffle()
 
-      override def data(looped: Boolean): RDD[C] =
-        preDataSet.data(looped).zipPartitions(cachedTransformer)(
+      override def data(train: Boolean): RDD[C] =
+        preDataSet.data(train).zipPartitions(cachedTransformer)(
           (data, tran) => tran.next()(data))
 
       override def originRDD(): RDD[_] = preDataSet.originRDD()
@@ -191,12 +191,12 @@ class CachedDistriDataSet[T: ClassTag] private[dataset] (buffer: RDD[Array[T]])
     Iterator.single(RandomGenerator.shuffle((0 until iter.next().length).toArray))
   }).setName("shuffled index").cache()
 
-  override def data(looped: Boolean): RDD[T] = {
-    val _looped = looped
+  override def data(train: Boolean): RDD[T] = {
+    val _train = train
     buffer.zipPartitions(indexes)((dataIter, indexIter) => {
       val indexes = indexIter.next()
       val localData = dataIter.next()
-      val offset = if (_looped) {
+      val offset = if (_train) {
         RandomGenerator.RNG.uniform(0, localData.length).toInt
       } else {
         0
@@ -205,12 +205,12 @@ class CachedDistriDataSet[T: ClassTag] private[dataset] (buffer: RDD[Array[T]])
         private val _offset = new AtomicInteger(offset)
 
         override def hasNext: Boolean = {
-          if (_looped) true else _offset.get() < localData.length
+          if (_train) true else _offset.get() < localData.length
         }
 
         override def next(): T = {
           val i = _offset.getAndIncrement()
-          if (_looped) {
+          if (_train) {
             localData(indexes(i % localData.length))
           } else {
             if (i < localData.length) {

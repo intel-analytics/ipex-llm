@@ -95,7 +95,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     dataSet = new DistributedDataSet[MiniBatch[Double]] {
       override def originRDD(): RDD[_] = rdd
 
-      override def data(looped : Boolean): RDD[MiniBatch[Double]] = rdd
+      override def data(train : Boolean): RDD[MiniBatch[Double]] = rdd
 
       override def size(): Long = 256 * nodeNumber
 

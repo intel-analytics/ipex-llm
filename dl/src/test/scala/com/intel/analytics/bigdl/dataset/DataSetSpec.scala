@@ -56,9 +56,9 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
       Paths.get(processPath(resource.getPath()) + File.separator, "t10k-labels.idx1-ubyte")
     ))
     dataSet.size() should be(10000)
-    var iter = dataSet.data(looped = false)
+    var iter = dataSet.data(train = false)
     iter.map(_.label).min should be(1.0f)
-    iter = dataSet.data(looped = false)
+    iter = dataSet.data(train = false)
     iter.map(_.label).max should be(10.0f)
   }
 
