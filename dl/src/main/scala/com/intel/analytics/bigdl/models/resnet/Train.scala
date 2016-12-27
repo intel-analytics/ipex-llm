@@ -55,18 +55,18 @@ object Train {
         (32, DatasetType.CIFAR10, param.nepochs, Cifar10DataSet)
 
       val trainDataSet = if (sc.isDefined) {
-        dataSet.distributedTrainDataSet(
+        dataSet.trainDataSet(
           Paths.get(param.folder, "train"), sc.get, param.nodeNumber, imageSize, batchSize)
       } else {
-        dataSet.localTrainDataSet(
+        dataSet.trainDataSet(
           Paths.get(param.folder, "train"), batchSize, imageSize)
       }
 
       val validateSet = if (sc.isDefined) {
-        dataSet.distributedValDataSet(
+        dataSet.valDataSet(
           Paths.get(param.folder, "val"), sc.get, param.nodeNumber, imageSize, batchSize)
       } else {
-        dataSet.localValDataSet(
+        dataSet.valDataSet(
           Paths.get(param.folder, "val"), batchSize, imageSize)
       }
 
@@ -101,7 +101,6 @@ object Train {
         )
       }
 
-      // Engine.setCoreNumber(param.coreNumber)
       val optimizer = Optimizer(
         model = model,
         dataset = trainDataSet,
