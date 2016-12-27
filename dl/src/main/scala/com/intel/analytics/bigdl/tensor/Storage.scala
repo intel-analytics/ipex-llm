@@ -36,6 +36,14 @@ trait Storage[T] extends Iterable[T] with Serializable {
   def length(): Int
 
   /**
+   * Returns the number of elements in the storage. Override `size` in Iterable, which will cause
+   * some full gc and performance issues.
+   *
+   * @return
+   */
+  override def size: Int = length()
+
+  /**
    * Returns the element at position index in the storage. Valid range of index is 0 to length() -1
    *
    * @param index
