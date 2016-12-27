@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.{T, Table}
 
-object Inception_v1 {
+object Inception_Layer_v1 {
   def apply(inputSize: Int, config: Table, namePrefix : String = "") : Module[Float] = {
     val concat = Concat(2)
     val conv1 = Sequential()
@@ -56,7 +56,7 @@ object Inception_v1 {
   }
 }
 
-object GoogleNet_v1_NoAuxClassifier {
+object Inception_v1_NoAuxClassifier {
   def apply(classNum: Int): Module[Float] = {
     val model = Sequential()
     model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false).setInitMethod(Xavier)
@@ -72,17 +72,17 @@ object GoogleNet_v1_NoAuxClassifier {
     model.add(ReLU(true).setName("conv2/relu_3x3"))
     model.add(SpatialCrossMapLRN(5, 0.0001, 0.75). setName("conv2/norm2"))
     model.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool2/3x3_s2"))
-    model.add(Inception_v1(192, T(T(64), T(96, 128), T(16, 32), T(32)), "inception_3a/"))
-    model.add(Inception_v1(256, T(T(128), T(128, 192), T(32, 96), T(64)), "inception_3b/"))
+    model.add(Inception_Layer_v1(192, T(T(64), T(96, 128), T(16, 32), T(32)), "inception_3a/"))
+    model.add(Inception_Layer_v1(256, T(T(128), T(128, 192), T(32, 96), T(64)), "inception_3b/"))
     model.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool3/3x3_s2"))
-    model.add(Inception_v1(480, T(T(192), T(96, 208), T(16, 48), T(64)), "inception_4a/"))
-    model.add(Inception_v1(512, T(T(160), T(112, 224), T(24, 64), T(64)), "inception_4b/"))
-    model.add(Inception_v1(512, T(T(128), T(128, 256), T(24, 64), T(64)), "inception_4c/"))
-    model.add(Inception_v1(512, T(T(112), T(144, 288), T(32, 64), T(64)), "inception_4d/"))
-    model.add(Inception_v1(528, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_4e/"))
+    model.add(Inception_Layer_v1(480, T(T(192), T(96, 208), T(16, 48), T(64)), "inception_4a/"))
+    model.add(Inception_Layer_v1(512, T(T(160), T(112, 224), T(24, 64), T(64)), "inception_4b/"))
+    model.add(Inception_Layer_v1(512, T(T(128), T(128, 256), T(24, 64), T(64)), "inception_4c/"))
+    model.add(Inception_Layer_v1(512, T(T(112), T(144, 288), T(32, 64), T(64)), "inception_4d/"))
+    model.add(Inception_Layer_v1(528, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_4e/"))
     model.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool4/3x3_s2"))
-    model.add(Inception_v1(832, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_5a/"))
-    model.add(Inception_v1(832, T(T(384), T(192, 384), T(48, 128), T(128)), "inception_5b/"))
+    model.add(Inception_Layer_v1(832, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_5a/"))
+    model.add(Inception_Layer_v1(832, T(T(384), T(192, 384), T(48, 128), T(128)), "inception_5b/"))
     model.add(SpatialAveragePooling(7, 7, 1, 1).setName("pool5/7x7_s1"))
     model.add(Dropout(0.4).setName("pool5/drop_7x7_s1"))
     model.add(View(1024).setNumInputDims(3))
@@ -93,7 +93,7 @@ object GoogleNet_v1_NoAuxClassifier {
   }
 }
 
-object GoogleNet_v1 {
+object Inception_v1 {
   def apply(classNum: Int): Module[Float] = {
     val feature1 = Sequential()
     feature1.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false).setInitMethod(Xavier)
@@ -109,10 +109,10 @@ object GoogleNet_v1 {
     feature1.add(ReLU(true).setName("conv2/relu_3x3"))
     feature1.add(SpatialCrossMapLRN(5, 0.0001, 0.75). setName("conv2/norm2"))
     feature1.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool2/3x3_s2"))
-    feature1.add(Inception_v1(192, T(T(64), T(96, 128), T(16, 32), T(32)), "inception_3a/"))
-    feature1.add(Inception_v1(256, T(T(128), T(128, 192), T(32, 96), T(64)), "inception_3b/"))
+    feature1.add(Inception_Layer_v1(192, T(T(64), T(96, 128), T(16, 32), T(32)), "inception_3a/"))
+    feature1.add(Inception_Layer_v1(256, T(T(128), T(128, 192), T(32, 96), T(64)), "inception_3b/"))
     feature1.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool3/3x3_s2"))
-    feature1.add(Inception_v1(480, T(T(192), T(96, 208), T(16, 48), T(64)), "inception_4a/"))
+    feature1.add(Inception_Layer_v1(480, T(T(192), T(96, 208), T(16, 48), T(64)), "inception_4a/"))
 
     val output1 = Sequential()
     output1.add(SpatialAveragePooling(5, 5, 3, 3).ceil().setName("loss1/ave_pool"))
@@ -126,9 +126,9 @@ object GoogleNet_v1 {
     output1.add(LogSoftMax().setName("loss1/loss"))
 
     val feature2 = Sequential()
-    feature2.add(Inception_v1(512, T(T(160), T(112, 224), T(24, 64), T(64)), "inception_4b/"))
-    feature2.add(Inception_v1(512, T(T(128), T(128, 256), T(24, 64), T(64)), "inception_4c/"))
-    feature2.add(Inception_v1(512, T(T(112), T(144, 288), T(32, 64), T(64)), "inception_4d/"))
+    feature2.add(Inception_Layer_v1(512, T(T(160), T(112, 224), T(24, 64), T(64)), "inception_4b/"))
+    feature2.add(Inception_Layer_v1(512, T(T(128), T(128, 256), T(24, 64), T(64)), "inception_4c/"))
+    feature2.add(Inception_Layer_v1(512, T(T(112), T(144, 288), T(32, 64), T(64)), "inception_4d/"))
 
     val output2 = Sequential()
     output2.add(SpatialAveragePooling(5, 5, 3, 3).setName("loss2/ave_pool"))
@@ -142,10 +142,13 @@ object GoogleNet_v1 {
     output2.add(LogSoftMax().setName("loss2/loss"))
 
     val output3 = Sequential()
-    output3.add(Inception_v1(528, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_4e/"))
+    output3.add(Inception_Layer_v1(528, T(T(256), T(160, 320), T(32, 128), T(128)),
+      "inception_4e/"))
     output3.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool4/3x3_s2"))
-    output3.add(Inception_v1(832, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_5a/"))
-    output3.add(Inception_v1(832, T(T(384), T(192, 384), T(48, 128), T(128)), "inception_5b/"))
+    output3.add(Inception_Layer_v1(832, T(T(256), T(160, 320), T(32, 128), T(128)),
+      "inception_5a/"))
+    output3.add(Inception_Layer_v1(832, T(T(384), T(192, 384), T(48, 128), T(128)),
+      "inception_5b/"))
     output3.add(SpatialAveragePooling(7, 7, 1, 1).setName("pool5/7x7_s1"))
     output3.add(Dropout(0.4).setName("pool5/drop_7x7_s1"))
     output3.add(View(1024).setNumInputDims(3))
@@ -174,7 +177,7 @@ object GoogleNet_v1 {
   }
 }
 
-object Inception_v2 {
+object Inception_Layer_v2 {
   def apply(inputSize: Int, config: Table, namePrefix : String): Module[Float] = {
     val concat = Concat(2)
     if (config[Table](1)[Int](1) != 0) {
@@ -255,7 +258,7 @@ object Inception_v2 {
   }
 }
 
-object GoogleNet_v2_NoAuxClassifier {
+object Inception_v2_NoAuxClassifier {
   def apply(classNum: Int): Module[Float] = {
     val model = Sequential()
     model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
@@ -270,18 +273,25 @@ object GoogleNet_v2_NoAuxClassifier {
     model.add(SpatialBatchNormalization(192, 1e-3).setName("conv2/3x3/bn"))
     model.add(ReLU(true).setName("conv2/3x3/bn/sc/relu"))
     model.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool2/3x3_s2"))
-    model.add(Inception_v2(192, T(T(64), T(64, 64), T(64, 96), T("avg", 32)), "inception_3a/"))
-    model.add(Inception_v2(256, T(T(64), T(64, 96), T(64, 96), T("avg", 64)), "inception_3b/"))
-    model.add(Inception_v2(320, T(T(0), T(128, 160), T(64, 96), T("max", 0)), "inception_3c/"))
-    model.add(Inception_v2(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128)), "inception_4a/"))
-    model.add(Inception_v2(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)), "inception_4b/"))
-    model.add(Inception_v2(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96)),
+    model.add(Inception_Layer_v2(192, T(T(64), T(64, 64), T(64, 96), T("avg", 32)),
+      "inception_3a/"))
+    model.add(Inception_Layer_v2(256, T(T(64), T(64, 96), T(64, 96), T("avg", 64)),
+      "inception_3b/"))
+    model.add(Inception_Layer_v2(320, T(T(0), T(128, 160), T(64, 96), T("max", 0)),
+      "inception_3c/"))
+    model.add(Inception_Layer_v2(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128)),
+      "inception_4a/"))
+    model.add(Inception_Layer_v2(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)),
+      "inception_4b/"))
+    model.add(Inception_Layer_v2(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96)),
       "inception_4c/"))
-    model.add(Inception_v2(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)), "inception_4d/"))
-    model.add(Inception_v2(576, T(T(0), T(128, 192), T(192, 256), T("max", 0)), "inception_4e/"))
-    model.add(Inception_v2(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128)),
+    model.add(Inception_Layer_v2(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)),
+      "inception_4d/"))
+    model.add(Inception_Layer_v2(576, T(T(0), T(128, 192), T(192, 256), T("max", 0)),
+      "inception_4e/"))
+    model.add(Inception_Layer_v2(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128)),
       "inception_5a/"))
-    model.add(Inception_v2(1024, T(T(352), T(192, 320), T(192, 224), T("max", 128)),
+    model.add(Inception_Layer_v2(1024, T(T(352), T(192, 320), T(192, 224), T("max", 128)),
       "inception_5b/"))
     model.add(SpatialAveragePooling(7, 7, 1, 1).ceil().setName("pool5/7x7_s1"))
     model.add(View(1024).setNumInputDims(3))
@@ -293,7 +303,7 @@ object GoogleNet_v2_NoAuxClassifier {
   }
 }
 
-object GoogleNet_v2 {
+object Inception_v2 {
   def apply(classNum: Int): Module[Float] = {
     val features1 = Sequential()
     features1.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
@@ -308,9 +318,12 @@ object GoogleNet_v2 {
     features1.add(SpatialBatchNormalization(192, 1e-3).setName("conv2/3x3/bn"))
     features1.add(ReLU(true).setName("conv2/3x3/bn/sc/relu"))
     features1.add(SpatialMaxPooling(3, 3, 2, 2).ceil().setName("pool2/3x3_s2"))
-    features1.add(Inception_v2(192, T(T(64), T(64, 64), T(64, 96), T("avg", 32)), "inception_3a/"))
-    features1.add(Inception_v2(256, T(T(64), T(64, 96), T(64, 96), T("avg", 64)), "inception_3b/"))
-    features1.add(Inception_v2(320, T(T(0), T(128, 160), T(64, 96), T("max", 0)), "inception_3c/"))
+    features1.add(Inception_Layer_v2(192, T(T(64), T(64, 64), T(64, 96), T("avg", 32)),
+      "inception_3a/"))
+    features1.add(Inception_Layer_v2(256, T(T(64), T(64, 96), T(64, 96), T("avg", 64)),
+      "inception_3b/"))
+    features1.add(Inception_Layer_v2(320, T(T(0), T(128, 160), T(64, 96), T("max", 0)),
+      "inception_3c/"))
 
     val output1 = Sequential()
     output1.add(SpatialAveragePooling(5, 5, 3, 3).ceil().setName("pool3/5x5_s3"))
@@ -326,11 +339,16 @@ object GoogleNet_v2 {
 
     val features2 = Sequential()
     features2
-      .add(Inception_v2(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128)), "inception_4a/"))
-      .add(Inception_v2(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)), "inception_4b/"))
-      .add(Inception_v2(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96)), "inception_4c/"))
-      .add(Inception_v2(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)), "inception_4d/"))
-      .add(Inception_v2(576, T(T(0), T(128, 192), T(192, 256), T("max", 0)), "inception_4e/"))
+      .add(Inception_Layer_v2(576, T(T(224), T(64, 96), T(96, 128), T("avg", 128)),
+        "inception_4a/"))
+      .add(Inception_Layer_v2(576, T(T(192), T(96, 128), T(96, 128), T("avg", 128)),
+        "inception_4b/"))
+      .add(Inception_Layer_v2(576, T(T(160), T(128, 160), T(128, 160), T("avg", 96)),
+        "inception_4c/"))
+      .add(Inception_Layer_v2(576, T(T(96), T(128, 192), T(160, 192), T("avg", 96)),
+        "inception_4d/"))
+      .add(Inception_Layer_v2(576, T(T(0), T(128, 192), T(192, 256), T("max", 0)),
+        "inception_4e/"))
 
     val output2 = Sequential()
     output2.add(SpatialAveragePooling(5, 5, 3, 3).ceil().setName("pool4/5x5_s3"))
@@ -344,9 +362,9 @@ object GoogleNet_v2 {
     output2.add(LogSoftMax().setName("loss2/loss"))
 
     val output3 = Sequential()
-    output3.add(Inception_v2(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128)),
+    output3.add(Inception_Layer_v2(1024, T(T(352), T(192, 320), T(160, 224), T("avg", 128)),
       "inception_5a/"))
-    output3.add(Inception_v2(1024, T(T(352), T(192, 320), T(192, 224), T("max", 128)),
+    output3.add(Inception_Layer_v2(1024, T(T(352), T(192, 320), T(192, 224), T("max", 128)),
       "inception_5b/"))
     output3.add(SpatialAveragePooling(7, 7, 1, 1).ceil().setName("pool5/7x7_s1"))
     output3.add(View(1024).setNumInputDims(3))

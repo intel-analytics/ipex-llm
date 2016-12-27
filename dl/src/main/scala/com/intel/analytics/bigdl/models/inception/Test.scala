@@ -42,7 +42,7 @@ object Test {
       val batchSize = param.batchSize.getOrElse(128)
       val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
         .map(conf => {
-          conf.setAppName("Test Googlenet on ImageNet")
+          conf.setAppName("Test Inception on ImageNet")
           new SparkContext(conf)
         })
       val valSet = ImageNet2012(

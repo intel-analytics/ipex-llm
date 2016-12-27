@@ -29,11 +29,11 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
-object GoogleNet {
+object Inception {
   def getModel[D: ClassTag](classNum: Int, modelName: String = "")(
     implicit ev: TensorNumeric[D]): Module[D] = {
     modelName match {
-      case "googlenet-bn" =>
+      case "inception-bn" =>
         def inception(inputSize: Int, config: Table)(
           implicit ev: TensorNumeric[D]): Module[D] = {
           val concat = Concat[D](2)
