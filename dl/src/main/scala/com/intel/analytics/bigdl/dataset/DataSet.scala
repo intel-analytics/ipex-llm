@@ -294,7 +294,9 @@ object DataSet {
       val total = paths.length
       var count = 1
       val buffer = paths.map(imageFile => {
-        logger.info(s"Cache image $count/$total")
+        if (total < 100 || count % (total / 100) == 0 || count == total) {
+          logger.info(s"Cache image $count/$total(${count * 100 / total}%)")
+        }
         count += 1
         ByteRecord(BGRImage.readImage(imageFile.path, scaleTo), imageFile.label)
       })
