@@ -43,10 +43,10 @@ class SimpleTokenizer(nbWords: Int, lower: Boolean = true, split: Char = ' ') {
   private var documentCount = 0
 
   /**
-    * The Tokenizer should be feed with some texts before working.
-    *
-    * @param texts a collection of text to init the tokenizer
-    */
+   * The Tokenizer should be feed with some texts before working.
+   *
+   * @param texts a collection of text to init the tokenizer
+   */
   def init(texts: Seq[String]): Unit = {
     var t = 0
     while (t < texts.length) {
@@ -79,14 +79,14 @@ class SimpleTokenizer(nbWords: Int, lower: Boolean = true, split: Char = ' ') {
   }
 
   /**
-    * Transform each text in texts to a sequence of indexes.
-    * The un-know word would be ignore
-    *
-    * @param texts  a collection of text
-    * @param seqLen the length of the returning sequence,
-    * it be would padded or truncated in case not meet the requirement.
-    * @return a collection of sequences
-    */
+   * Transform each text in texts to a sequence of indexes.
+   * The un-know word would be ignore
+   *
+   * @param texts  a collection of text
+   * @param seqLen the length of the returning sequence,
+   * it be would padded or truncated in case not meet the requirement.
+   * @return a collection of sequences
+   */
   def textsToSequences(texts: ArrayBuffer[String], seqLen: Int, trunc: String = "pre")
   : ArrayBuffer[ArrayBuffer[Int]] = {
     texts.map { text =>
