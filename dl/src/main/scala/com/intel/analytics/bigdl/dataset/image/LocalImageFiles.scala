@@ -70,9 +70,8 @@ object LocalImageFiles {
    */
   private[bigdl] def readPathsNoLabel(path: Path): Array[LocalLabeledImagePath] = {
     println(s"Start to read directories $path")
-    val labelMap = readLabels(path)
     import scala.collection.JavaConverters._
     Files.newDirectoryStream(path).asScala.map(p =>
-      LocalLabeledImagePath(labelMap(p.getFileName.toString).toFloat, p)).toArray
+      LocalLabeledImagePath(-1, p)).toArray
   }
 }
