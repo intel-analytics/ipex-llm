@@ -25,7 +25,6 @@ import com.intel.analytics.bigdl.tensor.Tensor
 class FP16ParameterSpec extends FlatSpec with Matchers {
 
   "convert double tensor to fp16 array and back" should "be same when the number is integer" in {
-    Engine.default.setPoolSize(1)
     val tensor = Tensor[Double](5)
     tensor.setValue(1, 1.0)
     tensor.setValue(2, 2.0)
