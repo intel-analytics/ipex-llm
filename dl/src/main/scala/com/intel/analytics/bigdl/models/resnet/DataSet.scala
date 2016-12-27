@@ -24,14 +24,14 @@ import com.intel.analytics.bigdl.dataset.image._
 import org.apache.spark.SparkContext
 
 trait ResNetDataSet {
-  def localTrainDataSet(path: Path, batchSize: Int, size: Int)
+  def trainDataSet(path: Path, batchSize: Int, size: Int)
   : DataSet[MiniBatch[Float]]
-  def localValDataSet(path: Path, batchSize: Int, size: Int)
+  def valDataSet(path: Path, batchSize: Int, size: Int)
   : DataSet[MiniBatch[Float]]
-  def distributedValDataSet(path: Path, sc: SparkContext,
+  def valDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
   : DataSet[MiniBatch[Float]]
-  def distributedTrainDataSet(path: Path, sc: SparkContext,
+  def trainDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
   : DataSet[MiniBatch[Float]]
 }
@@ -43,7 +43,7 @@ object Cifar10DataSet extends ResNetDataSet {
   val testMean = (0.4942142913295297, 0.4851314002725445, 0.45040910258647154)
   val testStd = (0.2466525177466614, 0.2428922662655766, 0.26159238066790275)
 
-  override def localTrainDataSet(path: Path, batchSize: Int, size: Int)
+  override def trainDataSet(path: Path, batchSize: Int, size: Int)
   : DataSet[MiniBatch[Float]] = {
 
     DataSet.ImageFolder.images(path, size)
@@ -53,7 +53,7 @@ object Cifar10DataSet extends ResNetDataSet {
       .transform(BGRImgToBatch(batchSize))
   }
 
-  override def localValDataSet(path: Path, batchSize: Int, size: Int)
+  override def valDataSet(path: Path, batchSize: Int, size: Int)
   : DataSet[MiniBatch[Float]] = {
 
     DataSet.ImageFolder.images(path, size)
@@ -61,7 +61,7 @@ object Cifar10DataSet extends ResNetDataSet {
       .transform(BGRImgToBatch(batchSize))
   }
 
-  override def distributedValDataSet(path: Path, sc: SparkContext,
+  override def valDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
   : DataSet[MiniBatch[Float]] = {
 
@@ -70,7 +70,7 @@ object Cifar10DataSet extends ResNetDataSet {
       .transform(BGRImgToBatch(batchSize))
   }
 
-  override def distributedTrainDataSet(path: Path, sc: SparkContext,
+  override def trainDataSet(path: Path, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
   : DataSet[MiniBatch[Float]] = {
 
