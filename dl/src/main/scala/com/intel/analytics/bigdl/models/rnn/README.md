@@ -52,6 +52,7 @@ User can define the inputSize, hiddenSize, outputSize and bptt (back propagation
 
 ##Training
 Note that we train the rnn sentence by sentence. Thus the following codes are necessary settings.
+<br>
 <code>
 Engine.setCoreNumber(1)
 </code><br>
@@ -72,4 +73,4 @@ Note that user must define the coreNumber (for example: 4 for a desktop).
 ##Sample Command Line
 <code>
 java -cp bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar:spark-assembly-1.5.1-hadoop2.6.0.jar com.intel.analytics.bigdl.models.rnn.Train -f ./ --core 4 --nEpochs 30 --learningRate 0.1
-/code>
+</code>
