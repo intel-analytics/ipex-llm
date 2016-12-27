@@ -66,7 +66,7 @@ trait AbstractDataSet[D, DataSequence] {
   // scalastyle:off methodName
   // scalastyle:off noSpaceBeforeLeftBracket
   /**
-   * This operator transform one type of data set to another
+   * This operator transforms one type of data set to another
    *
    * @param transformer
    * @tparam C
@@ -85,7 +85,7 @@ trait AbstractDataSet[D, DataSequence] {
 }
 
 /**
- * Mange some 'local' data set, e.g. data in files or memory. We use iterator to access the data
+ * Manage some 'local' data sets, e.g. data in files or memory. We use iterator to access the data
  *
  * @tparam T
  */

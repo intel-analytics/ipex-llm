@@ -64,7 +64,7 @@ object Utils {
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
-    opt[Int]('b', "maxEpoch")
+    opt[Int]('e', "maxEpoch")
       .text("max epoch")
       .action((x, c) => c.copy(maxEpoch = x))
     opt[String]("env")

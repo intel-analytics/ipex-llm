@@ -47,10 +47,10 @@ object Train {
         new SparkContext(conf)
       })
 
-      val trainData = Paths.get(param.folder, "/train-images.idx3-ubyte")
-      val trainLabel = Paths.get(param.folder, "/train-labels.idx1-ubyte")
-      val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
-      val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
+      val trainData = Paths.get(param.folder, "/train-images-idx3-ubyte")
+      val trainLabel = Paths.get(param.folder, "/train-labels-idx1-ubyte")
+      val validationData = Paths.get(param.folder, "/t10k-images-idx3-ubyte")
+      val validationLabel = Paths.get(param.folder, "/t10k-labels-idx1-ubyte")
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
