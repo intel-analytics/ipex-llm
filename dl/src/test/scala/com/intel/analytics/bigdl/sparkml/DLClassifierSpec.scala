@@ -19,9 +19,9 @@ package com.intel.analytics.bigdl.sparkml
 
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.DLClassifier
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.DLClassifier
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.mllib.regression.LabeledPoint
@@ -77,7 +77,7 @@ class DLClassifierSpec extends FlatSpec with Matchers{
 
       valTrans.transform(testData, paramsTrans)
         .select("label", "predict")
-         .collect()
+        .collect()
         .foreach { case Row(label: Double, predict: Int) =>
           label.toInt should be(predict)
         }

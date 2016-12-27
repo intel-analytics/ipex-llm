@@ -16,13 +16,11 @@
  */
 package com.intel.analytics.bigdl.models.alexnet
 
-import java.nio.file.{Path, Paths}
+import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.dataset.image._
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
 
 object ImageNet2012 {

@@ -20,15 +20,18 @@ import scopt.OptionParser
 
 object MlUtils {
 
-  val testMean = 0.13251460696903547
-  val testStd = 0.31048024
+  val testMean = (0.4942142913295297, 0.4851314002725445, 0.45040910258647154)
+  val testStd = (0.2466525177466614, 0.2428922662655766, 0.26159238066790275)
+  val imageSize = 32
 
   case class PredictParams(
     folder: String = "./",
     model: String = "",
     partitionNum : Int = 4,
     coreNumber: Int = -1,
-    nodeNumber: Int = -1
+    nodeNumber: Int = -1,
+    batchSize: Int = 128,
+    classNum: Int = 10
   )
 
   val predictParser = new OptionParser[PredictParams]("BigDL Predict Example") {
@@ -54,5 +57,13 @@ object MlUtils {
     opt[Int]('n', "nodeNumber")
       .text("nodes number to train the model")
       .action((x, c) => c.copy(nodeNumber = x))
+
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = x))
+
+    opt[Int]("classNum")
+      .text("class num")
+      .action((x, c) => c.copy(classNum = x))
   }
 }
