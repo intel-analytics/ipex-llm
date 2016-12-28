@@ -128,16 +128,16 @@ object Optimizer {
     criterion: Criterion[T]
   )(implicit ev: TensorNumeric[T]): Optimizer[T, D] = {
     dataset match {
-      case d: DistributedDataSet[MiniBatch[T]] =>
+      case d: DistributedDataSet[_] =>
         new DistriOptimizer[T](
           model = model,
-          dataset = d,
+          dataset = d.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
           criterion = criterion
         ).asInstanceOf[Optimizer[T, D]]
-      case d: LocalDataSet[MiniBatch[T]] =>
+      case d: LocalDataSet[_] =>
         new LocalOptimizer[T](
           model = model,
-          dataset = d,
+          dataset = d.asInstanceOf[LocalDataSet[MiniBatch[T]]],
           criterion = criterion
         ).asInstanceOf[Optimizer[T, D]]
       case _ =>

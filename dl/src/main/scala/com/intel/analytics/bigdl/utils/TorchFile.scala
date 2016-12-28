@@ -173,7 +173,8 @@ object TorchFile {
           (classOf[TensorNumeric[_]], ev))
         createInstanceFor(bigDlName, args)
       } catch {
-        case _ => throw new IllegalArgumentException(s"unsupported module $moduleName")
+        case _: Throwable =>
+          throw new IllegalArgumentException(s"unsupported module $moduleName")
       }
     }
     module
@@ -335,8 +336,9 @@ object TorchFile {
         i = i + 1
         rawData.putInt(i)
         source match {
-          case s: mutable.Map[Any, Any] =>
-            writeTable(s, rawData, path)
+          case s: mutable.Map[_, _] =>
+            writeTable(s.asInstanceOf[mutable.Map[Any, Any]],
+              rawData, path)
           case s: Table =>
             writeTable(source.asInstanceOf[Table].getState(), rawData, path)
           case _ => throw new Error(s"Unknown table $source")

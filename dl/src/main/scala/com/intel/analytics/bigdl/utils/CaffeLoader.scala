@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.io.{File, FileInputStream, InputStreamReader}
+import java.io.{FileInputStream, InputStreamReader}
 
 import caffe.Caffe
 import caffe.Caffe.{LayerParameter, NetParameter, V1LayerParameter}
@@ -54,7 +54,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def loadBinary(prototxtPath: String, modelPath: String): Caffe.NetParameter = {
-    val f = new File(prototxtPath)
+    val f = new java.io.File(prototxtPath)
     require(f.exists(), prototxtPath + " does not exists")
     val reader = new InputStreamReader(new FileInputStream(f), "ASCII")
     val builder = NetParameter.newBuilder

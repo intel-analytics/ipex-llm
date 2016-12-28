@@ -33,12 +33,9 @@ object LocalOptimizer {
 /**
  * Optimize a model on a single machine
  *
- * @param model
- * @param dataset
- * @param criterion
- * @param ev$1
- * @param ev
- * @tparam T
+ * @param model model to be optimized
+ * @param dataset data set
+ * @param criterion criterion to be used
  */
 class LocalOptimizer[T: ClassTag] private[optim](
   model: Module[T],

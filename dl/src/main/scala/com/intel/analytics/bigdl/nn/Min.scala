@@ -24,14 +24,14 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 /**
- * Applies a min operation over dimension $dim.
+ * Applies a min operation over dimension `dim`.
  *
- * @param dim
+ * @param dim min along this dimension
  * @param numInputDims Optional. If in a batch model, set to the inputDims.
  */
 
 @SerialVersionUID(8958076163182151950L)
-class Min[@specialized(Float, Double) T: ClassTag](
+class Min[T: ClassTag](
   var dim : Int = 1,
   var numInputDims: Int = Int.MinValue
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {

@@ -26,11 +26,8 @@ import scala.reflect.ClassTag
 /**
  * the cosine similarity of the input to k mean centers
  *
- * @param inputSize
- * @param outputSize
- * @param ev$1
- * @param ev
- * @tparam T
+ * @param inputSize input size
+ * @param outputSize output size
  */
 
 @SerialVersionUID(- 8739169489135761430L)
