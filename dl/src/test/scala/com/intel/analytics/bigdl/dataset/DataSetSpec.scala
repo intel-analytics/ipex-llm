@@ -259,4 +259,24 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     RandomGenerator.RNG.setSeed(100)
     test("n99999999", "n03000134_4970.JPEG", "n03000134_4970.t7")
   }
+
+  "RDD from DataSet" should "give different position every time" in {
+    val data = (1 to 4).toArray
+    val trainRDD = DataSet.rdd(sc.parallelize(data, 1).mapPartitions(_ => {
+      RandomGenerator.RNG.setSeed(100)
+      (1 to 100).iterator
+    }), 1).data(train = true)
+    trainRDD.mapPartitions(iter => {
+      Iterator.single(iter.next())
+    }).collect()(0) should be(22)
+
+    trainRDD.mapPartitions(iter => {
+      Iterator.single(iter.next())
+    }).collect()(0) should be(41)
+
+    trainRDD.mapPartitions(iter => {
+      Iterator.single(iter.next())
+    }).collect()(0) should be(62)
+
+  }
 }

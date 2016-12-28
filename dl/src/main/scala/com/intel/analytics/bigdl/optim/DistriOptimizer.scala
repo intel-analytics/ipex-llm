@@ -96,6 +96,7 @@ object DistriOptimizer {
     val shuffleEnd = System.nanoTime()
     logger.info(s"Shuffle data complete. Takes ${(shuffleEnd - shuffleBefore) / 1e9}s")
     var epochStart = System.nanoTime()
+    var dataRDD = dataset.data(train = true)
     while (!endWhen(driverState)) {
       val _header = header(driverState[Int]("epoch"), accumulateCount, dataset.size(),
         driverState[Int]("neval"), wallClockTime)
@@ -113,7 +114,7 @@ object DistriOptimizer {
       val driverMetrics = metrics
       val start = System.nanoTime()
       val _ps = new AllReduceParameter[T]()
-      dataset.data(train = true).zipPartitions(
+      dataRDD.zipPartitions(
         models, true)(
         (data, modelIter) => {
           var time = System.nanoTime()
@@ -222,7 +223,6 @@ object DistriOptimizer {
         _ps.putWeights()
         Iterator.empty
       }).count()
-      val reduceAfter = System.nanoTime()
 
       accumulateCount += recordsNum.value
       val end = System.nanoTime()
@@ -242,6 +242,7 @@ object DistriOptimizer {
 
         driverState("epoch") = driverState[Int]("epoch") + 1
         dataset.shuffle()
+        dataRDD = dataset.data(train = true)
         accumulateCount = 0
       }
       validate(
