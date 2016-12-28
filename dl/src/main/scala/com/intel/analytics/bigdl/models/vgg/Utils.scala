@@ -125,12 +125,13 @@ object Utils {
   }
 
   private[bigdl] def loadTrain(dataFile: String): Array[ByteRecord] = {
-    val directoryStream = Files.newDirectoryStream(Paths.get(dataFile))
-    import scala.collection.JavaConverters._
-    val allFiles = directoryStream.asScala.map(_.toAbsolutePath.toString)
-      .filter(_.startsWith(dataFile + "/data_batch_"))
-      .filter(_.endsWith(".bin"))
-      .toArray.sortWith(_ < _).map(p => Paths.get(p))
+    val allFiles = Array(
+      Paths.get(dataFile, "data_batch_1.bin"),
+      Paths.get(dataFile, "data_batch_2.bin"),
+      Paths.get(dataFile, "data_batch_3.bin"),
+      Paths.get(dataFile, "data_batch_4.bin"),
+      Paths.get(dataFile, "data_batch_5.bin")
+    )
 
     val result = new ArrayBuffer[ByteRecord]()
     allFiles.map(imageFile => {
@@ -141,7 +142,7 @@ object Utils {
 
   private[bigdl] def loadTest(dataFile: String): Array[ByteRecord] = {
     val result = new ArrayBuffer[ByteRecord]()
-    val testFile = Paths.get(dataFile + "/test_batch.bin")
+    val testFile = Paths.get(dataFile, "test_batch.bin")
     load(testFile, result)
     result.toArray
   }
