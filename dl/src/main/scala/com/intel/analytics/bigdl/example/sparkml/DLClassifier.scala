@@ -58,12 +58,12 @@ object DLClassifier {
 
       val paramsTrans = ParamMap(
         valTrans.modelTrain -> model,
-        valTrans.batchSize ->
+        valTrans.batchShape ->
         Array(param.batchSize, 3, imageSize, imageSize))
 
       val valSet = DataSet.SeqFileFolder.
         files(param.folder, sc, param.classNum, param.nodeNumber, null) ->
-        SampleToBGRImg(imageSize) ->
+        SampleToBGRImg() ->
         BGRImgNormalizer(testMean, testStd) ->
         BGRImgToLabeledPoint()
 

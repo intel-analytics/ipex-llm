@@ -25,8 +25,7 @@ import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 
-import scala.collection.mutable.ArrayBuffer
-import scala.reflect._
+import scala.reflect.ClassTag
 
 /**
  * make saprk 1.5-plus compatible with 2.0 by extends extends MlTransform and
@@ -45,7 +44,7 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag]
     val params = this.extractParamMap()
     require(null != params.getOrElse(modelTrain, null),
       "model for predict must not be null")
-    require(null != params.getOrElse(batchSize, null),
+    require(null != params.getOrElse(batchShape, null),
       "batchSize for predict must not be null")
     require(null != params.getOrElse(inputCol, null),
       "inputCol must not be null")
@@ -55,7 +54,7 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag]
 
   override def process(dataset: DataFrame): DataFrame = {
     this.validateParams()
-    DLClassifier.process[T]($(batchSize), $(modelTrain), $(inputCol), $(outputCol), dataset)
+    DLClassifier.process[T]($(batchShape), $(modelTrain), $(inputCol), $(outputCol), dataset)
   }
 
   override def copy(extra: ParamMap): DLClassifier[T] = {
@@ -85,9 +84,9 @@ object DLClassifier{
         // to use this tensorBuffer, but only add the meaningful parts to the result Array.
         batch.foreach{ row =>
           tensorBuffer.select(1, i).copy(
-              Tensor(Storage(row.getAs[DenseVector](inputCol).toArray.map(ev.fromType(_)))))
+            Tensor(Storage(row.getAs[DenseVector](inputCol).toArray.map(ev.fromType(_)))))
         }
-        val output = localModel.forward(tensorBuffer).toTensor[T]git r
+        val output = localModel.forward(tensorBuffer).toTensor[T]
         val predict = if (output.dim == 2) {
           output.max(2)._2.squeeze().storage().array()
         } else if (output.dim == 1) {
@@ -114,9 +113,9 @@ object DLClassifier{
 
 trait DataParams[@specialized(Float, Double) T] extends Params {
   final val modelTrain = new Param[Module[T]](this, "module factory", "network model")
-  final val batchSize = new Param[Array[Int]](this, "batch size", "batch size for input")
+  final val batchShape = new Param[Array[Int]](this, "batch size", "batch size for input")
 
   final def getModel: Module[T] = $(modelTrain)
-  final def getBatchSize: Array[Int] = $(batchSize)
+  final def getBatchSize: Array[Int] = $(batchShape)
 }
 
