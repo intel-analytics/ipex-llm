@@ -17,9 +17,14 @@
 
 package com.intel.analytics.bigdl.dataset
 
+import java.nio.ByteBuffer
 import java.nio.file.Path
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
+import com.intel.analytics.bigdl.dataset.text.LabeledSentence
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+
+import scala.collection.Iterator
 
 /**
  * Represent an image
@@ -28,6 +33,15 @@ abstract class Image extends Serializable {
   def width(): Int
 
   def height(): Int
+
+  def content: Array[Float]
+}
+
+ /**
+  * Represent a sentence
+  */
+abstract class Sentence extends Serializable {
+  def length(): Int
 
   def content: Array[Float]
 }
@@ -45,6 +59,63 @@ class LocalImagePath(val path : Path)
  * @param path
  */
 case class LocalSeqFilePath(val path: Path)
+
+
+ /**
+  * Sample, bundling input and target
+  *
+  * @param featureTensor
+  * @param labelTensor
+  */
+
+class Sample(
+    protected var featureTensor: Tensor[Float],
+    protected var labelTensor: Tensor[Float]) {
+
+  def this() = this(Tensor[Float](), Tensor[Float]())
+
+  def copy(featureData: Array[Float],
+           labelData: Array[Float],
+           featureSize: Array[Int],
+           labelSize: Array[Int]): Sample = {
+    featureTensor.set(Storage[Float](featureData), 1, featureSize)
+    labelTensor.set(Storage[Float](labelData), 1, labelSize)
+    this
+  }
+
+  def copyToFeature(storage: Array[Float], offset: Int, length: Int): Unit = {
+    require(offset + length <= storage.length, "index out of boundary")
+    var i = 0
+    while (i < length) {
+      storage(i) = featureTensor.storage()(i)
+      i += 1
+    }
+  }
+
+  def copyToLabel(storage: Array[Float], offset: Int, length: Int): Unit = {
+    require(offset + length <= storage.length, "index out of boundary")
+    var i = 0
+    while (i < length) {
+      storage(i) = labelTensor.storage()(i)
+      i += 1
+    }
+  }
+
+  def copy(other: Sample): Sample = {
+    featureTensor.copy(other.featureTensor)
+    labelTensor.copy(other.labelTensor)
+    this
+  }
+
+  def getFeature(): Tensor[Float] = featureTensor
+
+  def getLabel(): Tensor[Float] = labelTensor
+
+  override def clone(): Sample = {
+    new Sample().copy(this)
+  }
+
+}
 
 /**
  * Represent a label

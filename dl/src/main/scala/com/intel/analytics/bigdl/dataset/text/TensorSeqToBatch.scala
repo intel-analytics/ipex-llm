@@ -37,7 +37,11 @@ class TensorSeqToBatch(batchSize: Int = 1)
       override def next(): MiniBatch[Float] = {
         if (prev.hasNext) {
           val data = prev.next()
-          MiniBatch(data._1, data._2)
+          val h = data._1.size(1)
+          val w = data._1.size(2)
+          val input = Tensor(data._1.storage(), 1, Array(1, h, w))
+          val target = Tensor(data._2.storage(), 1, Array(1, h, w))
+          MiniBatch(input, target)
         } else {
           null
         }

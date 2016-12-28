@@ -31,6 +31,7 @@ class Recurrent[T : ClassTag] (
   val hidden = T(Tensor[T](hiddenSize))
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    input.squeeze()
     require(input.dim == 2, "input should be a two dimension Tensor")
     require(modules.length == 2, "rnn container must include a cell and a non-linear layer")
 
