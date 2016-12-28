@@ -101,7 +101,7 @@ object ImageClassifier {
               (Module.loadCaffe[Float](AlexNet(1000),
                 param.caffeDefPath.get, param.modelPath),
                 AlexNetPreprocessor(valPath, param.batchSize, param.meanFile.get))
-            case "googlenet" =>
+            case "inception" =>
               (Module.loadCaffe[Float](Inception_v1_NoAuxClassifier(1000),
                 param.caffeDefPath.get, param.modelPath),
                 InceptionPreprocessor(valPath, param.batchSize))
