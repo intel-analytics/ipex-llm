@@ -68,8 +68,10 @@ class SampleToBatch(totalBatch: Int)
             val featureLength = smpl.getFeature().size.reduceLeft(_*_)
            val labelLength = smpl.getLabel().size.reduceLeft(_*_)
             dimension = (smpl.getFeature().size, smpl.getLabel().size)
-            if (featureData == null) {
+            if (featureData == null || featureData.length < batchSize * featureLength) {
               featureData = new Array[Float](batchSize * featureLength)
+            }
+            if (labelData == null || labelData.length < batchSize * labelLength) {
               labelData = new Array[Float](batchSize * labelLength)
             }
             smpl.copyToFeature(featureData, i*featureLength, featureLength)
