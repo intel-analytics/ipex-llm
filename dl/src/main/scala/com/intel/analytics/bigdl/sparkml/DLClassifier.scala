@@ -19,7 +19,6 @@ package org.apache.spark.ml
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.ml.param.shared.{HasInputCol, HasOutputCol}
 import org.apache.spark.ml.param.{ParamMap, _}
 import org.apache.spark.mllib.linalg.DenseVector
@@ -27,7 +26,7 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.ClassTag
+import scala.reflect._
 
 /**
  * make saprk 1.5-plus compatible with 2.0 by extends extends MlTransform and
@@ -75,19 +74,18 @@ object DLClassifier{
     val modelBroadCast = dataset.sqlContext.sparkContext.broadcast(model)
 
     val predictRdd = dataset.rdd.mapPartitions{ rows =>
-      val result = new ArrayBuffer[Row]()
       val localModel = modelBroadCast.value
       val tensorBuffer = Tensor[T](batchSize)
       val batches = rows.grouped((batchSize)(0))
 
-      while (batches.hasNext) {
-        val batch = batches.next()
+      val results = batches.flatMap{ batch =>
+        val batchResult = new Array[Row](batch.length)
         var i = 1
         batch.foreach{ row =>
-          if (T.isInstanceOf[Double]) {
+          if (classTag[T] == classTag[Double]) {
             tensorBuffer.select(1, i).copy(
               Tensor(Storage(row.getAs[DenseVector](inputCol).toArray.asInstanceOf[Array[T]])))
-          } else {
+          } else if (classTag[T] == classTag[Float]) {
             tensorBuffer.select(1, i).copy(
               Tensor(Storage(row.getAs[DenseVector](inputCol).toArray.map(ev.fromType(_)))))
           }
@@ -104,11 +102,14 @@ object DLClassifier{
 
         i = 0
         batch.foreach{ row =>
-          result.append(Row.fromSeq(row.toSeq ++ Array[Int](ev.toType[Int](predict(i)))))
+          batchResult(i) = Row.fromSeq(row.toSeq ++ Array[Int](ev.toType[Int](predict(i))))
           i += 1
         }
+
+        batchResult
       }
-      result.toIterator
+
+      results
     }
     val predictSchema = dataset.schema.add(outputCol, IntegerType)
     dataset.sqlContext.createDataFrame(predictRdd, predictSchema)
