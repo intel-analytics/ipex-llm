@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.models.vgg
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{BGRImgNormalizer, BGRImgToBatch}
+import com.intel.analytics.bigdl.dataset.image.{BGRImgNormalizer, BGRImgToBatch, SampleToBGRImg}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{DistriValidator, LocalValidator, Top1Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
@@ -45,12 +45,11 @@ object Test {
         })
 
       val validationSet = (if (sc.isDefined) {
-        DataSet.ImageFolder
-          .images(Paths.get(param.folder), sc.get, param.nodeNumber, 32)
+        DataSet.array(Utils.loadTest(param.folder), sc.get, param.nodeNumber)
       } else {
-        DataSet.ImageFolder
-          .images(Paths.get(param.folder), 32)
-      }) -> BGRImgNormalizer(testMean, testStd) -> BGRImgToBatch(param.batchSize)
+        DataSet.array(Utils.loadTest(param.folder))
+      }) -> SampleToBGRImg() -> BGRImgNormalizer(testMean, testStd) ->
+        BGRImgToBatch(param.batchSize)
 
       val model = Module.load[Float](param.model)
       val validator = Validator(model, validationSet)

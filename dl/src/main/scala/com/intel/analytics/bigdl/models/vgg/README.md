@@ -4,6 +4,7 @@ article](http://torch.ch/blog/2015/07/30/cifar.html).
 
 ## Prepare Cifar10 Dataset
 You can download Cifar10 dataset from [this webpage](https://www.cs.toronto.edu/~kriz/cifar.html)
+, and choose the (binary version).
 .
 
 ## Train Model
