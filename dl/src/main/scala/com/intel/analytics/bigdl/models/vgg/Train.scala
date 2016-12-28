@@ -46,12 +46,11 @@ object Train {
       })
 
       val trainDataSet = (if (sc.isDefined) {
-        DataSet.ImageFolder
-          .images(Paths.get(param.folder, "/train"), sc.get, param.nodeNumber, 32)
+        DataSet.array(Utils.loadTrain(param.folder), sc.get, param.nodeNumber)
       } else {
-        DataSet.ImageFolder
-          .images(Paths.get(param.folder, "/train"), 32)
-      }) -> BGRImgNormalizer(trainMean, trainStd) -> BGRImgToBatch(param.batchSize)
+        DataSet.array(Utils.loadTrain(param.folder))
+      }) -> SampleToBGRImg() -> BGRImgNormalizer(trainMean, trainStd) -> BGRImgToBatch(
+        param.batchSize)
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -78,12 +77,11 @@ object Train {
       )
 
       val validateSet = (if (sc.isDefined) {
-        DataSet.ImageFolder
-          .images(Paths.get(param.folder, "/val"), sc.get, param.nodeNumber, 32)
+        DataSet.array(Utils.loadTest(param.folder), sc.get, param.nodeNumber)
       } else {
-        DataSet.ImageFolder
-          .images(Paths.get(param.folder, "/val"), 32)
-      }) -> BGRImgNormalizer(testMean, testStd) -> BGRImgToBatch(param.batchSize)
+        DataSet.array(Utils.loadTest(param.folder))
+      }) -> SampleToBGRImg() -> BGRImgNormalizer(testMean, testStd) -> BGRImgToBatch(param
+        .batchSize)
 
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
