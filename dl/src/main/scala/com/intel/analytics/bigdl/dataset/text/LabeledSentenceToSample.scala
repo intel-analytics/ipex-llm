@@ -48,6 +48,7 @@ class LabeledSentenceToSample(vocabLength: Int)
       i = 0
       while (i < other.length) {
         labelBuffer(i) = other.label()(i) + 1.0f
+        i += 1
       }
       buffer.copy(arrayBuffer, labelBuffer,
         Array(other.length, vocabLength), Array(other.labelLength))
