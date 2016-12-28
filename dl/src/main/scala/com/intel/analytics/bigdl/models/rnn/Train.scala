@@ -20,8 +20,8 @@ package com.intel.analytics.bigdl.models.rnn
 import java.io.File
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.text.{TensorSeqToBatch, TextSeqToTensorSeq}
+import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.text.{LabeledSentenceToSample, SeqToLabeledSentence, TensorSeqToBatch, TextSeqToTensorSeq}
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
@@ -53,11 +53,20 @@ object Train {
       val valData = dataArray._2
 
       val trainSet = DataSet.array(trainData)
-          .transform(TextSeqToTensorSeq(dictionaryLength))
-          .transform(TensorSeqToBatch())
+           .transform(SeqToLabeledSentence())
+           .transform(LabeledSentenceToSample(dictionaryLength))
+           .transform(SampleToBatch(1))
       val validationSet = DataSet.array(valData)
-          .transform(TextSeqToTensorSeq(dictionaryLength))
-          .transform(TensorSeqToBatch())
+           .transform(SeqToLabeledSentence())
+           .transform(LabeledSentenceToSample(dictionaryLength))
+           .transform(SampleToBatch(1))
+
+//      val trainSet = DataSet.array(trainData)
+//          .transform(TextSeqToTensorSeq(dictionaryLength))
+//          .transform(TensorSeqToBatch())
+//      val validationSet = DataSet.array(valData)
+//          .transform(TextSeqToTensorSeq(dictionaryLength))
+//          .transform(TensorSeqToBatch())
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -81,13 +90,13 @@ object Train {
       }
 
 
-      Engine.setCoreNumber(1)
-      Engine.model.setPoolSize(param.coreNumber)
+      // Engine.setCoreNumber(1)
+      // Engine.model.setPoolSize(param.coreNumber)
 
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
-        criterion = new CrossEntropyCriterion[Float]()
+        criterion = new CrossEntropyCriterion[Float](squeezeFlag = true)
       )
 
       optimizer

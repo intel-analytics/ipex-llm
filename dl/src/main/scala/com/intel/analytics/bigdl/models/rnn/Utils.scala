@@ -145,23 +145,53 @@ object Utils {
   }
 
   private[bigdl] def readSentence(filedirect: String, dictionarySize: Int)
-  : (Array[(Seq[Int], Seq[Int])], Array[(Seq[Int], Seq[Int])]) = {
+  : (Array[(Array[Float], Array[Float])], Array[(Array[Float], Array[Float])]) = {
 
     import scala.io.Source
 
     val logData = Source.fromFile(filedirect + "/mapped_data.txt").getLines().toArray
-    val dataDF = logData.map(x => {
+    val dataFlow = logData.map(x => {
       val seq = x.split(",").toList.asInstanceOf[Seq[Int]]
       (seq.take(seq.length - 1), seq.drop(1))
     })
 
-    val length = dataDF.length
+    val length = dataFlow.length
     val seq = Random.shuffle((1 to length).toList)
     val seqTrain = seq.take(Math.floor(seq.length*0.8).toInt).toArray
     val seqVal = seq.drop(Math.floor(seq.length*0.8).toInt).toArray
 
-    val trainData = seqTrain.collect(dataDF)
-    val valData = seqVal.collect(dataDF)
+    val trainFlow = seqTrain.collect(dataFlow)
+    val valFlow = seqVal.collect(dataFlow)
+
+    val trainData = trainFlow.map(x => {
+      val data = x._1
+      val label = x._2
+      val numOfWords = data.length
+      val input = new Array[Float](numOfWords)
+      val target = new Array[Float](numOfWords)
+      var i = 0
+      while (i < numOfWords) {
+        input(i) = data(i).toString.toInt.toFloat
+        target(i) = data(i).toString.toInt.toFloat
+        i += 1
+      }
+      (input, target)
+    })
+
+    val valData = valFlow.map(x => {
+      val data = x._1
+      val label = x._2
+      val numOfWords = data.length
+      val input = new Array[Float](numOfWords)
+      val target = new Array[Float](numOfWords)
+      var i = 0
+      while (i < numOfWords) {
+        input(i) = data(i).toString.toInt.toFloat
+        target(i) = data(i).toString.toInt.toFloat
+        i += 1
+      }
+      (input, target)
+    })
 
     (trainData, valData)
   }
