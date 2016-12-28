@@ -78,6 +78,8 @@ class LocalOptimizer[T: ClassTag] private[optim](
     (1 to subModelNumber).map(_ => criterion.cloneCriterion()).toArray
 
   override def optimize(): Module[T] = {
+    this.checkEngineIsInited()
+
     var wallClockTime = 0L
     var count = 0
     optimMethod.clearHistory(state)

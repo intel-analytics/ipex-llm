@@ -508,6 +508,8 @@ class DistriOptimizer[T: ClassTag] private[optim](
   private var models: RDD[DistriOptimizer.Cache[T]] = null
 
   override def optimize(): Module[T] = {
+    this.checkEngineIsInited()
+
     optimMethod.clearHistory(state)
     state("dropPercentage") = dropPercentage
     state("warmupIterationNum") = warmupIterationNum

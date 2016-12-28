@@ -20,8 +20,8 @@ package com.intel.analytics.bigdl.optim
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet, MiniBatch}
 
 import scala.reflect.ClassTag
@@ -95,6 +95,10 @@ abstract class Optimizer[T: ClassTag, D](
     this.comupteThresholdbatchSize = batchsize
     this.warmupIterationNum = warmupIteration
     this
+  }
+
+  def checkEngineIsInited(): Unit = {
+    require(Engine.isInitialized, s"you may forget to initialize Engine object.")
   }
 }
 
