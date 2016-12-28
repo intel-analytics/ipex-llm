@@ -60,7 +60,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
     extraSize = size % partitionNum
     partitionId = TaskContext.getPartitionId()
   }
-  
+
   def readParameterBuffer(): CompressedTensor[T] = {
     new FP16SplitsCompressedTensor[T](size,
       partitionNum).asInstanceOf[CompressedTensor[T]]
