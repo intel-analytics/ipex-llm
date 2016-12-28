@@ -219,7 +219,7 @@ object DistriOptimizer {
         }).reduce(_ + _)
 
       dropModelNumBatch += (driverSubModelNum - finishedModelNum)
-      if (finishedModelNum >= driverSubModelNum * (1-maxDropPercentage)) {
+      if (dropPercentage == 0 || finishedModelNum >= driverSubModelNum * (1-maxDropPercentage)) {
         val value = lossSum.value / finishedModelNum
         models.mapPartitions(modelIter => {
           val modelCache = modelIter.next()
