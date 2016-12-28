@@ -64,6 +64,8 @@ if [ $MVN_INSTALL -eq 0 ]; then
 fi
 
 cp $BASEDIR/scripts/bigdl.sh $BIN_DIR/
+cp $BASEDIR/scripts/classes.lst $BIN_DIR/
+cp $BASEDIR/scripts/img_class.lst $BIN_DIR/
 
 mvn clean package -DskipTests $*
 cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies.jar $LIB_DIR/

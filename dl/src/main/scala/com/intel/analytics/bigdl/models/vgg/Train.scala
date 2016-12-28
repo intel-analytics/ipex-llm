@@ -38,7 +38,6 @@ object Train {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      val maxEpoch = 90
       val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark").map(conf => {
         conf.setAppName("Train Vgg on Cifar10")
           .set("spark.akka.frameSize", 64.toString)
@@ -92,7 +91,7 @@ object Train {
       optimizer
         .setValidation(Trigger.everyEpoch, validateSet, Array(new Top1Accuracy[Float]))
         .setState(state)
-        .setEndWhen(Trigger.maxEpoch(maxEpoch))
+        .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
     })
   }

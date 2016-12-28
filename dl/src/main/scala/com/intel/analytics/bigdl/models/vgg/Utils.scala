@@ -32,7 +32,8 @@ object Utils {
     stateSnapshot: Option[String] = None,
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
-    batchSize: Int = 128,
+    batchSize: Int = 112,
+    maxEpoch: Int = 90,
     env: String = "local"
   )
 
@@ -57,6 +58,9 @@ object Utils {
       .text("node number to train the model")
       .action((x, c) => c.copy(nodeNumber = x))
       .required()
+    opt[Int]('e', "maxEpoch")
+      .text("epoch numbers")
+      .action((x, c) => c.copy(maxEpoch = x))
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
@@ -78,7 +82,7 @@ object Utils {
     model: String = "",
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
-    batchSize: Int = 128,
+    batchSize: Int = 112,
     env: String = "local"
   )
 
