@@ -30,6 +30,7 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.ml.{DLClassifier => SparkDLClassifier}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -68,8 +69,7 @@ object DLClassifier {
       val valData = valSet.data(train = false).asInstanceOf[Iterator[MiniBatch[Float]]]
 
       // init
-      import org.apache.spark.ml.DLClassifier
-      val valTrans = new DLClassifier[Float]().setInputCol("features").setOutputCol("predict")
+      val valTrans = new SparkDLClassifier[Float]().setInputCol("features").setOutputCol("predict")
       val paramsTrans = ParamMap(valTrans.modelTrain -> model,
         valTrans.batchSize -> Array(10, 28, 28))
       val tensorBuffer = new ArrayBuffer[LabeledPoint]()
