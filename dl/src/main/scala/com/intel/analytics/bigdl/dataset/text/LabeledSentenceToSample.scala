@@ -30,6 +30,7 @@ class LabeledSentenceToSample(vocabLength: Int)
   extends Transformer[LabeledSentence, Sample] {
   private val buffer = new Sample()
   private var arrayBuffer: Array[Float] = null
+  private var labelBuffer: Array[Float] = null
 
   override def apply(prev: Iterator[LabeledSentence]): Iterator[Sample] = {
     prev.map(other => {
@@ -41,7 +42,14 @@ class LabeledSentenceToSample(vocabLength: Int)
         arrayBuffer(i*vocabLength + other.getData(i).toInt) = 1.0f
         i += 1
       }
-      buffer.copy(arrayBuffer, other.label,
+      if (labelBuffer == null || labelBuffer.length < other.length) {
+        labelBuffer = new Array[Float](other.length)
+      }
+      i = 0
+      while (i < other.length) {
+        labelBuffer(i) = other.label()(i) + 1.0f
+      }
+      buffer.copy(arrayBuffer, labelBuffer,
         Array(other.length, vocabLength), Array(other.labelLength))
     })
   }

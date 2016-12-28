@@ -96,9 +96,9 @@ class LabeledSentence(
 
   def labelLength(): Int = _labelLength
 
-  def label: Array[Float] = _label
+  def label(): Array[Float] = _label
 
-  override def content: Array[Float] = _data
+  override def content(): Array[Float] = _data
 
   override def length(): Int = _dataLength
 }
