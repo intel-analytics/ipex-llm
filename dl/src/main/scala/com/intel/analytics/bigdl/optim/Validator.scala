@@ -18,13 +18,18 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{MiniBatch, DistributedDataSet, LocalDataSet}
+import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet, MiniBatch}
 
 abstract class Validator[T, D](
   model: Module[T],
   dataSet: DataSet[D]
 ) {
   def test(vMethods: Array[ValidationMethod[T]]): Array[(ValidationResult, ValidationMethod[T])]
+
+  def checkEngineIsInited(): Unit = {
+    require(Engine.isInitialized, s"you may forget to initialize Engine.")
+  }
 }
 
 object Validator {
