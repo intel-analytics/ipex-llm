@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 /**
- * Replicate repeats input $$nFeatures times along its `dim`
+ * Replicate repeats input `nFeatures` times along its `dim` dimension
  *
  * Notice: No memory copy, it set the stride along the `dim`-th dimension to zero.
  *
