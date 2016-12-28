@@ -20,13 +20,15 @@ package com.intel.analytics.bigdl.dataset.text
 import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
 
 import scala.collection.Iterator
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
 object LabeledSentenceToSample {
-  def apply(vocabLength: Int): LabeledSentenceToSample =
-    new LabeledSentenceToSample(vocabLength)
+  def apply(vocabLength: Int, vocabNumber: Int, batchMode: Boolean)
+  : LabeledSentenceToSample =
+    new LabeledSentenceToSample(vocabLength, vocabNumber, batchMode)
 }
 
-class LabeledSentenceToSample(vocabLength: Int)
+class LabeledSentenceToSample(vocabLength: Int, vocabNumber: Int, batchMode: Boolean)
   extends Transformer[LabeledSentence, Sample] {
   private val buffer = new Sample()
   private var arrayBuffer: Array[Float] = null
@@ -34,24 +36,38 @@ class LabeledSentenceToSample(vocabLength: Int)
 
   override def apply(prev: Iterator[LabeledSentence]): Iterator[Sample] = {
     prev.map(other => {
-      if (arrayBuffer == null || arrayBuffer.length < other.length * vocabLength) {
-        arrayBuffer = new Array[Float](other.length*vocabLength)
+      val wordLength = batchMode match {
+        case true => vocabNumber
+        case _ => other.length
+      }
+      if (arrayBuffer == null || arrayBuffer.length < wordLength * vocabLength) {
+        arrayBuffer = new Array[Float](wordLength*vocabLength)
       }
       var i = 0
       while (i < other.length) {
         arrayBuffer(i*vocabLength + other.getData(i).toInt) = 1.0f
         i += 1
       }
-      if (labelBuffer == null || labelBuffer.length < other.length) {
-        labelBuffer = new Array[Float](other.length)
+      while (i < wordLength) {
+        val index = (RNG.uniform(0.0, 1.0) * vocabLength).toInt
+        arrayBuffer(i*vocabLength + index) = 1.0f
+        i += 1
+      }
+      if (labelBuffer == null || labelBuffer.length < wordLength) {
+        labelBuffer = new Array[Float](wordLength)
       }
       i = 0
       while (i < other.length) {
         labelBuffer(i) = other.label()(i) + 1.0f
         i += 1
       }
+      while (i < wordLength) {
+        val index = (RNG.uniform(0.0, 1.0) * vocabLength).toInt
+        labelBuffer(i) = index.toFloat + 1.0f
+        i += 1
+      }
       buffer.copy(arrayBuffer, labelBuffer,
-        Array(other.length, vocabLength), Array(other.labelLength))
+        Array(wordLength, vocabLength), Array(wordLength))
     })
   }
 }
