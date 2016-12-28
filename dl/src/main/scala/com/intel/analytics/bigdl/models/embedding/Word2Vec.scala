@@ -67,25 +67,25 @@ object Word2Vec {
 
   def parse(args: Array[String]): Word2VecConfig = new OptionParser[Word2VecConfig]("word2vec") {
     help("help") text "prints this usage text"
-    opt[String]("saveLocation") required() action { (x,c) => c.copy(saveLocation = x) }
-    opt[String]("trainDataLocation") required() action { (x,c) => c.copy(trainDataLocation = x) }
-    opt[String]("testDataLocation")required() action { (x,c) => c.copy(testDataLocation = x) }
+    opt[String]("saveLocation") required() action { (x, c) => c.copy(saveLocation = x) }
+    opt[String]("trainDataLocation") required() action { (x, c) => c.copy(trainDataLocation = x) }
+    opt[String]("testDataLocation")required() action { (x, c) => c.copy(testDataLocation = x) }
     opt[Int]("numNegSamples")
       .text("Negative samples per training example.")
-      .action { (x,c) => c.copy(numNegSamples = x) }
+      .action { (x, c) => c.copy(numNegSamples = x) }
     opt[Int]("embeddingSize")
       .text("Initial learning rate.")
-      .action { (x,c) => c.copy(embeddingSize = x) }
+      .action { (x, c) => c.copy(embeddingSize = x) }
     opt[Int]("windowSize")
       .text("The number of words to predict to the left and right of the target word.")
-      .action { (x,c) => c.copy(windowSize = x) }
+      .action { (x, c) => c.copy(windowSize = x) }
     opt[Int]("minCount")
       .text("The minimum number of word occurrences for it to be included in the vocabulary.")
-      .action { (x,c) => c.copy(minCount = x) }
+      .action { (x, c) => c.copy(minCount = x) }
     opt[Double]("subsample")
       .text("Subsample threshold for word occurrence. Words that appear with higher " +
         "frequency will be randomly down-sampled. Set to 0 to disable.")
-      .action { (x,c) => c.copy(subsample = x) }
+      .action { (x, c) => c.copy(subsample = x) }
   }.parse(args, Word2VecConfig()).get
 
   private var trainWordsCount = 0L
@@ -135,11 +135,10 @@ object Word2Vec {
 
 
 
+
   }
 
-
-
-  def main(args: Array[String]) = {
+  def main(args: Array[String]): Unit = {
     val config = parse(args)
   }
 }
