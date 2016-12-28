@@ -17,10 +17,12 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{Engine, T}
 
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 class Recurrent[T : ClassTag] (
@@ -28,80 +30,202 @@ class Recurrent[T : ClassTag] (
   bpttTruncate: Int = 2)
 (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
-  val hidden = T(Tensor[T](hiddenSize))
+  // val hidden = T(Tensor[T](hiddenSize))
+  val hidden = Tensor[T]()
+  @transient
+  protected var results: Array[Future[Unit]] = null
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     input.squeeze()
-    require(input.dim == 2, "input should be a two dimension Tensor")
+    require(input.dim == 2 || input.dim == 3, "only support 2D or 3D (batch) input")
     require(modules.length == 2, "rnn container must include a cell and a non-linear layer")
 
     val module = modules(0)
     val transform = modules(1)
 
-    val numOfWords = input.size(1)
-    output.resize(Array(numOfWords, hiddenSize))
+    if (input.dim == 2) {
+      val height = input.size(1)
+      output.resize(Array(height, hiddenSize))
+      hidden.resize(Array(hiddenSize + 1, hiddenSize))
 
-    var i = 1
-    while (i <= numOfWords) {
-      val curInput = T(input(i), hidden(i).asInstanceOf[Tensor[T]])
-      val currentOutput = module.updateOutput(curInput)
-      transform.updateOutput(currentOutput)
-      output.update(i, transform.output.asInstanceOf[Tensor[T]])
-      hidden(i + 1) = Tensor[T]()
-        .resizeAs(transform.output.asInstanceOf[Tensor[T]])
-        .copy(transform.output.asInstanceOf[Tensor[T]])
-      i += 1
+      var i = 1
+      while (i <= height) {
+        val curInput = T(input(i), hidden(i))
+        val currentOutput = module.updateOutput(curInput)
+        transform.updateOutput(currentOutput)
+        output.update(i, transform.output.asInstanceOf[Tensor[T]])
+        hidden(i + 1) = Tensor[T]()
+          .resizeAs(transform.output.asInstanceOf[Tensor[T]])
+          .copy(transform.output.asInstanceOf[Tensor[T]])
+        i += 1
+      }
+    } else {
+      val batchSize = input.size(1)
+      val height = input.size(2)
+      output.resize(Array(batchSize, height, hiddenSize))
+      hidden.resize(Array(batchSize, hiddenSize + 1, hiddenSize))
+
+      if (results == null || results.length != batchSize) {
+        results = new Array[Future[Unit]](batchSize)
+      }
+
+      var i = 0
+      while (i < batchSize) {
+        val _i = i + 1
+        results(i) = Engine.model.invoke(() => {
+          val inputT = input.select(1, _i)
+          val outputT = output.select(1, _i)
+          val hiddenT = hidden.select(1, _i)
+          var j = 1
+          while (j <= height) {
+            val curInput = T(inputT(j), hiddenT(j))
+            val currentOutput = module.updateOutput(curInput)
+            transform.updateOutput(currentOutput)
+            outputT.update(j, transform.output.asInstanceOf[Tensor[T]])
+            hiddenT(j + 1) = Tensor[T]()
+              .resizeAs(transform.output.asInstanceOf[Tensor[T]])
+              .copy(transform.output.asInstanceOf[Tensor[T]])
+            j += 1
+          }
+        })
+        i += 1
+      }
+      Engine.model.sync(results)
     }
     output
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
+    input.squeeze()
+    require(input.dim == 2 || input.dim == 3, "only support 2D or 3D (batch) input")
+    require(modules.length == 2, "rnn container must include a cell and a non-linear layer")
+
     val module = modules(0)
     val transform = modules(1)
 
-    val numOfWords = input.size(1)
-    var i = numOfWords
-    while (i >= 1) {
-      transform.output = hidden(i + 1).asInstanceOf[Tensor[T]]
-      var deltaHidden = transform.updateGradInput(hidden(i), gradOutput(i))
-      var bpttStep = i
-      while (bpttStep >= Math.max(1, i - bpttTruncate)) {
-        val curInput = T(input(bpttStep), hidden(bpttStep).asInstanceOf[Tensor[T]])
-        module.accGradParameters(curInput, deltaHidden)
-        transform.output.asInstanceOf[Tensor[T]]
-          .copy(hidden(bpttStep).asInstanceOf[Tensor[T]])
-        deltaHidden = transform.updateGradInput(Tensor(),
-          module.updateGradInput(curInput, deltaHidden).toTable(2))
-        bpttStep -= 1
+    if (input.dim == 2) {
+      val height = input.size(1)
+      var i = height
+      while (i >= 1) {
+        transform.output = hidden(i + 1)
+        var deltaHidden = transform.updateGradInput(hidden(i), gradOutput(i))
+        var bpttStep = i
+        while (bpttStep >= Math.max(1, i - bpttTruncate)) {
+          val curInput = T(input(bpttStep), hidden(bpttStep))
+          module.accGradParameters(curInput, deltaHidden)
+          transform.output.asInstanceOf[Tensor[T]]
+            .copy(hidden(bpttStep))
+          deltaHidden = transform.updateGradInput(Tensor(),
+            module.updateGradInput(curInput, deltaHidden).toTable(2))
+          bpttStep -= 1
+        }
+        i -= 1
       }
-      i -= 1
+    } else {
+      val batchSize = input.size(1)
+      val height = input.size(2)
+
+      if (results == null || results.length != batchSize) {
+        results = new Array[Future[Unit]](batchSize)
+      }
+
+      var i = 0
+      while (i < batchSize) {
+        val _i = i + 1
+        results(i) = Engine.model.invoke(() => {
+          val inputT = input.select(1, _i)
+          val gradOutputT = gradOutput.select(1, _i)
+          val hiddenT = hidden.select(1, _i)
+          var j = height
+          while (j >= 1) {
+            transform.output = hiddenT(j + 1)
+            var deltaHidden = transform.updateGradInput(hiddenT(j), gradOutputT(j))
+            var bpttStep = j
+            while (bpttStep >= Math.max(1, j - bpttTruncate)) {
+              val curInput = T(inputT(bpttStep), hiddenT(bpttStep))
+              module.accGradParameters(curInput, deltaHidden)
+              transform.output.asInstanceOf[Tensor[T]]
+                .copy(hiddenT(bpttStep))
+              deltaHidden = transform.updateGradInput(Tensor(),
+                module.updateGradInput(curInput, deltaHidden).toTable(2))
+              bpttStep -= 1
+            }
+            j -= 1
+          }
+        })
+        i += 1
+      }
+      Engine.model.sync(results)
     }
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    input.squeeze()
+    require(input.dim == 2 || input.dim == 3, "only support 2D or 3D (batch) input")
+    require(modules.length == 2, "rnn container must include a cell and a non-linear layer")
+
     val module = modules(0)
     val transform = modules(1)
 
     gradInput.resize(input.size).zero
 
-    val numOfWords = input.size(1)
-    var i = numOfWords
-    while (i >= 1) {
-      transform.output.asInstanceOf[Tensor[T]]
-        .copy(hidden(i + 1).asInstanceOf[Tensor[T]])
-      var deltaHidden = transform.updateGradInput(hidden(i), gradOutput(i))
-      var bpttStep = i
-      while (bpttStep >= Math.max(1, i - bpttTruncate)) {
-        val curInput = T(input(bpttStep), hidden(bpttStep).asInstanceOf[Tensor[T]])
-        val gradInputBundle = module.updateGradInput(curInput, deltaHidden).toTable
-        gradInput(bpttStep).add(gradInputBundle(1).asInstanceOf[Tensor[T]])
+    if (input.dim == 2) {
+      val height = input.size(1)
+      var i = height
+      while (i >= 1) {
         transform.output.asInstanceOf[Tensor[T]]
-          .copy(hidden(bpttStep).asInstanceOf[Tensor[T]])
-        deltaHidden = transform.updateGradInput(Tensor(), gradInputBundle(2))
-        bpttStep -= 1
+          .copy(hidden(i + 1))
+        var deltaHidden = transform.updateGradInput(hidden(i), gradOutput(i))
+        var bpttStep = i
+        while (bpttStep >= Math.max(1, i - bpttTruncate)) {
+          val curInput = T(input(bpttStep), hidden(bpttStep))
+          val gradInputBundle = module.updateGradInput(curInput, deltaHidden).toTable
+          gradInput(bpttStep).add(gradInputBundle(1).asInstanceOf[Tensor[T]])
+          transform.output.asInstanceOf[Tensor[T]]
+            .copy(hidden(bpttStep))
+          deltaHidden = transform.updateGradInput(Tensor(), gradInputBundle(2))
+          bpttStep -= 1
+        }
+        i -= 1
       }
-      i -= 1
+    } else {
+      val batchSize = input.size(1)
+      val height = input.size(2)
+
+      if (results == null || results.length != batchSize) {
+        results = new Array[Future[Unit]](batchSize)
+      }
+
+      var i = 0
+      while (i < batchSize) {
+        val _i = i + 1
+        results(i) = Engine.model.invoke(() => {
+          val inputT = input.select(1, _i)
+          val gradOutputT = gradOutput.select(1, _i)
+          val gradInputT = gradInput.select(1, _i)
+          val hiddenT = hidden.select(1, _i)
+          var j = height
+          while (j >= 1) {
+            transform.output.asInstanceOf[Tensor[T]]
+              .copy(hiddenT(j + 1))
+            var deltaHidden = transform.updateGradInput(hiddenT(j), gradOutputT(j))
+            var bpttStep = j
+            while (bpttStep >= Math.max(1, j - bpttTruncate)) {
+              val curInput = T(inputT(bpttStep), hiddenT(bpttStep))
+              val gradInputBundle = module.updateGradInput(curInput, deltaHidden).toTable
+              gradInputT(bpttStep).add(gradInputBundle(1).asInstanceOf[Tensor[T]])
+              transform.output.asInstanceOf[Tensor[T]]
+                .copy(hiddenT(bpttStep))
+              deltaHidden = transform.updateGradInput(Tensor(), gradInputBundle(2))
+              bpttStep -= 1
+            }
+            j -= 1
+          }
+        })
+        i += 1
+      }
+      Engine.model.sync(results)
     }
 
     gradInput

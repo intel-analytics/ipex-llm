@@ -157,8 +157,8 @@ object Utils {
 
     val length = dataFlow.length
     val seq = Random.shuffle((1 to length).toList)
-    val seqTrain = seq.take(Math.floor(seq.length*0.8).toInt).toArray
-    val seqVal = seq.drop(Math.floor(seq.length*0.8).toInt).toArray
+    val seqTrain = seq.take(Math.floor(seq.length*0.3).toInt).toArray
+    val seqVal = seq.drop(Math.floor(seq.length*0.9).toInt).toArray
 
     val trainFlow = seqTrain.collect(dataFlow)
     val valFlow = seqVal.collect(dataFlow)
@@ -172,7 +172,7 @@ object Utils {
       var i = 0
       while (i < numOfWords) {
         input(i) = data(i).toString.toInt.toFloat
-        target(i) = data(i).toString.toInt.toFloat
+        target(i) = label(i).toString.toInt.toFloat
         i += 1
       }
       (input, target)
@@ -187,7 +187,7 @@ object Utils {
       var i = 0
       while (i < numOfWords) {
         input(i) = data(i).toString.toInt.toFloat
-        target(i) = data(i).toString.toInt.toFloat
+        target(i) = label(i).toString.toInt.toFloat
         i += 1
       }
       (input, target)
