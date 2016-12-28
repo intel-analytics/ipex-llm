@@ -45,7 +45,7 @@ object ResNet {
       model match {
         case container: Container[Activity, Activity, Float] =>
           container.modules.foreach( m => {
-            if (m.gradInput.isInstanceOf[Tensor[Float]] &&
+            if (m.gradInput.isInstanceOf[Tensor[_]] &&
               !m.getClass.getName.equals(packageName + "ConcatTable")) {
               val key = sharingKey(m)
               if (!cache.contains(key)) {
