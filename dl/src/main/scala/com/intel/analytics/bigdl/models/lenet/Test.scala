@@ -44,8 +44,8 @@ object Test {
         new SparkContext(conf)
       })
 
-      val validationData = Paths.get(param.folder, "/t10k-images.idx3-ubyte")
-      val validationLabel = Paths.get(param.folder, "/t10k-labels.idx1-ubyte")
+      val validationData = Paths.get(param.folder, "/t10k-images-idx3-ubyte")
+      val validationLabel = Paths.get(param.folder, "/t10k-labels-idx1-ubyte")
 
       val validationSet = (if (sc.isDefined) {
         DataSet.array(load(validationData, validationLabel), sc.get, param.nodeNumber)
