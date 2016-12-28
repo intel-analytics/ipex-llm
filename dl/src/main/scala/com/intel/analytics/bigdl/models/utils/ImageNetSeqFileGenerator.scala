@@ -66,15 +66,15 @@ object ImageNetSeqFileGenerator {
           s"${trainFolderPath} is not valid")
         val trainDataSet = DataSet.ImageFolder.paths(trainFolderPath)
         trainDataSet.shuffle()
+        val iter = trainDataSet.data(train = false)
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
-              val pipeline = trainDataSet -> LocalImgReader(256) ->
-                BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "train",
-                  s"imagenet-seq-$tid"))
-              val iter = pipeline.toLocal().data(train = false)
-              while (iter.hasNext) {
-                println(s"Generated file ${iter.next()}")
+              val imageIter = LocalImgReader(256)(iter)
+              val fileIter = BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "train",
+                  s"imagenet-seq-$tid"))(imageIter)
+              while (fileIter.hasNext) {
+                println(s"Generated file ${fileIter.next()}")
               }
             }
           })
