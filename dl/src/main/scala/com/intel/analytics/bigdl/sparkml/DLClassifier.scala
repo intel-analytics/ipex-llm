@@ -76,20 +76,16 @@ object DLClassifier{
     val predictRdd = dataset.rdd.mapPartitions{ rows =>
       val localModel = modelBroadCast.value
       val tensorBuffer = Tensor[T](batchSize)
-      val batches = rows.grouped((batchSize)(0))
+      val batches = rows.grouped(batchSize(0))
 
       val results = batches.flatMap{ batch =>
         val batchResult = new Array[Row](batch.length)
         var i = 1
+        // Notice: if the last batch is smaller than the batchSize(0), we still continue
+        // to use this tensorBuffer, but only add the meaningful parts to the result Array.
         batch.foreach{ row =>
-          if (classTag[T] == classTag[Double]) {
-            tensorBuffer.select(1, i).copy(
-              Tensor(Storage(row.getAs[DenseVector](inputCol).toArray.asInstanceOf[Array[T]])))
-          } else if (classTag[T] == classTag[Float]) {
-            tensorBuffer.select(1, i).copy(
+          tensorBuffer.select(1, i).copy(
               Tensor(Storage(row.getAs[DenseVector](inputCol).toArray.map(ev.fromType(_)))))
-          }
-          i += 1
         }
         val output = localModel.forward(tensorBuffer).toTensor[T]
         val predict = if (output.dim == 2) {
@@ -106,7 +102,7 @@ object DLClassifier{
           i += 1
         }
 
-        batchResult
+        batchResult.toIterator
       }
 
       results
