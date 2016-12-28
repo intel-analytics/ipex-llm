@@ -228,7 +228,7 @@ object DistriOptimizer {
       metrics.add("task1 time from driver", System.nanoTime() - start)
 
       dropModelNumBatch += (driverSubModelNum - finishedModelNum)
-      if (finishedModelNum > driverSubModelNum * maxDropPercentage) {
+      if (finishedModelNum > driverSubModelNum * (1-maxDropPercentage)) {
         val task2Start = System.nanoTime()
         val value = lossSum.value / finishedModelNum
         models.mapPartitions(modelIter => {

@@ -46,14 +46,21 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
   size: Int) extends Serializable {
   import AllReduceParameter._
 
-  @transient lazy private val taskSize = size / partitionNum
-  @transient lazy private val extraSize = size % partitionNum
-  @transient lazy private val partitionId: Int = TaskContext.getPartitionId()
+  @transient private var taskSize = 0
+  @transient private var extraSize = 0
+  @transient private var partitionId: Int = 0
 
   @transient lazy val parameterBuffer: CompressedTensor[T] = readParameterBuffer()
   @transient lazy val weightPartition: Tensor[T] = readWeightParititon()
   @transient lazy val gradientPartition: Tensor[T] = readGradientPartition()
 
+  private def readObject(in: java.io.ObjectInputStream) = {
+    in.defaultReadObject()
+    taskSize = size / partitionNum
+    extraSize = size % partitionNum
+    partitionId = TaskContext.getPartitionId()
+  }
+  
   def readParameterBuffer(): CompressedTensor[T] = {
     new FP16SplitsCompressedTensor[T](size,
       partitionNum).asInstanceOf[CompressedTensor[T]]
