@@ -15,13 +15,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.sparkml
+package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.DLClassifier
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
+import org.apache.spark.ml.DLClassifier
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.mllib.regression.LabeledPoint
@@ -53,7 +53,7 @@ class DLClassifierSpec extends FlatSpec with Matchers{
     // init
     val valTrans = new DLClassifier[Float]().setInputCol("features").setOutputCol("predict")
     val paramsTrans = ParamMap(valTrans.modelTrain -> model,
-      valTrans.batchSize -> Array(10, 28, 28))
+      valTrans.batchShape -> Array(10, 28, 28))
 
     val tensorBuffer = new ArrayBuffer[LabeledPoint]()
     var m = 0
