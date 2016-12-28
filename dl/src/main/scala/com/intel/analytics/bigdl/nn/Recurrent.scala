@@ -27,10 +27,10 @@ import scala.reflect.ClassTag
 
 class Recurrent[T : ClassTag] (
   hiddenSize: Int = 3,
+  outputSize: Int = 4,
   bpttTruncate: Int = 2)
 (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
-  // val hidden = T(Tensor[T](hiddenSize))
   val hidden = Tensor[T]()
   @transient
   protected var results: Array[Future[Unit]] = null
@@ -38,22 +38,25 @@ class Recurrent[T : ClassTag] (
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     input.squeeze()
     require(input.dim == 2 || input.dim == 3, "only support 2D or 3D (batch) input")
-    require(modules.length == 2, "rnn container must include a cell and a non-linear layer")
+    require(modules.length == 3,
+      "rnn container must include a cell, a non-linear layer and a linear layer")
 
     val module = modules(0)
     val transform = modules(1)
+    val linear = modules(2)
 
     if (input.dim == 2) {
       val height = input.size(1)
-      output.resize(Array(height, hiddenSize))
-      hidden.resize(Array(hiddenSize + 1, hiddenSize))
+      output.resize(Array(height, outputSize))
+      hidden.resize(Array(height + 1, hiddenSize))
 
       var i = 1
       while (i <= height) {
         val curInput = T(input(i), hidden(i))
         val currentOutput = module.updateOutput(curInput)
         transform.updateOutput(currentOutput)
-        output.update(i, transform.output.asInstanceOf[Tensor[T]])
+        output.update(i, linear.updateOutput(
+          transform.output).asInstanceOf[Tensor[T]])
         hidden(i + 1) = Tensor[T]()
           .resizeAs(transform.output.asInstanceOf[Tensor[T]])
           .copy(transform.output.asInstanceOf[Tensor[T]])
@@ -62,8 +65,8 @@ class Recurrent[T : ClassTag] (
     } else {
       val batchSize = input.size(1)
       val height = input.size(2)
-      output.resize(Array(batchSize, height, hiddenSize))
-      hidden.resize(Array(batchSize, hiddenSize + 1, hiddenSize))
+      output.resize(Array(batchSize, height, outputSize))
+      hidden.resize(Array(batchSize, height + 1, hiddenSize))
 
       if (results == null || results.length != batchSize) {
         results = new Array[Future[Unit]](batchSize)
@@ -81,7 +84,8 @@ class Recurrent[T : ClassTag] (
             val curInput = T(inputT(j), hiddenT(j))
             val currentOutput = module.updateOutput(curInput)
             transform.updateOutput(currentOutput)
-            outputT.update(j, transform.output.asInstanceOf[Tensor[T]])
+            outputT.update(j, linear.updateOutput(
+              transform.output).asInstanceOf[Tensor[T]])
             hiddenT(j + 1) = Tensor[T]()
               .resizeAs(transform.output.asInstanceOf[Tensor[T]])
               .copy(transform.output.asInstanceOf[Tensor[T]])
@@ -99,17 +103,25 @@ class Recurrent[T : ClassTag] (
                                  scale: Double = 1.0): Unit = {
     input.squeeze()
     require(input.dim == 2 || input.dim == 3, "only support 2D or 3D (batch) input")
-    require(modules.length == 2, "rnn container must include a cell and a non-linear layer")
+    require(modules.length == 3,
+      "rnn container must include a cell, a non-linear layer and a linear layer")
 
     val module = modules(0)
     val transform = modules(1)
+    val linear = modules(2)
 
     if (input.dim == 2) {
       val height = input.size(1)
       var i = height
       while (i >= 1) {
         transform.output = hidden(i + 1)
-        var deltaHidden = transform.updateGradInput(hidden(i), gradOutput(i))
+        val deltaGradOutput = linear.updateGradInput(
+          transform.output, gradOutput(i))
+        linear.accGradParameters(
+          transform.output, gradOutput(i)
+        )
+        var deltaHidden =
+          transform.updateGradInput(hidden(i), deltaGradOutput)
         var bpttStep = i
         while (bpttStep >= Math.max(1, i - bpttTruncate)) {
           val curInput = T(input(bpttStep), hidden(bpttStep))
@@ -140,7 +152,12 @@ class Recurrent[T : ClassTag] (
           var j = height
           while (j >= 1) {
             transform.output = hiddenT(j + 1)
-            var deltaHidden = transform.updateGradInput(hiddenT(j), gradOutputT(j))
+            val deltaGradOutput = linear.updateGradInput(
+              transform.output, gradOutputT(j))
+            linear.accGradParameters(
+              transform.output, gradOutputT(j))
+            var deltaHidden =
+              transform.updateGradInput(hiddenT(j), deltaGradOutput)
             var bpttStep = j
             while (bpttStep >= Math.max(1, j - bpttTruncate)) {
               val curInput = T(inputT(bpttStep), hiddenT(bpttStep))
@@ -163,10 +180,12 @@ class Recurrent[T : ClassTag] (
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     input.squeeze()
     require(input.dim == 2 || input.dim == 3, "only support 2D or 3D (batch) input")
-    require(modules.length == 2, "rnn container must include a cell and a non-linear layer")
+    require(modules.length == 3,
+      "rnn container must include a cell, a non-linear layer and a linear layer")
 
     val module = modules(0)
     val transform = modules(1)
+    val linear = modules(2)
 
     gradInput.resize(input.size).zero
 
@@ -176,7 +195,9 @@ class Recurrent[T : ClassTag] (
       while (i >= 1) {
         transform.output.asInstanceOf[Tensor[T]]
           .copy(hidden(i + 1))
-        var deltaHidden = transform.updateGradInput(hidden(i), gradOutput(i))
+        val deltaGradOutput = linear.updateGradInput(
+          transform.output, gradOutput(i))
+        var deltaHidden = transform.updateGradInput(hidden(i), deltaGradOutput)
         var bpttStep = i
         while (bpttStep >= Math.max(1, i - bpttTruncate)) {
           val curInput = T(input(bpttStep), hidden(bpttStep))
@@ -209,7 +230,9 @@ class Recurrent[T : ClassTag] (
           while (j >= 1) {
             transform.output.asInstanceOf[Tensor[T]]
               .copy(hiddenT(j + 1))
-            var deltaHidden = transform.updateGradInput(hiddenT(j), gradOutputT(j))
+            val deltaGradOutput = linear.updateGradInput(
+              transform.output, gradOutputT(j))
+            var deltaHidden = transform.updateGradInput(hiddenT(j), deltaGradOutput)
             var bpttStep = j
             while (bpttStep >= Math.max(1, j - bpttTruncate)) {
               val curInput = T(inputT(bpttStep), hiddenT(bpttStep))
@@ -240,7 +263,8 @@ class Recurrent[T : ClassTag] (
 object Recurrent {
   def apply[@specialized(Float, Double) T: ClassTag](
     hiddenSize: Int = 3,
+    outputSize: Int = 4,
     bpttTruncate: Int = 2)(implicit ev: TensorNumeric[T]) : Recurrent[T] = {
-    new Recurrent[T](hiddenSize, bpttTruncate)
+    new Recurrent[T](hiddenSize, outputSize, bpttTruncate)
   }
 }

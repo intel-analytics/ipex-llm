@@ -87,7 +87,7 @@ class Sample(
     require(offset + length <= storage.length, "index out of boundary")
     var i = 0
     while (i < length) {
-      storage(i) = featureTensor.storage()(i)
+      storage(offset + i) = featureTensor.storage()(i)
       i += 1
     }
   }
@@ -96,7 +96,7 @@ class Sample(
     require(offset + length <= storage.length, "index out of boundary")
     var i = 0
     while (i < length) {
-      storage(i) = labelTensor.storage()(i)
+      storage(offset + i) = labelTensor.storage()(i)
       i += 1
     }
   }
