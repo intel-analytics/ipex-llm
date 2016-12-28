@@ -36,11 +36,11 @@ class LogSoftMaxBatch[T: ClassTag](
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2
       || input.dim() == 3, "vector, matrix or batch matrix expected")
-    output.resizeAs(input)
+    // output.resizeAs(input)
     if (input.dim() != 3) {
       super.updateOutput(input)
     } else {
-      // output.resizeAs(input)
+      output.resizeAs(input)
       val (batchSize, nframe, dim) = (input.size(1), input.size(2), input.size(3))
 
       if (results == null || results.length != batchSize) {
