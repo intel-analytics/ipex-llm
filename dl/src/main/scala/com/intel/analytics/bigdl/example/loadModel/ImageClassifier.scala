@@ -15,16 +15,18 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.ImageClassification
+package com.intel.analytics.bigdl.example.loadModel
 
 import java.nio.file.Paths
 
+import com.intel.analytics.bigdl.example.loadModel.Preprocessor.{AlexNetPreprocessor, InceptionPreprocessor, ResNetPreprocessor}
 import com.intel.analytics.bigdl.models.alexnet.AlexNet
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.Logger
+import org.apache.spark.SparkContext
 import scopt.OptionParser
 
 
@@ -48,7 +50,9 @@ object ImageClassifier {
     modelPath: String = "",
     batchSize: Int = 32,
     meanFile: Option[String] = None,
-    coreNumber: Int = Runtime.getRuntime().availableProcessors() / 2
+    coreNumber: Int = Runtime.getRuntime().availableProcessors() / 2,
+    nodeNumber: Int = -1,
+    env: String = "local"
   )
 
   val testLocalParser = new OptionParser[TestLocalParams]("BigDL Image Classifier Example") {
@@ -87,11 +91,33 @@ object ImageClassifier {
     opt[Int]('c', "core")
       .text("cores number to test the model")
       .action((x, c) => c.copy(coreNumber = x))
+    opt[Int]('n', "node")
+      .text("node number to train the model")
+      .action((x, c) => c.copy(nodeNumber = x))
+      .required()
+    opt[String]("env")
+      .text("execution environment")
+      .validate(x => {
+        if (Set("local", "spark").contains(x.toLowerCase)) {
+          success
+        } else {
+          failure("env only support local|spark")
+        }
+      })
+      .action((x, c) => c.copy(env = x.toLowerCase()))
+      .required()
   }
 
   def main(args: Array[String]): Unit = {
     testLocalParser.parse(args, TestLocalParams()).foreach(param => {
       Engine.setCoreNumber(param.coreNumber)
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
+        .map(conf => {
+          conf.setAppName("BigDL Image Classifier Example")
+            .set("spark.akka.frameSize", 64.toString)
+          new SparkContext(conf)
+        })
+
       val valPath = Paths.get(param.folder, "val")
 
       val (model, validateDataSet) = param.modelType match {
@@ -100,18 +126,19 @@ object ImageClassifier {
             case "alexnet" =>
               (Module.loadCaffe[Float](AlexNet(1000),
                 param.caffeDefPath.get, param.modelPath),
-                AlexNetPreprocessor(valPath, param.batchSize, param.meanFile.get))
+                AlexNetPreprocessor(valPath, param.batchSize, param.meanFile.get,
+                  sc, param.nodeNumber))
             case "inception" =>
               (Module.loadCaffe[Float](Inception_v1_NoAuxClassifier(1000),
                 param.caffeDefPath.get, param.modelPath),
-                InceptionPreprocessor(valPath, param.batchSize))
+                InceptionPreprocessor(valPath, param.batchSize, sc, param.nodeNumber))
           }
 
         case TorchModel =>
           param.modelName match {
             case "resnet" =>
               (Module.loadTorch[Float](param.modelPath),
-                ResNetPreprocessor(valPath, param.batchSize))
+                ResNetPreprocessor(valPath, param.batchSize, sc, param.nodeNumber))
           }
 
         case _ => throw new IllegalArgumentException(s"${param.modelType}")

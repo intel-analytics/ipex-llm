@@ -315,6 +315,40 @@ object DataSet {
       }
       array(buffer, sc, partitionNum) -> SampleToBGRImg()
     }
+
+    def images(paths: Array[LocalLabeledImagePath], resizeW: Int, resizeH: Int, normalize: Float)
+    : DataSet[LabeledBGRImage] = {
+      val total = paths.length
+      var count = 1
+      val buffer = paths.map(imageFile => {
+        if (total < 100 || count % (total / 100) == 0 || count == total) {
+          logger.info(s"Cache image $count/$total(${count * 100 / total}%)")
+        }
+        count += 1
+        ByteRecord(BGRImage.readImage(imageFile.path, resizeW, resizeH), imageFile.label)
+      })
+      new LocalArrayDataSet[ByteRecord](buffer) -> SampleToBGRImg(normalize)
+    }
+
+    def images(path: Path, resizeW: Int, resizeH: Int, normalize: Float)
+    : DataSet[LabeledBGRImage] = {
+      images(LocalImageFiles.readPaths(path), resizeW, resizeH, normalize)
+    }
+
+    def images(paths: Array[LocalLabeledImagePath], sc: SparkContext, partitionNum: Int,
+      resizeW: Int, resizeH: Int, normalize: Float): DataSet[LabeledBGRImage] = {
+      val buffer: Array[ByteRecord] = {
+        paths.map(imageFile => {
+          ByteRecord(BGRImage.readImage(imageFile.path, resizeW, resizeH), imageFile.label)
+        })
+      }
+      array(buffer, sc, partitionNum) -> SampleToBGRImg(normalize)
+    }
+
+    def images(path: Path, sc: SparkContext, partitionNum: Int,
+      resizeW: Int, resizeH: Int, normalize: Float): DataSet[LabeledBGRImage] = {
+      images(LocalImageFiles.readPaths(path), sc, partitionNum, resizeW, resizeH, normalize)
+    }
   }
 
   object SeqFileFolder {
