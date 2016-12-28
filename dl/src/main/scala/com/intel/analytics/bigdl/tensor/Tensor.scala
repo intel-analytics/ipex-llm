@@ -573,8 +573,8 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def diff(other: Tensor[T], count: Int = 1, reverse: Boolean = false): Boolean
 
   /**
-   * view this.tensor and add a Singleton Dimension to $dim dimension
- *
+   * view this.tensor and add a Singleton Dimension to `dim` dimension
+   *
    * @param t source tensor
    * @param dim the specific dimension, default is 1
    * @return this

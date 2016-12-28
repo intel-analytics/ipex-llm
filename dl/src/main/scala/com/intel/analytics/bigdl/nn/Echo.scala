@@ -26,14 +26,9 @@ import scala.reflect.ClassTag
 /**
  * This module is for debug purpose, which can print activation and gradient in your model
  * topology
- *
- * @param ev$1
- * @param ev
- * @tparam T
  */
-
 @SerialVersionUID(6735245897546687343L)
-class Echo[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T])
+class Echo[T: ClassTag] (implicit ev: TensorNumeric[T])
   extends TensorModule[T]  {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

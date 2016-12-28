@@ -31,6 +31,7 @@ import org.slf4j.{Logger, LoggerFactory}
 import scopt.OptionParser
 
 import scala.collection.mutable.{ArrayBuffer, Map => MMap}
+import scala.language.existentials
 import scala.io.Source
 import scala.util.Random
 

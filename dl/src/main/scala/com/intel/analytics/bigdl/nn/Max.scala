@@ -24,14 +24,13 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 /**
- * Applies a max operation over dimension $dim.
+ * Applies a max operation over dimension `dim`
  *
- * @param dim
+ * @param dim max along this dimension
  * @param numInputDims Optional. If in a batch model, set to the inputDims.
  */
-
 @SerialVersionUID(- 3491572553329730774L)
-class Max[@specialized(Float, Double) T: ClassTag](
+class Max[T: ClassTag](
   var dim : Int = 1,
   var numInputDims: Int = Int.MinValue
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
@@ -107,7 +106,7 @@ class Max[@specialized(Float, Double) T: ClassTag](
 }
 
 object Max {
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[T: ClassTag](
       dim : Int = 1,
       numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Max[T] = {
     new Max[T](dim, numInputDims)
