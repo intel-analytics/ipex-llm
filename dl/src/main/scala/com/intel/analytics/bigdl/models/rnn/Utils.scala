@@ -37,6 +37,7 @@ object Utils {
     vocabSize: Int = 4000,
     bptt: Int = 4,
     nEpochs: Int = 30,
+    batchSize: Int = 1,
     coreNumber: Int = -1)
 
   val trainParser = new OptionParser[TrainParams]("BigDL SimpleRNN Train Example") {
@@ -90,6 +91,10 @@ object Utils {
     opt[Int]('e', "nEpochs")
       .text("epoch numbers")
       .action((x, c) => c.copy(nEpochs = x))
+
+    opt[Int]("batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = x))
 
     opt[Int]('c', "core")
       .text("cores number to train the model")
@@ -145,7 +150,8 @@ object Utils {
   }
 
   private[bigdl] def readSentence(filedirect: String, dictionarySize: Int)
-  : (Array[(Array[Float], Array[Float])], Array[(Array[Float], Array[Float])]) = {
+  : (Array[(Array[Float], Array[Float])], Array[(Array[Float], Array[Float])],
+    Int, Int) = {
 
     import scala.io.Source
 
@@ -163,10 +169,13 @@ object Utils {
     val trainFlow = seqTrain.collect(dataFlow)
     val valFlow = seqVal.collect(dataFlow)
 
+    var trainMaxLength = 0
+
     val trainData = trainFlow.map(x => {
       val data = x._1
       val label = x._2
       val numOfWords = data.length
+      trainMaxLength = math.max(trainMaxLength, numOfWords)
       val input = new Array[Float](numOfWords)
       val target = new Array[Float](numOfWords)
       var i = 0
@@ -177,11 +186,14 @@ object Utils {
       }
       (input, target)
     })
+
+    var valMaxLength = 0
 
     val valData = valFlow.map(x => {
       val data = x._1
       val label = x._2
       val numOfWords = data.length
+      valMaxLength = math.max(valMaxLength, numOfWords)
       val input = new Array[Float](numOfWords)
       val target = new Array[Float](numOfWords)
       var i = 0
@@ -193,6 +205,6 @@ object Utils {
       (input, target)
     })
 
-    (trainData, valData)
+    (trainData, valData, trainMaxLength, valMaxLength)
   }
 }

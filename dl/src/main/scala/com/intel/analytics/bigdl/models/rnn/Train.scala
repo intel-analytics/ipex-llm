@@ -51,22 +51,19 @@ object Train {
       val dataArray = readSentence(param.folder, dictionaryLength)
       val trainData = dataArray._1
       val valData = dataArray._2
+      val trainMaxLength = dataArray._3
+      val valMaxLegnth = dataArray._4
 
       val trainSet = DataSet.array(trainData)
            .transform(SeqToLabeledSentence())
-           .transform(LabeledSentenceToSample(dictionaryLength))
-           .transform(SampleToBatch(1))
+           .transform(LabeledSentenceToSample(dictionaryLength,
+             trainMaxLength, batchMode = true))
+           .transform(SampleToBatch(batchSize = param.batchSize))
       val validationSet = DataSet.array(valData)
            .transform(SeqToLabeledSentence())
-           .transform(LabeledSentenceToSample(dictionaryLength))
-           .transform(SampleToBatch(1))
-
-//      val trainSet = DataSet.array(trainData)
-//          .transform(TextSeqToTensorSeq(dictionaryLength))
-//          .transform(TensorSeqToBatch())
-//      val validationSet = DataSet.array(valData)
-//          .transform(TextSeqToTensorSeq(dictionaryLength))
-//          .transform(TensorSeqToBatch())
+           .transform(LabeledSentenceToSample(dictionaryLength,
+             valMaxLegnth, batchMode = true))
+           .transform(SampleToBatch(batchSize = param.batchSize))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -88,10 +85,6 @@ object Train {
           "weightDecay" -> param.weightDecay,
           "dampening" -> param.dampening)
       }
-
-
-      // Engine.setCoreNumber(1)
-      // Engine.model.setPoolSize(param.coreNumber)
 
       val optimizer = Optimizer(
         model = model,
