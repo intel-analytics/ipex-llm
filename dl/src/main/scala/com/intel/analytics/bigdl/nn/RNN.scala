@@ -55,6 +55,8 @@ class RnnCell[T : ClassTag] (
             ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
           m.asInstanceOf[Linear[T]].bias.apply1( _ => ev.fromType[Double](0.0))
         })
+      case _ =>
+        throw new IllegalArgumentException(s"Unsupported initMethod type ${initMethod}")
     }
     zeroGradParameters()
   }
