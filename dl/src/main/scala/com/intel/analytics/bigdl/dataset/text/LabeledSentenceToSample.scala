@@ -36,7 +36,8 @@ class LabeledSentenceToSample(vocabLength: Int, vocabNumber: Int, batchMode: Boo
 
   override def apply(prev: Iterator[LabeledSentence[Float]]): Iterator[Sample[Float]] = {
     prev.map(other => {
-      val wordLength = batchMode match {
+
+       val wordLength = batchMode match {
         case true => vocabNumber
         case _ => other.length
       }

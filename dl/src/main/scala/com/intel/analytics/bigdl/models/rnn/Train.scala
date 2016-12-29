@@ -57,12 +57,12 @@ object Train {
       val trainSet = DataSet.array(trainData)
            .transform(SeqToLabeledSentence())
            .transform(LabeledSentenceToSample(dictionaryLength,
-             trainMaxLength, batchMode = true))
+             trainMaxLength, batchMode = false))
            .transform(SampleToBatch(batchSize = param.batchSize))
       val validationSet = DataSet.array(valData)
            .transform(SeqToLabeledSentence())
            .transform(LabeledSentenceToSample(dictionaryLength,
-             valMaxLegnth, batchMode = true))
+             valMaxLegnth, batchMode = false))
            .transform(SampleToBatch(batchSize = param.batchSize))
 
       val model = if (param.modelSnapshot.isDefined) {
