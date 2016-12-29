@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.optim.DistriOptimizer._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 import org.apache.log4j.Logger
@@ -31,6 +30,7 @@ object LocalValidator {
 class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[MiniBatch[T]])
   extends Validator[T, MiniBatch[T]](model, dataSet) {
 
+  val logger = LocalValidator.logger
   private val coreNumber = Engine.coreNumber()
 
   private val subModelNumber = Engine.getEngineType match {
