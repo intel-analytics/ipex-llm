@@ -66,6 +66,12 @@ The <code>Dataset.array()</code> is a pipeline that will load the data and trans
 A SimpleRNN model is implemented in the <code>Model.scala</code> script. It is a one hidden layer recurrent neural network with arbitrary hidden circles.
 User can define the inputSize, hiddenSize, outputSize and bptt (back propagation through time) parameter to fine-tune the model.
 
+##Expected Output
+Users can see the Loss of the model printed by the program. The Loss means the perplexity of the model. The lower, the better.
+```
+[Epoch 1 1/26220][Iteration 1][Wall Clock 13.925086008s] loss is 8.333075046539307, iteration time is 0.04556048s data fetch time is 8.10813E-4s, train time 0.044749667s.
+```
+
 ##Parameters
 ```
   --folder | -f  [the directory to reach the data and save generated dictionary]
