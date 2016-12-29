@@ -30,15 +30,15 @@ abstract class Validator[T, D](
 object Validator {
   def apply[T, D](model: Module[T], dataset: DataSet[D]): Validator[T, D] = {
     dataset match {
-      case d: DistributedDataSet[MiniBatch[T]] =>
+      case d: DistributedDataSet[_] =>
         new DistriValidator[T](
           model = model,
-          dataSet = d
+          dataSet = d.asInstanceOf[DistributedDataSet[MiniBatch[T]]]
         ).asInstanceOf[Validator[T, D]]
-      case d: LocalDataSet[MiniBatch[T]] =>
+      case d: LocalDataSet[_] =>
         new LocalValidator[T](
           model = model,
-          dataSet = d
+          dataSet = d.asInstanceOf[LocalDataSet[MiniBatch[T]]]
         ).asInstanceOf[Validator[T, D]]
       case _ =>
         throw new UnsupportedOperationException

@@ -34,6 +34,7 @@ import org.apache.log4j.{Logger => Logger4j, Level => Levle4j}
 import scopt.OptionParser
 
 import scala.collection.mutable.{ArrayBuffer, Map => MMap}
+import scala.language.existentials
 import scala.io.Source
 
   /**

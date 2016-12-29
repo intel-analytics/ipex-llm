@@ -23,9 +23,9 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 /**
- * Replicate repeats input $nFeatures times along its $dim dimension.
+ * Replicate repeats input `nFeatures` times along its `dim` dimension
  *
- * Notice: No memory copy, it set the stride along the $dim-th dimension to zero.
+ * Notice: No memory copy, it set the stride along the `dim`-th dimension to zero.
  *
  * @param nFeatures replicate times.
  * @param dim dimension to be replicated.
@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID( - 7255265230723863741L)
-class Replicate[@specialized(Float, Double) T: ClassTag](
+class Replicate[T: ClassTag](
   val nFeatures : Int,
   val dim : Int = 1,
   val nDim : Int = Int.MaxValue)
