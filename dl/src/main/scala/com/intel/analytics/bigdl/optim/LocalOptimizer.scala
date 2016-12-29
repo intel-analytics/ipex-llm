@@ -17,10 +17,9 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, LocalDataSet}
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.CrossEntropyCriterion
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
@@ -215,12 +214,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
             val target = batch.labels.narrow(1, offset + 1, length)
             val output = workingModels(b).forward(input)
             vMethods.map(validation => {
-              if (validation.toString().equals("language model Loss")) {
-                val loss = workingCriterion(b).forward(output, target)
-                validation(Tensor(Storage(Array(loss))), Tensor())
-              } else {
-                validation(output, target)
-              }
+              validation(output, target)
             })
           }
         )
