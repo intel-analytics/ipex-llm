@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -36,11 +36,11 @@ object ZippedPartitionsWithLocalityRDD {
 }
 
 class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
-    sc: SparkContext,
-    _f: (Iterator[A], Iterator[B]) => Iterator[V],
-    _rdd1: RDD[A],
-    _rdd2: RDD[B],
-    preservesPartitioning: Boolean = false)
+  sc: SparkContext,
+  _f: (Iterator[A], Iterator[B]) => Iterator[V],
+  _rdd1: RDD[A],
+  _rdd2: RDD[B],
+  preservesPartitioning: Boolean = false)
   extends ZippedPartitionsRDD2[A, B, V](sc, _f, _rdd1, _rdd2, preservesPartitioning) {
 
   override def getPartitions: Array[Partition] = {
@@ -99,5 +99,6 @@ private[spark] class ZippedPartitionsLocalityPartition(
     oos.defaultWriteObject()
   }
 }
+
 
 
