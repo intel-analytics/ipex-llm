@@ -55,13 +55,16 @@ class Recurrent[T : ClassTag] (
         val curInput = T(input(i), hidden(i))
         val currentOutput = module.updateOutput(curInput)
         transform.updateOutput(currentOutput)
-        output.update(i, linear.updateOutput(
-          transform.output).asInstanceOf[Tensor[T]])
+        val _output = linear.updateOutput(transform.output)
+        output(i) = Tensor[T]()
+          .resizeAs(_output.asInstanceOf[Tensor[T]])
+          .copy(_output.asInstanceOf[Tensor[T]])
         hidden(i + 1) = Tensor[T]()
           .resizeAs(transform.output.asInstanceOf[Tensor[T]])
           .copy(transform.output.asInstanceOf[Tensor[T]])
         i += 1
       }
+      // println("recurrent forward batchSize = 1")
     } else {
       val batchSize = input.size(1)
       val height = input.size(2)

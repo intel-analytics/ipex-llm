@@ -46,11 +46,11 @@ class LabeledSentence[T: ClassTag](
   def copy(rawData: Array[T], rawLabel: Array[T]): this.type = {
     _dataLength = rawData.length
     _labelLength = rawLabel.length
-    if (_data.length < _dataLength) {
+    if (_data.length != _dataLength) {
       _data = new Array[T](_dataLength)
     }
     rawData.copyToArray(_data)
-    if (_label.length < _labelLength) {
+    if (_label.length != _labelLength) {
       _label = new Array[T](_labelLength)
     }
     rawLabel.copyToArray(_label)
