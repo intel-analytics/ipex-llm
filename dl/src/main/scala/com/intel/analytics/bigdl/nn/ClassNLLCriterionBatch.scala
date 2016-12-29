@@ -51,6 +51,7 @@ class ClassNLLCriterionBatch[T: ClassTag](weights: Tensor[T] = null, sizeAverage
         results = new Array[Future[(T, T)]](batchSize)
       }
 
+      // println(s"batchSize = ${batchSize}")
       var i = 1
       while (i <= batchSize) {
         val _i = i
