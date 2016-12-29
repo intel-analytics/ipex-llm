@@ -67,7 +67,7 @@ object Train {
       }
 
       val trainSet = (if (sc.isDefined) {
-        DataSet.array(load(trainData, trainLabel), sc.get, param.nodeNumber)
+        DataSet.array(load(trainData, trainLabel), sc.get)
       } else {
         DataSet.array(load(trainData, trainLabel))
       }) -> SampleToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
@@ -82,7 +82,7 @@ object Train {
       }
 
       val validationSet = (if (sc.isDefined) {
-        DataSet.array(load(validationData, validationLabel), sc.get, param.nodeNumber)
+        DataSet.array(load(validationData, validationLabel), sc.get)
       } else {
         DataSet.array(load(validationData, validationLabel))
       }) -> SampleToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(

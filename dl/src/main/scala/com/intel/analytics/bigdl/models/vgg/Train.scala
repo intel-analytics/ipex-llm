@@ -46,7 +46,7 @@ object Train {
       })
 
       val trainDataSet = (if (sc.isDefined) {
-        DataSet.array(Utils.loadTrain(param.folder), sc.get, param.nodeNumber)
+        DataSet.array(Utils.loadTrain(param.folder), sc.get)
       } else {
         DataSet.array(Utils.loadTrain(param.folder))
       }) -> SampleToBGRImg() -> BGRImgNormalizer(trainMean, trainStd) -> BGRImgToBatch(
@@ -77,7 +77,7 @@ object Train {
       )
 
       val validateSet = (if (sc.isDefined) {
-        DataSet.array(Utils.loadTest(param.folder), sc.get, param.nodeNumber)
+        DataSet.array(Utils.loadTest(param.folder), sc.get)
       } else {
         DataSet.array(Utils.loadTest(param.folder))
       }) -> SampleToBGRImg() -> BGRImgNormalizer(testMean, testStd) -> BGRImgToBatch(param

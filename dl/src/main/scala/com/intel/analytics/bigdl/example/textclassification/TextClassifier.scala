@@ -166,8 +166,8 @@ class TextClassifier(param: TextClassificationParams) {
     val Array(trainingRDD, valRDD) = vectorizedRdd.randomSplit(
       Array(trainingSplit, 1 - trainingSplit))
     val batching = Batching(param.batchSize, Array(param.maxSequenceLength, param.embeddingDim))
-    val trainingDataSet = DataSet.rdd(trainingRDD, param.nodeNum) -> batching
-    val valDataSet = DataSet.rdd(valRDD, param.nodeNum) -> batching
+    val trainingDataSet = DataSet.rdd(trainingRDD) -> batching
+    val valDataSet = DataSet.rdd(valRDD) -> batching
 
     val optimizer = Optimizer(
       model = buildModel(classNum),
