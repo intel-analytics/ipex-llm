@@ -17,8 +17,6 @@
 
 package com.intel.analytics.bigdl.models.resnet
 
-import java.nio.file.Paths
-
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
@@ -56,18 +54,18 @@ object Train {
 
       val trainDataSet = if (sc.isDefined) {
         dataSet.trainDataSet(
-          Paths.get(param.folder, "train"), sc.get, param.nodeNumber, imageSize, batchSize)
+          param.folder + "/train", sc.get, param.nodeNumber, imageSize, batchSize)
       } else {
         dataSet.trainDataSet(
-          Paths.get(param.folder, "train"), batchSize, imageSize)
+          param.folder + "/train", batchSize, imageSize)
       }
 
       val validateSet = if (sc.isDefined) {
         dataSet.valDataSet(
-          Paths.get(param.folder, "val"), sc.get, param.nodeNumber, imageSize, batchSize)
+          param.folder + "val", sc.get, param.nodeNumber, imageSize, batchSize)
       } else {
         dataSet.valDataSet(
-          Paths.get(param.folder, "val"), batchSize, imageSize)
+          param.folder + "val", batchSize, imageSize)
       }
 
       val shortcut: ShortcutType = param.shortcutType match {
