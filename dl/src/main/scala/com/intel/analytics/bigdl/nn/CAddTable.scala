@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect._
 
 @SerialVersionUID(7959261460060075605L)
-class CAddTable[@specialized(Float, Double) T: ClassTag](val inplace: Boolean = false)(
+class CAddTable[T: ClassTag](val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   override def updateOutput(input: Table): Tensor[T] = {

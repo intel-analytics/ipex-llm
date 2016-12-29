@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.DLClassifier
+import org.apache.spark.ml.{DLClassifier => SparkDLClassifier}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.SQLContext
 
@@ -53,7 +53,7 @@ object DLClassifier {
           .getOrElse(throw new RuntimeException("can't get node number"))
 
       val model = loadModel(param)
-      val valTrans = new DLClassifier()
+      val valTrans = new SparkDLClassifier()
         .setInputCol("features")
         .setOutputCol("predict")
 
