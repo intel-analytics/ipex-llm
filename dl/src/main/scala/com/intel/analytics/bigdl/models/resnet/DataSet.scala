@@ -24,14 +24,14 @@ import com.intel.analytics.bigdl.dataset.image._
 import org.apache.spark.SparkContext
 
 trait ResNetDataSet {
-  def trainDataSet(path: Path, batchSize: Int, size: Int)
+  def trainDataSet(path: String, batchSize: Int, size: Int)
   : DataSet[MiniBatch[Float]]
-  def valDataSet(path: Path, batchSize: Int, size: Int)
+  def valDataSet(path: String, batchSize: Int, size: Int)
   : DataSet[MiniBatch[Float]]
-  def valDataSet(path: Path, sc: SparkContext,
+  def valDataSet(path: String, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
   : DataSet[MiniBatch[Float]]
-  def trainDataSet(path: Path, sc: SparkContext,
+  def trainDataSet(path: String, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
   : DataSet[MiniBatch[Float]]
 }
@@ -43,38 +43,42 @@ object Cifar10DataSet extends ResNetDataSet {
   val testMean = (0.4942142913295297, 0.4851314002725445, 0.45040910258647154)
   val testStd = (0.2466525177466614, 0.2428922662655766, 0.26159238066790275)
 
-  override def trainDataSet(path: Path, batchSize: Int, size: Int)
+  override def trainDataSet(path: String, batchSize: Int, size: Int)
   : DataSet[MiniBatch[Float]] = {
 
-    DataSet.ImageFolder.images(path, size)
+    DataSet.array(Utils.loadTrain(path))
+      .transform(SampleToBGRImg())
       .transform(BGRImgNormalizer(trainMean, trainStd))
       .transform(HFlip(0.5))
       .transform(BGRImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))
       .transform(BGRImgToBatch(batchSize))
   }
 
-  override def valDataSet(path: Path, batchSize: Int, size: Int)
+  override def valDataSet(path: String, batchSize: Int, size: Int)
   : DataSet[MiniBatch[Float]] = {
 
-    DataSet.ImageFolder.images(path, size)
+    DataSet.array(Utils.loadTest(path))
+      .transform(SampleToBGRImg())
       .transform(BGRImgNormalizer(testMean, testStd))
       .transform(BGRImgToBatch(batchSize))
   }
 
-  override def valDataSet(path: Path, sc: SparkContext,
+  override def valDataSet(path: String, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
   : DataSet[MiniBatch[Float]] = {
 
-    DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
+    DataSet.array(Utils.loadTest(path), sc, partitionNum)
+      .transform(SampleToBGRImg())
       .transform(BGRImgNormalizer(trainMean, trainStd))
       .transform(BGRImgToBatch(batchSize))
   }
 
-  override def trainDataSet(path: Path, sc: SparkContext,
+  override def trainDataSet(path: String, sc: SparkContext,
     partitionNum: Int, imageSize: Int, batchSize: Int)
   : DataSet[MiniBatch[Float]] = {
 
-    DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
+    DataSet.array(Utils.loadTrain(path), sc, partitionNum)
+      .transform(SampleToBGRImg())
       .transform(BGRImgNormalizer(testMean, testStd))
       .transform(HFlip(0.5))
       .transform(BGRImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))
