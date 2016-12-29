@@ -41,10 +41,10 @@ class LabeledSentenceToSample(vocabLength: Int, vocabNumber: Int, batchMode: Boo
         case true => vocabNumber
         case _ => other.length
       }
-      if (arrayBuffer == null || arrayBuffer.length < wordLength * vocabLength) {
+      if (arrayBuffer == null || arrayBuffer.length != wordLength * vocabLength) {
         arrayBuffer = new Array[Float](wordLength*vocabLength)
       }
-      if (labelBuffer == null || labelBuffer.length < wordLength) {
+      if (labelBuffer == null || labelBuffer.length != wordLength) {
         labelBuffer = new Array[Float](wordLength)
       }
       var i = 0
