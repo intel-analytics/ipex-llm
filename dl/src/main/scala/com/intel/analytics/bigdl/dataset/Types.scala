@@ -22,9 +22,11 @@ import java.nio.file.Path
 
 import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
 import com.intel.analytics.bigdl.dataset.text.LabeledSentence
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.collection.Iterator
+import scala.reflect.ClassTag
 
 /**
  * Represent an image
@@ -40,10 +42,10 @@ abstract class Image extends Serializable {
  /**
   * Represent a sentence
   */
-abstract class Sentence extends Serializable {
+abstract class Sentence[T] extends Serializable {
   def length(): Int
 
-  def content: Array[Float]
+  def content(): Array[T]
 }
 
 /**
@@ -66,13 +68,14 @@ case class LocalSeqFilePath(val path: Path)
   *
   * @param featureTensor
   * @param labelTensor
+  * @tparam T
   */
 
-class Sample[T](
+class Sample[T: ClassTag] (
     protected var featureTensor: Tensor[T],
-    protected var labelTensor: Tensor[T]) {
+    protected var labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) {
 
-  def this() = this(Tensor[T](), Tensor[T]())
+  def this()(implicit ev: TensorNumeric[T]) = this(Tensor[T](), Tensor[T]())
 
   def copy(featureData: Array[T],
            labelData: Array[T],
@@ -112,10 +115,17 @@ class Sample[T](
   def getLabel(): Tensor[T] = labelTensor
 
   override def clone(): Sample[T] = {
-    new Sample().copy(this)
+    new Sample[T]().copy(this)
   }
-
 }
+
+object Sample {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+   (implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new Sample[T]()
+  }
+}
+
 
 /**
  * Represent a label

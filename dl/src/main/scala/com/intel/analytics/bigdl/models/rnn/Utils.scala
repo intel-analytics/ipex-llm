@@ -163,8 +163,8 @@ object Utils {
 
     val length = dataFlow.length
     val seq = Random.shuffle((1 to length).toList)
-    val seqTrain = seq.take(Math.floor(seq.length*0.8).toInt).toArray
-    val seqVal = seq.drop(Math.floor(seq.length*0.8).toInt).toArray
+    val seqTrain = seq.take(Math.floor(seq.length*0.2).toInt).toArray
+    val seqVal = seq.drop(Math.floor(seq.length*0.9).toInt).toArray
 
     val trainFlow = seqTrain.collect(dataFlow)
     val valFlow = seqVal.collect(dataFlow)
