@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.loadModel
+package com.intel.analytics.bigdl.example.loadmodel
 
 import java.nio.file.Path
 
