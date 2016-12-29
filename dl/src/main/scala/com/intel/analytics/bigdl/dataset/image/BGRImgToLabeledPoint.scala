@@ -20,22 +20,33 @@ package com.intel.analytics.bigdl.dataset.image
 import com.intel.analytics.bigdl.dataset.Transformer
 import org.apache.log4j.Logger
 import org.apache.spark.mllib.linalg.DenseVector
-import org.apache.spark.mllib.regression.LabeledPoint
 
 import scala.collection.Iterator
 
-object BGRImgToLabeledPoint {
+object BGRImgToDfPoint {
   val logger = Logger.getLogger(getClass)
 
-  def apply(): BGRImgToLabeledPoint = {
-    new BGRImgToLabeledPoint()
+  def apply(): BGRImgToDfPoint = {
+    new BGRImgToDfPoint()
   }
 }
 
-class BGRImgToLabeledPoint() extends Transformer[LabeledBGRImage, LabeledPoint] {
-  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[LabeledPoint] = {
-    prev.map(img => {
-      new LabeledPoint(img.label(), new DenseVector(img.content.map(_.toDouble)))
-    })
+case class DfPoints(label: String, features: DenseVector)
+
+class BGRImgToDfPoint(pathName : Array[LocalLabeledImagePath] = null)
+  extends Transformer[LabeledBGRImage, DfPoints] {
+
+  private var featureData: Array[Float] = null
+
+  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[DfPoints] = {
+    prev.map(
+      img => {
+        if (null == featureData) {
+          featureData = new Array[Float](3 * img.height() * img.width())
+        }
+        img.copyTo(featureData, 0, true)
+        new DfPoints(img.label().toString, new DenseVector(featureData.map(_.toDouble)))
+      }
+    )
   }
 }

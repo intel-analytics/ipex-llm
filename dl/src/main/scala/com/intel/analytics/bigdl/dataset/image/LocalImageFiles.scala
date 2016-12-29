@@ -18,13 +18,9 @@
 package com.intel.analytics.bigdl.dataset.image
 
 import java.awt.color.ColorSpace
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, Path}
 
-import com.intel.analytics.bigdl.dataset.{CachedDistriDataSet, _}
-import com.intel.analytics.bigdl.optim.LocalOptimizer._
-import org.apache.hadoop.io.Text
 import org.apache.log4j.Logger
-import org.apache.spark.SparkContext
 
 object LocalImageFiles {
   Class.forName("javax.imageio.ImageIO")
@@ -64,5 +60,18 @@ object LocalImageFiles {
     }).toArray.sortWith(
       _.path.getFileName.toString < _.path.getFileName.toString
     )
+  }
+
+  /**
+   * Read all data file paths into one array.
+   *
+   * @param path
+   * @return
+   */
+  private[bigdl] def readPathsNoLabel(path: Path): Array[LocalLabeledImagePath] = {
+    println(s"Start to read directories $path")
+    import scala.collection.JavaConverters._
+    Files.newDirectoryStream(path).asScala.map(p =>
+      LocalLabeledImagePath(-1, p)).toArray
   }
 }

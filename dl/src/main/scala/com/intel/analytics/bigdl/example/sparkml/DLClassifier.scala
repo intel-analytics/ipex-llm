@@ -16,19 +16,18 @@
  */
 package com.intel.analytics.bigdl.example.sparkml
 
+import java.nio.file.Paths
+
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{BGRImgNormalizer, BGRImgToLabeledPoint, SampleToBGRImg}
+import com.intel.analytics.bigdl.dataset.image.{LocalImageFiles, _}
 import com.intel.analytics.bigdl.example.sparkml.MlUtils._
-import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.DLClassifier
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.mllib.regression.LabeledPoint
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{Row, SQLContext}
-import com.intel.analytics.bigdl.numeric.NumericFloat
+import org.apache.spark.sql.SQLContext
 
 /**
  * An example to show how to use DLClassifier Transform, and the test data is cifar10
@@ -50,7 +49,7 @@ object DLClassifier {
 
       val sc = scc.get
       val sqlContext = new SQLContext(sc)
-      val model = Module.load[Float](param.model)
+      val model = loadModel(param)
 
       val valTrans = new DLClassifier()
         .setInputCol("features")
@@ -61,21 +60,20 @@ object DLClassifier {
         valTrans.batchShape ->
         Array(param.batchSize, 3, imageSize, imageSize))
 
-      val valSet = DataSet.SeqFileFolder.
-        files(param.folder, sc, param.classNum, param.nodeNumber, null) ->
-        SampleToBGRImg() ->
-        BGRImgNormalizer(testMean, testStd) ->
-        BGRImgToLabeledPoint()
+      // load image set
+      val paths = LocalImageFiles.readPathsNoLabel(Paths.get(param.folder))
+      val imageSet = DataSet.ImageFolder.imagesNoLabel(paths, imageSize)
+      val trainRDD = sc.parallelize(imageSet).repartition(param.partitionNum).persist()
 
-      val rowRDD = valSet.data(train = false).asInstanceOf[RDD[LabeledPoint]]
+      val transf = SampleToBGRImg() ->
+          BGRImgNormalizer(testMean, testStd) ->
+          BGRImgToDfPoint()
+      val rowRDD = trainRDD.mapPartitions(transf(_))
+
       val testData = sqlContext.createDataFrame(rowRDD)
       valTrans.transform(testData, paramsTrans)
         .select("label", "predict")
-        .collect()
-        .foreach { case Row(label: Double, predict: Int) =>
-          println(label + " " + predict)
-        }
-      sc.stop()
+        .show(param.showNum)
     })
   }
 }

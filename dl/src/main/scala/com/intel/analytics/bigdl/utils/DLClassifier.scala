@@ -85,6 +85,7 @@ object DLClassifier{
         batch.foreach{ row =>
           tensorBuffer.select(1, i).copy(
             Tensor(Storage(row.getAs[DenseVector](inputCol).toArray.map(ev.fromType(_)))))
+          i += 1
         }
         val output = localModel.forward(tensorBuffer).toTensor[T]
         val predict = if (output.dim == 2) {
