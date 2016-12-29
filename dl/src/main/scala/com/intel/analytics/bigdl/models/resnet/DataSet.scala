@@ -65,7 +65,7 @@ object Cifar10DataSet extends ResNetDataSet {
     partitionNum: Int, imageSize: Int, batchSize: Int)
   : DataSet[MiniBatch[Float]] = {
 
-    DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
+    DataSet.ImageFolder.images(path, sc, imageSize)
       .transform(BGRImgNormalizer(trainMean, trainStd))
       .transform(BGRImgToBatch(batchSize))
   }
@@ -74,7 +74,7 @@ object Cifar10DataSet extends ResNetDataSet {
     partitionNum: Int, imageSize: Int, batchSize: Int)
   : DataSet[MiniBatch[Float]] = {
 
-    DataSet.ImageFolder.images(path, sc, partitionNum, imageSize)
+    DataSet.ImageFolder.images(path, sc, imageSize)
       .transform(BGRImgNormalizer(testMean, testStd))
       .transform(HFlip(0.5))
       .transform(BGRImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))

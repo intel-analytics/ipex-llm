@@ -45,7 +45,7 @@ object Test {
         })
 
       val validationSet = (if (sc.isDefined) {
-        DataSet.array(Utils.loadTest(param.folder), sc.get, param.nodeNumber)
+        DataSet.array(Utils.loadTest(param.folder), sc.get)
       } else {
         DataSet.array(Utils.loadTest(param.folder))
       }) -> SampleToBGRImg() -> BGRImgNormalizer(testMean, testStd) ->

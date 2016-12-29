@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset.image.LocalImageFiles._
 import com.intel.analytics.bigdl.dataset.image._
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.{SequenceFile, Text}
 import org.apache.hadoop.io.SequenceFile.Reader
@@ -249,8 +249,12 @@ object DataSet {
     new LocalArrayDataSet[T](data)
   }
 
-  def array[T: ClassTag](localData: Array[T], sc: SparkContext, partitionNum: Int)
-  : DistributedDataSet[T] = {
+  def array[T: ClassTag](localData: Array[T], sc: SparkContext): DistributedDataSet[T] = {
+    val partitionNum = Engine.nodeNumber() match {
+      case Some(x) => x
+      case _ => 0
+    }
+
     new CachedDistriDataSet[T](
       sc.parallelize(localData, partitionNum)
         // Keep this line, or the array will be send to worker every time
@@ -293,7 +297,7 @@ object DataSet {
       new LocalArrayDataSet[ByteRecord](buffer) -> SampleToBGRImg()
     }
 
-    def images(path: Path, sc: SparkContext, partitionNum: Int, scaleTo: Int)
+    def images(path: Path, sc: SparkContext, scaleTo: Int)
     : DataSet[LabeledBGRImage] = {
       val paths = LocalImageFiles.readPaths(path)
       val buffer: Array[ByteRecord] = {
@@ -301,7 +305,7 @@ object DataSet {
           ByteRecord(BGRImage.readImage(imageFile.path, scaleTo), imageFile.label)
         })
       }
-      array(buffer, sc, partitionNum) -> SampleToBGRImg()
+      array(buffer, sc) -> SampleToBGRImg()
     }
   }
 
@@ -319,13 +323,12 @@ object DataSet {
       }
     }
 
-    def files(url: String, sc: SparkContext, classNum: Int,
-      partitionNum: Int): DistributedDataSet[ByteRecord] = {
+    def files(url: String, sc: SparkContext, classNum: Int): DistributedDataSet[ByteRecord] = {
       val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text]).map(image => {
         ByteRecord(image._2.copyBytes(), image._1.toString.toFloat)
       }).filter(_.label <= classNum)
 
-      rdd[ByteRecord](rawData, partitionNum)
+      rdd[ByteRecord](rawData)
     }
 
     private[bigdl] def findFiles(path: Path): Array[LocalSeqFilePath] = {

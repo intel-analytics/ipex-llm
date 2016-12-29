@@ -63,7 +63,7 @@ object Train {
       val trainLabel = Paths.get(param.folder, "/train-labels-idx1-ubyte")
 
       val trainDataSet = (if (sc.isDefined) {
-        DataSet.array(load(trainData, trainLabel), sc.get, param.nodeNumber)
+        DataSet.array(load(trainData, trainLabel), sc.get)
       } else {
         DataSet.array(load(trainData, trainLabel))
       }) -> SampleToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
