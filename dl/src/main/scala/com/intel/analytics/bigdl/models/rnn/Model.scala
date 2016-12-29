@@ -28,10 +28,10 @@ object SimpleRNN {
   bpttTruncate: Int = 4)
   : Module[Float] = {
     val model = Sequential[Float]()
-    model.add(Recurrent[Float](hiddenSize, outputSize, bpttTruncate)
+    model.add(Recurrent[Float](hiddenSize, bpttTruncate)
       .add(RnnCell[Float](inputSize, hiddenSize))
-      .add(Tanh[Float]())
-      .add(Linear[Float](hiddenSize, outputSize)))
+      .add(Tanh[Float]()))
+      .add(Linear[Float](hiddenSize, outputSize))
     model
   }
 }

@@ -21,7 +21,7 @@ import java.io.File
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
-import com.intel.analytics.bigdl.dataset.text.{LabeledSentenceToSample, SeqToLabeledSentence, TensorSeqToBatch, TextSeqToTensorSeq}
+import com.intel.analytics.bigdl.dataset.text.{LabeledSentenceToSample, SeqToLabeledSentence}
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}

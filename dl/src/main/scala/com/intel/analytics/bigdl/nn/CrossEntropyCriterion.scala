@@ -33,14 +33,15 @@ class CrossEntropyCriterion[T: ClassTag](
    val weights: Tensor[T] = null,
    val squeezeFlag: Boolean = false)
    (implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{
-  private val lsm = new LogSoftMaxBatch[T]()
-  private val nll = new ClassNLLCriterionBatch[T](weights)
+  private val lsm = new LogSoftMax[T]()
+  private val nll = new ClassNLLCriterion[T](weights)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     if (squeezeFlag) {
       input.squeeze()
       target.squeeze()
     }
+
     lsm.updateOutput(input)
     nll.updateOutput(lsm.output, target.asInstanceOf[Tensor[T]])
     output = nll.output
@@ -57,7 +58,6 @@ class CrossEntropyCriterion[T: ClassTag](
 
     _gradInput = nll.updateGradInput(lsm.output, target)
     lsm.updateGradInput(input, _gradInput)
-    gradInput.resizeAs(lsm.gradInput)
     gradInput.resizeAs(lsm.gradInput).copy(lsm.gradInput).view(size)
     gradInput
   }
