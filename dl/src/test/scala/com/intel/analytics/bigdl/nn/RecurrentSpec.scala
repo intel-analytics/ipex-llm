@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-
 class RecurrentSpec extends FlatSpec with Matchers {
 
   "A Recurrent Module " should "converge" in {
@@ -34,11 +33,12 @@ class RecurrentSpec extends FlatSpec with Matchers {
     val bpttTruncate = 3
     val seed = 100
     RNG.setSeed(seed)
+
     val model = Sequential[Double]()
-    model.add(Recurrent[Double](hiddenSize, outputSize, bpttTruncate)
+    model.add(Recurrent[Double](hiddenSize, bpttTruncate)
       .add(RnnCell[Double](inputSize, hiddenSize))
-      .add(Tanh())
-      .add(Linear[Double](hiddenSize, outputSize)))
+      .add(Tanh()))
+      .add(Linear[Double](hiddenSize, outputSize))
 
     val criterion = CrossEntropyCriterion[Double]()
     val logSoftMax = LogSoftMax[Double]()
@@ -88,10 +88,10 @@ class RecurrentSpec extends FlatSpec with Matchers {
     val seed = 100
     RNG.setSeed(seed)
     val model = Sequential[Double]()
-    model.add(Recurrent[Double](hiddenSize, outputSize, bpttTruncate)
+    model.add(Recurrent[Double](hiddenSize, bpttTruncate)
       .add(RnnCell[Double](inputSize, hiddenSize))
-      .add(Tanh[Double]())
-      .add(Linear[Double](hiddenSize, outputSize)))
+      .add(Tanh[Double]()))
+      .add(Linear[Double](hiddenSize, outputSize))
 
     model.reset()
 
