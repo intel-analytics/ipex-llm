@@ -40,7 +40,7 @@ class RefDistriOptimizer[T: ClassTag](
   ) {
 
   override def optimize(): Module[T] = {
-    this.checkEngineIsInited()
+    this.assertEngineInited()
 
     RefDistriOptimizer.optimize(
       model,

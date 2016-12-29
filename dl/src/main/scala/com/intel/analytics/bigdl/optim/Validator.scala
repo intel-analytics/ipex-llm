@@ -27,7 +27,7 @@ abstract class Validator[T, D](
 ) {
   def test(vMethods: Array[ValidationMethod[T]]): Array[(ValidationResult, ValidationMethod[T])]
 
-  def checkEngineIsInited(): Unit = {
+  def assertEngineInited(): Unit = {
     require(Engine.isInitialized, s"you may forget to initialize Engine.")
   }
 }

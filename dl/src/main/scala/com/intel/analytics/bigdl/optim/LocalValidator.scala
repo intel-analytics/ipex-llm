@@ -42,7 +42,7 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[M
 
   override def test(vMethods: Array[ValidationMethod[T]])
   : Array[(ValidationResult, ValidationMethod[T])] = {
-    this.checkEngineIsInited()
+    this.assertEngineInited()
 
     val dataIter = dataSet.data (train = false)
     var count = 0
