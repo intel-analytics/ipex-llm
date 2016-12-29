@@ -36,37 +36,52 @@ import org.apache.spark.rdd.RDD
 import scala.reflect._
 
 /**
- * Represent a set of data, which can be used for training or validation. Data can be shuffled
+ * A set of data which is used in the model optimization process. The dataset can be access in
+ * a random data sample sequence. In the training process, the data sequence is a looped endless
+ * sequence. While in the validation process, the data sequence is a limited length sequence.
+ * User can use the data() method to get the data sequence.
  *
+ * The sequence of the data is not fixed. It can be changed by the shuffle() method.
+ *
+ * User can create a dataset from a RDD, an array and a folder, etc. The DataSet object provides
+ * many factory methods.
+ *
+ * @tparam D Data type
  * @tparam DataSequence Represent a sequence of data
  */
 trait AbstractDataSet[D, DataSequence] {
   /**
    * Get a sequence of data
    *
-   * @param train if the data is used in train
-   * @return
+   * @param train if the data is used in train. If yes, the data sequence is a looped endless
+   *              sequence, or it has a limited length.
+   * @return data sequence
    */
   def data(train: Boolean): DataSequence
 
   /**
-   * Change the sequence of data flow from the data set
+   * Change the order of the data sequence from the data set
    */
   def shuffle(): Unit
 
   /**
-   * Return the total size of the data set
-   *
+   * Total size of the data set
    * @return
    */
   def size(): Long
 
+  /**
+   * Helper function to transform the data type in the data set.
+   * @param transformer
+   * @tparam C
+   * @return
+   */
   def transform[C: ClassTag](transformer: Transformer[D, C]): DataSet[C]
 
   // scalastyle:off methodName
   // scalastyle:off noSpaceBeforeLeftBracket
   /**
-   * This operator transforms one type of data set to another
+   * Helper function to transform the data type in the data set.
    *
    * @param transformer
    * @tparam C
@@ -79,14 +94,23 @@ trait AbstractDataSet[D, DataSequence] {
   // scalastyle:on noSpaceBeforeLeftBracket
   // scalastyle:on methodName
 
+  /**
+   * Convert current DataSet to a local DataSet, in which we use an iterator to represent the
+   * data sequence.
+   * @return
+   */
   def toLocal(): LocalDataSet[D] = this.asInstanceOf[LocalDataSet[D]]
 
+  /**
+   * Convert current DataSet to a distributed DataSet, in which we use a RDD to represent the
+   * data sequence.
+   * @return
+   */
   def toDistributed(): DistributedDataSet[D] = this.asInstanceOf[DistributedDataSet[D]]
 }
 
 /**
- * Manage some 'local' data sets, e.g. data in files or memory. We use iterator to access the data
- *
+ * Manage some 'local' data, e.g. data in files or memory. We use iterator to go through the data.
  * @tparam T
  */
 trait LocalDataSet[T] extends AbstractDataSet[T, Iterator[T]] {
@@ -103,8 +127,7 @@ trait LocalDataSet[T] extends AbstractDataSet[T, Iterator[T]] {
 }
 
 /**
- * Represent a set of data cached in an array
- *
+ * Wrap an array as a DataSet.
  * @tparam T
  */
 class LocalArrayDataSet[T] private[dataset](buffer: Array[T]) extends LocalDataSet[T] {
@@ -139,7 +162,7 @@ class LocalArrayDataSet[T] private[dataset](buffer: Array[T]) extends LocalDataS
 }
 
 /**
- * A RDD data set
+ * Represent a distributed data. Use RDD to go through all data.
  *
  * @tparam T
  */
@@ -177,6 +200,11 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
   def originRDD(): RDD[_]
 }
 
+/**
+ * Wrap a RDD as a DataSet.
+ * @param buffer
+ * @tparam T
+ */
 class CachedDistriDataSet[T: ClassTag] private[dataset] (buffer: RDD[Array[T]])
   extends DistributedDataSet[T] {
 
@@ -237,18 +265,25 @@ class CachedDistriDataSet[T: ClassTag] private[dataset] (buffer: RDD[Array[T]])
 }
 
 /**
- * Common used data set generator
+ * Common used DataSet builder.
  */
 object DataSet {
   val logger = Logger.getLogger(getClass)
 
   /**
-   * Generate data set from an array
+   * Wrap an array as a DataSet.
    */
   def array[T](data: Array[T]): LocalArrayDataSet[T] = {
     new LocalArrayDataSet[T](data)
   }
 
+  /**
+   * Wrap an array as a distributed DataSet.
+   * @param localData
+   * @param sc
+   * @tparam T
+   * @return
+   */
   def array[T: ClassTag](localData: Array[T], sc: SparkContext): DistributedDataSet[T] = {
     val partitionNum = Engine.nodeNumber()
       .getOrElse(throw new RuntimeException("can't get node number? Have you initialized?"))
@@ -264,6 +299,12 @@ object DataSet {
     )
   }
 
+  /**
+   * Wrap a RDD as a DataSet.
+   * @param data
+   * @tparam T
+   * @return
+   */
   def rdd[T: ClassTag](data: RDD[T]): DistributedDataSet[T] = {
     val partitionNum = Engine.nodeNumber()
       .getOrElse(throw new RuntimeException("can't get node number? Have you initialized?"))
@@ -276,12 +317,31 @@ object DataSet {
     )
   }
 
+  /**
+   * Generate a DataSet from a local image folder. The image folder should have two levels. The
+   * first level is class folders, and the second level is images. All images belong to a same
+   * class should be put into the same class folder. So each image in the path is labeled by the
+   * folder it belongs.
+   */
   object ImageFolder {
+    /**
+     * Extract all image paths into a Local DataSet. The paths are all labeled. When the image
+     * files are too large(e.g. ImageNet2012 data set), you'd better readd all paths instead of
+     * image files themselves.
+     * @param path
+     * @return
+     */
     def paths(path: Path): LocalDataSet[LocalLabeledImagePath] = {
       val buffer = LocalImageFiles.readPaths(path)
       new LocalArrayDataSet[LocalLabeledImagePath](buffer)
     }
 
+    /**
+     * Extract all images under the given path into a Local DataSet. The images are all labeled.
+     * @param path
+     * @param scaleTo
+     * @return
+     */
     def images(path: Path, scaleTo: Int): DataSet[LabeledBGRImage] = {
       val paths = LocalImageFiles.readPaths(path)
       val total = paths.length
@@ -296,6 +356,14 @@ object DataSet {
       new LocalArrayDataSet[ByteRecord](buffer) -> SampleToBGRImg()
     }
 
+    /**
+     * Extract all images under the given path into a Distributed DataSet. The images are all
+     * labeled.
+     * @param path
+     * @param sc
+     * @param scaleTo
+     * @return
+     */
     def images(path: Path, sc: SparkContext, scaleTo: Int)
     : DataSet[LabeledBGRImage] = {
       val paths = LocalImageFiles.readPaths(path)
@@ -308,8 +376,18 @@ object DataSet {
     }
   }
 
+  /**
+   * Create a DataSet from a Hadoop sequence file folder.
+   */
   object SeqFileFolder {
     val logger = Logger.getLogger(getClass)
+
+    /**
+     * Extract all hadoop sequence file paths from a local file folder.
+     * @param path
+     * @param totalSize
+     * @return
+     */
     def paths(path: Path, totalSize: Long): LocalDataSet[LocalSeqFilePath] = {
       logger.info(s"Read sequence files folder $path")
       val buffer: Array[LocalSeqFilePath] = findFiles(path)
@@ -322,6 +400,13 @@ object DataSet {
       }
     }
 
+    /**
+     * Extract hadoop sequence files from an HDFS path
+     * @param url
+     * @param sc
+     * @param classNum
+     * @return
+     */
     def files(url: String, sc: SparkContext, classNum: Int): DistributedDataSet[ByteRecord] = {
       val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text]).map(image => {
         ByteRecord(image._2.copyBytes(), image._1.toString.toFloat)
