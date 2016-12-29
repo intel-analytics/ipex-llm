@@ -2,7 +2,7 @@
  This example use a (pre-trained GloVe embedding) to convert word to vector,
  and uses it to train the text classification model on a 20 Newsgroup dataset
  with 20 different categories. This model can achieve around 90% accuracy after 2 epochs training.
-(It was first described in: https://github.com/fchollet/keras/blob/master/examples/pretrained_word_embeddings.py)
+(It was first described in: https://blog.keras.io/using-pre-trained-word-embeddings-in-a-keras-model.html)
 ## Data
 * Embedding: 100-dimensional pre-trained GloVe embeddings of 400k words which trained on a 2014 dump of English Wikipedia.
 * Training data: "20 Newsgroup dataset" which containing 20 categories and with totally 19997 texts.
@@ -19,7 +19,7 @@
     * Spark cluster:
       * Execute: bigdl.sh
       * spark-submit --master  $MASTER --driver-memory 10g --executor-memory 20g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar  --coreNum 8 --nodeNum 4 --batchSize 32  --baseDir $BASE_DIR
-      * NB: The total batch is: 32 * 4 as we specify nodeNum to be 4
+      * NOTE: The total batch is: 32 * 4 as we specify nodeNum to be 4
 
 4. Verify:
    * Search accuracy from log:
