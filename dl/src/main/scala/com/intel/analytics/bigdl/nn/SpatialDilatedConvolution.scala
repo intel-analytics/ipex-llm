@@ -98,6 +98,8 @@ class SpatialDilatedConvolution[T: ClassTag](
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
+      case _ =>
+        throw new IllegalArgumentException(s"Unsupported initMethod type ${initMethod}")
     }
     zeroGradParameters()
   }
