@@ -72,6 +72,8 @@ com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_fold
 -o output_folder -p cores_number
 ```
 
+Then put the transformed sequence files to HDFS.
+
 Having prepared the dataset, you can submit your spark job by 
 
 ```
