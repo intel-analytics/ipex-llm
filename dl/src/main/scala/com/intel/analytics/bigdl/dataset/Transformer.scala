@@ -21,7 +21,15 @@ import org.apache.commons.lang3.SerializationUtils
 import scala.collection.Iterator
 
 /**
- * Transform data from type A to type B. It is usually used in data pre-process stage
+ * Transform a data stream of type A to type B. It is usually used in data pre-process stage.
+ * Different transformers can compose a pipeline. For example, if there're transformer1 from A to
+ * B, transformer2 from B to C, and transformer3 from C to D, you can compose them into a bigger
+ * transformer from A to D by transformer1 -> transformer2 -> transformer 3.
+ *
+ * The purpose of transformer is for code reuse. Many deep learning share many common data
+ * pre-process steps. User needn't write them every time, but can reuse others work.
+ *
+ * Transformer can be used with RDD(rdd.mapPartition), iterator and DataSet.
  * @tparam A
  * @tparam B
  */

@@ -33,6 +33,11 @@ object BGRImgToLocalSeqFile {
   }
 }
 
+/**
+ * Write a BGR image sequence into one or many hadoop sequence files.
+ * @param blockSize how many images each sequence file contains
+ * @param baseFileName file name, the real generated sequence file will have a No. suffix
+ */
 class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path) extends
   Transformer[LabeledBGRImage, String] {
   private val conf: Configuration = new Configuration

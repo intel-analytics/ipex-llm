@@ -97,6 +97,16 @@ object BGRImgNormalizer {
   }
 }
 
+/**
+ * Normalize a BGR image. The normalize is per channel. Each pixel will minus mean value of the
+ * channel. Then divide std value of the channel.
+ * @param meanR
+ * @param meanG
+ * @param meanB
+ * @param stdR
+ * @param stdG
+ * @param stdB
+ */
 class BGRImgNormalizer(meanR: Double, meanG: Double, meanB: Double,
   stdR: Double, stdG: Double, stdB: Double)
   extends Transformer[LabeledBGRImage, LabeledBGRImage] {

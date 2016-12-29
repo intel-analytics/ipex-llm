@@ -26,6 +26,11 @@ object SampleToGreyImg {
   = new SampleToGreyImg(row, col)
 }
 
+/**
+ * Convert byte records into grey image.
+ * @param row
+ * @param col
+ */
 class SampleToGreyImg(row: Int, col: Int)
   extends Transformer[ByteRecord, LabeledGreyImage] {
   private val buffer = new LabeledGreyImage(row, col)

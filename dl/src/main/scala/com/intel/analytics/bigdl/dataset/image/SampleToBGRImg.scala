@@ -26,6 +26,11 @@ object SampleToBGRImg {
     new SampleToBGRImg(normalize)
 }
 
+/**
+ * Convert a byte record to BGR image. The format is, first 4 bytes is width, the next 4 bytes is
+ * height, and the last is pixels coming with BGR order.
+ * @param normalize
+ */
 class SampleToBGRImg(normalize: Float)
   extends Transformer[ByteRecord, LabeledBGRImage] {
   private val buffer = new LabeledBGRImage()

@@ -33,6 +33,14 @@ object BGRImgCropper {
     new BGRImgCropper(cropWidth, cropHeight, cropperMethod)
 }
 
+/**
+ * Crop an area from an image. The crop area size should be less than the image size. There're
+ * two crop method: random select an area or select the center area. Usually in training, random
+ * select is prefered for data augmentation. In validation or testing, center crop is often used.
+ * @param cropWidth
+ * @param cropHeight
+ * @param cropperMethod
+ */
 class BGRImgCropper(cropWidth: Int, cropHeight: Int, cropperMethod: CropperMethod = CropRandom)
   extends Transformer[LabeledBGRImage, LabeledBGRImage] {
 

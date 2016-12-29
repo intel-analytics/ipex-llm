@@ -28,6 +28,9 @@ object LocalSeqFileToBytes {
   def apply(): LocalSeqFileToBytes = new LocalSeqFileToBytes()
 }
 
+/**
+ * Read byte records from local hadoop sequence files.
+ */
 class LocalSeqFileToBytes extends Transformer[LocalSeqFilePath, ByteRecord] {
 
   import org.apache.hadoop.fs.{Path => hPath}
