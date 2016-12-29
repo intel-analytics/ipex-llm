@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.example.sparkml
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{LocalImageFiles, _}
 import com.intel.analytics.bigdl.example.sparkml.MlUtils._
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -30,7 +29,7 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.SQLContext
 
 /**
- * An example to show how to use DLClassifier Transform, and the test data is cifar10
+ * An example to show how to use DLClassifier Transform, and the test data is imagenet
  */
 object DLClassifier {
   Logger.getLogger("org").setLevel(Level.ERROR)
@@ -49,8 +48,13 @@ object DLClassifier {
 
       val sc = scc.get
       val sqlContext = new SQLContext(sc)
+
+      val partitionNum = Engine.nodeNumber()
+          .getOrElse(throw new RuntimeException("can't get node number"))
+
       val model = loadModel(param)
 
+      val start = System.nanoTime()
       val valTrans = new DLClassifier()
         .setInputCol("features")
         .setOutputCol("predict")
@@ -62,18 +66,24 @@ object DLClassifier {
 
       // load image set
       val paths = LocalImageFiles.readPathsNoLabel(Paths.get(param.folder))
-      val imageSet = DataSet.ImageFolder.imagesNoLabel(paths, imageSize)
-      val trainRDD = sc.parallelize(imageSet).repartition(param.partitionNum).persist()
+      val imageSet = imagesLoad(paths, 256)
 
-      val transf = SampleToBGRImg() ->
+      val trainRDD = sc.parallelize(imageSet).repartition(partitionNum).persist()
+
+      val transf = RowToByteRecords() ->
+          SampleToBGRImg() ->
+          BGRImgCropper(imageSize, imageSize) ->
           BGRImgNormalizer(testMean, testStd) ->
-          BGRImgToDfPoint()
-      val rowRDD = trainRDD.mapPartitions(transf(_))
+          BGRImgToImageVector()
 
-      val testData = sqlContext.createDataFrame(rowRDD)
+      val testData = transformDF(sqlContext.createDataFrame(trainRDD), transf)
+
       valTrans.transform(testData, paramsTrans)
-        .select("label", "predict")
-        .show(param.showNum)
+          .select("imageName", "predict")
+          .show(param.showNum)
+
+      val scalaTime = System.nanoTime() - start
+      println(scalaTime / 1e9 + "s")
     })
   }
 }

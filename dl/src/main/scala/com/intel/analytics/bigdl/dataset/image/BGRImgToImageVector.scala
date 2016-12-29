@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -23,29 +23,27 @@ import org.apache.spark.mllib.linalg.DenseVector
 
 import scala.collection.Iterator
 
-object BGRImgToDfPoint {
+object BGRImgToImageVector {
   val logger = Logger.getLogger(getClass)
 
-  def apply(): BGRImgToDfPoint = {
-    new BGRImgToDfPoint()
+  def apply(): BGRImgToImageVector = {
+    new BGRImgToImageVector()
   }
 }
 
-case class DfPoints(label: String, features: DenseVector)
-
-class BGRImgToDfPoint(pathName : Array[LocalLabeledImagePath] = null)
-  extends Transformer[LabeledBGRImage, DfPoints] {
+class BGRImgToImageVector()
+  extends Transformer[LabeledBGRImage, DenseVector] {
 
   private var featureData: Array[Float] = null
 
-  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[DfPoints] = {
+  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[DenseVector] = {
     prev.map(
       img => {
         if (null == featureData) {
           featureData = new Array[Float](3 * img.height() * img.width())
         }
         img.copyTo(featureData, 0, true)
-        new DfPoints(img.label().toString, new DenseVector(featureData.map(_.toDouble)))
+        new DenseVector(featureData.map(_.toDouble))
       }
     )
   }

@@ -17,16 +17,19 @@
 package com.intel.analytics.bigdl.example.sparkml
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.models.alexnet.AlexNet
-import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
+import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.dataset.image.{BGRImage, LocalLabeledImagePath}
 import com.intel.analytics.bigdl.nn.Module
+import org.apache.spark.mllib.linalg.DenseVector
+import org.apache.spark.sql.{DataFrame, Row}
 import scopt.OptionParser
 
 object MlUtils {
 
-  val testMean = (0.4942142913295297, 0.4851314002725445, 0.45040910258647154)
-  val testStd = (0.2466525177466614, 0.2428922662655766, 0.26159238066790275)
-  val imageSize = 32
+  val testMean = (0.485, 0.456, 0.406)
+  val testStd = (0.229, 0.224, 0.225)
+
+  val imageSize = 224
 
   sealed trait ModelType
 
@@ -38,17 +41,13 @@ object MlUtils {
 
   case class PredictParams(
     folder: String = "./",
-    partitionNum : Int = 4,
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
     batchSize: Int = 32,
-    classNum: Int = 10,
+    classNum: Int = 1000,
 
     modelType: ModelType = BigDlModel,
-    modelName: String = "",
-    caffeDefPath: Option[String] = None,
     modelPath: String = "",
-    meanFile: Option[String] = None,
     showNum : Int = 100
   )
 
@@ -61,11 +60,6 @@ object MlUtils {
     opt[String]("modelPath")
       .text("model snapshot location")
       .action((x, c) => c.copy(modelPath = x))
-      .required()
-
-    opt[Int]("partitionNum")
-      .text("partition num")
-      .action((x, c) => c.copy(partitionNum = x))
       .required()
 
     opt[Int]('c', "core")
@@ -92,51 +86,51 @@ object MlUtils {
       .text("where you put your local image files")
       .action((x, c) => c.copy(folder = x))
 
-    opt[String]('m', "modelName")
-      .text("the model name you want to test")
-      .action((x, c) => c.copy(modelName = x.toLowerCase()))
-
     opt[String]('t', "modelType")
-      .text("torch, caffe or bigdl")
+      .text("torch, bigdl")
       .action((x, c) =>
         x.toLowerCase() match {
           case "torch" => c.copy(modelType = TorchModel)
-          case "caffe" => c.copy(modelType = CaffeModel)
           case "bigdl" => c.copy(modelType = BigDlModel)
           case _ =>
-            throw new IllegalArgumentException("only torch, caffe or bigdl supported")
+            throw new IllegalArgumentException("only torch, bigdl supported")
         }
       )
-    opt[String]("caffeDefPath")
-      .text("caffe define path")
-      .action((x, c) => c.copy(caffeDefPath = Some(x)))
-
-    opt[String]("meanFile")
-      .text("mean file")
-      .action((x, c) => c.copy(meanFile = Some(x)))
   }
-
 
   def loadModel[@specialized(Float, Double) T](param : PredictParams): Module[Float] = {
     val model = param.modelType match {
-      case CaffeModel =>
-        param.modelName match {
-          case "alexnet" =>
-            Module.loadCaffe[Float](AlexNet(param.classNum),
-              param.caffeDefPath.get, param.modelPath)
-          case "inception" =>
-            Module.loadCaffe[Float](Inception_v1_NoAuxClassifier(param.classNum),
-              param.caffeDefPath.get, param.modelPath)
-        }
       case TorchModel =>
-        param.modelName match {
-          case "resnet" =>
-            Module.loadTorch[Float](param.modelPath)
-        }
+        Module.loadTorch[Float](param.modelPath)
       case BigDlModel =>
         Module.load[Float](param.modelPath)
       case _ => throw new IllegalArgumentException(s"${param.modelType}")
     }
     model
+  }
+
+  case class DfPoint(features: DenseVector, imageName: String)
+
+  case class ByteImage(data: Array[Byte], imageName: String)
+
+  def transformDF(data: DataFrame, f: Transformer[Row, DenseVector]): DataFrame = {
+    val vectorRdd = data.select("data").mapPartitions(f(_))
+    val dataRDD = data.rdd.zipPartitions(vectorRdd) { (a, b) =>
+      b.zip(a.map(_.getAs[String]("imageName")))
+        .map(
+        v => DfPoint(v._1, v._2)
+      )
+    }
+    data.sqlContext.createDataFrame(dataRDD)
+  }
+
+  def imagesLoad(paths: Array[LocalLabeledImagePath], scaleTo: Int):
+    Array[ByteImage] = {
+    var count = 1
+    val buffer = paths.map(imageFile => {
+      count += 1
+      ByteImage(BGRImage.readImage(imageFile.path, scaleTo), imageFile.path.getFileName.toString)
+    })
+    buffer
   }
 }
