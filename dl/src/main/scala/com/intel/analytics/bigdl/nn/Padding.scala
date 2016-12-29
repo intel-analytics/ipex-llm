@@ -38,7 +38,7 @@ class Padding[T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     outputSize.resize(input.dim()).copy(Storage(input.size()))
-    val dim = if (nInputDim != null && input.dim() != nInputDim) this.dim + 1 else this.dim
+    val dim = if (input.dim() != nInputDim) this.dim + 1 else this.dim
 
     outputSize(dim - 1) += math.abs(this.pad)
     output.resize(outputSize.array()).fill(ev.fromType(value))
@@ -62,7 +62,7 @@ class Padding[T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(input)
 
-    val dim = if (nInputDim != null && input.dim() != nInputDim) this.dim + 1 else this.dim
+    val dim = if (input.dim() != nInputDim) this.dim + 1 else this.dim
     val index = if (this.pad > 0) input.size(dim) - nIndex + 2 else nIndex
     val pad = if (this.pad > 0) this.pad else -this.pad
 
