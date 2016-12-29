@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.example.loadmodel
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.example.loadmodel.Preprocessor.{AlexNetPreprocessor, InceptionPreprocessor, ResNetPreprocessor}
 import com.intel.analytics.bigdl.models.alexnet.AlexNet
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.Module
@@ -126,24 +125,23 @@ object ImageClassifier {
             case "alexnet" =>
               (Module.loadCaffe[Float](AlexNet(1000),
                 param.caffeDefPath.get, param.modelPath),
-                AlexNetPreprocessor(valPath, param.batchSize, param.meanFile.get,
-                  sc, param.nodeNumber))
+                AlexNetPreprocessor(valPath, param.batchSize, param.meanFile.get, sc))
             case "inception" =>
               (Module.loadCaffe[Float](Inception_v1_NoAuxClassifier(1000),
                 param.caffeDefPath.get, param.modelPath),
-                InceptionPreprocessor(valPath, param.batchSize, sc, param.nodeNumber))
+                InceptionPreprocessor(valPath, param.batchSize, sc))
           }
 
         case TorchModel =>
           param.modelName match {
             case "resnet" =>
               (Module.loadTorch[Float](param.modelPath),
-                ResNetPreprocessor(valPath, param.batchSize, sc, param.nodeNumber))
+                ResNetPreprocessor(valPath, param.batchSize, sc))
           }
 
         case _ => throw new IllegalArgumentException(s"${param.modelType}")
       }
-
+      println(model)
       val validator = Validator(model, validateDataSet)
       val evaluator = Array(new Top1Accuracy[Float](), new Top5Accuracy[Float]())
       val result = validator.test(evaluator)

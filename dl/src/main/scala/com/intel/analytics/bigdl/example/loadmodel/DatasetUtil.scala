@@ -26,56 +26,51 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.File
 import org.apache.spark.SparkContext
 
-object Preprocessor {
 
-  object AlexNetPreprocessor {
-    val imageSize = 227
+object AlexNetPreprocessor {
+  val imageSize = 227
 
-    def apply(path: Path, batchSize: Int, meanFile: String, sc: Option[SparkContext] = None,
-      nodeNumber: Int = -1, hasLabel: Boolean = true)
-    : DataSet[MiniBatch[Float]] = {
-      val means = File.load[Tensor[Float]](meanFile)
-      (if (sc.isDefined) {
-        DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000) ->
-          SampleToBGRImg(1f)
-      } else {
-        DataSet.ImageFolder.paths(path) -> LocalImgReader(256, 256, normalize = 1f)
-      }) -> BGRImgPixelNormalizer(means) -> BGRImgCropper(imageSize, imageSize, CropCenter) ->
-        BGRImgToBatch(batchSize, toRGB = false)
-    }
+  def apply(path: Path, batchSize: Int, meanFile: String, sc: Option[SparkContext] = None)
+  : DataSet[MiniBatch[Float]] = {
+    val means = File.load[Tensor[Float]](meanFile)
+    (if (sc.isDefined) {
+      DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000) ->
+        SampleToBGRImg(1f)
+    } else {
+      DataSet.ImageFolder.paths(path) -> LocalImgReader(256, 256, normalize = 1f)
+    }) -> BGRImgPixelNormalizer(means) -> BGRImgCropper(imageSize, imageSize, CropCenter) ->
+      BGRImgToBatch(batchSize, toRGB = false)
   }
-
-  object InceptionPreprocessor {
-    val imageSize = 224
-
-    def apply(path: Path, batchSize: Int, sc: Option[SparkContext] = None, nodeNumber: Int = -1)
-    : DataSet[MiniBatch[Float]] = {
-      (if (sc.isDefined) {
-        DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000) ->
-          SampleToBGRImg(1f)
-      } else {
-        DataSet.ImageFolder.paths(path) -> LocalImgReader(256, 256, normalize = 1f)
-      }) -> BGRImgCropper(imageSize, imageSize, CropCenter) ->
-        BGRImgNormalizer(123, 117, 104, 1, 1, 1) ->
-        BGRImgToBatch(batchSize, toRGB = false)
-    }
-  }
-
-  object ResNetPreprocessor {
-    val imageSize = 224
-
-    def apply(path: Path, batchSize: Int, sc: Option[SparkContext] = None, nodeNumber: Int = -1)
-    : DataSet[MiniBatch[Float]] = {
-      (if (sc.isDefined) {
-        DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000) ->
-          SampleToBGRImg()
-      } else {
-        DataSet.ImageFolder.images(path, 256)
-      }) -> BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize, CropCenter) ->
-        BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) ->
-        BGRImgToBatch(batchSize)
-    }
-  }
-
 }
 
+object InceptionPreprocessor {
+  val imageSize = 224
+
+  def apply(path: Path, batchSize: Int, sc: Option[SparkContext] = None)
+  : DataSet[MiniBatch[Float]] = {
+    (if (sc.isDefined) {
+      DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000) ->
+        SampleToBGRImg(1f)
+    } else {
+      DataSet.ImageFolder.paths(path) -> LocalImgReader(256, 256, normalize = 1f)
+    }) -> BGRImgCropper(imageSize, imageSize, CropCenter) ->
+      BGRImgNormalizer(123, 117, 104, 1, 1, 1) ->
+      BGRImgToBatch(batchSize, toRGB = false)
+  }
+}
+
+object ResNetPreprocessor {
+  val imageSize = 224
+
+  def apply(path: Path, batchSize: Int, sc: Option[SparkContext] = None)
+  : DataSet[MiniBatch[Float]] = {
+    (if (sc.isDefined) {
+      DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000) ->
+        SampleToBGRImg()
+    } else {
+      DataSet.ImageFolder.paths(path) -> LocalImgReader(256)
+    }) -> BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize, CropCenter) ->
+      BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) ->
+      BGRImgToBatch(batchSize)
+  }
+}
