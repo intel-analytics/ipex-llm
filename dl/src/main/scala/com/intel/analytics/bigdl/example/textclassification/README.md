@@ -18,7 +18,7 @@
 3. Run the commands:
     * bigdl.sh would setup the essential environment for you and it would accept a spark-submit command as an input parameter.
     * Spark local:
-      * Execute: bigdl.sh -- spark-submit --master "local[*]" --driver-memory 10g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --batchSize 128  --baseDir $BASE_DIR --partitionNum 4
+      * Execute: bigdl.sh -- spark-submit --master "local[*]" --driver-memory 20g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --batchSize 128  --baseDir $BASE_DIR --partitionNum 4
 
     * Spark cluster:
       * Execute: bigdl.sh -- spark-submit --master  $MASTER --driver-memory 5g --executor-memory 5g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar  --coreNum 8 --nodeNum 4 --batchSize 32  --baseDir $BASE_DIR --partitionNum 32
