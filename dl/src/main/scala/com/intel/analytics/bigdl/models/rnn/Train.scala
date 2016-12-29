@@ -54,15 +54,19 @@ object Train {
       val trainMaxLength = dataArray._3
       val valMaxLegnth = dataArray._4
 
+      val batchMode = param.batchSize match {
+        case 1 => false
+        case _ => true
+      }
       val trainSet = DataSet.array(trainData)
            .transform(SeqToLabeledSentence())
            .transform(LabeledSentenceToSample(dictionaryLength,
-             trainMaxLength, batchMode = false))
+             trainMaxLength, batchMode = batchMode))
            .transform(SampleToBatch(batchSize = param.batchSize))
       val validationSet = DataSet.array(valData)
            .transform(SeqToLabeledSentence())
            .transform(LabeledSentenceToSample(dictionaryLength,
-             valMaxLegnth, batchMode = false))
+             valMaxLegnth, batchMode = batchMode))
            .transform(SampleToBatch(batchSize = param.batchSize))
 
       val model = if (param.modelSnapshot.isDefined) {

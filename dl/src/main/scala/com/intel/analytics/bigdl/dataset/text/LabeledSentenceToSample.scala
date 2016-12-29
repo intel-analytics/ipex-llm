@@ -44,29 +44,24 @@ class LabeledSentenceToSample(vocabLength: Int, vocabNumber: Int, batchMode: Boo
       if (arrayBuffer == null || arrayBuffer.length < wordLength * vocabLength) {
         arrayBuffer = new Array[Float](wordLength*vocabLength)
       }
-      var i = 0
-      while (i < other.length) {
-        arrayBuffer(i*vocabLength + other.getData(i).toInt) = 1.0f
-        i += 1
-      }
-      while (i < wordLength) {
-        val index = (RNG.uniform(0.0, 1.0) * vocabLength).toInt
-        arrayBuffer(i*vocabLength + index) = 1.0f
-        i += 1
-      }
       if (labelBuffer == null || labelBuffer.length < wordLength) {
         labelBuffer = new Array[Float](wordLength)
       }
-      i = 0
+      var i = 0
       while (i < other.length) {
+        arrayBuffer(i*vocabLength + other.getData(i).toInt) = 1.0f
         labelBuffer(i) = other.label()(i) + 1.0f
         i += 1
       }
+      val lastIndex = labelBuffer(other.length - 1)
       while (i < wordLength) {
         val index = (RNG.uniform(0.0, 1.0) * vocabLength).toInt
-        labelBuffer(i) = index.toFloat + 1.0f
+        arrayBuffer(i*vocabLength + index) = 1.0f
+        labelBuffer(i-1) = index + 1.0f
         i += 1
       }
+      labelBuffer(wordLength - 1) = lastIndex
+
       buffer.copy(arrayBuffer, labelBuffer,
         Array(wordLength, vocabLength), Array(wordLength))
     })
