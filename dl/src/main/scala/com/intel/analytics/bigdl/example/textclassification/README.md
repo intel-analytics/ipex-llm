@@ -10,15 +10,18 @@
 ## Steps to run this example:
 1. Download [Pre-train GloVe word embeddings](http://nlp.stanford.edu/data/glove.6B.zip)
 2. Download [20 Newsgroup dataset](http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/www/data/news20.html) as the training data
+3. Put those data under BASE_DIR, and the final structure would look like this:
+   * BASE_DIR
+       -  20_newsgroup
+       -  glove.6B
+         
 3. Run the commands:
-
+    * bigdl.sh would setup the essential environment for you and it would accept a spark-submit command as an input parameter.
     * Spark local:
-      * Execute: bigdl.sh
-      * spark-submit --master "local[*]" --driver-memory 20g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --batchSize 128  --baseDir $BASE_DIR
+      * Execute: bigdl.sh -- spark-submit --master "local[*]" --driver-memory 20g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --batchSize 128  --baseDir $BASE_DIR --partitionNum 4
 
     * Spark cluster:
-      * Execute: bigdl.sh
-      * spark-submit --master  $MASTER --driver-memory 10g --executor-memory 20g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar  --coreNum 8 --nodeNum 4 --batchSize 32  --baseDir $BASE_DIR
+      * Execute: bigdl.sh -- spark-submit --master  $MASTER --driver-memory 5g --executor-memory 5g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar  --coreNum 8 --nodeNum 4 --batchSize 32  --baseDir $BASE_DIR --partitionNum 32
       * NOTE: The total batch is: 32 * 4 as we specify nodeNum to be 4
 
 4. Verify:

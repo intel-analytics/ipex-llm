@@ -38,10 +38,10 @@ object SimpleTokenizer {
    * Transform sample text into tokens and ignore those unknown tokens.
    * @param word2Meta Indicate the included words.
    */
-  def toTokens(text: String, word2Meta: Map[String, WordMeta]): Array[String] = {
+  def toTokens(text: String, word2Meta: Map[String, WordMeta]): Array[Float] = {
     SimpleTokenizer.toTokens(text).map { word: String =>
       if (word2Meta.contains(word)) {
-        Some(word)
+        Some(word2Meta(word).index.toFloat)
       } else {
         None
       }
@@ -54,8 +54,8 @@ object SimpleTokenizer {
    * @param sequenceLen the desired seq length
    * @param trunc truncated from pre or post.
    */
-  def shaping(tokens: Array[String], sequenceLen: Int, trunc: String = "pre")
-  : Array[String] = {
+  def shaping(tokens: Array[Float], sequenceLen: Int, trunc: String = "pre")
+  : Array[Float] = {
     val paddedTokens = if (tokens.length > sequenceLen) {
       if ("pre" == trunc) {
         tokens.slice(tokens.length - sequenceLen, tokens.length)
@@ -63,7 +63,7 @@ object SimpleTokenizer {
         tokens.slice(0, sequenceLen)
       }
     } else {
-      tokens ++ Array.fill[String](sequenceLen - tokens.length)("$$$")
+      tokens ++ Array.fill[Float](sequenceLen - tokens.length)(0)
     }
     paddedTokens
   }
@@ -73,7 +73,7 @@ object SimpleTokenizer {
    * @param embeddingSize size of the pre-trained vector
    * @param word2Vec pre-trained word2Vec
    */
-  def vectorization(tokens: Array[String], embeddingSize: Int, word2Vec: Map[String, Array[Float]])
+  def vectorization(tokens: Array[Float], embeddingSize: Int, word2Vec: Map[Float, Array[Float]])
   : Array[Array[Float]] = {
     tokens.map { word =>
       if (word2Vec.contains(word)) {
