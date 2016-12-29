@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to the Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -27,10 +27,11 @@ object SeqToLabeledSentence {
 }
 
 class SeqToLabeledSentence()
-  extends Transformer[(Array[Float], Array[Float]), LabeledSentence] {
-  private val buffer = new LabeledSentence()
+  extends Transformer[(Array[Float], Array[Float]), LabeledSentence[Float]] {
+  private val buffer = new LabeledSentence[Float]()
 
-  override def apply(prev: Iterator[(Array[Float], Array[Float])]): Iterator[LabeledSentence] = {
+  override def apply(prev: Iterator[(Array[Float], Array[Float])])
+  : Iterator[LabeledSentence[Float]] = {
     prev.map(rawData => {
       buffer.copy(rawData._1, rawData._2)
     })

@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to the Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -17,14 +17,11 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
 
-import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
-import scala.math.exp
 import scala.reflect.ClassTag
 
 
@@ -132,5 +129,12 @@ class LogSoftMaxBatch[T: ClassTag](
 
   override def toString(): String = {
     s"nn.LogSoftMaxBatch"
+  }
+}
+
+object LogSoftMaxBatch {
+  def apply[@specialized(Float, Double) T: ClassTag]()
+    (implicit ev: TensorNumeric[T]): LogSoftMaxBatch[T] = {
+    new LogSoftMaxBatch[T]()
   }
 }
