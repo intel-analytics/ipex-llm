@@ -22,7 +22,7 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, RandomGenerator}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, BeforeAndAfterAll, FlatSpec, Matchers}
@@ -31,6 +31,9 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc: SparkContext = null
 
   before {
+    val nodeNumber = 1
+    val coreNumber = 1
+    Engine.init(nodeNumber, coreNumber, true)
     sc = new SparkContext("local[1]", "DataSetSpec")
   }
 
