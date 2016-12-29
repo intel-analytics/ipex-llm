@@ -9,7 +9,7 @@ To train the autoencoder, you need the [MNIST](http://yann.lecun.com/exdb/mnist/
 You need to download:
 
 - train-images-idx3-ubyte.jar
-- train-labels-idx1-ubyte.jar
+- train-labels-idx1-ubyte.jar (the labels file is not actually used)
 
 then unzip them.
 
@@ -40,8 +40,7 @@ See [Implementation Details](#implementation-details) for more information on im
 
 
 ## Implementation Details
-For our implementation, ReLU is used as activation function and the mean square error is
-calculated as the loss function.
+For our implementation, ReLU is used as activation function and the mean square error as the loss function.
 
 #### Reference
 <a name="Bengio09">[Bengio09]</a> Yoshua Bengio. Learning deep architectures for AI. Foundations and Trends in Machine Learning, 2(1):1–127, 2009. Also published as a book. Now Publishers, 2009.
