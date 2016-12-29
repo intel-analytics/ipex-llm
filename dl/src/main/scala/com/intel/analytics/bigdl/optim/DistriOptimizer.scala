@@ -464,7 +464,7 @@ object DistriOptimizer {
       parameters: AllReduceParameter[T])
   : Module[T] = {
     val partitionNum = models.partitions.length
-    val trainedModel = models.map(_.localModels.head).first()
+    val trainedModel = models.map(_.localModels.head.clearState()).first()
     val weights = models.mapPartitions(iter => {
       val cached = iter.next()
       val curPartitionId = TaskContext.getPartitionId()
