@@ -231,7 +231,7 @@ object Engine {
 
   def coreNumber(): Int = physicalCoreNumber
 
-  def setCoreNumber(n: Int): Unit = {
+  private[bigdl] def setCoreNumber(n: Int): Unit = {
     require(n > 0)
     physicalCoreNumber = n
     _model = initModelThreadPool()
@@ -246,7 +246,7 @@ object Engine {
 
   def nodeNumber(): Option[Int] = nodeNum
 
-  def setNodeNumber(n : Option[Int]): Unit = {
+  private[bigdl] def setNodeNumber(n : Option[Int]): Unit = {
     nodeNum = n
   }
 
