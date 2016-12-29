@@ -52,15 +52,17 @@ class TextClassifier(param: TextClassificationParams) {
    * Load the pre-trained word2Vec
    * @return A map from word to vector
    */
-  private def buildWord2Vec(): Map[String, Array[Float]] = {
+  private def buildWord2Vec(word2Meta: Map[String, WordMeta]): Map[Float, Array[Float]] = {
     log.info("Indexing word vectors.")
-    val preWord2Vec = MMap[String, Array[Float]]()
+    val preWord2Vec = MMap[Float, Array[Float]]()
     val filename = s"$gloveDir/glove.6B.100d.txt"
     for (line <- Source.fromFile(filename, "ISO-8859-1").getLines) {
       val values = line.split(" ")
       val word = values(0)
-      val coefs = values.slice(1, values.length).map(_.toFloat)
-      preWord2Vec.put(word, coefs)
+      if (word2Meta.contains(word)) {
+        val coefs = values.slice(1, values.length).map(_.toFloat)
+        preWord2Vec.put(word2Meta(word).index.toFloat, coefs)
+      }
     }
     log.info(s"Found ${preWord2Vec.size} word vectors.")
     preWord2Vec.toMap
@@ -99,7 +101,8 @@ class TextClassifier(param: TextClassificationParams) {
    * Go through the whole data set to gather some meta info for the tokens.
    * Tokens would be discarded if the frequency ranking is less then maxWordsNum
    */
-  def analyzeTexts(dataRdd: RDD[(String, Float)]): Map[String, WordMeta] = {
+  def analyzeTexts(dataRdd: RDD[(String, Float)])
+  : (Map[String, WordMeta], Map[Float, Array[Float]]) = {
     // Remove the top 10 words roughly, you might want to fine tuning this.
     val frequencies = dataRdd.flatMap{case (text: String, label: Float) =>
       SimpleTokenizer.toTokens(text)
@@ -109,7 +112,7 @@ class TextClassifier(param: TextClassificationParams) {
     val indexes = Range(1, frequencies.length)
     val word2Meta = frequencies.zip(indexes).map{item =>
       (item._1._1, WordMeta(item._1._2, item._2))}.toMap
-    word2Meta
+    (word2Meta, buildWord2Vec(word2Meta))
   }
 
   // TODO: Replace SpatialConv and SpatialMaxPolling with 1D implementation
@@ -118,17 +121,17 @@ class TextClassifier(param: TextClassificationParams) {
 
     model.add(Reshape(Array(param.embeddingDim, 1, param.maxSequenceLength)))
 
-    model.add(SpatialConvolution(param.embeddingDim, 128, 5, 1, initMethod = Xavier))
+    model.add(SpatialConvolution(param.embeddingDim, 128, 5, 1))
     model.add(ReLU())
 
     model.add(SpatialMaxPooling(5, 1, 5, 1))
 
-    model.add(SpatialConvolution(128, 128, 5, 1, initMethod = Xavier))
+    model.add(SpatialConvolution(128, 128, 5, 1))
     model.add(ReLU())
 
     model.add(SpatialMaxPooling(5, 1, 5, 1))
 
-    model.add(SpatialConvolution(128, 128, 5, 1, initMethod = Xavier))
+    model.add(SpatialConvolution(128, 128, 5, 1))
     model.add(ReLU())
 
     model.add(SpatialMaxPooling(35, 1, 35, 1))
@@ -150,14 +153,16 @@ class TextClassifier(param: TextClassificationParams) {
     val embeddingDim = param.embeddingDim
     val trainingSplit = param.trainingSplit
 
-    val word2Vec = sc.broadcast(buildWord2Vec())
     // For large dataset, you might want to get such RDD[(String, Float)] from HDFS
-    val dataRdd = sc.parallelize(loadRawData(), param.nodeNum)
-    val word2Meta = sc.broadcast(analyzeTexts(dataRdd))
-    val vectorizedRdd = dataRdd.map {case (text, label) => (toTokens(text, word2Meta.value), label)}
+    val dataRdd = sc.parallelize(loadRawData(), param.partitionNum)
+    val (word2Meta, word2Vec) = analyzeTexts(dataRdd)
+    val word2MetaBC = sc.broadcast(word2Meta)
+    val word2VecBC = sc.broadcast(word2Vec)
+    val vectorizedRdd = dataRdd
+        .map {case (text, label) => (toTokens(text, word2MetaBC.value), label)}
         .map {case (tokens, label) => (shaping(tokens, sequenceLen), label)}
-        .map {case (tokens, label) =>
-          (vectorization(tokens, embeddingDim, word2Vec.value), label)}
+        .map {case (tokens, label) => (vectorization(
+          tokens, embeddingDim, word2VecBC.value), label)}
     val Array(trainingRDD, valRDD) = vectorizedRdd.randomSplit(
       Array(trainingSplit, 1 - trainingSplit))
     val batching = Batching(param.batchSize, Array(param.maxSequenceLength, param.embeddingDim))
@@ -196,8 +201,9 @@ case class TextClassificationParams(baseDir: String = "./",
   trainingSplit: Double = 0.8,
   batchSize: Int = 128,
   embeddingDim: Int = 100,
-  coreNum: Int = 1,
-  nodeNum: Int = 1)
+  coreNum: Int = 4,
+  nodeNum: Int = 1,
+  partitionNum: Int = 4)
 
 object TextClassifier {
   val log: Logger = LoggerFactory.getLogger(this.getClass)
@@ -218,6 +224,9 @@ object TextClassifier {
       opt[String]('n', "nodeNum")
         .text("nodeNumber")
         .action((x, c) => c.copy(nodeNum = x.toInt))
+      opt[String]('p', "partitionNum")
+        .text("you may want to tune the partitionNum if run into spark mode")
+        .action((x, c) => c.copy(partitionNum = x.toInt))
       opt[String]('s', "maxSequenceLength")
         .text("maxSequenceLength")
         .action((x, c) => c.copy(maxSequenceLength = x.toInt))
