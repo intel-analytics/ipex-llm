@@ -2,11 +2,20 @@
 
 Model that supports sequence to sequence processing
 
-##Dataset
+This is a implementation of Simple Recurrent Neural Network for Language Model. Please refer to the [original paper](http://www.fit.vutbr.cz/research/groups/speech/publi/2010/mikolov_interspeech2010_IS100722.pdf) by Tomas Mikolov.
 
-Shakespeare texts are used as a toy example to train a language model.
+The implementation of RNN in this code is referred to [Keras Recurrent](https://keras.io/layers/recurrent/) documents.
 
-The input.txt is a pure text file format, which contains the Shakespeare's poems.
+
+##Get the BigDL files
+
+Please build BigDL referring to [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page).
+
+
+##Prepare the Input Data
+You can download one piece of Shakespeare Texts from [here](http://shakespeare.mit.edu/coriolanus/coriolanus.1.1.html).
+
+After downloading the text, please put it into one directory (e.g /opt/text/input.txt). The program will load in the original text file from this directory later.
 
 ###Sample Text
 
@@ -23,6 +32,13 @@ The input texts may look as follows:
       You are all resolved rather to die than to famish?
 ```
 
+##Train the Model
+Example command:
+```bash
+./dist/bin/bigdl.sh -- java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Train -f /opt/text --batchSize 1 --core 4 --nEpochs 30 --learningRate 0.1
+
+```
+
 ##Preprocessing
 
 The <code>WordTokenizer.scala</code> in <code>rnn/Utils.scala</code> file is the source code to do the preprocessing procedure for the text.
@@ -33,7 +49,7 @@ A <code>mapped_data.txt</code> will be created to store the preprocessed texts. 
 Note that all the words that are not included in the dictionary will be indicated as an UNKNOWN_TOKEN index.
 Both files will be saved to the <code>saveDirectory</code>, which is defined by user.
 
-###Sample Data
+###Sample Sequence of Processed Data
 ```
       3998,3875,3690,3999
       3998,3171,3958,2390,3832,3202,3855,3983,3883,3999
@@ -50,27 +66,17 @@ The <code>Dataset.array()</code> is a pipeline that will load the data and trans
 A SimpleRNN model is implemented in the <code>Model.scala</code> script. It is a one hidden layer recurrent neural network with arbitrary hidden circles.
 User can define the inputSize, hiddenSize, outputSize and bptt (back propagation through time) parameter to fine-tune the model.
 
-##Training
-Note that we train the rnn sentence by sentence. Thus the following codes are necessary settings.
-<br>
-<code>
-Engine.setCoreNumber(1)
-</code><br>
-<code>
-Engine.model.setPoolSize(param.coreNumber)
-</code><br>
-
-The <code>optimizer</code> method is a highly optimized class. Users can simply pass their parameters to this class to initiate training.
-For example, the validation method, number of epochs to train, learning rate, momentum, etc.
-
-In our example, we set Loss as the validation method, and learning rate is set to be 0.1
-
 ##Parameters
-Almost all the parameters that can tune the model are user defined.
-Users can define their training epochs, learning rate, input file folder, etc as the command line arguments.
-Note that user must define the coreNumber (for example: 4 for a desktop).
-
-##Sample Command Line
-<code>
-java -cp bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar:spark-assembly-1.5.1-hadoop2.6.0.jar com.intel.analytics.bigdl.models.rnn.Train -f ./ --core 4 --nEpochs 30 --learningRate 0.1
-</code>
+```
+  --folder | -f  [the directory to reach the data and save generated dictionary]
+  --learningRate [default 0.1]
+  --momentum     [default 0.0]
+  --weightDecay  [default 0.0]
+  --dampening    [default 0.0]
+  --hiddenSize   [the size of recurrent layer, default 40]
+  --vocabSize    [the vocabulary size that users would like to set, default 4000]
+  --bptt         [back propagation through time, default 4]
+  --nEpochs      [number of epochs to train, default 30]
+  --batchSize    [only support 1; train the model sentence by sentence]
+  --coreNumber   [engine core numbers, e.g 4 for a desktop]
+```
