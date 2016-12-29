@@ -30,7 +30,9 @@ object ImageNetSeqFileGenerator {
     parallel: Int = 1,
     blockSize: Int = 12800,
     train: Boolean = true,
-    validate: Boolean = true
+    validate: Boolean = true,
+    scaleSize: Int = 256,
+    isResize: Boolean = false
   )
 
   private val parser = new OptionParser[ImageNetSeqFileGeneratorParams]("Spark-DL ImageNet " +
@@ -54,6 +56,12 @@ object ImageNetSeqFileGenerator {
     opt[Unit]('v', "validationOnly")
       .text("only generate validation data")
       .action((_, c) => c.copy(train = false))
+    opt[Int]('s', "scaleSize")
+      .text("scale size, default is uniform scale without -r option")
+      .action((x, c) => c.copy(scaleSize = x))
+    opt[Unit]('r', "resize")
+      .text("resize to (scaleSize, scaleSize) instead of uniform scale")
+      .action((x, c) => c.copy(isResize = true))
   }
 
   def main(args: Array[String]): Unit = {
@@ -70,7 +78,11 @@ object ImageNetSeqFileGenerator {
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
-              val imageIter = LocalImgReader(256)(iter)
+              val imageIter = if (param.isResize) {
+                LocalImgReader(param.scaleSize, param.scaleSize, 255f)(iter)
+              } else {
+                LocalImgReader(param.scaleSize)(iter)
+              }
               val fileIter = BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "train",
                   s"imagenet-seq-$tid"))(imageIter)
               while (fileIter.hasNext) {
@@ -97,7 +109,11 @@ object ImageNetSeqFileGenerator {
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
-              val imageIter = LocalImgReader(256)(iter)
+              val imageIter = if (param.isResize) {
+                LocalImgReader(param.scaleSize, param.scaleSize, 255f)(iter)
+              } else {
+                LocalImgReader(param.scaleSize)(iter)
+              }
               val fileIter = BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "val",
                   s"imagenet-seq-$tid"))(imageIter)
               while (fileIter.hasNext) {
