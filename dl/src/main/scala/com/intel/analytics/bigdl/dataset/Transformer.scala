@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.dataset
 
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.collection.Iterator
@@ -64,5 +65,56 @@ object Identity {
 class Identity[A] extends Transformer[A, A] {
   override def apply(prev: Iterator[A]): Iterator[A] = {
     prev
+  }
+}
+
+object SampleToBatch {
+  def apply[T](batchSize: Int): SampleToBatch[T]
+  = new SampleToBatch[T](batchSize)
+}
+
+class SampleToBatch[T](totalBatch: Int)
+  extends Transformer[Sample[T], MiniBatch[T]] {
+
+  override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
+    new Iterator[MiniBatch[T]] {
+      private val featureTensor: Tensor[T] = Tensor[T]()
+      private val labelTensor: Tensor[T] = Tensor[T]()
+      private var featureData: Array[T] = null
+      private var labelData: Array[T] = null
+      private val batchSize = Utils.getBatchSize(totalBatch)
+      private var dimension: (Array[Int], Array[Int]) = null
+      override def hasNext: Boolean = prev.hasNext
+
+      override def next(): MiniBatch[T] = {
+        if (prev.hasNext) {
+          var i = 0
+          while (i < batchSize && prev.hasNext) {
+            val smpl = prev.next()
+            val featureLength = smpl.getFeature().size.reduceLeft(_*_)
+            val labelLength = smpl.getLabel().size.reduceLeft(_*_)
+            dimension = (smpl.getFeature().size, smpl.getLabel().size)
+            if (featureData == null || featureData.length < batchSize * featureLength) {
+              featureData = new Array[T](batchSize * featureLength)
+            }
+            if (labelData == null || labelData.length < batchSize * labelLength) {
+              labelData = new Array[T](batchSize * labelLength)
+            }
+            smpl.copyToFeature(featureData, i*featureLength, featureLength)
+            smpl.copyToLabel(labelData, i*labelLength, labelLength)
+            i += 1
+          }
+
+          featureTensor.set(Storage[T](featureData),
+            storageOffset = 1, sizes = Array(Array(i), dimension._1).flatten)
+          labelTensor.set(Storage[T](labelData),
+            storageOffset = 1, sizes = Array(Array(i), dimension._2).flatten)
+
+          MiniBatch(featureTensor, labelTensor)
+        } else {
+          null
+        }
+      }
+    }
   }
 }
