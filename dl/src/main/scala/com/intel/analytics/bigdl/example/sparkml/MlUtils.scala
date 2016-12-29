@@ -20,9 +20,12 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.Transformer
 import com.intel.analytics.bigdl.dataset.image.{BGRImage, LocalLabeledImagePath}
 import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.sql.{DataFrame, Row}
 import scopt.OptionParser
+
+import scala.reflect.ClassTag
 
 object MlUtils {
 
@@ -98,12 +101,13 @@ object MlUtils {
       )
   }
 
-  def loadModel[@specialized(Float, Double) T](param : PredictParams): Module[Float] = {
+  def loadModel[@specialized(Float, Double) T : ClassTag](param : PredictParams)
+    (implicit ev: TensorNumeric[T]): Module[T] = {
     val model = param.modelType match {
       case TorchModel =>
-        Module.loadTorch[Float](param.modelPath)
+        Module.loadTorch[T](param.modelPath)
       case BigDlModel =>
-        Module.load[Float](param.modelPath)
+        Module.load[T](param.modelPath)
       case _ => throw new IllegalArgumentException(s"${param.modelType}")
     }
     model

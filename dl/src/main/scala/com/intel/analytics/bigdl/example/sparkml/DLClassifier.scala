@@ -29,7 +29,7 @@ import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.SQLContext
 
 /**
- * An example to show how to use DLClassifier Transform, and the test data is imagenet
+ * An example to show how to use DLClassifier Transform
  */
 object DLClassifier {
   Logger.getLogger("org").setLevel(Level.ERROR)
@@ -53,8 +53,6 @@ object DLClassifier {
           .getOrElse(throw new RuntimeException("can't get node number"))
 
       val model = loadModel(param)
-
-      val start = System.nanoTime()
       val valTrans = new DLClassifier()
         .setInputCol("features")
         .setOutputCol("predict")
@@ -68,22 +66,20 @@ object DLClassifier {
       val paths = LocalImageFiles.readPathsNoLabel(Paths.get(param.folder))
       val imageSet = imagesLoad(paths, 256)
 
-      val trainRDD = sc.parallelize(imageSet).repartition(partitionNum).persist()
-
+      val valRDD = sc.parallelize(imageSet).repartition(partitionNum)
       val transf = RowToByteRecords() ->
           SampleToBGRImg() ->
           BGRImgCropper(imageSize, imageSize) ->
           BGRImgNormalizer(testMean, testStd) ->
           BGRImgToImageVector()
 
-      val testData = transformDF(sqlContext.createDataFrame(trainRDD), transf)
+      val valDF = transformDF(sqlContext.createDataFrame(valRDD), transf)
 
-      valTrans.transform(testData, paramsTrans)
+      valTrans.transform(valDF, paramsTrans)
           .select("imageName", "predict")
           .show(param.showNum)
 
-      val scalaTime = System.nanoTime() - start
-      println(scalaTime / 1e9 + "s")
+      sc.stop()
     })
   }
 }
