@@ -53,19 +53,15 @@ object Train {
         (32, DatasetType.CIFAR10, param.nepochs, Cifar10DataSet)
 
       val trainDataSet = if (sc.isDefined) {
-        dataSet.trainDataSet(
-          param.folder + "/train", sc.get, param.nodeNumber, imageSize, batchSize)
+        dataSet.trainDataSet(param.folder, sc.get, imageSize, batchSize)
       } else {
-        dataSet.trainDataSet(
-          param.folder + "/train", batchSize, imageSize)
+        dataSet.trainDataSet(param.folder, batchSize, imageSize)
       }
 
       val validateSet = if (sc.isDefined) {
-        dataSet.valDataSet(
-          param.folder + "val", sc.get, param.nodeNumber, imageSize, batchSize)
+        dataSet.valDataSet(param.folder, sc.get, imageSize, batchSize)
       } else {
-        dataSet.valDataSet(
-          param.folder + "val", batchSize, imageSize)
+        dataSet.valDataSet(param.folder, batchSize, imageSize)
       }
 
       val shortcut: ShortcutType = param.shortcutType match {
