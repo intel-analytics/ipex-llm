@@ -38,6 +38,13 @@ object LocalImgReader {
   = new LocalResizeImgReader(resizeW, resizeH, normalize)
 }
 
+/**
+ * Read BGR images from given paths. After read the image, it will resize the shorted edge to the
+ * given scale to value and resize the other edge properly. It will also divide the pixel value
+ * by the given normalize value.
+ * @param scaleTo
+ * @param normalize
+ */
 class LocalScaleImgReader private[dataset](scaleTo: Int, normalize: Float)
   extends Transformer[LocalLabeledImagePath, LabeledBGRImage] {
 

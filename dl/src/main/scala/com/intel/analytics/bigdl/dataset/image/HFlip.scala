@@ -28,6 +28,10 @@ object HFlip {
   }
 }
 
+/**
+ * Flip a image with a probability. The threshold higher, the less easier to flip the image.
+ * @param threshold
+ */
 class HFlip(threshold: Double) extends Transformer[LabeledBGRImage, LabeledBGRImage] {
   override def apply(prev: Iterator[LabeledBGRImage]): Iterator[LabeledBGRImage] = {
     prev.map(img => {

@@ -28,6 +28,14 @@ object BGRImgToBatch {
     = new BGRImgToBatch(batchSize, toRGB)
 }
 
+/**
+ * Convert a batch of labeled BGR images into a Mini-batch.
+ *
+ * Notice: The totalBatch means a total batch size. In distributed environment, the batch should be
+ * divided by total core number
+ * @param totalBatch
+ * @param toRGB
+ */
 class BGRImgToBatch(totalBatch: Int, toRGB: Boolean = true)
   extends Transformer[LabeledBGRImage, MiniBatch[Float]] {
 

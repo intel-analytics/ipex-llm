@@ -119,8 +119,7 @@ class LabeledGreyImage(d: Array[Float], w: Int, h: Int,
 }
 
 /**
- * Represent a BGR image
- *
+ * Represent a BGR image.
  * @param data
  * @param _width
  * @param _height

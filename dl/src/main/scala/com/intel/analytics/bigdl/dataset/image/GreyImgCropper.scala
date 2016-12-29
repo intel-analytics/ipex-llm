@@ -27,6 +27,12 @@ object GreyImgCropper {
   }
 }
 
+/**
+ * Crop an area from a grey image. The crop area width and height must be smaller than grey image
+ * width and height. The area position is random.
+ * @param cropWidth
+ * @param cropHeight
+ */
 class GreyImgCropper(cropWidth: Int, cropHeight: Int)
   extends Transformer[LabeledGreyImage, LabeledGreyImage] {
 

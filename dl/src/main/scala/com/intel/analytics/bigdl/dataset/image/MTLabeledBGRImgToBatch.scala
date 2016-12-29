@@ -33,6 +33,17 @@ object MTLabeledBGRImgToBatch {
   }
 }
 
+/**
+ * Multi-thread convert BGR images into Mini-Batch.
+ *
+ * Note: the source iterator must be thread safe.
+ * @param width
+ * @param height
+ * @param totalBatchSize
+ * @param transformer
+ * @param toRGB
+ * @tparam A
+ */
 class MTLabeledBGRImgToBatch[A: ClassTag] private[bigdl](width: Int, height: Int,
   totalBatchSize: Int, transformer: Transformer[A, LabeledBGRImage], toRGB: Boolean = true)
   extends Transformer[A, MiniBatch[Float]] {

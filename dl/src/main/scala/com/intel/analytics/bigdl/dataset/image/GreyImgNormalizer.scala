@@ -61,6 +61,11 @@ object GreyImgNormalizer {
   }
 }
 
+/**
+ * Normalize a grey image. Each pixel will minus mean and then divide std.
+ * @param mean
+ * @param std
+ */
 class GreyImgNormalizer(mean : Double, std : Double)
   extends Transformer[LabeledGreyImage, LabeledGreyImage] {
 

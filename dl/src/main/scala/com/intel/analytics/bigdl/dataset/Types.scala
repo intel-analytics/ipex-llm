@@ -56,6 +56,17 @@ trait Label[T] {
   def label(): T
 }
 
+/**
+ * A batch of data feed into the model. The first size is batchsize
+ * @param data
+ * @param labels
+ * @tparam T
+ */
 case class MiniBatch[T](data: Tensor[T], labels: Tensor[T])
 
+/**
+ * A byte array and a label. It can contain anything.
+ * @param data
+ * @param label
+ */
 case class ByteRecord(data: Array[Byte], label: Float)

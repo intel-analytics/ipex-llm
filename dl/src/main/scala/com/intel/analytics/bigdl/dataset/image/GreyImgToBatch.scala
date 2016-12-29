@@ -28,6 +28,13 @@ object GreyImgToBatch {
   }
 }
 
+/**
+ * Convert a batch of labeled grey images into a Mini-batch.
+ *
+ * Notice: The totalBatch means a total batch size. In distributed environment, the batch should be
+ * divided by total core number
+ * @param totalBatchSize
+ */
 class GreyImgToBatch private[dataset](totalBatchSize: Int)
   extends Transformer[LabeledGreyImage, MiniBatch[Float]] {
 
