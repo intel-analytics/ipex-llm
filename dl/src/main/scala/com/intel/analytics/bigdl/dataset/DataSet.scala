@@ -282,19 +282,6 @@ object DataSet {
       new LocalArrayDataSet[LocalLabeledImagePath](buffer)
     }
 
-    def imagesNoLabel(paths: Array[LocalLabeledImagePath], scaleTo: Int): Array[ByteRecord] = {
-      val total = paths.length
-      var count = 1
-      val buffer = paths.map(imageFile => {
-        if (total < 100 || count % (total / 100) == 0 || count == total) {
-          logger.info(s"Cache image $count/$total(${count * 100 / total}%)")
-        }
-        count += 1
-        ByteRecord(BGRImage.readImage(imageFile.path, scaleTo), imageFile.label)
-      })
-      buffer
-    }
-
     def images(path: Path, scaleTo: Int): DataSet[LabeledBGRImage] = {
       val paths = LocalImageFiles.readPaths(path)
       val total = paths.length
