@@ -68,22 +68,22 @@ case class LocalSeqFilePath(val path: Path)
   * @param labelTensor
   */
 
-class Sample(
-    protected var featureTensor: Tensor[Float],
-    protected var labelTensor: Tensor[Float]) {
+class Sample[T](
+    protected var featureTensor: Tensor[T],
+    protected var labelTensor: Tensor[T]) {
 
-  def this() = this(Tensor[Float](), Tensor[Float]())
+  def this() = this(Tensor[T](), Tensor[T]())
 
-  def copy(featureData: Array[Float],
-           labelData: Array[Float],
+  def copy(featureData: Array[T],
+           labelData: Array[T],
            featureSize: Array[Int],
-           labelSize: Array[Int]): Sample = {
-    featureTensor.set(Storage[Float](featureData), 1, featureSize)
-    labelTensor.set(Storage[Float](labelData), 1, labelSize)
+           labelSize: Array[Int]): Sample[T] = {
+    featureTensor.set(Storage[T](featureData), 1, featureSize)
+    labelTensor.set(Storage[T](labelData), 1, labelSize)
     this
   }
 
-  def copyToFeature(storage: Array[Float], offset: Int, length: Int): Unit = {
+  def copyToFeature(storage: Array[T], offset: Int, length: Int): Unit = {
     require(offset + length <= storage.length, "index out of boundary")
     var i = 0
     while (i < length) {
@@ -92,7 +92,7 @@ class Sample(
     }
   }
 
-  def copyToLabel(storage: Array[Float], offset: Int, length: Int): Unit = {
+  def copyToLabel(storage: Array[T], offset: Int, length: Int): Unit = {
     require(offset + length <= storage.length, "index out of boundary")
     var i = 0
     while (i < length) {
@@ -101,17 +101,17 @@ class Sample(
     }
   }
 
-  def copy(other: Sample): Sample = {
+  def copy(other: Sample[T]): Sample[T] = {
     featureTensor.copy(other.featureTensor)
     labelTensor.copy(other.labelTensor)
     this
   }
 
-  def getFeature(): Tensor[Float] = featureTensor
+  def getFeature(): Tensor[T] = featureTensor
 
-  def getLabel(): Tensor[Float] = labelTensor
+  def getLabel(): Tensor[T] = labelTensor
 
-  override def clone(): Sample = {
+  override def clone(): Sample[T] = {
     new Sample().copy(this)
   }
 

@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to the Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -17,7 +17,6 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 
@@ -28,7 +27,7 @@ import com.intel.analytics.bigdl.utils.Engine
 
 class ClassNLLCriterionBatch[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends ClassNLLCriterion[T] {
-  // private var total_weight = ev.fromType[Int](0)
+
   if (weights != null) require(weights.dim() == 1, "weights input should be 1-D Tensor")
 
   @transient
@@ -139,5 +138,13 @@ class ClassNLLCriterionBatch[T: ClassTag](weights: Tensor[T] = null, sizeAverage
 
       gradInput
     }
+  }
+}
+
+object ClassNLLCriterionBatch {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    weights: Tensor[T] = null,
+    sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) : ClassNLLCriterionBatch[T] = {
+    new ClassNLLCriterionBatch[T](weights, sizeAverage)
   }
 }

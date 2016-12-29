@@ -1,8 +1,8 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
+ * Licensed to the Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
+ * The Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
@@ -29,12 +29,12 @@ object LabeledSentenceToSample {
 }
 
 class LabeledSentenceToSample(vocabLength: Int, vocabNumber: Int, batchMode: Boolean)
-  extends Transformer[LabeledSentence, Sample] {
-  private val buffer = new Sample()
+  extends Transformer[LabeledSentence[Float], Sample[Float]] {
+  private val buffer = new Sample[Float]()
   private var arrayBuffer: Array[Float] = null
   private var labelBuffer: Array[Float] = null
 
-  override def apply(prev: Iterator[LabeledSentence]): Iterator[Sample] = {
+  override def apply(prev: Iterator[LabeledSentence[Float]]): Iterator[Sample[Float]] = {
     prev.map(other => {
       val wordLength = batchMode match {
         case true => vocabNumber
