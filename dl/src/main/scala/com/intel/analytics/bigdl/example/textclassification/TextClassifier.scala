@@ -22,19 +22,21 @@ import java.util
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset._
+import com.intel.analytics.bigdl.example.textclassification.SimpleTokenizer._
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, _}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.slf4j.{Logger, LoggerFactory}
+import org.apache.log4j.{Logger => Logger4j, Level => Levle4j}
+
 import scopt.OptionParser
 
 import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 import scala.io.Source
-import scala.util.Random
 
-/**
+  /**
  * This example use a (pre-trained GloVe embedding) to convert word to vector,
  * and uses it to train a text classification model on the 20 Newsgroup dataset
  * with 20 different categories. This model can achieve around 90% accuracy after
@@ -51,6 +53,7 @@ class TextClassifier(param: TextClassificationParams) {
    * @return A map from word to vector
    */
   private def buildWord2Vec(): Map[String, Array[Float]] = {
+    log.info("Indexing word vectors.")
     val preWord2Vec = MMap[String, Array[Float]]()
     val filename = s"$gloveDir/glove.6B.100d.txt"
     for (line <- Source.fromFile(filename, "ISO-8859-1").getLines) {
@@ -92,43 +95,16 @@ class TextClassifier(param: TextClassificationParams) {
     texts.zip(labels)
   }
 
-  private def transforming(dataSet: DataSet[(String, Float)],
-                        word2Meta: Map[String, WordMeta],
-                        word2Vec: Map[String, Array[Float]])
-    : DataSet[MiniBatch[Float]] = {
-  // You can implement this via pure RDD operation if on Spark mode only.
-    val result = dataSet -> Tokens(word2Meta) -> Shapping(param.maxSequenceLength) ->
-      Vectorization(param.embeddingDim, word2Vec) -> Batching(
-      param.batchSize, Array(param.maxSequenceLength, param.embeddingDim))
-    result
-  }
-
   /**
    * Go through the whole data set to gather some meta info for the tokens.
    * Tokens would be discarded if the frequency ranking is less then maxWordsNum
    */
   def analyzeTexts(dataRdd: RDD[(String, Float)]): Map[String, WordMeta] = {
+    // Remove the top 10 words roughly, you might want to fine tuning this.
     val frequencies = dataRdd.flatMap{case (text: String, label: Float) =>
-      Tokens.toTokens(text)
+      SimpleTokenizer.toTokens(text)
     }.map(word => (word, 1)).reduceByKey(_ + _)
-      .sortBy(- _._2).collect().slice(0, param.maxWordsNum)
-
-    val indexes = Range(1, frequencies.length)
-    val word2Meta = frequencies.zip(indexes).map{item =>
-      (item._1._1, WordMeta(item._1._2, item._2))}.toMap
-    word2Meta
-  }
-
-  /**
-   * Go through the whole data set to gather some meta info for the tokens.
-   * Tokens would be discarded if the frequency ranking is less then maxWordsNum
-   */
-  def analyzeTexts(data: ArrayBuffer[(String, Float)]): Map[String, WordMeta] = {
-    val frequencies = data.flatMap{case (text: String, label: Float) =>
-      Tokens.toTokens(text)
-    }.groupBy((word: String) => word)
-     .mapValues(_.length).toList
-     .sortBy(- _._2).slice(0, param.maxWordsNum)
+      .sortBy(- _._2).collect().slice(10, param.maxWordsNum)
 
     val indexes = Range(1, frequencies.length)
     val word2Meta = frequencies.zip(indexes).map{item =>
@@ -165,49 +141,42 @@ class TextClassifier(param: TextClassificationParams) {
   }
 
   def train(): Unit = {
-    val scOption = Engine.init(param.nodeNum, param.coreNum,
-      param.env == "spark").map(conf => {
-      conf.setAppName("Text classification")
+    val sc = new SparkContext(
+      Engine.init(param.nodeNum, param.coreNum, true).get
+        .setAppName("Text classification")
         .set("spark.akka.frameSize", 64.toString)
-        .set("spark.task.maxFailures", "1")
-      new SparkContext(conf)
-    })
+        .set("spark.task.maxFailures", "1"))
+    val sequenceLen = param.maxSequenceLength
+    val embeddingDim = param.embeddingDim
+    val trainingSplit = param.trainingSplit
 
-    log.info("Indexing word vectors.")
-    val word2Vec = buildWord2Vec()
-    val data = loadRawData()
-    val (trainingDataSet, valDataSet) = scOption match {
-      case Some(sc) =>
-        // For large dataset, you might want to get such RDD[(String, Float)] from HDFS
-        val dataRdd = scOption.get.parallelize(data, param.partitionNum)
-        val word2Meta = analyzeTexts(dataRdd)
-        val Array(trainingRDD, valRDD) = dataRdd.randomSplit(
-          Array(param.trainingSplit, 1 - param.trainingSplit))
-        (transforming(DataSet.rdd(trainingRDD, param.partitionNum), word2Meta, word2Vec),
-          transforming(DataSet.rdd(trainingRDD, param.partitionNum), word2Meta, word2Vec))
-      case _ =>
-        val word2Meta = analyzeTexts(data)
-        val (trainingData, valData) =
-          Random.shuffle(data).splitAt((data.length * param.trainingSplit).toInt)
-        (transforming(DataSet.array(trainingData.toArray), word2Meta, word2Vec),
-          transforming(DataSet.array(valData.toArray), word2Meta, word2Vec))
-    }
+    val word2Vec = sc.broadcast(buildWord2Vec())
+    // For large dataset, you might want to get such RDD[(String, Float)] from HDFS
+    val dataRdd = sc.parallelize(loadRawData(), param.nodeNum)
+    val word2Meta = sc.broadcast(analyzeTexts(dataRdd))
+    val vectorizedRdd = dataRdd.map {case (text, label) => (toTokens(text, word2Meta.value), label)}
+        .map {case (tokens, label) => (shaping(tokens, sequenceLen), label)}
+        .map {case (tokens, label) =>
+          (vectorization(tokens, embeddingDim, word2Vec.value), label)}
+    val Array(trainingRDD, valRDD) = vectorizedRdd.randomSplit(
+      Array(trainingSplit, 1 - trainingSplit))
+    val batching = Batching(param.batchSize, Array(param.maxSequenceLength, param.embeddingDim))
+    val trainingDataSet = DataSet.rdd(trainingRDD, param.nodeNum) -> batching
+    val valDataSet = DataSet.rdd(valRDD, param.nodeNum) -> batching
 
     val optimizer = Optimizer(
       model = buildModel(classNum),
       dataset = trainingDataSet,
       criterion = new ClassNLLCriterion[Float]()
     )
-
     val state = T("learningRate" -> 0.01, "learningRateDecay" -> 0.0002)
     optimizer
       .setState(state)
       .setOptimMethod(new Adagrad())
-      .setValidation(Trigger.everyEpoch,
-        valDataSet, Array(new Top1Accuracy[Float]))
+      .setValidation(Trigger.everyEpoch, valDataSet, Array(new Top1Accuracy[Float]))
       .setEndWhen(Trigger.maxEpoch(2))
       .optimize()
-    scOption.map(_.stop())
+    sc.stop()
   }
 }
 
@@ -220,9 +189,6 @@ class TextClassifier(param: TextClassificationParams) {
  * @param embeddingDim size of the embedding vector
  * @param coreNum same idea of spark core
  * @param nodeNum size of the cluster
- * @param partitionNum partition number of a training RDD.
- *   It should be equal to nodeNum(We might relax this in the following release)
- * @param env spark mode or no-spark mode
  */
 case class TextClassificationParams(baseDir: String = "./",
   maxSequenceLength: Int = 1000,
@@ -231,26 +197,21 @@ case class TextClassificationParams(baseDir: String = "./",
   batchSize: Int = 128,
   embeddingDim: Int = 100,
   coreNum: Int = 1,
-  nodeNum: Int = 1,
-  partitionNum: Int = 1,
-  env: String = "nospark")
+  nodeNum: Int = 1)
 
 object TextClassifier {
   val log: Logger = LoggerFactory.getLogger(this.getClass)
+  Logger4j.getLogger("org").setLevel(Levle4j.ERROR)
+  Logger4j.getLogger("akka").setLevel(Levle4j.ERROR)
+  Logger4j.getLogger("breeze").setLevel(Levle4j.ERROR)
+  Logger4j.getLogger("com.intel.analytics.bigdl.optim").setLevel(Levle4j.INFO)
+
   def main(args: Array[String]): Unit = {
     val localParser = new OptionParser[TextClassificationParams]("BigDL Example") {
       opt[String]('b', "baseDir")
         .required()
         .text("Base dir containing the training and word2Vec data")
         .action((x, c) => c.copy(baseDir = x))
-      opt[String]('e', "env")
-        .required()
-        .text("spark or without spark, possible input: spark, nospark")
-        .action((x, c) => c.copy(env = x))
-      opt[String]('p', "partitionNum")
-        .text("you may want to tune the partitionNum if run into spark mode")
-        .action((x, c) => c.copy(partitionNum = x.toInt))
-
       opt[String]('o', "coreNum")
         .text("core number")
         .action((x, c) => c.copy(coreNum = x.toInt))

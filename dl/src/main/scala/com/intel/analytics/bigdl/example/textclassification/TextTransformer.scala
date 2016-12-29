@@ -23,109 +23,64 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.Iterator
 
-object Tokens {
+object SimpleTokenizer {
   /**
    * Simple tokenizer to split text into separated tokens.
    * @param text text to be split.
    * @param lower convert to lower case or not.
    * @return An array of separated tokens.
    */
-   def toTokens(text: String, lower: Boolean = true): Array[String] = {
-    text.replaceAll("[^a-zA-Z ]", " ").toLowerCase().split("\\s+").filter(_.size > 2)
+  def toTokens(text: String, lower: Boolean = true): Array[String] = {
+    text.replaceAll("[^a-zA-Z]", " ").toLowerCase().split("\\s+").filter(_.size > 2)
   }
-  def apply(word2Meta: Map[String, WordMeta]): Tokens = new Tokens(word2Meta)
-}
 
-/**
- * Transform sample text into tokens and ignore those unknown tokens.
- * @param word2Meta Indicate the included words.
- */
-class Tokens(word2Meta: Map[String, WordMeta])
-  extends Transformer[(String, Float), (Array[String], Float)] {
-  val log: Logger = LoggerFactory.getLogger(this.getClass)
-
-  override def apply(prev: Iterator[(String, Float)]): Iterator[(Array[String], Float)] = {
-    new Iterator[(Array[String], Float)] {
-      override def hasNext: Boolean = prev.hasNext
-      override def next(): (Array[String], Float) = {
-        val (text, label) = prev.next()
-        val tokens = Tokens.toTokens(text).map { word: String =>
-          if (word2Meta.contains(word)) {
-            Some(word)
-          } else {
-            None
-          }
-        }.flatten
-        (tokens, label)
+  /**
+   * Transform sample text into tokens and ignore those unknown tokens.
+   * @param word2Meta Indicate the included words.
+   */
+  def toTokens(text: String, word2Meta: Map[String, WordMeta]): Array[String] = {
+    SimpleTokenizer.toTokens(text).map { word: String =>
+      if (word2Meta.contains(word)) {
+        Some(word)
+      } else {
+        None
       }
-    }
+    }.flatten
   }
-}
 
-object Shapping {
-  def apply(maxSequenceLen: Int, trunc: String = "pre"): Shapping =
-    new Shapping(maxSequenceLen, trunc)
-}
-
-/**
- * Shape the token sequence to the specified length.
- * The sequence would be either padded or truncated.
- * @param sequenceLen the desired seq length
- * @param trunc truncated from pre or post.
- */
-class Shapping(sequenceLen: Int, trunc: String = "pre")
-  extends Transformer[(Array[String], Float), (Array[String], Float)] {
-  val log: Logger = LoggerFactory.getLogger(this.getClass)
-
-  override def apply(prev: Iterator[(Array[String], Float)]): Iterator[(Array[String], Float)] = {
-    new Iterator[(Array[String], Float)] {
-      override def hasNext: Boolean = prev.hasNext
-      override def next(): (Array[String], Float) = {
-        val (tokens, label) = prev.next()
-        val paddedTokens = if (tokens.length > sequenceLen) {
-          if ("pre" == trunc) {
-            tokens.slice(tokens.length - sequenceLen, tokens.length)
-          } else {
-            tokens.slice(0, sequenceLen)
-          }
-        } else {
-          tokens ++ Array.fill[String](sequenceLen - tokens.length)("$$$")
-        }
-        (paddedTokens, label)
+  /**
+   * Shape the token sequence to the specified length.
+   * The sequence would be either padded or truncated.
+   * @param sequenceLen the desired seq length
+   * @param trunc truncated from pre or post.
+   */
+  def shaping(tokens: Array[String], sequenceLen: Int, trunc: String = "pre")
+  : Array[String] = {
+    val paddedTokens = if (tokens.length > sequenceLen) {
+      if ("pre" == trunc) {
+        tokens.slice(tokens.length - sequenceLen, tokens.length)
+      } else {
+        tokens.slice(0, sequenceLen)
       }
+    } else {
+      tokens ++ Array.fill[String](sequenceLen - tokens.length)("$$$")
     }
+    paddedTokens
   }
-}
 
-object Vectorization {
-  def apply(embeddingSize: Int, word2Vec: Map[String, Array[Float]]): Vectorization =
-    new Vectorization(embeddingSize, word2Vec)
-}
-
-/**
- * Transform word to pre-trained vector.
- * @param embeddingSize size of the pre-trained vector
- * @param word2Vec pre-trained word2Vec
- */
-class Vectorization(embeddingSize: Int, word2Vec: Map[String, Array[Float]])
-  extends Transformer[(Array[String], Float), (Array[Array[Float]], Float)] {
-  val log: Logger = LoggerFactory.getLogger(this.getClass)
-
-  override def apply(prev: Iterator[(Array[String], Float)]):
-  Iterator[(Array[Array[Float]], Float)] = {
-    new Iterator[(Array[Array[Float]], Float)] {
-      override def hasNext: Boolean = prev.hasNext
-      override def next(): (Array[Array[Float]], Float) = {
-        val (tokens, label) = prev.next()
-        val vectors = tokens.map { word =>
-          if (word2Vec.contains(word)) {
-            word2Vec(word)
-          } else {
-            // Treat it as zeros if cannot be found from pre-trained word2Vec
-            Array.fill[Float](embeddingSize)(0)
-          }
-        }
-        (vectors, label)
+  /**
+   * Transform word to pre-trained vector.
+   * @param embeddingSize size of the pre-trained vector
+   * @param word2Vec pre-trained word2Vec
+   */
+  def vectorization(tokens: Array[String], embeddingSize: Int, word2Vec: Map[String, Array[Float]])
+  : Array[Array[Float]] = {
+    tokens.map { word =>
+      if (word2Vec.contains(word)) {
+        word2Vec(word)
+      } else {
+        // Treat it as zeros if cannot be found from pre-trained word2Vec
+        Array.fill[Float](embeddingSize)(0)
       }
     }
   }
@@ -152,7 +107,7 @@ class Batching(batchSize: Int, sampleShape: Array[Int])
       private val labelTensor: Tensor[Float] = Tensor[Float]()
       private var featureData: Array[Float] = null
       private var labelData: Array[Float] = null
-      private val sampleSize = sampleShape.sum
+      private val sampleSize = sampleShape.product
 
       override def hasNext: Boolean = prev.hasNext
 
@@ -181,6 +136,6 @@ class Batching(batchSize: Int, sampleShape: Array[Int])
 
 /**
  * @param count frequency of the word.
- * @param index index of the word which ranked by the frequency from hight to low.
+ * @param index index of the word which ranked by the frequency from high to low.
  */
 case class WordMeta(count: Int, index: Int)
