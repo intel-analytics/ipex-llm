@@ -17,20 +17,15 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import java.awt.color.ColorSpace
-import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.image.LocalImageFiles._
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.utils.RandomGenerator
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.io.{SequenceFile, Text}
-import org.apache.hadoop.io.SequenceFile.Reader
+import org.apache.hadoop.io.Text
 import org.apache.log4j.Logger
-import org.apache.spark.{Partition, SparkContext}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.reflect._
@@ -289,6 +284,13 @@ object DataSet {
       new LocalArrayDataSet[LocalLabeledImagePath](buffer)
     }
 
+    def pathsNoLabel(path: Path): LocalDataSet[LocalLabeledImagePath] = {
+      val buffer =
+        if (path.toFile.isDirectory) LocalImageFiles.readPathsNoLabel(path)
+        else Array(LocalLabeledImagePath(-1, path))
+      new LocalArrayDataSet[LocalLabeledImagePath](buffer)
+    }
+
     def images(path: Path, scaleTo: Int): DataSet[LabeledBGRImage] = {
       val paths = LocalImageFiles.readPaths(path)
       val total = paths.length
@@ -312,6 +314,40 @@ object DataSet {
         })
       }
       array(buffer, sc, partitionNum) -> SampleToBGRImg()
+    }
+
+    def images(paths: Array[LocalLabeledImagePath], resizeW: Int, resizeH: Int, normalize: Float)
+    : DataSet[LabeledBGRImage] = {
+      val total = paths.length
+      var count = 1
+      val buffer = paths.map(imageFile => {
+        if (total < 100 || count % (total / 100) == 0 || count == total) {
+          logger.info(s"Cache image $count/$total(${count * 100 / total}%)")
+        }
+        count += 1
+        ByteRecord(BGRImage.readImage(imageFile.path, resizeW, resizeH), imageFile.label)
+      })
+      new LocalArrayDataSet[ByteRecord](buffer) -> SampleToBGRImg(normalize)
+    }
+
+    def images(path: Path, resizeW: Int, resizeH: Int, normalize: Float)
+    : DataSet[LabeledBGRImage] = {
+      images(LocalImageFiles.readPaths(path), resizeW, resizeH, normalize)
+    }
+
+    def images(paths: Array[LocalLabeledImagePath], sc: SparkContext, partitionNum: Int,
+      resizeW: Int, resizeH: Int, normalize: Float): DataSet[LabeledBGRImage] = {
+      val buffer: Array[ByteRecord] = {
+        paths.map(imageFile => {
+          ByteRecord(BGRImage.readImage(imageFile.path, resizeW, resizeH), imageFile.label)
+        })
+      }
+      array(buffer, sc, partitionNum) -> SampleToBGRImg(normalize)
+    }
+
+    def images(path: Path, sc: SparkContext, partitionNum: Int,
+      resizeW: Int, resizeH: Int, normalize: Float): DataSet[LabeledBGRImage] = {
+      images(LocalImageFiles.readPaths(path), sc, partitionNum, resizeW, resizeH, normalize)
     }
   }
 
