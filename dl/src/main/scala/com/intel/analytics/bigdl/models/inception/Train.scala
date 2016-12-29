@@ -62,8 +62,7 @@ object TrainInceptionV1 {
         param.nodeNumber,
         param.coreNumber,
         param.classNumber,
-        50000,
-        trainSet
+        50000
       )
 
       val model = if (param.modelSnapshot.isDefined) {

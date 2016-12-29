@@ -34,13 +34,11 @@ object ImageNet2012 {
     nodeNumber: Int,
     coresPerNode: Int,
     classNumber: Int,
-    size: Int,
-    ds: DataSet[_] = null
+    size: Int
   )
   : DataSet[MiniBatch[Float]] = {
     (if (sc.isDefined) {
-      DataSet.SeqFileFolder.files(path, sc.get, classNumber, nodeNumber,
-        (if (ds == null) null else ds.toDistributed().originRDD())).transform(
+      DataSet.SeqFileFolder.files(path, sc.get, classNumber, nodeNumber).transform(
         MTLabeledBGRImgToBatch[ByteRecord](
           width = imageSize,
           height = imageSize,

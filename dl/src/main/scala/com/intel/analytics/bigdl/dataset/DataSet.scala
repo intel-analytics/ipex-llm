@@ -262,25 +262,15 @@ object DataSet {
     )
   }
 
-  def rdd[T: ClassTag](data: RDD[T], partitionNum: Int, otherRDD: RDD[_] = null):
+  def rdd[T: ClassTag](data: RDD[T], partitionNum: Int):
   DistributedDataSet[T] = {
-    if (otherRDD == null) {
-      new CachedDistriDataSet[T](
-        data.coalesce(partitionNum, true)
-          .mapPartitions(iter => {
-            Iterator.single(iter.toArray)
-          }).setName("cached dataset")
-          .cache()
-      )
-    } else {
-      new CachedDistriDataSet[T](
-        otherRDD.zipPartitions(data.coalesce(partitionNum, true))((a, b) => b)
-          .mapPartitions(iter => {
-            Iterator.single(iter.toArray)
-          }).setName("cached dataset")
-          .cache()
-      )
-    }
+    new CachedDistriDataSet[T](
+      data.coalesce(partitionNum, true)
+        .mapPartitions(iter => {
+          Iterator.single(iter.toArray)
+        }).setName("cached dataset")
+        .cache()
+    )
   }
 
   object ImageFolder {
@@ -330,12 +320,12 @@ object DataSet {
     }
 
     def files(url: String, sc: SparkContext, classNum: Int,
-      partitionNum: Int, otherRDD: RDD[_] = null): DistributedDataSet[ByteRecord] = {
+      partitionNum: Int): DistributedDataSet[ByteRecord] = {
       val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text]).map(image => {
         ByteRecord(image._2.copyBytes(), image._1.toString.toFloat)
       }).filter(_.label <= classNum)
 
-      rdd[ByteRecord](rawData, partitionNum, otherRDD)
+      rdd[ByteRecord](rawData, partitionNum)
     }
 
     private[bigdl] def findFiles(path: Path): Array[LocalSeqFilePath] = {
