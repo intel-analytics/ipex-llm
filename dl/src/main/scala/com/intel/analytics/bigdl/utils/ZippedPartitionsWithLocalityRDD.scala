@@ -22,6 +22,7 @@ import java.io.{IOException, ObjectOutputStream}
 import org.apache.spark.util.Utils
 import org.apache.spark.{Partition, SparkContext, TaskContext}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 object ZippedPartitionsWithLocalityRDD {
@@ -48,25 +49,28 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
     if (!rdds.forall(rdd => rdd.partitions.length == numParts)) {
       throw new IllegalArgumentException("Can't zip RDDs with unequal numbers of partitions")
     }
+
+    val candidateLocs = new ArrayBuffer[(Int, Seq[String])]()
+    (0 until numParts).foreach(p => {
+      candidateLocs.append((p, rdds(1).context.getPreferredLocs(rdds(1), p).map(_.host)))
+    })
     Array.tabulate[Partition](numParts) { i =>
-      val curPrefs = rdds(0).preferredLocations(rdds(0).partitions(i))
-      val prefs = rdds(1).partitions.map(rdds(1).preferredLocations(_))
+      val curPrefs = rdds(0).context.getPreferredLocs(rdds(0), i).map(_.host)
       var p = 0
-      var locIndex = -1
-      var locs : Seq[String] = null
-      while(p < prefs.length) {
-        println(prefs(p))
-        println(curPrefs)
-        locs = prefs(p).intersect(curPrefs)
+      var matchPartition: (Int, Seq[String]) = null
+      var locs: Seq[String] = null
+      while (p < candidateLocs.length) {
+        locs = candidateLocs(p)._2.intersect(curPrefs)
         if (!locs.isEmpty) {
-          locIndex = p
+          matchPartition = candidateLocs.remove(p)
           p = Integer.MAX_VALUE - 1
         }
         p += 1
       }
-      require(locIndex != -1, s"can't find locality partition for partition $i")
-      println(s"$i $locIndex")
-      new ZippedPartitionsLocalityPartition(i, Array(i, locIndex), rdds, locs)
+      require(matchPartition != null, s"can't find locality partition for partition $i " +
+        s"Partition locations are (${curPrefs}) Candidate partition locations are\n" +
+        s"${candidateLocs.mkString("\n")}")
+      new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
     }
   }
 
@@ -81,17 +85,17 @@ private[spark] class ZippedPartitionsLocalityPartition(
   idx: Int,
   @transient indexes: Seq[Int],
   @transient rdds: Seq[RDD[_]],
-  @transient val preferredLocations: Seq[String])
-  extends Partition {
+  @transient override val preferredLocations: Seq[String])
+  extends ZippedPartitionsPartition(idx, rdds, preferredLocations) {
 
   override val index: Int = idx
-  var partitionValues = rdds.zip(indexes).map{ case (rdd, i) => rdd.partitions(i) }
-  def partitions: Seq[Partition] = partitionValues
+  var _partitionValues = rdds.zip(indexes).map{ case (rdd, i) => rdd.partitions(i) }
+  override def partitions: Seq[Partition] = _partitionValues
 
   @throws(classOf[IOException])
   private def writeObject(oos: ObjectOutputStream): Unit = Utils.tryOrIOException {
     // Update the reference to parent split at the time of task serialization
-    partitionValues = rdds.zip(indexes).map{ case (rdd, i) => rdd.partitions(i) }
+    _partitionValues = rdds.zip(indexes).map{ case (rdd, i) => rdd.partitions(i) }
     oos.defaultWriteObject()
   }
 }
