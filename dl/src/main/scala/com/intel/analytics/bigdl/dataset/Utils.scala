@@ -17,10 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
-
-import scala.collection.Iterator
 
 object Utils {
 
@@ -40,55 +37,4 @@ object Utils {
     }
   }
 
-}
-
-object SampleToBatch {
-  def apply(batchSize: Int): SampleToBatch
-  = new SampleToBatch(batchSize)
-}
-
-class SampleToBatch(totalBatch: Int)
-  extends Transformer[Sample, MiniBatch[Float]] {
-
-  override def apply(prev: Iterator[Sample]): Iterator[MiniBatch[Float]] = {
-    new Iterator[MiniBatch[Float]] {
-      private val featureTensor: Tensor[Float] = Tensor[Float]()
-      private val labelTensor: Tensor[Float] = Tensor[Float]()
-      private var featureData: Array[Float] = null
-      private var labelData: Array[Float] = null
-      private val batchSize = Utils.getBatchSize(totalBatch)
-      private var dimension: (Array[Int], Array[Int]) = null
-      override def hasNext: Boolean = prev.hasNext
-
-      override def next(): MiniBatch[Float] = {
-        if (prev.hasNext) {
-          var i = 0
-          while (i < batchSize && prev.hasNext) {
-            val smpl = prev.next()
-            val featureLength = smpl.getFeature().size.reduceLeft(_*_)
-            val labelLength = smpl.getLabel().size.reduceLeft(_*_)
-            dimension = (smpl.getFeature().size, smpl.getLabel().size)
-            if (featureData == null || featureData.length < batchSize * featureLength) {
-              featureData = new Array[Float](batchSize * featureLength)
-            }
-            if (labelData == null || labelData.length < batchSize * labelLength) {
-              labelData = new Array[Float](batchSize * labelLength)
-            }
-            smpl.copyToFeature(featureData, i*featureLength, featureLength)
-            smpl.copyToLabel(labelData, i*labelLength, labelLength)
-            i += 1
-          }
-
-          featureTensor.set(Storage[Float](featureData),
-            storageOffset = 1, sizes = Array(Array(i), dimension._1).flatten)
-          labelTensor.set(Storage[Float](labelData),
-            storageOffset = 1, sizes = Array(Array(i), dimension._2).flatten)
-
-          MiniBatch(featureTensor, labelTensor)
-        } else {
-          null
-        }
-      }
-    }
-  }
 }
