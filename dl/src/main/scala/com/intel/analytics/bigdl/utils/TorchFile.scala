@@ -632,8 +632,6 @@ object TorchFile {
           writeObject(s, rawData, path, TYPE_STRING)
         case s: mutable.Map[_, _] =>
           writeObject(s, rawData, path, TYPE_TABLE)
-        case s: Table =>
-          writeObject(s, rawData, path, TYPE_TABLE)
         case s: Array[Int] =>
           writeObject(s, rawData, path, TYPE_LONG_STORAGE)
         case s: AbstractModule[_, _, _] =>
