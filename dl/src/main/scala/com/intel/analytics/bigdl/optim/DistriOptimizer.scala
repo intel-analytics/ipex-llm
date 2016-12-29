@@ -65,7 +65,6 @@ object DistriOptimizer {
     endWhen: Trigger,
     metrics: Metrics,
     models: RDD[Cache[T]],
-    model: Module[T],
     optimMethod: OptimMethod[T],
     parameters: AllReduceParameter[T],
     validationTrigger: Option[Trigger],
@@ -304,7 +303,6 @@ object DistriOptimizer {
           isOverWrite,
           wallClockTime,
           models,
-          model,
           driverState,
           parameters
         )
@@ -322,7 +320,6 @@ object DistriOptimizer {
     isOverWrite: Boolean,
     wallClockTime: Long,
     models: RDD[Cache[T]],
-    model: Module[T],
     state: Table,
     parameters: AllReduceParameter[T])
   : Unit = {
@@ -330,7 +327,7 @@ object DistriOptimizer {
       val trigger = cacheTrigger.get
       if (trigger(state) && cachePath.isDefined) {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
-        saveModel(getModel(models, model, parameters), cachePath, isOverWrite,
+        saveModel(getModel(models, parameters), cachePath, isOverWrite,
           s".${state[Int]("neval")}")
         saveState(models.map(_.localStates.head).first(), cachePath, isOverWrite, s"" +
           s".${state[Int]("neval")}")
@@ -463,16 +460,18 @@ object DistriOptimizer {
   }
 
 
-  private def getModel[T: ClassTag](models: RDD[Cache[T]], model: Module[T],
-    parameters: AllReduceParameter[T]): Module[T] = {
+  private def getModel[T: ClassTag](models: RDD[Cache[T]],
+      parameters: AllReduceParameter[T])
+  : Module[T] = {
     val partitionNum = models.partitions.length
+    val trainedModel = models.map(_.localModels.head).first()
     val weights = models.mapPartitions(iter => {
       val cached = iter.next()
       val curPartitionId = TaskContext.getPartitionId()
       Iterator.single(Map(curPartitionId -> parameters.weightPartition))
     }).reduce(_ ++ _)
 
-    val parameter = model.getParameters()._1
+    val parameter = trainedModel.getParameters()._1
     val parameterLength = parameter.nElement()
     val taskSize = parameterLength / partitionNum
     require(taskSize != 0, "parameter length should not less than partition number")
@@ -484,7 +483,7 @@ object DistriOptimizer {
       parameter.narrow(1, start + 1, length).copy(weights(pid))
     })
 
-    model
+    trainedModel
   }
 }
 
@@ -535,7 +534,6 @@ class DistriOptimizer[T: ClassTag] private[optim](
       endWhen,
       metrics,
       models,
-      model,
       optimMethod,
       parameters,
       validationTrigger,
@@ -546,7 +544,7 @@ class DistriOptimizer[T: ClassTag] private[optim](
       isOverWrite
     )
 
-    DistriOptimizer.getModel(models, model, parameters)
+    DistriOptimizer.getModel(models, parameters)
   }
 }
 
