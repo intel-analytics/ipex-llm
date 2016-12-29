@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, LogSoftMax}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, TensorCriterion}
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -157,14 +157,13 @@ class Top5Accuracy[T] extends ValidationMethod[T] {
   override def format(): String = "top5 accuracy"
 }
 
-class LossResult[T: ClassTag](private var loss: T, private var count: Int)
-  (implicit ev: TensorNumeric[T])
+class LossResult(private var loss: Float, private var count: Int)
   extends ValidationResult {
 
   // scalastyle:off methodName
   override def +(other: ValidationResult): ValidationResult = {
-    val otherResult = other.asInstanceOf[LossResult[T]]
-    this.loss = ev.plus(this.loss, otherResult.loss)
+    val otherResult = other.asInstanceOf[LossResult]
+    this.loss += otherResult.loss
     this.count += otherResult.count
     this
   }
@@ -172,17 +171,17 @@ class LossResult[T: ClassTag](private var loss: T, private var count: Int)
   // scalastyle:on methodName
 
   override protected def format(): String = {
-    s"(Loss: $loss, count: $count, Average Loss: ${ev.divide(loss, ev.fromType[Int](count))})"
+    s"(Loss: $loss, count: $count, Average Loss: ${loss.toFloat / count})"
   }
 
   override def equals(obj: Any): Boolean = {
     if (obj == null) {
       return false
     }
-    if (!obj.isInstanceOf[LossResult[T]]) {
+    if (!obj.isInstanceOf[LossResult]) {
       return false
     }
-    val other = obj.asInstanceOf[LossResult[T]]
+    val other = obj.asInstanceOf[LossResult]
     if (this.eq(other)) {
       return true
     }
@@ -192,7 +191,7 @@ class LossResult[T: ClassTag](private var loss: T, private var count: Int)
   override def hashCode(): Int = {
     val seed = 37
     var hash = 1
-    hash = hash * seed + this.loss.asInstanceOf[Int]
+    hash = hash * seed + this.loss.toInt
     hash = hash * seed + this.count
     hash
   }
@@ -200,13 +199,15 @@ class LossResult[T: ClassTag](private var loss: T, private var count: Int)
 
 class Loss[@specialized(Float, Double)T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
-  def apply(output: Activity, target: Activity)
-  : LossResult[T] = {
-    val loss = output.toTensor[T].valueAt(1)
+  val criterion = CrossEntropyCriterion[T]()
+  override def apply(output: Activity, target: Activity): LossResult = {
+    val _output = output.asInstanceOf[Tensor[T]].squeeze()
+    val _target = target.asInstanceOf[Tensor[T]].squeeze()
+    val loss = criterion.forward(_output, _target).asInstanceOf[Float]
     var count = 1
 
-    new LossResult[T](loss, count)
+    new LossResult(loss, count)
   }
 
-  override def format(): String = "language model Loss"
+  override def format(): String = "language model Loss "
 }
