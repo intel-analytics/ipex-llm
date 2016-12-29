@@ -250,10 +250,8 @@ object DataSet {
   }
 
   def array[T: ClassTag](localData: Array[T], sc: SparkContext): DistributedDataSet[T] = {
-    val partitionNum = Engine.nodeNumber() match {
-      case Some(x) => x
-      case _ => 0
-    }
+    val partitionNum = Engine.nodeNumber()
+      .getOrElse(throw new RuntimeException("can't get node number? Have you initialized?"))
 
     new CachedDistriDataSet[T](
       sc.parallelize(localData, partitionNum)
@@ -266,8 +264,9 @@ object DataSet {
     )
   }
 
-  def rdd[T: ClassTag](data: RDD[T], partitionNum: Int):
-  DistributedDataSet[T] = {
+  def rdd[T: ClassTag](data: RDD[T]): DistributedDataSet[T] = {
+    val partitionNum = Engine.nodeNumber()
+      .getOrElse(throw new RuntimeException("can't get node number? Have you initialized?"))
     new CachedDistriDataSet[T](
       data.coalesce(partitionNum, true)
         .mapPartitions(iter => {

@@ -36,7 +36,7 @@ object Preprocessor {
     : DataSet[MiniBatch[Float]] = {
       val means = File.load[Tensor[Float]](meanFile)
       (if (sc.isDefined) {
-        DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000, nodeNumber) ->
+        DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000) ->
           SampleToBGRImg(1f)
       } else {
         DataSet.ImageFolder.paths(path) -> LocalImgReader(256, 256, normalize = 1f)
@@ -51,7 +51,7 @@ object Preprocessor {
     def apply(path: Path, batchSize: Int, sc: Option[SparkContext] = None, nodeNumber: Int = -1)
     : DataSet[MiniBatch[Float]] = {
       (if (sc.isDefined) {
-        DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000, nodeNumber) ->
+        DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000) ->
           SampleToBGRImg(1f)
       } else {
         DataSet.ImageFolder.paths(path) -> LocalImgReader(256, 256, normalize = 1f)
@@ -67,7 +67,7 @@ object Preprocessor {
     def apply(path: Path, batchSize: Int, sc: Option[SparkContext] = None, nodeNumber: Int = -1)
     : DataSet[MiniBatch[Float]] = {
       (if (sc.isDefined) {
-        DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000, nodeNumber) ->
+        DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000) ->
           SampleToBGRImg()
       } else {
         DataSet.ImageFolder.images(path, 256)
