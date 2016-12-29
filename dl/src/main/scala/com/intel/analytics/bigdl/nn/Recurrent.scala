@@ -114,7 +114,9 @@ class Recurrent[T : ClassTag] (
       val height = input.size(1)
       var i = height
       while (i >= 1) {
-        transform.output = hidden(i + 1)
+        transform.output.asInstanceOf[Tensor[T]]
+          .resizeAs(hidden(i + 1))
+          .copy(hidden(i + 1))
         val deltaGradOutput = linear.updateGradInput(
           transform.output, gradOutput(i))
         linear.accGradParameters(
@@ -151,7 +153,9 @@ class Recurrent[T : ClassTag] (
           val hiddenT = hidden.select(1, _i)
           var j = height
           while (j >= 1) {
-            transform.output = hiddenT(j + 1)
+            transform.output.asInstanceOf[Tensor[T]]
+              .resizeAs(hiddenT(j + 1))
+              .copy(hiddenT(j + 1))
             val deltaGradOutput = linear.updateGradInput(
               transform.output, gradOutputT(j))
             linear.accGradParameters(
