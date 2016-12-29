@@ -97,7 +97,7 @@ abstract class Optimizer[T: ClassTag, D](
     this
   }
 
-  def checkEngineIsInited(): Unit = {
+  def assertEngineInited(): Unit = {
     require(Engine.isInitialized, s"you may forget to initialize Engine object.")
   }
 }
