@@ -19,15 +19,18 @@ package com.intel.analytics.bigdl.dataset.text
 
 import com.intel.analytics.bigdl.dataset.Sentence
 
+import scala.reflect.ClassTag
+
  /**
   * Represent a sentence
   *
   * @param _data
   * @param _label
+  * @tparam T
   */
-class LabeledSentence[T](
+class LabeledSentence[T: ClassTag](
     protected var _data: Array[T],
-    protected var _label: Array[T]) extends Sentence {
+    protected var _label: Array[T]) extends Sentence[T] {
 
    private var _dataLength: Int = 0
    private var _labelLength: Int = 0

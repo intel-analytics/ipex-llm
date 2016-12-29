@@ -16,10 +16,12 @@
  */
 package com.intel.analytics.bigdl.dataset
 
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.collection.Iterator
+import scala.reflect.ClassTag
 
 /**
  * Transform data from type A to type B. It is usually used in data pre-process stage
@@ -61,11 +63,15 @@ class Identity[A] extends Transformer[A, A] {
 }
 
 object SampleToBatch {
-  def apply[T](batchSize: Int): SampleToBatch[T]
+  def apply[@specialized(Float, Double) T: ClassTag]
+  (batchSize: Int)
+  (implicit ev: TensorNumeric[T]): SampleToBatch[T]
   = new SampleToBatch[T](batchSize)
 }
 
-class SampleToBatch[T](totalBatch: Int)
+class SampleToBatch[T: ClassTag]
+  (totalBatch: Int)
+  (implicit ev: TensorNumeric[T])
   extends Transformer[Sample[T], MiniBatch[T]] {
 
   override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
