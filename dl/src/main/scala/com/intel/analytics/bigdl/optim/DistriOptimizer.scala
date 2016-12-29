@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
-import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -426,7 +426,7 @@ object DistriOptimizer {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException
     }
-    models.zipPartitions(validateRDD)((modelIter, dataIter) => {
+    ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
       val workingModels = modelIter.next().localModels
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
