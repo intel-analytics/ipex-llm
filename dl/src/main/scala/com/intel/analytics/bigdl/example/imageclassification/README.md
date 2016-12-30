@@ -1,9 +1,5 @@
 ## Summary
- This example shows how to predict images on trained model.
- 
-1. Only support load bigdl model and torch model, not support caffe model
-2. Only support some models of imagenet, such as resnet and inception.
-3. Only support loading imagenet images or similar from local, not hdfs.
+This example demonstrates how to use BigDL to load a BigDL or [Torch](http://torch.ch/) model trained on [ImageNet](http://image-net.org/) data, and then apply the loaded model to classify the contents of a set of images in Spark ML pipeline.
 
 ## Preparation
 
@@ -11,27 +7,22 @@ To start with this example, you need prepare your model and dataset.
 
 1. Prepare model.
 
-    The torch resnet model used in this example can be found in [Resnet Torch Model](https://github.com/facebook/fb.resnet.torch/tree/master/pretrained).
-    The bigdl inception model used in this example can be trained with [bigdl Inception](https://github.com/intel-analytics/BigDL/tree/master/dl/src/main/scala/com/intel/analytics/bigdl/models/inception).
+    The Torch ResNet model used in this example can be found in [Resnet Torch Model](https://github.com/facebook/fb.resnet.torch/tree/master/pretrained).
+    The BigDL Inception model used in this example can be trained with [bigdl Inception](https://github.com/intel-analytics/BigDL/tree/master/dl/src/main/scala/com/intel/analytics/bigdl/models/inception).
     You can choose one of them, and then put the trained model in $modelPath, and set corresponding $modelType（torch or bigdl）.
    
 2. Prepare predict dataset
 
-    You can use imagenet-2012 validation dataset to run the example, the data can be found from <http://image-net.org/download-images>.
-    After you download the files(ILSVRC2012_img_val.tar), run the follow commands to prepare the data.
+    Put your image data for prediction in the ./predict foler. Alternatively, you may also use imagenet-2012 validation dataset to run the example, which can be found from <http://image-net.org/download-images>. After you download the file (ILSVRC2012_img_val.tar), run the follow commands to prepare the data.
     
      ```bash
     mkdir predict
     tar -xvf ILSVRC2012_img_val.tar -C ./predict/
     ```
-    
-    If your want to use your own data similar to imagenet, <code>Note</code> : You should put all predict images in the same $folder.
-
-
-
+  
 ## Run this example
 
-Command to run the example in spark local mode:
+Command to run the example in Spark local mode:
 
 ```
     ./bigdl.sh 
@@ -40,7 +31,7 @@ Command to run the example in spark local mode:
 ```
 
 
-Command to run the example in spark cluster mode:
+Command to run the example in Spark cluster mode:
 
 ```
     MASTER=xxx.xxx.xxx.xxx:xxxx
@@ -51,10 +42,10 @@ Command to run the example in spark cluster mode:
 
 where 
 
-* ```--modelPath``` is model snapshot location.
+* ```--modelPath``` is the path to the model file.
 * ```--folder``` is the folder of predict images.
-* ```--modelType``` is the type of model to load, it can be bigdl or torch.
-* ```-n``` is nodes number to use the model.
-* ```-c``` is cores number on each node.
+* ```--modelType``` is the type of model to load, it can be ```bigdl``` or ```torch```.
+* ```-n``` is the number of executor (or containter) in the Spark cluster.
+* ```-c``` is the number of physical cores on each executor.
 * ```--showNum``` is the result number to show, default 100.
 * ```--batchSize``` is the batch size to use when do the prediction, default 32.
