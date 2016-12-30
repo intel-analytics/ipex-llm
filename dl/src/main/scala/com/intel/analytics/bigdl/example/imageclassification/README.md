@@ -34,20 +34,19 @@ To start with this example, you need prepare your model and dataset.
 Command to run the example in spark local mode:
 
 ```
-    source make_dist.sh
-    ./dist/bin/bigdl.sh 
-    java -Xmx20g -Dspark.master="local[*]" -cp $BASEDIR/dl/target/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar:$spark-assembly-jar  com.intel.analytics.bigdl.example.imageclassification.ImagePredictor
-     --modelPath $modelPath --folder $folder --modelType $modelType -c $core -n $nodeNumber
+    ./bigdl.sh 
+    spark-submit --master local[*] --driver-memory 10g --executor-memory 20g --class com.intel.analytics.bigdl.example.imageclassification.ImagePredictor bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar 
+        --modelPath ./resnet-18.t7 --folder ./predict --modelType torch -c 4 -n 1 --batchSize 32
 ```
 
 
 Command to run the example in spark cluster mode:
 
 ```
-    source make_dist.sh
-    ./dist/bin/bigdl.sh 
-    spark-submit --driver-memory 10g --executor-memory 20g --class $BASEDIR/dl/target/com.intel.analytics.bigdl.example.imageclassification.ImagePredictor bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar
-    --modelPath $modelPath --folder $folder --modelType $modelType -c $core -n $nodeNumber --batchSize 32
+    MASTER=xxx.xxx.xxx.xxx:xxxx
+    ./bigdl.sh 
+    spark-submit --master ${MASTER} --driver-memory 10g --executor-memory 20g --class com.intel.analytics.bigdl.example.imageclassification.ImagePredictor bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar 
+    --modelPath ./resnet-18.t7 --folder ./predict --modelType torch -c 8 -n 4 --batchSize 32
 ```
 
 where 
