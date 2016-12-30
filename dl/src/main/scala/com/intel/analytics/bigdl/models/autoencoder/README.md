@@ -8,8 +8,8 @@ To train the autoencoder, you need the [MNIST](http://yann.lecun.com/exdb/mnist/
 
 You need to download:
 
-- train-images-idx3-ubyte.jar
-- train-labels-idx1-ubyte.jar (the labels file is not actually used)
+- train-images-idx3-ubyte.gz
+- train-labels-idx1-ubyte.gz (the labels file is not actually used)
 
 then unzip them, you can get:
 - train-images-idx3-ubyte
