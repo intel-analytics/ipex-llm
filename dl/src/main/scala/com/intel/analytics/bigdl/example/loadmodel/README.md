@@ -31,7 +31,13 @@ In the local mode example, we use original imagenet image folder as input.
 Command to run the example in local mode:
 
 ```
-java -cp bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
+modelType=caffe
+folder=imagenet
+modelName=inception
+pathToCaffePrototxt=data/model/googlenet/deploy.prototxt
+pathToModel=data/model/googlenet/bvlc_googlenet.caffemodel
+batchSize=64
+dist/bin/bigdl.sh -- java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.example.loadmodel.ModelValidator \
 -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt \
 --modelPath $pathToModel -b $batchSize --env local
@@ -39,7 +45,7 @@ com.intel.analytics.bigdl.example.loadmodel.ModelValidator \
 
 where 
 
-* ```-t``` is the type of model to load, it can be bigdl, torch, caffe.
+* ```-t``` is the type of model to load, it can be torch, caffe.
 * ```-f``` is the folder holding validation data,
 * ```-m``` is the name of model to use, it can be inception, alexnet, or resenet in this example.
 * ```--caffeDefPath``` is the path of caffe prototxt file, this is only needed for caffe model
@@ -59,7 +65,7 @@ In the spark mode example, we use transformed imagenet sequence file as input.
 For caffe inception model and alexnet model, the command to transform the sequence file is
 
 ```bash
-java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
+dist/bin/bigdl.sh -- java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_folder \
 -o output_folder -p cores_number -r
 ```
@@ -67,7 +73,7 @@ com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_fold
 For torch resnet model, the command to transform the sequence file is
 
 ```bash
-java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
+dist/bin/bigdl.sh -- java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_folder \
 -o output_folder -p cores_number
 ```
@@ -77,10 +83,16 @@ Then put the transformed sequence files to HDFS.
 Having prepared the dataset, you can submit your spark job by 
 
 ```
-spark-submit \
- --driver-class-path bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+modelType=caffe
+folder=imagenet
+modelName=inception
+pathToCaffePrototxt=data/model/googlenet/deploy.prototxt
+pathToModel=data/model/googlenet/bvlc_googlenet.caffemodel
+batchSize=448
+dist/bin/bigdl.sh -- spark-submit \
+ --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
  --class com.intel.analytics.bigdl.example.loadmodel.ModelValidator \
- bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar  \
+ dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar  \
  -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt \
  --modelPath $pathToModel \
  -b $batchSize --env spark --node 8

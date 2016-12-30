@@ -93,7 +93,6 @@ object ModelValidator {
     opt[Int]('n', "node")
       .text("node number to test the model")
       .action((x, c) => c.copy(nodeNumber = x))
-      .required()
     opt[String]("env")
       .text("execution environment")
       .validate(x => {
