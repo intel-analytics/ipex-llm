@@ -69,7 +69,7 @@ User can define the inputSize, hiddenSize, outputSize and bptt (back propagation
 ##Expected Output
 Users can see the Loss of the model printed by the program. The Loss means the perplexity of the model. The lower, the better.
 ```
-[Epoch 1 1/26220][Iteration 1][Wall Clock 13.925086008s] loss is 8.333075046539307, iteration time is 0.04556048s data fetch time is 8.10813E-4s, train time 0.044749667s.
+INFO  LocalOptimizer$:152 - [Epoch 1 1/26221][Iteration 1][Wall Clock 0.225452714s] loss is 8.3017578125, iteration time is 0.225452714s data fetch time is 0.001966759s, train time 0.223485955s. Throughput is 4.435519902412885 record / second
 ```
 
 ##Parameters
