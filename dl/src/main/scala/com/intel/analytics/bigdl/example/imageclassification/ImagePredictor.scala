@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.example.imageclassifier
+package com.intel.analytics.bigdl.example.imageclassification
 
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.image.{LocalImageFiles, _}
-import com.intel.analytics.bigdl.example.imageclassifier.MlUtils._
+import com.intel.analytics.bigdl.example.imageclassification.MlUtils._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
@@ -31,7 +31,7 @@ import org.apache.spark.sql.SQLContext
 /**
  * An example to show how to use DLClassifier Transform
  */
-object DLClassifier {
+object ImagePredictor {
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
