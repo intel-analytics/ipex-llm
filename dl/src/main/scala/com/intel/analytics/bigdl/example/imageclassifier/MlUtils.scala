@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.example.sparkml
+package com.intel.analytics.bigdl.example.imageclassifier
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.Transformer
@@ -37,8 +37,6 @@ object MlUtils {
   sealed trait ModelType
 
   case object TorchModel extends ModelType
-
-  case object CaffeModel extends ModelType
 
   case object BigDlModel extends ModelType
 

@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.example.sparkml
+package com.intel.analytics.bigdl.example.imageclassifier
 
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.image.{LocalImageFiles, _}
-import com.intel.analytics.bigdl.example.sparkml.MlUtils._
+import com.intel.analytics.bigdl.example.imageclassifier.MlUtils._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
