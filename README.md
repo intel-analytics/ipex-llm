@@ -19,7 +19,7 @@ You may want to write your deep learning programs using BigDL if:
 ## How to use BigDL?
 * To learn how to install and build BigDL, you can check out the [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
 * To learn how run BigDL programs (as either a local Java program or a Spark program), you can check out the [Getting Started Page](https://github.com/intel-analytics/BigDL/wiki/Getting-Started)
-* For more details, you can check out the [Document Page](https://github.com/intel-analytics/BigDL/wiki/Document) (including Tutorials, Examples, Programming Guide, etc.)
+* For more details, you can check out the [Documents Page](https://github.com/intel-analytics/BigDL/wiki/Documents) (including Tutorials, Examples, Programming Guide, etc.)
 
 ## Support
 * You can join the [BigDL Google Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or subscribe to the [mail list](mailto:bigdl-user-group+subscribe@googlegroups.com)) for more questions and discussions on BigDL
