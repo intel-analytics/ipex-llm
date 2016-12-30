@@ -31,8 +31,8 @@ In the local mode example, we use original imagenet image folder as input.
 Command to run the example in local mode:
 
 ```
-java -cp bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
-com.intel.analytics.bigdl.example.loadModel.ImageClassifier \
+java -cp bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
+com.intel.analytics.bigdl.example.loadmodel.ImageClassifier \
 -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt \
 --modelPath $pathToModel -b $batchSize --env local
 ```
@@ -79,7 +79,7 @@ Having prepared the dataset, you can submit your spark job by
 ```
 spark-submit \
  --driver-class-path bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
- --class com.intel.analytics.bigdl.example.loadModel.ImageClassifier \
+ --class com.intel.analytics.bigdl.example.loadmodel.ImageClassifier \
  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar  \
  -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt \
  --modelPath $pathToModel \
