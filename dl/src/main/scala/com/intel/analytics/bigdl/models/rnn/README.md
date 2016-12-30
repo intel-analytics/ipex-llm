@@ -13,7 +13,7 @@ Please build BigDL referring to [Build Page](https://github.com/intel-analytics/
 
 
 ##Prepare the Input Data
-You can download one piece of Shakespeare Texts from [here](http://shakespeare.mit.edu/coriolanus/coriolanus.1.1.html).
+You can download one tiny Shakespeare Texts from [here](https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt).
 
 After downloading the text, please put it into one directory (e.g /opt/text/input.txt). The program will load in the original text file from this directory later.
 
@@ -83,6 +83,5 @@ Users can see the Loss of the model printed by the program. The Loss means the p
   --vocabSize    [the vocabulary size that users would like to set, default 4000]
   --bptt         [back propagation through time, default 4]
   --nEpochs      [number of epochs to train, default 30]
-  --batchSize    [only support 1; train the model sentence by sentence]
   --coreNumber   [engine core numbers, e.g 4 for a desktop]
 ```
