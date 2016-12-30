@@ -1,21 +1,15 @@
-# Load Pretrained Model
+# Load Pre-trained Model
 
-Bigdl supports loading pretrained models from other popular deep learning projects.
+This example demonstrates how to use BigDL to load pre-trained [Torch](http://torch.ch/) or [Caffe](http://caffe.berkeleyvision.org/) model into Spark program for prediction.
 
-Currently, two sources are supported:
-
-* Torch model
-* Caffe model
-
-**ModelValidator** provides an integrated example to load models from the above sources, 
-test over imagenet validation dataset on both local mode and spark cluster mode.
+**ModelValidator** provides an integrated example to load models, and test over imagenet validation dataset (running as a local Java program, or a standard Spark program).
 
 ## Preparation
 
 To start with this example, you need prepare your model, dataset.
 
 The caffe model used in this example can be found in 
-[Inference Caffe Model](https://github.com/BVLC/caffe/tree/master/models/bvlc_googlenet)
+[GoogleNet Caffe Model](https://github.com/BVLC/caffe/tree/master/models/bvlc_googlenet)
 and [Alexnet Caffe Model](https://github.com/BVLC/caffe/tree/master/models/bvlc_alexnet).
 
 The torch model used in this example can be found in
@@ -24,11 +18,11 @@ The torch model used in this example can be found in
 The imagenet validation dataset preparation can be found from
 [BigDL inception Prepare the data](https://github.com/intel-analytics/BigDL/tree/master/dl/src/main/scala/com/intel/analytics/bigdl/models/inception#prepare-the-data).
 
-## Run in Local Mode
+## Run as a local Java program
 
-In the local mode example, we use original imagenet image folder as input.
+When running as a local Java program, we use original imagenet image folder as input.
 
-Command to run the example in local mode:
+Command to run the example:
 
 ```
 modelType=caffe
@@ -58,11 +52,11 @@ Some other parameters
 * ```-n```: node number to do the validation
 * ```--meanFile```: mean values that is needed in alexnet caffe model preprocess part
 
-## Run in spark Mode
+## Run as a Spark program
 
-In the spark mode example, we use transformed imagenet sequence file as input.
+When running as a Spark program, we use transformed imagenet sequence file as input.
 
-For caffe inception model and alexnet model, the command to transform the sequence file is (validation data is the different with the [BigDL inception Prepare the data](https://github.com/intel-analytics/BigDL/tree/master/dl/src/main/scala/com/intel/analytics/bigdl/models/inception#prepare-the-data))
+For Caffe Inception model and Alexnet model, the command to transform the sequence file is (validation data is the different with the [BigDL inception Prepare the data](https://github.com/intel-analytics/BigDL/tree/master/dl/src/main/scala/com/intel/analytics/bigdl/models/inception#prepare-the-data))
 
 ```bash
 dist/bin/bigdl.sh -- java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
@@ -70,7 +64,7 @@ com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_fold
 -o output_folder -p cores_number -r -v
 ```
 
-For torch resnet model, the command to transform the sequence file is (validation data is the same with the [BigDL inception Prepare the data](https://github.com/intel-analytics/BigDL/tree/master/dl/src/main/scala/com/intel/analytics/bigdl/models/inception#prepare-the-data))
+For Torch Resnet model, the command to transform the sequence file is (validation data is the same with the [BigDL Inception Prepare the data](https://github.com/intel-analytics/BigDL/tree/master/dl/src/main/scala/com/intel/analytics/bigdl/models/inception#prepare-the-data))
 
 ```bash
 dist/bin/bigdl.sh -- java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
@@ -112,14 +106,3 @@ other parameters have the same meaning as local mode.
 ## Expected Results
 
 You should get similar top1 or top5 accuracy as the original model.
-
-
-
-
-
-
-
-
-
-
-
