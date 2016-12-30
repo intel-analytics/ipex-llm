@@ -10,7 +10,7 @@
 ## Steps to run this example:
 1. Download [Pre-train GloVe word embeddings](http://nlp.stanford.edu/data/glove.6B.zip)
 2. Download [20 Newsgroup dataset](http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/www/data/news20.html) as the training data
-3. Put those data under BASE_DIR, and the final structure would look like this:
+3. Extract and put those data under BASE_DIR on local(NOT HDFS), and the final structure would look like this:
    * BASE_DIR
        -  20_newsgroup
        -  glove.6B
@@ -21,14 +21,13 @@
       * Execute: bigdl.sh -- spark-submit --master "local[*]" --driver-memory 20g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --batchSize 128  --baseDir $BASE_DIR --partitionNum 4
 
     * Spark cluster:
-      * Execute: bigdl.sh -- spark-submit --master  $MASTER --driver-memory 5g --executor-memory 5g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar  --coreNum 8 --nodeNum 4 --batchSize 32  --baseDir $BASE_DIR --partitionNum 32
+      * Execute: bigdl.sh -- spark-submit --master  $MASTER --driver-memory 5g --executor-memory 5g    --total-executor-cores 32 --executor-cores 8 --class com.intel.analytics.bigdl.example.textclassification.TextClassifier  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar  --coreNum 8 --nodeNum 4 --batchSize 32  --baseDir $BASE_DIR --partitionNum 32
       * NOTE: The total batch is: 32 * 4 as we specify nodeNum to be 4
 
 4. Verify:
    * Search accuracy from log:
    ``` 
-   [Epoch 1 0/15964][Iteration 1][Wall Clock 0.0s] Train 128 in 1.669692383sec
-   onds. Throughput is 76.66082764899336 records/second. Loss is 3.0336612164974213
+   [Epoch 1 0/15964][Iteration 1][Wall Clock 0.0s] 
    
    top1 accuracy is Accuracy(correct: 14749, count: 15964, accuracy: 0.9238912
       553244801)
