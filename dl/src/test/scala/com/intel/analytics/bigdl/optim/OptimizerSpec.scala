@@ -22,7 +22,7 @@ import java.nio.file.{Files, Paths}
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, DistributedDataSet}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, Sequential}
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.models.alexnet.AlexNet
+import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.utils.{File, T, Table}
 import org.apache.spark.rdd.RDD
 import org.scalatest.{FlatSpec, Matchers}

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.alexnet
+package com.intel.analytics.bigdl.example.loadmodel
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._

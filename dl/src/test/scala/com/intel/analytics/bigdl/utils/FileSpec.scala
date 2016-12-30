@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.models.alexnet.AlexNet_OWT
+import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.scalatest.{FlatSpec, Matchers}
 
