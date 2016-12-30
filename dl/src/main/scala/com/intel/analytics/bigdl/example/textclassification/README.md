@@ -22,7 +22,7 @@
 
     * Spark cluster:
       * Execute: bigdl.sh -- spark-submit --master  $MASTER --driver-memory 5g --executor-memory 5g    --total-executor-cores 32 --executor-cores 8 --class com.intel.analytics.bigdl.example.textclassification.TextClassifier  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar  --coreNum 8 --nodeNum 4 --batchSize 32  --baseDir $BASE_DIR --partitionNum 32
-      * NOTE: The total batch is: 32 * 4 as we specify nodeNum to be 4
+      * NOTE:  __The batchSize is per node, so the total batch size is 32*4 as the nodeNum is 4__
 
 4. Verify:
    * Search accuracy from log:
