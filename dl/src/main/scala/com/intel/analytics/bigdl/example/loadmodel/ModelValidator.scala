@@ -140,6 +140,7 @@ object ModelValidator {
 
         case _ => throw new IllegalArgumentException(s"${param.modelType}")
       }
+      println(model)
 
       val validator = Validator(model, validateDataSet)
       val evaluator = Array(new Top1Accuracy[Float](), new Top5Accuracy[Float]())
