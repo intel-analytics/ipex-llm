@@ -1,4 +1,5 @@
 #ResNet
+This example demonstrates how to use BigDL to train and evaluate the [ResNet](https://arxiv.org/abs/1512.03385) architecture on CIFAR-10 data
 
 ##DataSet
 Support Cifar-10 dataset
