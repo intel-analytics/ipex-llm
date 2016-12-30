@@ -130,8 +130,10 @@ object DistriOptimizer {
           tasks += Engine.default.invoke(() => {
             val batch = data.next()
             var b = 0
-            require(batch.data.size(1) == batch.labels.size(1))
-            require(batch.data.size(1) >= _subModelNumber)
+            require(batch.data.size(1) == batch.labels.size(1),
+              "data and label batch size not match")
+            require(batch.data.size(1) >= _subModelNumber,
+              "total batch size should be divided by total core number")
             val stackSize = batch.data.size(1) / _subModelNumber
             while (b < _subModelNumber) {
               tensorBuffer(b) = (batch.data.narrow(1, b * stackSize + 1, stackSize),
