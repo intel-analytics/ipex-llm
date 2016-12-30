@@ -118,7 +118,7 @@ object MlUtils {
   case class ByteImage(data: Array[Byte], imageName: String)
 
   def transformDF(data: DataFrame, f: Transformer[Row, DenseVector]): DataFrame = {
-    val vectorRdd = data.select("data").mapPartitions(f(_))
+    val vectorRdd = data.select("data").rdd.mapPartitions(f(_))
     val dataRDD = data.rdd.zipPartitions(vectorRdd) { (a, b) =>
       b.zip(a.map(_.getAs[String]("imageName")))
         .map(
