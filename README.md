@@ -1,30 +1,26 @@
-#BigDL
+# BigDL: Distributed Deep learning on Apache Spark
 
-A scalable deep learning library for Apache Spark.
+## What is BigDL?
+BigDL is a distributed deep learning library for Apache Spark; with BigDL, users can write their deep learning applications as standard Spark programs, which can directly run on top of existing Spark or Hadoop clusters.
+* **Rich deep learning support.** Modeled after [Torch](http://torch.ch/), BigDL provides comprehensive support for deep learning, including numeric computing (via [Tensor](https://github.com/intel-analytics/BigDL/tree/master/dl/src/main/scala/com/intel/analytics/bigdl/tensor)) and high level [neural networks] (https://github.com/intel-analytics/BigDL/tree/master/dl/src/main/scala/com/intel/analytics/bigdl/nn); in addition, users can load pre-trained [Caffe](http://caffe.berkeleyvision.org/) or [Torch](http://torch.ch/) models into Spark programs using BigDL.
 
-Here's the summary of core features:
-* a powerful N-dimensional array
-* lots of math and data manipulating operations
-* rich neural network layers
-* effecient distributed numeric optimization routines on Apache Spark
-* powered by MKL and MKL DNN, fast and optmized on Intel hardware platforms
+* **Extremely high performance.** To achieve high performance, BigDL uses [Intel MKL](https://software.intel.com/en-us/intel-mkl) and multi-threaded programming in each Spark task. Consequently, it is orders of magnitude faster than out-of-box open source [Caffe](http://caffe.berkeleyvision.org/), [Torch](http://torch.ch/) or [TensorFlow](https://www.tensorflow.org/) on a single-node Xeon.
 
-##How to build
-###Linux (only intel64 architecture)
-####Build
-<code>mvn clean package -DskipTests</code><br> Module native is skipped by default. If you want to build native module, see the [Full Build](#full-build).
+* **Efficiently scale-out.** BigDL can efficiently scale out to perform data analytics at "Big Data scale", by leveraging [Apache Spark](http://spark.apache.org/) (a lightening fast distributed data processing framework), as well as efficient implementations of synchronous SGD and all-reduce communications on Spark. 
 
-####Full build
-1. Download [Intel MKL](https://software.intel.com/en-us/intel-mkl) and install it in your linux box
-2. Prepare MKL build environment<br>  <code>source PATH_TO_MKL/bin/mklvars.sh intel64</code><br> If Intel MKL doesn't install to default path /opt/intel, please link your libiomp5.so to project.<br> <code>ln -sf PATH_TO_INTEL_HOME/lib/intel64/libiomp5.so BIGDL_HOME/native/jni/src/main/resources/intel64</code>
-3. Full build <br>  <code>mvn clean package -DskipTests -P full-build</code>
+## Why BigDL?
+You may want to write your deep learning programs using BigDL if:
+* You want to analyze a large amount of data on the same Big Data (Hadoop/Spark) cluster where the data are stored (in, say, HDFS, HBase, Hive, etc.).
 
-####Build package support Spark 2.0 version
-The generated package supports spark 1.5 plus version by default. If you want to build a package which supports spark 2.0, run following command.
+* You want to add deep learning functionalities (either training or prediction) to your Big Data (Spark) programs and/or workflow.
 
-<code>mvn clean package -DskipTests -P 2.0</code><br>
+* You want to leverage existing Big Data (Hadoop/Spark) clusters to run your deep learning applications, which can be then dynamically shared with other workloads (e.g., ETL, data warehouse, feature engineering, classical machine learning, graph analytics, etc.)
 
-##Example
-* MNIST example
-* Cifar10 example
-* Imagenet example
+## How to use BigDL?
+* To learn how to install and build BigDL, you can check out the [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
+* To learn how run BigDL programs (as either a local Java program or a Spark program), you can check out the [Getting Started Page](https://github.com/intel-analytics/BigDL/wiki/Getting-Started)
+* For more details, you can check out the [Document Page](https://github.com/intel-analytics/BigDL/wiki/Document) (including Tutorials, Examples, Programming Guide, etc.)
+
+## Support
+* You can join the [BigDL Google Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or subscribe to the [mail list](mailto:bigdl-user-group+subscribe@googlegroups.com)) for more questions and discussions on BigDL
+* You can post bug reports and feature requests at the [Issue Page](https://github.com/intel-analytics/BigDL/issues)
