@@ -30,7 +30,7 @@ import org.apache.spark.SparkContext
 import scopt.OptionParser
 
 
-object ImageClassifier {
+object ModelValidator {
 
   val logger = Logger.getLogger(getClass)
 
