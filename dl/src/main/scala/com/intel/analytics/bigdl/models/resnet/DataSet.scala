@@ -45,7 +45,7 @@ object Cifar10DataSet extends ResNetDataSet {
   : DataSet[MiniBatch[Float]] = {
 
     DataSet.array(Utils.loadTrain(path))
-      .transform(SampleToBGRImg())
+      .transform(BytesToBGRImg())
       .transform(BGRImgNormalizer(trainMean, trainStd))
       .transform(HFlip(0.5))
       .transform(BGRImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))
@@ -56,7 +56,7 @@ object Cifar10DataSet extends ResNetDataSet {
   : DataSet[MiniBatch[Float]] = {
 
     DataSet.array(Utils.loadTest(path))
-      .transform(SampleToBGRImg())
+      .transform(BytesToBGRImg())
       .transform(BGRImgNormalizer(testMean, testStd))
       .transform(BGRImgToBatch(batchSize))
   }
@@ -65,7 +65,7 @@ object Cifar10DataSet extends ResNetDataSet {
   : DataSet[MiniBatch[Float]] = {
 
     DataSet.array(Utils.loadTest(path), sc)
-      .transform(SampleToBGRImg())
+      .transform(BytesToBGRImg())
       .transform(BGRImgNormalizer(trainMean, trainStd))
       .transform(BGRImgToBatch(batchSize))
   }
@@ -74,7 +74,7 @@ object Cifar10DataSet extends ResNetDataSet {
   : DataSet[MiniBatch[Float]] = {
 
     DataSet.array(Utils.loadTrain(path), sc)
-      .transform(SampleToBGRImg())
+      .transform(BytesToBGRImg())
       .transform(BGRImgNormalizer(testMean, testStd))
       .transform(HFlip(0.5))
       .transform(BGRImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))

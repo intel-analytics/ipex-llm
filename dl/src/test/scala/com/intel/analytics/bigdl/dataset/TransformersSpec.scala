@@ -456,7 +456,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       LocalSeqFilePath(Paths.get(tmpFile + "_5.seq"))
     ))
     var count = 0
-    val readPipeline = seqDataSet -> LocalSeqFileToBytes() -> SampleToBGRImg()
+    val readPipeline = seqDataSet -> LocalSeqFileToBytes() -> BytesToBGRImg()
     val readIter = readPipeline.toLocal().data(train = false)
     readIter.zip((dataSet -> pathToImage).toLocal().data(train = false))
       .foreach { case (l, r) =>

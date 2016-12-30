@@ -21,9 +21,9 @@ import com.intel.analytics.bigdl.dataset.{ByteRecord, Transformer}
 
 import scala.collection.Iterator
 
-object SampleToGreyImg {
-  def apply(row: Int, col: Int): SampleToGreyImg
-  = new SampleToGreyImg(row, col)
+object BytesToGreyImg {
+  def apply(row: Int, col: Int): BytesToGreyImg
+  = new BytesToGreyImg(row, col)
 }
 
 /**
@@ -31,7 +31,7 @@ object SampleToGreyImg {
  * @param row
  * @param col
  */
-class SampleToGreyImg(row: Int, col: Int)
+class BytesToGreyImg(row: Int, col: Int)
   extends Transformer[ByteRecord, LabeledGreyImage] {
   private val buffer = new LabeledGreyImage(row, col)
 

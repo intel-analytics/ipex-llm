@@ -205,7 +205,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     files.length should be(6)
 
     val imageIter = (DataSet.SeqFileFolder.paths(Paths.get(tmpFile.getAbsolutePath()), 11)
-      -> LocalSeqFileToBytes() -> SampleToBGRImg()).toLocal().data(train = false)
+      -> LocalSeqFileToBytes() -> BytesToBGRImg()).toLocal().data(train = false)
 
     val img = imageIter.next()
     img.label() should be(4f)

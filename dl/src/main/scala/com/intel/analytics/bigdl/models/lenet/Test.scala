@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.models.lenet
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToBatch, SampleToGreyImg}
+import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToBatch, BytesToGreyImg}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{LocalValidator, Top1Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
@@ -51,7 +51,7 @@ object Test {
         DataSet.array(load(validationData, validationLabel), sc.get)
       } else {
         DataSet.array(load(validationData, validationLabel))
-      }) -> SampleToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(
+      }) -> BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(
         param.batchSize)
 
       val model = Module.load[Float](param.model)
