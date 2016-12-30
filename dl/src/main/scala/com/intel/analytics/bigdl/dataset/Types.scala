@@ -23,7 +23,7 @@ import java.nio.file.Path
 import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
 import com.intel.analytics.bigdl.dataset.text.LabeledSentence
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
 
 import scala.collection.Iterator
 import scala.reflect.ClassTag
@@ -43,9 +43,9 @@ abstract class Image extends Serializable {
   * Represent a sentence
   */
 abstract class Sentence[T] extends Serializable {
-  def length(): Int
+  def dataLength(): Int
 
-  def content(): Array[T]
+  def data(): Array[T]
 }
 
 /**
@@ -73,7 +73,8 @@ case class LocalSeqFilePath(val path: Path)
 
 class Sample[T: ClassTag] (
     protected var featureTensor: Tensor[T],
-    protected var labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) {
+    protected var labelTensor: Tensor[T])
+    (implicit ev: TensorNumeric[T]) {
 
   def this()(implicit ev: TensorNumeric[T]) = this(Tensor[T](), Tensor[T]())
 
@@ -88,19 +89,27 @@ class Sample[T: ClassTag] (
 
   def copyToFeature(storage: Array[T], offset: Int, length: Int): Unit = {
     require(offset + length <= storage.length, "index out of boundary")
-    var i = 0
-    while (i < length) {
-      storage(offset + i) = featureTensor.storage()(i)
-      i += 1
+    ev.getType() match {
+      case DoubleType => Array.copy(featureTensor.storage().array
+          .asInstanceOf[Array[Double]], 0, storage
+          .asInstanceOf[Array[Double]], offset, length)
+      case FloatType => System.arraycopy(featureTensor.storage().array
+        .asInstanceOf[Array[Float]], 0, storage
+        .asInstanceOf[Array[Float]], offset, length)
+      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
   }
 
   def copyToLabel(storage: Array[T], offset: Int, length: Int): Unit = {
     require(offset + length <= storage.length, "index out of boundary")
-    var i = 0
-    while (i < length) {
-      storage(offset + i) = labelTensor.storage()(i)
-      i += 1
+    ev.getType() match {
+      case DoubleType => Array.copy(labelTensor.storage().array
+        .asInstanceOf[Array[Double]], 0, storage
+        .asInstanceOf[Array[Double]], offset, length)
+      case FloatType => Array.copy(labelTensor.storage().array
+        .asInstanceOf[Array[Float]], 0, storage
+        .asInstanceOf[Array[Float]], offset, length)
+      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
   }
 

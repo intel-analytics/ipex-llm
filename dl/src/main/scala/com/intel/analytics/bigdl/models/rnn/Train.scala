@@ -55,17 +55,14 @@ object Train {
       val valMaxLegnth = dataArray._4
 
       val batchSize = 1
-      val batchMode = false
 
       val trainSet = DataSet.array(trainData)
            .transform(SeqToLabeledSentence())
-           .transform(LabeledSentenceToSample(dictionaryLength,
-             trainMaxLength, batchMode = batchMode))
+           .transform(LabeledSentenceToSample(dictionaryLength))
            .transform(SampleToBatch(batchSize = batchSize))
       val validationSet = DataSet.array(valData)
            .transform(SeqToLabeledSentence())
-           .transform(LabeledSentenceToSample(dictionaryLength,
-             valMaxLegnth, batchMode = batchMode))
+           .transform(LabeledSentenceToSample(dictionaryLength))
            .transform(SampleToBatch(batchSize = batchSize))
 
       val model = if (param.modelSnapshot.isDefined) {
@@ -88,6 +85,8 @@ object Train {
           "weightDecay" -> param.weightDecay,
           "dampening" -> param.dampening)
       }
+
+      Engine.init(1, 4, false)
 
       val optimizer = Optimizer(
         model = model,

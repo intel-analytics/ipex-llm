@@ -18,6 +18,8 @@
 package com.intel.analytics.bigdl.dataset.text
 
 import com.intel.analytics.bigdl.dataset.Sentence
+import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
@@ -30,14 +32,17 @@ import scala.reflect.ClassTag
   */
 class LabeledSentence[T: ClassTag](
     protected var _data: Array[T],
-    protected var _label: Array[T]) extends Sentence[T] {
+    protected var _label: Array[T])
+    (implicit ev: TensorNumeric[T])
+   extends Sentence[T] {
 
    private var _dataLength: Int = 0
    private var _labelLength: Int = 0
 
-  def this() = this(new Array[T](0), new Array[T](0))
+  def this()(implicit ev: TensorNumeric[T]) = this(null, null)
 
-  def this(dataLength: Int, labelLength: Int) = {
+  def this(dataLength: Int, labelLength: Int)
+          (implicit ev: TensorNumeric[T]) = {
     this(new Array[T](dataLength), new Array[T](labelLength))
     _dataLength = dataLength
     _labelLength = labelLength
@@ -46,14 +51,33 @@ class LabeledSentence[T: ClassTag](
   def copy(rawData: Array[T], rawLabel: Array[T]): this.type = {
     _dataLength = rawData.length
     _labelLength = rawLabel.length
-    if (_data.length != _dataLength) {
+    if (_data == null || _data.length <= _dataLength) {
       _data = new Array[T](_dataLength)
     }
-    rawData.copyToArray(_data)
-    if (_label.length != _labelLength) {
+    if (_label == null || _label.length != _labelLength) {
       _label = new Array[T](_labelLength)
     }
-    rawLabel.copyToArray(_label)
+    ev.getType() match {
+      case DoubleType =>
+        Array.copy(rawData
+          .asInstanceOf[Array[Double]], 0, _data
+          .asInstanceOf[Array[Double]], 0, _dataLength)
+        Array.copy(rawLabel
+          .asInstanceOf[Array[Double]], 0, _label
+          .asInstanceOf[Array[Double]], 0, _dataLength)
+      case FloatType =>
+        Array.copy(rawData
+        .asInstanceOf[Array[Float]], 0, _data
+        .asInstanceOf[Array[Float]], 0, _dataLength)
+        Array.copy(rawLabel
+          .asInstanceOf[Array[Float]], 0, _label
+          .asInstanceOf[Array[Float]], 0, _dataLength)
+    }
+    // Array.copy(rawData, 0, _data, 0, _dataLength)
+    // rawData.copyToArray(_data)
+
+    // Array.copy(rawLabel, 0, _label, 0, _labelLength)
+    // rawLabel.copyToArray(_label)
     this
   }
 
@@ -68,15 +92,33 @@ class LabeledSentence[T: ClassTag](
   }
 
   def copyToData(storage: Array[T], offset: Int): Unit = {
-    val frameLength = _dataLength
-    require(frameLength + offset <= storage.length)
-    _data.copyToArray(storage, offset)
+    // val frameLength = _dataLength
+    require(_dataLength + offset <= storage.length)
+    ev.getType() match {
+      case DoubleType => Array.copy(_data
+          .asInstanceOf[Array[Double]], 0, storage
+          .asInstanceOf[Array[Double]], offset, _dataLength)
+      case FloatType => Array.copy(_data
+        .asInstanceOf[Array[Float]], 0, storage
+        .asInstanceOf[Array[Float]], offset, _dataLength)
+    }
+    // Array.copy(_data, 0, storage, offset, _dataLength)
+    // _data.copyToArray(storage, offset)
   }
 
   def copyToLabel(storage: Array[T], offset: Int): Unit = {
-    val frameLength = _labelLength
-    require(frameLength + offset <= storage.length)
-    _label.copyToArray(storage, offset)
+    // val frameLength = _labelLength
+    require(_labelLength + offset <= storage.length)
+    ev.getType() match {
+      case DoubleType => Array.copy(_label
+        .asInstanceOf[Array[Double]], 0, storage
+        .asInstanceOf[Array[Double]], offset, _labelLength)
+      case FloatType => Array.copy(_label
+        .asInstanceOf[Array[Float]], 0, storage
+        .asInstanceOf[Array[Float]], offset, _labelLength)
+    }
+    // Array.copy(_label, 0, storage, offset, _labelLength)
+    // _label.copyToArray(storage, offset)
   }
 
   def copy(other: LabeledSentence[T]): LabeledSentence[T] = {
@@ -88,8 +130,20 @@ class LabeledSentence[T: ClassTag](
     if (this._label.length < this._labelLength) {
       this._label = new Array[T](this._labelLength)
     }
-    other._data.copyToArray(this._data)
-    other._label.copyToArray(this._label)
+    ev.getType() match {
+      case DoubleType => Array.copy(other._data
+        .asInstanceOf[Array[Double]], 0, this._data
+        .asInstanceOf[Array[Double]], 0, _dataLength)
+        Array.copy(other._label
+          .asInstanceOf[Array[Double]], 0, this._label
+          .asInstanceOf[Array[Double]], 0, _labelLength)
+      case FloatType => Array.copy(other._data
+        .asInstanceOf[Array[Float]], 0, this._data
+        .asInstanceOf[Array[Float]], 0, _dataLength)
+        Array.copy(other._label
+          .asInstanceOf[Array[Float]], 0, this._label
+          .asInstanceOf[Array[Float]], 0, _labelLength)
+    }
     this
   }
 
@@ -101,7 +155,7 @@ class LabeledSentence[T: ClassTag](
 
   def label(): Array[T] = _label
 
-  override def content(): Array[T] = _data
+  override def data(): Array[T] = _data
 
-  override def length(): Int = _dataLength
+   override def dataLength(): Int = _dataLength
 }

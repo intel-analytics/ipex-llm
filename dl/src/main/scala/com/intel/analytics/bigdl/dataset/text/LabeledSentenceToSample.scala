@@ -23,47 +23,59 @@ import scala.collection.Iterator
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
 object LabeledSentenceToSample {
-  def apply(vocabLength: Int, vocabNumber: Int, batchMode: Boolean)
+  def apply(vocabLength: Int,
+            fixDataLength: Option[Int] = None,
+            fixLabelLength: Option[Int] = None)
   : LabeledSentenceToSample =
-    new LabeledSentenceToSample(vocabLength, vocabNumber, batchMode)
+    new LabeledSentenceToSample(
+      vocabLength,
+      fixDataLength,
+      fixLabelLength)
 }
 
-class LabeledSentenceToSample(vocabLength: Int, vocabNumber: Int, batchMode: Boolean)
+class LabeledSentenceToSample(vocabLength: Int,
+                              fixDataLength: Option[Int],
+                              fixLabelLength: Option[Int])
   extends Transformer[LabeledSentence[Float], Sample[Float]] {
   private val buffer = new Sample[Float]()
-  private var arrayBuffer: Array[Float] = null
+  private var featureBuffer: Array[Float] = null
   private var labelBuffer: Array[Float] = null
 
   override def apply(prev: Iterator[LabeledSentence[Float]]): Iterator[Sample[Float]] = {
-    prev.map(other => {
+    prev.map(sentence => {
 
-       val wordLength = batchMode match {
-        case true => vocabNumber
-        case _ => other.length
+      val dataLength = fixDataLength.getOrElse(sentence.dataLength())
+      val labelLength = fixLabelLength.getOrElse(sentence.labelLength())
+
+      require(dataLength == labelLength, "data length should be equal to label length")
+
+      if (featureBuffer == null || featureBuffer.length < dataLength * vocabLength) {
+        featureBuffer = new Array[Float](dataLength * vocabLength)
       }
-      if (arrayBuffer == null || arrayBuffer.length != wordLength * vocabLength) {
-        arrayBuffer = new Array[Float](wordLength*vocabLength)
+      if (labelBuffer == null || labelBuffer.length < labelLength) {
+        labelBuffer = new Array[Float](labelLength)
       }
-      if (labelBuffer == null || labelBuffer.length != wordLength) {
-        labelBuffer = new Array[Float](wordLength)
-      }
+
+      // One-Hot format for feature
+
       var i = 0
-      while (i < other.length) {
-        arrayBuffer(i*vocabLength + other.getData(i).toInt) = 1.0f
-        labelBuffer(i) = other.label()(i) + 1.0f
+      while (i < sentence.dataLength()) {
+        featureBuffer(i*vocabLength + sentence.getData(i).toInt) = 1.0f
+        labelBuffer(i) = sentence.label()(i) + 1.0f
         i += 1
       }
-      val lastIndex = labelBuffer(other.length - 1)
-      while (i < wordLength) {
+
+      val lastIndex = labelBuffer(sentence.labelLength() - 1)
+      while (i < dataLength) {
         val index = (RNG.uniform(0.0, 1.0) * vocabLength).toInt
-        arrayBuffer(i*vocabLength + index) = 1.0f
+        featureBuffer(i*vocabLength + index) = 1.0f
         labelBuffer(i-1) = index + 1.0f
         i += 1
       }
-      labelBuffer(wordLength - 1) = lastIndex
+      labelBuffer(dataLength - 1) = lastIndex
 
-      buffer.copy(arrayBuffer, labelBuffer,
-        Array(wordLength, vocabLength), Array(wordLength))
+      buffer.copy(featureBuffer, labelBuffer,
+        Array(dataLength, vocabLength), Array(labelLength))
     })
   }
 }
