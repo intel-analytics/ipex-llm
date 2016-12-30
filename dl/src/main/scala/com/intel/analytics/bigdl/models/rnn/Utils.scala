@@ -37,7 +37,6 @@ object Utils {
     vocabSize: Int = 4000,
     bptt: Int = 4,
     nEpochs: Int = 30,
-    batchSize: Int = 1,
     coreNumber: Int = -1)
 
   val trainParser = new OptionParser[TrainParams]("BigDL SimpleRNN Train Example") {
@@ -91,10 +90,6 @@ object Utils {
     opt[Int]('e', "nEpochs")
       .text("epoch numbers")
       .action((x, c) => c.copy(nEpochs = x))
-
-    opt[Int]("batchSize")
-      .text("batch size")
-      .action((x, c) => c.copy(batchSize = x))
 
     opt[Int]('c', "core")
       .text("cores number to train the model")
