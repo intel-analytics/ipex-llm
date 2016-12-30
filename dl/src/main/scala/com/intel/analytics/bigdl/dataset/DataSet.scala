@@ -353,7 +353,7 @@ object DataSet {
         count += 1
         ByteRecord(BGRImage.readImage(imageFile.path, scaleTo), imageFile.label)
       })
-      new LocalArrayDataSet[ByteRecord](buffer) -> SampleToBGRImg()
+      new LocalArrayDataSet[ByteRecord](buffer) -> BytesToBGRImg()
     }
 
     /**
@@ -372,7 +372,7 @@ object DataSet {
           ByteRecord(BGRImage.readImage(imageFile.path, scaleTo), imageFile.label)
         })
       }
-      array(buffer, sc) -> SampleToBGRImg()
+      array(buffer, sc) -> BytesToBGRImg()
     }
   }
 

@@ -68,7 +68,7 @@ object ImagePredictor {
 
       val valRDD = sc.parallelize(imageSet).repartition(partitionNum)
       val transf = RowToByteRecords() ->
-          SampleToBGRImg() ->
+          BytesToBGRImg() ->
           BGRImgCropper(imageSize, imageSize) ->
           BGRImgNormalizer(testMean, testStd) ->
           BGRImgToImageVector()

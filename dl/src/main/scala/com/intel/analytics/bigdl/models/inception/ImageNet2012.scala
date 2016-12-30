@@ -43,7 +43,7 @@ object ImageNet2012 {
           width = imageSize,
           height = imageSize,
           batchSize = batchSize,
-          transformer = (SampleToBGRImg() -> BGRImgCropper(imageSize, imageSize)
+          transformer = (BytesToBGRImg() -> BGRImgCropper(imageSize, imageSize)
             -> HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225))
         ))
     } else {
@@ -53,7 +53,7 @@ object ImageNet2012 {
             width = imageSize,
             height = imageSize,
             batchSize = batchSize,
-            transformer = (LocalSeqFileToBytes() -> SampleToBGRImg() ->
+            transformer = (LocalSeqFileToBytes() -> BytesToBGRImg() ->
               BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize) -> HFlip(0.5) ->
               BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
               )
