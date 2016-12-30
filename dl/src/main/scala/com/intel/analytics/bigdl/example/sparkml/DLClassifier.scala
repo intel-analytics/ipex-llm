@@ -63,7 +63,7 @@ object DLClassifier {
         Array(param.batchSize, 3, imageSize, imageSize))
 
       // load image set
-      val paths = LocalImageFiles.readPathsNoLabel(Paths.get(param.folder))
+      val paths = LocalImageFiles.readPaths(Paths.get(param.folder), hasLabel = false)
       val imageSet = imagesLoad(paths, 256)
 
       val valRDD = sc.parallelize(imageSet).repartition(partitionNum)
