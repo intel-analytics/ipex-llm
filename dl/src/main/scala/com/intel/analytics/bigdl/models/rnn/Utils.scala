@@ -16,14 +16,10 @@
  */
 
 package com.intel.analytics.bigdl.models.rnn
-
-import org.apache.spark.sql.SQLContext
 import scopt.OptionParser
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.functions._
 import java.io._
 
-import org.apache.spark.ml.feature.RegexTokenizer
+import com.intel.analytics.bigdl.dataset.text.LabeledSentence
 
 import scala.util.Random
 
@@ -34,10 +30,16 @@ object Utils {
     cache: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
+    checkpoint: Option[String] = None,
     learningRate: Double = 0.1,
+    momentum: Double = 0.0,
+    weightDecay: Double = 0.0,
+    dampening: Double = 0.0,
     hiddenSize: Int = 40,
-    maxEpoch: Int = 10,
-    coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2))
+    vocabSize: Int = 4000,
+    bptt: Int = 4,
+    nEpochs: Int = 30,
+    coreNumber: Int = -1)
 
   val trainParser = new OptionParser[TrainParams]("BigDL SimpleRNN Train Example") {
     opt[String]('f', "folder")
@@ -55,127 +57,151 @@ object Utils {
       .text("where to cache the model")
       .action((x, c) => c.copy(cache = Some(x)))
 
+    opt[String]("checkpoint")
+      .text("where to cache the model and state")
+      .action((x, c) => c.copy(checkpoint = Some(x)))
+
     opt[Double]('r', "learningRate")
       .text("learning rate")
       .action((x, c) => c.copy(learningRate = x))
+
+    opt[Double]('m', "momentum")
+      .text("momentum")
+      .action((x, c) => c.copy(momentum = x))
+
+    opt[Double]("weightDecay")
+      .text("weight decay")
+      .action((x, c) => c.copy(weightDecay = x))
+
+    opt[Double]("dampening")
+      .text("dampening")
+      .action((x, c) => c.copy(dampening = x))
 
     opt[Int]('h', "hidden")
       .text("hidden size")
       .action((x, c) => c.copy(hiddenSize = x))
 
-    opt[Int]('e', "maxEpoch")
+    opt[Int]("vocab")
+      .text("dictionary length | vocabulary size")
+      .action((x, c) => c.copy(vocabSize = x))
+
+    opt[Int]("bptt")
+      .text("back propagation through time size")
+      .action((x, c) => c.copy(bptt = x))
+
+    opt[Int]('e', "nEpochs")
       .text("epoch numbers")
-      .action((x, c) => c.copy(maxEpoch = x))
+      .action((x, c) => c.copy(nEpochs = x))
 
     opt[Int]('c', "core")
       .text("cores number to train the model")
       .action((x, c) => c.copy(coreNumber = x))
+      .required()
   }
 
   class WordTokenizer(
     inputFile: String,
     saveDirectory: String,
-    dictionaryLength: Int,
-    sc: SparkContext)
-    extends Serializable{
+    dictionaryLength: Int)
+    extends Serializable {
 
     def process() {
-      if (!new File(saveDirectory + "/train.txt").exists) {
-        // Read Input Data
-        val logData = sc.textFile(inputFile, 2).filter(!_.isEmpty()).cache()
+      if (!new File(saveDirectory + "/mapped_data.txt").exists) {
+        import scala.io.Source
+
+        val lines = Source.fromFile(inputFile).getLines.toArray
+          .filter(_.length > 0)
 
         // Special Words
         val sentence_start_token = "SENTENCE_START"
         val sentence_end_token = "SENTENCE_END"
         val unknown_token = "UNKNOWN_TOKEN"
 
-        // Transform Input Data to DataFrame
-        val sqlContext = new SQLContext(sc)
-        import sqlContext.implicits._
-        val input_df = logData.toDF("sentence")
+        // Create dictionary with frequency as value for each word
+        val sentences = lines.map(x => sentence_start_token + " " + x + " " + sentence_end_token)
+        val freqDict = sentences.flatMap(_.split("\\W+"))
+          .foldLeft(Map.empty[String, Int]) {
+            (count, word) => count + (word -> (count.getOrElse(word, 0) + 1))
+          }.toSeq.sortBy(_._2)
 
-        // Append Sentence Start and End to Each Sentence
-        val appendSentence = udf { (sentence: String) =>
-          if (!sentence.isEmpty) {
-            sentence_start_token + " " + sentence + " " + sentence_end_token
-          } else sentence
-        }
-        val new_df = input_df.withColumn("sentence", appendSentence(input_df("sentence")))
+        // Select most common words
+        val length = math.min(dictionaryLength, freqDict.length)
+        val vocabDict = freqDict.drop(freqDict.length - length).map(_._1)
+        val vocabSize = vocabDict.length
+        val word2index = vocabDict.zipWithIndex.toMap
 
-        // Tokenize Sentence to Words
-        val regexTokenizer = new RegexTokenizer().setInputCol("sentence")
-          .setOutputCol("words").setPattern("\\W+").setMinTokenLength(0)
-        val regexTokenized = regexTokenizer.transform(new_df)
-        val countTokens = udf { (words: Seq[String]) => words.length }
-        regexTokenized.select("sentence", "words")
-          .withColumn("tokens", countTokens(col("words"))).show(false)
-        val token_df = regexTokenized.select("sentence", "words")
-          .withColumn("tokens", countTokens(col("words")))
-
-        // Create Frequency Dictionary
-        val tokens = logData.flatMap(_.split("\\W+"))
-        val freq_dict = tokens.filter(_.length > 0).map(word =>
-          (word, 1)).reduceByKey((a, b) => a + b)
-          .sortBy[Int]((pair: Tuple2[String, Int]) => -pair._2)
-
-        // Selecting Most Common Words According to Vocabulary
-        val vocabulary_size = dictionaryLength
-        val vocab_dict = freq_dict.take(vocabulary_size - 2)
+        // save dictionary
         new PrintWriter(saveDirectory + "/dictionary.txt") {
-          write(vocab_dict.mkString("\n")); close
+          write(word2index.mkString("\n")); close
         }
-        val distinct_words = vocab_dict.map(x => x._1)
-        val words = distinct_words :+ sentence_start_token :+ sentence_end_token
+        // Convert the string texts to integer arrays
+        val mappedDF = sentences.map(x => x.split("\\W+")
+          .map(word => word2index.getOrElse(word, vocabSize)))
 
-        // Mapping Words to Indexes and Generate Dictionary
-        val index_dict = words.zipWithIndex.toMap
-        sc.parallelize(index_dict.toSeq).saveAsTextFile(saveDirectory + "/dictionary")
-
-        // Generate Vectors According to Dictionary
-        val word_match = udf { (words: Seq[String]) =>
-          words.map((word: String) => index_dict.getOrElse(word, vocabulary_size))
-        }
-        val mapped_df = regexTokenized.withColumn("vectors", word_match(col("words")))
-        val mapped_vector = mapped_df.select("vectors")
-          .rdd.map(x => x(0).asInstanceOf[Seq[Int]]).collect()
+        // save converted data
         new PrintWriter(saveDirectory + "/mapped_data.txt") {
-          write(mapped_vector.map(_.mkString(",")).mkString("\n")); close
-        }
-
-        // Generate Training Data and Labels
-        val train_vector = mapped_vector.map(x => x.take(x.size - 1))
-        new PrintWriter(saveDirectory + "/train.txt") {
-          write(train_vector.map(_.mkString(",")).mkString("\n")); close
-        }
-        val label_vector = mapped_vector.map(x => x.drop(1))
-        new PrintWriter(saveDirectory + "/label.txt") {
-          write(label_vector.map(_.mkString(",")).mkString("\n")); close
+          write(mappedDF.map(_.mkString(",")).mkString("\n")); close
         }
       }
     }
   }
 
-  private[bigdl] def readSentence(filedirect: String, dictionarySize: Int,
-    sc: SparkContext)
-  : (Array[(Seq[Int], Seq[Int])], Array[(Seq[Int], Seq[Int])]) = {
-    val logData = sc.textFile(filedirect + "/mapped_data.txt", 2).filter(!_.isEmpty).cache
-    val sQLContext = new SQLContext(sc)
-    import sQLContext.implicits._
-    val input_df = logData.toDF("sentence")
+  private[bigdl] def readSentence(filedirect: String, dictionarySize: Int)
+  : (Array[LabeledSentence[Float]], Array[LabeledSentence[Float]],
+    Int, Int) = {
 
-    val data_df = input_df.select("sentence").rdd.map(x => {
-      val seq = x(0).asInstanceOf[String].split(",").toList.asInstanceOf[Seq[Int]]
+    import scala.io.Source
+
+    val logData = Source.fromFile(filedirect + "/mapped_data.txt").getLines().toArray
+    val dataFlow = logData.map(x => {
+      val seq = x.split(",").toList.asInstanceOf[Seq[Int]]
       (seq.take(seq.length - 1), seq.drop(1))
-    }).collect()
+    })
 
-    val length = data_df.length
+    val length = dataFlow.length
     val seq = Random.shuffle((1 to length).toList)
     val seqTrain = seq.take(Math.floor(seq.length*0.8).toInt).toArray
     val seqVal = seq.drop(Math.floor(seq.length*0.8).toInt).toArray
 
-    val trainData = seqTrain.collect(data_df)
-    val valData = seqVal.collect(data_df)
+    val trainFlow = seqTrain.collect(dataFlow)
+    val valFlow = seqVal.collect(dataFlow)
 
-    (trainData, valData)
+    var trainMaxLength = 0
+
+    val trainData = trainFlow.map(x => {
+      val data = x._1
+      val label = x._2
+      val numOfWords = data.length
+      trainMaxLength = math.max(trainMaxLength, numOfWords)
+      val input = new Array[Float](numOfWords)
+      val target = new Array[Float](numOfWords)
+      var i = 0
+      while (i < numOfWords) {
+        input(i) = data(i).toString.toInt.toFloat
+        target(i) = label(i).toString.toInt.toFloat
+        i += 1
+      }
+      new LabeledSentence[Float](input, target)
+    })
+
+    var valMaxLength = 0
+
+    val valData = valFlow.map(x => {
+      val data = x._1
+      val label = x._2
+      val numOfWords = data.length
+      valMaxLength = math.max(valMaxLength, numOfWords)
+      val input = new Array[Float](numOfWords)
+      val target = new Array[Float](numOfWords)
+      var i = 0
+      while (i < numOfWords) {
+        input(i) = data(i).toString.toInt.toFloat
+        target(i) = label(i).toString.toInt.toFloat
+        i += 1
+      }
+      new LabeledSentence[Float](input, target)
+    })
+
+    (trainData, valData, trainMaxLength, valMaxLength)
   }
 }

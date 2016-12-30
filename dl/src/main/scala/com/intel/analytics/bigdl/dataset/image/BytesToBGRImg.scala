@@ -21,25 +21,23 @@ import com.intel.analytics.bigdl.dataset.{ByteRecord, Transformer}
 
 import scala.collection.Iterator
 
-object SampleToGreyImg {
-  def apply(row: Int, col: Int): SampleToGreyImg
-  = new SampleToGreyImg(row, col)
+object BytesToBGRImg {
+  def apply(normalize: Float = 255f): BytesToBGRImg =
+    new BytesToBGRImg(normalize)
 }
 
 /**
- * Convert byte records into grey image.
- * @param row
- * @param col
+ * Convert a byte record to BGR image. The format is, first 4 bytes is width, the next 4 bytes is
+ * height, and the last is pixels coming with BGR order.
+ * @param normalize
  */
-class SampleToGreyImg(row: Int, col: Int)
-  extends Transformer[ByteRecord, LabeledGreyImage] {
-  private val buffer = new LabeledGreyImage(row, col)
+class BytesToBGRImg(normalize: Float)
+  extends Transformer[ByteRecord, LabeledBGRImage] {
+  private val buffer = new LabeledBGRImage()
 
-  override def apply(prev: Iterator[ByteRecord]): Iterator[LabeledGreyImage] = {
+  override def apply(prev: Iterator[ByteRecord]): Iterator[LabeledBGRImage] = {
     prev.map(rawData => {
-      require(row * col == rawData.data.length)
-      require(rawData.label >= 1)
-      buffer.setLabel(rawData.label).copy(rawData.data, 255.0f)
+      buffer.copy(rawData.data, normalize).setLabel(rawData.label)
     })
   }
 }

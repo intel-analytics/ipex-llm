@@ -31,6 +31,7 @@ class Recurrent[T : ClassTag] (
   val hidden = T(Tensor[T](hiddenSize))
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    input.squeeze()
     require(input.dim == 2, "input should be a two dimension Tensor")
     require(modules.length == 2, "rnn container must include a cell and a non-linear layer")
 
@@ -56,6 +57,7 @@ class Recurrent[T : ClassTag] (
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
+    input.squeeze()
     val module = modules(0)
     val transform = modules(1)
 
@@ -79,6 +81,7 @@ class Recurrent[T : ClassTag] (
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    input.squeeze()
     val module = modules(0)
     val transform = modules(1)
 
@@ -102,7 +105,6 @@ class Recurrent[T : ClassTag] (
       }
       i -= 1
     }
-
     gradInput
   }
 

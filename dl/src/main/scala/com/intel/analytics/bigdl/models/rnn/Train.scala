@@ -17,13 +17,14 @@
 
 package com.intel.analytics.bigdl.models.rnn
 
+import java.io.File
+
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.text.{TensorSeqToBatch, TextSeqToTensorSeq}
-import com.intel.analytics.bigdl.nn.CrossEntropyCriterion
+import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.text.LabeledSentenceToSample
+import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
-import org.apache.spark.{SparkConf, SparkContext}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import org.apache.log4j.Logger
 
@@ -34,50 +35,65 @@ object Train {
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
 
-      val sc = new SparkContext("local[1]", "train rnn")
-      val dictionaryLength = 4000 + 1
+      if (!new File(param.folder + "/input.txt").exists()) {
+        throw new IllegalArgumentException("Input file not exists!")
+      }
+      logger.info("preprocessing input text file ..")
+      val dictionaryLength = param.vocabSize + 1
       val wt = new WordTokenizer(
         param.folder + "/input.txt",
         param.folder,
-        dictionaryLength = dictionaryLength-1,
-        sc
+        dictionaryLength = dictionaryLength-1
       )
       wt.process()
 
-      val dataArray = readSentence(param.folder, dictionaryLength, sc)
+      logger.info("loading the training and testing data ..")
+      val dataArray = readSentence(param.folder, dictionaryLength)
       val trainData = dataArray._1
       val valData = dataArray._2
+      val trainMaxLength = dataArray._3
+      val valMaxLegnth = dataArray._4
+
+      val batchSize = 1
 
       val trainSet = DataSet.array(trainData)
-        .transform(TextSeqToTensorSeq(dictionaryLength))
-        .transform(TensorSeqToBatch())
+           .transform(LabeledSentenceToSample(dictionaryLength))
+           .transform(SampleToBatch(batchSize = batchSize))
       val validationSet = DataSet.array(valData)
-        .transform(TextSeqToTensorSeq(dictionaryLength))
-        .transform(TensorSeqToBatch())
+           .transform(LabeledSentenceToSample(dictionaryLength))
+           .transform(SampleToBatch(batchSize = batchSize))
 
-      val model = SimpleRNN(
-        inputSize = dictionaryLength,
-        hiddenSize = 40,
-        outputSize = dictionaryLength,
-        bpttTruncate = 4)
-      model.reset()
+      val model = if (param.modelSnapshot.isDefined) {
+        Module.load[Float](param.modelSnapshot.get)
+      } else {
+        val curModel = SimpleRNN(
+          inputSize = dictionaryLength,
+          hiddenSize = param.hiddenSize,
+          outputSize = dictionaryLength,
+          bpttTruncate = param.bptt)
+        curModel.reset()
+        curModel
+      }
 
-      val state = T("learningRate" -> param.learningRate, "momentum" -> 0.0,
-        "weightDecay" -> 0.0, "dampening" -> 0.0)
+      val state = if (param.stateSnapshot.isDefined) {
+        T.load(param.stateSnapshot.get)
+      } else {
+        T("learningRate" -> param.learningRate,
+          "momentum" -> param.momentum,
+          "weightDecay" -> param.weightDecay,
+          "dampening" -> param.dampening)
+      }
 
-
-      Engine.setCoreNumber(1)
-      Engine.model.setPoolSize(param.coreNumber)
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
-        criterion = new CrossEntropyCriterion[Float]()
+        criterion = new CrossEntropyCriterion[Float](squeezeFlag = true)
       )
 
       optimizer
         .setValidation(Trigger.everyEpoch, validationSet, Array(new Loss[Float]))
         .setState(state)
-        .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
+        .setEndWhen(Trigger.maxEpoch(param.nEpochs))
         .optimize()
     })
   }

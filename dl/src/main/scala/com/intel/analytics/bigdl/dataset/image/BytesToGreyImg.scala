@@ -15,33 +15,31 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.dataset.text
+package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dataset.{ByteRecord, Transformer}
 
 import scala.collection.Iterator
 
-object TensorSeqToBatch {
-  def apply(batchSize: Int = 1): TensorSeqToBatch = new TensorSeqToBatch(batchSize)
+object BytesToGreyImg {
+  def apply(row: Int, col: Int): BytesToGreyImg
+  = new BytesToGreyImg(row, col)
 }
 
-class TensorSeqToBatch(batchSize: Int = 1)
-  extends Transformer[(Tensor[Float], Tensor[Float]), MiniBatch[Float]] {
+/**
+ * Convert byte records into grey image.
+ * @param row
+ * @param col
+ */
+class BytesToGreyImg(row: Int, col: Int)
+  extends Transformer[ByteRecord, LabeledGreyImage] {
+  private val buffer = new LabeledGreyImage(row, col)
 
-  override def apply(prev: Iterator[(Tensor[Float], Tensor[Float])]): Iterator[MiniBatch[Float]] = {
-    new Iterator[MiniBatch[Float]] {
-
-      override def hasNext: Boolean = prev.hasNext
-
-      override def next(): MiniBatch[Float] = {
-        if (prev.hasNext) {
-          val data = prev.next()
-          MiniBatch(data._1, data._2)
-        } else {
-          null
-        }
-      }
-    }
+  override def apply(prev: Iterator[ByteRecord]): Iterator[LabeledGreyImage] = {
+    prev.map(rawData => {
+      require(row * col == rawData.data.length)
+      require(rawData.label >= 1)
+      buffer.setLabel(rawData.label).copy(rawData.data, 255.0f)
+    })
   }
 }

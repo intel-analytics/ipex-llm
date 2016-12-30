@@ -16,9 +16,12 @@
  */
 package com.intel.analytics.bigdl.dataset
 
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.collection.Iterator
+import scala.reflect.ClassTag
 
 /**
  * Transform a data stream of type A to type B. It is usually used in data pre-process stage.
@@ -64,5 +67,72 @@ object Identity {
 class Identity[A] extends Transformer[A, A] {
   override def apply(prev: Iterator[A]): Iterator[A] = {
     prev
+  }
+}
+
+object SampleToBatch {
+  def apply[T: ClassTag]
+  (batchSize: Int)
+  (implicit ev: TensorNumeric[T]): SampleToBatch[T]
+  = new SampleToBatch[T](batchSize)
+}
+
+class SampleToBatch[T: ClassTag]
+  (totalBatch: Int)
+  (implicit ev: TensorNumeric[T])
+  extends Transformer[Sample[T], MiniBatch[T]] {
+
+  override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
+    new Iterator[MiniBatch[T]] {
+      private val featureTensor: Tensor[T] = Tensor[T]()
+      private val labelTensor: Tensor[T] = Tensor[T]()
+      private var featureData: Array[T] = null
+      private var labelData: Array[T] = null
+      private val batchSize = Utils.getBatchSize(totalBatch)
+      private var featureSize: Array[Int] = null
+      private var labelSize: Array[Int] = null
+      private var _featureLength: Int = 0
+      private var _labelLength: Int = 0
+      override def hasNext: Boolean = prev.hasNext
+
+      override def next(): MiniBatch[T] = {
+        if (prev.hasNext) {
+          var i = 0
+          while (i < batchSize && prev.hasNext) {
+            val sample = prev.next()
+            val featureLength = sample.getFeature().nElement()
+            val labelLength = sample.getLabel().nElement()
+            if (featureSize == null || labelSize == null
+              || _featureLength != featureLength
+              || _labelLength != labelLength) {
+              featureSize = Array(1) ++ sample.getFeature().size
+              labelSize = Array(1) ++ sample.getLabel().size
+              _featureLength = featureLength
+              _labelLength = labelLength
+            }
+            if (featureData == null || featureData.length < batchSize * featureLength) {
+              featureData = new Array[T](batchSize * featureLength)
+            }
+            if (labelData == null || labelData.length < batchSize * labelLength) {
+              labelData = new Array[T](batchSize * labelLength)
+            }
+            sample.copyToLabel(labelData, i*labelLength, labelLength)
+            sample.copyToFeature(featureData, i*featureLength, featureLength)
+
+            i += 1
+          }
+
+          featureSize(0) = i
+          labelSize(0) = i
+          featureTensor.set(Storage[T](featureData),
+            storageOffset = 1, sizes = featureSize)
+          labelTensor.set(Storage[T](labelData),
+            storageOffset = 1, sizes = labelSize)
+          MiniBatch(featureTensor, labelTensor)
+        } else {
+          null
+        }
+      }
+    }
   }
 }

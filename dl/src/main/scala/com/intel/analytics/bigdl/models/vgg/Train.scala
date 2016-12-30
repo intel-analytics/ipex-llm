@@ -49,7 +49,7 @@ object Train {
         DataSet.array(Utils.loadTrain(param.folder), sc.get)
       } else {
         DataSet.array(Utils.loadTrain(param.folder))
-      }) -> SampleToBGRImg() -> BGRImgNormalizer(trainMean, trainStd) -> BGRImgToBatch(
+      }) -> BytesToBGRImg() -> BGRImgNormalizer(trainMean, trainStd) -> BGRImgToBatch(
         param.batchSize)
 
       val model = if (param.modelSnapshot.isDefined) {
@@ -80,7 +80,7 @@ object Train {
         DataSet.array(Utils.loadTest(param.folder), sc.get)
       } else {
         DataSet.array(Utils.loadTest(param.folder))
-      }) -> SampleToBGRImg() -> BGRImgNormalizer(testMean, testStd) -> BGRImgToBatch(param
+      }) -> BytesToBGRImg() -> BGRImgNormalizer(testMean, testStd) -> BGRImgToBatch(param
         .batchSize)
 
       if (param.checkpoint.isDefined) {

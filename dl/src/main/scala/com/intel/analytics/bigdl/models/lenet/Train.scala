@@ -21,7 +21,7 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToBatch, SampleToGreyImg}
+import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToBatch, BytesToBGR$}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
@@ -70,7 +70,7 @@ object Train {
         DataSet.array(load(trainData, trainLabel), sc.get)
       } else {
         DataSet.array(load(trainData, trainLabel))
-      }) -> SampleToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
+      }) -> BytesToBGR(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
         param.batchSize)
 
       val optimizer = Optimizer(
@@ -85,7 +85,7 @@ object Train {
         DataSet.array(load(validationData, validationLabel), sc.get)
       } else {
         DataSet.array(load(validationData, validationLabel))
-      }) -> SampleToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(
+      }) -> BytesToBGR(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(
         param.batchSize)
 
       optimizer
