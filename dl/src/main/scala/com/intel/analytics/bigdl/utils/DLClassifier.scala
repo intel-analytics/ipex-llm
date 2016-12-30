@@ -28,17 +28,28 @@ import org.apache.spark.sql.{DataFrame, Row}
 import scala.reflect.ClassTag
 
 /**
- * make saprk 1.5-plus compatible with 2.0 by extends extends MlTransform and
- * implement process function
- * @param uid
+ * A general Classifier to classify the image data in inputCol, and write the results to outputCol.
+ * Use setInputCol to set inputCol name, and use setOutputCol to set outputCol name.
+ *
+ * DLClassifier is compatible with both spark 1.5-plus and 2.0 by extending MLTransform.
  */
 class DLClassifier[@specialized(Float, Double) T: ClassTag]
-  (override val uid: String = "DLClassifier")(implicit ev: TensorNumeric[T]) extends MlTransform
+  (override val uid: String = "DLClassifier")(implicit ev: TensorNumeric[T]) extends MlTransformer
   with HasInputCol with HasOutputCol with DataParams[T] {
 
-  def setInputCol(value: String): this.type = set(inputCol, value)
+  /**
+   * Set the input column name
+   * @param inputColName the name of the input column
+   * @return this.
+   */
+  def setInputCol(inputColName: String): this.type = set(inputCol, inputColName)
 
-  def setOutputCol(value: String): this.type = set(outputCol, value)
+  /**
+   * Set the output column name, should not existed in the DataFrame.
+   * @param outputColName the name of the output column
+   * @return this.
+   */
+  def setOutputCol(outputColName: String): this.type = set(outputCol, outputColName)
 
   override def validateParams(): Unit = {
     val params = this.extractParamMap()
@@ -52,6 +63,11 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag]
       "inputCol must not be null")
   }
 
+  /**
+   * Perform a prediction on inputCol, and write result to the outputCol.
+   * @param dataset input DataFrame
+   * @return output DataFrame
+   */
   override def process(dataset: DataFrame): DataFrame = {
     this.validateParams()
     DLClassifier.process[T]($(batchShape), $(modelTrain), $(inputCol), $(outputCol), dataset)
