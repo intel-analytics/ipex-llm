@@ -36,14 +36,15 @@ class LabeledSentence[T: ClassTag](
     (implicit ev: TensorNumeric[T])
    extends Sentence[T] {
 
-   private var _dataLength: Int = 0
-   private var _labelLength: Int = 0
+   private var _dataLength: Int = _data.length
+   private var _labelLength: Int = _label.length
 
   def this()(implicit ev: TensorNumeric[T]) = this(null, null)
 
   def this(dataLength: Int, labelLength: Int)
           (implicit ev: TensorNumeric[T]) = {
-    this(new Array[T](dataLength), new Array[T](labelLength))
+    this(new Array[T](dataLength),
+      new Array[T](labelLength))
     _dataLength = dataLength
     _labelLength = labelLength
   }
@@ -73,11 +74,6 @@ class LabeledSentence[T: ClassTag](
           .asInstanceOf[Array[Float]], 0, _label
           .asInstanceOf[Array[Float]], 0, _dataLength)
     }
-    // Array.copy(rawData, 0, _data, 0, _dataLength)
-    // rawData.copyToArray(_data)
-
-    // Array.copy(rawLabel, 0, _label, 0, _labelLength)
-    // rawLabel.copyToArray(_label)
     this
   }
 
@@ -92,7 +88,6 @@ class LabeledSentence[T: ClassTag](
   }
 
   def copyToData(storage: Array[T], offset: Int): Unit = {
-    // val frameLength = _dataLength
     require(_dataLength + offset <= storage.length)
     ev.getType() match {
       case DoubleType => Array.copy(_data
@@ -102,12 +97,9 @@ class LabeledSentence[T: ClassTag](
         .asInstanceOf[Array[Float]], 0, storage
         .asInstanceOf[Array[Float]], offset, _dataLength)
     }
-    // Array.copy(_data, 0, storage, offset, _dataLength)
-    // _data.copyToArray(storage, offset)
   }
 
   def copyToLabel(storage: Array[T], offset: Int): Unit = {
-    // val frameLength = _labelLength
     require(_labelLength + offset <= storage.length)
     ev.getType() match {
       case DoubleType => Array.copy(_label
@@ -117,8 +109,6 @@ class LabeledSentence[T: ClassTag](
         .asInstanceOf[Array[Float]], 0, storage
         .asInstanceOf[Array[Float]], offset, _labelLength)
     }
-    // Array.copy(_label, 0, storage, offset, _labelLength)
-    // _label.copyToArray(storage, offset)
   }
 
   def copy(other: LabeledSentence[T]): LabeledSentence[T] = {

@@ -21,7 +21,7 @@ import java.io.File
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
-import com.intel.analytics.bigdl.dataset.text.{LabeledSentenceToSample, SeqToLabeledSentence}
+import com.intel.analytics.bigdl.dataset.text.LabeledSentenceToSample
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
@@ -57,11 +57,9 @@ object Train {
       val batchSize = 1
 
       val trainSet = DataSet.array(trainData)
-           .transform(SeqToLabeledSentence())
            .transform(LabeledSentenceToSample(dictionaryLength))
            .transform(SampleToBatch(batchSize = batchSize))
       val validationSet = DataSet.array(valData)
-           .transform(SeqToLabeledSentence())
            .transform(LabeledSentenceToSample(dictionaryLength))
            .transform(SampleToBatch(batchSize = batchSize))
 
@@ -85,8 +83,6 @@ object Train {
           "weightDecay" -> param.weightDecay,
           "dampening" -> param.dampening)
       }
-
-      Engine.init(1, 4, false)
 
       val optimizer = Optimizer(
         model = model,
