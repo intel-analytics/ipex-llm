@@ -21,9 +21,9 @@ import com.intel.analytics.bigdl.dataset.{ByteRecord, Transformer}
 
 import scala.collection.Iterator
 
-object SampleToBGRImg {
-  def apply(normalize: Float = 255f): SampleToBGRImg =
-    new SampleToBGRImg(normalize)
+object BytesToBGRImg {
+  def apply(normalize: Float = 255f): BytesToBGRImg =
+    new BytesToBGRImg(normalize)
 }
 
 /**
@@ -31,7 +31,7 @@ object SampleToBGRImg {
  * height, and the last is pixels coming with BGR order.
  * @param normalize
  */
-class SampleToBGRImg(normalize: Float)
+class BytesToBGRImg(normalize: Float)
   extends Transformer[ByteRecord, LabeledBGRImage] {
   private val buffer = new LabeledBGRImage()
 

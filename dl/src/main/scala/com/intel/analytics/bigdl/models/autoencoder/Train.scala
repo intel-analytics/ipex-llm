@@ -66,7 +66,7 @@ object Train {
         DataSet.array(load(trainData, trainLabel), sc.get)
       } else {
         DataSet.array(load(trainData, trainLabel))
-      }) -> SampleToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
+      }) -> BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
         param.batchSize) -> toAutoencoderBatch()
 
       val model = if (param.modelSnapshot.isDefined) {

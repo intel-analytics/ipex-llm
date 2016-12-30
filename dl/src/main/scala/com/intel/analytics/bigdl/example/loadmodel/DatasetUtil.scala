@@ -35,7 +35,7 @@ object AlexNetPreprocessor {
     val means = File.load[Tensor[Float]](meanFile)
     (if (sc.isDefined) {
       DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000) ->
-        SampleToBGRImg(normalize = 1f) // do not normalize the pixel values to [0, 1]
+        BytesToBGRImg(normalize = 1f) // do not normalize the pixel values to [0, 1]
     } else {
       DataSet.ImageFolder.paths(path) -> LocalImgReader(256, 256, normalize = 1f)
     }) -> BGRImgPixelNormalizer(means) -> BGRImgCropper(imageSize, imageSize, CropCenter) ->
@@ -50,7 +50,7 @@ object InceptionPreprocessor {
   : DataSet[MiniBatch[Float]] = {
     (if (sc.isDefined) {
       DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000) ->
-        SampleToBGRImg(normalize = 1f) // do not normalize the pixel values to [0, 1]
+        BytesToBGRImg(normalize = 1f) // do not normalize the pixel values to [0, 1]
     } else {
       DataSet.ImageFolder.paths(path) -> LocalImgReader(256, 256, normalize = 1f)
     }) -> BGRImgCropper(imageSize, imageSize, CropCenter) ->
@@ -66,7 +66,7 @@ object ResNetPreprocessor {
   : DataSet[MiniBatch[Float]] = {
     (if (sc.isDefined) {
       DataSet.SeqFileFolder.files(path.toString, sc.get, classNum = 1000) ->
-        SampleToBGRImg()
+        BytesToBGRImg()
     } else {
       DataSet.ImageFolder.paths(path) -> LocalImgReader(256)
     }) -> BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize, CropCenter) ->
