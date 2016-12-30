@@ -12,7 +12,7 @@ To start with this example, you need prepare your model and dataset.
 1. Prepare model.
 
     The torch resnet model used in this example can be found in [Resnet Torch Model](https://github.com/facebook/fb.resnet.torch/tree/master/pretrained).
-    The bigdl inception model used in this example can be trained with [bigdl Inception](https://github.com/intel-analytics/BigDL/tree/master/dl/src/main/scala/com/intel/analytics/bigdl/example/loadmodel)
+    The bigdl inception model used in this example can be trained with [bigdl Inception](https://github.com/intel-analytics/BigDL/tree/master/dl/src/main/scala/com/intel/analytics/bigdl/models/inception).
     You can choose one of them, and then put the trained model in $modelPath, and set corresponding $modelType（torch or bigdl）.
    
 2. Prepare predict dataset
@@ -52,9 +52,9 @@ Command to run the example in spark cluster mode:
 
 where 
 
-* ```-modelPath``` is model snapshot location.
-* ```-folder``` is the folder of predict images.
-* ```-modelType``` is the type of model to load, it can be bigdl or torch.
+* ```--modelPath``` is model snapshot location.
+* ```--folder``` is the folder of predict images.
+* ```--modelType``` is the type of model to load, it can be bigdl or torch.
 * ```-n``` is nodes number to use the model.
 * ```-c``` is cores number on each node.
 * ```--showNum``` is the result number to show, default 100.
