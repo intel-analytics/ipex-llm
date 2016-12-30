@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.parameters
 
 import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.{Callable, Executors, Future}
+import java.util.concurrent.{Callable, Executors, Future, ThreadFactory}
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -33,7 +33,13 @@ object AllReduceParameter {
   private val syncPoolSize: Int = System.getProperty(
     "bigdl.Parameter.syncPoolSize", "4").toInt
 
-  val syncPool = Executors.newFixedThreadPool(syncPoolSize)
+  val syncPool = Executors.newFixedThreadPool(syncPoolSize, new ThreadFactory {
+    override def newThread(r: Runnable): Thread = {
+      val t = Executors.defaultThreadFactory().newThread(r)
+      t.setDaemon(true)
+      t
+    }
+  })
 
   private val nextId = new AtomicLong(0)
 
