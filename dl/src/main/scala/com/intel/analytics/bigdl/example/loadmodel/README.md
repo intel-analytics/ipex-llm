@@ -7,7 +7,7 @@ Currently, two sources are supported:
 * Torch model
 * Caffe model
 
-**ImageClassifier** provides an integrated example to load models from the above sources, 
+**ModelValidator** provides an integrated example to load models from the above sources, 
 test over imagenet validation dataset on both local mode and spark cluster mode.
 
 ## Preparation
@@ -32,7 +32,7 @@ Command to run the example in local mode:
 
 ```
 java -cp bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
-com.intel.analytics.bigdl.example.loadmodel.ImageClassifier \
+com.intel.analytics.bigdl.example.loadmodel.ModelValidator \
 -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt \
 --modelPath $pathToModel -b $batchSize --env local
 ```
@@ -79,7 +79,7 @@ Having prepared the dataset, you can submit your spark job by
 ```
 spark-submit \
  --driver-class-path bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
- --class com.intel.analytics.bigdl.example.loadmodel.ImageClassifier \
+ --class com.intel.analytics.bigdl.example.loadmodel.ModelValidator \
  bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar  \
  -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt \
  --modelPath $pathToModel \
