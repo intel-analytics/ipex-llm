@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.example.loadmodel
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.models.alexnet.AlexNet
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy, Validator}

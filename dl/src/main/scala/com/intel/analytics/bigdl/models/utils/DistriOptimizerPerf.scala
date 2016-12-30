@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.optim.{Optimizer, DistriOptimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
 import com.intel.analytics.bigdl.models.inception.{Inception_v2, Inception_v1}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
@@ -66,15 +65,15 @@ object DistriOptimizerPerf {
         }
       )
     opt[String]('m', "model")
-      .text("Model name. It can be alexnet | alexnetowt | inception_v1 | inception_v2 | vgg16 | " +
+      .text("Model name. It can be inception_v1 | inception_v2 | vgg16 | " +
         "vgg19")
       .action((v, p) => p.copy(module = v))
       .validate(v =>
-        if (Set("alexnet", "alexnetowt", "inception_v1", "inception_v2", "vgg16", "vgg19").
+        if (Set("inception_v1", "inception_v2", "vgg16", "vgg19").
           contains(v.toLowerCase())) {
           success
         } else {
-          failure("Data type can only be alexnet | alexnetowt | inception_v1 | " +
+          failure("Data type can only be inception_v1 | " +
             "vgg16 | vgg19 | inception_v2 now")
         }
       )
@@ -103,8 +102,6 @@ object DistriOptimizerPerf {
       .set("spark.task.cpus", param.corePerNode.toString)
 
     val (_model, input) = param.module match {
-      case "alexnet" => (AlexNet(1000), Tensor(param.batchSize, 3, 227, 227))
-      case "alexnetowt" => (AlexNet_OWT(1000), Tensor(param.batchSize, 3, 224, 224))
       case "inception_v1" => (Inception_v1(1000), Tensor(param.batchSize, 3, 224, 224))
       case "inception_v2" => (Inception_v2(1000), Tensor(param.batchSize, 3, 224, 224))
       case "vgg16" => (Vgg_16(1000), Tensor(param.batchSize, 3, 224, 224))
@@ -148,6 +145,6 @@ case class DistriOptimizerPerfParam(
   nodeNumber: Int = -1,
   corePerNode: Int = -1,
   dataType: String = "float",
-  module: String = "alexnet",
+  module: String = "inception_v1",
   inputData: String = "random"
 )

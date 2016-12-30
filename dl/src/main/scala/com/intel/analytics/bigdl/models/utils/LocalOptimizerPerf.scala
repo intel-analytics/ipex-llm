@@ -20,7 +20,6 @@ import com.intel.analytics.bigdl.dataset.{MiniBatch, LocalDataSet}
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.models.alexnet.{AlexNet, AlexNet_OWT}
 import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.optim.{Optimizer, LocalOptimizer, Trigger}
@@ -44,15 +43,15 @@ object LocalOptimizerPerf {
       .text("Iteration of perf test. The result will be average of each iteration time cost")
       .action((v, p) => p.copy(iteration = v))
     opt[String]('m', "model")
-      .text("Model name. It can be alexnet | alexnetowt | inception_v1 | vgg16 | vgg19 | " +
+      .text("Model name. It can be inception_v1 | vgg16 | vgg19 | " +
         "inception_v2")
       .action((v, p) => p.copy(module = v))
       .validate(v =>
-        if (Set("alexnet", "alexnetowt", "inception_v1", "inception_v2", "vgg16", "vgg19").
+        if (Set("inception_v1", "inception_v2", "vgg16", "vgg19").
           contains(v.toLowerCase())) {
           success
         } else {
-          failure("Data type can only be alexnet | alexnetowt | inception_v1 | " +
+          failure("Data type can only be inception_v1 | " +
             "vgg16 | vgg19 | inception_v2 now")
         }
       )
@@ -77,8 +76,6 @@ object LocalOptimizerPerf {
 
   def performance(param: LocalOptimizerPerfParam): Unit = {
     val (_model, input) = param.module match {
-      case "alexnet" => (AlexNet(1000), Tensor(param.batchSize, 3, 227, 227))
-      case "alexnetowt" => (AlexNet_OWT(1000), Tensor(param.batchSize, 3, 224, 224))
       case "inception_v1" => (Inception_v1(1000), Tensor(param.batchSize, 3, 224, 224))
       case "inception_v2" => (Inception_v2(1000), Tensor(param.batchSize, 3, 224, 224))
       case "vgg16" => (Vgg_16(1000), Tensor(param.batchSize, 3, 224, 224))
@@ -117,6 +114,6 @@ case class LocalOptimizerPerfParam(
   coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2),
   iteration: Int = 50,
   dataType: String = "float",
-  module: String = "alexnet",
+  module: String = "inception_v1",
   inputData: String = "random"
 )
