@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.models.vgg
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{BGRImgNormalizer, BGRImgToBatch, BytesToBGRImg$}
+import com.intel.analytics.bigdl.dataset.image.{BGRImgNormalizer, BGRImgToBatch, BytesToBGRImg}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{DistriValidator, LocalValidator, Top1Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
