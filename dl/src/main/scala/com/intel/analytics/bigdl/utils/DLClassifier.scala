@@ -28,7 +28,7 @@ import org.apache.spark.sql.{DataFrame, Row}
 import scala.reflect.ClassTag
 
 /**
- * A general Classifier to classify the image data in inputCol, and write the results to outputCol.
+ * A general Classifier to classify the input data in inputCol, and write the results to outputCol.
  * Use setInputCol to set inputCol name, and use setOutputCol to set outputCol name.
  *
  * DLClassifier is compatible with both spark 1.5-plus and 2.0 by extending MLTransform.
