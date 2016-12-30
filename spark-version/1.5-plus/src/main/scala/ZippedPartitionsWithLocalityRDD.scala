@@ -74,12 +74,6 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
       new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
     }
   }
-
-  override def compute(s: Partition, context: TaskContext): Iterator[V] = {
-    tryPrepareParents()
-    val partitions = s.asInstanceOf[ZippedPartitionsLocalityPartition].partitions
-    f(rdd1.iterator(partitions(0), context), rdd2.iterator(partitions(1), context))
-  }
 }
 
 private[spark] class ZippedPartitionsLocalityPartition(
