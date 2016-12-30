@@ -1,6 +1,5 @@
-# Inception Model on Imagenet
-This example show how to use a spark cluster to train a Inception V1 
-model. The model is proposed in [this paper](https://arxiv.org/abs/1409.4842).
+# Inception Model on ImageNet
+This example demonstrates how to use BigDL to train and evaluate [Inception v1](https://arxiv.org/abs/1409.4842) (or [Inception v2](https://arxiv.org/abs/1502.03167)) architecture on the [ImageNet](http://image-net.org/index) data.
 
 ## Get the BigDL Files
 You can build BigDL refer to [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code  
