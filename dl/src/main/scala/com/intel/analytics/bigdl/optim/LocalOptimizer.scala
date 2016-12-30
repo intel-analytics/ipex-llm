@@ -153,7 +153,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
         s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
         s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
         s"train time ${(end - dataFetchTime) / 1e9}s. " +
-        s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} img / second")
+        s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} record / second")
       state("neval") = state[Int]("neval") + 1
 
       if (count >= dataset.size()) {
