@@ -48,7 +48,7 @@ object LocalImageFiles {
    * @param path
    * @return
    */
-  private[bigdl] def readPaths(path: Path): Array[LocalLabeledImagePath] = {
+  private def readPathsWithLabel(path: Path): Array[LocalLabeledImagePath] = {
     val directoryStream = Files.newDirectoryStream(path)
     println(s"Start to read directories $path")
     val labelMap = readLabels(path)
@@ -68,10 +68,24 @@ object LocalImageFiles {
    * @param path
    * @return
    */
-  private[bigdl] def readPathsNoLabel(path: Path): Array[LocalLabeledImagePath] = {
+  private def readPathsNoLabel(path: Path): Array[LocalLabeledImagePath] = {
     println(s"Start to read directories $path")
     import scala.collection.JavaConverters._
     Files.newDirectoryStream(path).asScala.map(p =>
       LocalLabeledImagePath(-1, p)).toArray
+  }
+
+  /**
+   * Read all data file paths into one array.
+   * if has label, each subfolder is associate with its label.
+   * if no label, give -1 as its label
+   *
+   * @param path
+   * @param hasLabel
+   * @return
+   */
+  private[bigdl] def readPaths(path: Path, hasLabel: Boolean = true)
+  : Array[LocalLabeledImagePath] = {
+    if (hasLabel) readPathsWithLabel(path) else readPathsNoLabel(path)
   }
 }
