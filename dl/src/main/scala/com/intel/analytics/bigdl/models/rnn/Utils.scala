@@ -19,6 +19,8 @@ package com.intel.analytics.bigdl.models.rnn
 import scopt.OptionParser
 import java.io._
 
+import com.intel.analytics.bigdl.dataset.text.LabeledSentence
+
 import scala.util.Random
 
 object Utils {
@@ -145,7 +147,7 @@ object Utils {
   }
 
   private[bigdl] def readSentence(filedirect: String, dictionarySize: Int)
-  : (Array[(Array[Float], Array[Float])], Array[(Array[Float], Array[Float])],
+  : (Array[LabeledSentence[Float]], Array[LabeledSentence[Float]],
     Int, Int) = {
 
     import scala.io.Source
@@ -179,7 +181,7 @@ object Utils {
         target(i) = label(i).toString.toInt.toFloat
         i += 1
       }
-      (input, target)
+      new LabeledSentence[Float](input, target)
     })
 
     var valMaxLength = 0
@@ -197,7 +199,7 @@ object Utils {
         target(i) = label(i).toString.toInt.toFloat
         i += 1
       }
-      (input, target)
+      new LabeledSentence[Float](input, target)
     })
 
     (trainData, valData, trainMaxLength, valMaxLength)
