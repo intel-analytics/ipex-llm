@@ -19,12 +19,12 @@ Model is implemented in <code>ResNet</code>
 ##Training
 ### Command for Local Train
 ```bash
-./dist/bin/bigdl.sh -- java -cp dl/target/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.resnet.Train --evn local -f /cifar-10 --batchSize 128 --core 4 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 --learningRate 0.1 -n 4
+./dist/bin/bigdl.sh -- java -cp dl/target/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.resnet.Train --env local -f /cifar-10 --batchSize 128 --core 4 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 --learningRate 0.1 -n 1
 ```
 
 ### Command for Spark Train
 ```bash
-./dist/bin/bigdl.sh -- java -cp dl/target/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.resnet.Train --evn spark -f /cifar-10 --batchSize 512 --core 28 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 --learningRate 0.1 -n 4
+./dist/bin/bigdl.sh -- java -cp dl/target/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.resnet.Train --env spark -f /cifar-10 --batchSize 448 --core 28 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 --learningRate 0.1 -n 4
 ```
 
 <code>Optimizer</code> class is used to train the model. Users can define validation method to evaluate the model. We use Top1Accurary as the validation method.
@@ -32,4 +32,20 @@ Model is implemented in <code>ResNet</code>
 We support Local and Spark versions of training. Users can define <code>env</code> as "Local" or "Spark" to set the training envrionment.
 
 ##Parameters
-depth, shortcutType, number of epochs, learning rate, momentum, etc are user defined parameters.
+```
+    --folder | -f   [the directory to reach the data]
+    --coreNumber    [number of cores of the node, e.g 4 for a desktop]
+    --nodeNumber    [number of nodes | servers to run on spark, 1 for local]
+    --optnet        [share variables in convolutional layers to save the memory usage, default false]
+    --depth         [number of layers for resnet]
+    --classes       [number of classes]
+    --shortcutType  [three shortcutTypes for resnet defined from the original paper, default "A"]
+    --batchSize     [default 128, should be n*nodeNumber*coreNumber for spark]
+    --nEpochs       [number of epochs to train]
+    --learningRate  [default 0.1]
+    --momentum      [default 0.9]
+    --weightDecay   [default 1e-4]
+    --dampening     [default 0.0]
+    --nesterov      [default true]
+    --env           [local | spark]
+```
