@@ -1,8 +1,9 @@
-# Inception Model on ImageNet
-This example demonstrates how to use BigDL to train and evaluate [Inception v1](https://arxiv.org/abs/1409.4842) (or [Inception v2](https://arxiv.org/abs/1502.03167)) architecture on the [ImageNet](http://image-net.org/index) data.
-
-## Get the BigDL Files
-You can build BigDL refer to [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code  
+# Inception Model on Imagenet
+This example demonstrates how to use BigDL to train and evaluate [Inception v1](https://arxiv.org/abs/1409.4842) architecture on the [ImageNet](http://image-net.org/index) data.
+## Get the JAR
+You can build one by refer to the
+[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code. We
+will release a pre-build package soon.
 
 ## Prepare the data
 You can download imagenet-2012 data from <http://image-net.org/download-images>.
@@ -42,11 +43,52 @@ It will generate the hadoop sequence files in the output folder.
 ## Train the Model
 Here is an example command run on Spark cluster.
 ```bash
-./bigdl_folder/bin/bigdl.sh -- spark-submit --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --env spark --batchSize batch_size --core core_number --nodeNumber node_number --learningRate 0.0898 -f hdfs://.../imagenet --checkpoint .
+./bigdl_folder/bin/bigdl.sh -- \
+spark-submit --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 \
+dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--env spark \
+--batchSize batch_size \
+--core core_number \
+--nodeNumber node_number \
+--learningRate learningRate \
+-f hdfs://.../imagenet \
+--checkpoint ~/models
 ```
+In the above commands
+* -f: where you put your ImageNet data, it should be a hdfs folder
+* --core: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
+* --node: Node number.
+* --env: It can be local/spark.
+* --checkpoint: Where you cache the model/train_state snapshot. You should input a folder and
+make sure the folder is created when you run this example. The model snapshot will be named as
+model.#iteration_number, and train state will be named as state.#iteration_number. Note that if
+there are some files already exist in the folder, the old file will not be overwrite for the
+safety of your model files.
+* --batchSize: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number *
+core_number. In this example, node_number is 1 and the mini-batch size is suggested to be set to core_number * 4
+* --learningRate: inital learning rate. Note in this example, we use a Poly learning rate decay
+policy.
 
 ## Test the Model
 Example command
 ```bash
-./bigdl_folder/bin/bigdl.sh -- spark-submit --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --class com.intel.analytics.bigdl.models.inception.Test dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --env spark --batchSize batch_size --core core_number --nodeNumber node_number -f hdfs://.../imagenet1/val --model model.file
+./bigdl_folder/bin/bigdl.sh -- \
+spark-submit --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--class com.intel.analytics.bigdl.models.inception.Test \
+dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--env spark \
+--batchSize batch_size
+--core core_number \
+--nodeNumber node_number \
+-f hdfs://.../imagenet/val \
+--model model.file
 ```
+In the above command
+* -f: where you put your ImageNet data, it should be a hdfs folder
+* --model: the model snapshot file
+* --core: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
+* --nodeNumber: Node number.
+* --env: It can be local/spark.
+* --batchSize: The mini-batch size. It is expected that the mini-batch size is a multiple of
+node_number * core_number. In this example, node_number is 1 and the mini-batch size is suggested to be set to core_number * 4
