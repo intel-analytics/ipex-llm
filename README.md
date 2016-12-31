@@ -14,11 +14,11 @@ You may want to write your deep learning programs using BigDL if:
 
 * You want to add deep learning functionalities (either training or prediction) to your Big Data (Spark) programs and/or workflow.
 
-* You want to leverage existing Big Data (Hadoop/Spark) clusters to run your deep learning applications, which can be then dynamically shared with other workloads (e.g., ETL, data warehouse, feature engineering, classical machine learning, graph analytics, etc.)
+* You want to leverage existing Hadoop/Spark clusters to run your deep learning applications, which can be then dynamically shared with other workloads (e.g., ETL, data warehouse, feature engineering, classical machine learning, graph analytics, etc.)
 
 ## How to use BigDL?
 * To learn how to install and build BigDL, you can check out the [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
-* To learn how run BigDL programs (as either a local Java program or a Spark program), you can check out the [Getting Started Page](https://github.com/intel-analytics/BigDL/wiki/Getting-Started)
+* To learn how to run BigDL programs (as either a local Java program or a Spark program), you can check out the [Getting Started Page](https://github.com/intel-analytics/BigDL/wiki/Getting-Started)
 * To learn how to create practical neural networks using BigDL in a couple of minutes, you can check out the [Tutorials Page](https://github.com/intel-analytics/BigDL/wiki/Tutorials)
 * For more details, you can check out the [Documents Page](https://github.com/intel-analytics/BigDL/wiki/Documents) (including Tutorials, Examples, Programming Guide, etc.)
 
