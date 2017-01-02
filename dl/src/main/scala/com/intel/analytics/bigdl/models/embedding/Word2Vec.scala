@@ -129,9 +129,10 @@ object Word2Vec {
 
   def buildNegSampTable(alpah: Double): Unit = {
     val powerSum = vocab
-      .foldLeft(0.0)((sum, pair) => sum + math.pow(pair.count, alpah))
+      .foldLeft(0.0)((sum, wordCount) => sum + math.pow(wordCount.count, alpah))
 
     def wordProb(id: Int) = math.pow(vocab(id).count, alpah) / powerSum
+
 
 
 
