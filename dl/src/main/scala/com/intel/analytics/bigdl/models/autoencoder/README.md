@@ -23,17 +23,17 @@ $ --class com.intel.analytics.bigdl.models.autoencoder.Train \
 $ ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 $ --node 8 --core 10 -b 400 --env spark -f $DATA_FOLDER
 ```
-where `$DATA_FOLDER` is the directory containing the MNIST training data, whose value is "./ ".
+where `$DATA_FOLDER` is the directory containing the MNIST training data, whose default value is "./ ".
 
 ## Train on Local:
 Enter the following commands to run the model on local:
 ```{r, engine='sh'}
 $ ./dist/bin/bigdl.sh -- java -cp \
-$ ./dist/bin/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
+$ ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
 $ com.intel.analytics.bigdl.models.autoencoder.Train \
 $ --core 1 --node 1 --env local -f $DATA_FOLDER
 ```
-where `$DATA_FOLDER` is the directory containing the MNIST training data, whose value is "./ ".
+where `$DATA_FOLDER` is the directory containing the MNIST training data, whose default value is "./ ".
 
 ## Model Brief Introduction
 Auto-encoder has the same dimension for both input and output and
