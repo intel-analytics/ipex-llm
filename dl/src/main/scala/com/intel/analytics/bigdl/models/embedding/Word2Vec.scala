@@ -19,6 +19,8 @@ package com.intel.analytics.bigdl.models.embedding
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import org.apache.spark.rdd.RDD
 import scopt.OptionParser
 
@@ -90,8 +92,11 @@ object Word2Vec {
 
   private var trainWordsCount = 0L
   private var vocabSize = 0
-  @transient private var vocab: Array[WordCount] = null
+  private var powerSum = 0
+  private var contexts: Tensor[Float] = _
+  @transient private var vocab: Array[WordCount] = _
   @transient private var word2Id = mutable.HashMap.empty[String, Int]
+  @transient private var powerUnigram: Array[Int] = _
   var total = 0
 
   def getModel: Module[Float] = {
@@ -127,17 +132,57 @@ object Word2Vec {
     println(s"vocabSize = $vocabSize, trainWordsCount = $trainWordsCount")
   }
 
-  def buildNegSampTable(alpah: Double): Unit = {
-    val powerSum = vocab
-      .foldLeft(0.0)((sum, wordCount) => sum + math.pow(wordCount.count, alpah))
+  /**
+   * Create unigram power distribution to grenerate negative samples
+   * @param power
+   */
+  def buildNegSampleDistribution(power: Double): Unit = {
+    powerSum = math.round(
+      vocab.foldLeft(0.0)((sum, wordCount) => sum + math.pow(wordCount.count, power))).toInt
 
-    def wordProb(id: Int) = math.pow(vocab(id).count, alpah) / powerSum
+    powerUnigram = new Array(powerSum)
 
+    def wordProb(id: Int) = math.pow(vocab(id).count, power) / powerSum
 
+    var wordId = 1
+    var idx = 1
+    var powerProb = wordProb(wordId)
+    while (idx < powerSum) {
+      powerUnigram(idx) = wordId
+      if (idx / powerSum > powerProb) {
+        wordId += 1
+        powerProb = wordProb(wordId)
+      }
 
+      if (wordId > powerSum) {
+        wordId -= 1
+      }
 
-
+      idx += 1
+    }
   }
+
+  /**
+   * Sample negative contexts from power unigram distribution
+   *
+   * @param context given context
+   * @param numNegSamples number of negative samples for each context
+   */
+  def sampleNegativeContext(context: Int, numNegSamples: Int): Unit = {
+    contexts.setValue(1, context)
+    var i = 2
+    while (i <= numNegSamples + 1) {
+      val negContext = powerUnigram(math.ceil(RNG.uniform(1, powerSum)).toInt)
+      if (context != negContext) {
+        contexts.setValue(i, negContext)
+        i += 1
+      }
+    }
+  }
+
+//  def getSimilarWords(word: Int, num: Int): Array[String] = {
+//    if ()
+//  }
 
   def main(args: Array[String]): Unit = {
     val config = parse(args)
