@@ -224,8 +224,9 @@ object Utils {
 
         // Create dictionary with frequency as value for each word
         val sentences = lines.map(x => sentence_start_token + " " + x + " " + sentence_end_token)
-        val freqDict = sentences.flatMap(_.split("\\W+"))
-          .foldLeft(Map.empty[String, Int]) {
+        val freqDict = sentences.map(x => x.replaceAll("[^a-z_A-Z]", " ").toLowerCase())
+            .flatMap(_.split("\\W+")).filter(_.size > 2)
+            .foldLeft(Map.empty[String, Int]) {
             (count, word) => count + (word -> (count.getOrElse(word, 0) + 1))
           }.toSeq.sortBy(_._2)
 
@@ -247,8 +248,10 @@ object Utils {
         }
 
         // Convert the string texts to integer arrays
-        val mappedDF = sentences.map(x => x.split("\\W+")
-          .map(word => word2index.getOrElse(word, vocabSize)))
+        val mappedDF = sentences.map(x => x.replaceAll("[^a-z_A-Z]", " ").toLowerCase())
+          .map(_.split("\\W+")).filter(_.size > 2)
+          .map(word => word.map(
+            w => word2index.getOrElse(w, vocabSize)))
 
         // save converted data
         new PrintWriter(saveDirectory + "/mapped_data.txt") {
