@@ -27,7 +27,6 @@ object Utils {
   case class TrainParams(
     folder: String =
       "./",
-    cache: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
     checkpoint: Option[String] = None,
@@ -52,10 +51,6 @@ object Utils {
     opt[String]("state")
       .text("state snapshot location")
       .action((x, c) => c.copy(stateSnapshot = Some(x)))
-
-    opt[String]("cache")
-      .text("where to cache the model")
-      .action((x, c) => c.copy(cache = Some(x)))
 
     opt[String]("checkpoint")
       .text("where to cache the model and state")
