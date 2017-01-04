@@ -17,15 +17,15 @@
 
 package com.intel.analytics.bigdl.models.rnn
 
-import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToBatch, BytesToGreyImg}
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{LocalValidator, Top1Accuracy, Validator}
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, LabeledSentenceToSample}
+import com.intel.analytics.bigdl.nn.{LogSoftMax, Module}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+
+import scala.util.Random
 
 object Test {
   Logger.getLogger("org").setLevel(Level.ERROR)
@@ -40,11 +40,55 @@ object Test {
     testParser.parse(args, new TestParams()).map(param => {
 
       val vocab = new Dictionary(param.folder)
-      vocab.print()
-      vocab.printDiscard()
 
-      logger.info(vocab.getWord(50))
+      val model = Module.load[Float](param.modelSnapshot.get)
+      Engine.setCoreNumber(param.coreNumber)
 
+      val logSoftMax = LogSoftMax[Float]()
+      val lines = readSentence(param.folder)
+      val input = lines.map(x =>
+      x.map(t => vocab.getIndex(t).toFloat))
+
+      var labeledInput = input.map(x =>
+        new LabeledSentence[Float](x, x))
+
+      val batchSize = 1
+
+      var index = 0
+      while (index < param.numOfWords.getOrElse(0)) {
+        index += 1
+
+        val validationSet = DataSet.array(labeledInput)
+          .transform(LabeledSentenceToSample(vocab.length + 1))
+          .transform(SampleToBatch(batchSize = batchSize))
+          .asInstanceOf[LocalDataSet[MiniBatch[Float]]]
+
+        val dataIter = validationSet.data(train = false)
+        val predict = dataIter.map(batch => {
+          require(batch.data.size(1) == 1, "predict sentence one by one")
+          val output = model.forward(batch.data)
+            .asInstanceOf[Tensor[Float]]
+          val predictProbDist = logSoftMax.forward(output(output.size(1)))
+            .storage().map(x => math.exp(x).toFloat).toArray
+            .map {
+              var s = 0.0f; d => {
+                s += d; s
+              }
+            }
+            .filter(_ < Random.nextFloat())
+          (predictProbDist.length - 1).toFloat
+        }).toArray
+        labeledInput = (labeledInput zip predict).map(x => {
+          val addedInput = x._1.asInstanceOf[LabeledSentence[Float]]
+            .data() ++ Array(x._2)
+          new LabeledSentence[Float](addedInput, addedInput)
+        })
+      }
+
+      val results = labeledInput.map(x => x.data()
+        .map(t => vocab.getWord(t)))
+      results.foreach(x =>
+      logger.info(x.mkString(",")))
     })
   }
 }

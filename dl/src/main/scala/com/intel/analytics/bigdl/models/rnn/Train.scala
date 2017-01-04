@@ -48,7 +48,7 @@ object Train {
       wt.process()
 
       logger.info("loading the training and testing data ..")
-      val dataArray = readSentence(param.folder, dictionaryLength)
+      val dataArray = loadInData(param.folder, dictionaryLength)
       val trainData = dataArray._1
       val valData = dataArray._2
       val trainMaxLength = dataArray._3

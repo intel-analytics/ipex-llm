@@ -99,6 +99,7 @@ object Utils {
      folder: String = "./",
      modelSnapshot: Option[String] = None,
      stateSnapshot: Option[String] = None,
+     numOfWords: Option[Int] = None,
      coreNumber: Int = -1)
 
   val testParser = new OptionParser[TestParams]("BigDL rnn Test Example") {
@@ -116,12 +117,29 @@ object Utils {
       .action((x, c) => c.copy(stateSnapshot = Some(x)))
       .required()
 
+    opt[Int]("words")
+      .text("number of words to write")
+      .action((x, c) => c.copy(numOfWords = Some(x)))
+      .required()
+
     opt[Int]('c', "core")
       .text("cores number on each node")
       .action((x, c) => c.copy(coreNumber = x))
       .required()
   }
 
+
+  private[bigdl] def readSentence(directory: String)
+  : Array[Array[String]] = {
+
+    import scala.io.Source
+    if (!new File(directory + "/test.txt").exists()) {
+      throw new IllegalArgumentException("test file not exists!")
+    }
+    val lines = Source.fromFile(directory + "/test.txt")
+      .getLines().map(_.split("\\W+")).toArray
+    lines
+  }
 
   class Dictionary()
   extends Serializable {
@@ -147,7 +165,7 @@ object Utils {
       import scala.io.Source
       vocab2index = Source.fromFile(directory + "/dictionary.txt")
         .getLines.map(_.stripLineEnd.split("->", -1))
-        .map(fields => fields(0).stripLineEnd -> fields(1).stripPrefix(" ").toInt)
+        .map(fields => fields(0).stripSuffix(" ") -> fields(1).stripPrefix(" ").toInt)
         .toMap[String, Int]
       index2vocab = vocab2index.map(x => (x._2, x._1))
       vocabLength = vocab2index.size
@@ -158,6 +176,14 @@ object Utils {
 
     def getIndex(word: String): Int = {
       vocab2index.getOrElse(word, vocabLength)
+    }
+
+    def getWord(index: Float): String = {
+      getWord(index.toInt)
+    }
+
+    def getWord(index: Double): String = {
+      getWord(index.toInt)
     }
 
     def getWord(index: Int): String = {
@@ -232,7 +258,7 @@ object Utils {
     }
   }
 
-  private[bigdl] def readSentence(filedirect: String, dictionarySize: Int)
+  private[bigdl] def loadInData(filedirect: String, dictionarySize: Int)
   : (Array[LabeledSentence[Float]], Array[LabeledSentence[Float]],
     Int, Int) = {
 
