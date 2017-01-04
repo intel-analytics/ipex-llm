@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
 
 import scala.collection.Iterator
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import java.util
 
 object LabeledSentenceToSample {
   def apply(vocabLength: Int,
@@ -55,6 +56,10 @@ class LabeledSentenceToSample(vocabLength: Int,
       if (labelBuffer == null || labelBuffer.length < labelLength) {
         labelBuffer = new Array[Float](labelLength)
       }
+
+      // initialize featureBuffer to 0.0
+
+      util.Arrays.fill(featureBuffer, 0, featureBuffer.length, 0.0f)
 
       // One-Hot format for feature
 
