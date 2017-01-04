@@ -39,6 +39,12 @@ Example command:
 
 ```
 
+##Test the Model
+Example command:
+```bash
+./dist/bin/bigdl.sh -- java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Test -f /textdirectory --model /modeldirectory/model.iterationNumber --state /modeldirectory/state.iterationNumber -c 4 --words 20
+```
+
 ##Preprocessing
 
 The <code>WordTokenizer</code> class in the <code>rnn/Utils.scala</code> file implements the preprocessing procedure for the input text.
@@ -66,11 +72,15 @@ The <code>Dataset.array()</code> is a pipeline that will load the data and trans
 A SimpleRNN model is implemented in the <code>Model.scala</code> script. It is a one hidden layer recurrent neural network with arbitrary hidden circles.
 Users can define the <code>inputSize</code>, <code>hiddenSize</code>, <code>outputSize</code> and <code>bptt</code> (back propagation through time) parameters to fine-tune the model.
 
-##Expected Output
+##Expected Training Output
 Users can see the Loss of the model printed by the program. The Loss, in this case, is the perplexity of the language model. The lower, the better.
 ```
 INFO  LocalOptimizer$:152 - [Epoch 1 1/26221][Iteration 1][Wall Clock 0.225452714s] loss is 8.3017578125, iteration time is 0.225452714s data fetch time is 0.001966759s, train time 0.223485955s. Throughput is 4.435519902412885 record / second
 ```
+
+##Expected Testing Output
+The test program will load the dictionary and test.txt(with several trigger words as the start tokens of the sentences) and generate the predicted output. The number of words to predict is defined by user with arguments --words.
+
 
 ##Parameters
 ```
