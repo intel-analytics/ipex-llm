@@ -20,9 +20,10 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import scopt.OptionParser
 
 import scala.collection._
 
@@ -36,64 +37,10 @@ private case class WordCount(
 )
 
 object Word2Vec {
-  /**
-   * Options used by our word2vec model.
-   *
-   * @param saveLocation
-   * @param trainDataLocation
-   * @param testDataLocation
-   * @param numNegSamples Number of negative samples per example.
-   * @param learningRate
-   * @param embeddingSize Embedding dimension.
-   * @param batchSize
-   * @param windowSize The number of words to predict to the left
-   *                   and right of the target word.
-   * @param minCount The minimum number of word occurrences for it
-   *                 to be included in the vocabulary.
-   * @param subsample Sub-sampling threshold for word occurrence.
-   * @param alpha Negative sampling unigram distribution raised to alpha power
-   */
-  case class Word2VecConfig(
-    saveLocation: String = "",
-    trainDataLocation: String = "",
-    testDataLocation: String = "",
-    numNegSamples: Int = 0,
-    learningRate: Double = 1e-3,
-    embeddingSize: Int = 200,
-    batchSize: Int = 16,
-    windowSize: Int = 5,
-    minCount: Int = 5,
-    subsample: Double = 1e-3,
-    alpha: Double = 0.75
-  )
-
-  def parse(args: Array[String]): Word2VecConfig = new OptionParser[Word2VecConfig]("word2vec") {
-    help("help") text "prints this usage text"
-    opt[String]("saveLocation") required() action { (x, c) => c.copy(saveLocation = x) }
-    opt[String]("trainDataLocation") required() action { (x, c) => c.copy(trainDataLocation = x) }
-    opt[String]("testDataLocation")required() action { (x, c) => c.copy(testDataLocation = x) }
-    opt[Int]("numNegSamples")
-      .text("Negative samples per training example.")
-      .action { (x, c) => c.copy(numNegSamples = x) }
-    opt[Int]("embeddingSize")
-      .text("Initial learning rate.")
-      .action { (x, c) => c.copy(embeddingSize = x) }
-    opt[Int]("windowSize")
-      .text("The number of words to predict to the left and right of the target word.")
-      .action { (x, c) => c.copy(windowSize = x) }
-    opt[Int]("minCount")
-      .text("The minimum number of word occurrences for it to be included in the vocabulary.")
-      .action { (x, c) => c.copy(minCount = x) }
-    opt[Double]("subsample")
-      .text("Subsample threshold for word occurrence. Words that appear with higher " +
-        "frequency will be randomly down-sampled. Set to 0 to disable.")
-      .action { (x, c) => c.copy(subsample = x) }
-  }.parse(args, Word2VecConfig()).get
-
   private var trainWordsCount = 0L
   private var vocabSize = 0
   private var powerSum = 0
-  private var contexts: Tensor[Float] = _
+  @transient private var contexts: Tensor[Float] = _
   @transient private var vocab: Array[WordCount] = _
   @transient private var word2Id = mutable.HashMap.empty[String, Int]
   @transient private var powerUnigram: Array[Int] = _
@@ -133,7 +80,8 @@ object Word2Vec {
   }
 
   /**
-   * Create unigram power distribution to grenerate negative samples
+   * Create power-unigram distribution to grenerate negative samples
+   *
    * @param power
    */
   def buildNegSampleDistribution(power: Double): Unit = {
@@ -180,12 +128,25 @@ object Word2Vec {
     }
   }
 
-//  def getSimilarWords(word: Int, num: Int): Array[String] = {
-//    if ()
+//  def train(): Unit = {
+//    val scOption = Engine.init(params.nodeNum, params.coreNum,
+//      params.env == "spark").map(conf => {
+//      conf.setAppName("Text classification")
+//        .set("spark.akka.frameSize", 64.toString)
+//        .set("spark.task.maxFailures", "1")
+//      new SparkContext(conf)
+//    })
 //  }
 
-  def main(args: Array[String]): Unit = {
-    val config = parse(args)
-  }
+  //  def getSimilarWords(word: Int, num: Int): Array[String] = {
+  //    if ()
+  //  }
+
 }
+
+// object Word2Vec {
+//  def main(args: Array[String]): Unit = {
+//    val config = Utils.parse(args)
+//  }
+// }
 
