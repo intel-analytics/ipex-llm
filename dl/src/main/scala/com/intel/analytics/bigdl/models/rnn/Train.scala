@@ -90,6 +90,9 @@ object Train {
         dataset = trainSet,
         criterion = new CrossEntropyCriterion[Float](squeezeFlag = true)
       )
+      if (param.checkpoint.isDefined) {
+        optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
+      }
 
       optimizer
         .setValidation(Trigger.everyEpoch, validationSet, Array(new Loss[Float]))
