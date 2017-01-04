@@ -43,7 +43,7 @@ object Train {
       val wt = new WordTokenizer(
         param.folder + "/input.txt",
         param.folder,
-        dictionaryLength = dictionaryLength-1
+        dictionaryLength = dictionaryLength
       )
       wt.process()
 
@@ -84,6 +84,7 @@ object Train {
           "dampening" -> param.dampening)
       }
 
+      Engine.init(1, param.coreNumber, false)
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
