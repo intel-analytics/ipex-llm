@@ -125,7 +125,7 @@ object Utils {
           }.toSeq.sortBy(_._2)
 
         // Select most common words
-        val length = math.min(dictionaryLength, freqDict.length)
+        val length = math.min(dictionaryLength - 1, freqDict.length)
         val vocabDict = freqDict.drop(freqDict.length - length).map(_._1)
         val vocabSize = vocabDict.length
         val word2index = vocabDict.zipWithIndex.toMap
