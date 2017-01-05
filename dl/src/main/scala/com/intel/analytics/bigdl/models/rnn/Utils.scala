@@ -138,7 +138,8 @@ object Utils {
       throw new IllegalArgumentException("test file not exists!")
     }
     val lines = Source.fromFile(directory + "/test.txt")
-      .getLines().map(_.split("\\W+")).toArray
+      .getLines().map(x => "sentence_start " + x)
+      .map(_.split("\\W+")).toArray
     lines
   }
 

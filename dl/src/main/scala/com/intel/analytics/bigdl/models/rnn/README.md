@@ -35,8 +35,7 @@ The input text may look as follows:
 ##Train the Model
 Example command:
 ```bash
-./dist/bin/bigdl.sh -- java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Train -f /opt/text --core 4 --nEpochs 30 --learningRate 0.1
-
+./scripts/bigdl.sh -- java -cp /folder/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Train -f /folder-text -c 4 --vocab 10000 -h 100 --learningRate 0.1 -e 50 --bptt 5 --checkpoint /modeldirectory
 ```
 
 ##Test the Model
