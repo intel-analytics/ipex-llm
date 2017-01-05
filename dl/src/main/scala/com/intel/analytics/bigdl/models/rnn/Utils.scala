@@ -25,6 +25,7 @@ import scala.util.Random
 import org.apache.log4j.Logger
 
 object Utils {
+  val logger = Logger.getLogger(getClass)
   case class TrainParams(
     folder: String =
       "./",
@@ -210,6 +211,8 @@ object Utils {
     dictionaryLength: Int)
     extends Serializable {
 
+    private var _vocabSize: Int = 0
+    def length(): Int = _vocabSize
     def process() {
       if (!new File(saveDirectory + "/mapped_data.txt").exists) {
         import scala.io.Source
@@ -231,9 +234,10 @@ object Utils {
           }.toSeq.sortBy(_._2)
 
         // Select most common words
-        val length = math.min(dictionaryLength - 1, freqDict.length)
+        val length = math.min(dictionaryLength, freqDict.length)
         val vocabDict = freqDict.drop(freqDict.length - length).map(_._1)
         val vocabSize = vocabDict.length
+        _vocabSize = vocabSize + 1
         val word2index = vocabDict.zipWithIndex.toMap
         val discardDict = freqDict.take(freqDict.length - length).map(_._1)
 
@@ -257,6 +261,11 @@ object Utils {
         new PrintWriter(saveDirectory + "/mapped_data.txt") {
           write(mappedDF.map(_.mkString(",")).mkString("\n")); close
         }
+      } else {
+        logger.info("mapped_data.txt already exists! Dictionary Size unchanged.")
+        import scala.io.Source
+        val lines = Source.fromFile(saveDirectory + "/dictionary.txt").getLines.toArray
+        _vocabSize = lines.length + 1
       }
     }
   }

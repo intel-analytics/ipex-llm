@@ -39,14 +39,14 @@ object Train {
         throw new IllegalArgumentException("Input file not exists!")
       }
       logger.info("preprocessing input text file ..")
-      val dictionaryLength = param.vocabSize + 1
       val wt = new WordTokenizer(
         param.folder + "/input.txt",
         param.folder,
-        dictionaryLength = dictionaryLength
+        dictionaryLength = param.vocabSize
       )
       wt.process()
 
+      val dictionaryLength: Int = wt.length()
       logger.info("loading the training and testing data ..")
       val dataArray = loadInData(param.folder, dictionaryLength)
       val trainData = dataArray._1
