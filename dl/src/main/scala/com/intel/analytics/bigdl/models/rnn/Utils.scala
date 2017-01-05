@@ -24,6 +24,8 @@ import com.intel.analytics.bigdl.dataset.text.LabeledSentence
 import scala.util.Random
 import org.apache.log4j.Logger
 
+import scala.collection.mutable.ArrayBuffer
+
 object Utils {
   val logger = Logger.getLogger(getClass)
   case class TrainParams(
@@ -216,23 +218,32 @@ object Utils {
     def length(): Int = _vocabSize
     def process() {
       if (!new File(saveDirectory + "/mapped_data.txt").exists) {
-        import scala.io.Source
+        import edu.stanford.nlp.process.DocumentPreprocessor
 
-        val lines = Source.fromFile(inputFile).getLines.toArray
-          .filter(_.length > 0)
-
-        // Special Words
         val sentence_start_token = "SENTENCE_START"
         val sentence_end_token = "SENTENCE_END"
-        val unknown_token = "UNKNOWN_TOKEN"
+        val lines = ArrayBuffer[Array[String]]()
+        val dp = new DocumentPreprocessor(inputFile)
+        val iterator = dp.iterator()
+        while (iterator.hasNext) {
+          val sentence = iterator.next()
+          val inIter = sentence.iterator()
+          val tokens = ArrayBuffer[String]()
+          tokens.append(sentence_start_token)
+          while (inIter.hasNext) {
+            val token = inIter.next().word()
+            tokens.append(token)
+          }
+          tokens.append(sentence_end_token)
+          lines.append(tokens.toArray)
+        }
+        val sentences = lines.toArray
 
-        // Create dictionary with frequency as value for each word
-        val sentences = lines.map(x => sentence_start_token + " " + x + " " + sentence_end_token)
-        val freqDict = sentences.map(x => x.replaceAll("[^a-z_A-Z]", " ").toLowerCase())
-            .flatMap(_.split("\\W+")).filter(_.size > 2)
-            .foldLeft(Map.empty[String, Int]) {
-            (count, word) => count + (word -> (count.getOrElse(word, 0) + 1))
-          }.toSeq.sortBy(_._2)
+        val freqDict = sentences.filter(_.size > 3)
+          .flatMap(x => x)
+          .foldLeft(Map.empty[String, Int]) {
+          (count, word) => count + (word -> (count.getOrElse(word, 0) + 1))
+        }.toSeq.sortBy(_._2)
 
         // Select most common words
         val length = math.min(dictionaryLength, freqDict.length)
@@ -253,8 +264,7 @@ object Utils {
         }
 
         // Convert the string texts to integer arrays
-        val mappedDF = sentences.map(x => x.replaceAll("[^a-z_A-Z]", " ").toLowerCase())
-          .map(_.split("\\W+")).filter(_.size > 2)
+        val mappedDF = sentences.filter(_.size > 3)
           .map(word => word.map(
             w => word2index.getOrElse(w, vocabSize)))
 
