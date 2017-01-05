@@ -49,7 +49,6 @@ object Test {
       val input = lines.map(x =>
       x.map(t => vocab.getIndex(t).toFloat))
 
-
       val sentence_start_index = vocab.getIndex("sentence_start")
       val sentence_end_index = vocab.getIndex("sentence_end")
 
@@ -72,15 +71,6 @@ object Test {
           require(batch.data.size(1) == 1, "predict sentence one by one")
           val output = model.forward(batch.data)
             .asInstanceOf[Tensor[Float]]
-//          val predictProbDist = logSoftMax.forward(output(output.size(1)))
-//            .storage().map(x => math.exp(x).toFloat).toArray
-//            .map {
-//              var s = 0.0f; d => {
-//                s += d; s
-//              }
-//            }
-//            .filter(_ < Random.nextFloat())
-//          (predictProbDist.length - 1).toFloat
           val target = logSoftMax.forward(output(output.size(1)))
             .max(1)._2.valueAt(1) - 1
           if (target == sentence_end_index) {
