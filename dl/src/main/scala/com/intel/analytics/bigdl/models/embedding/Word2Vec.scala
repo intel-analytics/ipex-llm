@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.embedding
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer}
 import com.intel.analytics.bigdl.dataset.text.Tokenizer
 import com.intel.analytics.bigdl.models.embedding.Utils.Word2VecConfig
 import com.intel.analytics.bigdl.nn.{Module => _, _}
@@ -45,20 +45,21 @@ class Word2Vec(params: Word2VecConfig) {
   private var trainWordsCount = 0L
   private var vocabSize = 0
   private var powerSum = 0
-  @transient private var contexts: Tensor[Float] = _
   @transient private var vocab: Array[WordCount] = _
   @transient private var word2Id = mutable.HashMap.empty[String, Int]
   @transient private var powerUnigram: Array[Int] = _
-  var total = 0
+  private var total = 0
+  var wordVectors = LookupTable(vocabSize, params.embeddingSize)
+  var contextVectors = LookupTable(vocabSize, params.embeddingSize)
 
   def getModel: Module[Float] = {
     new Sequential()
       .add(
-        new ParallelTable()
-          .add(new ReLU())
-          .add(new ReLU()))
-      .add(new MM(false, true))
-      .add(new Sigmoid())
+        ParallelTable()
+          .add(wordVectors)
+          .add(contextVectors)) // ToDo: try replace contextVectors with wordVectors
+      .add(MM(false, true))
+      .add(Sigmoid())
   }
 
   def buildVocab(words: RDD[String]): Unit = {
@@ -118,7 +119,8 @@ class Word2Vec(params: Word2VecConfig) {
    *
    * @param context given context
    */
-  def sampleNegativeContext(context: Int): Unit = {
+  def sampleNegativeContext(context: Int): Tensor[Float] = {
+    val contexts = Tensor(params.numNegSamples)
     contexts.setValue(1, context)
     var i = 2
     while (i <= params.numNegSamples + 1) {
@@ -128,6 +130,7 @@ class Word2Vec(params: Word2VecConfig) {
         i += 1
       }
     }
+    contexts
   }
 
   /**
@@ -148,25 +151,9 @@ class Word2Vec(params: Word2VecConfig) {
 
 
   }
-
-
-//  def train(): Unit = {
-//    val scOption = Engine.init(params.nodeNum, params.coreNum,
-//      params.env == "spark").map(conf => {
-//      conf.setAppName("Text classification")
-//        .set("spark.akka.frameSize", 64.toString)
-//        .set("spark.task.maxFailures", "1")
-//      new SparkContext(conf)
-//    })
-//  }
-
-  //  def getSimilarWords(word: Int, num: Int): Array[String] = {
-  //    if ()
-  //  }
-
 }
 
-private case class SentenceToWordIds(
+private class SentenceToWordIds(
   vocab: mutable.HashMap[String, Int],
   maxSentenceLength: Int)
   extends Transformer[Seq[String], Seq[Int]] {
@@ -196,11 +183,28 @@ object SentenceToWordIds {
     new SentenceToWordIds(vocab, maxSentenceLength)
 }
 
+class WordIdsToMiniBatch(word2Vec: Word2Vec, window: Int)
+  extends Transformer[Seq[Int], MiniBatch[Float]] {
+  var buffer = MiniBatch
+  override def apply(prev: Iterator[Seq[Int]]): Iterator[MiniBatch[Float]] = {
+    prev.map(sentence => {
+      sentence.zipWithIndex.map {
+        case (i, word) =>
+          val a = 0
+          val reducedWindow = RNG.uniform(0, window).toInt
+          var j = i - reducedWindow
+          j = if (j < 0) 0 else j
 
+          while (j <= i + reducedWindow && j < sentence.length) {
+            if (j != i) {
+              val context = sentence(j)
+              val contexts = word2Vec.sampleNegativeContext(context)
 
-// object Word2Vec {
-//  def main(args: Array[String]): Unit = {
-//    val config = Utils.parse(args)
-//  }
-// }
+            }
+          }
+      }
+      new MiniBatch[Float](Tensor(), Tensor())
+    })
+  }
+}
 
