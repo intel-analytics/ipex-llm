@@ -60,16 +60,17 @@ class LabeledSentenceToSample(vocabLength: Int,
       util.Arrays.fill(featureBuffer, 0, featureBuffer.length, 0.0f)
       util.Arrays.fill(labelBuffer, 0, labelBuffer.length, 0.0f)
 
-      // One-Hot format for feature
-      // Expected transformed format should be:
-      //
-      // Example1: Input = [0, 2, 3], label = [2, 3, 1], dictionary length = 4
-      // Transformed: Input = [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
-      // Transformed: label = [3, 4, 2] (+1 because Tensor index starts from 1)
-      //
-      // Example2: Input = [0, 2, 3], label = [0], dictionary length = 4
-      // Transformed: Input = [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
-      // Transformed: label = [1] (+1 because Tensor index starts from 1)
+      /* One-Hot format for feature
+       * Expected transformed format should be:
+       *
+       * Example1: Input = [0, 2, 3], label = [2, 3, 1], dictionary length = 4
+       * Transformed: Input = [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+       * Transformed: label = [3, 4, 2] (+1 because Tensor index starts from 1)
+       *
+       * Example2: Input = [0, 2, 3], label = [0], dictionary length = 4
+       * Transformed: Input = [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+       * Transformed: label = [1] (+1 because Tensor index starts from 1)
+       */
 
       var i = 0
       while (i < sentence.dataLength) {
