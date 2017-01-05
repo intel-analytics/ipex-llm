@@ -43,7 +43,7 @@ class BGRImgRdmCropper(cropHeight: Int, cropWidth: Int, padding: Int)
           val padHeight = heightTmp + 2 * padding
           val temp = new LabeledBGRImage(padWidth, padHeight)
           val tempBuffer = temp.content
-          val startIndex = (padding + 1 + (padding + 1) * padWidth) * 3
+          val startIndex = (padding + padding * padWidth) * 3
           val frameLength = widthTmp * heightTmp
           var i = 0
           while (i < frameLength) {
