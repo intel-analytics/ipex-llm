@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dataset.Transformer
 
 import scala.collection.Iterator
 
-case class LowerCase(locale: Locale) extends Transformer[String, String] {
+class LowerCase(locale: Locale) extends Transformer[String, String] {
   override def apply(prev: Iterator[String]): Iterator[String] =
     prev.map(x => x.toLowerCase(locale))
 }

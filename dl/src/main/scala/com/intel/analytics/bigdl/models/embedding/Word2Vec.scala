@@ -153,7 +153,7 @@ class Word2Vec(params: Word2VecConfig) {
   }
 }
 
-private class SentenceToWordIds(
+class SentenceToWordIds(
   vocab: mutable.HashMap[String, Int],
   maxSentenceLength: Int)
   extends Transformer[Seq[String], Seq[Int]] {

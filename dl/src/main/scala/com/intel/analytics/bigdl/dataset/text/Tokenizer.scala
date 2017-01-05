@@ -26,8 +26,8 @@ import scala.collection.Iterator
  * @param sep the delimiting regular expression to split on.
  *            Defaults to matching all punctuation and whitespace
  */
-case class Tokenizer(sep: String) extends Transformer[String, Seq[String]] {
-  override def apply(prev: Iterator[String]): Iterator[Array[String]] =
+class Tokenizer(sep: String) extends Transformer[String, Seq[String]] {
+  override def apply(prev: Iterator[String]): Iterator[Seq[String]] =
     prev.map(x => x.split(sep))
 }
 
