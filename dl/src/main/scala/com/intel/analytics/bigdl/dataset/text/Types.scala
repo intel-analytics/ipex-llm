@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+class Sentence[T: ClassTag]
  /**
   * Represent a sentence
   *

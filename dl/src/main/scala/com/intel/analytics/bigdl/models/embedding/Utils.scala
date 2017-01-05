@@ -33,6 +33,7 @@ object Utils {
    *                 to be included in the vocabulary.
    * @param subsample Sub-sampling threshold for word occurrence.
    * @param alpha Negative sampling unigram distribution raised to alpha power
+   * @param maxSentenceLength The maximum sentence length
    * @param learningRate
    * @param batchSize
    */
@@ -46,6 +47,7 @@ object Utils {
     minCount: Int = 5,
     subsample: Double = 1e-3,
     alpha: Double = 0.75,
+    maxSentenceLength: Int = 1000,
     learningRate: Double = 1e-3,
     batchSize: Int = 16,
     coreNumber: Int = -1,
@@ -74,6 +76,10 @@ object Utils {
     opt[Double]("subsample")
       .text("Subsample threshold for word occurrence. Words that appear with higher " +
         "frequency will be randomly down-sampled. Set to 0 to disable.")
+      .action { (x, c) => c.copy(subsample = x) }
+    opt[Double]("maxSentenceLength")
+      .text("The maximum threshold of sentence length accepted, if length than the threshold" +
+        "the rest will be dropped")
       .action { (x, c) => c.copy(subsample = x) }
   }.parse(args, Word2VecConfig()).get
 }

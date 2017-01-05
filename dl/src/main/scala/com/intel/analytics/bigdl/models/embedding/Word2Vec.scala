@@ -17,15 +17,16 @@
 package com.intel.analytics.bigdl.models.embedding
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.dataset.text.Tokenizer
+import com.intel.analytics.bigdl.models.embedding.Utils.Word2VecConfig
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
-import scala.collection._
+import scala.collection.{mutable, _}
 
 
 /**
@@ -37,6 +38,10 @@ private case class WordCount(
 )
 
 object Word2Vec {
+  def apply(params: Word2VecConfig): Word2Vec = new Word2Vec(params)
+}
+
+class Word2Vec(params: Word2VecConfig) {
   private var trainWordsCount = 0L
   private var vocabSize = 0
   private var powerSum = 0
@@ -56,11 +61,10 @@ object Word2Vec {
       .add(new Sigmoid())
   }
 
-  def buildVocab[S <: Iterable[String]](dataset: RDD[S], minCount: Int): Unit = {
-    val words = dataset.flatMap(x => x)
+  def buildVocab(words: RDD[String]): Unit = {
     vocab = words.map(w => (w, 1))
       .reduceByKey(_ + _)
-      .filter(_._2 >= minCount)
+      .filter(_._2 >= params.minCount)
       .map(x => WordCount(x._1, x._2))
       .collect()
       .sortWith((a, b) => a.count > b.count)
@@ -82,15 +86,14 @@ object Word2Vec {
   /**
    * Create power-unigram distribution to grenerate negative samples
    *
-   * @param power
    */
-  def buildNegSampleDistribution(power: Double): Unit = {
+  def buildNegSampleDistribution(): Unit = {
     powerSum = math.round(
-      vocab.foldLeft(0.0)((sum, wordCount) => sum + math.pow(wordCount.count, power))).toInt
+      vocab.foldLeft(0.0)((sum, wordCount) => sum + math.pow(wordCount.count, params.alpha))).toInt
 
     powerUnigram = new Array(powerSum)
 
-    def wordProb(id: Int) = math.pow(vocab(id).count, power) / powerSum
+    def wordProb(id: Int) = math.pow(vocab(id).count, params.alpha) / powerSum
 
     var wordId = 1
     var idx = 1
@@ -114,12 +117,11 @@ object Word2Vec {
    * Sample negative contexts from power unigram distribution
    *
    * @param context given context
-   * @param numNegSamples number of negative samples for each context
    */
-  def sampleNegativeContext(context: Int, numNegSamples: Int): Unit = {
+  def sampleNegativeContext(context: Int): Unit = {
     contexts.setValue(1, context)
     var i = 2
-    while (i <= numNegSamples + 1) {
+    while (i <= params.numNegSamples + 1) {
       val negContext = powerUnigram(math.ceil(RNG.uniform(1, powerSum)).toInt)
       if (context != negContext) {
         contexts.setValue(i, negContext)
@@ -127,6 +129,26 @@ object Word2Vec {
       }
     }
   }
+
+  /**
+   * Computes the vector representation of each word in vocabulary.
+   * @param dataset an RDD of words
+   * @return a Word2VecModel
+   */
+  def fit[S <: Iterable[String]](dataset: RDD[S]): Unit = {
+    val words = dataset.flatMap(x => x)
+
+    buildVocab(words)
+
+    buildNegSampleDistribution()
+
+    val sc = dataset.context
+
+    Tokenizer -> SentenceToWordIds
+
+
+  }
+
 
 //  def train(): Unit = {
 //    val scOption = Engine.init(params.nodeNum, params.coreNum,
@@ -143,6 +165,38 @@ object Word2Vec {
   //  }
 
 }
+
+private case class SentenceToWordIds(
+  vocab: mutable.HashMap[String, Int],
+  maxSentenceLength: Int)
+  extends Transformer[Seq[String], Seq[Int]] {
+  val sentence = mutable.ArrayBuilder.make[Int]
+
+  override def apply(prev: Iterator[Seq[String]]): Iterator[Seq[Int]] =
+    prev.map(words => {
+      var sentenceLength = 0
+      while (sentenceLength < maxSentenceLength) {
+        val word = vocab.get(words(sentenceLength))
+        word match {
+          case Some(w) =>
+            sentence += w
+            sentenceLength += 1
+          case None =>
+        }
+        sentenceLength += 1
+      }
+      sentence.result()
+    })
+}
+
+object SentenceToWordIds {
+  def apply(
+    vocab: mutable.HashMap[String, Int],
+    maxSentenceLength: Int = 1000): SentenceToWordIds =
+    new SentenceToWordIds(vocab, maxSentenceLength)
+}
+
+
 
 // object Word2Vec {
 //  def main(args: Array[String]): Unit = {

@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.models.embedding
+package com.intel.analytics.bigdl.dataset.text
 
-import com.intel.analytics.bigdl.utils.Engine
-import org.apache.spark.SparkContext
+import java.util.Locale
 
-object Train {
-  def main(args: Array[String]): Unit = {
-    val params = Utils.parse(args)
+import com.intel.analytics.bigdl.dataset.Transformer
 
-    val sc = Engine.init(params.nodeNumber, params.coreNumber, params.env == "spark")
-      .map(conf => {
-        conf.setAppName("BigDL Word2Vec Example")
-          .set("spark.task.maxFailures", "1")
-        new SparkContext(conf)
-      })
-  }
+import scala.collection.Iterator
+
+case class LowerCase(locale: Locale) extends Transformer[String, String] {
+  override def apply(prev: Iterator[String]): Iterator[String] =
+    prev.map(x => x.toLowerCase(locale))
+}
+
+object LowerCase {
+  def apply(locale: Locale = Locale.getDefault): LowerCase = new LowerCase(locale)
 }
