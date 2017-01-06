@@ -87,7 +87,7 @@ class Word2Vec(val params: Word2VecConfig) {
   }
 
   /**
-   * Create power-unigram distribution to grenerate negative samples
+   * Create power-unigram distribution to generate negative samples
    *
    */
   def buildNegSampleDistribution(): Unit = {
@@ -141,11 +141,6 @@ class Word2Vec(val params: Word2VecConfig) {
     contexts
   }
 
-  /**
-   * Computes the vector representation of each word in vocabulary.
-   * @param dataset an RDD of words
-   * @return a Word2VecModel
-   */
   def fit[S <: Iterable[String]](dataset: RDD[S]): Unit = {
     val words = dataset.flatMap(x => x)
 
@@ -153,69 +148,78 @@ class Word2Vec(val params: Word2VecConfig) {
 
     buildNegSampleDistribution()
 
-    val sc = dataset.context
+//    val sc = dataset.context
 
-    Tokenizer -> SentenceToWordIds
-
-
+    (Tokenizer()
+      -> WordsToIds(word2Id, params.maxSentenceLength)
+      -> WordIdsToMiniBatch(params.numNegSamples, params.windowSize))
   }
-}
 
-case class SentenceToWordIds(
-  vocab: mutable.HashMap[String, Int],
-  maxSentenceLength: Int)
-  extends Transformer[Seq[String], Seq[Int]] {
-  val sentence = mutable.ArrayBuilder.make[Int]
+  /**
+   * Transform a sequence of words to its corresponding ids, and filter the length
+   * of each set of words less than `maxSentenceLength`
+   *
+   */
+  case class WordsToIds(
+    word2Id: mutable.HashMap[String, Int],
+    maxSentenceLength: Int)
+    extends Transformer[Seq[String], Seq[Int]] {
+    val sentence = mutable.ArrayBuilder.make[Int]
 
-  override def apply(prev: Iterator[Seq[String]]): Iterator[Seq[Int]] =
-    prev.map(words => {
-      var sentenceLength = 0
-      while (sentenceLength < maxSentenceLength) {
-        val word = vocab.get(words(sentenceLength))
-        word match {
-          case Some(w) =>
-            sentence += w
-            sentenceLength += 1
-          case None =>
-        }
-        sentenceLength += 1
-      }
-      sentence.result()
-    })
-}
-
-case class WordIdsToMiniBatch(word2Vec: Word2Vec, window: Int)
-  extends Transformer[Seq[Int], MiniBatch[Float]] {
-  override def apply(prev: Iterator[Seq[Int]]): Iterator[MiniBatch[Float]] = {
-    val label = Tensor(word2Vec.params.numNegSamples + 1).zero()
-    label.setValue(1, 1)
-
-    prev.map(sentence => {
-      val inputTable = T()
-      val labelTable = T()
-      sentence.zipWithIndex.foreach {
-        case (i, word) =>
-          val reducedWindow = RNG.uniform(0, window).toInt
-          var j = i - reducedWindow
-          j = if (j < 0) 0 else j
-
-          while (j <= i + reducedWindow && j < sentence.length) {
-            if (j != i) {
-              val context = sentence(j)
-              val sample = word2Vec.sampleContexts(word, context)
-              inputTable.insert(sample)
-              labelTable.insert(label)
-            }
+    override def apply(prev: Iterator[Seq[String]]): Iterator[Seq[Int]] =
+      prev.map(words => {
+        var sentenceLength = 0
+        while (sentenceLength < maxSentenceLength) {
+          val word = word2Id.get(words(sentenceLength))
+          word match {
+            case Some(w) =>
+              sentence += w
+              sentenceLength += 1
+            case None =>
           }
-      }
+          sentenceLength += 1
+        }
+        sentence.result()
+      })
+  }
 
-      val inputTensor =
-        JoinTable(1).updateOutput(inputTable)
-      val labelTensor =
-        JoinTable(1).updateOutput(labelTable)
+  /**
+   * Transform sentence represented as word ids to MiniBatch
+   * Each sensence is represented as a batch
+   *
+   */
+  case class WordIdsToMiniBatch(numNegSamples: Int, window: Int)
+    extends Transformer[Seq[Int], MiniBatch[Float]] {
+    override def apply(prev: Iterator[Seq[Int]]): Iterator[MiniBatch[Float]] = {
+      val label = Tensor(numNegSamples + 1).zero()
+      label.setValue(1, 1)
 
-      MiniBatch(inputTensor, labelTensor)
-    })
+      prev.map(sentence => {
+        val inputTable = T()
+        val labelTable = T()
+        sentence.zipWithIndex.foreach {
+          case (i, word) =>
+            val reducedWindow = RNG.uniform(0, window).toInt
+            var j = i - reducedWindow
+            j = if (j < 0) 0 else j
+
+            while (j <= i + reducedWindow && j < sentence.length) {
+              if (j != i) {
+                val context = sentence(j)
+                val sample = sampleContexts(word, context)
+                inputTable.insert(sample)
+                labelTable.insert(label)
+              }
+            }
+        }
+
+        val inputTensor =
+          JoinTable(1).updateOutput(inputTable)
+        val labelTensor =
+          JoinTable(1).updateOutput(labelTable)
+
+        MiniBatch(inputTensor, labelTensor)
+      })
+    }
   }
 }
-
