@@ -77,3 +77,10 @@ class SelectTable[T: ClassTag](
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object SelectTable {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    dimension: Int)(implicit ev: TensorNumeric[T]) : SelectTable[T] = {
+    new SelectTable[T](dimension)
+  }
+}

@@ -54,6 +54,11 @@ class Word2Vec(val params: Word2VecConfig) {
 
   def getModel: Module[Float] = {
     new Sequential()
+      .add(wordVectors)
+      .add(SplitTable(1))
+      .add(ConcatTable()
+        .add(SelectTable(1))
+        .add(Sequential().add(NarrowTable(2, ))))
       .add(
         ParallelTable()
           .add(wordVectors)

@@ -26,17 +26,23 @@ import scala.reflect.ClassTag
 /**
  * Creates a module that takes a table as input and outputs the subtable starting at index
  * offset having length elements (defaults to 1 element). The elements can be either
- * a table or a Tensor.
+ * a table or a Tensor. If `length` is negative, it means selecting the elements from the
+ * offset to element which located at the abs(`length`) to the last element of the input.
  *
- * @param offset
- * @param length
+ * @param offset the start index of table
+ * @param length the length want to select
  */
 
 @SerialVersionUID(8046335768231475724L)
-class NarrowTable[T: ClassTag](val offset: Int, val length: Int = 1)
+class NarrowTable[T: ClassTag](var offset: Int, val length: Int = 1)
  (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Table, T]{
+  var len = length
 
   override def updateOutput(input: Table): Table = {
+    if (length < 0) {
+      len = input.length() - offset + 2 + length
+    }
+
     var i = 1
     while (i <= length) {
       output.insert(i, input(offset + i -1))
@@ -46,6 +52,10 @@ class NarrowTable[T: ClassTag](val offset: Int, val length: Int = 1)
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
+    if (length < 0) {
+      len = input.length() - offset + 2 + length
+    }
+
     var i = 1
     while (i <= gradOutput.length()) {
       gradInput.insert(offset + i - 1, gradOutput(i))
