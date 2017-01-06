@@ -63,5 +63,5 @@ find "$BASEDIR" -name 'pom.xml' -not -path '*target*' -print \
   -exec bash -c "sed_i 's/\(artifactId.*\)bigdl'$FROM_VERSION'\([^-parent]\)/\1bigdl'$TO_VERSION'\2/g' {}" \;
 
 # Also update <spark.version> in parent POM
-# Match any spark version to ensure idempotency
+# Match any spark version to ensure independency
 # sed_i '1,/<spark\.version>[0-9]*\.[0-9]*</s/<spark\.version>[0-9]*\.[0-9]*</<spark.version>'$TO_VERSION'</' \

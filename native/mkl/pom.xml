@@ -11,7 +11,7 @@
 
     <groupId>com.intel.analytics.bigdl.native</groupId>
     <artifactId>bigdl-native</artifactId>
-    <packaging>so</packaging>
+    <packaging>${dynamicLibType}</packaging>
 
     <build>
         <plugins>
@@ -37,7 +37,7 @@
                     </sources>
                     <compilerStartOptions>
                         <compilerStartOption>-I ${JAVA_HOME}/include/</compilerStartOption>
-                        <compilerStartOption>-I ${JAVA_HOME}/include/linux/</compilerStartOption>
+                        <compilerStartOption>${compilerStartOptionDirectory}</compilerStartOption>
                     </compilerStartOptions>
                     <compilerEndOptions>
                         <compilerEndOption>-lpthread</compilerEndOption>
@@ -52,7 +52,7 @@
                     </compilerEndOptions>
                     <linkerStartOptions>
                         <linkerStartOption>-I ${JAVA_HOME}/include/</linkerStartOption>
-                        <linkerStartOption>-I ${JAVA_HOME}/include/linux/</linkerStartOption>
+                        <linkerStartOption>${linkerStartOptionDirectory}</linkerStartOption>
                         <linkerStartOption>-lpthread</linkerStartOption>
                         <linkerStartOption>-ldl</linkerStartOption>
                         <linkerStartOption>-liomp5</linkerStartOption>

@@ -173,6 +173,8 @@
         <spark-version.project>1.5-plus</spark-version.project>
         <spark.version>1.5.1</spark.version>
         <spark-scope>provided</spark-scope>
+
+        <mkl-java-os-version>mkl-java</mkl-java-os-version>
     </properties>
 
     <modules>
@@ -514,7 +516,19 @@
             <id>full-build</id>
             <modules>
                 <module>native</module>
+                <module>dl</module>
+                <module>spark-version</module>
             </modules>
+        </profile>
+        <profile>
+            <id>mac</id>
+            <modules>
+                <module>dl</module>
+                <module>spark-version</module>
+            </modules>
+            <properties>
+                <mkl-java-os-version>mkl-java-mac</mkl-java-os-version>
+            </properties>
         </profile>
         <profile>
             <id>src</id>

@@ -250,7 +250,7 @@ object Engine {
     nodeNum = n
   }
 
-  private val ERROR = "Please use bigdl.sh set the env. For spark application, please use" +
+  private val ERROR = "Please use bigdl.sh set the env. For spark application, please use " +
     "Engine.sparkConf() to initialize your sparkConf"
 
   /**

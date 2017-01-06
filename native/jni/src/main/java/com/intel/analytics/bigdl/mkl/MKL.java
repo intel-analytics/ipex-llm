@@ -17,13 +17,20 @@ public class MKL {
 
     static {
         try {
-            tmpFile = extract("libiomp5.so");
+            String iomp5FileName = "libiomp5.so";
+            String jmklFileName = "libjmkl.so";
+            if (System.getProperty("os.name").toLowerCase().contains("mac")) {
+                iomp5FileName = "libiomp5.dylib";
+                jmklFileName = "libjmkl.dylib";
+            }
+            tmpFile = extract(iomp5FileName);
             System.load(tmpFile.getAbsolutePath());
             tmpFile.delete(); // delete so temp file after loaded
-            tmpFile = extract("libjmkl.so");
+            tmpFile = extract(jmklFileName);
             System.load(tmpFile.getAbsolutePath());
             tmpFile.delete(); // delete so temp file after loaded
             isLoaded = true;
+
         } catch (Exception e) {
             isLoaded = false;
             e.printStackTrace();
