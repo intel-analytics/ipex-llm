@@ -288,5 +288,46 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def getNumericType(): TensorDataType = {
     ev.getType()
   }
+
+  // TODO code style
+  import ModuleType._
+
+  def convertToMklDnn(prevModule: Option[AbstractModule[Activity, Activity, T]] = None)
+    : (ModuleType, AbstractModule[Activity, Activity, T]) = {
+    (BLAS, this.asInstanceOf[AbstractModule[Activity, Activity, T]])
+  }
+
+  /**
+   * return current module type, default is blas module, which will override in mkl module.
+   * @return
+   */
+  def moduleType: ModuleType = {
+    BLAS
+  }
+
+  /**
+   * return prevous module type, default is blas module, which will override in mkl module.
+   * @return
+   */
+  def prevModuleType: ModuleType = {
+    BLAS
+  }
+
+  /**
+   * return next module type, default is blas module, which will override in mkl module.
+   * @return
+   */
+  def nextModuleType: ModuleType = {
+    BLAS
+  }
+
+  def setPrevModuleType(value: ModuleType): Unit = {}
+
+  def setNextModuleType(value: ModuleType): Unit = {}
+}
+
+object ModuleType extends Enumeration {
+  type ModuleType = Value
+  val BLAS, DNN = Value
 }
 

@@ -33,6 +33,7 @@ import scala.collection.JavaConverters._
 sealed trait EngineType
 
 case object MklBlas extends EngineType
+case object MklDnn extends EngineType
 
 /**
  * A thread pool wrapper, provide some helper functions for multi-threading

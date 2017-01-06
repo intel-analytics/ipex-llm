@@ -32,6 +32,17 @@
                             <directory>${basedir}/src/main/c/jni</directory>
                             <fileNames>
                                 <fileName>mkl.c</fileName>
+                                <fileName>concat.c</fileName>
+                                <fileName>batch_norm.c</fileName>
+                                <fileName>convolution.c</fileName>
+                                <fileName>layout.c</fileName>
+                                <fileName>linear.c</fileName>
+                                <fileName>lrn.c</fileName>
+                                <fileName>pooling.c</fileName>
+                                <fileName>relu.c</fileName>
+                                <fileName>split.c</fileName>
+                                <fileName>sum.c</fileName>
+                                <fileName>utils.c</fileName>
                             </fileNames>
                         </source>
                     </sources>
