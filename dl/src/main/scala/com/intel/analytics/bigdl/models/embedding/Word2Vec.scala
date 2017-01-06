@@ -50,19 +50,16 @@ class Word2Vec(val params: Word2VecConfig) {
   @transient private var word2Id = mutable.HashMap.empty[String, Int]
   @transient private var powerUnigram: Array[Int] = _
   var wordVectors = LookupTable(vocabSize, params.embeddingSize)
-  var contextVectors = LookupTable(vocabSize, params.embeddingSize)
 
   def getModel: Module[Float] = {
     new Sequential()
       .add(wordVectors)
       .add(SplitTable(1))
       .add(ConcatTable()
-        .add(SelectTable(1))
-        .add(Sequential().add(NarrowTable(2, ))))
-      .add(
-        ParallelTable()
-          .add(wordVectors)
-          .add(contextVectors)) // ToDo: try replace contextVectors with wordVectors
+        .add(Sequential()
+          .add(NarrowTable(2, -1))
+          .add(JoinTable(1)))
+        .add(SelectTable(1)))
       .add(MM(transA = false, transB = true))
       .add(Sigmoid())
   }
