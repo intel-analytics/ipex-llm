@@ -506,7 +506,7 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     val labeledSentenceToSample = LabeledSentenceToSample(5)
     val sampleDataSet = dataSet -> labeledSentenceToSample
-    val iter = sampleDataSet.toLocal().data(train = true)
+    val iter = sampleDataSet.toLocal().data(train = false)
 
     val tensorInput1 = Tensor[Float](Storage(
       Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))

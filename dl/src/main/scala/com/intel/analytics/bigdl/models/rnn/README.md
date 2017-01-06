@@ -41,7 +41,7 @@ Example command:
 ##Test the Model
 Example command:
 ```bash
-./dist/bin/bigdl.sh -- java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Test -f /textdirectory --model /modeldirectory/model.iterationNumber --state /modeldirectory/state.iterationNumber -c 4 --words 20
+./dist/bin/bigdl.sh -- java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Test -f /textdirectory --dictionary dictionary.txt --discard discard.txt --test test.txt --model /modeldirectory/model.iterationNumber --state /modeldirectory/state.iterationNumber -c 4 --words 20
 ```
 
 ##Preprocessing

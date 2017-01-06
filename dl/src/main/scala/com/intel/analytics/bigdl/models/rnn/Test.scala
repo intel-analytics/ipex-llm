@@ -41,13 +41,16 @@ object Test {
   def main(args: Array[String]): Unit = {
     testParser.parse(args, new TestParams()).map(param => {
 
-      val vocab = new Dictionary(param.folder)
+      val vocab = new Dictionary(
+        param.folder,
+        param.dictionary,
+        param.discard)
 
       val model = Module.load[Float](param.modelSnapshot.get)
       Engine.setCoreNumber(param.coreNumber)
 
       val logSoftMax = LogSoftMax[Float]()
-      val lines = readSentence(param.folder)
+      val lines = readSentence(param.folder, param.test)
       val input = lines.map(x =>
       x.map(t => vocab.getIndex(t).toFloat))
 

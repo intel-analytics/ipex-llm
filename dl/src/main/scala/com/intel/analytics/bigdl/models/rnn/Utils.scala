@@ -100,6 +100,9 @@ object Utils {
 
   case class TestParams(
      folder: String = "./",
+     test: String = "test.txt",
+     dictionary: String = "dictionary.txt",
+     discard: String = "discard.txt",
      modelSnapshot: Option[String] = None,
      stateSnapshot: Option[String] = None,
      numOfWords: Option[Int] = None,
@@ -107,8 +110,24 @@ object Utils {
 
   val testParser = new OptionParser[TestParams]("BigDL rnn Test Example") {
     opt[String]('f', "folder")
-      .text("where you put the text data")
+      .text("where to load and write data")
       .action((x, c) => c.copy(folder = x))
+      .required()
+
+    opt[String]('t', "test")
+      .text("test file name, should be under the folder")
+      .action((x, c) => c.copy(test = x))
+      .required()
+
+    opt[String]("dictionary")
+      .text("dictionary file name, should be under the folder")
+      .action((x, c) => c.copy(dictionary = x))
+      .required()
+
+    opt[String]("discard")
+      .text("discard words file name, should be under the folder")
+      .action((x, c) => c.copy(discard = x))
+      .required()
 
     opt[String]("model")
       .text("model snapshot location")
@@ -132,13 +151,15 @@ object Utils {
   }
 
 
-  private[bigdl] def readSentence(directory: String)
+  private[bigdl] def readSentence(directory: String,
+                                  test: String)
   : Array[Array[String]] = {
 
-    import scala.io.Source
-    if (!new File(directory + "/test.txt").exists()) {
+    val testFile = new File(directory, test)
+    if (!testFile.exists()) {
       throw new IllegalArgumentException("test file not exists!")
     }
+
     import edu.stanford.nlp.process.DocumentPreprocessor
 
     val sentence_start_token = "SENTENCE_START"
@@ -171,24 +192,28 @@ object Utils {
 
     val logger = Logger.getLogger(getClass)
 
-    def this(directory: String) = {
+    def this(directory: String,
+             dictionaryName: String,
+             discardName: String) = {
       this()
 
-      if (!new File(directory + "/dictionary.txt").exists()) {
+      val dictionaryFile = new File(directory, dictionaryName)
+      if (!dictionaryFile.exists()) {
         throw new IllegalArgumentException("dictionary file not exists!")
       }
-      if (!new File(directory + "/discard.txt").exists()) {
+      val discardFile = new File(directory, discardName)
+      if (!discardFile.exists()) {
         throw new IllegalArgumentException("discard file not exists!")
       }
 
       import scala.io.Source
-      vocab2index = Source.fromFile(directory + "/dictionary.txt")
+      vocab2index = Source.fromFile(dictionaryFile.getAbsolutePath)
         .getLines.map(_.stripLineEnd.split("->", -1))
         .map(fields => fields(0).stripSuffix(" ") -> fields(1).stripPrefix(" ").toInt)
         .toMap[String, Int]
       index2vocab = vocab2index.map(x => (x._2, x._1))
       vocabLength = vocab2index.size
-      discard = Source.fromFile(directory + "/discard.txt")
+      discard = Source.fromFile(discardFile.getAbsolutePath)
         .getLines().toArray
       discardLength = discard.length
     }
