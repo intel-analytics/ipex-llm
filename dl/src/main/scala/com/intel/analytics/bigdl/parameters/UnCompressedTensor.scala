@@ -29,11 +29,12 @@ class UnCompressedTensor[T: ClassTag](buffer: Array[Byte], bufferOffset: Int, bu
   import UnCompressedTensor.tLength
 
   def this(length: Int) {
-    this(new Array[Byte](length), 0, length)
+    this(new Array[Byte](length * UnCompressedTensor.tLength()),
+      0, length * UnCompressedTensor.tLength())
   }
 
   def this(tensor: Tensor[T]) {
-    this(tensor.nElement() * UnCompressedTensor.tLength[T]())
+    this(tensor.nElement())
     compress(tensor)
   }
 
