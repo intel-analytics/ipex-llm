@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 8435694717504118735L)
 class JoinTable[T: ClassTag] (
   val dimension: Int,
-  val nInputDims: Int
+  val nInputDims: Int = 1
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Tensor[T], T] {
 
@@ -131,7 +131,7 @@ class JoinTable[T: ClassTag] (
 object JoinTable {
   def apply[@specialized(Float, Double) T: ClassTag](
       dimension: Int,
-      nInputDims: Int)(implicit ev: TensorNumeric[T]) : JoinTable[T] = {
+      nInputDims: Int = 1)(implicit ev: TensorNumeric[T]) : JoinTable[T] = {
     new JoinTable[T](dimension, nInputDims)
   }
 }

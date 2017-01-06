@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 4318640284973082779L)
 class SplitTable[T: ClassTag](
   var dimension: Int,
-  var nInputDims: Int)
+  var nInputDims: Int = 1)
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Table, T]{
 
   private def getPositiveDimension(input: Tensor[T]): Int = {
@@ -89,4 +89,12 @@ class SplitTable[T: ClassTag](
 
 
   override def toString: String = s"SplitTable($dimension, $nInputDims)"
+}
+
+object SplitTable {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    dimension: Int,
+    nInputDims: Int = 1)(implicit ev: TensorNumeric[T]) : SplitTable[T] = {
+    new SplitTable[T](dimension, nInputDims)
+  }
 }

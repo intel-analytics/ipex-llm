@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.rdd.RDD
 
 import scala.collection.{mutable, _}
@@ -41,14 +42,13 @@ object Word2Vec {
   def apply(params: Word2VecConfig): Word2Vec = new Word2Vec(params)
 }
 
-class Word2Vec(params: Word2VecConfig) {
+class Word2Vec(val params: Word2VecConfig) {
   private var trainWordsCount = 0L
   private var vocabSize = 0
   private var powerSum = 0
   @transient private var vocab: Array[WordCount] = _
   @transient private var word2Id = mutable.HashMap.empty[String, Int]
   @transient private var powerUnigram: Array[Int] = _
-  private var total = 0
   var wordVectors = LookupTable(vocabSize, params.embeddingSize)
   var contextVectors = LookupTable(vocabSize, params.embeddingSize)
 
@@ -58,7 +58,7 @@ class Word2Vec(params: Word2VecConfig) {
         ParallelTable()
           .add(wordVectors)
           .add(contextVectors)) // ToDo: try replace contextVectors with wordVectors
-      .add(MM(false, true))
+      .add(MM(transA = false, transB = true))
       .add(Sigmoid())
   }
 
@@ -115,15 +115,21 @@ class Word2Vec(params: Word2VecConfig) {
   }
 
   /**
-   * Sample negative contexts from power unigram distribution
+   * Sample negative contexts from power unigram distribution,
+   * and conbine them with given word and context together as a training sample
    *
    * @param context given context
+   * @return a one-dimension tensor, whose first elmement is the given word,
+   *         second element is the given context, and the rest elements are the
+   *         sampled negative contexts.
    */
-  def sampleNegativeContext(context: Int): Tensor[Float] = {
-    val contexts = Tensor(params.numNegSamples)
+  def sampleContexts(word: Int, context: Int): Tensor[Float] = {
+    val contexts = Tensor(params.numNegSamples + 2)
+    contexts.setValue(1, word)
     contexts.setValue(1, context)
-    var i = 2
-    while (i <= params.numNegSamples + 1) {
+    var i = 3
+    while (i <= params.numNegSamples + 2) {
+      // Sample a negative context
       val negContext = powerUnigram(math.ceil(RNG.uniform(1, powerSum)).toInt)
       if (context != negContext) {
         contexts.setValue(i, negContext)
@@ -153,7 +159,7 @@ class Word2Vec(params: Word2VecConfig) {
   }
 }
 
-class SentenceToWordIds(
+case class SentenceToWordIds(
   vocab: mutable.HashMap[String, Int],
   maxSentenceLength: Int)
   extends Transformer[Seq[String], Seq[Int]] {
@@ -176,21 +182,17 @@ class SentenceToWordIds(
     })
 }
 
-object SentenceToWordIds {
-  def apply(
-    vocab: mutable.HashMap[String, Int],
-    maxSentenceLength: Int = 1000): SentenceToWordIds =
-    new SentenceToWordIds(vocab, maxSentenceLength)
-}
-
-class WordIdsToMiniBatch(word2Vec: Word2Vec, window: Int)
+case class WordIdsToMiniBatch(word2Vec: Word2Vec, window: Int)
   extends Transformer[Seq[Int], MiniBatch[Float]] {
-  var buffer = MiniBatch
   override def apply(prev: Iterator[Seq[Int]]): Iterator[MiniBatch[Float]] = {
+    val label = Tensor(word2Vec.params.numNegSamples + 1).zero()
+    label.setValue(1, 1)
+
     prev.map(sentence => {
-      sentence.zipWithIndex.map {
+      val inputTable = T()
+      val labelTable = T()
+      sentence.zipWithIndex.foreach {
         case (i, word) =>
-          val a = 0
           val reducedWindow = RNG.uniform(0, window).toInt
           var j = i - reducedWindow
           j = if (j < 0) 0 else j
@@ -198,12 +200,19 @@ class WordIdsToMiniBatch(word2Vec: Word2Vec, window: Int)
           while (j <= i + reducedWindow && j < sentence.length) {
             if (j != i) {
               val context = sentence(j)
-              val contexts = word2Vec.sampleNegativeContext(context)
-
+              val sample = word2Vec.sampleContexts(word, context)
+              inputTable.insert(sample)
+              labelTable.insert(label)
             }
           }
       }
-      new MiniBatch[Float](Tensor(), Tensor())
+
+      val inputTensor =
+        JoinTable(1).updateOutput(inputTable)
+      val labelTensor =
+        JoinTable(1).updateOutput(labelTable)
+
+      MiniBatch(inputTensor, labelTensor)
     })
   }
 }
