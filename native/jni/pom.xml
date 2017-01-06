@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.intel.analytics.bigdl.native</groupId>
-    <artifactId>mkl-java</artifactId>
+    <artifactId>${mkl-java-os-version}</artifactId>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -32,7 +32,7 @@
             <resource>
                 <directory>src/main/resources/intel64</directory>
                 <includes>
-                    <include>libiomp5.so</include>
+                    <include>${iompLib}</include>
                 </includes>
                 <targetPath>${project.build.directory}/classes</targetPath>
             </resource>
@@ -58,10 +58,10 @@
                                     <groupId>com.intel.analytics.bigdl.native</groupId>
                                     <artifactId>bigdl-native</artifactId>
                                     <version>${pom.version}</version>
-                                    <type>so</type>
+                                    <type>${dynamicLibType}</type>
                                     <overWrite>false</overWrite>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
-                                    <destFileName>libjmkl.so</destFileName>
+                                    <destFileName>${destFileName}</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
