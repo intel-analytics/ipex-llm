@@ -18,6 +18,8 @@
 package com.intel.analytics.bigdl.models.rnn
 
 
+import java.io.PrintWriter
+
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch, SampleToBatch}
 import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, LabeledSentenceToSample}
 import com.intel.analytics.bigdl.nn.{LogSoftMax, Module}
@@ -49,8 +51,8 @@ object Test {
       val input = lines.map(x =>
       x.map(t => vocab.getIndex(t).toFloat))
 
-      val sentence_start_index = vocab.getIndex("sentence_start")
-      val sentence_end_index = vocab.getIndex("sentence_end")
+      val sentence_start_index = vocab.getIndex("SENTENCE_START")
+      val sentence_end_index = vocab.getIndex("SENTENCE_END")
 
       var labeledInput = input.map(x =>
         new LabeledSentence[Float](x, x))
@@ -85,9 +87,18 @@ object Test {
       }
 
       val results = labeledInput.map(x => x.data()
-        .map(t => vocab.getWord(t)))
-      results.foreach(x =>
-      logger.info(x.mkString(",")))
+        .map(t => if (t == sentence_start_index ||
+            t == sentence_end_index) {
+          "" } else {
+          vocab.getWord(t)
+        }))
+      val output = results.map(x => {
+        logger.info(x.mkString(" "))
+        x.mkString(" ")
+      })
+      new PrintWriter(param.folder + "/output.txt") {
+        write(output.mkString("\n")); close
+      }
     })
   }
 }

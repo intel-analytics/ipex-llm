@@ -139,10 +139,25 @@ object Utils {
     if (!new File(directory + "/test.txt").exists()) {
       throw new IllegalArgumentException("test file not exists!")
     }
-    val lines = Source.fromFile(directory + "/test.txt")
-      .getLines().map(x => "sentence_start " + x)
-      .map(_.split("\\W+")).toArray
-    lines
+    import edu.stanford.nlp.process.DocumentPreprocessor
+
+    val sentence_start_token = "SENTENCE_START"
+    val sentence_end_token = "SENTENCE_END"
+    val lines = ArrayBuffer[Array[String]]()
+    val dp = new DocumentPreprocessor(directory + "/test.txt")
+    val iterator = dp.iterator()
+    while (iterator.hasNext) {
+      val sentence = iterator.next()
+      val inIter = sentence.iterator()
+      val tokens = ArrayBuffer[String]()
+      tokens.append(sentence_start_token)
+      while (inIter.hasNext) {
+        val token = inIter.next().word()
+        tokens.append(token)
+      }
+      lines.append(tokens.toArray.take(tokens.length - 1))
+    }
+    lines.toArray
   }
 
   class Dictionary()
