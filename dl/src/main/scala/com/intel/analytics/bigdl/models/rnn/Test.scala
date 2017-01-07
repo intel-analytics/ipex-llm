@@ -21,13 +21,11 @@ package com.intel.analytics.bigdl.models.rnn
 import java.io.PrintWriter
 
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch, SampleToBatch}
-import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, LabeledSentenceToSample}
+import com.intel.analytics.bigdl.dataset.text.{Dictionary, LabeledSentence, LabeledSentenceToSample}
 import com.intel.analytics.bigdl.nn.{LogSoftMax, Module}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
-
-import scala.util.Random
 
 object Test {
   Logger.getLogger("org").setLevel(Level.ERROR)
@@ -41,10 +39,8 @@ object Test {
   def main(args: Array[String]): Unit = {
     testParser.parse(args, new TestParams()).map(param => {
 
-      val vocab = new Dictionary(
-        param.folder,
-        param.dictionary,
-        param.discard)
+      val vocab = Dictionary(
+        param.folder)
 
       val model = Module.load[Float](param.modelSnapshot.get)
       Engine.setCoreNumber(param.coreNumber)
@@ -54,8 +50,8 @@ object Test {
       val input = lines.map(x =>
       x.map(t => vocab.getIndex(t).toFloat))
 
-      val sentence_start_index = vocab.getIndex("SENTENCE_START")
-      val sentence_end_index = vocab.getIndex("SENTENCE_END")
+      val sentence_start_index = vocab.getIndex(Sentence.sentenceStart)
+      val sentence_end_index = vocab.getIndex(Sentence.sentenceEnd)
 
       var labeledInput = input.map(x =>
         new LabeledSentence[Float](x, x))
@@ -67,7 +63,7 @@ object Test {
         index += 1
 
         val validationSet = DataSet.array(labeledInput)
-          .transform(LabeledSentenceToSample(vocab.length + 1))
+          .transform(LabeledSentenceToSample(vocab.vocabSize() + 1))
           .transform(SampleToBatch(batchSize = batchSize))
           .asInstanceOf[LocalDataSet[MiniBatch[Float]]]
 
