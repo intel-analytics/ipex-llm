@@ -67,7 +67,7 @@ Example command:
 ##Test the Model
 Example command:
 ```bash
-./dist/bin/bigdl.sh -- java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Test -f /textdirectory --test test.txt --model /modeldirectory/model.iterationNumber --state /modeldirectory/state.iterationNumber -c 4 --words 20
+./scripts/bigdl.sh -- java -cp /folder/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Test -f /textdirectory --test test.txt --model /modeldirectory/model.iterationNumber --state /modeldirectory/state.iterationNumber -c 4 --words 20
 ```
 
 ##Preprocessing
@@ -95,7 +95,7 @@ The model will be trained sentence by sentence. For each epoch, the program will
 
 ##Testing
 The basic idea of testing a language model is to let the model generate sentence automatically. Thus, a test.txt file will be provided by the user. In this file,
-users have to give some trigger words (>= 2 words). Please use period "." token to indicate the end of the trigger words for each sentence.
+users have to give some trigger words (>= 1 words). Please use period "." token to indicate the end of the trigger words for each sentence.
 
 For example, some sample trigger words can be:
 ```
@@ -113,14 +113,14 @@ Then the program will load these trigger words and generate the next serious of 
 
 For example, the expected outputs for these trigger words by the model can be:
 ```
-Long live the .  of the sky .   conversing .   the drained of the quietus .   the scaping of the furrows .   and Clogg of the
- For this relief .  , but what the cause .   the truth of the Cephalenian .   unhappily of the pointing of the stair .   the unload of the
- A man he says .   The outflies of the divan .   shreds of the breeds of the acclaim .   the truth of the leagues .   table-book of the
- Therefore , I have entreated .  ?   The errs of the cap-à-pie of the sky .   The enchased of the bodes of the cock .   The Known 's  ,
- What art thou that .  , and the King of the Weigh .   the truth of the Lycians .   heaven-illumined of the heaven-illumined of the freshness .   the truth
- Welcome , Horatio .   ' t ?  '' and your father 's the King .   unlamented of the cherished of the Successless .   the sentences of the Strew
- I have seen .   And let them to the rest .   rowers of the crest of the meditates .   the thicker of the unbelieving .   and conversing
-```
+ Long live the King exit .   and the dispensed of the Dance .   and shail of the Ambush of the Homeric .   ascribe of the quaintly of
+ For this relief of vengeance , but the King .  Lotophagi of the sky ?   heroine of the councils of the professed .   Five of the boding of
+ A man he says lasts a shadow .  ''  the Nemean of the Iphyclus .   and soothes of the innavigable of the Homeric .   abused of the stirring
+ Therefore , I have entreated .  And let me not to the degeneracy of the Homeric of the Homeric of the Homeric .   Achilleid of the best-authenticated of the Proclaims .
+ What art thou that ?  '' and my heart ?   The Love-dittied of the Boeotia of the cock .   The throwing of the repell of the cock .
+ Welcome , Horatio .  en .  `` To me your father 's daughter and the main .   that 's will , and the undergone of the surcharged of the
+ I have seen to speak .   If !  , and the undisguised of the planets .   and witching of the recruited of the Homeric .   Courage
+ ```
 
 ##Expected Training Output
 Users can see the Loss of the model printed by the program. The Loss, in this case, is the perplexity of the language model. The lower, the better.

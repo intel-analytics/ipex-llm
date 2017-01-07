@@ -161,7 +161,7 @@ object Utils {
     val iter = writePipeLine.toLocal().data(train = false)
 
     iter.next.map(x =>
-      Array(Sentence.sentenceStart) ++ x ++ Array(Sentence.sentenceEnd))
+      Array(Sentence.sentenceStart) ++ x.take(x.length - 1))
   }
 
   class WordTokenizer(
