@@ -23,6 +23,7 @@
             <groupId>com.intel.analytics.bigdl.native</groupId>
             <artifactId>mkl-native</artifactId>
             <version>${project.version}</version>
+            <type>so</type>
         </dependency>
     </dependencies>
 
