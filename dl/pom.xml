@@ -52,13 +52,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.10</artifactId>
+            <artifactId>spark-core_${scala.major.version}</artifactId>
             <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-mllib_2.10</artifactId>
+            <artifactId>spark-mllib_${scala.major.version}</artifactId>
             <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
         </dependency>
@@ -69,7 +69,7 @@
         </dependency>
         <dependency>
             <groupId>org.scalanlp</groupId>
-            <artifactId>breeze_2.10</artifactId>
+            <artifactId>breeze_${scala.major.version}</artifactId>
             <version>0.11.2</version>
             <exclusions>
                 <!-- This is included as a compile-scoped dependency by jtransforms, which is
@@ -87,7 +87,7 @@
 
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.10</artifactId>
+            <artifactId>scalatest_${scala.major.version}</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -97,7 +97,7 @@
         </dependency>
         <dependency>
             <groupId>com.github.scopt</groupId>
-            <artifactId>scopt_2.10</artifactId>
+            <artifactId>scopt_${scala.major.version}</artifactId>
             <version>3.2.0</version>
         </dependency>
         <dependency>

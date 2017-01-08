@@ -16,13 +16,13 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-core_2.10</artifactId>
+            <artifactId>spark-core_${scala.major.version}</artifactId>
             <version>1.5.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-mllib_2.10</artifactId>
+            <artifactId>spark-mllib_${scala.major.version}</artifactId>
             <version>1.5.1</version>
             <scope>provided</scope>
         </dependency>
