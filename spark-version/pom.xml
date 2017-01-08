@@ -12,10 +12,22 @@
     <artifactId>spark-version</artifactId>
     <groupId>com.intel.analytics.bigdl</groupId>
     <packaging>pom</packaging>
-    <modules>
-        <module>1.5-plus</module>
-        <module>2.0</module>
-    </modules>
 
-
+    <profiles>
+        <profile>
+            <id>1.5-plus</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>1.5-plus</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>2.0</id>
+            <modules>
+                <module>2.0</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>
