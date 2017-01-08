@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.embedding
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer}
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Transformer}
 import com.intel.analytics.bigdl.dataset.text.Tokenizer
 import com.intel.analytics.bigdl.models.embedding.Utils.Word2VecConfig
 import com.intel.analytics.bigdl.nn.{Module => _, _}
@@ -141,6 +141,12 @@ class Word2Vec(val params: Word2VecConfig) {
     contexts
   }
 
+  def transformToBatch: Transformer[Seq[String], MiniBatch[Float]] = {
+    (WordsToIds(word2Id, params.maxSentenceLength)
+    -> WordIdsToMiniBatch(params.numNegSamples, params.windowSize))
+  }
+
+
   def fit[S <: Iterable[String]](dataset: RDD[S]): Unit = {
     val words = dataset.flatMap(x => x)
 
@@ -148,11 +154,8 @@ class Word2Vec(val params: Word2VecConfig) {
 
     buildNegSampleDistribution()
 
-//    val sc = dataset.context
 
-    (Tokenizer()
-      -> WordsToIds(word2Id, params.maxSentenceLength)
-      -> WordIdsToMiniBatch(params.numNegSamples, params.windowSize))
+//    val sc = dataset.context
   }
 
   /**

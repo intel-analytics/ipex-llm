@@ -16,11 +16,24 @@
  */
 package com.intel.analytics.bigdl.models.embedding
 
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.text.Tokenizer
+import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet}
+import com.intel.analytics.bigdl.nn.{BCECriterion, Module}
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.optim.{Optimizer, SGD, Trigger}
+import com.intel.analytics.bigdl.utils.{Engine, T}
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 object Train {
   def main(args: Array[String]): Unit = {
+    Logger.getLogger("org").setLevel(Level.ERROR)
+    Logger.getLogger("akka").setLevel(Level.ERROR)
+    Logger.getLogger("breeze").setLevel(Level.ERROR)
+    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
     val params = Utils.parse(args)
 
     val sc = Engine.init(params.nodeNumber, params.coreNumber, params.env == "spark")
@@ -28,6 +41,53 @@ object Train {
         conf.setAppName("BigDL Word2Vec Example")
           .set("spark.task.maxFailures", "1")
         new SparkContext(conf)
-      })
+      }).get
+
+    Engine.setCoreNumber(params.coreNumber)
+
+    val word2Vec = Word2Vec(params)
+
+    val model = if (params.modelSnapshot.isDefined) {
+      Module.load[Float](params.modelSnapshot.get)
+    } else {
+      word2Vec.getModel
+    }
+
+    val state = if (params.stateSnapshot.isDefined) {
+      T.load(params.stateSnapshot.get)
+    } else {
+      T(
+        "learningRate" -> params.learningRate
+      )
+    }
+
+//    val trainSet = (if (sc.isDefined) {
+//      DataSet.array(load(trainData, trainLabel), sc.get)
+//    } else {
+//      DataSet.array(load(trainData, trainLabel))
+//    }) -> word2Vec.transformToBatch
+
+
+    val a = DataSet.rdd(sc.textFile(params.trainDataLocation)) -> Tokenizer()
+
+    word2Vec.fit(
+      a.asInstanceOf[DistributedDataSet[Float]].originRDD().asInstanceOf[RDD[Seq[String]]])
+
+    val trainSet = a -> word2Vec.transformToBatch
+
+    val optimizer = Optimizer(
+      model = model,
+      dataset = trainSet,
+      criterion = BCECriterion[Float]())
+
+    if (params.checkpoint.isDefined) {
+      optimizer.setCheckpoint(params.checkpoint.get, Trigger.everyEpoch)
+    }
+
+    optimizer
+      .setState(state)
+      .setOptimMethod(new SGD())
+      .setEndWhen(Trigger.maxEpoch(params.maxEpoch))
+      .optimize()
   }
 }

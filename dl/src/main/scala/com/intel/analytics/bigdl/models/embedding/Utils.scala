@@ -53,7 +53,10 @@ object Utils {
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
     maxEpoch: Int = 90,
-    env: String = "local"
+    env: String = "local",
+    modelSnapshot: Option[String] = None,
+    stateSnapshot: Option[String] = None,
+    checkpoint: Option[String] = None
   )
 
   def parse(args: Array[String]): Word2VecConfig = new OptionParser[Word2VecConfig]("word2vec") {
