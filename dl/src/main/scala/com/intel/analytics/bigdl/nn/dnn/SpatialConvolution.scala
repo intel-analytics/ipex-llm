@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn.dnn
 
 import com.intel.analytics.bigdl.mkl.{MKL, MklDnnFloat}
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.{Default, InitializationMethod, Xavier}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
@@ -37,12 +38,13 @@ class SpatialConvolution[T: ClassTag](val nInputPlane: Int,
                                       val nGroup: Int = 1,
                                       val propagateBack: Boolean = true,
                                       private var initMethod: InitializationMethod = Default
-                                     )(implicit ev: TensorNumeric[T]) extends MklModule[T] {
+                                     )(implicit ev: TensorNumeric[T])
+  extends TensorModule[T] with MklModuleMethods{
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
-  class ConvRef extends Ref {
+  class ConvRef extends Ref[T] {
     var weight = new MklTensor[T]()
     var bias = new MklTensor[T]()
 
@@ -75,8 +77,8 @@ class SpatialConvolution[T: ClassTag](val nInputPlane: Int,
   private val im2colTime = 0L
   private val col2imTime = 0L
 
-  def getIm2ColTime: Long = im2colTime
-  def getCol2ImgTime: Long = col2imTime
+  def getIm2ColTime: Double = im2colTime
+  def getCol2ImgTime: Double = col2imTime
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
@@ -409,4 +411,20 @@ class SpatialConvolution[T: ClassTag](val nInputPlane: Int,
   override def toString: String = {
     s"mkl.SpatialConvolution($nInputPlane -> $nOutputPlane, $kW x $kH, $dW, $dH, $padW, $padH)"
   }
+
+  override def convertToMklDnn(prevModule: Option[AbstractModule[Activity, Activity, T]] = None)
+  : (ModuleType, AbstractModule[Activity, Activity, T]) =
+    super[MklModuleMethods].convertToMklDnn(prevModule)
+
+  override def setNextModuleType(value: ModuleType): Unit =
+    super[MklModuleMethods].setNextModuleType(value)
+
+  override def setPrevModuleType(value: ModuleType): Unit =
+    super[MklModuleMethods].setPrevModuleType(value)
+
+  override def nextModuleType: ModuleType = super[MklModuleMethods].nextModuleType
+
+  override def prevModuleType: ModuleType = super[MklModuleMethods].prevModuleType
+
+  override def moduleType(): ModuleType = super[MklModuleMethods].moduleType()
 }

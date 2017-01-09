@@ -127,7 +127,7 @@ class Sequential[T: ClassTag]
         prev = module
       }
 
-      // at last we will get the last TensorModule/MklModule in Sequentail
+      // at last we will get the last Tensor/Mkl Modules in Sequentail
       (first, prev)
     } else {
       // if there is no module in Sequential, the head and tail module type is BLAS defaultly.

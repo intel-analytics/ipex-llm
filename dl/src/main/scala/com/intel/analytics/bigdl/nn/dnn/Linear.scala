@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.nn.dnn
 import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.{FloatType, MklTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.nn.{Default, InitializationMethod, Xavier}
@@ -31,9 +32,9 @@ class Linear[T: ClassTag](inputSize: Int,
                           val needCompute: Boolean = true,
                           private var initMethod: InitializationMethod = Default
                          )(implicit ev: TensorNumeric[T])
-    extends MklModule[T] {
+    extends TensorModule[T] with MklModuleMethods {
 
-  class LinearRef extends Ref {
+  class LinearRef extends Ref[T] {
     var weight = new MklTensor[T]()
     var bias = new MklTensor[T]()
 
@@ -309,4 +310,17 @@ class Linear[T: ClassTag](inputSize: Int,
   override def toString: String = {
     s"mkl.Linear($inputSize -> $outputSize)"
   }
+
+  override def convertToMklDnn(prevModule: Option[AbstractModule[Activity, Activity, T]] = None)
+  : (ModuleType, AbstractModule[Activity, Activity, T]) = super.convertToMklDnn(prevModule)
+
+  override def setNextModuleType(value: ModuleType): Unit = super.setNextModuleType(value)
+
+  override def setPrevModuleType(value: ModuleType): Unit = super.setPrevModuleType(value)
+
+  override def nextModuleType: ModuleType = super.nextModuleType
+
+  override def prevModuleType: ModuleType = super.prevModuleType
+
+  override def moduleType(): ModuleType = super.moduleType()
 }

@@ -21,82 +21,10 @@ import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.tensor.{FloatType, MklTensor}
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
-
-abstract class MklModule[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T])
-    extends TensorModule[T] {
-
-  trait Ref {
-    var input = new MklTensor[T]()
-    var output = new MklTensor[T]()
-    var gradOutput = new MklTensor[T]()
-    var gradInput = new MklTensor[T]()
-  }
-
-  trait Primitive {
-    var forward = 0L
-    var backward = 0L
-  }
-
-  var profiling = false
-
-  def execute(resources: Array[Long], primitive: Long): Unit = {
-    ev.getType() match {
-      case FloatType =>
-        val start = System.nanoTime()
-
-        MklDnnFloat.execute(resources, primitive)
-
-        val end = System.nanoTime()
-        if (profiling) {
-          println("Elapsed time of " + getName() + ": " + (end - start) / 1e6)
-        }
-      case _ => throw new UnsupportedOperationException(s"Only Float supported")
-    }
-  }
-
-  private[this] var _isInited: Boolean = false
-  private[this] var _nextModuleType: ModuleType = BLAS
-  private[this] var _prevModuleType: ModuleType = BLAS
-
-  override def convertToMklDnn(prevModule: Option[AbstractModule[Activity, Activity, T]] = None)
-    : (ModuleType, AbstractModule[Activity, Activity, T]) = {
-    prevModule match {
-      case Some(x) => setPrevModuleType(x.moduleType)
-      case _ =>
-    }
-
-    (DNN, this.asInstanceOf[AbstractModule[Activity, Activity, T]])
-  }
-
-  def isInited: Boolean = _isInited
-  def setInit(value: Boolean): Unit = {
-    _isInited = value
-  }
-
-  override def moduleType(): ModuleType = DNN
-
-  override def nextModuleType: ModuleType = _nextModuleType
-  override def setNextModuleType(value: ModuleType): Unit = {
-    value match {
-      case DNN => _nextModuleType = DNN
-      case _ =>
-    }
-  }
-
-  override def prevModuleType: ModuleType = _prevModuleType
-  override def setPrevModuleType(value: ModuleType): Unit = {
-    value match {
-      case DNN => _prevModuleType = DNN
-      case _ =>
-    }
-  }
-
-  implicit def bool2int(b: Boolean): Int = if (b) 1 else 0
-}
 
 /**
  * create a mkl layout description
@@ -115,19 +43,9 @@ class MklLayout(dim: Int, eles: Array[Long]) {
     stride
   }
 
-  val size = eles.clone()
-  val strides = computeStrides(eles)
-  val dimension = dim
-}
-
-class MklPrimitive {
-  private[this] var _primitive: Long = 0L
-
-  def primitive: Long = _primitive
-
-  def setPrimitive(value: Long): Unit = {
-    _primitive = value
-  }
+  val size: Array[Long] = eles.clone()
+  val strides: Array[Long] = computeStrides(eles)
+  val dimension: Int = dim
 }
 
 object ResourceType {
@@ -155,12 +73,12 @@ object Border {
 }
 
 object Error {
-  val E_SUCCESS = 0
-  val E_INCORRECT_INPUT_PARAMETER = -1
-  val E_UNEXPECTED_NULL_POINTER = -2
-  val E_MEMORY_ERROR = -3
-  val E_UNSUPPORTED_DIMENSION = -4
-  val E_UNIMPLEMENTED = -127
+  val E_SUCCESS: Int = 0
+  val E_INCORRECT_INPUT_PARAMETER: Int = -1
+  val E_UNEXPECTED_NULL_POINTER: Int = -2
+  val E_MEMORY_ERROR: Int = -3
+  val E_UNSUPPORTED_DIMENSION: Int = -4
+  val E_UNIMPLEMENTED: Int = -127
 }
 
 object Algorithm {
@@ -176,4 +94,68 @@ object MklDataSize {
   val FLOAT = 4
   val INT = 4
   val DOUBLE = 8
+}
+
+trait MklModuleMethods {
+  class Ref[U: ClassTag](implicit ev: TensorNumeric[U]) {
+    var input = new MklTensor[U]()
+    var output = new MklTensor[U]()
+    var gradOutput = new MklTensor[U]()
+    var gradInput = new MklTensor[U]()
+  }
+
+  class Primitive {
+    var forward = 0L
+    var backward = 0L
+  }
+
+  var profiling = false
+
+  def execute[U: ClassTag](resources: Array[Long], primitive: Long)
+                          (implicit ev: TensorNumeric[U]): Unit = {
+    ev.getType() match {
+      case FloatType =>
+        MklDnnFloat.execute(resources, primitive)
+      case _ => throw new UnsupportedOperationException(s"Only Float supported")
+    }
+  }
+
+  private[this] var _isInited: Boolean = false
+  private[this] var _nextModuleType: ModuleType = BLAS
+  private[this] var _prevModuleType: ModuleType = BLAS
+
+  def convertToMklDnn[U: ClassTag](prevModule: Option[AbstractModule[Activity, Activity, U]] = None)
+  : (ModuleType, AbstractModule[Activity, Activity, U]) = {
+    prevModule match {
+      case Some(x) => setPrevModuleType(x.moduleType)
+      case _ =>
+    }
+
+    (DNN, this.asInstanceOf[AbstractModule[Activity, Activity, U]])
+  }
+
+  def isInited: Boolean = _isInited
+  def setInit(value: Boolean): Unit = {
+    _isInited = value
+  }
+
+  def moduleType(): ModuleType = DNN
+
+  def nextModuleType: ModuleType = _nextModuleType
+  def setNextModuleType(value: ModuleType): Unit = {
+    value match {
+      case DNN => _nextModuleType = DNN
+      case _ =>
+    }
+  }
+
+  def prevModuleType: ModuleType = _prevModuleType
+  def setPrevModuleType(value: ModuleType): Unit = {
+    value match {
+      case DNN => _prevModuleType = DNN
+      case _ =>
+    }
+  }
+
+  implicit def bool2int(b: Boolean): Int = if (b) 1 else 0
 }

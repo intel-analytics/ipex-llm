@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn.dnn
 
 import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.{FloatType, MklTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -29,9 +30,9 @@ class SpatialCrossMapLRN[T: ClassTag](val size: Int = 5,
                                       val alpha: Double = 1.0,
                                       val beta: Double = 0.75,
                                       val k: Double = 1.0)(implicit ev: TensorNumeric[T])
-  extends MklModule[T] {
+  extends TensorModule[T] with MklModuleMethods {
 
-  class LRNRef extends Ref {
+  class LRNRef extends Ref[T] {
     val workspace = new MklTensor[T]()
   }
   class LRNPrimitive extends Primitive {}
@@ -122,6 +123,7 @@ class SpatialCrossMapLRN[T: ClassTag](val size: Int = 5,
     if (this.nextModuleType == DNN) {
       this.output = refs.output
     } else {
+      println("HELLO LRN----")
       refs.output.backToUsr(output)
     }
 
@@ -177,4 +179,19 @@ class SpatialCrossMapLRN[T: ClassTag](val size: Int = 5,
     s"mkl.SpatialCrossMapLRN($size, $alpha, $beta, $k)"
   }
 
+  override def convertToMklDnn(prevModule: Option[AbstractModule[Activity, Activity, T]] = None)
+  : (ModuleType, AbstractModule[Activity, Activity, T]) =
+    super[MklModuleMethods].convertToMklDnn(prevModule)
+
+  override def setNextModuleType(value: ModuleType): Unit =
+    super[MklModuleMethods].setNextModuleType(value)
+
+  override def setPrevModuleType(value: ModuleType): Unit =
+    super[MklModuleMethods].setPrevModuleType(value)
+
+  override def nextModuleType: ModuleType = super[MklModuleMethods].nextModuleType
+
+  override def prevModuleType: ModuleType = super[MklModuleMethods].prevModuleType
+
+  override def moduleType(): ModuleType = super[MklModuleMethods].moduleType()
 }

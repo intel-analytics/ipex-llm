@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn.dnn
 
 import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{FloatType, MklTensor, Tensor}
 
@@ -31,7 +32,7 @@ class Pool[T: ClassTag](val kW: Int,
                         val padW: Int = 0,
                         val padH: Int = 0,
                         val algorithm: Int)(implicit ev: TensorNumeric[T])
-  extends MklModule[T] {
+  extends TensorModule[T] with MklModuleMethods {
   class PoolRef extends Ref {
     val workspace = new MklTensor[T]()
   }
@@ -176,6 +177,22 @@ class Pool[T: ClassTag](val kW: Int,
   override def toString: String = {
     s"mkl.Pooling"
   }
+
+  override def convertToMklDnn(prevModule: Option[AbstractModule[Activity, Activity, T]] = None)
+  : (ModuleType, AbstractModule[Activity, Activity, T]) =
+    super[MklModuleMethods].convertToMklDnn(prevModule)
+
+  override def setNextModuleType(value: ModuleType): Unit =
+    super[MklModuleMethods].setNextModuleType(value)
+
+  override def setPrevModuleType(value: ModuleType): Unit =
+    super[MklModuleMethods].setPrevModuleType(value)
+
+  override def nextModuleType: ModuleType = super[MklModuleMethods].nextModuleType
+
+  override def prevModuleType: ModuleType = super[MklModuleMethods].prevModuleType
+
+  override def moduleType(): ModuleType = super[MklModuleMethods].moduleType()
 }
 
 class SpatialMaxPooling[T: ClassTag](kW: Int,

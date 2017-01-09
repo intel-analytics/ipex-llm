@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.nn.dnn
 import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.{FloatType, MklTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -29,12 +30,12 @@ class BatchNormalization[T: ClassTag](val nOutput: Int,
                                       val eps: Double = 1e-5,
                                       val momentum: Double = 0.1,
                                       val affine: Boolean = true)(implicit ev: TensorNumeric[T])
-  extends MklModule[T] {
+  extends TensorModule[T] with MklModuleMethods {
 
   require(nOutput > 0,
           "To set affine=false call SpatialBatchNormalization(nFeature,  eps, momentum, false)")
 
-  class BNRef extends Ref {
+  class BNRef extends Ref[T] {
     val workspace = new MklTensor[T]()
     val scaleShift = new MklTensor[T]()
   }
@@ -205,6 +206,19 @@ class BatchNormalization[T: ClassTag](val nOutput: Int,
   override def toString: String = {
     s"mkl.BatchNormalization[${ev.getType()}]($nOutput, $eps, $momentum, $affine)"
   }
+
+  override def convertToMklDnn(prevModule: Option[AbstractModule[Activity, Activity, T]] = None)
+  : (ModuleType, AbstractModule[Activity, Activity, T]) = super.convertToMklDnn(prevModule)
+
+  override def setNextModuleType(value: ModuleType): Unit = super.setNextModuleType(value)
+
+  override def setPrevModuleType(value: ModuleType): Unit = super.setPrevModuleType(value)
+
+  override def nextModuleType: ModuleType = super.nextModuleType
+
+  override def prevModuleType: ModuleType = super.prevModuleType
+
+  override def moduleType(): ModuleType = super.moduleType()
 }
 
 class SpatialBatchNormalization[T: ClassTag](nOutput: Int,
