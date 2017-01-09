@@ -17,8 +17,7 @@
 package com.intel.analytics.bigdl.models.embedding
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Transformer}
-import com.intel.analytics.bigdl.dataset.text.Tokenizer
+import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer}
 import com.intel.analytics.bigdl.models.embedding.Utils.Word2VecConfig
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -120,12 +119,17 @@ class Word2Vec(val params: Word2VecConfig) {
    * Sample negative contexts from power unigram distribution,
    * and conbine them with given word and context together as a training sample
    *
+   * @param powerUnigram the power unigram distribution
+   * @param word given word
    * @param context given context
    * @return a one-dimension tensor, whose first elmement is the given word,
    *         second element is the given context, and the rest elements are the
    *         sampled negative contexts.
    */
-  def sampleContexts(word: Int, context: Int): Tensor[Float] = {
+  def sampleContexts(
+    powerUnigram: Array[Int],
+    word: Int,
+    context: Int): Tensor[Float] = {
     val contexts = Tensor(params.numNegSamples + 2)
     contexts.setValue(1, word)
     contexts.setValue(1, context)
@@ -141,9 +145,9 @@ class Word2Vec(val params: Word2VecConfig) {
     contexts
   }
 
-  def transformToBatch: Transformer[Seq[String], MiniBatch[Float]] = {
+  def transformToBatch(): Transformer[Seq[String], MiniBatch[Float]] = {
     (WordsToIds(word2Id, params.maxSentenceLength)
-    -> WordIdsToMiniBatch(params.numNegSamples, params.windowSize))
+    -> WordIdsToMiniBatch(powerUnigram, params.numNegSamples, params.windowSize))
   }
 
 
@@ -153,15 +157,14 @@ class Word2Vec(val params: Word2VecConfig) {
     buildVocab(words)
 
     buildNegSampleDistribution()
-
-
-//    val sc = dataset.context
   }
 
   /**
    * Transform a sequence of words to its corresponding ids, and filter the length
    * of each set of words less than `maxSentenceLength`
    *
+   * @param word2Id A Map from [[String]] of word to the index of the word in dictionary
+   * @param maxSentenceLength The maximum sentence length
    */
   case class WordsToIds(
     word2Id: mutable.HashMap[String, Int],
@@ -190,8 +193,15 @@ class Word2Vec(val params: Word2VecConfig) {
    * Transform sentence represented as word ids to MiniBatch
    * Each sensence is represented as a batch
    *
+   * @param powerUnigram the power unigram distribution
+   * @param numNegSamples Number of negative samples per example.
+   * @param window The number of words to predict to the left
+   *                   and right of the target word.
    */
-  case class WordIdsToMiniBatch(numNegSamples: Int, window: Int)
+  case class WordIdsToMiniBatch(
+    powerUnigram: Array[Int],
+    numNegSamples: Int,
+    window: Int)
     extends Transformer[Seq[Int], MiniBatch[Float]] {
     override def apply(prev: Iterator[Seq[Int]]): Iterator[MiniBatch[Float]] = {
       val label = Tensor(numNegSamples + 1).zero()
@@ -209,7 +219,7 @@ class Word2Vec(val params: Word2VecConfig) {
             while (j <= i + reducedWindow && j < sentence.length) {
               if (j != i) {
                 val context = sentence(j)
-                val sample = sampleContexts(word, context)
+                val sample = sampleContexts(powerUnigram, word, context)
                 inputTable.insert(sample)
                 labelTable.insert(label)
               }

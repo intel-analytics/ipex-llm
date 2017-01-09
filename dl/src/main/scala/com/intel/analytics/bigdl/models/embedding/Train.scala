@@ -17,15 +17,14 @@
 package com.intel.analytics.bigdl.models.embedding
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.text.Tokenizer
-import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet}
 import com.intel.analytics.bigdl.nn.{BCECriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.{Optimizer, SGD, Trigger}
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 
 object Train {
   def main(args: Array[String]): Unit = {
@@ -61,19 +60,11 @@ object Train {
       )
     }
 
-//    val trainSet = (if (sc.isDefined) {
-//      DataSet.array(load(trainData, trainLabel), sc.get)
-//    } else {
-//      DataSet.array(load(trainData, trainLabel))
-//    }) -> word2Vec.transformToBatch
+    val tokens = DataSet.rdd(sc.textFile(params.trainDataLocation)) -> Tokenizer()
 
+    word2Vec.fit(tokens.toDistributed().data(false))
 
-    val a = DataSet.rdd(sc.textFile(params.trainDataLocation)) -> Tokenizer()
-
-    word2Vec.fit(
-      a.asInstanceOf[DistributedDataSet[Float]].originRDD().asInstanceOf[RDD[Seq[String]]])
-
-    val trainSet = a -> word2Vec.transformToBatch
+    val trainSet = tokens -> word2Vec.transformToBatch
 
     val optimizer = Optimizer(
       model = model,
