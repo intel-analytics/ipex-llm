@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.intel.analytics.bigdl.native</groupId>
-    <artifactId>mkl-native</artifactId>
+    <artifactId>bigdl-native</artifactId>
     <packaging>so</packaging>
 
     <build>

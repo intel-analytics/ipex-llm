@@ -21,7 +21,7 @@
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl.native</groupId>
-            <artifactId>mkl-native</artifactId>
+            <artifactId>bigdl-native</artifactId>
             <version>${project.version}</version>
             <type>so</type>
         </dependency>
@@ -56,7 +56,7 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>com.intel.analytics.bigdl.native</groupId>
-                                    <artifactId>mkl-native</artifactId>
+                                    <artifactId>bigdl-native</artifactId>
                                     <version>${pom.version}</version>
                                     <type>so</type>
                                     <overWrite>false</overWrite>
