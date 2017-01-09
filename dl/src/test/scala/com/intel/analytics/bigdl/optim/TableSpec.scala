@@ -81,7 +81,7 @@ class TableSpec extends FlatSpec with Matchers {
         "\t2:  {\n\t   \t   \t1: d\n\t   \t    }\n\t   \t1: b\n\t    }" +
         "\n\t1: 0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   " +
         "[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x3]\n }")
-    } else if(util.Properties.versionNumberString.contains("2.11")) {
+    } else if (util.Properties.versionNumberString.contains("2.11")) {
       state.toString() should be(" {\n\t2:  {\n\t   " +
         "\t2:  {\n\t   \t   \t1: d\n\t   \t    }\n\t   \t1: b\n\t    }" +
         "\n\t1: 0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   " +
