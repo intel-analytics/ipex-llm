@@ -150,7 +150,8 @@ class Word2Vec(val params: Word2VecConfig) {
 
   def transformToBatch(): Transformer[Seq[String], MiniBatch[Float]] = {
     (WordsToIds(word2Id, params.maxSentenceLength)
-    -> WordIdsToMiniBatch(powerUnigram, params.numNegSamples, params.windowSize))
+      -> Subsampling(params.subsample, trainWordsCount, vocab)
+      -> SentenceToMiniBatch(powerUnigram, params.numNegSamples, params.windowSize))
   }
 
   def fit[S <: Iterable[String]](dataset: RDD[S]): Unit = {
@@ -245,6 +246,46 @@ class Word2Vec(val params: Word2VecConfig) {
   }
 
   /**
+   * Subsampling of Frequent Words.
+   * This transformer will use a simple subsampling approach:
+   *    each word w in training set is discarded with a probability computed
+   *    by the formula:
+   *
+   *    P(w_i) = (f(w_i) - t) / f(w_i) - sqrt(t / (f(w_i)))
+   *
+   *    where `t` is the threshold
+   *
+   * @param t threshould
+   * @param trainWordsCount the total number of words in training set
+   * @param vocab vocabulary of the training words
+   */
+  case class Subsampling(
+    t: Double,
+    trainWordsCount: Long,
+    vocab: Array[WordCount])
+    extends Transformer[Seq[Int], Seq[Int]] {
+    val sentence = mutable.ArrayBuilder.make[Int]
+
+    override def apply(prev: Iterator[Seq[Int]]): Iterator[Seq[Int]] =
+      if (t > 0) {
+        prev.map(words => {
+          words.map(word => {
+            val ran = (math.sqrt(vocab(word).count / (t * trainWordsCount)) + 1) *
+              (t * trainWordsCount) / vocab(word).count
+
+            if (ran < RNG.uniform(0, 1)) {
+              -1
+            } else {
+              word
+            }
+          }).filter(_ != -1)
+        })
+      } else {
+        prev
+      }
+  }
+
+  /**
    * Transform sentence represented as word ids to MiniBatch
    * Each sensence is represented as a batch
    *
@@ -253,7 +294,7 @@ class Word2Vec(val params: Word2VecConfig) {
    * @param window The number of words to predict to the left
    *                   and right of the target word.
    */
-  case class WordIdsToMiniBatch(
+  case class SentenceToMiniBatch(
     powerUnigram: Array[Int],
     numNegSamples: Int,
     window: Int)
@@ -280,6 +321,7 @@ class Word2Vec(val params: Word2VecConfig) {
                 inputTable.insert(sample)
                 labelTable.insert(label)
               }
+              j += 1
             }
         }
 

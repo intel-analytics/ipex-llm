@@ -55,7 +55,7 @@ object Utils {
     batchSize: Int = 16,
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
-    maxEpoch: Int = 90,
+    maxEpoch: Int = 15,
     env: String = "local",
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
