@@ -17,11 +17,13 @@
 
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.LogSoftMax
+import com.intel.analytics.bigdl.nn.{GradientChecker, LogSoftMax}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
+import com.intel.analytics.bigdl._
 
 class LogSoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
@@ -56,5 +58,15 @@ class LogSoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
     luaGradInput should be(gradInput)
 
     println("Test case : LogSoft, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "LogSoftMax module" should "be good in gradient check for input" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val layer = new LogSoftMax[Double]()
+    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-4)
+    checker.checkLayer[Double](layer, input, 1e-3) should be(true)
   }
 }

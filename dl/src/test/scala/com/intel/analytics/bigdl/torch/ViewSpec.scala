@@ -17,11 +17,14 @@
 
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.View
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.{GradientChecker, View}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
+import scala.util.Random
 
 class ViewSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
@@ -60,5 +63,15 @@ class ViewSpec extends FlatSpec with BeforeAndAfter with Matchers {
     })
 
     println("Test case : View, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "View module" should "be good in gradient check for input" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val layer = new View[Double](2, 8)
+    val input = Tensor[Double](4, 4).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-4)
+    checker.checkLayer[Double](layer, input, 1e-3) should be(true)
   }
 }

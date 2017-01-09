@@ -18,10 +18,11 @@
 package com.intel.analytics.bigdl.torch
 
 import breeze.numerics.abs
-import com.intel.analytics.bigdl.nn.BatchNormalization
+import com.intel.analytics.bigdl.nn.{BatchNormalization, GradientChecker}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import com.intel.analytics.bigdl._
 
 import scala.util.Random
 
@@ -264,5 +265,25 @@ class BatchNormalizationSpec extends FlatSpec with BeforeAndAfter with Matchers 
     gradInput should be (gradInputTorch)
     gradparametersTorch should be (gradparameters)
 
+  }
+
+  "BatchNormalization module in batch mode" should "be good in gradient check for input" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val sbn = new BatchNormalization[Double](3, 1e-3)
+    val input = Tensor[Double](16, 3).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-4)
+    checker.checkLayer[Double](sbn, input, 1e-3) should be(true)
+  }
+
+  "BatchNormalization module in batch mode" should "be good in gradient check for weight" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val sbn = new BatchNormalization[Double](3, 1e-3)
+    val input = Tensor[Double](16, 3).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-4)
+    checker.checkWeight[Double](sbn, input, 1e-3) should be(true)
   }
 }

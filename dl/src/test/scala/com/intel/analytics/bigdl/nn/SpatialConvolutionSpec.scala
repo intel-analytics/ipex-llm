@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.math._
+import com.intel.analytics.bigdl._
 
 class SpatialConvolutionSpec extends FlatSpec with Matchers {
   "A SpatialConvolution layer" should "generate correct output" in {
@@ -2535,8 +2536,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     layer.reset()
 
     val input = Tensor[Double](2, 1, 5, 5).rand()
-    val checker = new GradientChecker(1e-2, 1e-2)
-    checker.checkLayer(layer, input) should be(true)
+    val checker = new GradientChecker(1e-4, 1e-2)
+    checker.checkLayer[Double](layer, input) should be(true)
 
   }
 }
