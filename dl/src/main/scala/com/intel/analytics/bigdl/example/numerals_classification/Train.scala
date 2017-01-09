@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.numerals_classification
+package com.intel.analytics.bigdl.example.numerals_classification
 
 import java.nio.file.Paths
 

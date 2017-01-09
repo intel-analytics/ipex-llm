@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.numerals_classification
+package com.intel.analytics.bigdl.example.numerals_classification
 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._

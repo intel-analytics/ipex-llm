@@ -14,44 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package com.intel.analytics.bigdl.models.numerals_classification
+package com.intel.analytics.bigdl.example.finetune_flickr_style
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{Top1Accuracy, Validator}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
+import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.spark.SparkContext
 
 object Test {
-  import Utils._
+
+  import Options._
 
   def main(args: Array[String]): Unit = {
-    val batchSize = 10
     testParser.parse(args, new TestParams()).map(param => {
-      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark").map(conf => {
-        conf.setAppName("BigDL classification Test Example")
-          .set("spark.task.maxFailures", "1")
-        new SparkContext(conf)
-      })
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
+        .map(conf => {
+          conf.setAppName("BigDL Flickr Style fine tune Example")
+            .set("spark.task.maxFailures", "1").setMaster("local")
+          new SparkContext(conf)
+        })
+      val imageSize = 227
+      // create dataset
+      val validationData = Paths.get(param.folder, "test")
+      val validateDataSet = FlickrImage.load(validationData, sc, imageSize, param.batchSize)
+      // Create model
+      val model = {
+        Module.load[Float](param.model)
+      }
 
-      val validationData = Paths.get(param.folder, "/test.bin")
-      val validationLabel = Paths.get(param.folder, "/test_label.bin")
-      val validateDataSet = (if (sc.isDefined) {
-        DataSet.array(load(validationData, validationLabel), sc.get)
-      } else {
-        DataSet.array(load(validationData, validationLabel))
-      }).transform(SampleToBatch(param.batchSize, 4))
-
-      val model = Module.load[Float](param.model)
       val validator = Validator(model, validateDataSet)
-      val result = validator.test(Array(new Top1Accuracy[Float]))
+      val result = validator.test(Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
       result.foreach(r => {
         println(s"${r._2} is ${r._1}")
       })
-
     })
   }
 }
