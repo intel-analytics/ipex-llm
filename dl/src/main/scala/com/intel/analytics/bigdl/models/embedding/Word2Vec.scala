@@ -16,6 +16,7 @@
  */
 package com.intel.analytics.bigdl.models.embedding
 
+import breeze.linalg.argsort
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer}
 import com.intel.analytics.bigdl.models.embedding.Utils.Word2VecConfig
@@ -152,7 +153,6 @@ class Word2Vec(val params: Word2VecConfig) {
     -> WordIdsToMiniBatch(powerUnigram, params.numNegSamples, params.windowSize))
   }
 
-
   def fit[S <: Iterable[String]](dataset: RDD[S]): Unit = {
     val words = dataset.flatMap(x => x)
 
@@ -189,6 +189,29 @@ class Word2Vec(val params: Word2VecConfig) {
     }
 
     normMatrix
+  }
+
+  /**
+   * Return the k-nearest words to a word or a vector based on cosine similarity
+   * @param numSimilarWord Output the number of most similar words given a
+   *                       input during prediction1
+   */
+  def getSimilarWords(
+    words: Array[String],
+    numSimilarWord: Int): Array[Array[String]] = {
+    words.map(word => {
+      if (!word2Id.contains(word)) {
+        log.info(s"$word does not exist in vocabulary.")
+        null
+      } else {
+        val vector = wordVectors.weight(word2Id(word))
+        val similarity = Tensor().mv(wordVectors.weight, vector)
+        argsort(similarity.toBreezeVector())
+          .reverse
+          .toArray
+          .map(id => vocab(id).word)
+      }
+    }).filter(_ != null)
   }
 
   /**
