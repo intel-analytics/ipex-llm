@@ -152,8 +152,8 @@ object DistriOptimizer {
             }
             while (b < _subModelNumber) {
               batchBuffer(b) = tensorBatchType match {
-                case true => (batch.data.toTensor[T].narrow (1, b * stackSize + 1, stackSize),
-                  batch.labels.toTensor[T].narrow (1, b * stackSize + 1, stackSize))
+                case true => (batch.data.toTensor.narrow (1, b * stackSize + 1, stackSize),
+                  batch.labels.toTensor.narrow (1, b * stackSize + 1, stackSize))
                 case false =>
                   (NarrowTable(b * stackSize + 1, stackSize).updateOutput(batch.data.toTable),
                   NarrowTable(b * stackSize + 1, stackSize).updateOutput(batch.labels.toTable))
@@ -472,13 +472,11 @@ object DistriOptimizer {
             () => {
               val offset = b * stackSize + math.min(b, extraSize)
               val length = stackSize + (if (b < extraSize) 1 else 0)
-              val input = tensorBatchType match {
-                case true => batch.data.toTensor[T].narrow(1, offset + 1, length)
-                case false => NarrowTable[T](offset + 1, length).updateOutput(batch.data.toTable)
-              }
-              val target = tensorBatchType match {
-                case true => batch.labels.toTensor[T].narrow(1, offset + 1, length)
-                case false => NarrowTable(offset + 1, length).updateOutput(batch.labels.toTable)
+              val (input, target) = tensorBatchType match {
+                case true => (batch.data.toTensor[T].narrow(1, offset + 1, length),
+                  batch.labels.toTensor[T].narrow(1, offset + 1, length))
+                case false => (NarrowTable[T](offset + 1, length).updateOutput(batch.data.toTable),
+                  NarrowTable(offset + 1, length).updateOutput(batch.labels.toTable))
               }
               val output = workingModels(b).forward(input)
               vMethods.map(validation => {
