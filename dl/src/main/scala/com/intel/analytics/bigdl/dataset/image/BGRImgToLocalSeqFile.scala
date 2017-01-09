@@ -28,8 +28,8 @@ import org.apache.hadoop.io.{SequenceFile, Text}
 import scala.collection.Iterator
 
 object BGRImgToLocalSeqFile {
-  def apply(blockSize: Int, baseFileName: Path): BGRImgToLocalSeqFile = {
-    new BGRImgToLocalSeqFile(blockSize, baseFileName)
+  def apply(blockSize: Int, baseFileName: Path, hasName: Boolean = false): BGRImgToLocalSeqFile = {
+    new BGRImgToLocalSeqFile(blockSize, baseFileName, hasName)
   }
 }
 
@@ -38,13 +38,13 @@ object BGRImgToLocalSeqFile {
  * @param blockSize how many images each sequence file contains
  * @param baseFileName file name, the real generated sequence file will have a No. suffix
  */
-class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path) extends
-  Transformer[LabeledBGRImage, String] {
+class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path, hasName: Boolean = false) extends
+  Transformer[(LabeledBGRImage, String), String] {
   private val conf: Configuration = new Configuration
   private var index = 0
   private val preBuffer: ByteBuffer = ByteBuffer.allocate(4 * 2)
 
-  override def apply(prev: Iterator[LabeledBGRImage]): Iterator[String] = {
+  override def apply(prev: Iterator[(LabeledBGRImage, String)]): Iterator[String] = {
     new Iterator[String] {
       override def hasNext: Boolean = prev.hasNext
 
@@ -56,7 +56,8 @@ class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path) extends
           SequenceFile.Writer.valueClass(classOf[Text]))
         var i = 0
         while (i < blockSize && prev.hasNext) {
-          val image = prev.next()
+          val (image, imageName) = prev.next()
+
           preBuffer.putInt(image.width())
           preBuffer.putInt(image.height())
           val imageByteData = image.convertToByte()
@@ -64,7 +65,8 @@ class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path) extends
           System.arraycopy(preBuffer.array, 0, data, 0, preBuffer.capacity)
           System.arraycopy(imageByteData, 0, data, preBuffer.capacity, imageByteData.length)
           preBuffer.clear
-          val imageKey = s"${image.label().toInt}"
+          val imageKey = if (hasName) s"${imageName}\n${image.label().toInt}"
+            else s"${image.label().toInt}"
           writer.append(new Text(imageKey), new Text(data))
           i += 1
         }
@@ -75,3 +77,4 @@ class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path) extends
     }
   }
 }
+

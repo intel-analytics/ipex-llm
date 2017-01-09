@@ -194,7 +194,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     // Convert the test imagenet files to seq files
     val files = (DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
-      -> LocalImgReader(BGRImage.NO_SCALE)
+      -> LocalImgReaderWithName(BGRImage.NO_SCALE)
       -> BGRImgToLocalSeqFile(2, Paths.get(tmpFile.getAbsolutePath(), "imagenet"))
       ).toLocal().data(train = false).map(s => {
       println(s);

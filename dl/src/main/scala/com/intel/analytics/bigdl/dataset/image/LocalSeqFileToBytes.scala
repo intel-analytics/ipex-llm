@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
+import com.intel.analytics.bigdl.dataset.DataSet.SeqFileFolder
 import com.intel.analytics.bigdl.dataset.{ByteRecord, LocalSeqFilePath, Transformer}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.SequenceFile.Reader
@@ -73,7 +74,7 @@ class LocalSeqFileToBytes extends Transformer[LocalSeqFilePath, ByteRecord] {
           reader.next(key, value)
         }
 
-        ByteRecord(value.copyBytes(), key.toString.toFloat)
+        ByteRecord(value.copyBytes(), SeqFileFolder.readLabel(key).toFloat)
       }
 
       override def hasNext: Boolean = {
@@ -83,7 +84,8 @@ class LocalSeqFileToBytes extends Transformer[LocalSeqFilePath, ByteRecord] {
           prev.hasNext
         } else {
           if (reader.next(key, value)) {
-            oneRecordBuffer = ByteRecord(value.copyBytes(), key.toString.toFloat)
+            oneRecordBuffer = ByteRecord(value.copyBytes(),
+              SeqFileFolder.readLabel(key).toFloat)
             return true
           } else {
             prev.hasNext

@@ -20,6 +20,17 @@ To start with this example, you need prepare your model and dataset.
     tar -xvf ILSVRC2012_img_val.tar -C ./predict/
     ```
   
+  
+     <code>Note: </code>For large dataset, you may want to read image data from HDFS.This command will transform the images into hadoop sequence files:
+
+     ```bash
+     mkdir -p val/images
+     mv predict/* val/images/
+     java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f ./ --validationOnly --hasName
+     mv val/*.seq predict/
+    ```
+
+  
 ## Run this example
 
 Command to run the example in Spark local mode:
@@ -27,7 +38,7 @@ Command to run the example in Spark local mode:
 ```
     ./bigdl.sh 
     spark-submit --master local[*] --driver-memory 10g --executor-memory 20g --class com.intel.analytics.bigdl.example.imageclassification.ImagePredictor bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar 
-        --modelPath ./resnet-18.t7 --folder ./predict --modelType torch -c 4 -n 1 --batchSize 32
+        --modelPath ./resnet-18.t7 --folder ./predict --modelType torch -c 4 -n 1 --batchSize 32 --isHdfs false
 ```
 
 
@@ -37,7 +48,7 @@ Command to run the example in Spark cluster mode:
     MASTER=xxx.xxx.xxx.xxx:xxxx
     ./bigdl.sh 
     spark-submit --master ${MASTER} --driver-memory 10g --executor-memory 20g --class com.intel.analytics.bigdl.example.imageclassification.ImagePredictor bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar 
-    --modelPath ./resnet-18.t7 --folder ./predict --modelType torch -c 8 -n 4 --batchSize 32
+    --modelPath ./resnet-18.t7 --folder ./predict --modelType torch -c 8 -n 4 --batchSize 32 --isHdfs false
 ```
 
 where 
@@ -49,3 +60,4 @@ where
 * ```-c``` is the number of physical cores on each executor.
 * ```--showNum``` is the result number to show, default 100.
 * ```--batchSize``` is the batch size to use when do the prediction, default 32.
+* ```--isHdfs``` is the type of predict data. "true" means reading sequence file from hdfs, "false" means reading local images, default "false". 
