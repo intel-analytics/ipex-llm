@@ -22,12 +22,12 @@ import java.io._
 import com.intel.analytics.bigdl.dataset.text.LabeledSentence
 
 import scala.util.Random
+import org.apache.log4j.Logger
 
 object Utils {
   case class TrainParams(
     folder: String =
       "./",
-    cache: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
     checkpoint: Option[String] = None,
@@ -52,10 +52,6 @@ object Utils {
     opt[String]("state")
       .text("state snapshot location")
       .action((x, c) => c.copy(stateSnapshot = Some(x)))
-
-    opt[String]("cache")
-      .text("where to cache the model")
-      .action((x, c) => c.copy(cache = Some(x)))
 
     opt[String]("checkpoint")
       .text("where to cache the model and state")
@@ -99,6 +95,115 @@ object Utils {
       .required()
   }
 
+  case class TestParams(
+     folder: String = "./",
+     modelSnapshot: Option[String] = None,
+     stateSnapshot: Option[String] = None,
+     numOfWords: Option[Int] = None,
+     coreNumber: Int = -1)
+
+  val testParser = new OptionParser[TestParams]("BigDL rnn Test Example") {
+    opt[String]('f', "folder")
+      .text("where you put the text data")
+      .action((x, c) => c.copy(folder = x))
+
+    opt[String]("model")
+      .text("model snapshot location")
+      .action((x, c) => c.copy(modelSnapshot = Some(x)))
+      .required()
+
+    opt[String]("state")
+      .text("state snapshot location")
+      .action((x, c) => c.copy(stateSnapshot = Some(x)))
+      .required()
+
+    opt[Int]("words")
+      .text("number of words to write")
+      .action((x, c) => c.copy(numOfWords = Some(x)))
+      .required()
+
+    opt[Int]('c', "core")
+      .text("cores number on each node")
+      .action((x, c) => c.copy(coreNumber = x))
+      .required()
+  }
+
+
+  private[bigdl] def readSentence(directory: String)
+  : Array[Array[String]] = {
+
+    import scala.io.Source
+    if (!new File(directory + "/test.txt").exists()) {
+      throw new IllegalArgumentException("test file not exists!")
+    }
+    val lines = Source.fromFile(directory + "/test.txt")
+      .getLines().map(_.split("\\W+")).toArray
+    lines
+  }
+
+  class Dictionary()
+  extends Serializable {
+
+    private var vocab2index: Map[String, Int] = null
+    private var index2vocab: Map[Int, String] = null
+    private var vocabLength: Int = 0
+    private var discard: Array[String] = null
+    private var discardLength: Int = 0
+
+    val logger = Logger.getLogger(getClass)
+
+    def this(directory: String) = {
+      this()
+
+      if (!new File(directory + "/dictionary.txt").exists()) {
+        throw new IllegalArgumentException("dictionary file not exists!")
+      }
+      if (!new File(directory + "/discard.txt").exists()) {
+        throw new IllegalArgumentException("discard file not exists!")
+      }
+
+      import scala.io.Source
+      vocab2index = Source.fromFile(directory + "/dictionary.txt")
+        .getLines.map(_.stripLineEnd.split("->", -1))
+        .map(fields => fields(0).stripSuffix(" ") -> fields(1).stripPrefix(" ").toInt)
+        .toMap[String, Int]
+      index2vocab = vocab2index.map(x => (x._2, x._1))
+      vocabLength = vocab2index.size
+      discard = Source.fromFile(directory + "/discard.txt")
+        .getLines().toArray
+      discardLength = discard.length
+    }
+
+    def getIndex(word: String): Int = {
+      vocab2index.getOrElse(word, vocabLength)
+    }
+
+    def getWord(index: Float): String = {
+      getWord(index.toInt)
+    }
+
+    def getWord(index: Double): String = {
+      getWord(index.toInt)
+    }
+
+    def getWord(index: Int): String = {
+      index2vocab.getOrElse(index,
+        discard(Random.nextInt(discardLength)))
+    }
+
+    def length(): Int = vocabLength
+
+    def print(): Unit = {
+      vocab2index.foreach(x =>
+        logger.info(x._1 + " -> " + x._2))
+    }
+
+    def printDiscard(): Unit = {
+      discard.foreach(x =>
+        logger.info(x))
+    }
+  }
+
   class WordTokenizer(
     inputFile: String,
     saveDirectory: String,
@@ -125,15 +230,22 @@ object Utils {
           }.toSeq.sortBy(_._2)
 
         // Select most common words
-        val length = math.min(dictionaryLength, freqDict.length)
+        val length = math.min(dictionaryLength - 1, freqDict.length)
         val vocabDict = freqDict.drop(freqDict.length - length).map(_._1)
         val vocabSize = vocabDict.length
         val word2index = vocabDict.zipWithIndex.toMap
+        val discardDict = freqDict.take(freqDict.length - length).map(_._1)
 
         // save dictionary
         new PrintWriter(saveDirectory + "/dictionary.txt") {
           write(word2index.mkString("\n")); close
         }
+
+        // save discard dictionary
+        new PrintWriter(saveDirectory + "/discard.txt") {
+          write(discardDict.mkString("\n")); close
+        }
+
         // Convert the string texts to integer arrays
         val mappedDF = sentences.map(x => x.split("\\W+")
           .map(word => word2index.getOrElse(word, vocabSize)))
@@ -146,7 +258,7 @@ object Utils {
     }
   }
 
-  private[bigdl] def readSentence(filedirect: String, dictionarySize: Int)
+  private[bigdl] def loadInData(filedirect: String, dictionarySize: Int)
   : (Array[LabeledSentence[Float]], Array[LabeledSentence[Float]],
     Int, Int) = {
 

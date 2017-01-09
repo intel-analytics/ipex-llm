@@ -89,7 +89,7 @@ object DLClassifier{
     val modelBroadCast = dataset.sqlContext.sparkContext.broadcast(model)
 
     val predictRdd = dataset.rdd.mapPartitions{ rows =>
-      val localModel = modelBroadCast.value
+      val localModel = modelBroadCast.value.cloneModule()
       val tensorBuffer = Tensor[T](batchSize)
       val batches = rows.grouped(batchSize(0))
 

@@ -43,12 +43,12 @@ object Train {
       val wt = new WordTokenizer(
         param.folder + "/input.txt",
         param.folder,
-        dictionaryLength = dictionaryLength-1
+        dictionaryLength = dictionaryLength
       )
       wt.process()
 
       logger.info("loading the training and testing data ..")
-      val dataArray = readSentence(param.folder, dictionaryLength)
+      val dataArray = loadInData(param.folder, dictionaryLength)
       val trainData = dataArray._1
       val valData = dataArray._2
       val trainMaxLength = dataArray._3
@@ -84,11 +84,15 @@ object Train {
           "dampening" -> param.dampening)
       }
 
+      Engine.init(1, param.coreNumber, false)
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
         criterion = new CrossEntropyCriterion[Float](squeezeFlag = true)
       )
+      if (param.checkpoint.isDefined) {
+        optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
+      }
 
       optimizer
         .setValidation(Trigger.everyEpoch, validationSet, Array(new Loss[Float]))
