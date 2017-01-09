@@ -17,11 +17,14 @@
 
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.SpatialAveragePooling
+import com.intel.analytics.bigdl.nn.{GradientChecker, SpatialAveragePooling}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
+import scala.util.Random
+import com.intel.analytics.bigdl._
 
 class SpatialAveragePoolingSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
@@ -78,4 +81,15 @@ class SpatialAveragePoolingSpec extends FlatSpec with BeforeAndAfter with Matche
     println("Test case : SpatialAveragePooling, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
   }
+
+  "A SpatialAveragePooling" should "be good in gradient checker for input" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val layer = new SpatialAveragePooling[Double](3, 2, 2, 1)
+    val input = Tensor[Double](1, 4, 3).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-4)
+    checker.checkLayer[Double](layer, input, 1e-3) should be(true)
+  }
+
 }

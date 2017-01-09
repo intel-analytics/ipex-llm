@@ -17,11 +17,14 @@
 
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.ReLU
+import com.intel.analytics.bigdl.nn.{GradientChecker, ReLU}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
+import scala.util.Random
+import com.intel.analytics.bigdl._
 
 class ReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
@@ -78,4 +81,13 @@ class ReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
     println("Test case : ReLU, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
+  "ReLU module" should "be good in gradient check for input" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val layer = new ReLU[Double]()
+    val input = Tensor[Double](2, 2, 2).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-4)
+    checker.checkLayer[Double](layer, input, 1e-3) should be(true)
+  }
 }

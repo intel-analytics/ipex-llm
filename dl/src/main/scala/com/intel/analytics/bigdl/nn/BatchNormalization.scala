@@ -23,9 +23,7 @@ import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
-import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 3181824540272906068L)
@@ -51,7 +49,12 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   val gradBias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
 
   @transient
-  private var results: Array[Future[_]] = null
+  private var results : Array[Future[_]] = null
+  @transient
+  // BatchNormalization has internal parameters (saveMean, saveStd)
+  // that changes at every forward, so a standard gradcheck won't work with this module.
+  // if you want to do a gradcheck, you will need to fix those variables, otherwise not fix.
+  private var needFix: Boolean = false
 
   reset()
 
@@ -67,6 +70,13 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     runningMean.zero()
     runningVar.fill(ev.fromType[Int](1))
     zeroGradParameters()
+  }
+
+  @inline
+  // to fix internal parameters (saveMean, saveStd)
+  def setInit(status: Boolean = true): this.type = {
+    needFix = status
+    this
   }
 
   @inline
@@ -178,6 +188,12 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
           invstd = 1 / Math.sqrt(ev.toType[Double](runningVar.valueAt(_f)) + eps)
         }
 
+        if (needFix) {
+          mean = 0
+          invstd = 0.0001
+          saveMean.zero().fill(ev.fromType(mean))
+          saveStd.zero().fill(ev.fromType(invstd))
+        }
         val w = if (null != weight) ev.toType[Double](weight.valueAt(_f)) else 1.0
         val b = if (null != bias) ev.toType[Double](bias.valueAt(_f)) else 0.0
 
@@ -240,6 +256,13 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
         } else {
           mean = ev.toType[Float](runningMean.valueAt(_f))
           invstd = 1 / Math.sqrt(ev.toType[Double](runningVar.valueAt(_f)) + eps).toFloat
+        }
+
+        if (needFix) {
+          mean = 0
+          invstd = 0.0001f
+          saveMean.zero().fill(ev.fromType(mean))
+          saveStd.zero().fill(ev.fromType(invstd))
         }
 
         val w = if (null != weight) ev.toType[Float](weight.valueAt(_f)) else 1.0f

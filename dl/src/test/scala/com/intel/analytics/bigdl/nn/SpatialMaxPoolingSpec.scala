@@ -359,7 +359,7 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     RandomGenerator.RNG.setSeed(1000)
     val module = new SpatialMaxPooling[Float](2, 2)
     val input = Tensor[Float](1, 3, 3).rand()
-    val checker = new GradientChecker(1e-2, 1e-2)
+    val checker = new GradientChecker(1e-4, 1e-2)
     checker.checkLayer[Float](module, input) should be(true)
   }
 }

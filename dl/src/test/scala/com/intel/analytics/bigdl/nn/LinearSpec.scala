@@ -21,6 +21,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.math._
+import com.intel.analytics.bigdl._
 
 class LinearSpec extends FlatSpec with Matchers {
   "Linear module" should "converate to correct weight and bias" in {
@@ -129,7 +130,7 @@ class LinearSpec extends FlatSpec with Matchers {
     linear.reset()
     val input = Tensor[Double](3, 5).rand()
 
-    val checker = new GradientChecker(1e-2, 1e-2)
-    checker.checkLayer(linear, input) should be(true)
+    val checker = new GradientChecker(1e-4, 1e-2)
+    checker.checkLayer[Double](linear, input) should be(true)
   }
 }

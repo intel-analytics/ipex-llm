@@ -17,10 +17,13 @@
 
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.SpatialCrossMapLRN
+import com.intel.analytics.bigdl.nn.{GradientChecker, SpatialCrossMapLRN}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import com.intel.analytics.bigdl._
+
+import scala.util.Random
 
 class SpatialCrossMapLRNSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
@@ -107,5 +110,16 @@ class SpatialCrossMapLRNSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val luaOutput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
     output should be equals luaOutput
+  }
+
+  "SpatialCrossMapLRN module" should "be good in gradient check for input" in {
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val layer = new SpatialCrossMapLRN[Double](5, 1.0, 0.75, 1.0)
+    val input = Tensor[Double](4, 8, 32, 32).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-3)
+    checker.checkLayer[Double](layer, input, 1e-3) should be(true)
   }
 }
