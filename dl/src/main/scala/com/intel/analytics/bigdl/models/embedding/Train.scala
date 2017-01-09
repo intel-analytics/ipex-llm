@@ -80,5 +80,7 @@ object Train {
       .setOptimMethod(new SGD())
       .setEndWhen(Trigger.maxEpoch(params.maxEpoch))
       .optimize()
+
+    word2Vec.wordVectors.weigh
   }
 }

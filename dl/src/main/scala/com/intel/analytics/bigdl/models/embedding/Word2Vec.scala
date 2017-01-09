@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.rdd.RDD
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.{mutable, _}
 
@@ -49,6 +50,7 @@ class Word2Vec(val params: Word2VecConfig) {
   @transient private var word2Id = mutable.HashMap.empty[String, Int]
   @transient private var powerUnigram: Array[Int] = _
   var wordVectors = LookupTable(vocabSize, params.embeddingSize)
+  val log: Logger = LoggerFactory.getLogger(this.getClass)
 
   def getModel: Module[Float] = {
     new Sequential()
@@ -160,6 +162,36 @@ class Word2Vec(val params: Word2VecConfig) {
   }
 
   /**
+   * Normalize the each word vector
+   */
+  def normalizeWordVectors(): Unit =
+    wordVectors.weight.set(normalizeMatrix(wordVectors.weight))
+
+  /**
+   * Normalize rows of a matrix
+   *
+   * @param matrix given matrix
+   * @return nomalized matrix
+   */
+  def normalizeMatrix(matrix: Tensor[Float]): Tensor[Float] = {
+    val size = matrix.size()
+    val normMatrix = Tensor(size).zero()
+
+    var i = 1
+    while (i < size(0)) {
+      val norm = matrix.apply(i).norm(1)
+      var j = 1
+      while (j < size(1)) {
+        normMatrix.setValue(i, j, matrix(Array(i, j)) / norm)
+        j += 1
+      }
+      i += 1
+    }
+
+    normMatrix
+  }
+
+  /**
    * Transform a sequence of words to its corresponding ids, and filter the length
    * of each set of words less than `maxSentenceLength`
    *
@@ -203,6 +235,8 @@ class Word2Vec(val params: Word2VecConfig) {
     numNegSamples: Int,
     window: Int)
     extends Transformer[Seq[Int], MiniBatch[Float]] {
+    val joinTable = JoinTable(1)
+
     override def apply(prev: Iterator[Seq[Int]]): Iterator[MiniBatch[Float]] = {
       val label = Tensor(numNegSamples + 1).zero()
       label.setValue(1, 1)
@@ -227,9 +261,9 @@ class Word2Vec(val params: Word2VecConfig) {
         }
 
         val inputTensor =
-          JoinTable(1).updateOutput(inputTable)
+          joinTable.updateOutput(inputTable)
         val labelTensor =
-          JoinTable(1).updateOutput(labelTable)
+          joinTable.updateOutput(labelTable)
 
         MiniBatch(inputTensor, labelTensor)
       })

@@ -22,9 +22,9 @@ object Utils {
   /**
    * Options used by our word2vec model.
    *
-   * @param saveLocation
-   * @param trainDataLocation
-   * @param testDataLocation
+   * @param saveLocation Save the model to the location
+   * @param trainDataLocation The location of Training data
+   * @param testDataLocation The location of test data
    * @param numNegSamples Number of negative samples per example.
    * @param embeddingSize Embedding dimension.
    * @param windowSize The number of words to predict to the left
@@ -34,6 +34,8 @@ object Utils {
    * @param subsample Sub-sampling threshold for word occurrence.
    * @param alpha Negative sampling unigram distribution raised to alpha power
    * @param maxSentenceLength The maximum sentence length
+   * @param numSimilarWord Output the number of most similar words given a
+   *                       input during prediction
    * @param learningRate
    * @param batchSize
    */
@@ -48,6 +50,7 @@ object Utils {
     subsample: Double = 1e-3,
     alpha: Double = 0.75,
     maxSentenceLength: Int = 1000,
+    numSimilarWord: Int = 5,
     learningRate: Double = 1e-3,
     batchSize: Int = 16,
     coreNumber: Int = -1,
