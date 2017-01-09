@@ -24,7 +24,7 @@
             </modules>
         </profile>
         <profile>
-            <id>2.0</id>
+            <id>spark_2.0</id>
             <modules>
                 <module>2.0</module>
             </modules>
