@@ -19,6 +19,8 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, DataSet => DataSource}
+import com.intel.analytics.bigdl.nn.NarrowTable
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -126,18 +128,36 @@ object DistriOptimizer {
           val cached = modelIter.next()
           val syWStart = System.nanoTime()
           val weightsResult = parameters.getWeights(cached.modelWeights.head)
-          val tensorBuffer = new Array[(Tensor[T], Tensor[T])](_subModelNumber)
+          val batchBuffer = new Array[(Activity, Activity)](_subModelNumber)
           tasks += Engine.default.invoke(() => {
             val batch = data.next()
             var b = 0
-            require(batch.data.size(1) == batch.labels.size(1),
-              "data and label batch size not match")
-            require(batch.data.size(1) >= _subModelNumber,
-              "total batch size should be divided by total core number")
-            val stackSize = batch.data.size(1) / _subModelNumber
+            val tensorBatchType = batch.data match {
+              case tensor: Tensor[T] =>
+                require(batch.data.toTensor[T].size(1) == batch.labels.toTensor[T].size(1),
+                  "data and label batch size not match")
+                require(batch.data.toTensor[T].size(1) >= _subModelNumber,
+                  "total batch size should be divided by total core number")
+                true
+              case table: Table =>
+                require(batch.data.toTable.length == batch.labels.toTable.length,
+                  "data and label batch size not match")
+                require(batch.data.toTable.length >= _subModelNumber,
+                  "total batch size should be divided by total core number")
+                false
+            }
+            val stackSize = tensorBatchType match {
+              case true => batch.data.toTensor[T].size(1) / _subModelNumber
+              case false => batch.data.toTable.length / _subModelNumber
+            }
             while (b < _subModelNumber) {
-              tensorBuffer(b) = (batch.data.narrow(1, b * stackSize + 1, stackSize),
-                batch.labels.narrow(1, b * stackSize + 1, stackSize))
+              batchBuffer(b) = tensorBatchType match {
+                case true => (batch.data.toTensor[T].narrow (1, b * stackSize + 1, stackSize),
+                  batch.labels.toTensor[T].narrow (1, b * stackSize + 1, stackSize))
+                case false =>
+                  (NarrowTable(b * stackSize + 1, stackSize).updateOutput(batch.data.toTable),
+                  NarrowTable(b * stackSize + 1, stackSize).updateOutput(batch.labels.toTable))
+              }
               b += 1
             }
           })
@@ -160,7 +180,7 @@ object DistriOptimizer {
               val localModel = cached.localModels(i)
               localModel.training()
               val localCriterion = cached.localCriterions(i)
-              val (input, target) = tensorBuffer(i)
+              val (input, target) = batchBuffer(i)
               val output = localModel.forward(input)
               lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
               val errors = localCriterion.backward(output, target)
@@ -174,7 +194,10 @@ object DistriOptimizer {
           driverMetrics.add("computing time for each node", computingTime)
 
           val finishedThreads = trainingThreads.filter(!_.isCancelled).map(_.get())
-          recordsNum += finishedThreads.size * tensorBuffer.head._2.size(1)
+          recordsNum += finishedThreads.size * (batchBuffer.head._2 match {
+            case tensor: Tensor[T] => tensor.size(1)
+            case table: Table => table.length
+          })
           var i = 0
           while (i < finishedThreads.size) {
             lossSum += lossArray(finishedThreads(i))
@@ -402,7 +425,7 @@ object DistriOptimizer {
   }
 
 
-  private def validate[T](
+  private def validate[T: ClassTag](
     validationTrigger: Option[Trigger],
     validationDataSet: Option[DataSet[MiniBatch[T]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
@@ -410,7 +433,7 @@ object DistriOptimizer {
     models: RDD[Cache[T]],
     wallClockTime: Long,
     state: Table
-  ): Unit = {
+  )(implicit ev: TensorNumeric[T]): Unit = {
     if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
       return
     }
@@ -429,17 +452,34 @@ object DistriOptimizer {
       val workingModels = modelIter.next().localModels
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
-        require(batch.data.size(1) == batch.labels.size(1))
-        val stackSize = batch.data.size(1) / _subModelNumber
-        val extraSize = batch.data.size(1) % _subModelNumber
+        val tensorBatchType = batch.data match {
+          case tensor: Tensor[T] =>
+            require(batch.data.toTensor[T].size(1) == batch.labels.toTensor[T].size(1))
+            true
+          case table: Table =>
+            require(batch.data.toTable.length == batch.labels.toTable.length)
+            false
+        }
+        val (stackSize, extraSize) = tensorBatchType match {
+          case true => (batch.data.toTensor[T].size(1) / _subModelNumber,
+            batch.data.toTensor[T].size(1) % _subModelNumber)
+          case false => (batch.data.toTable.length / _subModelNumber,
+            batch.data.toTable.length % _subModelNumber)
+        }
         val parallelism = if (stackSize == 0) extraSize else _subModelNumber
         Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
               val offset = b * stackSize + math.min(b, extraSize)
               val length = stackSize + (if (b < extraSize) 1 else 0)
-              val input = batch.data.narrow(1, offset + 1, length)
-              val target = batch.labels.narrow(1, offset + 1, length)
+              val input = tensorBatchType match {
+                case true => batch.data.toTensor[T].narrow(1, offset + 1, length)
+                case false => NarrowTable[T](offset + 1, length).updateOutput(batch.data.toTable)
+              }
+              val target = tensorBatchType match {
+                case true => batch.labels.toTensor[T].narrow(1, offset + 1, length)
+                case false => NarrowTable(offset + 1, length).updateOutput(batch.labels.toTable)
+              }
               val output = workingModels(b).forward(input)
               vMethods.map(validation => {
                 validation(output, target)

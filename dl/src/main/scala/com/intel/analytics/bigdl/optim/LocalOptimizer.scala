@@ -17,8 +17,10 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.NarrowTable
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -91,16 +93,31 @@ class LocalOptimizer[T: ClassTag] private[optim](
       // Fetch data and prepare tensors
       val batch = iter.next()
       var b = 0
-      require(batch.data.size(1) == batch.labels.size(1))
-      val stackSize = batch.data.size(1) / subModelNumber
-      val extraSize = batch.data.size(1) % subModelNumber
+      val tensorBatchType = batch.data match {
+        case tensor: Tensor[T] =>
+          require(batch.data.toTensor[T].size(1) == batch.labels.toTensor[T].size(1))
+          true
+        case table: Table =>
+          require(batch.data.toTable.length == batch.labels.toTable.length)
+          false
+      }
+      val (stackSize, extraSize) = tensorBatchType match {
+        case true => (batch.data.toTensor[T].size(1) / subModelNumber,
+          batch.data.toTensor[T].size(1) % subModelNumber)
+        case false => (batch.data.toTable.length / subModelNumber,
+          batch.data.toTable.length % subModelNumber)
+      }
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
-      val tensorBuffer = new Array[(Tensor[T], Tensor[T])](parallelism)
+      val batchBuffer = new Array[(Activity, Activity)](parallelism)
       while (b < parallelism) {
         val offset = b * stackSize + math.min(b, extraSize)
         val length = stackSize + (if (b < extraSize) 1 else 0)
-        tensorBuffer(b) = (batch.data.narrow(1, offset + 1, length),
-          batch.labels.narrow(1, offset + 1, length))
+        batchBuffer(b) = tensorBatchType match {
+          case true => (batch.data.toTensor[T].narrow (1, offset + 1, length),
+            batch.labels.toTensor[T].narrow (1, offset + 1, length))
+          case false => (NarrowTable(offset + 1, length).updateOutput(batch.data.toTable),
+            NarrowTable(offset + 1, length).updateOutput(batch.labels.toTable))
+        }
         b += 1
       }
       val dataFetchTime = System.nanoTime()
@@ -112,7 +129,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
             localModel.zeroGradParameters()
             localModel.training()
             val localCriterion = workingCriterion(i)
-            val (input, target) = tensorBuffer(i)
+            val (input, target) = batchBuffer(i)
             val output = localModel.forward(input)
             val _loss = ev.toType[Double](localCriterion.forward(output, target))
             val errors = localCriterion.backward(output, target)
@@ -146,14 +163,21 @@ class LocalOptimizer[T: ClassTag] private[optim](
       optimMethod.optimize(_ => (ev.fromType(loss), grad), weight, state)
       val end = System.nanoTime()
       wallClockTime += end - start
-      count += batch.data.size(1)
+      count += (tensorBatchType match {
+        case true => batch.data.toTensor[T].size(1)
+        case false => batch.data.toTable.length
+      })
       val head =
         header(state[Int]("epoch"), count, dataset.size(), state[Int]("neval"), wallClockTime)
       logger.info(s"$head " +
         s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
         s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
         s"train time ${(end - dataFetchTime) / 1e9}s. " +
-        s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} record / second")
+        s"Throughput is " +
+          s"${(tensorBatchType match {
+            case true => batch.data.toTensor[T].size(1)
+            case false => batch.data.toTable.length}).toDouble / (end - start) * 1e9} " +
+        s"record / second")
       state("neval") = state[Int]("neval") + 1
 
       if (count >= dataset.size()) {
@@ -199,9 +223,20 @@ class LocalOptimizer[T: ClassTag] private[optim](
 
     var count = 0
     dataIter.map(batch => {
-      require(batch.data.size(1) == batch.labels.size(1))
-      val stackSize = batch.data.size(1) / subModelNumber
-      val extraSize = batch.data.size(1) % subModelNumber
+      val tensorBatchType = batch.data match {
+        case tensor: Tensor[T] => true
+        case table: Table => false
+      }
+      tensorBatchType match {
+        case true => require(batch.data.toTensor[T].size(1) == batch.labels.toTensor[T].size(1))
+        case false => require(batch.data.toTable.length == batch.labels.toTable.length)
+      }
+      val (stackSize, extraSize) = tensorBatchType match {
+        case true => (batch.data.toTensor[T].size(1) / subModelNumber,
+          batch.data.toTensor[T].size(1) % subModelNumber)
+        case false => (batch.data.toTable.length / subModelNumber,
+          batch.data.toTable.length % subModelNumber)
+      }
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
       val start = System.nanoTime()
       val result = Engine.default.invokeAndWait(
@@ -209,8 +244,14 @@ class LocalOptimizer[T: ClassTag] private[optim](
           () => {
             val offset = b * stackSize + math.min(b, extraSize)
             val length = stackSize + (if (b < extraSize) 1 else 0)
-            val input = batch.data.narrow(1, offset + 1, length)
-            val target = batch.labels.narrow(1, offset + 1, length)
+            val input = tensorBatchType match {
+              case true => batch.data.toTensor[T].narrow(1, offset + 1, length)
+              case false => NarrowTable(offset + 1, length).updateOutput(batch.data.toTable)
+            }
+            val target = tensorBatchType match {
+              case true => batch.labels.toTensor[T].narrow(1, offset + 1, length)
+              case false => NarrowTable(offset + 1, length).updateOutput(batch.labels.toTable)
+            }
             val output = workingModels(b).forward(input)
             vMethods.map(validation => {
               validation(output, target)
@@ -222,9 +263,15 @@ class LocalOptimizer[T: ClassTag] private[optim](
           l + r
         }
       })
-      count += batch.data.size(1)
+      count += (tensorBatchType match {
+        case true => batch.data.toTensor[T].size(1)
+        case false => batch.data.toTable.length
+      })
       logger.info(s"[Validation] $count/${validationDataSet.get.size()} Throughput is ${
-        batch.data.size(1) / ((System.nanoTime() - start) / 1e9)
+        (tensorBatchType match {
+          case true => batch.data.toTensor[T].size(1)
+          case false => batch.data.toTable.length
+        }) / ((System.nanoTime() - start) / 1e9)
       } record / sec")
       result
     }).reduce((left, right) => {

@@ -20,6 +20,9 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+
+import scala.reflect.ClassTag
 
 abstract class Validator[T, D](
   model: Module[T],
@@ -33,7 +36,8 @@ abstract class Validator[T, D](
 }
 
 object Validator {
-  def apply[T, D](model: Module[T], dataset: DataSet[D]): Validator[T, D] = {
+  def apply[T: ClassTag, D](model: Module[T], dataset: DataSet[D])
+  (implicit ev: TensorNumeric[T]): Validator[T, D] = {
     dataset match {
       case d: DistributedDataSet[_] =>
         new DistriValidator[T](

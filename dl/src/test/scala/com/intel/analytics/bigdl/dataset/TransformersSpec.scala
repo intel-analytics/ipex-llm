@@ -21,7 +21,7 @@ import java.nio.file.{Path, Paths}
 
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -92,10 +92,10 @@ class TransformersSpec extends FlatSpec with Matchers {
     val tensorDataSet = dataSet -> toTensor
     val iter = tensorDataSet.toLocal().data(train = true)
     val batch = iter.next()
-    batch.data.size(1) should be(2)
-    batch.data.size(2) should be(32)
-    batch.data.size(3) should be(32)
-    val testData1 = batch.data.storage().array()
+    batch.data.toTensor[Float].size(1) should be(2)
+    batch.data.toTensor[Float].size(2) should be(32)
+    batch.data.toTensor[Float].size(3) should be(32)
+    val testData1 = batch.data.toTensor[Float].storage().array()
     val content1 = image1.content
     var i = 0
     while (i < content1.length) {
@@ -110,9 +110,9 @@ class TransformersSpec extends FlatSpec with Matchers {
     }
     val batch2 = iter.next()
     val content3 = image3.content
-    batch2.data.size(1) should be(2)
-    batch2.data.size(2) should be(32)
-    batch2.data.size(3) should be(32)
+    batch2.data.toTensor[Float].size(1) should be(2)
+    batch2.data.toTensor[Float].size(2) should be(32)
+    batch2.data.toTensor[Float].size(3) should be(32)
     i = 0
     while (i < content3.length) {
       testData1(i) should be(content3(i))
@@ -233,48 +233,48 @@ class TransformersSpec extends FlatSpec with Matchers {
     val tensorDataSet = dataSet -> toTensor
     val iter = tensorDataSet.toLocal().data(train = true)
     val batch1 = iter.next()
-    batch1.data.size(1) should be(2)
-    batch1.data.size(2) should be(3)
-    batch1.data.size(3) should be(32)
-    batch1.data.size(4) should be(32)
+    batch1.data.toTensor[Float].size(1) should be(2)
+    batch1.data.toTensor[Float].size(2) should be(3)
+    batch1.data.toTensor[Float].size(3) should be(32)
+    batch1.data.toTensor[Float].size(4) should be(32)
     val content1 = image1.content
     var i = 0
-    batch1.data.select(1, 1).select(1, 1).apply1(e => {
+    batch1.data.toTensor[Float].select(1, 1).select(1, 1).apply1(e => {
       e should be(content1(i * 3 + 2))
       i += 1
       e
     })
 
     i = 0
-    batch1.data.select(1, 1).select(1, 2).apply1(e => {
+    batch1.data.toTensor[Float].select(1, 1).select(1, 2).apply1(e => {
       e should be(content1(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    batch1.data.select(1, 1).select(1, 3).apply1(e => {
+    batch1.data.toTensor[Float].select(1, 1).select(1, 3).apply1(e => {
       e should be(content1(i * 3))
       i += 1
       e
     })
     val content2 = image2.content
     i = 0
-    batch1.data.select(1, 2).select(1, 1).apply1(e => {
+    batch1.data.toTensor[Float].select(1, 2).select(1, 1).apply1(e => {
       e should be(content2(i * 3 + 2))
       i += 1
       e
     })
 
     i = 0
-    batch1.data.select(1, 2).select(1, 2).apply1(e => {
+    batch1.data.toTensor[Float].select(1, 2).select(1, 2).apply1(e => {
       e should be(content2(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    batch1.data.select(1, 2).select(1, 3).apply1(e => {
+    batch1.data.toTensor[Float].select(1, 2).select(1, 3).apply1(e => {
       e should be(content2(i * 3))
       i += 1
       e
@@ -282,47 +282,47 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     val batch = iter.next()
     val content3 = image3.content
-    batch.data.size(1) should be(2)
-    batch.data.size(2) should be(3)
-    batch.data.size(3) should be(32)
-    batch.data.size(4) should be(32)
+    batch.data.toTensor[Float].size(1) should be(2)
+    batch.data.toTensor[Float].size(2) should be(3)
+    batch.data.toTensor[Float].size(3) should be(32)
+    batch.data.toTensor[Float].size(4) should be(32)
 
     i = 0
-    batch.data.select(1, 1).select(1, 1).apply1(e => {
+    batch.data.toTensor[Float].select(1, 1).select(1, 1).apply1(e => {
       e should be(content3(i * 3 + 2))
       i += 1
       e
     })
 
     i = 0
-    batch.data.select(1, 1).select(1, 2).apply1(e => {
+    batch.data.toTensor[Float].select(1, 1).select(1, 2).apply1(e => {
       e should be(content3(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    batch.data.select(1, 1).select(1, 3).apply1(e => {
+    batch.data.toTensor[Float].select(1, 1).select(1, 3).apply1(e => {
       e should be(content3(i * 3))
       i += 1
       e
     })
     i = 0
-    batch.data.select(1, 2).select(1, 1).apply1(e => {
+    batch.data.toTensor[Float].select(1, 2).select(1, 1).apply1(e => {
       e should be(content1(i * 3 + 2))
       i += 1
       e
     })
 
     i = 0
-    batch.data.select(1, 2).select(1, 2).apply1(e => {
+    batch.data.toTensor[Float].select(1, 2).select(1, 2).apply1(e => {
       e should be(content1(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    batch.data.select(1, 2).select(1, 3).apply1(e => {
+    batch.data.toTensor[Float].select(1, 2).select(1, 3).apply1(e => {
       e should be(content1(i * 3))
       i += 1
       e
@@ -350,48 +350,48 @@ class TransformersSpec extends FlatSpec with Matchers {
     val tensorDataSet = dataSet -> toTensor
     val iter = tensorDataSet.toLocal().data(train = true)
     val batch = iter.next()
-    batch.data.size(1) should be(2)
-    batch.data.size(2) should be(3)
-    batch.data.size(3) should be(32)
-    batch.data.size(4) should be(32)
+    batch.data.toTensor[Float].size(1) should be(2)
+    batch.data.toTensor[Float].size(2) should be(3)
+    batch.data.toTensor[Float].size(3) should be(32)
+    batch.data.toTensor[Float].size(4) should be(32)
     val content1 = image1.content
     var i = 0
-    batch.data.select(1, 1).select(1, 1).apply1(e => {
+    batch.data.toTensor[Float].select(1, 1).select(1, 1).apply1(e => {
       e should be(content1(i * 3 + 2))
       i += 1
       e
     })
 
     i = 0
-    batch.data.select(1, 1).select(1, 2).apply1(e => {
+    batch.data.toTensor[Float].select(1, 1).select(1, 2).apply1(e => {
       e should be(content1(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    batch.data.select(1, 1).select(1, 3).apply1(e => {
+    batch.data.toTensor[Float].select(1, 1).select(1, 3).apply1(e => {
       e should be(content1(i * 3))
       i += 1
       e
     })
     val content2 = image2.content
     i = 0
-    batch.data.select(1, 2).select(1, 1).apply1(e => {
+    batch.data.toTensor[Float].select(1, 2).select(1, 1).apply1(e => {
       e should be(content2(i * 3 + 2))
       i += 1
       e
     })
 
     i = 0
-    batch.data.select(1, 2).select(1, 2).apply1(e => {
+    batch.data.toTensor[Float].select(1, 2).select(1, 2).apply1(e => {
       e should be(content2(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    batch.data.select(1, 2).select(1, 3).apply1(e => {
+    batch.data.toTensor[Float].select(1, 2).select(1, 3).apply1(e => {
       e should be(content2(i * 3))
       i += 1
       e
@@ -399,47 +399,47 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     val batch2 = iter.next()
     val content3 = image3.content
-    batch2.data.size(1) should be(2)
-    batch2.data.size(2) should be(3)
-    batch2.data.size(3) should be(32)
-    batch2.data.size(4) should be(32)
+    batch2.data.toTensor[Float].size(1) should be(2)
+    batch2.data.toTensor[Float].size(2) should be(3)
+    batch2.data.toTensor[Float].size(3) should be(32)
+    batch2.data.toTensor[Float].size(4) should be(32)
 
     i = 0
-    batch2.data.select(1, 1).select(1, 1).apply1(e => {
+    batch2.data.toTensor[Float].select(1, 1).select(1, 1).apply1(e => {
       e should be(content3(i * 3 + 2))
       i += 1
       e
     })
 
     i = 0
-    batch2.data.select(1, 1).select(1, 2).apply1(e => {
+    batch2.data.toTensor[Float].select(1, 1).select(1, 2).apply1(e => {
       e should be(content3(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    batch2.data.select(1, 1).select(1, 3).apply1(e => {
+    batch2.data.toTensor[Float].select(1, 1).select(1, 3).apply1(e => {
       e should be(content3(i * 3))
       i += 1
       e
     })
     i = 0
-    batch2.data.select(1, 2).select(1, 1).apply1(e => {
+    batch2.data.toTensor[Float].select(1, 2).select(1, 1).apply1(e => {
       e should be(content1(i * 3 + 2))
       i += 1
       e
     })
 
     i = 0
-    batch2.data.select(1, 2).select(1, 2).apply1(e => {
+    batch2.data.toTensor[Float].select(1, 2).select(1, 2).apply1(e => {
       e should be(content1(i * 3 + 1))
       i += 1
       e
     })
 
     i = 0
-    batch2.data.select(1, 2).select(1, 3).apply1(e => {
+    batch2.data.toTensor[Float].select(1, 2).select(1, 3).apply1(e => {
       e should be(content1(i * 3))
       i += 1
       e
@@ -486,5 +486,38 @@ class TransformersSpec extends FlatSpec with Matchers {
     }
 
     count should be(11)
+  }
+
+  "SampleToBatchSpec" should "be good" in {
+    val tensorInput1 = Tensor[Float](Storage(
+      Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
+    val tensorInput2 = Tensor[Float](Storage(
+      Array(0.0f, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1)), 1, Array(4, 5))
+    val tensorInput3 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 0, 1)), 1, Array(2, 5))
+    val tensorTarget1 = Tensor[Float](Storage(
+      Array(3.0f, 4, 5)), 1, Array(3))
+    val tensorTarget2 = Tensor[Float](Storage(
+      Array(2.0f, 1, 5, 1)), 1, Array(4))
+    val tensorTarget3 = Tensor[Float](Storage(
+      Array(5.0f, 2)), 1, Array(2))
+    val sample1 = Sample[Float](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Float](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Float](tensorInput3, tensorTarget3)
+
+    val dataSet = new LocalArrayDataSet[Sample[Float]](Array(sample1,
+      sample2, sample3))
+    val sampleToBatch = SampleToBatch[Float](2, true)
+    val sampleDataSet = dataSet -> sampleToBatch
+    val iter = sampleDataSet.toLocal().data(train = false)
+
+    val batch1 = iter.next()
+
+    batch1.data should be (T(tensorInput1, tensorInput2))
+    batch1.labels should be (T(tensorTarget1, tensorTarget2))
+
+    val batch2 = iter.next()
+    batch2.data should be (T(tensorInput3))
+    batch2.labels should be (T(tensorTarget3))
   }
 }

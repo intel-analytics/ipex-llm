@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dataset.MiniBatch
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
@@ -52,7 +53,10 @@ class RefLocalOptimizer[T: ClassTag](
       val loss = criterion.forward(output, target)
       model.backward(input, criterion.backward(output, target))
       optimMethod.optimize(_ => (loss, g), w, state)
-      count += input.size(1)
+      count += (input match {
+        case tensor: Tensor[T] => tensor.size(1)
+        case table: Table => table.length()
+      })
       state("neval") = state[Int]("neval") + 1
       println(s"loss is $loss")
       if (count >= dataset.size()) {

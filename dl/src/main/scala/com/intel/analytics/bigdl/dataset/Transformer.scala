@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.collection.Iterator
@@ -72,13 +73,14 @@ class Identity[A] extends Transformer[A, A] {
 
 object SampleToBatch {
   def apply[T: ClassTag]
-  (batchSize: Int)
+  (batchSize: Int,
+   tableOfBatch: Boolean = false)
   (implicit ev: TensorNumeric[T]): SampleToBatch[T]
-  = new SampleToBatch[T](batchSize)
+  = new SampleToBatch[T](batchSize, tableOfBatch)
 }
 
 class SampleToBatch[T: ClassTag]
-  (totalBatch: Int)
+  (totalBatch: Int, tableOfBatch: Boolean = false)
   (implicit ev: TensorNumeric[T])
   extends Transformer[Sample[T], MiniBatch[T]] {
 
@@ -86,6 +88,8 @@ class SampleToBatch[T: ClassTag]
     new Iterator[MiniBatch[T]] {
       private val featureTensor: Tensor[T] = Tensor[T]()
       private val labelTensor: Tensor[T] = Tensor[T]()
+      private val featureTable: Table = T()
+      private val labelTable: Table = T()
       private var featureData: Array[T] = null
       private var labelData: Array[T] = null
       private val batchSize = Utils.getBatchSize(totalBatch)
@@ -119,7 +123,25 @@ class SampleToBatch[T: ClassTag]
             sample.copyToLabel(labelData, i*labelLength, labelLength)
             sample.copyToFeature(featureData, i*featureLength, featureLength)
 
+            featureTable(i + 1) = Tensor()
+              .set(Storage[T](featureData), storageOffset = i*featureLength + 1,
+                sizes = sample.getFeature().size)
+            labelTable(i + 1) = Tensor()
+              .set(Storage[T](labelData), storageOffset = i*labelLength + 1,
+                sizes = sample.getLabel().size)
             i += 1
+          }
+
+          var j = i + 1
+          while (j <= featureTable.length) {
+            featureTable.remove(j)
+            j += 1
+          }
+
+          j = i + 1
+          while (j <= labelTable.length) {
+            labelTable.remove(j)
+            j += 1
           }
 
           featureSize(0) = i
@@ -128,7 +150,10 @@ class SampleToBatch[T: ClassTag]
             storageOffset = 1, sizes = featureSize)
           labelTensor.set(Storage[T](labelData),
             storageOffset = 1, sizes = labelSize)
-          MiniBatch(featureTensor, labelTensor)
+          tableOfBatch match {
+            case true => MiniBatch(featureTable, labelTable)
+            case false => MiniBatch(featureTensor, labelTensor)
+          }
         } else {
           null
         }

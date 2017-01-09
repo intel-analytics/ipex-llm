@@ -22,18 +22,22 @@ import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.optim.DistriValidator._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
+import com.intel.analytics.bigdl.nn.NarrowTable
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Table}
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
+
+import scala.reflect.ClassTag
 
 object DistriValidator {
   val logger = Logger.getLogger(this.getClass)
 }
 
-class DistriValidator[T] private[optim](
+class DistriValidator[T: ClassTag] private[optim](
   model: Module[T],
   dataSet: DistributedDataSet[MiniBatch[T]]
-) extends Validator[T, MiniBatch[T]](model, dataSet) {
+) (implicit ev: TensorNumeric[T])extends Validator[T, MiniBatch[T]](model, dataSet) {
 
   override def test(vMethods: Array[ValidationMethod[T]])
   : Array[(ValidationResult, ValidationMethod[T])] = {
@@ -51,17 +55,34 @@ class DistriValidator[T] private[optim](
       val workingModels = (1 to _subModelNumber)
         .map(_ => localModel.cloneModule().evaluate()).toArray
       dataIter.map(batch => {
-        require(batch.data.size(1) == batch.labels.size(1))
-        val stackSize = batch.data.size(1) / _subModelNumber
-        val extraSize = batch.data.size(1) % _subModelNumber
+        val tensorBatchType = batch.data match {
+          case tensor: Tensor[T] =>
+            require(batch.data.toTensor[T].size(1) == batch.labels.toTensor[T].size(1))
+            true
+          case table: Table =>
+            require(batch.data.toTable.length == batch.labels.toTable.length)
+            false
+        }
+        val (stackSize, extraSize) = tensorBatchType match {
+          case true => (batch.data.toTensor[T].size(1) / _subModelNumber,
+            batch.data.toTensor[T].size(1) % _subModelNumber)
+          case false => (batch.data.toTable.length / _subModelNumber,
+            batch.data.toTable.length % _subModelNumber)
+        }
         val parallelism = if (stackSize == 0) extraSize else _subModelNumber
         Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
               val offset = b * stackSize + math.min(b, extraSize)
               val length = stackSize + (if (b < extraSize) 1 else 0)
-              val input = batch.data.narrow(1, offset + 1, length)
-              val target = batch.labels.narrow(1, offset + 1, length)
+              val input = tensorBatchType match {
+                case true => batch.data.toTensor[T].narrow(1, offset + 1, length)
+                case false => NarrowTable[T](offset + 1, length).updateOutput(batch.data.toTable)
+              }
+              val target = tensorBatchType match {
+                case true => batch.labels.toTensor[T].narrow(1, offset + 1, length)
+                case false => NarrowTable[T](offset + 1, length).updateOutput(batch.labels.toTable)
+              }
               val output = workingModels(b).forward(input)
               vMethods.map(validation => {
                 validation(output, target)
