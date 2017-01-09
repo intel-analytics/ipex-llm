@@ -17,20 +17,15 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import java.awt.color.ColorSpace
-import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.image.LocalImageFiles._
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.io.{SequenceFile, Text}
-import org.apache.hadoop.io.SequenceFile.Reader
+import org.apache.hadoop.io.Text
 import org.apache.log4j.Logger
-import org.apache.spark.{Partition, SparkContext}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 
 import scala.reflect._
@@ -402,6 +397,31 @@ object DataSet {
     }
 
     /**
+     * get label from text of sequence file,
+     * @param data text of sequence file, this text can split into parts by "\n"
+     * @return
+     */
+    def readLabel(data: Text): String = {
+      val dataArr = data.toString.split("\n")
+      if (dataArr.length == 1) {
+        dataArr(0)
+      } else {
+        dataArr(1)
+      }
+    }
+
+    /**
+     * get name from text of sequence file,
+     * @param data text of sequence file, this text can split into parts by "\n"
+     * @return
+     */
+    def readName(data: Text): String = {
+      val dataArr = data.toString.split("\n")
+      require(dataArr.length >= 2, "key in seq file only contains label, no name")
+      dataArr(0)
+    }
+
+    /**
      * Extract hadoop sequence files from an HDFS path
      * @param url
      * @param sc
@@ -414,7 +434,7 @@ object DataSet {
       val coreNumber = Engine.coreNumber()
       val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text],
         nodeNumber * coreNumber).map(image => {
-        ByteRecord(image._2.copyBytes(), image._1.toString.toFloat)
+        ByteRecord(image._2.copyBytes(), readLabel(image._1).toFloat)
       }).filter(_.label <= classNum)
 
       rdd[ByteRecord](rawData)

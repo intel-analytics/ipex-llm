@@ -17,12 +17,17 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import java.nio.file.{Path, Paths}
+import java.nio.file.Paths
 
+import com.intel.analytics.bigdl.dataset.DataSet.SeqFileFolder
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.{SequenceFile, Text}
+import org.apache.hadoop.io.SequenceFile.Reader
 import org.scalatest.{FlatSpec, Matchers}
 
 class TransformersSpec extends FlatSpec with Matchers {
@@ -447,9 +452,9 @@ class TransformersSpec extends FlatSpec with Matchers {
     Engine.setCoreNumber(core)
   }
 
-  "RGBImage To SeqFile" should "be good" in {
+  "RGBImage To SeqFile without file name" should "be good" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
-    val pathToImage = LocalImgReader(BGRImage.NO_SCALE)
+    val pathToImage = LocalImgReaderWithName(BGRImage.NO_SCALE)
     val dataSet = DataSet.ImageFolder.paths(
       Paths.get(processPath(resource.getPath()))
     )
@@ -478,13 +483,67 @@ class TransformersSpec extends FlatSpec with Matchers {
     val readIter = readPipeline.toLocal().data(train = false)
     readIter.zip((dataSet -> pathToImage).toLocal().data(train = false))
       .foreach { case (l, r) =>
-      l.label() should be(r.label())
-      l.width() should be(r.width())
-      l.height() should be(r.height())
-      l.content.zip(r.content).foreach(d => d._1 should be(d._2))
+      l.label() should be(r._1.label())
+      l.width() should be(r._1.width())
+      l.height() should be(r._1.height())
+      l.content.zip(r._1.content).foreach(d => d._1 should be(d._2))
       count += 1
     }
 
+    count should be(11)
+  }
+
+  "RGBImage To SeqFile with file name" should "be good" in {
+    val resource = getClass().getClassLoader().getResource("imagenet")
+    val pathToImage = LocalImgReaderWithName(BGRImage.NO_SCALE)
+    val dataSet = DataSet.ImageFolder.paths(
+      Paths.get(processPath(resource.getPath()))
+    )
+
+    RandomGenerator.RNG.setSeed(1000)
+
+    dataSet.shuffle()
+    val tmpFile = Paths.get(java.io.File.createTempFile("UnitTest", "RGBImageToSeqFile").getPath)
+    val seqWriter = BGRImgToLocalSeqFile(2, tmpFile, true)
+    val writePipeline = dataSet -> pathToImage -> seqWriter
+    val iter = writePipeline.toLocal().data(train = false)
+    while (iter.hasNext) {
+      println(s"writer file ${iter.next()}")
+    }
+
+    val seqDataSet = new LocalArrayDataSet[LocalSeqFilePath](Array(
+      LocalSeqFilePath(Paths.get(tmpFile + "_0.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_1.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_2.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_3.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_4.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_5.seq"))
+    ))
+
+    val seqData = seqDataSet.toLocal().data(train = false)
+    val data = dataSet.toLocal().data(train = false)
+
+    var reader: SequenceFile.Reader = null
+    val key = new Text()
+    val value = new Text()
+    var count = 0
+
+    while (seqData.hasNext) {
+      val l = seqData.next()
+      if ((reader == null) || (!reader.next(key, value))) {
+        reader = new SequenceFile.Reader(new Configuration,
+          Reader.file(new Path(l.path.toAbsolutePath.toString)))
+      }
+
+      while (reader.next(key, value) && data.hasNext) {
+        val r = data.next()
+        val imgData = BGRImage.readImage(r.path, BGRImage.NO_SCALE)
+        SeqFileFolder.readName(key).toString should be (r.path.getFileName.toString)
+        SeqFileFolder.readLabel(key).toFloat should be (r.label)
+        value.copyBytes() should be (imgData)
+        count += 1
+      }
+    }
     count should be(11)
   }
 }
