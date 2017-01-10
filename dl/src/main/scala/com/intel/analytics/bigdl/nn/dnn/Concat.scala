@@ -18,16 +18,17 @@
 package com.intel.analytics.bigdl.nn.dnn
 
 import com.intel.analytics.bigdl.mkl.MklDnnFloat
-import com.intel.analytics.bigdl.nn.Container
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.AbstractConcat
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
 import com.intel.analytics.bigdl.tensor.{FloatType, MklTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 
 import scala.reflect.ClassTag
 
-class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])
-  extends Container[Tensor[T], Tensor[T], T] {
+@SerialVersionUID(- 4157856938968907891L)
+class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
+  extends AbstractConcat[T](dimension) {
 
   class ConcatRef {
     var inputs: Array[MklTensor[T]] = null //  we don't known the length of modules
@@ -57,7 +58,9 @@ class Concat[T: ClassTag](val dimension: Int)(implicit ev: TensorNumeric[T])
     var sum = 0L
   }
 
+  @transient
   val primitive = new Primitive
+  @transient
   val refs = new Ref
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 

@@ -890,7 +890,7 @@ object TorchFile {
   private def readConcatWithType[T: ClassTag](
       elements: Table)(implicit ev: TensorNumeric[T]): Concat[T] = {
     val modules = elements[Table]("modules")
-    val result = Concat[T](elements("dimension").asInstanceOf[Double].toInt)
+    val result = new Concat[T](elements("dimension").asInstanceOf[Double].toInt)
 
     for (i <- 1 to modules.length()) {
       result.add(modules(i))
