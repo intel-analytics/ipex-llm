@@ -37,28 +37,26 @@ import java.io._
   */
 
 class DocumentTokenizer() extends Transformer[String, Array[Array[String]]] {
-  //import edu.stanford.nlp.process.DocumentPreprocessor
-  //var dp: DocumentPreprocessor = null
   override def apply(prev: Iterator[String]): Iterator[Array[Array[String]]] =
     prev.map(x => {
-      //dp = new DocumentPreprocessor(x)
       val sentences = ArrayBuffer[Array[String]]()
       val sc = new SparkContext("local[1]", "DocumentTokenizer")
-      //for (i <- filelist.indices){
       val logData = sc.textFile(x, 2).filter(!_.isEmpty()).cache()
 
       val sqlContext = new SQLContext(sc)
       import sqlContext.implicits._
           
       val new_df = logData.flatMap(_.split("(?<=[.!?])\\s* ")).toDF("sentence")
-      val regexTokenizer = new RegexTokenizer().setInputCol("sentence").setOutputCol("words").setPattern("\\W+").setMinTokenLength(0)
+      val regexTokenizer = new RegexTokenizer().setInputCol("sentence")
+        .setOutputCol("words").setPattern("\\W+").setMinTokenLength(0)
       val regexTokenized = regexTokenizer.transform(new_df)
       val countTokens = udf { (words: Seq[String]) => words.length }
-      //regexTokenized.select("sentence", "words").withColumn("tokens", countTokens(col("words"))).show(false)
-      val token_df = regexTokenized.select("sentence", "words").withColumn("tokens", countTokens(col("words")))
-      val mapped_vector = token_df.select("words").rdd.map(x => x(0).asInstanceOf[Seq[String]]).collect()
+      val token_df = regexTokenized.select("sentence", "words")
+        .withColumn("tokens", countTokens(col("words")))
+      val mapped_vector = token_df.select("words")
+        .rdd.map(x => x(0).asInstanceOf[Seq[String]]).collect()
 
-      for (i <- mapped_vector.indices){
+      for (i <- mapped_vector.indices) {
           val mapped_token = mapped_vector(i).toArray
           sentences.append(mapped_token)
       }

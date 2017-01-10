@@ -20,11 +20,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>edu.stanford.nlp</groupId>
-            <artifactId>stanford-parser</artifactId>
-            <version>3.6.0</version>
-        </dependency>
-        <dependency>
             <groupId>com.twelvemonkeys.imageio</groupId>
             <artifactId>imageio-jpeg</artifactId>
             <version>3.2.1</version>
