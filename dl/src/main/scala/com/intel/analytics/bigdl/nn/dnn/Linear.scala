@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn.dnn
 
+import com.intel.analytics.bigdl.nn.AbstractLinear
 import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
@@ -27,12 +28,13 @@ import com.intel.analytics.bigdl.nn.{Default, InitializationMethod, Xavier}
 
 import scala.reflect.ClassTag
 
+@SerialVersionUID(8701465356502898075L)
 class Linear[T: ClassTag](inputSize: Int,
                           outputSize: Int,
                           val needCompute: Boolean = true,
                           private var initMethod: InitializationMethod = Default
                          )(implicit ev: TensorNumeric[T])
-    extends TensorModule[T] with MklModuleMethods {
+    extends AbstractLinear[T](inputSize, outputSize, initMethod) with MklModuleMethods {
 
   class LinearRef extends Ref[T] {
     var weight = new MklTensor[T]()
@@ -47,16 +49,13 @@ class Linear[T: ClassTag](inputSize: Int,
     var backBias = 0L
   }
 
+  @transient
   val refs = new LinearRef
+  @transient
   val primitive = new LinearPrimitive
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
-  val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
-  val gradWeight = Tensor[T](outputSize, inputSize)
-  val bias: Tensor[T] = Tensor[T](outputSize)
-  val gradBias = Tensor[T](outputSize)
-
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
+  override def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
     this
   }
@@ -312,15 +311,18 @@ class Linear[T: ClassTag](inputSize: Int,
   }
 
   override def convertToMklDnn(prevModule: Option[AbstractModule[Activity, Activity, T]] = None)
-  : (ModuleType, AbstractModule[Activity, Activity, T]) = super.convertToMklDnn(prevModule)
+  : (ModuleType, AbstractModule[Activity, Activity, T]) =
+    super[MklModuleMethods].convertToMklDnn(prevModule)
 
-  override def setNextModuleType(value: ModuleType): Unit = super.setNextModuleType(value)
+  override def setNextModuleType(value: ModuleType): Unit =
+    super[MklModuleMethods].setNextModuleType(value)
 
-  override def setPrevModuleType(value: ModuleType): Unit = super.setPrevModuleType(value)
+  override def setPrevModuleType(value: ModuleType): Unit =
+    super[MklModuleMethods].setPrevModuleType(value)
 
-  override def nextModuleType: ModuleType = super.nextModuleType
+  override def nextModuleType: ModuleType = super[MklModuleMethods].nextModuleType
 
-  override def prevModuleType: ModuleType = super.prevModuleType
+  override def prevModuleType: ModuleType = super[MklModuleMethods].prevModuleType
 
-  override def moduleType(): ModuleType = super.moduleType()
+  override def moduleType(): ModuleType = super[MklModuleMethods].moduleType()
 }

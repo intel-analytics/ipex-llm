@@ -912,7 +912,7 @@ object TorchFile {
       elements: Table)(implicit ev: TensorNumeric[T]) : Linear[T] = {
     val bias = elements("bias").asInstanceOf[Tensor[T]]
     val weight = elements("weight").asInstanceOf[Tensor[T]]
-    val result = Linear[T](weight.size(2), weight.size(1))
+    val result = new Linear[T](weight.size(2), weight.size(1))
     result.bias.copy(bias)
     result.weight.copy(weight)
     result
