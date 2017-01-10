@@ -20,17 +20,19 @@ package com.intel.analytics.bigdl.nn.dnn
 import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
+import com.intel.analytics.bigdl.nn.AbstractBatchNormalization
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.{FloatType, MklTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-class BatchNormalization[T: ClassTag](val nOutput: Int,
-                                      val eps: Double = 1e-5,
-                                      val momentum: Double = 0.1,
-                                      val affine: Boolean = true)(implicit ev: TensorNumeric[T])
-  extends TensorModule[T] with MklModuleMethods {
+@SerialVersionUID(796580269069270433L)
+class BatchNormalization[T: ClassTag](nOutput: Int,
+                                      eps: Double = 1e-5,
+                                      momentum: Double = 0.1,
+                                      affine: Boolean = true)(implicit ev: TensorNumeric[T])
+  extends AbstractBatchNormalization[T](nOutput, eps, momentum, affine) with MklModuleMethods {
 
   require(nOutput > 0,
           "To set affine=false call SpatialBatchNormalization(nFeature,  eps, momentum, false)")
@@ -44,14 +46,11 @@ class BatchNormalization[T: ClassTag](val nOutput: Int,
     var scaleShift = 0L
   }
 
+  @transient
   val refs = new BNRef
+  @transient
   val primitive = new BNPrimitive
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
-
-  val weight = Tensor[T]().resize(nOutput)
-  val bias = Tensor[T]().resize(nOutput)
-  val gradWeight = Tensor[T]().resize(nOutput)
-  val gradBias = Tensor[T]().resize(nOutput)
 
   override def reset(): Unit = {
     weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1)))
@@ -208,19 +207,23 @@ class BatchNormalization[T: ClassTag](val nOutput: Int,
   }
 
   override def convertToMklDnn(prevModule: Option[AbstractModule[Activity, Activity, T]] = None)
-  : (ModuleType, AbstractModule[Activity, Activity, T]) = super.convertToMklDnn(prevModule)
+  : (ModuleType, AbstractModule[Activity, Activity, T]) =
+    super[MklModuleMethods].convertToMklDnn(prevModule)
 
-  override def setNextModuleType(value: ModuleType): Unit = super.setNextModuleType(value)
+  override def setNextModuleType(value: ModuleType): Unit =
+    super[MklModuleMethods].setNextModuleType(value)
 
-  override def setPrevModuleType(value: ModuleType): Unit = super.setPrevModuleType(value)
+  override def setPrevModuleType(value: ModuleType): Unit =
+    super[MklModuleMethods].setPrevModuleType(value)
 
-  override def nextModuleType: ModuleType = super.nextModuleType
+  override def nextModuleType: ModuleType = super[MklModuleMethods].nextModuleType
 
-  override def prevModuleType: ModuleType = super.prevModuleType
+  override def prevModuleType: ModuleType = super[MklModuleMethods].prevModuleType
 
-  override def moduleType(): ModuleType = super.moduleType()
+  override def moduleType(): ModuleType = super[MklModuleMethods].moduleType()
 }
 
+@SerialVersionUID(7103870054854933642L)
 class SpatialBatchNormalization[T: ClassTag](nOutput: Int,
                                              eps: Double = 1e-5,
                                              momentum: Double = 0.1,

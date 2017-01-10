@@ -20,19 +20,37 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
-@SerialVersionUID(- 3181824540272906068L)
-class BatchNormalization[@specialized(Float, Double) T: ClassTag](
+abstract class AbstractBatchNormalization[@specialized(Float, Double) T: ClassTag](
   val nOutput: Int, // output feature map number
   val eps: Double = 1e-5, // avoid divde zero
   val momentum: Double = 0.1, // momentum for weight update
   val affine: Boolean = true // affine operation on output or not
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  val weight: Tensor[T] = if (affine) Tensor[T](nOutput) else null
+  val bias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
+
+  val gradWeight: Tensor[T] = if (affine) Tensor[T](nOutput) else null
+  val gradBias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
+
+}
+
+@SerialVersionUID(- 3181824540272906068L)
+class BatchNormalization[T: ClassTag](
+  nOutput: Int, // output feature map number
+  eps: Double = 1e-5, // avoid divde zero
+  momentum: Double = 0.1, // momentum for weight update
+  affine: Boolean = true // affine operation on output or not
+)(implicit ev: TensorNumeric[T]) extends AbstractBatchNormalization[T](
+  nOutput,
+  eps,
+  momentum,
+  affine) {
 
   require(nOutput > 0)
 
@@ -41,12 +59,6 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   val runningVar = Tensor[T](nOutput).fill(ev.fromType[Int](1))
   val saveMean = Tensor[T](nOutput)
   val saveStd = Tensor[T](nOutput).fill(ev.fromType[Int](1))
-
-  val weight: Tensor[T] = if (affine) Tensor[T](nOutput) else null
-  val bias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
-
-  val gradWeight: Tensor[T] = if (affine) Tensor[T](nOutput) else null
-  val gradBias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
 
   @transient
   private var results : Array[Future[_]] = null
@@ -619,7 +631,11 @@ object BatchNormalization {
     nOutput: Int,
     eps: Double = 1e-5,
     momentum: Double = 0.1,
-    affine: Boolean = true)(implicit ev: TensorNumeric[T]): BatchNormalization[T] = {
-    new BatchNormalization[T](nOutput, eps, momentum, affine)
+    affine: Boolean = true)(implicit ev: TensorNumeric[T]): AbstractBatchNormalization[T] = {
+    if (Engine.getEngineType() == MklBlas) {
+      new BatchNormalization[T](nOutput, eps, momentum, affine)
+    } else {
+      new dnn.BatchNormalization[T](nOutput, eps, momentum, affine)
+    }
   }
 }
