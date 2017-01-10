@@ -38,7 +38,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val result = iter.next()
 
     result.width() should be(24)
-    result.width() should be(24)
+    result.height() should be(24)
 
     val originContent = image.content
     val resultContent = result.content
@@ -135,7 +135,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     val result = iter.next()
 
     result.width() should be(24)
-    result.width() should be(24)
+    result.height() should be(24)
 
     val originContent = image.content
     val resultContent = result.content
