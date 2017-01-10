@@ -269,6 +269,8 @@ object Engine {
 
     if (dlEngineType == null || dlEngineType.toLowerCase == "mklblas") {
       MklBlas
+    } else if (dlEngineType.toLowerCase == "mkldnn") {
+      MklDnn
     } else {
       throw new Error(s"Unkown DL_ENGINE_TYPE. $ERROR")
     }
@@ -292,14 +294,15 @@ object Engine {
   def model: ThreadPool = _model
 
   private def initModelThreadPool() = {
-    val modelPoolSize: Int = if (engineType == MklBlas) {
-      1
-    } else {
-      physicalCoreNumber
-    }
+    val modelPoolSize: Int = 1
 
     val model = new ThreadPool(modelPoolSize)
-    model.setMKLThread(1)
+    if (engineType == MklBlas) {
+      model.setMKLThread(1)
+    } else {
+      model.setMKLThread(physicalCoreNumber)
+      MKL.setAffinity()
+    }
     model
   }
 
@@ -324,6 +327,14 @@ object Engine {
           .set("spark.shuffle.blockTransferService", "nio")
           .set("spark.akka.frameSize", "10")
           .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
+      } else if (engineType == MklDnn) {
+        new SparkConf()
+          .setExecutorEnv("DL_ENGINE_TYPE", "mkldnn")
+          .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
+          .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
+          .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
+          .set("spark.shuffle.blockTransferService", "nio")
+          .set("spark.akka.frameSize", "10")
       } else {
         throw new IllegalArgumentException(engineType.toString)
       }
@@ -344,6 +355,8 @@ object Engine {
       || System.getenv("KMP_BLOCKTIME") != "0") {
       logger.warn("Invalid env setting. " + ERROR)
     }
+  } else if (Engine.getEngineType() == MklDnn) {
+    ;
   } else {
     throw new IllegalArgumentException(engineType.toString)
   }
