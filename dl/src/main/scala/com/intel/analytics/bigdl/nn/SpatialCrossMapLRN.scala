@@ -33,7 +33,7 @@ abstract class AbstractSpatialCrossMapLRN[@specialized(Float, Double) T: ClassTa
 }
 
 @SerialVersionUID(3641570491004969703L)
-class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
+class SpatialCrossMapLRN[T: ClassTag]
 (size: Int = 5, alpha: Double = 1.0, beta: Double = 0.75, k: Double = 1.0)(
   implicit ev: TensorNumeric[T]) extends AbstractSpatialCrossMapLRN[T](
   size, alpha, beta, k) {
