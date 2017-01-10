@@ -23,7 +23,7 @@
             <groupId>com.intel.analytics.bigdl.native</groupId>
             <artifactId>bigdl-native</artifactId>
             <version>${project.version}</version>
-            <type>so</type>
+            <type>${dynamicLibType}</type>
         </dependency>
     </dependencies>
 

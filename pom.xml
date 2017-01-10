@@ -516,8 +516,6 @@
             <id>full-build</id>
             <modules>
                 <module>native</module>
-                <module>dl</module>
-                <module>spark-version</module>
             </modules>
         </profile>
         <profile>
