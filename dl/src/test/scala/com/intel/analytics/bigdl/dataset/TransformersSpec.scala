@@ -155,6 +155,24 @@ class TransformersSpec extends FlatSpec with Matchers {
     }
   }
 
+  "RGB image cropper with padding" should "crop correctly" in {
+    val (w, h, channel, label, cW, cH, pad) = (2, 1, 3, 1, 4, 3, 1)
+    val image = new LabeledBGRImage(Array[Float](1, 2, 3, 4, 5, 6), w, h, label)
+    val padAndCropData = Array[Float](
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 1, 2, 3, 4, 5, 6, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    )
+
+    val cropper = new BGRImgRdmCropper(cropHeight = cH, cropWidth = cW, padding = pad)
+    val iter = cropper.apply(Iterator.single(image))
+    val result = iter.next()
+
+    result.width() should be(cW)
+    result.height() should be(cH)
+    result.content should be(padAndCropData)
+  }
+
   "RGB Image Normalizer" should "normalize image correctly" in {
     val image1 = new LabeledBGRImage((1 to 27).map(_.toFloat).toArray, 3, 3, 0)
     val image2 = new LabeledBGRImage((2 to 28).map(_.toFloat).toArray, 3, 3, 0)
