@@ -34,9 +34,10 @@ object BGRImgCropper {
 }
 
 /**
- * Crop an area from an image. The crop area size should be less than the image size. There're
- * two crop method: random select an area or select the center area. Usually in training, random
- * select is prefered for data augmentation. In validation or testing, center crop is often used.
+ * Crop a `cropWidth` x `cropHeight` patch from an image. The patch size should be less than
+ * the image size. There're two cropping methods: at random and from the center. The former
+ * is preferred for simple data augmentation during training while the later applies to
+ * validation or testing
  * @param cropWidth
  * @param cropHeight
  * @param cropperMethod
