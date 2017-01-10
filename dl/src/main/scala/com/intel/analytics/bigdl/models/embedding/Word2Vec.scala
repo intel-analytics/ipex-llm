@@ -34,7 +34,7 @@ import scala.collection.{mutable, _}
 /**
  *  Entry in vocabulary
  */
-private case class WordCount(
+case class WordCount(
   var word: String,
   var count: Int
 )

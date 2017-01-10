@@ -41,7 +41,7 @@ object Utils {
    */
   case class Word2VecConfig(
     saveLocation: String = "",
-    trainDataLocation: String = "",
+    trainDataLocation: String = "/home/yao/Downloads/corpus.txt",
     testDataLocation: String = "",
     numNegSamples: Int = 0,
     embeddingSize: Int = 200,
@@ -56,7 +56,7 @@ object Utils {
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
     maxEpoch: Int = 15,
-    env: String = "local",
+    env: String = "spark",
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
     checkpoint: Option[String] = None
@@ -64,9 +64,15 @@ object Utils {
 
   def parse(args: Array[String]): Word2VecConfig = new OptionParser[Word2VecConfig]("word2vec") {
     help("help") text "prints this usage text"
-    opt[String]("saveLocation") required() action { (x, c) => c.copy(saveLocation = x) }
-    opt[String]("trainDataLocation") required() action { (x, c) => c.copy(trainDataLocation = x) }
-    opt[String]("testDataLocation")required() action { (x, c) => c.copy(testDataLocation = x) }
+    opt[String]("saveLocation")
+      .text("")
+      .action { (x, c) => c.copy(saveLocation = x) }
+    opt[String]("trainDataLocation")
+      .text("")
+      .action { (x, c) => c.copy(trainDataLocation = x) }
+    opt[String]("testDataLocation")
+      .text("")
+      .action { (x, c) => c.copy(testDataLocation = x) }
     opt[Int]("numNegSamples")
       .text("Negative samples per training example.")
       .action { (x, c) => c.copy(numNegSamples = x) }

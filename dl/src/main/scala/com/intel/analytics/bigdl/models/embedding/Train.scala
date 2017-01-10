@@ -39,6 +39,7 @@ object Train {
       .map(conf => {
         conf.setAppName("BigDL Word2Vec Example")
           .set("spark.task.maxFailures", "1")
+          .setMaster("local[4]")
         new SparkContext(conf)
       }).get
 
