@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn.dnn
 
+import com.intel.analytics.bigdl.nn.AbstractReLU
 import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
@@ -26,13 +27,16 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
 
-class ReLU[T: ClassTag](val ip: Boolean = false)
+@SerialVersionUID(9153872979086169351L)
+class ReLU[T: ClassTag](ip: Boolean = false)
                        (implicit ev: TensorNumeric[T])
-  extends TensorModule[T] with MklModuleMethods {
+  extends AbstractReLU[T](ip) with MklModuleMethods {
   class ReLURef extends Ref[T] {}
   class ReLUPrimitive extends Primitive {}
 
+  @transient
   val refs = new ReLURef
+  @transient
   val primitive = new ReLUPrimitive
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
