@@ -9,6 +9,7 @@
 #include <mkl_service.h>
 #include <omp.h>
 #include <sched.h>
+#include <errno.h>
 
 
 #include "com_intel_analytics_bigdl_mkl_MKL.h"
@@ -71,31 +72,39 @@ cpu_set_t *saved = NULL;
  */
 static void bindTo(unsigned id, int setIt)
 {
-  cpu_set_t set;
-  CPU_ZERO(&set);
+  cpu_set_t *set;
+  int ncpus = 256;
 
-  int ret = 0;
+  set = CPU_ALLOC(ncpus);
+  size_t size = CPU_ALLOC_SIZE(ncpus);
+  CPU_ZERO_S(size, set);
+
+  int ret = -1;
 
   if (setIt) {
-    CPU_SET(id, &set);
-    ret = sched_setaffinity(0, sizeof(set), &set);
-  } else {
-    ret = sched_setaffinity(0, sizeof(set), saved + id);
-//     switch (errno) {
-//     case EFAULT:
-//       LOG(ERROR) << "A supplied memory address was invalid."; break;
-//     case EINVAL:
-//       LOG(ERROR) << "The affinity bit mask mask contains no processors"; break;
-//     case EPERM:
-//       LOG(ERROR) << "The calling thread does not have appropriate privileges."; break;
-//     case ESRCH:
-//       LOG(ERROR) << "The thread whose ID is pid could not be found."; break;
-//     default:
-//       LOG(ERROR) << "unknonwn reason";
-//    }
+    CPU_SET_S(id, size, set);
+    ret = sched_setaffinity(0, size, set);
   }
 
-  CHECK_NE(ret, -1);
+  CPU_FREE(set);
+
+  char *msg = NULL;
+  switch (errno) {
+  case EFAULT:
+    msg = "A supplied memory address was invalid."; break;
+  case EINVAL:
+    msg = "The affinity bit mask mask contains no processors"; break;
+  case EPERM:
+    msg = "The calling thread does not have appropriate privileges."; break;
+  case ESRCH:
+    msg = "The thread whose ID is pid could not be found."; break;
+  default:
+    msg = "unknonwn reason";
+  }
+  
+  if (ret < 0) {
+    fprintf(stderr, "%d - %s\n", id, msg);
+  }
 }
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MKL
@@ -107,23 +116,6 @@ void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_setAffinity
 (JNIEnv *env,
  jclass cls)
 {
-  cpu_set_t mask;
-  const size_t size = sizeof(mask);
-
-  // if we have not saved the origin affinity, backup first
-  if (!saved) {
-    saved = (cpu_set_t *)malloc(sizeof(mask) * omp_get_num_threads());
-    if (!saved) {
-      // LOG(ERROR) << "can't create affinity backup";
-    }
-
-#pragma omp parallel
-    {
-      unsigned id = omp_get_thread_num();
-      CHECK_NE(sched_getaffinity(0, sizeof(size), saved + id), -1);
-    }
-  }
-
 #pragma omp parallel
   {
     unsigned id = omp_get_thread_num();
@@ -136,10 +128,6 @@ void JNICALL Java_com_intel_analytics_bigdl_mkl_MKL_release
 (JNIEnv *env,
  jclass cls)
 {
-  if (!saved) {
-    // LOG(ERROR) << "can't find the backup";
-  }
-
 #pragma omp parallel
   {
     unsigned id = omp_get_thread_num();
