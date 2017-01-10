@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn.dnn
 
+import com.intel.analytics.bigdl.nn.Pooling
 import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
@@ -25,24 +26,30 @@ import com.intel.analytics.bigdl.tensor.{FloatType, MklTensor, Tensor}
 
 import scala.reflect.ClassTag
 
-class Pool[T: ClassTag](val kW: Int,
-                        val kH: Int,
-                        val dW: Int,
-                        val dH: Int,
-                        val padW: Int = 0,
-                        val padH: Int = 0,
-                        val algorithm: Int)(implicit ev: TensorNumeric[T])
-  extends TensorModule[T] with MklModuleMethods {
+class Pool[T: ClassTag](kW: Int,
+                        kH: Int,
+                        dW: Int,
+                        dH: Int,
+                        padW: Int = 0,
+                        padH: Int = 0,
+                        algorithm: Int)(implicit ev: TensorNumeric[T])
+  extends Pooling[T](kW, kH, dW, dH, padW, padH) with MklModuleMethods {
   class PoolRef extends Ref {
     val workspace = new MklTensor[T]()
   }
   class PoolPrimitive extends Primitive {}
 
+  @transient
   val refs = new PoolRef
+  @transient
   val primitive = new PoolPrimitive
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
-  def ceil(): Pool[T] = {
+  override def ceil(): Pool[T] = {
+    this
+  }
+
+  override def floor(): Pooling[T] = {
     this
   }
 
@@ -195,6 +202,7 @@ class Pool[T: ClassTag](val kW: Int,
   override def moduleType(): ModuleType = super[MklModuleMethods].moduleType()
 }
 
+@SerialVersionUID(- 9140346840084610380L)
 class SpatialMaxPooling[T: ClassTag](kW: Int,
                                      kH: Int,
                                      dW: Int,
@@ -214,6 +222,7 @@ class SpatialMaxPooling[T: ClassTag](kW: Int,
   }
 }
 
+@SerialVersionUID(2161491765598561395L)
 class SpatialAveragePooling[T: ClassTag](kW: Int,
                                          kH: Int,
                                          dW: Int,

@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
 import com.intel.analytics.bigdl.nn.AbstractBatchNormalization
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{FloatType, MklTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 

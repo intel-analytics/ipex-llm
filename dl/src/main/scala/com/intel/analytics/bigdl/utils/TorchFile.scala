@@ -857,7 +857,7 @@ object TorchFile {
 
   private def readSpatialMaxPoolingWithType[T: ClassTag](
       elements: Table)(implicit ev: TensorNumeric[T]): SpatialMaxPooling[T] = {
-    val result = SpatialMaxPooling[T](
+    val result = new SpatialMaxPooling[T](
       kW = elements[Double]("kW").toInt,
       kH = elements[Double]("kH").toInt,
       dW = elements[Double]("dW").toInt,
@@ -873,7 +873,7 @@ object TorchFile {
   private def readSpatialAveragePoolingWithType[T: ClassTag](
       elements: Table)(
       implicit ev: TensorNumeric[T]): SpatialAveragePooling[T] = {
-    val result = SpatialAveragePooling[T](
+    val result = new SpatialAveragePooling[T](
       kW = elements[Double]("kW").toInt,
       kH = elements[Double]("kH").toInt,
       dW = elements.getOrElse("dW", 1.0).toInt,

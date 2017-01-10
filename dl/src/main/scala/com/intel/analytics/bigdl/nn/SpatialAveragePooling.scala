@@ -24,40 +24,70 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect._
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 
-@SerialVersionUID(4533142511857387857L)
-class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
+abstract class Pooling[@specialized(Float, Double) T: ClassTag]
+(
   val kW: Int,
   val kH: Int,
   val dW: Int = 1,
   val dH: Int = 1,
-  private var padW: Int = 0,
-  private var padH: Int = 0,
+  var padW: Int = 0,
+  var padH: Int = 0,
   private var ceilMode: Boolean = false,
   private var countIncludePad: Boolean = true,
   private var divide: Boolean = true
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  def ceil(): Pooling[T]
+
+  def floor(): Pooling[T]
+
+  def setCountIncludePad(): Pooling[T] = {this}
+
+  def setCountExcludePad(): Pooling[T] = {this}
+}
+
+@SerialVersionUID(4533142511857387857L)
+class SpatialAveragePooling[T: ClassTag](
+  kW: Int,
+  kH: Int,
+  dW: Int = 1,
+  dH: Int = 1,
+  padW: Int = 0,
+  padH: Int = 0,
+  private var ceilMode: Boolean = false,
+  private var countIncludePad: Boolean = true,
+  private var divide: Boolean = true
+)(implicit ev: TensorNumeric[T]) extends Pooling[T](
+  kW,
+  kH,
+  dW,
+  dH,
+  padW,
+  padH,
+  ceilMode,
+  countIncludePad,
+  divide) {
 
   @transient
   private var results: Array[Future[Unit]] = null
 
-  def ceil(): SpatialAveragePooling[T] = {
+  override def ceil(): SpatialAveragePooling[T] = {
     ceilMode = true
     this
   }
 
-  def floor(): SpatialAveragePooling[T] = {
+  override def floor(): SpatialAveragePooling[T] = {
     ceilMode = false
     this
   }
 
-  def setCountIncludePad(): SpatialAveragePooling[T] = {
+  override def setCountIncludePad(): SpatialAveragePooling[T] = {
     countIncludePad = true
     this
   }
 
-  def setCountExcludePad(): SpatialAveragePooling[T] = {
+  override def setCountExcludePad(): SpatialAveragePooling[T] = {
     countIncludePad = false
     this
   }
@@ -452,7 +482,11 @@ object SpatialAveragePooling {
       padH: Int = 0,
       ceilMode: Boolean = false,
       countIncludePad: Boolean = true,
-      divide: Boolean = true)(implicit ev: TensorNumeric[T]) : SpatialAveragePooling[T] = {
-    new SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, ceilMode, countIncludePad, divide)
+      divide: Boolean = true)(implicit ev: TensorNumeric[T]) : Pooling[T] = {
+    if (Engine.getEngineType() == MklBlas) {
+      new SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, ceilMode, countIncludePad, divide)
+    } else {
+      new dnn.SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH)
+    }
   }
 }
