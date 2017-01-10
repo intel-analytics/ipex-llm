@@ -19,7 +19,8 @@ package com.intel.analytics.bigdl.nn.dnn
 
 import com.intel.analytics.bigdl.mkl.{MKL, MklDnnFloat}
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.AbstractSpatialConvolution
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.{Default, InitializationMethod, Xavier}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
@@ -27,19 +28,30 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
 
-class SpatialConvolution[T: ClassTag](val nInputPlane: Int,
-                                      val nOutputPlane: Int,
-                                      val kW: Int,
-                                      val kH: Int,
-                                      val dW: Int = 1,
-                                      val dH: Int = 1,
-                                      val padW: Int = 0,
-                                      val padH: Int = 0,
-                                      val nGroup: Int = 1,
-                                      val propagateBack: Boolean = true,
+@SerialVersionUID(3867434259731018006L)
+class SpatialConvolution[T: ClassTag](nInputPlane: Int,
+                                      nOutputPlane: Int,
+                                      kernelW: Int,
+                                      kernelH: Int,
+                                      strideW: Int = 1,
+                                      strideH: Int = 1,
+                                      padW: Int = 0,
+                                      padH: Int = 0,
+                                      nGroup: Int = 1,
+                                      propagateBack: Boolean = true,
                                       private var initMethod: InitializationMethod = Default
                                      )(implicit ev: TensorNumeric[T])
-  extends TensorModule[T] with MklModuleMethods{
+  extends AbstractSpatialConvolution[T]( nInputPlane,
+    nOutputPlane,
+    kernelW,
+    kernelH,
+    strideW,
+    strideH,
+    padW,
+    padH,
+    nGroup,
+    propagateBack,
+    initMethod) with MklModuleMethods{
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
@@ -62,25 +74,21 @@ class SpatialConvolution[T: ClassTag](val nInputPlane: Int,
     var backBias = 0L
   }
 
+  @transient
   val refs = new ConvRef
+  @transient
   val primitive = new ConvPrimitive
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
-
-  // TODO currently, we should convert all weights, which maybe can be omited.
-  val weight: Tensor[T] = Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup, kH, kW)
-  val gradWeight = Tensor[T]().resizeAs(weight)
-  val bias: Tensor[T] = Tensor[T](nOutputPlane)
-  val gradBias = Tensor[T](nOutputPlane)
 
   reset()
 
   private val im2colTime = 0L
   private val col2imTime = 0L
 
-  def getIm2ColTime: Double = im2colTime
-  def getCol2ImgTime: Double = col2imTime
+  override def getIm2ColTime: Double = im2colTime
+  override def getCol2ImgTime: Double = col2imTime
 
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
+  override def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
     this
   }
@@ -88,12 +96,12 @@ class SpatialConvolution[T: ClassTag](val nInputPlane: Int,
   override def reset(): Unit = {
     initMethod match {
       case Default =>
-        val stdv = 1.0 / math.sqrt(kW * kH * nInputPlane)
+        val stdv = 1.0 / math.sqrt(kernelW * kernelH * nInputPlane)
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
         bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
       case Xavier =>
-        val fanIn = nInputPlane * kH * kW
-        val fanOut = nOutputPlane * kH * kW
+        val fanIn = nInputPlane * kernelH * kernelW
+        val fanOut = nOutputPlane * kernelH * kernelW
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
@@ -102,7 +110,7 @@ class SpatialConvolution[T: ClassTag](val nInputPlane: Int,
   }
 
   private[this] def initLayerAttributes(input: Tensor[T]): Unit = {
-    val strides = Array[Long](dW, dH)
+    val strides = Array[Long](strideW, strideH)
     val pads = Array[Int](-padW, -padH)
 
     // set dimension = 4. because it seems that only support dimension 4 in mkl dnn
@@ -111,8 +119,8 @@ class SpatialConvolution[T: ClassTag](val nInputPlane: Int,
     val inputLayout = new MklLayout(dimension, Utils.getSize(input, dimension))
 
     val outputLayout = new MklLayout(4, Array(
-      Utils.computeOutput(inputLayout.size(0), padW, kW, dW), // width
-      Utils.computeOutput(inputLayout.size(1), padH, kH, dH), // height
+      Utils.computeOutput(inputLayout.size(0), padW, kernelW, strideW), // width
+      Utils.computeOutput(inputLayout.size(1), padH, kernelH, strideH), // height
       nOutputPlane, // channels
       inputLayout.size(3)// number
     ))
@@ -130,8 +138,8 @@ class SpatialConvolution[T: ClassTag](val nInputPlane: Int,
     }
 
     val weightLayout = new MklLayout(kernelDim, Array(
-      kW,
-      kH,
+      kernelW,
+      kernelH,
       nInputPlane / nGroup,
       nOutputPlane / nGroupMkl,
       nGroupMkl
@@ -377,10 +385,10 @@ class SpatialConvolution[T: ClassTag](val nInputPlane: Int,
 
     nInputPlane == other.nInputPlane &&
       nOutputPlane == other.nOutputPlane &&
-      kW == other.kW &&
-      kH == other.kH &&
-      dW == other.dW &&
-      dH == other.dH &&
+      kernelW == other.kernelW &&
+      kernelH == other.kernelH &&
+      strideW == other.strideW &&
+      strideH == other.strideH &&
       padW == other.padW &&
       padH == other.padH &&
       weight == other.weight &&
@@ -394,10 +402,10 @@ class SpatialConvolution[T: ClassTag](val nInputPlane: Int,
     var hash = super.hashCode()
     hash = hash * seed + nInputPlane.hashCode()
     hash = hash * seed + nOutputPlane.hashCode()
-    hash = hash * seed + kW.hashCode()
-    hash = hash * seed + kH.hashCode()
-    hash = hash * seed + dW.hashCode()
-    hash = hash * seed + dH.hashCode()
+    hash = hash * seed + kernelW.hashCode()
+    hash = hash * seed + kernelH.hashCode()
+    hash = hash * seed + strideW.hashCode()
+    hash = hash * seed + strideH.hashCode()
     hash = hash * seed + padW.hashCode()
     hash = hash * seed + padH.hashCode()
     hash = hash * seed + weight.hashCode()
@@ -408,8 +416,9 @@ class SpatialConvolution[T: ClassTag](val nInputPlane: Int,
     hash
   }
 
-  override def toString: String = {
-    s"mkl.SpatialConvolution($nInputPlane -> $nOutputPlane, $kW x $kH, $dW, $dH, $padW, $padH)"
+  override def toString: String = {s"""
+       |mkl.SpatialConvolution($nInputPlane -> $nOutputPlane, $kernelW x $kernelH,
+       |$strideW, $strideH, $padW, $padH)""".stripMargin.replaceAll("\n", "")
   }
 
   override def convertToMklDnn(prevModule: Option[AbstractModule[Activity, Activity, T]] = None)
