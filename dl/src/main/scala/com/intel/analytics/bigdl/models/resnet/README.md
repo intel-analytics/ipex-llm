@@ -17,15 +17,27 @@ ShortcutType is a unique feature defined in ResNet. ShortcutType-A is used for C
 Model is implemented in <code>ResNet</code>
 
 ##Training
-### Command for Local Train
-```bash
-./dist/bin/bigdl.sh -- java -cp dl/target/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.resnet.Train --env local -f /cifar-10 --batchSize 128 --core 4 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 --learningRate 0.1 -n 1
-```
+* bigdl.sh would setup the essential environment for you and it would accept a spark-submit command as an input parameter.
 
-### Command for Spark Train
-```bash
-./dist/bin/bigdl.sh -- java -cp dl/target/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.resnet.Train --env spark -f /cifar-10 --batchSize 448 --core 28 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 --learningRate 0.1 -n 4
-```
+* Local:
+    * Execute:
+
+        ```shell
+        ./bigdl.sh -- java -cp dl/target/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
+        com.intel.analytics.bigdl.models.resnet.Train --env local -f /cifar-10 --batchSize 128 --core 4 \
+        --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 --learningRate 0.1 -n 1
+        ```
+* Spark cluster:
+    * Execute:
+
+        ```shell
+        MASTER=xxx.xxx.xxx.xxx:xxxx
+        ./bigdl.sh -- spark-submit --master ${MASTER} --driver-memory 5g --executor-memory 5g \
+        --total-executor-cores 32 --executor-cores 8 --class com.intel.analytics.bigdl.models.resnet.Train \
+        bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar --env spark -f Cifar-10/ \
+        --batchSize 448 --core 28 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 \
+        --learningRate 0.1 -n 4
+        ```
 
 <code>Optimizer</code> class is used to train the model. Users can define validation method to evaluate the model. We use Top1Accurary as the validation method.
 
