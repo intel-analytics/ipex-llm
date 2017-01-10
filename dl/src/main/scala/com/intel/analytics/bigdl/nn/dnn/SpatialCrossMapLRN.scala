@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn.dnn
 
 import com.intel.analytics.bigdl.mkl.MklDnnFloat
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
+import com.intel.analytics.bigdl.nn.AbstractSpatialCrossMapLRN
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.{FloatType, MklTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -26,18 +27,21 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 import scala.language.implicitConversions
 
-class SpatialCrossMapLRN[T: ClassTag](val size: Int = 5,
-                                      val alpha: Double = 1.0,
-                                      val beta: Double = 0.75,
-                                      val k: Double = 1.0)(implicit ev: TensorNumeric[T])
-  extends TensorModule[T] with MklModuleMethods {
+@SerialVersionUID(- 3751059713747860692L)
+class SpatialCrossMapLRN[T: ClassTag](size: Int = 5,
+                                      alpha: Double = 1.0,
+                                      beta: Double = 0.75,
+                                      k: Double = 1.0)(implicit ev: TensorNumeric[T])
+  extends AbstractSpatialCrossMapLRN[T](size, alpha, beta, k) with MklModuleMethods {
 
   class LRNRef extends Ref[T] {
     val workspace = new MklTensor[T]()
   }
   class LRNPrimitive extends Primitive {}
 
+  @transient
   val refs = new LRNRef
+  @transient
   val primitive = new LRNPrimitive
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
