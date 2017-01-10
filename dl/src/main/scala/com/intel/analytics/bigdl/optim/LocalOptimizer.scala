@@ -52,6 +52,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
+    case MklDnn => 1
     case _ => throw new IllegalArgumentException
   }
 

@@ -40,9 +40,9 @@ class Pool[T: ClassTag](kW: Int,
   class PoolPrimitive extends Primitive {}
 
   @transient
-  val refs = new PoolRef
+  var refs: PoolRef = null
   @transient
-  val primitive = new PoolPrimitive
+  var primitive: PoolPrimitive = null
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
   override def ceil(): Pool[T] = {
@@ -54,6 +54,9 @@ class Pool[T: ClassTag](kW: Int,
   }
 
   private[this] def initLayerAttributes(input: Tensor[T]): Unit = {
+    if (refs == null) { refs = new PoolRef }
+    if (primitive == null) { primitive = new PoolPrimitive }
+
     val strides = Array[Long](dW, dH)
     val pads = Array[Int](-padW, -padH)
 

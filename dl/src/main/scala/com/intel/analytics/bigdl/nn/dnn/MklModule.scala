@@ -120,6 +120,7 @@ trait MklModuleMethods {
     }
   }
 
+  @transient
   private[this] var _isInited: Boolean = false
   private[this] var _nextModuleType: ModuleType = BLAS
   private[this] var _prevModuleType: ModuleType = BLAS

@@ -35,12 +35,15 @@ class ReLU[T: ClassTag](ip: Boolean = false)
   class ReLUPrimitive extends Primitive {}
 
   @transient
-  val refs = new ReLURef
+  var refs: ReLURef = null
   @transient
-  val primitive = new ReLUPrimitive
+  var primitive: ReLUPrimitive = null
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
   private[this] def initLayerAttributes(input: Tensor[T]): Unit = {
+    if (refs == null) { refs = new ReLURef }
+    if (primitive == null) { primitive = new ReLUPrimitive }
+
     val dimension = input.dim()
     // input and output layout
     val ioLayout = new MklLayout(dimension, Array(

@@ -75,9 +75,9 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
   }
 
   @transient
-  val refs = new ConvRef
+  var refs: ConvRef = null
   @transient
-  val primitive = new ConvPrimitive
+  var primitive: ConvPrimitive = null
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
   reset()
@@ -110,6 +110,9 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
   }
 
   private[this] def initLayerAttributes(input: Tensor[T]): Unit = {
+    if (refs == null) { refs = new ConvRef }
+    if (primitive == null) { primitive = new ConvPrimitive }
+
     val strides = Array[Long](strideW, strideH)
     val pads = Array[Int](-padW, -padH)
 

@@ -59,9 +59,9 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
   }
 
   @transient
-  val primitive = new Primitive
+  var primitive: Primitive = null
   @transient
-  val refs = new Ref
+  var refs: Ref = null
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
   var coefficients: Array[T] = null
@@ -121,6 +121,9 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
 
   private[this] def initConcat(inputs: Array[Tensor[T]]): Unit = {
     require(inputs.length > 0, s"input of concat is not satisfied.")
+
+    if (refs == null) { refs = new Ref }
+    if (primitive == null) { primitive = new Primitive }
 
     var channels = 0 // output channels
     val numConcats = inputs.length

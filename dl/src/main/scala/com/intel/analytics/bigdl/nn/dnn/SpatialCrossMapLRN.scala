@@ -40,12 +40,15 @@ class SpatialCrossMapLRN[T: ClassTag](size: Int = 5,
   class LRNPrimitive extends Primitive {}
 
   @transient
-  val refs = new LRNRef
+  var refs: LRNRef = null
   @transient
-  val primitive = new LRNPrimitive
+  var primitive: LRNPrimitive = null
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
   private[this] def initLayerAttributes(input: Tensor[T]): Unit = {
+    if (refs == null) { refs = new LRNRef }
+    if (primitive == null) { primitive = new LRNPrimitive }
+
     val dimension = 4
 
     val inputLayout = new MklLayout(4, Utils.getSize(input, dimension))

@@ -47,9 +47,9 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
   }
 
   @transient
-  val refs = new BNRef
+  var refs: BNRef = null
   @transient
-  val primitive = new BNPrimitive
+  var primitive: BNPrimitive = null
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
   override def reset(): Unit = {
@@ -58,6 +58,9 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
   }
 
   private[this] def initLayerAttributes(input: Tensor[T]): Unit = {
+    if (refs == null) { refs = new BNRef }
+    if (primitive == null) { primitive = new BNPrimitive }
+
     val dimension = 4
     val inputLayout = new MklLayout(dimension, Utils.getSize(input, dimension))
 

@@ -50,9 +50,9 @@ class Linear[T: ClassTag](inputSize: Int,
   }
 
   @transient
-  val refs = new LinearRef
+  var refs: LinearRef = null
   @transient
-  val primitive = new LinearPrimitive
+  var primitive: LinearPrimitive = null
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
   override def setInitMethod(initMethod: InitializationMethod): this.type = {
@@ -77,6 +77,9 @@ class Linear[T: ClassTag](inputSize: Int,
   }
 
   private[this] def initLayerAttributes(input: Tensor[T]): Unit = {
+    if (refs == null) { refs = new LinearRef }
+    if (primitive == null) { primitive = new LinearPrimitive }
+
     val dimension = 2
 
     val inputLayout = new MklLayout(
