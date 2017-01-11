@@ -155,10 +155,13 @@ class Pool[T: ClassTag](kW: Int,
     if (this.nextModuleType == DNN) {
       this.output = refs.output
     } else {
+      output.resizeAs(refs.output)
       refs.output.backToUsr(output)
     }
 
-    refs.input.setConverted(true)
+    if (this.isTraining()) {
+      refs.input.setConverted(true)
+    }
 
     this.output
   }
@@ -179,11 +182,14 @@ class Pool[T: ClassTag](kW: Int,
     if (this.prevModuleType == DNN) {
       this.gradInput = refs.gradInput
     } else {
-      this.gradInput.zero()
+      gradInput.resizeAs(refs.gradInput)
+      gradInput.zero()
       refs.gradInput.backToUsr(gradInput)
     }
 
-    refs.input.setConverted(false)
+    if (this.isTraining()) {
+      refs.input.setConverted(false)
+    }
 
     this.gradInput
   }

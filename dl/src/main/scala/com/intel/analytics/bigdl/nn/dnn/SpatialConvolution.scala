@@ -305,10 +305,13 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
     if (this.nextModuleType == DNN) {
       this.output = refs.output
     } else {
+      output.resizeAs(refs.output)
       refs.output.backToUsr(output)
     }
 
-    refs.input.setConverted(true)
+    if (this.isTraining()) {
+      refs.input.setConverted(true)
+    }
 
     this.output
   }
@@ -328,6 +331,7 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
       if (this.prevModuleType == DNN) {
         this.gradInput = this.refs.gradInput
       } else {
+        gradInput.resizeAs(refs.gradInput)
         refs.gradInput.backToUsr(gradInput)
       }
     }
@@ -364,7 +368,9 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
       refs.gradBias.backToUsr(gradBias)
     }
 
-    refs.input.setConverted(false)
+    if (this.isTraining()) {
+      refs.input.setConverted(false)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {

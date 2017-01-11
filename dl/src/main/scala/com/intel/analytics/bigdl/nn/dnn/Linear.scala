@@ -55,6 +55,8 @@ class Linear[T: ClassTag](inputSize: Int,
   var primitive: LinearPrimitive = null
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
+  reset()
+
   override def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
     this
@@ -221,7 +223,14 @@ class Linear[T: ClassTag](inputSize: Int,
     if (this.nextModuleType == DNN) {
       this.output = refs.output
     } else {
+      output.resizeAs(refs.output)
       refs.output.backToUsr(output)
+    }
+
+    if (this.isTraining()) {
+      refs.input.setConverted(true)
+      refs.bias.setConverted(true)
+      refs.weight.setConverted(true)
     }
 
     this.output
@@ -240,7 +249,14 @@ class Linear[T: ClassTag](inputSize: Int,
     if (this.prevModuleType == DNN) {
       this.gradInput = this.refs.gradInput
     } else {
+      gradInput.resizeAs(refs.gradInput)
       refs.gradInput.backToUsr(gradInput)
+    }
+
+    if (this.isTraining()) {
+      refs.input.setConverted(false)
+      refs.bias.setConverted(false)
+      refs.weight.setConverted(false)
     }
 
     this.gradInput

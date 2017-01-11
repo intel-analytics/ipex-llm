@@ -491,7 +491,9 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
                    sizes: Array[Int] = null,
                    strides: Array[Int] = null): Tensor[T] = returnTensor()
 
-  override def set(): Tensor[T] = returnTensor()
+  override def set(): Tensor[T] = {
+    this
+  }
 
   override def transpose(dim1: Int, dim2: Int): Tensor[T] = returnTensor()
 

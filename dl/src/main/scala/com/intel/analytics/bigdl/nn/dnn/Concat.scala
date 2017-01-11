@@ -359,6 +359,7 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
     if (this.nextModuleType == DNN) {
       this.output = refs.concat.output
     } else {
+      this.output.resizeAs(refs.concat.output)
       refs.concat.output.backToUsr(this.output)
     }
 
@@ -429,6 +430,7 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
     if (this.prevModuleType == DNN) {
       this.gradInput = refs.sum.gradInput
     } else {
+      this.gradInput.resizeAs(refs.sum.gradInput)
       refs.sum.gradInput.backToUsr(this.gradInput)
     }
 

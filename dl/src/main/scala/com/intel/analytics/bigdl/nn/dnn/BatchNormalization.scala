@@ -140,7 +140,12 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
     if (this.nextModuleType == DNN) {
       this.output = refs.output
     } else {
+      output.resizeAs(refs.output)
       refs.output.backToUsr(output)
+    }
+
+    if (this.isTraining()) {
+      refs.input.setConverted(true)
     }
 
     this.output
@@ -162,8 +167,14 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
     if (this.prevModuleType == DNN) {
       this.gradInput = this.refs.gradInput
     } else {
+      gradInput.resizeAs(refs.gradInput)
       refs.gradInput.backToUsr(gradInput)
     }
+
+    if (this.isTraining()) {
+      refs.input.setConverted(false)
+    }
+
     this.gradInput
   }
 

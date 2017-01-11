@@ -82,6 +82,7 @@ object DistriOptimizer {
       "neval" -> state.get[Int]("neval").getOrElse(1))
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
+      case MklDnn => 1
       case _ => throw new IllegalArgumentException()
     }
     var accumulateCount = 0
@@ -351,6 +352,7 @@ object DistriOptimizer {
     val broadcast = sc.broadcast((model, criterion, state))
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
+      case MklDnn => 1
       case _ => throw new IllegalArgumentException
     }
 
@@ -427,6 +429,7 @@ object DistriOptimizer {
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
+      case MklDnn => 1
       case _ => throw new IllegalArgumentException
     }
     ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
