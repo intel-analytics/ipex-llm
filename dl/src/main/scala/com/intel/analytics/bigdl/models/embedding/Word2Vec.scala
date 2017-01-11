@@ -18,11 +18,11 @@ package com.intel.analytics.bigdl.models.embedding
 
 import breeze.linalg.argsort
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, SampleToBatch, Transformer}
 import com.intel.analytics.bigdl.models.embedding.Utils.Word2VecConfig
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.rdd.RDD
@@ -43,24 +43,27 @@ object Word2Vec {
   def apply(params: Word2VecConfig): Word2Vec = new Word2Vec(params)
 }
 
-class Word2Vec(val params: Word2VecConfig) {
+class Word2Vec(val params: Word2VecConfig)
+  extends Serializable {
   private var trainWordsCount = 0L
   private var vocabSize = 0
   private var powerSum = 0
+  private val minCount = params.minCount
   @transient private var vocab: Array[WordCount] = _
   @transient private var word2Id = mutable.HashMap.empty[String, Int]
   @transient private var powerUnigram: Array[Int] = _
-  var wordVectors = LookupTable(vocabSize, params.embeddingSize)
+  var wordVectors: LookupTable[Float] = _
   val log: Logger = LoggerFactory.getLogger(this.getClass)
 
   def getModel: Module[Float] = {
+    wordVectors = LookupTable(vocabSize, params.embeddingSize)
     new Sequential()
       .add(wordVectors)
-      .add(SplitTable(1))
+      .add(SplitTable(1, 2))
       .add(ConcatTable()
         .add(Sequential()
           .add(NarrowTable(2, -1))
-          .add(JoinTable(1)))
+          .add(JoinTable(1, 2)))
         .add(SelectTable(1)))
       .add(MM(transA = false, transB = true))
       .add(Sigmoid())
@@ -69,7 +72,7 @@ class Word2Vec(val params: Word2VecConfig) {
   def buildVocab(words: RDD[String]): Unit = {
     vocab = words.map(w => (w, 1))
       .reduceByKey(_ + _)
-      .filter(_._2 >= params.minCount)
+      .filter(_._2 >= minCount)
       .map(x => WordCount(x._1, x._2))
       .collect()
       .sortWith((a, b) => a.count > b.count)
@@ -101,17 +104,17 @@ class Word2Vec(val params: Word2VecConfig) {
     def wordProb(id: Int) = math.pow(vocab(id).count, params.alpha) / powerSum
 
     var wordId = 1
-    var idx = 1
+    var idx = 0
     var powerProb = wordProb(wordId)
     while (idx < powerSum) {
       powerUnigram(idx) = wordId
-      if (idx / powerSum > powerProb) {
+      if (idx / powerSum.toDouble > powerProb) {
         wordId += 1
-        powerProb = wordProb(wordId)
+        powerProb += wordProb(wordId)
       }
 
-      if (wordId > powerSum) {
-        wordId -= 1
+      if (wordId >= vocab.length - 1) {
+        wordId = vocab.length - 2
       }
 
       idx += 1
@@ -135,23 +138,24 @@ class Word2Vec(val params: Word2VecConfig) {
     context: Int): Tensor[Float] = {
     val contexts = Tensor(params.numNegSamples + 2)
     contexts.setValue(1, word)
-    contexts.setValue(1, context)
+    contexts.setValue(2, context)
     var i = 3
     while (i <= params.numNegSamples + 2) {
       // Sample a negative context
-      val negContext = powerUnigram(math.ceil(RNG.uniform(1, powerSum)).toInt)
+      val negContext = powerUnigram(RNG.uniform(0, powerSum).toInt)
       if (context != negContext) {
         contexts.setValue(i, negContext)
         i += 1
       }
     }
-    contexts
+    contexts.view(1, contexts.size(1))
   }
 
   def transformToBatch(): Transformer[Seq[String], MiniBatch[Float]] = {
     (WordsToIds(word2Id, params.maxSentenceLength)
       -> Subsampling(params.subsample, trainWordsCount, vocab)
-      -> SentenceToMiniBatch(powerUnigram, params.numNegSamples, params.windowSize))
+      -> SentenceToSamples(powerUnigram, params.numNegSamples, params.windowSize)
+      -> SampleToBatch(16))
   }
 
   def fit[S <: Iterable[String]](dataset: RDD[S]): Unit = {
@@ -231,11 +235,12 @@ class Word2Vec(val params: Word2VecConfig) {
     override def apply(prev: Iterator[Seq[String]]): Iterator[Seq[Int]] =
       prev.map(words => {
         var sentenceLength = 0
-        while (sentenceLength < maxSentenceLength) {
+        while (sentenceLength < words.length &&
+          sentenceLength < maxSentenceLength) {
           val word = word2Id.get(words(sentenceLength))
           word match {
             case Some(w) =>
-              sentence += w
+              sentence += w + 1
               sentenceLength += 1
             case None =>
           }
@@ -294,23 +299,17 @@ class Word2Vec(val params: Word2VecConfig) {
    * @param window The number of words to predict to the left
    *                   and right of the target word.
    */
-  case class SentenceToMiniBatch(
+  case class SentenceToSamples(
     powerUnigram: Array[Int],
     numNegSamples: Int,
     window: Int)
-    extends Transformer[Seq[Int], MiniBatch[Float]] {
-    val joinTable = JoinTable(1)
-
-    override def apply(prev: Iterator[Seq[Int]]): Iterator[MiniBatch[Float]] = {
-      val label = Tensor(numNegSamples + 1).zero()
-      label.setValue(1, 1)
-
-      prev.map(sentence => {
-        val inputTable = T()
-        val labelTable = T()
+    extends Transformer[Seq[Int], Sample[Float]] {
+    override def apply(prev: Iterator[Seq[Int]]): Iterator[Sample[Float]] = {
+      prev.flatMap(sentence => {
+        val samples = mutable.ArrayBuilder.make[Sample[Float]]
         sentence.zipWithIndex.foreach {
-          case (i, word) =>
-            val reducedWindow = RNG.uniform(0, window).toInt
+          case (word, i) =>
+            val reducedWindow = RNG.uniform(1, window + 1).toInt
             var j = i - reducedWindow
             j = if (j < 0) 0 else j
 
@@ -318,20 +317,52 @@ class Word2Vec(val params: Word2VecConfig) {
               if (j != i) {
                 val context = sentence(j)
                 val sample = sampleContexts(powerUnigram, word, context)
-                inputTable.insert(sample)
-                labelTable.insert(label)
+                samples += new Sample(sample, Tensor(T(1f)))
               }
               j += 1
             }
         }
-
-        val inputTensor =
-          joinTable.updateOutput(inputTable)
-        val labelTensor =
-          joinTable.updateOutput(labelTable)
-
-        MiniBatch(inputTensor, labelTensor)
+        samples.result()
       })
     }
   }
+
+
+//  /**
+//   * Batching samples into mini-batch
+//   * @param batchSize The desired mini-batch size.
+//   */
+//  case class SampleToBatch(batchSize: Int)
+//    extends Transformer[Seq[Sample[Float]], MiniBatch[Float]] {
+//    override def apply(prev: Iterator[Seq[Sample[Float]]]): Iterator[MiniBatch[Float]] = {
+//      new Iterator[MiniBatch[Float]] {
+//        private val featureTensor: Tensor[Float] = Tensor[Float]()
+//        private val labelTensor: Tensor[Float] = Tensor[Float]()
+//        private var featureData: Array[Float] = _
+//        private var labelData: Array[Float] = _
+//
+//        override def hasNext: Boolean = prev.hasNext
+//
+//        override def next(): MiniBatch[Float] = {
+//          var i = 0
+//          while (i < batchSize && prev.hasNext) {
+//            val sample = prev.next()
+//            if (featureData == null) {
+//              featureData = new Array[Float](batchSize * sampleSize)
+//              labelData = new Array[Float](batchSize)
+//            }
+//            Array.copy(sample._1.flatten, 0,
+//              featureData, i * sampleSize, sampleSize)
+//            labelData(i) = sample._2
+//            i += 1
+//          }
+//          featureTensor.set(Storage[Float](featureData),
+//            storageOffset = 1, sizes = Array(i) ++ sampleShape)
+//          labelTensor.set(Storage[Float](labelData),
+//            storageOffset = 1, sizes = Array(i))
+//          MiniBatch(featureTensor.transpose(2, 3), labelTensor)
+//        }
+//      }
+//    }
+//  }
 }

@@ -47,25 +47,17 @@ object Train {
 
     val word2Vec = Word2Vec(params)
 
-    val model = if (params.modelSnapshot.isDefined) {
-      Module.load[Float](params.modelSnapshot.get)
-    } else {
-      word2Vec.getModel
-    }
-
-    val state = if (params.stateSnapshot.isDefined) {
-      T.load(params.stateSnapshot.get)
-    } else {
-      T(
-        "learningRate" -> params.learningRate
-      )
-    }
-
     val tokens = DataSet.rdd(sc.textFile(params.trainDataLocation)) -> Tokenizer()
 
     word2Vec.fit(tokens.toDistributed().data(false))
 
     val trainSet = tokens -> word2Vec.transformToBatch
+
+    val model = if (params.modelSnapshot.isDefined) {
+      Module.load[Float](params.modelSnapshot.get)
+    } else {
+      word2Vec.getModel
+    }
 
     val optimizer = Optimizer(
       model = model,
@@ -76,6 +68,13 @@ object Train {
       optimizer.setCheckpoint(params.checkpoint.get, Trigger.everyEpoch)
     }
 
+    val state = if (params.stateSnapshot.isDefined) {
+      T.load(params.stateSnapshot.get)
+    } else {
+      T(
+        "learningRate" -> params.learningRate
+      )
+    }
     optimizer
       .setState(state)
       .setOptimMethod(new SGD())

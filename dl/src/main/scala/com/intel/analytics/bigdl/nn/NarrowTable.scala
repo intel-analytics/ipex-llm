@@ -44,7 +44,7 @@ class NarrowTable[T: ClassTag](var offset: Int, val length: Int = 1)
     }
 
     var i = 1
-    while (i <= length) {
+    while (i <= len) {
       output.insert(i, input(offset + i -1))
       i += 1
     }
