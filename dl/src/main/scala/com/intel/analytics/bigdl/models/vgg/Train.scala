@@ -86,6 +86,9 @@ object Train {
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
+      if(param.overWriteCheckpoint) {
+        optimizer.overWriteCheckpoint()
+      }
       optimizer
         .setValidation(Trigger.everyEpoch, validateSet, Array(new Top1Accuracy[Float]))
         .setState(state)

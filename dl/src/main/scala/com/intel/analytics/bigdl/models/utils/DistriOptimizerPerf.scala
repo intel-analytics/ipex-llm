@@ -51,9 +51,9 @@ object DistriOptimizerPerf {
       .text("core number of each nodes")
       .action((v, p) => p.copy(corePerNode = v))
       .required()
-    opt[Int]('i', "iteration")
-      .text("Iteration of perf test. The result will be average of each iteration time cost")
-      .action((v, p) => p.copy(iteration = v))
+    opt[Int]('e', "maxEpoch")
+      .text("epoch numbers of the test")
+      .action((v, p) => p.copy(maxEpoch = v))
     opt[String]('t', "type")
       .text("Data type. It can be float | double")
       .action((v, p) => p.copy(dataType = v))
@@ -124,7 +124,7 @@ object DistriOptimizerPerf {
       }).persist()
     rdd.count()
     val dummyDataSet = new DistributedDataSet[MiniBatch[Float]] {
-      override def size(): Long = 100000
+      override def size(): Long = 10000
       override def shuffle(): Unit = {}
       override def originRDD(): RDD[_] = rdd
       override def data(train: Boolean): RDD[MiniBatch[Float]] = rdd
@@ -135,13 +135,13 @@ object DistriOptimizerPerf {
       dummyDataSet,
       criterion
     )
-    optimizer.setEndWhen(Trigger.maxIteration(param.iteration)).optimize()
+    optimizer.setEndWhen(Trigger.maxEpoch(param.maxEpoch)).optimize()
   }
 }
 
 case class DistriOptimizerPerfParam(
   batchSize: Int = 128,
-  iteration: Int = 50,
+  maxEpoch: Int = 5,
   nodeNumber: Int = -1,
   corePerNode: Int = -1,
   dataType: String = "float",

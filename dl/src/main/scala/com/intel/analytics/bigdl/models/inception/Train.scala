@@ -89,15 +89,29 @@ object TrainInceptionV1 {
         criterion = new ClassNLLCriterion[Float]()
       )
 
+      val (checkpointTrigger, testTrigger, endTrigger) = if (param.maxEpoch.isDefined) {
+        (Trigger.everyEpoch, Trigger.everyEpoch, Trigger.maxEpoch(param.maxEpoch.get))
+      } else {
+        (
+          Trigger.severalIteration(620),
+          Trigger.severalIteration(620),
+          Trigger.maxIteration(param.maxIteration)
+          )
+      }
+
       if (param.checkpoint.isDefined) {
-        optimizer.setCheckpoint(param.checkpoint.get, Trigger.severalIteration(620))
+        optimizer.setCheckpoint(param.checkpoint.get, checkpointTrigger)
+      }
+
+      if(param.overWriteCheckpoint) {
+        optimizer.overWriteCheckpoint()
       }
 
       optimizer
         .setState(state)
-        .setValidation(Trigger.severalIteration(620),
+        .setValidation(testTrigger,
           valSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
-        .setEndWhen(Trigger.maxIteration(62000))
+        .setEndWhen(endTrigger)
         .optimize()
     })
   }

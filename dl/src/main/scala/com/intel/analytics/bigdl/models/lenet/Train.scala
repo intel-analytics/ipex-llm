@@ -80,6 +80,9 @@ object Train {
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
+      if(param.overWriteCheckpoint) {
+        optimizer.overWriteCheckpoint()
+      }
 
       val validationSet = (if (sc.isDefined) {
         DataSet.array(load(validationData, validationLabel), sc.get)

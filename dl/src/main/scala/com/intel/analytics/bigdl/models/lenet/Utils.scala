@@ -40,7 +40,8 @@ object Utils {
     maxEpoch: Int = 15,
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
-    env: String = "local"
+    env: String = "local",
+    overWriteCheckpoint: Boolean = false
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Lenet Train Example") {
@@ -82,6 +83,9 @@ object Utils {
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
+    opt[Unit]("overWrite")
+      .text("overwrite checkpoint files")
+      .action( (_, c) => c.copy(overWriteCheckpoint = true) )
     opt[String]("env")
       .text("execution environment")
       .validate(x => {

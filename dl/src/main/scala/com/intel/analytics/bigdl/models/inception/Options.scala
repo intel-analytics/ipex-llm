@@ -31,7 +31,10 @@ object Options {
     classNumber: Int = 1000,
     batchSize: Int = -1,
     learningRate: Double = 0.01,
-    env: String = "local"
+    env: String = "local",
+    overWriteCheckpoint: Boolean = false,
+    maxEpoch: Option[Int] = None,
+    maxIteration: Int = 62000
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
@@ -55,6 +58,12 @@ object Options {
       .text("nodes number to train the model")
       .action((x, c) => c.copy(nodeNumber = x))
       .required()
+    opt[Int]('e', "maxEpoch")
+      .text("epoch numbers")
+      .action((x, c) => c.copy(maxEpoch = Some(x)))
+    opt[Int]('i', "maxIteration")
+      .text("iteration numbers")
+      .action((x, c) => c.copy(maxIteration = x))
     opt[Double]('l', "learningRate")
       .text("inital learning rate")
       .action((x, c) => c.copy(learningRate = x))
@@ -66,6 +75,9 @@ object Options {
     opt[Int]("classNum")
       .text("class number")
       .action((x, c) => c.copy(classNumber = x))
+    opt[Unit]("overWrite")
+      .text("overwrite checkpoint files")
+      .action( (_, c) => c.copy(overWriteCheckpoint = true) )
     opt[String]("env")
       .text("execution environment")
       .validate(x => {
