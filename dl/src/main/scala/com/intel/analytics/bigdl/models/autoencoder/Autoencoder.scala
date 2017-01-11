@@ -32,11 +32,11 @@ object Autoencoder {
 
   def apply(classNum: Int): Module[Float] = {
     val model = Sequential[Float]()
-    model.add(new Reshape(Array(featureSize)))
-    model.add(new Linear(featureSize, classNum))
-    model.add(new ReLU[Float]())
-    model.add(new Linear(classNum, featureSize))
-    model.add(new Sigmoid[Float]())
+    model.add(Reshape(Array(featureSize)))
+    model.add(Linear(featureSize, classNum))
+    model.add(ReLU[Float]())
+    model.add(Linear(classNum, featureSize))
+    model.add(Sigmoid[Float]())
     model
   }
 }

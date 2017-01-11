@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToBatc
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.{Engine, MklDnn, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
@@ -56,6 +56,10 @@ object Train {
         Module.load[Float](param.modelSnapshot.get)
       } else {
         LeNet5(classNum = 10)
+      }
+
+      if (Engine.getEngineType() == MklDnn) {
+        model.convertToMklDnn()
       }
 
       val state = if (param.stateSnapshot.isDefined) {
