@@ -41,7 +41,7 @@ class Dictionary()
 
    def vocabulary(): Array[String] = _vocabulary.toArray
 
-   def discardVocab(): Array[String] = _disvardVocab.toArray
+   def discardVocab(): Array[String] = _discardVocab.toArray
 
    def getIndex(word: String): Int = {
      _word2index.getOrElse(word, _vocabSize)
@@ -57,7 +57,7 @@ class Dictionary()
 
    def getWord(index: Int): String = {
      _index2word.getOrElse(index,
-       _disvardVocab(Random.nextInt(_discardSize)))
+       _discardVocab(Random.nextInt(_discardSize)))
    }
 
    def print(): Unit = {
@@ -66,7 +66,7 @@ class Dictionary()
    }
 
    def printDiscard(): Unit = {
-     _disvardVocab.foreach(x =>
+     _discardVocab.foreach(x =>
        logger.info(x))
    }
 
@@ -85,8 +85,8 @@ class Dictionary()
      _vocabSize = _vocabulary.length
      _word2index = _vocabulary.zipWithIndex.toMap
      _index2word = _word2index.map(x => (x._2, x._1))
-     _disvardVocab = freqDict.take(freqDict.length - length).map(_._1)
-     _discardSize = _disvardVocab.length
+     _discardVocab = freqDict.take(freqDict.length - length).map(_._1)
+     _discardSize = _discardVocab.length
    }
 
    def this(directory: String) = {
@@ -109,9 +109,9 @@ class Dictionary()
      _index2word = _word2index.map(x => (x._2, x._1))
      _vocabulary = _word2index.keys.toSeq
      _vocabSize = _word2index.size
-     _disvardVocab = Source.fromFile(discardFile.getAbsolutePath)
+     _discardVocab = Source.fromFile(discardFile.getAbsolutePath)
        .getLines().toSeq
-     _discardSize = _disvardVocab.length
+     _discardSize = _discardVocab.length
    }
 
    val logger = Logger.getLogger(getClass)
@@ -120,12 +120,12 @@ class Dictionary()
    private var _word2index: Map[String, Int] = null
    private var _index2word: Map[Int, String] = null
    private var _vocabulary: Seq[String] = null
-   private var _disvardVocab: Seq[String] = null
+   private var _discardVocab: Seq[String] = null
 }
 
 object Dictionary {
   def apply(sentences: Array[Array[String]],
-            vocabSize: Int)
+            vocabSize: Int = 10000)
   : Dictionary = new Dictionary(sentences, vocabSize)
   def apply(directory: String)
   : Dictionary = new Dictionary(directory)
