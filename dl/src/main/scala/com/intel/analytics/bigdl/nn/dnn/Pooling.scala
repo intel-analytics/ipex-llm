@@ -158,6 +158,8 @@ class Pool[T: ClassTag](kW: Int,
       refs.output.backToUsr(output)
     }
 
+    refs.input.setConverted(true)
+
     this.output
   }
 
@@ -180,6 +182,8 @@ class Pool[T: ClassTag](kW: Int,
       this.gradInput.zero()
       refs.gradInput.backToUsr(gradInput)
     }
+
+    refs.input.setConverted(false)
 
     this.gradInput
   }

@@ -5,8 +5,27 @@
 #include <omp.h>
 #include <sched.h>
 
+#if __STDC_VERSION__ >= 199901L
+#define _XOPEN_SOURCE 600
+#else
+#define _XOPEN_SOURCE 500
+#endif /* __STDC_VERSION__ */
+#include <time.h>
+
 #include "com_intel_analytics_bigdl_mkl_MklDnnFloat.h"
 #include "debug.h"
+
+#define PERFSTART() \
+  do { \
+    struct timespec start, end; \
+    clock_gettime(CLOCK_MONOTONIC, &start);
+
+#define PERFEND(x) \
+    clock_gettime(CLOCK_MONOTONIC, &end); \
+  } while(0);
+
+    // fprintf(stderr, x " %lf\n", (end.tv_sec - start.tv_sec) * 1000 + \
+           (double)(end.tv_nsec - start.tv_nsec) / 1000000); \
 
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
@@ -118,7 +137,9 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_conversion
   resources[dnnResourceFrom] = (void*)(jUsr + offset);
   resources[dnnResourceTo]   = (void*)jMkl;
 
+  PERFSTART();
   status = dnnExecute_F32(jPrimitive, resources);
+  PERFEND("conversion usr->mkl costs");
   CHECK_EQ(status, E_SUCCESS);
 
   (*env)->ReleasePrimitiveArrayCritical(env, usr, jUsr, 0);
@@ -143,7 +164,9 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_conversion
   resources[dnnResourceFrom] = (void*)jMkl;
   resources[dnnResourceTo]   = (void*)(jUsr + offset);
 
+  PERFSTART();
   status = dnnExecute_F32(jPrimitive, resources);
+  PERFEND("conversion mkl->usr costs");
   CHECK_EQ(status, E_SUCCESS);
 
   (*env)->ReleasePrimitiveArrayCritical(env, usr, jUsr, 0);
@@ -208,7 +231,9 @@ void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_conversionExecuteMkl
   resources[dnnResourceFrom] = (void*)jSrc;
   resources[dnnResourceTo]   = (void*)jDst;
 
+  PERFSTART();
   status = dnnExecute_F32(jPrimitive, resources);
+  PERFEND("conversion mkl->mkl costs");
   CHECK_EQ(status, E_SUCCESS);
 }
 
@@ -234,7 +259,9 @@ jint JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_execute
     res[i] = (void*)jResources[i];
   }
   dnnError_t status = E_UNIMPLEMENTED;
+  PERFSTART();
   status = dnnExecute_F32(jPrimitive, res);
+  PERFEND("execute costs");
   CHECK_EQ(status, E_SUCCESS);
   (*env)->ReleasePrimitiveArrayCritical(env, resources, jResources, 0);
 

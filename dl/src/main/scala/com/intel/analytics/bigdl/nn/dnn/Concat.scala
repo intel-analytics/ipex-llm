@@ -31,7 +31,9 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
   extends AbstractConcat[T](dimension) {
 
   class ConcatRef {
-    var inputs: Array[MklTensor[T]] = null //  we don't known the length of modules
+    var inputs: Array[MklTensor[T]] = null
+    //  we don't known the length of modules
+    var inputsUsr: Array[Tensor[T]] = null
     val output = new MklTensor[T]()
   }
 
@@ -134,8 +136,10 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
     val layouts = new Array[MklLayout](numConcats) // for creating conversion
 
     refs.concat.inputs = new Array[MklTensor[T]](numConcats)
+    refs.concat.inputsUsr = new Array[Tensor[T]](numConcats)
     for (i <- 0 until numConcats) {
       refs.concat.inputs(i) = new MklTensor[T]()
+      refs.concat.inputsUsr(i) = Tensor[T]()
     }
 
     for (i <- 0 until numConcats) {
@@ -175,6 +179,7 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
     // create conversion
     for (i <- 0 until numConcats) {
       refs.concat.inputs(i).resizeAs(inputs(i))
+      refs.concat.inputsUsr(i).resizeAs(inputs(i))
       refs.concat.inputs(i).createConversion(layouts(i), primitive.concat,
         ResourceType.dnnResourceMultipleSrc + i)
     }
@@ -333,7 +338,13 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
     }
 
     for (i <- modules.indices) {
-      refs.concat.inputs(i).set(modules(i).output.asInstanceOf[Tensor[T]], usrOnly = true)
+      val tensor = modules(i).output.asInstanceOf[Tensor[T]]
+      if (tensor.dim() >= 4) {
+        refs.concat.inputs(i).set(modules(i).output.asInstanceOf[Tensor[T]])
+      } else {
+        refs.concat.inputs(i).backToUsr(refs.concat.inputsUsr(i))
+        refs.concat.inputs(i).set(refs.concat.inputsUsr(i))
+      }
     }
 
     java.util.Arrays.fill(resources, 0)

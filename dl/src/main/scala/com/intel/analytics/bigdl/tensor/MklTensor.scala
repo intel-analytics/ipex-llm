@@ -48,6 +48,11 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
 
   private[this] var _internalToMkl: Long = 0L
 
+  var hasConverted = false
+  def setConverted(value: Boolean): Unit = {
+    hasConverted = value
+  }
+
   var _size = Array[Int]()
   var _stride = Array[Int]()
 
@@ -68,8 +73,8 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
    * @param inplace if it's true, it will not create a new storage and copy
    * @return current mkl tensor
    */
-  def set(other: Tensor[T], inplace: Boolean, usrOnly: Boolean): Tensor[T] = {
-    if (other.isMklTensor() && !usrOnly) {
+  def set(other: Tensor[T], inplace: Boolean): Tensor[T] = {
+    if (other.isMklTensor()) {
       val otherTensor = other.asInstanceOf[MklTensor[T]]
       val currLayout = this.layoutMkl
       val otherLayout = other.asInstanceOf[MklTensor[T]].layoutMkl
@@ -87,7 +92,7 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
         // TODO mem leak
         ev.getType() match {
           case FloatType =>
-            val buffer = if (interStorage != 0) {
+            val buffer = if (interStorage == 0) {
               MklDnnFloat.allocateBuffer(otherTensor.layoutMkl)
             } else {
               interStorage
@@ -111,11 +116,7 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
   }
 
   override def set(other: Tensor[T]): Tensor[T] = {
-    this.set(other, true, false)
-  }
-
-  def set(other: Tensor[T], usrOnly: Boolean): Tensor[T] = {
-    this.set(other, true, usrOnly)
+    this.set(other, true)
   }
 
   def createUsrLayout(dimension: Int, size: Array[Long], strides: Array[Long]): Unit = {
@@ -212,24 +213,27 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
     // 2. otherwise convert usr storage to mkl storage
 
     // internal storage layout is same as mkl storage layout
-    if (internalToMkl == 0 && interStorage != 0) {
-      setMklStorage(interStorage)
-    } else if (internalToMkl != 0) {
-      ev.getType() match {
-        case FloatType => MklDnnFloat.conversionExecuteMklToMkl(interStorage, mklStorage,
-          internalToMkl)
-        case _ => throw new UnsupportedOperationException(s"Only Float is supported.")
+    if (!hasConverted) {
+      if (internalToMkl == 0 && interStorage != 0) {
+        setMklStorage(interStorage)
+      } else if (internalToMkl != 0) {
+        ev.getType() match {
+          case FloatType => MklDnnFloat.conversionExecuteMklToMkl(interStorage, mklStorage,
+            internalToMkl)
+          case _ => throw new UnsupportedOperationException(s"Only Float is supported.")
+        }
+      } else if (usrToMkl != 0) {
+        // It will always create usr->mkl conversion.
+        ev.getType() match {
+          case FloatType => MklDnnFloat.conversionExecuteToMkl(
+            usrStorage.array().asInstanceOf[Array[Float]],
+            usrStorageOffset - 1, mklStorage, usrToMkl)
+          case _ => throw new UnsupportedOperationException(s"Only Float is supported.")
+        }
+      } else {
+        // never reach here
+        throw new RuntimeException(s"Something wrong with primitive creation.")
       }
-    } else if (usrToMkl != 0) {
-      // It will always create usr->mkl conversion.
-      ev.getType() match {
-        case FloatType => MklDnnFloat.conversionExecuteToMkl(
-          usrStorage.array().asInstanceOf[Array[Float]],
-          usrStorageOffset - 1, mklStorage, usrToMkl)
-        case _ => throw new UnsupportedOperationException(s"Only Float is supported.")
-      }
-    } else { // never reach here
-      throw new RuntimeException(s"Something wrong with primitive creation.")
     }
 
     this.mklStorage()

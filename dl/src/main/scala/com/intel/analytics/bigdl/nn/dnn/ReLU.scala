@@ -110,6 +110,8 @@ class ReLU[T: ClassTag](ip: Boolean = false)
       refs.output.backToUsr(output)
     }
 
+    refs.input.setConverted(true)
+
     this.output
   }
 
@@ -129,6 +131,8 @@ class ReLU[T: ClassTag](ip: Boolean = false)
     } else {
       refs.gradInput.backToUsr(gradInput)
     }
+
+    refs.input.setConverted(false)
 
     this.gradInput
   }

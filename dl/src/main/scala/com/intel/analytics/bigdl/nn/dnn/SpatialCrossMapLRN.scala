@@ -134,6 +134,8 @@ class SpatialCrossMapLRN[T: ClassTag](size: Int = 5,
       refs.output.backToUsr(output)
     }
 
+    refs.input.setConverted(true)
+
     this.output
   }
 
@@ -154,6 +156,8 @@ class SpatialCrossMapLRN[T: ClassTag](size: Int = 5,
     } else {
       refs.gradInput.backToUsr(gradInput)
     }
+
+    refs.input.setConverted(false)
 
     this.gradInput
   }

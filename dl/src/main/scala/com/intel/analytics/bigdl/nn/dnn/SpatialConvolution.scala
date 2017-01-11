@@ -308,6 +308,8 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
       refs.output.backToUsr(output)
     }
 
+    refs.input.setConverted(true)
+
     this.output
   }
 
@@ -361,6 +363,8 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
 
       refs.gradBias.backToUsr(gradBias)
     }
+
+    refs.input.setConverted(false)
   }
 
   override def updateParameters(learningRate: T): Unit = {

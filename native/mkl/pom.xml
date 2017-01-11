@@ -59,7 +59,6 @@
                         <compilerEndOption>-fPIC</compilerEndOption>
                         <compilerEndOption>-qopenmp</compilerEndOption>
                         <compilerEndOption>-Wall</compilerEndOption>
-                        <compilerEndOption>-std=c99</compilerEndOption>
                     </compilerEndOptions>
                     <linkerStartOptions>
                         <linkerStartOption>-I ${JAVA_HOME}/include/</linkerStartOption>

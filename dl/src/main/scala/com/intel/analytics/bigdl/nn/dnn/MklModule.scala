@@ -115,7 +115,11 @@ trait MklModuleMethods {
                           (implicit ev: TensorNumeric[U]): Unit = {
     ev.getType() match {
       case FloatType =>
+        val start = System.nanoTime()
         MklDnnFloat.execute(resources, primitive)
+        if (profiling) {
+          println("scala execute costs " + (System.nanoTime() - start) / 1e6)
+        }
       case _ => throw new UnsupportedOperationException(s"Only Float supported")
     }
   }
