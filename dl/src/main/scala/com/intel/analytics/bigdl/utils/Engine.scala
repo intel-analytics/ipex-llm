@@ -316,6 +316,7 @@ object Engine {
           .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
           .set("spark.shuffle.blockTransferService", "nio")
           .set("spark.akka.frameSize", "10")
+          .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
       } else {
         throw new IllegalArgumentException(engineType.toString)
       }
