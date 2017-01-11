@@ -520,10 +520,6 @@
         </profile>
         <profile>
             <id>mac</id>
-            <modules>
-                <module>dl</module>
-                <module>spark-version</module>
-            </modules>
             <properties>
                 <mkl-java-os-version>mkl-java-mac</mkl-java-os-version>
             </properties>
