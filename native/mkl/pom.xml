@@ -49,6 +49,10 @@
                     <compilerStartOptions>
                         <compilerStartOption>-I ${JAVA_HOME}/include/</compilerStartOption>
                         <compilerStartOption>${compilerStartOptionDirectory}</compilerStartOption>
+                        <compilerStartOption>-I ${JAVA_HOME}/include/linux/</compilerStartOption>
+                        <!--
+                        <compilerStartOption>-DPERF</compilerStartOption>
+                        -->
                     </compilerStartOptions>
                     <compilerEndOptions>
                         <compilerEndOption>-lpthread</compilerEndOption>

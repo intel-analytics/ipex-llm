@@ -15,17 +15,26 @@
 #include "com_intel_analytics_bigdl_mkl_MklDnnFloat.h"
 #include "debug.h"
 
+#ifdef PERF
+const int INPERF = 1;
+#else
+const int INPERF = 0;
+#endif
+
 #define PERFSTART() \
   do { \
     struct timespec start, end; \
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    if (INPERF) { \
+      clock_gettime(CLOCK_MONOTONIC, &start); \
+    }
 
 #define PERFEND(x) \
-    clock_gettime(CLOCK_MONOTONIC, &end); \
+    if (INPERF) { \
+      clock_gettime(CLOCK_MONOTONIC, &end); \
+      fprintf(stderr, x " %lf\n", (end.tv_sec - start.tv_sec) * 1000 + \
+              (double)(end.tv_nsec - start.tv_nsec) / 1000000); \
+    } \
   } while(0);
-
-    // fprintf(stderr, x " %lf\n", (end.tv_sec - start.tv_sec) * 1000 + \
-           (double)(end.tv_nsec - start.tv_nsec) / 1000000); \
 
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
