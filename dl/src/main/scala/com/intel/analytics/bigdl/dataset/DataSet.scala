@@ -289,7 +289,7 @@ object DataSet {
       .getOrElse(throw new RuntimeException("can't get node number? Have you initialized?"))
     val coreNumber = Engine.coreNumber()
     new CachedDistriDataSet[T](
-      sc.parallelize(localData, nodeNumber)
+      sc.parallelize(localData, nodeNumber * coreNumber)
         // Keep this line, or the array will be send to worker every time
         .coalesce(nodeNumber, true)
         .mapPartitions(iter => {
@@ -409,7 +409,11 @@ object DataSet {
      * @return
      */
     def files(url: String, sc: SparkContext, classNum: Int): DistributedDataSet[ByteRecord] = {
-      val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text]).map(image => {
+      val nodeNumber = Engine.nodeNumber()
+        .getOrElse(throw new RuntimeException("can't get node number? Have you initialized?"))
+      val coreNumber = Engine.coreNumber()
+      val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text],
+        nodeNumber * coreNumber).map(image => {
         ByteRecord(image._2.copyBytes(), image._1.toString.toFloat)
       }).filter(_.label <= classNum)
 
