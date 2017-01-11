@@ -19,15 +19,42 @@ package com.intel.analytics.bigdl.models.resnet
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.{SpatialConvolution => _, _}
-import com.intel.analytics.bigdl.nn.{SpatialShareConvolution => SpatialConvolution}
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.log4j.Logger
 
 import scala.collection.mutable
+import scala.reflect.ClassTag
+
+
+object Convolution {
+  def apply[@specialized(Float, Double) T: ClassTag](
+     nInputPlane: Int,
+     nOutputPlane: Int,
+     kernelW: Int,
+     kernelH: Int,
+     strideW: Int = 1,
+     strideH: Int = 1,
+     padW: Int = 0,
+     padH: Int = 0,
+     nGroup: Int = 1,
+     propagateBack: Boolean = true,
+     initMethod: InitializationMethod = Default,
+     optnet: Boolean = true)
+     (implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
+    if (optnet) {
+      new SpatialShareConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
+        strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)
+    } else {
+      new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
+        strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)
+    }
+  }
+}
 
 object ResNet {
   val logger = Logger.getLogger(getClass)
@@ -61,8 +88,9 @@ object ResNet {
           }
           concatTable.gradInput = Tensor[Float](cache.get(index % 2).get, 1, Array(0))
           index = index + 1
-        case spatialConvolution if (spatialConvolution.isInstanceOf[SpatialConvolution[Float]]) =>
-          val curModel = spatialConvolution.asInstanceOf[SpatialConvolution[Float]]
+        case spatialShareConvolution
+          if (spatialShareConvolution.isInstanceOf[SpatialShareConvolution[Float]]) =>
+          val curModel = spatialShareConvolution.asInstanceOf[SpatialShareConvolution[Float]]
           curModel.fInput = Tensor[Float](cache.get("fInput").get)
           curModel.fGradInput = Tensor[Float](cache.get("fGradInput").get)
         case _ => Unit
@@ -77,7 +105,14 @@ object ResNet {
       model match {
         case container: Container[Activity, Activity, Float]
         => container.modules.foreach(m => initModules(m))
-        case spatialConvolution if (spatialConvolution.isInstanceOf[SpatialConvolution[Float]]) =>
+        case spatialShareConvolution
+          if (spatialShareConvolution.isInstanceOf[SpatialShareConvolution[Float]]) =>
+          val curModel = spatialShareConvolution.asInstanceOf[SpatialShareConvolution[Float]]
+          val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane
+          curModel.weight.apply1(_ => RNG.normal(0, Math.sqrt(2.0f / n)).toFloat)
+          curModel.bias.apply1(_ => 0.0f)
+        case spatialConvolution
+          if (spatialConvolution.isInstanceOf[SpatialConvolution[Float]]) =>
           val curModel = spatialConvolution.asInstanceOf[SpatialConvolution[Float]]
           val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane
           curModel.weight.apply1(_ => RNG.normal(0, Math.sqrt(2.0f / n)).toFloat)
@@ -92,6 +127,7 @@ object ResNet {
         case _ => Unit
       }
     }
+    initModules(model)
   }
 
   var iChannels = 0
@@ -102,6 +138,7 @@ object ResNet {
     val shortcutType = shortCutType.getOrElse(ShortcutType.B).asInstanceOf[ShortcutType]
     val dataSet = opt.get("dataset")
     val dataset = dataSet.getOrElse(DatasetType.CIFAR10).asInstanceOf[DatasetType]
+    val optnet = opt.get("optnet").getOrElse(true)
 
     def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[Float] = {
       val useConv = shortcutType == ShortcutType.C ||
@@ -109,7 +146,7 @@ object ResNet {
 
       if (useConv) {
         Sequential()
-          .add(SpatialConvolution(nInputPlane, nOutputPlane, 1, 1, stride, stride))
+          .add(Convolution(nInputPlane, nOutputPlane, 1, 1, stride, stride, optnet = optnet))
           .add(SpatialBatchNormalization(nOutputPlane))
       } else if (nInputPlane != nOutputPlane) {
         Sequential()
@@ -127,10 +164,10 @@ object ResNet {
       iChannels = n
 
       val s = Sequential()
-      s.add(SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1))
+      s.add(Convolution(nInputPlane, n, 3, 3, stride, stride, 1, 1, optnet = optnet))
       s.add(SpatialBatchNormalization(n))
       s.add(ReLU(true))
-      s.add(SpatialConvolution(n, n, 3, 3, 1, 1, 1, 1))
+      s.add(Convolution(n, n, 3, 3, 1, 1, 1, 1, optnet = optnet))
       s.add(SpatialBatchNormalization(n))
 
       Sequential()
@@ -146,13 +183,13 @@ object ResNet {
       iChannels = n * 4
 
       val s = Sequential()
-      s.add(SpatialConvolution(nInputPlane, n, 1, 1, 1, 1, 0, 0))
+      s.add(Convolution(nInputPlane, n, 1, 1, 1, 1, 0, 0, optnet = optnet))
         .add(SpatialBatchNormalization(n))
         .add(ReLU(true))
-        .add(SpatialConvolution(n, n, 3, 3, stride, stride, 1, 1))
+        .add(Convolution(n, n, 3, 3, stride, stride, 1, 1, optnet = optnet))
         .add(SpatialBatchNormalization(n))
         .add(ReLU(true))
-        .add(SpatialConvolution(n, n*4, 1, 1, 1, 1, 0, 0))
+        .add(Convolution(n, n*4, 1, 1, 1, 1, 0, 0, optnet = optnet))
         .add(SpatialBatchNormalization(n * 4))
 
       Sequential()
@@ -195,7 +232,7 @@ object ResNet {
       iChannels = 64
       logger.info(" | ResNet-" + depth + " ImageNet")
 
-      model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3))
+      model.add(Convolution(3, 64, 7, 7, 2, 2, 3, 3, optnet = optnet))
         .add(SpatialBatchNormalization(64))
         .add(ReLU(true))
         .add(SpatialMaxPooling(3, 3, 2, 2, 1, 1))
@@ -213,7 +250,7 @@ object ResNet {
       iChannels = 16
       logger.info(" | ResNet-" + depth + " CIFAR-10")
 
-      model.add(SpatialConvolution(3, 16, 3, 3, 1, 1, 1, 1))
+      model.add(Convolution(3, 16, 3, 3, 1, 1, 1, 1, optnet = optnet))
       model.add(SpatialBatchNormalization(16))
       model.add(ReLU(true))
       model.add(layer(basicBlock, 16, n))
