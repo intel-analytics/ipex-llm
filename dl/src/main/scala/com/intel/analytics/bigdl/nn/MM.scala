@@ -68,8 +68,7 @@ class MM[T: ClassTag](
     } else {
       require(mb.dim() == 3, "second input tensor must be 3D")
       require(ma.size(1) == mb.size(1), "inputs must contain the same number of minibatches")
-
-      if (transA) {
+if (transA) {
         ma = ma.transpose(2, 3)
       }
       if (transB) {

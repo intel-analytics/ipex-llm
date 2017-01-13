@@ -18,11 +18,11 @@ package com.intel.analytics.bigdl.models.embedding
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.text.Tokenizer
+import com.intel.analytics.bigdl.dataset.text.{LowerCase, Tokenizer}
 import com.intel.analytics.bigdl.nn.{BCECriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.{Optimizer, SGD, Trigger}
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.{Engine, File, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
@@ -47,7 +47,7 @@ object Train {
 
     val word2Vec = Word2Vec(params)
 
-    val tokens = DataSet.rdd(sc.textFile(params.trainDataLocation)) -> Tokenizer()
+    val tokens = DataSet.rdd(sc.textFile(params.trainDataLocation)) -> LowerCase() -> Tokenizer()
 
     word2Vec.fit(tokens.toDistributed().data(false))
 
@@ -82,5 +82,11 @@ object Train {
       .optimize()
 
     word2Vec.normalizeWordVectors()
+
+    File.save(word2Vec, "w2v.obj", isOverwrite = true)
+//    val word2Vec = File.load[Word2Vec]("w2v.obj")
+
+    print(word2Vec.getSimilarWords(Array("the", "he", "can"), 5)
+      .map(_.mkString(" ")).mkString("\n"))
   }
 }

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -39,6 +39,7 @@ class NarrowTable[T: ClassTag](var offset: Int, val length: Int = 1)
   var len = length
 
   override def updateOutput(input: Table): Table = {
+    output = T()
     if (length < 0) {
       len = input.length() - offset + 2 + length
     }
