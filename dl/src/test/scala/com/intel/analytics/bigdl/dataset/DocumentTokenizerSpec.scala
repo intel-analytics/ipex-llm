@@ -30,8 +30,9 @@ class DocumentTokenizerSpec extends FlatSpec with Matchers {
     val sentence1 = "Enter Barnardo and Francisco, two sentinels."
     val sentence2 = "Who’s there?"
     val sentence3 = "I think I hear them. Stand ho! Who is there?"
+    val sentence4 = "The Dr. lives in a blue-painted box."
 
-    val sentences = Array(sentence1, sentence2, sentence3)
+    val sentences = Array(sentence1, sentence2, sentence3, sentence4)
 
     new PrintWriter(tmpFile) {
       write(sentences.mkString("\n")); close
@@ -50,8 +51,8 @@ class DocumentTokenizerSpec extends FlatSpec with Matchers {
       println(x.mkString(" "))
     })
 
-    val numOfSents = 5
-    val numOfWords = 25
+    val numOfSents = 6
+    val numOfWords = 34
 
     output.length should be (numOfSents)
     count should be (numOfWords)

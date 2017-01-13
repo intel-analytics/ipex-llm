@@ -25,10 +25,12 @@ import scala.collection.mutable.ArrayBuffer
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 //import org.scalatest.FlatSpec
-import org.apache.spark.ml.feature.RegexTokenizer
+import org.apache.spark.ml.feature.{Tokenizer, RegexTokenizer}
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql._
 import java.io._
+
+import smile.nlp.tokenizer.{SimpleSentenceSplitter, SimpleTokenizer}
 
   /**
   * Transformer that tokenizes a Document (article)
@@ -37,31 +39,42 @@ import java.io._
   */
 
 class DocumentTokenizer() extends Transformer[String, Array[Array[String]]] {
+  //import edu.stanford.nlp.process.DocumentPreprocessor
+  //var dp: DocumentPreprocessor = null
   override def apply(prev: Iterator[String]): Iterator[Array[Array[String]]] =
     prev.map(x => {
+      //dp = new DocumentPreprocessor(x)
       val sentences = ArrayBuffer[Array[String]]()
       val sc = new SparkContext("local[1]", "DocumentTokenizer")
+      //for (i <- filelist.indices){
       val logData = sc.textFile(x, 2).filter(!_.isEmpty()).cache()
 
       val sqlContext = new SQLContext(sc)
       import sqlContext.implicits._
-          
-      val new_df = logData.flatMap(_.split("(?<=[.!?])\\s* ")).toDF("sentence")
-      val regexTokenizer = new RegexTokenizer().setInputCol("sentence")
-        .setOutputCol("words").setPattern("\\W+").setMinTokenLength(0)
+
+      //println(logData.collect())
+      val sentences_split = SimpleSentenceSplitter.getInstance.split(logData.collect().reduce((l,r)=>l+r))
+      val tokenizer = new SimpleTokenizer(true)
+      //val words = sentences.flatMap(tokenizer.split(_))
+      for (i <- sentences_split.indices){
+          val words = tokenizer.split(sentences_split(i))
+          sentences.append(words)
+      }
+      sentences.toArray
+/*      val new_df = logData.flatMap(_.split("((?<=[.!?])|(?=[.!?]))\\s")).toDF("sentence")
+      val regexTokenizer = new RegexTokenizer().setInputCol("sentence").setOutputCol("words").setPattern("\\s|(?=[\\.,:?!](\\W|$))|(?<=\\W[\\.:?!])")
       val regexTokenized = regexTokenizer.transform(new_df)
       val countTokens = udf { (words: Seq[String]) => words.length }
-      val token_df = regexTokenized.select("sentence", "words")
-        .withColumn("tokens", countTokens(col("words")))
-      val mapped_vector = token_df.select("words")
-        .rdd.map(x => x(0).asInstanceOf[Seq[String]]).collect()
+      regexTokenized.select("sentence", "words").withColumn("tokens", countTokens(col("words"))).show(false)
+      val token_df = regexTokenized.select("sentence", "words").withColumn("tokens", countTokens(col("words")))
+      val mapped_vector = token_df.select("words").rdd.map(x => x(0).asInstanceOf[Seq[String]]).collect()
 
-      for (i <- mapped_vector.indices) {
+      for (i <- mapped_vector.indices){
           val mapped_token = mapped_vector(i).toArray
           sentences.append(mapped_token)
       }
 
-      sentences.toArray
+      sentences.toArray*/
     })
 }
 
