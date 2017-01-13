@@ -104,13 +104,13 @@ class SampleToBatch[T: ClassTag]
           var i = 0
           while (i < batchSize && prev.hasNext) {
             val sample = prev.next()
-            val featureLength = sample.getFeature().nElement()
-            val labelLength = sample.getLabel().nElement()
+            val featureLength = sample.feature().nElement()
+            val labelLength = sample.label().nElement()
             if (featureSize == null || labelSize == null
               || _featureLength != featureLength
               || _labelLength != labelLength) {
-              featureSize = Array(1) ++ sample.getFeature().size
-              labelSize = Array(1) ++ sample.getLabel().size
+              featureSize = Array(1) ++ sample.feature().size
+              labelSize = Array(1) ++ sample.label().size
               _featureLength = featureLength
               _labelLength = labelLength
             }
@@ -125,10 +125,10 @@ class SampleToBatch[T: ClassTag]
 
             featureTable(i + 1) = Tensor()
               .set(Storage[T](featureData), storageOffset = i*featureLength + 1,
-                sizes = sample.getFeature().size)
+                sizes = sample.feature().size)
             labelTable(i + 1) = Tensor()
               .set(Storage[T](labelData), storageOffset = i*labelLength + 1,
-                sizes = sample.getLabel().size)
+                sizes = sample.label().size)
             i += 1
           }
 

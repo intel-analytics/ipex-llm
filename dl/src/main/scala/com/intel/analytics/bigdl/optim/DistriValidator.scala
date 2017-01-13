@@ -55,34 +55,15 @@ class DistriValidator[T: ClassTag] private[optim](
       val workingModels = (1 to _subModelNumber)
         .map(_ => localModel.cloneModule().evaluate()).toArray
       dataIter.map(batch => {
-        val tensorBatchType = batch.data match {
-          case tensor: Tensor[T] =>
-            require(batch.data.toTensor[T].size(1) == batch.labels.toTensor[T].size(1))
-            true
-          case table: Table =>
-            require(batch.data.toTable.length == batch.labels.toTable.length)
-            false
-        }
-        val (stackSize, extraSize) = tensorBatchType match {
-          case true => (batch.data.toTensor[T].size(1) / _subModelNumber,
-            batch.data.toTensor[T].size(1) % _subModelNumber)
-          case false => (batch.data.toTable.length / _subModelNumber,
-            batch.data.toTable.length % _subModelNumber)
-        }
+        val (stackSize, extraSize) = (batch.size / _subModelNumber,
+          batch.size % _subModelNumber)
         val parallelism = if (stackSize == 0) extraSize else _subModelNumber
         Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
               val offset = b * stackSize + math.min(b, extraSize)
               val length = stackSize + (if (b < extraSize) 1 else 0)
-              val input = tensorBatchType match {
-                case true => batch.data.toTensor[T].narrow(1, offset + 1, length)
-                case false => NarrowTable[T](offset + 1, length).updateOutput(batch.data.toTable)
-              }
-              val target = tensorBatchType match {
-                case true => batch.labels.toTensor[T].narrow(1, offset + 1, length)
-                case false => NarrowTable[T](offset + 1, length).updateOutput(batch.labels.toTable)
-              }
+              val (input, target) = batch.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)
               vMethods.map(validation => {
                 validation(output, target)

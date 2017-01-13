@@ -132,32 +132,12 @@ object DistriOptimizer {
           tasks += Engine.default.invoke(() => {
             val batch = data.next()
             var b = 0
-            val tensorBatchType = batch.data match {
-              case tensor: Tensor[T] =>
-                require(batch.data.toTensor[T].size(1) == batch.labels.toTensor[T].size(1),
-                  "data and label batch size not match")
-                require(batch.data.toTensor[T].size(1) >= _subModelNumber,
-                  "total batch size should be divided by total core number")
-                true
-              case table: Table =>
-                require(batch.data.toTable.length == batch.labels.toTable.length,
-                  "data and label batch size not match")
-                require(batch.data.toTable.length >= _subModelNumber,
-                  "total batch size should be divided by total core number")
-                false
-            }
-            val stackSize = tensorBatchType match {
-              case true => batch.data.toTensor[T].size(1) / _subModelNumber
-              case false => batch.data.toTable.length / _subModelNumber
-            }
+            require(batch.size >= _subModelNumber &&
+              batch.size % _subModelNumber == 0,
+              "total batch size should be divided by total core number")
+            val stackSize = batch.size / _subModelNumber
             while (b < _subModelNumber) {
-              batchBuffer(b) = tensorBatchType match {
-                case true => (batch.data.toTensor.narrow (1, b * stackSize + 1, stackSize),
-                  batch.labels.toTensor.narrow (1, b * stackSize + 1, stackSize))
-                case false =>
-                  (NarrowTable(b * stackSize + 1, stackSize).updateOutput(batch.data.toTable),
-                  NarrowTable(b * stackSize + 1, stackSize).updateOutput(batch.labels.toTable))
-              }
+              batchBuffer(b) = batch.narrow(1, b * stackSize + 1, stackSize)
               b += 1
             }
           })
@@ -452,32 +432,15 @@ object DistriOptimizer {
       val workingModels = modelIter.next().localModels
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
-        val tensorBatchType = batch.data match {
-          case tensor: Tensor[T] =>
-            require(batch.data.toTensor[T].size(1) == batch.labels.toTensor[T].size(1))
-            true
-          case table: Table =>
-            require(batch.data.toTable.length == batch.labels.toTable.length)
-            false
-        }
-        val (stackSize, extraSize) = tensorBatchType match {
-          case true => (batch.data.toTensor[T].size(1) / _subModelNumber,
-            batch.data.toTensor[T].size(1) % _subModelNumber)
-          case false => (batch.data.toTable.length / _subModelNumber,
-            batch.data.toTable.length % _subModelNumber)
-        }
+        val (stackSize, extraSize) = (batch.size / _subModelNumber,
+          batch.size % _subModelNumber)
         val parallelism = if (stackSize == 0) extraSize else _subModelNumber
         Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
               val offset = b * stackSize + math.min(b, extraSize)
               val length = stackSize + (if (b < extraSize) 1 else 0)
-              val (input, target) = tensorBatchType match {
-                case true => (batch.data.toTensor[T].narrow(1, offset + 1, length),
-                  batch.labels.toTensor[T].narrow(1, offset + 1, length))
-                case false => (NarrowTable[T](offset + 1, length).updateOutput(batch.data.toTable),
-                  NarrowTable(offset + 1, length).updateOutput(batch.labels.toTable))
-              }
+              val (input, target) = batch.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)
               vMethods.map(validation => {
                 validation(output, target)

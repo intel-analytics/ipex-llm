@@ -22,9 +22,11 @@ import java.nio.file.Path
 
 import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
 import com.intel.analytics.bigdl.dataset.text.LabeledSentence
+import com.intel.analytics.bigdl.nn.NarrowTable
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.collection.Iterator
 import scala.reflect.ClassTag
@@ -93,10 +95,12 @@ class Sample[T: ClassTag] (
     require(length <= featureTensor.storage().array().length, "length too long for feature")
     ev.getType() match {
       case DoubleType => Array.copy(featureTensor.storage().array
-          .asInstanceOf[Array[Double]], 0, storage
+          .asInstanceOf[Array[Double]],
+        featureTensor.storageOffset() - 1, storage
           .asInstanceOf[Array[Double]], offset, length)
       case FloatType => System.arraycopy(featureTensor.storage().array
-        .asInstanceOf[Array[Float]], 0, storage
+        .asInstanceOf[Array[Float]],
+        featureTensor.storageOffset() - 1, storage
         .asInstanceOf[Array[Float]], offset, length)
       case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
@@ -107,10 +111,12 @@ class Sample[T: ClassTag] (
     require(length <= labelTensor.storage().array().length, "length too long for label")
     ev.getType() match {
       case DoubleType => Array.copy(labelTensor.storage().array
-        .asInstanceOf[Array[Double]], 0, storage
+        .asInstanceOf[Array[Double]],
+        labelTensor.storageOffset() - 1, storage
         .asInstanceOf[Array[Double]], offset, length)
       case FloatType => Array.copy(labelTensor.storage().array
-        .asInstanceOf[Array[Float]], 0, storage
+        .asInstanceOf[Array[Float]],
+        labelTensor.storageOffset() - 1, storage
         .asInstanceOf[Array[Float]], offset, length)
       case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
@@ -122,9 +128,9 @@ class Sample[T: ClassTag] (
     this
   }
 
-  def getFeature(): Tensor[T] = featureTensor
+  def feature(): Tensor[T] = featureTensor
 
-  def getLabel(): Tensor[T] = labelTensor
+  def label(): Tensor[T] = labelTensor
 
   override def clone(): Sample[T] = {
     new Sample[T]().copy(this)
@@ -160,7 +166,43 @@ trait Label[T] {
  * @param labels
  * @tparam T
  */
-case class MiniBatch[T](data: Activity, labels: Activity)
+case class MiniBatch[T: ClassTag](data: Activity, labels: Activity)
+  (implicit ev: TensorNumeric[T]) {
+
+  require(dataLength == labelLength,
+    "data and label batch size not match")
+
+  def size(): Int = {
+    dataLength()
+  }
+
+  private def dataLength(): Int = {
+    data match {
+      case tensor: Tensor[T] => tensor.size(1)
+      case table: Table => table.length
+      case _ => throw new IllegalArgumentException("MiniBatch only supports Table or Tensor")
+    }
+  }
+
+  private def labelLength(): Int = {
+    labels match {
+      case tensor: Tensor[T] => tensor.size(1)
+      case table: Table => table.length
+      case _ => throw new IllegalArgumentException("MiniBatch only supports Table or Tensor")
+    }
+  }
+
+  def narrow(dim: Int, index: Int, size: Int): (Activity, Activity) = {
+    data match {
+      case tensor: Tensor[T] => (
+        tensor.narrow(1, index, size), labels.toTensor[T].narrow(dim, index, size))
+      case table: Table =>
+        val narrowTable = NarrowTable[T](index, size)
+        (narrowTable.updateOutput(table), narrowTable.updateOutput(labels.toTable))
+      case _ => throw new IllegalArgumentException("MiniBatch only supports Table or Tensor")
+    }
+  }
+}
 
 /**
  * A byte array and a label. It can contain anything.

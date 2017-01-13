@@ -54,20 +54,8 @@ class LocalValidator[T: ClassTag] private[optim]
     var count = 0
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     dataIter.map(batch => {
-      val tensorBatchType = batch.data match {
-        case tensor: Tensor[T] =>
-          require(batch.data.toTensor[T].size(1) == batch.labels.toTensor[T].size(1))
-          true
-        case table: Table =>
-          require(batch.data.toTable.length == batch.labels.toTable.length)
-          false
-      }
-      val (stackSize, extraSize) = tensorBatchType match {
-        case true => (batch.data.toTensor[T].size(1) / subModelNumber,
-          batch.data.toTensor[T].size(1) % subModelNumber)
-        case false => (batch.data.toTable.length / subModelNumber,
-          batch.data.toTable.length % subModelNumber)
-      }
+      val (stackSize, extraSize) = (batch.size / subModelNumber,
+        batch.size % subModelNumber)
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
       val start = System.nanoTime()
       val result = Engine.default.invokeAndWait(
@@ -75,14 +63,7 @@ class LocalValidator[T: ClassTag] private[optim]
           () => {
             val offset = b * stackSize + math.min(b, extraSize)
             val length = stackSize + (if (b < extraSize) 1 else 0)
-            val input = tensorBatchType match {
-              case true => batch.data.toTensor[T].narrow(1, offset + 1, length)
-              case false => NarrowTable[T](offset + 1, length).updateOutput(batch.data.toTable)
-            }
-            val target = tensorBatchType match {
-              case true => batch.labels.toTensor[T].narrow(1, offset + 1, length)
-              case false => NarrowTable[T](offset + 1, length).updateOutput(batch.labels.toTable)
-            }
+            val (input, target) = batch.narrow(1, offset + 1, length)
             val output = workingModels(b).forward(input)
             vMethods.map(validation => {
               validation(output.asInstanceOf[Tensor[T]], target)
@@ -94,15 +75,9 @@ class LocalValidator[T: ClassTag] private[optim]
           l + r
         }
       })
-      count += (tensorBatchType match {
-        case true => batch.data.toTensor[T].size(1)
-        case false => batch.data.toTable.length
-      })
+      count += batch.size
       logger.info(s"[Validation] $count/${dataSet.size()} Throughput is ${
-        (tensorBatchType match {
-          case true => batch.data.toTensor[T].size(1)
-          case false => batch.data.toTable.length
-        }) / ((System.nanoTime() - start) / 1e9)
+        batch.size / ((System.nanoTime() - start) / 1e9)
       } record / sec")
       result
     }).reduce((left, right) => {
