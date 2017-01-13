@@ -203,7 +203,7 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_deletePrim
 {
   dnnPrimitive_t jPrimitive = (dnnPrimitive_t)primitive;
   dnnError_t status = E_UNIMPLEMENTED;
-  
+
   status = dnnDelete_F32(jPrimitive);
   CHECK_EQ(status, E_SUCCESS);
 }

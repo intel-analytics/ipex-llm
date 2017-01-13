@@ -51,4 +51,38 @@ class LinearSpec  extends FlatSpec with Matchers {
     linear.gradWeight should be (blasLinear.gradWeight)
     linear.gradBias should be (blasLinear.gradBias)
   }
+
+  "Linear batch model" should "generate correct weight and bias with diff size of input" in {
+    val inputN = 20
+    val outputN = 10
+
+    val linear = new Linear[Float](inputN, outputN)
+    val blasLinear = new com.intel.analytics.bigdl.nn.Linear[Float](inputN, outputN)
+
+    val seed = 100
+    RandomGenerator.RNG.setSeed(seed)
+    blasLinear.weight.copy(linear.weight)
+    blasLinear.bias.copy(linear.bias)
+
+    for (batchSize <- 5 to 15) {
+      val input = Tensor[Float](batchSize, inputN).rand()
+      val gradOutput = Tensor[Float](batchSize, outputN).rand()
+
+      linear.zeroGradParameters()
+      blasLinear.zeroGradParameters()
+
+      val output = linear.forward(input)
+      val gradInput = linear.backward(input, gradOutput)
+
+      val blasOutput = blasLinear.forward(input)
+      val blasGradInput = blasLinear.backward(input, gradOutput)
+
+      Tools.cumulativeError(output, blasOutput, "output") should be (0)
+      Tools.cumulativeError(gradInput, blasGradInput, "gradient input") should be (0)
+      Tools.cumulativeError(linear.gradWeight, blasLinear.gradWeight,
+        "gradient weight") should be (0)
+      Tools.cumulativeError(linear.gradBias, blasLinear.gradBias, "gradient bias") should be (0)
+
+    }
+  }
 }

@@ -17,6 +17,9 @@
 
 package com.intel.analytics.bigdl.nn.dnn
 
+import com.intel.analytics.bigdl.nn.dnn.Tools._
+import com.intel.analytics.bigdl.numeric.NumericFloat
+
 import org.scalatest.{FlatSpec, Matchers}
 
 class LRNSpec extends FlatSpec with Matchers {
@@ -30,61 +33,97 @@ class LRNSpec extends FlatSpec with Matchers {
     TestCase(8, 192, 56, 56, 5, 1.0E-4, 0.75, 1.0)
   )
 
-  for (test <- testCases) {
+  def getPrototxt(test: TestCase): String = {
+    val prototxt =
+      s"""
+         |name: "LRN"
+         |force_backward: true
+         |layer {
+         |  name: "data"
+         |  type: "DummyData"
+         |  top: "data"
+         |  dummy_data_param {
+         |    shape: { dim: 4 dim: 96 dim: 28 dim: 28}
+         |    data_filler {
+         |      type: "gaussian"
+         |      std: 0.01
+         |    }
+         |  }
+         |}
+         |
+           |layer {
+         |  name: "lrn"
+         |  type: "LRN"
+         |  bottom: "data"
+         |  top: "lrn"
+         |
+           |  lrn_param {
+         |    local_size: 5
+         |    alpha: 0.0001
+         |    beta: 0.75
+         |    engine: MKL2017
+         |  }
+         |}
+         """.stripMargin
+    prototxt
+  }
+
+  def getModel(test: TestCase): SpatialCrossMapLRN[Float] = {
+    new SpatialCrossMapLRN[Float](test.size, test.alpha, test.beta, test.k)
+  }
+
+  def testLayer(prototxt: String, model: SpatialCrossMapLRN[Float], test: TestCase): Unit = {
     val restOfSentence = (s"with parameters ${test.batchSize}", test.channel, test.height,
       test.width, test.size, test.alpha, test.beta, test.k).productIterator.mkString(",")
+
     "A SpatialCrossLRN" should restOfSentence in {
-      val prototxt =
-        s"""
-           |name: "LRN"
-           |force_backward: true
-           |layer {
-           |  name: "data"
-           |  type: "DummyData"
-           |  top: "data"
-           |  dummy_data_param {
-           |    shape: { dim: 4 dim: 96 dim: 28 dim: 28}
-           |    data_filler {
-           |      type: "gaussian"
-           |      std: 0.01
-           |    }
-           |  }
-           |}
-           |
-           |layer {
-           |  name: "lrn"
-           |  type: "LRN"
-           |  bottom: "data"
-           |  top: "lrn"
-           |
-           |  lrn_param {
-           |    local_size: 5
-           |    alpha: 0.0001
-           |    beta: 0.75
-           |    engine: MKL2017
-           |  }
-           |}
-         """.stripMargin
       val identity = Collect.run(prototxt)
 
-      val model = new SpatialCrossMapLRN[Float](test.size, test.alpha, test.beta, test.k)
-      val input = Tools.loadTensor[Float]("Fwrd_data", Array(test.batchSize, test.channel,
-                                                      test.width, test.height), identity)
+      val input = loadTensor("Fwrd_data", Array(test.batchSize, test.channel,
+        test.width, test.height), identity)
 
-      model.forward(input)
+      for (i <- 0 until randTimes()) {
+        model.forward(input)
 
-      val output = Tools.loadTensor[Float]("Fwrd_lrn", model.output.size(), identity)
+        val output = loadTensor("Fwrd_lrn", model.output.size(), identity)
 
-      val gradOutput = Tools.loadTensor[Float]("Bwrd_lrn.loss", output.size(), identity)
-      val gradInput = Tools.loadTensor[Float]("Bwrd_lrn", input.size(), identity)
+        val gradOutput = loadTensor("Bwrd_lrn.loss", output.size(), identity)
+        val gradInput = loadTensor("Bwrd_lrn", input.size(), identity)
 
-      model.zeroGradParameters()
-      model.backward(input, gradOutput)
+        model.zeroGradParameters()
+        model.backward(input, gradOutput)
 
-      Tools.cumulativeError(model.output, output, "output") should be(0.0)
-      Tools.cumulativeError(model.gradInput, gradInput, "gradient input") should be(0.0)
+        cumulativeError(model.output, output, "output") should be(0.0)
+        cumulativeError(model.gradInput, gradInput, "gradient input") should be(0.0)
+      }
     }
   }
+
+  def diffAttributes(): Unit = {
+    for (test <- testCases) {
+      val prototxt = getPrototxt(test)
+      val model = getModel(test)
+      testLayer(prototxt, model, test)
+    }
+  }
+
+  def diffBatchSizeOnSameModel(): Unit = {
+    val initTest = TestCase(4, 96, 55, 55, 5, 0.0001, 0.75, 1.0)
+    val model = getModel(initTest)
+    for (batchSize <- List(8, 128, 234)) {
+      val test = TestCase(batchSize, 96, 55, 55, 5, 0.0001, 0.75, 1.0)
+      val prototxt = getPrototxt(test)
+
+      testLayer(prototxt, model, test)
+    }
+  }
+
+  def run(): Unit = {
+    diffAttributes()
+    diffBatchSizeOnSameModel()
+  }
+
+  run()
 
   case class TestCase(batchSize: Int, channel: Int, height: Int, width: Int, size: Int,
                       alpha: Double, beta: Double, k : Double)

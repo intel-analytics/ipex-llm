@@ -409,8 +409,10 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
   def release(): Unit = {
     ev.getType() match {
       case FloatType =>
-        for (primtive <- List(usrToMkl, mklToUsr, internalToMkl)) {
-          MklDnnFloat.deletePrimitive(primtive)
+        for (primitive <- List(usrToMkl, mklToUsr, internalToMkl)) {
+          if (primitive != 0) {
+            MklDnnFloat.deletePrimitive(primitive)
+          }
         }
 
         setUsrToMkl(0L)
@@ -421,7 +423,9 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
         setMklStorage(0L)
 
         for (layout <- List(layoutUsr, layoutMkl, layoutInternal)) {
-          MklDnnFloat.layoutDelete(layout)
+          if (layout != 0) {
+            MklDnnFloat.layoutDelete(layout)
+          }
         }
 
         setLayoutInternal(0L)

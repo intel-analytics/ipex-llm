@@ -199,7 +199,7 @@ object Tools {
     }
   }
 
-  def randTimes(): Int = 10
+  def randTimes(): Int = util.Random.nextInt(5) + 1
 }
 
 /**

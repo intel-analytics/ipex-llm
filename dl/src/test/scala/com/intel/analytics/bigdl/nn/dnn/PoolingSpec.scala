@@ -17,6 +17,9 @@
 
 package com.intel.analytics.bigdl.nn.dnn
 
+import com.intel.analytics.bigdl.nn.dnn.Tools._
+import com.intel.analytics.bigdl.numeric.NumericFloat
+
 import org.scalatest.{FlatSpec, Matchers}
 
 class PoolingSpec extends FlatSpec with Matchers {
@@ -30,7 +33,16 @@ class PoolingSpec extends FlatSpec with Matchers {
     }
   }
 
-  def doTest(test: TestCase, poolType: String): Unit = {
+  def getModel(test: TestCase, ver : String) : Pool[Float] = {
+    ver match {
+      case "MAX" =>
+        new SpatialMaxPooling[Float](test.kW, test.kH, test.dW, test.dH, test.padW, test.padH)
+      case "AVE" =>
+        new SpatialAveragePooling[Float](test.kW, test.kH, test.dW, test.dH, test.padW, test.padH)
+    }
+  }
+
+  def getPrototxt(test: TestCase, poolType: String): String = {
     val prototxt =
       s"""
          |name: "Pooling"
@@ -72,80 +84,116 @@ class PoolingSpec extends FlatSpec with Matchers {
          |}
          |
        """.stripMargin
+    prototxt
+  }
+
+  def doTest(prototxt: String, model: Pool[Float], test: TestCase): Unit = {
     val identity = Collect.run(prototxt)
 
-    val model = getModel(test.kW, test.kH, test.dW, test.dH, test.padW, test.padH, poolType)
-
-    val input = Tools.loadTensor[Float]("Fwrd_data", Array(test.batchSize, test.channel,
+    val input = loadTensor("Fwrd_data", Array(test.batchSize, test.channel,
       test.width, test.height), identity)
 
     model.forward(input)
-    val output = Tools.loadTensor[Float]("Fwrd_pooling", model.output.size(), identity)
+    val output = loadTensor("Fwrd_pooling", model.output.size(), identity)
 
-    val gradOutput = Tools.loadTensor[Float]("Bwrd_pooling.loss", output.size(), identity)
-    val gradInput = Tools.loadTensor[Float]("Bwrd_pooling", input.size(), identity)
+    val gradOutput = loadTensor("Bwrd_pooling.loss", output.size(), identity)
+    val gradInput = loadTensor("Bwrd_pooling", input.size(), identity)
 
-    for (i <- 0 until 3) {
+    for (i <- 0 until randTimes()) {
       model.forward(input)
       model.zeroGradParameters()
       model.backward(input, gradOutput)
     }
 
-    Tools.cumulativeError(model.output, output, "output") should be(0.0)
-    Tools.cumulativeError(model.gradInput, gradInput, "gradient input") should be(0.0)
-
+    cumulativeError(model.output, output, "output") should be(0.0)
+    cumulativeError(model.gradInput, gradInput, "gradient input") should be(0.0)
   }
 
-  val testCases = List(
-    TestCase(128, 128, 16, 16, 2, 2, 2, 2, 0, 0),
-    TestCase(128, 256, 13, 13, 3, 3, 2, 2, 0, 0),
-    TestCase(128, 256, 27, 27, 3, 3, 2, 2, 0, 0),
-    TestCase(128, 256, 8, 8, 2, 2, 2, 2, 0, 0),
-    TestCase(128, 512, 2, 2, 2, 2, 2, 2, 0, 0),
-    TestCase(128, 512, 4, 4, 2, 2, 2, 2, 0, 0),
-    TestCase(128, 64, 32, 32, 2, 2, 2, 2, 0, 0),
-    TestCase(128, 96, 55, 55, 3, 3, 2, 2, 0, 0),
-    TestCase(128, 1024, 7, 7, 3, 3, 1, 1, 1, 1),
-    TestCase(128, 1024, 7, 7, 5, 5, 3, 3, 0, 0),
-    TestCase(128, 1024, 7, 7, 7, 7, 1, 1, 0, 0),
-    TestCase(128, 192, 28, 28, 3, 3, 1, 1, 1, 1),
-    TestCase(128, 192, 56, 56, 3, 3, 2, 2, 0, 0),
-    TestCase(128, 256, 28, 28, 3, 3, 1, 1, 1, 1),
-    TestCase(128, 320, 28, 28, 3, 3, 2, 2, 0, 0),
-    TestCase(128, 480, 14, 14, 3, 3, 1, 1, 1, 1),
-    TestCase(128, 480, 28, 28, 3, 3, 2, 2, 0, 0),
-    TestCase(128, 512, 14, 14, 3, 3, 1, 1, 1, 1),
-    TestCase(128, 512, 14, 14, 5, 5, 3, 3, 0, 0),
-    TestCase(128, 528, 14, 14, 3, 3, 1, 1, 1, 1),
-    TestCase(128, 528, 14, 14, 5, 5, 3, 3, 0, 0),
-    TestCase(128, 576, 14, 14, 3, 3, 1, 1, 1, 1),
-    TestCase(128, 576, 14, 14, 3, 3, 2, 2, 0, 0),
-    TestCase(128, 576, 14, 14, 5, 5, 3, 3, 0, 0),
-    TestCase(128, 64, 112, 112, 3, 3, 2, 2, 0, 0),
-    TestCase(128, 832, 14, 14, 3, 3, 2, 2, 0, 0),
-    TestCase(128, 832, 7, 7, 3, 3, 1, 1, 1, 1)
-  )
+  def diffAttributes(): Unit = {
+    val testCases = List(
+      TestCase(128, 128, 16, 16, 2, 2, 2, 2, 0, 0),
+      TestCase(128, 256, 13, 13, 3, 3, 2, 2, 0, 0),
+      TestCase(128, 256, 27, 27, 3, 3, 2, 2, 0, 0),
+      TestCase(128, 256, 8, 8, 2, 2, 2, 2, 0, 0),
+      TestCase(128, 512, 2, 2, 2, 2, 2, 2, 0, 0),
+      TestCase(128, 512, 4, 4, 2, 2, 2, 2, 0, 0),
+      TestCase(128, 64, 32, 32, 2, 2, 2, 2, 0, 0),
+      TestCase(128, 96, 55, 55, 3, 3, 2, 2, 0, 0),
+      TestCase(128, 1024, 7, 7, 3, 3, 1, 1, 1, 1),
+      TestCase(128, 1024, 7, 7, 5, 5, 3, 3, 0, 0),
+      TestCase(128, 1024, 7, 7, 7, 7, 1, 1, 0, 0),
+      TestCase(128, 192, 28, 28, 3, 3, 1, 1, 1, 1),
+      TestCase(128, 192, 56, 56, 3, 3, 2, 2, 0, 0),
+      TestCase(128, 256, 28, 28, 3, 3, 1, 1, 1, 1),
+      TestCase(128, 320, 28, 28, 3, 3, 2, 2, 0, 0),
+      TestCase(128, 480, 14, 14, 3, 3, 1, 1, 1, 1),
+      TestCase(128, 480, 28, 28, 3, 3, 2, 2, 0, 0),
+      TestCase(128, 512, 14, 14, 3, 3, 1, 1, 1, 1),
+      TestCase(128, 512, 14, 14, 5, 5, 3, 3, 0, 0),
+      TestCase(128, 528, 14, 14, 3, 3, 1, 1, 1, 1),
+      TestCase(128, 528, 14, 14, 5, 5, 3, 3, 0, 0),
+      TestCase(128, 576, 14, 14, 3, 3, 1, 1, 1, 1),
+      TestCase(128, 576, 14, 14, 3, 3, 2, 2, 0, 0),
+      TestCase(128, 576, 14, 14, 5, 5, 3, 3, 0, 0),
+      TestCase(128, 64, 112, 112, 3, 3, 2, 2, 0, 0),
+      TestCase(128, 832, 14, 14, 3, 3, 2, 2, 0, 0),
+      TestCase(128, 832, 7, 7, 3, 3, 1, 1, 1, 1)
+    )
 
-  for (test <- testCases) {
-    val restOfSentence = (s"with parameters ${test.batchSize}", test.channel, test.height,
-      test.width, test.kW, test.kH, test.dW, test.dH, test.padW, test.padH)
-      .productIterator.mkString(",")
+    for (test <- testCases) {
+      val model = getModel(test.kW, test.kH, test.dW, test.dH, test.padW, test.padH, "MAX")
+      val prototxt = getPrototxt(test, "MAX")
 
-    "A MaxPooling" should restOfSentence in {
-      doTest(test, "MAX")
+      val restOfSentence = (s"with parameters ${test.batchSize}", test.channel, test.height,
+        test.width, test.kW, test.kH, test.dW, test.dH, test.padW, test.padH)
+        .productIterator.mkString(",")
+
+      "A MaxPooling" should restOfSentence in {
+        doTest(prototxt, model, test)
+      }
+    }
+
+    for (test <- testCases) {
+      val model = getModel(test.kW, test.kH, test.dW, test.dH, test.padW, test.padH, "AVE")
+      val prototxt = getPrototxt(test, "AVE")
+
+      val restOfSentence = (s"with parameters ${test.batchSize}", test.channel, test.height,
+        test.width, test.kW, test.kH, test.dW, test.dH, test.padW, test.padH)
+        .productIterator.mkString(",")
+
+      "A AveragePooling" should restOfSentence in {
+        doTest(prototxt, model, test) // average pooling is AVE in caffe.
+      }
     }
   }
 
-  for (test <- testCases) {
-    val restOfSentence = (s"with parameters ${test.batchSize}", test.channel, test.height,
-      test.width, test.kW, test.kH, test.dW, test.dH, test.padW, test.padH)
-      .productIterator.mkString(",")
+  def diffBatchSizeOnSameModel(): Unit = {
+    for (poolType <- List("MAX", "AVE")) {
+      val initTest = TestCase(128, 128, 16, 16, 2, 2, 2, 2, 0, 0)
+      val model = getModel(initTest, poolType)
 
-    "A AveragePooling" should restOfSentence in {
-      doTest(test, "AVE") // average pooling is AVE in caffe.
+      for (batchSize <- List(158, 295, 854)) {
+        val test = TestCase(batchSize, 128, 16, 16, 2, 2, 2, 2, 0, 0)
+        val prototxt = getPrototxt(test, poolType)
+
+        val restOfSentence = (s"with parameters ${test.batchSize}", test.channel, test.height,
+          test.width, test.kW, test.kH, test.dW, test.dH, test.padW, test.padH)
+          .productIterator.mkString(",")
+
+        s"A $poolType Pooling" should restOfSentence in {
+          doTest(prototxt, model, test) // average pooling is AVE in caffe.
+        }
+      }
     }
   }
+
+  def run(): Unit = {
+    diffAttributes()
+    diffBatchSizeOnSameModel()
+  }
+
+  run()
 
   case class TestCase(batchSize: Int, channel: Int, height: Int, width: Int,
-                      kW: Int, kH: Int, dW: Int, dH:Int, padW: Int, padH: Int)
+                      kW: Int, kH: Int, dW: Int, dH: Int, padW: Int, padH: Int)
 }

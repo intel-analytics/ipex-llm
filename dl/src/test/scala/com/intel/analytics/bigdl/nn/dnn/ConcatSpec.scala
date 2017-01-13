@@ -28,274 +28,280 @@ import scala.collection.mutable.ArrayBuffer
 import org.scalatest.{FlatSpec, Matchers}
 
 class ConcatSpec extends FlatSpec with Matchers {
-  "A Concat" should "aa" in {
-    val prototxt =
-      s"""
-         |name: "Concat"
-         |force_backward: true
-         |
-         |layer {
-         |  name: "data"
-         |  type: "DummyData"
-         |  top: "data"
-         |  dummy_data_param {
-         |    shape: { dim: 32 dim: 192 dim: 28 dim: 28}
-         |    data_filler {
-         |      type: "gaussian"
-         |      std: 0.01
-         |    }
-         |  }
-         |}
-         |layer {
-         |  name: "split"
-         |  type: "Split"
-         |  split_param {
-         |    engine: MKL2017
-         |  }
-         |  bottom: "data"
-         |  top: "split1"
-         |  top: "split2"
-         |  top: "split3"
-         |  top: "split4"
-         |}
-         |layer {
-         |  name: "inception_3a/1x1"
-         |  type: "Convolution"
-         |  bottom: "split1"
-         |  top: "inception_3a/1x1"
-         |  param {
-         |    lr_mult: 1
-         |    decay_mult: 1
-         |  }
-         |  param {
-         |    lr_mult: 2
-         |    decay_mult: 0
-         |  }
-         |  convolution_param {
-         |    engine: MKL2017
-         |    num_output: 64
-         |    kernel_size: 1
-         |    weight_filler {
-         |      type: "xavier"
-         |    }
-         |    bias_filler {
-         |      type: "constant"
-         |      value: 0.2
-         |    }
-         |  }
-         |}
-         |layer {
-         |  name: "inception_3a/relu_1x1"
-         |  type: "ReLU"
-         |  relu_param {
-         |    engine: MKL2017
-         |  }
-         |  bottom: "inception_3a/1x1"
-         |  top: "inception_3a/1x1"
-         |}
-         |layer {
-         |  name: "inception_3a/3x3_reduce"
-         |  type: "Convolution"
-         |  bottom: "split2"
-         |  top: "inception_3a/3x3_reduce"
-         |  param {
-         |    lr_mult: 1
-         |    decay_mult: 1
-         |  }
-         |  param {
-         |    lr_mult: 2
-         |    decay_mult: 0
-         |  }
-         |  convolution_param {
-         |    engine: MKL2017
-         |    num_output: 96
-         |    kernel_size: 1
-         |    weight_filler {
-         |      type: "xavier"
-         |    }
-         |    bias_filler {
-         |      type: "constant"
-         |      value: 0.2
-         |    }
-         |  }
-         |}
-         |layer {
-         |  name: "inception_3a/relu_3x3_reduce"
-         |  type: "ReLU"
-         |  relu_param {
-         |    engine: MKL2017
-         |  }
-         |  bottom: "inception_3a/3x3_reduce"
-         |  top: "inception_3a/3x3_reduce"
-         |}
-         |layer {
-         |  name: "inception_3a/3x3"
-         |  type: "Convolution"
-         |  bottom: "inception_3a/3x3_reduce"
-         |  top: "inception_3a/3x3"
-         |  param {
-         |    lr_mult: 1
-         |    decay_mult: 1
-         |  }
-         |  param {
-         |    lr_mult: 2
-         |    decay_mult: 0
-         |  }
-         |  convolution_param {
-         |    engine: MKL2017
-         |    num_output: 128
-         |    pad: 1
-         |    kernel_size: 3
-         |    weight_filler {
-         |      type: "xavier"
-         |    }
-         |    bias_filler {
-         |      type: "constant"
-         |      value: 0.2
-         |    }
-         |  }
-         |}
-         |layer {
-         |  name: "inception_3a/relu_3x3"
-         |  type: "ReLU"
-         |  relu_param {
-         |    engine: MKL2017
-         |  }
-         |  bottom: "inception_3a/3x3"
-         |  top: "inception_3a/3x3"
-         |}
-         |layer {
-         |  name: "inception_3a/5x5_reduce"
-         |  type: "Convolution"
-         |  bottom: "split3"
-         |  top: "inception_3a/5x5_reduce"
-         |  param {
-         |    lr_mult: 1
-         |    decay_mult: 1
-         |  }
-         |  param {
-         |    lr_mult: 2
-         |    decay_mult: 0
-         |  }
-         |  convolution_param {
-         |    engine: MKL2017
-         |    num_output: 16
-         |    kernel_size: 1
-         |    weight_filler {
-         |      type: "xavier"
-         |    }
-         |    bias_filler {
-         |      type: "constant"
-         |      value: 0.2
-         |    }
-         |  }
-         |}
-         |layer {
-         |  name: "inception_3a/relu_5x5_reduce"
-         |  type: "ReLU"
-         |  relu_param {
-         |    engine: MKL2017
-         |  }
-         |  bottom: "inception_3a/5x5_reduce"
-         |  top: "inception_3a/5x5_reduce"
-         |}
-         |layer {
-         |  name: "inception_3a/5x5"
-         |  type: "Convolution"
-         |  bottom: "inception_3a/5x5_reduce"
-         |  top: "inception_3a/5x5"
-         |  param {
-         |    lr_mult: 1
-         |    decay_mult: 1
-         |  }
-         |  param {
-         |    lr_mult: 2
-         |    decay_mult: 0
-         |  }
-         |  convolution_param {
-         |    engine: MKL2017
-         |    num_output: 32
-         |    pad: 2
-         |    kernel_size: 5
-         |    weight_filler {
-         |      type: "xavier"
-         |    }
-         |    bias_filler {
-         |      type: "constant"
-         |      value: 0.2
-         |    }
-         |  }
-         |}
-         |layer {
-         |  name: "inception_3a/relu_5x5"
-         |  type: "ReLU"
-         |  relu_param {
-         |    engine: MKL2017
-         |  }
-         |  bottom: "inception_3a/5x5"
-         |  top: "inception_3a/5x5"
-         |}
-         |layer {
-         |  name: "inception_3a/pool"
-         |  type: "Pooling"
-         |  bottom: "split4"
-         |  top: "inception_3a/pool"
-         |  pooling_param {
-         |    engine: MKL2017
-         |    pool: MAX
-         |    kernel_size: 3
-         |    stride: 1
-         |    pad: 1
-         |  }
-         |}
-         |layer {
-         |  name: "inception_3a/pool_proj"
-         |  type: "Convolution"
-         |  bottom: "inception_3a/pool"
-         |  top: "inception_3a/pool_proj"
-         |  param {
-         |    lr_mult: 1
-         |    decay_mult: 1
-         |  }
-         |  param {
-         |    lr_mult: 2
-         |    decay_mult: 0
-         |  }
-         |  convolution_param {
-         |    engine: MKL2017
-         |    num_output: 32
-         |    kernel_size: 1
-         |    weight_filler {
-         |      type: "xavier"
-         |    }
-         |    bias_filler {
-         |      type: "constant"
-         |      value: 0.2
-         |    }
-         |  }
-         |}
-         |layer {
-         |  name: "inception_3a/relu_pool_proj"
-         |  type: "ReLU"
-         |  relu_param {
-         |    engine: MKL2017
-         |  }
-         |  bottom: "inception_3a/pool_proj"
-         |  top: "inception_3a/pool_proj"
-         |}
-         |layer {
-         |  name: "inception_3a/output"
-         |  type: "Concat"
-         |  concat_param {
-         |    engine: MKL2017
-         |  }
-         |  bottom: "inception_3a/1x1"
-         |  bottom: "inception_3a/3x3"
-         |  bottom: "inception_3a/5x5"
-         |  bottom: "inception_3a/pool_proj"
-         |  top: "inception_3a/output"
-         |}
-       """.stripMargin
+  "A Concat" should "generate correct output and gradient" in {
+    val batchSize = 32
+
+    def getPrototxt(batchSize: Int): String = {
+      val prototxt =
+        s"""
+           |name: "Concat"
+           |force_backward: true
+           |
+           |layer {
+           |  name: "data"
+           |  type: "DummyData"
+           |  top: "data"
+           |  dummy_data_param {
+           |    shape: { dim: ${batchSize} dim: 192 dim: 28 dim: 28}
+           |    data_filler {
+           |      type: "gaussian"
+           |      std: 0.01
+           |    }
+           |  }
+           |}
+           |layer {
+           |  name: "split"
+           |  type: "Split"
+           |  split_param {
+           |    engine: MKL2017
+           |  }
+           |  bottom: "data"
+           |  top: "split1"
+           |  top: "split2"
+           |  top: "split3"
+           |  top: "split4"
+           |}
+           |layer {
+           |  name: "inception_3a/1x1"
+           |  type: "Convolution"
+           |  bottom: "split1"
+           |  top: "inception_3a/1x1"
+           |  param {
+           |    lr_mult: 1
+           |    decay_mult: 1
+           |  }
+           |  param {
+           |    lr_mult: 2
+           |    decay_mult: 0
+           |  }
+           |  convolution_param {
+           |    engine: MKL2017
+           |    num_output: 64
+           |    kernel_size: 1
+           |    weight_filler {
+           |      type: "xavier"
+           |    }
+           |    bias_filler {
+           |      type: "constant"
+           |      value: 0.2
+           |    }
+           |  }
+           |}
+           |layer {
+           |  name: "inception_3a/relu_1x1"
+           |  type: "ReLU"
+           |  relu_param {
+           |    engine: MKL2017
+           |  }
+           |  bottom: "inception_3a/1x1"
+           |  top: "inception_3a/1x1"
+           |}
+           |layer {
+           |  name: "inception_3a/3x3_reduce"
+           |  type: "Convolution"
+           |  bottom: "split2"
+           |  top: "inception_3a/3x3_reduce"
+           |  param {
+           |    lr_mult: 1
+           |    decay_mult: 1
+           |  }
+           |  param {
+           |    lr_mult: 2
+           |    decay_mult: 0
+           |  }
+           |  convolution_param {
+           |    engine: MKL2017
+           |    num_output: 96
+           |    kernel_size: 1
+           |    weight_filler {
+           |      type: "xavier"
+           |    }
+           |    bias_filler {
+           |      type: "constant"
+           |      value: 0.2
+           |    }
+           |  }
+           |}
+           |layer {
+           |  name: "inception_3a/relu_3x3_reduce"
+           |  type: "ReLU"
+           |  relu_param {
+           |    engine: MKL2017
+           |  }
+           |  bottom: "inception_3a/3x3_reduce"
+           |  top: "inception_3a/3x3_reduce"
+           |}
+           |layer {
+           |  name: "inception_3a/3x3"
+           |  type: "Convolution"
+           |  bottom: "inception_3a/3x3_reduce"
+           |  top: "inception_3a/3x3"
+           |  param {
+           |    lr_mult: 1
+           |    decay_mult: 1
+           |  }
+           |  param {
+           |    lr_mult: 2
+           |    decay_mult: 0
+           |  }
+           |  convolution_param {
+           |    engine: MKL2017
+           |    num_output: 128
+           |    pad: 1
+           |    kernel_size: 3
+           |    weight_filler {
+           |      type: "xavier"
+           |    }
+           |    bias_filler {
+           |      type: "constant"
+           |      value: 0.2
+           |    }
+           |  }
+           |}
+           |layer {
+           |  name: "inception_3a/relu_3x3"
+           |  type: "ReLU"
+           |  relu_param {
+           |    engine: MKL2017
+           |  }
+           |  bottom: "inception_3a/3x3"
+           |  top: "inception_3a/3x3"
+           |}
+           |layer {
+           |  name: "inception_3a/5x5_reduce"
+           |  type: "Convolution"
+           |  bottom: "split3"
+           |  top: "inception_3a/5x5_reduce"
+           |  param {
+           |    lr_mult: 1
+           |    decay_mult: 1
+           |  }
+           |  param {
+           |    lr_mult: 2
+           |    decay_mult: 0
+           |  }
+           |  convolution_param {
+           |    engine: MKL2017
+           |    num_output: 16
+           |    kernel_size: 1
+           |    weight_filler {
+           |      type: "xavier"
+           |    }
+           |    bias_filler {
+           |      type: "constant"
+           |      value: 0.2
+           |    }
+           |  }
+           |}
+           |layer {
+           |  name: "inception_3a/relu_5x5_reduce"
+           |  type: "ReLU"
+           |  relu_param {
+           |    engine: MKL2017
+           |  }
+           |  bottom: "inception_3a/5x5_reduce"
+           |  top: "inception_3a/5x5_reduce"
+           |}
+           |layer {
+           |  name: "inception_3a/5x5"
+           |  type: "Convolution"
+           |  bottom: "inception_3a/5x5_reduce"
+           |  top: "inception_3a/5x5"
+           |  param {
+           |    lr_mult: 1
+           |    decay_mult: 1
+           |  }
+           |  param {
+           |    lr_mult: 2
+           |    decay_mult: 0
+           |  }
+           |  convolution_param {
+           |    engine: MKL2017
+           |    num_output: 32
+           |    pad: 2
+           |    kernel_size: 5
+           |    weight_filler {
+           |      type: "xavier"
+           |    }
+           |    bias_filler {
+           |      type: "constant"
+           |      value: 0.2
+           |    }
+           |  }
+           |}
+           |layer {
+           |  name: "inception_3a/relu_5x5"
+           |  type: "ReLU"
+           |  relu_param {
+           |    engine: MKL2017
+           |  }
+           |  bottom: "inception_3a/5x5"
+           |  top: "inception_3a/5x5"
+           |}
+           |layer {
+           |  name: "inception_3a/pool"
+           |  type: "Pooling"
+           |  bottom: "split4"
+           |  top: "inception_3a/pool"
+           |  pooling_param {
+           |    engine: MKL2017
+           |    pool: MAX
+           |    kernel_size: 3
+           |    stride: 1
+           |    pad: 1
+           |  }
+           |}
+           |layer {
+           |  name: "inception_3a/pool_proj"
+           |  type: "Convolution"
+           |  bottom: "inception_3a/pool"
+           |  top: "inception_3a/pool_proj"
+           |  param {
+           |    lr_mult: 1
+           |    decay_mult: 1
+           |  }
+           |  param {
+           |    lr_mult: 2
+           |    decay_mult: 0
+           |  }
+           |  convolution_param {
+           |    engine: MKL2017
+           |    num_output: 32
+           |    kernel_size: 1
+           |    weight_filler {
+           |      type: "xavier"
+           |    }
+           |    bias_filler {
+           |      type: "constant"
+           |      value: 0.2
+           |    }
+           |  }
+           |}
+           |layer {
+           |  name: "inception_3a/relu_pool_proj"
+           |  type: "ReLU"
+           |  relu_param {
+           |    engine: MKL2017
+           |  }
+           |  bottom: "inception_3a/pool_proj"
+           |  top: "inception_3a/pool_proj"
+           |}
+           |layer {
+           |  name: "inception_3a/output"
+           |  type: "Concat"
+           |  concat_param {
+           |    engine: MKL2017
+           |  }
+           |  bottom: "inception_3a/1x1"
+           |  bottom: "inception_3a/3x3"
+           |  bottom: "inception_3a/5x5"
+           |  bottom: "inception_3a/pool_proj"
+           |  top: "inception_3a/output"
+           |}
+         """.stripMargin
+
+       prototxt
+    }
 
     def getModel: Module[Float] = {
       val concat = new Concat(2)
@@ -338,32 +344,57 @@ class ConcatSpec extends FlatSpec with Matchers {
       concat
     }
 
-    val identity = Collect.run(prototxt, singleLayer = true)
+    def doTest(prototxt: String, model: Module[Float]): Unit = {
+      val identity = Collect.run(prototxt, singleLayer = true)
 
-    val model = getModel
-    model.convertToMklDnn()
+      val model = getModel
+      model.convertToMklDnn()
 
-    val modules = ArrayBuffer[TensorModule[Float]]()
-    flattenModules(model, modules)
+      val modules = ArrayBuffer[TensorModule[Float]]()
+      flattenModules(model, modules)
 
-    loadParameters(modules, identity)
+      loadParameters(modules, identity)
 
-    val input = loadTensor("Fwrd_data", Array(4, 192, 28, 28), identity)
-    val gradOutput = loadTensor("Bwrd_inception_3a_output.loss", Array(4, 256, 28, 28), identity)
+      val input = loadTensor("Fwrd_data", Array(batchSize, 192, 28, 28), identity)
+      val gradOutput = loadTensor("Bwrd_inception_3a_output.loss", Array(batchSize, 256, 28, 28), identity)
 
-    model.forward(input)
-    model.backward(input, gradOutput)
+      model.forward(input)
+      model.backward(input, gradOutput)
 
-    compareAllLayers(modules, identity, Forward)
-    compareAllLayers(modules, identity, Backward)
+      compareAllLayers(modules, identity, Forward)
+      compareAllLayers(modules, identity, Backward)
 
-    val modelOutput = model.output.toTensor
-    val modelGradInput = model.gradInput.toTensor
+      val modelOutput = model.output.toTensor
+      val modelGradInput = model.gradInput.toTensor
 
-    val output = loadTensor("Fwrd_inception_3a_output", modelOutput.size(), identity)
-    val gradInput = loadTensor("Bwrd_split", input.size(), identity)
+      val output = loadTensor("Fwrd_inception_3a_output", modelOutput.size(), identity)
+      val gradInput = loadTensor("Bwrd_split", input.size(), identity)
 
-    cumulativeError(modelOutput, output, "output") should be(0.0)
-    cumulativeError(modelGradInput, gradInput, "gradient input") should be(0.0)
+      cumulativeError(modelOutput, output, "output") should be(0.0)
+      cumulativeError(modelGradInput, gradInput, "gradient input") should be(0.0)
+    }
+
+    def diffAttributes(): Unit = {
+      val prototxt = getPrototxt(32)
+      val model = getModel
+
+      doTest(prototxt, model)
+    }
+
+    def diffBatchSizeOnSameModel(): Unit = {
+      val model = getModel
+      for (batchSize <- List(32, 128)) {
+        val prototxt = getPrototxt(32)
+
+        doTest(prototxt, model)
+      }
+    }
+
+    def run(): Unit = {
+      diffAttributes()
+      diffBatchSizeOnSameModel()
+    }
+
+    run()
   }
 }

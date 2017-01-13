@@ -40,10 +40,27 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
   class BNRef extends Ref[T] {
     val workspace = new MklTensor[T]()
     val scaleShift = new MklTensor[T]()
+
+    override def release(): Unit = {
+      super.release()
+      
+      workspace.release()
+      scaleShift.release()
+    }
   }
 
   class BNPrimitive extends Primitive {
     var scaleShift = 0L
+
+    override def release(): Unit = {
+      super.release()
+
+      wrapper {
+        MklDnnFloat.deletePrimitive(scaleShift)
+
+        scaleShift = 0L
+      }
+    }
   }
 
   @transient
@@ -60,6 +77,8 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
   private[this] def initLayerAttributes(input: Tensor[T]): Unit = {
     if (refs == null) { refs = new BNRef }
     if (primitive == null) { primitive = new BNPrimitive }
+
+    savedSize = Some(input.size().clone())
 
     val dimension = 4
     val inputLayout = new MklLayout(dimension, Utils.getSize(input, dimension))
@@ -113,8 +132,19 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
     setInit(true)
   }
 
+  def releaseAll(): Unit = {
+    if (refs != null && primitive != null) {
+      refs.release()
+      primitive.release()
+
+      setInit(false)
+    }
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (!isInited) {
+    if (input.size().deep != savedSize.getOrElse(Array()).deep || ! isInited) {
+      releaseAll()
+
       initLayerAttributes(input)
     }
 

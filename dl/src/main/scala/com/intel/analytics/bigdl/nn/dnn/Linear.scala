@@ -42,11 +42,36 @@ class Linear[T: ClassTag](inputSize: Int,
 
     var gradWeight = new MklTensor[T]()
     var gradBias = new MklTensor[T]()
+
+    override def release(): Unit = {
+      super.release()
+
+      wrapper {
+
+        for (ref <- List(weight, bias, gradWeight, gradBias)) {
+          ref.release()
+        }
+
+      }
+    }
   }
 
-  class LinearPrimitive extends Primitive {
+  class LinearPrimitive extends Primitive[T] {
     var backWeight = 0L
     var backBias = 0L
+
+    override def release(): Unit = {
+      super.release()
+
+      wrapper {
+        for (prim <- List(backWeight, backBias)) {
+          MklDnnFloat.deletePrimitive(prim)
+        }
+      }
+
+      backWeight = 0L
+      backBias = 0L
+    }
   }
 
   @transient
@@ -83,6 +108,8 @@ class Linear[T: ClassTag](inputSize: Int,
     if (primitive == null) { primitive = new LinearPrimitive }
 
     val dimension = 2
+
+    savedSize = Some(input.size().clone())
 
     val inputLayout = new MklLayout(
       dimension,
@@ -204,10 +231,22 @@ class Linear[T: ClassTag](inputSize: Int,
       ResourceType.dnnResourceDiffBias)
   }
 
+  def releaseAll(): Unit = {
+    if (refs != null && primitive != null) {
+      refs.release()
+      primitive.release()
+
+      setInit(false)
+    }
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (!isInited) {
+    if (input.size().deep != savedSize.getOrElse(Array()).deep || ! isInited) {
+      releaseAll()
+
       initLayerAttributes(input)
     }
+
     refs.input.set(input)
     refs.weight.set(weight)
     refs.bias.set(bias)
@@ -254,9 +293,10 @@ class Linear[T: ClassTag](inputSize: Int,
     }
 
     if (this.isTraining()) {
-      refs.input.setConverted(false)
       refs.bias.setConverted(false)
       refs.weight.setConverted(false)
+
+      refs.gradOutput.setConverted(true)
     }
 
     this.gradInput
@@ -283,6 +323,10 @@ class Linear[T: ClassTag](inputSize: Int,
     refs.gradWeight.backToUsr(gradWeight)
     refs.gradBias.backToUsr(gradBias)
 
+    if (this.isTraining()) {
+      refs.input.setConverted(false)
+      refs.gradOutput.setConverted(false)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {

@@ -36,6 +36,12 @@ class Pool[T: ClassTag](kW: Int,
   extends Pooling[T](kW, kH, dW, dH, padW, padH) with MklModuleMethods {
   class PoolRef extends Ref {
     val workspace = new MklTensor[T]()
+
+    override def release(): Unit = {
+      super.release()
+
+      workspace.release()
+    }
   }
   class PoolPrimitive extends Primitive {}
 
@@ -56,6 +62,8 @@ class Pool[T: ClassTag](kW: Int,
   private[this] def initLayerAttributes(input: Tensor[T]): Unit = {
     if (refs == null) { refs = new PoolRef }
     if (primitive == null) { primitive = new PoolPrimitive }
+
+    savedSize = Some(input.size().clone())
 
     val strides = Array[Long](dW, dH)
     val pads = Array[Int](-padW, -padH)
@@ -138,8 +146,18 @@ class Pool[T: ClassTag](kW: Int,
     setInit(true)
   }
 
+  def releaseAll(): Unit = {
+    if (refs != null && primitive != null) {
+      refs.release()
+      primitive.release()
+
+      setInit(false)
+    }
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (!isInited) {
+    if (input.size().deep != savedSize.getOrElse(Array()).deep || ! isInited) {
+      releaseAll()
       initLayerAttributes(input)
     }
 

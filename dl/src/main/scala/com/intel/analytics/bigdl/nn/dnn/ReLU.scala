@@ -44,6 +44,8 @@ class ReLU[T: ClassTag](ip: Boolean = false)
     if (refs == null) { refs = new ReLURef }
     if (primitive == null) { primitive = new ReLUPrimitive }
 
+    savedSize = Some(input.size().clone())
+
     val dimension = input.dim()
     // input and output layout
     val ioLayout = new MklLayout(dimension, Array(
@@ -92,8 +94,18 @@ class ReLU[T: ClassTag](ip: Boolean = false)
     setInit(true)
   }
 
+  def releaseAll(): Unit = {
+    if (refs != null && primitive != null) {
+      refs.release()
+      primitive.release()
+
+      setInit(false)
+    }
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (!isInited) {
+    if (input.size().deep != savedSize.getOrElse(Array()).deep || ! isInited) {
+      releaseAll()
       initLayerAttributes(input)
     }
     refs.input.set(input, ip)

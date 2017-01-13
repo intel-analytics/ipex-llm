@@ -36,6 +36,12 @@ class SpatialCrossMapLRN[T: ClassTag](size: Int = 5,
 
   class LRNRef extends Ref[T] {
     val workspace = new MklTensor[T]()
+
+    override def release(): Unit = {
+      super.release()
+
+      workspace.release()
+    }
   }
   class LRNPrimitive extends Primitive {}
 
@@ -48,6 +54,8 @@ class SpatialCrossMapLRN[T: ClassTag](size: Int = 5,
   private[this] def initLayerAttributes(input: Tensor[T]): Unit = {
     if (refs == null) { refs = new LRNRef }
     if (primitive == null) { primitive = new LRNPrimitive }
+
+    savedSize = Some(input.size().clone())
 
     val dimension = 4
 
@@ -113,9 +121,18 @@ class SpatialCrossMapLRN[T: ClassTag](size: Int = 5,
 
     setInit(true)
   }
+  def releaseAll(): Unit = {
+    if (refs != null && primitive != null) {
+      refs.release()
+      primitive.release()
+
+      setInit(false)
+    }
+  }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (!isInited) {
+    if (input.size().deep != savedSize.getOrElse(Array()).deep || ! isInited) {
+      releaseAll()
       initLayerAttributes(input)
     }
     refs.input.set(input)

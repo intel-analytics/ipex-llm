@@ -6,10 +6,10 @@
 //#define CHECK_EQ(x, y) CHECK((x) == (y))
 #define CHECK_EQ(x, y)                              \
   if (!((x) == (y)))                                \
-    printf("check error\n");
+    printf("[MKL] %s]:%d check error\n", __FILE__, __LINE__);
 
 #define CHECK_NE(x, y)                              \
   if (!((x) != (y)))                                \
-    printf("check error\n");
+    printf("[MKL] %s]:%d check error\n", __FILE__, __LINE__);
 
 #endif

@@ -35,30 +35,73 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
     //  we don't known the length of modules
     var inputsUsr: Array[Tensor[T]] = null
     val output = new MklTensor[T]()
+
+    def release(): Unit = {
+      for (input <- inputs) {
+        input.release()
+      }
+      output.release()
+    }
   }
 
   class SplitRef {
     val gradOutput = new MklTensor[T]()
     var gradInputs: Array[MklTensor[T]] = null
     var gradInputsUsr: Array[Tensor[T]] = null
+
+    def release(): Unit = {
+      for (gradInput <- gradInputs) {
+        gradInput.release()
+      }
+
+      gradOutput.release()
+    }
   }
 
   class SumRef {
     val gradInput = new MklTensor[T]()
     var gradOutputs: Array[MklTensor[T]] = null
+
+    def release(): Unit = {
+      for (gradOutput <- gradOutputs) {
+        gradOutput.release()
+      }
+    }
   }
 
   class Ref {
     val concat = new ConcatRef
     val split = new SplitRef
     val sum = new SumRef
+
+    def release(): Unit = {
+      concat.release()
+      split.release()
+      sum.release()
+    }
   }
 
   class Primitive {
     var concat = 0L
     var split = 0L
     var sum = 0L
+
+    def release(): Unit = {
+      ev.getType match {
+        case FloatType =>
+          for (primitive <- List(concat, split, sum)) {
+            MklDnnFloat.deletePrimitive(primitive)
+          }
+
+          concat = 0L
+          split = 0L
+          sum = 0L
+        case _ => throw new UnsupportedOperationException(s"Only Float supported")
+      }
+    }
   }
+
+  var savedSize = None: Option[Array[Array[Int]]]
 
   @transient
   var primitive: Primitive = null
@@ -142,10 +185,14 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
       refs.concat.inputsUsr(i) = Tensor[T]()
     }
 
+    savedSize = Some(new Array[Array[Int]](numConcats))
+    for (i <- inputs.indices) {
+      savedSize.getOrElse(throw new RuntimeException("the size saved is not initialized"))(i) =
+        inputs(i).size().clone()
+    }
+
     for (i <- 0 until numConcats) {
       val one = inputs(i)
-//      require(nDimension == one.nDimension(), s"the dimension of outputs in concats must be same")
-
       val size = one.size().reverse.map(_.toLong).slice(0, one.nDimension())
       val layout = if (one.nDimension() <= 2) {
         new MklLayout(4, Array(1, 1, size(0), size(1)))
@@ -327,13 +374,41 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
     setSumInit(true)
   }
 
+  def releaseAll(): Unit = {
+    // concat is the first it'll meet, so release all resources here.
+    if (refs != null && primitive != null) {
+      refs.release()
+      primitive.release()
+
+      setConcatInit(false)
+      setSplitInit(false)
+      setSumInit(false)
+    }
+  }
+
   private[this] def concat(): Tensor[T] = {
     // init concat
-    if (!isConcatInited) {
+    // check whether the size of input has been changed.
+    savedSize match {
+      case Some(sizes) =>
+        // we should iterate all module's output, if it should be inited,
+        // it will set concatInit to false, which will be set to true in `initConcat`
+        for (i <- modules.indices) {
+          if (modules(i).output.toTensor.size().deep != sizes(i).deep) {
+            setConcatInit(false)
+          }
+        }
+      case None => setConcatInit(false)
+    }
+
+    if (! isConcatInited) {
+      releaseAll()
+
       val leaves = new Array[Tensor[T]](modules.length)
       for (i <- modules.indices) {
         leaves(i) = modules(i).output.asInstanceOf[Tensor[T]]
       }
+
       initConcat(leaves)
     }
 
