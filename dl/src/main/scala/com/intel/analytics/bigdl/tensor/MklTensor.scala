@@ -406,6 +406,32 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
     _usrStorage = value
   }
 
+  def release(): Unit = {
+    ev.getType() match {
+      case FloatType =>
+        for (primtive <- List(usrToMkl, mklToUsr, internalToMkl)) {
+          MklDnnFloat.deletePrimitive(primtive)
+        }
+
+        setUsrToMkl(0L)
+        setMklToUsr(0L)
+        setInternalToMkl(0L)
+
+        MklDnnFloat.releaseBuffer(mklStorage())
+        setMklStorage(0L)
+
+        for (layout <- List(layoutUsr, layoutMkl, layoutInternal)) {
+          MklDnnFloat.layoutDelete(layout)
+        }
+
+        setLayoutInternal(0L)
+        setLayoutMkl(0L)
+        setLayoutUsr(0L)
+
+      case _ => throw new UnsupportedOperationException(s"Only Float supported")
+    }
+  }
+
   // }} ---------------------------------------------
 
   // unsupport methods

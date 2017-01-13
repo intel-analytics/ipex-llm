@@ -102,11 +102,33 @@ trait MklModuleMethods {
     var output = new MklTensor[U]()
     var gradOutput = new MklTensor[U]()
     var gradInput = new MklTensor[U]()
+
+    def release(): Unit = {
+      ev.getType() match {
+        case FloatType =>
+          for (ref <- List(input, output, gradOutput, gradInput)) {
+            ref.release()
+          }
+        case _ => throw new UnsupportedOperationException(s"Only Float supported")
+      }
+    }
   }
 
-  class Primitive {
+  class Primitive[U: ClassTag](implicit ev: TensorNumeric[U]) {
     var forward = 0L
     var backward = 0L
+
+    def release(): Unit = {
+      ev.getType() match {
+        case FloatType =>
+          for (primitive <- List(forward, backward)) {
+            MklDnnFloat.deletePrimitive(primitive)
+          }
+          forward = 0
+          backward = 0
+        case _ => throw new UnsupportedOperationException(s"Only Float supported")
+      }
+    }
   }
 
   var profiling = false
@@ -128,6 +150,8 @@ trait MklModuleMethods {
   private[this] var _isInited: Boolean = false
   private[this] var _nextModuleType: ModuleType = BLAS
   private[this] var _prevModuleType: ModuleType = BLAS
+
+  var savedSize = None: Option[Array[Int]]
 
   def convertToMklDnn[U: ClassTag](prevModule: Option[AbstractModule[Activity, Activity, U]] = None)
   : (ModuleType, AbstractModule[Activity, Activity, U]) = {
@@ -163,4 +187,11 @@ trait MklModuleMethods {
   }
 
   implicit def bool2int(b: Boolean): Int = if (b) 1 else 0
+
+  def wrapper[U: ClassTag](block: => Any)(implicit ev: TensorNumeric[U]): Unit = {
+    ev.getType() match {
+      case FloatType => block
+      case _ => throw new UnsupportedOperationException(s"Only Float supported")
+    }
+  }
 }

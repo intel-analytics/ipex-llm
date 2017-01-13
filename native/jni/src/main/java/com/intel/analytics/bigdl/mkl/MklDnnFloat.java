@@ -22,6 +22,8 @@ public class MklDnnFloat {
                                            long[] size,
                                            long[] strides);
 
+    public native static void layoutDelete(long layout);
+
     /**
      * create mkl layout from primitive
      *

@@ -67,11 +67,35 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
 
     var gradOutputInBackWeight = new MklTensor[T]()
     var gradOutputInBackBias = new MklTensor[T]()
+
+    override def release(): Unit = {
+      super.release()
+
+      wrapper {
+        for (ref <- List(weight, bias, gradWeight, gradBias,
+          gradOutputInBackBias, gradOutputInBackWeight, weightInBwd)) {
+          ref.release()
+        }
+      }
+    }
   }
 
-  class ConvPrimitive extends Primitive {
+  class ConvPrimitive extends Primitive[T] {
     var backWeight = 0L
     var backBias = 0L
+
+    override def release(): Unit = {
+      super.release()
+
+      wrapper {
+        for (prim <- List(backWeight, backBias)) {
+          MklDnnFloat.deletePrimitive(prim)
+        }
+      }
+
+      backWeight = 0L
+      backBias = 0L
+    }
   }
 
   @transient
@@ -118,6 +142,8 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
 
     // set dimension = 4. because it seems that only support dimension 4 in mkl dnn
     val dimension = 4
+
+    savedSize = Some(input.size().clone())
 
     val inputLayout = new MklLayout(dimension, Utils.getSize(input, dimension))
 
@@ -285,8 +311,19 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
     refs.gradBias.createConversion(biasLayout, primitive.backBias, ResourceType.dnnResourceDiffBias)
   }
 
+  def releaseAll(): Unit = {
+    if (refs != null && primitive != null) {
+      refs.release()
+      primitive.release()
+
+      setInit(false)
+    }
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (!isInited) {
+    if (input.size().deep != savedSize.getOrElse(Array()).deep || ! isInited) {
+      releaseAll()
+
       initLayerAttributes(input)
     }
 

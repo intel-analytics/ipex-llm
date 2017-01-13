@@ -17,6 +17,14 @@ JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_layoutCre
 
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    layoutDelete
+ * Signature: (J)J
+ */
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_layoutDelete
+  (JNIEnv *, jclass, jlong);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
  * Method:    layoutCreateFromPrimitive
  * Signature: (JI)J
  */
