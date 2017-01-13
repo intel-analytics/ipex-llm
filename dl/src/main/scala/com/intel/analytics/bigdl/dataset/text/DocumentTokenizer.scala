@@ -23,16 +23,13 @@ import scala.collection.Iterator
 import scala.collection.mutable.ArrayBuffer
 
 import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
-import org.apache.spark.sql.functions._
 import org.apache.spark.sql._
-import java.io._
 
 import smile.nlp.tokenizer.{SimpleSentenceSplitter, SimpleTokenizer}
 
   /**
   * Transformer that tokenizes a Document (article)
-  * into a Seq[Seq[String]] by using Stanford Tokenizer.
+  * into a Seq[Seq[String]]
   *
   */
 
@@ -44,11 +41,11 @@ class DocumentTokenizer() extends Transformer[String, Array[Array[String]]] {
       val logData = sc.textFile(x, 2).filter(!_.isEmpty()).cache()
 
       val sqlContext = new SQLContext(sc)
-      import sqlContext.implicits._
 
-      val sentences_split = SimpleSentenceSplitter.getInstance.split(logData.collect().reduce((l,r)=>l+r))
+      val sentences_split = SimpleSentenceSplitter
+        .getInstance.split(logData.collect().reduce((l, r) => l + r))
       val tokenizer = new SimpleTokenizer(true)
-      for (i <- sentences_split.indices){
+      for (i <- sentences_split.indices) {
           val words = tokenizer.split(sentences_split(i))
           sentences.append(words)
       }
