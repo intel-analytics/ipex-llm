@@ -1,0 +1,14 @@
+net: "train_val.prototxt"
+test_iter: 250
+test_interval: 1000
+base_lr: 0.01
+display: 1000
+max_iter: 9000
+lr_policy: "step"
+stepsize: 4500
+gamma: 0.1
+momentum: 0.9
+weight_decay: 0.0005
+snapshot: 9000
+snapshot_prefix: "hdf5_classification/data/train"
+solver_mode: CPU
