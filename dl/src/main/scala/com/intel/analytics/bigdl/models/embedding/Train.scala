@@ -47,11 +47,14 @@ object Train {
 
     val word2Vec = Word2Vec(params)
 
-    val tokens = DataSet.rdd(sc.textFile(params.trainDataLocation)) -> LowerCase() -> Tokenizer()
+    val tokens =
+      (DataSet.rdd(sc.textFile(params.trainDataLocation))
+      -> LowerCase()
+      -> Tokenizer())
 
-    word2Vec.fit(tokens.toDistributed().data(false))
+    word2Vec.initialize(tokens.toDistributed().data(false))
 
-    val trainSet = tokens -> word2Vec.transformToBatch
+    val trainSet = tokens -> word2Vec.generateTrainingData
 
     val model = if (params.modelSnapshot.isDefined) {
       Module.load[Float](params.modelSnapshot.get)

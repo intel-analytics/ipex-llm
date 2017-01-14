@@ -56,8 +56,8 @@ class Word2Vec(val params: Word2VecConfig)
   final val tableSize = 1e8.toInt
   private val powerUnigram: Array[Int] = new Array(tableSize)
 
+  // embedding the word vectors in the LookupTable
   var wordVectors: LookupTable[Float] = _
-
 
   /**
    * Generate the training model of word2vec
@@ -72,6 +72,22 @@ class Word2Vec(val params: Word2VecConfig)
         .add(Narrow(2, 2, params.numNegSamples + 1)))
       .add(MM(transA = false, transB = true))
       .add(Sigmoid())
+  }
+
+  /**
+   * Prepare the data including build the dictionary and initialize
+   * the negative sampling distribution
+   *
+   * @param dataset text data set in [[RDD]] format
+   *                each element of RDD is a sentence containing the words
+   *                in iterable format
+   */
+  def initialize[S <: Iterable[String]](dataset: RDD[S]): Unit = {
+    val words = dataset.flatMap(x => x)
+
+    buildVocab(words)
+
+    buildNegSampleDistribution()
   }
 
   /**
@@ -130,13 +146,26 @@ class Word2Vec(val params: Word2VecConfig)
 
 
   /**
+   * Pre-process the text, generate training data and
+   * transform it to the train samples in [[MiniBatch]] format
+   *
+   * @return a transformer transforms the input words to Mini-batch
+   */
+  def generateTrainingData: Transformer[Seq[String], MiniBatch[Float]] = {
+    (WordsToIds(word2Id, params.maxSentenceLength)
+      -> SubSampling(params.subsample, trainWordsCount, vocab)
+      -> SentenceToSamples(powerUnigram, params.numNegSamples, params.windowSize)
+      -> SampleToBatch(params.batchSize))
+  }
+
+  /**
    * Sample negative contexts from power unigram distribution,
-   * and conbine them with given word and context together as a training sample
+   * and combine them with given word and context together as a training sample
    *
    * @param powerUnigram the power unigram distribution
    * @param word given word
    * @param context given context
-   * @return a one-dimension tensor, whose first elmement is the given word,
+   * @return a one-dimension tensor, whose first element is the given word,
    *         second element is the given context, and the rest elements are the
    *         sampled negative contexts.
    */
@@ -148,6 +177,7 @@ class Word2Vec(val params: Word2VecConfig)
     contexts.setValue(1, word + 1)
     contexts.setValue(2, context + 1)
     var i = 3
+
     while (i <= params.numNegSamples + 2) {
       // Sample a negative context
       val negContext = powerUnigram(RNG.uniform(0, tableSize).toInt)
@@ -159,86 +189,6 @@ class Word2Vec(val params: Word2VecConfig)
     contexts
   }
 
-  def transformToBatch(): Transformer[Seq[String], MiniBatch[Float]] = {
-    (WordsToIds(word2Id, params.maxSentenceLength)
-//      -> Subsampling(params.subsample, trainWordsCount, vocab)
-      -> SentenceToSamples(powerUnigram, params.numNegSamples, params.windowSize)
-      -> SampleToBatch(params.batchSize))
-  }
-
-
-  /**
-   * Normalize the each word vector
-   */
-  def normalizeWordVectors(): Unit =
-    wordVectors.weight.set(normalizeMatrix(wordVectors.weight))
-
-  /**
-   * Normalize rows of a matrix
-   *
-   * @param matrix given matrix
-   * @return nomalized matrix
-   */
-  def normalizeMatrix(matrix: Tensor[Float]): Tensor[Float] = {
-    val size = matrix.size()
-    val normMatrix = Tensor(size).zero()
-
-    var i = 1
-    while (i < size(0)) {
-      val norm = matrix.apply(i).norm(2)
-      var j = 1
-      while (j < size(1)) {
-        normMatrix.setValue(i, j, matrix(Array(i, j)) / norm)
-        j += 1
-      }
-      i += 1
-    }
-
-    normMatrix
-  }
-
-  def getVectorById(id: Int): Tensor[Float] = {
-    wordVectors.weight(id + 1)
-  }
-
-  def getVectorByString(word: String): Tensor[Float] = {
-    getVectorById(word2Id(word))
-  }
-
-  /**
-   * Return the k-nearest words to a word or a vector based on cosine similarity
-   * @param numSimilarWord Output the number of most similar words given a
-   *                       input during prediction1
-   */
-  def getSimilarWords(
-    words: Array[String],
-    numSimilarWord: Int): Array[Array[(String, Float)]] = {
-    words.map(word => {
-      if (!word2Id.contains(word)) {
-        log.info(s"$word does not exist in vocabulary.")
-        null
-      } else {
-        val vector = getVectorByString(word)
-        val similarity = Tensor(vocabSize)
-          .mv(wordVectors.weight, vector)
-          .toBreezeVector()
-        argsort(similarity)
-          .reverse
-          .take(numSimilarWord)
-          .toArray
-          .map(id => (vocab(id).word, similarity(id)))
-      }
-    }).filter(_ != null)
-  }
-
-  def printSimilarWords(
-    words: Array[String],
-    numSimilarWord: Int): Unit = {
-    val simWords = getSimilarWords(words, numSimilarWord)
-    simWords
-      .map(e => e.mkString(", "))
-      .mkString("\n")
-  }
 
   /**
    * Transform a sequence of words to its corresponding ids, and filter the length
@@ -257,6 +207,7 @@ class Word2Vec(val params: Word2VecConfig)
       prev.map(words => {
         var sentenceLength = 0
         var i = 0
+
         while (i < words.length && sentenceLength < maxSentenceLength) {
           val word = word2Id.get(words(i))
           word match {
@@ -272,7 +223,7 @@ class Word2Vec(val params: Word2VecConfig)
   }
 
   /**
-   * Subsampling of Frequent Words.
+   * Sub-sampling of Frequent Words.
    * This transformer will use a simple subsampling approach:
    *    each word w in training set is discarded with a probability computed
    *    by the formula:
@@ -285,7 +236,7 @@ class Word2Vec(val params: Word2VecConfig)
    * @param trainWordsCount the total number of words in training set
    * @param vocab vocabulary of the training words
    */
-  case class Subsampling(
+  case class SubSampling(
     t: Double,
     trainWordsCount: Long,
     vocab: Array[WordCount])
@@ -349,5 +300,92 @@ class Word2Vec(val params: Word2VecConfig)
         samples.result()
       })
     }
+  }
+
+  /**
+   * Normalize the each word vector
+   */
+  def normalizeWordVectors(): Unit =
+  wordVectors.weight.set(normalizeMatrix(wordVectors.weight))
+
+  /**
+   * Normalize rows of a matrix
+   *
+   * @param matrix given matrix
+   * @return normalized matrix
+   */
+  def normalizeMatrix(matrix: Tensor[Float]): Tensor[Float] = {
+    val size = matrix.size()
+    val normMatrix = Tensor(size).zero()
+
+    var i = 1
+    while (i < size(0)) {
+      val norm = matrix.apply(i).norm(2)
+      var j = 1
+      while (j < size(1)) {
+        normMatrix.setValue(i, j, matrix(Array(i, j)) / norm)
+        j += 1
+      }
+      i += 1
+    }
+
+    normMatrix
+  }
+
+  /**
+   * Print the k-nearest words to a word or a vector based on cosine similarity
+   * @param numSimilarWord print the number of the most similar words
+   */
+  def printSimilarWords(
+    words: Array[String],
+    numSimilarWord: Int): Unit = {
+    val simWords = getSimilarWords(words, numSimilarWord)
+    simWords
+      .map(e => e.mkString(", "))
+      .mkString("\n")
+  }
+
+  /**
+   * Return the k-nearest words to a word or a vector based on cosine similarity
+   * @param numSimilarWord return the number of the most similar words given a
+   *                       input during prediction
+   */
+  def getSimilarWords(
+    words: Array[String],
+    numSimilarWord: Int): Array[Array[(String, Float)]] = {
+    words.map(word => {
+      if (!word2Id.contains(word)) {
+        log.info(s"$word does not exist in vocabulary.")
+        null
+      } else {
+        val vector = getVectorByString(word)
+        val similarity = Tensor(vocabSize)
+          .mv(wordVectors.weight, vector)
+          .toBreezeVector()
+        argsort(similarity)
+          .reverse
+          .take(numSimilarWord)
+          .toArray
+          .map(id => (vocab(id).word, similarity(id)))
+      }
+    }).filter(_ != null)
+  }
+
+  /**
+   * Given a word in [[String]] format, return the corresponding word vector
+   * @param word word in [[String]] format
+   * @return
+   */
+  def getVectorByString(word: String): Tensor[Float] = {
+    getVectorById(word2Id(word))
+  }
+
+  /**
+   * Given a word id in [[Int]] format, return the corresponding word vector
+   * @param id word id in [[Int]] format
+   * @return
+   */
+  def getVectorById(id: Int): Tensor[Float] = {
+    wordVectors.weight(id + 1)
   }
 }
