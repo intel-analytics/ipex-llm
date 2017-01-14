@@ -57,6 +57,7 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
   var _stride = Array[Int]()
 
   var nDimension: Int = 0
+  var inplace = true
 
   /**
    * If other is not a MklTensor, then we set usr storage to other.storage.
@@ -90,6 +91,8 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
       } else {
         // out-of-place exists performance issue
         // TODO mem leak
+        this.inplace = false
+
         ev.getType() match {
           case FloatType =>
             val buffer = if (interStorage == 0) {
@@ -214,14 +217,16 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
 
     // internal storage layout is same as mkl storage layout
     if (!hasConverted) {
-      if (internalToMkl == 0 && interStorage != 0) {
-        setMklStorage(interStorage)
+      val retStorage = if (internalToMkl == 0 && interStorage != 0) {
+        interStorage
       } else if (internalToMkl != 0) {
         ev.getType() match {
           case FloatType => MklDnnFloat.conversionExecuteMklToMkl(interStorage, mklStorage,
             internalToMkl)
           case _ => throw new UnsupportedOperationException(s"Only Float is supported.")
         }
+
+        mklStorage
       } else if (usrToMkl != 0) {
         // It will always create usr->mkl conversion.
         ev.getType() match {
@@ -230,13 +235,16 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
             usrStorageOffset - 1, mklStorage, usrToMkl)
           case _ => throw new UnsupportedOperationException(s"Only Float is supported.")
         }
+
+        mklStorage
       } else {
         // never reach here
         throw new RuntimeException(s"Something wrong with primitive creation.")
       }
+      retStorage
+    } else {
+      mklStorage
     }
-
-    this.mklStorage()
   }
 
   def backToUsr(usr: Tensor[T]): Unit = {
@@ -419,8 +427,17 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
         setMklToUsr(0L)
         setInternalToMkl(0L)
 
-        MklDnnFloat.releaseBuffer(mklStorage())
-        setMklStorage(0L)
+        // if mkl storage comes from another Tensor, we should not free it twice.
+        if (mklStorage() != interStorage) {
+          MklDnnFloat.releaseBuffer(mklStorage())
+          setMklStorage(0L)
+        }
+
+        if (!inplace && interStorage != 0) {
+          MklDnnFloat.releaseBuffer(interStorage)
+        }
+
+        setInterStorage(0L)
 
         for (layout <- List(layoutUsr, layoutMkl, layoutInternal)) {
           if (layout != 0) {
