@@ -40,7 +40,7 @@ else
         shift
         eval $*
     else
-        echo "Invalid engine type. Only support mkl_blas now"
+        echo "Invalid engine type '$1'. Only support mkl_blas now"
     fi
 fi
 
