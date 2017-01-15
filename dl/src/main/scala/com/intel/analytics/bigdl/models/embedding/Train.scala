@@ -43,8 +43,6 @@ object Train {
         new SparkContext(conf)
       }).get
 
-    Engine.setCoreNumber(params.coreNumber)
-
     val word2Vec = Word2Vec(params)
 
     val tokens =

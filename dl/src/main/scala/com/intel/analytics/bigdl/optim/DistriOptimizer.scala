@@ -238,6 +238,9 @@ object DistriOptimizer {
         accumulateCount += recordsNum.value
         val end = System.nanoTime()
         wallClockTime += end - start
+        if (lossSum.value == 0) {
+          val a = 1
+        }
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${recordsNum.value / ((end - start) / 1e9)} records/second. Loss is ${
             lossSum.value / finishedModelNum

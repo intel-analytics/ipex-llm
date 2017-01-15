@@ -42,6 +42,15 @@ object Word2Vec {
   def apply(params: Word2VecConfig): Word2Vec = new Word2Vec(params)
 }
 
+/**
+ * This version of word2Vec implementation using
+ *    skip-gram + negative sampling and sub-sampling.
+ *
+ * For more details of the theory, please refer to the paper:
+ *   Distributed Representations of Words and Phrases and their Compositionality
+ *
+ * @param params word2vec configuration parameters
+ */
 @SerialVersionUID(- 4753052739687459443L)
 class Word2Vec(val params: Word2VecConfig)
   extends Serializable {
@@ -85,13 +94,16 @@ class Word2Vec(val params: Word2VecConfig)
   def initialize[S <: Iterable[String]](dataset: RDD[S]): Unit = {
     val words = dataset.flatMap(x => x)
 
+    log.info(s"${words.count()} words and ${dataset.count()} sentences processed")
+
     buildVocab(words)
 
     buildNegSampleDistribution()
   }
 
   /**
-   * Build the vocabulary
+   * Build the vocabulary frequency, word2Id from input
+   *
    * @param words the given words, each element in the RDD is a word
    */
   def buildVocab(words: RDD[String]): Unit = {
@@ -100,7 +112,6 @@ class Word2Vec(val params: Word2VecConfig)
       .filter(_._2 >= minCount)
       .map(x => WordCount(x._1, x._2))
       .collect()
-      .sortWith((a, b) => a.count > b.count)
 
     vocabSize = vocab.length
     require(vocabSize > 0, "The vocabulary size should be > 0. You may need to check " +
@@ -151,10 +162,10 @@ class Word2Vec(val params: Word2VecConfig)
    *
    * @return a transformer transforms the input words to Mini-batch
    */
-  def generateTrainingData: Transformer[Seq[String], MiniBatch[Float]] = {
+  def generateTrainingData(): Transformer[Seq[String], MiniBatch[Float]] = {
     (WordsToIds(word2Id, params.maxSentenceLength)
       -> SubSampling(params.subsample, trainWordsCount, vocab)
-      -> SentenceToSamples(powerUnigram, params.numNegSamples, params.windowSize)
+      -> GenerateSamplesBySkipGram(powerUnigram, params.numNegSamples, params.windowSize)
       -> SampleToBatch(params.batchSize))
   }
 
@@ -201,10 +212,9 @@ class Word2Vec(val params: Word2VecConfig)
     word2Id: mutable.HashMap[String, Int],
     maxSentenceLength: Int)
     extends Transformer[Seq[String], Seq[Int]] {
-    val sentence = mutable.ArrayBuilder.make[Int]
-
     override def apply(prev: Iterator[Seq[String]]): Iterator[Seq[Int]] =
       prev.map(words => {
+        val sentence = mutable.ArrayBuilder.make[Int]
         var sentenceLength = 0
         var i = 0
 
@@ -241,8 +251,6 @@ class Word2Vec(val params: Word2VecConfig)
     trainWordsCount: Long,
     vocab: Array[WordCount])
     extends Transformer[Seq[Int], Seq[Int]] {
-    val sentence = mutable.ArrayBuilder.make[Int]
-
     override def apply(prev: Iterator[Seq[Int]]): Iterator[Seq[Int]] =
       if (t > 0) {
         prev.map(words => {
@@ -263,15 +271,14 @@ class Word2Vec(val params: Word2VecConfig)
   }
 
   /**
-   * Transform sentence represented as word ids to MiniBatch
-   * Each sensence is represented as a batch
+   * Generate training samples by skip-gram algorithm
    *
    * @param powerUnigram the power unigram distribution
    * @param numNegSamples Number of negative samples per example.
    * @param window The number of words to predict to the left
    *                   and right of the target word.
    */
-  case class SentenceToSamples(
+  case class GenerateSamplesBySkipGram(
     powerUnigram: Array[Int],
     numNegSamples: Int,
     window: Int)
