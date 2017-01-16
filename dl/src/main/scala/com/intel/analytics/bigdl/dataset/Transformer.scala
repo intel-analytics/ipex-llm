@@ -120,8 +120,8 @@ class SampleToBatch[T: ClassTag]
             if (labelData == null || labelData.length < batchSize * labelLength) {
               labelData = new Array[T](batchSize * labelLength)
             }
-            sample.copyToLabel(labelData, i*labelLength, labelLength)
-            sample.copyToFeature(featureData, i*featureLength, featureLength)
+            sample.copyLabel(labelData, i*labelLength, labelLength)
+            sample.copyFeature(featureData, i*featureLength, featureLength)
 
             featureTable(i + 1) = Tensor()
               .set(Storage[T](featureData), storageOffset = i*featureLength + 1,

@@ -90,7 +90,7 @@ class Sample[T: ClassTag] (
     this
   }
 
-  def copyToFeature(storage: Array[T], offset: Int, length: Int): Unit = {
+  def copyFeature(storage: Array[T], offset: Int, length: Int): Unit = {
     require(offset + length <= storage.length, "index out of boundary")
     require(length <= featureTensor.storage().array().length, "length too long for feature")
     ev.getType() match {
@@ -106,7 +106,7 @@ class Sample[T: ClassTag] (
     }
   }
 
-  def copyToLabel(storage: Array[T], offset: Int, length: Int): Unit = {
+  def copyLabel(storage: Array[T], offset: Int, length: Int): Unit = {
     require(offset + length <= storage.length, "index out of boundary")
     require(length <= labelTensor.storage().array().length, "length too long for label")
     ev.getType() match {
