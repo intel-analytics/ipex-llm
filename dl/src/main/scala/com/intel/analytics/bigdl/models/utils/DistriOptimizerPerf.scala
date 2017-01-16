@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.inception.{Inception_v2, Inception_v1}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, MklDnn}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -113,6 +113,11 @@ object DistriOptimizerPerf {
     }
     val model = _model
     println(model)
+
+    if (Engine.getEngineType == MklDnn) {
+      model.convertToMklDnn()
+    }
+
     val criterion = ClassNLLCriterion[Float]()
     val labels = Tensor(param.batchSize).fill(1)
 
