@@ -19,9 +19,6 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.NarrowTable
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
@@ -96,7 +93,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
       val (stackSize, extraSize) = (batch.size / subModelNumber,
         batch.size % subModelNumber)
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
-      val batchBuffer = new Array[(Activity, Activity)](parallelism)
+      val batchBuffer = new Array[MiniBatch[T]](parallelism)
       while (b < parallelism) {
         val offset = b * stackSize + math.min(b, extraSize)
         val length = stackSize + (if (b < extraSize) 1 else 0)
@@ -112,7 +109,10 @@ class LocalOptimizer[T: ClassTag] private[optim](
             localModel.zeroGradParameters()
             localModel.training()
             val localCriterion = workingCriterion(i)
-            val (input, target) = batchBuffer(i)
+            val (input, target) = batchBuffer(i) match {
+              case MiniBatch(a, b) => (a, b)
+              case _ => throw new IllegalArgumentException("MiniBatch Arguments are Illegal!")
+            }
             val output = localModel.forward(input)
             val _loss = ev.toType[Double](localCriterion.forward(output, target))
             val errors = localCriterion.backward(output, target)
@@ -210,7 +210,10 @@ class LocalOptimizer[T: ClassTag] private[optim](
           () => {
             val offset = b * stackSize + math.min(b, extraSize)
             val length = stackSize + (if (b < extraSize) 1 else 0)
-            val (input, target) = batch.narrow(1, offset + 1, length)
+            val (input, target) = batch.narrow(1, offset + 1, length) match {
+              case MiniBatch(a, b) => (a, b)
+              case _ => throw new IllegalArgumentException("MiniBatch Arguments are Illegal!")
+            }
             val output = workingModels(b).forward(input)
             vMethods.map(validation => {
               validation(output, target)

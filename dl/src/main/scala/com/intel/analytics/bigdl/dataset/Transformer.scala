@@ -74,22 +74,22 @@ class Identity[A] extends Transformer[A, A] {
 object SampleToBatch {
   def apply[T: ClassTag]
   (batchSize: Int,
-   tableOfBatch: Boolean = false)
+   isTable: Boolean = false)
   (implicit ev: TensorNumeric[T]): SampleToBatch[T]
-  = new SampleToBatch[T](batchSize, tableOfBatch)
+  = new SampleToBatch[T](batchSize, isTable)
 }
 
 class SampleToBatch[T: ClassTag]
-  (totalBatch: Int, tableOfBatch: Boolean = false)
+  (totalBatch: Int, isTable: Boolean = false)
   (implicit ev: TensorNumeric[T])
   extends Transformer[Sample[T], MiniBatch[T]] {
 
   override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
     new Iterator[MiniBatch[T]] {
-      private val featureTensor: Tensor[T] = Tensor[T]()
-      private val labelTensor: Tensor[T] = Tensor[T]()
-      private val featureTable: Table = T()
-      private val labelTable: Table = T()
+      private var featureTensor: Tensor[T] = _
+      private var labelTensor: Tensor[T] = _
+      private var featureTable: Table = _
+      private var labelTable: Table = _
       private var featureData: Array[T] = null
       private var labelData: Array[T] = null
       private val batchSize = Utils.getBatchSize(totalBatch)
@@ -98,6 +98,14 @@ class SampleToBatch[T: ClassTag]
       private var _featureLength: Int = 0
       private var _labelLength: Int = 0
       override def hasNext: Boolean = prev.hasNext
+
+      if (isTable) {
+        featureTable = T()
+        labelTable = T()
+      } else {
+        featureTensor = Tensor[T]()
+        labelTensor = Tensor[T]()
+      }
 
       override def next(): MiniBatch[T] = {
         if (prev.hasNext) {
@@ -123,36 +131,38 @@ class SampleToBatch[T: ClassTag]
             sample.copyLabel(labelData, i*labelLength, labelLength)
             sample.copyFeature(featureData, i*featureLength, featureLength)
 
-            featureTable(i + 1) = Tensor()
-              .set(Storage[T](featureData), storageOffset = i*featureLength + 1,
-                sizes = sample.feature().size)
-            labelTable(i + 1) = Tensor()
-              .set(Storage[T](labelData), storageOffset = i*labelLength + 1,
-                sizes = sample.label().size)
+            if (isTable) {
+              featureTable(i + 1) = Tensor()
+                .set(Storage[T](featureData), storageOffset = i * featureLength + 1,
+                  sizes = sample.feature().size)
+              labelTable(i + 1) = Tensor()
+                .set(Storage[T](labelData), storageOffset = i * labelLength + 1,
+                  sizes = sample.label().size)
+            }
             i += 1
           }
 
-          var j = i + 1
-          while (j <= featureTable.length) {
-            featureTable.remove(j)
-            j += 1
-          }
-
-          j = i + 1
-          while (j <= labelTable.length) {
-            labelTable.remove(j)
-            j += 1
-          }
-
-          featureSize(0) = i
-          labelSize(0) = i
-          featureTensor.set(Storage[T](featureData),
-            storageOffset = 1, sizes = featureSize)
-          labelTensor.set(Storage[T](labelData),
-            storageOffset = 1, sizes = labelSize)
-          tableOfBatch match {
-            case true => MiniBatch(featureTable, labelTable)
-            case false => MiniBatch(featureTensor, labelTensor)
+          isTable match {
+            case true =>
+              var j = i + 1
+              while (j <= featureTable.length) {
+                featureTable.remove(j)
+                j += 1
+              }
+              j = i + 1
+              while (j <= labelTable.length) {
+                labelTable.remove(j)
+                j += 1
+              }
+              MiniBatch(featureTable, labelTable)
+            case _ =>
+              featureSize(0) = i
+              labelSize(0) = i
+              featureTensor.set(Storage[T](featureData),
+                storageOffset = 1, sizes = featureSize)
+              labelTensor.set(Storage[T](labelData),
+                storageOffset = 1, sizes = labelSize)
+              MiniBatch(featureTensor, labelTensor)
           }
         } else {
           null

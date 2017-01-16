@@ -488,7 +488,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     count should be(11)
   }
 
-  "SampleToBatchSpec" should "be good" in {
+  "SampleToBatchSpec" should "be good with TableBatch" in {
     val tensorInput1 = Tensor[Float](Storage(
       Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
     val tensorInput2 = Tensor[Float](Storage(
@@ -519,5 +519,47 @@ class TransformersSpec extends FlatSpec with Matchers {
     val batch2 = iter.next()
     batch2.data should be (T(tensorInput3))
     batch2.labels should be (T(tensorTarget3))
+  }
+  "SampleToBatchSpec" should "be good with TensorBatch" in {
+    val tensorInput1 = Tensor[Float](Storage(
+      Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
+    val tensorInput2 = Tensor[Float](Storage(
+      Array(0.0f, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0)), 1, Array(3, 5))
+    val tensorInput3 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)), 1, Array(3, 5))
+    val tensorTarget1 = Tensor[Float](Storage(
+      Array(3.0f, 4, 5)), 1, Array(3))
+    val tensorTarget2 = Tensor[Float](Storage(
+      Array(2.0f, 1, 5)), 1, Array(3))
+    val tensorTarget3 = Tensor[Float](Storage(
+      Array(5.0f, 2, 1)), 1, Array(3))
+    val sample1 = Sample[Float](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Float](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Float](tensorInput3, tensorTarget3)
+
+    val dataSet = new LocalArrayDataSet[Sample[Float]](Array(sample1,
+      sample2, sample3))
+    val sampleToBatch = SampleToBatch[Float](2, false)
+    val sampleDataSet = dataSet -> sampleToBatch
+    val iter = sampleDataSet.toLocal().data(train = false)
+
+    val batch1 = iter.next()
+
+    val batch1Data = Tensor[Float](Array(2, 3, 5))
+    batch1Data(1).resizeAs(tensorInput1).copy(tensorInput1)
+    batch1Data(2).resizeAs(tensorInput2).copy(tensorInput2)
+    val batch1Label = Tensor[Float](Array(2, 3))
+    batch1Label(1).resizeAs(tensorTarget1).copy(tensorTarget1)
+    batch1Label(2).resizeAs(tensorTarget2).copy(tensorTarget2)
+    batch1.data should be (batch1Data)
+    batch1.labels should be (batch1Label)
+
+    val batch2 = iter.next()
+    val batch2Data = Tensor[Float](Array(1, 3, 5))
+    batch2Data(1).resizeAs(tensorInput3).copy(tensorInput3)
+    val batch2Label = Tensor[Float](Array(1, 3))
+    batch2Label(1).resizeAs(tensorTarget3).copy(tensorTarget3)
+    batch2.data should be (batch2Data)
+    batch2.labels should be (batch2Label)
   }
 }

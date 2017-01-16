@@ -20,9 +20,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.optim.DistriValidator._
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.NarrowTable
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Table}
 import org.apache.log4j.Logger
@@ -63,7 +61,10 @@ class DistriValidator[T: ClassTag] private[optim](
             () => {
               val offset = b * stackSize + math.min(b, extraSize)
               val length = stackSize + (if (b < extraSize) 1 else 0)
-              val (input, target) = batch.narrow(1, offset + 1, length)
+              val (input, target) = batch.narrow(1, offset + 1, length) match {
+                case MiniBatch(a, b) => (a, b)
+                case _ => throw new IllegalArgumentException("MiniBatch Arguments are Illegal!")
+              }
               val output = workingModels(b).forward(input)
               vMethods.map(validation => {
                 validation(output, target)

@@ -169,7 +169,10 @@ trait Label[T] {
 case class MiniBatch[T: ClassTag](data: Activity, labels: Activity)
   (implicit ev: TensorNumeric[T]) {
 
-  require(dataLength == labelLength,
+  val _dataLength = dataLength()
+  val _labelLength = labelLength()
+
+  require(_dataLength == _labelLength,
     "data and label batch size not match")
 
   def this (pair: (Activity, Activity))
@@ -198,16 +201,14 @@ case class MiniBatch[T: ClassTag](data: Activity, labels: Activity)
     }
   }
 
-  def size(): Int = {
-    dataLength()
-  }
+  def size(): Int = _dataLength
 
-  def narrow(dim: Int, index: Int, size: Int): (Activity, Activity) = {
+  def narrow(dim: Int, index: Int, size: Int): MiniBatch[T] = {
     data match {
-      case tensor: Tensor[T] => (
-        tensor.narrow(1, index, size), labels.toTensor[T].narrow(dim, index, size))
+      case tensor: Tensor[T] =>
+        MiniBatch[T](tensor.narrow(1, index, size), labels.toTensor[T].narrow(dim, index, size))
       case table: Table =>
-        (NarrowTable[T](index, size).updateOutput(table),
+        MiniBatch[T](NarrowTable[T](index, size).updateOutput(table),
           NarrowTable[T](index, size).updateOutput(labels.toTable))
       case _ => throw new IllegalArgumentException("MiniBatch only supports Table or Tensor")
     }

@@ -65,7 +65,7 @@ object Test {
 
         val dataIter = validationSet.data(train = false)
         val predict = dataIter.map(batch => {
-          require(batch.data.toTensor[Float].size(1) == 1, "predict sentence one by one")
+          require(batch.size == 1, "predict sentence one by one")
           val output = model.forward(batch.data)
             .asInstanceOf[Tensor[Float]]
           val predictProbDist = logSoftMax.forward(output(output.size(1)))
