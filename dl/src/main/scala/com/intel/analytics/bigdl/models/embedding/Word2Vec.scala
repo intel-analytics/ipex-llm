@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.models.embedding
 
 import breeze.linalg.argsort
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, SampleToBatch, Transformer}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, Transformer}
 import com.intel.analytics.bigdl.models.embedding.Utils.Word2VecConfig
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -162,11 +162,10 @@ class Word2Vec(val params: Word2VecConfig)
    *
    * @return a transformer transforms the input words to Mini-batch
    */
-  def generateTrainingData(): Transformer[Seq[String], MiniBatch[Float]] = {
+  def generateTrainingData(): Transformer[Seq[String], Sample[Float]] = {
     (WordsToIds(word2Id, params.maxSentenceLength)
-      -> SubSampling(params.subsample, trainWordsCount, vocab)
-      -> GenerateSamplesBySkipGram(powerUnigram, params.numNegSamples, params.windowSize)
-      -> SampleToBatch(params.batchSize))
+//      -> SubSampling(params.subsample, trainWordsCount, vocab)
+      -> GenerateSamplesBySkipGram(powerUnigram, params.numNegSamples, params.windowSize))
   }
 
   /**
@@ -212,7 +211,8 @@ class Word2Vec(val params: Word2VecConfig)
     word2Id: mutable.HashMap[String, Int],
     maxSentenceLength: Int)
     extends Transformer[Seq[String], Seq[Int]] {
-    override def apply(prev: Iterator[Seq[String]]): Iterator[Seq[Int]] =
+    override def apply(prev: Iterator[Seq[String]]): Iterator[Seq[Int]] = {
+//      log.info(s"WordsToIds: ${prev.length}")
       prev.map(words => {
         val sentence = mutable.ArrayBuilder.make[Int]
         var sentenceLength = 0
@@ -230,6 +230,7 @@ class Word2Vec(val params: Word2VecConfig)
         }
         sentence.result()
       })
+    }
   }
 
   /**

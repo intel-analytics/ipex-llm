@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.embedding
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample, SampleToBatch}
 import com.intel.analytics.bigdl.dataset.text.{LowerCase, Tokenizer}
 import com.intel.analytics.bigdl.nn.{BCECriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -50,9 +50,14 @@ object Train {
       -> LowerCase()
       -> Tokenizer())
 
-    word2Vec.initialize(tokens.toDistributed().data(false))
+    val rddTokens = tokens.toDistributed().data(false)
 
-    val trainSet = tokens -> word2Vec.generateTrainingData
+    word2Vec.initialize(rddTokens)
+
+    val trainSetRDD = rddTokens
+      .mapPartitions[Sample[Float]](word2Vec.generateTrainingData().apply)
+
+    val trainSet = DataSet.rdd(trainSetRDD) -> SampleToBatch(params.batchSize)
 
     val model = if (params.modelSnapshot.isDefined) {
       Module.load[Float](params.modelSnapshot.get)
@@ -87,7 +92,6 @@ object Train {
     File.save(word2Vec, "w2v.obj", isOverwrite = true)
 //    val word2Vec = File.load[Word2Vec]("w2v.obj")
 
-    print(word2Vec.getSimilarWords(Array("the", "he", "can"), 5)
-      .map(_.mkString(" ")).mkString("\n"))
+    word2Vec.printSimilarWords(Array("the", "he", "can"), 5)
   }
 }

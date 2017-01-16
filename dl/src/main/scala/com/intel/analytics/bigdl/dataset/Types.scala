@@ -71,7 +71,7 @@ case class LocalSeqFilePath(val path: Path)
   * @tparam T
   */
 
-class Sample[T: ClassTag] (
+case class Sample[T: ClassTag] (
     protected var featureTensor: Tensor[T],
     protected var labelTensor: Tensor[T])
     (implicit ev: TensorNumeric[T]) {
