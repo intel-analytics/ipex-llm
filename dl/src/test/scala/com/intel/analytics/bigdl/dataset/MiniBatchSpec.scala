@@ -35,7 +35,26 @@ class MiniBatchSpec extends FlatSpec with Matchers {
     val target = T(Tensor[Float](Array(4)).randn(), Tensor[Float](Array(3)).randn())
     val miniBatch = MiniBatch[Float](input, target)
     miniBatch.size should be (2)
-    miniBatch.narrow(1, 1, 1) should be ((input(1),
-      target(1)))
+    val subBatch = miniBatch.narrow(1, 1, 1)
+    subBatch should be (T(input(1).asInstanceOf[Tensor[Float]]),
+      T(target(1).asInstanceOf[Tensor[Float]]))
+  }
+  "MiniBatch" should "unapply well for Table input" in {
+    val input = T(Tensor[Float](Array(4, 2)).randn(), Tensor[Float](Array(3, 2)).randn())
+    val target = T(Tensor[Float](Array(4)).randn(), Tensor[Float](Array(3)).randn())
+    val miniBatch = MiniBatch[Float](input, target)
+    val params = MiniBatch.unapply(miniBatch).get
+    params should be ((input, target))
+
+    val miniBatch2 = new MiniBatch[Float](params)
+    miniBatch2.size should be (2)
+
+    val batchBuffer = new Array[MiniBatch[Float]](2)
+    for (i <- 1 to 2) {
+      batchBuffer(i - 1) = new MiniBatch[Float](miniBatch.narrow(1, i, 1))
+    }
+    val (a, b) = MiniBatch.unapply(batchBuffer(1)).get
+    a should be (miniBatch.narrow(1, 2, 1)._1)
+    b should be (miniBatch.narrow(1, 2, 1)._2)
   }
 }
