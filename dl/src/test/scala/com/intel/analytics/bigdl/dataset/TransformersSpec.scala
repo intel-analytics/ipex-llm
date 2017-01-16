@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import java.nio.file.{Path, Paths}
+import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -125,7 +125,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     }
   }
 
-  "RGB Image Cropper" should "crop image correct" in {
+  "RGB Image Cropper without padding" should "crop image correct" in {
     val image = new LabeledBGRImage(32, 32)
     val tensor = Tensor[Float](Storage[Float](image.content), 1, Array(3, 32, 32))
     tensor.rand()
@@ -164,7 +164,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     )
 
-    val cropper = new BGRImgRdmCropper(cropHeight = cH, cropWidth = cW, padding = pad)
+    val cropper = new BGRImgCropper(cropHeight = cH, cropWidth = cW, padding = pad)
     val iter = cropper.apply(Iterator.single(image))
     val result = iter.next()
 
