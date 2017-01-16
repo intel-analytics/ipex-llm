@@ -35,8 +35,7 @@ object Utils {
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
     batchSize: Int = 150,
-    maxEpoch: Int = 10,
-    env: String = "local"
+    maxEpoch: Int = 10
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Autoencoder on MNIST") {
@@ -66,17 +65,6 @@ object Utils {
     opt[Int]('e', "maxEpoch")
       .text("max epoch")
       .action((x, c) => c.copy(maxEpoch = x))
-    opt[String]("env")
-      .text("execution environment")
-      .validate(x => {
-        if (Set("local", "spark").contains(x.toLowerCase)) {
-          success
-        } else {
-          failure("env only support local|spark")
-        }
-      })
-      .action((x, c) => c.copy(env = x.toLowerCase()))
-      .required()
   }
 
   private[bigdl] def load(featureFile: Path, labelFile: Path): Array[ByteRecord] = {

@@ -69,7 +69,7 @@ object LocalOptimizerPerf {
   }
 
   def performance(param: LocalOptimizerPerfParam): Unit = {
-    Engine.init(1, param.coreNumber, false)
+    Engine.init(1, param.coreNumber)
     val (_model, input) = param.module match {
       case "inception_v1" => (Inception_v1(1000), Tensor(param.batchSize, 3, 224, 224))
       case "inception_v2" => (Inception_v2(1000), Tensor(param.batchSize, 3, 224, 224))

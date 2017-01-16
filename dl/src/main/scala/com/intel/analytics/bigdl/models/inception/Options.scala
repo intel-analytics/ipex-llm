@@ -79,23 +79,13 @@ object Options {
     opt[Unit]("overWrite")
       .text("overwrite checkpoint files")
       .action( (_, c) => c.copy(overWriteCheckpoint = true) )
-    opt[String]("env")
-      .text("execution environment")
-      .validate(x => {
-        if (Set("local", "spark").contains(x.toLowerCase)) {
-          success
-        } else {
-          failure("env only support local|spark")
-        }
-      })
-      .action((x, c) => c.copy(env = x.toLowerCase()))
-      .required()
     opt[Double]("weightDecay")
       .text("weight decay")
       .action((x, c) => c.copy(weightDecay = x))
     opt[Int]("checkpointIteration")
       .text("checkpoint interval of iterations")
       .action((x, c) => c.copy(checkpointIteration = x))
+
   }
 
   case class TestParams(
@@ -103,8 +93,7 @@ object Options {
     model: String = "",
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
-    batchSize: Option[Int] = None,
-    env: String = "local"
+    batchSize: Option[Int] = None
   )
 
   val testParser = new OptionParser[TestParams]("BigDL Inception Test Example") {
@@ -126,16 +115,5 @@ object Options {
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = Some(x)))
-    opt[String]("env")
-      .text("execution environment")
-      .validate(x => {
-        if (Set("local", "spark").contains(x.toLowerCase)) {
-          success
-        } else {
-          failure("env only support local|spark")
-        }
-      })
-      .action((x, c) => c.copy(env = x.toLowerCase()))
-      .required()
   }
 }

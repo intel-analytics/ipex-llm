@@ -47,7 +47,6 @@ Here is an example command run on Spark cluster.
 spark-submit --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 \
 dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
---env spark \
 --batchSize batch_size \
 --core core_number \
 --nodeNumber node_number \
@@ -61,7 +60,6 @@ In the above commands
 * -f: where you put your ImageNet data, it should be a hdfs folder
 * --core: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
 * --node: Node number.
-* --env: It can be local/spark.
 * --checkpoint: Where you cache the model/train_state snapshot. You should input a folder and
 make sure the folder is created when you run this example. The model snapshot will be named as
 model.#iteration_number, and train state will be named as state.#iteration_number. Note that if
@@ -81,7 +79,6 @@ Example command
 spark-submit --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.inception.Test \
 dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
---env spark \
 --batchSize batch_size
 --core core_number \
 --nodeNumber node_number \
@@ -93,6 +90,5 @@ In the above command
 * --model: the model snapshot file
 * --core: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
 * --nodeNumber: Node number.
-* --env: It can be local/spark.
 * --batchSize: The mini-batch size. It is expected that the mini-batch size is a multiple of
 node_number * core_number. In this example, node_number is 1 and the mini-batch size is suggested to be set to core_number * 4

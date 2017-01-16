@@ -21,7 +21,7 @@ Enter the following commands to run the model on Spark:
 $ ./dist/bin/bigdl.sh -- spark-submit \
 $ --class com.intel.analytics.bigdl.models.autoencoder.Train \
 $ ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
-$ --node 8 --core 10 -b 400 --env spark -f $DATA_FOLDER
+$ --node 8 --core 10 -b 400 -f $DATA_FOLDER
 ```
 where `$DATA_FOLDER` is the directory containing the MNIST training data, whose default value is "./ ".
 
@@ -31,7 +31,7 @@ Enter the following commands to run the model on local:
 $ ./dist/bin/bigdl.sh -- java -cp \
 $ ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
 $ com.intel.analytics.bigdl.models.autoencoder.Train \
-$ --core 1 --node 1 --env local -f $DATA_FOLDER
+$ --core 1 --node 1 -f $DATA_FOLDER
 ```
 where `$DATA_FOLDER` is the directory containing the MNIST training data, whose default value is "./ ".
 

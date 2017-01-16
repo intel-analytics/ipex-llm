@@ -145,7 +145,7 @@ class TextClassifier(param: TextClassificationParams) {
 
   def train(): Unit = {
     val sc = new SparkContext(
-      Engine.init(param.nodeNum, param.coreNum, true).get
+      Engine.init(param.nodeNum, param.coreNum).get
         .setAppName("Text classification")
         .set("spark.akka.frameSize", 64.toString)
         .set("spark.task.maxFailures", "1"))

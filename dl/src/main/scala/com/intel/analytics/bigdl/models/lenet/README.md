@@ -26,7 +26,6 @@ com.intel.analytics.bigdl.models.lenet.Train \
 -f ~/mnist/ \
 --core pyshical_core_number \
 --node 1 \
---env local \
 --checkpoint ~/model \
 -b batch_size
 ```
@@ -42,7 +41,6 @@ dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 -f ~/mnist/ \
 --core physical_core_number \
 --node 1 \
---env spark \
 --checkpoint ~/model
 ```
 Cluster mode, example command
@@ -55,14 +53,12 @@ dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 -f ~/mnist/ \
 --core physical_core \
 --node node_number \
---env spark \
 -b batch_size
 ```
 In the above commands
 * -f: where you put your MNIST data
 * --core: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
 * --node: Node number.
-* --env: It can be local/spark.
 * --checkpoint: Where you cache the model/train_state snapshot. You should input a folder and
 make sure the folder is created when you run this example. The model snapshot will be named as
 model.#iteration_number, and train state will be named as state.#iteration_number. Note that if
@@ -81,7 +77,6 @@ com.intel.analytics.bigdl.models.lenet.Test \
 -f ~/mnist/ \
 --core physical_core_number \
 -n 1 \
---env local \
 --model ~/model/model.iteration
 ```
 Spark local mode, example command
@@ -95,7 +90,6 @@ dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 --model model.iteration
 --nodeNumber 1 \
 --core physical_core_number \
---env spark \
 -b batch_size
 ```
 Spark cluster mode, example command
@@ -108,7 +102,6 @@ dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 --model model.iteration_number
 --nodeNumber node_number \
 --core physical_number_per_node \
---env spark \
 -b batch_size
 ```
 In the above command
@@ -116,5 +109,4 @@ In the above command
 * --model: the model snapshot file
 * --core: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
 * --nodeNumber: Node number.
-* --env: It can be local/spark.
 * -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number. In this example, node_number is 1 and the mini-batch size is suggested to be set to core_number * 4
