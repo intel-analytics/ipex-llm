@@ -146,6 +146,8 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
 
     setMklStorage(MklDnnFloat.allocateBuffer(layoutMkl))
     // TODO we should replace the println to standard log
+    val size = MklDnnFloat.layoutGetMemorySize(layoutMkl) / MklDataSize.FLOAT
+    require(size != 0, "allocate buffer failed.")
     println(s"resize mkl storage " +
       s"${MklDnnFloat.layoutGetMemorySize(layoutMkl) / MklDataSize.FLOAT} floats")
   }

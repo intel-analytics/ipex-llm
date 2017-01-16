@@ -63,6 +63,10 @@ class ThreadPool(private var poolSize: Int) {
         })
 
         def execute(runnable: Runnable) {
+          // TODO should not use this directly.
+          MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
+          MKL.setAffinity()
+
           threadPool.submit(runnable)
         }
 
@@ -294,15 +298,15 @@ object Engine {
   def model: ThreadPool = _model
 
   private def initModelThreadPool() = {
-    val modelPoolSize: Int = 1
+    val modelPoolSize: Int = if (engineType == MklBlas) {
+      1
+    } else {
+      physicalCoreNumber
+    }
 
     val model = new ThreadPool(modelPoolSize)
-    if (engineType == MklBlas) {
-      model.setMKLThread(1)
-    } else {
-      model.setMKLThread(physicalCoreNumber)
-      MKL.setAffinity()
-    }
+    model.setMKLThread(1)
+
     model
   }
 
