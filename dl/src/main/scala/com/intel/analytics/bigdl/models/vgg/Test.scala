@@ -34,7 +34,7 @@ object Test {
 
   def main(args: Array[String]) {
     testParser.parse(args, new TestParams()).foreach { param =>
-      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
+      val sc = Engine.init(param.nodeNumber, param.coreNumber)
         .map(conf => {
           conf.setAppName("Test Vgg on Cifar10")
             .set("spark.akka.frameSize", 64.toString)

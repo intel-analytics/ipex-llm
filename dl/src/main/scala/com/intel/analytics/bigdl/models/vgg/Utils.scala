@@ -39,7 +39,6 @@ object Utils {
     nodeNumber: Int = -1,
     batchSize: Int = 112,
     maxEpoch: Int = 90,
-    env: String = "local",
     overWriteCheckpoint: Boolean = false
   )
 
@@ -73,17 +72,6 @@ object Utils {
     opt[Unit]("overWrite")
       .text("overwrite checkpoint files")
       .action( (_, c) => c.copy(overWriteCheckpoint = true) )
-    opt[String]("env")
-      .text("execution environment")
-      .validate(x => {
-        if (Set("local", "spark").contains(x.toLowerCase)) {
-          success
-        } else {
-          failure("env only support local|spark")
-        }
-      })
-      .action((x, c) => c.copy(env = x.toLowerCase()))
-      .required()
   }
 
   case class TestParams(
@@ -91,8 +79,7 @@ object Utils {
     model: String = "",
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
-    batchSize: Int = 112,
-    env: String = "local"
+    batchSize: Int = 112
   )
 
   val testParser = new OptionParser[TestParams]("BigDL Vgg on Cifar10 Test Example") {
@@ -114,17 +101,6 @@ object Utils {
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
-    opt[String]("env")
-      .text("execution environment")
-      .validate(x => {
-        if (Set("local", "spark").contains(x.toLowerCase)) {
-          success
-        } else {
-          failure("env only support local|spark")
-        }
-      })
-      .action((x, c) => c.copy(env = x.toLowerCase()))
-      .required()
   }
 
   private[bigdl] def loadTrain(dataFile: String): Array[ByteRecord] = {

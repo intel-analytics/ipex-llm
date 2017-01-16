@@ -54,8 +54,7 @@ object ModelValidator {
     batchSize: Int = 32,
     meanFile: Option[String] = None,
     coreNumber: Int = Runtime.getRuntime().availableProcessors() / 2,
-    nodeNumber: Int = -1,
-    env: String = "local"
+    nodeNumber: Int = -1
   )
 
   val testLocalParser = new OptionParser[TestLocalParams]("BigDL Image Classifier Example") {
@@ -97,23 +96,12 @@ object ModelValidator {
     opt[Int]('n', "node")
       .text("node number to test the model")
       .action((x, c) => c.copy(nodeNumber = x))
-    opt[String]("env")
-      .text("execution environment")
-      .validate(x => {
-        if (Set("local", "spark").contains(x.toLowerCase)) {
-          success
-        } else {
-          failure("env only support local|spark")
-        }
-      })
-      .action((x, c) => c.copy(env = x.toLowerCase()))
-      .required()
   }
 
   def main(args: Array[String]): Unit = {
     testLocalParser.parse(args, TestLocalParams()).foreach(param => {
       Engine.setCoreNumber(param.coreNumber)
-      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
+      val sc = Engine.init(param.nodeNumber, param.coreNumber)
         .map(conf => {
           conf.setAppName("BigDL Image Classifier Example")
             .set("spark.akka.frameSize", 64.toString)

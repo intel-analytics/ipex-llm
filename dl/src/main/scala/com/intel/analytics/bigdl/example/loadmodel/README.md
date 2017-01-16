@@ -30,7 +30,7 @@ java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
          com.intel.analytics.bigdl.example.loadmodel.ModelValidator        \
      -t <caffe | torch | bigdl> -f <imagenet path> -m <model name>         \
      --caffeDefPath <caffe model prototxt path> --modelPath <model path>   \
-     -b <batch size> --env <local | spark> --node <node number>
+     -b <batch size> --node <node number>
 ```
 
 where 
@@ -41,7 +41,6 @@ where
 - ```--caffeDefPath``` is the path of caffe prototxt file, this is only needed for caffe model
 - ```--modelPath``` is the path to serialized model
 - ```-b``` is the batch size to use when do the validation.
-- ```--env``` is the execution environment
 
 Some other parameters
 
@@ -97,7 +96,7 @@ For example, following the steps below will load BVLC GoogLeNet.
   java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar      \
            com.intel.analytics.bigdl.example.loadmodel.ModelValidator             \
        -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt \
-       --modelPath $pathToModel -b $batchSize --env local --node $nodeNum
+       --modelPath $pathToModel -b $batchSize --node $nodeNum
   ```
 
 ## Run as a Spark program
@@ -216,7 +215,7 @@ For example, following the steps below will load BVLC GoogLeNet.
                --class com.intel.analytics.bigdl.example.loadmodel.ModelValidator          \
                        dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar             \
               -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt   \
-              --modelPath $pathToModel -b $batchSize --env spark --node $nodeNum
+              --modelPath $pathToModel -b $batchSize --node $nodeNum
   ```
 
 where 
