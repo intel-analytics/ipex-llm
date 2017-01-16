@@ -69,6 +69,8 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
   var primitive: BNPrimitive = null
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
+  reset()
+
   override def reset(): Unit = {
     weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1)))
     bias.fill(ev.fromType[Int](0))

@@ -632,10 +632,6 @@ object BatchNormalization {
     eps: Double = 1e-5,
     momentum: Double = 0.1,
     affine: Boolean = true)(implicit ev: TensorNumeric[T]): AbstractBatchNormalization[T] = {
-    if (Engine.getEngineType() == MklBlas) {
-      new BatchNormalization[T](nOutput, eps, momentum, affine)
-    } else {
-      new dnn.BatchNormalization[T](nOutput, eps, momentum, affine)
-    }
+    new BatchNormalization[T](nOutput, eps, momentum, affine)
   }
 }

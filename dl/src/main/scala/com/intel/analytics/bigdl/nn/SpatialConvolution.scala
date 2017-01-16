@@ -349,7 +349,6 @@ class SpatialConvolution[T: ClassTag](
       val grad = gradWeight.view(nOutputPlane * nInputPlane * kernelH * kernelW / nGroup)
       grad.addmv(ev.fromType(1.0), ev.fromType(1.0), gradView, onesBatch)
       gradBias.addmv(ev.fromType(1.0), ev.fromType(1.0), gradientBiasMT.t, onesBatch)
-      println("-")
     }
   }
 
