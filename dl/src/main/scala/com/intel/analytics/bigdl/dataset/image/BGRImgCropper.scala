@@ -55,8 +55,7 @@ class BGRImgCropper(cropWidth: Int, cropHeight: Int, cropperMethod: CropperMetho
       val height = img.height()
       val (startH, startW) = cropperMethod match {
         case CropRandom =>
-          (math.ceil(RNG.uniform(1e-2, height - cropHeight)).toInt,
-            math.ceil(RNG.uniform(1e-2, width - cropWidth)).toInt)
+          (RNG.uniform(0, height - cropHeight).toInt, RNG.uniform(0, width - cropWidth).toInt)
         case CropCenter =>
           ((height - cropHeight) / 2, (width - cropWidth) / 2)
       }

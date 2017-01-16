@@ -145,7 +145,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       while (y < 24) {
         var x = 0
         while (x < 24) {
-          resultContent((y * 24 + x) * 3 + c) should be(originContent(582 + (y * 32 + x) * 3 +
+          resultContent((y * 24 + x) * 3 + c) should be(originContent(483 + (y * 32 + x) * 3 +
             c))
           x += 1
         }
