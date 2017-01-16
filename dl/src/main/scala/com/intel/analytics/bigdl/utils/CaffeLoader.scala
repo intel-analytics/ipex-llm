@@ -79,18 +79,21 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
   private def loadParameters(name: String, destPara: Array[Tensor[T]]):
   (Tensor[T], Tensor[T]) = {
+    logger.info(s"load parameters for $name ...")
     val caffeWeight = getBlob(name, 0)
     if (caffeWeight.isEmpty) return (null, null)
     val weightList = caffeWeight.get.getDataList
     require(destPara != null && destPara(0).nElement() == weightList.size(),
-      s"weight element must be equal in module $name")
+      s"weight element must be equal in module $name, data shape in caffe is" +
+        s" ${caffeWeight.get.getShape()}" +
+        s" in caffe model")
     require(destPara(0).isContiguous())
     val weightData = destPara(0).storage().array()
     for (i <- 0 until weightList.size()) {
       weightData(i) = ev.fromType[Float](weightList.get(i))
     }
 
-    if (destPara.length > 1) {
+    if (destPara.length > 1 && destPara(1) != null) {
       val caffeBias = getBlob(name, 1)
       if (caffeBias.isEmpty) return (destPara(1), null)
       val biasList = caffeBias.get.getDataList
