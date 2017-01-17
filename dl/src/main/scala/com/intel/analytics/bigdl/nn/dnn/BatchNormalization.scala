@@ -119,6 +119,9 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
     refs.scaleShift.createMklLayout(primitive.forward, ResourceType.dnnResourceScaleShift)
     refs.workspace.createMklLayout(primitive.forward, ResourceType.dnnResourceWorkspace)
 
+    refs.workspace.zero()
+    refs.scaleShift.zero()
+
     for (tensor <- List(refs.input, refs.output, refs.gradOutput, refs.gradInput)) {
       tensor.resizeAs(input)
     }

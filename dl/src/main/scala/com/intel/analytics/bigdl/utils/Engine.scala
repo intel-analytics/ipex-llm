@@ -64,8 +64,10 @@ class ThreadPool(private var poolSize: Int) {
 
         def execute(runnable: Runnable) {
           // TODO should not use this directly.
-          MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
-          MKL.setAffinity()
+          if (Engine.getEngineType() == MklDnn) {
+            MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
+            MKL.setAffinity()
+          }
 
           threadPool.submit(runnable)
         }
