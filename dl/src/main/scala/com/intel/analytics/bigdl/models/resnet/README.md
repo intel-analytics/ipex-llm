@@ -31,7 +31,7 @@ Model is implemented in <code>ResNet</code>
     * Execute:
 
         ```shell
-        MASTER=xxx.xxx.xxx.xxx:xxxx
+        MASTER=spark://xxx.xxx.xxx.xxx:xxxx
         ./bigdl.sh -- spark-submit --master ${MASTER} --driver-memory 5g --executor-memory 5g \
         --total-executor-cores 32 --executor-cores 8 --class com.intel.analytics.bigdl.models.resnet.Train \
         bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar --env spark -f Cifar-10/ \
