@@ -52,7 +52,7 @@ class LookupTable[T: ClassTag]
     if (Double.MaxValue == maxNorm) {
       return
     }
-    inputBuffer.resize(input.size()).copy(input)
+    inputBuffer = input.clone()
     if (inputBuffer.dim() == 2) {
       inputBuffer = inputBuffer.view(inputBuffer.nElement())
     }
@@ -187,7 +187,7 @@ class LookupTable[T: ClassTag]
     var i = 0
     while (i < numEle) {
       require(ev.isGreater(ev.fromType(gradWeight.size(1) + 1), input_data(i + input_offset)),
-        "elements of input should be little than or equal to nIndex+1")
+        "elements of input should be less than or equal to nIndex+1")
       require(ev.isGreaterEq(input_data(i + input_offset), ev.one),
         "elements of input should be greater than or equal to 1")
       i += 1
