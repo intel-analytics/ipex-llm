@@ -27,6 +27,7 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
 object Train {
+
   def main(args: Array[String]): Unit = {
     Logger.getLogger("org").setLevel(Level.ERROR)
     Logger.getLogger("akka").setLevel(Level.ERROR)
@@ -64,9 +65,11 @@ object Train {
     } else {
       word2Vec.getModel
     }
-
+    val a = DataSet.array(trainSet.toDistributed().data(false).toLocalIterator.toArray)
+//    word2Vec.wordVectors.weight.apply1(x => 1)
     val optimizer = Optimizer(
       model = model,
+//      dataset = a,
       dataset = trainSet,
       criterion = BCECriterion[Float]())
 
@@ -92,6 +95,7 @@ object Train {
     File.save(word2Vec, "w2v.obj", isOverwrite = true)
 //    val word2Vec = File.load[Word2Vec]("w2v.obj")
 
+    print(word2Vec.wordVectors.weight)
     word2Vec.printSimilarWords(Array("the", "he", "can"), 5)
   }
 }

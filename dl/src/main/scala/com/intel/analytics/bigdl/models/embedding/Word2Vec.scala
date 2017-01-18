@@ -20,6 +20,7 @@ import breeze.linalg.argsort
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, Transformer}
 import com.intel.analytics.bigdl.models.embedding.Utils.Word2VecConfig
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -155,7 +156,6 @@ class Word2Vec(val params: Word2VecConfig)
     }
   }
 
-
   /**
    * Pre-process the text, generate training data and
    * transform it to the train samples in [[MiniBatch]] format
@@ -167,38 +167,6 @@ class Word2Vec(val params: Word2VecConfig)
 //      -> SubSampling(params.subsample, trainWordsCount, vocab)
       -> GenerateSamplesBySkipGram(powerUnigram, params.numNegSamples, params.windowSize))
   }
-
-  /**
-   * Sample negative contexts from power unigram distribution,
-   * and combine them with given word and context together as a training sample
-   *
-   * @param powerUnigram the power unigram distribution
-   * @param word given word
-   * @param context given context
-   * @return a one-dimension tensor, whose first element is the given word,
-   *         second element is the given context, and the rest elements are the
-   *         sampled negative contexts.
-   */
-  def sampleContexts(
-    powerUnigram: Array[Int],
-    word: Int,
-    context: Int): Tensor[Float] = {
-    val contexts = Tensor(params.numNegSamples + 2)
-    contexts.setValue(1, word + 1)
-    contexts.setValue(2, context + 1)
-    var i = 3
-
-    while (i <= params.numNegSamples + 2) {
-      // Sample a negative context
-      val negContext = powerUnigram(RNG.uniform(0, tableSize).toInt)
-      if (context != negContext) {
-        contexts.setValue(i, negContext + 1)
-        i += 1
-      }
-    }
-    contexts
-  }
-
 
   /**
    * Transform a sequence of words to its corresponding ids, and filter the length
@@ -272,6 +240,37 @@ class Word2Vec(val params: Word2VecConfig)
   }
 
   /**
+   * Sample negative contexts from power unigram distribution,
+   * and combine them with given word and context together as a training sample
+   *
+   * @param powerUnigram the power unigram distribution
+   * @param word given word
+   * @param context given context
+   * @return a one-dimension tensor, whose first element is the given word,
+   *         second element is the given context, and the rest elements are the
+   *         sampled negative contexts.
+   */
+  def sampleContexts(
+    powerUnigram: Array[Int],
+    word: Int,
+    context: Int): Tensor[Float] = {
+    val contexts = Tensor(params.numNegSamples + 2)
+    contexts.setValue(1, word + 1)
+    contexts.setValue(2, context + 1)
+    var i = 3
+
+    while (i <= params.numNegSamples + 2) {
+      // Sample a negative context
+      val negContext = powerUnigram(RNG.uniform(0, tableSize).toInt)
+      if (context != negContext) {
+        contexts.setValue(i, negContext + 1)
+        i += 1
+      }
+    }
+    contexts
+  }
+
+  /**
    * Generate training samples by skip-gram algorithm
    *
    * @param powerUnigram the power unigram distribution
@@ -290,6 +289,7 @@ class Word2Vec(val params: Word2VecConfig)
         sentence.zipWithIndex.foreach {
           case (word, i) =>
             val reducedWindow = RNG.uniform(1, window + 1).toInt
+//            val reducedWindow = window
             var j = i - reducedWindow
             j = if (j < 0) 0 else j
 
@@ -327,10 +327,10 @@ class Word2Vec(val params: Word2VecConfig)
     val normMatrix = Tensor(size).zero()
 
     var i = 1
-    while (i < size(0)) {
-      val norm = matrix.apply(i).norm(2)
+    while (i <= size(0)) {
+      val norm = matrix(i).norm(2)
       var j = 1
-      while (j < size(1)) {
+      while (j <= size(1)) {
         normMatrix.setValue(i, j, matrix(Array(i, j)) / norm)
         j += 1
       }
@@ -348,9 +348,9 @@ class Word2Vec(val params: Word2VecConfig)
     words: Array[String],
     numSimilarWord: Int): Unit = {
     val simWords = getSimilarWords(words, numSimilarWord)
-    simWords
+    print(simWords
       .map(e => e.mkString(", "))
-      .mkString("\n")
+      .mkString("\n"))
   }
 
   /**
