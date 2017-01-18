@@ -250,9 +250,9 @@ object DistriOptimizer {
         // record the hyper parameters to debug log, only support SGD now.
         optimMethod match {
           case sgd: SGD[T] =>
-            val lrSchedule = state.get[HyperParameterScheduler](
-              "learningRateSchedule").getOrElse(Default())
-            lrSchedule.updateHyperParameter(driverState, state)
+            val hpScheduler = state.getOrElse[HyperParameterScheduler](
+              "hyperParameterScheduler", Default())
+            hpScheduler.updateHyperParameter(driverState, state)
             logger.debug(s"Current learning rate is ${driverState.getOrElse[Double]("clr",
               driverState.getOrElse[Double]("learningRate", 1e-3))}")
             if (driverState.contains("wd")) {

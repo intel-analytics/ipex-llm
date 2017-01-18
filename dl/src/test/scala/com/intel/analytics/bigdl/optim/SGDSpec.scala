@@ -68,7 +68,7 @@ class SGDSpec extends FlatSpec with Matchers {
   }
 
   "default learning rate decay" should "generate correct learning rates" in {
-    val config = T("learningRate" -> 0.1, "learningRateDecay" -> 0.1, "learningRateSchedule" ->
+    val config = T("learningRate" -> 0.1, "learningRateDecay" -> 0.1, "hyperParameterScheduler" ->
       Default())
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
@@ -84,7 +84,7 @@ class SGDSpec extends FlatSpec with Matchers {
     config[Double]("clr") should be(0.1 / (1 + 2 * 0.1))
   }
 
-  it should "be used when we leave the learningRateSchedule empty" in {
+  it should "be used when we leave the hyperParameterScheduler empty" in {
     val config = T("learningRate" -> 0.1, "learningRateDecay" -> 0.1)
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
@@ -101,7 +101,7 @@ class SGDSpec extends FlatSpec with Matchers {
   }
 
   "step learning rate decay" should "generate correct learning rates" in {
-    val config = T("learningRate" -> 0.1, "learningRateSchedule" -> Step(5, 0.1))
+    val config = T("learningRate" -> 0.1, "hyperParameterScheduler" -> Step(5, 0.1))
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
       return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
@@ -125,7 +125,7 @@ class SGDSpec extends FlatSpec with Matchers {
   }
 
   "ploy learning rate decay" should "generate correct learning rates" in {
-    val config = T("learningRate" -> 0.1, "learningRateSchedule" -> Poly(3, 100))
+    val config = T("learningRate" -> 0.1, "hyperParameterScheduler" -> Poly(3, 100))
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
       return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
@@ -147,7 +147,7 @@ class SGDSpec extends FlatSpec with Matchers {
       Regime(8, 10, T("learningRate" -> 1e-3, "weightDecay" -> 0.0))
     )
 
-    val config = T("learningRate" -> 0.1, "learningRateSchedule" -> EpochSchedule(regimes))
+    val config = T("learningRate" -> 0.1, "hyperParameterScheduler" -> EpochSchedule(regimes))
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
       return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))

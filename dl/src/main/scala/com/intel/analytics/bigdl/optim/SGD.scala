@@ -32,8 +32,8 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     config: Table, state: Table = null): (Tensor[T], Array[T]) = {
 
     val _state = if (state == null) config else state
-    val lrSchedule = config.get[HyperParameterScheduler]("learningRateSchedule").getOrElse(Default())
-    lrSchedule.updateHyperParameter(config, _state)
+    val scheduler = config.getOrElse[HyperParameterScheduler]("hyperParameterScheduler", Default())
+    scheduler.updateHyperParameter(config, _state)
 
     val clr = ev.fromType(config.getOrElse[Double]("clr",
       config.getOrElse[Double]("learningRate", 1e-3)))
