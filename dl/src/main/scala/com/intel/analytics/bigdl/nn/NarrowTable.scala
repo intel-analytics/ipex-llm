@@ -53,6 +53,7 @@ class NarrowTable[T: ClassTag](var offset: Int, val length: Int = 1)
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
+    gradInput = T()
     if (length < 0) {
       len = input.length() - offset + 2 + length
     }
