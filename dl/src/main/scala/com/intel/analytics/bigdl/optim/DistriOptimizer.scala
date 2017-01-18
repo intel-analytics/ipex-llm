@@ -247,13 +247,13 @@ object DistriOptimizer {
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
 
-        // compute hyperparameter on driver side, only support SGD now.
+        // compute and log learning rate on driver side, only support SGD now.
         optimMethod match {
           case sgd: SGD[T] =>
             val lrSchedule = state.get[HyperParameterSchedule](
               "learningRateSchedule").getOrElse(Default())
             lrSchedule.updateHyperParameter(driverState, state)
-            logger.debug(s"Current learning rate is ${-driverState[Double]("clr")}" )
+            logger.debug(s"Current learning rate is ${driverState[Double]("clr")}" )
           case _ =>
         }
 

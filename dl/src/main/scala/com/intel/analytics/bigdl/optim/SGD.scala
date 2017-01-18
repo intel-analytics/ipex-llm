@@ -35,12 +35,14 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     val lrSchedule = config.get[HyperParameterSchedule]("learningRateSchedule").getOrElse(Default())
     lrSchedule.updateHyperParameter(config, _state)
 
-    val wd = config.get[Double]("weightDecay").getOrElse(0.0)
-    val mom = config.get[Double]("momentum").getOrElse(0.0)
-    val damp = config.get[Double]("dampening").getOrElse(mom)
+    val wd = config.get[Double]("wd").getOrElse(config.get[Double]("weightDecay").getOrElse(0.0))
+    val mom = config.get[Double]("mom").getOrElse(config.get[Double]("momentum").getOrElse(0.0))
+    val damp = config.get[Double]("damp").getOrElse(config.get[Double]("dampening").getOrElse(mom))
+    val lrs = config.get[Tensor[T]]("lrs").getOrElse(
+      config.get[Tensor[T]]("learningRates").getOrElse(null))
+    val wds = config.get[Tensor[T]]("wds").getOrElse(
+      config.get[Tensor[T]]("weightDecays").getOrElse(null))
     val nesterov = config.get[Boolean]("nesterov").getOrElse(false)
-    val lrs = config.get[Tensor[T]]("learningRates").getOrElse(null)
-    val wds = config.get[Tensor[T]]("weightDecays").getOrElse(null)
 
     require(!nesterov || (mom > 0 && damp == 0),
       "Nesterov momentum requires a momentum and zero dampening")
@@ -84,9 +86,9 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
         deltaP
       })
       deltaParameters.copy(lrs).cmul(dfdx)
-      x.add(clr, deltaParameters)
+      x.add(ev.negative(clr), deltaParameters)
     } else {
-      x.add(clr, dfdx)
+      x.add(ev.negative(clr), dfdx)
     }
 
 
@@ -101,6 +103,19 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
 }
 
 object SGD {
+
+  /**
+   * A trait for User Defined SGD HyperParameterSchedule.
+   * Please don't overwrite the origin hyper parameters, and use this mapping to define the current
+   * hyper parameters.
+   *
+   * config("clr") = current learning rate
+   * config("wd") = current weight decay
+   * config("mom") = current momentum
+   * config("damp") = current dampening
+   * config("lrs") = current learning rates
+   * config("wds") = current weight decays
+   */
   trait HyperParameterSchedule {
     def updateHyperParameter(config : Table, state : Table) : Unit
   }
@@ -113,7 +128,7 @@ object SGD {
           config.add(r.config)
         }
       }
-      config("clr") = -config.get[Double]("learningRate").getOrElse(1e-3)
+      config("clr") = config.get[Double]("learningRate").getOrElse(1e-3)
     }
   }
   case class Poly(power : Double, maxIteration : Int) extends HyperParameterSchedule {
@@ -123,7 +138,7 @@ object SGD {
       val clr = if (nevals > maxIteration) {
         0.0
       } else {
-        -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
+        lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
       }
       state("evalCounter") = nevals + 1
       config("clr") = clr
@@ -133,7 +148,7 @@ object SGD {
   case class Step(stepSize : Int, gamma : Double) extends HyperParameterSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
-      var clr = -lr
+      var clr = lr
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
       var i = 0
       while(i < nevals / stepSize) {
@@ -148,7 +163,7 @@ object SGD {
   case class EpochDecay(decayType: (Int) => Double) extends HyperParameterSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-1)
-      var clr = -lr
+      var clr = lr
       val epoch = config[Int]("epoch")
       val decay = decayType(epoch)
       clr = clr * math.pow(0.1, decay)
@@ -159,7 +174,7 @@ object SGD {
   case class EpochStep(stepSize : Int, gamma : Double) extends HyperParameterSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
-      var clr = -lr
+      var clr = lr
       val epoch = config[Int]("epoch")
       var i = 0
       while(i < epoch / stepSize) {
@@ -175,7 +190,7 @@ object SGD {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val lrd = config.get[Double]("learningRateDecay").getOrElse(0.0)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
-      config("clr") = -lr / (1 + nevals * lrd)
+      config("clr") = lr / (1 + nevals * lrd)
       state("evalCounter") = nevals + 1
     }
   }
