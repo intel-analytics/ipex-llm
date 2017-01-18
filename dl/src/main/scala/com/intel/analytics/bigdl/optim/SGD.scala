@@ -32,19 +32,19 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     config: Table, state: Table = null): (Tensor[T], Array[T]) = {
 
     val _state = if (state == null) config else state
-    val lrSchedule = config.get[HyperParameterSchedule]("learningRateSchedule").getOrElse(Default())
+    val lrSchedule = config.get[HyperParameterScheduler]("learningRateSchedule").getOrElse(Default())
     lrSchedule.updateHyperParameter(config, _state)
 
-    val wd = config.get[Double]("wd").getOrElse(config.get[Double]("weightDecay").getOrElse(0.0))
-    val mom = config.get[Double]("mom").getOrElse(config.get[Double]("momentum").getOrElse(0.0))
-    val damp = config.get[Double]("damp").getOrElse(config.get[Double]("dampening").getOrElse(mom))
-    val lrs = config.get[Tensor[T]]("lrs").getOrElse(
-      config.get[Tensor[T]]("learningRates").getOrElse(null))
-    val wds = config.get[Tensor[T]]("wds").getOrElse(
-      config.get[Tensor[T]]("weightDecays").getOrElse(null))
-    val nesterov = config.get[Boolean]("nesterov").getOrElse(false)
+    val clr = ev.fromType(config.getOrElse[Double]("clr",
+      config.getOrElse[Double]("learningRate", 1e-3)))
+    val wd = config.getOrElse[Double]("wd", config.getOrElse[Double]("weightDecay", 0.0))
+    val mom = config.getOrElse[Double]("mom", config.getOrElse[Double]("momentum", 0.0))
+    val damp = config.getOrElse[Double]("damp", config.getOrElse[Double]("dampening", mom))
+    val cntv = config.getOrElse[Boolean]("cntv", config.getOrElse[Boolean]("nesterov", false))
+    val lrs = config.getOrElse[Tensor[T]]("lrs", config.getOrElse[Tensor[T]]("learningRates", null))
+    val wds = config.getOrElse[Tensor[T]]("wds", config.getOrElse[Tensor[T]]("weightDecays", null))
 
-    require(!nesterov || (mom > 0 && damp == 0),
+    require(!cntv || (mom > 0 && damp == 0),
       "Nesterov momentum requires a momentum and zero dampening")
 
     var (fx, dfdx) = feval(x)
@@ -71,14 +71,13 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
           add(ev.fromType[Double](1 - damp), dfdx)
       }
 
-      if (nesterov) {
+      if (cntv) {
         dfdx.add(ev.fromType[Double](mom), stateDFDX)
       } else {
         dfdx = stateDFDX
       }
     }
 
-    val clr = ev.fromType(config[Double]("clr"))
     if (lrs != null) {
       val deltaParameters = _state.get[Tensor[T]]("deltaParameters").getOrElse({
         val deltaP = Tensor[T]().resizeAs(dfdx)
@@ -105,22 +104,34 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
 object SGD {
 
   /**
-   * A trait for User Defined SGD HyperParameterSchedule.
-   * Please don't overwrite the origin hyper parameters, and use this mapping to define the current
-   * hyper parameters.
+   * A trait for user defined hyper parameter scheduler.
+   * Hyper parameters should be defined in config Table, supported parameters are:
+   * learningRate, default is 1e-3
+   * weightDecay, default is 0.0
+   * momentum, default is 0.0
+   * dampening, default is momentum
+   * nesterov, default is false
+   * learningRates, default is null. If defined, size must be the same as gradient Tensor.
+   * weightDecays, default is null. If defined, size must be the same as gradient Tensor.
+   *
+   * Please don't overwrite the base hyper parameters list above, and use below mapping
+   * to define the current hyper parameters.
    *
    * config("clr") = current learning rate
    * config("wd") = current weight decay
    * config("mom") = current momentum
    * config("damp") = current dampening
+   * config("cntv") = current nesterov
    * config("lrs") = current learning rates
    * config("wds") = current weight decays
+   *
+   * Notice: the clr, wd, mom and damp should be double value.
    */
-  trait HyperParameterSchedule {
+  trait HyperParameterScheduler {
     def updateHyperParameter(config : Table, state : Table) : Unit
   }
 
-  case class EpochSchedule(regimes : Array[Regime]) extends HyperParameterSchedule {
+  case class EpochSchedule(regimes : Array[Regime]) extends HyperParameterScheduler {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val epoch = config[Int]("epoch")
       for (r <- regimes) {
@@ -131,7 +142,7 @@ object SGD {
       config("clr") = config.get[Double]("learningRate").getOrElse(1e-3)
     }
   }
-  case class Poly(power : Double, maxIteration : Int) extends HyperParameterSchedule {
+  case class Poly(power : Double, maxIteration : Int) extends HyperParameterScheduler {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
@@ -145,7 +156,7 @@ object SGD {
     }
   }
 
-  case class Step(stepSize : Int, gamma : Double) extends HyperParameterSchedule {
+  case class Step(stepSize : Int, gamma : Double) extends HyperParameterScheduler {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       var clr = lr
@@ -160,7 +171,7 @@ object SGD {
     }
   }
 
-  case class EpochDecay(decayType: (Int) => Double) extends HyperParameterSchedule {
+  case class EpochDecay(decayType: (Int) => Double) extends HyperParameterScheduler {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-1)
       var clr = lr
@@ -171,7 +182,7 @@ object SGD {
     }
   }
 
-  case class EpochStep(stepSize : Int, gamma : Double) extends HyperParameterSchedule {
+  case class EpochStep(stepSize : Int, gamma : Double) extends HyperParameterScheduler {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       var clr = lr
@@ -185,7 +196,7 @@ object SGD {
     }
   }
 
-  case class Default() extends HyperParameterSchedule {
+  case class Default() extends HyperParameterScheduler {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val lrd = config.get[Double]("learningRateDecay").getOrElse(0.0)

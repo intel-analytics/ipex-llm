@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, DataSet => DataSource}
-import com.intel.analytics.bigdl.optim.SGD.{Default, HyperParameterSchedule}
+import com.intel.analytics.bigdl.optim.SGD.{Default, HyperParameterScheduler}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -247,13 +247,26 @@ object DistriOptimizer {
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
 
-        // compute and log learning rate on driver side, only support SGD now.
+        // record the hyper parameters to debug log, only support SGD now.
         optimMethod match {
           case sgd: SGD[T] =>
-            val lrSchedule = state.get[HyperParameterSchedule](
+            val lrSchedule = state.get[HyperParameterScheduler](
               "learningRateSchedule").getOrElse(Default())
             lrSchedule.updateHyperParameter(driverState, state)
-            logger.debug(s"Current learning rate is ${driverState[Double]("clr")}" )
+            logger.debug(s"Current learning rate is ${driverState.getOrElse[Double]("clr",
+              driverState.getOrElse[Double]("learningRate", 1e-3))}")
+            if (driverState.contains("wd")) {
+              logger.debug(s"Current weight decay is ${driverState[Double]("wd")}")
+            }
+            if (driverState.contains("mom")) {
+              logger.debug(s"Current momentum is ${driverState[Double]("mom")}")
+            }
+            if (driverState.contains("damp")) {
+              logger.debug(s"Current damping is ${driverState[Double]("damp")}")
+            }
+            if (driverState.contains("cntv")) {
+              logger.debug(s"Current nesterov is ${driverState[Boolean]("cntv")}")
+            }
           case _ =>
         }
 
