@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dataset
 
 import java.io.File
 import java.nio.file.Paths
+import java.util.concurrent.{Callable, Executors}
 
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -226,6 +227,33 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     imageIter.next()
     imageIter.next()
     imageIter.hasNext should be(false)
+  }
+
+  "ImageNet data source" should "load image correct with parallel process" in {
+    val resource = getClass().getClassLoader().getResource("imagenet")
+    val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
+    val dataSet = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
+      BGRImage.NO_SCALE)
+
+    val iter = dataSet.toLocal().data(train = false)
+    val parallel = 10
+    val syncPool = Executors.newFixedThreadPool(parallel)
+    val tasks = (0 until parallel).map(pid => {
+      syncPool.submit(new Callable[Int] {
+        override def call(): Int = {
+          var cc = 0
+          while (iter.hasNext) {
+            val img = iter.next()
+            cc += img.label().toInt
+            Thread.sleep(1)
+          }
+          cc
+        }
+      })
+    })
+    val count = tasks.map(_.get()).reduce(_ + _)
+    count should be (28)
+    syncPool.shutdown()
   }
 
   "image preprocess" should "be same with torch result" in {

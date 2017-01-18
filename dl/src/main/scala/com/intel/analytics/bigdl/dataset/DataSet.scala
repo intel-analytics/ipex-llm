@@ -21,7 +21,7 @@ import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.DataSet
-import com.intel.analytics.bigdl.dataset.image._
+import com.intel.analytics.bigdl.dataset.image.{LabeledBGRImage, _}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import org.apache.hadoop.io.Text
 import org.apache.log4j.Logger
@@ -347,9 +347,13 @@ object DataSet {
           logger.info(s"Cache image $count/$total(${count * 100 / total}%)")
         }
         count += 1
-        ByteRecord(BGRImage.readImage(imageFile.path, scaleTo), imageFile.label)
+
+        val bufferBGR = new LabeledBGRImage()
+        bufferBGR.copy(BGRImage.readImage(imageFile.path, scaleTo), 255f)
+          .setLabel(imageFile.label)
       })
-      new LocalArrayDataSet[ByteRecord](buffer) -> BytesToBGRImg()
+
+      new LocalArrayDataSet[LabeledBGRImage](buffer)
     }
 
     /**
@@ -363,12 +367,14 @@ object DataSet {
     def images(path: Path, sc: SparkContext, scaleTo: Int)
     : DataSet[LabeledBGRImage] = {
       val paths = LocalImageFiles.readPaths(path)
-      val buffer: Array[ByteRecord] = {
+      val buffer: Array[LabeledBGRImage] = {
         paths.map(imageFile => {
-          ByteRecord(BGRImage.readImage(imageFile.path, scaleTo), imageFile.label)
+          val bufferBGR = new LabeledBGRImage()
+          bufferBGR.copy(BGRImage.readImage(imageFile.path, scaleTo), 255f)
+            .setLabel(imageFile.label)
         })
       }
-      array(buffer, sc) -> BytesToBGRImg()
+      array(buffer, sc)
     }
   }
 
