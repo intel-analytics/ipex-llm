@@ -319,7 +319,9 @@ object BGRImage {
       val channel = fis.getChannel
       val byteArrayOutputStream = new ByteArrayOutputStream
       channel.transferTo(0, channel.size, Channels.newChannel(byteArrayOutputStream))
-      ImageIO.read(new ByteArrayInputStream(byteArrayOutputStream.toByteArray))
+      val image = ImageIO.read(new ByteArrayInputStream(byteArrayOutputStream.toByteArray))
+      require(image != null, "Can't read file " + path + ", ImageIO.read is null")
+      image
     } catch {
       case ex: Exception =>
         ex.printStackTrace()
