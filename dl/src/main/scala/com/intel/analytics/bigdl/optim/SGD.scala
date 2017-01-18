@@ -32,7 +32,7 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     config: Table, state: Table = null): (Tensor[T], Array[T]) = {
 
     val _state = if (state == null) config else state
-    val lrSchedule = config.get[LearningRateSchedule]("learningRateSchedule").getOrElse(Default())
+    val lrSchedule = config.get[HyperParameterSchedule]("learningRateSchedule").getOrElse(Default())
     lrSchedule.updateHyperParameter(config, _state)
 
     val wd = config.get[Double]("weightDecay").getOrElse(0.0)
@@ -101,11 +101,11 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
 }
 
 object SGD {
-  trait LearningRateSchedule {
+  trait HyperParameterSchedule {
     def updateHyperParameter(config : Table, state : Table) : Unit
   }
 
-  case class EpochSchedule(regimes : Array[Regime]) extends LearningRateSchedule {
+  case class EpochSchedule(regimes : Array[Regime]) extends HyperParameterSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val epoch = config[Int]("epoch")
       for (r <- regimes) {
@@ -116,7 +116,7 @@ object SGD {
       config("clr") = -config.get[Double]("learningRate").getOrElse(1e-3)
     }
   }
-  case class Poly(power : Double, maxIteration : Int) extends LearningRateSchedule {
+  case class Poly(power : Double, maxIteration : Int) extends HyperParameterSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
@@ -125,13 +125,12 @@ object SGD {
       } else {
         -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
       }
-      println(s"iteration is : ${nevals}. current learning rate is $clr")
       state("evalCounter") = nevals + 1
       config("clr") = clr
     }
   }
 
-  case class Step(stepSize : Int, gamma : Double) extends LearningRateSchedule {
+  case class Step(stepSize : Int, gamma : Double) extends HyperParameterSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       var clr = -lr
@@ -146,7 +145,7 @@ object SGD {
     }
   }
 
-  case class EpochDecay(decayType: (Int) => Double) extends LearningRateSchedule {
+  case class EpochDecay(decayType: (Int) => Double) extends HyperParameterSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-1)
       var clr = -lr
@@ -157,7 +156,7 @@ object SGD {
     }
   }
 
-  case class EpochStep(stepSize : Int, gamma : Double) extends LearningRateSchedule {
+  case class EpochStep(stepSize : Int, gamma : Double) extends HyperParameterSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       var clr = -lr
@@ -171,7 +170,7 @@ object SGD {
     }
   }
 
-  case class Default() extends LearningRateSchedule {
+  case class Default() extends HyperParameterSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val lrd = config.get[Double]("learningRateDecay").getOrElse(0.0)

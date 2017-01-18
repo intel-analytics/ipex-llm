@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, DataSet => DataSource}
+import com.intel.analytics.bigdl.optim.SGD.{Default, HyperParameterSchedule}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -245,6 +246,16 @@ object DistriOptimizer {
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
+
+        // compute hyperparameter on driver side, only support SGD now.
+        optimMethod match {
+          case sgd: SGD[T] =>
+            val lrSchedule = state.get[HyperParameterSchedule](
+              "learningRateSchedule").getOrElse(Default())
+            lrSchedule.updateHyperParameter(driverState, state)
+            logger.debug(s"Current learning rate is ${-driverState[Double]("clr")}" )
+          case _ =>
+        }
 
         // compute threshold
         iteration += 1
