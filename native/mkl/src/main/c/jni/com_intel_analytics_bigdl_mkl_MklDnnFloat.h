@@ -35,7 +35,7 @@ JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_layoutCre
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
  * Method:    layoutDelete
- * Signature: (J)J
+ * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_layoutDelete
   (JNIEnv *, jclass, jlong);
@@ -319,6 +319,22 @@ JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_setScaleS
  */
 JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_setGradScaleShift
   (JNIEnv *, jclass, jint, jfloatArray, jfloatArray, jlong, jint);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    unPadding
+ * Signature: ([FJJ[J[J[J)V
+ */
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_unPadding
+  (JNIEnv *, jclass, jfloatArray, jlong, jlong, jlongArray, jlongArray, jlongArray);
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    padding
+ * Signature: ([FJJ[J[J[J[J)V
+ */
+JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_padding
+  (JNIEnv *, jclass, jfloatArray, jlong, jlong, jlongArray, jlongArray, jlongArray, jlongArray);
 
 #ifdef __cplusplus
 }

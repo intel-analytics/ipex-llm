@@ -486,7 +486,7 @@ object SpatialAveragePooling {
     if (Engine.getEngineType() == MklBlas) {
       new SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, ceilMode, countIncludePad, divide)
     } else {
-      new SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH)
+      new dnn.SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH)
     }
   }
 }

@@ -47,7 +47,7 @@ object Convolution {
      optnet: Boolean = true)
      (implicit ev: TensorNumeric[T]): AbstractSpatialConvolution[T] = {
     if (optnet) {
-      SpatialShareConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
+      new SpatialShareConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
         strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)
     } else {
       SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,

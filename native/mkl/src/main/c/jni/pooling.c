@@ -18,6 +18,7 @@
 #include <mkl_dnn.h>
 #include <mkl_dnn_types.h>
 #include <mkl_service.h>
+#include <string.h>
 
 #include "com_intel_analytics_bigdl_mkl_MklDnnFloat.h"
 #include "debug.h"
@@ -108,4 +109,127 @@ jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_poolCreateBackward
   (*env)->ReleasePrimitiveArrayCritical(env, pads      , jPads      , 0);
 
   return (jlong)primitive;
+}
+
+#include <omp.h>
+#include <sched.h>
+
+static void unPadding(float* from, float* to, size_t *fromStrides,
+                      size_t *toSize, size_t *toStrides)
+{
+  for (int n = 0; n < toSize[3]; n++)
+    for (int c = 0; c < toSize[2]; c++) {
+      int baseToIndex = n * toStrides[3] + c * toStrides[2];
+      int baseFromIndex = n * fromStrides[3] + c * fromStrides[2];
+
+#pragma omp parallel for
+      for (int h = 0; h < toSize[1]; h++) {
+        memcpy(to + baseToIndex + h * toStrides[1],
+               from + baseFromIndex + h * fromStrides[1],
+               toSize[0] * sizeof(float));
+      }
+    }
+}
+
+static void padding(float* from, float* to, size_t *fromSize,
+                    size_t *fromStrides, size_t *toSize, size_t *toStrides)
+{
+  for (int n = 0; n < fromSize[3]; n++) {
+    for (int c = 0; c < fromSize[2]; c++) {
+      int baseToIndex = n * toStrides[3] + c * toStrides[2];
+      int baseFromIndex = n * fromStrides[3] + c * fromStrides[2];
+
+#pragma omp parallel for
+      for (int h = 0; h < fromSize[1]; h++) {  // height
+        memcpy(to + baseToIndex + h * toStrides[1],
+               from + baseFromIndex + h * fromStrides[1],
+               fromSize[0] * sizeof(float));
+
+        // the last column of a matrix with 0. we only need to set
+        // one element to 0, because 0 <= ceil - floor <= 1
+        if (toSize[0] > fromSize[0]) {
+          int end     = baseToIndex + h * toStrides[1] + fromSize[0];
+          *(to + end) = 0;
+        }
+      }
+
+      // pad the last row of a matrix with 0 * width
+      if (toSize[1] > fromSize[1]) {
+        int end = baseToIndex + fromSize[1] * toStrides[1];
+        memset(to + end, 0, toSize[0] * sizeof(float));
+      }
+    }
+  }
+}
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    unPadding
+ * Signature: ([FJJ[J[J[J)V
+ */
+JNIEXPORT
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_unPadding
+(JNIEnv *env,
+ jclass cls,
+ jfloatArray to,
+ jlong offset,
+ jlong from,
+ jlongArray fromStrides,
+ jlongArray toSize,
+ jlongArray toStrides)
+{
+  jfloat* jTo = (jfloat *)((*env)->GetPrimitiveArrayCritical(env, to, 0));
+  size_t * jFromStrides = (size_t*)((*env)->GetPrimitiveArrayCritical(env,
+                                                                   fromStrides,
+                                                                   0));
+  size_t* jToSize = (size_t*)((*env)->GetPrimitiveArrayCritical(env, toSize, 0));
+  size_t* jToStrides = (size_t*)((*env)->GetPrimitiveArrayCritical(env, toStrides,
+                                                                 0));
+
+  jfloat *jFrom = (jfloat*)(from);
+  
+  unPadding(jFrom, jTo + offset, jFromStrides, jToSize, jToStrides);
+
+  (*env)->ReleasePrimitiveArrayCritical(env, to, jTo, 0);
+  (*env)->ReleasePrimitiveArrayCritical(env, fromStrides, jFromStrides, 0);
+  (*env)->ReleasePrimitiveArrayCritical(env, toSize, jToSize, 0);
+  (*env)->ReleasePrimitiveArrayCritical(env, toStrides, jToStrides, 0);
+}
+
+
+/*
+ * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
+ * Method:    padding
+ * Signature: ([FJJ[J[J[J[J)V
+ */
+JNIEXPORT
+  void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_padding
+(JNIEnv *env,
+ jclass cls,
+ jfloatArray from,
+ jlong offset,
+ jlong to,
+ jlongArray fromSize,
+ jlongArray fromStrides,
+ jlongArray toSize,
+ jlongArray toStrides)
+{
+  jfloat *jFrom = (jfloat *)((*env)->GetPrimitiveArrayCritical(env, from, 0));
+  size_t* jFromSize = (size_t*)((*env)->GetPrimitiveArrayCritical(env, fromSize,
+                                                                0));
+  size_t* jFromStrides = (size_t*)((*env)->GetPrimitiveArrayCritical(env,
+                                                                   fromStrides,
+                                                                   0));
+  size_t* jToSize = (size_t*)((*env)->GetPrimitiveArrayCritical(env, toSize, 0));
+  size_t* jToStrides = (size_t*)((*env)->GetPrimitiveArrayCritical(env, toStrides,
+                                                                 0));
+  jfloat *jTo = (jfloat*)(to);
+
+  padding(jFrom + offset, jTo, jFromSize, jFromStrides, jToSize, jToStrides);
+
+  (*env)->ReleasePrimitiveArrayCritical(env, from, jFrom, 0);
+  (*env)->ReleasePrimitiveArrayCritical(env, fromSize, jFromSize, 0);
+  (*env)->ReleasePrimitiveArrayCritical(env, fromStrides, jFromStrides, 0);
+  (*env)->ReleasePrimitiveArrayCritical(env, toSize, jToSize, 0);
+  (*env)->ReleasePrimitiveArrayCritical(env, toStrides, jToStrides, 0);
 }

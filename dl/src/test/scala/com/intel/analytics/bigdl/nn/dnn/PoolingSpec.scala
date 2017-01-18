@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.dnn
 
 import com.intel.analytics.bigdl.nn.dnn.Tools._
 import com.intel.analytics.bigdl.numeric.NumericFloat
-
+import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 class PoolingSpec extends FlatSpec with Matchers {
@@ -111,33 +111,26 @@ class PoolingSpec extends FlatSpec with Matchers {
 
   def diffAttributes(): Unit = {
     val testCases = List(
-      TestCase(128, 128, 16, 16, 2, 2, 2, 2, 0, 0),
-      TestCase(128, 256, 13, 13, 3, 3, 2, 2, 0, 0),
-      TestCase(128, 256, 27, 27, 3, 3, 2, 2, 0, 0),
-      TestCase(128, 256, 8, 8, 2, 2, 2, 2, 0, 0),
-      TestCase(128, 512, 2, 2, 2, 2, 2, 2, 0, 0),
-      TestCase(128, 512, 4, 4, 2, 2, 2, 2, 0, 0),
-      TestCase(128, 64, 32, 32, 2, 2, 2, 2, 0, 0),
-      TestCase(128, 96, 55, 55, 3, 3, 2, 2, 0, 0),
-      TestCase(128, 1024, 7, 7, 3, 3, 1, 1, 1, 1),
-      TestCase(128, 1024, 7, 7, 5, 5, 3, 3, 0, 0),
-      TestCase(128, 1024, 7, 7, 7, 7, 1, 1, 0, 0),
-      TestCase(128, 192, 28, 28, 3, 3, 1, 1, 1, 1),
-      TestCase(128, 192, 56, 56, 3, 3, 2, 2, 0, 0),
-      TestCase(128, 256, 28, 28, 3, 3, 1, 1, 1, 1),
-      TestCase(128, 320, 28, 28, 3, 3, 2, 2, 0, 0),
-      TestCase(128, 480, 14, 14, 3, 3, 1, 1, 1, 1),
-      TestCase(128, 480, 28, 28, 3, 3, 2, 2, 0, 0),
-      TestCase(128, 512, 14, 14, 3, 3, 1, 1, 1, 1),
-      TestCase(128, 512, 14, 14, 5, 5, 3, 3, 0, 0),
-      TestCase(128, 528, 14, 14, 3, 3, 1, 1, 1, 1),
-      TestCase(128, 528, 14, 14, 5, 5, 3, 3, 0, 0),
-      TestCase(128, 576, 14, 14, 3, 3, 1, 1, 1, 1),
-      TestCase(128, 576, 14, 14, 3, 3, 2, 2, 0, 0),
-      TestCase(128, 576, 14, 14, 5, 5, 3, 3, 0, 0),
-      TestCase(128, 64, 112, 112, 3, 3, 2, 2, 0, 0),
-      TestCase(128, 832, 14, 14, 3, 3, 2, 2, 0, 0),
-      TestCase(128, 832, 7, 7, 3, 3, 1, 1, 1, 1)
+      TestCase(4, 128, 16, 16, 2, 2, 2, 2, 0, 0),
+      TestCase(4, 256, 13, 13, 3, 3, 2, 2, 0, 0),
+      TestCase(4, 256, 27, 27, 3, 3, 2, 2, 0, 0),
+      TestCase(4, 256, 8, 8, 2, 2, 2, 2, 0, 0),
+      TestCase(4, 512, 2, 2, 2, 2, 2, 2, 0, 0),
+      TestCase(4, 512, 4, 4, 2, 2, 2, 2, 0, 0),
+      TestCase(4, 64, 32, 32, 2, 2, 2, 2, 0, 0),
+      TestCase(4, 96, 55, 55, 3, 3, 2, 2, 0, 0),
+      TestCase(4, 1024, 7, 7, 3, 3, 1, 1, 1, 1),
+      TestCase(4, 1024, 7, 7, 7, 7, 1, 1, 0, 0),
+      TestCase(4, 192, 28, 28, 3, 3, 1, 1, 1, 1),
+      TestCase(4, 256, 28, 28, 3, 3, 1, 1, 1, 1),
+      TestCase(4, 480, 14, 14, 3, 3, 1, 1, 1, 1),
+      TestCase(4, 512, 14, 14, 3, 3, 1, 1, 1, 1),
+      TestCase(4, 512, 14, 14, 5, 5, 3, 3, 0, 0),
+      TestCase(4, 528, 14, 14, 3, 3, 1, 1, 1, 1),
+      TestCase(4, 528, 14, 14, 5, 5, 3, 3, 0, 0),
+      TestCase(4, 576, 14, 14, 3, 3, 1, 1, 1, 1),
+      TestCase(4, 576, 14, 14, 5, 5, 3, 3, 0, 0),
+      TestCase(4, 832, 7, 7, 3, 3, 1, 1, 1, 1)
     )
 
     for (test <- testCases) {
@@ -187,9 +180,46 @@ class PoolingSpec extends FlatSpec with Matchers {
     }
   }
 
+  def ceilMode(): Unit = {
+    val testCases = List(
+      TestCase(4, 832, 14, 14, 3, 3, 2, 2, 0, 0),
+      TestCase(4, 576, 14, 14, 3, 3, 2, 2, 0, 0),
+      TestCase(4, 64, 112, 112, 3, 3, 2, 2, 0, 0),
+      TestCase(4, 480, 28, 28, 3, 3, 2, 2, 0, 0),
+      TestCase(4, 320, 28, 28, 3, 3, 2, 2, 0, 0),
+      TestCase(4, 192, 56, 56, 3, 3, 2, 2, 0, 0),
+      TestCase(4, 1024, 7, 7, 5, 5, 3, 3, 0, 0)
+    )
+
+    for (test <- testCases) {
+      val dnnPool = getModel(test, "MAX")
+      val blasPool = new com.intel.analytics.bigdl.nn.SpatialMaxPooling(test.kW, test.kH, test.dW,
+        test.dH, test.padW, test.padH)
+
+      val restOfSentence = (s"with parameters ${test.batchSize}", test.channel, test.height,
+        test.width, test.kW, test.kH, test.dW, test.dH, test.padW, test.padH)
+        .productIterator.mkString(",")
+
+      s"A MAX Pooling" should restOfSentence in {
+        val input = Tensor[Float](test.batchSize, test.channel, test.width, test.height).rand()
+
+        // should test clearing gradInput
+        for (i <- 0 until 3) {
+          val dnnOutput = dnnPool.forward(input)
+          val blasOutput = blasPool.forward(input)
+
+          val gradOutput = Tensor[Float]().resizeAs(blasOutput).rand()
+          val dnnGradInput = dnnPool.backward(input, gradOutput)
+          val blasGradInput = blasPool.backward(input, gradOutput)
+        }
+      }
+    }
+  }
+
   def run(): Unit = {
     diffAttributes()
     diffBatchSizeOnSameModel()
+    ceilMode()
   }
 
   run()

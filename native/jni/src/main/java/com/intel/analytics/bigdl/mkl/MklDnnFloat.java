@@ -302,4 +302,19 @@ public class MklDnnFloat {
 
     public native static long setScaleShift(int affine, float[] weight, float[] bias, long scaleShift, int num);
     public native static long setGradScaleShift(int affine, float[] weight, float[] bias, long scaleShift, int num);
+
+    public native static void unPadding(float[] to,
+                                        long offset,
+                                        long from,
+                                        long fromStrides[],
+                                        long toSize[],
+                                        long toStrides[]);
+
+    public native static void padding(float[] from,
+                                      long offset,
+                                      long to,
+                                      long fromSize[],
+                                      long fromStrides[],
+                                      long toSize[],
+                                      long toStrides[]);
 }
