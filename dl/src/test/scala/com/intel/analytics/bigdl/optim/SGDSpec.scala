@@ -77,11 +77,11 @@ class SGDSpec extends FlatSpec with Matchers {
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
     val state = T()
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(-0.1 / (1 + 0 * 0.1))
+    config[Double]("clr") should be(0.1 / (1 + 0 * 0.1))
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(-0.1 / (1 + 1 * 0.1))
+    config[Double]("clr") should be(0.1 / (1 + 1 * 0.1))
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(-0.1 / (1 + 2 * 0.1))
+    config[Double]("clr") should be(0.1 / (1 + 2 * 0.1))
   }
 
   it should "be used when we leave the learningRateSchedule empty" in {
@@ -93,11 +93,11 @@ class SGDSpec extends FlatSpec with Matchers {
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
     val state = T()
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(-0.1 / (1 + 0 * 0.1))
+    config[Double]("clr") should be(0.1 / (1 + 0 * 0.1))
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(-0.1 / (1 + 1 * 0.1))
+    config[Double]("clr") should be(0.1 / (1 + 1 * 0.1))
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(-0.1 / (1 + 2 * 0.1))
+    config[Double]("clr") should be(0.1 / (1 + 2 * 0.1))
   }
 
   "step learning rate decay" should "generate correct learning rates" in {
@@ -110,17 +110,17 @@ class SGDSpec extends FlatSpec with Matchers {
     val state = T()
     for(i <- 1 to 5) {
       optimMethod.optimize(feval, x, config, state)
-      config[Double]("clr") should be(-0.1 +- 1e-9)
+      config[Double]("clr") should be(0.1 +- 1e-9)
     }
 
     for(i <- 1 to 5) {
       optimMethod.optimize(feval, x, config, state)
-      config[Double]("clr") should be(-0.01 +- 1e-9)
+      config[Double]("clr") should be(0.01 +- 1e-9)
     }
 
     for(i <- 1 to 5) {
       optimMethod.optimize(feval, x, config, state)
-      config[Double]("clr") should be(-0.001 +- 1e-9)
+      config[Double]("clr") should be(0.001 +- 1e-9)
     }
   }
 
@@ -133,11 +133,11 @@ class SGDSpec extends FlatSpec with Matchers {
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
     val state = T()
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(-0.1)
+    config[Double]("clr") should be(0.1)
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(-0.1 * (1 - 1.0 / 100) * (1 - 1.0 / 100) * (1 - 1.0 / 100))
+    config[Double]("clr") should be(0.1 * (1 - 1.0 / 100) * (1 - 1.0 / 100) * (1 - 1.0 / 100))
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(-0.1 * (1 - 2.0 / 100) * (1 - 2.0 / 100) * (1 - 2.0 / 100))
+    config[Double]("clr") should be(0.1 * (1 - 2.0 / 100) * (1 - 2.0 / 100) * (1 - 2.0 / 100))
   }
 
   "epoch decay" should "generate correct learning rates" in {
@@ -158,13 +158,13 @@ class SGDSpec extends FlatSpec with Matchers {
       config("epoch") = e
       optimMethod.optimize(feval, x, config, state)
       if(e <= 3) {
-        config[Double]("clr") should be(-1e-2)
+        config[Double]("clr") should be(1e-2)
         config[Double]("weightDecay") should be(2e-4)
       } else if (e <= 7) {
-        config[Double]("clr") should be(-5e-3)
+        config[Double]("clr") should be(5e-3)
         config[Double]("weightDecay") should be(2e-4)
       } else if (e <= 10) {
-        config[Double]("clr") should be(-1e-3)
+        config[Double]("clr") should be(1e-3)
         config[Double]("weightDecay") should be(0.0)
       }
     }
