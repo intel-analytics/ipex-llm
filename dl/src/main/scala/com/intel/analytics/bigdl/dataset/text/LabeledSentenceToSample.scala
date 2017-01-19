@@ -79,7 +79,7 @@ class LabeledSentenceToSample(vocabLength: Int,
       }
       labelBuffer(dataLength - 1) = lastIndex
 
-      buffer.copy(featureBuffer, labelBuffer,
+      buffer.set(featureBuffer, labelBuffer,
         Array(dataLength, vocabLength), Array(labelLength))
     })
   }

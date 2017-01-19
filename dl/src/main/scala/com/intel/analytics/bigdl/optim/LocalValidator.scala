@@ -62,10 +62,7 @@ class LocalValidator[T: ClassTag] private[optim]
           () => {
             val offset = b * stackSize + math.min(b, extraSize)
             val length = stackSize + (if (b < extraSize) 1 else 0)
-            val (input, target) = batch.narrow(1, offset + 1, length) match {
-              case MiniBatch(a, b) => (a, b)
-              case _ => throw new IllegalArgumentException("MiniBatch Arguments are Illegal!")
-            }
+            val (input, target) = batch.narrow(1, offset + 1, length).get
             val output = workingModels(b).forward(input)
             vMethods.map(validation => {
               validation(output.asInstanceOf[Tensor[T]], target)

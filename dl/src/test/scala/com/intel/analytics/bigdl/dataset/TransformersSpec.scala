@@ -488,19 +488,49 @@ class TransformersSpec extends FlatSpec with Matchers {
     count should be(11)
   }
 
-  "SampleToBatchSpec" should "be good with TableBatch" in {
+  "SampleToBatchSpec" should "be good with TableBatch1" in {
     val tensorInput1 = Tensor[Float](Storage(
       Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
     val tensorInput2 = Tensor[Float](Storage(
       Array(0.0f, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1)), 1, Array(4, 5))
     val tensorInput3 = Tensor[Float](Storage(
-      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 0, 1)), 1, Array(2, 5))
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0)),
+      1, Array(5, 5))
     val tensorTarget1 = Tensor[Float](Storage(
       Array(3.0f, 4, 5)), 1, Array(3))
     val tensorTarget2 = Tensor[Float](Storage(
       Array(2.0f, 1, 5, 1)), 1, Array(4))
     val tensorTarget3 = Tensor[Float](Storage(
-      Array(5.0f, 2)), 1, Array(2))
+      Array(5.0f, 2, 5, 3, 1)), 1, Array(5))
+    val sample1 = Sample[Float](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Float](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Float](tensorInput3, tensorTarget3)
+
+    val dataSet = new LocalArrayDataSet[Sample[Float]](Array(sample1,
+      sample2, sample3))
+    val sampleToBatch = SampleToBatch[Float](3, true)
+    val sampleDataSet = dataSet -> sampleToBatch
+    val iter = sampleDataSet.toLocal().data(train = false)
+
+    val batch1 = iter.next()
+
+    batch1.data should be (T(tensorInput1, tensorInput2, tensorInput3))
+    batch1.labels should be (T(tensorTarget1, tensorTarget2, tensorTarget3))
+  }
+  "SampleToBatchSpec" should "be good with TableBatch2" in {
+    val tensorInput1 = Tensor[Float](Storage(
+      Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
+    val tensorInput2 = Tensor[Float](Storage(
+      Array(0.0f, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1)), 1, Array(4, 5))
+    val tensorInput3 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0)),
+      1, Array(5, 5))
+    val tensorTarget1 = Tensor[Float](Storage(
+      Array(3.0f, 4, 5)), 1, Array(3))
+    val tensorTarget2 = Tensor[Float](Storage(
+      Array(2.0f, 1, 5, 1)), 1, Array(4))
+    val tensorTarget3 = Tensor[Float](Storage(
+      Array(5.0f, 2, 5, 3, 1)), 1, Array(5))
     val sample1 = Sample[Float](tensorInput1, tensorTarget1)
     val sample2 = Sample[Float](tensorInput2, tensorTarget2)
     val sample3 = Sample[Float](tensorInput3, tensorTarget3)
@@ -515,10 +545,41 @@ class TransformersSpec extends FlatSpec with Matchers {
 
     batch1.data should be (T(tensorInput1, tensorInput2))
     batch1.labels should be (T(tensorTarget1, tensorTarget2))
-
     val batch2 = iter.next()
     batch2.data should be (T(tensorInput3))
     batch2.labels should be (T(tensorTarget3))
+  }
+  "SampleToBatchSpec" should "be good with TableBatch3" in {
+    val tensorInput1 = Tensor[Float](Storage(
+      Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
+    val tensorInput2 = Tensor[Float](Storage(
+      Array(0.0f, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1)), 1, Array(4, 5))
+    val tensorInput3 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0)),
+      1, Array(5, 5))
+    val tensorTarget1 = Tensor[Float](Storage(
+      Array(3.0f, 4, 5)), 1, Array(3))
+    val tensorTarget2 = Tensor[Float](Storage(
+      Array(2.0f, 1, 5, 1)), 1, Array(4))
+    val tensorTarget3 = Tensor[Float](Storage(
+      Array(5.0f, 2, 5, 3, 1)), 1, Array(5))
+    val sample1 = Sample[Float](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Float](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Float](tensorInput3, tensorTarget3)
+
+    val dataSet = new LocalArrayDataSet[Sample[Float]](Array(sample1,
+      sample2, sample3))
+    val sampleToBatch = SampleToBatch[Float](2, true)
+    val sampleDataSet = dataSet -> sampleToBatch
+    val iter = sampleDataSet.toLocal().data(train = true)
+
+    val batch1 = iter.next()
+
+    batch1.data should be (T(tensorInput1, tensorInput2))
+    batch1.labels should be (T(tensorTarget1, tensorTarget2))
+    val batch2 = iter.next()
+    batch2.data should be (T(tensorInput3, tensorInput1))
+    batch2.labels should be (T(tensorTarget3, tensorTarget1))
   }
   "SampleToBatchSpec" should "be good with TensorBatch" in {
     val tensorInput1 = Tensor[Float](Storage(

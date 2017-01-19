@@ -81,7 +81,7 @@ class Sample[T: ClassTag] (
 
   def this()(implicit ev: TensorNumeric[T]) = this(Tensor[T](), Tensor[T]())
 
-  def copy(featureData: Array[T],
+  def set(featureData: Array[T],
            labelData: Array[T],
            featureSize: Array[Int],
            labelSize: Array[Int]): Sample[T] = {
@@ -202,6 +202,8 @@ case class MiniBatch[T: ClassTag](data: Activity, labels: Activity)
   }
 
   def size(): Int = _dataLength
+
+  def get: (Activity, Activity) = (data, labels)
 
   def narrow(dim: Int, index: Int, size: Int): MiniBatch[T] = {
     data match {

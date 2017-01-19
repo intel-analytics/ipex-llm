@@ -59,4 +59,13 @@ class MiniBatchSpec extends FlatSpec with Matchers {
     a should be (T(input(1).asInstanceOf[Tensor[Float]]))
     b should be (T(target(1).asInstanceOf[Tensor[Float]]))
   }
+  "MiniBatch" should "get a tuple" in {
+    val input = T(Tensor[Float](Array(4, 2)).randn(), Tensor[Float](Array(3, 2)).randn())
+    val target = T(Tensor[Float](Array(4)).randn(), Tensor[Float](Array(3)).randn())
+    val miniBatch = MiniBatch[Float](input, target)
+
+    val (data, label) = miniBatch.get
+    data should be (input)
+    label should be (target)
+  }
 }
