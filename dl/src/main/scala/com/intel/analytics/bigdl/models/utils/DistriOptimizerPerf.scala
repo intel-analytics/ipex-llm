@@ -92,7 +92,7 @@ object DistriOptimizerPerf {
   }
 
   def performance(param: DistriOptimizerPerfParam): Unit = {
-    val conf = Engine.init(param.nodeNumber, param.corePerNode).get
+    val conf = Engine.init.get
       .setAppName("DistriOptimizer Performance Test")
       .set("spark.task.cpus", param.corePerNode.toString)
 

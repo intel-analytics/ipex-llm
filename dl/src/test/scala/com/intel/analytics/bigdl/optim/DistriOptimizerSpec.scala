@@ -36,7 +36,8 @@ object DistriOptimizerSpec {
   var plusOne = 0.0
   val nodeNumber = 4
   val coreNumber = 4
-  Engine.init(nodeNumber, coreNumber)
+  Engine.setNodeNumber(Some(nodeNumber))
+  Engine.setCoreNumber(coreNumber)
 
   val batchSize = 2 * coreNumber
 

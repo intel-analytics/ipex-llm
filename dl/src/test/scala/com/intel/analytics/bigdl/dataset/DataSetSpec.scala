@@ -31,9 +31,8 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc: SparkContext = null
 
   before {
-    val nodeNumber = 1
-    val coreNumber = 1
-    Engine.init(nodeNumber, coreNumber)
+    Engine.setNodeNumber(Some(1))
+    Engine.setCoreNumber(1)
     val conf = new SparkConf().setMaster("local[1]").setAppName("DataSetSpec")
     sc = new SparkContext(conf)
   }

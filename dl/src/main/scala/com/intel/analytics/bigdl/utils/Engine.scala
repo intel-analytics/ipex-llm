@@ -205,12 +205,13 @@ object ThreadPool {
 
 object Engine {
   private val logger = Logger.getLogger(getClass)
-
   private val singletonCounter: AtomicInteger = new AtomicInteger(0)
-
   private[this] var _isInitialized: Boolean = false
+  private[this] var _onSpark: Boolean = false
 
   def isInitialized: Boolean = _isInitialized
+
+  def onSpark: Boolean = _onSpark
 
   /**
    * Check if current execution is a singleton on the JVM
@@ -242,6 +243,11 @@ object Engine {
 
   def coreNumber(): Int = physicalCoreNumber
 
+  /**
+   * This method should only be used for test purpose.
+   *
+   * @param n
+   */
   private[bigdl] def setCoreNumber(n: Int): Unit = {
     require(n > 0)
     physicalCoreNumber = n
@@ -257,6 +263,11 @@ object Engine {
 
   def nodeNumber(): Option[Int] = nodeNum
 
+  /**
+   * This method should only be used for test purpose.
+   *
+   * @param n
+   */
   private[bigdl] def setNodeNumber(n : Option[Int]): Unit = {
     nodeNum = n
   }
@@ -278,6 +289,11 @@ object Engine {
     }
   }
 
+  /**
+   * This method should only be used for test purpose.
+   *
+   * @param engineType
+   */
   private[bigdl] def setEngineType(engineType: EngineType): Unit = {
     this.engineType = engineType
   }
@@ -307,11 +323,23 @@ object Engine {
     model
   }
 
-  def init(
-    node: Int,
-    cores: Int
-  ): Option[SparkConf] = {
+  /**
+   * Try to automatically find node number and core number from the environment.
+   *
+   * We assume that user run their spark application through spark-submit. And try to find the node
+   * number and core number from the system property set by spark-submit. Application should use
+   * this method to get SparkConf object to init their SparkContext.
+   *
+   * If application is not submitted by spark-submit, we consider it run on a single node without
+   * Spark. Note that this is different from Spark Local mode. If you want to run in Spark Local
+   * mode, you still need to submit your application through spark-submit --master local[n].
+   *
+   * @return An option of SparkConf
+   */
+  def init: Option[SparkConf] = {
     val ret = if (System.getProperty("SPARK_SUBMIT") != null) {
+      _onSpark = true
+      val (node, cores) = sparkNodeAndCore
       nodeNum = Some(node)
       physicalCoreNumber = cores
       _model = initModelThreadPool()
@@ -332,12 +360,91 @@ object Engine {
       }
       Some(sc)
     } else {
-      physicalCoreNumber = cores
+      _onSpark = false
       None
     }
     _isInitialized = true
 
     ret
+  }
+
+  private def dynamicAllocationExecutor : Option[Int] = {
+    if (System.getProperty("spark.dynamicAllocation.enabled") == "true") {
+      val maxExecutors = if (System.getProperty("spark.dynamicAllocation.maxExecutors") != null) {
+        System.getProperty("spark.dynamicAllocation.maxExecutors").toInt
+      } else {
+        1
+      }
+      val minExecutors = if (System.getProperty("spark.dynamicAllocation.minExecutors") != null) {
+        System.getProperty("spark.dynamicAllocation.minExecutors").toInt
+      } else {
+        1
+      }
+      require(maxExecutors == minExecutors, "spark.dynamicAllocation.maxExecutors and " +
+        "spark.dynamicAllocation.minExecutors must be identical in dynamic allocation")
+      Some(minExecutors)
+    } else {
+      None
+    }
+  }
+
+  private def sparkNodeAndCore : (Int, Int) = {
+    require(System.getProperty("spark.master") != null, "Can't find spark.master, do you start " +
+      "your application without spark-submit?")
+    val master = System.getProperty("spark.master")
+    if(master.toLowerCase.startsWith("local")) {
+      // Spark local mode
+      val pattern = "local\\[(\\d+)\\]".r
+      master match {
+        case pattern(n) => (1, n.toInt)
+        case _ => throw new IllegalArgumentException(s"Can't parser master $master")
+      }
+    } else if (master.toLowerCase.startsWith("spark")) {
+      // Spark standalone mode
+      val coreString = System.getProperty("spark.executor.cores")
+      val maxString = System.getProperty("spark.executor.max")
+      require(coreString != null, "Can't find executor core number, do you submit with " +
+        "--executor-cores option")
+      require(maxString != null, "Can't find total core number. Do you submit with " +
+        "--total-executor-cores")
+      val core = coreString.toInt
+      val nodeNum = dynamicAllocationExecutor.getOrElse {
+        val total = maxString.toInt
+        require(total > core && total % core == 0, s"total core number($total) can't be divided " +
+          s"by single core number($core)")
+        total / core
+      }
+      (nodeNum, core)
+    } else if (master.toLowerCase.startsWith("yarn")) {
+      // yarn mode
+      val coreString = System.getProperty("spark.executor.cores")
+      require(coreString != null, "Can't find executor core number, do you submit with " +
+        "--executor-cores option")
+      val core = coreString.toInt
+      val node = dynamicAllocationExecutor.getOrElse {
+        val numExecutorString = System.getProperty("spark.executor.instances")
+        require(numExecutorString != null, "Can't find executor number, do you submit with " +
+          "--num-executors option")
+        numExecutorString.toInt
+      }
+      (node, core)
+    } else if (master.toLowerCase.startsWith("mesos")) {
+      // mesos mode
+      require(System.getProperty("spark.mesos.coarse") != "false", "Not support mesos " +
+        "fine-grained mode")
+      val coreString = System.getProperty("spark.executor.cores")
+      val maxString = System.getProperty("spark.executor.max")
+      val core = coreString.toInt
+      val nodeNum = dynamicAllocationExecutor.getOrElse {
+        val total = maxString.toInt
+        require(total > core && total % core == 0, s"total core number($total) can't be divided " +
+          s"by single core number($core)")
+        total / core
+      }
+      (nodeNum, core)
+    } else {
+      throw new IllegalArgumentException(s"Unsupport master format $master")
+    }
   }
 
   // Check envs
