@@ -73,8 +73,8 @@ class SampleSpec extends FlatSpec with Matchers {
     val sample = Sample[Float](tensorInput1, tensorLabel1)
     val input2 = new Array[Float](size*size)
     val label2 = new Array[Float](size*size)
-    sample.copyFeature(input2, 0, size*size)
-    sample.copyLabel(label2, 0, size*size)
+    sample.extractFeature(input2, 0, size*size)
+    sample.extractLabel(label2, 0, size*size)
 
     var i = 0
     while (i < input2.length) {

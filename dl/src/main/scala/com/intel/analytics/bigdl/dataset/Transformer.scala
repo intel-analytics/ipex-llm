@@ -128,8 +128,8 @@ class SampleToBatch[T: ClassTag]
             if (labelData == null || labelData.length < batchSize * labelLength) {
               labelData = new Array[T](batchSize * labelLength)
             }
-            sample.copyLabel(labelData, i*labelLength, labelLength)
-            sample.copyFeature(featureData, i*featureLength, featureLength)
+            sample.extractLabel(labelData, i*labelLength, labelLength)
+            sample.extractFeature(featureData, i*featureLength, featureLength)
 
             if (isTable) {
               featureTable(i + 1) = Tensor()
