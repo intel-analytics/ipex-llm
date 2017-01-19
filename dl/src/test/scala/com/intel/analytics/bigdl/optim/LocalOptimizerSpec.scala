@@ -118,7 +118,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers {
 
   val nodeNumber = 4
   val coreNumber = 4
-  Engine.setNodeNumber(Some(nodeNumber))
+  Engine.setNodeNumber(nodeNumber)
   Engine.setCoreNumber(coreNumber)
 
   "Train model with CrossEntropy and SGD" should "be good" in {

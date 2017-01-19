@@ -279,8 +279,8 @@ object DataSet {
    * @return
    */
   def array[T: ClassTag](localData: Array[T], sc: SparkContext): DistributedDataSet[T] = {
+    require(Engine.onSpark, "Do you submit your job with spark-submit?")
     val nodeNumber = Engine.nodeNumber()
-      .getOrElse(throw new RuntimeException("can't get node number? Have you initialized?"))
     val coreNumber = Engine.coreNumber()
     new CachedDistriDataSet[T](
       sc.parallelize(localData, nodeNumber * coreNumber)
@@ -300,8 +300,8 @@ object DataSet {
    * @return
    */
   def rdd[T: ClassTag](data: RDD[T]): DistributedDataSet[T] = {
+    require(Engine.onSpark, "Do you submit your job with spark-submit?")
     val nodeNumber = Engine.nodeNumber()
-      .getOrElse(throw new RuntimeException("can't get node number? Have you initialized?"))
     val coreNumber = Engine.coreNumber()
     new CachedDistriDataSet[T](
       data.coalesce(nodeNumber, true)
@@ -434,8 +434,8 @@ object DataSet {
      * @return
      */
     def files(url: String, sc: SparkContext, classNum: Int): DistributedDataSet[ByteRecord] = {
+      require(Engine.onSpark, "Do you submit your job with spark-submit?")
       val nodeNumber = Engine.nodeNumber()
-        .getOrElse(throw new RuntimeException("can't get node number? Have you initialized?"))
       val coreNumber = Engine.coreNumber()
       val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text],
         nodeNumber * coreNumber).map(image => {

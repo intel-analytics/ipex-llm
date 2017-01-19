@@ -81,7 +81,7 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "Grey Image toTensor" should "convert correctly" in {
-    Engine.setNodeNumber(None)
+    Engine.setNodeNumber(1)
     val image1 = new LabeledGreyImage(32, 32)
     val image2 = new LabeledGreyImage(32, 32)
     val image3 = new LabeledGreyImage(32, 32)
@@ -222,7 +222,7 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "RGB Image toTensor" should "convert correctly" in {
-    Engine.setNodeNumber(None)
+    Engine.setNodeNumber(1)
     val image1 = new LabeledBGRImage(32, 32)
     val image2 = new LabeledBGRImage(32, 32)
     val image3 = new LabeledBGRImage(32, 32)
@@ -336,7 +336,7 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "Multi thread RGB Image toTensor" should "convert correctly" in {
-    Engine.setNodeNumber(None)
+    Engine.setNodeNumber(1)
     val image1 = new LabeledBGRImage(32, 32)
     val image2 = new LabeledBGRImage(32, 32)
     val image3 = new LabeledBGRImage(32, 32)
