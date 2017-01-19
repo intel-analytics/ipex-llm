@@ -17,16 +17,15 @@
 package com.intel.analytics.bigdl.models.embedding
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample, SampleToBatch}
 import com.intel.analytics.bigdl.dataset.text.{LowerCase, Tokenizer}
+import com.intel.analytics.bigdl.dataset.{DataSet, Sample, SampleToBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.{Optimizer, SGD, Trigger}
 import com.intel.analytics.bigdl.utils.{Engine, File, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-
-import scala.collection.Parallel
+import org.slf4j.{LoggerFactory, Logger => sl4jLogger}
 
 object Train {
 
@@ -36,9 +35,11 @@ object Train {
     Logger.getLogger("breeze").setLevel(Level.ERROR)
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
 
+    val log: sl4jLogger = LoggerFactory.getLogger(this.getClass)
+
     val params = Utils.parse(args)
 
-    val sc = Engine.init(params.nodeNumber, params.coreNumber, params.env == "spark")
+    val sc = Engine.init(params.nodeNumber, params.coreNumber, onSpark = true)
       .map(conf => {
         conf.setAppName("BigDL Word2Vec Example")
           .set("spark.task.maxFailures", "1")
@@ -50,8 +51,8 @@ object Train {
 
     val tokens =
       (DataSet.rdd(sc.textFile(params.trainDataLocation))
-      -> LowerCase()
-      -> Tokenizer())
+        -> LowerCase()
+        -> Tokenizer())
 
     val rddTokens = tokens.toDistributed().data(false)
 
@@ -68,10 +69,9 @@ object Train {
       word2Vec.getModel
     }
 
-//    word2Vec.wordVectors.weight.apply1(x => 1)
+    //    word2Vec.wordVectors.weight.apply1(x => 1)
     val optimizer = Optimizer(
       model = model,
-//      dataset = a,
       dataset = trainSet,
       criterion = BCECriterion[Float]())
 
@@ -98,7 +98,10 @@ object Train {
 
     word2Vec.normalizeWordVectors()
 
+    File.save(word2Vec, params.w2vLocation + "word2vec.obj")
+
     word2Vec.printSimilarWords(
-      Array("usa", "like", "play", "go", "china", "the", "he", "can"), 5)
+      Array("usa", "like", "play", "go", "china", "the", "he", "can"),
+      params.kNearestWords)
   }
 }

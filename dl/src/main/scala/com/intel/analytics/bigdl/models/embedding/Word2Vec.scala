@@ -20,7 +20,6 @@ import breeze.linalg.argsort
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, Transformer}
 import com.intel.analytics.bigdl.models.embedding.Utils.Word2VecConfig
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -167,7 +166,7 @@ class Word2Vec(val params: Word2VecConfig)
    */
   def generateTrainingData(): Transformer[Seq[String], Sample[Float]] = {
     (WordsToIds(word2Id, params.maxSentenceLength)
-//      -> SubSampling(params.subsample, trainWordsCount, vocab)
+      -> SubSampling(params.subsample, trainWordsCount, vocab)
       -> GenerateSamplesBySkipGram(powerUnigram, params.numNegSamples, params.windowSize))
   }
 
@@ -183,7 +182,6 @@ class Word2Vec(val params: Word2VecConfig)
     maxSentenceLength: Int)
     extends Transformer[Seq[String], Seq[Int]] {
     override def apply(prev: Iterator[Seq[String]]): Iterator[Seq[Int]] = {
-//      log.info(s"WordsToIds: ${prev.length}")
       prev.map(words => {
         val sentence = mutable.ArrayBuilder.make[Int]
         var sentenceLength = 0
@@ -292,7 +290,6 @@ class Word2Vec(val params: Word2VecConfig)
         sentence.zipWithIndex.foreach {
           case (word, i) =>
             val reducedWindow = RNG.uniform(1, window + 1).toInt
-//            val reducedWindow = window
             var j = i - reducedWindow
             j = if (j < 0) 0 else j
 
@@ -351,7 +348,7 @@ class Word2Vec(val params: Word2VecConfig)
     words: Array[String],
     numSimilarWord: Int): Unit = {
     val simWords = getSimilarWords(words, numSimilarWord)
-    print(simWords
+    log.info(simWords
       .map(e => e.mkString(", "))
       .mkString("\n"))
   }
@@ -373,8 +370,9 @@ class Word2Vec(val params: Word2VecConfig)
         val similarity = Tensor(vocabSize)
           .mv(wordVectors.weight, vector)
           .toBreezeVector()
+
+        implicit val ordering = Ordering.Float.reverse
         argsort(similarity)
-          .reverse
           .take(numSimilarWord)
           .toArray
           .map(id => (vocab(id).word, similarity(id)))

@@ -44,20 +44,21 @@ object Utils {
 //    trainDataLocation: String = "/home/yao/Desktop/enwik9",
     trainDataLocation: String = "/home/yao/Downloads/corpus.txt",
     testDataLocation: String = "",
+    w2vLocation: String = "./model",
     numNegSamples: Int = 5,
     embeddingSize: Int = 100,
-    windowSize: Int = 3,
+    windowSize: Int = 5,
     minCount: Int = 10,
     subsample: Double = 1e-3,
     alpha: Double = 0.75,
     maxSentenceLength: Int = 1000,
+    kNearestWords: Int = 5,
     numSimilarWord: Int = 5,
     learningRate: Double = 0.025,
     batchSize: Int = 1,
     coreNumber: Int = 1,
     nodeNumber: Int = 1,
     maxEpoch: Int = 3,
-    env: String = "spark",
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
     checkpoint: Option[String] = None
@@ -76,6 +77,10 @@ object Utils {
     opt[String]("testDataLocation")
       .text("")
       .action { (x, c) => c.copy(testDataLocation = x) }
+
+    opt[String]("model")
+      .text("")
+      .action { (x, c) => c.copy(w2vLocation = x) }
 
     opt[Int]("numNegSamples")
       .text("Negative samples per training example.")
@@ -103,6 +108,10 @@ object Utils {
         "the rest will be dropped")
       .action { (x, c) => c.copy(subsample = x) }
 
+    opt[Int]("kNearestWords")
+      .text("Print the k-nearest words to a word or a vector based on cosine similarity")
+      .action { (x, c) => c.copy(kNearestWords = x) }
+
     opt[String]('f', "folder")
       .text("where you put the MNIST data")
       .action((x, c) => c.copy(trainDataLocation = x))
@@ -114,6 +123,7 @@ object Utils {
     opt[String]("model")
       .text("model snapshot location")
       .action((x, c) => c.copy(modelSnapshot = Some(x)))
+
     opt[String]("state")
       .text("state snapshot location")
       .action((x, c) => c.copy(stateSnapshot = Some(x)))
@@ -134,23 +144,16 @@ object Utils {
       .text("cores number on each node")
       .action((x, c) => c.copy(coreNumber = x))
       .required()
+
     opt[Int]('n', "node")
       .text("node number to train the model")
       .action((x, c) => c.copy(nodeNumber = x))
       .required()
+
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
-    opt[String]("env")
-      .text("execution environment")
-      .validate(x => {
-        if (Set("local", "spark").contains(x.toLowerCase)) {
-          success
-        } else {
-          failure("env only support local|spark")
-        }
-      })
-      .action((x, c) => c.copy(env = x.toLowerCase()))
-      .required()
+
+
   }.parse(args, Word2VecConfig()).get
 }
