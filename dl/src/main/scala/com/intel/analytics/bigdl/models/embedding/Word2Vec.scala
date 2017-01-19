@@ -74,9 +74,8 @@ class Word2Vec(val params: Word2VecConfig)
    * Generate the training model of word2vec
    */
   def getModel: Module[Float] = {
-    wordVectors = LookupTable(vocabSize, params.embeddingSize)
-    contextVectors = LookupTable(vocabSize, params.embeddingSize)
-    wordVectors.reset()
+    wordVectors = LookupTable(vocabSize, params.embeddingSize).reset(0.25)
+    contextVectors = LookupTable(vocabSize, params.embeddingSize).reset(0.25)
     new Sequential()
       .add(ConcatTable()
         .add(Narrow(2, 2, params.numNegSamples + 1))

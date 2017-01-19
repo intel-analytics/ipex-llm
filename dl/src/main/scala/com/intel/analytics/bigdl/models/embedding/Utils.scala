@@ -42,21 +42,21 @@ object Utils {
   case class Word2VecConfig(
     saveLocation: String = "",
 //    trainDataLocation: String = "/home/yao/Desktop/enwik9",
-    trainDataLocation: String = "/home/yao/Downloads/corpus1.txt",
+    trainDataLocation: String = "/home/yao/Downloads/corpus.txt",
     testDataLocation: String = "",
     numNegSamples: Int = 5,
     embeddingSize: Int = 100,
     windowSize: Int = 3,
-    minCount: Int = 5,
+    minCount: Int = 10,
     subsample: Double = 1e-3,
     alpha: Double = 0.75,
     maxSentenceLength: Int = 1000,
     numSimilarWord: Int = 5,
     learningRate: Double = 0.025,
-    batchSize: Int = 16,
-    coreNumber: Int = 4,
+    batchSize: Int = 1,
+    coreNumber: Int = 1,
     nodeNumber: Int = 1,
-    maxEpoch: Int = 5,
+    maxEpoch: Int = 3,
     env: String = "spark",
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
@@ -68,31 +68,89 @@ object Utils {
     opt[String]("saveLocation")
       .text("")
       .action { (x, c) => c.copy(saveLocation = x) }
+
     opt[String]("trainDataLocation")
       .text("")
       .action { (x, c) => c.copy(trainDataLocation = x) }
+
     opt[String]("testDataLocation")
       .text("")
       .action { (x, c) => c.copy(testDataLocation = x) }
+
     opt[Int]("numNegSamples")
       .text("Negative samples per training example.")
       .action { (x, c) => c.copy(numNegSamples = x) }
+
     opt[Int]("embeddingSize")
       .text("Initial learning rate.")
       .action { (x, c) => c.copy(embeddingSize = x) }
+
     opt[Int]("windowSize")
       .text("The number of words to predict to the left and right of the target word.")
       .action { (x, c) => c.copy(windowSize = x) }
+
     opt[Int]("minCount")
       .text("The minimum number of word occurrences for it to be included in the vocabulary.")
       .action { (x, c) => c.copy(minCount = x) }
+
     opt[Double]("subsample")
       .text("Subsample threshold for word occurrence. Words that appear with higher " +
         "frequency will be randomly down-sampled. Set to 0 to disable.")
       .action { (x, c) => c.copy(subsample = x) }
+
     opt[Double]("maxSentenceLength")
       .text("The maximum threshold of sentence length accepted, if length than the threshold" +
         "the rest will be dropped")
       .action { (x, c) => c.copy(subsample = x) }
+
+    opt[String]('f', "folder")
+      .text("where you put the MNIST data")
+      .action((x, c) => c.copy(trainDataLocation = x))
+
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = x))
+
+    opt[String]("model")
+      .text("model snapshot location")
+      .action((x, c) => c.copy(modelSnapshot = Some(x)))
+    opt[String]("state")
+      .text("state snapshot location")
+      .action((x, c) => c.copy(stateSnapshot = Some(x)))
+
+    opt[String]("checkpoint")
+      .text("where to cache the model")
+      .action((x, c) => c.copy(checkpoint = Some(x)))
+
+    opt[Double]('r', "learningRate")
+      .text("learning rate")
+      .action((x, c) => c.copy(learningRate = x))
+
+    opt[Int]('e', "maxEpoch")
+      .text("epoch numbers")
+      .action((x, c) => c.copy(maxEpoch = x))
+
+    opt[Int]('c', "core")
+      .text("cores number on each node")
+      .action((x, c) => c.copy(coreNumber = x))
+      .required()
+    opt[Int]('n', "node")
+      .text("node number to train the model")
+      .action((x, c) => c.copy(nodeNumber = x))
+      .required()
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = x))
+    opt[String]("env")
+      .text("execution environment")
+      .validate(x => {
+        if (Set("local", "spark").contains(x.toLowerCase)) {
+          success
+        } else {
+          failure("env only support local|spark")
+        }
+      })
+      .action((x, c) => c.copy(env = x.toLowerCase()))
+      .required()
   }.parse(args, Word2VecConfig()).get
 }
