@@ -101,7 +101,7 @@ object ModelValidator {
   def main(args: Array[String]): Unit = {
     testLocalParser.parse(args, TestLocalParams()).foreach(param => {
       Engine.setCoreNumber(param.coreNumber)
-      val sc = Engine.init(param.nodeNumber, param.coreNumber)
+      val sc = Engine.init
         .map(conf => {
           conf.setAppName("BigDL Image Classifier Example")
             .set("spark.akka.frameSize", 64.toString)
