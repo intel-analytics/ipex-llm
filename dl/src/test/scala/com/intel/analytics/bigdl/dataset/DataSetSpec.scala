@@ -31,7 +31,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc: SparkContext = null
 
   before {
-    Engine.setNodeNumber(Some(1))
+    Engine.setNodeNumber(1)
     Engine.setCoreNumber(1)
     val conf = new SparkConf().setMaster("local[1]").setAppName("DataSetSpec")
     sc = new SparkContext(conf)
@@ -259,7 +259,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "image preprocess" should "be same with torch result" in {
-    Engine.setNodeNumber(None)
+    Engine.setNodeNumber(1)
     val resourceImageNet = getClass().getClassLoader().getResource("imagenet")
     def test(imgFolder: String, imgFileName: String, tensorFile: String): Unit = {
       val img1Path = Paths.get(processPath(resourceImageNet.getPath()), imgFolder, imgFileName)

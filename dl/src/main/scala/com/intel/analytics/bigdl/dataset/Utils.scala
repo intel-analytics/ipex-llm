@@ -23,8 +23,8 @@ object Utils {
   private val logger = Logger.getLogger(getClass)
 
   def getBatchSize(totalBatch : Int): Int = {
-    val batchPerUnit = if (Engine.nodeNumber().isDefined) {
-      val nodeNumber = Engine.nodeNumber().get
+    val batchPerUnit = if (Engine.onSpark) {
+      val nodeNumber = Engine.nodeNumber()
       val coreNumber = Engine.coreNumber()
       logger.debug(s"node number: $nodeNumber, core number: $coreNumber")
       require(totalBatch % (nodeNumber * coreNumber) == 0

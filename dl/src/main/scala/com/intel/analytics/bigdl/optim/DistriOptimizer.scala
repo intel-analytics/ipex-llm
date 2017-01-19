@@ -595,8 +595,8 @@ class DistriOptimizer[T: ClassTag] (
     state("computeThresholdbatchSize") = computeThresholdbatchSize
     state("maxDropPercentage") = maxDropPercentage
 
-    require(Engine.nodeNumber().isDefined, "Node number is not set")
-    val nodeNumber = Engine.nodeNumber().get
+    require(Engine.onSpark, "Do you submit your job with spark-submit?")
+    val nodeNumber = Engine.nodeNumber()
     val coresPerNode = Engine.coreNumber()
 
     val partitionNum = dataset.originRDD().partitions.length

@@ -255,20 +255,20 @@ object Engine {
   }
 
   // Set node number
-  private var nodeNum: Option[Int] = if (System.getenv("DL_NODE_NUMBER") == null) {
-    None
+  private var nodeNum: Int = if (System.getenv("DL_NODE_NUMBER") == null) {
+    1
   } else {
-    Some(System.getenv("DL_NODE_NUMBER").toInt)
+    System.getenv("DL_NODE_NUMBER").toInt
   }
 
-  def nodeNumber(): Option[Int] = nodeNum
+  def nodeNumber(): Int = nodeNum
 
   /**
    * This method should only be used for test purpose.
    *
    * @param n
    */
-  private[bigdl] def setNodeNumber(n : Option[Int]): Unit = {
+  private[bigdl] def setNodeNumber(n : Int): Unit = {
     nodeNum = n
   }
 
@@ -340,7 +340,7 @@ object Engine {
     val ret = if (System.getProperty("SPARK_SUBMIT") != null) {
       _onSpark = true
       val (node, cores) = sparkNodeAndCore
-      nodeNum = Some(node)
+      nodeNum = node
       physicalCoreNumber = cores
       _model = initModelThreadPool()
       val sc = if (engineType == MklBlas) {
@@ -351,7 +351,7 @@ object Engine {
           .setExecutorEnv("OMP_WAIT_POLICY", "passive")
           .setExecutorEnv("OMP_NUM_THREADS", "1")
           .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
-          .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
+          .setExecutorEnv("DL_NODE_NUMBER", nodeNum.toString)
           .set("spark.shuffle.blockTransferService", "nio")
           .set("spark.akka.frameSize", "10")
           .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
