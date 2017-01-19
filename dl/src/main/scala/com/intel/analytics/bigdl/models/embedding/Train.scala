@@ -19,12 +19,14 @@ package com.intel.analytics.bigdl.models.embedding
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample, SampleToBatch}
 import com.intel.analytics.bigdl.dataset.text.{LowerCase, Tokenizer}
-import com.intel.analytics.bigdl.nn.{BCECriterion, Module}
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.{Optimizer, SGD, Trigger}
 import com.intel.analytics.bigdl.utils.{Engine, File, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
+
+import scala.collection.Parallel
 
 object Train {
 
@@ -65,7 +67,7 @@ object Train {
     } else {
       word2Vec.getModel
     }
-    val a = DataSet.array(trainSet.toDistributed().data(false).toLocalIterator.toArray)
+
 //    word2Vec.wordVectors.weight.apply1(x => 1)
     val optimizer = Optimizer(
       model = model,
@@ -84,18 +86,19 @@ object Train {
         "learningRate" -> params.learningRate
       )
     }
-    optimizer
+
+    val trained = optimizer
       .setState(state)
       .setOptimMethod(new SGD())
       .setEndWhen(Trigger.maxEpoch(params.maxEpoch))
       .optimize()
 
+    word2Vec.wordVectors = trained.asInstanceOf[Sequential[Float]]
+      .modules(1).asInstanceOf[ParallelTable[Float]].modules(1).asInstanceOf[LookupTable[Float]]
+
     word2Vec.normalizeWordVectors()
 
-    File.save(word2Vec, "w2v.obj", isOverwrite = true)
-//    val word2Vec = File.load[Word2Vec]("w2v.obj")
-
-    print(word2Vec.wordVectors.weight)
-    word2Vec.printSimilarWords(Array("the", "he", "can"), 5)
+    word2Vec.printSimilarWords(
+      Array("usa", "like", "play", "go", "china", "the", "he", "can"), 5)
   }
 }

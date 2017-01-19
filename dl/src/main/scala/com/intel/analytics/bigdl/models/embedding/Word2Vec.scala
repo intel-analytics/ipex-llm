@@ -68,18 +68,22 @@ class Word2Vec(val params: Word2VecConfig)
 
   // embedding the word vectors in the LookupTable
   var wordVectors: LookupTable[Float] = _
+  var contextVectors: LookupTable[Float] = _
 
   /**
    * Generate the training model of word2vec
    */
   def getModel: Module[Float] = {
     wordVectors = LookupTable(vocabSize, params.embeddingSize)
+    contextVectors = LookupTable(vocabSize, params.embeddingSize)
     wordVectors.reset()
     new Sequential()
-      .add(wordVectors)
       .add(ConcatTable()
-        .add(Narrow(2, 1, 1))
-        .add(Narrow(2, 2, params.numNegSamples + 1)))
+        .add(Narrow(2, 2, params.numNegSamples + 1))
+        .add(Narrow(2, 1, 1)))
+      .add(ParallelTable()
+        .add(contextVectors)
+        .add(wordVectors))
       .add(MM(transA = false, transB = true))
       .add(Sigmoid())
   }
