@@ -123,7 +123,7 @@ class SampleToBatch[T: ClassTag]
             var i = 0
             while (i < batchSize && prev.hasNext) {
               val sample = prev.next()
-              /*
+              /**
               * Each Tensor in the Table should be independent
               * Thus the resizeAs function will only affect one sample
               */
@@ -151,7 +151,7 @@ class SampleToBatch[T: ClassTag]
               if (featureData == null) {
                 oneFeatureLength = sample.feature().nElement()
                 oneLabelLength = sample.label().nElement()
-                /*
+                /**
                 * For example,
                 * the featureSize of an image is: [3, 224, 224]
                 * the labelSize of an image is: [1]

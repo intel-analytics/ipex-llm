@@ -123,8 +123,8 @@ class Sample[T: ClassTag] (
   }
 
   def copy(other: Sample[T]): Sample[T] = {
-    this.featureTensor.resizeAs(other.featureTensor).copy(other.featureTensor)
-    this.labelTensor.resizeAs(other.labelTensor).copy(other.labelTensor)
+    this.featureTensor.resizeAs(other.feature).copy(other.feature)
+    this.labelTensor.resizeAs(other.label).copy(other.label)
     this
   }
 
@@ -160,62 +160,7 @@ trait Label[T] {
   def label(): T
 }
 
-/**
- * A batch of data feed into the model. The first size is batchsize
- * @param data
- * @param labels
- * @tparam T
- */
-case class MiniBatch[T: ClassTag](data: Activity, labels: Activity)
-  (implicit ev: TensorNumeric[T]) {
 
-  val _dataLength = dataLength()
-  val _labelLength = labelLength()
-
-  require(_dataLength == _labelLength,
-    "data and label batch size not match")
-
-  def this (pair: (Activity, Activity))
-  (implicit ev: TensorNumeric[T]) {
-    this(pair._1, pair._2)
-  }
-
-  def unapply[@specialized(Float, Double) T: ClassTag]
-  (batch: MiniBatch[T])
-  (implicit ev: TensorNumeric[T]): Option[(Activity, Activity)] =
-    Some((batch.data, batch.labels))
-
-  private def dataLength(): Int = {
-    data match {
-      case tensor: Tensor[T] => tensor.size(1)
-      case table: Table => table.length
-      case _ => throw new IllegalArgumentException("MiniBatch only supports Table or Tensor")
-    }
-  }
-
-  private def labelLength(): Int = {
-    labels match {
-      case tensor: Tensor[T] => tensor.size(1)
-      case table: Table => table.length
-      case _ => throw new IllegalArgumentException("MiniBatch only supports Table or Tensor")
-    }
-  }
-
-  def size(): Int = _dataLength
-
-  def get: (Activity, Activity) = (data, labels)
-
-  def narrow(dim: Int, index: Int, size: Int): MiniBatch[T] = {
-    data match {
-      case tensor: Tensor[T] =>
-        MiniBatch[T](tensor.narrow(1, index, size), labels.toTensor[T].narrow(dim, index, size))
-      case table: Table =>
-        MiniBatch[T](NarrowTable[T](index, size).updateOutput(table),
-          NarrowTable[T](index, size).updateOutput(labels.toTable))
-      case _ => throw new IllegalArgumentException("MiniBatch only supports Table or Tensor")
-    }
-  }
-}
 
 /**
  * A byte array and a label. It can contain anything.
