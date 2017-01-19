@@ -44,8 +44,12 @@ class LookupTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.LookupTable(9, 4, 2, 0.1)\n" +
       "module:scaleGradByFreq()\n" +
+      "local i = 0\n" +
+      "while i < 10 do\n" +
       "output = module:forward(input:int())\n" +
       "_gradInput = module:backward(input:int(), output)\n" +
+      "i = i + 1\n" +
+      "end\n" +
       "gradInput = _gradInput:double()\n" +
       "weight = module.weight\n" +
       "gradweight = module.gradWeight\n"
@@ -58,8 +62,14 @@ class LookupTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val luagradWeight = torchResult("gradweight").asInstanceOf[Tensor[Double]]
 
     val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input, output)
+    var output : Tensor[Double] = null
+    var gradInput : Tensor[Double] = null
+    var i = 0
+    while (i < 10) {
+      output = module.forward(input)
+      gradInput = module.backward(input, output)
+      i += 1
+    }
     val weight = module.weight
     val gradWeight = module.gradWeight
     val end = System.nanoTime()
@@ -88,11 +98,14 @@ class LookupTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     input(Array(2, 3)) = 2
     input(Array(2, 4)) = 10
 
-
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.LookupTable(10, 3, 3)\n" +
-      "output = module:forward(input:int())\n" +
-      "_gradInput = module:backward(input:int(),output)\n" +
+      "local i = 0\n" +
+      "while i < 10 do\n" +
+      "output = module:forward(input)\n" +
+      "_gradInput = module:backward(input, output)\n" +
+      "i = i + 1\n" +
+      "end\n" +
       "gradInput = _gradInput:double()\n" +
       "weight = module.weight\n" +
       "gradweight = module.gradWeight\n"
@@ -105,8 +118,14 @@ class LookupTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val luagradWeight = torchResult("gradweight").asInstanceOf[Tensor[Double]]
 
     val start = System.nanoTime()
-    val output = module.updateOutput(input)
-    val gradInput = module.backward(input, output)
+    var output : Tensor[Double] = null
+    var gradInput : Tensor[Double] = null
+    var i = 0
+    while (i < 10) {
+      output = module.updateOutput(input)
+      gradInput = module.backward(input, output)
+      i += 1
+    }
     val weight = module.weight
     val gradWeight = module.gradWeight
     val end = System.nanoTime()
@@ -137,8 +156,12 @@ class LookupTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.LookupTable(10, 3, 0, 0.1, 2)\n" +
+      "local i = 0\n" +
+      "while i < 10 do\n" +
       "output = module:forward(input:int())\n" +
       "_gradInput = module:backward(input:int(),output) \n" +
+      "i = i + 1\n" +
+      "end\n" +
       "gradInput = _gradInput:double()\n" +
       "weight = module.weight\n" +
       "gradweight = module.gradWeight\n"
@@ -151,8 +174,14 @@ class LookupTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val luagradWeight = torchResult("gradweight").asInstanceOf[Tensor[Double]]
 
     val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input, output)
+    var output : Tensor[Double] = null
+    var gradInput : Tensor[Double] = null
+    var i = 0
+    while (i < 10) {
+      output = module.forward(input)
+      gradInput = module.backward(input, output)
+      i += 1
+    }
     val weight = module.weight
     val gradWeight = module.gradWeight
     val end = System.nanoTime()
