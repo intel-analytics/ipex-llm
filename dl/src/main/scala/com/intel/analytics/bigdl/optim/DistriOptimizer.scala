@@ -158,10 +158,7 @@ object DistriOptimizer {
               val localModel = cached.localModels(i)
               localModel.training()
               val localCriterion = cached.localCriterions(i)
-              val (input, target) = batchBuffer(i) match {
-                case MiniBatch(a, b) => (a, b)
-                case _ => throw new IllegalArgumentException("MiniBatch Arguments are Illegal!")
-              }
+              val (input, target) = (batchBuffer(i).data, batchBuffer(i).labels)
               val output = localModel.forward(input)
               lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
               val errors = localCriterion.backward(output, target)

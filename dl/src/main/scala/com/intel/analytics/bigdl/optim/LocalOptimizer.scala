@@ -109,10 +109,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
             localModel.zeroGradParameters()
             localModel.training()
             val localCriterion = workingCriterion(i)
-            val (input, target) = batchBuffer(i) match {
-              case MiniBatch(a, b) => (a, b)
-              case _ => throw new IllegalArgumentException("MiniBatch Arguments are Illegal!")
-            }
+            val (input, target) = (batchBuffer(i).data, batchBuffer(i).labels)
             val output = localModel.forward(input)
             val _loss = ev.toType[Double](localCriterion.forward(output, target))
             val errors = localCriterion.backward(output, target)
