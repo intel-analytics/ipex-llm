@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import org.apache.log4j.Logger
 
+
 object Train {
 
   import Utils._
@@ -35,20 +36,23 @@ object Train {
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
 
-      if (!new File(param.folder + "/input.txt").exists()) {
-        throw new IllegalArgumentException("Input file not exists!")
+      val inputDirect = new File(param.dataFolder)
+      if (!inputDirect.isDirectory || inputDirect.list.length == 0) {
+        throw new IllegalArgumentException(
+          "data folder is not a directory or input files not exists!")
       }
       logger.info("preprocessing input text file ..")
-      val dictionaryLength = param.vocabSize + 1
+
       val wt = new WordTokenizer(
-        param.folder + "/input.txt",
-        param.folder,
-        dictionaryLength = dictionaryLength
+        param.dataFolder,
+        param.saveFolder,
+        dictionaryLength = param.vocabSize
       )
       wt.process()
 
+      val dictionaryLength: Int = wt.length()
       logger.info("loading the training and testing data ..")
-      val dataArray = loadInData(param.folder, dictionaryLength)
+      val dataArray = loadData(param.saveFolder, dictionaryLength)
       val trainData = dataArray._1
       val valData = dataArray._2
       val trainMaxLength = dataArray._3

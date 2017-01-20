@@ -48,8 +48,6 @@ class LabeledSentenceToSample(vocabLength: Int,
       val dataLength = fixDataLength.getOrElse(sentence.dataLength())
       val labelLength = fixLabelLength.getOrElse(sentence.labelLength())
 
-      require(dataLength == labelLength, "data length should be equal to label length")
-
       if (featureBuffer == null || featureBuffer.length < dataLength * vocabLength) {
         featureBuffer = new Array[Float](dataLength * vocabLength)
       }
@@ -60,24 +58,41 @@ class LabeledSentenceToSample(vocabLength: Int,
       // initialize featureBuffer to 0.0
 
       util.Arrays.fill(featureBuffer, 0, featureBuffer.length, 0.0f)
+      util.Arrays.fill(labelBuffer, 0, labelBuffer.length, 0.0f)
 
-      // One-Hot format for feature
+      /* One-Hot format for feature
+       * Expected transformed format should be:
+       *
+       * Example1: Input = [0, 2, 3], label = [2, 3, 1], dictionary length = 4
+       * Transformed: Input = [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+       * Transformed: label = [3, 4, 2] (+1 because Tensor index starts from 1)
+       *
+       * Example2: Input = [0, 2, 3], label = [0], dictionary length = 4
+       * Transformed: Input = [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+       * Transformed: label = [1] (+1 because Tensor index starts from 1)
+       */
 
       var i = 0
-      while (i < sentence.dataLength()) {
+      while (i < sentence.dataLength) {
         featureBuffer(i*vocabLength + sentence.getData(i).toInt) = 1.0f
-        labelBuffer(i) = sentence.label()(i) + 1.0f
         i += 1
       }
-
-      val lastIndex = labelBuffer(sentence.labelLength() - 1)
       while (i < dataLength) {
         val index = (RNG.uniform(0.0, 1.0) * vocabLength).toInt
         featureBuffer(i*vocabLength + index) = 1.0f
-        labelBuffer(i-1) = index + 1.0f
         i += 1
       }
-      labelBuffer(dataLength - 1) = lastIndex
+
+      i = 0
+      while (i < sentence.labelLength) {
+        labelBuffer(i) = sentence.label()(i) + 1.0f
+        i += 1
+      }
+      while (i < labelLength) {
+        val index = (RNG.uniform(0.0, 1.0) * vocabLength).toInt
+        labelBuffer(i) = index.toFloat + 1.0f
+        i += 1
+      }
 
       buffer.copy(featureBuffer, labelBuffer,
         Array(dataLength, vocabLength), Array(labelLength))

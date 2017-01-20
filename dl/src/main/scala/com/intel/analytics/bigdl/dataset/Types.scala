@@ -89,6 +89,7 @@ class Sample[T: ClassTag] (
 
   def copyToFeature(storage: Array[T], offset: Int, length: Int): Unit = {
     require(offset + length <= storage.length, "index out of boundary")
+    require(length <= featureTensor.storage().array().length, "length too long for feature")
     ev.getType() match {
       case DoubleType => Array.copy(featureTensor.storage().array
           .asInstanceOf[Array[Double]], 0, storage
@@ -102,6 +103,7 @@ class Sample[T: ClassTag] (
 
   def copyToLabel(storage: Array[T], offset: Int, length: Int): Unit = {
     require(offset + length <= storage.length, "index out of boundary")
+    require(length <= labelTensor.storage().array().length, "length too long for label")
     ev.getType() match {
       case DoubleType => Array.copy(labelTensor.storage().array
         .asInstanceOf[Array[Double]], 0, storage
@@ -114,8 +116,8 @@ class Sample[T: ClassTag] (
   }
 
   def copy(other: Sample[T]): Sample[T] = {
-    featureTensor.copy(other.featureTensor)
-    labelTensor.copy(other.labelTensor)
+    this.featureTensor.resizeAs(other.featureTensor).copy(other.featureTensor)
+    this.labelTensor.resizeAs(other.labelTensor).copy(other.labelTensor)
     this
   }
 
@@ -129,8 +131,13 @@ class Sample[T: ClassTag] (
 }
 
 object Sample {
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[@specialized(Float, Double) T: ClassTag]
+  (featureTensor: Tensor[T], labelTensor: Tensor[T])
    (implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new Sample[T](featureTensor, labelTensor)
+  }
+  def apply[@specialized(Float, Double) T: ClassTag]()
+  (implicit ev: TensorNumeric[T]) : Sample[T] = {
     new Sample[T]()
   }
 }
