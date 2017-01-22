@@ -75,6 +75,7 @@ class Word2Vec(val params: Word2VecConfig)
   def getModel: Module[Float] = {
     wordVectors = LookupTable(vocabSize, params.embeddingSize).reset(0.25)
     contextVectors = LookupTable(vocabSize, params.embeddingSize).reset(0.25)
+    contextVectors.weight.set(wordVectors.weight)
     new Sequential()
       .add(ConcatTable()
         .add(Narrow(2, 2, params.numNegSamples + 1))
@@ -362,11 +363,12 @@ class Word2Vec(val params: Word2VecConfig)
     words: Array[String],
     numSimilarWord: Int): Array[Array[(String, Float)]] = {
     words.map(word => {
-      if (!word2Id.contains(word)) {
-        log.info(s"$word does not exist in vocabulary.")
+      val lower = word.toLowerCase()
+      if (!word2Id.contains(lower)) {
+        log.info(s"$lower does not exist in vocabulary.")
         null
       } else {
-        val vector = getVectorByString(word)
+        val vector = getVectorByString(lower)
         val similarity = Tensor(vocabSize)
           .mv(wordVectors.weight, vector)
           .toBreezeVector()

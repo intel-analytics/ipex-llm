@@ -17,15 +17,13 @@
 package com.intel.analytics.bigdl.models
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn._
- import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.optim.{Adagrad, Optimizer, SGD}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.optim.SGD
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{Engine, T}
-import org.apache.spark.SparkContext
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.immutable
@@ -33,166 +31,6 @@ import scala.math._
 import scala.util.Random
 
 class Word2VectSpec extends FlatSpec with BeforeAndAfter with Matchers {
-//  "aaa" should "aaa" in {
-//    object ToSample {
-//      def apply(nRows: Int, nCols: Int)
-//      : ToSample =
-//        new ToSample(nRows, nCols)
-//    }
-//
-//    class ToSample(nRows: Int, nCols: Int)
-//      extends Transformer[(Array[Double], Double), Sample[Double]] {
-//      private val buffer = new Sample[Double]()
-//      private var featureBuffer: Array[Double] = null
-//      private var labelBuffer: Array[Double] = null
-//
-//      override def apply(prev: Iterator[(Array[Double], Double)]): Iterator[Sample[Double]] = {
-//
-//        prev.map(x => {
-//
-//          if (featureBuffer == null || featureBuffer.length < nRows * nCols) {
-//            featureBuffer = new Array[Double](nRows * nCols)
-//          }
-//          if (labelBuffer == null || labelBuffer.length < nRows) {
-//            labelBuffer = new Array[Double](nRows)
-//          }
-//
-//          var i = 0
-//          while (i < nRows) {
-//            Array.copy(x._1, 0, featureBuffer, i * nCols, nCols)
-//            labelBuffer(i) = x._2
-//            i += 1
-//          }
-//
-//          buffer.copy(featureBuffer, labelBuffer,
-//            Array(nRows, nCols), Array(nRows))
-//        })
-//      }
-//    }
-//
-//    // make up some data
-//    val data = (0 to 100).collect {
-//      case i if i > 75 || i < 25 ⇒
-//        (0 to 100).collect {
-//          case j if j > 75 || j < 25 ⇒
-//            val res =
-//              if (i > 75 && j < 25) 23.0
-//              else if (i < 25 && j > 75) -45
-//              else 0
-//            (Array(i / 100.0 + 1, j / 100.0 + 2), res)
-//        }
-//    }.flatten
-//
-//
-//    /**
-//     * Batching samples into mini-batch
-//     * @param batchSize The desired mini-batch size.
-//     * @param sampleShape Shape of the training sample
-//     */
-//    case class OOMBatching(batchSize: Int, sampleShape: Array[Int])
-//      extends Transformer[(Array[Double], Double), MiniBatch[Double]] {
-//      override def apply(prev: Iterator[(Array[Double], Double)]): Iterator[MiniBatch[Double]] = {
-//        new Iterator[MiniBatch[Double]] {
-//          private val featureTensor: Tensor[Double] = Tensor[Double]()
-//          private val labelTensor: Tensor[Double] = Tensor[Double]()
-//          private var featureData: Array[Double] = null
-//          private var labelData: Array[Double] = null
-//          private val featureLength = sampleShape.product
-//          private val labelLength = 1
-//
-//          override def hasNext: Boolean = prev.hasNext
-//
-//          override def next(): MiniBatch[Double] = {
-//            if (prev.hasNext) {
-//              var i = 0
-//              while (i < batchSize && prev.hasNext) {
-//                val sample = prev.next()
-//                if (featureData == null || featureData.length < batchSize * featureLength) {
-//                  featureData = new Array[Double](batchSize * featureLength)
-//                }
-//                if (labelData == null || labelData.length < batchSize * labelLength) {
-//                  labelData = new Array[Double](batchSize * labelLength)
-//                }
-//                Array.copy(sample._1, 0, featureData, i * featureLength, featureLength)
-//                labelData(i) = sample._2
-//                i += 1
-//              }
-//              featureTensor
-//                .set(Storage[Double](featureData), storageOffset = 1,
-//                  sizes = Array(i) ++ sampleShape)
-//              labelTensor.set(Storage[Double](labelData), storageOffset = 1, sizes = Array(i, 1))
-//              MiniBatch(featureTensor, labelTensor)
-//            }
-//            else {
-//              null
-//            }
-//          }
-//        }
-//      }
-//    }
-//
-//    val numExecutors = 1
-//    val numCores = 4
-//
-//    val sc = new SparkContext(
-//      Engine.init(numExecutors, numCores, true).get
-//        .setAppName("Sample_NN")
-//        .set("spark.akka.frameSize", 64.toString)
-//        .set("spark.task.maxFailures", "1")
-//        .setMaster("local[4]")
-//    )
-//
-//    import com.intel.analytics.bigdl.numeric.NumericDouble
-//    val batchSize = 12
-//
-//    val dimInput = 2
-//    val nHidden = 5
-//    val sampleShape = Array(1, dimInput)
-//    val batching = OOMBatching(batchSize, sampleShape)
-//    val trainSetRDD = sc.makeRDD(data)
-// //      .coalesce(numExecutors * numCores, true)
-// //      .coalesce(numExecutors)
-// //    val trainSet = DataSet.rdd(trainSetRDD) -> batching
-//    val trainSet = DataSet.rdd(trainSetRDD) -> ToSample(1, dimInput) -> SampleToBatch(batchSize)
-// // val trainSet =
-  // DataSet.array(data.toArray) -> ToSample(1, dimInput) -> SampleToBatch(batchSize)
-//
-//    val layer1 = Linear[Double](dimInput, nHidden)
-//    val layer2 = ReLU[Double]()
-//    val layer3 = Linear[Double](nHidden, nHidden)
-//    val layer4 = ReLU[Double]()
-//    val output = Linear[Double](nHidden, 1) // Sum[Double](nInputDims = 1)
-//
-//    val model = Sequential[Double]()
-//      .add(Reshape(Array(dimInput)))
-//      .add(layer1)
-//      .add(layer2)
-//      .add(layer3)
-//      .add(layer4)
-//      .add(output)
-//
-//
-//    val state =
-//      T(
-//        "learningRate" -> 0.01,
-//        "weightDecay" -> 0.0005,
-//        "momentum" -> 0.9,
-//        "dampening" -> 0.0
-//      )
-//
-//    val optimizer = Optimizer(
-//      model = model,
-//      dataset = trainSet,
-//      criterion = new MSECriterion[Double]()
-//    )
-//
-//    optimizer.
-//      setState(state).
-//      // setValidation(Trigger.everyEpoch, validationSet, Array(new Loss[Double])).
-//      setOptimMethod(new Adagrad[Double]()).
-//      optimize()
-//    print(model.getParameters())
-//  }
 
   "Word2Vec Float" should "generate correct output" in {
     if (!TH.hasTorch()) {

@@ -52,11 +52,11 @@ object Utils {
     subsample: Double = 1e-3,
     alpha: Double = 0.75,
     maxSentenceLength: Int = 1000,
-    kNearestWords: Int = 5,
+    numClosestWords: Int = 5,
     numSimilarWord: Int = 5,
-    learningRate: Double = 0.025,
-    batchSize: Int = 1,
-    coreNumber: Int = 1,
+    learningRate: Double = 2.5,
+    batchSize: Int = 128,
+    coreNumber: Int = 4,
     nodeNumber: Int = 1,
     maxEpoch: Int = 3,
     modelSnapshot: Option[String] = None,
@@ -109,8 +109,8 @@ object Utils {
       .action { (x, c) => c.copy(subsample = x) }
 
     opt[Int]("kNearestWords")
-      .text("Print the k-nearest words to a word or a vector based on cosine similarity")
-      .action { (x, c) => c.copy(kNearestWords = x) }
+      .text("number of closest words that will be shown")
+      .action { (x, c) => c.copy(numClosestWords = x) }
 
     opt[String]('f', "folder")
       .text("where you put the MNIST data")
@@ -143,12 +143,10 @@ object Utils {
     opt[Int]('c', "core")
       .text("cores number on each node")
       .action((x, c) => c.copy(coreNumber = x))
-      .required()
 
     opt[Int]('n', "node")
       .text("node number to train the model")
       .action((x, c) => c.copy(nodeNumber = x))
-      .required()
 
     opt[Int]('b', "batchSize")
       .text("batch size")

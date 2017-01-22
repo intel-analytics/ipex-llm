@@ -2,9 +2,9 @@
  * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
+ * the License.  You may obtain a copy of the License at
  * Intel Corporation licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
  *
  *    http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -98,10 +98,10 @@ object Train {
 
     word2Vec.normalizeWordVectors()
 
-    File.save(word2Vec, params.w2vLocation + "word2vec.obj")
+    File.save(word2Vec, params.w2vLocation + "word2vec.obj", isOverwrite = true)
 
     word2Vec.printSimilarWords(
       Array("usa", "like", "play", "go", "china", "the", "he", "can"),
-      params.kNearestWords)
+      params.numClosestWords)
   }
 }

@@ -43,7 +43,6 @@ object Test {
       }).get
 
     val testSet = (DataSet.rdd(sc.textFile(params.testDataLocation))
-      -> LowerCase()
       -> Tokenizer())
 
     var model: Word2Vec = null
@@ -58,6 +57,6 @@ object Test {
     testSet
       .toDistributed()
       .data(false)
-      .foreach(words => model.printSimilarWords(words.toArray, params.kNearestWords))
+      .foreach(words => model.printSimilarWords(words.toArray, params.numClosestWords))
   }
 }
