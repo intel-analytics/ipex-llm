@@ -154,7 +154,7 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3 || input.dim() == 4, "3D or 4D (batch mode) tensor expected")
+    require(input.dim() == 3 || input.dim() == 4, ErrorInfo.constrainInputAs3DOrBatch)
     val dimH = input.dim() - 1
     val dimW = input.dim()
     val inputHeight = input.size(dimH)
@@ -324,7 +324,7 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3 || input.dim() == 4, "3D or 4D (batch mode) tensor expected")
+    require(input.dim() == 3 || input.dim() == 4, ErrorInfo.constrainInputAs3DOrBatch)
     val dimh = input.dim() - 1
     val dimw = input.dim()
     val inputHeight = input.size(dimh)

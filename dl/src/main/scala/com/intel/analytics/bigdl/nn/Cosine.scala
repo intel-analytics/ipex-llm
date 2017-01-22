@@ -28,10 +28,10 @@ import scala.reflect.ClassTag
  * The input given in `forward(input)` must be either
  * a vector (1D tensor) or matrix (2D tensor). If the input is a vector, it must
  * have the size of `inputSize`. If it is a matrix, then each row is assumed to be
- * an input sample of given batch (the number of rows means the batch size and the,
- * the number of columns should be equal to the `inputSize`.
+ * an input sample of given batch (the number of rows means the batch size and
+ * the number of columns should be equal to the `inputSize`).
  *
- * @param inputSize the size the each input sample
+ * @param inputSize the size of each input sample
  * @param outputSize the size of the module output of each sample
  */
 
@@ -41,10 +41,6 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
 
   val gradWeight = Tensor[T](outputSize, inputSize)
   val weight = Tensor[T](outputSize, inputSize)
-
-  final val inputConstraint =
-    "The input to the cosine layer needs to be a vector (or a mini-batch of vectors);\n" +
-      "please use the Reshape module to convert multi-dimensional input into vectors if needed"
 
   @transient
   var _weightNorm: Tensor[T] = null
@@ -68,7 +64,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2, inputConstraint)
+    require(input.dim() == 1 || input.dim() == 2, ErrorInfo.constrainInputAsVectorOrBatch)
 
     if (null == _weightNorm) _weightNorm = Tensor[T]()
     if (null == _inputNorm) _inputNorm = Tensor[T]()
@@ -101,7 +97,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]) : Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2, inputConstraint)
+    require(input.dim() == 1 || input.dim() == 2, ErrorInfo.constrainInputAsVectorOrBatch)
     val nElement = gradInput.nElement()
     gradInput.resizeAs(input)
     if (gradInput.nElement() != nElement) gradInput.zero()
@@ -139,7 +135,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
    scale: Double = 1.0): Unit = {
-    require(input.dim() == 1 || input.dim() == 2, inputConstraint)
+    require(input.dim() == 1 || input.dim() == 2, ErrorInfo.constrainInputAsVectorOrBatch)
 
     if (input.dim() == 1) {
       _gradOutput.resizeAs(gradOutput).copy(gradOutput)

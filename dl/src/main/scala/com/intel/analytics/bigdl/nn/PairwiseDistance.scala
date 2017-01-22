@@ -30,8 +30,8 @@ import scala.reflect.ClassTag
  * The input given in `forward(input)` is a [[Table]] that contains two tensors which
  * must be either a vector (1D tensor) or matrix (2D tensor). If the input is a vector,
  * it must have the size of `inputSize`. If it is a matrix, then each row is assumed to be
- * an input sample of the given batch (the number of rows means the batch size and the,
- * the number of columns should be equal to the `inputSize`.
+ * an input sample of the given batch (the number of rows means the batch size and
+ * the number of columns should be equal to the `inputSize`).
  *
  * @param norm the norm of distance
  */

@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
  *                  the entire input (including the first dimension) to be reshaped
  *                  to the input size. Default is `None`, which means the module considers
  *                  inputs with more elements than the product of provided sizes (size(0) *
- *                  size(1) * ..) to be batches, otherwise no batch mode.
+ *                  size(1) * ..) to be batches, otherwise in no batch mode.
  *
  */
 @SerialVersionUID(- 830146931795053244L)
@@ -51,7 +51,7 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
-    if (batchMode.nonEmpty && !batchMode.get ||
+    if ((batchMode.nonEmpty && !batchMode.get) ||
           (input.nElement() == nElement && batchMode.isEmpty && input.size(1) != 1)) {
       require(input.nElement() == nElement, "element number must match Reshape size")
       if (input.isContiguous()) output =

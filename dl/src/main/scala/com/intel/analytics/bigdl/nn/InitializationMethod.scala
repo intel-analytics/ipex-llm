@@ -26,6 +26,8 @@ case object Default extends InitializationMethod
 
 /**
  * In short, it helps signals reach deep into the network.
+ *
+ * During the training process of deep nn:
  *        1. If the weights in a network start are too small,
  *           then the signal shrinks as it passes through
  *           each layer until it’s too tiny to be useful.
@@ -40,10 +42,6 @@ case object Default extends InitializationMethod
  * More details on the paper
  *  [Understanding the difficulty of training deep feedforward neural networks]
  *  (http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf)
- *
- * Or you can refer to the blog:
- *    andy's blog [An Explanation of Xavier Initialization]
- *    (http://andyljones.tumblr.com/post/110998971763/an-explanation-of-xavier-initialization)
  */
 case object Xavier extends InitializationMethod
 

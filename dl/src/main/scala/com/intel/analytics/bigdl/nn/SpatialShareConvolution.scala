@@ -42,7 +42,7 @@ class SpatialShareConvolution[T: ClassTag](
   padW, padH, nGroup, propagateBack, initMethod) {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3 || input.dim() == 4, "Only support 3D or 4D(batch mode) input")
+    require(input.dim() == 3 || input.dim() == 4, ErrorInfo.constrainInputAs3DOrBatch)
     require(input.isContiguous())
 
     if (weightMM == null) {
