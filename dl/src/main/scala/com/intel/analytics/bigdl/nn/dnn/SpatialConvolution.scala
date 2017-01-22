@@ -180,10 +180,12 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
 
     for (tensor <- List(refs.weight, refs.gradWeight, refs.weightInBwd)) {
       tensor.resizeAs(weight)
+      tensor.zero()
     }
 
     for (tensor <- List(refs.bias, refs.gradBias)) {
       tensor.resizeAs(bias)
+      tensor.zero()
     }
 
     for (tensor <- List(refs.input, refs.gradInput)) {

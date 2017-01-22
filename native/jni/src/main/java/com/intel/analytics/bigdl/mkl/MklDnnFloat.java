@@ -300,8 +300,20 @@ public class MklDnnFloat {
     public native static long batchNormCreateScaleShift(long layout,
                                                         float eps);
 
-    public native static long setScaleShift(int affine, float[] weight, float[] bias, long scaleShift, int num);
-    public native static long setGradScaleShift(int affine, float[] weight, float[] bias, long scaleShift, int num);
+    public native static long setScaleShift(int affine,
+                                            float[] weight,
+                                            long weightOffset,
+                                            float[] bias,
+                                            long biasOffset,
+                                            long scaleShift,
+                                            int num);
+    public native static long setGradScaleShift(int affine,
+                                                float[] weight,
+                                                long weightOffset,
+                                                float[] bias,
+                                                long biasOffset,
+                                                long scaleShift,
+                                                int num);
 
     public native static void unPadding(float[] to,
                                         long offset,

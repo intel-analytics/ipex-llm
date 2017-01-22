@@ -339,7 +339,9 @@ void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_releaseBuffer
 {
   if (data) {
     void* jData = (void*)data;
-    dnnReleaseBuffer_F32(jData);
+    dnnError_t status = E_UNIMPLEMENTED;
+    status = dnnReleaseBuffer_F32(jData);
+    CHECK_EQ(status, E_SUCCESS);
   }
 }
 

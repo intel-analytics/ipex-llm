@@ -159,7 +159,10 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
       case FloatType =>
         val weightArray = weight.storage().array().asInstanceOf[Array[Float]]
         val biasArray = bias.storage().array().asInstanceOf[Array[Float]]
-        MklDnnFloat.setScaleShift(bool2int(affine), weightArray, biasArray,
+
+        MklDnnFloat.setScaleShift(bool2int(affine),
+          weightArray, weight.storageOffset() - 1,
+          biasArray, bias.storageOffset() - 1,
           refs.scaleShift.mklStorage(), nOutput)
       case _ => throw new UnsupportedOperationException(s"Only Float supported")
     }
@@ -177,10 +180,6 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
     } else {
       output.resizeAs(refs.output)
       refs.output.backToUsr(output)
-    }
-
-    if (this.isTraining()) {
-      refs.input.setConverted(true)
     }
 
     this.output
@@ -206,10 +205,6 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
       refs.gradInput.backToUsr(gradInput)
     }
 
-    if (this.isTraining()) {
-      refs.input.setConverted(false)
-    }
-
     this.gradInput
   }
 
@@ -230,7 +225,10 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
         case FloatType =>
           val weightArray = gradWeight.storage().array().asInstanceOf[Array[Float]]
           val biasArray = gradBias.storage().array().asInstanceOf[Array[Float]]
-          MklDnnFloat.setGradScaleShift(bool2int(affine), weightArray, biasArray,
+
+          MklDnnFloat.setGradScaleShift(bool2int(affine),
+            weightArray, gradWeight.storageOffset() - 1,
+            biasArray, gradBias.storageOffset() - 1,
             refs.scaleShift.mklStorage(), nOutput)
         case _ => throw new UnsupportedOperationException(s"Only Float supported")
       }

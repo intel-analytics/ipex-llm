@@ -307,18 +307,18 @@ JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_batchNorm
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
  * Method:    setScaleShift
- * Signature: (I[F[FJI)J
+ * Signature: (I[FJ[FJJI)J
  */
 JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_setScaleShift
-  (JNIEnv *, jclass, jint, jfloatArray, jfloatArray, jlong, jint);
+  (JNIEnv *, jclass, jint, jfloatArray, jlong, jfloatArray, jlong, jlong, jint);
 
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
  * Method:    setGradScaleShift
- * Signature: (I[F[FJI)J
+ * Signature: (I[FJ[FJJI)J
  */
 JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_setGradScaleShift
-  (JNIEnv *, jclass, jint, jfloatArray, jfloatArray, jlong, jint);
+  (JNIEnv *, jclass, jint, jfloatArray, jlong, jfloatArray, jlong, jlong, jint);
 
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat

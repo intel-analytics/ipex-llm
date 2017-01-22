@@ -77,7 +77,6 @@ object LocalOptimizerPerf {
 
   def performance(param: LocalOptimizerPerfParam): Unit = {
     Engine.init(1, param.coreNumber, false)
-    Engine.setEngineType(MklDnn)
     val (_model, input) = param.module match {
       case "alexnet" => (AlexNet(1000), Tensor(param.batchSize, 3, 227, 227))
       case "inception_v1" => (Inception_v1(1000), Tensor(param.batchSize, 3, 224, 224))

@@ -47,7 +47,7 @@ object Convolution {
      optnet: Boolean = true)
      (implicit ev: TensorNumeric[T]): AbstractSpatialConvolution[T] = {
     if (optnet) {
-      new SpatialShareConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
+      SpatialShareConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
         strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)
     } else {
       SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
@@ -112,16 +112,31 @@ object ResNet {
           curModel.weight.apply1(_ => RNG.normal(0, Math.sqrt(2.0f / n)).toFloat)
           curModel.bias.apply1(_ => 0.0f)
         case spatialConvolution
+          if (spatialConvolution.isInstanceOf[dnn.SpatialConvolution[Float]]) =>
+          val curModel = spatialConvolution.asInstanceOf[dnn.SpatialConvolution[Float]]
+          val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane
+          curModel.weight.apply1(_ => RNG.normal(0, Math.sqrt(2.0f / n)).toFloat)
+          curModel.bias.apply1(_ => 0.0f)
+        case spatialConvolution
           if (spatialConvolution.isInstanceOf[SpatialConvolution[Float]]) =>
           val curModel = spatialConvolution.asInstanceOf[SpatialConvolution[Float]]
           val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane
           curModel.weight.apply1(_ => RNG.normal(0, Math.sqrt(2.0f / n)).toFloat)
           curModel.bias.apply1(_ => 0.0f)
         case spatialBatchNormalization
-          if (spatialBatchNormalization.isInstanceOf[SpatialBatchNormalization[Float]]) =>
-          val curModel = spatialBatchNormalization.asInstanceOf[SpatialBatchNormalization[Float]]
+          if (spatialBatchNormalization.isInstanceOf[dnn.SpatialBatchNormalization[Float]]) =>
+          val curModel = spatialBatchNormalization
+            .asInstanceOf[dnn.SpatialBatchNormalization[Float]]
           curModel.weight.apply1(_ => 1.0f)
           curModel.bias.apply1(_ => 0.0f)
+        case spatialBatchNormalization
+          if (spatialBatchNormalization.isInstanceOf[SpatialBatchNormalization[Float]]) =>
+          val curModel = spatialBatchNormalization
+            .asInstanceOf[SpatialBatchNormalization[Float]]
+          curModel.weight.apply1(_ => 1.0f)
+          curModel.bias.apply1(_ => 0.0f)
+        case linear if (linear.isInstanceOf[dnn.Linear[Float]]) =>
+          linear.asInstanceOf[dnn.Linear[Float]].bias.apply1(_ => 0.0f)
         case linear if (linear.isInstanceOf[Linear[Float]]) =>
           linear.asInstanceOf[Linear[Float]].bias.apply1(_ => 0.0f)
         case _ => Unit

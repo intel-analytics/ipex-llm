@@ -93,15 +93,17 @@ JNIEXPORT
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
  * Method:    setScaleShift
- * Signature: (I[F[FJI)J
+ * Signature: (I[FJ[FJJI)J
  */
 JNIEXPORT
-jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_setScaleShift
+  jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_setScaleShift
 (JNIEnv *env,
  jclass cls,
  jint affine,
  jfloatArray weight,
+ jlong weightOffset,
  jfloatArray bias,
+ jlong biasOffset,
  jlong storage,
  jint length)
 {
@@ -114,8 +116,8 @@ jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_setScaleShift
     int i = 0;
 #pragma omp parallel for
     for (i = 0; i < length; i++) {
-      jStorage[i] = jWeight[i];
-      jStorage[i + length] = jBias[i];  
+      jStorage[i] = *(jWeight + weightOffset + i);
+      jStorage[i + length] = *(jBias + biasOffset + i); 
     }
 
     (*env)->ReleasePrimitiveArrayCritical(env, weight, jWeight, 0);
@@ -133,28 +135,31 @@ jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_setScaleShift
 /*
  * Class:     com_intel_analytics_bigdl_mkl_MklDnnFloat
  * Method:    setGradScaleShift
- * Signature: (I[F[FJI)J
+ * Signature: (I[FJ[FJJI)J
  */
-JNIEXPORT jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_setGradScaleShift
+JNIEXPORT
+  jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_setGradScaleShift
 (JNIEnv *env,
  jclass cls,
  jint affine,
  jfloatArray weight,
+ jlong weightOffset,
  jfloatArray bias,
+ jlong biasOffset,
  jlong storage,
  jint length)
 {
   jfloat* jStorage = (jfloat*)storage;
 
-  if (affine) {
+  if (affine > 0) {
     jfloat* jWeight = (jfloat*)((*env)->GetPrimitiveArrayCritical(env, weight, 0));
     jfloat* jBias = (jfloat*)((*env)->GetPrimitiveArrayCritical(env, bias, 0));
     
     int i = 0;
 #pragma omp parallel for
     for (i = 0; i < length; i++) {
-      jWeight[i] = jStorage[i];
-      jBias[i] = jStorage[i + length];
+      *(jWeight + weightOffset + i) = jStorage[i];
+      *(jBias + biasOffset + i) = jStorage[i + length];
     }
 
     (*env)->ReleasePrimitiveArrayCritical(env, weight, jWeight, 0);
