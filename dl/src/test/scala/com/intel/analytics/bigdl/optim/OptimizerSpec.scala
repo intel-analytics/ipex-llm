@@ -19,11 +19,12 @@ package com.intel.analytics.bigdl.optim
 
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, DistributedDataSet}
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, Sequential}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.utils.{File, T, Table}
+import org.apache.hadoop.conf.Configuration
 import org.apache.spark.rdd.RDD
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -103,7 +104,7 @@ class OptimizerSpec extends FlatSpec with Matchers {
     dummyOptimizer.optimize()
   }
 
-  it should "save model to given path" in {
+  it should "save model to given local path" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
     Files.delete(Paths.get(filePath))
     Files.createDirectory(Paths.get(filePath))
@@ -122,7 +123,28 @@ class OptimizerSpec extends FlatSpec with Matchers {
     loadedModel should be(model)
   }
 
-  it should "save model and state to given path with postfix" in {
+  it should "save model to given hdfs path without postfix" in {
+    val conf: Configuration = new Configuration()
+    val dfs = conf.get("fs.defaultFS")
+    if (dfs != null && dfs.startsWith(File.hdfsPrefix)) {
+      val filePath = dfs + "/tmp"
+      val model = AlexNet(1000)
+      val dummyOptimizer = new Optimizer[Float, Float](model, null, null) {
+        override def optimize(): Module[Float] = {
+          Optimizer.saveModel(model, this.checkpointPath, this.isOverWrite)
+          model
+        }
+      }
+      dummyOptimizer.setCheckpoint(filePath, Trigger.everyEpoch)
+      dummyOptimizer.optimize()
+
+      model.clearState()
+      val loadedModel = File.load[Module[Double]](filePath + "/model")
+      loadedModel should be(model)
+    }
+  }
+
+  it should "save model to given path with postfix" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
     Files.delete(Paths.get(filePath))
     Files.createDirectory(Paths.get(filePath))
