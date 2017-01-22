@@ -27,6 +27,11 @@ import scala.reflect.ClassTag
 /**
  * It is a module that takes a table of two vectors as input and outputs
  * the distance between them using the p-norm.
+ * The input given in `forward(input)` is a [[Table]] that contains two tensors which
+ * must be either a vector (1D tensor) or matrix (2D tensor). If the input is a vector,
+ * it must have the size of `inputSize`. If it is a matrix, then each row is assumed to be
+ * an input sample of the given batch (the number of rows means the batch size and the,
+ * the number of columns should be equal to the `inputSize`.
  *
  * @param norm the norm of distance
  */
@@ -35,6 +40,11 @@ import scala.reflect.ClassTag
 class PairwiseDistance[T: ClassTag](
   val norm : Int = 2)
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
+
+  final val inputConstraint =
+    "Each tensor contained in the input to the PairwiseDistance layer needs to be a vector " +
+      "(or a mini-batch of vectors);\n" +
+      "please use the Reshape module to convert multi-dimensional input into vectors if needed"
 
   override def updateOutput(input: Table): Tensor[T] = {
     output.resize(1)
@@ -55,7 +65,7 @@ class PairwiseDistance[T: ClassTag](
       output.add(diff.pow(ev.fromType[Int](norm)).sum(2))
       output.pow(ev.divide(ev.fromType[Int](1), ev.fromType[Int](norm)))
     } else {
-      require(requirement = false, "input must be vector or matrix")
+      require(requirement = false, inputConstraint)
     }
     output
   }
@@ -73,7 +83,7 @@ class PairwiseDistance[T: ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    require(input[Tensor[T]](1).dim() <= 2, "input must be vector or matrix")
+    require(input[Tensor[T]](1).dim() <= 2, inputConstraint)
 
     if (!gradInput.contains(1)) {
       gradInput.update(1, Tensor[T]())

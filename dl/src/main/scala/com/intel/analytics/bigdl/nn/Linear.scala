@@ -25,6 +25,21 @@ import scala.reflect.ClassTag
 import RandomGenerator._
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 
+/**
+ * The [[Linear]] module applies a linear transformation to the input data,
+ * i.e. `y = Wx + b`. The input given in `forward(input)` must be either
+ * a vector (1D tensor) or matrix (2D tensor). If the input is a vector, it must
+ * have the size of `inputSize`. If it is a matrix, then each row is assumed to be
+ * an input sample of given batch (the number of rows means the batch size and the,
+ * the number of columns should be equal to the `inputSize`.
+ *
+ * @param inputSize the size the each input sample
+ * @param outputSize the size of the module output of each sample
+ * @param initMethod two initialized methods are supported here, which are [[Default]]
+ *                   and [[Xavier]], where [[Xavier]] set bias to zero here. For more
+ *                   detailed information about `initMethod`, please refer to
+ *                   [[InitializationMethod]]
+ */
 @SerialVersionUID( 359656776803598943L)
 class Linear[T: ClassTag](
   inputSize: Int,
@@ -38,6 +53,10 @@ class Linear[T: ClassTag](
   val gradWeight: Tensor[T] = Tensor[T](outputSize, inputSize)
   val gradBias: Tensor[T] = Tensor[T](outputSize)
   reset()
+
+  final val inputConstraint =
+    "The input to the linear layer needs to be a vector (or a mini-batch of vectors);\n" +
+    "please use the Reshape module to convert multi-dimensional input into vectors if needed"
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
@@ -63,7 +82,8 @@ class Linear[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2, "input must be vector or matrix")
+    require(input.dim() == 1 || input.dim() == 2, inputConstraint)
+
     if (input.dim() == 1) {
       output.resize(Array(outputSize))
       output.copy(bias)
@@ -89,7 +109,7 @@ class Linear[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2, "input must be vector or matrix")
+    require(input.dim() == 1 || input.dim() == 2, inputConstraint)
     val nElement = gradInput.nElement()
     gradInput.resizeAs(input)
     if (nElement != gradInput.nElement()) {
@@ -106,7 +126,7 @@ class Linear[T: ClassTag](
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
     scale: Double = 1.0): Unit = {
-    require(input.dim() == 1 || input.dim() == 2, "input must be vector or matrix")
+    require(input.dim() == 1 || input.dim() == 2, inputConstraint)
     val value = ev.fromType[Double](scale)
     if (input.dim() == 1) {
       gradWeight.addr(value, gradOutput, input)
