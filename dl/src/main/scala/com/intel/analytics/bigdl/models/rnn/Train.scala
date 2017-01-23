@@ -85,17 +85,18 @@ object Train {
       }
 
       Engine.init(1, param.coreNumber, false)
+      val criterion = new CrossEntropyCriterion[Float](squeezeFlag = true)
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
-        criterion = new CrossEntropyCriterion[Float](squeezeFlag = true)
+        criterion = criterion
       )
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
 
       optimizer
-        .setValidation(Trigger.everyEpoch, validationSet, Array(new Loss[Float]))
+        .setValidation(Trigger.everyEpoch, validationSet, Array(new Loss[Float](criterion)))
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.nEpochs))
         .optimize()
