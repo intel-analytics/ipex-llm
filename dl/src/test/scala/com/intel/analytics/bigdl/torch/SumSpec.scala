@@ -113,4 +113,32 @@ class SumSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     println("Test case : Sum, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
+
+  "An Sum(-1,1,true)" should "generate correct output and grad" in {
+    val layer = new Sum[Double](-1, 1, true)
+    val input = Tensor[Double](2, 2, 2)
+    input.apply1(x => randomn())
+    val gradOutput = Tensor[Double](1, 2, 2)
+    gradOutput.apply1(x => randomn())
+
+    val start = System.nanoTime()
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "module = nn.Sum(-1,1,true)\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    output should be (luaOutput)
+    gradInput should be (luaGradInput)
+
+    println("Test case : Sum, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
 }
