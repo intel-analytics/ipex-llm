@@ -27,6 +27,11 @@ import scala.reflect.ClassTag
  * It is a table module which takes a table of Tensors as input and
  * outputs a Tensor by joining them together along the dimension `dimension`.
  *
+ * The input to this layer is expected to be a tensor, or a batch of tensors;
+ * when using mini-batch, a batch of sample tensors will be passed to the layer and
+ * the user need to specify the number of dimensions of each sample tensor in the
+ * batch using `nInputDims`.
+ *
  * @param dimension to be join in this dimension
  * @param nInputDims specify the number of dimensions that this module will receive
  *                   If it is more than the dimension of input tensors, the first dimension

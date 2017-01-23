@@ -27,8 +27,15 @@ import scala.reflect.ClassTag
  * When nInputDims is provided, the input will be considered as a batches.
  * Then the sum operation will be applied in (dimension + 1)
  *
+ * The input to this layer is expected to be a tensor, or a batch of tensors;
+ * when using mini-batch, a batch of sample tensors will be passed to the layer and
+ * the user need to specify the number of dimensions of each sample tensor in the
+ * batch using `nInputDims`.
+ *
  * @param dimension the dimension to be applied sum operation
- * @param nInputDims the number of dimensions of the give input
+ * @param nInputDims specify the number of dimensions that this module will receive
+ *                   If it is more than the dimension of input tensors, the first dimension
+ *                   would be considered as batch size
  * @param sizeAverage default is false, if it is true, it will return the mean instead
  */
 
@@ -45,9 +52,12 @@ class Sum[T: ClassTag](
     var dimension = this.dimension
     if (dimension < 0) {
       dimension = input.dim() + dimension + 1
-    } else if (nInputDims > 0 && input.dim() == (nInputDims + 1)) {
+    }
+
+    if (nInputDims > 0 && input.dim() == (nInputDims + 1)) {
       dimension += 1
     }
+
     require(input.dim() >= dimension, "dimension exceeds input dimensions")
     dimension
   }
