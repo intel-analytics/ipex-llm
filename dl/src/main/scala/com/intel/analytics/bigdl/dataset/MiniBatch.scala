@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
  * @tparam T
  */
 case class MiniBatch[T: ClassTag](data: Activity, labels: Activity)
-  (implicit ev: TensorNumeric[T]) {
+  (implicit ev: TensorNumeric[T]) extends Serializable {
 
   val _dataLength = dataLength()
   val _labelLength = labelLength()

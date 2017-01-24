@@ -33,8 +33,7 @@ import scala.reflect.ClassTag
 class Sample[T: ClassTag] (
    protected var featureTensor: Tensor[T],
    protected var labelTensor: Tensor[T])
-   (implicit ev: TensorNumeric[T])
-extends Serializable {
+   (implicit ev: TensorNumeric[T]) extends Serializable {
 
  def this()(implicit ev: TensorNumeric[T]) = this(Tensor[T](), Tensor[T]())
 

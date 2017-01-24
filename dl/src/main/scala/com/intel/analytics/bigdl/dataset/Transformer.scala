@@ -74,13 +74,13 @@ class Identity[A] extends Transformer[A, A] {
 object SampleToBatch {
   def apply[T: ClassTag]
   (batchSize: Int,
-   isTable: Boolean = false)
+   toTable: Boolean = false)
   (implicit ev: TensorNumeric[T]): SampleToBatch[T]
-  = new SampleToBatch[T](batchSize, isTable)
+  = new SampleToBatch[T](batchSize, toTable)
 }
 
 class SampleToBatch[T: ClassTag]
-  (totalBatch: Int, isTable: Boolean = false)
+  (totalBatch: Int, toTable: Boolean = false)
   (implicit ev: TensorNumeric[T])
   extends Transformer[Sample[T], MiniBatch[T]] {
 
@@ -101,7 +101,7 @@ class SampleToBatch[T: ClassTag]
       private var labelArrayOfTensor: Array[Tensor[T]] = null
       override def hasNext: Boolean = prev.hasNext
 
-      if (isTable) {
+      if (toTable) {
         featureTable = T()
         labelTable = T()
         featureArrayOfTensor = new Array[Tensor[T]](batchSize)
@@ -119,7 +119,8 @@ class SampleToBatch[T: ClassTag]
 
       override def next(): MiniBatch[T] = {
         if (prev.hasNext) {
-          if (isTable) {
+          if (toTable) {
+            featureTable.
             var i = 0
             while (i < batchSize && prev.hasNext) {
               val sample = prev.next()
