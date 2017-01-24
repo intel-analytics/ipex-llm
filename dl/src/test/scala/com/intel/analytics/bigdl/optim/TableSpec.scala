@@ -231,4 +231,20 @@ class TableSpec extends FlatSpec with Matchers {
     t.insert(100)
     t[Int](1) should be(100)
   }
+
+  "clear from table" should "return correct value" in {
+    val t = T(1, 2, 3, 4, 5, 6)
+
+    val r = t.clear()
+    r.get() should be (None)
+    r.contains(1) should be (false)
+    r.length() should be (0)
+    t.length() should be (0)
+
+    t.insert(1, 1)
+    t.length() should be (1)
+
+    t.insert(100)
+    t[Int](2) should be(100)
+  }
 }
