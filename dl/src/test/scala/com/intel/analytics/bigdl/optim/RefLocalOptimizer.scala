@@ -53,10 +53,7 @@ class RefLocalOptimizer[T: ClassTag](
       val loss = criterion.forward(output, target)
       model.backward(input, criterion.backward(output, target))
       optimMethod.optimize(_ => (loss, g), w, state)
-      count += (input match {
-        case tensor: Tensor[T] => tensor.size(1)
-        case table: Table => table.length()
-      })
+      count += batch.size
       state("neval") = state[Int]("neval") + 1
       println(s"loss is $loss")
       if (count >= dataset.size()) {

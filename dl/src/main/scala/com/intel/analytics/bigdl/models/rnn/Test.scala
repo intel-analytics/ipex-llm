@@ -61,7 +61,6 @@ object Test {
         val validationSet = DataSet.array(labeledInput)
           .transform(LabeledSentenceToSample(vocab.length + 1))
           .transform(SampleToBatch(batchSize = batchSize)).toLocal().data(false)
-          // .asInstanceOf[LocalDataSet[TensorMiniBatch]]
 
         val dataIter = validationSet
         val predict = dataIter.map(batch => {
