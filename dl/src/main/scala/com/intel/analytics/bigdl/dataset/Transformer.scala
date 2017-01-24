@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.collection.Iterator
@@ -72,63 +73,99 @@ class Identity[A] extends Transformer[A, A] {
 
 object SampleToBatch {
   def apply[T: ClassTag]
-  (batchSize: Int)
+  (batchSize: Int,
+   toTable: Boolean = false)
   (implicit ev: TensorNumeric[T]): SampleToBatch[T]
-  = new SampleToBatch[T](batchSize)
+  = new SampleToBatch[T](batchSize, toTable)
 }
 
 class SampleToBatch[T: ClassTag]
-  (totalBatch: Int)
+  (totalBatch: Int, toTable: Boolean = false)
   (implicit ev: TensorNumeric[T])
   extends Transformer[Sample[T], MiniBatch[T]] {
 
   override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
     new Iterator[MiniBatch[T]] {
-      private val featureTensor: Tensor[T] = Tensor[T]()
-      private val labelTensor: Tensor[T] = Tensor[T]()
+      private var featureTensor: Tensor[T] = _
+      private var labelTensor: Tensor[T] = _
+      private var featureTable: Table = _
+      private var labelTable: Table = _
       private var featureData: Array[T] = null
       private var labelData: Array[T] = null
       private val batchSize = Utils.getBatchSize(totalBatch)
       private var featureSize: Array[Int] = null
       private var labelSize: Array[Int] = null
-      private var _featureLength: Int = 0
-      private var _labelLength: Int = 0
+      private var oneFeatureLength: Int = 0
+      private var oneLabelLength: Int = 0
+      private var featureArrayOfTensor: Array[Tensor[T]] = null
+      private var labelArrayOfTensor: Array[Tensor[T]] = null
       override def hasNext: Boolean = prev.hasNext
+
+      if (toTable) {
+        featureTable = T()
+        labelTable = T()
+        featureArrayOfTensor = new Array[Tensor[T]](batchSize)
+        labelArrayOfTensor = new Array[Tensor[T]](batchSize)
+        var i = 0
+        while (i < batchSize) {
+          featureArrayOfTensor(i) = Tensor[T]()
+          labelArrayOfTensor(i) = Tensor[T]()
+          i += 1
+        }
+      } else {
+        featureTensor = Tensor[T]()
+        labelTensor = Tensor[T]()
+      }
 
       override def next(): MiniBatch[T] = {
         if (prev.hasNext) {
-          var i = 0
-          while (i < batchSize && prev.hasNext) {
-            val sample = prev.next()
-            val featureLength = sample.getFeature().nElement()
-            val labelLength = sample.getLabel().nElement()
-            if (featureSize == null || labelSize == null
-              || _featureLength != featureLength
-              || _labelLength != labelLength) {
-              featureSize = Array(1) ++ sample.getFeature().size
-              labelSize = Array(1) ++ sample.getLabel().size
-              _featureLength = featureLength
-              _labelLength = labelLength
+          if (toTable) {
+            var i = 0
+            while (i < batchSize && prev.hasNext) {
+              val sample = prev.next()
+              /**
+              * Each Tensor in the Table should be independent
+              * Thus the resizeAs function will only affect one sample
+              */
+              featureArrayOfTensor(i).resizeAs(sample.feature()).copy(sample.feature())
+              labelArrayOfTensor(i).resizeAs(sample.label()).copy(sample.label())
+              featureTable(i + 1) = featureArrayOfTensor(i)
+              labelTable(i + 1) = labelArrayOfTensor(i)
+              i += 1
             }
-            if (featureData == null || featureData.length < batchSize * featureLength) {
-              featureData = new Array[T](batchSize * featureLength)
+            TableMiniBatch(featureTable, labelTable, i)
+          } else {
+            var i = 0
+            while (i < batchSize && prev.hasNext) {
+              val sample = prev.next()
+              if (featureData == null) {
+                oneFeatureLength = sample.feature().nElement()
+                oneLabelLength = sample.label().nElement()
+                /**
+                * For example,
+                * the featureSize of an image is: [3, 224, 224]
+                * the labelSize of an image is: [1]
+                *
+                * the featureSize of a fixed sentence input is: [10, 1000]
+                * the labelSize of a fixed sentence input is: [10]
+                */
+                featureSize = Array(1) ++ sample.feature().size
+                labelSize = Array(1) ++ sample.label().size
+                featureData = new Array[T](batchSize * oneFeatureLength)
+                labelData = new Array[T](batchSize * oneLabelLength)
+              }
+              sample.extractLabel(labelData, i*oneLabelLength, oneLabelLength)
+              sample.extractFeature(featureData, i*oneFeatureLength, oneFeatureLength)
+              i += 1
             }
-            if (labelData == null || labelData.length < batchSize * labelLength) {
-              labelData = new Array[T](batchSize * labelLength)
-            }
-            sample.copyToLabel(labelData, i*labelLength, labelLength)
-            sample.copyToFeature(featureData, i*featureLength, featureLength)
-
-            i += 1
+            featureSize(0) = i
+            labelSize(0) = i
+            featureTensor.set(Storage[T](featureData),
+              storageOffset = 1, sizes = featureSize)
+            labelTensor.set(Storage[T](labelData),
+              storageOffset = 1, sizes = labelSize)
+            TensorMiniBatch(featureTensor, labelTensor)
           }
-
-          featureSize(0) = i
-          labelSize(0) = i
-          featureTensor.set(Storage[T](featureData),
-            storageOffset = 1, sizes = featureSize)
-          labelTensor.set(Storage[T](labelData),
-            storageOffset = 1, sizes = labelSize)
-          MiniBatch(featureTensor, labelTensor)
         } else {
           null
         }

@@ -240,7 +240,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
         -> BGRImgNormalizer((0.4, 0.5, 0.6), (0.1, 0.2, 0.3))
         -> BGRImgToBatch(1)
         ).toLocal().data(train = false)
-      val image1 = iter.next().data
+      val image1 = iter.next().data.toTensor[Float]
 
       val resourceTorch = getClass().getClassLoader().getResource("torch")
       val tensor1Path = Paths.get(processPath(resourceTorch.getPath()), tensorFile)

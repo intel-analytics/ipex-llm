@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, DistributedDataSet}
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, TensorMiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -53,7 +53,7 @@ object DistriOptimizerSpec {
       }
       i += 1
     }
-    MiniBatch(input, target)
+    TensorMiniBatch[Double](input, target)
   }
 }
 

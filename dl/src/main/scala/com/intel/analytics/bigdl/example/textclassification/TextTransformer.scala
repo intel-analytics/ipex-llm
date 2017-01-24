@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.example.textclassification
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, TensorMiniBatch, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -128,7 +128,7 @@ class Batching(batchSize: Int, sampleShape: Array[Int])
           storageOffset = 1, sizes = Array(i) ++ sampleShape)
         labelTensor.set(Storage[Float](labelData),
           storageOffset = 1, sizes = Array(i))
-        MiniBatch(featureTensor.transpose(2, 3), labelTensor)
+        TensorMiniBatch[Float](featureTensor.transpose(2, 3), labelTensor)
       }
     }
   }

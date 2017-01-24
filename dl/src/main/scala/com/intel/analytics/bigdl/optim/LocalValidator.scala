@@ -20,14 +20,19 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Table}
 import org.apache.log4j.Logger
+
+import scala.reflect.ClassTag
 
 object LocalValidator {
   val logger = Logger.getLogger(getClass)
 }
 
-class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[MiniBatch[T]])
+class LocalValidator[T: ClassTag] private[optim]
+(model: Module[T], dataSet: LocalDataSet[MiniBatch[T]])
+  (implicit ev: TensorNumeric[T])
   extends Validator[T, MiniBatch[T]](model, dataSet) {
 
   val logger = LocalValidator.logger
@@ -48,9 +53,8 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[M
     var count = 0
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     dataIter.map(batch => {
-      require(batch.data.size(1) == batch.labels.size(1))
-      val stackSize = batch.data.size(1) / subModelNumber
-      val extraSize = batch.data.size(1) % subModelNumber
+      val (stackSize, extraSize) = (batch.size / subModelNumber,
+        batch.size % subModelNumber)
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
       val start = System.nanoTime()
       val result = Engine.default.invokeAndWait(
@@ -58,8 +62,7 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[M
           () => {
             val offset = b * stackSize + math.min(b, extraSize)
             val length = stackSize + (if (b < extraSize) 1 else 0)
-            val input = batch.data.narrow(1, offset + 1, length)
-            val target = batch.labels.narrow(1, offset + 1, length)
+            val (input, target) = batch.narrow(1, offset + 1, length).get
             val output = workingModels(b).forward(input)
             vMethods.map(validation => {
               validation(output.asInstanceOf[Tensor[T]], target)
@@ -71,9 +74,9 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[M
           l + r
         }
       })
-      count += batch.data.size(1)
+      count += batch.size
       logger.info(s"[Validation] $count/${dataSet.size()} Throughput is ${
-        batch.data.size(1) / ((System.nanoTime() - start) / 1e9)
+        batch.size / ((System.nanoTime() - start) / 1e9)
       } record / sec")
       result
     }).reduce((left, right) => {

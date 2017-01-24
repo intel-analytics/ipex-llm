@@ -16,13 +16,13 @@
  */
 package com.intel.analytics.bigdl.models.utils
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, TensorMiniBatch}
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
-import com.intel.analytics.bigdl.optim.{Optimizer, LocalOptimizer, Trigger}
+import com.intel.analytics.bigdl.optim.{LocalOptimizer, Optimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
@@ -96,7 +96,7 @@ object LocalOptimizerPerf {
           override def hasNext: Boolean = true
 
           override def next(): MiniBatch[Float] = {
-            MiniBatch(input, labels)
+            TensorMiniBatch[Float](input, labels)
           }
         }
       }

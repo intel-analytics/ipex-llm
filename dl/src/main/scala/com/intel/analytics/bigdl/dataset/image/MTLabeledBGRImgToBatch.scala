@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dataset.image
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.intel.analytics.bigdl.dataset.{Utils, MiniBatch, Transformer}
+import com.intel.analytics.bigdl.dataset.{Utils, TensorMiniBatch, MiniBatch, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 import scala.reflect.ClassTag
@@ -97,7 +97,7 @@ class MTLabeledBGRImgToBatch[A: ClassTag] private[bigdl](width: Int, height: Int
             storageOffset = 1, sizes = Array(batch))
         }
 
-        MiniBatch(featureTensor, labelTensor)
+        TensorMiniBatch(featureTensor, labelTensor)
       }
     }
   }

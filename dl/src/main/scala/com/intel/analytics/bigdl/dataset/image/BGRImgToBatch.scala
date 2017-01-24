@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{Utils, MiniBatch, Transformer}
+import com.intel.analytics.bigdl.dataset.{Utils, TensorMiniBatch, MiniBatch, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 
@@ -74,7 +74,7 @@ class BGRImgToBatch(totalBatch: Int, toRGB: Boolean = true)
               storageOffset = 1, sizes = Array(i))
           }
 
-          MiniBatch(featureTensor, labelTensor)
+          TensorMiniBatch(featureTensor, labelTensor)
         } else {
           null
         }

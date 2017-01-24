@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.models.rnn
 
 
-import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, TensorMiniBatch, MiniBatch, SampleToBatch}
 import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, LabeledSentenceToSample}
 import com.intel.analytics.bigdl.nn.{LogSoftMax, Module}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -60,13 +60,12 @@ object Test {
 
         val validationSet = DataSet.array(labeledInput)
           .transform(LabeledSentenceToSample(vocab.length + 1))
-          .transform(SampleToBatch(batchSize = batchSize))
-          .asInstanceOf[LocalDataSet[MiniBatch[Float]]]
+          .transform(SampleToBatch(batchSize = batchSize)).toLocal().data(false)
 
-        val dataIter = validationSet.data(train = false)
+        val dataIter = validationSet
         val predict = dataIter.map(batch => {
-          require(batch.data.size(1) == 1, "predict sentence one by one")
-          val output = model.forward(batch.data)
+          require(batch.size == 1, "predict sentence one by one")
+          val output = model.forward(batch.get._1)
             .asInstanceOf[Tensor[Float]]
           val predictProbDist = logSoftMax.forward(output(output.size(1)))
             .storage().map(x => math.exp(x).toFloat).toArray
