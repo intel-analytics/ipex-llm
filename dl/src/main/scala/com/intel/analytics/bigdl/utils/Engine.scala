@@ -112,11 +112,17 @@ class ThreadPool(private var poolSize: Int) {
   }
 
   def invokeAndWait2[T](tasks: Seq[() => T], timeout: Long = Long.MaxValue,
-                        timeUnit: TimeUnit = TimeUnit.NANOSECONDS):
-                        scala.collection.mutable.Buffer[java.util.concurrent.Future[T]] = {
+    timeUnit: TimeUnit = TimeUnit.NANOSECONDS):
+    scala.collection.mutable.Buffer[java.util.concurrent.Future[T]] = {
     val callables = tasks.map(task => new Callable[T] {
       override def call(): T = {
-        task()
+        try {
+          task()
+        } catch {
+          case t : Throwable =>
+            logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+            throw t
+        }
       }
     })
     threadPool.invokeAll(callables.asJava, timeout, timeUnit).asScala
