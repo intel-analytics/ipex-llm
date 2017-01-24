@@ -42,6 +42,15 @@ class Table private[bigdl](
     }
   }
 
+  /**
+   * Empty the Table
+   */
+  def clear(): this.type = {
+    state.clear()
+    topIndex = 0
+    this
+  }
+
   def getState(): Map[Any, Any] = this.state
 
   def get[T](key: Any): Option[T] = {
