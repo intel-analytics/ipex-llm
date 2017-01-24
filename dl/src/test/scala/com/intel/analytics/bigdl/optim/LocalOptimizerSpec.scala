@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, DataSet, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch, TensorMiniBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -88,7 +88,7 @@ object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {
 
       override def next(): MiniBatch[Float] = {
         i += 1
-        MiniBatch(feature, if (isCrossEntropy) labelCrossEntropy else labelMSE)
+        TensorMiniBatch(feature, if (isCrossEntropy) labelCrossEntropy else labelMSE)
       }
     }
   }

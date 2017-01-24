@@ -16,7 +16,7 @@
  */
 package com.intel.analytics.bigdl.models.utils
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, DistributedDataSet}
+import com.intel.analytics.bigdl.dataset.{TensorMiniBatch, MiniBatch, DistributedDataSet}
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.optim.{Optimizer, DistriOptimizer, Trigger}
@@ -117,17 +117,17 @@ object DistriOptimizerPerf {
     val labels = Tensor(param.batchSize).fill(1)
 
     val sc = new SparkContext(conf)
-    val broadcast = sc.broadcast(MiniBatch[Float](input, labels))
+    val broadcast = sc.broadcast(TensorMiniBatch(input, labels))
     val rdd = sc.parallelize((1 to param.nodeNumber), param.nodeNumber)
       .mapPartitions(iter => {
         Iterator.single((broadcast.value))
       }).persist()
     rdd.count()
-    val dummyDataSet = new DistributedDataSet[MiniBatch[Float]] {
+    val dummyDataSet = new DistributedDataSet[TensorMiniBatch[Float]] {
       override def size(): Long = 10000
       override def shuffle(): Unit = {}
       override def originRDD(): RDD[_] = rdd
-      override def data(train: Boolean): RDD[MiniBatch[Float]] = rdd
+      override def data(train: Boolean): RDD[TensorMiniBatch[Float]] = rdd
     }
 
     val optimizer = Optimizer(

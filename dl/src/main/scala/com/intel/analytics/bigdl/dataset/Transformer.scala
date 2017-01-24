@@ -120,7 +120,6 @@ class SampleToBatch[T: ClassTag]
       override def next(): MiniBatch[T] = {
         if (prev.hasNext) {
           if (toTable) {
-            featureTable.
             var i = 0
             while (i < batchSize && prev.hasNext) {
               val sample = prev.next()
@@ -134,17 +133,7 @@ class SampleToBatch[T: ClassTag]
               labelTable(i + 1) = labelArrayOfTensor(i)
               i += 1
             }
-            var j = i + 1
-            while (j <= featureTable.length) {
-              featureTable.remove(j)
-              j += 1
-            }
-            j = i + 1
-            while (j <= labelTable.length) {
-              labelTable.remove(j)
-              j += 1
-            }
-            MiniBatch(featureTable, labelTable)
+            TableMiniBatch(featureTable, labelTable, i)
           } else {
             var i = 0
             while (i < batchSize && prev.hasNext) {
@@ -175,7 +164,7 @@ class SampleToBatch[T: ClassTag]
               storageOffset = 1, sizes = featureSize)
             labelTensor.set(Storage[T](labelData),
               storageOffset = 1, sizes = labelSize)
-            MiniBatch(featureTensor, labelTensor)
+            TensorMiniBatch(featureTensor, labelTensor)
           }
         } else {
           null

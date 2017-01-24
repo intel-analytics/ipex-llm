@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset.image
 
-import com.intel.analytics.bigdl.dataset.{Utils, MiniBatch, Transformer}
+import com.intel.analytics.bigdl.dataset.{Utils, TensorMiniBatch, MiniBatch, Transformer}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.collection.Iterator
@@ -81,7 +81,7 @@ class GreyImgToBatch private[dataset](totalBatchSize: Int)
             labelTensor.set(Storage[Float](labelData),
               storageOffset = 1, sizes = Array(i))
           }
-          MiniBatch(featureTensor, labelTensor)
+          TensorMiniBatch(featureTensor, labelTensor)
         } else {
           null
         }

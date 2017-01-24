@@ -17,7 +17,6 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
