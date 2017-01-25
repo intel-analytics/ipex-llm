@@ -30,18 +30,12 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 5446858218997354022L)
 class CrossEntropyCriterion[T: ClassTag](
-   val weights: Tensor[T] = null,
-   val squeezeFlag: Boolean = false)
+   val weights: Tensor[T] = null)
    (implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{
   private val lsm = new LogSoftMax[T]()
   private val nll = new ClassNLLCriterion[T](weights)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    if (squeezeFlag) {
-      input.squeeze()
-      target.squeeze()
-    }
-
     lsm.updateOutput(input)
     nll.updateOutput(lsm.output, target.asInstanceOf[Tensor[T]])
     output = nll.output
@@ -51,11 +45,6 @@ class CrossEntropyCriterion[T: ClassTag](
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     val size = input.size()
     var _gradInput = Tensor[T]()
-    if (squeezeFlag) {
-      input.squeeze()
-      target.squeeze()
-    }
-
     _gradInput = nll.updateGradInput(lsm.output, target)
     lsm.updateGradInput(input, _gradInput)
     gradInput.resizeAs(lsm.gradInput).copy(lsm.gradInput).view(size)
@@ -82,9 +71,8 @@ class CrossEntropyCriterion[T: ClassTag](
 
 object CrossEntropyCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
-      weights: Tensor[T] = null,
-      squeezeFlag: Boolean = false)
+      weights: Tensor[T] = null)
       (implicit ev: TensorNumeric[T]) : CrossEntropyCriterion[T] = {
-    new CrossEntropyCriterion[T](weights, squeezeFlag)
+    new CrossEntropyCriterion[T](weights)
   }
 }
