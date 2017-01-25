@@ -47,6 +47,8 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
       output = ev.times(ev.negative(input.valueAt(curTarget)), total_weight)
     } else if (input.dim() == 2) {
       val batchSize = input.size(1)
+      val targetSize = target.size()
+      target.squeeze()
       total_weight = ev.fromType[Int](0)
       output = ev.fromType[Int](0)
 
@@ -74,6 +76,7 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
         total_weight = ev.plus(total_weight, w)
         i += 1
       }
+      target.resize(targetSize)
     }
     if (sizeAverage && total_weight != 0) {
       output = ev.divide(output, total_weight)
@@ -97,6 +100,8 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
     }
     else if (input.dim() == 2) {
       val batchSize = input.size(1)
+      val targetSize = target.size()
+      target.squeeze()
       if (resultsBackward == null || resultsBackward.length != batchSize) {
         resultsBackward = new Array[Future[_]](batchSize)
       }
@@ -120,6 +125,7 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
         Await.result(resultsBackward(i), Duration.Inf)
         i += 1
       }
+      target.resize(targetSize)
     }
     gradInput
   }
