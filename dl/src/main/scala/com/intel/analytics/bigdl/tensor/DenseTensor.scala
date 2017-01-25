@@ -510,14 +510,14 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def valueAt(d1: Int): T = {
-    require(1 == this.nDimension, "invalid size")
+    require(1 == this.nDimension, s"nDimension size should be 1")
     var offset = this._storageOffset
     offset += getOffset(d1 - 1, 1)
     this._storage(offset)
   }
 
   override def valueAt(d1: Int, d2: Int): T = {
-    require(2 == this.nDimension, "invalid size")
+    require(2 == this.nDimension, s"nDimension size should be 2")
     var offset = this._storageOffset
     offset += getOffset(d1 - 1, 1)
     offset += getOffset(d2 - 1, 2)
@@ -525,7 +525,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def valueAt(d1: Int, d2: Int, d3: Int): T = {
-    require(3 == this.nDimension, "invalid size")
+    require(3 == this.nDimension, s"nDimension size should be 3")
     var offset = this._storageOffset
     offset += getOffset(d1 - 1, 1)
     offset += getOffset(d2 - 1, 2)
@@ -534,7 +534,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def valueAt(d1: Int, d2: Int, d3: Int, d4: Int): T = {
-    require(4 == this.nDimension, "invalid size")
+    require(4 == this.nDimension, s"nDimension size should be 4")
     var offset = this._storageOffset
     offset += getOffset(d1 - 1, 1)
     offset += getOffset(d2 - 1, 2)
@@ -544,7 +544,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def valueAt(d1: Int, d2: Int, d3: Int, d4: Int, d5: Int): T = {
-    require(5 == this.nDimension, "invalid size")
+    require(5 == this.nDimension, s"nDimension size should be 5")
     var offset = this._storageOffset
     offset += getOffset(d1 - 1, 1)
     offset += getOffset(d2 - 1, 2)
@@ -578,7 +578,8 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def update(indexes: Array[Int], value: T): Unit = {
-    require(indexes.length == this.nDimension, "invalid size")
+    require(indexes.length == this.nDimension, s"nDimension size should be " +
+      s"equal to indexes.length")
     var offset = this._storageOffset
     var d = 0
     while (d < indexes.length) {
@@ -589,7 +590,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def setValue(d1: Int, d2: Int, d3: Int, d4: Int, value: T): this.type = {
-    require(4 == this.nDimension, "invalid size")
+    require(4 == this.nDimension, s"nDimension size should be 4")
     var offset = this._storageOffset
     offset += getOffset(d1 - 1, 1)
     offset += getOffset(d2 - 1, 2)
@@ -600,7 +601,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def setValue(d1: Int, d2: Int, d3: Int, d4: Int, d5: Int, value: T): this.type = {
-    require(5 == this.nDimension, "invalid size")
+    require(5 == this.nDimension, s"nDimension size should be 5")
     var offset = this._storageOffset
     offset += getOffset(d1 - 1, 1)
     offset += getOffset(d2 - 1, 2)
@@ -612,7 +613,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def setValue(d1: Int, d2: Int, d3: Int, value: T): this.type = {
-    require(3 == this.nDimension, "invalid size")
+    require(3 == this.nDimension, s"nDimension size should be 3")
     var offset = this._storageOffset
     offset += getOffset(d1 - 1, 1)
     offset += getOffset(d2 - 1, 2)
@@ -622,7 +623,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def setValue(d1: Int, d2: Int, value: T): this.type = {
-    require(2 == this.nDimension, "invalid size")
+    require(2 == this.nDimension, s"nDimension size should be 2")
     var offset = this._storageOffset
     offset += getOffset(d1 - 1, 1)
     offset += getOffset(d2 - 1, 2)
@@ -631,7 +632,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def setValue(d1: Int, value: T): this.type = {
-    require(1 == this.nDimension, "invalid size")
+    require(1 == this.nDimension, s"nDimension size should be 1")
     var offset = this._storageOffset
     offset += getOffset(d1 - 1, 1)
     this._storage(offset) = value

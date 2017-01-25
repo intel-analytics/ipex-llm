@@ -63,7 +63,8 @@ class Unsqueeze[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.nElement() == gradOutput.nElement())
+    require(input.nElement() == gradOutput.nElement(),
+      "the size of input should be equal to the size of gradOutput")
     gradInput = gradOutput.view(input.size())
     gradInput
   }

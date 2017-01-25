@@ -48,7 +48,8 @@ object Module {
     var i = 0
     var length = 0
     while (i < parameters.length) {
-      require(parameters(i).isContiguous())
+      require(parameters(i).isContiguous(),
+        s"parameters should be contiguous here")
       length += parameters(i).nElement()
       i += 1
     }
@@ -71,7 +72,8 @@ object Module {
 
   def isCompact[@specialized(Float, Double) T: ClassTag](paramters: Array[Tensor[T]])(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(paramters.length > 0)
+    require(paramters.length > 0,
+          "the parameters should not be empty")
     var i = 1
     val storage = paramters(0).storage()
     var length = paramters(0).nElement()

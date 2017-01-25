@@ -77,8 +77,8 @@ class Concat[T: ClassTag](val dimension: Int)(
         while (f <= target.size(1)) {
           val curFrame = target.select(1, f)
           val outputFrame = currentOutput.select(1, f)
-          require(curFrame.isContiguous())
-          require(outputFrame.isContiguous())
+          require(curFrame.isContiguous(), "curFrame should be contiguous here")
+          require(outputFrame.isContiguous(), "outputFrame should be contiguous here")
           curFrame.copy(outputFrame)
           f += 1
         }
@@ -114,8 +114,8 @@ class Concat[T: ClassTag](val dimension: Int)(
 
       if (currentGradInput != null) {
         if (i == 0) {
-          require(this.gradInput.isContiguous())
-          require(currentGradInput.isContiguous())
+          require(this.gradInput.isContiguous(), "gradInput should be contiguous here")
+          require(currentGradInput.isContiguous(), "currentGradInput should be contiguous here")
           this.gradInput.copy(currentGradInput)
         } else {
           this.gradInput.add(currentGradInput)
@@ -188,8 +188,10 @@ class Concat[T: ClassTag](val dimension: Int)(
       before = System.nanoTime()
       if (currentGradInput != null) {
         if (i == 0) {
-          require(this.gradInput.isContiguous())
-          require(currentGradInput.isContiguous())
+          require(this.gradInput.isContiguous(),
+            "gradInput should be contiguous here")
+          require(currentGradInput.isContiguous(),
+            "currentGradInput should be contiguous here")
           this.gradInput.copy(currentGradInput)
         } else {
           this.gradInput.add(currentGradInput)

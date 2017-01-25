@@ -142,7 +142,12 @@ class SpatialDilatedConvolution[T: ClassTag](
         s"Calculated output size: ($nOutputPlane x $outputHeight x $outputWidth). " +
         s"Output size is too small")
 
-    require(input.dim() == nDim && input.size(dimF) == nInputPlane)
+
+    val warining = """the input.dim() ahould be equal to nDim and the size of input """ +
+      """in dimF dimension should be equal to nInputPlane"""
+
+    require(input.dim() == nDim && input.size(dimF) == nInputPlane, warining)
+
 
     if (null != gradOutput) {
       require(gradOutput.nDimension() == nDim &&
@@ -156,7 +161,7 @@ class SpatialDilatedConvolution[T: ClassTag](
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     shapeCheck(input, null, weight, bias,
       kH, kW, dH, dW, padH, padW, dilationH, dilationW)
-    require(input.isContiguous())
+    require(input.isContiguous(), "Input should be contiguous here")
 
     val isBatch = if (input.nDimension() == 3) {
       // Force batch
