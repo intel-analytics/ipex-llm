@@ -365,6 +365,8 @@ object DistriOptimizer {
       if (checkSingleton) {
         require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
           "Currently not support this")
+      } else {
+        logger.info("Skip singleton check")
       }
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = broadcastModel.cloneModule()
@@ -496,13 +498,6 @@ class DistriOptimizer[T: ClassTag] private[optim](
 )(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
     model, dataset, criterion) {
-
-  def disableCheckSingleton(): this.type = {
-    this.checkSingleton = false
-    this
-  }
-
-  private var checkSingleton = true
 
   val metrics = new Metrics
 
