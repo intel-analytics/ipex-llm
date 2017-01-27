@@ -62,7 +62,7 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
       while (p < candidateLocs.length) {
         locs = candidateLocs(p)._2.intersect(curPrefs)
         if (!locs.isEmpty) {
-          matchPartition = candidateLocs.remove(p)
+          matchPartition = candidateLocs.apply(p)
           p = Integer.MAX_VALUE - 1
         }
         p += 1
