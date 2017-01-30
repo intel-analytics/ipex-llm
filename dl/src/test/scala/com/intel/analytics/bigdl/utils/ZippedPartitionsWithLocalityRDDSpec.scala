@@ -33,24 +33,20 @@ class ZippedPartitionsWithLocalityRDDSpec extends FlatSpec with Matchers with Be
     }
   }
 
-  "two uncached rdd zip partition" should "throw exception" in {
+  "two uncached rdd zip partition" should "not throw exception" in {
     val rdd1 = sc.parallelize((1 to 100), 4)
     val rdd2 = sc.parallelize((1 to 100), 4)
-    the[IllegalArgumentException] thrownBy  {
       ZippedPartitionsWithLocalityRDD(rdd1, rdd2)((iter1, iter2) => {
         iter1.zip(iter2)
       }).count()
-    }
   }
 
-  "one uncached rdd zip partition" should "throw exception" in {
+  "one uncached rdd zip partition" should "not throw exception" in {
     val rdd1 = sc.parallelize((1 to 100), 4).cache()
     val rdd2 = sc.parallelize((1 to 100), 4)
-    the[IllegalArgumentException] thrownBy  {
       ZippedPartitionsWithLocalityRDD(rdd1, rdd2)((iter1, iter2) => {
         iter1.zip(iter2)
       }).count()
-    }
   }
 
   "two cached rdd zip partition" should "should be zip" in {
