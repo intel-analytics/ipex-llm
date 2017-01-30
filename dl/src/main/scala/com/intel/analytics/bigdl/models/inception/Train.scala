@@ -107,10 +107,6 @@ object TrainInceptionV1 {
         optimizer.overWriteCheckpoint()
       }
 
-      if (param.disableCheckSingleton == true) {
-        optimizer.disableCheckSingleton()
-      }
-
       optimizer
         .setState(state)
         .setValidation(testTrigger,

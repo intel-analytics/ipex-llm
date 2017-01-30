@@ -34,8 +34,7 @@ object Options {
     env: String = "local",
     overWriteCheckpoint: Boolean = false,
     maxEpoch: Option[Int] = None,
-    maxIteration: Int = 62000,
-    disableCheckSingleton: Boolean = true
+    maxIteration: Int = 62000
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
@@ -79,9 +78,6 @@ object Options {
     opt[Unit]("overWrite")
       .text("overwrite checkpoint files")
       .action( (_, c) => c.copy(overWriteCheckpoint = true) )
-    opt[Boolean]("disableCheckSingleton")
-      .text("disable check singleton")
-      .action((x, c) => c.copy(disableCheckSingleton = x))
     opt[String]("env")
       .text("execution environment")
       .validate(x => {

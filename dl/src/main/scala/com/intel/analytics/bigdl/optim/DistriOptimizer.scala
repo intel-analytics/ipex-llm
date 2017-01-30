@@ -362,11 +362,13 @@ object DistriOptimizer {
     val comupteThresholdbatchSize = state.get[Int]("comupteThresholdbatchSize").get
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastModel, broadcastCriterion, broadcastState) = broadcast.value
-      if (checkSingleton) {
-        require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
-          "Currently not support this")
-      } else {
-        logger.info("Skip singleton check")
+      if (!Engine.checkSingleton()) {
+        if (checkSingleton) {
+          require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
+            "Please disable singleton check or repartition data")
+        } else {
+          logger.warn("Detect multi-task run on one Executor/Container.")
+        }
       }
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = broadcastModel.cloneModule()
@@ -502,6 +504,9 @@ class DistriOptimizer[T: ClassTag] private[optim](
   val metrics = new Metrics
 
   private var models: RDD[DistriOptimizer.Cache[T]] = null
+
+  private val checkSingleton = System.getProperty("bigdl.check.singleton",
+    true.toString).toBoolean
 
   override def optimize(): Module[T] = {
     this.assertEngineInited()

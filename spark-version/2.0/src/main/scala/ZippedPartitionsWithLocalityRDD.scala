@@ -62,15 +62,17 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
       while (p < candidateLocs.length) {
         locs = candidateLocs(p)._2.intersect(curPrefs)
         if (!locs.isEmpty) {
-          matchPartition = candidateLocs.apply(p)
+          matchPartition = candidateLocs.remove(p)
           p = Integer.MAX_VALUE - 1
         }
         p += 1
       }
-      require(matchPartition != null, s"can't find locality partition for partition $i " +
-        s"Partition locations are (${curPrefs}) Candidate partition locations are\n" +
-        s"${candidateLocs.mkString("\n")} Are you using more executors than the node number? " +
-        s"If yes, try to change your executor number.")
+      if (matchPartition == null) {
+        println(s"can't find locality partition for partition $i " +
+          s"Partition locations are (${curPrefs}) Candidate partition locations are\n" +
+          s"${candidateLocs.mkString("\n")}.")
+        matchPartition = candidateLocs.remove(util.Random.nextInt(candidateLocs.length))
+      }
       new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
     }
   }
