@@ -49,13 +49,6 @@ abstract class Optimizer[T: ClassTag, D](
   protected var comupteThresholdbatchSize: Int = 100
   protected var warmupIterationNum: Int = 200
 
-  def disableCheckSingleton(): this.type = {
-    this.checkSingleton = false
-    this
-  }
-
-  protected var checkSingleton = true
-
   def optimize(): Module[T]
 
   def setValidation(trigger: Trigger, dataset: DataSet[D],

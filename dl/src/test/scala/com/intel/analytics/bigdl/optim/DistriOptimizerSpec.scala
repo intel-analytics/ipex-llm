@@ -103,6 +103,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
 
     plusOne = 0.0
+    System.setProperty("bigdl.check.singleton", false.toString)
     Engine.model.setPoolSize(1)
   }
 
@@ -118,7 +119,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       mse,
       dataSet,
       new MSECriterion[Double]())
-      .setOptimMethod(new LBFGS).disableCheckSingleton()
+      .setOptimMethod(new LBFGS)
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -134,7 +135,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setState(T("learningRate" -> 20.0))
       .setEndWhen(Trigger.maxEpoch(5))
-      .disableCheckSingleton()
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -150,7 +150,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       mse,
       dataSet,
       new MSECriterion[Double]())
-      .disableCheckSingleton()
     val model = optimizer.optimize()
 
     RandomGenerator.RNG.setSeed(10)
@@ -170,7 +169,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = new DistriOptimizer[Double](cre, dataSet,
       new ClassNLLCriterion[Double]())
       .setEndWhen(Trigger.maxEpoch(3)).setOptimMethod(new LBFGS)
-      .disableCheckSingleton()
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -186,7 +184,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     RandomGenerator.RNG.setSeed(10)
     val optimizer = new DistriOptimizer[Double](cre, dataSet,
       new ClassNLLCriterion[Double]())
-      .setState(T("learningRate" -> 20.0)).disableCheckSingleton()
+      .setState(T("learningRate" -> 20.0))
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -203,7 +201,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       cre,
       dataSet,
       new ClassNLLCriterion[Double]()
-    ).setState(T("learningRate" -> 20.0)).disableCheckSingleton()
+    ).setState(T("learningRate" -> 20.0))
     val model = optimizer.optimize()
 
     RandomGenerator.RNG.setSeed(10)
