@@ -136,7 +136,9 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
         override def call(): Int = {
           val blockId = getWeightBlockId(pid)
           val localBuffer = BlockManagerWrapper.byteBufferConvert(
-            bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId).get))
+            bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId)
+                .getOrElse(throw new IllegalArgumentException(s"Can't get the block(${blockId})." +
+                s"Please check if there is executor lost"))))
           val start = pid * taskSize + math.min(pid, extraSize)
           val length = taskSize + (if (pid < extraSize) 1 else 0)
           require(localBuffer.array().length == length * 2)
@@ -159,7 +161,8 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
           val blockId = getGradientBlockId(pid, partitionId)
           val tmp = BlockManagerWrapper.byteBufferConvert(bm.getLocalBytes(blockId)
             .getOrElse(bm.getRemoteBytes(blockId).getOrElse(
-              throw new IllegalArgumentException(s"Can't get the block(${blockId})")
+              throw new IllegalArgumentException(s"Can't get the block(${blockId})." +
+                s"Please check if there is executor lost")
             )))
           params(pid) = SerializerInstance.serialize(tmp)
           BlockManagerWrapper.unlock(blockId)
