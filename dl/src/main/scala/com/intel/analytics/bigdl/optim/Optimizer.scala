@@ -51,7 +51,7 @@ abstract class Optimizer[T: ClassTag, D](
 
   def optimize(): Module[T]
 
-  @deprecated("Use bigdl.check.singleton instead")
+  @deprecated("Use bigdl.check.singleton instead", "0.1.0")
   def disableCheckSingleton(): this.type = {
     this.checkSingleton = false
     println("disableCheckSingleton is deprecated. Please use bigdl.check.singleton instead")
@@ -61,7 +61,7 @@ abstract class Optimizer[T: ClassTag, D](
   // TODO: Remove below code to DistriOptimizer after disableCheckSingleton is not supported
   protected var checkSingleton = System.getProperty("bigdl.check.singleton",
     true.toString).toBoolean
-  
+
   def setValidation(trigger: Trigger, dataset: DataSet[D],
     vMethods : Array[ValidationMethod[T]])
   : this.type = {
