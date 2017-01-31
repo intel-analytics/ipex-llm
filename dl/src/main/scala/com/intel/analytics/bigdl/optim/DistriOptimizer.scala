@@ -505,9 +505,6 @@ class DistriOptimizer[T: ClassTag] private[optim](
 
   private var models: RDD[DistriOptimizer.Cache[T]] = null
 
-  private val checkSingleton = System.getProperty("bigdl.check.singleton",
-    true.toString).toBoolean
-
   override def optimize(): Module[T] = {
     this.assertEngineInited()
 
