@@ -78,7 +78,8 @@ class Linear[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2, ErrorInfo.constrainInputAsVectorOrBatch)
+    require(input.dim() == 1 || input.dim() == 2,
+      "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
     if (input.dim() == 1) {
       output.resize(Array(outputSize))
@@ -105,7 +106,8 @@ class Linear[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2, ErrorInfo.constrainInputAsVectorOrBatch)
+    require(input.dim() == 1 || input.dim() == 2,
+      "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
     val nElement = gradInput.nElement()
     gradInput.resizeAs(input)
     if (nElement != gradInput.nElement()) {
@@ -122,7 +124,8 @@ class Linear[T: ClassTag](
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
     scale: Double = 1.0): Unit = {
-    require(input.dim() == 1 || input.dim() == 2, ErrorInfo.constrainInputAsVectorOrBatch)
+    require(input.dim() == 1 || input.dim() == 2,
+      "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
     val value = ev.fromType[Double](scale)
     if (input.dim() == 1) {
       gradWeight.addr(value, gradOutput, input)

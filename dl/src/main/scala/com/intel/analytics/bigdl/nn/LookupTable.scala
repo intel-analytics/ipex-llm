@@ -145,7 +145,8 @@ class LookupTable[T: ClassTag]
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2, ErrorInfo.constrainInputAsVectorOrBatch)
+    require(input.dim() == 1 || input.dim() == 2,
+      "LookupTable: " + ErrorInfo.constrainInputAsVectorOrBatch)
     renorm(input)
     inputBuffer = input.contiguous()
     if (inputBuffer.dim() == 1) {

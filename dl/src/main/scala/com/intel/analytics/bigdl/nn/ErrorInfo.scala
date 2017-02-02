@@ -20,12 +20,14 @@ object ErrorInfo {
   final val constrainInputAsVectorOrBatch =
     """
       | The input to the layer needs to be a vector(or a mini-batch of vectors);
-      | please use the Reshape module to convert multi-dimensional input into vectors if appropriate"
+      | please use the Reshape module to convert multi-dimensional input into vectors
+      | if appropriate"
     """.stripMargin
 
   final val constrainInputAs3DOrBatch =
     """
       | The input to the layer needs to be a 3D tensor(or a mini-batch of 3D tensors);
-      | please use the Reshape module to convert multi-dimensional input into 3D tensors if appropriate"
+      | please use the Reshape module to convert multi-dimensional input into 3D tensors
+      | if appropriate"
     """.stripMargin
 }

@@ -34,7 +34,8 @@ class LogSoftMax[T: ClassTag](
   private var results: Array[Future[Unit]] = null
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2, ErrorInfo.constrainInputAsVectorOrBatch)
+    require(input.dim() == 1 || input.dim() == 2,
+      "LogSoftMax: " + ErrorInfo.constrainInputAsVectorOrBatch)
     output.resizeAs(input)
     val (nframe, dim) =
       if (input.nDimension() == 1) (1, input.size(1)) else (input.size(1), input.size(2))

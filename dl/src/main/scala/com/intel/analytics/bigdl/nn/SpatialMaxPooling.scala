@@ -50,7 +50,8 @@ class SpatialMaxPooling[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3 || input.dim() == 4, ErrorInfo.constrainInputAs3DOrBatch)
+    require(input.dim() == 3 || input.dim() == 4,
+      "SpatialMaxPooling: " + ErrorInfo.constrainInputAs3DOrBatch)
     val dimw = input.dim()
     val dimh = input.dim() - 1
     require(input.size(dimw) >= kW - padW && input.size(dimh) >= kH - padH,

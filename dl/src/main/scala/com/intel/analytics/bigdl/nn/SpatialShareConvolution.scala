@@ -42,7 +42,8 @@ class SpatialShareConvolution[T: ClassTag](
   padW, padH, nGroup, propagateBack, initMethod) {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3 || input.dim() == 4, ErrorInfo.constrainInputAs3DOrBatch)
+    require(input.dim() == 3 || input.dim() == 4,
+      "SpatialShareConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
     require(input.isContiguous())
 
     if (weightMM == null) {
