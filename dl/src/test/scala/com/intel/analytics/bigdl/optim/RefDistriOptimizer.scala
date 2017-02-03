@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset.{MiniBatch}
-import com.intel.analytics.bigdl.parameters.FP16CompressedTensor
+import com.intel.analytics.bigdl.parameters.UnCompressedTensor
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -75,7 +75,7 @@ object RefDistriOptimizer {
       val (lossSum, grad, batch) = data.mapPartitions(iter => {
         val (localW, localG) = model.getParameters()
         model.zeroGradParameters()
-        val fp16W = new FP16CompressedTensor[T](localW)
+        val fp16W = new UnCompressedTensor[T](localW)
         fp16W.deCompress(localW)
         val batch = iter.next()
         val input = batch.data
@@ -89,7 +89,7 @@ object RefDistriOptimizer {
       }).reduce((l, r) => {
         (ev.plus(l._1, r._1), {
           l._2.add(r._2)
-          val fp16W = new FP16CompressedTensor[T](l._2)
+          val fp16W = new UnCompressedTensor[T](l._2)
           fp16W.deCompress(l._2)
           l._2
         }, l._3 + r._3)

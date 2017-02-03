@@ -25,6 +25,7 @@ import scala.reflect.ClassTag
 
 abstract trait CompressedTensor[T] extends Serializable {
 
+  // TODO: rename tp deCompressTo
   def deCompress(srcOffset: Int, tensor: Tensor[T], tgtOffset: Int, length: Int): Unit
 
   def deCompress(tensor: Tensor[T]): Unit
@@ -41,29 +42,37 @@ abstract trait CompressedTensor[T] extends Serializable {
 
   def parAdd(data: ByteBuffer): this.type
 
+  // TODO: rename tp compressTo
   def compress(offset: Int, src: Tensor[T], srcOffset: Int, length: Int): this.type
 
   def compress(tensor: Tensor[T]): this.type
 }
 
 object SerializerInstance {
-  private var pm: String = "fp16"
+  sealed trait SerializerType
 
-  def setSerializer(pm: String): Unit = {
-    if (pm.toLowerCase != "fp16") throw new IllegalArgumentException("Unsupported parameter type!")
+  object DoubleType extends SerializerType
+
+  object FloatType extends SerializerType
+
+  object Fp16Type extends SerializerType
+
+  private var pm: SerializerType = Fp16Type
+
+  def setSerializerType(pm: SerializerType): Unit = {
     this.pm = pm
   }
 
   def serialize[T: ClassTag](data: Tensor[T]): CompressedTensor[T] = {
-    pm.toLowerCase match {
-      case "fp16" => new FP16CompressedTensor[T](data)
+    pm match {
+      case Fp16Type => new UnCompressedTensor[T](data)
       case _ => throw new IllegalArgumentException("Unsupported parameter type")
     }
   }
 
   def serialize[T: ClassTag](data: ByteBuffer): CompressedTensor[T] = {
-    pm.toLowerCase() match {
-      case "fp16" => new FP16CompressedTensor[T](data)
+    pm match {
+      case Fp16Type => new UnCompressedTensor[T](data)
       case _ => throw new IllegalArgumentException("Unsupported parameter type")
     }
   }

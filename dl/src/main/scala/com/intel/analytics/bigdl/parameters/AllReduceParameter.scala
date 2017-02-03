@@ -68,7 +68,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
   }
 
   def readParameterBuffer(): CompressedTensor[T] = {
-    new FP16SplitsCompressedTensor[T](size,
+    new SplitsUnCompressedTensor[T](size,
       partitionNum).asInstanceOf[CompressedTensor[T]]
   }
 
@@ -108,7 +108,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
     BlockManagerWrapper.putSingle(getGradientPartitionId(),
       _gradients, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
     val blockId = getWeightBlockId(partitionId)
-    val fp16param = new FP16CompressedTensor[T](length)(_classTag)
+    val fp16param = new UnCompressedTensor[T](length)(_classTag)
     fp16param.compress(0, parameter, start, length)
     BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
@@ -139,7 +139,9 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
             bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId).get))
           val start = pid * taskSize + math.min(pid, extraSize)
           val length = taskSize + (if (pid < extraSize) 1 else 0)
-          require(localBuffer.array().length == length * 2)
+          require(localBuffer.array().length == length * UnCompressedTensor.tLength(),
+            s"${localBuffer.array().length} == ${length * UnCompressedTensor.tLength()}"
+          )
           SerializerInstance.serialize(localBuffer).deCompress(0, localParameter, start, length)
           BlockManagerWrapper.unlock(blockId)
           pid
