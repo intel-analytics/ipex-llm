@@ -430,7 +430,10 @@ object DistriOptimizer {
       case _ => throw new IllegalArgumentException
     }
     ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
-      val workingModels = modelIter.next().localModels
+      val cached = modelIter.next()
+      val criterion = cached.localCriterions
+      val workingModels = cached.localModels
+
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
         require(batch.data.size(1) == batch.labels.size(1))
@@ -446,7 +449,7 @@ object DistriOptimizer {
               val target = batch.labels.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)
               vMethods.map(validation => {
-                validation(output, target)
+                validation(output, target, criterion(b))
               })
             }
           )
