@@ -129,6 +129,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     updateOutput(input)
     forwardTime += System.nanoTime() - before
 
+//    println(this.getClass.getName + " forward: " + ((System.nanoTime() - before) / 1e3))
     output
   }
 
@@ -148,6 +149,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     accGradParameters(input, gradOutput)
     backwardTime += System.nanoTime() - before
 
+//    println(this.getClass.getName + " backward: " + ((System.nanoTime() - before) / 1e3))
     gradInput
   }
 

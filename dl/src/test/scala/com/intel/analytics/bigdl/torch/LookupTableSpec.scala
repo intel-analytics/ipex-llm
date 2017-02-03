@@ -107,7 +107,6 @@ class LookupTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
       "_gradInput = module:backward(input, output)\n" +
       "i = i + 1\n" +
       "end\n" +
-      "_gradInput = module:backward(input:int(),output)\n" +
       "gradInput = _gradInput:double()\n" +
       "weight = module.weight\n" +
       "gradweight = module.gradWeight\n"

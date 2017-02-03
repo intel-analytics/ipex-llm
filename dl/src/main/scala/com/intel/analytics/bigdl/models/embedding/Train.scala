@@ -69,7 +69,7 @@ object Train {
       word2Vec.getModel
     }
 
-    //    word2Vec.wordVectors.weight.apply1(x => 1)
+//        word2Vec.wordVectors.weight.apply1(x => 1)
     val optimizer = Optimizer(
       model = model,
       dataset = trainSet,

@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.models.embedding
 
 import breeze.linalg.argsort
+import breeze.numerics.sqrt
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, Transformer}
 import com.intel.analytics.bigdl.models.embedding.Utils.Word2VecConfig
@@ -73,9 +74,12 @@ class Word2Vec(val params: Word2VecConfig)
    * Generate the training model of word2vec
    */
   def getModel: Module[Float] = {
-    wordVectors = LookupTable(vocabSize, params.embeddingSize).reset(0.25)
-    contextVectors = LookupTable(vocabSize, params.embeddingSize).reset(0.25)
-    contextVectors.weight.set(wordVectors.weight)
+    wordVectors = LookupTable(vocabSize, params.embeddingSize)
+    wordVectors.weight.apply1(x => RNG.uniform(-0.5, 0.5).toFloat / params.embeddingSize)
+    contextVectors = LookupTable(vocabSize, params.embeddingSize)
+          .reset(1.0 / sqrt(params.embeddingSize))
+//    contextVectors.weight.zero()
+//    contextVectors.weight.set(wordVectors.weight)
     new Sequential()
       .add(ConcatTable()
         .add(Narrow(2, 2, params.numNegSamples + 1))

@@ -88,7 +88,7 @@ object DistriOptimizer {
     val shuffleBefore = System.nanoTime()
     logger.info(s"config $state")
     logger.info(s"Shuffle data")
-    dataset.shuffle()
+//    dataset.shuffle()
     val shuffleEnd = System.nanoTime()
     logger.info(s"Shuffle data complete. Takes ${(shuffleEnd - shuffleBefore) / 1e9}s")
 

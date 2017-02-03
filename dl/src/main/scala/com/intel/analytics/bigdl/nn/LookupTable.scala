@@ -20,8 +20,10 @@ import breeze.numerics.{abs, pow}
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 /**
@@ -39,7 +41,11 @@ class LookupTable[T: ClassTag]
   val gradWeight = Tensor[T](nIndex, nOutput).zero()
 
   private var inputBuffer = Tensor[T]()
+  private var normBuffer = Tensor[T]()
   private val countBuffer = Tensor[T]()
+
+  @transient
+  protected var results: Array[Future[Unit]] = _
 
   reset()
 
@@ -56,18 +62,18 @@ class LookupTable[T: ClassTag]
     if (Double.MaxValue == maxNorm) {
       return
     }
-    inputBuffer = input.clone()
-    if (inputBuffer.dim() == 2) {
-      inputBuffer = inputBuffer.view(inputBuffer.nElement())
+    normBuffer = input.clone()
+    if (normBuffer.dim() == 2) {
+      normBuffer = normBuffer.view(normBuffer.nElement())
     }
     require(weight.isContiguous(), "weight must be contiguous")
-    require(inputBuffer.isContiguous(), "input must be contiguous")
-    require(inputBuffer.nDimension() == 1, "idx must be a vector")
+    require(normBuffer.isContiguous(), "input must be contiguous")
+    require(normBuffer.nDimension() == 1, "idx must be a vector")
     require(normType > 0, "non-positive-norm not supported")
 
-    val rowIdx = inputBuffer.storage().array()
-    val rowOffset = inputBuffer.storageOffset() - 1
-    var numEle = inputBuffer.nElement()
+    val rowIdx = normBuffer.storage().array()
+    val rowOffset = normBuffer.storageOffset() - 1
+    var numEle = normBuffer.nElement()
     val stride = weight.stride(1)
 
     val gw = weight.storage().array()
@@ -152,12 +158,50 @@ class LookupTable[T: ClassTag]
     require(input.dim() == 1 || input.dim() == 2, "input must be a vector or matrix")
     renorm(input)
     inputBuffer = input.contiguous()
+    var before = System.nanoTime()
     if (inputBuffer.dim() == 1) {
       output.index(1, inputBuffer, weight)
     } else if (inputBuffer.dim() == 2) {
       output.index(1, inputBuffer.view(inputBuffer.nElement()), weight)
+      //      println("Look a forward: " + ((System.nanoTime() - before) / 1e3))
+      //      before = System.nanoTime()
       output = output.view(inputBuffer.size(1), inputBuffer.size(2), weight.size(2))
     }
+//    else {
+//      require(inputBuffer.dim() == 2)
+//
+//      val newBuffer = inputBuffer.view(inputBuffer.nElement())
+//      val batchSize = input.size(1)
+//
+//      if (results == null || results.length != batchSize) {
+//        results = new Array[Future[Unit]](input.size(2))
+//      }
+//
+//      val numEle = newBuffer.nElement()
+//      val newSize = weight.size()
+//      newSize(0) = numEle
+//      output.resize(newSize)
+//
+//      var i = 0
+//      while (i < input.size(2)) {
+//        val _i = i
+//        results(i) = Engine.model.invoke(() => {
+//          var _j = 1 + _i * batchSize
+//          while (_j <= (_i + 1) * batchSize) {
+//            output.select(1, _j)
+//              .copy(weight.select(1, ev.toType[Double](newBuffer(Array(_j))).toInt))
+// //            this.select(dim, i).copy(y.select(dim, ev.toType[Double](indexC(Array(i))).toInt))
+//            _j += 1
+//          }
+// //          output.index(1, newBuffer(_i), weight)
+//        })
+//        i += 1
+//      }
+//
+//      Engine.model.sync(results)
+//      output = output.view(inputBuffer.size(1), inputBuffer.size(2), weight.size(2))
+//    }
+//    println("Look forward: " + ((System.nanoTime() - before) / 1e3))
     output
   }
 

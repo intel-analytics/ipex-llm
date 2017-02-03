@@ -78,7 +78,9 @@ class MM[T: ClassTag](
       require(ma.size(3) == mb.size(2), "matrix sizes do not match")
 
       output.resize(ma.size(1), ma.size(2), mb.size(3)).zero()
+//      var before = System.nanoTime()
       output.bmm(ma, mb)
+//      println("bmm: " + ((System.nanoTime() - before) / 1e3))
     }
 
     output
