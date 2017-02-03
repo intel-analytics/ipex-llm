@@ -42,15 +42,16 @@ class Squeeze[@specialized(Float, Double) T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     var addOne = false
+    var dimension = dim
     if (numInputDims != Int.MinValue && input.dim() == numInputDims + 1) {
       if (dim != Int.MinValue) {
-        dim += 1
+        dimension = dim + 1
       } else if (input.size(1) == 1) {
         addOne = true // in case of miniBatch of size 1
       }
     }
     output.set(input)
-    if (dim != Int.MinValue) output.squeeze(dim) else output.squeeze()
+    if (dimension != Int.MinValue) output.squeeze(dimension) else output.squeeze()
     if (addOne) {
       val s = output.size()
       s(1) = 1

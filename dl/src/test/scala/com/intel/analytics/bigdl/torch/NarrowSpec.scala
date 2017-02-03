@@ -33,8 +33,12 @@ class NarrowSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val gradOutput = Tensor[Double](5, 4, 14).apply1(e => Random.nextDouble())
 
     val code = "module = nn.Narrow(1, 3, -3)\n" +
+      "local i = 0\n" +
+      "while i < 10 do\n" +
       "output = module:forward(input)\n" +
-      "gradInput = module:backward(input,gradOutput)"
+      "gradInput = module:backward(input, output)\n" +
+      "i = i + 1\n" +
+      "end"
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
@@ -44,8 +48,14 @@ class NarrowSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val module = Narrow[Double](1, 3, -3)
     val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input, gradOutput)
+    var i = 0
+    var output = Tensor[Double]()
+    var gradInput = Tensor[Double]()
+    while (i < 10) {
+      output = module.forward(input)
+      gradInput = module.backward(input, output)
+      i += 1
+    }
     val end = System.nanoTime()
     val scalaTime = end - start
 

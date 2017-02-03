@@ -21,8 +21,6 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import scala.collection.mutable
-
 class MMSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
@@ -41,15 +39,24 @@ class MMSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val module = new MM[Double]()
 
     val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input, gradOutput)
+    var i = 0
+    var output = Tensor[Double]()
+    var gradInput = T()
+    while (i < 2) {
+      output = module.forward(input)
+      gradInput = module.backward(input, gradOutput)
+      i += 1
+    }
     val end = System.nanoTime()
     val scalaTime = end - start
 
     val code = "module = nn.MM()\n" +
+      "local i = 0\n" +
+      "while i < 100 do\n" +
       "output = module:forward(input)\n " +
-      "gradInput = module:backward(input, gradOutput)"
-
+      "gradInput = module:backward(input, gradOutput)\n" +
+      "i = i + 1\n" +
+      "end\n"
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))

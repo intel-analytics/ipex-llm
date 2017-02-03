@@ -35,6 +35,10 @@ class MapTable[T: ClassTag](
   var module: AbstractModule[_ <: Activity, _ <: Activity, T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T]  {
 
+  if (module != null) {
+    modules.append(module.asInstanceOf[AbstractModule[Activity, Activity, T]])
+  }
+
   private def extend(n: Int): Unit = {
     modules.update(0, module.asInstanceOf[AbstractModule[Activity, Activity, T]])
     var i = 1

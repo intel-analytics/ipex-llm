@@ -434,7 +434,7 @@ trait TensorMath[T] {
   /** res = v1 * res + v2 * mat1*mat2 */
   def addmm(v1: T, v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T]
 
-  /** res = mat1*mat2 */
+  /** res = res + mat1*mat2 */
   def mm(mat1: Tensor[T], mat2: Tensor[T]): Tensor[T]
 
   /**

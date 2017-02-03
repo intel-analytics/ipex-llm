@@ -44,8 +44,12 @@ class LookupTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.LookupTable(9, 4, 2, 0.1)\n" +
       "module:scaleGradByFreq()\n" +
-      "output = module:forward(input:int())\n" +
-      "_gradInput = module:backward(input:int(), output)\n" +
+      "local i = 0\n" +
+      "while i < 10 do\n" +
+      "output = module:forward(input)\n" +
+      "_gradInput = module:backward(input, output)\n" +
+      "i = i + 1\n" +
+      "end\n" +
       "gradInput = _gradInput:double()\n" +
       "weight = module.weight\n" +
       "gradweight = module.gradWeight\n"
@@ -58,8 +62,14 @@ class LookupTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val luagradWeight = torchResult("gradweight").asInstanceOf[Tensor[Double]]
 
     val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input, output)
+    var i = 0
+    var output = Tensor[Double]()
+    var gradInput = Tensor[Double]()
+    while (i < 10) {
+      output = module.forward(input)
+      gradInput = module.backward(input, output)
+      i += 1
+    }
     val weight = module.weight
     val gradWeight = module.gradWeight
     val end = System.nanoTime()
@@ -91,7 +101,12 @@ class LookupTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.LookupTable(10, 3, 3)\n" +
-      "output = module:forward(input:int())\n" +
+      "local i = 0\n" +
+      "while i < 10 do\n" +
+      "output = module:forward(input)\n" +
+      "_gradInput = module:backward(input, output)\n" +
+      "i = i + 1\n" +
+      "end\n" +
       "_gradInput = module:backward(input:int(),output)\n" +
       "gradInput = _gradInput:double()\n" +
       "weight = module.weight\n" +
@@ -105,8 +120,14 @@ class LookupTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val luagradWeight = torchResult("gradweight").asInstanceOf[Tensor[Double]]
 
     val start = System.nanoTime()
-    val output = module.updateOutput(input)
-    val gradInput = module.backward(input, output)
+    var i = 0
+    var output = Tensor[Double]()
+    var gradInput = Tensor[Double]()
+    while (i < 10) {
+      output = module.forward(input)
+      gradInput = module.backward(input, output)
+      i += 1
+    }
     val weight = module.weight
     val gradWeight = module.gradWeight
     val end = System.nanoTime()

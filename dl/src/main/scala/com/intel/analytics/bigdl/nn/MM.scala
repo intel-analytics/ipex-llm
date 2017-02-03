@@ -63,7 +63,7 @@ class MM[T: ClassTag](
       }
       require(ma.size(2) == mb.size(1), "matrix sizes do not match")
 
-      output.resize(ma.size(1), mb.size(2))
+      output.resize(ma.size(1), mb.size(2)).zero()
       output.mm(ma, mb)
     } else {
       require(mb.dim() == 3, "second input tensor must be 3D")
@@ -77,7 +77,7 @@ class MM[T: ClassTag](
       }
       require(ma.size(3) == mb.size(2), "matrix sizes do not match")
 
-      output.resize(ma.size(1), ma.size(2), mb.size(3))
+      output.resize(ma.size(1), ma.size(2), mb.size(3)).zero()
       output.bmm(ma, mb)
     }
 
@@ -87,8 +87,8 @@ class MM[T: ClassTag](
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
     var (ma, mb) = checkInputFormat(input)
 
-    gradInput[Tensor[T]](1).resizeAs(ma)
-    gradInput[Tensor[T]](2).resizeAs(mb)
+    gradInput[Tensor[T]](1).resizeAs(ma).zero()
+    gradInput[Tensor[T]](2).resizeAs(mb).zero()
 
     require(gradOutput.dim() == 2 || gradOutput.dim() == 3,
       "arguments must be a 2D or 3D Tensor")
