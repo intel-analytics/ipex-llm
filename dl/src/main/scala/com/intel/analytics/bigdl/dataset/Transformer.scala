@@ -84,15 +84,15 @@ class SampleToBatch[T: ClassTag]
 
   override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
     new Iterator[MiniBatch[T]] {
-      private val featureTensor: Tensor[T] = Tensor[T]()
-      private val labelTensor: Tensor[T] = Tensor[T]()
+      private var featureTensor: Tensor[T] = Tensor[T]()
+      private var labelTensor: Tensor[T] = Tensor[T]()
       private var featureData: Array[T] = null
       private var labelData: Array[T] = null
       private val batchSize = Utils.getBatchSize(totalBatch)
       private var featureSize: Array[Int] = null
       private var labelSize: Array[Int] = null
-      private var _featureLength: Int = 0
-      private var _labelLength: Int = 0
+      private var oneFeatureLength: Int = 0
+      private var oneLabelLength: Int = 0
       override def hasNext: Boolean = prev.hasNext
 
       override def next(): MiniBatch[T] = {
@@ -100,28 +100,26 @@ class SampleToBatch[T: ClassTag]
           var i = 0
           while (i < batchSize && prev.hasNext) {
             val sample = prev.next()
-            val featureLength = sample.getFeature().nElement()
-            val labelLength = sample.getLabel().nElement()
-            if (featureSize == null || labelSize == null
-              || _featureLength != featureLength
-              || _labelLength != labelLength) {
-              featureSize = Array(1) ++ sample.getFeature().size
-              labelSize = Array(1) ++ sample.getLabel().size
-              _featureLength = featureLength
-              _labelLength = labelLength
+            if (featureData == null) {
+              oneFeatureLength = sample.feature().nElement()
+              oneLabelLength = sample.label().nElement()
+              /**
+               * For example,
+               * the featureSize of an image is: [3, 224, 224]
+               * the labelSize of an image is: [1]
+               *
+               * the featureSize of a fixed sentence input is: [10, 1000]
+               * the labelSize of a fixed sentence input is: [10]
+               */
+              featureSize = Array(1) ++ sample.feature().size
+              labelSize = Array(1) ++ sample.label().size
+              featureData = new Array[T](batchSize * oneFeatureLength)
+              labelData = new Array[T](batchSize * oneLabelLength)
             }
-            if (featureData == null || featureData.length < batchSize * featureLength) {
-              featureData = new Array[T](batchSize * featureLength)
-            }
-            if (labelData == null || labelData.length < batchSize * labelLength) {
-              labelData = new Array[T](batchSize * labelLength)
-            }
-            sample.copyToLabel(labelData, i*labelLength, labelLength)
-            sample.copyToFeature(featureData, i*featureLength, featureLength)
-
+            sample.copyFromLabel(labelData, i*oneLabelLength, oneLabelLength)
+            sample.copyFromFeature(featureData, i*oneFeatureLength, oneFeatureLength)
             i += 1
           }
-
           featureSize(0) = i
           labelSize(0) = i
           featureTensor.set(Storage[T](featureData),
