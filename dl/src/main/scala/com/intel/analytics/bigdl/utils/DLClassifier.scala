@@ -17,6 +17,7 @@
 package org.apache.spark.ml
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.models.utils.ModelBroadCast
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.apache.spark.ml.param.shared.{HasInputCol, HasOutputCol}
@@ -86,10 +87,11 @@ object DLClassifier{
     outputCol: String,
     dataset: DataFrame)(implicit ev: TensorNumeric[T]) : DataFrame = {
     val model = modelTrain.evaluate()
-    val modelBroadCast = dataset.sqlContext.sparkContext.broadcast(model)
+
+    val modelBroadCast = ModelBroadCast[T].broadcast(dataset.sqlContext.sparkContext, model)
 
     val predictRdd = dataset.rdd.mapPartitions{ rows =>
-      val localModel = modelBroadCast.value.cloneModule()
+      val localModel = modelBroadCast.cloneModel()
       val tensorBuffer = Tensor[T](batchSize)
       val batches = rows.grouped(batchSize(0))
 
