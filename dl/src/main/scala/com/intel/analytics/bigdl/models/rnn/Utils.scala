@@ -25,25 +25,34 @@ import org.apache.log4j.Logger
 
 object Utils {
   case class TrainParams(
-    folder: String =
-      "./",
-    modelSnapshot: Option[String] = None,
-    stateSnapshot: Option[String] = None,
-    checkpoint: Option[String] = None,
-    learningRate: Double = 0.1,
-    momentum: Double = 0.0,
-    weightDecay: Double = 0.0,
-    dampening: Double = 0.0,
-    hiddenSize: Int = 40,
-    vocabSize: Int = 4000,
-    bptt: Int = 4,
-    nEpochs: Int = 30,
-    coreNumber: Int = -1)
+                          dataFolder: String = "./",
+                          saveFolder: String = "./",
+                          modelSnapshot: Option[String] = None,
+                          stateSnapshot: Option[String] = None,
+                          checkpoint: Option[String] = None,
+                          batchSize: Int = 128,
+                          learningRate: Double = 0.1,
+                          momentum: Double = 0.0,
+                          weightDecay: Double = 0.0,
+                          dampening: Double = 0.0,
+                          hiddenSize: Int = 40,
+                          vocabSize: Int = 4000,
+                          bptt: Int = 4,
+                          nEpochs: Int = 30,
+                          coreNumber: Int = -1,
+                          nodeNumber: Int = -1,
+                          env: String = "local")
 
   val trainParser = new OptionParser[TrainParams]("BigDL SimpleRNN Train Example") {
-    opt[String]('f', "folder")
+    opt[String]('f', "dataFolder")
       .text("where you put the text data")
-      .action((x, c) => c.copy(folder = x))
+      .action((x, c) => c.copy(dataFolder = x))
+      .required()
+
+    opt[String]('s', "saveFolder")
+      .text("where you save the processed text data")
+      .action((x, c) => c.copy(saveFolder = x))
+      .required()
 
     opt[String]("model")
       .text("model snapshot location")
@@ -55,6 +64,11 @@ object Utils {
     opt[String]("checkpoint")
       .text("where to cache the model and state")
       .action((x, c) => c.copy(checkpoint = Some(x)))
+
+    opt[Int]('b', "batchSize")
+      .text("batchSize of rnn")
+      .action((x, c) => c.copy(batchSize = x))
+      .required()
 
     opt[Double]('r', "learningRate")
       .text("learning rate")
@@ -89,8 +103,25 @@ object Utils {
       .action((x, c) => c.copy(nEpochs = x))
 
     opt[Int]('c', "core")
-      .text("cores number to train the model")
+      .text("cores number on each node")
       .action((x, c) => c.copy(coreNumber = x))
+      .required()
+
+    opt[Int]('n', "node")
+      .text("node number to train the model")
+      .action((x, c) => c.copy(nodeNumber = x))
+      .required()
+
+    opt[String]("env")
+      .text("execution environment")
+      .validate(x => {
+        if (Set("local", "spark").contains(x.toLowerCase)) {
+          success
+        } else {
+          failure("env only support local|spark")
+        }
+      })
+      .action((x, c) => c.copy(env = x.toLowerCase()))
       .required()
   }
 

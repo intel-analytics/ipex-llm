@@ -20,13 +20,16 @@ import java.io.File
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
-import com.intel.analytics.bigdl.dataset.text.{LabeledSentenceToSample}
+import com.intel.analytics.bigdl.dataset.text._
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import org.apache.log4j.Logger
+import org.apache.spark.SparkContext
+
+import scala.io.Source
 
 object Train {
 
@@ -35,37 +38,70 @@ object Train {
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
 
-      if (!new File(param.folder + "/input.txt").exists()) {
-        throw new IllegalArgumentException("Input file not exists!")
+      val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark").map(conf => {
+        conf.setAppName("Train rnn on text")
+          .set("spark.akka.frameSize", 64.toString)
+          .set("spark.task.maxFailures", "1")
+        new SparkContext(conf)
+      })
+
+      val (trainSet, validationSet, dictionaryLength) = if (!sc.isDefined) {
+        val logData = Source.fromFile(param.dataFolder + "/" + "train.txt").getLines().toArray
+        val trainSents = DataSet.array(logData
+          .filter(!_.isEmpty)).transform(SentenceSplitter())
+        val output_sents = trainSents.toLocal().data(train = false).flatMap(item => item.iterator)
+        val tokens = DataSet.array(output_sents.toArray).transform(DocumentTokenizer())
+        val dictionary = Dictionary(tokens.toLocal().data(false), param.vocabSize)
+        dictionary.save(param.saveFolder)
+        println("vocabulary size = " + dictionary.vocabSize())
+        var maxTrainLength = 0
+        tokens.toLocal().data(false).foreach(x => {
+          maxTrainLength = math.max(maxTrainLength, x.length)
+        })
+        val valData = Source.fromFile(param.dataFolder + "/" + "val.txt").getLines().toArray
+        val valSents = DataSet.array(valData
+          .filter(!_.isEmpty)).transform(SentenceSplitter())
+        val valoutput = valSents.toLocal().data(train = false).flatMap(item => item.iterator)
+        val valtokens = DataSet.array(valoutput.toArray).transform(DocumentTokenizer())
+        var maxValLength = 0
+        valtokens.toLocal().data(false).foreach(x => {
+          maxValLength = math.max(maxValLength, x.length)
+        })
+
+        println(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
+        (tokens
+          .transform(TextToLabeledSentence(dictionary))
+          .transform(LabeledSentenceToSample(dictionary.vocabSize() + 1,
+            Option(maxTrainLength), Option(maxTrainLength)))
+          .transform(SampleToBatch(batchSize = param.batchSize)),
+          valtokens
+            .transform(TextToLabeledSentence(dictionary))
+            .transform(LabeledSentenceToSample(dictionary.vocabSize() + 1,
+              Option(maxTrainLength), Option(maxTrainLength)))
+            .transform(SampleToBatch(batchSize = param.batchSize)),
+          dictionary.vocabSize() + 1)
+      } else {
+        val trainSents = DataSet.rdd(sc.get.textFile(param.dataFolder + "/" + "train.txt")
+          .filter(!_.isEmpty)).transform(SentenceSplitter())
+        val output_sents = trainSents.toDistributed().data(train = false).collect().flatten
+        val tokens = DataSet.rdd(sc.get.parallelize(output_sents)).transform(DocumentTokenizer())
+        val dictionary = Dictionary(tokens.toDistributed().data(false),
+          param.vocabSize)
+        dictionary.save(param.saveFolder)
+        val valSents = DataSet.rdd(sc.get.textFile(param.dataFolder + "/" + "val.txt")
+          .filter(!_.isEmpty)).transform(SentenceSplitter())
+        val valoutput = valSents.toDistributed().data(train = false).collect().flatten
+        val valtokens = DataSet.rdd(sc.get.parallelize(valoutput)).transform(DocumentTokenizer())
+        (tokens
+          .transform(TextToLabeledSentence(dictionary))
+          .transform(LabeledSentenceToSample(dictionary.vocabSize() + 1))
+          .transform(SampleToBatch(batchSize = param.batchSize)),
+          valtokens
+            .transform(TextToLabeledSentence(dictionary))
+            .transform(LabeledSentenceToSample(dictionary.vocabSize() + 1))
+            .transform(SampleToBatch(batchSize = param.batchSize)),
+          dictionary.vocabSize() + 1)
       }
-      logger.info("preprocessing input text file ..")
-      val dictionaryLength = param.vocabSize + 1
-      val wt = new WordTokenizer(
-        param.folder + "/input.txt",
-        param.folder,
-        dictionaryLength = dictionaryLength
-      )
-      wt.process()
-
-      logger.info("loading the training and testing data ..")
-      val dataArray = loadInData(param.folder, dictionaryLength)
-      val trainData = dataArray._1
-      val valData = dataArray._2
-      val trainMaxLength = dataArray._3
-      val valMaxLength = dataArray._4
-
-      val batchSize = 1
-      val featurePadding = Tensor[Float](dictionaryLength).fill(0.0f)
-      featurePadding(4000) = 1.0f
-      val labelPadding = 3999
-      val trainSet = DataSet.array(trainData)
-           .transform(LabeledSentenceToSample(dictionaryLength))
-           .transform(SampleToBatch(
-             batchSize, Some(featurePadding), Some(labelPadding), Some(trainMaxLength)))
-      val validationSet = DataSet.array(valData)
-           .transform(LabeledSentenceToSample(dictionaryLength))
-           .transform(SampleToBatch(
-             batchSize, Some(featurePadding), Some(labelPadding), Some(valMaxLength)))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -87,11 +123,10 @@ object Train {
           "dampening" -> param.dampening)
       }
 
-      Engine.init(1, param.coreNumber, false)
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
-        criterion = new CrossEntropyCriterion[Float]()
+        criterion = CrossEntropyCriterion[Float]()
       )
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)

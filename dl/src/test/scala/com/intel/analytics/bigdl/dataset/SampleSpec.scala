@@ -86,4 +86,13 @@ class SampleSpec extends FlatSpec with Matchers {
       i += 1
     }
   }
+  "Tensor Test" should "succeed" in {
+    val a = Tensor[Float](Array(3, 2, 5)).randn()
+    println(a)
+    val c = a.select(2, 1)
+    println(c)
+    val b = Tensor[Float].resizeAs(a).zero()
+    b.select(2, 1).copy(c)
+    println(b)
+  }
 }
