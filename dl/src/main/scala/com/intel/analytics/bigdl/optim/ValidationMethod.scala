@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.nn.CrossEntropyCriterion
+import com.intel.analytics.bigdl.Criterion
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 trait ValidationMethod[T] extends Serializable {
-  def apply(output: Activity, target: Activity): ValidationResult
+  def apply(output: Activity, target: Activity, criterion: Criterion[T] = null): ValidationResult
 
   protected def format(): String
 
@@ -85,7 +85,8 @@ class AccuracyResult(private var correct: Int, private var count: Int)
 }
 
 class Top1Accuracy[T] extends ValidationMethod[T] {
-  override def apply(output: Activity, target: Activity): ValidationResult = {
+  override def apply(output: Activity, target: Activity, criterion: Criterion[T] = null):
+  ValidationResult = {
     var correct = 0
     var count = 0
 
@@ -119,7 +120,8 @@ class Top1Accuracy[T] extends ValidationMethod[T] {
 }
 
 class Top5Accuracy[T] extends ValidationMethod[T] {
-  override def apply(output: Activity, target: Activity): AccuracyResult = {
+  override def apply(output: Activity, target: Activity, criterion: Criterion[T] = null):
+  AccuracyResult = {
     val _output = output.asInstanceOf[Tensor[T]]
     val _target = target.asInstanceOf[Tensor[T]]
     var correct = 0
@@ -199,12 +201,11 @@ class LossResult(private var loss: Float, private var count: Int)
 
 class Loss[@specialized(Float, Double)T: ClassTag]()
 (implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
-  override def apply(output: Activity, target: Activity): LossResult = {
-    val cri = CrossEntropyCriterion[T]()
+  override def apply(output: Activity, target: Activity, criterion: Criterion[T]): LossResult = {
     val _output = output.asInstanceOf[Tensor[T]]
     val _target = target.asInstanceOf[Tensor[T]]
-    val loss = ev.toType[Float](cri.forward(_output, _target))
-    var count = 1
+    val loss = ev.toType[Float](criterion.forward(_output, _target))
+    val count = 1
 
     new LossResult(loss, count)
   }
