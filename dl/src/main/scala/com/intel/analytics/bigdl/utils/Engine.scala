@@ -323,6 +323,20 @@ object Engine {
     model
   }
 
+  @deprecated
+  def init(
+    node: Int,
+    cores: Int,
+    onSpark: Boolean = false
+  ): Option[SparkConf] = {
+    val result = init
+    require(node == Engine.nodeNumber(), s"The input node number($node) is inconsistent with " +
+      s"auto-detect node number(${Engine.nodeNumber()})")
+    require(cores == Engine.coreNumber(), s"The input core number($cores) is inconsistent with " +
+      s"auto-detect core number(${Engine.coreNumber()})")
+    result
+  }
+
   /**
    * Try to automatically find node number and core number from the environment.
    *
@@ -339,7 +353,7 @@ object Engine {
   def init: Option[SparkConf] = {
     val ret = if (System.getProperty("SPARK_SUBMIT") != null) {
       _onSpark = true
-      val (node, cores) = sparkNodeAndCore
+      val (node, cores) = sparkExecutorAndCore
       nodeNum = node
       physicalCoreNumber = cores
       _model = initModelThreadPool()
@@ -352,8 +366,8 @@ object Engine {
           .setExecutorEnv("OMP_NUM_THREADS", "1")
           .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
           .setExecutorEnv("DL_NODE_NUMBER", nodeNum.toString)
+          .set("spark.shuffle.reduceLocality.enabled", "false")
           .set("spark.shuffle.blockTransferService", "nio")
-          .set("spark.akka.frameSize", "10")
           .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
       } else {
         throw new IllegalArgumentException(engineType.toString)
@@ -381,14 +395,14 @@ object Engine {
         1
       }
       require(maxExecutors == minExecutors, "spark.dynamicAllocation.maxExecutors and " +
-        "spark.dynamicAllocation.minExecutors must be identical in dynamic allocation")
+        "spark.dynamicAllocation.minExecutors must be identical in dynamic allocation for BigDL")
       Some(minExecutors)
     } else {
       None
     }
   }
 
-  private def sparkNodeAndCore : (Int, Int) = {
+  private def sparkExecutorAndCore : (Int, Int) = {
     require(System.getProperty("spark.master") != null, "Can't find spark.master, do you start " +
       "your application without spark-submit?")
     val master = System.getProperty("spark.master")
@@ -411,7 +425,7 @@ object Engine {
       val nodeNum = dynamicAllocationExecutor.getOrElse {
         val total = maxString.toInt
         require(total > core && total % core == 0, s"total core number($total) can't be divided " +
-          s"by single core number($core)")
+          s"by single core number($core) provided to spark-submit")
         total / core
       }
       (nodeNum, core)
@@ -430,7 +444,7 @@ object Engine {
       (node, core)
     } else if (master.toLowerCase.startsWith("mesos")) {
       // mesos mode
-      require(System.getProperty("spark.mesos.coarse") != "false", "Not support mesos " +
+      require(System.getProperty("spark.mesos.coarse") != "false", "Don't support mesos " +
         "fine-grained mode")
       val coreString = System.getProperty("spark.executor.cores")
       val maxString = System.getProperty("spark.executor.max")
@@ -438,12 +452,12 @@ object Engine {
       val nodeNum = dynamicAllocationExecutor.getOrElse {
         val total = maxString.toInt
         require(total > core && total % core == 0, s"total core number($total) can't be divided " +
-          s"by single core number($core)")
+          s"by single core number($core) provided to spark-submit")
         total / core
       }
       (nodeNum, core)
     } else {
-      throw new IllegalArgumentException(s"Unsupport master format $master")
+      throw new IllegalArgumentException(s"Unsupported master format $master")
     }
   }
 

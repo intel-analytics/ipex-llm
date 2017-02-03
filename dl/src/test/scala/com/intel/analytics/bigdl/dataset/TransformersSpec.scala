@@ -549,7 +549,6 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "LabeledSentence toSample" should "transform correctly for single label" in {
-    Engine.setNodeNumber(None)
     val input1 = Array(1.0f, 2.0f, 3.0f)
     val target1 = Array(1.0f)
     val input2 = Array(2.0f, 1.0f, 0.0f, 4.0f)
@@ -598,7 +597,6 @@ class TransformersSpec extends FlatSpec with Matchers {
     batch3.label() should be (tensorTarget3)
   }
   "LabeledSentence toSample" should "transform correctly for single label Double" in {
-    Engine.setNodeNumber(None)
     val input1 = Array(1.0, 2.0, 3.0)
     val target1 = Array(1.0)
     val input2 = Array(2.0, 1.0, 0.0, 4.0)
@@ -647,7 +645,6 @@ class TransformersSpec extends FlatSpec with Matchers {
     batch3.label() should be (tensorTarget3)
   }
   "LabeledSentence toSample" should "transform correctly for padding sentences single label" in {
-    Engine.setNodeNumber(None)
     val input1 = Array(1.0f, 2.0f, 3.0f)
     val target1 = Array(1.0f)
     val input2 = Array(2.0f, 1.0f, 0.0f, 4.0f)
@@ -696,7 +693,6 @@ class TransformersSpec extends FlatSpec with Matchers {
     batch3.label() should be (tensorTarget3)
   }
   "LabeledSentence toSample" should "transform correctly for language model label" in {
-    Engine.setNodeNumber(None)
     val input1 = Array(0.0f, 2.0f, 3.0f)
     val target1 = Array(2.0f, 3.0f, 4.0f)
     val input2 = Array(0.0f, 1.0f, 0.0f, 2.0f)
@@ -746,7 +742,6 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
   "LabeledSentence toSample" should "transform correctly" +
     " for language model label padding sentences" in {
-    Engine.setNodeNumber(None)
     val input1 = Array(0.0f, 2.0f, 3.0f)
     val target1 = Array(2.0f, 3.0f, 4.0f)
     val input2 = Array(0.0f, 1.0f, 0.0f, 2.0f)
