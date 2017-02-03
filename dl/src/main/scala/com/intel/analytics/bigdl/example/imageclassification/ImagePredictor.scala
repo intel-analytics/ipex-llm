@@ -44,11 +44,10 @@ object ImagePredictor {
           .set("spark.task.maxFailures", "1")
         new SparkContext(conf)
       })
-
+      require(Engine.onSpark, "Do you submit your job with spark-submit?")
       val sc = scc.get
       val sqlContext = new SQLContext(sc)
 
-      require(Engine.onSpark, "Do you submit your job with spark-submit?")
       val partitionNum = Engine.nodeNumber() * Engine.coreNumber()
       val model = loadModel(param)
       val valTrans = new SparkDLClassifier()
