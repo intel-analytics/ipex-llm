@@ -93,6 +93,11 @@ class SampleToBatch[T: ClassTag]
       private var labelSize: Array[Int] = null
       private var oneFeatureLength: Int = 0
       private var oneLabelLength: Int = 0
+      private var featureStrides: Array[Int] = null
+      private var labelStrides: Array[Int] = null
+      private var batchFeatureStrides: Array[Int] = null
+      private var batchLabelStrides: Array[Int] = null
+
       override def hasNext: Boolean = prev.hasNext
 
       override def next(): MiniBatch[T] = {
@@ -118,14 +123,23 @@ class SampleToBatch[T: ClassTag]
             }
             sample.copyFromLabel(labelData, i*oneLabelLength, oneLabelLength)
             sample.copyFromFeature(featureData, i*oneFeatureLength, oneFeatureLength)
+            if(null == featureStrides) {
+              featureStrides = sample.feature().stride()
+              labelStrides = sample.label().stride()
+            }
             i += 1
+          }
+
+          if(null == batchFeatureStrides) {
+            batchFeatureStrides = Array(featureSize.product) ++ featureStrides
+            batchLabelStrides = Array(labelSize.product) ++ labelStrides
           }
           featureSize(0) = i
           labelSize(0) = i
           featureTensor.set(Storage[T](featureData),
-            storageOffset = 1, sizes = featureSize)
+            storageOffset = 1, sizes = featureSize, strides = batchFeatureStrides)
           labelTensor.set(Storage[T](labelData),
-            storageOffset = 1, sizes = labelSize)
+            storageOffset = 1, sizes = labelSize, strides = batchLabelStrides)
           MiniBatch(featureTensor, labelTensor)
         } else {
           null

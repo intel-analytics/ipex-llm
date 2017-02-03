@@ -17,16 +17,9 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import java.nio.ByteBuffer
 import java.nio.file.Path
 
-import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
-import com.intel.analytics.bigdl.dataset.text.LabeledSentence
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
-
-import scala.collection.Iterator
-import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.tensor.Tensor
 
 /**
  * Represent an image
