@@ -39,6 +39,7 @@ class LookupTable[T: ClassTag]
   val gradWeight = Tensor[T](nIndex, nOutput).zero()
 
   private var inputBuffer = Tensor[T]()
+  private var normBuffer = Tensor[T]()
   private val countBuffer = Tensor[T]()
 
   reset()
@@ -52,18 +53,18 @@ class LookupTable[T: ClassTag]
     if (Double.MaxValue == maxNorm) {
       return
     }
-    inputBuffer.resize(input.size()).copy(input)
-    if (inputBuffer.dim() == 2) {
-      inputBuffer = inputBuffer.view(inputBuffer.nElement())
+    normBuffer.resize(input.size()).copy(input)
+    if (normBuffer.dim() == 2) {
+      normBuffer = normBuffer.view(normBuffer.nElement())
     }
     require(weight.isContiguous(), "weight must be contiguous")
-    require(inputBuffer.isContiguous(), "input must be contiguous")
-    require(inputBuffer.nDimension() == 1, "idx must be a vector")
+    require(normBuffer.isContiguous(), "input must be contiguous")
+    require(normBuffer.nDimension() == 1, "idx must be a vector")
     require(normType > 0, "non-positive-norm not supported")
 
-    val rowIdx = inputBuffer.storage().array()
-    val rowOffset = inputBuffer.storageOffset() - 1
-    var numEle = inputBuffer.nElement()
+    val rowIdx = normBuffer.storage().array()
+    val rowOffset = normBuffer.storageOffset() - 1
+    var numEle = normBuffer.nElement()
     val stride = weight.stride(1)
 
     val gw = weight.storage().array()
@@ -225,6 +226,7 @@ class LookupTable[T: ClassTag]
     super.clearState()
     inputBuffer.set()
     countBuffer.set()
+    normBuffer.set()
     this
   }
 
