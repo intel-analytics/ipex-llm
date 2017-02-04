@@ -244,7 +244,9 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
           var cc = 0
           while (iter.hasNext) {
             val img = iter.next()
-            cc += img.label().toInt
+            if (null != img) {
+              cc += img.label().toInt
+            }
             Thread.sleep(1)
           }
           cc
