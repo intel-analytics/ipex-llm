@@ -77,9 +77,8 @@ class Word2Vec(val params: Word2VecConfig)
     wordVectors = LookupTable(vocabSize, params.embeddingSize)
     wordVectors.weight.apply1(x => RNG.uniform(-0.5, 0.5).toFloat / params.embeddingSize)
     contextVectors = LookupTable(vocabSize, params.embeddingSize)
-          .reset(1.0 / sqrt(params.embeddingSize))
-//    contextVectors.weight.zero()
-//    contextVectors.weight.set(wordVectors.weight)
+    contextVectors.reset(1.0 / sqrt(params.embeddingSize))
+
     new Sequential()
       .add(ConcatTable()
         .add(Narrow(2, 2, params.numNegSamples + 1))
@@ -359,9 +358,11 @@ class Word2Vec(val params: Word2VecConfig)
   }
 
   /**
-   * Return the k-nearest words to a word or a vector based on cosine similarity
+   * Return the k-nearest words to a set of words based on cosine similarity
+   *
    * @param numSimilarWord return the number of the most similar words given a
    *                       input during prediction
+   * @return ranked most similar words, with corresponding similarity
    */
   def getSimilarWords(
     words: Array[String],
@@ -373,17 +374,31 @@ class Word2Vec(val params: Word2VecConfig)
         null
       } else {
         val vector = getVectorByString(lower)
-        val similarity = Tensor(vocabSize)
-          .mv(wordVectors.weight, vector)
-          .toBreezeVector()
-
-        implicit val ordering = Ordering.Float.reverse
-        argsort(similarity)
-          .take(numSimilarWord)
-          .toArray
-          .map(id => (vocab(id).word, similarity(id)))
+        getSimilarWordsGivenAVector(vector, numSimilarWord)
       }
     }).filter(_ != null)
+  }
+
+  /**
+   * Return the k-nearest words to a vector based on cosine similarity
+   *
+   * @param vector an input vector
+   * @param numSimilarWord return the number of the most similar words given a
+   *                       input during prediction
+   * @return ranked most similar words, with corresponding similarity
+   */
+  def getSimilarWordsGivenAVector(
+    vector: Tensor[Float],
+    numSimilarWord: Int): Array[(String, Float)] = {
+    val similarity = Tensor(vocabSize)
+      .mv(wordVectors.weight, vector)
+      .toBreezeVector()
+
+    implicit val ordering = Ordering.Float.reverse
+    argsort(similarity)
+      .take(numSimilarWord)
+      .toArray
+      .map(id => (vocab(id).word, similarity(id)))
   }
 
   /**
@@ -402,5 +417,37 @@ class Word2Vec(val params: Word2VecConfig)
    */
   def getVectorById(id: Int): Tensor[Float] = {
     wordVectors.weight(id + 1)
+  }
+
+  def printWordAnalogy(
+    words: Array[String],
+    numSimilarWord: Int): Unit = {
+    val simWords = getWordAnalogy(words, numSimilarWord)
+    log.info(simWords.mkString(", ") + "\n")
+  }
+
+  /**
+   * Given three words in `words`, return the most similar analogy (word4)
+   * to match the relationship between (word1, word2) and (word3, word4).
+   *
+   * For example:
+   *    Given ["Beijing", "China", "London"], expected result should be
+   *    [England, ...]
+   */
+  def getWordAnalogy(
+    words: Array[String],
+    numSimilarWord: Int): Array[(String, Float)] = {
+    if (words.length < 3) {
+      println(s"Only ${words.length} words were entered.." +
+        s" three words are needed at the input to perform the calculation")
+    }
+
+    val vectors = words.map(word => {
+      val lower = word.toLowerCase()
+      getVectorByString(lower)
+    })
+
+    val vector = vectors(0) - vectors(1) + vectors(2)
+    getSimilarWordsGivenAVector(vector, numSimilarWord)
   }
 }

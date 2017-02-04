@@ -43,8 +43,8 @@ object Utils {
     saveLocation: String = "",
 //    trainDataLocation: String = "/home/yao/Desktop/enwik9",
     trainDataLocation: String = "/home/yao/Downloads/corpus.txt",
-    testDataLocation: String = "",
-    w2vLocation: String = "./model",
+    testDataLocation: String = "/home/yao/Downloads/w2vtest",
+    modelLocation: String = "./model",
     numNegSamples: Int = 5,
     embeddingSize: Int = 100,
     windowSize: Int = 5,
@@ -80,7 +80,7 @@ object Utils {
 
     opt[String]("model")
       .text("")
-      .action { (x, c) => c.copy(w2vLocation = x) }
+      .action { (x, c) => c.copy(modelLocation = x) }
 
     opt[Int]("numNegSamples")
       .text("Negative samples per training example.")

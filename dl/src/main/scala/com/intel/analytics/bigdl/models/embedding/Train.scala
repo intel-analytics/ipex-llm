@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.optim.{Optimizer, SGD, Trigger}
 import com.intel.analytics.bigdl.utils.{Engine, File, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.slf4j.{LoggerFactory, Logger => sl4jLogger}
+import org.slf4j.{Logger => sl4jLogger}
 
 object Train {
 
@@ -34,8 +34,6 @@ object Train {
     Logger.getLogger("akka").setLevel(Level.ERROR)
     Logger.getLogger("breeze").setLevel(Level.ERROR)
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
-
-    val log: sl4jLogger = LoggerFactory.getLogger(this.getClass)
 
     val params = Utils.parse(args)
 
@@ -54,7 +52,10 @@ object Train {
         -> LowerCase()
         -> Tokenizer())
 
-    val rddTokens = tokens.toDistributed().data(false)
+    val rddTokens = tokens
+      .toDistributed()
+      .data(false)
+      .cache()
 
     word2Vec.initialize(rddTokens)
 
@@ -83,7 +84,10 @@ object Train {
       T.load(params.stateSnapshot.get)
     } else {
       T(
-        "learningRate" -> params.learningRate
+        "learningRate" -> params.learningRate,
+        "learningRateSchedule" ->
+          SGD.Word2VecSchedule(
+            params.batchSize.toDouble / (params.maxEpoch * trainSetRDD.count()))
       )
     }
 
@@ -98,7 +102,7 @@ object Train {
 
     word2Vec.normalizeWordVectors()
 
-    File.save(word2Vec, params.w2vLocation + "word2vec.obj", isOverwrite = true)
+    File.save(word2Vec, params.modelLocation + "/word2vec.obj", isOverwrite = true)
 
     word2Vec.printSimilarWords(
       Array("usa", "like", "play", "go", "china", "the", "he", "can"),

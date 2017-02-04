@@ -46,10 +46,11 @@ object Test {
       -> Tokenizer())
 
     var model: Word2Vec = null
-    if (params.checkpoint.isDefined) {
-      model = File.load[Word2Vec](params.checkpoint.get)
+    if (params.modelLocation == null && params.modelLocation.equals("")) {
+      log.error("Model directory should be set")
+      System.exit(0)
     } else {
-      log.error("model directory should be set")
+      model = File.load[Word2Vec](params.modelLocation + "/word2vec.obj")
     }
 
     Engine.setCoreNumber(params.coreNumber)
@@ -57,6 +58,6 @@ object Test {
     testSet
       .toDistributed()
       .data(false)
-      .foreach(words => model.printSimilarWords(words.toArray, params.numClosestWords))
+      .foreach(words => model.printWordAnalogy(words.toArray, params.numClosestWords))
   }
 }

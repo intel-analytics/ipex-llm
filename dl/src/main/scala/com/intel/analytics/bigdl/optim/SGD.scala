@@ -131,6 +131,23 @@ object SGD {
     }
   }
 
+  case class Word2VecSchedule(gamma : Double)
+    extends LearningRateSchedule {
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
+      val lr = config.get[Double]("learningRate").getOrElse(1.0)
+      val nEval = state.get[Int]("evalCounter").getOrElse(0)
+
+      var clr = -lr * (1 - gamma * nEval)
+      if (clr > -lr * 0.0001) {
+        clr = -lr * 0.0001
+      }
+
+      println(s"Iteration is : $nEval and current learning rate is ${-clr}")
+      state("evalCounter") = nEval + 1
+      config("clr") = clr
+    }
+  }
+
   case class Step(stepSize : Int, gamma : Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
