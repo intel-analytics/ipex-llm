@@ -167,7 +167,7 @@ class TextClassifier(param: TextClassificationParams) {
     val sampleRDD = vectorizedRdd.map {case (input: Array[Array[Float]], label: Float) =>
           Sample(
             featureTensor = Tensor(input.flatten, Array(sequenceLen, embeddingDim))
-              .transpose(1, 2),
+              .transpose(1, 2).contiguous(),
             labelTensor = Tensor(Array(label), Array(1)))
         }
 

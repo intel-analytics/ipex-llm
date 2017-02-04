@@ -95,8 +95,6 @@ class SampleToBatch[T: ClassTag]
       private var oneLabelLength: Int = 0
       private var featureStrides: Array[Int] = null
       private var labelStrides: Array[Int] = null
-      private var batchFeatureStrides: Array[Int] = null
-      private var batchLabelStrides: Array[Int] = null
 
       override def hasNext: Boolean = prev.hasNext
 
@@ -105,6 +103,10 @@ class SampleToBatch[T: ClassTag]
           var i = 0
           while (i < batchSize && prev.hasNext) {
             val sample = prev.next()
+            if(!sample.feature().isContiguous() || !sample.label().isContiguous()) {
+              throw new IllegalArgumentException(
+                "Only support contiguous tensor, pls use tensor.contiguous() before batching")
+            }
             if (featureData == null) {
               oneFeatureLength = sample.feature().nElement()
               oneLabelLength = sample.label().nElement()
@@ -130,16 +132,12 @@ class SampleToBatch[T: ClassTag]
             i += 1
           }
 
-          if(null == batchFeatureStrides) {
-            batchFeatureStrides = Array(featureSize.product) ++ featureStrides
-            batchLabelStrides = Array(labelSize.product) ++ labelStrides
-          }
           featureSize(0) = i
           labelSize(0) = i
           featureTensor.set(Storage[T](featureData),
-            storageOffset = 1, sizes = featureSize, strides = batchFeatureStrides)
+            storageOffset = 1, sizes = featureSize)
           labelTensor.set(Storage[T](labelData),
-            storageOffset = 1, sizes = labelSize, strides = batchLabelStrides)
+            storageOffset = 1, sizes = labelSize)
           MiniBatch(featureTensor, labelTensor)
         } else {
           null
