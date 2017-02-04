@@ -107,7 +107,7 @@ class SpatialConvolution[T: ClassTag](
       "SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
     require(input.isContiguous())
 
-    if (weightMM == null) {
+    if (weightMM == null || weightMM.storage().isEmpty) {
       weightMM = weight.view(nGroup, nOutputPlane / nGroup,
         nInputPlane * kernelH * kernelW / nGroup)
     }
