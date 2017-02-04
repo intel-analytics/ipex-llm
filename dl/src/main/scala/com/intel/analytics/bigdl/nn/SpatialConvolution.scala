@@ -106,7 +106,7 @@ class SpatialConvolution[T: ClassTag](
     require(input.dim() == 3 || input.dim() == 4, "Only support 3D or 4D(batch mode) input")
     require(input.isContiguous())
 
-    if (weightMM == null) {
+    if (weightMM == null || weightMM.storage().isEmpty) {
       weightMM = weight.view(nGroup, nOutputPlane / nGroup,
         nInputPlane * kernelH * kernelW / nGroup)
     }
