@@ -31,13 +31,16 @@ class Recurrent[T : ClassTag] (
   val hidden = T(Tensor[T](hiddenSize))
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    input.squeeze()
-    require(input.dim == 2, "input should be a two dimension Tensor")
-    require(modules.length == 2, "rnn container must include a cell and a non-linear layer")
+    require(input.dim == 3,
+      "Recurrent: input should be a 3D Tensor, e.g [batch, nWords, wordLength]")
+    require(modules.length == 2,
+      "Recurrent: rnn container must include a cell and a non-linear layer")
 
     val module = modules(0)
     val transform = modules(1)
 
+    val inputSize = input.size
+    input.squeeze()
     val numOfWords = input.size(1)
     output.resize(Array(numOfWords, hiddenSize))
 
@@ -52,12 +55,18 @@ class Recurrent[T : ClassTag] (
         .copy(transform.output.asInstanceOf[Tensor[T]])
       i += 1
     }
+
+    input.resize(inputSize)
+    output.resize(Array(inputSize(0), inputSize(1), hiddenSize))
     output
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
+    val inputSize = input.size
+    val gradOutputSize = gradOutput.size
     input.squeeze()
+    gradOutput.squeeze()
     val module = modules(0)
     val transform = modules(1)
 
@@ -78,10 +87,15 @@ class Recurrent[T : ClassTag] (
       }
       i -= 1
     }
+    input.resize(inputSize)
+    gradOutput.resize(gradOutputSize)
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val inputSize = input.size
+    val gradOutputSize = gradOutput.size
     input.squeeze()
+    gradOutput.squeeze()
     val module = modules(0)
     val transform = modules(1)
 
@@ -105,6 +119,9 @@ class Recurrent[T : ClassTag] (
       }
       i -= 1
     }
+    gradInput.resize(inputSize)
+    input.resize(inputSize)
+    gradOutput.resize(gradOutputSize)
     gradInput
   }
 
