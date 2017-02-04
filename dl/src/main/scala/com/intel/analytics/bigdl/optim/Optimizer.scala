@@ -23,12 +23,13 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet, MiniBatch}
+import org.apache.hadoop.conf.Configuration
 
 import scala.reflect.ClassTag
 
 abstract class Optimizer[T: ClassTag, D](
     protected val model: Module[T],
-  protected val dataset: DataSet[D],
+    protected val dataset: DataSet[D],
     protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
 {
   protected var state: Table = T()
@@ -72,8 +73,15 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   def setCheckpoint(path: String, trigger: Trigger): this.type = {
-    require(Files.isDirectory(Paths.get(path)), s"$path is not a folder")
-    this.checkpointPath = Some(path)
+    if (path.startsWith("/") || path.startsWith("file:")) {
+      require(Files.isDirectory(Paths.get(path)), s"$path is not a folder")
+    }
+    var _path = path
+    val dfs = new Configuration().get("fs.defaultFS", "file:///")
+    if (_path.startsWith("/")) {
+      _path = dfs + _path
+    }
+    this.checkpointPath = Some(_path)
     this.checkpointTrigger = Some(trigger)
     this
   }
