@@ -25,17 +25,17 @@ import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.example.textclassification.SimpleTokenizer._
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, _}
 import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, T}
+import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.slf4j.{Logger, LoggerFactory}
-import org.apache.log4j.{Logger => Logger4j, Level => Levle4j}
-
 import scopt.OptionParser
 
 import scala.collection.mutable.{ArrayBuffer, Map => MMap}
-import scala.language.existentials
 import scala.io.Source
+import scala.language.existentials
 
   /**
  * This example use a (pre-trained GloVe embedding) to convert word to vector,
@@ -164,22 +164,27 @@ class TextClassifier(param: TextClassificationParams) {
         .map {case (tokens, label) => (shaping(tokens, sequenceLen), label)}
         .map {case (tokens, label) => (vectorization(
           tokens, embeddingDim, word2VecBC.value), label)}
-    val Array(trainingRDD, valRDD) = vectorizedRdd.randomSplit(
+    val sampleRDD = vectorizedRdd.map {case (input: Array[Array[Float]], label: Float) =>
+          Sample(
+            featureTensor = Tensor(input.flatten, Array(sequenceLen, embeddingDim))
+              .transpose(1, 2).contiguous(),
+            labelTensor = Tensor(Array(label), Array(1)))
+        }
+
+    val Array(trainingRDD, valRDD) = sampleRDD.randomSplit(
       Array(trainingSplit, 1 - trainingSplit))
-    val batching = Batching(param.batchSize, Array(param.maxSequenceLength, param.embeddingDim))
-    val trainingDataSet = DataSet.rdd(trainingRDD) -> batching
-    val valDataSet = DataSet.rdd(valRDD) -> batching
 
     val optimizer = Optimizer(
       model = buildModel(classNum),
-      dataset = trainingDataSet,
-      criterion = new ClassNLLCriterion[Float]()
+      sampleRDD = trainingRDD,
+      criterion = new ClassNLLCriterion[Float](),
+      batchSize = param.batchSize
     )
     val state = T("learningRate" -> 0.01, "learningRateDecay" -> 0.0002)
     optimizer
       .setState(state)
       .setOptimMethod(new Adagrad())
-      .setValidation(Trigger.everyEpoch, valDataSet, Array(new Top1Accuracy[Float]))
+      .setValidation(Trigger.everyEpoch, valRDD, Array(new Top1Accuracy[Float]), param.batchSize)
       .setEndWhen(Trigger.maxEpoch(2))
       .optimize()
     sc.stop()

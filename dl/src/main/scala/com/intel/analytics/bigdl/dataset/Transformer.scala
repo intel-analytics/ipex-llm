@@ -100,6 +100,10 @@ class SampleToBatch[T: ClassTag]
           var i = 0
           while (i < batchSize && prev.hasNext) {
             val sample = prev.next()
+            if(!sample.feature().isContiguous() || !sample.label().isContiguous()) {
+              throw new IllegalArgumentException(
+                "Only support contiguous tensor, pls use tensor.contiguous() before batching")
+            }
             if (featureData == null) {
               oneFeatureLength = sample.feature().nElement()
               oneLabelLength = sample.label().nElement()

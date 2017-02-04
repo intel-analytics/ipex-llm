@@ -22,10 +22,12 @@ import java.nio.file.{Files, Paths}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset._
+import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
-
+// TODO: remove D to be MiniBatch[T]
 abstract class Optimizer[T: ClassTag, D](
     protected val model: Module[T],
   protected val dataset: DataSet[D],
@@ -41,7 +43,7 @@ abstract class Optimizer[T: ClassTag, D](
 
   protected var validationTrigger: Option[Trigger] = None
   protected var validationMethods: Option[Array[ValidationMethod[T]]] = None
-  protected var validationDataSet: Option[DataSet[D]] = None
+  protected var validationDataSet: Option[DataSet[MiniBatch[T]]] = None
 
   // To achieve better performance, please set dropPercentage as 0.04
   protected var dropPercentage: Double = 0.0
@@ -62,11 +64,23 @@ abstract class Optimizer[T: ClassTag, D](
   protected var checkSingleton = System.getProperty("bigdl.check.singleton",
     true.toString).toBoolean
 
-  def setValidation(trigger: Trigger, dataset: DataSet[D],
+  def setValidation(trigger: Trigger, dataset: DataSet[MiniBatch[T]],
     vMethods : Array[ValidationMethod[T]])
   : this.type = {
     this.validationTrigger = Some(trigger)
     this.validationDataSet = Some(dataset)
+    this.validationMethods = Some(vMethods)
+    this
+  }
+
+  def setValidation(trigger: Trigger, sampleRDD: RDD[Sample[T]],
+      vMethods : Array[ValidationMethod[T]], batchSize: Int)
+  : this.type = {
+    this.validationTrigger = Some(trigger)
+    val dataSet =
+      (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    this.validationDataSet = Some(dataSet)
     this.validationMethods = Some(vMethods)
     this
   }
@@ -131,6 +145,20 @@ object Optimizer {
     if (checkpointPath.isDefined) {
       state.save(s"${checkpointPath.get}/state$postfix", overWrite)
     }
+  }
+
+  def apply[T: ClassTag](
+      model: Module[T],
+      sampleRDD: RDD[Sample[T]],
+      criterion: Criterion[T],
+      batchSize: Int
+      )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    new DistriOptimizer[T](
+      model = model,
+      dataset = (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
 
   def apply[T: ClassTag, D](

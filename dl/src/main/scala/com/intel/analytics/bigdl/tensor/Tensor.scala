@@ -712,6 +712,20 @@ object Tensor {
   }
 
   /**
+   * Returns a tensor with the given array and shape
+   *
+   * @param data the given storage
+   * @param shape the given shape
+   * @param ev
+   * @tparam T
+   * @return
+   */
+  def apply[@specialized(Float, Double) T: ClassTag](data: Array[T],
+    shape: Array[Int] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    new DenseTensor[T]().set(Storage[T](data), storageOffset = 1, sizes = shape)
+  }
+
+  /**
    * Returns a tensor which uses the existing Storage storage, starting at
    * position storageOffset (>=1). The size of each dimension of the tensor
    * is given by the optional Array size. If not given, the size will be computed
