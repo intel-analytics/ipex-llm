@@ -31,6 +31,7 @@ object SimpleRNN {
     model.add(Recurrent[Float](hiddenSize, bpttTruncate)
       .add(RnnCell[Float](inputSize, hiddenSize))
       .add(Tanh[Float]()))
+      .add(Select(1, 1))
       .add(Linear[Float](hiddenSize, outputSize))
     model
   }

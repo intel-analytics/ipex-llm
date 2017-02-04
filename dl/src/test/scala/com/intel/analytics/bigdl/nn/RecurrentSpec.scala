@@ -38,6 +38,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     model.add(Recurrent[Double](hiddenSize, bpttTruncate)
       .add(RnnCell[Double](inputSize, hiddenSize))
       .add(Tanh()))
+      .add(Select(1, 1))
       .add(Linear[Double](hiddenSize, outputSize))
 
     val criterion = CrossEntropyCriterion[Double]()
@@ -45,13 +46,13 @@ class RecurrentSpec extends FlatSpec with Matchers {
 
     val (weights, grad) = model.getParameters()
 
-    val input = Tensor[Double](5, inputSize)
-    val labels = Tensor[Double](5)
+    val input = Tensor[Double](Array(1, 5, inputSize))
+    val labels = Tensor[Double](Array(1, 5))
     for (i <- 1 to 5) {
       val rdmLabel = Math.ceil(RNG.uniform(0.0, 1.0)*inputSize).toInt
       val rdmInput = Math.ceil(RNG.uniform(0.0, 1.0)*inputSize).toInt
-      input.setValue(i, rdmInput, 1.0)
-      labels.setValue(i, rdmLabel)
+      input.setValue(1, i, rdmInput, 1.0)
+      labels.setValue(1, i, rdmLabel)
     }
 
     val state = T("learningRate" -> 0.5, "momentum" -> 0.0,
@@ -73,9 +74,9 @@ class RecurrentSpec extends FlatSpec with Matchers {
 
     val output = model.forward(input).asInstanceOf[Tensor[Double]]
     val logOutput = logSoftMax.forward(output)
-    val prediction = logOutput.max(2)._2.squeeze()
+    val prediction = logOutput.max(2)._2
 
-    labels should be (prediction)
+    labels.squeeze() should be (prediction.squeeze())
   }
 
 
@@ -91,17 +92,18 @@ class RecurrentSpec extends FlatSpec with Matchers {
     model.add(Recurrent[Double](hiddenSize, bpttTruncate)
       .add(RnnCell[Double](inputSize, hiddenSize))
       .add(Tanh[Double]()))
+      .add(Select(1, 1))
       .add(Linear[Double](hiddenSize, outputSize))
 
     model.reset()
 
-    val input = Tensor[Double](5, inputSize)
-    val labels = Tensor[Double](5)
+    val input = Tensor[Double](Array(1, 5, inputSize))
+    val labels = Tensor[Double](Array(1, 5))
     for (i <- 1 to 5) {
       val rdmLabel = Math.ceil(Math.random()*inputSize).toInt
       val rdmInput = Math.ceil(Math.random()*inputSize).toInt
-      input.setValue(i, rdmInput, 1.0)
-      labels.setValue(i, rdmLabel)
+      input.setValue(1, i, rdmInput, 1.0)
+      labels.setValue(1, i, rdmLabel)
     }
 
     println("gradient check for input")
