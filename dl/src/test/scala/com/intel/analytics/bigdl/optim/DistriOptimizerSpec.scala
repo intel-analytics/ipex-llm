@@ -16,13 +16,15 @@
 
 package com.intel.analytics.bigdl.optim
 
+import java.io.File
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
+import com.intel.analytics.bigdl.utils.{TestUtils, Engine, RandomGenerator, T}
+import org.apache.commons.io.FileUtils
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
@@ -36,8 +38,6 @@ object DistriOptimizerSpec {
   var plusOne = 0.0
   val nodeNumber = 4
   val coreNumber = 4
-  Engine.setNodeNumber(nodeNumber)
-  Engine.setCoreNumber(coreNumber)
 
   val batchSize = 2 * coreNumber
 
@@ -101,8 +101,11 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var dataSet: DistributedDataSet[MiniBatch[Double]] = null
 
   before {
-    val conf = new SparkConf().setMaster("local[1]").setAppName("RDDOptimizerSpec")
-    sc = new SparkContext(conf)
+    TestUtils.sparkLocalEnv(1) {
+      sc = new SparkContext(Engine.init.get.setAppName("DistriOptimizerSpec"))
+      Engine.setNodeNumber(nodeNumber)
+      Engine.setCoreNumber(coreNumber)
+    }
 
     val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber).map(prepareData)
 

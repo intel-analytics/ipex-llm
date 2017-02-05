@@ -16,12 +16,12 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, DataSet, LocalDataSet}
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 object DummyDataSet extends LocalDataSet[MiniBatch[Float]] {
   val totalSize = 10
@@ -112,14 +112,20 @@ object LocalOptimizerSpecModel {
 }
 
 @com.intel.analytics.bigdl.tags.Serial
-class LocalOptimizerSpec extends FlatSpec with Matchers {
-  import DummyDataSet._
+class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   import LocalOptimizerSpecModel._
+  import DummyDataSet._
 
-  val nodeNumber = 4
   val coreNumber = 4
-  Engine.setNodeNumber(nodeNumber)
-  Engine.setCoreNumber(coreNumber)
+
+  before {
+    Engine.init
+    Engine.setCoreNumber(coreNumber)
+  }
+
+  after {
+    Engine.reset
+  }
 
   "Train model with CrossEntropy and SGD" should "be good" in {
     RandomGenerator.RNG.setSeed(1000)
