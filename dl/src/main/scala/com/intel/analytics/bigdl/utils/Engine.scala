@@ -330,10 +330,10 @@ object Engine {
     onSpark: Boolean = false
   ): Option[SparkConf] = {
     val result = init
-    require(node == Engine.nodeNumber(), s"The input node number($node) is inconsistent with " +
-      s"auto-detect node number(${Engine.nodeNumber()})")
-    require(cores == Engine.coreNumber(), s"The input core number($cores) is inconsistent with " +
-      s"auto-detect core number(${Engine.coreNumber()})")
+    require(node == Engine.nodeNumber, s"The input node number($node) is inconsistent with " +
+      s"auto-detect node number(${Engine.nodeNumber})")
+    require(cores == Engine.coreNumber, s"The input core number($cores) is inconsistent with " +
+      s"auto-detect core number(${Engine.coreNumber})")
     result
   }
 
@@ -364,7 +364,7 @@ object Engine {
           .setExecutorEnv("KMP_BLOCKTIME", "0")
           .setExecutorEnv("OMP_WAIT_POLICY", "passive")
           .setExecutorEnv("OMP_NUM_THREADS", "1")
-          .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
+          .setExecutorEnv("DL_CORE_NUMBER", coreNumber.toString)
           .setExecutorEnv("DL_NODE_NUMBER", nodeNum.toString)
           .set("spark.shuffle.reduceLocality.enabled", "false")
           .set("spark.shuffle.blockTransferService", "nio")
@@ -380,6 +380,16 @@ object Engine {
     _isInitialized = true
 
     ret
+  }
+
+  /**
+   * Reset engine envs. Test purpose
+   */
+  private[bigdl] def reset : Unit = {
+    _onSpark = false
+    _isInitialized = false
+    nodeNum = 1
+    physicalCoreNumber = 1
   }
 
   private def dynamicAllocationExecutor : Option[Int] = {
@@ -416,7 +426,7 @@ object Engine {
     } else if (master.toLowerCase.startsWith("spark")) {
       // Spark standalone mode
       val coreString = System.getProperty("spark.executor.cores")
-      val maxString = System.getProperty("spark.executor.max")
+      val maxString = System.getProperty("spark.cores.max")
       require(coreString != null, "Can't find executor core number, do you submit with " +
         "--executor-cores option")
       require(maxString != null, "Can't find total core number. Do you submit with " +
@@ -447,9 +457,13 @@ object Engine {
       require(System.getProperty("spark.mesos.coarse") != "false", "Don't support mesos " +
         "fine-grained mode")
       val coreString = System.getProperty("spark.executor.cores")
-      val maxString = System.getProperty("spark.executor.max")
+      require(coreString != null, "Can't find executor core number, do you submit with " +
+        "--executor-cores option")
       val core = coreString.toInt
       val nodeNum = dynamicAllocationExecutor.getOrElse {
+        val maxString = System.getProperty("spark.cores.max")
+        require(maxString != null, "Can't find total core number. Do you submit with " +
+          "--total-executor-cores")
         val total = maxString.toInt
         require(total > core && total % core == 0, s"total core number($total) can't be divided " +
           s"by single core number($core) provided to spark-submit")

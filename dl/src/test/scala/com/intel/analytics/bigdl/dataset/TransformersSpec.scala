@@ -32,7 +32,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class TransformersSpec extends FlatSpec with Matchers {
-  import TestUtils._
+  import com.intel.analytics.bigdl.utils.TestUtils._
 
   "Grey Image Cropper" should "crop image correct" in {
     val image = new LabeledGreyImage(32, 32)

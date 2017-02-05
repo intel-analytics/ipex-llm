@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.optim.SGD._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{TestUtils, T}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
