@@ -721,7 +721,7 @@ object Tensor {
    * @return
    */
   def apply[@specialized(Float, Double) T: ClassTag](data: Array[T],
-    shape: Array[Int] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    shape: Array[Int])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     new DenseTensor[T]().set(Storage[T](data), storageOffset = 1, sizes = shape)
   }
 
