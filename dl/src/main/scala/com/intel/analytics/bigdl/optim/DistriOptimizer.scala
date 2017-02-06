@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, DataSet => DataSource}
+import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -133,7 +133,8 @@ object DistriOptimizer {
             require(batch.data.size(1) == batch.labels.size(1),
               "data and label batch size not match")
             require(batch.data.size(1) >= _subModelNumber,
-              "total batch size should be divided by total core number")
+              s"total batch size: ${batch.data.size(1)} " +
+                s"should be divided by total core number: ${_subModelNumber}")
             val stackSize = batch.data.size(1) / _subModelNumber
             while (b < _subModelNumber) {
               tensorBuffer(b) = (batch.data.narrow(1, b * stackSize + 1, stackSize),
@@ -496,14 +497,13 @@ object DistriOptimizer {
   }
 }
 
-class DistriOptimizer[T: ClassTag] private[optim](
+class DistriOptimizer[T: ClassTag] (
   model: Module[T],
   dataset: DistributedDataSet[MiniBatch[T]],
   criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
     model, dataset, criterion) {
-
   val metrics = new Metrics
 
   private var models: RDD[DistriOptimizer.Cache[T]] = null

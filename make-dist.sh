@@ -71,3 +71,5 @@ cp $BASEDIR/scripts/img_class.lst $BIN_DIR/
 
 cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies.jar $LIB_DIR/
 cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies-and-spark.jar $LIB_DIR/
+cp $BASEDIR/dl/target/bigdl-$VERSION-python-api.zip $LIB_DIR/
+

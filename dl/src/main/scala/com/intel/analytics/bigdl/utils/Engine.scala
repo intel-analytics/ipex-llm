@@ -302,38 +302,44 @@ object Engine {
     model
   }
 
+  def initEngine(nodeNum: Int, coreNum: Int): Unit = {
+    // init model
+    initModelThreadPool()
+    this.nodeNum = Some(nodeNum)
+    this.physicalCoreNumber = coreNum
+    this._isInitialized = true
+  }
+
+  private def calcSparkconf(): Option[SparkConf] = {
+    val sc = if (engineType == MklBlas) {
+      new SparkConf()
+        .setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
+        .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
+        .setExecutorEnv("KMP_BLOCKTIME", "0")
+        .setExecutorEnv("OMP_WAIT_POLICY", "passive")
+        .setExecutorEnv("OMP_NUM_THREADS", "1")
+        .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
+        .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
+        .set("spark.shuffle.blockTransferService", "nio")
+        .set("spark.akka.frameSize", "10")
+        .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
+    } else {
+      throw new IllegalArgumentException(engineType.toString)
+    }
+    Some(sc)
+  }
+
   def init(
     node: Int,
     cores: Int,
     onSpark: Boolean = false
   ): Option[SparkConf] = {
-    val ret = if (onSpark) {
-      nodeNum = Some(node)
-      physicalCoreNumber = cores
-      _model = initModelThreadPool()
-      val sc = if (engineType == MklBlas) {
-        new SparkConf()
-          .setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
-          .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
-          .setExecutorEnv("KMP_BLOCKTIME", "0")
-          .setExecutorEnv("OMP_WAIT_POLICY", "passive")
-          .setExecutorEnv("OMP_NUM_THREADS", "1")
-          .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
-          .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
-          .set("spark.shuffle.blockTransferService", "nio")
-          .set("spark.akka.frameSize", "10")
-          .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
-      } else {
-        throw new IllegalArgumentException(engineType.toString)
-      }
-      Some(sc)
+    initEngine(node, cores)
+    if (onSpark) {
+      calcSparkconf()
     } else {
-      physicalCoreNumber = cores
       None
     }
-    _isInitialized = true
-
-    ret
   }
 
   // Check envs

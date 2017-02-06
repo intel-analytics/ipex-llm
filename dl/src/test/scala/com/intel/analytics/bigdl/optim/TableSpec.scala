@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
+import scala.util.Properties
 
 @com.intel.analytics.bigdl.tags.Parallel
 class TableSpec extends FlatSpec with Matchers {
@@ -77,12 +78,12 @@ class TableSpec extends FlatSpec with Matchers {
     state(2) = T(1 -> "b", 2 -> T(1 -> "d"))
     print(state.toString)
     // Handle different behavior of toString in scala 2.10 and 2.11
-    if(util.Properties.versionNumberString.contains("2.10")) {
+    if(Properties.versionNumberString.contains("2.10")) {
       state.toString() should be(" {\n\t2:  {\n\t   " +
         "\t2:  {\n\t   \t   \t1: d\n\t   \t    }\n\t   \t1: b\n\t    }" +
         "\n\t1: 0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   " +
         "[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x3]\n }")
-    } else if (util.Properties.versionNumberString.contains("2.11")) {
+    } else if (Properties.versionNumberString.contains("2.11")) {
       state.toString() should be(" {\n\t2:  {\n\t   " +
         "\t2:  {\n\t   \t   \t1: d\n\t   \t    }\n\t   \t1: b\n\t    }" +
         "\n\t1: 0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   " +
