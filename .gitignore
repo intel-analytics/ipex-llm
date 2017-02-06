@@ -1,5 +1,7 @@
+*.pyc
 *.class
 *.log
+dl/src/main/python/.idea/
 
 # sbt specific
 .cache

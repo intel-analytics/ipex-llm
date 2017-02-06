@@ -510,7 +510,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def valueAt(d1: Int): T = {
-    require(1 == this.nDimension, "invalid size")
+    require(1 == this.nDimension, s"invalid size: 1 == ${this.nDimension}")
     var offset = this._storageOffset
     offset += getOffset(d1 - 1, 1)
     this._storage(offset)
