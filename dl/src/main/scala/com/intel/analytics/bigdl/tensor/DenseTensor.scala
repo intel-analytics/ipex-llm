@@ -1428,7 +1428,11 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def reshape(sizes: Array[Int]): Tensor[T] = {
-    require(sizes.reduce(_ * _) == this.nElement())
+    require(sizes.product == this.nElement(),
+      "DenseTensor: nElement of this tensor is not equal to nElement specified by sizes," +
+        s" specified sizes = (${sizes.mkString(",")})," +
+        s" nElement specified by sizes = ${sizes.reduce(_ * _)}," +
+        s" nElement of this tensor = ${this.nElement()}")
     val result = new DenseTensor[T]()
     result.resize(sizes)
     result.copy(this)
