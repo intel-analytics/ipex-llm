@@ -60,7 +60,8 @@ object DenseTensorApply {
    */
   def apply2[@specialized(Float, Double) T](tensor1: Tensor[T], tensor2: Tensor[T],
     func: TensorFunc4[T]): Unit = {
-    require(tensor1.nElement() == tensor2.nElement(), "inconsistent tensor size")
+    require(tensor1.nElement() == tensor2.nElement(),
+      s"inconsistent tensor size: ${tensor1.nElement()} == ${tensor2.nElement()}")
 
     if (tensor1.nDimension == 0) {
       return

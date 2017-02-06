@@ -185,7 +185,7 @@ class TextClassifier(param: TextClassificationParams) {
       .setState(state)
       .setOptimMethod(new Adagrad())
       .setValidation(Trigger.everyEpoch, valRDD, Array(new Top1Accuracy[Float]), param.batchSize)
-      .setEndWhen(Trigger.maxEpoch(2))
+      .setEndWhen(Trigger.maxEpoch(20))
       .optimize()
     sc.stop()
   }
