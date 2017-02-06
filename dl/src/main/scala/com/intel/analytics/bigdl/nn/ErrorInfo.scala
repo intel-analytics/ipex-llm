@@ -30,4 +30,10 @@ object ErrorInfo {
       | please use the Reshape module to convert multi-dimensional input into 3D tensors
       | if appropriate"
     """.stripMargin
+
+  final val constrainEachInputAsVectorOrBatch =
+    """
+      | Each tensor contained in the input to the layer needs to be a vector
+      | (or a mini-batch of vectors);\n please use the Reshape module to convert
+      | multi-dimensional input into vectors if needed"""
 }

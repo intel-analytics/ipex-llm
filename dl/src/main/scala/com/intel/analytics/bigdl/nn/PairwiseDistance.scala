@@ -41,11 +41,6 @@ class PairwiseDistance[T: ClassTag](
   val norm : Int = 2)
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
-  final val inputConstraint =
-    "Each tensor contained in the input to the PairwiseDistance layer needs to be a vector " +
-      "(or a mini-batch of vectors);\n" +
-      "please use the Reshape module to convert multi-dimensional input into vectors if needed"
-
   override def updateOutput(input: Table): Tensor[T] = {
     output.resize(1)
     if (input[Tensor[T]](1).dim() == 1) {
@@ -65,7 +60,8 @@ class PairwiseDistance[T: ClassTag](
       output.add(diff.pow(ev.fromType[Int](norm)).sum(2))
       output.pow(ev.divide(ev.fromType[Int](1), ev.fromType[Int](norm)))
     } else {
-      require(requirement = false, inputConstraint)
+      require(requirement = false,
+        "PairwiseDistance: " + ErrorInfo.constrainEachInputAsVectorOrBatch)
     }
     output
   }
@@ -83,7 +79,8 @@ class PairwiseDistance[T: ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    require(input[Tensor[T]](1).dim() <= 2, inputConstraint)
+    require(input[Tensor[T]](1).dim() <= 2,
+      "PairwiseDistance : " + ErrorInfo.constrainEachInputAsVectorOrBatch)
 
     if (!gradInput.contains(1)) {
       gradInput.update(1, Tensor[T]())
