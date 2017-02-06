@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.T
@@ -26,107 +27,87 @@ import scala.reflect.ClassTag
 class Recurrent[T : ClassTag] (
   hiddenSize: Int = 3,
   bpttTruncate: Int = 2)
-(implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
+  (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
-  val hidden = T(Tensor[T](hiddenSize))
+  val hidden = Tensor[T]()
+  var module: Module[T] = _
+  var transform: Module[T] = _
+  var (batchSize, times) = (0, 0)
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 3,
-      "Recurrent: input should be a 3D Tensor, e.g [batch, nWords, wordLength]")
+      "Recurrent: input should be a 3D Tensor, e.g [batch, times, nDim], " +
+        s"current input.dim = ${input.dim}")
     require(modules.length == 2,
-      "Recurrent: rnn container must include a cell and a non-linear layer")
+      "Recurrent: rnn container must include a cell and a non-linear layer, " +
+        s"current container length is ${modules.length}")
 
-    val module = modules(0)
-    val transform = modules(1)
+    module = modules(0)
+    transform = modules(1)
 
-    val inputSize = input.size
-    input.squeeze()
-    val numOfWords = input.size(1)
-    output.resize(Array(numOfWords, hiddenSize))
+    batchSize = input.size(1)
+    times = input.size(2)
+
+    output.resize(Array(batchSize, times, hiddenSize))
+    hidden.resize(Array(batchSize, times + 1, hiddenSize))
 
     var i = 1
-    while (i <= numOfWords) {
-      val curInput = T(input(i), hidden(i).asInstanceOf[Tensor[T]])
+    while (i <= times) {
+      val curInput = T(input.select(2, i), hidden.select(2, i))
       val currentOutput = module.updateOutput(curInput)
       transform.updateOutput(currentOutput)
-      output.update(i, transform.output.asInstanceOf[Tensor[T]])
-      hidden(i + 1) = Tensor[T]()
-        .resizeAs(transform.output.asInstanceOf[Tensor[T]])
-        .copy(transform.output.asInstanceOf[Tensor[T]])
+      output.select(2, i).copy(transform.output.toTensor)
+      hidden.select(2, i + 1).copy(transform.output.toTensor)
       i += 1
     }
-
-    input.resize(inputSize)
-    output.resize(Array(inputSize(0), inputSize(1), hiddenSize))
     output
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
-    val inputSize = input.size
-    val gradOutputSize = gradOutput.size
-    input.squeeze()
-    gradOutput.squeeze()
-    val module = modules(0)
-    val transform = modules(1)
-
-    val numOfWords = input.size(1)
-    var i = numOfWords
+    var i = times
     while (i >= 1) {
-      transform.output = hidden(i + 1).asInstanceOf[Tensor[T]]
-      var deltaHidden = transform.updateGradInput(hidden(i), gradOutput(i))
+      transform.output = hidden.select(2, i + 1)
+      var deltaHidden = transform.updateGradInput(hidden.select(2, i), gradOutput.select(2, i))
       var bpttStep = i
       while (bpttStep >= Math.max(1, i - bpttTruncate)) {
-        val curInput = T(input(bpttStep), hidden(bpttStep).asInstanceOf[Tensor[T]])
+        val curInput = T(input.select(2, bpttStep), hidden.select(2, bpttStep))
         module.accGradParameters(curInput, deltaHidden)
-        transform.output.asInstanceOf[Tensor[T]]
-          .copy(hidden(bpttStep).asInstanceOf[Tensor[T]])
+        transform.output.toTensor
+          .copy(hidden.select(2, bpttStep))
         deltaHidden = transform.updateGradInput(Tensor(),
           module.updateGradInput(curInput, deltaHidden).toTable(2))
         bpttStep -= 1
       }
       i -= 1
     }
-    input.resize(inputSize)
-    gradOutput.resize(gradOutputSize)
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    val inputSize = input.size
-    val gradOutputSize = gradOutput.size
-    input.squeeze()
-    gradOutput.squeeze()
-    val module = modules(0)
-    val transform = modules(1)
+    gradInput.resizeAs(input)
 
-    gradInput.resize(input.size).zero
-
-    val numOfWords = input.size(1)
-    var i = numOfWords
+    var i = times
     while (i >= 1) {
-      transform.output.asInstanceOf[Tensor[T]]
-        .copy(hidden(i + 1).asInstanceOf[Tensor[T]])
-      var deltaHidden = transform.updateGradInput(hidden(i), gradOutput(i))
+      transform.output.toTensor
+        .copy(hidden.select(2, i + 1))
+      var deltaHidden = transform.updateGradInput(hidden.select(2, i), gradOutput.select(2, i))
       var bpttStep = i
       while (bpttStep >= Math.max(1, i - bpttTruncate)) {
-        val curInput = T(input(bpttStep), hidden(bpttStep).asInstanceOf[Tensor[T]])
+        val curInput = T(input.select(2, bpttStep), hidden.select(2, bpttStep))
         val gradInputBundle = module.updateGradInput(curInput, deltaHidden).toTable
-        gradInput(bpttStep).add(gradInputBundle(1).asInstanceOf[Tensor[T]])
-        transform.output.asInstanceOf[Tensor[T]]
-          .copy(hidden(bpttStep).asInstanceOf[Tensor[T]])
+        gradInput.select(2, bpttStep).add(gradInputBundle(1).asInstanceOf[Tensor[T]])
+        transform.output.toTensor
+          .copy(hidden.select(2, bpttStep))
         deltaHidden = transform.updateGradInput(Tensor(), gradInputBundle(2))
         bpttStep -= 1
       }
       i -= 1
     }
-    gradInput.resize(inputSize)
-    input.resize(inputSize)
-    gradOutput.resize(gradOutputSize)
     gradInput
   }
 
   override def toString(): String = {
-    var str = "nn.Recurrent"
+    val str = "nn.Recurrent"
     str
   }
 }
@@ -134,7 +115,8 @@ class Recurrent[T : ClassTag] (
 object Recurrent {
   def apply[@specialized(Float, Double) T: ClassTag](
     hiddenSize: Int = 3,
-    bpttTruncate: Int = 2)(implicit ev: TensorNumeric[T]) : Recurrent[T] = {
+    bpttTruncate: Int = 2)
+    (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
     new Recurrent[T](hiddenSize, bpttTruncate)
   }
 }
