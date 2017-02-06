@@ -31,8 +31,8 @@ import scala.reflect.ClassTag
  * @param batchMode It is a optional argument. If it is set to `Some(true)`,
  *                  the first dimension of input is considered as batch dimension,
  *                  and thus keep this dimension size fixed. This is necessary
- *                  when dealing with batch sizes of one. When false, it forces
- *                  the entire input (including the first dimension) to be reshaped
+ *                  when dealing with batch sizes of one. When set to `Some(false)`,
+ *                  it forces the entire input (including the first dimension) to be reshaped
  *                  to the input size. Default is `None`, which means the module considers
  *                  inputs with more elements than the product of provided sizes (size(0) *
  *                  size(1) * ..) to be batches, otherwise in no batch mode.

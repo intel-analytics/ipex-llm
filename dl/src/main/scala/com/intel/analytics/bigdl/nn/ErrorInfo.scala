@@ -35,5 +35,5 @@ object ErrorInfo {
     """
       | Each tensor contained in the input to the layer needs to be a vector
       | (or a mini-batch of vectors);\n please use the Reshape module to convert
-      | multi-dimensional input into vectors if needed"""
+      | multi-dimensional input into vectors if appropriate""".stripMargin
 }
