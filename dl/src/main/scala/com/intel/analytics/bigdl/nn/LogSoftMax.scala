@@ -22,8 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
 
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.math.exp
 import scala.reflect.ClassTag
 
@@ -75,6 +74,8 @@ class LogSoftMax[T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(output.nDimension() == 1 || output.nDimension() == 2, "vector or matrix expected")
+    require(gradOutput.dim() == input.dim(), "LogSoftMax: input and gradOutput shapes do not " +
+      "match, input_dim: " + input.dim() + ", gradOutput_dim: " + gradOutput.dim())
     gradInput.resizeAs(input)
     val (nframe, dim) =
       if (output.nDimension() == 1) (1, output.size(1)) else (output.size(1), output.size(2))
@@ -90,14 +91,23 @@ class LogSoftMax[T: ClassTag](
         var sum = 0.0
         var d = 1
         while (d <= dim) {
-          sum += ev.toType[Double](gradOutput.valueAt(_t, d))
+          if (gradOutput.dim() == 1) {
+            sum += ev.toType[Double](gradOutput.valueAt(d))
+          } else {
+            sum += ev.toType[Double](gradOutput.valueAt(_t, d))
+          }
           d += 1
         }
 
         d = 1
         while (d <= dim) {
-          gradInput.setValue(_t, d, ev.minus(gradOutput.valueAt(_t, d),
-            ev.times(ev.exp(output.valueAt(_t, d)), ev.fromType[Double](sum))))
+          if (input.dim() == 1) {
+            gradInput.setValue(d, ev.minus(gradOutput.valueAt(d),
+              ev.times(ev.exp(output.valueAt(d)), ev.fromType[Double](sum))))
+          } else {
+            gradInput.setValue(_t, d, ev.minus(gradOutput.valueAt(_t, d),
+              ev.times(ev.exp(output.valueAt(_t, d)), ev.fromType[Double](sum))))
+          }
           d += 1
         }
       })

@@ -42,6 +42,8 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
       "ClassNLLCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
     val nClasses = input.size(input.dim())
     if (input.dim() == 1) {
+      require(input.dim() == target.dim(),
+        "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget)
       val curTarget = ev.toType[Int](target.valueAt(1))
       assert(curTarget >= 1 && curTarget <= nClasses)
       total_weight = if (weights != null) weights(Array(curTarget)) else ev.fromType[Int](1)
@@ -93,6 +95,8 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
     gradInput.zero()
 
     if (input.dim() == 1) {
+      require(input.dim() == target.dim(),
+        "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget)
       val curTarget = ev.toType[Int](target.valueAt(1))
       gradInput.setValue(curTarget, if (weights != null) ev.times(ev.fromType[Int](-1),
         weights.valueAt(curTarget))
