@@ -23,6 +23,21 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * The `forward(input)` reshape the input tensor into a
+ * `size(0) * size(1) * ...` tensor, taking the elements row-wise.
+ *
+ * @param size the reshape size
+ * @param batchMode It is a optional argument. If it is set to `Some(true)`,
+ *                  the first dimension of input is considered as batch dimension,
+ *                  and thus keep this dimension size fixed. This is necessary
+ *                  when dealing with batch sizes of one. When set to `Some(false)`,
+ *                  it forces the entire input (including the first dimension) to be reshaped
+ *                  to the input size. Default is `None`, which means the module considers
+ *                  inputs with more elements than the product of provided sizes (size(0) *
+ *                  size(1) * ..) to be batches, otherwise in no batch mode.
+ *
+ */
 @SerialVersionUID(- 830146931795053244L)
 class Reshape[@specialized(Float, Double) T: ClassTag](
   size: Array[Int], var batchMode: Option[Boolean] = None)(
@@ -36,8 +51,8 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
-    if ((batchMode.nonEmpty && batchMode.get == false) ||
-      (input.nElement() == nElement && batchMode.isEmpty && input.size(1) != 1)) {
+    if ((batchMode.nonEmpty && !batchMode.get) ||
+          (input.nElement() == nElement && batchMode.isEmpty && input.size(1) != 1)) {
       require(input.nElement() == nElement, "element number must match Reshape size")
       if (input.isContiguous()) output =
         input.view(size)

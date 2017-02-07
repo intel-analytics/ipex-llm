@@ -130,7 +130,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     val dimW = if (nDim == 4) 4 else 3
 
     require(nDim == 3 || nDim == 4,
-      s"3D or 4D input tensor expected but got: ${input.nDimension()}")
+      "SpatialDilatedConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
 
     val inputHeight = input.size(dimH)
     val inputWidth = input.size(dimW)

@@ -53,7 +53,8 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
-    require(input.dim() == 1 || input.dim() == 2, "1D or 2D input expected")
+    require(input.dim() == 1 || input.dim() == 2,
+      "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
     if (input.dim() == 1) {
       if (input.isContiguous()) {
@@ -91,7 +92,8 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2, "1D or 2D input expected")
+    require(input.dim() == 1 || input.dim() == 2,
+      "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
     if (!fastBackward) {
       updateOutput(input)
@@ -122,7 +124,8 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
     scale: Double = 1.0): Unit = {
 
-    require(input.dim() == 1 || input.dim() == 2, "1D or 2D input expected")
+    require(input.dim() == 1 || input.dim() == 2,
+      "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch)
     if (input.dim() == 1) {
       gradWeight.add(ev.fromType(-scale), repeatBuffer)
     } else if (input.dim() == 2) {
