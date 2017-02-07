@@ -331,7 +331,10 @@ object DistriOptimizer {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
         saveModel(getModel(models, parameters), cachePath, isOverWrite,
           s".${state[Int]("neval")}")
-        saveState(models.map(_.localStates.head).first(), cachePath, isOverWrite, s"" +
+        val localState = models.map(_.localStates.head).first()
+        localState("neval") = state[Int]("neval")
+        localState("epoch") = state[Int]("epoch")
+        saveState(localState, cachePath, isOverWrite, s"" +
           s".${state[Int]("neval")}")
       }
     }
