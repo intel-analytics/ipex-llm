@@ -26,7 +26,7 @@ import org.scalatest.{FlatSpec, Matchers}
 @com.intel.analytics.bigdl.tags.Parallel
 class RecurrentSpec extends FlatSpec with Matchers {
 
-  "A Recurrent Language Model Module " should "converge" in {
+  "A Recurrent Language Model Module " should "converge for inside transpose" in {
 
     val hiddenSize = 4
     val inputSize = 5
@@ -80,7 +80,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     labels.squeeze() should be (prediction.squeeze())
   }
 
-  "A Recurrent Module " should "converge in batch mode" in {
+  "A Recurrent Module " should "converge in batch mode for inside transpose" in {
 
     val batchSize = 10
     val nWords = 5
@@ -126,16 +126,273 @@ class RecurrentSpec extends FlatSpec with Matchers {
       (_loss, grad)
     }
 
-    for (i <- 1 to 50) {
+    val nEpoch = 50
+    val start = System.nanoTime()
+    for (i <- 1 to nEpoch) {
       val (_, loss) = sgd.optimize(feval, weights, state)
       println(s"${i}-th loss = ${loss(0)}")
     }
+    val end = System.nanoTime()
+    val wallClockTime = end - start
 
     val output = model.forward(input).asInstanceOf[Tensor[Double]]
     val logOutput = logSoftMax.forward(output)
     val prediction = logOutput.max(2)._2
 
     labels.squeeze() should be (prediction.squeeze())
+    println(s"training time is ${(end - start) / (nEpoch*1e9)} seconds/epoch")
+  }
+
+  "A Recurrent Module " should "converge in batch mode the same as in legacyMode" in {
+
+    val batchSize = 10
+    val nWords = 5
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val bpttTruncate = 3
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val recurrent = Recurrent[Double](hiddenSize, bpttTruncate, timeDim = 2)
+    val model = Sequential[Double]()
+    model.add(recurrent
+      .add(RnnCell[Double](inputSize, hiddenSize))
+      .add(Tanh()))
+      .add(Select(2, nWords))
+      .add(Linear[Double](hiddenSize, outputSize))
+
+    recurrent.setLegacyMode()
+
+    val criterion = CrossEntropyCriterion[Double]()
+    val logSoftMax = LogSoftMax[Double]()
+
+    val (weights, grad) = model.getParameters()
+
+    val input = Tensor[Double](Array(batchSize, nWords, inputSize))
+    val labels = Tensor[Double](batchSize)
+    for (b <- 1 to batchSize) {
+      for (i <- 1 to nWords) {
+        val rdmInput = Math.ceil(RNG.uniform(0.0, 1.0) * inputSize).toInt
+        input.setValue(b, i, rdmInput, 1.0)
+      }
+      val rdmLabel = Math.ceil(RNG.uniform(0.0, 1.0) * outputSize).toInt
+      labels.setValue(b, rdmLabel)
+    }
+
+    val state = T("learningRate" -> 0.5, "momentum" -> 0.0,
+      "weightDecay" -> 0.0, "dampening" -> 0.0)
+    val sgd = new SGD[Double]
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model.forward(input).asInstanceOf[Tensor[Double]]
+      val _loss = criterion.forward(output, labels)
+      model.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model.backward(input, gradInput)
+      (_loss, grad)
+    }
+
+    val nEpoch = 50
+    val start = System.nanoTime()
+    for (i <- 1 to nEpoch) {
+      val (_, loss) = sgd.optimize(feval, weights, state)
+      println(s"${i}-th loss = ${loss(0)}")
+    }
+    val end = System.nanoTime()
+    val wallClockTime = end - start
+
+    val output = model.forward(input).asInstanceOf[Tensor[Double]]
+    val logOutput = logSoftMax.forward(output)
+    val prediction = logOutput.max(2)._2
+
+    labels.squeeze() should be (prediction.squeeze())
+    println(s"training time is ${(end - start) / (nEpoch*1e9)} seconds/epoch")
+  }
+
+  "A Recurrent Module " should "converge in batch mode for outside transpose" in {
+
+    val batchSize = 10
+    val nWords = 5
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val bpttTruncate = 3
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+    model.add(Transpose(Array((1, 2))))
+      .add(Recurrent[Double](hiddenSize, bpttTruncate, timeDim = 1)
+      .add(RnnCell[Double](inputSize, hiddenSize))
+      .add(Tanh()))
+      .add(Transpose(Array((1, 2))))
+      .add(Select(2, nWords))
+      .add(Linear[Double](hiddenSize, outputSize))
+
+    val criterion = CrossEntropyCriterion[Double]()
+    val logSoftMax = LogSoftMax[Double]()
+
+    val (weights, grad) = model.getParameters()
+
+    val input = Tensor[Double](Array(batchSize, nWords, inputSize))
+    val labels = Tensor[Double](batchSize)
+    for (b <- 1 to batchSize) {
+      for (i <- 1 to nWords) {
+        val rdmInput = Math.ceil(RNG.uniform(0.0, 1.0) * inputSize).toInt
+        input.setValue(b, i, rdmInput, 1.0)
+      }
+      val rdmLabel = Math.ceil(RNG.uniform(0.0, 1.0) * outputSize).toInt
+      labels.setValue(b, rdmLabel)
+    }
+
+    val state = T("learningRate" -> 0.5, "momentum" -> 0.0,
+      "weightDecay" -> 0.0, "dampening" -> 0.0)
+    val sgd = new SGD[Double]
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model.forward(input).asInstanceOf[Tensor[Double]]
+      val _loss = criterion.forward(output, labels)
+      model.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model.backward(input, gradInput)
+      (_loss, grad)
+    }
+
+    val nEpoch = 50
+    val start = System.nanoTime()
+    for (i <- 1 to nEpoch) {
+      val (_, loss) = sgd.optimize(feval, weights, state)
+      println(s"${i}-th loss = ${loss(0)}")
+    }
+    val end = System.nanoTime()
+    val wallClockTime = end - start
+
+    val output = model.forward(input).asInstanceOf[Tensor[Double]]
+    val logOutput = logSoftMax.forward(output)
+    val prediction = logOutput.max(2)._2
+
+    labels.squeeze() should be (prediction.squeeze())
+    println(s"training time is ${(end - start) / (nEpoch*1e9)} seconds/epoch")
+  }
+
+  "A Recurrent Module " should "be slow in legacyMode for RnnCell" in {
+
+    val batchSize = 50
+    val nWords = 20
+    val hiddenSize = 40
+    val inputSize = 1000
+    val outputSize = 1000
+    val bpttTruncate = 5
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val recurrent = Recurrent[Double](hiddenSize, bpttTruncate, timeDim = 2)
+    val model = Sequential[Double]()
+    model.add(recurrent
+      .add(RnnCell[Double](inputSize, hiddenSize))
+      .add(Tanh()))
+      .add(Select(2, nWords))
+      .add(Linear[Double](hiddenSize, outputSize))
+
+    recurrent.setLegacyMode()
+
+    val criterion = CrossEntropyCriterion[Double]()
+    val logSoftMax = LogSoftMax[Double]()
+
+    val (weights, grad) = model.getParameters()
+
+    val input = Tensor[Double](Array(batchSize, nWords, inputSize))
+    val labels = Tensor[Double](batchSize)
+    for (b <- 1 to batchSize) {
+      for (i <- 1 to nWords) {
+        val rdmInput = Math.ceil(RNG.uniform(0.0, 1.0) * inputSize).toInt
+        input.setValue(b, i, rdmInput, 1.0)
+      }
+      val rdmLabel = Math.ceil(RNG.uniform(0.0, 1.0) * outputSize).toInt
+      labels.setValue(b, rdmLabel)
+    }
+
+    val nEpoch = 50
+    var start = System.nanoTime()
+    for (i <- 1 to nEpoch) {
+      model.forward(input)
+    }
+    var end = System.nanoTime()
+    var wallClockTime = end - start
+    println(s"Average forward time is ${wallClockTime / (nEpoch * 1e9)} seconds")
+    var totalClockTime = wallClockTime
+
+    val output = model.forward(input).asInstanceOf[Tensor[Double]]
+    val loss = criterion.forward(output, labels)
+    val gradInput = criterion.backward(output, labels)
+    start = System.nanoTime()
+    for (i <- 1 to nEpoch) {
+      model.backward(input, gradInput)
+    }
+    end = System.nanoTime()
+    wallClockTime = end - start
+    println(s"Average backward time is ${wallClockTime / (nEpoch * 1e9)} seconds")
+
+    totalClockTime += wallClockTime
+    println(s"Average total time is ${totalClockTime / (nEpoch * 1e9)} seconds")
+  }
+
+  "A Recurrent Module " should "be fast in contiguous tensor for RnnCell" in {
+
+    val batchSize = 50
+    val nWords = 20
+    val hiddenSize = 40
+    val inputSize = 1000
+    val outputSize = 1000
+    val bpttTruncate = 5
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+    model.add(Recurrent[Double](hiddenSize, bpttTruncate, timeDim = 1)
+      .add(RnnCell[Double](inputSize, hiddenSize))
+      .add(Tanh()))
+      .add(Select(2, nWords))
+      .add(Linear[Double](hiddenSize, outputSize))
+
+    val criterion = CrossEntropyCriterion[Double]()
+    val logSoftMax = LogSoftMax[Double]()
+
+    val (weights, grad) = model.getParameters()
+
+    val input = Tensor[Double](Array(batchSize, nWords, inputSize))
+    val labels = Tensor[Double](batchSize)
+    for (b <- 1 to batchSize) {
+      for (i <- 1 to nWords) {
+        val rdmInput = Math.ceil(RNG.uniform(0.0, 1.0) * inputSize).toInt
+        input.setValue(b, i, rdmInput, 1.0)
+      }
+      val rdmLabel = Math.ceil(RNG.uniform(0.0, 1.0) * outputSize).toInt
+      labels.setValue(b, rdmLabel)
+    }
+
+    val nEpoch = 50
+    var start = System.nanoTime()
+    for (i <- 1 to nEpoch) {
+      model.forward(input)
+    }
+    var end = System.nanoTime()
+    var wallClockTime = end - start
+    println(s"Average forward time is ${wallClockTime / (nEpoch * 1e9)} seconds")
+    var totalClockTime = wallClockTime
+
+    val output = model.forward(input).asInstanceOf[Tensor[Double]]
+    val loss = criterion.forward(output, labels)
+    val gradInput = criterion.backward(output, labels)
+    start = System.nanoTime()
+    for (i <- 1 to nEpoch) {
+      model.backward(input, gradInput)
+    }
+    end = System.nanoTime()
+    wallClockTime = end - start
+    println(s"Average backward time is ${wallClockTime / (nEpoch * 1e9)} seconds")
+
+    totalClockTime += wallClockTime
+    println(s"Average total time is ${totalClockTime / (nEpoch * 1e9)} seconds")
   }
 
   "A Recurrent Module " should "perform correct gradient check" in {
@@ -165,10 +422,10 @@ class RecurrentSpec extends FlatSpec with Matchers {
     }
 
     println("gradient check for input")
-    val gradCheckerInput = new GradientChecker(1e-2, 1)
+    val gradCheckerInput = new GradientChecker(1e-5, 1)
     val checkFlagInput = gradCheckerInput.checkLayer[Double](model, input)
     println("gradient check for weights")
-    val gradCheck = new GradientCheckerRNN(1e-2, 1)
+    val gradCheck = new GradientCheckerRNN(1e-5, 1)
     val checkFlag = gradCheck.checkLayer(model, input, labels)
   }
 }
