@@ -199,7 +199,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     // For each element in batch, do:
     var elt = 1
     while (elt <= batchSize) {
-      // Matrix mulitply per output:
+      // Matrix multiply per output:
       val input_n = input.select(1, elt)
       val output_n = output.select(1, elt)
 
@@ -304,7 +304,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     // For each element in batch, do:
     var elt = 1
     while (elt <= batchSize) {
-      // Matrix mulitply per sample:
+      // Matrix multiply per sample:
       val gradInput_n = gradInput.select(1, elt)
       val gradOutput_n = gradOutput.select(1, elt)
 
@@ -395,7 +395,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     // For each element in batch, do:
     var elt = 1
     while (elt <= batchSize) {
-      // Matrix mulitply per output:
+      // Matrix multiply per output:
       val input_n = input.select(1, elt)
       val gradOutput_n = gradOutput.select(1, elt)
 

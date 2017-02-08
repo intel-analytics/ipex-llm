@@ -224,7 +224,7 @@ object DistriOptimizer {
         val value = lossSum.value / finishedModelNum
         models.mapPartitions(modelIter => {
           val modelCache = modelIter.next()
-          parameters.aggregrateGradientParition()
+          parameters.aggregrateGradientPartition()
           parameters.gradientPartition.div(ev.fromType(finishedModelNum))
           modelCache.localStates.head("neval") = driverState[Int]("neval")
           modelCache.localStates.head("epoch") = driverState[Int]("epoch")
@@ -359,7 +359,7 @@ object DistriOptimizer {
         s" is not equal to configured node number ${nodeNumber}")
 
     val partitionNum = dataset.originRDD().partitions.length
-    val comupteThresholdbatchSize = state.get[Int]("comupteThresholdbatchSize").get
+    val computeThresholdbatchSize = state.get[Int]("computeThresholdbatchSize").get
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastModel, broadcastCriterion, broadcastState) = broadcast.value
       if (!Engine.checkSingleton()) {
@@ -395,7 +395,7 @@ object DistriOptimizer {
         cached.map(_._4), // criterions
         cached.map(_._5), // states
         cached.head._2.clone(), // a tensor buffer
-        new Array[Long](_subModelNumber * comupteThresholdbatchSize)
+        new Array[Long](_subModelNumber * computeThresholdbatchSize)
       ))
     }).persist()
     models.setName("Thread Model RDD")
@@ -514,7 +514,7 @@ class DistriOptimizer[T: ClassTag] private[optim](
     optimMethod.clearHistory(state)
     state("dropPercentage") = dropPercentage
     state("warmupIterationNum") = warmupIterationNum
-    state("comupteThresholdbatchSize") = comupteThresholdbatchSize
+    state("comupteThresholdbatchSize") = computeThresholdbatchSize
     state("maxDropPercentage") = maxDropPercentage
 
     require(Engine.nodeNumber().isDefined, "Node number is not set")

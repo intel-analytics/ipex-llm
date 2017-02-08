@@ -47,8 +47,8 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
     throw new IllegalArgumentException(s"input wrong check number ${status}")
   }
 
-  def setType(isModle: Boolean = false): this.type = {
-    checkModel = isModle
+  def setType(isModel: Boolean = false): this.type = {
+    checkModel = isModel
     this
   }
 

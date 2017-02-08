@@ -23,7 +23,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class ConcatTableSpec extends FlatSpec with Matchers {
 
-  "A ConcateTable" should "return right output and grad" in {
+  "A ConcatTable" should "return right output and grad" in {
     val ct = new ConcatTable[Double]()
     ct.add(new Identity[Double]())
     ct.add(new Identity[Double]())

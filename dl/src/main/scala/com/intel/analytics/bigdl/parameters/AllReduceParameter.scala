@@ -46,8 +46,8 @@ object AllReduceParameter {
 
   private val nextId = new AtomicLong(0)
 
-  def newParameter[T: ClassTag](parationNum: Int, size: Int): AllReduceParameter[T] = {
-    new AllReduceParameter(nextId.getAndIncrement(), parationNum, size)
+  def newParameter[T: ClassTag](partitionNum: Int, size: Int): AllReduceParameter[T] = {
+    new AllReduceParameter(nextId.getAndIncrement(), partitionNum, size)
   }
 }
 
@@ -159,7 +159,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
     new FutureResult(tasks)
   }
 
-  def aggregrateGradientParition(): Unit = {
+  def aggregrateGradientPartition(): Unit = {
     val bm = SparkEnv.get.blockManager
     require(partitionId < partitionNum)
     val params = new Array[CompressedTensor[T]](partitionNum)

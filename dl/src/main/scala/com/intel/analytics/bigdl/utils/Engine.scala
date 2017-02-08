@@ -269,7 +269,7 @@ object Engine {
     if (dlEngineType == null || dlEngineType.toLowerCase == "mklblas") {
       MklBlas
     } else {
-      throw new Error(s"Unkown DL_ENGINE_TYPE. $ERROR")
+      throw new Error(s"Unknown DL_ENGINE_TYPE. $ERROR")
     }
   }
 

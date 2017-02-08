@@ -48,7 +48,7 @@ abstract class Optimizer[T: ClassTag, D](
   // To achieve better performance, please set dropPercentage as 0.04
   protected var dropPercentage: Double = 0.0
   protected var maxDropPercentage: Double = 0.0
-  protected var comupteThresholdbatchSize: Int = 100
+  protected var computeThresholdbatchSize: Int = 100
   protected var warmupIterationNum: Int = 200
 
   def optimize(): Module[T]
@@ -117,7 +117,7 @@ abstract class Optimizer[T: ClassTag, D](
     this.dropPercentage = dropPercentage
     this.maxDropPercentage = maxDropPercentage
     require(dropPercentage >= 0 && dropPercentage <= maxDropPercentage)
-    this.comupteThresholdbatchSize = batchsize
+    this.computeThresholdbatchSize = batchsize
     this.warmupIterationNum = warmupIteration
     this
   }

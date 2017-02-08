@@ -24,7 +24,7 @@ import scala.math._
 import com.intel.analytics.bigdl._
 
 class LinearSpec extends FlatSpec with Matchers {
-  "Linear module" should "converate to correct weight and bias" in {
+  "Linear module" should "converge to correct weight and bias" in {
     val inputN = 5
     val outputN = 2
 
@@ -73,7 +73,7 @@ class LinearSpec extends FlatSpec with Matchers {
     assert(err < 1e-6)
   }
 
-  "Linear module in batch mode" should "converate to correct weight and bias" in {
+  "Linear module in batch mode" should "converge to correct weight and bias" in {
     val inputN = 5
     val outputN = 2
     val batchN = 3

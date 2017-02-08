@@ -39,9 +39,9 @@ Model is implemented in <code>ResNet</code>
         --learningRate 0.1 -n 4
         ```
 
-<code>Optimizer</code> class is used to train the model. Users can define validation method to evaluate the model. We use Top1Accurary as the validation method.
+<code>Optimizer</code> class is used to train the model. Users can define validation method to evaluate the model. We use Top1Accuracy as the validation method.
 
-We support Local and Spark versions of training. Users can define <code>env</code> as "Local" or "Spark" to set the training envrionment.
+We support Local and Spark versions of training. Users can define <code>env</code> as "Local" or "Spark" to set the training environment.
 
 ##Parameters
 ```

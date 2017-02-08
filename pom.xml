@@ -24,7 +24,6 @@
 
     <scm>
         <connection>scm:git:git@github.com:intel-analytics/BigDL.git</connection>
-        <developerConnection>scm:git:ssh://github.com:simpligility/ossrh-demo.git</developerConnection>
         <url>https://github.com/intel-analytics/BigDL/tree/master</url>
     </scm>
 
