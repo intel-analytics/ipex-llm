@@ -13,7 +13,7 @@ To start with this example, you need prepare your model and dataset.
    
 2. Prepare predict dataset
 
-    Put your image data for prediction in the ./predict foler. Alternatively, you may also use imagenet-2012 validation dataset to run the example, which can be found from <http://image-net.org/download-images>. After you download the file (ILSVRC2012_img_val.tar), run the follow commands to prepare the data.
+    Put your image data for prediction in the ./predict folder. Alternatively, you may also use imagenet-2012 validation dataset to run the example, which can be found from <http://image-net.org/download-images>. After you download the file (ILSVRC2012_img_val.tar), run the follow commands to prepare the data.
     
      ```bash
     mkdir predict

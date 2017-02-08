@@ -30,7 +30,7 @@ class DropoutSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   // Todo: Test when input is contiguous
-  "Dropout module" should "converate to correct weight and bias" in {
+  "Dropout module" should "converge to correct weight and bias" in {
     val module = new Dropout[Double](0.7, false, true)
     val input = Tensor[Double](100, 100).t
     val seed = 100

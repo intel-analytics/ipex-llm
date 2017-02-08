@@ -31,22 +31,22 @@ import scala.reflect.ClassTag
  * f(x) = ⎨ x + lambda, if x < -lambda
  *        ⎩ 0, otherwise
  *
- * @param lamda Default is 0.5.
+ * @param lambda Default is 0.5.
  */
 
 @SerialVersionUID(- 2868096135424517459L)
 class SoftShrink[T: ClassTag](
-    val lamda: Double = 0.5
+    val lambda: Double = 0.5
   )( implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input)
     val func = new TensorFunc4[T] {
       override def apply (data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
-        data1(offset1) = if (ev.toType[Double](data2(offset2)) > lamda) {
-          ev.minus(data2(offset2), ev.fromType[Double](lamda))
-        } else if (ev.toType[Double](data2(offset2)) < - lamda) {
-          ev.plus(data2(offset2), ev.fromType[Double](lamda))
+        data1(offset1) = if (ev.toType[Double](data2(offset2)) > lambda) {
+          ev.minus(data2(offset2), ev.fromType[Double](lambda))
+        } else if (ev.toType[Double](data2(offset2)) < - lambda) {
+          ev.plus(data2(offset2), ev.fromType[Double](lambda))
         } else {
           ev.fromType[Int](0)
         }
@@ -62,8 +62,8 @@ class SoftShrink[T: ClassTag](
     val func = new TensorFunc6[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
                          data3: Array[T], offset3: Int): Unit = {
-        data1(offset1) = if (ev.toType[Double](data3(offset3)) > lamda ||
-        ev.toType[Double](data3(offset3)) < - lamda) {
+        data1(offset1) = if (ev.toType[Double](data3(offset3)) > lambda ||
+        ev.toType[Double](data3(offset3)) < - lambda) {
           data2(offset2)
         } else {
           ev.fromType[Int](0)
@@ -82,7 +82,7 @@ class SoftShrink[T: ClassTag](
 
 object SoftShrink {
   def apply[@specialized(Float, Double) T: ClassTag](
-      lamda: Double = 0.5)(implicit ev: TensorNumeric[T]) : SoftShrink[T] = {
-    new SoftShrink[T](lamda)
+      lambda: Double = 0.5)(implicit ev: TensorNumeric[T]) : SoftShrink[T] = {
+    new SoftShrink[T](lambda)
   }
 }

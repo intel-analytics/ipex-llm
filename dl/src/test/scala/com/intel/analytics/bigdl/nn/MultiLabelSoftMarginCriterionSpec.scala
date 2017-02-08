@@ -57,7 +57,7 @@ class MultiLabelSoftMarginCriterionSpec  extends FlatSpec with Matchers {
     m1 should not equal m4
   }
 
-  "MultiLabelSoftMarginCriterio " should "return return right output and gradInput" in {
+  "MultiLabelSoftMarginCriterion " should "return return right output and gradInput" in {
     val criterion = new MultiLabelSoftMarginCriterion[Double]()
     val output = Tensor[Double](3)
     output(Array(1)) = 0.4

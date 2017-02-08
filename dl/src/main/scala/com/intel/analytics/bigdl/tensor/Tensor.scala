@@ -442,7 +442,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * The another tensor should has the same size of the current tensor
    *
    * @param other another tensor
-   * @param func  applied funciton
+   * @param func  applied function
    * @return current tensor
    */
   def map(other: Tensor[T], func: (T, T) => T): Tensor[T]

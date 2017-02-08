@@ -121,7 +121,7 @@ class Bilinear[T: ClassTag](inputSize1: Int,
     gradInput2.cmul(gradOutput.narrow(2, 1, 1).expand(
       Array(gradInput2.size(1), gradInput2.size(2))))
 
-    // do remaing slices of weight tensor
+    // do remaining slices of weight tensor
     if(weight.size(1) > 1) {
       buff1.resizeAs(res1)
 

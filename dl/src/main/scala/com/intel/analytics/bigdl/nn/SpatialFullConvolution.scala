@@ -470,7 +470,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     var elt = 1
     // For each element in batch, do:
     while (elt <= batchSize) {
-      // Matrix mulitply per output:
+      // Matrix multiply per output:
       val input_n = inputTensor.select(1, elt)
       val gradOutput_n = gradOutput.select(1, elt)
 

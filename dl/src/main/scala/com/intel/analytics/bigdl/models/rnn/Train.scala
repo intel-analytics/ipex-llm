@@ -52,7 +52,7 @@ object Train {
       val trainData = dataArray._1
       val valData = dataArray._2
       val trainMaxLength = dataArray._3
-      val valMaxLegnth = dataArray._4
+      val valMaxLength = dataArray._4
 
       val batchSize = 1
 
@@ -62,7 +62,7 @@ object Train {
            .transform(SampleToBatch(batchSize = batchSize))
       val validationSet = DataSet.array(valData)
            .transform(LabeledSentenceToSample(dictionaryLength,
-             Some(valMaxLegnth), Some(valMaxLegnth)))
+             Some(valMaxLength), Some(valMaxLength)))
            .transform(SampleToBatch(batchSize = batchSize))
 
       val model = if (param.modelSnapshot.isDefined) {

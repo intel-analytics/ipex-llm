@@ -1629,7 +1629,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
   /**
-   * mplements < operator comparing each element in x with y
+   * Implements < operator comparing each element in x with y
    *
    * @param x
    * @param y
@@ -1652,7 +1652,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   /**
-   * mplements <= operator comparing each element in x with y
+   * Implements <= operator comparing each element in x with y
    *
    * @param x
    * @param y

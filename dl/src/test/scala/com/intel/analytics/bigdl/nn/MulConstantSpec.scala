@@ -53,9 +53,9 @@ class MulConstantSpec extends FlatSpec {
 
     // Test backward
     input = Tensor[Double](2, 2, 2).randn()
-    val expctedInput = input.clone().apply1(_ / scalar)
+    val expectedInput = input.clone().apply1(_ / scalar)
     val gradInput = module.backward(input, gradOutput)
     assert(gradInput equals expectedGrad)
-    assert(input equals expctedInput)
+    assert(input equals expectedInput)
   }
 }

@@ -32,7 +32,7 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
-  "Linear module" should "converate to correct weight and bias" in {
+  "Linear module" should "converge to correct weight and bias" in {
     val inputN = 5
     val outputN = 2
 
@@ -79,7 +79,7 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
     println("Test case : Linear, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
-  "Linear (1024, 1000)" should "converate to correct weight and bias" in {
+  "Linear (1024, 1000)" should "converge to correct weight and bias" in {
     val inputN = 1024
     val outputN = 1000
 
@@ -123,7 +123,7 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
     println("Test case : Linear, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
-  "Linear (27, 64)" should "converate to correct weight and bias" in {
+  "Linear (27, 64)" should "converge to correct weight and bias" in {
     val inputN = 27
     val outputN = 64
 
