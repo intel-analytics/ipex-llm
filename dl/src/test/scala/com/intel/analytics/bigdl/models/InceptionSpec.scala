@@ -30,7 +30,7 @@ import scala.collection.mutable.HashMap
 import scala.math._
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Parallel
+@com.intel.analytics.bigdl.tags.Serial
 class InceptionSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "Inception+bn" should "generate correct output" in {
     if (!TH.hasTorch()) {
