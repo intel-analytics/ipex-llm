@@ -128,6 +128,7 @@
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                     <junitxml>.</junitxml>
                     <filereports>bigdl-test-report.txt</filereports>
+                    <parallel>${runSpecsInParallel}</parallel>
                 </configuration>
                 <executions>
                     <execution>
@@ -239,4 +240,21 @@
             </plugin>
         </plugins>
     </reporting>
+    
+    <profiles>
+    	<profile>
+    		<id>parallel-tests</id>
+   			<properties>
+      			<runSpecsInParallel>true</runSpecsInParallel>
+      			<membersOnlySuites>com.intel.analytics.bigdl.dataset</membersOnlySuites>
+   			</properties>
+		</profile>
+		<profile>
+    		<id>serial-tests</id>
+   			<properties>
+      			<runSpecsInParallel>true</runSpecsInParallel>
+      			<membersOnlySuites>com.intel.analytics.bigdl.dataset</membersOnlySuites>
+   			</properties>
+		</profile>
+    </profiles>
 </project>
