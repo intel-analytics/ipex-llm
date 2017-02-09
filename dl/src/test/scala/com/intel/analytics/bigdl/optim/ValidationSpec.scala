@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class ValidationSpec extends FlatSpec with Matchers {
   "top1 accuracy" should "be correct on 2d tensor" in {
     val output = Tensor(Storage(Array[Double](

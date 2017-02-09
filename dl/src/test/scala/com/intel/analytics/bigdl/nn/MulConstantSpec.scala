@@ -23,6 +23,7 @@ import org.scalatest.FlatSpec
   /**
   * Created by yao on 9/21/16.
   */
+@com.intel.analytics.bigdl.tags.Parallel
 class MulConstantSpec extends FlatSpec {
   "MulConstant" should "generate correct output and grad" in {
     val input = Tensor[Double](2, 2, 2).randn()

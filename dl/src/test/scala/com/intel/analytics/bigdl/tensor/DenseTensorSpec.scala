@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector}
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class DenseTensorSpec extends FlatSpec with Matchers {
 
   "Construct with empty parameter" should "be empty" in {

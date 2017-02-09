@@ -112,6 +112,7 @@ object LocalOptimizerSpecModel {
   }
 }
 
+@com.intel.analytics.bigdl.tags.Parallel
 class LocalOptimizerSpec extends FlatSpec with Matchers {
   import LocalOptimizerSpecModel._
   import DummyDataSet._

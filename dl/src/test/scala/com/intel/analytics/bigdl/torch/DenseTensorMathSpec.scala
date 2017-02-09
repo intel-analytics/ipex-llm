@@ -22,7 +22,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.sys.process._
 
-
+@com.intel.analytics.bigdl.tags.Serial
 class DenseTensorMathSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   before {

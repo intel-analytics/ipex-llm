@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
   private def referenceLRNForwardAcrossChannels
   (input: Tensor[Double], alpha: Double, beta: Double, size: Int): Tensor[Double] = {

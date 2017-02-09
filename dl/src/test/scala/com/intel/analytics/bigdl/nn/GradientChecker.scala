@@ -29,6 +29,7 @@ sealed trait modelCheck
 case class PartCheck(data : Int) extends modelCheck
 case class FullCheck() extends modelCheck
 
+@com.intel.analytics.bigdl.tags.Parallel
 class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
 
   private val defaultNum = 50

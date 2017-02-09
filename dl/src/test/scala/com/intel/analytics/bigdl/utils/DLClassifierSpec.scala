@@ -31,6 +31,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
+@com.intel.analytics.bigdl.tags.Parallel
 class DLClassifierSpec extends FlatSpec with Matchers{
 
   private def processPath(path: String): String = {

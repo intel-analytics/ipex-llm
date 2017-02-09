@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.dataset
 import com.intel.analytics.bigdl.dataset.text.LabeledSentence
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class LabeledSentenceSpec extends FlatSpec with Matchers {
   "LabeledSentence with Float Array input and Array label" should "initialize well" in {
     val input = Array(0.0f, 1.0f, 2.0f, 3.0f)

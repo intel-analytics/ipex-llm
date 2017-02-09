@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class CopySpec extends FlatSpec with Matchers {
   "A Copy" should "generate correct output" in {
     val output = Tensor[Double](Storage[Double](Array(

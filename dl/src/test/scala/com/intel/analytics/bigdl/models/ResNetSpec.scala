@@ -32,6 +32,7 @@ import scala.collection.immutable
 import scala.math._
 import scala.util.Random
 
+@com.intel.analytics.bigdl.tags.Serial
 class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   "ResNet Float" should "generate correct output" in {

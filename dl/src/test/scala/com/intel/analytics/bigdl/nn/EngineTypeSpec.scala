@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.models.inception.Inception_v2
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class EngineTypeSpec extends FlatSpec with Matchers {
   "checkEngineType" should "return right result" in {
     val model = Inception_v2(1000)

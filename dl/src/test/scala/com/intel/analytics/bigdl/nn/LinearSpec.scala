@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import scala.math._
 import com.intel.analytics.bigdl._
 
+@com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends FlatSpec with Matchers {
   "Linear module" should "converge to correct weight and bias" in {
     val inputN = 5

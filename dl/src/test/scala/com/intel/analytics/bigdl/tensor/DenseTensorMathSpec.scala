@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class DenseTensorMathSpec extends FlatSpec with Matchers {
   "a.dist(b, 1)" should "be correct" in {
     val a: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-
+@com.intel.analytics.bigdl.tags.Serial
 class TensorSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {

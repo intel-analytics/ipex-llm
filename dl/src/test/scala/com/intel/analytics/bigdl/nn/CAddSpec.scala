@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
+@com.intel.analytics.bigdl.tags.Parallel
 class CAddSpec extends FlatSpec with Matchers {
 
   "A CAdd(5, 1)" should "should converge" in {
