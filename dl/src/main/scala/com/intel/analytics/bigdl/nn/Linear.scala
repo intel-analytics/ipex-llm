@@ -32,7 +32,6 @@ abstract class AbstractLinear[T: ClassTag](
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
   val bias: Tensor[T] = Tensor[T](outputSize)
-  val addBuffer: Tensor[T] = Tensor[T]()
 
   val gradWeight: Tensor[T] = Tensor[T](outputSize, inputSize)
   val gradBias: Tensor[T] = Tensor[T](outputSize)
