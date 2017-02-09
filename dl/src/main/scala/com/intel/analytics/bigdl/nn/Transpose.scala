@@ -27,23 +27,25 @@ import scala.reflect.ClassTag
 class Transpose[@specialized(Float, Double) T: ClassTag](
   val permutations: Array[(Int, Int)])(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
+  var buffer: Tensor[T] = _
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output.resizeAs(input).copy(input)
     var i = 0
     while (i < permutations.length) {
-      output.transpose(permutations(i)._1, permutations(i)._2)
+      buffer = input.transpose(permutations(i)._1, permutations(i)._2)
       i += 1
     }
+    output.resizeAs(buffer).copy(buffer)
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput.resizeAs(gradOutput).copy(gradOutput)
     var i = permutations.length - 1
     while (i >= 0) {
-      gradInput.transpose(permutations(i)._1, permutations(i)._2)
+      buffer = gradOutput.transpose(permutations(i)._1, permutations(i)._2)
       i -= 1
     }
+    gradInput.resizeAs(buffer).copy(buffer)
     gradInput
   }
 
