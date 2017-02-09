@@ -252,7 +252,7 @@
 		<profile>
     		<id>serial-tests</id>
    			<properties>
-      			<runSpecsInParallel>true</runSpecsInParallel>
+      			<runSpecsInParallel>false</runSpecsInParallel>
       			<membersOnlySuites>com.intel.analytics.bigdl.dataset</membersOnlySuites>
    			</properties>
 		</profile>
