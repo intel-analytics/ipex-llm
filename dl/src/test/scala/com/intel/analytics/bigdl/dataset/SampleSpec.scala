@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class SampleSpec extends FlatSpec with Matchers {
   "SampleSpec with Float Tensor input and Tensor label" should "initialize well" in {
     val input1 = new LabeledBGRImage(32, 32)
