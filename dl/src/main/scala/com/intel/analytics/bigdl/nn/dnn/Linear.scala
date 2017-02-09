@@ -65,6 +65,7 @@ class Linear[T: ClassTag](inputSize: Int,
 
       wrapper {
         for (prim <- List(backWeight, backBias)) {
+          require(prim != 0, s"linear primitive should not be 0")
           MklDnnFloat.deletePrimitive(prim)
         }
       }

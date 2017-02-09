@@ -223,6 +223,9 @@ JNIEXPORT void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_deletePrim
 
   status = dnnDelete_F32(jPrimitive);
   CHECK_EQ(status, E_SUCCESS);
+  if (status != E_SUCCESS) {
+    fprintf(stderr, "primitive = %ld\n", primitive);
+  }
 }
 
 /*

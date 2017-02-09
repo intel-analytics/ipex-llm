@@ -56,6 +56,7 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
       super.release()
 
       wrapper {
+        require(scaleShift != 0, s"scaleShift should not 0")
         MklDnnFloat.deletePrimitive(scaleShift)
 
         scaleShift = 0L

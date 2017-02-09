@@ -68,6 +68,8 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
     var gradOutputInBackWeight = new MklTensor[T]()
     var gradOutputInBackBias = new MklTensor[T]()
 
+    val inputInBackWeight = new MklTensor[T]()
+
     override def release(): Unit = {
       super.release()
 
@@ -89,6 +91,7 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
 
       wrapper {
         for (prim <- List(backWeight, backBias)) {
+          require(prim != 0, s"convolution primitive should not be equal to 0")
           MklDnnFloat.deletePrimitive(prim)
         }
       }
@@ -188,7 +191,7 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
       tensor.zero()
     }
 
-    for (tensor <- List(refs.input, refs.gradInput)) {
+    for (tensor <- List(refs.input, refs.gradInput, refs.inputInBackWeight)) {
       tensor.resizeAs(input)
     }
 
@@ -293,6 +296,8 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
       ResourceType.dnnResourceDiffDst)
     refs.gradWeight.createConversion(weightLayout, primitive.backWeight,
       ResourceType.dnnResourceDiffFilter)
+    refs.inputInBackWeight.createConversion(inputLayout, primitive.backWeight,
+      ResourceType.dnnResourceSrc)
   }
 
   private[this] def initBackwardBias(outputLayout: MklLayout, biasLayout: MklLayout): Unit = {
@@ -357,7 +362,7 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     if (propagateBack) {
-      refs.weightInBwd.set(weight)
+      refs.weightInBwd.set(refs.weight)
       refs.gradOutput.set(gradOutput)
 
       java.util.Arrays.fill(resources, 0)
@@ -381,13 +386,14 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
   override def accGradParameters(input: Tensor[T],
                                  gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
+    refs.inputInBackWeight.set(input)
     refs.input.set(input)
     refs.gradOutputInBackWeight.set(gradOutput)
     refs.gradOutputInBackBias.set(gradOutput)
 
     {
       java.util.Arrays.fill(resources, 0)
-      resources(ResourceType.dnnResourceSrc) = refs.input.getConvertedStorage()
+      resources(ResourceType.dnnResourceSrc) = refs.inputInBackWeight.getConvertedStorage()
       resources(ResourceType.dnnResourceDiffDst) = refs.gradOutputInBackWeight.getConvertedStorage()
       resources(ResourceType.dnnResourceDiffFilter) = refs.gradWeight.mklStorage()
 

@@ -87,10 +87,14 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
     var sum = 0L
 
     def release(): Unit = {
+      require(concat != 0, s"mkl dnn memory overwritting")
+
       ev.getType match {
         case FloatType =>
           for (primitive <- List(concat, split, sum)) {
-            MklDnnFloat.deletePrimitive(primitive)
+            if (primitive != 0) {
+              MklDnnFloat.deletePrimitive(primitive)
+            }
           }
 
           concat = 0L

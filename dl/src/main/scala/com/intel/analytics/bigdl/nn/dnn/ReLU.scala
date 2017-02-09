@@ -88,8 +88,8 @@ class ReLU[T: ClassTag](ip: Boolean = false)
 
     refs.input.createConversion(ioLayout, primitive.forward, ResourceType.dnnResourceSrc)
     refs.output.createConversion(ioLayout, primitive.forward, ResourceType.dnnResourceDst)
-    refs.gradInput.createConversion(ioLayout, primitive.forward, ResourceType.dnnResourceSrc)
-    refs.gradOutput.createConversion(ioLayout, primitive.forward, ResourceType.dnnResourceDst)
+    refs.gradInput.createConversion(ioLayout, primitive.backward, ResourceType.dnnResourceDiffSrc)
+    refs.gradOutput.createConversion(ioLayout, primitive.backward, ResourceType.dnnResourceDiffDst)
 
     setInit(true)
   }

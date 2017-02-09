@@ -203,6 +203,10 @@ class ThreadPool(private var poolSize: Int) {
 object ThreadPool {
   val singleThreadPool = new ExecutionContext {
     def execute(runnable: Runnable) {
+      if (Engine.getEngineType() == MklDnn) {
+        MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
+        MKL.setAffinity()
+      }
       runnable.run()
     }
 
@@ -300,14 +304,13 @@ object Engine {
   def model: ThreadPool = _model
 
   private def initModelThreadPool() = {
-    val modelPoolSize: Int = if (engineType == MklBlas) {
-      1
-    } else {
-      physicalCoreNumber
+    val modelPoolSize = 1
+    if (engineType == MklDnn) {
+      MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
+      MKL.setAffinity()
     }
 
     val model = new ThreadPool(modelPoolSize)
-    model.setMKLThread(1)
 
     model
   }

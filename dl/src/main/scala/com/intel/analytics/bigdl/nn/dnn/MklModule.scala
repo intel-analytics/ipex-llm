@@ -122,6 +122,7 @@ trait MklModuleMethods {
       ev.getType() match {
         case FloatType =>
           for (primitive <- List(forward, backward)) {
+            require(primitive != 0, s"primitive should not be 0")
             MklDnnFloat.deletePrimitive(primitive)
           }
           forward = 0L
