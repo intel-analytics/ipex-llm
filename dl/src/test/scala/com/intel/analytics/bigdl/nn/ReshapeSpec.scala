@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.nn
 import org.scalatest.FlatSpec
 import com.intel.analytics.bigdl.tensor.Tensor
 
+@com.intel.analytics.bigdl.tags.Parallel
 class ReshapeSpec extends FlatSpec {
   "A Reshape Module " should "generate correct output and grad" in {
     val module = new Reshape[Double](Array(3, 2))

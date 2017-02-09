@@ -24,6 +24,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
+@com.intel.analytics.bigdl.tags.Serial
 class SpatialContrastiveNormalizationSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {

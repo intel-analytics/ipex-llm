@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.utils.Engine
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
 
+@com.intel.analytics.bigdl.tags.Parallel
 class FP16ParameterSpec extends FlatSpec with Matchers {
 
   "convert double tensor to fp16 array and back" should "be same when the number is integer" in {

@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Serial
 class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc: SparkContext = null
 

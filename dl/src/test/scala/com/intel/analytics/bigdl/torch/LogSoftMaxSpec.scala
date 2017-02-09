@@ -25,6 +25,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.util.Random
 import com.intel.analytics.bigdl._
 
+@com.intel.analytics.bigdl.tags.Serial
 class LogSoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {

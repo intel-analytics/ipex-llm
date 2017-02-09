@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import scala.math.abs
 import com.intel.analytics.bigdl._
 
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
   "A SpatialAveragePooling" should "generate correct output and gradInput" in {
     val module = new SpatialAveragePooling[Double](3, 2, 2, 1)

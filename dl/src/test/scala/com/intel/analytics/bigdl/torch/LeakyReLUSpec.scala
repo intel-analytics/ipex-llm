@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Serial
 class LeakyReLUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {

@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl._
 
 import scala.util.Random
 
+@com.intel.analytics.bigdl.tags.Serial
 class SpatialCrossMapLRNSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {

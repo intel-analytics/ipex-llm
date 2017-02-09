@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.scalatest.{FlatSpec, Matchers}
 
 
+@com.intel.analytics.bigdl.tags.Serial
 class FileSpec extends FlatSpec with Matchers {
 
   "read/write alexnet" should "work properly" in {

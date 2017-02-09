@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
 
   "A SpatialFullConvolution BilinearFiller" should "generate correct parameter" in {

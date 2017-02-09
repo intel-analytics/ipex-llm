@@ -23,6 +23,7 @@ import org.scalatest.{FlatSpec, Matchers}
   /**
   * Created by yao on 9/20/16.
   */
+@com.intel.analytics.bigdl.tags.Parallel
 class IdentitySpec extends FlatSpec with Matchers {
   "Identity" should "generate correct output and grad" in {
     val batchN = 3

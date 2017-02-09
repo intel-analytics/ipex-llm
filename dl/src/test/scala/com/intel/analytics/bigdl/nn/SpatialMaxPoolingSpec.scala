@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.math.abs
 
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
 
   "A SpatialMaxPooling" should "generate correct output and gradInput" in {

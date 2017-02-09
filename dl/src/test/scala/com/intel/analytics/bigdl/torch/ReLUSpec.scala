@@ -26,6 +26,7 @@ import scala.math._
 import scala.util.Random
 import com.intel.analytics.bigdl._
 
+@com.intel.analytics.bigdl.tags.Serial
 class ReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
