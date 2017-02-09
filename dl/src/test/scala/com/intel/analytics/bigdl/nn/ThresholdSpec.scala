@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.math.abs
 
+@com.intel.analytics.bigdl.tags.Parallel
 class ThresholdSpec extends FlatSpec {
   "A Threshold Module " should "generate correct output and grad" in {
     val module = new Threshold[Double](1, 0.8)

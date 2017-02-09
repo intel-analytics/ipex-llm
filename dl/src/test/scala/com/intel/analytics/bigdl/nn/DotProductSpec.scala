@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class DotProductSpec extends FlatSpec with Matchers {
   "A DotProductSpec" should "generate correct output" in {
     val input = T(

@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class ConcatTableSpec extends FlatSpec with Matchers {
 
   "A ConcateTable" should "return right output and grad" in {

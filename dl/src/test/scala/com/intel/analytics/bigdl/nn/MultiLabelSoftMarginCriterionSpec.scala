@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class MultiLabelSoftMarginCriterionSpec  extends FlatSpec with Matchers {
   "hashcode()" should "behave correctly" in {
     val m1 = new MultiLabelSoftMarginCriterion[Double]()

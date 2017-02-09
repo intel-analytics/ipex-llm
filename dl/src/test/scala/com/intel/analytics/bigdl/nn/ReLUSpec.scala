@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.math.abs
 
+@com.intel.analytics.bigdl.tags.Parallel
 class ReLUSpec extends FlatSpec {
   "A ReLU Module " should "generate correct output and grad" in {
     val module = new ReLU[Double]()

@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class MVSpec extends FlatSpec with Matchers {
   "hashcode()" should "behave correctly" in {
     val m1 = new MV[Double]()

@@ -22,6 +22,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
 
+@com.intel.analytics.bigdl.tags.Parallel
 class ModuleSpec extends FlatSpec with Matchers {
   "hashcode()" should "behave correctly" in {
     val r1 = new ReLU[Double]()

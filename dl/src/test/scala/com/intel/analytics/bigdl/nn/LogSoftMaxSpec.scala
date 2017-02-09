@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.nn
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
 
+@com.intel.analytics.bigdl.tags.Parallel
 class LogSoftMaxSpec extends FlatSpec with Matchers {
   "A LogSoftMax Module " should "generate correct output" in {
     val module = new LogSoftMax[Double]()

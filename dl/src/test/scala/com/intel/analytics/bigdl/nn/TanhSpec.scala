@@ -23,6 +23,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.math.abs
 
+@com.intel.analytics.bigdl.tags.Parallel
 class TanhSpec extends FlatSpec with Matchers {
   "A Tanh Module " should "generate correct output and grad" in {
     val module = new Tanh[Double]()

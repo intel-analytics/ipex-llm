@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.math._
 
+@com.intel.analytics.bigdl.tags.Parallel
 class ClassNLLCriterionSpec extends FlatSpec with Matchers {
   "A ClassNLL Criterion " should "generate correct output and grad" in {
     val criterion = new ClassNLLCriterion[Double]()

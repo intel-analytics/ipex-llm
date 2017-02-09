@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class ExpSpec extends FlatSpec with Matchers {
   "A Exp" should "generate correct output" in {
     val input = Tensor(Storage[Double](Array(1.0, 2, 3, 4, 5, 6)), 1, Array(2, 3))
