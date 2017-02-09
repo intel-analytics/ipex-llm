@@ -258,5 +258,12 @@
       			<tagsToExclude>com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
    			</properties>
 		</profile>
+		<profile>
+    		<id>serial-all</id>
+   			<properties>
+      			<runSpecsInParallel>false</runSpecsInParallel>
+      			<membersOnlySuites>com.intel.analytics.bigdl.dataset</membersOnlySuites>
+   			</properties>
+		</profile>
     </profiles>
 </project>
