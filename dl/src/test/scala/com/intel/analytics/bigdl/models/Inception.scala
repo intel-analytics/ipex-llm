@@ -29,6 +29,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+@com.intel.analytics.bigdl.tags.Parallel
 object Inception {
   def getModel[D: ClassTag](classNum: Int, modelName: String = "")(
     implicit ev: TensorNumeric[D]): Module[D] = {

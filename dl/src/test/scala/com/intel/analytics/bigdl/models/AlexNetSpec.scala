@@ -31,6 +31,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.math._
 import scala.util.Random
 
+@com.intel.analytics.bigdl.tags.Parallel
 class AlexNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "AlexNet float" should "generate correct output" in {
     if (!TH.hasTorch()) {
