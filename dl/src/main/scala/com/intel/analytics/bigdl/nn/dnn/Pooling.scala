@@ -193,7 +193,7 @@ class Pool[T: ClassTag](kW: Int,
 
     refs.workspace.createMklLayout(primitive.forward, ResourceType.dnnResourceWorkspace)
 
-    setInit(true)
+    setInited(true)
   }
 
   def releaseAll(): Unit = {
@@ -201,7 +201,7 @@ class Pool[T: ClassTag](kW: Int,
       refs.release()
       primitive.release()
 
-      setInit(false)
+      setInited(false)
     }
   }
 

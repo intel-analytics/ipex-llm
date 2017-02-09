@@ -155,7 +155,7 @@ class Linear[T: ClassTag](inputSize: Int,
     initBackwardWeight(inputLayout, outputLayout, weightLayout, biasLayout, outputSize)
     initBackwardBias(outputLayout, biasLayout)
 
-    setInit(true)
+    setInited(true)
   }
 
   private[this] def initForward(inputLayout: MklLayout,
@@ -237,7 +237,7 @@ class Linear[T: ClassTag](inputSize: Int,
       refs.release()
       primitive.release()
 
-      setInit(false)
+      setInited(false)
     }
   }
 

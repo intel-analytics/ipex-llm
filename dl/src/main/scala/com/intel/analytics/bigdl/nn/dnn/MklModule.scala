@@ -165,7 +165,7 @@ trait MklModuleMethods {
   }
 
   def isInited: Boolean = _isInited
-  def setInit(value: Boolean): Unit = {
+  def setInited(value: Boolean): Unit = {
     _isInited = value
   }
 

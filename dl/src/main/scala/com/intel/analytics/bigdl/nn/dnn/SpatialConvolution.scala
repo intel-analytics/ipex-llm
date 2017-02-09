@@ -213,7 +213,7 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
     initBackwardWeight(inputLayout, outputLayout, weightLayout, strides, pads, biasLayout)
     initBackwardBias(outputLayout, biasLayout)
 
-    setInit(true)
+    setInited(true)
   }
 
   private[this] def initForward(inputLayout: MklLayout, outputLayout: MklLayout,
@@ -323,7 +323,7 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
       refs.release()
       primitive.release()
 
-      setInit(false)
+      setInited(false)
     }
   }
 

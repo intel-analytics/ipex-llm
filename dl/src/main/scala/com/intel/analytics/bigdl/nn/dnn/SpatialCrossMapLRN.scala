@@ -119,14 +119,14 @@ class SpatialCrossMapLRN[T: ClassTag](size: Int = 5,
     refs.gradOutput.createConversion(inputLayout, primitive.backward,
       ResourceType.dnnResourceDiffDst)
 
-    setInit(true)
+    setInited(true)
   }
   def releaseAll(): Unit = {
     if (refs != null && primitive != null) {
       refs.release()
       primitive.release()
 
-      setInit(false)
+      setInited(false)
     }
   }
 

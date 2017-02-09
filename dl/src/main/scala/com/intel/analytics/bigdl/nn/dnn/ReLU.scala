@@ -91,7 +91,7 @@ class ReLU[T: ClassTag](ip: Boolean = false)
     refs.gradInput.createConversion(ioLayout, primitive.backward, ResourceType.dnnResourceDiffSrc)
     refs.gradOutput.createConversion(ioLayout, primitive.backward, ResourceType.dnnResourceDiffDst)
 
-    setInit(true)
+    setInited(true)
   }
 
   def releaseAll(): Unit = {
@@ -99,7 +99,7 @@ class ReLU[T: ClassTag](ip: Boolean = false)
       refs.release()
       primitive.release()
 
-      setInit(false)
+      setInited(false)
     }
   }
 

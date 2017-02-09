@@ -38,6 +38,7 @@ abstract class AbstractBatchNormalization[@specialized(Float, Double) T: ClassTa
   val gradWeight: Tensor[T] = if (affine) Tensor[T](nOutput) else null
   val gradBias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
 
+  def setInit(status: Boolean = true): this.type
 }
 
 @SerialVersionUID(- 3181824540272906068L)
@@ -86,7 +87,7 @@ class BatchNormalization[T: ClassTag](
 
   @inline
   // to fix internal parameters (saveMean, saveStd)
-  def setInit(status: Boolean = true): this.type = {
+  override def setInit(status: Boolean = true): this.type = {
     needFix = status
     this
   }

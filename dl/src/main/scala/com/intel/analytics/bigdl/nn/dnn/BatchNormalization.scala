@@ -37,6 +37,11 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
   require(nOutput > 0,
           "To set affine=false call SpatialBatchNormalization(nFeature,  eps, momentum, false)")
 
+  // do nothing
+  override def setInit(value: Boolean): this.type = {
+    this
+  }
+
   class BNRef extends Ref[T] {
     val workspace = new MklTensor[T]()
     val scaleShift = new MklTensor[T]()
@@ -135,7 +140,7 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
       this.gradInput.resizeAs(input)
     }
 
-    setInit(true)
+    setInited(true)
   }
 
   def releaseAll(): Unit = {
@@ -143,7 +148,7 @@ class BatchNormalization[T: ClassTag](nOutput: Int,
       refs.release()
       primitive.release()
 
-      setInit(false)
+      setInited(false)
     }
   }
 
