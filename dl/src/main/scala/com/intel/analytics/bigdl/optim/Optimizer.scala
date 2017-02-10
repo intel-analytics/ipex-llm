@@ -20,10 +20,9 @@ package com.intel.analytics.bigdl.optim
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+import com.intel.analytics.bigdl.dataset.{DataSet, _}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset._
+import com.intel.analytics.bigdl.utils.{Engine, File, T, Table}
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -86,7 +85,9 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   def setCheckpoint(path: String, trigger: Trigger): this.type = {
-    require(Files.isDirectory(Paths.get(path)), s"$path is not a folder")
+    if (!path.startsWith(File.hdfsPrefix)) {
+      require(Files.isDirectory(Paths.get(path)), s"Optimizer.setCheckpoint: $path is not a folder")
+    }
     this.checkpointPath = Some(path)
     this.checkpointTrigger = Some(trigger)
     this
