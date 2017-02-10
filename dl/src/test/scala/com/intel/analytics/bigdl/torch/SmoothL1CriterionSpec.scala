@@ -23,6 +23,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
 
+@com.intel.analytics.bigdl.tags.Parallel
 class SmoothL1CriterionSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {

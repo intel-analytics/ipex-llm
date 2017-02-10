@@ -23,6 +23,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
+@com.intel.analytics.bigdl.tags.Parallel
 class MulSpec extends FlatSpec with BeforeAndAfter with Matchers{
 
   before {
