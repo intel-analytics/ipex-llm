@@ -247,7 +247,6 @@
    			<properties>
       			<runSpecsInParallel>true</runSpecsInParallel>
       			<membersOnlySuites>com.intel.analytics.bigdl.torch</membersOnlySuites>
-      			<tagsToInclude>com.intel.analytics.bigdl.tags.Parallel</tagsToInclude>
       			<tagsToExclude>com.intel.analytics.bigdl.tags.Serial</tagsToExclude>
    			</properties>
 		</profile>
@@ -256,7 +255,6 @@
    			<properties>
       			<runSpecsInParallel>false</runSpecsInParallel>
       			<membersOnlySuites>com.intel.analytics.bigdl.torch</membersOnlySuites>
-      			<tagsToInclude>com.intel.analytics.bigdl.tags.Serial</tagsToInclude>
       			<tagsToExclude>com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
    			</properties>
 		</profile>
