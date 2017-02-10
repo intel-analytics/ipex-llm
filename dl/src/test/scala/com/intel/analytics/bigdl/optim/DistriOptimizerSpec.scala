@@ -75,6 +75,7 @@ object DistriOptimizerSpecModel {
   }
 }
 
+@com.intel.analytics.bigdl.tags.Parallel
 class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   import DistriOptimizerSpec._

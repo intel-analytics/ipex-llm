@@ -24,6 +24,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 
+@com.intel.analytics.bigdl.tags.Parallel
 class SGDSpec extends FlatSpec with Matchers {
   "A SGD optimMethod with 1 parameter" should "generate correct result" in {
     val state = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
