@@ -18,34 +18,34 @@
 package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 
 import scala.reflect.ClassTag
 
-class ModelBroadCast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
+class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
 
   private var broadcastModel: Broadcast[Module[T]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
 
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
     val bcModel = model.cloneModule()
-    val weightsBias = getWeightBias(bcModel.parameters())
+    val weightsBias = getAndClearWeightBias(bcModel.parameters())
     broadcastModel = sc.broadcast(bcModel)
     broadcastParameters = sc.broadcast(weightsBias)
     this
   }
 
-  def cloneModel(): Module[T] = {
+  def value(): Module[T] = {
     val localModel = broadcastModel.value.cloneModule()
     putWeightBias(broadcastParameters.value, localModel)
     localModel
   }
 
 
-  private def getWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
+  private def getAndClearWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
   : Array[Tensor[T]] = {
     var i = 0
     val weightsBias = new Array[Tensor[T]](parameters._1.length)
@@ -76,7 +76,7 @@ class ModelBroadCast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
 }
 
 
-object ModelBroadCast {
+object ModelBroadcast {
   def apply[@specialized(Float, Double) T: ClassTag]()(implicit ev: TensorNumeric[T])
-  : ModelBroadCast[T] = new ModelBroadCast
+  : ModelBroadcast[T] = new ModelBroadcast
 }
