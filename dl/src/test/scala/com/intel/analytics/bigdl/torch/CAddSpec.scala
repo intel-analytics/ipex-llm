@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
-@com.intel.analytics.bigdl.tags.Parallel
+@com.intel.analytics.bigdl.tags.Serial
 class CAddSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {

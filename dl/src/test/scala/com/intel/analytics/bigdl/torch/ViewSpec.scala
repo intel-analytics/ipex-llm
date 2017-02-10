@@ -26,7 +26,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.math._
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Parallel
+@com.intel.analytics.bigdl.tags.Serial
 class ViewSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
