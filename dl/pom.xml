@@ -246,7 +246,7 @@
     		<id>parallel-tests</id>
    			<properties>
       			<runSpecsInParallel>true</runSpecsInParallel>
-      			<membersOnlySuites>com.intel.analytics.bigdl.torch</membersOnlySuites>
+      			<membersOnlySuites>com.intel.analytics.bigdl.utils</membersOnlySuites>
       			<tagsToExclude>com.intel.analytics.bigdl.tags.Serial</tagsToExclude>
    			</properties>
 		</profile>
@@ -254,7 +254,7 @@
     		<id>serial-tests</id>
    			<properties>
       			<runSpecsInParallel>false</runSpecsInParallel>
-      			<membersOnlySuites>com.intel.analytics.bigdl.torch</membersOnlySuites>
+      			<membersOnlySuites>com.intel.analytics.bigdl.utils</membersOnlySuites>
       			<tagsToExclude>com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
    			</properties>
 		</profile>
@@ -262,7 +262,7 @@
     		<id>serial-all</id>
    			<properties>
       			<runSpecsInParallel>false</runSpecsInParallel>
-      			<membersOnlySuites>com.intel.analytics.bigdl.torch</membersOnlySuites>
+      			<membersOnlySuites>com.intel.analytics.bigdl.utils</membersOnlySuites>
    			</properties>
 		</profile>
     </profiles>
