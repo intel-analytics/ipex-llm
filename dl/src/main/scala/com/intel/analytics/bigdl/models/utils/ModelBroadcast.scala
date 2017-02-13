@@ -25,11 +25,24 @@ import org.apache.spark.broadcast.Broadcast
 
 import scala.reflect.ClassTag
 
+/**
+ * ModelBroadcast is used to broadcast model.
+ * It shortens the broadcast time, which is especially useful when the model size is large
+ * @tparam T data type
+ */
 class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
 
   private var broadcastModel: Broadcast[Module[T]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
 
+  /**
+   * broadcast the model
+   * first get and clear the weight and bias parameters from the model
+   * then broadcast the parameters and model(without parameters) separately
+   * @param sc    SparkContext
+   * @param model model to broadcast
+   * @return this
+   */
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
     val bcModel = model.cloneModule()
     val weightsBias = getAndClearWeightBias(bcModel.parameters())
@@ -38,6 +51,11 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
     this
   }
 
+  /**
+   * get the broadcast model
+   * put the weight and bias back to the model
+   * @return model
+   */
   def value(): Module[T] = {
     val localModel = broadcastModel.value.cloneModule()
     putWeightBias(broadcastParameters.value, localModel)
