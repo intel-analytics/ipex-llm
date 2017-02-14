@@ -16,20 +16,16 @@
 
 package com.intel.analytics.bigdl.models.rnn
 
-import java.io.File
-
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.SampleToBatch
 import com.intel.analytics.bigdl.dataset.text._
-import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
+import com.intel.analytics.bigdl.nn.{TimeDistributedCriterion, CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
-
-import scala.io.Source
 
 object Train {
 
@@ -45,71 +41,85 @@ object Train {
         new SparkContext(conf)
       })
 
-      val (trainSet, validationSet, dictionaryLength) = if (!sc.isDefined) {
-        val logData = Source.fromFile(param.dataFolder + "/" + "train.txt").getLines().toArray
-        val trainSents = DataSet.array(logData
-          .filter(!_.isEmpty)).transform(SentenceSplitter())
-        val output_sents = trainSents.toLocal().data(train = false).flatMap(item => item.iterator)
-        val tokens = DataSet.array(output_sents.toArray).transform(DocumentTokenizer())
+      val (traintokens, valtokens, dictionary, maxTrainLength, maxValLength) = if (!sc.isDefined) {
+
+        val tokens = SequencePreprocess(
+          param.dataFolder + "/train.txt",
+          param.sentFile,
+          param.tokenFile)
+
         val dictionary = Dictionary(tokens.toLocal().data(false), param.vocabSize)
         dictionary.save(param.saveFolder)
-        println("vocabulary size = " + dictionary.vocabSize())
+
         var maxTrainLength = 0
         tokens.toLocal().data(false).foreach(x => {
           maxTrainLength = math.max(maxTrainLength, x.length)
         })
-        val valData = Source.fromFile(param.dataFolder + "/" + "val.txt").getLines().toArray
-        val valSents = DataSet.array(valData
-          .filter(!_.isEmpty)).transform(SentenceSplitter())
-        val valoutput = valSents.toLocal().data(train = false).flatMap(item => item.iterator)
-        val valtokens = DataSet.array(valoutput.toArray).transform(DocumentTokenizer())
+
+        val valtokens = SequencePreprocess(
+          param.dataFolder + "/val.txt",
+          param.sentFile,
+          param.tokenFile
+        )
         var maxValLength = 0
         valtokens.toLocal().data(false).foreach(x => {
           maxValLength = math.max(maxValLength, x.length)
         })
+        logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
 
-        println(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
-        (tokens
-          .transform(TextToLabeledSentence(dictionary))
-          .transform(LabeledSentenceToSample(dictionary.vocabSize() + 1,
-            Option(maxTrainLength), Option(maxTrainLength)))
-          .transform(SampleToBatch(batchSize = param.batchSize)),
-          valtokens
-            .transform(TextToLabeledSentence(dictionary))
-            .transform(LabeledSentenceToSample(dictionary.vocabSize() + 1,
-              Option(maxTrainLength), Option(maxTrainLength)))
-            .transform(SampleToBatch(batchSize = param.batchSize)),
-          dictionary.vocabSize() + 1)
+        (tokens, valtokens, dictionary, maxTrainLength, maxValLength)
       } else {
-        val trainSents = DataSet.rdd(sc.get.textFile(param.dataFolder + "/" + "train.txt")
-          .filter(!_.isEmpty)).transform(SentenceSplitter())
-        val output_sents = trainSents.toDistributed().data(train = false).collect().flatten
-        val tokens = DataSet.rdd(sc.get.parallelize(output_sents)).transform(DocumentTokenizer())
+        val tokens = SequencePreprocess(
+          param.dataFolder + "/train.txt",
+          sc = sc.get,
+          param.sentFile,
+          param.tokenFile)
+
         val dictionary = Dictionary(tokens.toDistributed().data(false),
           param.vocabSize)
         dictionary.save(param.saveFolder)
-        val valSents = DataSet.rdd(sc.get.textFile(param.dataFolder + "/" + "val.txt")
-          .filter(!_.isEmpty)).transform(SentenceSplitter())
-        val valoutput = valSents.toDistributed().data(train = false).collect().flatten
-        val valtokens = DataSet.rdd(sc.get.parallelize(valoutput)).transform(DocumentTokenizer())
-        (tokens
-          .transform(TextToLabeledSentence(dictionary))
-          .transform(LabeledSentenceToSample(dictionary.vocabSize() + 1))
-          .transform(SampleToBatch(batchSize = param.batchSize)),
-          valtokens
-            .transform(TextToLabeledSentence(dictionary))
-            .transform(LabeledSentenceToSample(dictionary.vocabSize() + 1))
-            .transform(SampleToBatch(batchSize = param.batchSize)),
-          dictionary.vocabSize() + 1)
+
+        var maxTrainLength = 0
+        tokens.toDistributed().data(false).collect().foreach(x => {
+          maxTrainLength = math.max(maxTrainLength, x.length)
+        })
+
+        val valtokens = SequencePreprocess(
+          param.dataFolder + "/val.txt",
+          sc = sc.get,
+          param.sentFile,
+          param.tokenFile
+        )
+        var maxValLength = 0
+        valtokens.toDistributed().data(false).collect().foreach(x => {
+          maxValLength = math.max(maxValLength, x.length)
+        })
+        logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
+
+        (tokens, valtokens, dictionary, maxTrainLength, maxValLength)
       }
+
+      val totalVocabLength = dictionary.vocabSize() + 1
+
+      val (trainSet, validationSet) = (
+      traintokens
+        .transform(TextToLabeledSentence(dictionary))
+        .transform(LabeledSentenceToSample(totalVocabLength,
+          Option(maxTrainLength), Option(maxTrainLength)))
+        .transform(SampleToBatch(batchSize = param.batchSize)),
+      valtokens
+        .transform(TextToLabeledSentence(dictionary))
+        .transform(LabeledSentenceToSample(totalVocabLength,
+          Option(maxValLength), Option(maxValLength)))
+        .transform(SampleToBatch(batchSize = param.batchSize)))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
         val curModel = SimpleRNN(
-          inputSize = dictionaryLength,
+          inputSize = totalVocabLength,
           hiddenSize = param.hiddenSize,
-          outputSize = dictionaryLength)
+          outputSize = totalVocabLength)
         curModel.reset()
         curModel
       }
@@ -126,7 +136,7 @@ object Train {
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
-        criterion = CrossEntropyCriterion[Float]()
+        criterion = TimeDistributedCriterion[Float](CrossEntropyCriterion[Float]())
       )
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)

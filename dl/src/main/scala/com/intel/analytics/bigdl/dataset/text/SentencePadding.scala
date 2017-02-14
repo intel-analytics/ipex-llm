@@ -18,32 +18,30 @@
 package com.intel.analytics.bigdl.dataset.text
 
 import com.intel.analytics.bigdl.dataset.Transformer
-
 import scala.collection.Iterator
-import scala.collection.mutable.ArrayBuffer
-
-import org.apache.spark.SparkContext
-import org.apache.spark.sql._
-
-import smile.nlp.tokenizer.SimpleTokenizer
 
 /**
- * Transformer that tokenizes a Document (article)
- * into a Seq[Seq[String]]
- *
+ * x =>  ["start", x, "end"]
  */
 
-class DocumentTokenizer() extends Transformer[String, Array[String]] {
-  val sentenceStart = Array("SENTENCE_START")
-  val sentenceEnd = Array("SENTENCE_END")
-  override def apply(prev: Iterator[String]): Iterator[Array[String]] =
+class SentencePadding(
+  start: Option[String] = None,
+  end: Option[String] = None)
+  extends Transformer[String, String] {
+
+  val sentenceStart = start.getOrElse("SENTENCESTART ")
+  val sentenceEnd = end.getOrElse(" SENTENCEEND")
+
+  override def apply(prev: Iterator[String]): Iterator[String] = {
     prev.map(x => {
-      val tokenizer = new SimpleTokenizer(true)
-      val words = tokenizer.split(x)
-      sentenceStart ++ words ++ sentenceEnd
+      val sentence = sentenceStart + x + sentenceEnd
+      sentence
     })
+  }
 }
 
-object DocumentTokenizer {
-  def apply(): DocumentTokenizer = new DocumentTokenizer()
+object SentencePadding {
+  def apply(start: Option[String] = None,
+            end: Option[String] = None):
+  SentencePadding = new SentencePadding(start, end)
 }

@@ -19,16 +19,16 @@ package com.intel.analytics.bigdl.dataset.text
 
 import java.io.PrintWriter
 
-import com.intel.analytics.bigdl.dataset.{DataSet, LocalArrayDataSet}
+import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.io.Source
 
-class DocumentTokenizerSpec extends FlatSpec with Matchers {
+class SentencePaddingSpec extends FlatSpec with Matchers {
 
-  "DocumentTokenizerSpec" should "tokenizes articles correctly on Spark" in {
+  "SentencePaddingSpec" should "pads articles correctly on Spark" in {
     val tmpFile = java.io.File
       .createTempFile("UnitTest", "DocumentTokenizerSpec").getPath
 
@@ -46,25 +46,21 @@ class DocumentTokenizerSpec extends FlatSpec with Matchers {
     val sc = new SparkContext("local[1]", "DocumentTokenizer")
     val sents = DataSet.rdd(sc.textFile(tmpFile)
       .filter(!_.isEmpty)).transform(SentenceSplitter())
-    val output_sents = sents.toDistributed().data(train = false).collect().flatten
-    val tokens = DataSet.rdd(sc.parallelize(output_sents)).transform(DocumentTokenizer())
+      .toDistributed().data(train = false).flatMap(item => item.iterator).collect()
+      .asInstanceOf[Array[String]]
+    val tokens = DataSet.rdd(sc.parallelize(sents))
+      .transform(SentencePadding())
     val output = tokens.toDistributed().data(train = false).collect()
 
     var count = 0
-    println("tokenized sentences:")
+    println("padding sentences:")
     output.foreach(x => {
       count += x.length
-      println(x.mkString(" "))
+      println(x)
     })
-
-    val numOfSents = 6
-    val numOfWords = 46
-
-    output.length should be (numOfSents)
-    count should be (numOfWords)
   }
 
-  "DocumentTokenizerSpec" should "tokenizes articles correctly on local" in {
+  "SentencePaddingSpec" should "pads articles correctly on local" in {
     val tmpFile = java.io.File
       .createTempFile("UnitTest", "DocumentTokenizerSpec").getPath
 
@@ -82,20 +78,16 @@ class DocumentTokenizerSpec extends FlatSpec with Matchers {
     val logData = Source.fromFile(tmpFile).getLines().toArray
     val sents = DataSet.array(logData
       .filter(!_.isEmpty)).transform(SentenceSplitter())
-    val output_sents = sents.toLocal().data(train = false).flatMap(item => item.iterator)
-    val tokens = DataSet.array(output_sents.toArray).transform(DocumentTokenizer())
+      .toLocal().data(train = false).flatMap(item => item.iterator)
+    val tokens = DataSet.array(sents.toArray)
+      .transform(SentencePadding())
     val output = tokens.toLocal().data(train = false).toArray
 
     var count_word = 0
-    println("tokenized sentences:")
+    println("padding sentences:")
     output.foreach(x => {
       count_word += x.length
-      println(x.mkString(" "))
+      println(x)
     })
-
-    val numOfSents = 6
-    val numOfWords = 46
-    output.length should be (numOfSents)
-    count_word should be (numOfWords)
   }
 }
