@@ -297,7 +297,13 @@ object Engine {
   private val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
     (physicalCoreNumber * 50).toString).toInt
 
-  val default: ThreadPool = new ThreadPool(defaultPoolSize)
+  val default: ThreadPool = {
+    if (engineType == MklDnn) {
+      MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
+      MKL.setAffinity()
+    }
+    new ThreadPool(defaultPoolSize)
+  }
 
   @volatile private var _model: ThreadPool = initModelThreadPool()
 

@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
  * @param dim the dimension of layout, sometimes the dimension is not the same as eles length
  * @param eles the size of tensor. Order: width, height, channels, number.
  */
-class MklLayout(dim: Int, eles: Array[Long]) {
+class MklLayout(dim: Int, eles: Array[Long]) extends Serializable {
 
   def computeStrides(size: Array[Long]): Array[Long] = {
     val stride = new Array[Long](size.length)
@@ -147,8 +147,7 @@ trait MklModuleMethods {
     }
   }
 
-  @transient
-  private[this] var _isInited: Boolean = false
+  @transient private[this] var _isInited: Boolean = false
   private[this] var _nextModuleType: ModuleType = BLAS
   private[this] var _prevModuleType: ModuleType = BLAS
 

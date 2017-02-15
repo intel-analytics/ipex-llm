@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.{Engine, MklDnn, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
@@ -69,6 +69,10 @@ object TrainInceptionV1 {
         Module.load[Float](param.modelSnapshot.get)
       } else {
         Inception_v1_NoAuxClassifier(classNum = param.classNumber)
+      }
+
+      if (Engine.getEngineType == MklDnn) {
+        model.convertToMklDnn()
       }
 
       val state = if (param.stateSnapshot.isDefined) {

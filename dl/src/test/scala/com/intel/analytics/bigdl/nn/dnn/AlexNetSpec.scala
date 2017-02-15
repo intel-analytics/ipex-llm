@@ -67,7 +67,7 @@ object AlexNet {
 
 class AlexNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
-    Affinity.acquireCore()
+//    Affinity.acquireCore()
   }
 
   "An AlexNet forward and backward" should "the same output, gradient as intelcaffe w/ dnn" in {

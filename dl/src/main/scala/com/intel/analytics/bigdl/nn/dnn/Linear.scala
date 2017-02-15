@@ -143,8 +143,13 @@ class Linear[T: ClassTag](inputSize: Int,
       outputLayout.strides.reverse.map(_.toInt))
     refs.gradOutput.resizeAs(refs.output)
 
-    this.output.resizeAs(refs.output)
-    this.gradInput.resizeAs(refs.input)
+    if (nextModuleType != DNN) {
+      this.output.resizeAs(refs.output)
+    }
+
+    if (prevModuleType != DNN) {
+      this.gradInput.resizeAs(refs.input)
+    }
 
 
     for (i <- List(refs.weight, refs.gradWeight)) i.resizeAs(weight)

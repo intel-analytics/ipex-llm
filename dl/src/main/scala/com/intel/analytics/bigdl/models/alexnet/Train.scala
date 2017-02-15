@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.SGD.Regime
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.{Engine, MklDnn, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -74,6 +74,10 @@ object Train {
         AlexNet_OWT(classNum = 1000)
       }
 
+      if (Engine.getEngineType() == MklDnn) {
+        model.convertToMklDnn()
+      }
+
       val state = if (param.stateSnapshot.isDefined) {
         T.load(param.stateSnapshot.get)
       } else {
@@ -100,7 +104,7 @@ object Train {
       }
       optimizer
         .setState(state)
-        .setValidation(Trigger.everyEpoch, valSet,
+        .setValidation(Trigger.severalIteration(1), valSet,
           Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
         .setEndWhen(Trigger.maxEpoch(56))
         .optimize()

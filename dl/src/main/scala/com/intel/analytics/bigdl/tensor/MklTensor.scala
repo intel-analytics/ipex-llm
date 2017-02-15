@@ -33,20 +33,20 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
 
   // storage used by mkl dnn must be allocated with dnnAllocateBuffer_F32/F64
   // if not, the result will not be consistent and reproducibility
-  private[this] var _interStorage = 0L
-  private[this] var _mklStorage = 0L
+  @transient private[this] var _interStorage = 0L
+  @transient private[this] var _mklStorage = 0L
 
   private[this] var _usrStorage = Storage[T]()
   private[this] var _usrStorageOffset: Int = 1
 
-  private[this] var _layoutUsr: Long = 0L // usr layout ptr
-  private[this] var _layoutMkl: Long = 0L
-  private[this] var _layoutInternal: Long = 0L // the mkl layout of previous layer or next layer
+  @transient private[this] var _layoutUsr: Long = 0L // usr layout ptr
+  @transient private[this] var _layoutMkl: Long = 0L
+  @transient private[this] var _layoutInternal: Long = 0L
 
-  private[this] var _mklToUsr: Long = 0L // convert mkl layout mem to scala layout mem
-  private[this] var _usrToMkl: Long = 0L // convert scala layout mem to mkl layout mem
+  @transient private[this] var _mklToUsr: Long = 0L // convert mkl layout mem to scala layout mem
+  @transient private[this] var _usrToMkl: Long = 0L // convert scala layout mem to mkl layout mem
 
-  private[this] var _internalToMkl: Long = 0L
+  @transient private[this] var _internalToMkl: Long = 0L
 
   var hasConverted = false
   def setConverted(value: Boolean): Unit = {
