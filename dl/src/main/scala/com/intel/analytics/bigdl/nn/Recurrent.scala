@@ -102,7 +102,11 @@ class Recurrent[T : ClassTag] (
     hidden.resize(Array(times + 1, batchSize, hiddenSize))
 
     if (dataSelect != timeDim && !legacyMode) {
-      fInput = input.transpose(batchDim, timeDim).contiguous
+      if (train) {
+        fInput = input.transpose(batchDim, timeDim).contiguous
+      } else {
+        fInput = input.transpose(batchDim, timeDim)
+      }
     } else {
       fInput = input
     }
@@ -147,7 +151,12 @@ class Recurrent[T : ClassTag] (
     gradInput.resizeAs(input)
 
     if (dataSelect != timeDim && !legacyMode) {
-      fGradOutput = gradOutput.transpose(batchDim, timeDim).contiguous()
+      fGradOutput = gradOutput.transpose(batchDim, timeDim)
+      if (train) {
+        fGradOutput = gradOutput.transpose(batchDim, timeDim).contiguous()
+      } else {
+        fGradOutput = gradOutput.transpose(batchDim, timeDim)
+      }
     } else {
       fGradOutput = gradOutput
     }

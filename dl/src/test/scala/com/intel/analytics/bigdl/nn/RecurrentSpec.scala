@@ -294,6 +294,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
       .add(Linear[Double](hiddenSize, outputSize))
 
     recurrent.setLegacyMode()
+    model.evaluate()
 
     val criterion = CrossEntropyCriterion[Double]()
     val logSoftMax = LogSoftMax[Double]()
@@ -348,11 +349,12 @@ class RecurrentSpec extends FlatSpec with Matchers {
     RNG.setSeed(seed)
 
     val model = Sequential[Double]()
-    model.add(Recurrent[Double](hiddenSize, bpttTruncate, timeDim = 1)
+    model.add(Recurrent[Double](hiddenSize, bpttTruncate, timeDim = 2)
       .add(RnnCell[Double](inputSize, hiddenSize))
       .add(Tanh()))
       .add(Select(2, nWords))
       .add(Linear[Double](hiddenSize, outputSize))
+    model.evaluate()
 
     val criterion = CrossEntropyCriterion[Double]()
     val logSoftMax = LogSoftMax[Double]()
