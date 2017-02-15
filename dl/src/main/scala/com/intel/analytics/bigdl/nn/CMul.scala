@@ -53,9 +53,19 @@ class CMul[@specialized(Float, Double) T: ClassTag](
       } else {
         weight.view(Array(1) ++ weight.size())
       }
-
-      expand.expandAs(output)
-      output.cmul(expand)
+      if (weight.size().count(x => x != 1) == 1) {
+        val weightDim = expand.size().zip(Stream.from(1)).filter(x => x._1 != 1)(0)._2
+        var k = 0
+        val weightData = weight.storage().array()
+        while (k < weight.nElement()) {
+          val c = output.select(weightDim, k + 1)
+          c.mul(weightData(k))
+          k += 1
+        }
+      } else {
+        expand.expandAs(output)
+        output.cmul(expand)
+      }
     }
     output
   }
