@@ -50,8 +50,19 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
       } else {
         bias.view(Array(1) ++ bias.size())
       }
-      expand.expandAs(output)
-      output.add(expand)
+      if (bias.size().count(x => x != 1) == 1) {
+        val biasDim = expand.size().zip(Stream.from(1)).filter(x => x._1 != 1)(0)._2
+        var k = 0
+        val biasData = bias.storage().array()
+        while (k < bias.nElement()) {
+          val c = output.select(biasDim, k + 1)
+          c.add(biasData(k))
+          k += 1
+        }
+      } else {
+        expand.expandAs(output)
+        output.add(expand)
+      }
     }
     output
   }
