@@ -21,8 +21,6 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.utils.ThreadPool._
-import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag
 
@@ -37,7 +35,7 @@ import scala.reflect.ClassTag
 class Recurrent[T : ClassTag] (
   hiddenSize: Int = 3,
   bpttTruncate: Int = 2,
-  timeDim: Int = 2)
+  protected val timeDim: Int = 2)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   /**
@@ -46,16 +44,13 @@ class Recurrent[T : ClassTag] (
    *
    * If the timeDim is 2, this layer will transpose the first two dimensions of the input.
    * Otherwise, the input will remain unchanged.
-   *
-   * The legacyMode is set solely for unit test to compare the output of this layer. To make
-   * sure that the outputs will be the same regardless of transposition of input.
    */
 
-  require(timeDim < 3,
-    "In Recurrent: the timeDim should be less than three," +
+  require(timeDim == 1 | timeDim == 2,
+    "In Recurrent: the timeDim should be 1 or 2," +
       s"Current timeDim = ${timeDim}")
 
-  private var legacyMode: Boolean = false
+  protected var legacyMode: Boolean = false
   val hidden = Tensor[T]()
   var module: Module[T] = _
   var transform: Module[T] = _
@@ -69,20 +64,19 @@ class Recurrent[T : ClassTag] (
 
   val batchDim = 3 - timeDim
   val hiddenSelect = 1
-  var dataSelect = 1
+  protected var dataSelect = 1
   val outputSelect = timeDim
   var fInput: Tensor[T] = _
   var fGradOutput: Tensor[T] = _
 
   /**
-   * The legacyMode is set to perform an Recurrence
-   * with non-contiguous Tensor
+   * The legacyMode is set only for Unit Test
    */
-  def setLegacyMode(): Unit = {
-    require(timeDim == 2,
+  private def setLegacyMode(self: Recurrent[T]): Unit = {
+    require(self.timeDim == 2,
       "In Recurrent: timeDim should be 2 when legacyMode is set.")
-    legacyMode = true
-    dataSelect = 2
+    self.legacyMode = true
+    self.dataSelect = 2
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -101,7 +95,7 @@ class Recurrent[T : ClassTag] (
 
     hidden.resize(Array(times + 1, batchSize, hiddenSize))
 
-    if (dataSelect != timeDim && !legacyMode) {
+    if (dataSelect != timeDim) {
       if (train) {
         fInput = input.transpose(batchDim, timeDim).contiguous
       } else {
@@ -150,8 +144,7 @@ class Recurrent[T : ClassTag] (
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(input)
 
-    if (dataSelect != timeDim && !legacyMode) {
-      fGradOutput = gradOutput.transpose(batchDim, timeDim)
+    if (dataSelect != timeDim) {
       if (train) {
         fGradOutput = gradOutput.transpose(batchDim, timeDim).contiguous()
       } else {

@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class RecurrentSpec extends FlatSpec with Matchers {
@@ -162,7 +162,8 @@ class RecurrentSpec extends FlatSpec with Matchers {
       .add(Select(2, nWords))
       .add(Linear[Double](hiddenSize, outputSize))
 
-    recurrent.setLegacyMode()
+    val setLegacyMode = PrivateMethodTester.PrivateMethod[Recurrent[Double]]('setLegacyMode)
+    setLegacyMode(recurrent)
 
     val criterion = CrossEntropyCriterion[Double]()
     val logSoftMax = LogSoftMax[Double]()
@@ -293,7 +294,8 @@ class RecurrentSpec extends FlatSpec with Matchers {
       .add(Select(2, nWords))
       .add(Linear[Double](hiddenSize, outputSize))
 
-    recurrent.setLegacyMode()
+    val setLegacyMode = PrivateMethodTester.PrivateMethod[Recurrent[Double]]('setLegacyMode)
+    setLegacyMode(recurrent)
     model.evaluate()
 
     val criterion = CrossEntropyCriterion[Double]()
@@ -354,7 +356,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
       .add(Tanh()))
       .add(Select(2, nWords))
       .add(Linear[Double](hiddenSize, outputSize))
-    model.evaluate()
+    model.training()
 
     val criterion = CrossEntropyCriterion[Double]()
     val logSoftMax = LogSoftMax[Double]()
