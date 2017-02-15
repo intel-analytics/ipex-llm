@@ -59,10 +59,6 @@ class ClassNLLCriterion3d[T : ClassTag](
       "input should be at least a 3D Tensor, e.g.[batch, time, inputDim]. "
         + s"Current input.dim = ${input.dim}")
 
-//    fInput = input.transpose(batchDim, timeDim).contiguous
-//    fTarget = target.transpose(batchDim, timeDim).contiguous
-//    times = input.size(timeDim)
-
     if (inputSize == null) {
       inputSize = new Array[Int](input.size.length - 1)
     }
