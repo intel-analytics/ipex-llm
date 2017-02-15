@@ -17,23 +17,21 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, Activity, TensorCriterion}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+
 import scala.reflect.ClassTag
 
 /**
  * This class is intended to support inputs with 3 or more dimensions.
  * Apply Negative Log Likelihood Criterion to every temporal slice of an input.
- * @param weights
- * @param sizeAverage
+ * @param critrn
  * @param timeDim
  */
 
-class ClassNLLCriterion3d[T : ClassTag](
-  weights: Tensor[T] = null,
-  sizeAverage: Boolean = true,
-  timeDim: Int = 2)
-(implicit ev: TensorNumeric[T]) extends ClassNLLCriterion[T](weights, sizeAverage) {
+class CriterionWrapper[T : ClassTag](critrn : TensorCriterion[T])
+(implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   private var fInput: Tensor[T] = _
   private var fTarget: Tensor[T] = _
@@ -55,10 +53,6 @@ class ClassNLLCriterion3d[T : ClassTag](
   }
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require(input.dim() >= 3,
-      "input should be at least a 3D Tensor, e.g.[batch, time, inputDim]. "
-        + s"Current input.dim = ${input.dim}")
-
     if (inputSize == null) {
       inputSize = new Array[Int](input.size.length - 1)
     }
@@ -70,15 +64,11 @@ class ClassNLLCriterion3d[T : ClassTag](
     combine(target.size, targetSize)
     fInput = input.reshape(inputSize)
     fTarget = target.reshape(targetSize)
-    output = super.updateOutput(fInput, fTarget)
+    output = critrn.updateOutput(fInput, fTarget)
     output
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.dim() >= 3,
-      "input should be at least a 3D Tensor, e.g.[batch, time, inputDim]. "
-        + s"Current input.dim = ${input.dim}")
-
     if (inputSize == null) {
       inputSize = new Array[Int](input.size.length - 1)
     }
@@ -90,22 +80,16 @@ class ClassNLLCriterion3d[T : ClassTag](
     combine(target.size, targetSize)
     fInput = input.reshape(inputSize)
     fTarget = target.reshape(targetSize)
-    val _gradInput = super.updateGradInput(fInput, fTarget).toTensor[T]
-
-    require(_gradInput.nElement() == input.nElement(),
-      "updateGradInput: layer gradInput size should be matchable" +
-        s"to input size, current layer gradInput size dimensions is ${_gradInput.nElement()}," +
-        s"input size dimensions is ${input.nElement()}")
+    val _gradInput = critrn.updateGradInput(fInput, fTarget).toTensor[T]
 
     _gradInput.reshape(input.size)
   }
 
   object ClassNLLCriterion3d {
     def apply[@specialized(Float, Double) T: ClassTag](
-        weights: Tensor[T] = null,
-        sizeAverage: Boolean = true,
-        timeDim: Int = 2)(implicit ev: TensorNumeric[T]) : ClassNLLCriterion3d[T] = {
-      new ClassNLLCriterion3d[T](weights, sizeAverage, timeDim)
+        critrn: TensorCriterion[T] = null)
+    (implicit ev: TensorNumeric[T]) : CriterionWrapper[T] = {
+      new CriterionWrapper[T](critrn)
     }
   }
 }
