@@ -597,6 +597,9 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @return
    */
   def save(path : String, overWrite : Boolean = false) : this.type
+
+  override def toTable: Table =
+    throw new IllegalArgumentException("Tensor cannot be cast to Table")
 }
 
 sealed trait TensorDataType

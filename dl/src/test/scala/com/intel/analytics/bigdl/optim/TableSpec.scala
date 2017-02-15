@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl.nn.{ConcatTable, Linear}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -237,15 +238,40 @@ class TableSpec extends FlatSpec with Matchers {
     val t = T(1, 2, 3, 4, 5, 6)
 
     val r = t.clear()
-    r.get() should be (None)
-    r.contains(1) should be (false)
-    r.length() should be (0)
-    t.length() should be (0)
+    r.get() should be(None)
+    r.contains(1) should be(false)
+    r.length() should be(0)
+    t.length() should be(0)
 
     t.insert(1, 1)
-    t.length() should be (1)
+    t.length() should be(1)
 
     t.insert(100)
     t[Int](2) should be(100)
+  }
+
+  "toTensor" should "work correclty" in {
+    val input = Tensor[Float](3, 4)
+    val module = ConcatTable[Tensor[Float], Float]()
+      .add(Linear(4, 5))
+      .add(Linear(4, 5))
+    val output = module.forward(input)
+
+    try {
+      output.toTensor[Float]
+      fail()
+    } catch {
+      case ex: IllegalArgumentException =>
+    }
+  }
+
+  "toTable" should "work correclty" in {
+    val input = Tensor[Float](3, 4)
+    val module = ConcatTable[Tensor[Float], Float]()
+      .add(Linear(4, 5))
+      .add(Linear(4, 5))
+    val output = module.forward(input)
+
+    output.toTable should be(output)
   }
 }
