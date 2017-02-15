@@ -24,10 +24,10 @@ import org.scalatest.{FlatSpec, Matchers}
 @com.intel.analytics.bigdl.tags.Parallel
 class ConcatTableSpec extends FlatSpec with Matchers {
 
-  "A ConcatTable" should "return right output and grad" in {
-    val ct = new ConcatTable[Double]()
-    ct.add(new Identity[Double]())
-    ct.add(new Identity[Double]())
+  "A ConcateTable" should "return right output and grad" in {
+    val ct = new ConcatTable[Float]()
+    ct.add(new Identity[Float]())
+    ct.add(new Identity[Float]())
 
     val input = T(Tensor[Float](
       Storage(Array(1f, 2, 3))),

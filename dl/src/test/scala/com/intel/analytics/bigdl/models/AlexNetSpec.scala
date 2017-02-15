@@ -260,7 +260,7 @@ gradInput = model.gradInput
 
     for (i <- 1 to 4) {
       model.zeroGradParameters()
-      val outputtest = model.forward(input).toTensor[Double]
+      val outputtest = model.forward(input).toTensor[Float]
       val loss = criterion.forward(outputtest, labels)
       val gradoutputtest = criterion.backward(outputtest, labels)
       model.backward(input, gradoutputtest)

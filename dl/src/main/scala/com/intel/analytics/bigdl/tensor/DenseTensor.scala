@@ -1881,9 +1881,9 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     if (ev.getType() == env.getType()) {
       this.asInstanceOf[Tensor[D]]
     } else {
-      throw new IllegalArgumentException(s"The type ${env.getType()}" +
-        s" in toTensor[${env.getType()}] is not same" +
-        s"as the numeric type ${ev.getType()} of the " +
+      throw new IllegalArgumentException(s"The type ${env.getType().getClass}" +
+        s" in toTensor[${env.getType().getClass}] is not same" +
+        s"as the numeric type ${ev.getType().getClass} of the " +
         "corresponding module, please keep them same.")
     }
   }
