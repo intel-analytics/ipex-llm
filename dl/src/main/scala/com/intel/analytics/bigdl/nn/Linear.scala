@@ -199,7 +199,7 @@ object Linear {
       inputSize: Int,
       outputSize: Int,
       initMethod: InitializationMethod = Default,
-      withBias: Boolean = false
+      withBias: Boolean = true
   )(implicit ev: TensorNumeric[T]) : Linear[T] = {
     new Linear[T](inputSize, outputSize, initMethod, withBias)
   }
