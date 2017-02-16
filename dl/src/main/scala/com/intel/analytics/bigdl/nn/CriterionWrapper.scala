@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, Activity, TensorCriterion}
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -25,9 +25,8 @@ import scala.reflect.ClassTag
 
 /**
  * This class is intended to support inputs with 3 or more dimensions.
- * Apply Negative Log Likelihood Criterion to every temporal slice of an input.
+ * Apply Any Provided Criterion to every temporal slice of an input.
  * @param critrn
- * @param timeDim
  */
 
 class CriterionWrapper[T : ClassTag](critrn : TensorCriterion[T])
@@ -39,11 +38,6 @@ class CriterionWrapper[T : ClassTag](critrn : TensorCriterion[T])
   private var targetSize: Array[Int] = _
 
   private def combine(src: Array[Int], target: Array[Int]): Unit = {
-    require(src.length == target.length + 1,
-      "TimeDistributed: combine method requires src.length == target.length + 1" +
-        s" Current src.length = ${src.length}" +
-        s" Current target.length = ${target.length}")
-
     target(0) = src(0) * src(1)
     var j = 1
     while (j < target.length) {
@@ -69,19 +63,7 @@ class CriterionWrapper[T : ClassTag](critrn : TensorCriterion[T])
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    if (inputSize == null) {
-      inputSize = new Array[Int](input.size.length - 1)
-    }
-    if (targetSize == null) {
-      targetSize = new Array[Int](target.size.length - 1)
-    }
-
-    combine(input.size, inputSize)
-    combine(target.size, targetSize)
-    fInput = input.reshape(inputSize)
-    fTarget = target.reshape(targetSize)
     val _gradInput = critrn.updateGradInput(fInput, fTarget).toTensor[T]
-
     _gradInput.reshape(input.size)
   }
 
