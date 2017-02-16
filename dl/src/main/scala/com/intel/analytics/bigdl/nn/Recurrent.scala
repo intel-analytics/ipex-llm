@@ -46,7 +46,7 @@ class Recurrent[T : ClassTag] (
    * Otherwise, the input will remain unchanged.
    */
 
-  require(timeDim == 1 | timeDim == 2,
+  require(timeDim == 1 || timeDim == 2,
     "In Recurrent: the timeDim should be 1 or 2," +
       s"Current timeDim = ${timeDim}")
 
