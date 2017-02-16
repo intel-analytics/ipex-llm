@@ -23,10 +23,11 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.math._
 
-class CriterionWrapperSpec extends FlatSpec with Matchers {
+class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
   "A ClassNLL Criterion" should "generate correct output and grad" in {
     val criterion = ClassNLLCriterion[Double]()
-    val layer = CriterionWrapper[Double](criterion)
+    val layer = TimeDistributedCriterion[Double](criterion)
+
     val input = Tensor[Double](3, 2, 3)
     input(Array(1, 1, 1)) = -1.0262627674932
     input(Array(1, 1, 2)) = -1.2412600935171
@@ -86,7 +87,8 @@ class CriterionWrapperSpec extends FlatSpec with Matchers {
 
   "A ClassNLL Criterion with sizeAverage False" should "generate correct output and grad" in {
     val criterion = ClassNLLCriterion[Double](null, false)
-    val layer = CriterionWrapper[Double](criterion)
+    val layer = TimeDistributedCriterion[Double](criterion)
+
     val input = Tensor[Double](3, 2, 3)
     input(Array(1, 1, 1)) = -1.0262627674932
     input(Array(1, 1, 2)) = -1.2412600935171
@@ -146,7 +148,8 @@ class CriterionWrapperSpec extends FlatSpec with Matchers {
 
   "A BCE Criterion" should "generate correct output and grad" in {
     val criterion = BCECriterion[Double]()
-    val layer = CriterionWrapper[Double](criterion)
+    val layer = TimeDistributedCriterion[Double](criterion)
+
     val output = Tensor[Double](3, 2)
     output(Array(1, 1)) = 0.4
     output(Array(1, 2)) = 0.4
@@ -176,7 +179,7 @@ class CriterionWrapperSpec extends FlatSpec with Matchers {
 
   "A CrossEntropy Criterion" should "generate correct output and grad" in {
     val criterion = CrossEntropyCriterion[Double]()
-    val layer = CriterionWrapper[Double](criterion)
+    val layer = TimeDistributedCriterion[Double](criterion)
 
     val input = Tensor[Double](3, 2, 3)
     input(Array(1, 1, 1)) = 0.33655226649716
@@ -240,7 +243,7 @@ class CriterionWrapperSpec extends FlatSpec with Matchers {
 
   "A MSE Criterion" should "generate correct output and grad" in {
     val criterion = MSECriterion[Double]()
-    val layer = CriterionWrapper[Double](criterion)
+    val layer = TimeDistributedCriterion[Double](criterion)
 
     val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 0.17503996845335
@@ -285,7 +288,7 @@ class CriterionWrapperSpec extends FlatSpec with Matchers {
   "A MSE Criterion with sizeAverage false" should "generate correct output and grad" in {
     val criterion = MSECriterion[Double]()
     criterion.sizeAverage = false
-    val layer = CriterionWrapper[Double](criterion)
+    val layer = TimeDistributedCriterion[Double](criterion)
 
     val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 0.64631252549589
@@ -328,7 +331,7 @@ class CriterionWrapperSpec extends FlatSpec with Matchers {
 
   "A MultiLabelSoftMargin Criterion" should "generate correct output and grad" in {
     val criterion = MultiLabelSoftMarginCriterion[Double]()
-    val layer = CriterionWrapper[Double](criterion)
+    val layer = TimeDistributedCriterion[Double](criterion)
 
     val output = Tensor[Double](3, 2)
     output(Array(1, 1)) = 0.4
@@ -409,7 +412,7 @@ class CriterionWrapperSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 2, 3)) = -0.16666666666666666
 
     val nll = ClassNLLCriterion[Double]()
-    val layer1 = CriterionWrapper[Double](nll)
+    val layer1 = TimeDistributedCriterion[Double](nll)
     criterion.add(layer1, 1)
 
     val output = criterion.forward(T(input), T(target))

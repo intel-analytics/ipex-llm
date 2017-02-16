@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
  * @param critrn
  */
 
-class CriterionWrapper[T : ClassTag](critrn : TensorCriterion[T])
+class TimeDistributedCriterion[T : ClassTag](critrn : TensorCriterion[T])
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   private val fInput: Tensor[T] = Tensor[T]()
@@ -39,7 +39,7 @@ class CriterionWrapper[T : ClassTag](critrn : TensorCriterion[T])
 
   private def combine(src: Array[Int], target: Array[Int]): Unit = {
     require(src.length == target.length + 1,
-      "CriterionWrapper: combine method requires src.length == target.length + 1" +
+      "TimeDistributedCriterion: combine method requires src.length == target.length + 1" +
         s" Current src.length = ${src.length}" +
         s" Current target.length = ${target.length}")
     target(0) = src(0) * src(1)
@@ -77,10 +77,10 @@ class CriterionWrapper[T : ClassTag](critrn : TensorCriterion[T])
     gradInput
   }
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[CriterionWrapper[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[TimeDistributedCriterion[T]]
 
   override def equals(other: Any): Boolean = other match {
-    case that: CriterionWrapper[T] =>
+    case that: TimeDistributedCriterion[T] =>
       super.equals(that) &&
         (that canEqual this) &&
         fInput == that.fInput &&
@@ -96,10 +96,10 @@ class CriterionWrapper[T : ClassTag](critrn : TensorCriterion[T])
   }
 }
 
-object CriterionWrapper {
+object TimeDistributedCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
     critrn: TensorCriterion[T] = null)
-  (implicit ev: TensorNumeric[T]) : CriterionWrapper[T] = {
-    new CriterionWrapper[T](critrn)
+  (implicit ev: TensorNumeric[T]) : TimeDistributedCriterion[T] = {
+    new TimeDistributedCriterion[T](critrn)
   }
 }
