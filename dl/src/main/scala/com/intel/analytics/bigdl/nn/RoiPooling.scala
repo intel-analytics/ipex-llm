@@ -26,6 +26,15 @@ import scala.reflect._
 
 /**
  * Region of interest pooling
+ * The RoIPooling uses max pooling to convert the features inside any valid region of interest
+ * into a small feature map with a fixed spatial extent of pooledH × pooledW (e.g., 7 × 7)
+ * an RoI is a rectangular window into a conv feature map.
+ * Each RoI is defined by a four-tuple (x1, y1, x2, y2) that specifies its
+ * top-left corner (x1, y1) and its bottom-right corner (x2, y2).
+ * RoI max pooling works by dividing the h × w RoI window into an pooledH × pooledW grid of
+ * sub-windows of approximate size h/H × w/W and then max-pooling the values in each sub-window
+ * into the corresponding output grid cell.
+ * Pooling is applied independently to each feature map channel
  * @param pooledW
  * @param pooledH
  * @param spatialScale
