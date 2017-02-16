@@ -32,6 +32,7 @@ class LSTMCell[T : ClassTag] (
   var inputGate: Sequential[T] = _
   var forgetGate: Sequential[T] = _
   var outputGate: Sequential[T] = _
+  var hidden: Sequential[T] = _
 
   def buildGate(): Sequential[T] = {
     val gate = Sequential()
@@ -63,6 +64,26 @@ class LSTMCell[T : ClassTag] (
   def buildOutputGate(): Sequential[T] = {
     outputGate = buildGate()
     outputGate
+  }
+
+  def buildHidden(): Sequential[T] = {
+    val hidden = Sequential()
+      .add(NarrowTable(1, 2))
+
+    val i2h = Sequential()
+      .add(Linear(inputSize, hiddenSize))
+    val h2h = Sequential()
+      .add(Linear(hiddenSize, hiddenSize))
+
+    hidden
+      .add(ParallelTable()
+        .add(i2h)
+        .add(h2h))
+      .add(CAddTable())
+      .add(Tanh())
+
+    this.hidden = hidden
+    hidden
   }
 
   /**
