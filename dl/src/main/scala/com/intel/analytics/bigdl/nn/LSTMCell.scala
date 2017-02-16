@@ -34,6 +34,7 @@ class LSTMCell[T : ClassTag] (
   var outputGate: Sequential[T] = _
   var hiddenLayer: Sequential[T] = _
   var cellLayer: Sequential[T] = _
+  var lstm: Sequential[T] = buildLSTM()
 
   def buildGate(): Sequential[T] = {
     val gate = Sequential()
@@ -133,25 +134,19 @@ class LSTMCell[T : ClassTag] (
             .add(CMulTable())
           .add(SelectTable(3)))
 
+    lstm = LSTM
     LSTM
   }
 
-  /**
-   * Computes the output using the current parameter set of the class and input. This function
-   * returns the result which is stored in the output field.
-   *
-   * @param input
-   * @return
-   */
-  override def updateOutput(input: Table): Table = ???
+  override def updateOutput(input: Table): Table = {
+    lstm.updateOutput(input).toTable
+  }
 
-  /**
-   * Computing the gradient of the module with respect to its own input. This is returned in
-   * gradInput. Also, the gradInput state variable is updated accordingly.
-   *
-   * @param input
-   * @param gradOutput
-   * @return
-   */
-  override def updateGradInput(input: Table, gradOutput: Table): Table = ???
+  override def updateGradInput(input: Table, gradOutput: Table): Table = {
+    lstm.updateGradInput(input, gradOutput).toTable
+  }
+
+  override def accGradParameters(input: Table, gradOutput: Table, scale: Double): Unit = {
+    lstm.accGradParameters(input, gradOutput, scale)
+  }
 }
