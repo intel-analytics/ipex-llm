@@ -38,6 +38,10 @@ class CriterionWrapper[T : ClassTag](critrn : TensorCriterion[T])
   private var targetSize: Array[Int] = _
 
   private def combine(src: Array[Int], target: Array[Int]): Unit = {
+    require(src.length == target.length + 1,
+      "TimeDistributed: combine method requires src.length == target.length + 1" +
+        s" Current src.length = ${src.length}" +
+        s" Current target.length = ${target.length}")
     target(0) = src(0) * src(1)
     var j = 1
     while (j < target.length) {
@@ -67,7 +71,7 @@ class CriterionWrapper[T : ClassTag](critrn : TensorCriterion[T])
     _gradInput.reshape(input.size)
   }
 
-  object ClassNLLCriterion3d {
+  object CriterionWrapper {
     def apply[@specialized(Float, Double) T: ClassTag](
         critrn: TensorCriterion[T] = null)
     (implicit ev: TensorNumeric[T]) : CriterionWrapper[T] = {
