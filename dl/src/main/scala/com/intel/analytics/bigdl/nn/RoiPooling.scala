@@ -43,60 +43,62 @@ import scala.reflect._
 class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialScale: T)
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
-  @transient private var argmax: Tensor[T] = _
-  @transient private var argmaxData: Array[T] = _
-  @transient private var inputData: Array[T] = _
-  @transient private var outputData: Array[T] = _
-  @transient private var gradInputTensor: Tensor[T] = _
+  private val argmax: Tensor[T] = Tensor[T]
+  private val gradInputTensor: Tensor[T] = Tensor[T]
+  gradInput.insert(gradInputTensor)
 
   override def updateOutput(input: Table): Tensor[T] = {
-    assert(input.length() == 2, "there must have two tensors in the table")
+    require(input.length() == 2, "there must have two tensors in the table")
 
     val data = input[Tensor[T]](1) // Input data to ROIPooling
     val rois = input[Tensor[T]](2) // Input label to ROIPooling
 
-    assert(rois.size().length > 1 && rois.size(2) == 5, "roi input shape should be (R, 5)")
+    require(rois.size().length > 1 && rois.size(2) == 5, "roi input shape should be (R, 5)")
 
     output.resize(rois.size(1), data.size(2), pooledH, pooledW)
-      .fill(ev.fromType[Double](-Double.MaxValue))
-    outputData = output.storage().array()
-    if (argmax == null) {
-      argmax = Tensor[T]()
-    }
+      .fill(ev.fromType[Double](Double.MinValue))
+    val outputData = output.storage().array()
     argmax.resizeAs(output).fill(ev.fromType(-1))
-    argmaxData = argmax.storage().array()
-    inputData = data.storage().array()
+    val argmaxData = argmax.storage().array()
+    val inputData = data.storage().array()
     val dataOffset = offset(0, 1, sizes = data.size())
     val argmaxOffset = offset(0, 1, sizes = argmax.size())
     val outputOffset = offset(0, 1, sizes = output.size())
     val roisOffset = offset(1, sizes = rois.size())
     var n = 0
+    val dataSize = data.size()
     while (n < rois.size(1)) {
-      poolOneRoi(n, rois(n + 1), data, dataOffset, argmaxOffset, outputOffset, roisOffset)
+      poolOneRoi(n, rois(n + 1),
+        inputData, dataSize, dataOffset,
+        argmaxData, argmaxOffset,
+        outputData, outputOffset,
+        roisOffset)
       n += 1
     }
     output
   }
 
-  def poolOneRoi(n: Int, roi: Tensor[T], data: Tensor[T],
-    dataOffset: Int, argmaxOffset: Int, outputOffset: Int, roisOffset: Int): Unit = {
+  def poolOneRoi(n: Int, roi: Tensor[T],
+    inputData: Array[T], dataSize: Array[Int], dataOffset: Int,
+    argmaxData: Array[T], argmaxOffset: Int,
+    outputData: Array[T], outputOffset: Int, roisOffset: Int): Unit = {
     val roiBatchInd = ev.toType[Int](roi.valueAt(1))
     def scaleRoi(ind: Int) = Math.round(ev.toType[Double](roi.valueAt(ind))
       * ev.toType[Double](spatialScale)).toInt
     val roiStartW = scaleRoi(2)
     val roiStartH = scaleRoi(3)
 
-    require(roiBatchInd >= 0 && data.size(1) > roiBatchInd)
+    require(roiBatchInd >= 0 && dataSize(0) > roiBatchInd)
 
     val binSizeH = Math.max(scaleRoi(5) - roiStartH + 1, 1f) / pooledH
     val binSizeW = Math.max(scaleRoi(4) - roiStartW + 1, 1f) / pooledW
-    var batchDataIndex = offset(roiBatchInd, sizes = data.size())
+    var batchDataIndex = offset(roiBatchInd, sizes = dataSize)
 
     var c = 0
-    while (c < data.size(2)) {
+    while (c < dataSize(1)) {
       var ph = 0
-      val outputDataIndex = outputOffset * (n * data.size(2) + c)
-      val argmaxIndex = argmaxOffset * (n * data.size(2) + c)
+      val outputDataIndex = outputOffset * (n * dataSize(1) + c)
+      val argmaxIndex = argmaxOffset * (n * dataSize(1) + c)
       while (ph < pooledH) {
         var pw = 0
         while (pw < pooledW) {
@@ -104,13 +106,13 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
           //  start (included) = floor(ph * roi_height / pooled_height_)
           //  end (excluded) = ceil((ph + 1) * roi_height / pooled_height_)
           val hstart = Math.min(Math.max(Math.floor(ph * binSizeH).toInt + roiStartH, 0),
-            data.size(3))
+            dataSize(2))
           val hend = Math.min(Math.max(Math.ceil((ph + 1) * binSizeH).toInt + roiStartH, 0),
-            data.size(3))
+            dataSize(2))
           val wstart = Math.min(Math.max(Math.floor(pw * binSizeW).toInt + roiStartW, 0),
-            data.size(4))
+            dataSize(3))
           val wend = Math.min(Math.max(Math.ceil((pw + 1) * binSizeW).toInt + roiStartW, 0),
-            data.size(4))
+            dataSize(3))
 
           val poolIndex = ph * pooledW + pw
           if ((hend <= hstart) || (wend <= wstart)) {
@@ -120,7 +122,7 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
             var h = hstart
             while (h < hend) {
               var w = wstart
-              val hi = h * data.size(4)
+              val hi = h * dataSize(3)
               while (w < wend) {
                 val index = hi + w
                 if (ev.isGreater(inputData(batchDataIndex + index),
@@ -144,8 +146,17 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
   }
 
 
+  /**
+   * get the data offset given n, c, h, w
+   * @param n     batch indice
+   * @param c     channel indice
+   * @param h     height indice
+   * @param w     width indice
+   * @param sizes tensor size
+   * @return array offset
+   */
   def offset(n: Int, c: Int = 0, h: Int = 0, w: Int = 0, sizes: Array[Int]): Int = {
-    assert(sizes.length == 2 || sizes.length >= 4)
+    require(sizes.length == 2 || sizes.length >= 4)
     if (sizes.length == 2) ((n * sizes(1) + c) + h) + w
     else ((n * sizes(1) + c) * sizes(2) + h) * sizes(3) + w
   }
@@ -155,10 +166,6 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
     val roisData = input[Tensor[T]](2).storage().array()
     val argmaxData = argmax.storage().array()
     val numRois = output.size(1)
-    if (gradInputTensor == null) {
-      gradInputTensor = Tensor[T]()
-      gradInput.insert(gradInputTensor)
-    }
     val gradInputData = gradInputTensor.resizeAs(data).contiguous().zero().storage().array()
     val gradOutputData = gradOutput.storage().array()
     var roiN = 0
@@ -195,6 +202,13 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
   }
 
   override def toString: String = "nn.RoiPooling"
+
+  override def clearState(): this.type = {
+    super.clearState()
+    argmax.set()
+    gradInputTensor.set()
+    this
+  }
 }
 
 object RoiPooling {
