@@ -24,6 +24,19 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * a smooth version of the AbsCriterion
+ * It uses a squared term if the absolute element-wise error falls below 1.
+ * It is less sensitive to outliers than the MSECriterion and in some cases
+ * prevents exploding gradients (e.g. see "Fast R-CNN" paper by Ross Girshick).
+ *
+ * d = (x - y) * w_in
+ * loss(x, y, w_in, w_out)
+ *            | 0.5 * (sigma * d_i)^2 * w_out          if |d_i| < 1 / sigma / sigma
+ * = 1/n \sum |
+ *            | (|d_i| - 0.5 / sigma / sigma) * w_out   otherwise
+ * @tparam T
+ */
 class SmoothL1CriterionWithWeights[T: ClassTag]
 (val sigma: Double, val num: Int = 0)
   (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Tensor[T], Table, T] {
