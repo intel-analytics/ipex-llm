@@ -29,6 +29,9 @@ class LSTMCell[T : ClassTag] (
   private var initMethod: InitializationMethod = Default)
   (implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
+  var inputGate: Sequential[T] = _
+  var forgetGate: Sequential[T] = _
+  var outputGate: Sequential[T] = _
 
   def buildGate(): Sequential[T] = {
     val gate = Sequential()
@@ -45,6 +48,21 @@ class LSTMCell[T : ClassTag] (
         .add(h2g))
       .add(CAddTable())
       .add(Sigmoid())
+  }
+
+  def buildInputGate(): Sequential[T] = {
+    inputGate = buildGate()
+    inputGate
+  }
+
+  def buildForgetGate(): Sequential[T] = {
+    forgetGate = buildGate()
+    forgetGate
+  }
+
+  def buildOutputGate(): Sequential[T] = {
+    outputGate = buildGate()
+    outputGate
   }
 
   /**
