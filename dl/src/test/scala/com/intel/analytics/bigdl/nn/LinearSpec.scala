@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl._
 
 import scala.math._
 import com.intel.analytics.bigdl._
