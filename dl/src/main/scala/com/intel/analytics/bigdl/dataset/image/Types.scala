@@ -312,7 +312,7 @@ object BGRImage {
     }
   }
 
-  private def readRawImage(path: Path): BufferedImage = {
+  def readRawImage(path: Path): BufferedImage = {
     var fis: FileInputStream = null
     try {
       fis = new FileInputStream(path.toString)
