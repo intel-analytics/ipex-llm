@@ -114,6 +114,28 @@ class LSTMCell[T : ClassTag] (
     cellLayer
   }
 
+  def buildLSTM(): Sequential[T] = {
+    buildCell()
+    buildOutputGate()
+
+    val LSTM = Sequential()
+      .add(ConcatTable()
+        .add(NarrowTable(1, 2))
+        .add(cellLayer))
+      .add(FlattenTable())
+      .add(ConcatTable()
+          .add(Sequential())
+            .add(ConcatTable()
+              .add(outputGate)
+              .add(Sequential()
+                .add(SelectTable(3))
+                .add(Tanh())))
+            .add(CMulTable())
+          .add(SelectTable(3)))
+
+    LSTM
+  }
+
   /**
    * Computes the output using the current parameter set of the class and input. This function
    * returns the result which is stored in the output field.
