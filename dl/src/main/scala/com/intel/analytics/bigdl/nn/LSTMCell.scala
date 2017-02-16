@@ -32,7 +32,8 @@ class LSTMCell[T : ClassTag] (
   var inputGate: Sequential[T] = _
   var forgetGate: Sequential[T] = _
   var outputGate: Sequential[T] = _
-  var hidden: Sequential[T] = _
+  var hiddenLayer: Sequential[T] = _
+  var cellLayer: Sequential[T] = _
 
   def buildGate(): Sequential[T] = {
     val gate = Sequential()
@@ -82,8 +83,35 @@ class LSTMCell[T : ClassTag] (
       .add(CAddTable())
       .add(Tanh())
 
-    this.hidden = hidden
+    this.hiddenLayer = hidden
     hidden
+  }
+
+  def buildCell(): Sequential[T] = {
+    buildInputGate()
+    buildForgetGate()
+    buildHidden()
+
+    val forgetLayer = Sequential()
+      .add(ConcatTable()
+        .add(forgetGate)
+        .add(SelectTable(3)))
+      .add(CMulTable())
+
+    val inputLayer = Sequential()
+      .add(ConcatTable()
+        .add(inputGate)
+        .add(hiddenLayer))
+      .add(CMulTable())
+
+    val cellLayer = Sequential()
+      .add(ConcatTable()
+        .add(forgetLayer)
+        .add(inputLayer))
+      .add(CAddTable())
+
+    this.cellLayer = cellLayer
+    cellLayer
   }
 
   /**
