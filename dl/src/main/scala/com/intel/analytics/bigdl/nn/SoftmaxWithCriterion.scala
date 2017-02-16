@@ -24,9 +24,17 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-
-class SoftmaxWithCriterion[T: ClassTag](weights: Tensor[T] = null,
-  ignoreLabel: Option[Int] = None, normalizeMode: NormMode = NormMode.VALID)
+/**
+ * Computes the multinomial logistic loss for a one-of-many classification task,
+ * passing real-valued predictions through a softmax to get a probability distribution over classes.
+ * It should be preferred over separate SoftmaxLayer + MultinomialLogisticLossLayer
+ * as its gradient computation is more numerically stable.
+ * @param ignoreLabel (optional) Specify a label value that
+ *                    should be ignored when computing the loss.
+ * @param normalizeMode How to normalize the output loss.
+ */
+class SoftmaxWithCriterion[T: ClassTag](ignoreLabel: Option[Int] = None,
+  normalizeMode: NormMode = NormMode.VALID)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   @transient var softmax: SoftMax[T] = _
 
@@ -65,7 +73,7 @@ class SoftmaxWithCriterion[T: ClassTag](weights: Tensor[T] = null,
         val curTarget = ev.toType[Int](labelData(i * innerNum + j))
         if (ignoreLabel.isEmpty || ignoreLabel.get != curTarget) {
           assert(curTarget >= 0 && curTarget < nClasses,
-            s"curTarget $curTarget is out of range 0 to ${nClasses - 1} ")
+            s"curTarget $curTarget is out of range 0 to ${ nClasses - 1 } ")
           loss = ev.minus(loss,
             ev.log(
               ev.max(probData(i * dim + curTarget * innerNum + j), ev.fromType(Double.MinValue))
@@ -110,13 +118,21 @@ class SoftmaxWithCriterion[T: ClassTag](weights: Tensor[T] = null,
 
     val lossWeight = ev.divide(ev.fromType(1), getNormalizer(normalizeMode, count))
     i = 0
-    while ( i < gradData.length) {
+    while (i < gradData.length) {
       gradData(i) = ev.times(gradData(i), lossWeight)
       i += 1
     }
     gradInput
   }
 
+  /**
+   * Read the normalization mode parameter and compute the normalizer based on the input size.
+   * If normalizeMode is VALID, the count of valid outputs will be read from validCount,
+   * unless it is -1 in which case all outputs are assumed to be valid.
+   * @param normalizeMode
+   * @param validCount
+   * @return
+   */
   def getNormalizer(normalizeMode: NormMode, validCount: Int): T = {
     def normalizer = {
       normalizeMode match {
@@ -143,8 +159,8 @@ object NormMode extends Enumeration {
 }
 
 object SoftmaxWithCriterion {
-  def apply[@specialized(Float, Double) T: ClassTag](weights: Tensor[T] = null,
-    ignoreLabel: Option[Int] = None, normalizeMode: NormMode = NormMode.VALID)
-  (implicit ev: TensorNumeric[T]): SoftmaxWithCriterion[T] =
-    new SoftmaxWithCriterion[T](weights, ignoreLabel, normalizeMode)
+  def apply[@specialized(Float, Double) T: ClassTag](ignoreLabel: Option[Int] = None,
+    normalizeMode: NormMode = NormMode.VALID)
+    (implicit ev: TensorNumeric[T]): SoftmaxWithCriterion[T] =
+    new SoftmaxWithCriterion[T](ignoreLabel, normalizeMode)
 }
