@@ -98,7 +98,7 @@ object DistriOptimizer {
     var iteration = 0
     val dropPercentage = state.get[Double]("dropPercentage").get
     val warmupIterationNum = state.get[Int]("warmupIterationNum").get
-    val comupteThresholdbatchSize = state.get[Int]("comupteThresholdbatchSize").get
+    val computeThresholdbatchSize = state.get[Int]("computeThresholdbatchSize").get
     val maxDropPercentage = state.get[Double]("maxDropPercentage").get
     val driverSubModelNum = partitionNum * _subModelNumber
     var dropModelNumBatch = 0
@@ -150,10 +150,10 @@ object DistriOptimizer {
 
           // ======================Start train models===================================
           var time = System.nanoTime()
-          if(dropPercentage > 0 && iteration > warmupIterationNum + comupteThresholdbatchSize - 1) {
+          if(dropPercentage > 0 && iteration > warmupIterationNum + computeThresholdbatchSize - 1) {
             timeout = threshold - weightSyncTime
           }
-          val pre = (iteration % comupteThresholdbatchSize) * _subModelNumber
+          val pre = (iteration % computeThresholdbatchSize) * _subModelNumber
           val trainingThreads = Engine.default.invokeAndWait2((0 until _subModelNumber).map(i =>
             () => {
               val trainStart = System.nanoTime()
@@ -249,12 +249,12 @@ object DistriOptimizer {
         // compute threshold
         iteration += 1
         if (dropPercentage > 0 && iteration > warmupIterationNum &&
-          iteration % comupteThresholdbatchSize == 0) {
+          iteration % computeThresholdbatchSize == 0) {
           val moduleTimeList = models.mapPartitions { iter =>
             iter.next().moduleTimeList.iterator
           }.collect()
 
-          val k = (dropPercentage * comupteThresholdbatchSize * driverSubModelNum).toInt
+          val k = (dropPercentage * computeThresholdbatchSize * driverSubModelNum).toInt
           if (k > dropModelNumBatch) {
             threshold = Util.kthLargest(moduleTimeList, 0, moduleTimeList.length-1,
               k - dropModelNumBatch)
@@ -514,7 +514,7 @@ class DistriOptimizer[T: ClassTag] private[optim](
     optimMethod.clearHistory(state)
     state("dropPercentage") = dropPercentage
     state("warmupIterationNum") = warmupIterationNum
-    state("comupteThresholdbatchSize") = computeThresholdbatchSize
+    state("computeThresholdbatchSize") = computeThresholdbatchSize
     state("maxDropPercentage") = maxDropPercentage
 
     require(Engine.nodeNumber().isDefined, "Node number is not set")
