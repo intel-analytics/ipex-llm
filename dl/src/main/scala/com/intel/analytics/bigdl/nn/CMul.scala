@@ -32,6 +32,9 @@ class CMul[@specialized(Float, Double) T: ClassTag](
   val weight: Tensor[T] = Tensor[T](size)
   val gradWeight : Tensor[T] = Tensor[T](size)
 
+  private val _sum = Tensor[T]()
+  private val _repeat = Tensor[T]()
+
   reset()
 
   override def reset(): Unit = {
@@ -82,24 +85,23 @@ class CMul[@specialized(Float, Double) T: ClassTag](
       gradWeight.addcmul(ev.fromType[Double](scale), input, gradOutput)
     } else {
       if (weight.dim() == input.dim()) {
-        val sumFrom = Tensor[T](input.size()).copy(input)
-        sumFrom.cmul(gradOutput)
-
-        val sumInto = Tensor[T](input.size())
+        _repeat.resizeAs(input).cmul(input, gradOutput)
+        var sumFrom = _repeat
+        var sumInto = _sum
         var i = 1
         while (i <= weight.dim()) {
           if (weight.size(i) != input.size(i)) {
             sumInto.sum(sumFrom, i)
+            sumInto = sumFrom
+            sumFrom = if (sumFrom == _repeat) _sum else _repeat
           }
           i += 1
         }
-        gradWeight.add(ev.fromType[Double](scale), sumInto)
+        gradWeight.add(ev.fromType[Double](scale), sumFrom)
       } else {
-        val repeat = Tensor[T](input.size()).copy(input)
-        repeat.cmul(gradOutput)
-        val sum = Tensor[T](input.size())
-        sum.sum(repeat, 1)
-        gradWeight.view(Array(1) ++ gradWeight.size()).add(ev.fromType[Double](scale), sum)
+        _repeat.resizeAs(input).cmul(input, gradOutput)
+        _sum.sum(_repeat, 1)
+        gradWeight.add(ev.fromType[Double](scale), _sum)
       }
 
     }
@@ -115,6 +117,13 @@ class CMul[@specialized(Float, Double) T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
+  }
+
+  override def clearState(): this.type = {
+    super.clearState()
+    _repeat.set()
+    _sum.set()
+    this
   }
 
   override def equals(obj: Any): Boolean = {
