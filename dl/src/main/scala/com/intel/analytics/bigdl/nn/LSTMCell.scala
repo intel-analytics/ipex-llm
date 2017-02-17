@@ -135,6 +135,8 @@ class LSTMCell[T : ClassTag] (
           .add(SelectTable(3)))
 
     lstm = LSTM
+    output = LSTM.output.toTable
+    gradInput = LSTM.output.toTable
     LSTM
   }
 
@@ -148,5 +150,14 @@ class LSTMCell[T : ClassTag] (
 
   override def accGradParameters(input: Table, gradOutput: Table, scale: Double): Unit = {
     lstm.accGradParameters(input, gradOutput, scale)
+  }
+}
+
+object LSTMCell {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    inputSize: Int = 4,
+    hiddenSize: Int = 3)
+    (implicit ev: TensorNumeric[T]): LSTMCell[T] = {
+    new LSTMCell[T]()
   }
 }

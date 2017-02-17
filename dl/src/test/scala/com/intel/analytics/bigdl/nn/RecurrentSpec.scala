@@ -25,61 +25,6 @@ import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class RecurrentSpec extends FlatSpec with Matchers {
-
-  "A Recurrent Language Model Module " should "converge" in {
-
-    val hiddenSize = 4
-    val inputSize = 5
-    val outputSize = 5
-    val bpttTruncate = 3
-    val seed = 100
-    RNG.setSeed(seed)
-
-    val model = Sequential[Double]()
-    model.add(Recurrent[Double](hiddenSize, bpttTruncate)
-      .add(RnnCell[Double](inputSize, hiddenSize))
-      .add(Tanh()))
-      .add(Select(1, 1))
-      .add(Linear[Double](hiddenSize, outputSize))
-
-    val criterion = CrossEntropyCriterion[Double]()
-    val logSoftMax = LogSoftMax[Double]()
-
-    val (weights, grad) = model.getParameters()
-
-    val input = Tensor[Double](Array(1, 5, inputSize))
-    val labels = Tensor[Double](Array(1, 5))
-    for (i <- 1 to 5) {
-      val rdmLabel = Math.ceil(RNG.uniform(0.0, 1.0)*inputSize).toInt
-      val rdmInput = Math.ceil(RNG.uniform(0.0, 1.0)*inputSize).toInt
-      input.setValue(1, i, rdmInput, 1.0)
-      labels.setValue(1, i, rdmLabel)
-    }
-
-    val state = T("learningRate" -> 0.5, "momentum" -> 0.0,
-      "weightDecay" -> 0.0, "dampening" -> 0.0)
-    val sgd = new SGD[Double]
-    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
-      val output = model.forward(input).asInstanceOf[Tensor[Double]]
-      val _loss = criterion.forward(output, labels)
-      model.zeroGradParameters()
-      val gradInput = criterion.backward(output, labels)
-      model.backward(input, gradInput)
-      (_loss, grad)
-    }
-
-    for (i <- 1 to 50) {
-      val (_, loss) = sgd.optimize(feval, weights, state)
-      println(s"${i}-th loss = ${loss(0)}")
-    }
-
-    val output = model.forward(input).asInstanceOf[Tensor[Double]]
-    val logOutput = logSoftMax.forward(output)
-    val prediction = logOutput.max(2)._2
-
-    labels.squeeze() should be (prediction.squeeze())
-  }
-
   "A Recurrent Module " should "converge in batch mode" in {
 
     val batchSize = 10
