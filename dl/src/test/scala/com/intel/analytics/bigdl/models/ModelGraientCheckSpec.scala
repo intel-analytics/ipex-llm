@@ -17,11 +17,9 @@
 
 package com.intel.analytics.bigdl.models
 
-import com.intel.analytics.bigdl.nn.{GradientChecker, LSTMCell}
-import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.GradientChecker
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
@@ -30,20 +28,6 @@ import scala.util.Random
 class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   private val checkModel = true
-
-//  "LSTM model in batch mode" should "be good in gradient check for input" in {
-//    val seed = 100
-//    RNG.setSeed(seed)
-//    val start = System.nanoTime()
-//    val input = Tensor[Double](10, 4).apply1(e => Random.nextDouble())
-//    val model = LSTMCell[Double]()
-//    model.zeroGradParameters()
-//
-//    val checker = new GradientChecker(1e-4).setType(checkModel)
-//    checker.checkLayer(model, T(input,input), 1e-2) should be(true)
-//    val scalaTime = System.nanoTime() - start
-//    println("Test Scala time : " + scalaTime / 1e9 + " s")
-//  }
 
   "GoogleNet_v1 model in batch mode" should "be good in gradient check for input" in {
     val seed = 100
