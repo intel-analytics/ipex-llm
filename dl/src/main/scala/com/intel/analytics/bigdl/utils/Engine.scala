@@ -329,12 +329,33 @@ object Engine {
     cores: Int,
     onSpark: Boolean = false
   ): Option[SparkConf] = {
-    val result = init
-    require(node == Engine.nodeNumber, s"The input node number($node) is inconsistent with " +
-      s"auto-detect node number(${Engine.nodeNumber})")
-    require(cores == Engine.coreNumber, s"The input core number($cores) is inconsistent with " +
-      s"auto-detect core number(${Engine.coreNumber})")
-    result
+    val ret = if (onSpark) {
+      nodeNum = node
+      physicalCoreNumber = cores
+      _model = initModelThreadPool()
+      val sc = if (engineType == MklBlas) {
+        new SparkConf()
+          .setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
+          .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
+          .setExecutorEnv("KMP_BLOCKTIME", "0")
+          .setExecutorEnv("OMP_WAIT_POLICY", "passive")
+          .setExecutorEnv("OMP_NUM_THREADS", "1")
+          .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
+          .setExecutorEnv("DL_NODE_NUMBER", nodeNum.toString)
+          .set("spark.shuffle.blockTransferService", "nio")
+          .set("spark.akka.frameSize", "10")
+          .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
+      } else {
+        throw new IllegalArgumentException(engineType.toString)
+      }
+      Some(sc)
+    } else {
+      physicalCoreNumber = cores
+      None
+    }
+    _isInitialized = true
+
+    ret
   }
 
   /**
