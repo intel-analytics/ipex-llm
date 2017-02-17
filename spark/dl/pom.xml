@@ -259,8 +259,31 @@
             </plugin>
         </plugins>
     </reporting>
-    
+
     <profiles>
+        <profile>
+            <id>1.5-plus</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/intel/analytics/bigdl/example/udfpredictor/*Stream*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>spark_2.0</id>
+        </profile>
         <profile>
             <id>parallel-tests</id>
             <properties>
@@ -268,6 +291,20 @@
                 <tagsToInclude>com.intel.analytics.bigdl.tags.Parallel</tagsToInclude>
                 <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/intel/analytics/bigdl/example/udfpredictor/*Stream*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>serial-tests</id>
@@ -275,6 +312,20 @@
                 <runSpecsInParallel>false</runSpecsInParallel>
                 <tagsToExclude>com.intel.analytics.bigdl.tags.Parallel,com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/intel/analytics/bigdl/example/udfpredictor/*Stream*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>serial-all</id>
@@ -285,12 +336,20 @@
                 <runSpecsInParallel>false</runSpecsInParallel>
                 <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
             </properties>
-        </profile>
-        <profile>
-            <id>integration-test</id>
-            <properties>
-                <tagsToExclude>com.intel.analytics.bigdl.tags.Serial,com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
-            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/intel/analytics/bigdl/example/udfpredictor/*Stream*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
