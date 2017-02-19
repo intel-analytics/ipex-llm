@@ -18,8 +18,9 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -125,27 +126,28 @@ class LSTMCell[T : ClassTag] (
         .add(cellLayer))
       .add(FlattenTable())
       .add(ConcatTable()
-          .add(Sequential())
-            .add(ConcatTable()
-              .add(outputGate)
-              .add(Sequential()
-                .add(SelectTable(3))
-                .add(Tanh())))
-            .add(CMulTable())
-          .add(SelectTable(3)))
+        .add(Sequential()
+          .add(ConcatTable()
+            .add(outputGate)
+            .add(Sequential()
+              .add(SelectTable(3))
+              .add(Tanh())))
+          .add(CMulTable()))
+        .add(SelectTable(3)))
 
+    output = T(Tensor(), Tensor())
     lstm = LSTM
-    output = LSTM.output.toTable
-    gradInput = LSTM.output.toTable
     LSTM
   }
 
   override def updateOutput(input: Table): Table = {
-    lstm.updateOutput(input).toTable
+    output = lstm.updateOutput(input).toTable
+    output
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    lstm.updateGradInput(input, gradOutput).toTable
+    gradInput = lstm.updateGradInput(input, gradOutput).toTable
+    gradInput
   }
 
   override def accGradParameters(input: Table, gradOutput: Table, scale: Double): Unit = {
@@ -158,6 +160,6 @@ object LSTMCell {
     inputSize: Int = 4,
     hiddenSize: Int = 3)
     (implicit ev: TensorNumeric[T]): LSTMCell[T] = {
-    new LSTMCell[T]()
+    new LSTMCell[T](inputSize, hiddenSize)
   }
 }
