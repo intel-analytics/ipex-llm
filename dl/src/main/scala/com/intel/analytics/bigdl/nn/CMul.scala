@@ -20,8 +20,10 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 @SerialVersionUID(8888147326550637025L)
@@ -30,12 +32,12 @@ class CMul[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val weight: Tensor[T] = Tensor[T](size)
-  val gradWeight : Tensor[T] = Tensor[T](size)
+  val gradWeight: Tensor[T] = Tensor[T](size)
 
   reset()
 
   override def reset(): Unit = {
-    val stdv = 1.0/math.sqrt(weight.nElement())
+    val stdv = 1.0 / math.sqrt(weight.nElement())
     weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
     zeroGradParameters()
   }
@@ -50,9 +52,19 @@ class CMul[@specialized(Float, Double) T: ClassTag](
       } else {
         weight.view(Array(1) ++ weight.size())
       }
-
-      expand.expandAs(output)
-      output.cmul(expand)
+      if (weight.size().count(x => x != 1) == 1) {
+        val weightDim = expand.size().zip(Stream.from(1)).filter(x => x._1 != 1)(0)._2
+        var k = 0
+        val weightData = weight.storage().array()
+        while (k < weight.nElement()) {
+          val c = output.select(weightDim, k + 1)
+          c.mul(weightData(k))
+          k += 1
+        }
+      } else {
+        expand.expandAs(output)
+        output.cmul(expand)
+      }
     }
     output
   }
@@ -135,7 +147,7 @@ class CMul[@specialized(Float, Double) T: ClassTag](
       weight == other.weight
   }
 
-  override def hashCode() : Int = {
+  override def hashCode(): Int = {
     val seed = 37
     var hash = super.hashCode()
     hash = hash * seed + size.hashCode()
@@ -146,13 +158,13 @@ class CMul[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.CMul(${java.util.Arrays.toString(size)})"
+    s"nn.CMul(${ java.util.Arrays.toString(size) })"
   }
 }
 
 object CMul {
   def apply[@specialized(Float, Double) T: ClassTag](
-      size: Array[Int])(implicit ev: TensorNumeric[T]) : CMul[T] = {
+    size: Array[Int])(implicit ev: TensorNumeric[T]): CMul[T] = {
     new CMul[T](size)
   }
 }

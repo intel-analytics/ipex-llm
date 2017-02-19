@@ -17,7 +17,6 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.lang.Thread.UncaughtExceptionHandler
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent._
 
@@ -243,6 +242,13 @@ object Engine {
     _model = initModelThreadPool()
   }
 
+  private[bigdl] def setCoreNumberFixed(n: Int): Unit = {
+    require(n > 0)
+    physicalCoreNumber = n
+    _fixed = new ThreadPool(n)
+    model.setMKLThread(1)
+  }
+
   // Set node number
   private var nodeNum: Option[Int] = if (System.getenv("DL_NODE_NUMBER") == null) {
     None
@@ -286,6 +292,9 @@ object Engine {
 
   val default: ThreadPool = new ThreadPool(defaultPoolSize)
 
+  @volatile private var _fixed: ThreadPool = initModelThreadPoolFixed()
+  def fixed: ThreadPool = _fixed
+
   @volatile private var _model: ThreadPool = initModelThreadPool()
 
   def model: ThreadPool = _model
@@ -300,6 +309,12 @@ object Engine {
     val model = new ThreadPool(modelPoolSize)
     model.setMKLThread(1)
     model
+  }
+
+  private def initModelThreadPoolFixed() = {
+    val fixed = new ThreadPool(coreNumber())
+    fixed.setMKLThread(1)
+    fixed
   }
 
   def init(
