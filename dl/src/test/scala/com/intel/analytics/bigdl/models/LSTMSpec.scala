@@ -77,4 +77,38 @@ class LSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     labels.squeeze() should be (prediction.squeeze())
   }
+
+  "A LSTM Module " should "perform correct gradient check" in {
+
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val bpttTruncate = 10
+    val seed = 100
+    RNG.setSeed(seed)
+    val model = Sequential[Double]()
+    model.add(Recurrent[Double](hiddenSize, bpttTruncate)
+      .add(LSTMCell[Double](inputSize, hiddenSize))
+      .add(Tanh[Double]()))
+      .add(Select(1, 1))
+      .add(Linear[Double](hiddenSize, outputSize))
+
+    model.reset()
+
+    val input = Tensor[Double](Array(1, 5, inputSize))
+    val labels = Tensor[Double](Array(1, 5))
+    for (i <- 1 to 5) {
+      val rdmLabel = Math.ceil(Math.random()*inputSize).toInt
+      val rdmInput = Math.ceil(Math.random()*inputSize).toInt
+      input.setValue(1, i, rdmInput, 1.0)
+      labels.setValue(1, i, rdmLabel)
+    }
+
+    println("gradient check for input")
+    val gradCheckerInput = new GradientChecker(1e-2, 1)
+    val checkFlagInput = gradCheckerInput.checkLayer[Double](model, input)
+    println("gradient check for weights")
+    val gradCheck = new GradientCheckerRNN(1e-2, 1)
+    val checkFlag = gradCheck.checkLayer(model, input, labels)
+  }
 }
