@@ -132,9 +132,10 @@ class Recurrent[T : ClassTag] (
         val moduleGrads = module
           .updateGradInput(curInput, getIfTableSizeOne(deltaHidden)).toTable
         j = 1
+        val transformArray = transforms.modules.toArray
         while (j <= hiddens.length()) {
           val hidden = hiddens[Tensor[T]](j)
-          val transform = transforms.modules.toArray.apply(j - 1)
+          val transform = transformArray.apply(j - 1)
           transform.output
             .toTensor
             .copy(hidden.select(2, bpttStep))
@@ -178,9 +179,9 @@ class Recurrent[T : ClassTag] (
           .toTable
         gradInput.select(2, bpttStep).add(gradInputBundle(1).asInstanceOf[Tensor[T]])
         j = 1
+        val transformArray = transforms.modules.toArray
         while (j <= hiddens.length()) {
-          val hidden = hiddens[Tensor[T]](j)
-          val transform = transforms.modules.toArray.apply(j - 1)
+          val transform = transformArray.apply(j - 1)
           deltaHidden.update(j, transform.updateGradInput(Tensor(), gradInputBundle(j + 1)))
           j += 1
         }
