@@ -36,24 +36,28 @@ import scala.reflect.ClassTag
 class MultiMarginCriterion[T: ClassTag](val p: Int = 1,
  val weights: Tensor[T] = null, margin: Double = 1.0, val sizeAverage: Boolean = true)
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
-  require(p == 1 || p == 2, "only p=1 and p=2 supported")
+  require(p == 1 || p == 2, s"MultiMarginCriterion: only p=1 and p=2 supported, but get p $p")
   if (null != weights) {
-    require(weights.dim() == 1, "weights input should be 1-D Tensor")
+    require(weights.dim() == 1, s"MultiMarginCriterion: weights input should be 1-D Tensor, " +
+      s"but get weights dim ${weights.dim()}")
   }
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require(input.nDimension() == 1 || input.nDimension() == 2, "vector or matrix expected")
+    require(input.nDimension() == 1 || input.nDimension() == 2,
+    "MultiMarginCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
     val (nframe, dim) = if (input.nDimension() == 1) {
       (1, input.size(1))
     } else {
       require(target.nDimension() == 1 && target.size(1) == input.size(1),
-        "inconsistent target size")
+      "MultiMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
       (input.size(1), input.size(2))
     }
 
     require(ev.isGreaterEq(target.min(), ev.fromType(0)) &&
-      ev.isGreaterEq(ev.fromType(dim), target.max()), "target out of range")
+      ev.isGreaterEq(ev.fromType(dim), target.max()), "MultiMarginCriterion: " +
+      s"target out of range, target min should be greater than or equal to zero, but get " +
+      s"${target.min()}, target max should be less than or equal to $dim, but get ${target.max()}")
 
     val _target = target.contiguous()
     val _input = input.contiguous()
@@ -95,12 +99,12 @@ class MultiMarginCriterion[T: ClassTag](val p: Int = 1,
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     require(input.nDimension() == 1 || input.nDimension() == 2,
-      "vector or matrix expected")
+    "MultiMarginCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
     val (nframe, dim) = if (input.nDimension() == 1) {
       (1, input.size(1))
     } else {
       require(target.nDimension() == 1 && target.size(1) == input.size(1),
-        "inconsistent target size")
+      "MultiMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
       (input.size(1), input.size(2))
     }
     val g = ev.fromType(if (sizeAverage)  1.0/(nframe*dim) else 1.0/(dim))

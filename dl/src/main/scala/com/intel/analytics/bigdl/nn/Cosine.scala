@@ -186,10 +186,12 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
     s"nn.Cosine($inputSize, $outputSize)"
   }
 
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Contiguous[T]]
+
   override def equals(other: Any): Boolean = other match {
     case that: Cosine[T] =>
       super.equals(that) &&
-        (that.eq(this)) &&
+        (that canEqual this) &&
         weight == that.weight &&
         inputSize == that.inputSize &&
         outputSize == that.outputSize

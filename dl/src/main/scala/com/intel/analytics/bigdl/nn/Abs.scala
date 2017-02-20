@@ -36,7 +36,8 @@ class Abs[T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.isContiguous() && gradOutput.isContiguous())
+    require(input.isContiguous() && gradOutput.isContiguous(),
+      "Abs: input and gradOutput should be contiguous")
     gradInput.resizeAs(input).copy(gradOutput)
 
     val inputArray = input.storage().array()
@@ -52,6 +53,21 @@ class Abs[T: ClassTag]
       i += 1
     }
     gradInput
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Abs[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Abs[T] =>
+      super.equals(that) &&
+        (that canEqual this)
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode())
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 
   override def toString(): String = {

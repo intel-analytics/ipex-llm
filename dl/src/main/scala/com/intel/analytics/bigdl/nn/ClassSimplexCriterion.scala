@@ -31,7 +31,8 @@ import scala.reflect.ClassTag
 class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
  (implicit ev: TensorNumeric[T]) extends MSECriterion[T] {
 
-  require(nClasses > 1, "Required positive integer argument nClasses > 1")
+  require(nClasses > 1, "ClassSimplexCriterion: Required positive integer argument nClasses > 1," +
+    s"but get nClasses $nClasses")
 
   private val simp = regsplex(nClasses - 1)
   private val simplex = Tensor[T](simp.size(1), nClasses)
@@ -61,7 +62,8 @@ class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
   }
 
   private def transformTarget(target: Tensor[T]): Unit = {
-    require(target.dim() == 1, "1D tensors only!")
+    require(target.dim() == 1, s"ClassSimplexCriterion: target should be 1D tensors only!" +
+      s"But get ${target.dim()}")
     if (null == targetBuffer) targetBuffer = Tensor[T](nClasses)
 
     targetBuffer.resize(target.size(1), nClasses)
@@ -74,7 +76,8 @@ class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     transformTarget(target)
-    require(input.nElement() == targetBuffer.nElement(), "element number wrong")
+    require(input.nElement() == targetBuffer.nElement(), "ClassSimplexCriterion: " +
+      "element number wrong")
     output = super.updateOutput(input, targetBuffer)
     output
   }

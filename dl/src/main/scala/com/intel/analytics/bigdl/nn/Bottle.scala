@@ -65,7 +65,8 @@ class Bottle[T: ClassTag](
       // Forward with the module's dimension
       val newInput = input.view(inShape.storage().array().map(_.toInt))
       val output1 = modules(0).updateOutput(newInput).toTensor[T]
-      require(output1.dim() == nOutputDim, "Wrong number of output dims on module")
+      require(output1.dim() == nOutputDim,
+        s"Bottle: output dims on module should be $nOutputDim, but get ${output1.dim()}")
 
       outShape.copy(Tensor[Double](Storage(output1.size.map(_.toDouble))))
 
@@ -108,10 +109,12 @@ class Bottle[T: ClassTag](
     s"nn.Bottle ($module, $nInputDim, $nOutputDim1)"
   }
 
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Bottle[T]]
+
   override def equals(other: Any): Boolean = other match {
     case that: Bottle[T] =>
       super.equals(that) &&
-        (that.eq(this)) &&
+        (that canEqual this) &&
         module == that.module &&
         nInputDim == that.nInputDim &&
         nOutputDim1 == that.nOutputDim1

@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
  * measures the mean absolute value of the element-wise difference between input
  */
 @SerialVersionUID( - 7860793007567513758L)
-class AbsCriterion[T: ClassTag](sizeAverage: Boolean = true)
+class AbsCriterion[T: ClassTag](val sizeAverage: Boolean = true)
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   @transient
   private var buffer: Tensor[T] = null
@@ -51,7 +51,7 @@ class AbsCriterion[T: ClassTag](sizeAverage: Boolean = true)
     }
     gradInput.mul(input, ev.fromType[Int](-1)).add(target)
 
-    require(gradInput.isContiguous())
+    require(gradInput.isContiguous(), "AbsCriterion: gradInput should be contiguous")
     val bufferArray = gradInput.storage().array()
     val bufferOffset = gradInput.storageOffset() - 1
     var i = 0
@@ -62,6 +62,26 @@ class AbsCriterion[T: ClassTag](sizeAverage: Boolean = true)
       i += 1
     }
     gradInput
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[AbsCriterion[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: AbsCriterion[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        sizeAverage == that.sizeAverage
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), sizeAverage)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def toString(): String = {
+    s"nn.AbsCriterion"
   }
 }
 
