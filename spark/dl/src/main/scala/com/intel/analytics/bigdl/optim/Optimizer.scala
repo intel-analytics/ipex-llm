@@ -20,6 +20,7 @@ import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, _}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
@@ -271,6 +272,25 @@ object Optimizer {
     new DistriOptimizer[T](
       model = model,
       dataset = (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+  }
+
+  def apply[T: ClassTag](
+    model: Module[T],
+    sampleRDD: RDD[Sample[T]],
+    criterion: Criterion[T],
+    batchSize: Int,
+    isInOrder: Boolean,
+    featurePadding : Option[Tensor[T]] = None,
+    labelPadding : Option[T] = None,
+    fixedLength: Option[Int] = None
+  )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    new DistriOptimizer[T](
+      model = model,
+      dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
+        SampleToBatch(batchSize, featurePadding, labelPadding, fixedLength))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]

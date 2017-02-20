@@ -26,6 +26,8 @@ import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import scala.util.Random
+
 @com.intel.analytics.bigdl.tags.Serial
 class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc: SparkContext = null
@@ -304,15 +306,80 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     })).data(train = true)
     trainRDD.mapPartitions(iter => {
       Iterator.single(iter.next())
-    }).collect()(0) should be(22)
+    }).collect()(0) should be(55)
 
     trainRDD.mapPartitions(iter => {
       Iterator.single(iter.next())
-    }).collect()(0) should be(41)
+    }).collect()(0) should be(68)
 
     trainRDD.mapPartitions(iter => {
       Iterator.single(iter.next())
-    }).collect()(0) should be(62)
+    }).collect()(0) should be(28)
 
+  }
+
+  "RDD DataSet" should "be good for sorted buffer with two partition" in {
+    val count = 100
+    val data = new Array[Sample[Float]](count)
+    var i = 1
+    while (i <= count) {
+      val input = Tensor[Float](3, 28, 28).apply1(e => Random.nextFloat())
+      val target = Tensor[Float](1).fill(i.toFloat)
+      data(i-1) = Sample(input, target)
+      i += 1
+    }
+
+    val partitionNum = 2
+    val batchSize = 5
+    val groupSize = 5
+    val dataSet1 = new CachedDistriDataSet[Sample[Float]](
+      sc.parallelize(data, partitionNum)
+        .coalesce(partitionNum, true)
+        .mapPartitions(iter => {
+          val tmp = iter.toArray
+          Iterator.single(tmp)
+        }).setName("cached dataset")
+        .cache(),
+      true,
+      groupSize
+    )
+
+    val dataSet = dataSet1.transform(SampleToBatch(batchSize))
+    val rdd = dataSet.toDistributed().data(train = true)
+    rdd.partitions.size should be (partitionNum)
+    val rddData = rdd.mapPartitions(iter => {
+      Iterator.single(iter.next().labels)
+    })
+
+    i = 0
+    while (i < 100) {
+      val label = rddData.collect()(0).storage().array()
+      label.reduce((l, f) => if (l < f) f else 10000) should not be (10000)
+      i += 1
+    }
+  }
+
+  "RDD test DataSet" should "be same to the original data with one partition" in {
+    val count = 100
+    val data = new Array[Sample[Float]](count)
+    var i = 1
+    while (i <= count) {
+      val input = Tensor[Float](3, 28, 28).apply1(e => Random.nextFloat())
+      val target = Tensor[Float](1).fill(i.toFloat)
+      data(i-1) = Sample(input, target)
+      i += 1
+    }
+    val partitionNum = 1
+    val dataRDD = sc.parallelize(data, partitionNum).coalesce(partitionNum, true)
+    val dataSet = DataSet.sortRDD(dataRDD, true, 10)
+    val rdd = dataSet.toDistributed().data(train = false)
+    val localData = rdd.collect()
+
+    i = 0
+    while (i < localData.length) {
+      localData(i).label() should be (data(i).label)
+      localData(i).feature() should be (data(i).feature())
+      i += 1
+    }
   }
 }
