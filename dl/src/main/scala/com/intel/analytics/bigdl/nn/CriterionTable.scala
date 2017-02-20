@@ -46,6 +46,22 @@ class CriterionTable[T: ClassTag](val criterion: TensorCriterion[T])
   override def toString(): String = {
     s"nn.CriterionTable"
   }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[CriterionTable[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: CriterionTable[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        criterion == that.criterion
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), criterion)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 object CriterionTable {

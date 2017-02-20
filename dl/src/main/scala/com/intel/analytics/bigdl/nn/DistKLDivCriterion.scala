@@ -28,12 +28,12 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(5018120506588694055L)
-class DistKLDivCriterion[T: ClassTag](sizeAverage: Boolean = true)
+class DistKLDivCriterion[T: ClassTag](val sizeAverage: Boolean = true)
  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require((input.dim() == target.dim()) && (input.isSameSizeAs(target)),
-      "input and target should have the same size")
+      "DistKLDivCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
 
     var sum: T = ev.zero
     // todo: the performance of contiguous tensor should be optimized
@@ -52,7 +52,7 @@ class DistKLDivCriterion[T: ClassTag](sizeAverage: Boolean = true)
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     require((input.dim() == target.dim()) && (input.isSameSizeAs(target)),
-      "input and target should have the same size")
+      "DistKLDivCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
 
     val norm = ev.fromType(if (sizeAverage) -1.0 / input.nElement() else -1.0)
     gradInput.resizeAs(input)
@@ -77,13 +77,14 @@ class DistKLDivCriterion[T: ClassTag](sizeAverage: Boolean = true)
   override def equals(other: Any): Boolean = other match {
     case that: DistKLDivCriterion[T] =>
       super.equals(that) &&
-        (that canEqual this)
+        (that canEqual this) &&
+        sizeAverage == that.sizeAverage
     case _ => false
   }
 
   override def hashCode(): Int = {
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
-    val state = Seq(super.hashCode(), gradInput)
+    val state = Seq(super.hashCode(), sizeAverage)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

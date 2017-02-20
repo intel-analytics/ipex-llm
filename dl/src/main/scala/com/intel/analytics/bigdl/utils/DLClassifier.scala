@@ -55,13 +55,13 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag]
   override def validateParams(): Unit = {
     val params = this.extractParamMap()
     require(null != params.getOrElse(modelTrain, null),
-      "model for predict must not be null")
+      "DLClassifier: model for predict must not be null")
     require(null != params.getOrElse(batchShape, null),
-      "batchSize for predict must not be null")
+      "DLClassifier: batchSize for predict must not be null")
     require(null != params.getOrElse(inputCol, null),
-      "inputCol must not be null")
+      "DLClassifier: inputCol must not be null")
     require(null != params.getOrElse(outputCol, null),
-      "inputCol must not be null")
+      "DLClassifier: inputCol must not be null")
   }
 
   /**

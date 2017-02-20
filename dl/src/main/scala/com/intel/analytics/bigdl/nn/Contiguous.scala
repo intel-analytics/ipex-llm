@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 4704727587714736531L)
-class Contiguous[@specialized(Float, Double) T: ClassTag]
+class Contiguous[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -42,6 +42,21 @@ class Contiguous[@specialized(Float, Double) T: ClassTag]
 
   override def toString(): String = {
     s"nn.Contiguous"
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Contiguous[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Contiguous[T] =>
+      super.equals(that) &&
+        (that canEqual this)
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode())
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
 

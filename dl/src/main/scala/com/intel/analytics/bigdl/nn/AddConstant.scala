@@ -59,6 +59,22 @@ class AddConstant[T: ClassTag](
     s"nn.AddConstant ($constant_scalar, $inplace)"
   }
 
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[AddConstant[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: AddConstant[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        constant_scalar == that.constant_scalar &&
+        inplace == that.inplace
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), constant_scalar, inplace)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 object AddConstant {

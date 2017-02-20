@@ -51,16 +51,18 @@ class CrossEntropyCriterion[T: ClassTag](
     gradInput
   }
 
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[CrossEntropyCriterion[T]]
+
   override def equals(other: Any): Boolean = other match {
     case that: CrossEntropyCriterion[T] =>
-      (that.eq(this)) &&
+      (that canEqual this) &&
         weights == that.weights
     case _ => false
   }
 
   override def hashCode(): Int = {
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
-    val state = Seq(weights)
+    val state = Seq(super.hashCode(), weights)
     state.map(getHashCode).foldLeft(0)((a, b) => 37 * a + b)
   }
 

@@ -41,4 +41,10 @@ object ErrorInfo {
     """
       | The dimensions of input and target to the criterion layer need to be the same;
       | please use the Reshape module to convert if appropriate""".stripMargin
+
+  final val constrainInputSizeSameAsTarget =
+    """
+      | The size of input and target to the criterion layer need to be the same;
+      | please use the Reshape module to convert if appropriate""".stripMargin
+
 }

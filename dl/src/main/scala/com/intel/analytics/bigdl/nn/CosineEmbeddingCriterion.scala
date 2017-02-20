@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
@@ -167,9 +167,11 @@ class CosineEmbeddingCriterion[T: ClassTag]
     gradInput
   }
 
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[CosineEmbeddingCriterion[T]]
+
   override def equals(other: Any): Boolean = other match {
     case that: CosineEmbeddingCriterion[T] =>
-      (that.eq(this)) &&
+      (that canEqual this) &&
         margin == that.margin &&
         sizeAverage == that.sizeAverage
     case _ => false

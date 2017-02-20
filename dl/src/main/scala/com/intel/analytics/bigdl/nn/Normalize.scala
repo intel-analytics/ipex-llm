@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(1504221556573977764L)
 class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  require(p > 0, s"$p-norm not supported")
+  require(p > 0, s"Normalize: $p-norm not supported, norm number must be bigger than zero")
 
   // buffer
   var norm = Tensor[T]()
@@ -45,7 +45,8 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10)
   var indices = Tensor[T]()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() <= 2, "only 1d layer supported")
+    require(input.dim() <= 2, s"Normalize: only 1d layer supported, " +
+      s"but got input dim ${input.dim()}")
     inputBuffer = if (input.dim() == 1) input.view(1, input.nElement()) else input
     output.resizeAs(inputBuffer)
 
@@ -69,8 +70,10 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10)
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.dim() <= 2, "only 1d layer supported")
-    require(gradOutput.dim() <= 2, "only 1d layer supported")
+    require(input.dim() <= 2, s"Normalize: only 1d layer supported, " +
+      s"but got input dim ${input.dim()}")
+    require(gradOutput.dim() <= 2, s"Normalize: only 1d layer supported, " +
+      s"but got gradOutput dim ${gradOutput.dim()}")
 
     inputBuffer = if (input.dim() == 1) input.view(1, input.nElement()) else input
     val n = inputBuffer.size(1)
