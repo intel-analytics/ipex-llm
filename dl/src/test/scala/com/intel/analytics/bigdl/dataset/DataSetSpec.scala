@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.dataset
 
 import java.io.File
+import java.util
 import java.nio.file.Paths
 import java.util.concurrent.{Callable, Executors}
 
@@ -301,15 +302,99 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     })).data(train = true)
     trainRDD.mapPartitions(iter => {
       Iterator.single(iter.next())
-    }).collect()(0) should be(22)
+    }).collect()(0) should be(55)
 
     trainRDD.mapPartitions(iter => {
       Iterator.single(iter.next())
-    }).collect()(0) should be(41)
+    }).collect()(0) should be(68)
 
     trainRDD.mapPartitions(iter => {
       Iterator.single(iter.next())
-    }).collect()(0) should be(62)
+    }).collect()(0) should be(28)
 
+  }
+
+  "Local DataSet" should "be good for sorted buffer with default groupSize" in {
+    val data = (1 to 10).toArray.map(_.toFloat)
+    val dataSet = new LocalArrayDataSet[Float](data, true)
+    dataSet.size() should be (data.length)
+    dataSet.shuffle()
+
+    val trainData = dataSet.toLocal().data(train = true)
+    val offset = trainData.next()
+    var i = 0
+    while (trainData.hasNext && i < 100) {
+      val data = trainData.next()
+      data should be ((offset + i) % 10 + 1)
+      i += 1
+    }
+
+    dataSet.shuffle()
+    val valData = dataSet.toLocal.data(train = false)
+    valData.next() should be (1)
+    valData.next() should be (2)
+    valData.next() should be (3)
+    valData.next() should be (4)
+  }
+
+  "Local DataSet" should "be good for sorted buffer with groupSize > 1" in {
+    val data = (1 to 10).toArray.map(_.toFloat)
+    val groupSize = 5
+    val dataSet = new LocalArrayDataSet[Float](data, true, groupSize)
+    dataSet.size() should be (data.length)
+    dataSet.shuffle()
+
+    val trainData = dataSet.toLocal().data(train = true)
+    val offset = trainData.next()
+    (offset < data(data.length - groupSize + 1)) should be (true)
+    var i = 0
+    while (trainData.hasNext && i < 100) {
+      val data = trainData.next()
+      data should be ((offset + i) % 10 + 1)
+      i += 1
+    }
+  }
+
+  "RDD DataSet" should "be good for sorted buffer" in {
+    val data = (1 to 100).toArray.map(_.toFloat)
+    val partitionNum = 2
+    val groupSize = 10
+    val dataSet = new CachedDistriDataSet[Float](
+      sc.parallelize(data, partitionNum)
+        .coalesce(partitionNum, true)
+        .mapPartitions(iter => {
+          Iterator.single(iter.toArray)
+        }).setName("cached dataset")
+        .cache(),
+      true,
+      groupSize
+    )
+    val rdd = dataSet.toDistributed().data(train = false)
+    rdd.partitions.size should be (partitionNum)
+    val rddData = rdd.mapPartitions(iter => {
+      Iterator.single(iter.toArray.reduce((l, r) => {
+        if (l <= r) r else 1000
+      }))
+    }).collect()
+
+    rddData.contains(99.0f) should be (true)
+    rddData.contains(100.0f) should be (true)
+  }
+
+  "RDD test DataSet" should "be same to the original data with one partition" in {
+    val data = (1 to 100).toArray.map(_.toFloat)
+    val partitionNum = 1
+    val dataSet = new CachedDistriDataSet[Float](
+      sc.parallelize(data, partitionNum)
+        .coalesce(partitionNum, true)
+        .mapPartitions(iter => {
+          Iterator.single(iter.toArray)
+        }).setName("cached dataset")
+        .cache(),
+      true
+    )
+    val rdd = dataSet.toDistributed().data(train = false)
+    val localData = rdd.collect()
+    util.Arrays.equals(localData, data) should be (true)
   }
 }
