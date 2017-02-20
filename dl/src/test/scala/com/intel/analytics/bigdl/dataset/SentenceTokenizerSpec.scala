@@ -64,6 +64,7 @@ class SentenceTokenizerSpec extends FlatSpec with Matchers {
 
     output.length should be (numOfSents)
     count should be (numOfWords)
+    sc.stop()
   }
 
   "SentenceTokenizerSpec" should "tokenizes articles correctly on local" in {

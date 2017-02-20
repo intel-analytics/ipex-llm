@@ -58,6 +58,7 @@ class SentencePaddingSpec extends FlatSpec with Matchers {
       count += x.length
       println(x)
     })
+    sc.stop()
   }
 
   "SentencePaddingSpec" should "pads articles correctly on local" in {
