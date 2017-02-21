@@ -35,9 +35,9 @@ import scala.reflect._
  * sub-windows of approximate size h/H × w/W and then max-pooling the values in each sub-window
  * into the corresponding output grid cell.
  * Pooling is applied independently to each feature map channel
- * @param pooledW
- * @param pooledH
- * @param spatialScale
+ * @param pooledW      spatial extent in width
+ * @param pooledH      spatial extent in height
+ * @param spatialScale spatial scale
  * @tparam T Numeric type. Only support float/double now
  */
 class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialScale: T)
@@ -57,41 +57,63 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
 
     output.resize(rois.size(1), data.size(2), pooledH, pooledW)
       .fill(ev.fromType[Double](Double.MinValue))
-    val outputData = output.storage().array()
     argmax.resizeAs(output).fill(ev.fromType(-1))
-    val argmaxData = argmax.storage().array()
-    val inputData = data.storage().array()
     val dataOffset = offset(0, 1, sizes = data.size())
     val argmaxOffset = offset(0, 1, sizes = argmax.size())
     val outputOffset = offset(0, 1, sizes = output.size())
     val roisOffset = offset(1, sizes = rois.size())
     var n = 0
     val dataSize = data.size()
-    while (n < rois.size(1)) {
-      poolOneRoi(n, rois(n + 1),
-        inputData, dataSize, dataOffset,
-        argmaxData, argmaxOffset,
-        outputData, outputOffset,
-        roisOffset)
-      n += 1
+    if (classTag[T] == classTag[Double]) {
+      val inputData = data.storage().array().asInstanceOf[Array[Double]]
+      val argmaxData = argmax.storage().array().asInstanceOf[Array[Double]]
+      val outputData = output.storage().array().asInstanceOf[Array[Double]]
+      val roisDouble = rois.asInstanceOf[Tensor[Double]]
+      while (n < rois.size(1)) {
+        poolOneRoiDouble(n, roisDouble(n + 1),
+          inputData, dataSize, dataOffset,
+          argmaxData, argmaxOffset,
+          outputData, outputOffset,
+          roisOffset, ev.toType[Double](spatialScale))
+        n += 1
+      }
+    } else if (classTag[T] == classTag[Float]) {
+      val inputData = data.storage().array().asInstanceOf[Array[Float]]
+      val argmaxData = argmax.storage().array().asInstanceOf[Array[Float]]
+      val outputData = output.storage().array().asInstanceOf[Array[Float]]
+      val roisFloat = rois.asInstanceOf[Tensor[Float]]
+      while (n < rois.size(1)) {
+        poolOneRoiFloat(n, roisFloat(n + 1),
+          inputData, dataSize, dataOffset,
+          argmaxData, argmaxOffset,
+          outputData, outputOffset,
+          roisOffset, ev.toType[Float](spatialScale))
+        n += 1
+      }
+    } else {
+      throw new IllegalArgumentException("currently only Double and Float types are supported")
     }
+
     output
   }
 
-  def poolOneRoi(n: Int, roi: Tensor[T],
-    inputData: Array[T], dataSize: Array[Int], dataOffset: Int,
-    argmaxData: Array[T], argmaxOffset: Int,
-    outputData: Array[T], outputOffset: Int, roisOffset: Int): Unit = {
-    val roiBatchInd = ev.toType[Int](roi.valueAt(1))
-    def scaleRoi(ind: Int) = Math.round(ev.toType[Double](roi.valueAt(ind))
-      * ev.toType[Double](spatialScale)).toInt
-    val roiStartW = scaleRoi(2)
-    val roiStartH = scaleRoi(3)
+  private def scaleRoiFloat(roi: Tensor[Float], ind: Int, spatialScale: Float): Int = {
+    Math.round(roi.valueAt(ind) * spatialScale)
+  }
+
+  private def poolOneRoiFloat(n: Int, roi: Tensor[Float],
+    inputData: Array[Float], dataSize: Array[Int], dataOffset: Int,
+    argmaxData: Array[Float], argmaxOffset: Int,
+    outputData: Array[Float], outputOffset: Int, roisOffset: Int,
+    spatialScale: Float): Unit = {
+    val roiBatchInd = roi.valueAt(1).toInt
+    val roiStartW = scaleRoiFloat(roi, 2, spatialScale)
+    val roiStartH = scaleRoiFloat(roi, 3, spatialScale)
 
     require(roiBatchInd >= 0 && dataSize(0) > roiBatchInd)
 
-    val binSizeH = Math.max(scaleRoi(5) - roiStartH + 1, 1f) / pooledH
-    val binSizeW = Math.max(scaleRoi(4) - roiStartW + 1, 1f) / pooledW
+    val binSizeH = Math.max(scaleRoiFloat(roi, 5, spatialScale) - roiStartH + 1, 1f) / pooledH
+    val binSizeW = Math.max(scaleRoiFloat(roi, 4, spatialScale) - roiStartW + 1, 1f) / pooledW
     var batchDataIndex = offset(roiBatchInd, sizes = dataSize)
 
     var c = 0
@@ -116,8 +138,8 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
 
           val poolIndex = ph * pooledW + pw
           if ((hend <= hstart) || (wend <= wstart)) {
-            outputData(outputDataIndex + poolIndex) = ev.fromType(0)
-            argmaxData(argmaxIndex + poolIndex) = ev.fromType(-1)
+            outputData(outputDataIndex + poolIndex) = 0
+            argmaxData(argmaxIndex + poolIndex) = -1
           } else {
             var h = hstart
             while (h < hend) {
@@ -125,10 +147,80 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
               val hi = h * dataSize(3)
               while (w < wend) {
                 val index = hi + w
-                if (ev.isGreater(inputData(batchDataIndex + index),
-                  outputData(outputDataIndex + poolIndex))) {
+                if (inputData(batchDataIndex + index) >
+                  outputData(outputDataIndex + poolIndex)) {
                   outputData(outputDataIndex + poolIndex) = inputData(batchDataIndex + index)
-                  argmaxData(argmaxIndex + poolIndex) = ev.fromType(index)
+                  argmaxData(argmaxIndex + poolIndex) = index
+                }
+                w += 1
+              }
+              h += 1
+            }
+          }
+          pw += 1
+        }
+        ph += 1
+      }
+      // Increment all data pointers by one channel
+      c += 1
+      batchDataIndex += dataOffset
+    }
+  }
+
+  private def scaleRoiDouble(roi: Tensor[Double], ind: Int, spatialScale: Double): Int = {
+    Math.round(roi.valueAt(ind) * spatialScale).toInt
+  }
+
+  private def poolOneRoiDouble(n: Int, roi: Tensor[Double],
+    inputData: Array[Double], dataSize: Array[Int], dataOffset: Int,
+    argmaxData: Array[Double], argmaxOffset: Int,
+    outputData: Array[Double], outputOffset: Int, roisOffset: Int,
+    spatialScale: Double): Unit = {
+    val roiBatchInd = roi.valueAt(1).toInt
+    val roiStartW = scaleRoiDouble(roi, 2, spatialScale)
+    val roiStartH = scaleRoiDouble(roi, 3, spatialScale)
+
+    require(roiBatchInd >= 0 && dataSize(0) > roiBatchInd)
+
+    val binSizeH = Math.max(scaleRoiDouble(roi, 5, spatialScale) - roiStartH + 1, 1f) / pooledH
+    val binSizeW = Math.max(scaleRoiDouble(roi, 4, spatialScale) - roiStartW + 1, 1f) / pooledW
+    var batchDataIndex = offset(roiBatchInd, sizes = dataSize)
+
+    var c = 0
+    while (c < dataSize(1)) {
+      var ph = 0
+      val outputDataIndex = outputOffset * (n * dataSize(1) + c)
+      val argmaxIndex = argmaxOffset * (n * dataSize(1) + c)
+      while (ph < pooledH) {
+        var pw = 0
+        while (pw < pooledW) {
+          // Compute pooling region for this output unit:
+          //  start (included) = floor(ph * roi_height / pooled_height_)
+          //  end (excluded) = ceil((ph + 1) * roi_height / pooled_height_)
+          val hstart = Math.min(Math.max(Math.floor(ph * binSizeH).toInt + roiStartH, 0),
+            dataSize(2))
+          val hend = Math.min(Math.max(Math.ceil((ph + 1) * binSizeH).toInt + roiStartH, 0),
+            dataSize(2))
+          val wstart = Math.min(Math.max(Math.floor(pw * binSizeW).toInt + roiStartW, 0),
+            dataSize(3))
+          val wend = Math.min(Math.max(Math.ceil((pw + 1) * binSizeW).toInt + roiStartW, 0),
+            dataSize(3))
+
+          val poolIndex = ph * pooledW + pw
+          if ((hend <= hstart) || (wend <= wstart)) {
+            outputData(outputDataIndex + poolIndex) = 0
+            argmaxData(argmaxIndex + poolIndex) = -1
+          } else {
+            var h = hstart
+            while (h < hend) {
+              var w = wstart
+              val hi = h * dataSize(3)
+              while (w < wend) {
+                val index = hi + w
+                if (inputData(batchDataIndex + index) >
+                  outputData(outputDataIndex + poolIndex)) {
+                  outputData(outputDataIndex + poolIndex) = inputData(batchDataIndex + index)
+                  argmaxData(argmaxIndex + poolIndex) = index
                 }
                 w += 1
               }
@@ -155,26 +247,47 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
    * @param sizes tensor size
    * @return array offset
    */
-  def offset(n: Int, c: Int = 0, h: Int = 0, w: Int = 0, sizes: Array[Int]): Int = {
+  private def offset(n: Int, c: Int = 0, h: Int = 0, w: Int = 0, sizes: Array[Int]): Int = {
     require(sizes.length == 2 || sizes.length >= 4)
     if (sizes.length == 2) ((n * sizes(1) + c) + h) + w
     else ((n * sizes(1) + c) * sizes(2) + h) * sizes(3) + w
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    val data = input[Tensor[T]](1)
-    val roisData = input[Tensor[T]](2).storage().array()
-    val argmaxData = argmax.storage().array()
     val numRois = output.size(1)
-    val gradInputData = gradInputTensor.resizeAs(data).contiguous().zero().storage().array()
-    val gradOutputData = gradOutput.storage().array()
+    if (classTag[T] == classTag[Double]) {
+      val data = input[Tensor[Double]](1)
+      val roisData = input[Tensor[Double]](2).storage().array()
+      val argmaxData = argmax.storage().array().asInstanceOf[Array[Double]]
+      val gradInputData = gradInputTensor.resizeAs(data).zero()
+        .storage().array().asInstanceOf[Array[Double]]
+      val gradOutputData = gradOutput.storage().array().asInstanceOf[Array[Double]]
+      roiPoolingBackwardDouble(roisData, numRois, data,
+        argmaxData, gradInputData, gradOutputData)
+    } else if (classTag[T] == classTag[Float]) {
+      val data = input[Tensor[Float]](1)
+      val roisData = input[Tensor[Float]](2).storage().array()
+      val argmaxData = argmax.storage().array().asInstanceOf[Array[Float]]
+      val gradInputData = gradInputTensor.resizeAs(data).zero()
+        .storage().array().asInstanceOf[Array[Float]]
+      val gradOutputData = gradOutput.storage().array().asInstanceOf[Array[Float]]
+      roiPoolingBackwardFloat(roisData, numRois, data,
+        argmaxData, gradInputData, gradOutputData)
+    } else {
+      throw new IllegalArgumentException("currently only Double and Float types are supported")
+    }
+    gradInput
+  }
+
+  private def roiPoolingBackwardFloat(roisData: Array[Float], numRois: Int, data: Tensor[Float],
+    argmaxData: Array[Float], gradInputData: Array[Float], gradOutputData: Array[Float]): Unit = {
     var roiN = 0
     var c = 0
     var ph = 0
     var pw = 0
     // Accumulate gradient over all ROIs
     while (roiN < numRois) {
-      val roiBatchInd = roisData(roiN * 5)
+      val roiBatchInd = roisData(roiN * 5).toInt
       // Accumulate gradients over each bin in this ROI
       c = 0
       while (c < data.size(2)) {
@@ -184,11 +297,10 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
           while (pw < pooledW) {
             val outputOffset = ((roiN * data.size(2) + c) * pooledH + ph) * pooledW + pw
             val argmaxIndex = argmaxData(outputOffset)
-            if (ev.toType[Double](argmaxIndex) >= 0) {
-              val inputOffset = (ev.toType[Int](roiBatchInd) * data.size(2)
-                + c) * data.size(3) * data.size(4) + ev.toType[Int](argmaxIndex)
-              gradInputData(inputOffset) =
-                ev.plus(gradInputData(inputOffset), gradOutputData(outputOffset))
+            if (argmaxIndex >= 0) {
+              val inputOffset = (roiBatchInd * data.size(2)
+                + c) * data.size(3) * data.size(4) + argmaxIndex.toInt
+              gradInputData(inputOffset) = gradInputData(inputOffset) + gradOutputData(outputOffset)
             }
             pw += 1
           }
@@ -198,7 +310,40 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
       }
       roiN += 1
     }
-    gradInput
+  }
+
+  private def roiPoolingBackwardDouble(roisData: Array[Double], numRois: Int, data: Tensor[Double],
+    argmaxData: Array[Double], gradInputData: Array[Double],
+    gradOutputData: Array[Double]): Unit = {
+    var roiN = 0
+    var c = 0
+    var ph = 0
+    var pw = 0
+    // Accumulate gradient over all ROIs
+    while (roiN < numRois) {
+      val roiBatchInd = roisData(roiN * 5).toInt
+      // Accumulate gradients over each bin in this ROI
+      c = 0
+      while (c < data.size(2)) {
+        ph = 0
+        while (ph < pooledH) {
+          pw = 0
+          while (pw < pooledW) {
+            val outputOffset = ((roiN * data.size(2) + c) * pooledH + ph) * pooledW + pw
+            val argmaxIndex = argmaxData(outputOffset)
+            if (argmaxIndex >= 0) {
+              val inputOffset = (roiBatchInd * data.size(2)
+                + c) * data.size(3) * data.size(4) + argmaxIndex.toInt
+              gradInputData(inputOffset) = gradInputData(inputOffset) + gradOutputData(outputOffset)
+            }
+            pw += 1
+          }
+          ph += 1
+        }
+        c += 1
+      }
+      roiN += 1
+    }
   }
 
   override def toString: String = "nn.RoiPooling"
