@@ -67,6 +67,16 @@ object DistriOptimizerSpecModel {
     mlp
   }
 
+  def bn: Module[Double] = {
+    val mlp = Sequential[Double]
+    mlp.add(Linear(4, 2))
+    mlp.add(BatchNormalization(2))
+    mlp.add(ReLU())
+    mlp.add(Linear(2, 1))
+    mlp.add(Sigmoid())
+    mlp
+  }
+
   def cre: Module[Double] = {
     val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
@@ -214,6 +224,25 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val modelRef = optimizerRef.optimize()
 
     model.getParameters()._1 should be(modelRef.getParameters()._1)
+
+  }
+
+  "Train with BatchNormalization" should "return with state" in {
+    RandomGenerator.RNG.setSeed(10)
+    val mm = bn
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
+    val model = optimizer.optimize()
+    val batchNormalization = model.asInstanceOf[Sequential[Double]].modules(1).
+      asInstanceOf[BatchNormalization[Double]]
+    batchNormalization.runningMean.storage().array() should be (
+      Array(0.37499998210083496, 0.37499998210083496)
+    )
+    batchNormalization.runningVar.storage().array() should be (
+      Array(1188.2811870277535, 1188.2811870277535)
+    )
 
   }
 }

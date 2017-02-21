@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -87,6 +88,20 @@ abstract class Container[A <: Activity : ClassTag,
       }
     })
     (weights.toArray, gradWeights.toArray)
+  }
+
+  override def copyStatus(src: Module[T]): this.type = {
+    require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
+    val srcContainer = src.asInstanceOf[Container[A, B, T]]
+    require(srcContainer.modules.length == modules.length,
+      s"copyStatus: container's length mismatch" +
+        s"excepted ${modules.length}, but get ${srcContainer.modules.length}")
+    var i = 0
+    while (i < modules.length) {
+      modules(i).copyStatus(srcContainer.modules(i))
+      i += 1
+    }
+    this
   }
 
   override def clearState() : this.type = {

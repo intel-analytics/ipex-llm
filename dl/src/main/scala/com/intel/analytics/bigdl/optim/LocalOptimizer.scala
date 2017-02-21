@@ -167,6 +167,9 @@ class LocalOptimizer[T: ClassTag] private[optim](
       checkpoint(wallClockTime)
     }
 
+    // copy running status from workingModels to model
+    model.copyStatus(workingModels.head)
+
     model
   }
 
