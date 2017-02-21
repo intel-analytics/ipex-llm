@@ -20,7 +20,7 @@ import java.io._
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, SentencePadding, SentenceSplitter, SentenceTokenizer}
+import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, SentenceBiPadding$, SentenceSplitter, SentenceTokenizer}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.util.Random
@@ -202,7 +202,7 @@ object SequencePreprocess {
     .filter(!_.isEmpty)).transform(SentenceSplitter(sentBin))
     .toLocal().data(train = false).flatMap(item => item.iterator)
     val tokens = DataSet.array(trainSents.toArray)
-      .transform(SentencePadding())
+      .transform(SentenceBiPadding())
       .transform(SentenceTokenizer(tokenBin))
     tokens
   }
@@ -216,7 +216,7 @@ object SequencePreprocess {
       .filter(!_.isEmpty)).transform(SentenceSplitter(sentBin))
       .toDistributed().data(train = false).collect().flatten
     val tokens = DataSet.rdd(sc.parallelize(trainSents))
-      .transform(SentencePadding())
+      .transform(SentenceBiPadding())
       .transform(SentenceTokenizer(tokenBin))
     tokens
   }

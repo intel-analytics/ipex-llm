@@ -1,11 +1,12 @@
 /*
- * Copyright 2016 The BigDL Authors.
+ * Licensed to Intel Corporation under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,28 +20,13 @@ package com.intel.analytics.bigdl.dataset.text
 import java.io.PrintWriter
 
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.text.utils.SentenceToken
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import org.scalatest.{FlatSpec, Matchers}
 
 import scala.io.Source
 
-@com.intel.analytics.bigdl.tags.Serial
-class SentenceBiPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
-  var sc: SparkContext = null
-
-  before {
-    val nodeNumber = 1
-    val coreNumber = 1
-    Engine.init(nodeNumber, coreNumber, true)
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
+class SentenceBiPaddingSpec extends FlatSpec with Matchers {
 
   "SentenceBiPaddingSpec" should "pads articles correctly on Spark" in {
     val tmpFile = java.io.File
@@ -56,7 +42,8 @@ class SentenceBiPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
       write(sentences.mkString("\n")); close
     }
 
-    sc = new SparkContext("local[1]", "DocumentTokenizer")
+    Engine.init(1, 1, true)
+    val sc = new SparkContext("local[1]", "DocumentTokenizer")
     val sents = DataSet.rdd(sc.textFile(tmpFile)
       .filter(!_.isEmpty)).transform(SentenceSplitter())
       .toDistributed().data(train = false).flatMap(item => item.iterator).collect()
@@ -70,11 +57,6 @@ class SentenceBiPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     output.foreach(x => {
       count += x.length
       println(x)
-      val words = x.split(" ")
-      val startToken = words(0)
-      val endToken = words(words.length - 1)
-      startToken should be (SentenceToken.start)
-      endToken should be (SentenceToken.end)
     })
     sc.stop()
   }
@@ -107,11 +89,6 @@ class SentenceBiPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     output.foreach(x => {
       count_word += x.length
       println(x)
-      val words = x.split(" ")
-      val startToken = words(0)
-      val endToken = words(words.length - 1)
-      startToken should be (SentenceToken.start)
-      endToken should be (SentenceToken.end)
     })
   }
 }

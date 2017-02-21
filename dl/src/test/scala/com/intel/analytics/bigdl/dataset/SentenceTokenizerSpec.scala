@@ -48,7 +48,7 @@ class SentenceTokenizerSpec extends FlatSpec with Matchers {
       .toDistributed().data(train = false).flatMap(item => item.iterator).collect()
       .asInstanceOf[Array[String]]
     val tokens = DataSet.rdd(sc.parallelize(sents))
-        .transform(SentencePadding())
+        .transform(SentenceBiPadding())
         .transform(SentenceTokenizer())
     val output = tokens.toDistributed().data(train = false).collect()
 
@@ -87,7 +87,7 @@ class SentenceTokenizerSpec extends FlatSpec with Matchers {
       .filter(!_.isEmpty)).transform(SentenceSplitter())
       .toLocal().data(train = false).flatMap(item => item.iterator)
     val tokens = DataSet.array(sents.toArray)
-        .transform(SentencePadding())
+        .transform(SentenceBiPadding())
         .transform(SentenceTokenizer())
     val output = tokens.toLocal().data(train = false).toArray
 
