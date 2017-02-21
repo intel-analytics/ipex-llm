@@ -55,8 +55,6 @@ class DictionarySpec extends FlatSpec with Matchers with BeforeAndAfter {
       write(sentences.mkString("\n")); close
     }
 
-    val enToken = this.getClass.getClassLoader.getResource("token/en-token.bin")
-
     Engine.init(1, 1, true)
     val sc = new SparkContext("local[1]", "DocumentTokenizer")
     val tokens = DataSet.rdd(sc.textFile(tmpFile)
@@ -88,8 +86,6 @@ class DictionarySpec extends FlatSpec with Matchers with BeforeAndAfter {
     new PrintWriter(tmpFile) {
       write(sentences.mkString("\n")); close
     }
-
-    val enToken = this.getClass.getClassLoader.getResource("token/en-token.bin")
 
     val logData = Source.fromFile(tmpFile).getLines().toArray
     val tokens = DataSet.array(logData
