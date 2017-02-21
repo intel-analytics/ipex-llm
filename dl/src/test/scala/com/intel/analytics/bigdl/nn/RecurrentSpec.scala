@@ -268,7 +268,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     println(s"Average total time is ${totalClockTime / (nEpoch * 1e9)} seconds")
   }
 
-  "A Recurrent Module " should "output elapse time in contiguous tensor for RnnCell" in {
+  "A Recurrent Module " should "output elapse time in outside transpose tensor for RnnCell" in {
 
     val batchSize = 50
     val nWords = 20
