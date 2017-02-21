@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -32,26 +32,26 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     config: Table, state: Table = null): (Tensor[T], Array[T]) = {
 
     val _state = if (state == null) config else state
-    val scheduler = config.getOrElse[HyperParameterScheduler]("hyperParameterScheduler", Default())
-    scheduler.updateHyperParameter(config, _state)
+    val scheduler = config.getOrElse[HyperParameterScheduler[T]]("hyperParameterScheduler",
+      Default())
+    val currentHyperParameter = scheduler.getAndUpdateHyperParameter(config, _state)
 
-    val clr = ev.fromType(config.getOrElse[Double]("clr",
-      config.getOrElse[Double]("learningRate", 1e-3)))
-    val wd = config.getOrElse[Double]("wd", config.getOrElse[Double]("weightDecay", 0.0))
-    val mom = config.getOrElse[Double]("mom", config.getOrElse[Double]("momentum", 0.0))
-    val damp = config.getOrElse[Double]("damp", config.getOrElse[Double]("dampening", mom))
-    val cntv = config.getOrElse[Boolean]("cntv", config.getOrElse[Boolean]("nesterov", false))
-    val lrs = config.getOrElse[Tensor[T]]("lrs", config.getOrElse[Tensor[T]]("learningRates", null))
-    val wds = config.getOrElse[Tensor[T]]("wds", config.getOrElse[Tensor[T]]("weightDecays", null))
+    val clr = ev.fromType(currentHyperParameter[Double]("learningRate"))
+    val wd = currentHyperParameter[Double]("weightDecay")
+    val mom = currentHyperParameter[Double]("momentum")
+    val damp = currentHyperParameter[Double]("dampening")
+    val nesterov = currentHyperParameter[Boolean]("nesterov")
+    val lrs = currentHyperParameter[Tensor[T]]("learningRates")
+    val wds = currentHyperParameter[Tensor[T]]("weightDecays")
 
-    require(!cntv || (mom > 0 && damp == 0),
+    require(!nesterov || (mom > 0 && damp == 0),
       "Nesterov momentum requires a momentum and zero dampening")
 
     var (fx, dfdx) = feval(x)
 
     if (wd != 0) {
       dfdx.add(ev.fromType[Double](wd), x)
-    } else if (wds != null) {
+    } else if (wds.nElement() > 0) {
       val decayParameters = _state.get[Tensor[T]]("decayParameters").getOrElse({
         val DP = Tensor[T]().resizeAs(dfdx)
         _state("decayParameters") = DP
@@ -71,14 +71,14 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
           add(ev.fromType[Double](1 - damp), dfdx)
       }
 
-      if (cntv) {
+      if (nesterov) {
         dfdx.add(ev.fromType[Double](mom), stateDFDX)
       } else {
         dfdx = stateDFDX
       }
     }
 
-    if (lrs != null) {
+    if (lrs.nElement() > 0) {
       val deltaParameters = _state.get[Tensor[T]]("deltaParameters").getOrElse({
         val deltaP = Tensor[T]().resizeAs(dfdx)
         _state("deltaParameters") = deltaP
@@ -104,34 +104,60 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
 object SGD {
 
   /**
-   * A trait for user defined hyper parameter scheduler.
+   * Abstract class for user defined hyper parameter scheduler.
    * Hyper parameters should be defined in config Table, supported parameters are:
    * learningRate, default is 1e-3
    * weightDecay, default is 0.0
    * momentum, default is 0.0
    * dampening, default is momentum
    * nesterov, default is false
-   * learningRates, default is null. If defined, size must be the same as gradient Tensor.
-   * weightDecays, default is null. If defined, size must be the same as gradient Tensor.
+   * learningRates, default is empty tensor. If defined, size must be the same as gradient Tensor.
+   * weightDecays, default is empty tensor. If defined, size must be the same as gradient Tensor.
    *
-   * Please don't overwrite the base hyper parameters list above, and use below mapping
-   * to define the current hyper parameters.
-   *
-   * config("clr") = current learning rate
-   * config("wd") = current weight decay
-   * config("mom") = current momentum
-   * config("damp") = current dampening
-   * config("cntv") = current nesterov
-   * config("lrs") = current learning rates
-   * config("wds") = current weight decays
+   * Subclass should override updateHyperParameter(), and operate the hyper parameters.
    *
    * Notice: the clr, wd, mom and damp should be double value.
    */
-  trait HyperParameterScheduler {
-    def updateHyperParameter(config : Table, state : Table) : Unit
+  abstract class HyperParameterScheduler[T: ClassTag] {
+    // current hyper parameter
+    val chp = T()
+    chp("learningRates") = Tensor[T]()
+    chp("weightDecays") = Tensor[T]()
+
+    private[bigdl] final def getAndUpdateHyperParameter(config: Table, state: Table): Table = {
+      // init chp, copy from config or set to default value
+      chp("learningRate") = config.getOrElse[Double]("learningRate", 1e-3)
+      chp("weightDecay") = config.getOrElse[Double]("weightDecay", 0.0)
+      chp("momentum") = config.getOrElse[Double]("momentum", 0.0)
+      chp("dampening") = config.getOrElse[Double]("dampening", chp[Double]("momentum"))
+      chp("nesterov") = config.getOrElse[Boolean]("nesterov", false)
+      if (null != config.getOrElse[Tensor[T]]("learningRates", null)) {
+        chp[Tensor[T]]("learningRates").resizeAs(config[Tensor[T]]("learningRates"))
+         .copy(config[Tensor[T]]("learningRates"))
+      } else {
+        chp[Tensor[T]]("learningRates").set()
+      }
+      if (null != config.getOrElse[Tensor[T]]("weightDecays", null)) {
+        chp[Tensor[T]]("weightDecays").resizeAs(config[Tensor[T]]("weightDecays"))
+          .copy(config[Tensor[T]]("weightDecays"))
+      } else {
+        chp[Tensor[T]]("weightDecays").set()
+      }
+      updateHyperParameter(chp, state)
+      chp
+    }
+
+    /**
+     * override this method, and operate the hyperParameter.
+     * Notice: hyperParameter is a hard copy of the config table, changes on hyperParameter
+     * table won't change the parameter in config table.
+     *
+     */
+    def updateHyperParameter(hyperParameter : Table, state : Table) : Unit
   }
 
-  case class EpochSchedule(regimes : Array[Regime]) extends HyperParameterScheduler {
+  case class EpochSchedule[T: ClassTag](
+      regimes : Array[Regime]) extends HyperParameterScheduler[T] {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val epoch = config[Int]("epoch")
       for (r <- regimes) {
@@ -139,12 +165,13 @@ object SGD {
           config.add(r.config)
         }
       }
-      config("clr") = config.get[Double]("learningRate").getOrElse(1e-3)
     }
   }
-  case class Poly(power : Double, maxIteration : Int) extends HyperParameterScheduler {
+  case class Poly[T: ClassTag](
+      power : Double,
+      maxIteration : Int) extends HyperParameterScheduler[T] {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
-      val lr = config.get[Double]("learningRate").getOrElse(1e-3)
+      val lr = config[Double]("learningRate")
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
       val clr = if (nevals > maxIteration) {
         0.0
@@ -152,13 +179,15 @@ object SGD {
         lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
       }
       state("evalCounter") = nevals + 1
-      config("clr") = clr
+      config("learningRate") = clr
     }
   }
 
-  case class Step(stepSize : Int, gamma : Double) extends HyperParameterScheduler {
+  case class Step[T: ClassTag](
+      stepSize : Int,
+      gamma : Double) extends HyperParameterScheduler[T] {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
-      val lr = config.get[Double]("learningRate").getOrElse(1e-3)
+      val lr = config[Double]("learningRate")
       var clr = lr
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
       var i = 0
@@ -167,24 +196,27 @@ object SGD {
         i += 1
       }
       state("evalCounter") = nevals + 1
-      config("clr") = clr
+      config("learningRate") = clr
     }
   }
 
-  case class EpochDecay(decayType: (Int) => Double) extends HyperParameterScheduler {
+  case class EpochDecay[T: ClassTag](
+      decayType: (Int) => Double) extends HyperParameterScheduler[T] {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
-      val lr = config.get[Double]("learningRate").getOrElse(1e-1)
+      val lr = config[Double]("learningRate")
       var clr = lr
       val epoch = config[Int]("epoch")
       val decay = decayType(epoch)
       clr = clr * math.pow(0.1, decay)
-      config("clr") = clr
+      config("learningRate") = clr
     }
   }
 
-  case class EpochStep(stepSize : Int, gamma : Double) extends HyperParameterScheduler {
+  case class EpochStep[T: ClassTag](
+      stepSize : Int,
+      gamma : Double) extends HyperParameterScheduler[T] {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
-      val lr = config.get[Double]("learningRate").getOrElse(1e-3)
+      val lr = config[Double]("learningRate")
       var clr = lr
       val epoch = config[Int]("epoch")
       var i = 0
@@ -192,16 +224,16 @@ object SGD {
         clr *= gamma
         i += 1
       }
-      config("clr") = clr
+      config("learningRate") = clr
     }
   }
 
-  case class Default() extends HyperParameterScheduler {
+  case class Default[T: ClassTag]() extends HyperParameterScheduler[T] {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
-      val lr = config.get[Double]("learningRate").getOrElse(1e-3)
+      val lr = config[Double]("learningRate")
       val lrd = config.get[Double]("learningRateDecay").getOrElse(0.0)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
-      config("clr") = lr / (1 + nevals * lrd)
+      config("learningRate") = lr / (1 + nevals * lrd)
       state("evalCounter") = nevals + 1
     }
   }
