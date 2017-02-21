@@ -47,7 +47,7 @@ class Recurrent[T : ClassTag] (
    */
 
   require(timeDim == 1 || timeDim == 2,
-    "In Recurrent: the timeDim should be 1 or 2," +
+    "Recurrent: the timeDim should be 1 or 2," +
       s"Current timeDim = ${timeDim}")
 
   protected var legacyMode: Boolean = false
@@ -60,24 +60,13 @@ class Recurrent[T : ClassTag] (
    * batchDim should be either 1 or 2 according to timeDim
    * hiddenSelect is always equal to 1
    * outputSelect is always equal to timeDim
+   * dataSelect is always equal to timeDim
    */
 
   val batchDim = 3 - timeDim
   val hiddenSelect = 1
-  protected var dataSelect = 1
+  val dataSelect = timeDim
   val outputSelect = timeDim
-  var fInput: Tensor[T] = _
-  var fGradOutput: Tensor[T] = _
-
-  /**
-   * The legacyMode is set only for Unit Test
-   */
-  private def setLegacyMode(self: Recurrent[T]): Unit = {
-    require(self.timeDim == 2,
-      "In Recurrent: timeDim should be 2 when legacyMode is set.")
-    self.legacyMode = true
-    self.dataSelect = 2
-  }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 3,
@@ -95,21 +84,11 @@ class Recurrent[T : ClassTag] (
 
     hidden.resize(Array(times + 1, batchSize, hiddenSize))
 
-    if (dataSelect != timeDim) {
-      if (train) {
-        fInput = input.transpose(batchDim, timeDim).contiguous
-      } else {
-        fInput = input.transpose(batchDim, timeDim)
-      }
-    } else {
-      fInput = input
-    }
-
     output.resize(Array(input.size(1), input.size(2), hiddenSize))
 
     var i = 1
     while (i <= times) {
-      val curInput = T(fInput.select(dataSelect, i), hidden.select(hiddenSelect, i))
+      val curInput = T(input.select(dataSelect, i), hidden.select(hiddenSelect, i))
       val currentOutput = module.updateOutput(curInput)
       transform.updateOutput(currentOutput)
       output.select(outputSelect, i).copy(transform.output.toTensor)
@@ -125,11 +104,11 @@ class Recurrent[T : ClassTag] (
     while (i >= 1) {
       transform.output = hidden.select(hiddenSelect, i + 1)
       var deltaHidden = transform.updateGradInput(
-        hidden.select(hiddenSelect, i), fGradOutput.select(dataSelect, i))
+        hidden.select(hiddenSelect, i), gradOutput.select(dataSelect, i))
       var bpttStep = i
       while (bpttStep >= Math.max(1, i - bpttTruncate)) {
         val curInput = T(
-          fInput.select(dataSelect, bpttStep), hidden.select(hiddenSelect, bpttStep))
+          input.select(dataSelect, bpttStep), hidden.select(hiddenSelect, bpttStep))
         module.accGradParameters(curInput, deltaHidden)
         transform.output.toTensor
           .copy(hidden.select(hiddenSelect, bpttStep))
@@ -144,25 +123,15 @@ class Recurrent[T : ClassTag] (
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(input)
 
-    if (dataSelect != timeDim) {
-      if (train) {
-        fGradOutput = gradOutput.transpose(batchDim, timeDim).contiguous()
-      } else {
-        fGradOutput = gradOutput.transpose(batchDim, timeDim)
-      }
-    } else {
-      fGradOutput = gradOutput
-    }
-
     var i = times
     while (i >= 1) {
       transform.output.toTensor
         .copy(hidden.select(hiddenSelect, i + 1))
       var deltaHidden = transform.updateGradInput(
-        hidden.select(hiddenSelect, i), fGradOutput.select(dataSelect, i))
+        hidden.select(hiddenSelect, i), gradOutput.select(dataSelect, i))
       var bpttStep = i
       while (bpttStep >= Math.max(1, i - bpttTruncate)) {
-        val curInput = T(fInput.select(dataSelect, bpttStep), hidden.select(hiddenSelect, bpttStep))
+        val curInput = T(input.select(dataSelect, bpttStep), hidden.select(hiddenSelect, bpttStep))
         val gradInputBundle = module.updateGradInput(curInput, deltaHidden).toTable
         gradInput.select(outputSelect, bpttStep).add(gradInputBundle(1).asInstanceOf[Tensor[T]])
         transform.output.toTensor

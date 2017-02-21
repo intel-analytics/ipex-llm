@@ -26,7 +26,7 @@ import org.scalatest.{FlatSpec, Matchers, PrivateMethodTester}
 @com.intel.analytics.bigdl.tags.Parallel
 class RecurrentSpec extends FlatSpec with Matchers {
 
-  "A Recurrent Language Model Module " should "converge for inside transpose" in {
+  "A Recurrent Language Model Module " should "converge for batchSize = 1" in {
 
     val hiddenSize = 4
     val inputSize = 5
@@ -80,7 +80,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     labels.squeeze() should be (prediction.squeeze())
   }
 
-  "A Recurrent Module " should "converge in batch mode for inside transpose" in {
+  "A Recurrent Module " should "converge in batch mode for batchSize > 1" in {
 
     val batchSize = 10
     val nWords = 5
@@ -97,73 +97,6 @@ class RecurrentSpec extends FlatSpec with Matchers {
       .add(Tanh()))
       .add(Select(2, nWords))
       .add(Linear[Double](hiddenSize, outputSize))
-
-    val criterion = CrossEntropyCriterion[Double]()
-    val logSoftMax = LogSoftMax[Double]()
-
-    val (weights, grad) = model.getParameters()
-
-    val input = Tensor[Double](Array(batchSize, nWords, inputSize))
-    val labels = Tensor[Double](batchSize)
-    for (b <- 1 to batchSize) {
-      for (i <- 1 to nWords) {
-        val rdmInput = Math.ceil(RNG.uniform(0.0, 1.0) * inputSize).toInt
-        input.setValue(b, i, rdmInput, 1.0)
-      }
-      val rdmLabel = Math.ceil(RNG.uniform(0.0, 1.0) * outputSize).toInt
-      labels.setValue(b, rdmLabel)
-    }
-
-    val state = T("learningRate" -> 0.5, "momentum" -> 0.0,
-      "weightDecay" -> 0.0, "dampening" -> 0.0)
-    val sgd = new SGD[Double]
-    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
-      val output = model.forward(input).asInstanceOf[Tensor[Double]]
-      val _loss = criterion.forward(output, labels)
-      model.zeroGradParameters()
-      val gradInput = criterion.backward(output, labels)
-      model.backward(input, gradInput)
-      (_loss, grad)
-    }
-
-    val nEpoch = 50
-    val start = System.nanoTime()
-    for (i <- 1 to nEpoch) {
-      val (_, loss) = sgd.optimize(feval, weights, state)
-      println(s"${i}-th loss = ${loss(0)}")
-    }
-    val end = System.nanoTime()
-    val wallClockTime = end - start
-
-    val output = model.forward(input).asInstanceOf[Tensor[Double]]
-    val logOutput = logSoftMax.forward(output)
-    val prediction = logOutput.max(2)._2
-
-    labels.squeeze() should be (prediction.squeeze())
-    println(s"training time is ${(end - start) / (nEpoch*1e9)} seconds/epoch")
-  }
-
-  "A Recurrent Module " should "converge in batch mode the same as in legacyMode" in {
-
-    val batchSize = 10
-    val nWords = 5
-    val hiddenSize = 4
-    val inputSize = 5
-    val outputSize = 5
-    val bpttTruncate = 3
-    val seed = 100
-    RNG.setSeed(seed)
-
-    val recurrent = Recurrent[Double](hiddenSize, bpttTruncate, timeDim = 2)
-    val model = Sequential[Double]()
-    model.add(recurrent
-      .add(RnnCell[Double](inputSize, hiddenSize))
-      .add(Tanh()))
-      .add(Select(2, nWords))
-      .add(Linear[Double](hiddenSize, outputSize))
-
-    val setLegacyMode = PrivateMethodTester.PrivateMethod[Recurrent[Double]]('setLegacyMode)
-    setLegacyMode(recurrent)
 
     val criterion = CrossEntropyCriterion[Double]()
     val logSoftMax = LogSoftMax[Double]()
@@ -275,7 +208,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     println(s"training time is ${(end - start) / (nEpoch*1e9)} seconds/epoch")
   }
 
-  "A Recurrent Module " should "be slow in legacyMode for RnnCell" in {
+  "A Recurrent Module " should "output elapse time for RnnCell non-transposed input" in {
 
     val batchSize = 50
     val nWords = 20
@@ -293,10 +226,6 @@ class RecurrentSpec extends FlatSpec with Matchers {
       .add(Tanh()))
       .add(Select(2, nWords))
       .add(Linear[Double](hiddenSize, outputSize))
-
-    val setLegacyMode = PrivateMethodTester.PrivateMethod[Recurrent[Double]]('setLegacyMode)
-    setLegacyMode(recurrent)
-    model.evaluate()
 
     val criterion = CrossEntropyCriterion[Double]()
     val logSoftMax = LogSoftMax[Double]()
@@ -339,7 +268,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     println(s"Average total time is ${totalClockTime / (nEpoch * 1e9)} seconds")
   }
 
-  "A Recurrent Module " should "be fast in contiguous tensor for RnnCell" in {
+  "A Recurrent Module " should "output elapse time in contiguous tensor for RnnCell" in {
 
     val batchSize = 50
     val nWords = 20
@@ -351,12 +280,13 @@ class RecurrentSpec extends FlatSpec with Matchers {
     RNG.setSeed(seed)
 
     val model = Sequential[Double]()
-    model.add(Recurrent[Double](hiddenSize, bpttTruncate, timeDim = 2)
-      .add(RnnCell[Double](inputSize, hiddenSize))
-      .add(Tanh()))
+    model.add(Transpose(Array((1, 2))))
+      .add(Recurrent[Double](hiddenSize, bpttTruncate, timeDim = 1)
+        .add(RnnCell[Double](inputSize, hiddenSize))
+        .add(Tanh()))
+      .add(Transpose(Array((1, 2))))
       .add(Select(2, nWords))
       .add(Linear[Double](hiddenSize, outputSize))
-    model.training()
 
     val criterion = CrossEntropyCriterion[Double]()
     val logSoftMax = LogSoftMax[Double]()
