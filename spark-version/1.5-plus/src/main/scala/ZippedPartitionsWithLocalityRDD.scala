@@ -24,6 +24,7 @@ import org.apache.spark.{Partition, SparkContext, TaskContext}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.util.control.NonFatal
 
 object ZippedPartitionsWithLocalityRDD {
   def apply[T: ClassTag, B: ClassTag, V: ClassTag]
@@ -103,10 +104,17 @@ private[spark] class ZippedPartitionsLocalityPartition(
   override def partitions: Seq[Partition] = _partitionValues
 
   @throws(classOf[IOException])
-  private def writeObject(oos: ObjectOutputStream): Unit = Utils.tryOrIOException {
-    // Update the reference to parent split at the time of task serialization
-    _partitionValues = rdds.zip(indexes).map{ case (rdd, i) => rdd.partitions(i) }
-    oos.defaultWriteObject()
+  private def writeObject(oos: ObjectOutputStream): Unit = {
+    try {
+      // Update the reference to parent split at the time of task serialization
+      _partitionValues = rdds.zip(indexes).map{ case (rdd, i) => rdd.partitions(i) }
+      oos.defaultWriteObject()
+    } catch {
+      case e: IOException =>
+        throw e
+      case NonFatal(e) =>
+        throw new IOException(e)
+    }
   }
 }
 
