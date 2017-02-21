@@ -468,10 +468,9 @@ object DistriOptimizer {
     })
   }
 
-
-  private def getModel[T: ClassTag](models: RDD[Cache[T]],
-      parameters: AllReduceParameter[T])
-  : Module[T] = {
+  private def getModel[T: ClassTag](
+      models: RDD[Cache[T]],
+      parameters: AllReduceParameter[T]): Module[T] = {
     val partitionNum = models.partitions.length
     val trainedModel = models.map(_.localModels.head.clearState()).first()
     val weights = models.mapPartitions(iter => {
@@ -546,7 +545,10 @@ class DistriOptimizer[T: ClassTag] private[optim](
       isOverWrite
     )
 
-    DistriOptimizer.getModel(models, parameters)
+    val trainedModel = DistriOptimizer.getModel(models, parameters)
+
+    nn.Utils.copyModule(trainedModel, model)
+    model
   }
 }
 

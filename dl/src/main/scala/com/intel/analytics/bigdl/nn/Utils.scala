@@ -218,4 +218,21 @@ object Utils {
     getModules(model)
     namedModules
   }
+
+  /**
+   * copy src's parameters and running status to dst
+   * @param src source model
+   * @param dst destination model
+   */
+  def copyModule[T](src: Module[T], dst: Module[T]): Module[T] = {
+    // copy parameters
+    val srcParameters = src.getParameters()._1
+    val dstParameters = dst.getParameters()._1
+    require(srcParameters.size(1) == dstParameters.size(1),
+      s"$src and $dst is not the same type.")
+    dstParameters.copy(srcParameters)
+    // copy running status
+    dst.copyStatus(src)
+    dst
+  }
 }
