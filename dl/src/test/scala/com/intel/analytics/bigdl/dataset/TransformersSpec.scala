@@ -21,7 +21,7 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.DataSet.SeqFileFolder
 import com.intel.analytics.bigdl.dataset.image._
-import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, LabeledSentenceToSample}
+import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, LabeledSentenceToSample, SampleToBatch}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
