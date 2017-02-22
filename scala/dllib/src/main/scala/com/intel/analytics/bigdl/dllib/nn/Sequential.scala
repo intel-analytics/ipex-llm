@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(5375403296928513267L)
 class Sequential[T: ClassTag]
-  (implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
+(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
 
   override def updateOutput(input: Activity): Activity = {
     var i = 0
@@ -47,13 +47,31 @@ class Sequential[T: ClassTag]
     var error = nextError.asInstanceOf[Activity]
     while (i > 0) {
       val input = modules(i - 1).output
-      error = modules(i).backward(input, error)
+      error = modules(i).updateGradInput(input, error)
       i -= 1
     }
-    error = modules(0).backward(input, error)
+    error = modules(0).updateGradInput(input, error)
 
     this.gradInput = error
     gradInput
+  }
+
+  override def accGradParameters(
+    input: Activity,
+    gradOutput: Activity,
+    scale: Double = 1.0): Unit = {
+    var i = modules.length - 1
+    var currentModule = modules(i)
+    var currentGradOutput = gradOutput
+    while (i > 0) {
+      val previousModule = modules(i - 1)
+      currentModule.accGradParameters(previousModule.output, currentGradOutput, scale)
+      currentGradOutput = currentModule.gradInput
+      currentModule = previousModule
+      i -= 1
+    }
+
+    currentModule.accGradParameters(input, currentGradOutput, scale)
   }
 
   override def equals(obj: Any): Boolean = {
@@ -120,7 +138,7 @@ class Sequential[T: ClassTag]
 
 object Sequential {
   def apply[@specialized(Float, Double) T: ClassTag]()
-      (implicit ev: TensorNumeric[T]) : Sequential[T] = {
+    (implicit ev: TensorNumeric[T]) : Sequential[T] = {
     new Sequential[T]()
   }
 }
