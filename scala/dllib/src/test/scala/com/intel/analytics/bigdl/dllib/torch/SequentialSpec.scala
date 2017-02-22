@@ -63,4 +63,50 @@ class SequentialSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     println("Test case : Sequential, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
+
+  "A Sequential Container" should "update weight correctly" in {
+    val module = new Sequential[Double]()
+    module.add(new Linear(10, 25))
+    module.add(new Linear(25, 10))
+
+    val input = Tensor[Double](10).randn()
+    val gradOutput = Tensor[Double](10).randn()
+
+    val start = System.nanoTime()
+    val (weight, grad) = module.getParameters()
+    var i = 0
+    var output = Tensor[Double]()
+    var gradInput = Tensor[Double]()
+    while (i < 10) {
+      output = module.forward(input).toTensor[Double]
+      gradInput = module.backward(input, gradOutput).toTensor[Double]
+      i += 1
+    }
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code =
+      "local i = 0\n" +
+        "while i < 10 do\n" +
+        "output = module:forward(input)\n" +
+        "gradInput = module:backward(input,gradOutput)\n" +
+        "i = i + 1\n" +
+        "end"
+
+    val (luaTime, torchResult) = TH.run(code, Map("module" -> module, "input" -> input,
+      "gradOutput" -> gradOutput), Array("output", "gradInput"))
+    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    luaOutput1.map(output, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6);
+      v1
+    })
+    luaOutput2.map(gradInput, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6);
+      v1
+    })
+
+    println("Test case : Sequential, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
 }
