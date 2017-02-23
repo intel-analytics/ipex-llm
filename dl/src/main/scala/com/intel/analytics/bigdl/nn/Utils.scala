@@ -235,4 +235,46 @@ object Utils {
     dst.copyStatus(src)
     dst
   }
+
+  /**
+   * get the inner loop size and outer loop size given a pivot dim
+   * @param pivotDim is the dim whose value larger than 1
+   * @return inner loop size and outer loop size
+   */
+  private[nn] def getInnerOuterNum[T](pivotDim: Int, data: Tensor[T]): (Int, Int) = {
+    var k = 1
+    var outerNum = 1
+    while (k < pivotDim) {
+      outerNum *= data.size(k)
+      k += 1
+    }
+    var innerNum = 1
+    k = pivotDim + 1
+    while (k <= data.dim()) {
+      innerNum *= data.size(k)
+      k += 1
+    }
+    (innerNum, outerNum)
+  }
+
+  /**
+   * if there is only one dim of size > 1, return this dim(count from 1)
+   * else return -1
+   * e.g. (1, 2, 1, 1) returns 1, (1, 2, 3, 1) returns -1, and (1, 1, 1, 1) returns -1
+   * @param size size of tensor
+   * @return (the only dim whose value > 1) else (-1)
+   */
+  private[nn] def getOnlyDimGtOne(size: Array[Int]): Int = {
+    var i = 0
+    var count = 0
+    var pivot = 0
+    while (i < size.length) {
+      if (size(i) > 1) {
+        count += 1
+        pivot = i + 1
+      }
+      i += 1
+    }
+    if (count == 1) pivot else -1
+  }
 }
