@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.optim.DistriValidator._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, MklDnn}
 import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
@@ -43,6 +43,7 @@ class DistriValidator[T] private[optim](
     val broadcastModel = rdd.sparkContext.broadcast(model.evaluate())
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => Engine.coreNumber()
+      case MklDnn => 1
       case _ => throw new IllegalArgumentException
     }
     rdd.mapPartitions(dataIter => {

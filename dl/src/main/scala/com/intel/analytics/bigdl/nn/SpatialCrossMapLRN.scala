@@ -24,12 +24,19 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect._
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 
-@SerialVersionUID(3641570491004969703L)
-class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
+abstract class AbstractSpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
 (val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75, val k: Double = 1.0)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+
+}
+
+@SerialVersionUID(3641570491004969703L)
+class SpatialCrossMapLRN[T: ClassTag]
+(size: Int = 5, alpha: Double = 1.0, beta: Double = 0.75, k: Double = 1.0)(
+  implicit ev: TensorNumeric[T]) extends AbstractSpatialCrossMapLRN[T](
+  size, alpha, beta, k) {
 
   @transient
   private var scale: Tensor[T] = null
@@ -153,8 +160,12 @@ object SpatialCrossMapLRN {
       size: Int = 5,
       alpha: Double = 1.0,
       beta: Double = 0.75,
-      k: Double = 1.0)(implicit ev: TensorNumeric[T]) : SpatialCrossMapLRN[T] = {
-    new SpatialCrossMapLRN[T](size, alpha, beta, k)
+      k: Double = 1.0)(implicit ev: TensorNumeric[T]) : AbstractSpatialCrossMapLRN[T] = {
+    if (Engine.getEngineType() == MklBlas) {
+      new SpatialCrossMapLRN[T](size, alpha, beta, k)
+    } else {
+      new dnn.SpatialCrossMapLRN[T](size, alpha, beta, k)
+    }
   }
 
   private def forwardFrame[T](input: Tensor[T], output: Tensor[T],

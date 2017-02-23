@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.duration.Duration
@@ -29,8 +29,14 @@ import scala.reflect._
 
 @SerialVersionUID(2277597677473874749L)
 class SpatialMaxPooling[T: ClassTag](
-  val kW: Int, val kH: Int, val dW: Int, val dH: Int, val padW: Int = 0, val padH: Int = 0)
-  (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  kW: Int, kH: Int, dW: Int, dH: Int, padW: Int = 0, padH: Int = 0)
+  (implicit ev: TensorNumeric[T]) extends Pooling[T](
+  kW,
+  kH,
+  dW,
+  dH,
+  padW,
+  padH) {
 
   var ceil_mode = false
   val indices = Tensor[T]()
@@ -273,7 +279,11 @@ object SpatialMaxPooling {
       dW: Int,
       dH: Int,
       padW: Int = 0,
-      padH: Int = 0)(implicit ev: TensorNumeric[T]): SpatialMaxPooling[T] = {
-    new SpatialMaxPooling[T](kW, kH, dW, dH, padW, padH)
+      padH: Int = 0)(implicit ev: TensorNumeric[T]): Pooling[T] = {
+    if (Engine.getEngineType() == MklBlas) {
+      new SpatialMaxPooling[T](kW, kH, dW, dH, padW, padH)
+    } else {
+      new dnn.SpatialMaxPooling[T](kW, kH, dW, dH, padW, padH)
+    }
   }
 }

@@ -19,11 +19,25 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, RandomGenerator}
 
 import scala.reflect.ClassTag
 import RandomGenerator._
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+
+abstract class AbstractLinear[T: ClassTag](
+  inputSize: Int,
+  outputSize: Int,
+  private var initMethod: InitializationMethod = Default
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
+  val bias: Tensor[T] = Tensor[T](outputSize)
+
+  val gradWeight: Tensor[T] = Tensor[T](outputSize, inputSize)
+  val gradBias: Tensor[T] = Tensor[T](outputSize)
+
+  def setInitMethod(initMethod: InitializationMethod): this.type
+}
 
 /**
  * The [[Linear]] module applies a linear transformation to the input data,
@@ -45,16 +59,15 @@ class Linear[T: ClassTag](
   inputSize: Int,
   outputSize: Int,
   private var initMethod: InitializationMethod = Default
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
-  val bias: Tensor[T] = Tensor[T](outputSize)
-  val addBuffer: Tensor[T] = Tensor[T]()
+)(implicit ev: TensorNumeric[T]) extends AbstractLinear[T](
+  inputSize,
+  outputSize,
+  initMethod) {
 
-  val gradWeight: Tensor[T] = Tensor[T](outputSize, inputSize)
-  val gradBias: Tensor[T] = Tensor[T](outputSize)
+  val addBuffer: Tensor[T] = Tensor[T]()
   reset()
 
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
+  override def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
     this
   }
@@ -195,9 +208,14 @@ class Linear[T: ClassTag](
 
 object Linear {
   def apply[@specialized(Float, Double) T: ClassTag](
-      inputSize: Int,
-      outputSize: Int,
-      initMethod: InitializationMethod = Default)(implicit ev: TensorNumeric[T]) : Linear[T] = {
-    new Linear[T](inputSize, outputSize, initMethod)
+    inputSize: Int,
+    outputSize: Int,
+    initMethod: InitializationMethod = Default)
+  (implicit ev: TensorNumeric[T]) : AbstractLinear[T] = {
+    if (Engine.getEngineType() == MklBlas) {
+      new Linear[T](inputSize, outputSize, initMethod)
+    } else {
+      new dnn.Linear[T](inputSize, outputSize, initMethod = initMethod)
+    }
   }
 }

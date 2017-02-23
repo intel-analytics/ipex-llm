@@ -29,10 +29,19 @@ object VggForCifar10 {
     def convBNReLU(nInputPlane: Int, nOutPutPlane: Int)
     : Sequential[Float] = {
       vggBnDo.add(SpatialConvolution(nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
-      vggBnDo.add(SpatialBatchNormalization(nOutPutPlane, 1e-3))
+      vggBnDo.add(new SpatialBatchNormalization(nOutPutPlane, 1e-3))
       vggBnDo.add(ReLU(true))
       vggBnDo
     }
+
+    def convBNReLUNN(nInputPlane: Int, nOutPutPlane: Int)
+    : Sequential[Float] = {
+      vggBnDo.add(new SpatialConvolution(nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
+      vggBnDo.add(new SpatialBatchNormalization(nOutPutPlane, 1e-3))
+      vggBnDo.add(ReLU(true))
+      vggBnDo
+    }
+
     convBNReLU(3, 64).add(Dropout((0.3)))
     convBNReLU(64, 64)
     vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
@@ -51,16 +60,16 @@ object VggForCifar10 {
     convBNReLU(512, 512)
     vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
 
-    convBNReLU(512, 512).add(Dropout(0.4))
-    convBNReLU(512, 512).add(Dropout(0.4))
-    convBNReLU(512, 512)
+    convBNReLUNN(512, 512).add(Dropout(0.4))
+    convBNReLUNN(512, 512).add(Dropout(0.4))
+    convBNReLUNN(512, 512)
     vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
     vggBnDo.add(View(512))
 
     val classifier = Sequential[Float]()
     classifier.add(Dropout(0.5))
     classifier.add(Linear(512, 512))
-    classifier.add(BatchNormalization(512))
+    classifier.add(new BatchNormalization(512))
     classifier.add(ReLU(true))
     classifier.add(Dropout(0.5))
     classifier.add(Linear(512, classNum))

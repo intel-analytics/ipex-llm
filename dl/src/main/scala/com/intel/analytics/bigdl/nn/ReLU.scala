@@ -18,12 +18,18 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 
 import scala.reflect.ClassTag
 
+abstract class AbstractReLU[T: ClassTag](ip: Boolean = false)(implicit ev: TensorNumeric[T])
+  extends Threshold[T](0, 0, ip) {
+
+}
+
 @SerialVersionUID(1208478077576570643L)
 class ReLU[T: ClassTag](ip: Boolean = false)(
-  implicit ev: TensorNumeric[T]) extends Threshold[T](0, 0, ip) {
+  implicit ev: TensorNumeric[T]) extends AbstractReLU[T](ip) {
 
   override def toString(): String = {
     s"nn.ReLU"
@@ -32,7 +38,11 @@ class ReLU[T: ClassTag](ip: Boolean = false)(
 
 object ReLU {
   def apply[@specialized(Float, Double) T: ClassTag](
-      ip: Boolean = false)(implicit ev: TensorNumeric[T]) : ReLU[T] = {
-    new ReLU[T](ip)
+      ip: Boolean = false)(implicit ev: TensorNumeric[T]) : AbstractReLU[T] = {
+    if (Engine.getEngineType() == MklBlas) {
+      new ReLU[T](ip)
+    } else {
+      new dnn.ReLU[T](ip)
+    }
   }
 }

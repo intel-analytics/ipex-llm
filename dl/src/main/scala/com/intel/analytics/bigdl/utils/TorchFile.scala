@@ -857,7 +857,7 @@ object TorchFile {
 
   private def readSpatialMaxPoolingWithType[T: ClassTag](
       elements: Table)(implicit ev: TensorNumeric[T]): SpatialMaxPooling[T] = {
-    val result = SpatialMaxPooling[T](
+    val result = new SpatialMaxPooling[T](
       kW = elements[Double]("kW").toInt,
       kH = elements[Double]("kH").toInt,
       dW = elements[Double]("dW").toInt,
@@ -873,7 +873,7 @@ object TorchFile {
   private def readSpatialAveragePoolingWithType[T: ClassTag](
       elements: Table)(
       implicit ev: TensorNumeric[T]): SpatialAveragePooling[T] = {
-    val result = SpatialAveragePooling[T](
+    val result = new SpatialAveragePooling[T](
       kW = elements[Double]("kW").toInt,
       kH = elements[Double]("kH").toInt,
       dW = elements.getOrElse("dW", 1.0).toInt,
@@ -890,7 +890,7 @@ object TorchFile {
   private def readConcatWithType[T: ClassTag](
       elements: Table)(implicit ev: TensorNumeric[T]): Concat[T] = {
     val modules = elements[Table]("modules")
-    val result = Concat[T](elements("dimension").asInstanceOf[Double].toInt)
+    val result = new Concat[T](elements("dimension").asInstanceOf[Double].toInt)
 
     for (i <- 1 to modules.length()) {
       result.add(modules(i))
@@ -912,7 +912,7 @@ object TorchFile {
       elements: Table)(implicit ev: TensorNumeric[T]) : Linear[T] = {
     val bias = elements("bias").asInstanceOf[Tensor[T]]
     val weight = elements("weight").asInstanceOf[Tensor[T]]
-    val result = Linear[T](weight.size(2), weight.size(1))
+    val result = new Linear[T](weight.size(2), weight.size(1))
     result.bias.copy(bias)
     result.weight.copy(weight)
     result
@@ -1021,7 +1021,7 @@ object TorchFile {
   private def readSpatialConvolutionWithType[T: ClassTag](
       elements: Table)(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     val propagateBack = if (null == elements("gradInput")) false else true
-    val result = SpatialConvolution[T](
+    val result = new SpatialConvolution[T](
       nInputPlane = elements[Double]("nInputPlane").toInt,
       nOutputPlane = elements[Double]("nOutputPlane").toInt,
       kernelW = elements[Double]("kW").toInt,

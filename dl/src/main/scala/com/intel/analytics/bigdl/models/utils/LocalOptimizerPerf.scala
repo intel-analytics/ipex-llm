@@ -16,16 +16,17 @@
  */
 package com.intel.analytics.bigdl.models.utils
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
-import com.intel.analytics.bigdl.optim.{Optimizer, LocalOptimizer, Trigger}
+import com.intel.analytics.bigdl.optim.{LocalOptimizer, Optimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, MklDnn}
 import scopt.OptionParser
 
 import scala.reflect.ClassTag
@@ -44,15 +45,15 @@ object LocalOptimizerPerf {
       .action((v, p) => p.copy(iteration = v))
     opt[String]('m', "model")
       .text("Model name. It can be inception_v1 | vgg16 | vgg19 | " +
-        "inception_v2")
+        "inception_v2 | alexnet")
       .action((v, p) => p.copy(module = v))
       .validate(v =>
-        if (Set("inception_v1", "inception_v2", "vgg16", "vgg19").
+        if (Set("inception_v1", "inception_v2", "vgg16", "vgg19", "alexnet").
           contains(v.toLowerCase())) {
           success
         } else {
           failure("Data type can only be inception_v1 | " +
-            "vgg16 | vgg19 | inception_v2 now")
+            "vgg16 | vgg19 | inception_v2 | alexnet now")
         }
       )
     opt[String]('d', "inputdata")
@@ -77,6 +78,7 @@ object LocalOptimizerPerf {
   def performance(param: LocalOptimizerPerfParam): Unit = {
     Engine.init(1, param.coreNumber, false)
     val (_model, input) = param.module match {
+      case "alexnet" => (AlexNet(1000), Tensor(param.batchSize, 3, 227, 227))
       case "inception_v1" => (Inception_v1(1000), Tensor(param.batchSize, 3, 224, 224))
       case "inception_v2" => (Inception_v2(1000), Tensor(param.batchSize, 3, 224, 224))
       case "vgg16" => (Vgg_16(1000), Tensor(param.batchSize, 3, 224, 224))
@@ -87,6 +89,9 @@ object LocalOptimizerPerf {
       case "random" => input.rand()
     }
     val model = _model
+    if (Engine.getEngineType() == MklDnn) {
+      model.convertToMklDnn()
+    }
     println(model)
     val criterion = ClassNLLCriterion()
     val labels = Tensor(param.batchSize).fill(1)
@@ -111,10 +116,10 @@ object LocalOptimizerPerf {
 }
 
 case class LocalOptimizerPerfParam(
-  batchSize: Int = 128,
+  batchSize: Int = 4,
   coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2),
   iteration: Int = 50,
   dataType: String = "float",
-  module: String = "inception_v1",
+  module: String = "alexnet",
   inputData: String = "random"
 )

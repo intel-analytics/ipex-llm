@@ -27,8 +27,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
-@SerialVersionUID(- 8446523046224797382L)
-class SpatialConvolution[T: ClassTag](
+abstract class AbstractSpatialConvolution[T: ClassTag](
   val nInputPlane: Int, // The number of expected input planes in the image given into forward()
   val nOutputPlane: Int, // The number of output planes the convolution layer will produce.
   val kernelW: Int, // The kernel width of the convolution
@@ -41,10 +40,6 @@ class SpatialConvolution[T: ClassTag](
   val propagateBack: Boolean = true, // propagate gradient back
   private var initMethod: InitializationMethod = Default
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-
-  require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
-  require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
-
   val weight: Tensor[T] = Tensor[T](nGroup, nOutputPlane / nGroup,
     nInputPlane / nGroup, kernelH, kernelW)
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
@@ -52,6 +47,42 @@ class SpatialConvolution[T: ClassTag](
   val gradWeight: Tensor[T] = Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup,
     kernelH, kernelW)
   val gradBias: Tensor[T] = Tensor[T](nOutputPlane)
+
+  def getIm2ColTime(): Double
+
+  def getCol2ImgTime(): Double
+
+  def setInitMethod(initMethod: InitializationMethod): this.type
+}
+
+@SerialVersionUID(- 8446523046224797382L)
+class SpatialConvolution[T: ClassTag](
+  nInputPlane: Int, // The number of expected input planes in the image given into forward()
+  nOutputPlane: Int, // The number of output planes the convolution layer will produce.
+  kernelW: Int, // The kernel width of the convolution
+  kernelH: Int, // The kernel height of the convolution
+  strideW: Int = 1, // The step of the convolution in the width dimension.
+  strideH: Int = 1, // The step of the convolution in the height dimension
+  padW: Int = 0, // The additional zeros added per width to the input planes.
+  padH: Int = 0, // The additional zeros added per height to the input planes.
+  nGroup: Int = 1, // Kernel group number
+  propagateBack: Boolean = true, // propagate gradient back
+  private var initMethod: InitializationMethod = Default
+)(implicit ev: TensorNumeric[T]) extends AbstractSpatialConvolution[T](
+  nInputPlane,
+  nOutputPlane,
+  kernelW,
+  kernelH,
+  strideW,
+  strideH,
+  padW,
+  padH,
+  nGroup,
+  propagateBack,
+  initMethod) {
+
+  require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
+  require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
   var fInput = Tensor[T]()
   var fGradInput = Tensor[T]()
@@ -567,8 +598,13 @@ object SpatialConvolution {
       nGroup: Int = 1,
       propagateBack: Boolean = true,
       initMethod: InitializationMethod = Default
-  )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
-    new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
-      strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)
+  )(implicit ev: TensorNumeric[T]): AbstractSpatialConvolution[T] = {
+    if (Engine.getEngineType() == MklBlas) {
+      new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
+        strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)
+    } else {
+      new dnn.SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
+        strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)
+    }
   }
 }

@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 
 import scala.reflect.ClassTag
 
@@ -38,7 +39,11 @@ object SpatialBatchNormalization {
       nOutput: Int,
       eps: Double = 1e-5,
       momentum: Double = 0.1,
-      affine: Boolean = true)(implicit ev: TensorNumeric[T]) : SpatialBatchNormalization[T] = {
-    new SpatialBatchNormalization[T](nOutput, eps, momentum, affine)
+      affine: Boolean = true)(implicit ev: TensorNumeric[T]) : AbstractBatchNormalization[T] = {
+    if (Engine.getEngineType() == MklBlas) {
+      new SpatialBatchNormalization[T](nOutput, eps, momentum, affine)
+    } else {
+      new dnn.SpatialBatchNormalization[T](nOutput, eps, momentum, affine)
+    }
   }
 }

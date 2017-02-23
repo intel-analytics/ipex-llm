@@ -20,10 +20,10 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image._
-import com.intel.analytics.bigdl.nn.{Module, ClassNLLCriterion}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.{Engine, MklDnn, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
@@ -58,6 +58,10 @@ object Train {
         VggForCifar10(classNum = 10)
       }
 
+      if (Engine.getEngineType() == MklDnn) {
+        model.convertToMklDnn()
+      }
+
       val state = if (param.stateSnapshot.isDefined) {
         T.load(param.stateSnapshot.get)
       } else {
@@ -90,7 +94,7 @@ object Train {
         optimizer.overWriteCheckpoint()
       }
       optimizer
-        .setValidation(Trigger.everyEpoch, validateSet, Array(new Top1Accuracy[Float]))
+        .setValidation(Trigger.severalIteration(1), validateSet, Array(new Top1Accuracy[Float]))
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()

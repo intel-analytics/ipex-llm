@@ -176,4 +176,8 @@ public class MKL {
         }
     }
 
+    public native static long getMklVersion();
+    public native static byte[] getAffinity();
+    public native static void setAffinity();
+    public native static void release();
 }

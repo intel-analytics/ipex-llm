@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.nn.{MSECriterion, Module}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.{Engine, MklDnn, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
@@ -73,6 +73,10 @@ object Train {
         Module.load[Float](param.modelSnapshot.get)
       } else {
         Autoencoder(classNum = 32)
+      }
+
+      if (Engine.getEngineType() == MklDnn) {
+        model.convertToMklDnn()
       }
 
       val state = if (param.stateSnapshot.isDefined) {

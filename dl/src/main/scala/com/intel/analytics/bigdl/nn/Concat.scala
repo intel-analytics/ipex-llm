@@ -17,20 +17,25 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 
 import scala.collection.mutable.ArrayBuffer
 
-@SerialVersionUID(- 5218461876031660707L)
-class Concat[T: ClassTag](val dimension: Int)(
+abstract class AbstractConcat[T: ClassTag](val dimension: Int)(
   implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
+
+}
+
+@SerialVersionUID(- 5218461876031660707L)
+class Concat[T: ClassTag](dimension: Int)(
+  implicit ev: TensorNumeric[T]) extends AbstractConcat[T](dimension) {
   private var size: Array[Int] = null
   @transient
   private var results: Array[Future[Unit]] = null
@@ -291,7 +296,11 @@ class Concat[T: ClassTag](val dimension: Int)(
 
 object Concat {
   def apply[@specialized(Float, Double) T: ClassTag](
-      dimension: Int)(implicit ev: TensorNumeric[T]) : Concat[T] = {
-    new Concat[T](dimension)
+      dimension: Int)(implicit ev: TensorNumeric[T]) : AbstractConcat[T] = {
+    if (Engine.getEngineType() == MklBlas) {
+      new Concat[T](dimension)
+    } else {
+      new dnn.Concat[T](dimension)
+    }
   }
 }

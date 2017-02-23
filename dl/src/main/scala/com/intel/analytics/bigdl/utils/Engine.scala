@@ -33,6 +33,7 @@ import scala.collection.JavaConverters._
 sealed trait EngineType
 
 case object MklBlas extends EngineType
+case object MklDnn extends EngineType
 
 /**
  * A thread pool wrapper, provide some helper functions for multi-threading
@@ -62,6 +63,12 @@ class ThreadPool(private var poolSize: Int) {
         })
 
         def execute(runnable: Runnable) {
+          // TODO should not use this directly.
+          if (Engine.getEngineType() == MklDnn) {
+            MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
+            MKL.setAffinity()
+          }
+
           threadPool.submit(runnable)
         }
 
@@ -196,6 +203,10 @@ class ThreadPool(private var poolSize: Int) {
 object ThreadPool {
   val singleThreadPool = new ExecutionContext {
     def execute(runnable: Runnable) {
+      if (Engine.getEngineType() == MklDnn) {
+        MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
+        MKL.setAffinity()
+      }
       runnable.run()
     }
 
@@ -268,6 +279,8 @@ object Engine {
 
     if (dlEngineType == null || dlEngineType.toLowerCase == "mklblas") {
       MklBlas
+    } else if (dlEngineType.toLowerCase == "mkldnn") {
+      MklDnn
     } else {
       throw new Error(s"Unknown DL_ENGINE_TYPE. $ERROR")
     }
@@ -291,14 +304,14 @@ object Engine {
   def model: ThreadPool = _model
 
   private def initModelThreadPool() = {
-    val modelPoolSize: Int = if (engineType == MklBlas) {
-      1
-    } else {
-      physicalCoreNumber
+    val modelPoolSize = 1
+    if (engineType == MklDnn) {
+      MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
+      MKL.setAffinity()
     }
 
     val model = new ThreadPool(modelPoolSize)
-    model.setMKLThread(1)
+
     model
   }
 
@@ -323,6 +336,14 @@ object Engine {
           .set("spark.shuffle.blockTransferService", "nio")
           .set("spark.akka.frameSize", "10")
           .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
+      } else if (engineType == MklDnn) {
+        new SparkConf()
+          .setExecutorEnv("DL_ENGINE_TYPE", "mkldnn")
+          .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
+          .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
+          .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
+          .set("spark.shuffle.blockTransferService", "nio")
+          .set("spark.akka.frameSize", "10")
       } else {
         throw new IllegalArgumentException(engineType.toString)
       }
@@ -343,6 +364,8 @@ object Engine {
       || System.getenv("KMP_BLOCKTIME") != "0") {
       logger.warn("Invalid env setting. " + ERROR)
     }
+  } else if (Engine.getEngineType() == MklDnn) {
+    ;
   } else {
     throw new IllegalArgumentException(engineType.toString)
   }

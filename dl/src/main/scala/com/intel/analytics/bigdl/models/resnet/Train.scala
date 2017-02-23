@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.{Engine, MklDnn, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
@@ -82,6 +82,12 @@ object Train {
         ResNet.modelInit(curModel)
         curModel
       }
+
+      if (Engine.getEngineType() == MklDnn) {
+        model.convertToMklDnn()
+      }
+
+      println(model)
 
       val state = if (param.stateSnapshot.isDefined) {
         T.load(param.stateSnapshot.get)
