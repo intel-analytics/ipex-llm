@@ -54,7 +54,8 @@ class Recurrent[T : ClassTag] (
     if (hiddens.length() == 0) {
       transforms.add(transform)
       module.output match {
-        case tensor: Tensor[T] => hiddens.insert(Tensor())
+        case tensor: Tensor[T] => hiddens.insert(
+          Tensor().resize(Array(batchSize, times + 1, hiddenSize)))
         case table: Table =>
           var j = 1
           while (j <= table.length()) {
@@ -70,12 +71,6 @@ class Recurrent[T : ClassTag] (
     }
 
     var j = 1
-    while (j <= hiddens.length()) {
-      hiddens[Tensor[T]](j)
-        .resize(Array(batchSize, times + 1, hiddenSize))
-      j += 1
-    }
-
     var i = 1
     while (i <= times) {
       val curInput = T(input.select(2, i))
@@ -112,7 +107,8 @@ class Recurrent[T : ClassTag] (
       var j = 1
       while (j <= hiddens.length()) {
         val hidden = hiddens[Tensor[T]](j)
-        transforms.output.update(j, hidden.select(2, i + 1))
+        val transform = transforms.modules.apply(j - 1)
+        transform.output = hidden.select(2, i + 1)
         deltaHidden.insert(
           transform.updateGradInput(hidden.select(2, i), gradOutput.select(2, i))
         )
@@ -157,7 +153,8 @@ class Recurrent[T : ClassTag] (
       var j = 1
       while (j <= hiddens.length()) {
         val hidden = hiddens[Tensor[T]](j)
-        transforms.output.update(j, hidden.select(2, i + 1))
+        val transform = transforms.modules.apply(j - 1)
+        transform.output = hidden.select(2, i + 1)
         deltaHidden.insert(
           transform.updateGradInput(hidden.select(2, i), gradOutput.select(2, i))
         )
