@@ -153,6 +153,18 @@ class LSTMCell[T : ClassTag] (
   override def accGradParameters(input: Table, gradOutput: Table, scale: Double): Unit = {
     lstm.accGradParameters(input, gradOutput, scale)
   }
+
+  override def updateParameters(learningRate: T): Unit = {
+    lstm.updateParameters(learningRate)
+  }
+
+  override def zeroGradParameters(): Unit = {
+    lstm.zeroGradParameters()
+  }
+
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    lstm.parameters()
+  }
 }
 
 object LSTMCell {
