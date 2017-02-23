@@ -28,6 +28,8 @@ import scala.util.Random
 class TimeDistributedSpec extends FlatSpec with Matchers {
   "A TimeDistributed Module " should "generate correct output and grad for Linear in 3D input " +
     "along first dimension" in {
+    RNG.setSeed(100)
+
     val batchSize = 5
     val times = 5
     val inputDim = 3
@@ -63,6 +65,8 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
 
   "A TimeDistributed Module " should "generate correct output and grad for Linear in 3D input " +
     "along second dimension" in {
+    RNG.setSeed(100)
+
     val batchSize = 5
     val times = 3
     val inputDim = 3
@@ -98,6 +102,8 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
 
   "A TimeDistributed Module " should "generate correct output and grad for logSoftMax " +
     "when time dimension is 2" in {
+    RNG.setSeed(100)
+
     val batchSize = 5
     val times = 2
     val inputDim = 4
