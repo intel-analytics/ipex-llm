@@ -53,7 +53,7 @@ class CMul[@specialized(Float, Double) T: ClassTag](
       } else {
         weight.view(Array(1) ++ weight.size())
       }
-      val pivotDim = getOnlyDimGtOne(expand.size())
+      val pivotDim = Utils.getOnlyDimGtOne(expand.size())
       if (pivotDim > 0) {
         mulOneDimWeight(pivotDim, expand, output)
       } else {
@@ -64,50 +64,8 @@ class CMul[@specialized(Float, Double) T: ClassTag](
     output
   }
 
-  /**
-   * if there is only one dim of size > 1, return this dim(count from 1)
-   * else return -1
-   * e.g. (1, 2, 1, 1) returns 1, (1, 2, 3, 1) returns -1, and (1, 1, 1, 1) returns -1
-   * @param size size of tensor
-   * @return (the only dim whose value > 1) else (-1)
-   */
-  private def getOnlyDimGtOne(size: Array[Int]): Int = {
-    var i = 0
-    var count = 0
-    var pivot = 0
-    while (i < size.length) {
-      if (size(i) > 1) {
-        count += 1
-        pivot = i + 1
-      }
-      i += 1
-    }
-    if (count == 1) pivot else -1
-  }
-
-  /**
-   * get the inner loop size and outer loop size given a pivot dim
-   * @param pivotDim is the dim whose value larger than 1
-   * @return inner loop size and outer loop size
-   */
-  private def getInnerOuterNum(pivotDim: Int): (Int, Int) = {
-    var k = 1
-    var outerNum = 1
-    while (k < pivotDim) {
-      outerNum *= output.size(k)
-      k += 1
-    }
-    var innerNum = 1
-    k = pivotDim + 1
-    while (k <= output.dim()) {
-      innerNum *= output.size(k)
-      k += 1
-    }
-    (innerNum, outerNum)
-  }
-
   private def mulOneDimWeight(dim: Int, expand: Tensor[T], output: Tensor[T]): Unit = {
-    val (innerNum, outerNum) = getInnerOuterNum(dim)
+    val (innerNum, outerNum) = Utils.getInnerOuterNum(dim, output)
     val weightData = expand.storage().array()
     var outer = 0
     var offset = output.storageOffset() - 1
@@ -132,9 +90,14 @@ class CMul[@specialized(Float, Double) T: ClassTag](
       } else {
         weight.view(Array(1) ++ weight.size())
       }
-
-      expand.expandAs(gradOutput)
-      gradInput.copy(expand).cmul(gradOutput)
+      val pivotDim = Utils.getOnlyDimGtOne(expand.size())
+      if (pivotDim > 0) {
+        gradInput.copy(gradOutput)
+        mulOneDimWeight(pivotDim, expand, gradInput)
+      } else {
+        expand.expandAs(gradOutput)
+        gradInput.cmul(expand, gradOutput)
+      }
     }
 
     gradInput
