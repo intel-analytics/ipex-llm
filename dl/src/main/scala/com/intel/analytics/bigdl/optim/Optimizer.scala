@@ -162,6 +162,21 @@ object Optimizer {
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
 
+  def apply[T: ClassTag](
+    model: Module[T],
+    sampleRDD: RDD[Sample[T]],
+    criterion: Criterion[T],
+    batchSize: Int,
+    isInOrder: Boolean
+  )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    new DistriOptimizer[T](
+      model = model,
+      dataset = (DataSet.rdd(sampleRDD, isInOrder, batchSize) -> SampleToBatch(batchSize))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+  }
+
   def apply[T: ClassTag, D](
     model: Module[T],
     dataset: DataSet[D],

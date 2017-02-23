@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.dataset
 import java.io.File
 import java.util
 import java.nio.file.Paths
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.{Callable, Executors}
 
 import com.intel.analytics.bigdl.dataset.image._
@@ -27,6 +28,8 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -315,6 +318,17 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Local DataSet" should "be good for sorted buffer with default groupSize" in {
+
+
+    var index = new AtomicInteger(1)
+
+    val tmp1 = index.get()
+    index.set(100)
+    val tmp2 = index.getAndIncrement()
+    val tmp3 = index.getAndIncrement()
+    val tmp4 = index.getAndIncrement()
+    val tmp5 = index.getAndIncrement()
+
     val data = (1 to 10).toArray.map(_.toFloat)
     val dataSet = new LocalArrayDataSet[Float](data, true)
     dataSet.size() should be (data.length)
@@ -338,47 +352,72 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Local DataSet" should "be good for sorted buffer with groupSize > 1" in {
-    val data = (1 to 10).toArray.map(_.toFloat)
+    val count = 10
+    val data = new Array[Sample[Float]](count)
+    var i = 0
+    while (i < count) {
+      val input = Tensor[Float](3, 28, 28).apply1(e => Random.nextFloat())
+      val target = Tensor[Float](1).fill((i + 1).toFloat)
+      data(i) = Sample(input, target)
+      i += 1
+    }
+
+    val batchSize = 5
     val groupSize = 5
-    val dataSet = new LocalArrayDataSet[Float](data, true, groupSize)
+    val dataSet1 = new LocalArrayDataSet[Sample[Float]](data, true, groupSize)
+    val dataSet = dataSet1.transform(SampleToBatch(batchSize))
     dataSet.size() should be (data.length)
     dataSet.shuffle()
 
     val trainData = dataSet.toLocal().data(train = true)
-    val offset = trainData.next()
-    (offset < data(data.length - groupSize + 1)) should be (true)
-    var i = 0
+    i = 0
     while (trainData.hasNext && i < 100) {
-      val data = trainData.next()
-      data should be ((offset + i) % 10 + 1)
+      val batch = trainData.next()
+      val label = batch.labels.storage().array()
+      label.reduce((l, f) => if (l < f) f else 10000) should not be (10000)
       i += 1
     }
   }
 
-  "RDD DataSet" should "be good for sorted buffer" in {
-    val data = (1 to 100).toArray.map(_.toFloat)
+  "RDD DataSet" should "be good for sorted buffer with one partition" in {
+    val count = 100
+    val data = new Array[Sample[Float]](count)
+    var i = 1
+    while (i <= count) {
+      val input = Tensor[Float](3, 28, 28).apply1(e => Random.nextFloat())
+      val target = Tensor[Float](1).fill(i.toFloat)
+      data(i-1) = Sample(input, target)
+      i += 1
+    }
+
     val partitionNum = 2
-    val groupSize = 10
-    val dataSet = new CachedDistriDataSet[Float](
+    val batchSize = 5
+    val groupSize = 5
+    val dataSet1 = new CachedDistriDataSet[Sample[Float]](
       sc.parallelize(data, partitionNum)
         .coalesce(partitionNum, true)
         .mapPartitions(iter => {
-          Iterator.single(iter.toArray)
+          val tmp = iter.toArray
+          Iterator.single(tmp)
         }).setName("cached dataset")
         .cache(),
       true,
       groupSize
     )
-    val rdd = dataSet.toDistributed().data(train = false)
+
+    val dataSet = dataSet1.transform(SampleToBatch(batchSize))
+    val rdd = dataSet.toDistributed().data(train = true)
     rdd.partitions.size should be (partitionNum)
     val rddData = rdd.mapPartitions(iter => {
-      Iterator.single(iter.toArray.reduce((l, r) => {
-        if (l <= r) r else 1000
-      }))
-    }).collect()
+      Iterator.single(iter.next().labels)
+    })
 
-    rddData.contains(99.0f) should be (true)
-    rddData.contains(100.0f) should be (true)
+    i = 0
+    while (i < 100) {
+      val label = rddData.collect()(0).storage().array()
+      label.reduce((l, f) => if (l < f) f else 10000) should not be (10000)
+      i += 1
+    }
   }
 
   "RDD test DataSet" should "be same to the original data with one partition" in {
