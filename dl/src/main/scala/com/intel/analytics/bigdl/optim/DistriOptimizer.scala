@@ -247,28 +247,9 @@ object DistriOptimizer {
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
 
-        // record the hyper parameters to debug log, only support SGD now.
-        optimMethod match {
-          case sgd: SGD[T] =>
-            val hpScheduler = state.getOrElse[HyperParameterScheduler[T]](
-              "hyperParameterScheduler", Default())
-            hpScheduler.updateHyperParameter(driverState, state)
-            logger.debug(s"Current learning rate is ${driverState.getOrElse[Double]("clr",
-              driverState.getOrElse[Double]("learningRate", 1e-3))}")
-            if (driverState.contains("wd")) {
-              logger.debug(s"Current weight decay is ${driverState[Double]("wd")}")
-            }
-            if (driverState.contains("mom")) {
-              logger.debug(s"Current momentum is ${driverState[Double]("mom")}")
-            }
-            if (driverState.contains("damp")) {
-              logger.debug(s"Current damping is ${driverState[Double]("damp")}")
-            }
-            if (driverState.contains("cntv")) {
-              logger.debug(s"Current nesterov is ${driverState[Boolean]("cntv")}")
-            }
-          case _ =>
-        }
+        // record hyperParameter to log
+        optimMethod.recordHyperParameter(state.getOrElse[HyperParameterScheduler[T]](
+          "hyperParameterScheduler", Default()).getAndUpdateHyperParameter(driverState, state))
 
         // compute threshold
         iteration += 1

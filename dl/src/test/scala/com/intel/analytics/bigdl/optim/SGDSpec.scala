@@ -69,7 +69,7 @@ class SGDSpec extends FlatSpec with Matchers {
 
   "default learning rate decay" should "generate correct learning rates" in {
     val config = T("learningRate" -> 0.1, "learningRateDecay" -> 0.1, "hyperParameterScheduler" ->
-      Default())
+      Default[Double]())
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
       return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
@@ -77,11 +77,14 @@ class SGDSpec extends FlatSpec with Matchers {
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
     val state = T()
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(0.1 / (1 + 0 * 0.1))
+    var hp = optimMethod.getHyperParameter()
+    hp[Double]("learningRate") should be(0.1 / (1 + 0 * 0.1))
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(0.1 / (1 + 1 * 0.1))
+    hp = optimMethod.getHyperParameter()
+    hp[Double]("learningRate") should be(0.1 / (1 + 1 * 0.1))
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(0.1 / (1 + 2 * 0.1))
+    hp = optimMethod.getHyperParameter()
+    hp[Double]("learningRate") should be(0.1 / (1 + 2 * 0.1))
   }
 
   it should "be used when we leave the hyperParameterScheduler empty" in {
@@ -93,15 +96,18 @@ class SGDSpec extends FlatSpec with Matchers {
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
     val state = T()
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(0.1 / (1 + 0 * 0.1))
+    var hp = optimMethod.getHyperParameter()
+    hp[Double]("learningRate") should be(0.1 / (1 + 0 * 0.1))
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(0.1 / (1 + 1 * 0.1))
+    hp = optimMethod.getHyperParameter()
+    hp[Double]("learningRate") should be(0.1 / (1 + 1 * 0.1))
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(0.1 / (1 + 2 * 0.1))
+    hp = optimMethod.getHyperParameter()
+    hp[Double]("learningRate") should be(0.1 / (1 + 2 * 0.1))
   }
 
   "step learning rate decay" should "generate correct learning rates" in {
-    val config = T("learningRate" -> 0.1, "hyperParameterScheduler" -> Step(5, 0.1))
+    val config = T("learningRate" -> 0.1, "hyperParameterScheduler" -> Step[Double](5, 0.1))
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
       return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
@@ -110,22 +116,25 @@ class SGDSpec extends FlatSpec with Matchers {
     val state = T()
     for(i <- 1 to 5) {
       optimMethod.optimize(feval, x, config, state)
-      config[Double]("clr") should be(0.1 +- 1e-9)
+      val hp = optimMethod.getHyperParameter()
+      hp[Double]("learningRate") should be(0.1 +- 1e-9)
     }
 
     for(i <- 1 to 5) {
       optimMethod.optimize(feval, x, config, state)
-      config[Double]("clr") should be(0.01 +- 1e-9)
+      val hp = optimMethod.getHyperParameter()
+      hp[Double]("learningRate") should be(0.01 +- 1e-9)
     }
 
     for(i <- 1 to 5) {
       optimMethod.optimize(feval, x, config, state)
-      config[Double]("clr") should be(0.001 +- 1e-9)
+      val hp = optimMethod.getHyperParameter()
+      hp[Double]("learningRate") should be(0.001 +- 1e-9)
     }
   }
 
   "ploy learning rate decay" should "generate correct learning rates" in {
-    val config = T("learningRate" -> 0.1, "hyperParameterScheduler" -> Poly(3, 100))
+    val config = T("learningRate" -> 0.1, "hyperParameterScheduler" -> Poly[Double](3, 100))
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
       return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
@@ -133,11 +142,16 @@ class SGDSpec extends FlatSpec with Matchers {
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
     val state = T()
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(0.1)
+    var hp = optimMethod.getHyperParameter()
+    hp[Double]("learningRate") should be(0.1)
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(0.1 * (1 - 1.0 / 100) * (1 - 1.0 / 100) * (1 - 1.0 / 100))
+    hp = optimMethod.getHyperParameter()
+    hp[Double]("learningRate") should be(0.1 * (1 - 1.0 / 100)
+      * (1 - 1.0 / 100) * (1 - 1.0 / 100))
     optimMethod.optimize(feval, x, config, state)
-    config[Double]("clr") should be(0.1 * (1 - 2.0 / 100) * (1 - 2.0 / 100) * (1 - 2.0 / 100))
+    hp = optimMethod.getHyperParameter()
+    hp[Double]("learningRate") should be(0.1 * (1 - 2.0 / 100)
+      * (1 - 2.0 / 100) * (1 - 2.0 / 100))
   }
 
   "epoch decay" should "generate correct learning rates" in {
@@ -147,7 +161,8 @@ class SGDSpec extends FlatSpec with Matchers {
       Regime(8, 10, T("learningRate" -> 1e-3, "weightDecay" -> 0.0))
     )
 
-    val config = T("learningRate" -> 0.1, "hyperParameterScheduler" -> EpochSchedule(regimes))
+    val config = T("learningRate" -> 0.1,
+      "hyperParameterScheduler" -> EpochSchedule[Double](regimes))
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
       return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
@@ -155,18 +170,52 @@ class SGDSpec extends FlatSpec with Matchers {
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
     val state = T()
     for(e <- 1 to 10) {
-      config("epoch") = e
+      state("epoch") = e
       optimMethod.optimize(feval, x, config, state)
+      val hp = optimMethod.getHyperParameter()
       if(e <= 3) {
-        config[Double]("clr") should be(1e-2)
-        config[Double]("weightDecay") should be(2e-4)
+        hp[Double]("learningRate") should be(1e-2)
+        hp[Double]("weightDecay") should be(2e-4)
       } else if (e <= 7) {
-        config[Double]("clr") should be(5e-3)
-        config[Double]("weightDecay") should be(2e-4)
+        hp[Double]("learningRate") should be(5e-3)
+        hp[Double]("weightDecay") should be(2e-4)
       } else if (e <= 10) {
-        config[Double]("clr") should be(1e-3)
-        config[Double]("weightDecay") should be(0.0)
+        hp[Double]("learningRate") should be(1e-3)
+        hp[Double]("weightDecay") should be(0.0)
       }
     }
+  }
+
+  "getHyperParameter" should "return right hyperParameter" in {
+    val config = T("learningRate" -> 1.00001,
+      "learningRateDecay" -> 1e-6,
+      "weightDecay" -> 1e-5,
+      "momentum" -> 0.9,
+      "nesterov" -> true,
+      "learningRates" -> Tensor[Float](Storage(Array(1f, 2f, 3f))),
+      "weightDecays" -> Tensor[Float](Storage(Array(4f, 5f, 6f))),
+      "hyperParameterScheduler" -> Default[Float]())
+    val state = T("evalCounter" -> 10)
+
+    val currentHyperParameter = config[HyperParameterScheduler[Double]]("hyperParameterScheduler")
+      .getAndUpdateHyperParameter(config, state)
+
+    val clr = currentHyperParameter[Double]("learningRate")
+    val lrd = currentHyperParameter[Double]("learningRateDecay")
+    val wd = currentHyperParameter[Double]("weightDecay")
+    val mom = currentHyperParameter[Double]("momentum")
+    val damp = currentHyperParameter[Double]("dampening")
+    val nesterov = currentHyperParameter[Boolean]("nesterov")
+    val lrs = currentHyperParameter[Tensor[Float]]("learningRates")
+    val wds = currentHyperParameter[Tensor[Float]]("weightDecays")
+
+    clr should be (1.0)
+    lrd should be (1e-6)
+    wd should be (1e-5)
+    mom should be (0.9)
+    damp should be (mom)
+    nesterov should be (true)
+    lrs should be (Tensor[Float](Storage(Array(1f, 2f, 3f))))
+    wds should be (Tensor[Float](Storage(Array(4f, 5f, 6f))))
   }
 }
