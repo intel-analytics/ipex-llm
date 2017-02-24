@@ -18,6 +18,8 @@
 package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.collection.mutable
 import scala.collection.mutable.Map
@@ -270,6 +272,12 @@ class Table private[bigdl](
 
     new Table(newState)
   }
+
+  override def toTensor[D]
+  (implicit ev: TensorNumeric[D]): Tensor[D] =
+    throw new IllegalArgumentException("Table cannot be cast to Tensor")
+
+  override def toTable: Table = this
 }
 
 object T {

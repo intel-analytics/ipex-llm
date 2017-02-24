@@ -1876,6 +1876,17 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     }
     this
   }
+
+  override def toTensor[D](implicit env: TensorNumeric[D]): Tensor[D] = {
+    if (ev.getType() == env.getType()) {
+      this.asInstanceOf[Tensor[D]]
+    } else {
+      throw new IllegalArgumentException(s"The type ${env.getType().getClass}" +
+        s" in toTensor[${env.getType().getClass}] is not same" +
+        s"as the numeric type ${ev.getType().getClass} of the " +
+        "corresponding module, please keep them same.")
+    }
+  }
 }
 
 object DenseTensor {
