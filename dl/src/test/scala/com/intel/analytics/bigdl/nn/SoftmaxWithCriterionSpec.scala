@@ -34,15 +34,16 @@ class SoftmaxWithCriterionSpec extends FlatSpec with Matchers {
     -1.0300438404083251953, -21.75362396240234375,
     -2.7482614517211914062, 2.2115952968597412109, 0.85470116138458251953,
     1.8852581977844238281, -0.88053613901138305664, -21.679836273193359375)
-  val targetArr = Array(1, 3, 1, 3, 0, 1)
+  val targetArr = Array(2, 4, 2, 4, 1, 2)
   val input = Tensor(Storage(inputArr.map(x => x.toFloat))).resize(1, 5, 2, 3)
   val target = Tensor(Storage((targetArr).map(x => x.toFloat))).resize(1, 1, 2, 3)
+
   "SoftmaxWithCriterion forward" should "work properly" in {
     val normMode = NormMode.apply(2)
     val sfmLoss = new SoftmaxWithCriterion[Float](normalizeMode = normMode)
     val actOut = sfmLoss.forward(input, target)
     var sum = 0f
-    for (tar <- 0 to 4) {
+    for (tar <- 1 to 5) {
       val res = new SoftmaxWithCriterion[Float](ignoreLabel = Some(tar),
         normalizeMode = normMode).forward(input, target)
       sum += res
@@ -53,7 +54,7 @@ class SoftmaxWithCriterionSpec extends FlatSpec with Matchers {
 
   "SoftmaxWithCriterion backward" should "work properly" in {
     val normMode = NormMode.apply(1)
-    val sfmLoss = new SoftmaxWithCriterion[Float](normalizeMode = normMode, ignoreLabel = Some(0))
+    val sfmLoss = new SoftmaxWithCriterion[Float](normalizeMode = normMode, ignoreLabel = Some(1))
     val actOut = sfmLoss.forward(input, target)
     assert(abs(actOut - 10.073171615600585938) < 1e-4)
 

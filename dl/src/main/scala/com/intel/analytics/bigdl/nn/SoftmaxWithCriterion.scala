@@ -29,26 +29,26 @@ import scala.reflect.ClassTag
  * passing real-valued predictions through a softmax to get a probability distribution over classes.
  * It should be preferred over separate SoftmaxLayer + MultinomialLogisticLossLayer
  * as its gradient computation is more numerically stable.
- * @param ignoreLabel (optional) Specify a label value that
- *                    should be ignored when computing the loss.
+ * @param ignoreLabel   (optional) Specify a label value that
+ *                      should be ignored when computing the loss.
  * @param normalizeMode How to normalize the output loss.
  */
 class SoftmaxWithCriterion[T: ClassTag](ignoreLabel: Option[Int] = None,
   normalizeMode: NormMode = NormMode.VALID)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   @transient var softmax: SoftMax[T] = _
-
   @transient var prob: Tensor[T] = _
-
   @transient var outerNum = 0 // batchsize
-
   @transient var innerNum = 1
-
   @transient var nClasses = 2
 
+  /**
+   * compute the loss
+   * @param input input.size(1) is batch num
+   *              input.size(2) is the softmaxAxis, number of classes as usual
+   * @return
+   */
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    // input: batchsize * softmaxAxis * height * width
-    // for this example, (1, 2, 90, 4) if we have 1 image batch, 2 classes, 9*10*4 anchors
     outerNum = input.size(1)
     innerNum = 1
     var i = 3
@@ -72,12 +72,10 @@ class SoftmaxWithCriterion[T: ClassTag](ignoreLabel: Option[Int] = None,
       while (j < innerNum) {
         val curTarget = ev.toType[Int](labelData(i * innerNum + j))
         if (ignoreLabel.isEmpty || ignoreLabel.get != curTarget) {
-          assert(curTarget >= 0 && curTarget < nClasses,
-            s"curTarget $curTarget is out of range 0 to ${ nClasses - 1 } ")
+          assert(curTarget >= 1 && curTarget <= nClasses,
+            s"curTarget $curTarget is out of range 1 to ${ nClasses } ")
           loss = ev.minus(loss,
-            ev.log(
-              ev.max(probData(i * dim + curTarget * innerNum + j), ev.fromType(Double.MinValue))
-            ))
+            ev.log(probData(i * dim + (curTarget - 1) * innerNum + j)))
           count = count + 1
         }
         j += 1
@@ -101,8 +99,8 @@ class SoftmaxWithCriterion[T: ClassTag](ignoreLabel: Option[Int] = None,
       while (j < innerNum) {
         val curTarget = ev.toType[Int](labelData(i * innerNum + j))
         if (ignoreLabel.isEmpty || ignoreLabel.get != curTarget) {
-          gradData(i * dim + curTarget * innerNum + j) =
-            ev.minus(gradData(i * dim + curTarget * innerNum + j), ev.fromType(1))
+          gradData(i * dim + (curTarget - 1) * innerNum + j) =
+            ev.minus(gradData(i * dim + (curTarget - 1) * innerNum + j), ev.fromType(1))
           count = count + 1
         } else {
           var c = 0
@@ -129,9 +127,6 @@ class SoftmaxWithCriterion[T: ClassTag](ignoreLabel: Option[Int] = None,
    * Read the normalization mode parameter and compute the normalizer based on the input size.
    * If normalizeMode is VALID, the count of valid outputs will be read from validCount,
    * unless it is -1 in which case all outputs are assumed to be valid.
-   * @param normalizeMode
-   * @param validCount
-   * @return
    */
   def getNormalizer(normalizeMode: NormMode, validCount: Int): T = {
     def normalizer = {
