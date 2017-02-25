@@ -88,7 +88,7 @@ object TH {
         case _: AbstractModule[_, _, _] =>
           File.saveTorch(parameters(k), tmpPath, TYPE_MODULE, true)
         case _: Table =>
-          File.saveTorch(parameters(k).asInstanceOf[Table].getState(), tmpPath, TYPE_TABLE, true)
+          File.saveTorch(parameters(k).asInstanceOf[Table], tmpPath, TYPE_TABLE, true)
         case _ =>
       }
       varCode.append(k + " = torch.load(\'" + tmpPath + "\')\n")

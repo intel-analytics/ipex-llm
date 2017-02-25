@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.collection.mutable
 import scala.collection.mutable.Map
+import scala.collection.Set
 
 /**
  * Simulate the Table data structure in lua
@@ -31,7 +32,7 @@ import scala.collection.mutable.Map
  * @param topIndex
  */
 class Table private[bigdl](
-  state: Map[Any, Any] = new mutable.HashMap[Any, Any](),
+  private val state: Map[Any, Any] = new mutable.HashMap[Any, Any](),
   // index of last element in the contiguous numeric number indexed elements start from 1
   private var topIndex: Int = 0
 ) extends Serializable with Activity {
@@ -53,14 +54,20 @@ class Table private[bigdl](
     this
   }
 
-  def getState(): Map[Any, Any] = this.state
+  def getState(): Map[Any, Any] = {
+    val newState = mutable.Map[Any, Any]()
+    for ((k, v) <- this.state) {
+      newState(k) = v
+    }
+    newState
+  }
+
+  def keySet: Set[Any] = state.keySet
+
+  def foreach[U](f: ((Any, Any)) => U): Unit = state.foreach(f)
 
   def get[T](key: Any): Option[T] = {
-    if (!state.contains(key)) {
-      return None
-    }
-
-    Option(state(key).asInstanceOf[T])
+    state.get(key).map(_.asInstanceOf[T])
   }
 
   def getOrElse[T](key: Any, default: T): T = {
@@ -90,7 +97,7 @@ class Table private[bigdl](
     val result = new Table()
 
     for (k <- state.keys) {
-      result(k) = state.get(k).get
+      result(k) = state(k)
     }
 
     result
@@ -113,11 +120,11 @@ class Table private[bigdl](
     if (this.eq(other)) {
       return true
     }
-    if (this.state.keys.size != other.getState().keys.size) {
+    if (this.state.keys.size != other.state.keys.size) {
       return false
     }
     this.state.keys.foreach(key => {
-      if (this.state(key) != other.getState()(key)) {
+      if (this.state(key) != other.state(key)) {
         return false
       }
     })
@@ -192,7 +199,7 @@ class Table private[bigdl](
   }
 
   def add(other: Table): this.type = {
-    for (s <- other.getState().keys) {
+    for (s <- other.state.keys) {
       require(s.isInstanceOf[String])
       this.state(s) = other(s)
     }
@@ -224,7 +231,7 @@ class Table private[bigdl](
       state.get(i).get match {
         case table: Table =>
           val newTable = table.flatten(resultIndex)
-          newState ++= newTable.getState()
+          newState ++= newTable.state
           resultIndex += newState.size
         case other =>
           newState.put(resultIndex, other)
@@ -257,12 +264,12 @@ class Table private[bigdl](
     var resultIndex = startIndex
     val newState = mutable.Map[Any, Any]()
 
-    while (i <= target.getState().size) {
-      target.getState().get(i).get match {
+    while (i <= target.length()) {
+      target.state.get(i).get match {
         case table: Table =>
           val newTable = inverseFlatten(table, resultIndex)
-          newState.put(i, new Table(newTable.getState()))
-          resultIndex += newTable.getState().size
+          newState.put(i, new Table(newTable.state))
+          resultIndex += newTable.length()
         case other =>
           newState.put(i, state.get(resultIndex).get)
       }

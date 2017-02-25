@@ -37,7 +37,7 @@ object Utils {
    */
   def zeroTableCopy[T : ClassTag](t1: Table, t2: Table)(
     implicit ev: TensorNumeric[T]): Table = {
-    for ((k, v) <- t2.getState()) {
+    t2.foreach { case ((k: Any, v: Any)) =>
       if (v.isInstanceOf[Table]) {
         t1.update(k, zeroTableCopy(if (t1.contains(k)) t1(k) else T(), t2(k)))
       } else {
@@ -51,7 +51,7 @@ object Utils {
         }
       }
     }
-    for ((k, v) <- t1.getState()) {
+    t1.foreach { case ((k: Any, v: Any)) =>
       if (!t2.contains(k)) {
         t1.update(k, null)
       }
