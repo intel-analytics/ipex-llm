@@ -649,11 +649,10 @@ object Tensor {
    */
   def apply[@specialized(Float, Double) T: ClassTag](xs : Table)(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    val map = xs.flatten().getState().asInstanceOf[Map[Int, T]]
-    val content = new Array[T](map.values.size)
-    var i = 1
-    for (i <- 1 to content.size) {
-      content(i - 1) = map(i)
+    val flatTable = xs.flatten()
+    val content = new Array[T](flatTable.length())
+    for (i <- 1 to content.length) {
+      content(i - 1) = flatTable(i)
     }
 
     val dims = new ArrayBuffer[Int]()

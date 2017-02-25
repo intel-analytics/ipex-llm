@@ -58,9 +58,9 @@ class MapTable[T: ClassTag](
   }
 
   override def updateOutput(input: Table): Table = {
-    extend(input.getState().size)
+    extend(input.length())
     var i = 0
-    while (i < input.getState().size) {
+    while (i < input.length()) {
       output.update(i + 1, modules(i).updateOutput(input(i + 1)))
       i += 1
     }
@@ -68,9 +68,9 @@ class MapTable[T: ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    extend(input.getState().size)
+    extend(input.length())
     var i = 0
-    while (i < input.getState().size) {
+    while (i < input.length()) {
       gradInput.update(i + 1, modules(i).updateGradInput(input(i + 1), gradOutput(i + 1)))
       i += 1
     }
@@ -79,9 +79,9 @@ class MapTable[T: ClassTag](
 
   override def accGradParameters(input: Table, gradOutput: Table,
     scale: Double = 1.0): Unit = {
-    extend(input.getState().size)
+    extend(input.length())
     var i = 0
-    while (i < input.getState().size) {
+    while (i < input.length()) {
         modules(i).accGradParameters(input(i + 1), gradOutput(i + 1), scale)
       i += 1
     }

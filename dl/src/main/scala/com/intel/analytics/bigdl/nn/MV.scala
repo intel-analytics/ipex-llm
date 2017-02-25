@@ -36,7 +36,7 @@ class MV[T: ClassTag](val trans: Boolean = false)
   gradInput = T(Tensor[T], Tensor[T]())
 
   private def checkInputFormat(input: Table): (Tensor[T], Tensor[T]) = {
-    require(input.getState().size == 2 && input(1).isInstanceOf[Tensor[T]] &&
+    require(input.length() == 2 && input(1).isInstanceOf[Tensor[T]] &&
       input(2).isInstanceOf[Tensor[T]], "Input must be two tensors")
     val m: Tensor[T] = input(1)
     val v: Tensor[T] = input(2)
