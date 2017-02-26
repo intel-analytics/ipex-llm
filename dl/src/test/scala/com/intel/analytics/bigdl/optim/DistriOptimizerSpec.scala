@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.optim
 
 import java.io.File
+import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
@@ -249,10 +250,9 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "DistriOptimizer checkpoint" should "work correclty" in {
-    val path = "/home/yao/Documents/model/"
-    val folder = new File(path)
-    folder.mkdirs()
-    FileUtils.cleanDirectory(folder)
+    val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
 
     import com.intel.analytics.bigdl._
     plusOne = 1.0
@@ -262,15 +262,14 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       dataSet,
       new ClassNLLCriterion[Double]()
     ).setState(T("learningRate" -> 20.0))
-      .setCheckpoint(path, Trigger.everyEpoch)
+      .setCheckpoint(filePath, Trigger.everyEpoch)
       .setEndWhen(Trigger.maxEpoch(1))
       .disableCheckSingleton()
       .optimize()
 
-    val state = T.load(path + "state.33")
+    val state = T.load(filePath + "/state.33")
 
     state[Int]("epoch") should be (2)
     state[Int]("neval") should be (33)
-
   }
 }
