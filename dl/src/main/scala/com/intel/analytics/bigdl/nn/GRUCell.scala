@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
-import jdk.nashorn.internal.ir.Splittable
 
 import scala.reflect.ClassTag
 
@@ -34,10 +33,11 @@ class GRUCell[T : ClassTag] (
   (implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
   var i2g: AbstractModule[Activity, Activity, T] = _
-  var o2g: AbstractModule[Activity, Activity, T] = _
-  var GRU: Sequential[T] = buildGRU()
+  var h2g: AbstractModule[Activity, Activity, T] = _
+  var gates: AbstractModule[Activity, Activity, T] = _
+  var GRU: AbstractModule[Activity, Activity, T] = buildGRU()
 
-  def buildGRU(): Sequential[T] = {
+  def buildGates(): AbstractModule[Activity, Activity, T] = {
     if (p != 0) {
       i2g = Sequential()
         .add(ConcatTable()
@@ -48,31 +48,75 @@ class GRUCell[T : ClassTag] (
           .add(Linear(inputSize, outputSize)))
         .add(JoinTable(1, 1))
 
-      o2g = Sequential()
+      h2g = Sequential()
         .add(ConcatTable()
           .add(Dropout(p))
           .add(Dropout(p)))
         .add(ParallelTable()
-          .add(Linear(inputSize, outputSize, withBias = false))
-          .add(Linear(inputSize, outputSize, withBias = false)))
+          .add(Linear(outputSize, outputSize, withBias = false))
+          .add(Linear(outputSize, outputSize, withBias = false)))
         .add(JoinTable(1, 1))
     } else {
       i2g = Linear(inputSize, 2 * outputSize)
-      o2g = Linear(inputSize, 2 * outputSize, withBias = false)
+      h2g = Linear(outputSize, 2 * outputSize, withBias = false)
     }
 
-    Sequential()
+    gates = Sequential()
       .add(ParallelTable()
         .add(i2g)
-        .add(o2g))
+        .add(h2g))
       .add(CAddTable())
       .add(Reshape(Array(2, outputSize)))
-//      .add(SplitTable(1, 2))
+      .add(SplitTable(1, 2))
+      .add(ParallelTable()
+        .add(Sigmoid())
+        .add(Sigmoid()))
 
+    gates
+  }
 
-    val model = Sequential()
+  def buildGRU(): AbstractModule[Activity, Activity, T] = {
+    val gru = Sequential()
+      .add(ConcatTable()
+        .add(Identity())
+        .add(gates))
+      .add(FlattenTable()) // x(t), h(t - 1), r(t), z(t)
+
+    val h_hat = Sequential()
+      .add(ConcatTable()
+        .add(Sequential()
+          .add(NarrowTable(2, 2))
+          .add(CMulTable()))
+        .add(SelectTable(1)))
+      .add(ParallelTable()
+        .add(Sequential()
+          .add(Dropout(p))
+          .add(Linear(inputSize, outputSize)))
+        .add(Sequential()
+          .add(Dropout(p))
+          .add(Linear(outputSize, outputSize, withBias = false))))
+      .add(CAddTable())
+      .add(Tanh())
+
+    gru
+      .add(ConcatTable()
+        .add(Sequential()
+          .add(ConcatTable()
+            .add(h_hat)
+            .add(Sequential()
+              .add(SelectTable(4))
+              .add(MulConstant(-1))
+              .add(AddConstant(1))))
+          .add(CMulTable()))
+        .add(Sequential()
+          .add(ConcatTable()
+            .add(SelectTable(2))
+            .add(SelectTable(4)))
+          .add(CMulTable())))
+      .add(CAddTable())
+
     output = T(Tensor())
-    GRU = model
+    GRU = gru
     GRU
   }
 
