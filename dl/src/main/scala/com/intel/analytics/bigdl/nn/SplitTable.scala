@@ -23,6 +23,22 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+/**
+ * Creates a module that takes a Tensor as input and
+ * outputs several tables, splitting the Tensor along
+ * the specified dimension `dimension`.
+ *
+ * The input to this layer is expected to be a tensor, or a batch of tensors;
+ * when using mini-batch, a batch of sample tensors will be passed to the layer and
+ * the user need to specify the number of dimensions of each sample tensor in a
+ * batch using `nInputDims`.
+ *
+ * @param dimension to be split along this dimension
+ * @param nInputDims specify the number of dimensions that this module will receive
+ *                   If it is more than the dimension of input tensors, the first dimension
+ *                   would be considered as batch size
+ * @tparam T Numeric type. Only support float/double now
+ */
 @SerialVersionUID(- 4318640284973082779L)
 class SplitTable[T: ClassTag](
   var dimension: Int,
