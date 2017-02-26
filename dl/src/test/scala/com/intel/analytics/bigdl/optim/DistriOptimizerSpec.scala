@@ -17,11 +17,14 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, DistributedDataSet}
+import java.io.File
+
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
+import org.apache.commons.io.FileUtils
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -243,6 +246,31 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     batchNormalization.runningVar.storage().array() should be (
       Array(1188.2811870277535, 1188.2811870277535)
     )
+  }
+
+  "DistriOptimizer checkpoint" should "work correclty" in {
+    val path = "/home/yao/Documents/model/"
+    val folder = new File(path)
+    folder.mkdirs()
+    FileUtils.cleanDirectory(folder)
+
+    import com.intel.analytics.bigdl._
+    plusOne = 1.0
+    RandomGenerator.RNG.setSeed(10)
+    new DistriOptimizer[Double](
+      cre,
+      dataSet,
+      new ClassNLLCriterion[Double]()
+    ).setState(T("learningRate" -> 20.0))
+      .setCheckpoint(path, Trigger.everyEpoch)
+      .setEndWhen(Trigger.maxEpoch(1))
+      .disableCheckSingleton()
+      .optimize()
+
+    val state = T.load(path + "state.33")
+
+    state[Int]("epoch") should be (2)
+    state[Int]("neval") should be (33)
 
   }
 }
