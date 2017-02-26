@@ -17,22 +17,59 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
+import jdk.nashorn.internal.ir.Splittable
 
 import scala.reflect.ClassTag
 
 class GRUCell[T : ClassTag] (
   inputSize: Int = 4,
   outputSize: Int = 3,
+  p: Double = 0,
   private var initMethod: InitializationMethod = Default)
   (implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
+  var i2g: AbstractModule[Activity, Activity, T] = _
+  var o2g: AbstractModule[Activity, Activity, T] = _
   var GRU: Sequential[T] = buildGRU()
 
   def buildGRU(): Sequential[T] = {
+    if (p != 0) {
+      i2g = Sequential()
+        .add(ConcatTable()
+          .add(Dropout(p))
+          .add(Dropout(p)))
+        .add(ParallelTable()
+          .add(Linear(inputSize, outputSize))
+          .add(Linear(inputSize, outputSize)))
+        .add(JoinTable(1, 1))
+
+      o2g = Sequential()
+        .add(ConcatTable()
+          .add(Dropout(p))
+          .add(Dropout(p)))
+        .add(ParallelTable()
+          .add(Linear(inputSize, outputSize, withBias = false))
+          .add(Linear(inputSize, outputSize, withBias = false)))
+        .add(JoinTable(1, 1))
+    } else {
+      i2g = Linear(inputSize, 2 * outputSize)
+      o2g = Linear(inputSize, 2 * outputSize, withBias = false)
+    }
+
+    Sequential()
+      .add(ParallelTable()
+        .add(i2g)
+        .add(o2g))
+      .add(CAddTable())
+      .add(Reshape(Array(2, outputSize)))
+//      .add(SplitTable(1, 2))
+
+
     val model = Sequential()
     output = T(Tensor())
     GRU = model
