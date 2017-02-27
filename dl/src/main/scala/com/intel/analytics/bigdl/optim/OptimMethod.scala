@@ -45,6 +45,21 @@ trait OptimMethod[@specialized(Float, Double) T] extends Serializable {
    * @return
    */
   def clearHistory(state: Table): Table
+
+  /**
+   * Record the hyper parameters to logs, only support SGD now.
+   */
+  def recordHyperParameter(hyperParameter: Table): Unit
+
+  /**
+   * Record the hyper parameters to logs, only support SGD now.
+   */
+  def recordHyperParameter(): Unit
+
+  /**
+   * Get current hyper parameter, only support SGD now
+   */
+  def getHyperParameter(): Table
 }
 
 trait IterateByItself

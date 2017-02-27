@@ -92,7 +92,7 @@ object Train {
           "momentum" -> param.momentum,
           "dampening" -> param.dampening,
           "nesterov" -> param.nesterov,
-          "learningRateSchedule" -> SGD.EpochDecay(cifar10Decay)
+          "hyperParameterScheduler" -> SGD.EpochDecay[Float](cifar10Decay)
         )
       }
 

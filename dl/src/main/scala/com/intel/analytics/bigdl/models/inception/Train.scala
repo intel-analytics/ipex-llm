@@ -79,7 +79,7 @@ object TrainInceptionV1 {
           "weightDecay" -> 0.0001,
           "momentum" -> 0.9,
           "dampening" -> 0.0,
-          "learningRateSchedule" -> SGD.Poly(0.5, 62000)
+          "hyperParameterScheduler" -> SGD.Poly[Float](0.5, 62000)
         )
       }
 

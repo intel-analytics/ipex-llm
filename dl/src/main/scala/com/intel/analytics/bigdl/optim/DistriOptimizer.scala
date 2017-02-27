@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, DataSet => DataSource}
+import com.intel.analytics.bigdl.optim.SGD.{Default, HyperParameterScheduler}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -245,6 +246,10 @@ object DistriOptimizer {
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
+
+        // record hyperParameter to log
+        optimMethod.recordHyperParameter(state.getOrElse[HyperParameterScheduler[T]](
+          "hyperParameterScheduler", Default()).getAndUpdateHyperParameter(driverState, state))
 
         // compute threshold
         iteration += 1

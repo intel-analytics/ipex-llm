@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
+import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -40,6 +41,7 @@ class LBFGS[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends OptimMethod[T] with IterateByItself {
   private var verbose: Boolean = false
 
+  import LBFGS._
   /**
    * Optimize the model parameter
    *
@@ -284,4 +286,21 @@ class LBFGS[@specialized(Float, Double) T: ClassTag](
     state.delete("ro")
     state.delete("al")
   }
+
+
+  def recordHyperParameter(hyperParameter: Table): Unit = {
+    logger.warn("LBFGS: recordHyperParameter unimplemented")
+  }
+
+  def recordHyperParameter(): Unit = {
+    logger.warn("LBFGS: recordHyperParameter unimplemented")
+  }
+
+  def getHyperParameter(): Table = {
+    throw new UnsupportedOperationException("LBFGS: getHyperParameter unimplemented")
+  }
+}
+
+object LBFGS {
+  val logger = Logger.getLogger(getClass)
 }

@@ -66,7 +66,7 @@ object Train {
           "weightDecay" -> 0.0005,
           "momentum" -> 0.9,
           "dampening" -> 0.0,
-          "learningRateSchedule" -> SGD.EpochStep(25, 0.5)
+          "hyperParameterScheduler" -> SGD.EpochStep[Float](25, 0.5)
         )
       }
 
