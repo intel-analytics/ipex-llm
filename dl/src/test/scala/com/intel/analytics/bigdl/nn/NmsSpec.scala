@@ -15,10 +15,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.fasterrcnn.utils
+package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.File
 import org.scalatest.{FlatSpec, Matchers}
 
 class NmsSpec extends FlatSpec with Matchers {
