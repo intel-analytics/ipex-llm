@@ -207,7 +207,12 @@ object Engine {
   private val logger = Logger.getLogger(getClass)
   private val singletonCounter: AtomicInteger = new AtomicInteger(0)
   private[this] var _isInitialized: Boolean = false
-  private[this] var _onSpark: Boolean = false
+
+  private[this] var _onSpark: Boolean = if (System.getenv("ON_SPARK") == null) {
+    false
+  } else {
+    true
+  }
 
   def isInitialized: Boolean = _isInitialized
 
@@ -323,33 +328,62 @@ object Engine {
     model
   }
 
-  @deprecated
+  private def initSparkConf(core : Int, node : Int): SparkConf = {
+    new SparkConf()
+      .setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
+      .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
+      .setExecutorEnv("KMP_BLOCKTIME", "0")
+      .setExecutorEnv("OMP_WAIT_POLICY", "passive")
+      .setExecutorEnv("OMP_NUM_THREADS", "1")
+      .setExecutorEnv("DL_CORE_NUMBER", core.toString)
+      .setExecutorEnv("DL_NODE_NUMBER", node.toString)
+      .setExecutorEnv("ON_SPARK", "true")
+      .set("spark.shuffle.reduceLocality.enabled", "false")
+      .set("spark.shuffle.blockTransferService", "nio")    // This is removed after Spark 1.6
+      .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
+  }
+
+  /**
+   * Set core number per node and node number
+   *
+   * @param node
+   * @param core
+   */
+  def setNodeAndCore(node: Int, core : Int): Unit = {
+    require(node > 0, "node number is negative")
+    nodeNum = node
+    require(core > 0, "core number is negative")
+    physicalCoreNumber = core
+    _model = initModelThreadPool()
+  }
+
+  /**
+   * BigDL need to know the node and cores of the execution environment. This method will set the
+   * values. You should call this method before BigDL procedures.
+   *
+   * @param node
+   * @param cores
+   * @param onSpark
+   * @return
+   */
   def init(
     node: Int,
     cores: Int,
     onSpark: Boolean = false
   ): Option[SparkConf] = {
     val ret = if (onSpark) {
-      nodeNum = node
-      physicalCoreNumber = cores
-      _model = initModelThreadPool()
+      setNodeAndCore(node, cores)
+      tryToCheckAndSetSparkProperty(node, cores)
       val sc = if (engineType == MklBlas) {
-        new SparkConf()
-          .setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
-          .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
-          .setExecutorEnv("KMP_BLOCKTIME", "0")
-          .setExecutorEnv("OMP_WAIT_POLICY", "passive")
-          .setExecutorEnv("OMP_NUM_THREADS", "1")
-          .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
-          .setExecutorEnv("DL_NODE_NUMBER", nodeNum.toString)
-          .set("spark.shuffle.blockTransferService", "nio")
-          .set("spark.akka.frameSize", "10")
-          .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
+        initSparkConf(coreNumber(), nodeNumber())
       } else {
         throw new IllegalArgumentException(engineType.toString)
       }
+      _onSpark = true
       Some(sc)
     } else {
+      require(node == 1, "In local mode, the node should be 1")
+      _onSpark = false
       physicalCoreNumber = cores
       None
     }
@@ -372,35 +406,12 @@ object Engine {
    * @return An option of SparkConf
    */
   def init: Option[SparkConf] = {
-    val ret = if (System.getProperty("SPARK_SUBMIT") != null) {
-      _onSpark = true
+    if (System.getProperty("SPARK_SUBMIT") != null) {
       val (node, cores) = sparkExecutorAndCore
-      nodeNum = node
-      physicalCoreNumber = cores
-      _model = initModelThreadPool()
-      val sc = if (engineType == MklBlas) {
-        new SparkConf()
-          .setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
-          .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
-          .setExecutorEnv("KMP_BLOCKTIME", "0")
-          .setExecutorEnv("OMP_WAIT_POLICY", "passive")
-          .setExecutorEnv("OMP_NUM_THREADS", "1")
-          .setExecutorEnv("DL_CORE_NUMBER", coreNumber.toString)
-          .setExecutorEnv("DL_NODE_NUMBER", nodeNum.toString)
-          .set("spark.shuffle.reduceLocality.enabled", "false")
-          .set("spark.shuffle.blockTransferService", "nio")
-          .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
-      } else {
-        throw new IllegalArgumentException(engineType.toString)
-      }
-      Some(sc)
+      init(node, cores, true)
     } else {
-      _onSpark = false
-      None
+      init(1, physicalCoreNumber, false)
     }
-    _isInitialized = true
-
-    ret
   }
 
   /**
@@ -494,6 +505,43 @@ object Engine {
     } else {
       throw new IllegalArgumentException(s"Unsupported master format $master")
     }
+  }
+
+  private def tryToCheckAndSetSparkProperty(node: Int, core: Int) : Unit = {
+    val coreString = System.getProperty("spark.executor.cores")
+    if(coreString == null) {
+      System.setProperty("spark.executor.cores", core.toString)
+    } else if (coreString.toInt != core) {
+      logger.warn(s"Detect spark.executor.cores is set to $coreString, but you init core number " +
+        s"to $core")
+    }
+
+    val minExecutors = dynamicAllocationExecutor
+    if(minExecutors.isDefined) {
+      if (minExecutors.get != node) {
+        logger.warn(s"Detect minExecutor number to ${minExecutors.get} is not equal to node " +
+          s"number $node")
+      }
+    } else {
+      val maxString = System.getProperty("spark.cores.max")
+      if (maxString == null) {
+        System.setProperty("spark.cores.max", (core * node).toString)
+      } else if (maxString.toInt != core * node) {
+        logger.warn(s"Detect spark.cores.max is set to $maxString, but you init core number " +
+          s"to $core and node number to $node")
+      }
+    }
+    val numExecutorString = System.getProperty("spark.executor.instances")
+    if (numExecutorString == null) {
+      System.setProperty("spark.executor.instances", node.toString)
+    } else if (numExecutorString.toInt != node) {
+      logger.warn(s"Detect spark.executor.instances is set to $numExecutorString, " +
+        s"but you init node number to $node")
+    }
+
+
+    require(System.getProperty("spark.mesos.coarse") != "false", "Don't support mesos " +
+      "fine-grained mode")
   }
 
   // Check envs

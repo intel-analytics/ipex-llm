@@ -36,6 +36,7 @@ object Utils {
     stateSnapshot: Option[String] = None,
     batchSize: Int = 12,
     learningRate: Double = 0.05,
+    learningRateDecay: Double = 0.0,
     maxEpoch: Int = 15,
     coreNumber: Int = -1,
     nodeNumber: Int = -1,
@@ -46,38 +47,27 @@ object Utils {
     opt[String]('f', "folder")
       .text("where you put the MNIST data")
       .action((x, c) => c.copy(folder = x))
-
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
-
     opt[String]("model")
       .text("model snapshot location")
       .action((x, c) => c.copy(modelSnapshot = Some(x)))
     opt[String]("state")
       .text("state snapshot location")
       .action((x, c) => c.copy(stateSnapshot = Some(x)))
-
     opt[String]("checkpoint")
       .text("where to cache the model")
       .action((x, c) => c.copy(checkpoint = Some(x)))
-
     opt[Double]('r', "learningRate")
       .text("learning rate")
       .action((x, c) => c.copy(learningRate = x))
-
+    opt[Double]('d', "learningRateDecay")
+      .text("learning rate decay")
+      .action((x, c) => c.copy(learningRateDecay = x))
     opt[Int]('e', "maxEpoch")
       .text("epoch numbers")
       .action((x, c) => c.copy(maxEpoch = x))
-
-    opt[Int]('c', "core")
-      .text("cores number on each node")
-      .action((x, c) => c.copy(coreNumber = x))
-      .required()
-    opt[Int]('n', "node")
-      .text("node number to train the model")
-      .action((x, c) => c.copy(nodeNumber = x))
-      .required()
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
@@ -89,8 +79,6 @@ object Utils {
   case class TestParams(
     folder: String = "./",
     model: String = "",
-    coreNumber: Int = -1,
-    nodeNumber: Int = -1,
     batchSize: Int = 128
   )
 
@@ -103,13 +91,6 @@ object Utils {
       .text("model snapshot location")
       .action((x, c) => c.copy(model = x))
       .required()
-    opt[Int]('c', "core")
-      .text("cores number on each node")
-      .action((x, c) => c.copy(coreNumber = x))
-      .required()
-    opt[Int]('n', "nodeNumber")
-      .text("nodes number to train the model")
-      .action((x, c) => c.copy(nodeNumber = x))
       .required()
     opt[Int]('b', "batchSize")
       .text("batch size")

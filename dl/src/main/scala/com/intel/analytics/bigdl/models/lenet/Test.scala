@@ -54,7 +54,6 @@ object Test {
         param.batchSize)
 
       val model = Module.load[Float](param.model)
-      Engine.setCoreNumber(param.coreNumber)
       val validator = Validator(model, validationSet)
       val result = validator.test(Array(new Top1Accuracy[Float]))
       result.foreach(r => println(s"${r._2} is ${r._1}"))

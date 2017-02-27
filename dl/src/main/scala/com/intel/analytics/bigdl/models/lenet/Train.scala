@@ -63,7 +63,8 @@ object Train {
         T.load(param.stateSnapshot.get)
       } else {
         T(
-          "learningRate" -> param.learningRate
+          "learningRate" -> param.learningRate,
+          "learningRateDecay" -> param.learningRateDecay
         )
       }
 

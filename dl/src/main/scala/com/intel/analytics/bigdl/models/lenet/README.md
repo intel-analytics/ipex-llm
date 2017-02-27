@@ -14,19 +14,16 @@ There're four files. **train-images-idx3-ubyte** contains train images,
 
 ## Get the JAR
 You can build one by refer to the
-[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code. We
-will release a pre-build package soon.
+[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code.
 
 ## Train the Model
 Example command
 ```
-dist/bin/bigdl.sh -- \
+dist/bin/bigdl.sh -c pyshical_core_number -- \
 java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.models.lenet.Train \
--f ~/mnist/ \
---core pyshical_core_number \
---node 1 \
---checkpoint ~/model \
+-f path_to_mnist_folder \
+--checkpoint ./model \
 -b batch_size
 ```
 ### Use Apache Spark
@@ -38,46 +35,66 @@ spark-submit \
 --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.lenet.Train \
 dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
--f ~/mnist/ \
---core physical_core_number \
---node 1 \
---checkpoint ~/model
+-f path_to_mnist_folder \
+-b batch_size \
+--checkpoint ./model
 ```
-Cluster mode, example command
+Standalone cluster mode, example command
 ```
 ./dist/bin/bigdl.sh -- \
 spark-submit \
+--master spark://... \
+--executor-cores cores_per_executor \
+--total-executor-cores total_cores_for_the_job \
 --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.lenet.Train \
 dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
--f ~/mnist/ \
---core physical_core \
---node node_number \
--b batch_size
+-f path_to_mnist_folder \
+-b batch_size \
+--checkpoint ./model
+```
+Yarn cluster mode, example command
+```
+./dist/bin/bigdl.sh -- \
+spark-submit \
+--master yarn \
+--deploy-mode client \
+--executor-cores cores_per_executor \
+--num-executors executors_number \
+--driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--class com.intel.analytics.bigdl.models.lenet.Train \
+dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+-f path_to_mnist_folder \
+-b batch_size \
+--checkpoint ./model
 ```
 In the above commands
 * -f: where you put your MNIST data
-* --core: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
-* --node: Node number.
 * --checkpoint: Where you cache the model/train_state snapshot. You should input a folder and
 make sure the folder is created when you run this example. The model snapshot will be named as
 model.#iteration_number, and train state will be named as state.#iteration_number. Note that if
 there are some files already exist in the folder, the old file will not be overwrite for the
 safety of your model files.
-* -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number. In this example, node_number is 1 and the mini-batch size is suggested to be set to core_number * 4
+* -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.
+
+### Hyper parameter
+
+| Batch size  | Learning rate | Epoch | Accuracy |
+|---|
+| 1792 | 0.48 | 15 | 98+% |
+
 ## Test Model
 The above commands will cache the model in specified path(--checkpoint). Run this command will
 use the model to do a validation.
 
 Example command
 ```
-dist/bin/bigdl.sh -- \
+dist/bin/bigdl.sh -c physical_core_number -- \
 java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.models.lenet.Test \
--f ~/mnist/ \
---core physical_core_number \
--n 1 \
---model ~/model/model.iteration
+-f path_to_mnist_folder \
+-b batch_size \
+--model ./model/model.iteration
 ```
 Spark local mode, example command
 ```
@@ -86,27 +103,38 @@ spark-submit \
 --master local[physical_core_number] \
 --class com.intel.analytics.bigdl.models.lenet.Test \
 dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
--f mnist/ \
---model model.iteration
---nodeNumber 1 \
---core physical_core_number \
+-f path_to_mnist_folder \
+--model ./model/model.iteration \
 -b batch_size
 ```
-Spark cluster mode, example command
+Standalone cluster mode, example command
 ```
 ./dist/bin/bigdl.sh -- \
 spark-submit \
+--master spark://... \
+--executor-cores cores_per_executor \
+--total-executor-cores total_cores_for_the_job \
 --class com.intel.analytics.bigdl.models.lenet.Test \
 dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
--f mnist/ \
---model model.iteration_number
---nodeNumber node_number \
---core physical_number_per_node \
+-f path_to_mnist_folder \
+--model ./model/model.iteration_number \
+-b batch_size
+```
+Yarn cluster mode, example command
+```
+./dist/bin/bigdl.sh -- \
+spark-submit \
+--master yarn \
+--deploy-mode client \
+--executor-cores cores_per_executor \
+--num-executors executors_number \
+--class com.intel.analytics.bigdl.models.lenet.Test \
+dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+-f path_to_mnist_folder \
+--model ./model/model.iteration_number \
 -b batch_size
 ```
 In the above command
 * -f: where you put your MNIST data
 * --model: the model snapshot file
-* --core: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
-* --nodeNumber: Node number.
-* -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number. In this example, node_number is 1 and the mini-batch size is suggested to be set to core_number * 4
+* -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.
