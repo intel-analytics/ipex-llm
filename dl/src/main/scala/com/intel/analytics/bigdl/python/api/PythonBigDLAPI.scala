@@ -331,9 +331,8 @@ class PythonBigDLAPI[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
     }
   }
 
-  // TODO: add extra dict as parameter
-  def initEngine(nodeNum: Int, coreNum: Int, modelPoolSize: Int = 1): Unit = {
-    Engine.initEngine(nodeNum, coreNum, modelPoolSize)
+  def initEngine(nodeNum: Int, coreNum: Int): Unit = {
+    Engine.setNodeAndCore(nodeNum, coreNum)
   }
 }
 

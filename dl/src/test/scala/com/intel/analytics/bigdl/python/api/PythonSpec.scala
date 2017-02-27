@@ -18,21 +18,17 @@
 package com.intel.analytics.bigdl.python.api
 
 import java.util
+import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.optim.Trigger
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.bigdl.api.python.BigDLSerDe
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
-
-import com.intel.analytics.bigdl.dataset.MiniBatch
-import com.intel.analytics.bigdl.optim.{Optimizer, Trigger}
-
-import scala.collection.JavaConverters._
 
 
 class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {

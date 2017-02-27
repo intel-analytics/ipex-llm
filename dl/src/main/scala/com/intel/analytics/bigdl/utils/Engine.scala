@@ -302,8 +302,7 @@ object Engine {
     model
   }
 
-  def initEngine(nodeNum: Int, coreNum: Int): Unit = {
-    // init model
+  private[bigdl] def setNodeAndCore(nodeNum: Int, coreNum: Int): Unit = {
     initModelThreadPool()
     this.nodeNum = Some(nodeNum)
     this.physicalCoreNumber = coreNum
@@ -334,7 +333,7 @@ object Engine {
     cores: Int,
     onSpark: Boolean = false
   ): Option[SparkConf] = {
-    initEngine(node, cores)
+    setNodeAndCore(node, cores)
     if (onSpark) {
       calcSparkconf()
     } else {

@@ -111,8 +111,8 @@ _picklable_classes = [
 ]
 
 
-def initEngine(nodeNum, coreNum, modelPoolSize=1, bigdl_type="float"):
-    callBigDlFunc(bigdl_type, "initEngine", nodeNum, coreNum, modelPoolSize)
+def initEngine(nodeNum, coreNum, bigdl_type="float"):
+    callBigDlFunc(bigdl_type, "initEngine", nodeNum, coreNum)
 
 
 def calc_spark_conf(coreNum, nodeNum):
