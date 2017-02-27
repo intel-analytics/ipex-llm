@@ -20,8 +20,7 @@ import java.nio.file.Paths
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.example.imageclassification.MlUtils._
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.Engine
-import org.apache.log4j.{Level, Logger}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.{DLClassifier => SparkDLClassifier}
@@ -31,10 +30,7 @@ import org.apache.spark.sql.SQLContext
  * An example to show how to use DLClassifier Transform
  */
 object ImagePredictor {
-  Logger.getLogger("org").setLevel(Level.ERROR)
-  Logger.getLogger("akka").setLevel(Level.ERROR)
-  Logger.getLogger("breeze").setLevel(Level.ERROR)
-  Logger.getLogger("com.intel.analytics.bigdl.example").setLevel(Level.INFO)
+  LoggerFilter.redirectSparkInfoLogs()
 
   def main(args: Array[String]): Unit = {
     predictParser.parse(args, new PredictParams()).map(param => {
