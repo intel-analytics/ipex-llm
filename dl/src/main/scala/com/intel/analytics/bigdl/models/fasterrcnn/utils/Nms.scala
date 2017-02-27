@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
  */
 class Nms extends Serializable {
 
-  @transient private var areas: Tensor[Float] = _
+  @transient private var areas: Array[Float] = _
   @transient private var sortedScores: Tensor[Float] = _
   @transient private var sortedInds: Tensor[Float] = _
   @transient private var sortIndBuffer: Array[Int] = _
@@ -36,6 +36,7 @@ class Nms extends Serializable {
     if (suppressed == null || suppressed.length < size) {
       suppressed = new Array[Int](size)
       sortIndBuffer = new Array[Int](size)
+      areas = new Array[Float](size)
     } else {
       var i = 0
       while (i < size) {
@@ -46,7 +47,6 @@ class Nms extends Serializable {
     if (sortedScores == null) {
       sortedScores = Tensor[Float]
       sortedInds = Tensor[Float]
-      areas = Tensor[Float]
     }
   }
 
@@ -57,47 +57,44 @@ class Nms extends Serializable {
    * put the first index to result buffer
    * 3. update the indices by keeping those bboxes with overlap less than thresh
    * 4. repeat 2 and 3 until the indices are empty
-   * @param x1      x1 tensor
-   * @param y1      y1 tensor
-   * @param x2      x2 tensor
-   * @param y2      y2 tensor
    * @param scores  score tensor
+   * @param boxes box tensor, with the size N*4
    * @param thresh  overlap thresh
    * @param indices buffer to store indices after nms
    * @return the length of indices after nms
    */
-  private def nms(x1: Tensor[Float], y1: Tensor[Float], x2: Tensor[Float], y2: Tensor[Float],
-    scores: Tensor[Float], thresh: Float, indices: Array[Int]): Int = {
+  def nms(scores: Tensor[Float], boxes: Tensor[Float], thresh: Float,
+    indices: Array[Int]): Int = {
     if (scores.nElement() == 0) return 0
-    require(indices.length >= scores.nElement())
-    require(x1.isContiguous())
+    require(indices.length >= scores.nElement() && boxes.size(2) == 4)
 
     init(scores.nElement())
-    getAreas(x1, x2, y1, y2, areas)
-    // indices start from 1
+    val boxArray = boxes.storage().array()
+    val offset = boxes.storageOffset() - 1
+    val rowLength = boxes.stride(1)
+    getAreas(boxArray, offset, rowLength, boxes.size(1), areas)
+    // indices start from 0
     val orderLength = getSortedScoreInds(scores, sortIndBuffer)
     var indexLenth = 0
     var i = 0
     var curInd = 0
 
     while (i < orderLength) {
-      def nmsOne(): Unit = {
-        curInd = sortIndBuffer(i)
-        if (suppressed(curInd - 1) == 1) {
-          return
-        }
-        indices(indexLenth) = curInd
+      curInd = sortIndBuffer(i)
+      if (suppressed(curInd) != 1) {
+        indices(indexLenth) = curInd + 1
         indexLenth += 1
         var k = i + 1
         while (k < orderLength) {
-          if (suppressed(sortIndBuffer(k) - 1) != 1 &&
-            isOverlapRatioGtThresh(x1, x2, y1, y2, curInd, sortIndBuffer(k), thresh)) {
-            suppressed(sortIndBuffer(k) - 1) = 1
+          if (suppressed(sortIndBuffer(k)) != 1 &&
+            isOverlapRatioGtThresh(boxArray, offset, rowLength,
+              areas, curInd, sortIndBuffer(k), thresh)) {
+            suppressed(sortIndBuffer(k)) = 1
           }
           k += 1
         }
       }
-      nmsOne()
+
       i += 1
     }
     indexLenth
@@ -111,85 +108,44 @@ class Nms extends Serializable {
     )
     var i = 0
     while (i < scores.nElement()) {
-      sortIndBuffer(i) = sortedInds.valueAt(i + 1).toInt
+      sortIndBuffer(i) = sortedInds.valueAt(i + 1).toInt - 1
       i += 1
     }
     scores.nElement()
   }
 
-  @transient var buffer: Tensor[Float] = _
-
-  private def getAreas(x1: Tensor[Float], x2: Tensor[Float],
-    y1: Tensor[Float], y2: Tensor[Float], areas: Tensor[Float]): Tensor[Float] = {
-    if (buffer == null) buffer = Tensor[Float]
-    // (x2 - x1 + 1) * (y2 - y1 + 1)
-    areas.resizeAs(x2).add(x2, -1, x1).add(1)
-    buffer.resizeAs(y2).add(y2, -1, y1).add(1)
-    areas.cmul(buffer)
+  private def getAreas(boxesArr: Array[Float], offset: Int, rowLength: Int, total: Int,
+    areas: Array[Float]): Array[Float] = {
+    var i = 0
+    while (i < total) {
+      val x1 = boxesArr(offset + rowLength * i)
+      val y1 = boxesArr(offset + 1 + rowLength * i)
+      val x2 = boxesArr(offset + 2 + rowLength * i)
+      val y2 = boxesArr(offset + 3 + rowLength * i)
+      areas(i) = (x2 - x1 + 1) * (y2 - y1 + 1)
+      i += 1
+    }
     areas
   }
 
-  private def isOverlapRatioGtThresh(x1: Tensor[Float], x2: Tensor[Float],
-    y1: Tensor[Float], y2: Tensor[Float], ind: Int, ind2: Int, thresh: Float): Boolean = {
-    if (x1.valueAt(ind2) >= x2.valueAt(ind) ||
-      x1.valueAt(ind) >= x2.valueAt(ind2) ||
-      y1.valueAt(ind2) >= y2.valueAt(ind) ||
-      y1.valueAt(ind) >= y2.valueAt(ind2)) {
-      return false
-    }
-    val w = math.min(x2.valueAt(ind2), x2.valueAt(ind)) -
-      math.max(x1.valueAt(ind2), x1.valueAt(ind)) + 1
-    val h = math.min(y2.valueAt(ind2), y2.valueAt(ind)) -
-      math.max(y1.valueAt(ind2), y1.valueAt(ind)) + 1
+  private def isOverlapRatioGtThresh(boxArr: Array[Float], offset: Int, rowLength: Int,
+    areas: Array[Float], ind: Int, ind2: Int, thresh: Float): Boolean = {
+    val b1x1 = boxArr(offset + 2 + rowLength * ind2)
+    val b1x2 = boxArr(offset + rowLength * ind2)
+    val b2x1 = boxArr(offset + 2 + rowLength * ind)
+    val b2x2 = boxArr(offset + rowLength * ind)
+    val w = math.min(b1x1, b2x1) -
+      math.max(b1x2, b2x2) + 1
+    if (w < 0) return false
+
+    val b1y1 = boxArr(offset + 3 + rowLength * ind2)
+    val b1y2 = boxArr(offset + 1 + rowLength * ind2)
+    val b2y1 = boxArr(offset + 3 + rowLength * ind)
+    val b2y2 = boxArr(offset + 1 + rowLength * ind)
+    val h = math.min(b1y1, b2y1) - math.max(b1y2, b2y2) + 1
+    if (h < 0) return false
+
     val overlap = w * h
-    overlap / ((areas.valueAt(ind2) + areas.valueAt(ind)) - overlap) > thresh
-  }
-
-
-  /**
-   *
-   * @param dets N*5
-   * @param thresh
-   * @return
-   */
-  def nms(dets: Tensor[Float], thresh: Float): Array[Int] = {
-    if (dets.nElement() == 0) return Array[Int]()
-    val indexes = new Array[Int](dets.size(1))
-    val keepNum = nms(dets.select(2, 5), dets.narrow(2, 1, 4).t(), thresh,
-      indexes)
-    indexes.slice(0, keepNum)
-  }
-
-  @transient var x1Buffer: Tensor[Float] = _
-  @transient var x2Buffer: Tensor[Float] = _
-  @transient var y1Buffer: Tensor[Float] = _
-  @transient var y2Buffer: Tensor[Float] = _
-
-  /**
-   *
-   * @param scores score tensor, size N
-   * @param bbox   bboxes 4*N
-   * @param thresh overlap thresh
-   * @return the length of indices after nms
-   */
-  def nms(scores: Tensor[Float], bbox: Tensor[Float], thresh: Float,
-    indsBuffer: Array[Int]): Int = {
-    if (scores.nElement() == 0) return 0
-    val (x1, y1, x2, y2) = if (!bbox.isContiguous()) {
-      if (x1Buffer == null) {
-        x1Buffer = Tensor[Float]
-        x2Buffer = Tensor[Float]
-        y1Buffer = Tensor[Float]
-        y2Buffer = Tensor[Float]
-      }
-      x1Buffer.resize(bbox.size(2)).copy(bbox(1))
-      x2Buffer.resize(bbox.size(2)).copy(bbox(2))
-      y1Buffer.resize(bbox.size(2)).copy(bbox(3))
-      y2Buffer.resize(bbox.size(2)).copy(bbox(4))
-      (x1Buffer, x2Buffer, y1Buffer, y2Buffer)
-    } else {
-      (bbox(1), bbox(2), bbox(3), bbox(4))
-    }
-    nms(x1, y1, x2, y2, scores, thresh, indsBuffer)
+    overlap / ((areas(ind2) + areas(ind)) - overlap) > thresh
   }
 }

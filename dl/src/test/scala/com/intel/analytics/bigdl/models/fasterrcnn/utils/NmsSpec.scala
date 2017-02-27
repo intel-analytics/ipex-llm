@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.models.fasterrcnn.utils
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.File
 import org.scalatest.{FlatSpec, Matchers}
 
 class NmsSpec extends FlatSpec with Matchers {
@@ -136,17 +137,20 @@ class NmsSpec extends FlatSpec with Matchers {
     272.129, 310.907, 299.711, 332.000, 0.411,
     10.730, 223.756, 54.204, 272.484, 0.130,
     216.484, 112.347, 255.047, 200.992, 0.085).map(x => x.toFloat))).resize(112, 5)
+  val scores = dets.select(2, 5).contiguous()
+  val boxes = dets.narrow(2, 1, 4).contiguous()
+  val indexes = new Array[Int](scores.nElement())
 
 
   "nms with thresh 0.4" should "work properly" in {
     val expected = Array(1, 63, 30, 88, 52, 18, 5, 2, 76, 23, 26, 33, 25, 39, 70, 86, 92, 109, 50)
-    val keep = nmsTool.nms(dets, 0.4f)
-    keep should be(expected)
+    val keepNum = nmsTool.nms(scores, boxes, 0.4f, indexes)
+    indexes.slice(0, keepNum) should be(expected)
   }
 
   "nms with thresh 0.1" should "work properly" in {
     val expected = Array(1, 63, 30, 88, 52, 5, 2, 76, 68, 70, 79, 50)
-    val keep = nmsTool.nms(dets, 0.1f)
-    keep should be(expected)
+    val keepNum = nmsTool.nms(scores, boxes, 0.1f, indexes)
+    indexes.slice(0, keepNum) should be(expected)
   }
 }
