@@ -30,7 +30,6 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, Table}
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.DataFrame
 
 import scala.collection.JavaConverters._
 import scala.language.existentials
