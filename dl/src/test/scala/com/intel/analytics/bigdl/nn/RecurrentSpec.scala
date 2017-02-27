@@ -36,11 +36,12 @@ class RecurrentSpec extends FlatSpec with Matchers {
     RNG.setSeed(seed)
 
     val model = Sequential[Double]()
-    model.add(Recurrent[Double](hiddenSize, bpttTruncate)
-      .add(RnnCell[Double](inputSize, hiddenSize))
-      .add(Tanh()))
+      .add(Recurrent[Double](hiddenSize)
+        .add(RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())))
       .add(Select(1, 1))
       .add(Linear[Double](hiddenSize, outputSize))
+
+    model.reset()
 
     val criterion = CrossEntropyCriterion[Double]()
     val logSoftMax = LogSoftMax[Double]()
@@ -92,11 +93,12 @@ class RecurrentSpec extends FlatSpec with Matchers {
     RNG.setSeed(seed)
 
     val model = Sequential[Double]()
-    model.add(Recurrent[Double](hiddenSize, bpttTruncate)
-      .add(RnnCell[Double](inputSize, hiddenSize))
-      .add(Tanh()))
+      .add(Recurrent[Double](hiddenSize)
+        .add(RnnCell[Double](inputSize, hiddenSize, Tanh())))
       .add(Select(2, nWords))
       .add(Linear[Double](hiddenSize, outputSize))
+
+    model.reset()
 
     val criterion = CrossEntropyCriterion[Double]()
     val logSoftMax = LogSoftMax[Double]()
@@ -146,10 +148,10 @@ class RecurrentSpec extends FlatSpec with Matchers {
     val bpttTruncate = 10
     val seed = 100
     RNG.setSeed(seed)
+
     val model = Sequential[Double]()
-    model.add(Recurrent[Double](hiddenSize, bpttTruncate)
-      .add(RnnCell[Double](inputSize, hiddenSize))
-      .add(Tanh[Double]()))
+      .add(Recurrent[Double](hiddenSize)
+        .add(RnnCell[Double](inputSize, hiddenSize, Tanh())))
       .add(Select(1, 1))
       .add(Linear[Double](hiddenSize, outputSize))
 

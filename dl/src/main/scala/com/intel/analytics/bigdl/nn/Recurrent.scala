@@ -17,47 +17,131 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.T
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 class Recurrent[T : ClassTag] (
-  hiddenSize: Int = 3,
-  bpttTruncate: Int = 2)
+  hiddenSize: Int = 3)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
-  val hidden = Tensor[T]()
-  var module: Module[T] = _
-  var transform: Module[T] = _
-  var (batchSize, times) = (0, 0)
+  private var hidden: Activity = null
+  private var gradHidden: Activity = null
+  private var hiddenShape: Array[Int] = null
+  private val currentInput = T()
+  private val currentGradOutput = T()
+  private val _input = T()
+  private val batchDim = 1
+  private val timeDim = 2
+  private val inputDim = 1
+  private val hidDim = 2
+  private var (batchSize, times) = (0, 0)
+
+  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
+    require(module.isInstanceOf[Cell[T]],
+      "Recurrent: contained module should be Cell type")
+    modules += module.asInstanceOf[Cell[T]]
+    this
+  }
+
+  // list of cell modules cloned from added modules
+  private val cells: ArrayBuffer[Cell[T]]
+  = ArrayBuffer[Cell[T]]()
+
+  /**
+   * Clone N models; N depends on the time dimension of the input
+   * @param times
+   * @param batchSize
+   * @param hiddenSize
+   */
+  private def extend(times: Int, batchSize: Int, hiddenSize: Int): Unit = {
+    if (hidden == null) {
+      require(modules != null && modules.length == 1,
+        "Recurrent extend: should contain only one cell")
+
+      cells.clear()
+      cells += modules.head.asInstanceOf[Cell[T]]
+      val cell = cells.head
+
+      // The cell will help initialize or resize the hidden variable.
+      hidden = cell.hidResize(hidden = null, size1 = batchSize, size2 = hiddenSize)
+
+      /*
+       * Since the gradHidden is only used as an empty Tensor or Table during
+       * backward operations. We can reuse the hidden variable by pointing the
+       * gradHidden to it.
+       */
+      gradHidden = hidden
+    } else {
+      cells.head.hidResize(hidden = hidden, size1 = batchSize, size2 = hiddenSize)
+      gradHidden = hidden
+    }
+    var t = cells.length
+    if (t < times) {
+      while (t < times) {
+        cells += cells.head.cloneModule()
+          .asInstanceOf[Cell[T]]
+        t += 1
+      }
+      share(cells)
+    }
+  }
+
+  /**
+   * Sharing weights, bias, gradWeights across all the cells in time dim
+   * @param cells
+   */
+  def share(cells: ArrayBuffer[Cell[T]]): Unit = {
+    val params = cells.head.parameters()
+    cells.map(c => {
+      if (!c.parameters().eq(params)) {
+        var i = 0
+        while (i < c.parameters()._1.length) {
+          c.parameters()._1(i).storage().set(params._1(i).storage())
+          i += 1
+        }
+        i = 0
+        while (i < c.parameters()._2.length) {
+          c.parameters()._2(i).storage().set(params._2(i).storage())
+          i += 1
+        }
+      }
+      c
+    })
+  }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 3,
       "Recurrent: input should be a 3D Tensor, e.g [batch, times, nDim], " +
         s"current input.dim = ${input.dim}")
-    require(modules.length == 2,
-      "Recurrent: rnn container must include a cell and a non-linear layer, " +
-        s"current container length is ${modules.length}")
 
-    module = modules(0)
-    transform = modules(1)
+    batchSize = input.size(batchDim)
+    times = input.size(timeDim)
 
-    batchSize = input.size(1)
-    times = input.size(2)
+    output.resize(batchSize, times, hiddenSize)
 
-    output.resize(Array(batchSize, times, hiddenSize))
-    hidden.resize(Array(batchSize, times + 1, hiddenSize))
+    // Clone N modules along the sequence dimension.
+    extend(times, batchSize, hiddenSize)
 
+    /**
+     * currentInput forms a T() type. It contains two elements, hidden and input.
+     * Each time it will feed the cell with T(hidden, input) (or T(input, hidden) depends on
+     * your hidDim and inputDim), and the cell will give a table output containing two
+     * identical elements T(output, output). One of the elements from the cell output is
+     * the updated hidden. Thus the currentInput will update its hidden element with this output.
+     */
+    currentInput(hidDim) = hidden
     var i = 1
     while (i <= times) {
-      val curInput = T(input.select(2, i), hidden.select(2, i))
-      val currentOutput = module.updateOutput(curInput)
-      transform.updateOutput(currentOutput)
-      output.select(2, i).copy(transform.output.toTensor)
-      hidden.select(2, i + 1).copy(transform.output.toTensor)
+      currentInput(inputDim) = input.select(timeDim, i)
+      cells(i - 1).updateOutput(currentInput)
+      output.select(timeDim, i).copy(cells(i - 1).output.toTable(inputDim))
+      currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
       i += 1
     }
     output
@@ -65,58 +149,93 @@ class Recurrent[T : ClassTag] (
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
+    currentGradOutput(hidDim) = gradHidden
+    /**
+     * Since we clone module along the time dimension, the output of each
+     * iteration have been recorded by the cloned modules. Thus, we can
+     * reuse these outputs during the backward operations by copying the
+     * outputs to _input variable.
+     *
+     * The output of Cell(i-1) should be one of the elements fed to the inputs
+     * of Cell(i)
+     * The first module in the cells array accepts zero hidden parameter.
+     */
     var i = times
     while (i >= 1) {
-      transform.output = hidden.select(2, i + 1)
-      var deltaHidden = transform.updateGradInput(hidden.select(2, i), gradOutput.select(2, i))
-      var bpttStep = i
-      while (bpttStep >= Math.max(1, i - bpttTruncate)) {
-        val curInput = T(input.select(2, bpttStep), hidden.select(2, bpttStep))
-        module.accGradParameters(curInput, deltaHidden)
-        transform.output.toTensor
-          .copy(hidden.select(2, bpttStep))
-        deltaHidden = transform.updateGradInput(Tensor(),
-          module.updateGradInput(curInput, deltaHidden).toTable(2))
-        bpttStep -= 1
-      }
+      currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
+      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
+        else hidden
+      _input(inputDim) = input.select(timeDim, i)
+      cells(i - 1).accGradParameters(_input, currentGradOutput, scale)
+      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(input)
-
+    currentGradOutput(hidDim) = gradHidden
     var i = times
     while (i >= 1) {
-      transform.output.toTensor
-        .copy(hidden.select(2, i + 1))
-      var deltaHidden = transform.updateGradInput(hidden.select(2, i), gradOutput.select(2, i))
-      var bpttStep = i
-      while (bpttStep >= Math.max(1, i - bpttTruncate)) {
-        val curInput = T(input.select(2, bpttStep), hidden.select(2, bpttStep))
-        val gradInputBundle = module.updateGradInput(curInput, deltaHidden).toTable
-        gradInput.select(2, bpttStep).add(gradInputBundle(1).asInstanceOf[Tensor[T]])
-        transform.output.toTensor
-          .copy(hidden.select(2, bpttStep))
-        deltaHidden = transform.updateGradInput(Tensor(), gradInputBundle(2))
-        bpttStep -= 1
-      }
+      currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
+      _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
+        else hidden
+      _input(inputDim) = input.select(timeDim, i)
+      cells(i - 1).updateGradInput(_input, currentGradOutput)
+      gradInput.select(timeDim, i).copy(cells(i - 1).gradInput.toTable(inputDim))
+      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
     gradInput
   }
 
+  override def clearState() : this.type = {
+    super.clearState()
+    hidden = null
+    gradHidden = null
+    hiddenShape = null
+    currentInput.clear()
+    currentGradOutput.clear()
+    _input.clear()
+    cells.clear()
+    this
+  }
+
+  override def reset(): Unit = {
+    require(modules != null && modules.length == 1,
+      "Recurrent extend: should contain only one cell")
+    require(modules.head.isInstanceOf[Cell[T]],
+      "Recurrent: should contain module with Cell type")
+
+    modules.foreach(_.reset())
+    cells.clear()
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Recurrent[T]]
+
   override def toString(): String = {
     val str = "nn.Recurrent"
     str
+  }
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Recurrent[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        cells == that.cells
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), cells)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
 
 object Recurrent {
   def apply[@specialized(Float, Double) T: ClassTag](
-    hiddenSize: Int = 3,
-    bpttTruncate: Int = 2)
+    hiddenSize: Int = 3)
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
-    new Recurrent[T](hiddenSize, bpttTruncate)
+    new Recurrent[T](hiddenSize)
   }
 }
