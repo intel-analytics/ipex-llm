@@ -74,8 +74,7 @@ object Train {
         val curModel = SimpleRNN(
           inputSize = dictionaryLength,
           hiddenSize = param.hiddenSize,
-          outputSize = dictionaryLength,
-          bpttTruncate = param.bptt)
+          outputSize = dictionaryLength)
         curModel.reset()
         curModel
       }
