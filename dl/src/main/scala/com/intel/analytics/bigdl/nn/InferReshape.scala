@@ -25,10 +25,18 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 /**
- * Reshape with the support of infered size, the infered dim is indicated as -1
- * note that at most one infered dim is supported,
- * the element number is not changed after reshape
- * e.g. reshape from (3, 2) to (2, -1) is reshape to (2, 3)
+ * Reshape with the support of infered size,
+ * Positive numbers are used directly, setting the corresponding dimension of the output tensor.
+ * In addition, two special values are accepted:
+ * 0 means "copy the respective dimension of the input".
+ * i.e., if the input has 2 as its 1st dimension,
+ * the output will have 2 as its 1st dimension as well
+ * -1 stands for "infer this from the other dimensions"
+ * this dimension is calculated to keep the overall element count the same as in the input.
+ * At most one -1 can be used in a reshape operation.
+ *
+ * For example, (4, 5, 6, 7) -> InferReshape (4, 0, 3, -1) -> (4, 5, 3, 14)
+ * with 1st and 3rd dim same as given size, with 2nd dim same as input, and the infered dim is 14
  * @param size      the target tensor size
  * @param batchMode whether in batch mode
  * @tparam T type
@@ -36,32 +44,45 @@ import scala.reflect.ClassTag
 class InferReshape[@specialized(Float, Double) T: ClassTag](
   size: Array[Int], var batchMode: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  val inferedSizes = if (batchMode) new Array[Int](size.length + 1) else new Array[Int](size.length)
+  private var inferedSizes: Array[Int] = _
+  private var startIndex = 0
+  private var inferIndex = -1
+  private var subTotal = 1
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (size.contains(-1)) {
-      assert(sum(size.map(x => if (x == ev.fromType(-1)) 1 else 0)) == 1,
-        "at most a single (1) value of -1 may be specified")
-    }
-    var inferIndex = -1
-    var count = 1
-    val startIndex = if (batchMode) 1 else 0
+  init()
+
+  private def init(): Unit = {
+    var minusOneCount = 0
+    inferedSizes = if (batchMode) new Array[Int](size.length + 1) else new Array[Int](size.length)
+    if (batchMode) startIndex = 1
     var i = 0
     while (i < size.length) {
-      if (size(i) == 0) {
-        inferedSizes(i + startIndex) = input.size(i + startIndex + 1 - startIndex)
-        count *= inferedSizes(i + startIndex)
+      if (size(i) == -1) {
+        minusOneCount += 1
+        inferIndex = i + startIndex
       }
-      else if (size(i) == -1) inferIndex = i + startIndex
-      else {
+      else if (size(i) != 0) { // use the exact value in given size
         inferedSizes(i + startIndex) = size(i)
-        count *= size(i)
+        subTotal *= size(i)
       }
       i += 1
     }
-    require(count <= input.nElement())
+    require(minusOneCount == 1, "at most a single value of -1 may be specified")
+  }
+
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    var total = subTotal
+    var i = 0
+    while (i < size.length) {
+      if (size(i) == 0) { // use the same dim value as input
+        inferedSizes(i + startIndex) = input.size(i + 1)
+        total *= input.size(i + 1)
+      }
+      i += 1
+    }
+    require(total <= input.nElement(), "inferred size dim product must be <= total input #elements")
     if (inferIndex != -1) {
-      inferedSizes(inferIndex) = input.nElement() / count
+      inferedSizes(inferIndex) = input.nElement() / total
       if (batchMode) inferedSizes(inferIndex) = inferedSizes(inferIndex) / input.size(1)
     }
 
@@ -124,7 +145,7 @@ class InferReshape[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Reshape(${
+    s"nn.InferReshape(${
       size.mkString("x")
     })"
   }
