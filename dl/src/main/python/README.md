@@ -52,7 +52,7 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(PySample.from_ndarray(features, 
     trained_model = optimizer.optimize()
 ```
 
-4) The full LeNet notebook can be found from: http://nbviewer.jupyter.org/gist/zhichao-li/cf853705b43b38478d1d97c3532fb600
+4) LeNet example can be found from: models/lenet5.py
  
 
 ## Build BigDL
