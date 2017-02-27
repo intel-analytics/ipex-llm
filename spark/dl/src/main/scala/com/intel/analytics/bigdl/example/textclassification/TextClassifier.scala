@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.example.textclassification.SimpleTokenizer._
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, _}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
 import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -208,9 +208,7 @@ case class TextClassificationParams(baseDir: String = "./",
 
 object TextClassifier {
   val log: Logger = LoggerFactory.getLogger(this.getClass)
-  Logger4j.getLogger("org").setLevel(Levle4j.ERROR)
-  Logger4j.getLogger("akka").setLevel(Levle4j.ERROR)
-  Logger4j.getLogger("breeze").setLevel(Levle4j.ERROR)
+  LoggerFilter.redirectSparkInfoLogs()
   Logger4j.getLogger("com.intel.analytics.bigdl.optim").setLevel(Levle4j.INFO)
 
   def main(args: Array[String]): Unit = {
