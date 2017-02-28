@@ -319,8 +319,9 @@ object Engine {
         .setExecutorEnv("OMP_NUM_THREADS", "1")
         .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
         .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
+        // Note that this is removed after Spark 1.6
         .set("spark.shuffle.blockTransferService", "nio")
-        .set("spark.akka.frameSize", "10")
+        .set("spark.shuffle.reduceLocality.enabled", "false")
         .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
     } else {
       throw new IllegalArgumentException(engineType.toString)
