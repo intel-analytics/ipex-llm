@@ -42,8 +42,7 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
     linear2.weight.map(linear1.weight, (a, b) => {b})
     linear2.bias.map(linear1.bias, (a, b) => {b})
     val model = Sequential[Float]()
-      .add(TimeDistributed[Float]()
-        .add(linear1))
+      .add(TimeDistributed[Float](linear1))
 
     val output = model.forward(input).toTensor[Float].clone
     var i = 1
@@ -79,8 +78,7 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
     linear2.weight.map(linear1.weight, (a, b) => {b})
     linear2.bias.map(linear1.bias, (a, b) => {b})
     val model = Sequential[Float]()
-      .add(TimeDistributed[Float]()
-        .add(linear1))
+      .add(TimeDistributed[Float](linear1))
 
     val output = model.forward(input).toTensor[Float].clone
     var i = 1
@@ -115,8 +113,7 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
     val logSoftMax1 = LogSoftMax[Float]()
     val logSoftMax2 = LogSoftMax[Float]()
     val model = Sequential[Float]()
-      .add(TimeDistributed[Float]()
-        .add(logSoftMax1))
+      .add(TimeDistributed[Float](logSoftMax1))
 
     val output = model.forward(input).toTensor[Float].clone
     val gradInput = model.backward(input, gradOutput).toTensor[Float].clone

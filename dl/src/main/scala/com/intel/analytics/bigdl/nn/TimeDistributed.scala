@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -34,16 +35,22 @@ import scala.reflect.ClassTag
  * @tparam T
  */
 
-class TimeDistributed[T : ClassTag] ()
+class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
 (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
-  private def layer: Module[T] = modules(0)
+  super.add(layer)
 
   private val fInput: Tensor[T] = Tensor[T]()
   private val fGradOutput: Tensor[T] = Tensor[T]()
   private var inputSize: Array[Int] = _
   private var gradOutputSize: Array[Int] = _
   private var outputSize: Array[Int] = _
+
+  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
+    throw new IllegalAccessException("TimeDistributed: cannot use this method;" +
+      " please insert your module to the constructor.")
+    this
+  }
 
   private def combine(src: Array[Int], target: Array[Int]): Unit = {
     require(src.length == target.length + 1,
@@ -156,8 +163,8 @@ class TimeDistributed[T : ClassTag] ()
 }
 
 object TimeDistributed {
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[@specialized(Float, Double) T: ClassTag](layer: TensorModule[T])
   (implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
-    new TimeDistributed[T]()
+    new TimeDistributed[T](layer)
   }
 }
