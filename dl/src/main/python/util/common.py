@@ -18,6 +18,7 @@
 import sys
 from py4j.protocol import Py4JJavaError
 from py4j.java_gateway import JavaObject
+from py4j.java_gateway import is_instance_of
 from py4j.java_collections import ListConverter, JavaArray, JavaList
 
 from pyspark import RDD, SparkContext
@@ -160,8 +161,8 @@ def _java2py(sc, r, encoding="bytes"):
 
         if clsName == 'DataFrame':
             return DataFrame(r, SQLContext.getOrCreate(sc))
-        # TODO: Make this to be a more generic model
-        if clsName == 'Sequential':
+        if is_instance_of(sc._gateway, r,
+                    "com.intel.analytics.bigdl.nn.Container"):
             from optim.optimizer import Model
             return Model.of(r)
 
