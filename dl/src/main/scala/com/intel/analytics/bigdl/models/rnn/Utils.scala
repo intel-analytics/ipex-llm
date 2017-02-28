@@ -20,7 +20,7 @@ import java.io._
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, SentenceBiPadding$, SentenceSplitter, SentenceTokenizer}
+import com.intel.analytics.bigdl.dataset.text._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.util.Random
