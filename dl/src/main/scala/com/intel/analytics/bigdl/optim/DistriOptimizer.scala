@@ -238,10 +238,10 @@ object DistriOptimizer {
         accumulateCount += recordsNum.value
         val end = System.nanoTime()
         wallClockTime += end - start
+        optimMethod.updateHyperParameter(state, driverState)
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${recordsNum.value / ((end - start) / 1e9)} records/second. Loss is ${
-            lossSum.value / finishedModelNum
-          }. ")
+            lossSum.value / finishedModelNum}. ${optimMethod.getHyperParameter(state)}")
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
