@@ -98,6 +98,18 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     state.delete("dfdx")
     state.delete("deltaParameters")
   }
+
+  /**
+   * return an string of current learning Rate.
+   */
+  override def getHyperParameter(config: Table): String = {
+    s"Current learning rate is ${-config[Double]("clr")}."
+  }
+
+  override def updateHyperParameter(config: Table, state: Table): Unit = {
+    val lrSchedule = config.get[LearningRateSchedule]("learningRateSchedule").getOrElse(Default())
+    lrSchedule.updateHyperParameter(config, state)
+  }
 }
 
 object SGD {
