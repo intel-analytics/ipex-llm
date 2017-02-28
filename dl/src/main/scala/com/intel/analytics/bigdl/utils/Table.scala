@@ -54,14 +54,6 @@ class Table private[bigdl](
     this
   }
 
-  def getState(): Map[Any, Any] = {
-    val newState = mutable.Map[Any, Any]()
-    for ((k, v) <- this.state) {
-      newState(k) = v
-    }
-    newState
-  }
-
   def keySet: Set[Any] = state.keySet
 
   def foreach[U](f: ((Any, Any)) => U): Unit = state.foreach(f)
