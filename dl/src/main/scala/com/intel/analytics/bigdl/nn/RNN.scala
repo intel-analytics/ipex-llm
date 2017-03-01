@@ -37,8 +37,8 @@ class RnnCell[T : ClassTag] (
   val parallelTable = ParallelTable[T]()
   val i2h = Linear[T](inputSize, hiddenSize)
   val h2h = Linear[T](hiddenSize, hiddenSize)
-  parallelTable.add(i2h)
   parallelTable.add(h2h)
+  parallelTable.add(i2h)
   val cAddTable = CAddTable[T]()
 
   val rnn = Sequential[T]()
