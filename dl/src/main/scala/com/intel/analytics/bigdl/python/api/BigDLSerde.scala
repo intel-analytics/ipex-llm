@@ -22,7 +22,7 @@ package org.apache.spark.bigdl.api.python
 import java.io.OutputStream
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.python.api.{TestResult, PySample}
+import com.intel.analytics.bigdl.python.api.{TestResult, Sample}
 import net.razorvine.pickle._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.api.python.SerDeUtil
@@ -157,10 +157,10 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
     private[python] def saveState(obj: Object, out: OutputStream, pickler: Pickler)
   }
 
-  private[python] class PySamplePickler extends BigDLBasePickler[PySample] {
+  private[python] class SamplePickler extends BigDLBasePickler[Sample] {
 
     def saveState(obj: Object, out: OutputStream, pickler: Pickler): Unit = {
-      val record = obj.asInstanceOf[PySample]
+      val record = obj.asInstanceOf[Sample]
       saveObjects(out,
         pickler,
         record.features,
@@ -171,7 +171,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       if (args.length != 5) {
         throw new PickleException("should be 5, not : " + args.length)
       }
-      new PySample(args(0).asInstanceOf[JArrayList[Any]],
+      new Sample(args(0).asInstanceOf[JArrayList[Any]],
         args(1).asInstanceOf[JArrayList[Any]],
         args(2).asInstanceOf[JArrayList[Int]],
         args(3).asInstanceOf[JArrayList[Int]],
@@ -182,11 +182,11 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
   private[python] class TestResultPickler extends BigDLBasePickler[TestResult] {
 
     def saveState(obj: Object, out: OutputStream, pickler: Pickler): Unit = {
-      val inferenceResult = obj.asInstanceOf[TestResult]
+      val testResult = obj.asInstanceOf[TestResult]
       saveObjects(out,
         pickler,
-        inferenceResult.result,
-        inferenceResult.count, inferenceResult.method)
+        testResult.result,
+        testResult.count, testResult.method)
     }
 
     def construct(args: Array[Object]): Object = {
@@ -205,7 +205,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
     synchronized {
       if (!initialized) {
         SerDe.initialize()
-        new PySamplePickler().register()
+        new SamplePickler().register()
         new TestResultPickler().register()
         initialized = true
       }

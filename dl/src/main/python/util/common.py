@@ -18,7 +18,6 @@
 import sys
 from py4j.protocol import Py4JJavaError
 from py4j.java_gateway import JavaObject
-from py4j.java_gateway import is_instance_of
 from py4j.java_collections import ListConverter, JavaArray, JavaList
 
 from pyspark import RDD, SparkContext
@@ -38,27 +37,27 @@ class JavaValue(object):
         print("creating: " + name)
         return name
 
-    def __init__(self, bigdl_type="float", *args):
-        self.value = callBigDlFunc(bigdl_type, self.jvm_class_constructor(),
-                                   *args)
+    def __init__(self, jvalue, bigdl_type, *args):
+        self.value = jvalue if jvalue else callBigDlFunc(
+            bigdl_type, self.jvm_class_constructor(), *args)
         self.bigdl_type = bigdl_type
 
 
-class InferenceResult():
+class TestResult():
     def __init__(self, result, count, method):
         self.result = result
         self.count = count
         self.method = method
 
     def __reduce__(self):
-        return (InferenceResult, (self.result, self.count, self.method))
+        return (TestResult, (self.result, self.count, self.method))
 
     def __str__(self):
         return "result: %s, count: %s, method: %s" % (
             self.result, self.count, self.method)
 
 
-class PySample(object):
+class Sample(object):
     def __init__(self, features, label, features_shape, label_shape,
                  bigdl_type="float"):
         self.features = features
@@ -88,7 +87,7 @@ class PySample(object):
             bigdl_type=bigdl_type)
 
     def __reduce__(self):
-        return (PySample, (
+        return (Sample, (
             self.features, self.label, self.features_shape, self.label_shape,
             self.bigdl_type))
 
@@ -107,7 +106,7 @@ _picklable_classes = [
     'DenseMatrix',
     'Rating',
     'LabeledPoint',
-    'PySample',
+    'Sample',
     'TestResult'
 ]
 
@@ -116,7 +115,7 @@ def initEngine(nodeNum, coreNum, bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine", nodeNum, coreNum)
 
 
-def calc_spark_conf(coreNum, nodeNum):
+def create_spark_conf(coreNum, nodeNum):
     print("coreNum:%s,  nodeNum: %s" % (coreNum, nodeNum))
     sparkConf = SparkConf()
     sparkConf.setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
@@ -132,15 +131,15 @@ def calc_spark_conf(coreNum, nodeNum):
 
 
 def callBigDlFunc(bigdl_type, name, *args):
-    """ Call API in PythonBigDLAPI """
+    """ Call API in PythonBigDL """
     sc = SparkContext.getOrCreate()
     if bigdl_type == "float":
         api = getattr(
-            sc._jvm.com.intel.analytics.bigdl.python.api.PythonBigDLAPI.ofFloat(),
+            sc._jvm.com.intel.analytics.bigdl.python.api.PythonBigDL.ofFloat(),
             name)
     elif bigdl_type == "double":
         api = getattr(
-            sc._jvm.com.intel.analytics.bigdl.python.api.PythonBigDLAPI.ofDouble(),
+            sc._jvm.com.intel.analytics.bigdl.python.api.PythonBigDL.ofDouble(),
             name)
     else:
         raise Exception("Not supported bigdl_type: %s" % bigdl_type)
@@ -161,10 +160,6 @@ def _java2py(sc, r, encoding="bytes"):
 
         if clsName == 'DataFrame':
             return DataFrame(r, SQLContext.getOrCreate(sc))
-        if is_instance_of(sc._gateway, r,
-                    "com.intel.analytics.bigdl.nn.Container"):
-            from optim.optimizer import Model
-            return Model.of(r)
 
         if clsName in _picklable_classes:
             r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)

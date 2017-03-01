@@ -33,6 +33,3 @@ export SPARK_CLASSPATH=$DL_HOME/dl/target/bigdl-0.1.0-SNAPSHOT-jar-with-dependen
 
 cd "`dirname $0`"
 exec python -u ./run-tests.py "$@"
-
-
-#--python-executables=python

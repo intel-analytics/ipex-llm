@@ -22,6 +22,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.optim.Trigger
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
@@ -61,7 +62,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val labelShape = util.Arrays.asList(1)
 
     val data = sc.parallelize(0 to 100).map {i =>
-      PySample(
+      Sample(
         Range(0, 100).toList.map(_.toDouble).asJava.asInstanceOf[JList[Any]],
         util.Arrays.asList(i % 2 + 1.0d),
         featuresShape,
@@ -77,7 +78,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.add(ReLU[Double]())
     model.add(LogSoftMax[Double]())
 
-    val pp = PythonBigDLAPI.ofDouble()
+    val pp = PythonBigDL.ofDouble()
     val optimizer = pp.createOptimizer(
       model,
       data.toJavaRDD(),
@@ -95,8 +96,13 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val resultRDD = pp.predict(trainedModel, data.map(pp.toSample(_)))
     val result = resultRDD.take(5)
     println(result)
-
+    // TODO: verify the parameters result
     val parameters = pp.modelGetParameters(trainedModel)
 //    println(parameters)
+    val testResult = pp.modelTest(trainedModel,
+      data.toJavaRDD(),
+      batchSize = 32,
+      valMethods = util.Arrays.asList("top1"))
+    println(testResult)
   }
 }
