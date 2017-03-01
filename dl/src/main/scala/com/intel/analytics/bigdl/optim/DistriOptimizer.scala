@@ -19,10 +19,12 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch}
+import com.intel.analytics.bigdl.optim.SGD.Default
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.visualization.tensorboard.FileWriter
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
@@ -103,6 +105,10 @@ object DistriOptimizer {
     val driverSubModelNum = partitionNum * _subModelNumber
     var dropModelNumBatch = 0
     var lossArray = new Array[Double](_subModelNumber)
+    // TODO: use param to define path
+    val trainLogger = new FileWriter("./train")
+    val validationLogger = new FileWriter("./validation")
+    val tbLoggerTrigger = Some(Trigger.severalIteration(10))
 
     var epochStart = System.nanoTime()
     var dataRDD = dataset.data(train = true)
@@ -240,12 +246,25 @@ object DistriOptimizer {
         val end = System.nanoTime()
         wallClockTime += end - start
         optimMethod.updateHyperParameter(state, driverState)
+        trainLogger.addSummary(
+          TBLogger.scalar("Throughput", recordsNum.value.toFloat / ((end - start) / 1e9f)),
+          driverState[Int]("neval")
+        )
+        trainLogger.addSummary(
+          TBLogger.scalar("Loss", lossSum.value.toFloat / finishedModelNum),
+          driverState[Int]("neval")
+        )
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${recordsNum.value / ((end - start) / 1e9)} records/second. Loss is ${
             lossSum.value / finishedModelNum}. ${optimMethod.getHyperParameter(state)}")
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
+
+        trainLogger.addSummary(
+          TBLogger.scalar("learningRate", -state[Double]("clr").toFloat),
+          driverState[Int]("neval")
+        )
 
         // compute threshold
         iteration += 1
@@ -286,11 +305,12 @@ object DistriOptimizer {
           logger.info(s"${_header} Epoch finished. Wall clock time is ${wallClockTime / 1e6}ms")
 
           driverState("epoch") = driverState[Int]("epoch") + 1
+          trainLogger.flush()
           dataset.shuffle()
           dataRDD = dataset.data(train = true)
           accumulateCount = 0
         }
-        validate(
+        val result = validate(
           validationTrigger,
           validationDataSet,
           validationMethods,
@@ -298,6 +318,22 @@ object DistriOptimizer {
           models,
           wallClockTime,
           driverState
+        )
+        if (null != result) {
+          result.foreach { r =>
+            validationLogger.addSummary(
+              TBLogger.scalar(r._2.toString(), r._1.getResult()),
+              driverState[Int]("neval") - 1
+            )
+          }
+          validationLogger.flush()
+        }
+        saveParameter(
+          tbLoggerTrigger,
+          Some(trainLogger),
+          models,
+          driverState,
+          parameters
         )
 
         checkpoint(
@@ -309,11 +345,14 @@ object DistriOptimizer {
           driverState,
           parameters
         )
+
       } else {
         logger.info(s"Warning!!! Ignore this iteration as more than maxDropPercentage " +
           s"module is dropped!! Finished modules number: ${finishedModelNum}")
       }
     }
+    trainLogger.close()
+    validationLogger.close()
   }
 
 
@@ -337,6 +376,32 @@ object DistriOptimizer {
         localState("epoch") = state[Int]("epoch")
         saveState(localState, cachePath, isOverWrite, s"" +
           s".${state[Int]("neval")}")
+      }
+    }
+  }
+
+  private def saveParameter[T: ClassTag](
+        saveTrigger: Option[Trigger],
+        tBLogger: Option[FileWriter],
+        models: RDD[Cache[T]],
+        driverState: Table,
+        parameters: AllReduceParameter[T]): Unit = {
+    if (saveTrigger.isDefined) {
+      val trigger = saveTrigger.get
+      if (trigger(driverState)) {
+        val model = getModel(models, parameters).asInstanceOf[Module[Float]]
+        val modules = nn.Utils.getNamedModules(model)
+        modules.foreach{v =>
+          val name = v._1
+          val module = v._2
+          val p = module.parameters
+          if (null != p) {
+            tBLogger.get.addSummary(
+              TBLogger.histogram(module.getName + "/weight", p._1(0)), driverState("neval"))
+            tBLogger.get.addSummary(
+              TBLogger.histogram(module.getName + "/bias", p._1(1)), driverState("neval"))
+          }
+        }
       }
     }
   }
@@ -418,13 +483,13 @@ object DistriOptimizer {
     models: RDD[Cache[T]],
     wallClockTime: Long,
     state: Table
-  ): Unit = {
+  ): Array[(ValidationResult, ValidationMethod[T])] = {
     if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
-      return
+      return null
     }
     val trigger = validationTrigger.get
     if (!trigger(state)) {
-      return
+      return null
     }
     val vMethods = validationMethods.get
     val validateRDD = validationDataSet.get.toDistributed().data(train = false)
@@ -433,7 +498,7 @@ object DistriOptimizer {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException
     }
-    ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
+    val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
       val cached = modelIter.next()
       val criterion = cached.localCriterions
       val workingModels = cached.localModels
@@ -467,9 +532,11 @@ object DistriOptimizer {
       left.zip(right).map { case (l, r) =>
         l + r
       }
-    }).zip(vMethods).foreach(r => {
+    }).zip(vMethods)
+    results.foreach(r => {
       logger.info(s"${r._2} is ${r._1}")
     })
+    results
   }
 
   private def getModel[T: ClassTag](

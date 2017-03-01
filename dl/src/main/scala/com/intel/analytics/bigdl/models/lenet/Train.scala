@@ -44,6 +44,7 @@ object Train {
         conf.setAppName("Train Lenet on MNIST")
           .set("spark.akka.frameSize", 64.toString)
           .set("spark.task.maxFailures", "1")
+          .setMaster("local[1]")
         new SparkContext(conf)
       })
 
@@ -62,7 +63,8 @@ object Train {
         T.load(param.stateSnapshot.get)
       } else {
         T(
-          "learningRate" -> param.learningRate
+          "learningRate" -> param.learningRate,
+          "learningRateDecay" -> 1e-5
         )
       }
 
@@ -95,7 +97,7 @@ object Train {
         .setValidation(
           trigger = Trigger.everyEpoch,
           dataset = validationSet,
-          vMethods = Array(new Top1Accuracy))
+          vMethods = Array(new Top1Accuracy, new Top5Accuracy[Float], new Loss[Float]))
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
