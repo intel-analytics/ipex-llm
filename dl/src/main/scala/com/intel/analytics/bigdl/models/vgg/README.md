@@ -7,8 +7,7 @@ You can download CIFAR-10 dataset from [this webpage](https://www.cs.toronto.edu
 
 ## Get the JAR
 You can build one by refer to the
-[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code. We
-will release a pre-build package soon.
+[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code.
 
 ## Train Model
 Example command for running as a local Java program
@@ -16,48 +15,59 @@ Example command for running as a local Java program
 ./dist/bin/bigdl.sh -- \
 java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.models.vgg.Train \
---core physical_core_number \
---node 1 \
 -f Cifar-folder \
 -b batch_size \
---checkpoint ~/model
+--checkpoint ./model
 ```
 
 ## Train Model on Spark
 Example command for running in Spark cluster mode
 ```
 ./dist/bin/bigdl.sh -- \
-spark-submit --master local[core_number] \
+spark-submit --master local[physical_core_number] \
 --class com.intel.analytics.bigdl.models.vgg.Train \
 dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
---core physical_core_number \
---node 1 \
 -f Cifar-folder \
 -b batch_size \
 --checkpoint ~/model
 ```
 
-Example command for running in Spark cluster mode
+Standalone cluster mode, example command
 ```
 ./dist/bin/bigdl.sh -- \
-spark-submit --class com.intel.analytics.bigdl.models.vgg.Train \
+spark-submit \
+--master spark://... \
+--executor-cores cores_per_executor \
+--total-executor-cores total_cores_for_the_job \
+--class com.intel.analytics.bigdl.models.vgg.Train \
 dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
---core physical_core_number \
---node node_number \
 -f Cifar-folder \
 -b batchsize \
---checkpoint ~/model
+--checkpoint ./model
+```
+Yarn cluster mode, example command
+```
+./dist/bin/bigdl.sh -- \
+spark-submit \
+--master yarn \
+--deploy-mode client \
+--executor-cores cores_per_executor \
+--num-executors executors_number \
+--driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--class com.intel.analytics.bigdl.models.vgg.Train \
+dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+-f Cifar-folder \
+-b batch_size \
+--checkpoint ./model
 ```
 In the above commands
 * -f: where you put your Cifar10 data
-* --core: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
-* --node: Node number.
 * --checkpoint: Where you cache the model/train_state snapshot. You should input a folder and
 make sure the folder is created when you run this example. The model snapshot will be named as
 model.#iteration_number, and train state will be named as state.#iteration_number. Note that if
 there are some files already exist in the folder, the old file will not be overwrite for the
 safety of your model files.
-* -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number. In this example, node_number is 1 and the mini-batch size is suggested to be set to core_number * 4
+* -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.
 ## Test Model
 Example command for running as a local Java program
 ```
@@ -65,9 +75,7 @@ Example command for running as a local Java program
 java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.models.vgg.Test \
 -f cifar-folder \
---model model_file \
---nodeNumber 1
---core physical_core_number \
+--model model_file
 ```
 
 Example command for running in Spark local mode
@@ -75,28 +83,40 @@ Example command for running in Spark local mode
 ./dist/bin/bigdl.sh -- \
 spark-submit --master local[physical_core_number] \
 --class com.intel.analytics.bigdl.models.vgg.Test \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-all-in-one.jar \
+dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 -f cifar \
 --model model_file \
---nodeNumber 1 \
---core physical_core \
 -b batch_size
 ```
 
-Example command for running in Spark cluster mode
+Standalone cluster mode, example command
 ```
 ./dist/bin/bigdl.sh -- \
-spark-submit --class com.intel.analytics.bigdl.models.vgg.Test \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-all-in-one.jar \
+spark-submit \
+--master spark://... \
+--executor-cores cores_per_executor \
+--total-executor-cores total_cores_for_the_job \
+--class com.intel.analytics.bigdl.models.vgg.Test \
+dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 -f cifar-folder \
 --model model_file \
---nodeNumber node_number \
---core physical_core_number \
+-b batch_size
+```
+Yarn cluster mode, example command
+```
+./dist/bin/bigdl.sh -- \
+spark-submit \
+--master yarn \
+--deploy-mode client \
+--executor-cores cores_per_executor \
+--num-executors executors_number \
+--class com.intel.analytics.bigdl.models.vgg.Test \
+dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+-f cifar-folder \
+--model ./model/model.iteration_number \
 -b batch_size
 ```
 In the above commands
 * -f: where you put your MNIST data
 * --model: the model snapshot file
-* --core: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
-* --nodeNumber: Node number.
 * -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number. In this example, node_number is 1 and the mini-batch size is suggested to be set to core_number * 4

@@ -32,8 +32,6 @@ object Utils {
     checkpoint: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
-    coreNumber: Int = -1,
-    nodeNumber: Int = -1,
     batchSize: Int = 150,
     maxEpoch: Int = 10
   )
@@ -51,14 +49,6 @@ object Utils {
     opt[String]("checkpoint")
       .text("where to cache the model and state")
       .action((x, c) => c.copy(checkpoint = Some(x)))
-    opt[Int]('c', "core")
-      .text("cores number on each node")
-      .action((x, c) => c.copy(coreNumber = x))
-      .required()
-    opt[Int]('n', "node")
-      .text("node number to train the model")
-      .action((x, c) => c.copy(nodeNumber = x))
-      .required()
     opt[Int]('b', "batchSize")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
