@@ -41,7 +41,7 @@ object Test {
           conf.setAppName("Test Inception on ImageNet")
           new SparkContext(conf)
         })
-      val valSet = ImageNet2012(
+      val valSet = ImageNet2012Val(
         param.folder,
         sc,
         imageSize,
