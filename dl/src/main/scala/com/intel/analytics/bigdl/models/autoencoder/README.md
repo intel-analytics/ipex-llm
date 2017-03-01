@@ -15,23 +15,45 @@ then unzip them, you can get:
 - train-images-idx3-ubyte
 - train-labels-idx1-ubyte
 
+## Get the JAR
+You can build one by refer to the
+[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code.
+
 ## Train on Spark:
-Enter the following commands to run the model on Spark:
+Spark local mode, example command:
 ```{r, engine='sh'}
-$ ./dist/bin/bigdl.sh -- spark-submit \
-$ --class com.intel.analytics.bigdl.models.autoencoder.Train \
-$ ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
-$ --node 8 --core 10 -b 400 -f $DATA_FOLDER
+./dist/bin/bigdl.sh -- spark-submit --master local[physical_core_number]\
+  --class com.intel.analytics.bigdl.models.autoencoder.Train \
+  ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+  -b batch_size -f $DATA_FOLDER
+```
+Spark standalone mode, example command:
+```{r, engine='sh'}
+./dist/bin/bigdl.sh -- spark-submit --master spark://... \
+  --executor-cores cores_per_executor \
+  --total-executor-cores total_cores_for_the_job \
+  --class com.intel.analytics.bigdl.models.autoencoder.Train \
+  ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+  -b batch_size -f $DATA_FOLDER
+```
+Spark yarn mode, example command:
+```{r, engine='sh'}
+./dist/bin/bigdl.sh -- spark-submit --master yarn --deploy-mode client\
+  --executor-cores cores_per_executor \
+  --num-executors executors_number \
+  --class com.intel.analytics.bigdl.models.autoencoder.Train \
+  ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+  -b batch_size -f $DATA_FOLDER
 ```
 where `$DATA_FOLDER` is the directory containing the MNIST training data, whose default value is "./ ".
 
 ## Train on Local:
 Enter the following commands to run the model on local:
 ```{r, engine='sh'}
-$ ./dist/bin/bigdl.sh -- java -cp \
-$ ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
-$ com.intel.analytics.bigdl.models.autoencoder.Train \
-$ --core 1 --node 1 -f $DATA_FOLDER
+./dist/bin/bigdl.sh -c physical_core_number -- java -cp \
+  ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
+  com.intel.analytics.bigdl.models.autoencoder.Train \
+  -b batch_size -f $DATA_FOLDER
 ```
 where `$DATA_FOLDER` is the directory containing the MNIST training data, whose default value is "./ ".
 
