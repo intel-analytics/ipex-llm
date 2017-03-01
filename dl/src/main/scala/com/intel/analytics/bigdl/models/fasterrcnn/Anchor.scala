@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
  * Generates a regular grid of multi-scale, multi-aspect anchor boxes.
  * @param param (anchor ratios, anchor scales)
  */
-class AnchorUtil(param: AnchorParam) extends Serializable {
+class Anchor(param: AnchorParam) extends Serializable {
 
   private val basicAnchors: Tensor[Float] = generateBasicAnchors(param.ratios, param.scales)
 
@@ -217,8 +217,8 @@ class AnchorUtil(param: AnchorParam) extends Serializable {
   }
 }
 
-object AnchorUtil {
-  def apply(param: AnchorParam): AnchorUtil = new AnchorUtil(param)
+object Anchor {
+  def apply(param: AnchorParam): Anchor = new Anchor(param)
 }
 
 /**

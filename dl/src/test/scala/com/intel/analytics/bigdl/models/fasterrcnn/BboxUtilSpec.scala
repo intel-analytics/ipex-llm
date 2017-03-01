@@ -21,8 +21,6 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
 class BboxUtilSpec extends FlatSpec with Matchers {
-  val boxTool = new BboxUtil
-
   "bboxTransformInv" should "work properly" in {
 
     val boxes = Tensor(Storage(Array(0.54340494, 0.2783694, 0.4245176, 0.84477615,
@@ -51,7 +49,7 @@ class BboxUtilSpec extends FlatSpec with Matchers {
       .map(x => x.toFloat)))
     expectedResults.resize(5, 4)
 
-    val res = boxTool.bboxTransformInv(boxes, deltas)
+    val res = BboxUtil.bboxTransformInv(boxes, deltas)
     res should be(expectedResults)
   }
 
@@ -77,7 +75,7 @@ class BboxUtilSpec extends FlatSpec with Matchers {
 
     val expectedScores = Tensor(Storage(Array(0, 0, 0, 0.9985473, 0).map(x => x.toFloat)))
 
-    boxTool.clipBoxes(boxes, 60, 50, 4, 5, scores)
+    BboxUtil.clipBoxes(boxes, 60, 50, 4, 5, scores)
     scores should be(expectedScores)
     boxes should be(expectedResults)
   }

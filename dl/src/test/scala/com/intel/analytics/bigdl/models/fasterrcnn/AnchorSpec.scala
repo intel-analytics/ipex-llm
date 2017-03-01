@@ -20,10 +20,10 @@ package com.intel.analytics.bigdl.models.fasterrcnn
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
-class AnchorUtilSpec extends FlatSpec with Matchers {
+class AnchorSpec extends FlatSpec with Matchers {
   val anchorParam = AnchorParam(_scales = Array[Float](3, 6, 9, 16, 32),
     _ratios = Array(0.5f, 0.667f, 1.0f, 1.5f, 2.0f))
-  val anchorTool = new AnchorUtil(anchorParam)
+  val anchorTool = new Anchor(anchorParam)
 
   "generateBasicAnchors with 3 * 3 params" should "work well" in {
     val anchors = anchorTool.generateBasicAnchors(Tensor(Storage(Array[Float](0.5f, 1, 2))),
@@ -86,7 +86,7 @@ class AnchorUtilSpec extends FlatSpec with Matchers {
   }
 
   "getAllAnchors" should "work properly" in {
-    val anchorTool = new AnchorUtil(AnchorParam(Array(3f, 2f), Array(4f, 5f)))
+    val anchorTool = new Anchor(AnchorParam(Array(3f, 2f), Array(4f, 5f)))
     val all = anchorTool.generateAnchors(3, 2, 3)
 
     val expected = Tensor(Storage(Array(

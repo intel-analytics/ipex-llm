@@ -75,7 +75,6 @@ class Nms extends Serializable {
     val rowLength = boxes.stride(1)
     getAreas(boxArray, offset, rowLength, boxes.size(1), areas)
     // indices start from 0
-    getSortedScoreInds(scores, sortIndBuffer)
     val orderLength = if (!sorted) {
       getSortedScoreInds(scores, sortIndBuffer)
     } else {

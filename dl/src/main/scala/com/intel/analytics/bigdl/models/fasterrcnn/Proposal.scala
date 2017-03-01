@@ -33,9 +33,8 @@ import com.intel.analytics.bigdl.utils.Table
 class Proposal(preNmsTopN: Int, postNmsTopN: Int, anchorParam: AnchorParam)
   extends AbstractModule[Table, Table, Float] {
 
-  private val anchorUtil: AnchorUtil = new AnchorUtil(anchorParam)
+  private val anchorUtil: Anchor = new Anchor(anchorParam)
   @transient private var nms: Nms = _
-  @transient private var bbox: BboxUtil = _
   @transient private var bboxDeltas: Tensor[Float] = _
   @transient private var scores: Tensor[Float] = _
   @transient private var keep: Array[Int] = _
@@ -49,7 +48,6 @@ class Proposal(preNmsTopN: Int, postNmsTopN: Int, anchorParam: AnchorParam)
   private def init(): Unit = {
     if (nms == null) {
       nms = Nms()
-      bbox = new BboxUtil
       bboxDeltas = Tensor[Float]
       scores = Tensor[Float]
       sortedScores = Tensor[Float]
@@ -96,13 +94,13 @@ class Proposal(preNmsTopN: Int, postNmsTopN: Int, anchorParam: AnchorParam)
     // Enumerate all shifts
     val anchors = anchorUtil.generateAnchors(inputScore.size(4), inputScore.size(3), 16)
     // Convert anchors into proposals via bbox transformations
-    val proposals = bbox.bboxTransformInv(anchors, bboxDeltas)
+    val proposals = BboxUtil.bboxTransformInv(anchors, bboxDeltas)
     // clip predicted boxes to image
     // original faster rcnn way
     // minimum box width & height
     val minBoxH = minSize * imInfo.valueAt(3)
     val minBoxW = minSize * imInfo.valueAt(4)
-    var keepN = bbox.clipBoxes(proposals, imInfo.valueAt(1), imInfo.valueAt(2), minBoxH
+    var keepN = BboxUtil.clipBoxes(proposals, imInfo.valueAt(1), imInfo.valueAt(2), minBoxH
       , minBoxW, scores)
 
     val topNum = Math.min(preNmsTopN, keepN)

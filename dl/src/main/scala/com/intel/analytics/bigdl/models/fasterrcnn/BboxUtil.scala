@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.models.fasterrcnn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 
-class BboxUtil extends Serializable {
+object BboxUtil {
 
   /**
    * Note that the output are stored in input boxes
@@ -104,8 +104,4 @@ class BboxUtil extends Serializable {
     }
     count
   }
-}
-
-object BboxUtil {
-  def apply(): BboxUtil = new BboxUtil()
 }
