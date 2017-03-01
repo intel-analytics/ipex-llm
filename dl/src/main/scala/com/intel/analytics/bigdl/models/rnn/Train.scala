@@ -61,7 +61,7 @@ object Train {
           param.dataFolder + "/val.txt",
           param.sentFile,
           param.tokenFile
-        )
+        ).toStream
         var maxValLength = valtokens.map(x => x.length).max
 
         logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
