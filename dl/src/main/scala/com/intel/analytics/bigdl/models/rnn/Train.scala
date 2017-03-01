@@ -17,18 +17,22 @@
 package com.intel.analytics.bigdl.models.rnn
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.SampleToBatch
+import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.text.LabeledSentenceToSample
 import com.intel.analytics.bigdl.dataset.text._
-import com.intel.analytics.bigdl.nn.{TimeDistributedCriterion, CrossEntropyCriterion, Module}
+import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module, TimeDistributedCriterion}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
-import org.apache.log4j.Logger
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
 object Train {
-
+  Logger.getLogger("org").setLevel(Level.ERROR)
+  Logger.getLogger("akka").setLevel(Level.ERROR)
+  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
   import Utils._
   val logger = Logger.getLogger(getClass)
   def main(args: Array[String]): Unit = {
@@ -46,28 +50,24 @@ object Train {
         val tokens = SequencePreprocess(
           param.dataFolder + "/train.txt",
           param.sentFile,
-          param.tokenFile)
+          param.tokenFile).toStream
 
-        val dictionary = Dictionary(tokens.toLocal().data(false), param.vocabSize)
+        val dictionary = Dictionary(tokens, param.vocabSize)
         dictionary.save(param.saveFolder)
 
-        var maxTrainLength = 0
-        tokens.toLocal().data(false).foreach(x => {
-          maxTrainLength = math.max(maxTrainLength, x.length)
-        })
+        var maxTrainLength = tokens.map(x => x.length).max
 
         val valtokens = SequencePreprocess(
           param.dataFolder + "/val.txt",
           param.sentFile,
           param.tokenFile
         )
-        var maxValLength = 0
-        valtokens.toLocal().data(false).foreach(x => {
-          maxValLength = math.max(maxValLength, x.length)
-        })
+        var maxValLength = valtokens.map(x => x.length).max
+
         logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
 
-        (tokens, valtokens, dictionary, maxTrainLength, maxValLength)
+        (DataSet.array(tokens.toArray), DataSet.array(valtokens.toArray),
+          dictionary, maxTrainLength, maxValLength)
       } else {
         val tokens = SequencePreprocess(
           param.dataFolder + "/train.txt",
@@ -75,14 +75,10 @@ object Train {
           param.sentFile,
           param.tokenFile)
 
-        val dictionary = Dictionary(tokens.toDistributed().data(false),
-          param.vocabSize)
+        val dictionary = Dictionary(tokens, param.vocabSize)
         dictionary.save(param.saveFolder)
 
-        var maxTrainLength = 0
-        tokens.toDistributed().data(false).collect().foreach(x => {
-          maxTrainLength = math.max(maxTrainLength, x.length)
-        })
+        var maxTrainLength = tokens.map(x => x.length).collect().max
 
         val valtokens = SequencePreprocess(
           param.dataFolder + "/val.txt",
@@ -90,16 +86,19 @@ object Train {
           param.sentFile,
           param.tokenFile
         )
-        var maxValLength = 0
-        valtokens.toDistributed().data(false).collect().foreach(x => {
-          maxValLength = math.max(maxValLength, x.length)
-        })
+        var maxValLength = valtokens.map(x => x.length).collect().max
+
         logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
 
-        (tokens, valtokens, dictionary, maxTrainLength, maxValLength)
+        (DataSet.rdd(tokens), DataSet.rdd(valtokens), dictionary, maxTrainLength, maxValLength)
       }
 
       val totalVocabLength = dictionary.vocabSize() + 1
+      val startIdx = dictionary.getIndex("SENTENCESTART")
+      val endIdx = dictionary.getIndex("SENTENCEEND")
+      val padFeature = Tensor[Float]().resize(totalVocabLength)
+      padFeature.setValue(endIdx + 1, 1.0f)
+      val padLabel = startIdx
 
       val (trainSet, validationSet) = (
       traintokens

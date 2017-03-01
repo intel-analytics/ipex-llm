@@ -159,6 +159,25 @@ class Dictionary()
     update(freqDict, vocabSize)
   }
 
+  def this(sentences: Stream[Array[String]],
+           vocabSize: Int) = {
+    this()
+    val freqDict = sentences
+      .flatMap(x => x)
+      .foldLeft(Map.empty[String, Int]) {
+        (count, word) => count + (word -> (count.getOrElse(word, 0) + 1))
+      }.toSeq.sortBy(_._2)
+
+    // Select most common words
+    val length = math.min(vocabSize, freqDict.length)
+    _vocabulary = freqDict.drop(freqDict.length - length).map(_._1)
+    _vocabSize = _vocabulary.length
+    _word2index = _vocabulary.zipWithIndex.toMap
+    _index2word = _word2index.map(x => (x._2, x._1))
+    _discardVocab = freqDict.take(freqDict.length - length).map(_._1)
+    _discardSize = _discardVocab.length
+  }
+
   def this(directory: String) = {
     this()
 

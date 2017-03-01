@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.util.Random
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 import scala.io.Source
 import scala.reflect.ClassTag
@@ -196,28 +197,28 @@ object SequencePreprocess {
     fileName: String,
     sentBin: Option[String],
     tokenBin: Option[String])
-  : DataSet[Array[String]] = {
-    val logData = Source.fromFile(fileName).getLines().toArray
-    val trainSents = DataSet.array(logData
-    .filter(!_.isEmpty)).transform(SentenceSplitter(sentBin))
-    .toLocal().data(train = false).flatMap(item => item.iterator)
-    val tokens = DataSet.array(trainSents.toArray)
-      .transform(SentenceBiPadding())
-      .transform(SentenceTokenizer(tokenBin))
-    tokens
+  : Iterator[Array[String]] = {
+    val logData = Source.fromFile(fileName).getLines()
+      .filter(!_.isEmpty)
+    val tokens = SentenceSplitter(sentBin)(logData).flatten
+    SentenceTokenizer(tokenBin)(
+      SentenceBiPadding()(
+        tokens
+      )
+    )
   }
   def apply(
     fileName: String,
     sc: SparkContext,
     sentBin: Option[String],
     tokenBin: Option[String])
-  : DataSet[Array[String]] = {
-    val trainSents = DataSet.rdd(sc.textFile(fileName)
-      .filter(!_.isEmpty)).transform(SentenceSplitter(sentBin))
-      .toDistributed().data(train = false).collect().flatten
-    val tokens = DataSet.rdd(sc.parallelize(trainSents))
-      .transform(SentenceBiPadding())
-      .transform(SentenceTokenizer(tokenBin))
+  : RDD[Array[String]] = {
+
+    val tokens = sc.textFile(fileName).mapPartitions(iter =>
+      SentenceTokenizer(tokenBin)(
+        SentenceBiPadding()(
+        SentenceSplitter(sentBin)(iter.filter(!_.isEmpty)).flatten
+      )))
     tokens
   }
 }
