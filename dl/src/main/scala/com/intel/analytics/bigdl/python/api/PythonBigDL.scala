@@ -17,11 +17,10 @@
 
 package com.intel.analytics.bigdl.python.api
 
-import java.security.InvalidParameterException
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{Sample, _}
+import com.intel.analytics.bigdl.dataset.{Sample => JSample, _}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.numeric._
@@ -35,22 +34,22 @@ import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect.ClassTag
 
-case class PySample(features: JList[Any],
-                                 label: JList[Any],
-                                 featuresShape: JList[Int],
-                                 labelShape: JList[Int],
-                                 bigdlType: String)
+case class Sample(features: JList[Any],
+                  label: JList[Any],
+                  featuresShape: JList[Int],
+                  labelShape: JList[Int],
+                  bigdlType: String)
 case class TestResult(val result: Float, count: Int, val method: String)
 
 
-object PythonBigDLAPI{
-  val floatInstance = new PythonBigDLAPI[Float]()
+object PythonBigDL{
+  val floatInstance = new PythonBigDL[Float]()
 
-  val doubleInstance = new PythonBigDLAPI[Double]()
+  val doubleInstance = new PythonBigDL[Double]()
 
-  def ofFloat(): PythonBigDLAPI[Float] = floatInstance
+  def ofFloat(): PythonBigDL[Float] = floatInstance
 
-  def ofDouble(): PythonBigDLAPI[Double] = doubleInstance
+  def ofDouble(): PythonBigDL[Double] = doubleInstance
 
   def getInitMethod(initMethod: String): InitializationMethod = {
     initMethod.toLowerCase() match {
@@ -62,7 +61,12 @@ object PythonBigDLAPI{
   }
 }
 
-class PythonBigDLAPI[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
+class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
+
+  private val typeName = {
+    val cls = implicitly[ClassTag[T]].runtimeClass
+    cls.getSimpleName
+  }
 
   private def toValidationMethod(vMethods: JList[String]): Array[ValidationMethod[T]] = {
     vMethods.toArray.map{case m: String => m.toLowerCase()}.map {
@@ -78,33 +82,33 @@ class PythonBigDLAPI[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
       case _: Top1Accuracy[T] => "top1"
       case _: Top5Accuracy[T] => "top5"
       case _: Loss[T] => "loss"
+      case _ => throw new RuntimeException(s"not supported validation method: $method")
     }
   }
 
-  def toPySample(sample: Sample[T]): PySample = {
+  def toPySample(sample: JSample[T]): Sample = {
     val featureList = sample.feature().contiguous().storage().toArray[T].toList.asJava
     val labelList = sample.label().contiguous().storage().toArray[T].toList.asJava
     val cls = implicitly[ClassTag[T]].runtimeClass
-    PySample(featureList.asInstanceOf[JList[Any]],
+    Sample(featureList.asInstanceOf[JList[Any]],
       labelList.asInstanceOf[JList[Any]],
       sample.feature().size().toList.asJava,
       sample.label().size().toList.asJava,
       cls.getSimpleName)
   }
 
-  def toSample(record: PySample): Sample[T] = {
-    val cls = implicitly[ClassTag[T]].runtimeClass
-    require(record.bigdlType == cls.getSimpleName,
-      s"record.bigdlType: ${record.bigdlType} == cls.getSimpleName: ${cls.getSimpleName}")
-    val sample = cls.getSimpleName match {
+  def toSample(record: Sample): JSample[T] = {
+    require(record.bigdlType == this.typeName,
+      s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
+    val sample = this.typeName match {
       case "float" =>
-        Sample[Float]().set(
+        JSample[Float]().set(
           record.features.asInstanceOf[JList[Double]].asScala.map(_.toFloat).toArray[Float],
           (record.label.asInstanceOf[JList[Double]]).asScala.map(_.toFloat).toArray[Float],
           record.featuresShape.asScala.toArray[Int],
           record.labelShape.asScala.toArray[Int])
       case "double" =>
-        Sample[Double]().set(
+        JSample[Double]().set(
           record.features.asInstanceOf[JList[Double]].asScala.toArray[Double],
           (record.label.asInstanceOf[JList[Double]]).asScala.toArray[Double],
           record.featuresShape.asScala.toArray[Int],
@@ -112,17 +116,11 @@ class PythonBigDLAPI[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
       case t: String =>
         throw new IllegalArgumentException(s"Not supported type: ${t}")
     }
-    sample.asInstanceOf[Sample[T]]
+    sample.asInstanceOf[JSample[T]]
   }
-  private def batching(rdd: RDD[PySample], batchSize: Int)
+  private def batching(rdd: RDD[Sample], batchSize: Int)
   : DistributedDataSet[MiniBatch[T]] = {
-    val recordRDD = rdd.map{item =>
-      if (item.isInstanceOf[PySample]) {
-        toSample(item)
-      } else {
-        throw new RuntimeException("invalid type")
-      }
-      }
+    val recordRDD = rdd.map(toSample(_))
     (DataSet.rdd(recordRDD) -> new SampleToBatch[T](batchSize))
       .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
   }
@@ -132,7 +130,7 @@ class PythonBigDLAPI[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
   }
 
   def createLinear(inputSize: Int, outputSize: Int, initMethod: String): Linear[T] = {
-    Linear[T](inputSize, outputSize, PythonBigDLAPI.getInitMethod(initMethod))
+    Linear[T](inputSize, outputSize, PythonBigDL.getInitMethod(initMethod))
   }
 
   def createReLU(): ReLU[T] = {
@@ -187,7 +185,7 @@ class PythonBigDLAPI[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
       padH,
       nGroup,
       propagateBack,
-      PythonBigDLAPI.getInitMethod(initMethod))
+      PythonBigDL.getInitMethod(initMethod))
   }
 
   def createReshape(size: JList[Int]): Reshape[T] = {
@@ -204,21 +202,23 @@ class PythonBigDLAPI[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
   }
 
   def createValidator(model: AbstractModule[Activity, Activity, T],
-                      valRDD: JavaRDD[PySample],
+                      valRDD: JavaRDD[Sample],
                       batchSize: Int)
   : Validator[T, MiniBatch[T]] = {
     Validator(model, batching(valRDD, batchSize))
   }
 
-  def test(validator: Validator[T, MiniBatch[T]], valMethods: JList[String])
+  def modelTest(model: AbstractModule[Activity, Activity, T],
+                valRDD: JavaRDD[Sample],
+                batchSize: Int,
+                valMethods: JList[String])
   : JList[TestResult] = {
+    val validator = Validator(model, batching(valRDD, batchSize))
     val resultArray = validator.test(toValidationMethod(valMethods))
     val testResultArray = resultArray.map{result =>
       TestResult(result._1.result()._1, result._1.result()._2,
         validationMethodToStr(result._2))
     }
-    println(s"inference result len: ${testResultArray.length}")
-    testResultArray.foreach(println(_))
     testResultArray.toList.asJava
   }
 
@@ -227,14 +227,14 @@ class PythonBigDLAPI[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
   }
 
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
-                      dataRdd: JavaRDD[PySample]): JavaRDD[PySample] = {
+                      dataRdd: JavaRDD[Sample]): JavaRDD[Sample] = {
     val result = predict(model, dataRdd.rdd.map(toSample(_)))
     result.map(toPySample(_))
 
   }
 
   def modelGetParameters(model: AbstractModule[Activity, Activity, T])
-  : PySample = {
+  : JList[JList[Any]] = {
     model.getParameters()
     val result = new JArrayList[JArrayList[T]]()
     val item = new JArrayList[JList[T]]()
@@ -246,19 +246,20 @@ class PythonBigDLAPI[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
     val gradientTensor = model.getParameters()._1.contiguous()
     val gradientData: JList[T] = gradientTensor.storage().toList.asJava
     val gradientShape = gradientTensor.size().toList.asJava
-    // TODO: remove float
-    PySample(weightsData.asInstanceOf[JList[Any]],
-      gradientData.asInstanceOf[JList[Any]], weightsShape, gradientShape, "float")
+    List(weightsData.asInstanceOf[JList[Any]],
+      gradientData.asInstanceOf[JList[Any]],
+      weightsShape.asInstanceOf[JList[Any]],
+      gradientShape.asInstanceOf[JList[Any]]).asJava
   }
 
   def predict(model: AbstractModule[Activity, Activity, T],
-                      dataRdd: RDD[Sample[T]]): RDD[Sample[T]] = {
+                      dataRdd: RDD[JSample[T]]): RDD[JSample[T]] = {
     val modelBroadCast = dataRdd.sparkContext.broadcast(model.evaluate())
     dataRdd.mapPartitions {partition =>
       val localModel = modelBroadCast.value.cloneModule()
       partition.map {sample =>
         val output = localModel.forward(sample.feature()).toTensor[T]
-        Sample(sample.feature(), output)
+        JSample(sample.feature(), output)
       }
     }
   }
@@ -280,7 +281,7 @@ class PythonBigDLAPI[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
   }
 
   def createOptimizer(model: AbstractModule[Activity, Activity, T],
-                      trainingRdd: JavaRDD[PySample],
+                      trainingRdd: JavaRDD[Sample],
                       criterion: Criterion[T],
                       optimMethod: String,
                       state: JMap[Any, Any],
@@ -309,13 +310,16 @@ class PythonBigDLAPI[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
         optimizer.setOptimMethod(new LBFGS())
       case n: String => throw new IllegalArgumentException(s"Not supported type: $n")
     }
+    // TODO: remove this
+    optimizer.disableCheckSingleton()
+
     optimizer
   }
 
   def setValidation(optimizer: Optimizer[T, MiniBatch[T]],
                     batchSize: Int,
                     trigger: Trigger,
-                    valRdd: JavaRDD[PySample],
+                    valRdd: JavaRDD[Sample],
                     vMethods: JList[String]): Unit = {
     optimizer.setValidation(trigger, batching(valRdd, batchSize.toInt),
       toValidationMethod(vMethods))

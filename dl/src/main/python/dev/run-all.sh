@@ -18,5 +18,4 @@
 #
 BASE="$(cd "`dirname $0`"; pwd)"
 
-$BASE/lint-python
-$BASE/run-tests
+$BASE/lint-python && $BASE/run-tests

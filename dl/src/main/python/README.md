@@ -8,9 +8,9 @@ This Python binding tested with Python 2.7 and Spark 1.6.0.
 
 Here are the steps for training a simple LeNet model:
 
-1). Create a RDD[PySample]:
+1). Create a RDD[Sample]:
 ```
-RDD[..] --transform-->RDD[ndarray, ndarray].map(PySample.from_ndarray(features, label)) --> RDD[Sample]
+RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, label)) --> RDD[Sample]
 ```
     
 2). Define a model:

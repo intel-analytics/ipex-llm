@@ -33,81 +33,40 @@ if sys.version >= '3':
 
 class Validator(JavaValue):
     def __init__(self,  model, val_rdd, batch_size, bigdl_type="float"):
-        JavaValue.__init__(self, bigdl_type, model, val_rdd, batch_size)
+        JavaValue.__init__(self, None, bigdl_type, model, val_rdd, batch_size)
 
     def test(self, val_methods):
         return callBigDlFunc(self.bigdl_type, "test", self.value, val_methods)
 
 
-class Model(JavaValue):
-    def __init__(self, jmodel, bigdl_type="float"):
-        # JavaValue.__init__(self, bigdl_type)
-        self.value = jmodel
-        self.bigdl_type = bigdl_type
-
-    @classmethod
-    def of(cls, jmodel, bigdl_type="float"):
-        model = Model(jmodel)
-        model.value = jmodel
-        model.bigdl_type = bigdl_type
-        return model
-
-    def add(self, jlayer):
-        return self.value.add(jlayer)
-
-    def get_dtype(self):
-        if "float" == self.bigdl_type:
-            return "float32"
-        else:
-            return "float64"
-
-    def parameters(self):
-        result = callBigDlFunc(self.bigdl_type,
-                               "modelGetParameters", self.value)
-        return {"weights": np.array(result.features,
-                                    dtype=self.get_dtype()).reshape(
-            result.features_shape),
-            "gradients": np.array(result.label,
-                                  dtype=self.get_dtype()).reshape(
-                result.label_shape)}
-
-    def predict(self, data_rdd):
-        return callBigDlFunc(self.bigdl_type,
-                             "modelPredictRDD", self.value, data_rdd)
-
-    @staticmethod
-    def from_path(path, bigdl_type="float"):
-        return callBigDlFunc(bigdl_type, "modelFromPath", path)
-
-
 class MaxEpoch(JavaValue):
     def __init__(self, max_epoch, bigdl_type="float"):
-        JavaValue.__init__(self, bigdl_type, max_epoch)
+        JavaValue.__init__(self, None, bigdl_type, max_epoch)
 
 
 class EveryEpoch(JavaValue):
     def __init__(self, bigdl_type="float"):
-        JavaValue.__init__(self, bigdl_type)
+        JavaValue.__init__(self, None, bigdl_type)
 
 
 class SeveralIteration(JavaValue):
     def __init__(self, interval, bigdl_type="float"):
-        JavaValue.__init__(self, bigdl_type, interval)
+        JavaValue.__init__(self, None, bigdl_type, interval)
 
 
 class MaxIteration(JavaValue):
     def __init__(self, max, bigdl_type="float"):
-        JavaValue.__init__(self, bigdl_type, max)
+        JavaValue.__init__(self, None, bigdl_type, max)
 
 
 class ClassNLLCriterion(JavaValue):
     def __init__(self, bigdl_type="float"):
-        JavaValue.__init__(self, bigdl_type)
+        JavaValue.__init__(self, None, bigdl_type)
 
 
 class MSECriterion(JavaValue):
     def __init__(self, bigdl_type="float"):
-            JavaValue.__init__(self, bigdl_type)
+            JavaValue.__init__(self, None, bigdl_type)
 
 
 class Optimizer(JavaValue):
@@ -121,7 +80,7 @@ class Optimizer(JavaValue):
                  optim_method="SGD",
                  state={},
                  bigdl_type="float"):
-        JavaValue.__init__(self, bigdl_type, model.value,
+        JavaValue.__init__(self, None, bigdl_type, model.value,
                            training_rdd, criterion, optim_method,
                            state, end_trigger, batch_size)
 
@@ -138,7 +97,9 @@ class Optimizer(JavaValue):
 
     # return a module
     def optimize(self):
-        return callJavaFunc(SparkContext.getOrCreate(), self.value.optimize)
+        jmodel = callJavaFunc(SparkContext.getOrCreate(), self.value.optimize)
+        from nn.layer import Model
+        return Model.of(jmodel)
 
 
 def _test():
