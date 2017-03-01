@@ -20,23 +20,25 @@ package com.intel.analytics.bigdl.models.fasterrcnn
 import com.intel.analytics.bigdl.tensor.Tensor
 
 object BboxUtil {
-
   /**
-   * Note that the output are stored in input boxes
-   * and the results are saved in boxes
+   * Note that the output are stored in input deltas
    * @param boxes  (N, 4)
-   * @param deltas (N, 4)
+   * @param deltas (N, 4a)
    * @return
    */
   def bboxTransformInv(boxes: Tensor[Float], deltas: Tensor[Float]): Tensor[Float] = {
     if (boxes.size(1) == 0) {
       return boxes
     }
-    require(boxes.size(2) == 4 && deltas.size(2) == 4)
+    require(boxes.size(2) == 4,
+      s"boxes size ${ boxes.size().mkString(",") } do not satisfy N*4 size")
+    require(deltas.size(2) % 4 == 0,
+      s"and deltas size ${ deltas.size().mkString(",") } do not satisfy N*4a size")
     val boxesArr = boxes.storage().array()
     var offset = boxes.storageOffset() - 1
     val rowLength = boxes.stride(1)
     val deltasArr = deltas.storage().array()
+    val repeat = deltas.size(2) / boxes.size(2)
     var deltasoffset = deltas.storageOffset() - 1
     var i = 0
     while (i < boxes.size(1)) {
@@ -44,25 +46,29 @@ object BboxUtil {
       val y1 = boxesArr(offset + 1)
       val width = boxesArr(offset + 2) - x1 + 1
       val height = boxesArr(offset + 3) - y1 + 1
-      val predCtrX = deltasArr(deltasoffset) * width + x1 + width / 2 // dx1*width + centerX
-      val predCtrY = deltasArr(deltasoffset + 1) * height + y1 + height / 2 // dy1*height + centerY
-      val predW = Math.exp(deltasArr(deltasoffset + 2)).toFloat * width / 2 // exp(dx2)*width/2
-      val predH = Math.exp(deltasArr(deltasoffset + 3)).toFloat * height / 2 // exp(dy2)*height/2
-      boxesArr(offset) = predCtrX - predW
-      boxesArr(offset + 1) = predCtrY - predH
-      boxesArr(offset + 2) = predCtrX + predW
-      boxesArr(offset + 3) = predCtrY + predH
+      var j = 0
+      while (j < repeat) {
+        j += 1
+        val predCtrX = deltasArr(deltasoffset) * width + x1 + width / 2 // dx1*width+centerX
+        val predCtrY = deltasArr(deltasoffset + 1) * height + y1 + height / 2 // dy1*height+centerY
+        val predW = Math.exp(deltasArr(deltasoffset + 2)).toFloat * width / 2 // exp(dx2)*width/2
+        val predH = Math.exp(deltasArr(deltasoffset + 3)).toFloat * height / 2 // exp(dy2)*height/2
+        deltasArr(deltasoffset) = predCtrX - predW
+        deltasArr(deltasoffset + 1) = predCtrY - predH
+        deltasArr(deltasoffset + 2) = predCtrX + predW
+        deltasArr(deltasoffset + 3) = predCtrY + predH
+        deltasoffset += rowLength
+      }
       offset += rowLength
-      deltasoffset += rowLength
       i += 1
     }
-    boxes
+    deltas
   }
 
   /**
    * Clip boxes to image boundaries.
    * set the score of all boxes with any side smaller than minSize to 0
-   * @param boxes  N * 4
+   * @param boxes  N * 4a
    * @param height height of image
    * @param width  width of image
    * @param minH   min height limit
@@ -70,36 +76,40 @@ object BboxUtil {
    * @param scores scores for boxes
    * @return the number of boxes kept (score > 0)
    */
-  def clipBoxes(boxes: Tensor[Float], height: Float, width: Float, minH: Float,
-    minW: Float, scores: Tensor[Float]): Int = {
-    require(boxes.size(2) == 4, "boxes should have the shape N*4")
-    require(boxes.size(1) == scores.size(1), "the rows of boxes should be" +
-      " equal to the score elements")
+  def clipBoxes(boxes: Tensor[Float], height: Float, width: Float, minH: Float = 0,
+    minW: Float = 0, scores: Tensor[Float] = null): Int = {
+    require(boxes.size(2) % 4 == 0, "boxes should have the shape N*4a")
     val boxesArr = boxes.storage().array()
     var offset = boxes.storageOffset() - 1
-    val rowLength = boxes.stride(1)
-    val scoresArr = scores.storage().array()
-    val scoreOffset = scores.storageOffset() - 1
-    var c = 1
+    val scoresArr = if (scores != null) scores.storage().array() else null
+    var scoreOffset = if (scores != null) scores.storageOffset() - 1 else -1
     var r = 0
     var count = 0
     val h = height - 1
     val w = width - 1
-    require(boxes.size(2) == 4)
+    val repeat = boxes.size(2) / 4
     while (r < boxes.size(1)) {
-      boxesArr(offset) = Math.max(Math.min(boxesArr(offset), w), 0)
-      boxesArr(offset + 1) = Math.max(Math.min(boxesArr(offset + 1), h), 0)
-      boxesArr(offset + 2) = Math.max(Math.min(boxesArr(offset + 2), w), 0)
-      boxesArr(offset + 3) = Math.max(Math.min(boxesArr(offset + 3), h), 0)
-      val width = boxesArr(offset + 2) - boxesArr(offset) + 1
-      if (width < minW) {
-        scoresArr(scoreOffset + r) = 0
-      } else {
-        val height = boxesArr(offset + 3) - boxesArr(offset + 1) + 1
-        if (height < minH) scoresArr(scoreOffset + r) = 0
-        else count += 1
+      var k = 0
+      while (k < repeat) {
+        boxesArr(offset) = Math.max(Math.min(boxesArr(offset), w), 0)
+        boxesArr(offset + 1) = Math.max(Math.min(boxesArr(offset + 1), h), 0)
+        boxesArr(offset + 2) = Math.max(Math.min(boxesArr(offset + 2), w), 0)
+        boxesArr(offset + 3) = Math.max(Math.min(boxesArr(offset + 3), h), 0)
+
+        if (scores != null) {
+          val width = boxesArr(offset + 2) - boxesArr(offset) + 1
+          if (width < minW) {
+            scoresArr(scoreOffset) = 0
+          } else {
+            val height = boxesArr(offset + 3) - boxesArr(offset + 1) + 1
+            if (height < minH) scoresArr(scoreOffset) = 0
+            else count += 1
+          }
+          scoreOffset += 1
+        }
+        k += 1
+        offset += 4
       }
-      offset += rowLength
       r += 1
     }
     count
