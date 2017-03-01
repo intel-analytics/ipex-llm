@@ -16,13 +16,14 @@
 #
 # Still in experimental stage!
 
+import sys
+from optparse import OptionParser
+
+from dataset import mnist
+from dataset.transformer import *
 from nn.layer import *
 from optim.optimizer import *
 from util.common import *
-from nn.transformer import *
-from optparse import OptionParser
-import sys
-from dataset import mnist
 
 
 def build_model(class_num):
@@ -48,7 +49,7 @@ def get_minst(data_type="train"):
     labels = sc.parallelize(labels)
     # Target start from 1 in BigDL
     record = images.zip(labels).map(lambda (features, label):
-                                    PySample.from_ndarray(features, label + 1))
+                                    Sample.from_ndarray(features, label + 1))
     return record
 
 
@@ -61,7 +62,7 @@ if __name__ == "__main__":
     parser.add_option("-b", "--batchSize", dest="batchSize", default="128")
 
     (options, args) = parser.parse_args(sys.argv)
-    sparkConf = calc_spark_conf(int(options.nodeNum), int(options.coreNum))
+    sparkConf = create_spark_conf(int(options.nodeNum), int(options.coreNum))
     sc = SparkContext(appName="lenet5", conf=sparkConf)
     conf = initEngine(int(options.nodeNum), int(options.coreNum))
 

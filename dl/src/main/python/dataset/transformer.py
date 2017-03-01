@@ -16,10 +16,10 @@
 #
 
 
-from util.common import PySample
+from util.common import Sample
 
 
 def normalizer(mean, std):
-    return lambda record: PySample([(feature - mean) / std for feature in record.features],
-                                   record.label, record.features_shape,
-                                   record.label_shape, record.bigdl_type)
+    return lambda record: Sample([(feature - mean) / std for feature in record.features],
+                                 record.label, record.features_shape,
+                                 record.label_shape, record.bigdl_type)

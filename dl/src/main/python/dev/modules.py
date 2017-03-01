@@ -66,9 +66,9 @@ bigdl_optimizer = Module(
     ]
 )
 
-test_prototype = Module(
-    name="test_prototype",
+test_simple_integration_test = Module(
+    name="simple_integration_test",
     python_test_goals=[
-        "test.prototype"
+        "test.simple_integration_test"
     ]
 )

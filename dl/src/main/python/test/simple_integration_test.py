@@ -22,7 +22,7 @@ from util.common import *
 import numpy as np
 
 if __name__ == "__main__":
-    sparkConf = calc_spark_conf(1, 4)
+    sparkConf = create_spark_conf(1, 4)
     sc = SparkContext(master="local[*]", appName="test model", conf=sparkConf)
     conf = initEngine(1, 4)
     FEATURES_DIM = 2
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     def gen_rand_sample():
         features = np.random.uniform(0, 1, (FEATURES_DIM))
         label = (2*features).sum() + 0.4
-        return PySample.from_ndarray(features, label)
+        return Sample.from_ndarray(features, label)
 
     trainingData = sc.parallelize(range(0, 100)).map(
         lambda i: gen_rand_sample())
@@ -56,6 +56,7 @@ if __name__ == "__main__":
     optimizer.setcheckpoint(SeveralIteration(1), "/tmp/prototype/")
 
     trained_model = optimizer.optimize()
+    # TODO: add result validation
     parameters = trained_model.parameters()
     print("parameters %s" % parameters["weights"])
     predict_result = trained_model.predict(trainingData)
@@ -64,4 +65,8 @@ if __name__ == "__main__":
     for i in p:
         print(str(i) + "\n")
     print(len(p))
+
+    test_results = trained_model.test(trainingData, 32, ["top1"])
+    for test_result in test_results:
+        print(test_result)
     sc.stop()
