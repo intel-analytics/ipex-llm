@@ -25,7 +25,8 @@ import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class LSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  "A Recurrent LSTM Language Model Module " should "converge" in {
+  "A LSTM " should "converge" in {
+
     val hiddenSize = 4
     val inputSize = 5
     val outputSize = 5
@@ -34,11 +35,12 @@ class LSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
 
     val model = Sequential[Double]()
-    model.add(Recurrent[Double](hiddenSize, bpttTruncate)
-      .add(LSTMCell[Double](inputSize, hiddenSize))
-      .add(Tanh()))
+      .add(Recurrent[Double](hiddenSize, bpttTruncate)
+        .add(LSTMCell[Double](inputSize, hiddenSize)))
       .add(Select(1, 1))
       .add(Linear[Double](hiddenSize, outputSize))
+
+    model.reset()
 
     val criterion = CrossEntropyCriterion[Double]()
     val logSoftMax = LogSoftMax[Double]()
@@ -66,7 +68,69 @@ class LSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
       (_loss, grad)
     }
 
-    for (i <- 1 to 10000) {
+    val start = System.nanoTime()
+    for (i <- 1 to 100) {
+      val (_, loss) = sgd.optimize(feval, weights, state)
+      println(s"${i}-th loss = ${loss(0)}")
+    }
+    val end = System.nanoTime()
+    println("Time: " + (end - start) / 1E6)
+
+    val output = model.forward(input).asInstanceOf[Tensor[Double]]
+    val logOutput = logSoftMax.forward(output)
+    val prediction = logOutput.max(2)._2
+
+    labels.squeeze() should be (prediction.squeeze())
+  }
+
+  "A LSTM " should "converge in batch mode" in {
+
+    val batchSize = 10
+    val nWords = 5
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val bpttTruncate = 3
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double](hiddenSize, bpttTruncate)
+        .add(LSTMCell[Double](inputSize, hiddenSize)))
+      .add(Select(2, nWords))
+      .add(Linear[Double](hiddenSize, outputSize))
+
+    model.reset()
+
+    val criterion = CrossEntropyCriterion[Double]()
+    val logSoftMax = LogSoftMax[Double]()
+
+    val (weights, grad) = model.getParameters()
+
+    val input = Tensor[Double](Array(batchSize, nWords, inputSize))
+    val labels = Tensor[Double](batchSize)
+    for (b <- 1 to batchSize) {
+      for (i <- 1 to nWords) {
+        val rdmInput = Math.ceil(RNG.uniform(0.0, 1.0) * inputSize).toInt
+        input.setValue(b, i, rdmInput, 1.0)
+      }
+      val rdmLabel = Math.ceil(RNG.uniform(0.0, 1.0) * outputSize).toInt
+      labels.setValue(b, rdmLabel)
+    }
+
+    val state = T("learningRate" -> 0.5, "momentum" -> 0.0,
+      "weightDecay" -> 0.0, "dampening" -> 0.0)
+    val sgd = new SGD[Double]
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model.forward(input).asInstanceOf[Tensor[Double]]
+      val _loss = criterion.forward(output, labels)
+      model.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model.backward(input, gradInput)
+      (_loss, grad)
+    }
+
+    for (i <- 1 to 200) {
       val (_, loss) = sgd.optimize(feval, weights, state)
       println(s"${i}-th loss = ${loss(0)}")
     }
@@ -78,7 +142,7 @@ class LSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
     labels.squeeze() should be (prediction.squeeze())
   }
 
-  "A LSTM Module " should "perform correct gradient check" in {
+  "A LSTM " should "perform correct gradient check" in {
 
     val hiddenSize = 4
     val inputSize = 5
@@ -86,10 +150,10 @@ class LSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val bpttTruncate = 10
     val seed = 100
     RNG.setSeed(seed)
+
     val model = Sequential[Double]()
-    model.add(Recurrent[Double](hiddenSize, bpttTruncate)
-      .add(LSTMCell[Double](inputSize, hiddenSize))
-      .add(Tanh[Double]()))
+      .add(Recurrent[Double](hiddenSize, bpttTruncate)
+        .add(LSTMCell[Double](inputSize, hiddenSize)))
       .add(Select(1, 1))
       .add(Linear[Double](hiddenSize, outputSize))
 

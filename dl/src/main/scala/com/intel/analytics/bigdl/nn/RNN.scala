@@ -17,7 +17,8 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -28,16 +29,25 @@ import scala.reflect.ClassTag
 class RnnCell[T : ClassTag] (
   inputSize: Int = 4,
   hiddenSize: Int = 3,
+  activation: TensorModule[T],
   private var initMethod: InitializationMethod = Default)
   (implicit ev: TensorNumeric[T])
-  extends AbstractModule[Table, Tensor[T], T] {
+  extends AbstractModule[Table, Table, T] {
 
   val parallelTable = ParallelTable[T]()
   val i2h = Linear[T](inputSize, hiddenSize)
   val h2h = Linear[T](hiddenSize, hiddenSize)
-  parallelTable.add(i2h)
   parallelTable.add(h2h)
+  parallelTable.add(i2h)
   val cAddTable = CAddTable[T]()
+
+  val rnn = Sequential[T]()
+    .add(parallelTable)
+    .add(cAddTable)
+    .add(activation)
+    .add(ConcatTable()
+      .add(Identity[T]())
+      .add(Identity[T]()))
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
@@ -61,31 +71,31 @@ class RnnCell[T : ClassTag] (
     zeroGradParameters()
   }
 
-
-  override def updateOutput(input: Table): Tensor[T] = {
-    output = cAddTable.updateOutput(parallelTable.updateOutput(input))
+  override def updateOutput(input: Table): Table = {
+    output = rnn.updateOutput(input).toTable
     output
   }
 
-  override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    val _gradOutput = cAddTable.updateGradInput(input, gradOutput)
-    parallelTable.updateGradInput(input, _gradOutput)
+  override def updateGradInput(input: Table, gradOutput: Table): Table = {
+    gradInput = rnn.updateGradInput(input, gradOutput).toTable
+    gradInput
   }
-  override def accGradParameters(input: Table, gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
-    parallelTable.accGradParameters(input,
-      cAddTable.updateGradInput(input, gradOutput))
+
+  override def accGradParameters(input: Table, gradOutput: Table,
+    scale: Double = 1.0): Unit = {
+    rnn.accGradParameters(input, gradOutput, scale)
   }
+
   override def updateParameters(learningRate: T): Unit = {
-    parallelTable.updateParameters(learningRate)
+    rnn.updateParameters(learningRate)
   }
 
   override def zeroGradParameters(): Unit = {
-    parallelTable.zeroGradParameters()
+    rnn.zeroGradParameters()
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    parallelTable.parameters()
+    rnn.parameters()
   }
 
   override def getParametersTable(): Table = {
@@ -101,8 +111,9 @@ class RnnCell[T : ClassTag] (
 object RnnCell {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
-    hiddenSize: Int = 3)
-   (implicit ev: TensorNumeric[T]) : RnnCell[T] = {
-    new RnnCell[T](inputSize, hiddenSize)
+    hiddenSize: Int = 3,
+    activation: TensorModule[T])
+    (implicit ev: TensorNumeric[T]) : RnnCell[T] = {
+    new RnnCell[T](inputSize, hiddenSize, activation)
   }
 }
