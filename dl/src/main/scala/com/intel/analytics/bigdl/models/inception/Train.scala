@@ -74,13 +74,14 @@ object TrainInceptionV1 {
       val state = if (param.stateSnapshot.isDefined) {
         T.load(param.stateSnapshot.get)
       } else if (param.maxEpoch.isDefined) {
-	T(
-	  "learningRate" -> param.learningRate,
-	  "weightDecay" -> param.weightDecay,
-	  "momentum" -> 0.9,
-	  "dampening" -> 0.0,
-	  "learingRateSchedule" -> SGD.Poly(0.5, math.ceil(1281167.toDouble/param.batchSize).toInt * param.maxEpoch.get))
-      }else{
+        T(
+          "learningRate" -> param.learningRate,
+          "weightDecay" -> param.weightDecay,
+          "momentum" -> 0.9,
+          "dampening" -> 0.0,
+          "learingRateSchedule" -> SGD.Poly(0.5, math.ceil(1281167.toDouble / param.batchSize).toInt
+            * param.maxEpoch.get))
+      } else {
         T(
           "learningRate" -> param.learningRate,
           "weightDecay" -> param.weightDecay,
@@ -110,7 +111,7 @@ object TrainInceptionV1 {
         optimizer.setCheckpoint(param.checkpoint.get, checkpointTrigger)
       }
 
-      if(param.overWriteCheckpoint) {
+      if (param.overWriteCheckpoint) {
         optimizer.overWriteCheckpoint()
       }
 
