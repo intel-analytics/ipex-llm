@@ -125,7 +125,8 @@ object Train {
       }
 
       optimizer
-        .setValidation(Trigger.everyEpoch, validationSet, Array(new Loss[Float]))
+        .setValidation(Trigger.everyEpoch, validationSet,
+          Array(new Loss[Float](new CrossEntropyCriterion[Float]())))
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.nEpochs))
         .optimize()
