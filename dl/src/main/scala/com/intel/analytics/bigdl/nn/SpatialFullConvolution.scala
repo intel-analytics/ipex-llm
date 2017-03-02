@@ -681,7 +681,11 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    if (null == bias) {
+      (Array(this.weight), Array(this.gradWeight))
+    } else {
+      (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    }
   }
 
   override def clearState() : this.type = {

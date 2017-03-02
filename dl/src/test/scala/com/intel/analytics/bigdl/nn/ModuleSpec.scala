@@ -70,19 +70,44 @@ class ModuleSpec extends FlatSpec with Matchers {
   }
 
   "getParameter" should "behave correctly" in {
-    val module = new Sequential[Double]
-    val subModule1 = new Linear[Double](2, 3)
-    val subModule2 = new Linear[Double](4, 5)
+    val module = Sequential[Double]
+    val subModule1 = Linear[Double](2, 3)
+    val subModule2 = Linear[Double](4, 5, Default, false)
+    val subModule3 = BatchNormalization[Double](5)
+    val subModule4 = BatchNormalization[Double](5, 1e-5, 0.1, false)
+    val subModule5 = Bilinear[Double](1, 2, 3)
+    val subModule6 = Bilinear[Double](1, 2, 3, false)
+    val subModule7 = SpatialFullConvolution[Tensor[Double], Double](1, 2, 3, 4)
+    val subModule8 = SpatialFullConvolution[Tensor[Double], Double](1, 2, 3, 4,
+      1, 1, 0, 0, 0, 0, 1, true
+    )
+
     module.add(subModule1)
     module.add(subModule2)
+    module.add(subModule3)
+    module.add(subModule4)
+    module.add(subModule5)
+    module.add(subModule6)
+    module.add(subModule7)
+    module.add(subModule8)
 
     val (weight, grad) = module.getParameters()
     weight.dim() should be(1)
     weight.size(1) should be(subModule1.parameters()._1.foldLeft(0)(_ + _.nElement()) +
-      subModule2.parameters()._1.foldLeft(0)(_ + _.nElement()))
+      subModule2.parameters()._1.foldLeft(0)(_ + _.nElement()) +
+      subModule3.parameters()._1.foldLeft(0)(_ + _.nElement()) +
+      subModule5.parameters()._1.foldLeft(0)(_ + _.nElement()) +
+      subModule6.parameters()._1.foldLeft(0)(_ + _.nElement()) +
+      subModule7.parameters()._1.foldLeft(0)(_ + _.nElement()) +
+      subModule8.parameters()._1.foldLeft(0)(_ + _.nElement()))
 
     grad.size(1) should be(subModule1.parameters()._2.foldLeft(0)(_ + _.nElement()) +
-      subModule2.parameters()._2.foldLeft(0)(_ + _.nElement()))
+      subModule2.parameters()._2.foldLeft(0)(_ + _.nElement()) +
+      subModule3.parameters()._2.foldLeft(0)(_ + _.nElement()) +
+      subModule5.parameters()._2.foldLeft(0)(_ + _.nElement()) +
+      subModule6.parameters()._2.foldLeft(0)(_ + _.nElement()) +
+      subModule7.parameters()._2.foldLeft(0)(_ + _.nElement()) +
+      subModule8.parameters()._2.foldLeft(0)(_ + _.nElement()))
 
     val newValue = Random.nextDouble()
     weight.fill(newValue)
