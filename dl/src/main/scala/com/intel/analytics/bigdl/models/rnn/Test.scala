@@ -41,7 +41,8 @@ object Test {
       val vocab = new Dictionary(param.folder)
 
       val model = Module.load[Float](param.modelSnapshot.get)
-      Engine.setCoreNumber(param.coreNumber)
+      Engine.init
+      Engine.setCoreNumber(1)
 
       val logSoftMax = LogSoftMax[Float]()
       val lines = readSentence(param.folder)

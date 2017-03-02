@@ -38,14 +38,14 @@
 
         ```shell
         BASE_DIR=${PWD} # where is the data
-        ./bigdl.sh -- spark-submit --master "local[*]" --driver-memory 20g                     \
+        ./bigdl.sh -- spark-submit --master "local[physical_core_number]" --driver-memory 20g                     \
                    --class com.intel.analytics.bigdl.example.textclassification.TextClassifier \
                    bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --batchSize 128              \
                    --baseDir ${BASE_DIR} --partitionNum 4
         ```
 
     * Spark cluster:
-      * Execute:
+      * Standalone execute:
 
         ```shell
         MASTER=xxx.xxx.xxx.xxx:xxxx
@@ -53,9 +53,19 @@
         ./bigdl.sh -- spark-submit --master ${MASTER} --driver-memory 5g --executor-memory 5g  \
                    --total-executor-cores 32 --executor-cores 8                                \
                    --class com.intel.analytics.bigdl.example.textclassification.TextClassifier \
-                   bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --coreNum 8                  \
-                   --nodeNum 4 --batchSize 128  --baseDir ${BASE_DIR} --partitionNum 32
+                   bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --batchSize 128              \
+                   --baseDir ${BASE_DIR} --partitionNum 32
         ```
+        * Yarn client execute:
+        
+                ```shell
+                BASE_DIR=${PWD} # where is the data
+                ./bigdl.sh -- spark-submit --master yarn --driver-memory 5g --executor-memory 5g  \
+                           --num-executor 4 --executor-cores 8                                \
+                           --class com.intel.analytics.bigdl.example.textclassification.TextClassifier \
+                           bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --batchSize 128              \
+                           --baseDir ${BASE_DIR} --partitionNum 32
+                ```
 
       * NOTE: The total batch is: 128 and the batch per node is 128/nodeNum
 

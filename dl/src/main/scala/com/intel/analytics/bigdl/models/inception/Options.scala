@@ -25,8 +25,6 @@ object Options {
     checkpoint: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
-    coreNumber: Int = -1,
-    nodeNumber: Int = -1,
     classNumber: Int = 1000,
     batchSize: Int = -1,
     learningRate: Double = 0.01,
@@ -51,14 +49,6 @@ object Options {
     opt[String]("checkpoint")
       .text("where to cache the model")
       .action((x, c) => c.copy(checkpoint = Some(x)))
-    opt[Int]('c', "core")
-      .text("cores number on each node")
-      .action((x, c) => c.copy(coreNumber = x))
-      .required()
-    opt[Int]('n', "nodeNumber")
-      .text("nodes number to train the model")
-      .action((x, c) => c.copy(nodeNumber = x))
-      .required()
     opt[Int]('e', "maxEpoch")
       .text("epoch numbers")
       .action((x, c) => c.copy(maxEpoch = Some(x)))
@@ -91,8 +81,6 @@ object Options {
   case class TestParams(
     folder: String = "./",
     model: String = "",
-    coreNumber: Int = -1,
-    nodeNumber: Int = -1,
     batchSize: Option[Int] = None
   )
 
@@ -103,14 +91,6 @@ object Options {
     opt[String]("model")
       .text("model snapshot location")
       .action((x, c) => c.copy(model = x))
-      .required()
-    opt[Int]('c', "core")
-      .text("cores number on each node")
-      .action((x, c) => c.copy(coreNumber = x))
-      .required()
-    opt[Int]('n', "nodeNumber")
-      .text("nodes number to train the model")
-      .action((x, c) => c.copy(nodeNumber = x))
       .required()
     opt[Int]('b', "batchSize")
       .text("batch size")

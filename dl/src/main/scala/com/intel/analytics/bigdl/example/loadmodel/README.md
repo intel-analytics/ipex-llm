@@ -30,7 +30,7 @@ java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
          com.intel.analytics.bigdl.example.loadmodel.ModelValidator        \
      -t <caffe | torch | bigdl> -f <imagenet path> -m <model name>         \
      --caffeDefPath <caffe model prototxt path> --modelPath <model path>   \
-     -b <batch size> --node <node number>
+     -b <batch size>
 ```
 
 where 
@@ -44,7 +44,6 @@ where
 
 Some other parameters
 
-- ```-n```: node number to do the validation
 - ```--meanFile```: mean values that is needed in alexnet caffe model preprocess part
 
 For example, following the steps below will load BVLC GoogLeNet. 
@@ -84,20 +83,19 @@ For example, following the steps below will load BVLC GoogLeNet.
 
 + Execute command.
 
-  ```shell
+```shell
   modelType=caffe
   folder=imagenet
   modelName=inception
   pathToCaffePrototxt=data/model/bvlc_googlenet/deploy.prototxt
   pathToModel=data/model/bvlc_googlenet/bvlc_googlenet.caffemodel
   batchSize=64
-  nodeNum=1
   dist/bin/bigdl.sh --                                                            \
   java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar      \
            com.intel.analytics.bigdl.example.loadmodel.ModelValidator             \
        -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt \
-       --modelPath $pathToModel -b $batchSize --node $nodeNum
-  ```
+       --modelPath $pathToModel -b $batchSize
+```
 
 ## Run as a Spark program
 
@@ -167,7 +165,7 @@ For example, following the steps below will load BVLC GoogLeNet.
 
 - Transform the validation data to sequence file.
 
-  ```shell
+```shell
   imagenet_folder=imagenet
   output_folder=seq
   cores_number=28
@@ -176,12 +174,12 @@ For example, following the steps below will load BVLC GoogLeNet.
            com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator   \
        -f ${imagenet_folder} -o ${output_folder} -p ${cores_number} -r -v
   hdfs dfs -put seq/val/ /
-  ```
+```
 
 
 - Workspace on hdfs
 
-  ```
+```
   [last: s][~/loadmodel]$ hdfs dfs -ls /val
   Found 28 items
   -rw-r--r--   3 bigdl supergroup  273292894 2016-12-30 17:42 /val/imagenet-seq-0_0.seq
@@ -196,34 +194,47 @@ For example, following the steps below will load BVLC GoogLeNet.
   -rw-r--r--   3 bigdl supergroup  266317348 2016-12-30 17:42 /val/imagenet-seq-18_0.seq
   -rw-r--r--   3 bigdl supergroup  265998818 2016-12-30 17:42 /val/imagenet-seq-19_0.seq
   ....
-  ```
+```
 
-- Execute command.
-
-  ```shell
+- Execute command for Spark standalone mode.
+```shell
   master=spark://xxx.xxx.xxx.xxx:xxxx # please set your own spark master
   modelType=caffe
-  folder=/
+  folder=hdfs://...
   modelName=inception
   pathToCaffePrototxt=data/model/bvlc_googlenet/deploy.prototxt
   pathToModel=data/model/bvlc_googlenet/bvlc_googlenet.caffemodel
   batchSize=448
-  nodeNum=8
   dist/bin/bigdl.sh --                                                                     \
   spark-submit --driver-memory 20g --master $master --executor-memory 100g                 \
+               --executor-cores 28                                                         \
+               --total-executor-cores 112                                                  \
                --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
                --class com.intel.analytics.bigdl.example.loadmodel.ModelValidator          \
                        dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar             \
               -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt   \
-              --modelPath $pathToModel -b $batchSize --node $nodeNum
-  ```
+              --modelPath $pathToModel -b $batchSize
+```
 
-where 
-
-```--node``` is the number of nodes to test the model
-
-other parameters have the same meaning as local mode.
-
+- Execute command for Spark yarn mode.
+```shell
+  modelType=caffe
+  folder=hdfs://...
+  modelName=inception
+  pathToCaffePrototxt=data/model/bvlc_googlenet/deploy.prototxt
+  pathToModel=data/model/bvlc_googlenet/bvlc_googlenet.caffemodel
+  batchSize=448
+  dist/bin/bigdl.sh --                                                                     \
+  spark-submit --driver-memory 20g --master yarn --executor-memory 100g                    \
+               --deploy-mode client                                                        \
+               --executor-cores 28                                                         \
+               --num-executors 4                                                  \
+               --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+               --class com.intel.analytics.bigdl.example.loadmodel.ModelValidator          \
+                       dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar             \
+              -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt   \
+              --modelPath $pathToModel -b $batchSize
+```
 
 ## Expected Results
 

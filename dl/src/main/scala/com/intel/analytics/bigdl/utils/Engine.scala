@@ -346,14 +346,14 @@ object Engine {
   /**
    * Set core number per node and node number
    *
-   * @param node
-   * @param core
+   * @param nodeNum
+   * @param coreNum
    */
-  def setNodeAndCore(node: Int, core : Int): Unit = {
-    require(node > 0, "node number is negative")
-    nodeNum = node
-    require(core > 0, "core number is negative")
-    physicalCoreNumber = core
+  private[bigdl] def setNodeAndCore(nodeNum: Int, coreNum: Int): Unit = {
+    require(nodeNum > 0, "node number is negative")
+    this.nodeNum = nodeNum
+    require(coreNum > 0, "core number is negative")
+    physicalCoreNumber = coreNum
     _model = initModelThreadPool()
   }
 

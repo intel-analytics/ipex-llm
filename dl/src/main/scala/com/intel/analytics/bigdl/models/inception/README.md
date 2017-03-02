@@ -41,15 +41,33 @@ java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.j
 It will generate the hadoop sequence files in the output folder.
 
 ## Train the Model
-Here is an example command run on Spark cluster.
+* Spark standalone, example command
 ```bash
-./bigdl_folder/bin/bigdl.sh -- \
-spark-submit --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+./dist/bin/bigdl.sh -- \
+spark-submit \
+--master spark://xxx.xxx.xxx.xxx:xxxx \
+--executor-cores cores_per_executor \
+--total-executor-cores total_cores_for_the_job \
+--driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 \
 dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 --batchSize batch_size \
---core core_number \
---nodeNumber node_number \
+--learningRate learningRate \
+-f hdfs://.../imagenet \
+--checkpoint ~/models
+```
+* Spark yarn client mode, example command
+```bash
+./dist/bin/bigdl.sh -- \
+spark-submit \
+--master yarn \
+--deploy-mode client \
+--executor-cores cores_per_executor \
+--num-executors executors_number \
+--driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 \
+dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--batchSize batch_size \
 --learningRate learningRate \
 --weightDecay weightDecay \
 --checkpointIteration checkpointIteration \
@@ -58,8 +76,6 @@ dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 ```
 In the above commands
 * -f: where you put your ImageNet data, it should be a hdfs folder
-* --core: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
-* --node: Node number.
 * --checkpoint: Where you cache the model/train_state snapshot. You should input a folder and
 make sure the folder is created when you run this example. The model snapshot will be named as
 model.#iteration_number, and train state will be named as state.#iteration_number. Note that if
@@ -73,22 +89,37 @@ policy.
 * --checkpointIteration: the checkpoint interval in iteration.
 
 ## Test the Model
-Example command
+* Spark standalone, example command
 ```bash
-./bigdl_folder/bin/bigdl.sh -- \
-spark-submit --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+./dist/bin/bigdl.sh -- \
+spark-submit \
+--master spark://xxx.xxx.xxx.xxx:xxxx \
+--executor-cores cores_per_executor \
+--total-executor-cores total_cores_for_the_job \
+--driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.inception.Test \
 dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
---batchSize batch_size
---core core_number \
---nodeNumber node_number \
+--batchSize batch_size \
+-f hdfs://.../imagenet/val \
+--model model.file
+```
+* Spark yarn client mode, example command
+```bash
+./dist/bin/bigdl.sh -- \
+spark-submit \
+--master yarn \
+--deploy-mode client \
+--executor-cores cores_per_executor \
+--num-executors executors_number \
+--driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--class com.intel.analytics.bigdl.models.inception.Test \
+dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--batchSize batch_size \
 -f hdfs://.../imagenet/val \
 --model model.file
 ```
 In the above command
 * -f: where you put your ImageNet data, it should be a hdfs folder
 * --model: the model snapshot file
-* --core: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
-* --nodeNumber: Node number.
 * --batchSize: The mini-batch size. It is expected that the mini-batch size is a multiple of
 node_number * core_number. In this example, node_number is 1 and the mini-batch size is suggested to be set to core_number * 4

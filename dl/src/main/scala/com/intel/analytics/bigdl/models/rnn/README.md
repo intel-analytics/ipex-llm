@@ -35,12 +35,10 @@ The input text may look as follows:
 ##Train the Model
 Example command:
 ```bash
-./dist/bin/bigdl.sh -- java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Train -f /opt/text --core 4 --nEpochs 30 --learningRate 0.1
-
+./dist/bin/bigdl.sh -- java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Train -f /opt/text --nEpochs 30 --learningRate 0.1
 ```
 
 ##Test the Model
-
 Please create a <code>test.txt</code> file under the folder in which you save your dictionary during training process.
 A sample <code>test.txt</code> can be as follows. Each line starts with several trigger words and ends with a period. The test script will load in the trained model and <code>test.txt</code>, then it will generate the following words per line.
 ```
@@ -58,10 +56,9 @@ Thou dost beguile.
 But if thou live,.
 Each eye that saw him.
 ```
-
 Example command:
 ```bash
-./dist/bin/bigdl.sh -- java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Test -f /textdirectory --model /modeldirectory/model.iterationNumber --state /modeldirectory/state.iterationNumber -c 4 --words 20
+./dist/bin/bigdl.sh -- java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Test -f /textdirectory --model /modeldirectory/model.iterationNumber --words 20
 ```
 
 ##Preprocessing
@@ -112,5 +109,4 @@ The test program will load the dictionary and test.txt(with several trigger word
   --vocabSize    [the vocabulary size that users would like to set, default 4000]
   --bptt         [back propagation through time, default 4]
   --nEpochs      [number of epochs to train, default 30]
-  --coreNumber   [engine core numbers, e.g 4 for a desktop]
 ```

@@ -197,8 +197,6 @@ class TextClassifier(param: TextClassificationParams) {
  * @param trainingSplit percentage of the training data
  * @param batchSize size of the mini-batch
  * @param embeddingDim size of the embedding vector
- * @param coreNum same idea of spark core
- * @param nodeNum size of the cluster
  */
 case class TextClassificationParams(baseDir: String = "./",
   maxSequenceLength: Int = 1000,
@@ -206,8 +204,6 @@ case class TextClassificationParams(baseDir: String = "./",
   trainingSplit: Double = 0.8,
   batchSize: Int = 128,
   embeddingDim: Int = 100,
-  coreNum: Int = 4,
-  nodeNum: Int = 1,
   partitionNum: Int = 4)
 
 object TextClassifier {
@@ -223,12 +219,6 @@ object TextClassifier {
         .required()
         .text("Base dir containing the training and word2Vec data")
         .action((x, c) => c.copy(baseDir = x))
-      opt[String]('o', "coreNum")
-        .text("core number")
-        .action((x, c) => c.copy(coreNum = x.toInt))
-      opt[String]('n', "nodeNum")
-        .text("nodeNumber")
-        .action((x, c) => c.copy(nodeNum = x.toInt))
       opt[String]('p', "partitionNum")
         .text("you may want to tune the partitionNum if run into spark mode")
         .action((x, c) => c.copy(partitionNum = x.toInt))

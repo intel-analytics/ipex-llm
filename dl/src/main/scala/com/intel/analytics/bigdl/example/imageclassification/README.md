@@ -15,7 +15,7 @@ To start with this example, you need prepare your model and dataset.
 
     Put your image data for prediction in the ./predict folder. Alternatively, you may also use imagenet-2012 validation dataset to run the example, which can be found from <http://image-net.org/download-images>. After you download the file (ILSVRC2012_img_val.tar), run the follow commands to prepare the data.
     
-     ```bash
+    ```bash
     mkdir predict
     tar -xvf ILSVRC2012_img_val.tar -C ./predict/
     ```
@@ -23,41 +23,66 @@ To start with this example, you need prepare your model and dataset.
   
      <code>Note: </code>For large dataset, you may want to read image data from HDFS.This command will transform the images into hadoop sequence files:
 
-     ```bash
-     mkdir -p val/images
-     mv predict/* val/images/
-     java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f ./ --validationOnly --hasName
-     mv val/*.seq predict/
-    ```
+```bash
+mkdir -p val/images
+mv predict/* val/images/
+java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f ./ --validationOnly --hasName
+mv val/*.seq predict/
+```
 
   
 ## Run this example
 
 Command to run the example in Spark local mode:
-
 ```
-    ./bigdl.sh 
-    spark-submit --master local[*] --driver-memory 10g --executor-memory 20g --class com.intel.analytics.bigdl.example.imageclassification.ImagePredictor bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar 
-        --modelPath ./resnet-18.t7 --folder ./predict --modelType torch -c 4 -n 1 --batchSize 32 --isHdfs false
+./dist/bin/bigdl.sh -- \
+spark-submit \
+--master local[physcial_core_number] \
+--driver-memory 10g --executor-memory 20g \
+--class com.intel.analytics.bigdl.example.imageclassification.ImagePredictor \
+./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--modelPath ./resnet-18.t7 \
+--folder ./predict \
+--modelType torch \
+--batchSizePerCore 16 \
+--isHdfs false
 ```
-
-
-Command to run the example in Spark cluster mode:
-
+Command to run the example in Spark standalone mode:
 ```
-    MASTER=xxx.xxx.xxx.xxx:xxxx
-    ./bigdl.sh 
-    spark-submit --master ${MASTER} --driver-memory 10g --executor-memory 20g --class com.intel.analytics.bigdl.example.imageclassification.ImagePredictor bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar 
-    --modelPath ./resnet-18.t7 --folder ./predict --modelType torch -c 8 -n 4 --batchSize 32 --isHdfs false
+./dist/bin/bigdl.sh -- \
+spark-submit \
+--master spark://... \
+--executor-cores 8 \
+--total-executor-cores 32 \
+--class com.intel.analytics.bigdl.example.imageclassification.ImagePredictor \
+./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--modelPath ./resnet-18.t7 \
+--folder ./predict \
+--modelType torch \
+--batchSizePerCore 16 \
+--isHdfs false
 ```
-
+Command to run the example in Spark yarn mode:
+```
+./dist/bin/bigdl.sh -- \
+spark-submit \
+--master yarn \
+--deploy-mode client \
+--executor-cores 8 \
+--num-executors 4 \
+--class com.intel.analytics.bigdl.example.imageclassification.ImagePredictor \
+./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--modelPath ./resnet-18.t7 \
+--folder ./predict \
+--modelType torch \
+--batchSizePerCore 16 \
+--isHdfs false
+```
 where 
 
 * ```--modelPath``` is the path to the model file.
 * ```--folder``` is the folder of predict images.
 * ```--modelType``` is the type of model to load, it can be ```bigdl``` or ```torch```.
-* ```-n``` is the number of executor (or containter) in the Spark cluster.
-* ```-c``` is the number of physical cores on each executor.
 * ```--showNum``` is the result number to show, default 100.
 * ```--batchSize``` is the batch size to use when do the prediction, default 32.
 * ```--isHdfs``` is the type of predict data. "true" means reading sequence file from hdfs, "false" means reading local images, default "false". 
