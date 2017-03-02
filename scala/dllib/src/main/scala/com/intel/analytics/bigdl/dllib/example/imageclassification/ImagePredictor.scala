@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.example.imageclassification.MlUtils._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.{DLClassifier => SparkDLClassifier}
@@ -31,6 +32,7 @@ import org.apache.spark.sql.SQLContext
  */
 object ImagePredictor {
   LoggerFilter.redirectSparkInfoLogs()
+  Logger.getLogger("com.intel.analytics.bigdl.example").setLevel(Level.INFO)
 
   def main(args: Array[String]): Unit = {
     predictParser.parse(args, new PredictParams()).map(param => {
