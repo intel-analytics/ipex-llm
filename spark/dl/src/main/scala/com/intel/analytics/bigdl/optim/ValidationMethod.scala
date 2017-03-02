@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 trait ValidationMethod[T] extends Serializable {
-  def apply(output: Activity, target: Activity, criterion: Criterion[T] = null): ValidationResult
+  def apply(output: Activity, target: Activity): ValidationResult
 
   protected def format(): String
 
@@ -91,7 +91,7 @@ class AccuracyResult(private var correct: Int, private var count: Int)
  * Caculate the percentage that output's max probability index equals target
  */
 class Top1Accuracy[T] extends ValidationMethod[T] {
-  override def apply(output: Activity, target: Activity, criterion: Criterion[T] = null):
+  override def apply(output: Activity, target: Activity):
   ValidationResult = {
     var correct = 0
     var count = 0
@@ -129,7 +129,7 @@ class Top1Accuracy[T] extends ValidationMethod[T] {
  * Caculate the percentage that target in output's top5 probability indexes
  */
 class Top5Accuracy[T] extends ValidationMethod[T] {
-  override def apply(output: Activity, target: Activity, criterion: Criterion[T] = null):
+  override def apply(output: Activity, target: Activity):
   AccuracyResult = {
     val _output = output.asInstanceOf[Tensor[T]]
     val _target = target.asInstanceOf[Tensor[T]]
@@ -210,9 +210,10 @@ class LossResult(private var loss: Float, private var count: Int)
   }
 }
 
-class Loss[@specialized(Float, Double)T: ClassTag]()
+class Loss[@specialized(Float, Double)T: ClassTag](
+ criterion: Criterion[T])
 (implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
-  override def apply(output: Activity, target: Activity, criterion: Criterion[T]): LossResult = {
+  override def apply(output: Activity, target: Activity): LossResult = {
     val _output = output.asInstanceOf[Tensor[T]]
     val _target = target.asInstanceOf[Tensor[T]]
     val loss = ev.toType[Float](criterion.forward(_output, _target))
