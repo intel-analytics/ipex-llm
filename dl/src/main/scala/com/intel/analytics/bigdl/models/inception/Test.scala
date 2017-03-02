@@ -45,8 +45,8 @@ object Test {
         sc,
         imageSize,
         batchSize,
-        param.nodeNumber,
-        param.coreNumber,
+        Engine.nodeNumber(),
+        Engine.coreNumber(),
         1000,
         50000
       )

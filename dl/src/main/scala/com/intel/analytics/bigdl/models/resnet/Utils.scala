@@ -30,8 +30,6 @@ object Utils {
     checkpoint: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
-    coreNumber: Int = -1,
-    nodeNumber: Int = -1,
     optnet: Boolean = false,
     depth: Int = 20,
     classes: Int = 10,
@@ -58,14 +56,6 @@ object Utils {
     opt[String]("cache")
       .text("where to cache the model")
       .action((x, c) => c.copy(checkpoint = Some(x)))
-    opt[Int]('c', "core")
-      .text("cores number on each node")
-      .action((x, c) => c.copy(coreNumber = x))
-      .required()
-    opt[Int]('n', "nodeNumber")
-      .text("nodes number to train the model")
-      .action((x, c) => c.copy(nodeNumber = x))
-      .required()
     opt[Boolean]("optnet")
       .text("shared gradients and caches to reduce memory usage")
       .action((x, c) => c.copy(optnet = x))

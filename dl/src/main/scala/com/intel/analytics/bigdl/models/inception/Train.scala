@@ -45,8 +45,8 @@ object TrainInceptionV1 {
         sc,
         imageSize,
         param.batchSize,
-        param.nodeNumber,
-        param.coreNumber,
+        Engine.nodeNumber(),
+        Engine.coreNumber(),
         param.classNumber,
         1281167
       )
@@ -55,8 +55,8 @@ object TrainInceptionV1 {
         sc,
         imageSize,
         param.batchSize,
-        param.nodeNumber,
-        param.coreNumber,
+        Engine.nodeNumber(),
+        Engine.coreNumber(),
         param.classNumber,
         50000
       )

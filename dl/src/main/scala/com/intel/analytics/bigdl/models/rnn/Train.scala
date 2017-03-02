@@ -34,10 +34,8 @@ object Train {
   val logger = Logger.getLogger(getClass)
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-
-      if (!new File(param.folder + "/input.txt").exists()) {
-        throw new IllegalArgumentException("Input file not exists!")
-      }
+      require(new File(param.folder + "/input.txt").exists(),
+        s"Input file ${param.folder + File.separator + "input.txt"} not exists!")
       logger.info("preprocessing input text file ..")
       val dictionaryLength = param.vocabSize + 1
       val wt = new WordTokenizer(
@@ -88,7 +86,7 @@ object Train {
       }
 
       Engine.init
-      Engine.setCoreNumber(param.coreNumber)
+      Engine.setCoreNumber(1)
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,

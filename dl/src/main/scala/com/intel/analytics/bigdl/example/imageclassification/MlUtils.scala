@@ -45,8 +45,6 @@ object MlUtils {
 
   case class PredictParams(
     folder: String = "./",
-    coreNumber: Int = 4,
-    nodeNumber: Int = 1,
     batchSize: Int = 32,
     classNum: Int = 1000,
     isHdfs: Boolean = false,
@@ -67,15 +65,7 @@ object MlUtils {
       .action((x, c) => c.copy(modelPath = x))
       .required()
 
-    opt[Int]('c', "core")
-      .text("cores number on each node")
-      .action((x, c) => c.copy(coreNumber = x))
-
-    opt[Int]('n', "nodeNumber")
-      .text("nodes number to train the model")
-      .action((x, c) => c.copy(nodeNumber = x))
-
-    opt[Int]('b', "batchSize")
+    opt[Int]('b', "batchSizePerCore")
       .text("batch size")
       .action((x, c) => c.copy(batchSize = x))
 

@@ -52,13 +52,11 @@ object ModelValidator {
     caffeDefPath: Option[String] = None,
     modelPath: String = "",
     batchSize: Int = 32,
-    meanFile: Option[String] = None,
-    coreNumber: Int = Runtime.getRuntime().availableProcessors() / 2,
-    nodeNumber: Int = -1
+    meanFile: Option[String] = None
   )
 
-  val testLocalParser = new OptionParser[TestLocalParams]("BigDL Image Classifier Example") {
-    head("BigDL Image Classifier Example")
+  val testLocalParser = new OptionParser[TestLocalParams]("BigDL Load Model Example") {
+    head("BigDL Load Model Example")
     opt[String]('f', "folder")
       .text("where you put your local image files")
       .action((x, c) => c.copy(folder = x))
@@ -90,17 +88,10 @@ object ModelValidator {
     opt[String]("meanFile")
       .text("mean file")
       .action((x, c) => c.copy(meanFile = Some(x)))
-    opt[Int]('c', "core")
-      .text("cores number to test the model")
-      .action((x, c) => c.copy(coreNumber = x))
-    opt[Int]('n', "node")
-      .text("node number to test the model")
-      .action((x, c) => c.copy(nodeNumber = x))
   }
 
   def main(args: Array[String]): Unit = {
     testLocalParser.parse(args, TestLocalParams()).foreach(param => {
-      Engine.setCoreNumber(param.coreNumber)
       val sc = Engine.init
         .map(conf => {
           conf.setAppName("BigDL Image Classifier Example")
@@ -108,7 +99,7 @@ object ModelValidator {
           new SparkContext(conf)
         })
 
-      val valPath = Paths.get(param.folder, "val")
+      val valPath = param.folder
 
       val (model, validateDataSet) = param.modelType match {
         case CaffeModel =>

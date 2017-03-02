@@ -37,8 +37,8 @@ object Utils {
     hiddenSize: Int = 40,
     vocabSize: Int = 4000,
     bptt: Int = 4,
-    nEpochs: Int = 30,
-    coreNumber: Int = -1)
+    nEpochs: Int = 30
+  )
 
   val trainParser = new OptionParser[TrainParams]("BigDL SimpleRNN Train Example") {
     opt[String]('f', "folder")
@@ -87,19 +87,13 @@ object Utils {
     opt[Int]('e', "nEpochs")
       .text("epoch numbers")
       .action((x, c) => c.copy(nEpochs = x))
-
-    opt[Int]('c', "core")
-      .text("cores number to train the model")
-      .action((x, c) => c.copy(coreNumber = x))
-      .required()
   }
 
   case class TestParams(
      folder: String = "./",
      modelSnapshot: Option[String] = None,
-     stateSnapshot: Option[String] = None,
-     numOfWords: Option[Int] = None,
-     coreNumber: Int = -1)
+     numOfWords: Option[Int] = None
+  )
 
   val testParser = new OptionParser[TestParams]("BigDL rnn Test Example") {
     opt[String]('f', "folder")
@@ -111,19 +105,9 @@ object Utils {
       .action((x, c) => c.copy(modelSnapshot = Some(x)))
       .required()
 
-    opt[String]("state")
-      .text("state snapshot location")
-      .action((x, c) => c.copy(stateSnapshot = Some(x)))
-      .required()
-
     opt[Int]("words")
       .text("number of words to write")
       .action((x, c) => c.copy(numOfWords = Some(x)))
-      .required()
-
-    opt[Int]('c', "core")
-      .text("cores number on each node")
-      .action((x, c) => c.copy(coreNumber = x))
       .required()
   }
 
@@ -132,9 +116,8 @@ object Utils {
   : Array[Array[String]] = {
 
     import scala.io.Source
-    if (!new File(directory + "/test.txt").exists()) {
-      throw new IllegalArgumentException("test file not exists!")
-    }
+    require(new File(directory + "/test.txt").exists(),
+      s"test file ${directory + "/test.txt"} not exists!")
     val lines = Source.fromFile(directory + "/test.txt")
       .getLines().map(_.split("\\W+")).toArray
     lines
