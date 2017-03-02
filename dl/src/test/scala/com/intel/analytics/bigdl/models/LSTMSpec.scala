@@ -20,11 +20,12 @@ package com.intel.analytics.bigdl.models
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class LSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   "A LSTM " should "converge" in {
 
     val hiddenSize = 4
@@ -56,6 +57,65 @@ class LSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
       labels.setValue(1, i, rdmLabel)
     }
 
+
+
+    val code = s"""
+      |
+      |-- 1.4. Combine 1.1 and 1.3 to produce final model
+      |require 'rnn'
+      |
+      |model = nn.Sequential()
+      |:add(nn.SplitTable(1))
+      |:add(nn.Sequencer(nn.FastLSTM($inputSize, $hiddenSize)))
+      |:add(nn.Sequencer(nn.Linear($hiddenSize, $outputSize)))
+      |
+ |model:forward(input)
+      |
+ |local parameters, gradParameters = model:getParameters()
+      |model:zeroGradParameters()
+      |parameters_initial = parameters : clone()
+      |gradParameters_initial = gradParameters : clone()
+      |
+ |local criterion =  nn.SequencerCriterion(nn.CrossEntropyCriterion())
+      |
+      |
+      |state = {
+      |  learningRate = 0.5,
+      |  momentum = 0.0,
+      |  dampening = 0.0,
+      |  weightDecay = 0.0
+      |}
+      |
+      |feval = function(x)
+      |model:zeroGradParameters()
+      |model_initial = model : clone()
+      |
+      |local output1 = model:forward(input)
+      |local err1 = criterion:forward(output1, labels)
+      |local gradOutput1 = criterion:backward(output1, labels)
+      |model:backward(input, gradOutput1)
+      |print(err1)
+      |return err1, gradParameters
+      |end
+      |
+      |for i = 1,100,1 do
+      |  optim.sgd(feval, parameters, state)
+      |end
+      |
+      |output=model.output
+      |err=criterion.output
+      |gradOutput=criterion.gradInput
+      |gradInput = model.gradInput
+    """.stripMargin
+
+    val (luaTime, torchResult) = TH.run(code,
+      Map("input" -> input.transpose(1, 2), "labels" -> SplitTable[Double](1).forward(labels.t())),
+      Array("output", "err", "weight", "gradweight"))
+//    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaOutput2 = torchResult("err").asInstanceOf[Double]
+    val luaweight = torchResult("weight").asInstanceOf[Tensor[Double]]
+    val luagradWeight = torchResult("gradweight").asInstanceOf[Tensor[Double]]
+
     val state = T("learningRate" -> 0.5, "momentum" -> 0.0,
       "weightDecay" -> 0.0, "dampening" -> 0.0)
     val sgd = new SGD[Double]
@@ -69,10 +129,12 @@ class LSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     val start = System.nanoTime()
+    var loss: Array[Double] = null
     for (i <- 1 to 100) {
-      val (_, loss) = sgd.optimize(feval, weights, state)
+      loss = sgd.optimize(feval, weights, state)._2
       println(s"${i}-th loss = ${loss(0)}")
     }
+
     val end = System.nanoTime()
     println("Time: " + (end - start) / 1E6)
 
@@ -80,7 +142,10 @@ class LSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val logOutput = logSoftMax.forward(output)
     val prediction = logOutput.max(2)._2
 
-    labels.squeeze() should be (prediction.squeeze())
+//    labels.squeeze() should be (prediction.squeeze())
+
+//    luaOutput1 should be(output)
+    luaOutput2 should be(loss)
   }
 
   "A LSTM " should "converge in batch mode" in {
