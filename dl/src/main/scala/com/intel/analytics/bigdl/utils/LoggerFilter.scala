@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,24 +17,25 @@
 package com.intel.analytics.bigdl.utils
 
 import org.apache.log4j._
-
+import java.nio.file.Paths
 import scala.collection.JavaConverters._
 
 /**
- * logger appender, which will output the log to files
+ * logger filter, which will filter the log of Spark(org, breeze, akka) to file.
+ * it could be set by user through `-Dbigdl.utils.LoggerFilter.logFile`
  */
 object LoggerFilter {
 
   private val pattern = "%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n"
 
   /**
-   * redirect log to `filePath`, whose default value is /tmp/bigdl.log
+   * redirect log to `filePath`
    *
-   * @param filePath log file path, default value is /tmp/bigdl.log
+   * @param filePath log file path
+   * @param level logger level, the default is Level.INFO
    * @return a new file appender
    */
-  private def fileAppender(filePath: String = "/tmp/bigdl.log",
-    level: Level = Level.INFO): FileAppender = {
+  private def fileAppender(filePath: String, level: Level = Level.INFO): FileAppender = {
     val fileAppender = new FileAppender
     fileAppender.setName("FileLogger")
     fileAppender.setFile(filePath)
@@ -50,6 +50,7 @@ object LoggerFilter {
   /**
    * redirect log to console or stdout
    *
+   * @param level logger level, the default is Level.INFO
    * @return a new console appender
    */
   private def consoleAppender(level: Level = Level.INFO): ConsoleAppender = {
@@ -63,43 +64,37 @@ object LoggerFilter {
   }
 
   /**
-   * find the logger of `clz` and add a new appender to it.
+   * find the logger of `className` and add a new appender to it.
    *
-   * @param clz class which user defined
+   * @param className class which user defined
    * @param appender appender, eg. return of `fileAppender` or `consoleAppender`
    */
-  private def classLogToAppender(clz: String, appender: Appender): Unit = {
-    Logger.getLogger(clz).addAppender(appender)
+  private def classLogToAppender(className: String, appender: Appender): Unit = {
+    Logger.getLogger(className).addAppender(appender)
   }
 
   /**
-   * make the level of console appender in root logger to ERROR,
-   * which will interfere with all other loggers.
-   */
-  private def setConsoleLevelToError(): Unit = {
-    val appenders = Logger.getRootLogger.getAllAppenders.asScala
-
-    for (appender <- appenders) {
-      appender match {
-        case a: ConsoleAppender => a.setThreshold(Level.ERROR)
-        case _ => // ignore other appender except ConsoleAppender
-      }
-    }
-  }
-
-  /**
-   * redirect all logs of Spark to fileAppender (/tmp/bigdl.log).
-   * and add an console appender for `com.intel.analytics.bigdl.optim`
+   * redirect all logs of Spark to file, which can be set by `-Dbigdl.utils.LoggerFilter.logFile`
+   * the default file is under current workspace named `bigdl.log`.
+   * and add an console appender for `com.intel.analytics.bigdl.optim`, because we set the threshold
+   * to ERROR first.
    */
   def redirectSparkInfoLogs(): Unit = {
-    setConsoleLevelToError()
+    val optimClass = "com.intel.analytics.bigdl.optim"
+    val default = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
+    val logFile = System.getProperty("bigdl.utils.LoggerFilter.logFile", default)
 
-    val optimClz = "com.intel.analytics.bigdl.optim"
+    val defaultClasses = List("org", "akka", "breeze")
 
-    for (clz <- List("org", "akka", "breeze", optimClz)) {
-      LoggerFilter.classLogToAppender(clz, LoggerFilter.fileAppender())
+    for (clz <- defaultClasses) {
+      classLogToAppender(clz, consoleAppender(Level.ERROR))
+      Logger.getLogger(clz).setAdditivity(false)
     }
 
-    LoggerFilter.classLogToAppender(optimClz, LoggerFilter.consoleAppender())
+    for (clz <- optimClass :: defaultClasses) {
+      classLogToAppender(clz, fileAppender(logFile, Level.INFO))
+    }
+
+    classLogToAppender(optimClass, consoleAppender(Level.INFO))
   }
 }

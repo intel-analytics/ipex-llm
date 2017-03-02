@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,9 +25,9 @@ import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample, SampleToBa
 import scala.io.Source
 import java.io.StringWriter
 import java.nio.file.{Files, Paths}
-
 import org.apache.spark.SparkContext
 import org.apache.log4j.{Level, Logger, PatternLayout, WriterAppender}
+
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
@@ -40,8 +39,8 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     if (sc != null) { sc.stop() }
   }
 
-  "A LoggerFilter" should "output correct info on console and /tmp/bigdl.log" in {
-    val logFile = "/tmp/bigdl.log"
+  "A LoggerFilter" should "output correct info on console and bigdl.log" in {
+    val logFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
     val optimClz = "com.intel.analytics.bigdl.optim"
 
     // add an appender to optmClz because it's very hard to get the stdout of Log4j.
@@ -99,7 +98,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
       setOptimMethod(new SGD()).
       optimize()
 
-    require(Files.exists(Paths.get(logFile)), s"doesn't generate $logFile")
+    require(Files.exists(Paths.get(logFile)), s"didn't generate $logFile")
 
     // only check the first line of the log
     {
@@ -128,5 +127,62 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
       require(lastLine.matches(pattern), s"output can't matchs the specific output")
     }
 
+  }
+
+  "A LoggerFilter generate log " should "in correct place" in {
+    val logFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
+    val optimClz = "com.intel.analytics.bigdl.optim"
+
+    Files.deleteIfExists(Paths.get(logFile))
+    Logger.getLogger("org").setLevel(Level.INFO)
+    LoggerFilter.redirectSparkInfoLogs()
+    Logger.getLogger(optimClz).setLevel(Level.INFO)
+
+    sc = new SparkContext(
+      Engine.init(1, 1, true).get
+        .setAppName(s"LoggerFilter test")
+        .set("spark.task.maxFailures", "1")
+        .setMaster("local[1]")
+    )
+
+    val data = sc.parallelize(List("bigdl", "spark", "deep", "learning"))
+    val y = data.map(x => (x, x.length))
+
+    Paths.get(logFile)
+    Files.exists(Paths.get(logFile)) should be (true)
+
+    Files.deleteIfExists(Paths.get(logFile))
+  }
+
+  "A LoggerFilter generate log " should "under the place user gived" in {
+    val logFile = "/tmp/bigdl.log"
+    val optimClz = "com.intel.analytics.bigdl.optim"
+    val defaultFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
+
+    System.setProperty("bigdl.utils.LoggerFilter.logFile", "/tmp/bigdl.log")
+
+    Files.deleteIfExists(Paths.get(defaultFile))
+    Files.deleteIfExists(Paths.get(logFile))
+    Logger.getLogger("org").setLevel(Level.INFO)
+    LoggerFilter.redirectSparkInfoLogs()
+    Logger.getLogger(optimClz).setLevel(Level.INFO)
+
+    sc = new SparkContext(
+      Engine.init(1, 1, true).get
+        .setAppName(s"LoggerFilter test")
+        .set("spark.task.maxFailures", "1")
+        .setMaster("local[1]")
+    )
+
+    val data = sc.parallelize(List("bigdl", "spark", "deep", "learning"))
+    val y = data.map(x => (x, x.length))
+
+    Paths.get(logFile)
+    Files.exists(Paths.get(logFile)) should be (true)
+    Files.exists(Paths.get(defaultFile)) should be (false)
+
+    Files.deleteIfExists(Paths.get(logFile))
+    Files.deleteIfExists(Paths.get(defaultFile))
+    System.setProperty("bigdl.utils.LoggerFilter.logFile", "")
   }
 }
