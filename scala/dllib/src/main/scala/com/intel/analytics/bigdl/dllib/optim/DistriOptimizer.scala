@@ -253,9 +253,6 @@ object DistriOptimizer {
         val end = System.nanoTime()
         wallClockTime += end - start
         optimMethod.updateHyperParameter(state, driverState)
-        driverState("Loss") = lossSum.value.toFloat / finishedModelNum
-        driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
-        if (state.contains("clr")) driverState("LearningRate") = -state[Double]("clr").toFloat
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}. ${optimMethod.getHyperParameter(state)}")
@@ -490,6 +487,9 @@ object DistriOptimizer {
     }
     val vMethods = validationMethods.get
     val validateRDD = validationDataSet.get.toDistributed().data(train = false)
+    val sc = validateRDD.sparkContext
+    val broadcast = sc.broadcast(vMethods)
+
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
@@ -497,9 +497,8 @@ object DistriOptimizer {
     }
     val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
       val cached = modelIter.next()
-      val criterion = cached.localCriterions
       val workingModels = cached.localModels
-
+      val method = broadcast.value
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
         require(batch.data.size(1) == batch.labels.size(1))
@@ -514,8 +513,9 @@ object DistriOptimizer {
               val input = batch.data.narrow(1, offset + 1, length)
               val target = batch.labels.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)
-              vMethods.map(validation => {
-                validation(output, target, criterion(b))
+              val validatMethods = method.clone()
+              validatMethods.map(validation => {
+                validation(output, target)
               })
             }
           )
