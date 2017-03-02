@@ -214,8 +214,9 @@ class LocalOptimizer[T: ClassTag] private[optim](
             val input = batch.data.narrow(1, offset + 1, length)
             val target = batch.labels.narrow(1, offset + 1, length)
             val output = workingModels(b).forward(input)
-            vMethods.map(validation => {
-              validation(output, target, workingCriterion(b))
+            val validatMethods = vMethods.clone()
+            validatMethods.map(validation => {
+              validation(output, target)
             })
           }
         )
