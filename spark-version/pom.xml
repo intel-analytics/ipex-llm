@@ -29,5 +29,11 @@
                 <module>2.0</module>
             </modules>
         </profile>
+        <profile>
+            <id>spark_2.1</id>
+            <modules>
+                <module>2.0</module>
+            </modules>
+        </profile>
     </profiles>
 </project>
