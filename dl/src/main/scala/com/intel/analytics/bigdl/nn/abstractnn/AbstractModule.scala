@@ -42,6 +42,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 @specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
 
+  private val namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
   /**
    * The cached output. So we don't compute it again when need it
    */
@@ -109,13 +110,13 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   /**
-   * get the module name
+   * Get the module name, default name is className@namePostfix
    *
    * @return
    */
   def getName() : String = {
     if (this.name == null) {
-      s"${this.getClass.getName}@${Integer.toHexString(hashCode())}"
+      s"${this.getClass.getName}@${namePostfix}"
     } else {
       this.name
     }
@@ -237,7 +238,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    *
    * Custom modules should override this function if they have parameters.
    *
-   * @return (Array of weights, Array of grad)
+   * @return Table
    */
   def getParametersTable(): Table = null
 
@@ -299,7 +300,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   override def hashCode(): Int = {
     def getHashCode(a: Object): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(output, gradInput, this.getClass)
-    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b) + super.hashCode()
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 
   def save(path : String, overWrite: Boolean = false) : this.type = {

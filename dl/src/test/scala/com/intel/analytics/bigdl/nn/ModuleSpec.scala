@@ -123,6 +123,7 @@ class ModuleSpec extends FlatSpec with Matchers {
 
     val module2 = module.cloneModule()
 
+    module2.getName() should be (module.getName())
     module2 should be(module)
     module2.eq(module) should be(false)
   }
@@ -134,13 +135,24 @@ class ModuleSpec extends FlatSpec with Matchers {
     module1.getName() should not be (module2.getName())
   }
 
-  "getName for different module" should "return different name even if the module equals" in {
+  "getName for different modules" should "return different name even if two module equals" in {
     val module1 = new Linear[Double](2, 3)
     val module2 = new Linear[Double](2, 3)
     module1.weight.copy(module2.weight)
     module1.bias.copy(module2.bias)
 
     module1 should be (module2)
+    module1.getName() should not be (module2.getName())
+  }
+
+  "getName" should "return different name even if two module has the same hashcode" in {
+    val module1 = new Linear[Double](2, 3)
+    val module2 = new Linear[Double](2, 3)
+    module1.weight.copy(module2.weight)
+    module1.bias.copy(module2.bias)
+
+    println(module1.getName())
+    module1.hashCode() should be (module2.hashCode())
     module1.getName() should not be (module2.getName())
   }
 
