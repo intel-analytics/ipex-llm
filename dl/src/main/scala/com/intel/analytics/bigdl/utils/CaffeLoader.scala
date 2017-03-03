@@ -30,8 +30,15 @@ import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag
 
+/**
+ * load caffe model parameters to defined bigdl model
+ * @param prototxtPath caffe model define prototxt path
+ * @param modelPath    caffe serialized model path
+ * @param matchAll     if match all modules with parameters
+ * @tparam T type
+ */
 class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
-  matchAll: Boolean = true // if match all modules with parameters
+  matchAll: Boolean = true
 )(implicit ev: TensorNumeric[T]) {
 
   val logger = Logger.getLogger(getClass)
@@ -79,23 +86,28 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
   private def loadParameters(name: String, destPara: Array[Tensor[T]]):
   (Tensor[T], Tensor[T]) = {
+    logger.info(s"load parameters for $name ...")
     val caffeWeight = getBlob(name, 0)
     if (caffeWeight.isEmpty) return (null, null)
     val weightList = caffeWeight.get.getDataList
     require(destPara != null && destPara(0).nElement() == weightList.size(),
-      s"weight element must be equal in module $name")
+      s"weight element number is not equal between caffe layer and bigdl module $name, " +
+        s"data shape in caffe is ${ caffeWeight.get.getShape() }," +
+        s" while data shape in bigdl is ${ destPara(0).size().mkString(",") }")
     require(destPara(0).isContiguous())
     val weightData = destPara(0).storage().array()
     for (i <- 0 until weightList.size()) {
       weightData(i) = ev.fromType[Float](weightList.get(i))
     }
 
-    if (destPara.length > 1) {
+    if (destPara.length > 1 && destPara(1) != null) {
       val caffeBias = getBlob(name, 1)
       if (caffeBias.isEmpty) return (destPara(1), null)
       val biasList = caffeBias.get.getDataList
       require(destPara(1).nElement() == biasList.size(),
-        s"bias element must be equal in module $name")
+        s"bias element number is not equal between caffe layer and bigdl module $name, " +
+          s"data shape in caffe is ${ caffeBias.get.getShape() }," +
+          s" while data shape in bigdl is ${ destPara(1).size().mkString(",") }")
       require(destPara(1).isContiguous())
       val biasData = destPara(1).storage().array()
       for (i <- 0 until biasList.size()) {

@@ -23,6 +23,7 @@ import org.scalatest.FlatSpec
   /**
   * Created by yao on 9/21/16.
   */
+@com.intel.analytics.bigdl.tags.Parallel
 class MulConstantSpec extends FlatSpec {
   "MulConstant" should "generate correct output and grad" in {
     val input = Tensor[Double](2, 2, 2).randn()
@@ -53,9 +54,9 @@ class MulConstantSpec extends FlatSpec {
 
     // Test backward
     input = Tensor[Double](2, 2, 2).randn()
-    val expctedInput = input.clone().apply1(_ / scalar)
+    val expectedInput = input.clone().apply1(_ / scalar)
     val gradInput = module.backward(input, gradOutput)
     assert(gradInput equals expectedGrad)
-    assert(input equals expctedInput)
+    assert(input equals expectedInput)
   }
 }

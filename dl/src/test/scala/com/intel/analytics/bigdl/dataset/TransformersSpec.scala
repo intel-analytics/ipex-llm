@@ -31,6 +31,7 @@ import org.apache.hadoop.io.{SequenceFile, Text}
 import org.apache.hadoop.io.SequenceFile.Reader
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class TransformersSpec extends FlatSpec with Matchers {
   import TestUtils._
 

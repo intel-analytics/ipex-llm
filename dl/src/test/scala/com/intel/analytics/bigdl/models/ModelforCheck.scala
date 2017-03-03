@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 /**
  * models in this file is only for gradient check
  */
+@com.intel.analytics.bigdl.tags.Serial
 object GoogleNet_v1_test {
   def apply(classNum: Int): Module[Double] = {
     val feature1 = Sequential()

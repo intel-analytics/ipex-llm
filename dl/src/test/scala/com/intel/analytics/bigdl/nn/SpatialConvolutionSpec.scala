@@ -23,6 +23,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.math._
 import com.intel.analytics.bigdl._
 
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionSpec extends FlatSpec with Matchers {
   "A SpatialConvolution layer" should "generate correct output" in {
     val nInputPlane = 1

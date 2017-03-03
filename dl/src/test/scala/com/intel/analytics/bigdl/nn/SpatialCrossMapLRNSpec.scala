@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
   private def referenceLRNForwardAcrossChannels
   (input: Tensor[Double], alpha: Double, beta: Double, size: Int): Tensor[Double] = {
@@ -84,7 +85,7 @@ class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
     output
   }
 
-  "LocalNormalizationAcrossChannels Foward Double" should "be correct" in {
+  "LocalNormalizationAcrossChannels Forward Double" should "be correct" in {
     val layer = new SpatialCrossMapLRN[Double](5, 0.0001, 0.75, 1.0)
     val input = Tensor[Double](2, 7, 3, 3)
     input.rand()
@@ -95,7 +96,7 @@ class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
     output should be(outputRef)
   }
 
-  "LocalNormalizationAcrossChannels BackWard Double" should "be correct" in {
+  "LocalNormalizationAcrossChannels Backward Double" should "be correct" in {
     val layer = new SpatialCrossMapLRN[Double](5, 0.0001, 0.75, 1.0)
     val input = Tensor[Double](2, 7, 3, 3)
     input.rand()
@@ -103,7 +104,7 @@ class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
     checker.checkLayer(layer, input) should be(true)
   }
 
-  "LocalNormalizationAcrossChannels BackWard Float" should "be correct" in {
+  "LocalNormalizationAcrossChannels Backward Float" should "be correct" in {
     val layer = new SpatialCrossMapLRN[Float](5, 0.0001, 0.75, 1.0)
     val input = Tensor[Float](2, 7, 3, 3)
     input.rand()
@@ -111,7 +112,7 @@ class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
     checker.checkLayer[Float](layer, input) should be(true)
   }
 
-  "LocalNormalizationAcrossChannels with Large Region BackWard Double" should "be correct" in {
+  "LocalNormalizationAcrossChannels with Large Region Backward Double" should "be correct" in {
     val layer = new SpatialCrossMapLRN[Double](15, 0.0001, 0.75, 1.0)
     val input = Tensor[Double](2, 7, 3, 3)
     input.rand()
@@ -119,7 +120,7 @@ class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
     checker.checkLayer(layer, input) should be(true)
   }
 
-  "LocalNormalizationAcrossChannels with Large Region BackWard Float" should "be correct" in {
+  "LocalNormalizationAcrossChannels with Large Region Backward Float" should "be correct" in {
     val layer = new SpatialCrossMapLRN[Float](15, 0.0001, 0.75, 1.0)
     val input = Tensor[Float](2, 7, 3, 3)
     input.rand()
@@ -127,7 +128,7 @@ class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
     checker.checkLayer(layer, input) should be(true)
   }
 
-  "LocalNormalizationAcrossChannels with Large Region Foward Double" should "be correct" in {
+  "LocalNormalizationAcrossChannels with Large Region Forward Double" should "be correct" in {
     val layer = new SpatialCrossMapLRN[Double](15, 0.0001, 0.75, 1.0)
     val input = Tensor[Double](2, 7, 3, 3)
     input.rand()
@@ -137,7 +138,7 @@ class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
     output should be(outputRef)
   }
 
-  "LocalNormalizationAcrossChannels Foward Float" should "be correct" in {
+  "LocalNormalizationAcrossChannels Forward Float" should "be correct" in {
     val layer = new SpatialCrossMapLRN[Float](5, 0.0001f, 0.75f, 1.0f)
     val input = Tensor[Float](2, 7, 3, 3)
     input.rand()
@@ -147,7 +148,7 @@ class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
     output should be(outputRef)
   }
 
-  "LocalNormalizationAcrossChannels with Large Region Foward Float" should "be correct" in {
+  "LocalNormalizationAcrossChannels with Large Region Forward Float" should "be correct" in {
     val layer = new SpatialCrossMapLRN[Float](15, 0.0001f, 0.75f, 1.0f)
     val input = Tensor[Float](2, 7, 3, 3)
     input.rand()

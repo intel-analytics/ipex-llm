@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.nn
 
 /**
- * Initialization method to initializee bias and weight
+ * Initialization method to initialize bias and weight
  */
 sealed trait InitializationMethod
 

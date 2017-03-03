@@ -58,10 +58,12 @@ class L1Penalty[T: ClassTag]
     gradInput
   }
 
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[L1Penalty[T]]
+
   override def equals(other: Any): Boolean = other match {
     case that: L1Penalty[T] =>
       super.equals(that) &&
-        (that.eq(this)) &&
+        (that canEqual this) &&
         l1weight == that.l1weight &&
         sizeAverage == that.sizeAverage &&
         provideOutput == that.provideOutput

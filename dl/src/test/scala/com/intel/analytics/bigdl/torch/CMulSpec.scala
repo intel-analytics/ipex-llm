@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Serial
 class CMulSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
@@ -123,6 +124,80 @@ class CMulSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       """module = nn.CMul(3, 4)
+        output = module:forward(input)
+        gradInput = module:backward(input,gradOutput)
+        gradWeight = module.gradWeight"""
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput", "gradWeight"))
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+    val luaGradWeight = torchResult("gradWeight").asInstanceOf[Tensor[Double]]
+
+    output should be (luaOutput)
+    gradInput should be (luaGradInput)
+    layer.gradWeight should be (luaGradWeight)
+
+    println("Test case : CMul, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A CMul(1, 4, 1, 1)" should "generate correct output and grad" in {
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val layer = new CMul[Double](Array(1, 4, 1, 1))
+    val input = Tensor[Double](2, 4, 6, 5)
+    var i = 0
+    input.apply1(_ => {i += 1; i})
+    val gradOutput = Tensor[Double](2, 4, 6, 5)
+    i = 0
+    gradOutput.apply1(_ => {i += 1; i*0.1})
+
+    val start = System.nanoTime()
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      """module = nn.CMul(1, 4, 1, 1)
+        output = module:forward(input)
+        gradInput = module:backward(input,gradOutput)
+        gradWeight = module.gradWeight"""
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput", "gradWeight"))
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+    val luaGradWeight = torchResult("gradWeight").asInstanceOf[Tensor[Double]]
+
+    output should be (luaOutput)
+    gradInput should be (luaGradInput)
+    layer.gradWeight should be (luaGradWeight)
+
+    println("Test case : CMul, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A CMul(1, 5, 1, 1)" should "generate correct output and grad" in {
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val layer = new CMul[Double](Array(1, 5, 1, 1))
+    val input = Tensor[Double](10, 5, 600, 500)
+    var i = 0
+    input.apply1(_ => {i += 1; i})
+    val gradOutput = Tensor[Double](10, 5, 600, 500)
+    i = 0
+    gradOutput.apply1(_ => {i += 1; i*0.1})
+
+    val start = System.nanoTime()
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      """module = nn.CMul(1, 5, 1, 1)
         output = module:forward(input)
         gradInput = module:backward(input,gradOutput)
         gradWeight = module.gradWeight"""

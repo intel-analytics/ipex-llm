@@ -91,7 +91,7 @@ class JoinTable[T: ClassTag] (
     val dimension = getPositiveDimension(input)
 
     var i = 1
-    while (i <= input.getState().size) {
+    while (i <= input.length()) {
       if (!gradInput.contains(i)) {
         gradInput(i) = Tensor()
       }
@@ -101,7 +101,7 @@ class JoinTable[T: ClassTag] (
 
     var offset = 1
     i = 1
-    while (i <= input.getState().size) {
+    while (i <= input.length()) {
       val currentOutput: Tensor[T] = input(i)
       val currentGradInput = gradOutput
         .narrow(dimension, offset, currentOutput.size(dimension))

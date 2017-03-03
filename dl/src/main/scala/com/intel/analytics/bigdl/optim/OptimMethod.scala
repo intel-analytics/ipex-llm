@@ -45,6 +45,25 @@ trait OptimMethod[@specialized(Float, Double) T] extends Serializable {
    * @return
    */
   def clearHistory(state: Table): Table
+
+  /**
+   * Update hyper parameter.
+   * We have updated hyper parameter in method optimize(). But in DistriOptimizer, the method
+   * optimize() is only called on the executor side, the driver's hyper parameter is unchanged.
+   * So this method is using to update hyper parameter on the driver side.
+   *
+   * @param config config table.
+   * @param state state Table.
+   * @return A string.
+   */
+  def updateHyperParameter(config: Table, state: Table): Unit = {}
+
+  /**
+   * Get hyper parameter from config table.
+   *
+   * @param config a table contains the hyper parameter.
+   */
+  def getHyperParameter(config: Table): String = ""
 }
 
 trait IterateByItself

@@ -336,11 +336,8 @@ object TorchFile {
         i = i + 1
         rawData.putInt(i)
         source match {
-          case s: mutable.Map[_, _] =>
-            writeTable(s.asInstanceOf[mutable.Map[Any, Any]],
-              rawData, path)
           case s: Table =>
-            writeTable(source.asInstanceOf[Table].getState(), rawData, path)
+            writeTable(source.asInstanceOf[Table], rawData, path)
           case _ => throw new Error(s"Unknown table $source")
         }
       case _ => throw new IllegalArgumentException(objectType.toString)
@@ -590,8 +587,8 @@ object TorchFile {
     }
   }
 
-  private def writeTable(source: mutable.Map[Any, Any], rawData: ByteBuffer, path: Path): Unit = {
-    val size = source.size
+  private def writeTable(source: Table, rawData: ByteBuffer, path: Path): Unit = {
+    val size = source.length()
     flush(rawData, path)
     rawData.putInt(size)
 
@@ -610,7 +607,7 @@ object TorchFile {
         case _ => new Error(s"Unsupported key type $key")
       }
 
-      val sourceKey = source.getOrElse(key, null)
+      val sourceKey = source.getOrElse[Any](key, null)
       sourceKey match {
         case s: Tensor[_] =>
           if (isDoubleTensor(s)) {
@@ -619,7 +616,7 @@ object TorchFile {
             writeObject(s.asInstanceOf[Tensor[Float]], rawData, path, TYPE_FLOAT_TENSOR)
           }
         case s: Table =>
-          writeObject(s.getState(), rawData, path, TYPE_TABLE)
+          writeObject(s, rawData, path, TYPE_TABLE)
         case s: Int =>
           writeObject(s.toDouble, rawData, path, TYPE_NUMBER)
         case s: Float =>

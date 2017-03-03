@@ -17,10 +17,11 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.concurrent.Future
@@ -599,19 +600,66 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     Engine.model.sync(results)
   }
 
+  override def copyStatus(src: Module[T]): this.type = {
+    require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
+    val srcModule = src.asInstanceOf[BatchNormalization[T]]
+    runningMean.copy(srcModule.runningMean)
+    runningVar.copy(srcModule.runningVar)
+    this
+  }
+
   override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
+    if (affine) {
+      gradWeight.zero()
+      gradBias.zero()
+    }
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    if (affine) {
+      (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    } else {
+      null
+    }
+  }
+
+  override def getParametersTable(): Table = {
+    if (affine) {
+      T(getName() -> T("weight" -> weight, "bias" -> bias,
+        "gradWeight" -> gradWeight, "gradBias" -> gradBias,
+        "runningMean" -> runningMean, "runningVar" -> runningVar))
+    } else {
+      T(getName() -> T("runningMean" -> runningMean, "runningVar" -> runningVar))
+    }
   }
 
   override def toString(): String = {
     s"nn.BatchNormalization($nOutput, $eps, $momentum, $affine)"
   }
 
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[BatchNormalization[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: BatchNormalization[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        nDim == that.nDim &&
+        runningMean == that.runningMean &&
+        runningVar == that.runningVar &&
+        weight == that.weight &&
+        bias == that.bias &&
+        nOutput == that.nOutput &&
+        eps == that.eps &&
+        momentum == that.momentum &&
+        affine == that.affine
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), nDim, runningMean, runningVar, weight, bias,
+      nOutput, eps, momentum, affine)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 object BatchNormalization {

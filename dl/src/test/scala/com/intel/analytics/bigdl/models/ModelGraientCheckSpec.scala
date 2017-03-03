@@ -24,6 +24,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
+@com.intel.analytics.bigdl.tags.Parallel
 class ModelGraientCheckSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
   private val checkModel = true

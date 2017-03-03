@@ -58,6 +58,21 @@ class CMulTable[T: ClassTag]()(
   override def toString() : String = {
     "nn.CMulTable"
   }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[CMulTable[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: CMulTable[T] =>
+      super.equals(that) &&
+        (that canEqual this)
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode())
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 object CMulTable {

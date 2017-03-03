@@ -17,10 +17,13 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl.nn.{ConcatTable, Linear}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
+import scala.util.Properties
 
+@com.intel.analytics.bigdl.tags.Parallel
 class TableSpec extends FlatSpec with Matchers {
   "hashcode()" should "behave correctly" in {
     val input1 = Tensor[Double](3, 3).randn()
@@ -76,12 +79,12 @@ class TableSpec extends FlatSpec with Matchers {
     state(2) = T(1 -> "b", 2 -> T(1 -> "d"))
     print(state.toString)
     // Handle different behavior of toString in scala 2.10 and 2.11
-    if(util.Properties.versionNumberString.contains("2.10")) {
+    if(Properties.versionNumberString.contains("2.10")) {
       state.toString() should be(" {\n\t2:  {\n\t   " +
         "\t2:  {\n\t   \t   \t1: d\n\t   \t    }\n\t   \t1: b\n\t    }" +
         "\n\t1: 0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   " +
         "[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x3]\n }")
-    } else if (util.Properties.versionNumberString.contains("2.11")) {
+    } else if (Properties.versionNumberString.contains("2.11")) {
       state.toString() should be(" {\n\t2:  {\n\t   " +
         "\t2:  {\n\t   \t   \t1: d\n\t   \t    }\n\t   \t1: b\n\t    }" +
         "\n\t1: 0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   0.0\t0.0\t0.0\t\n\t   " +
@@ -236,15 +239,40 @@ class TableSpec extends FlatSpec with Matchers {
     val t = T(1, 2, 3, 4, 5, 6)
 
     val r = t.clear()
-    r.get() should be (None)
-    r.contains(1) should be (false)
-    r.length() should be (0)
-    t.length() should be (0)
+    r.get() should be(None)
+    r.contains(1) should be(false)
+    r.length() should be(0)
+    t.length() should be(0)
 
     t.insert(1, 1)
-    t.length() should be (1)
+    t.length() should be(1)
 
     t.insert(100)
     t[Int](2) should be(100)
+  }
+
+  "toTensor" should "work correclty" in {
+    val input = Tensor[Float](3, 4)
+    val module = ConcatTable[Tensor[Float], Float]()
+      .add(Linear(4, 5))
+      .add(Linear(4, 5))
+    val output = module.forward(input)
+
+    try {
+      output.toTensor[Float]
+      fail()
+    } catch {
+      case ex: IllegalArgumentException =>
+    }
+  }
+
+  "toTable" should "work correclty" in {
+    val input = Tensor[Float](3, 4)
+    val module = ConcatTable[Tensor[Float], Float]()
+      .add(Linear(4, 5))
+      .add(Linear(4, 5))
+    val output = module.forward(input)
+
+    output.toTable should be(output)
   }
 }

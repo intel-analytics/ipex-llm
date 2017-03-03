@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class MapTableSpec  extends FlatSpec with Matchers {
   "A MapTable" should "generate correct output" in {
     val input = T(

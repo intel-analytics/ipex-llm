@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.math.abs
 
+@com.intel.analytics.bigdl.tags.Parallel
 class SigmoidSpec extends FlatSpec {
   "A Sigmoid Module " should "generate correct output and grad" in {
     val module = new Sigmoid[Double]

@@ -17,11 +17,15 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, DistributedDataSet}
+import java.io.File
+import java.nio.file.{Files, Paths}
+
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
+import org.apache.commons.io.FileUtils
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -67,6 +71,16 @@ object DistriOptimizerSpecModel {
     mlp
   }
 
+  def bn: Module[Double] = {
+    val mlp = Sequential[Double]
+    mlp.add(Linear(4, 2))
+    mlp.add(BatchNormalization(2))
+    mlp.add(ReLU())
+    mlp.add(Linear(2, 1))
+    mlp.add(Sigmoid())
+    mlp
+  }
+
   def cre: Module[Double] = {
     val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
@@ -75,6 +89,7 @@ object DistriOptimizerSpecModel {
   }
 }
 
+@com.intel.analytics.bigdl.tags.Serial
 class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   import DistriOptimizerSpec._
@@ -214,5 +229,47 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     model.getParameters()._1 should be(modelRef.getParameters()._1)
 
+  }
+
+  "Train with BatchNormalization" should "return with state" in {
+    RandomGenerator.RNG.setSeed(10)
+    val mm = bn
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
+    val model = optimizer.optimize()
+    val batchNormalization = model.asInstanceOf[Sequential[Double]].modules(1).
+      asInstanceOf[BatchNormalization[Double]]
+    batchNormalization.runningMean.storage().array() should be (
+      Array(0.37499998210083496, 0.37499998210083496)
+    )
+    batchNormalization.runningVar.storage().array() should be (
+      Array(1188.2811870277535, 1188.2811870277535)
+    )
+  }
+
+  "DistriOptimizer checkpoint" should "work correclty" in {
+    val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
+
+    import com.intel.analytics.bigdl._
+    plusOne = 1.0
+    RandomGenerator.RNG.setSeed(10)
+    new DistriOptimizer[Double](
+      cre,
+      dataSet,
+      new ClassNLLCriterion[Double]()
+    ).setState(T("learningRate" -> 20.0))
+      .setCheckpoint(filePath, Trigger.everyEpoch)
+      .setEndWhen(Trigger.maxEpoch(1))
+      .disableCheckSingleton()
+      .optimize()
+
+    val state = T.load(filePath + "/state.33")
+
+    state[Int]("epoch") should be (2)
+    state[Int]("neval") should be (33)
   }
 }

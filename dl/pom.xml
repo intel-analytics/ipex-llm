@@ -68,17 +68,6 @@
             <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
         </dependency>
-        <!--dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql-kafka-0-10_${scala.major.version}</artifactId>
-            <version>${spark.version}</version>
-            <scope>${spark-scope}</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_${scala.major.version}</artifactId>
-            <version>0.10.1.1</version>
-        </dependency-->
         <dependency>
             <groupId>com.intel.analytics.bigdl.spark-version</groupId>
             <artifactId>${spark-version.project}</artifactId>
@@ -145,6 +134,7 @@
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
                     <junitxml>.</junitxml>
                     <filereports>bigdl-test-report.txt</filereports>
+                    <parallel>${runSpecsInParallel}</parallel>
                 </configuration>
                 <executions>
                     <execution>
@@ -160,6 +150,18 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
+                    <execution>
+                        <id>python</id>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>${project.basedir}/src/assembly/python-zip.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
                     <execution>
                         <id>without-spark</id>
                         <configuration>
@@ -257,6 +259,26 @@
         </plugins>
     </reporting>
     <profiles>
+    	<profile>
+    		<id>parallel-tests</id>
+   			<properties>
+      			<runSpecsInParallel>true</runSpecsInParallel>
+      			<tagsToInclude>com.intel.analytics.bigdl.tags.Parallel</tagsToInclude>
+   			</properties>
+		</profile>
+		<profile>
+    		<id>serial-tests</id>
+   			<properties>
+      			<runSpecsInParallel>false</runSpecsInParallel>
+      			<tagsToExclude>com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
+   			</properties>
+		</profile>
+		<profile>
+    		<id>serial-all</id>
+   			<properties>
+      			<runSpecsInParallel>false</runSpecsInParallel>
+   			</properties>
+		</profile>
         <profile>
             <id>1.5-plus</id>
             <activation>

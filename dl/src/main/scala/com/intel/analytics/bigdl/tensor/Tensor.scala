@@ -442,7 +442,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * The another tensor should has the same size of the current tensor
    *
    * @param other another tensor
-   * @param func  applied funciton
+   * @param func  applied function
    * @return current tensor
    */
   def map(other: Tensor[T], func: (T, T) => T): Tensor[T]
@@ -597,6 +597,9 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @return
    */
   def save(path : String, overWrite : Boolean = false) : this.type
+
+  override def toTable: Table =
+    throw new IllegalArgumentException("Tensor cannot be cast to Table")
 }
 
 sealed trait TensorDataType
@@ -646,11 +649,10 @@ object Tensor {
    */
   def apply[@specialized(Float, Double) T: ClassTag](xs : Table)(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    val map = xs.flatten().getState().asInstanceOf[Map[Int, T]]
-    val content = new Array[T](map.values.size)
-    var i = 1
-    for (i <- 1 to content.size) {
-      content(i - 1) = map(i)
+    val flatTable = xs.flatten()
+    val content = new Array[T](flatTable.length())
+    for (i <- 1 to content.length) {
+      content(i - 1) = flatTable(i)
     }
 
     val dims = new ArrayBuffer[Int]()

@@ -17,9 +17,11 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -87,6 +89,31 @@ abstract class Container[A <: Activity : ClassTag,
       }
     })
     (weights.toArray, gradWeights.toArray)
+  }
+
+  override def getParametersTable(): Table = {
+    val pt = T()
+    modules.foreach(m => {
+      val params = m.getParametersTable()
+      if (params != null) {
+        params.keySet.foreach(key => pt(key) = params(key))
+      }
+    })
+    pt
+  }
+
+  override def copyStatus(src: Module[T]): this.type = {
+    require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
+    val srcContainer = src.asInstanceOf[Container[A, B, T]]
+    require(srcContainer.modules.length == modules.length,
+      s"copyStatus: container's length mismatch" +
+        s"excepted ${modules.length}, but get ${srcContainer.modules.length}")
+    var i = 0
+    while (i < modules.length) {
+      modules(i).copyStatus(srcContainer.modules(i))
+      i += 1
+    }
+    this
   }
 
   override def clearState() : this.type = {

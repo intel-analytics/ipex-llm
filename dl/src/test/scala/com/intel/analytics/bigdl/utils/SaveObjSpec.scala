@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.models.inception.Inception_v1
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class SaveObjSpec extends FlatSpec with Matchers {
   "A tensor load from saved file" should "be same with original tensor" in {
     val originTensor = Tensor[Float](3, 2, 4).rand()

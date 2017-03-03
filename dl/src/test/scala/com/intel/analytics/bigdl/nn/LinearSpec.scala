@@ -19,12 +19,14 @@ package com.intel.analytics.bigdl.nn
 
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl._
 
 import scala.math._
 import com.intel.analytics.bigdl._
 
+@com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends FlatSpec with Matchers {
-  "Linear module" should "converate to correct weight and bias" in {
+  "Linear module" should "converge to correct weight and bias" in {
     val inputN = 5
     val outputN = 2
 
@@ -73,7 +75,7 @@ class LinearSpec extends FlatSpec with Matchers {
     assert(err < 1e-6)
   }
 
-  "Linear module in batch mode" should "converate to correct weight and bias" in {
+  "Linear module in batch mode" should "converge to correct weight and bias" in {
     val inputN = 5
     val outputN = 2
     val batchN = 3
@@ -118,6 +120,51 @@ class LinearSpec extends FlatSpec with Matchers {
       assert(abs(v1 - v2) < 1e-6);
       v1
     })
+    expectedWeight.map(weight, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6);
+      v1
+    })
+    assert(err < 1e-6)
+  }
+
+  "Linear module in batch mode without bias" should "converate to correct weight and bias" in {
+    val inputN = 5
+    val outputN = 2
+    val batchN = 3
+
+    val linear = new Linear[Double](inputN, outputN, withBias = false)
+    val mse = new MSECriterion[Double]
+
+    val input = Tensor[Double](batchN, inputN)
+    val res = Tensor[Double](batchN, outputN)
+    var err = 0.0
+    for (i <- 1 to 10000) {
+      input.rand()
+      for (k <- 1 to batchN) {
+        for (y <- 1 to outputN) {
+          res(Array(k, y)) = 0
+          for (x <- 1 to inputN) {
+            res(Array(k, y)) += 0.1 * y * x * input(Array(k, x))
+          }
+        }
+      }
+      val output = linear.forward(input)
+      err = mse.forward(output, res)
+      val grad = mse.backward(output, res)
+      linear.zeroGradParameters()
+      linear.backward(input, grad)
+      linear.updateParameters(0.5 / log(i + 3))
+    }
+    val params = linear.parameters()
+    val weight = params._1(0)
+
+    val expectedWeight = Tensor[Double](outputN, inputN)
+    for (y <- 1 to outputN) {
+      for (x <- 1 to inputN) {
+        expectedWeight(Array(y, x)) = 0.1 * y * x
+      }
+    }
+
     expectedWeight.map(weight, (v1, v2) => {
       assert(abs(v1 - v2) < 1e-6);
       v1

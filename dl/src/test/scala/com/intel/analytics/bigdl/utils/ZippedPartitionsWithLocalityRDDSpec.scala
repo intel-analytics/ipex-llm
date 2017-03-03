@@ -21,6 +21,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.ZippedPartitionsWithLocalityRDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Serial
 class ZippedPartitionsWithLocalityRDDSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc: SparkContext = null
   before {

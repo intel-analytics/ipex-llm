@@ -41,7 +41,7 @@ import scala.language.existentials
  * This example use a (pre-trained GloVe embedding) to convert word to vector,
  * and uses it to train a text classification model on the 20 Newsgroup dataset
  * with 20 different categories. This model can achieve around 90% accuracy after
- * 2 epoches training.
+ * 2 epochs training.
  */
 class TextClassifier(param: TextClassificationParams) {
   val log: Logger = LoggerFactory.getLogger(this.getClass)
@@ -185,7 +185,7 @@ class TextClassifier(param: TextClassificationParams) {
       .setState(state)
       .setOptimMethod(new Adagrad())
       .setValidation(Trigger.everyEpoch, valRDD, Array(new Top1Accuracy[Float]), param.batchSize)
-      .setEndWhen(Trigger.maxEpoch(2))
+      .setEndWhen(Trigger.maxEpoch(20))
       .optimize()
     sc.stop()
   }

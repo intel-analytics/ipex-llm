@@ -20,6 +20,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 
+@com.intel.analytics.bigdl.tags.Parallel
 class ParallelTableSpec extends FlatSpec with Matchers {
   "hashcode()" should "behave correctly" in {
     val log = new Log[Double]()

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.tensor
 
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class TensorConvSpec extends FlatSpec with Matchers {
   "Valid conv" should "return correct value" in {
     val t = new DenseTensor[Double](3, 4)

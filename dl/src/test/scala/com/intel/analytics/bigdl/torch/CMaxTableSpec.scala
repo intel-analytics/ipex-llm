@@ -25,7 +25,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
-
+@com.intel.analytics.bigdl.tags.Serial
 class CMaxTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
   before {
     if (!TH.hasTorch()) {

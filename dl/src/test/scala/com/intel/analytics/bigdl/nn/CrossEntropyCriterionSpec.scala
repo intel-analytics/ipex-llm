@@ -31,6 +31,7 @@ import scala.math._
   * Created by ywan on 16-9-21.
   */
 
+@com.intel.analytics.bigdl.tags.Parallel
 class CrossEntropyCriterionSpec extends FlatSpec with Matchers {
 
   "CrossEntropyCriterion " should "return return right output and gradInput" in {

@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
+@com.intel.analytics.bigdl.tags.Serial
 class CAddSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
@@ -123,6 +124,43 @@ class CAddSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.CAdd(3, 4)\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)" +
+      "gradBias = module.gradBias"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput", "gradBias"))
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+    val luaGradBias = torchResult("gradBias").asInstanceOf[Tensor[Double]]
+
+    output should be (luaOutput)
+    gradInput should be (luaGradInput)
+    layer.gradBias should be (luaGradBias)
+
+    println("Test case : CAdd, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A CAdd(1, 10, 1, 1)" should "generate correct output and grad" in {
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val layer = new CAdd[Double](Array(1, 10, 1, 1))
+    val input = Tensor[Double](3, 10, 500, 600)
+    var i = 0
+    input.apply1(_ => {i += 1; i})
+    val gradOutput = Tensor[Double](3, 10, 500, 600)
+    i = 0
+    gradOutput.apply1(_ => {i += 1; i*0.1})
+
+    val start = System.nanoTime()
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      "module = nn.CAdd(1, 10, 1, 1)\n" +
       "output = module:forward(input)\n" +
       "gradInput = module:backward(input,gradOutput)" +
       "gradBias = module.gradBias"

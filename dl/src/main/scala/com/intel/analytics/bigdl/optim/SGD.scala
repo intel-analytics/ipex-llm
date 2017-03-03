@@ -98,6 +98,31 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     state.delete("dfdx")
     state.delete("deltaParameters")
   }
+
+  /**
+   * return an string of current hyperParameter.
+   */
+  override def getHyperParameter(config: Table): String = {
+    val clr = -config[Double]("clr")
+    val wd = config.get[Double]("weightDecay").getOrElse(0.0)
+    val mom = config.get[Double]("momentum").getOrElse(0.0)
+    val damp = config.get[Double]("dampening").getOrElse(mom)
+    val nesterov = config.get[Boolean]("nesterov").getOrElse(false)
+    val lrs = config.get[Tensor[T]]("learningRates").getOrElse(null)
+    val wds = config.get[Tensor[T]]("weightDecays").getOrElse(null)
+    s"Current learning rate is $clr. " +
+      {if (wd != 0) s"Current weight decay is $wd. " else ""} +
+      {if (mom != 0) s"Current momentum is $mom. " else ""} +
+      {if (damp != 0) s"Current dampening is $damp. " else ""} +
+      {if (nesterov) s"Current nesterov is true. " else ""} +
+      {if (null != lrs) s"Current learningRates is a Tensor. " else ""} +
+      {if (null != wds) s"Current weightDecays is a Tensor. " else ""}
+  }
+
+  override def updateHyperParameter(config: Table, state: Table): Unit = {
+    val lrSchedule = config.get[LearningRateSchedule]("learningRateSchedule").getOrElse(Default())
+    lrSchedule.updateHyperParameter(config, state)
+  }
 }
 
 object SGD {

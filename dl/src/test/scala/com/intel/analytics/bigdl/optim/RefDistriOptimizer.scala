@@ -31,6 +31,7 @@ import scala.reflect.ClassTag
 /**
  * The class is used as a reference optimizer in distribute optimizer unit test
  */
+@com.intel.analytics.bigdl.tags.Parallel
 class RefDistriOptimizer[T: ClassTag](
   model: Module[T],
   dataset: DataSet[MiniBatch[T]],

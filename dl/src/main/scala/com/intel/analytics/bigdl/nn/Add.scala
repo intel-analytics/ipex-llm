@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -29,7 +30,7 @@ import scala.reflect.ClassTag
  * @param inputSize size of input data
  */
 @SerialVersionUID(4268487849759172896L)
-class Add[T: ClassTag](inputSize: Int
+class Add[T: ClassTag](val inputSize: Int
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val bias = Tensor[T](inputSize)
@@ -96,8 +97,30 @@ class Add[T: ClassTag](inputSize: Int
     (Array(this.bias), Array(this.gradBias))
   }
 
+  override def getParametersTable(): Table = {
+    T(getName() -> T("bias" -> bias, "gradBias" -> gradBias))
+  }
+
   override def toString(): String = {
-    s"nn.Add"
+    s"nn.Add ($inputSize)"
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Add[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Add[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        bias == that.bias &&
+        gradBias == that.gradBias &&
+        inputSize == that.inputSize
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), bias, gradBias, inputSize)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
 

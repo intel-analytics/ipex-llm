@@ -31,6 +31,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.math._
 import scala.util.Random
 
+@com.intel.analytics.bigdl.tags.Serial
 class AlexNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "AlexNet float" should "generate correct output" in {
     if (!TH.hasTorch()) {
@@ -259,7 +260,7 @@ gradInput = model.gradInput
 
     for (i <- 1 to 4) {
       model.zeroGradParameters()
-      val outputtest = model.forward(input).toTensor[Double]
+      val outputtest = model.forward(input).toTensor[Float]
       val loss = criterion.forward(outputtest, labels)
       val gradoutputtest = criterion.backward(outputtest, labels)
       model.backward(input, gradoutputtest)

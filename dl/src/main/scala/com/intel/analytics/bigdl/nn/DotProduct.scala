@@ -56,7 +56,7 @@ class DotProduct[T: ClassTag] (implicit ev: TensorNumeric[T])
     var input2: Tensor[T] = input(2)
     var notBatch = false
 
-    if (gradInput.getState().size != 2) {
+    if (gradInput.length() != 2) {
       if (!gradInput.contains(1)) {
         gradInput.update(1, Tensor[T]())
       }

@@ -583,7 +583,7 @@ trait TensorMath[T] {
   def gt(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
   /**
-   * mplements < operator comparing each element in x with y
+   * Implements < operator comparing each element in x with y
    *
    * @param x
    * @param y
@@ -592,7 +592,7 @@ trait TensorMath[T] {
   def lt(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
   /**
-   * mplements <= operator comparing each element in x with y
+   * Implements <= operator comparing each element in x with y
    *
    * @param x
    * @param y

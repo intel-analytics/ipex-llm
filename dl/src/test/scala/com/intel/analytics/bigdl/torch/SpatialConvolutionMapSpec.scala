@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 
+@com.intel.analytics.bigdl.tags.Serial
 class SpatialConvolutionMapSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {

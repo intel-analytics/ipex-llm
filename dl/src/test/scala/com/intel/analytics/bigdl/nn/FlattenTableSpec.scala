@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class FlattenTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "An FlattenTable" should "generate correct output and grad" in {
     val layer = new FlattenTable[Double]()

@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DenseTensorBLAS, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -199,7 +200,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     // For each element in batch, do:
     var elt = 1
     while (elt <= batchSize) {
-      // Matrix mulitply per output:
+      // Matrix multiply per output:
       val input_n = input.select(1, elt)
       val output_n = output.select(1, elt)
 
@@ -304,7 +305,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     // For each element in batch, do:
     var elt = 1
     while (elt <= batchSize) {
-      // Matrix mulitply per sample:
+      // Matrix multiply per sample:
       val gradInput_n = gradInput.select(1, elt)
       val gradOutput_n = gradOutput.select(1, elt)
 
@@ -395,7 +396,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     // For each element in batch, do:
     var elt = 1
     while (elt <= batchSize) {
-      // Matrix mulitply per output:
+      // Matrix multiply per output:
       val input_n = input.select(1, elt)
       val gradOutput_n = gradOutput.select(1, elt)
 
@@ -476,6 +477,11 @@ class SpatialDilatedConvolution[T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+  }
+
+  override def getParametersTable(): Table = {
+    T(getName() -> T("weight" -> weight, "bias" -> bias,
+      "gradWeight" -> gradWeight, "gradBias" -> gradBias))
   }
 
   override def equals(obj: Any): Boolean = {

@@ -36,4 +36,15 @@ object ErrorInfo {
       | Each tensor contained in the input to the layer needs to be a vector
       | (or a mini-batch of vectors);\n please use the Reshape module to convert
       | multi-dimensional input into vectors if appropriate""".stripMargin
+
+  final val constrainInputDimSameAsTarget =
+    """
+      | The dimensions of input and target to the criterion layer need to be the same;
+      | please use the Reshape module to convert if appropriate""".stripMargin
+
+  final val constrainInputSizeSameAsTarget =
+    """
+      | The size of input and target to the criterion layer need to be the same;
+      | please use the Reshape module to convert if appropriate""".stripMargin
+
 }

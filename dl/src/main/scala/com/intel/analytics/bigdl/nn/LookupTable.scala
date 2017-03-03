@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -57,10 +58,10 @@ class LookupTable[T: ClassTag]
     if (normBuffer.dim() == 2) {
       normBuffer = normBuffer.view(normBuffer.nElement())
     }
-    require(weight.isContiguous(), "weight must be contiguous")
-    require(normBuffer.isContiguous(), "input must be contiguous")
-    require(normBuffer.nDimension() == 1, "idx must be a vector")
-    require(normType > 0, "non-positive-norm not supported")
+    require(weight.isContiguous(), "LookupTable: weight must be contiguous")
+    require(normBuffer.isContiguous(), "LookupTable: input must be contiguous")
+    require(normBuffer.nDimension() == 1, "LookupTable: idx must be a vector")
+    require(normType > 0, "LookupTable: non-positive-norm not supported")
 
     val rowIdx = normBuffer.storage().array()
     val rowOffset = normBuffer.storageOffset() - 1
@@ -73,9 +74,9 @@ class LookupTable[T: ClassTag]
     var i = 0
     while (i < numEle) {
       require(ev.isGreater(ev.fromType(weight.size(1) + 1), rowIdx(i + rowOffset)),
-        "elements of input should be little than or equal to nIndex+1")
+        s"LookupTable: elements of input should be little than or equal to $nIndex + 1")
       require(ev.isGreaterEq(rowIdx(i + rowOffset), ev.one),
-        "elements of input should be greater than or equal to 1")
+        "LookupTable: elements of input should be greater than or equal to 1")
       i += 1
     }
 
@@ -169,8 +170,9 @@ class LookupTable[T: ClassTag]
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
     scale: Double = 1.0): Unit = {
     inputBuffer = input.contiguous()
-    require(gradWeight.isContiguous(), "gradWeight must be contiguous")
-    require(inputBuffer.dim() == 1 || inputBuffer.dim() == 2, "input must be a vector or matrix")
+    require(gradWeight.isContiguous(), "LookupTable: gradWeight must be contiguous")
+    require(inputBuffer.dim() == 1 || inputBuffer.dim() == 2,
+      "LookupTable: input must be a vector or matrix")
 
     if (inputBuffer.dim() == 2) {
       inputBuffer.view(inputBuffer.nElement())
@@ -189,9 +191,9 @@ class LookupTable[T: ClassTag]
     var i = 0
     while (i < numEle) {
       require(ev.isGreater(ev.fromType(gradWeight.size(1) + 1), input_data(i + input_offset)),
-        "elements of input should be little than or equal to nIndex+1")
+        s"LookupTable: elements of input should be little than or equal to $nIndex + 1")
       require(ev.isGreaterEq(input_data(i + input_offset), ev.one),
-        "elements of input should be greater than or equal to 1")
+        "LookupTable: elements of input should be greater than or equal to 1")
       i += 1
     }
 
@@ -221,6 +223,10 @@ class LookupTable[T: ClassTag]
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
+  }
+
+  override def getParametersTable(): Table = {
+    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
   }
 
   override def clearState() : this.type = {

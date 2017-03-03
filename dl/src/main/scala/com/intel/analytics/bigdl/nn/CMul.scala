@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -31,6 +32,9 @@ class CMul[@specialized(Float, Double) T: ClassTag](
 
   val weight: Tensor[T] = Tensor[T](size)
   val gradWeight : Tensor[T] = Tensor[T](size)
+
+  private val _sum = Tensor[T]()
+  private val _repeat = Tensor[T]()
 
   reset()
 
@@ -50,11 +54,31 @@ class CMul[@specialized(Float, Double) T: ClassTag](
       } else {
         weight.view(Array(1) ++ weight.size())
       }
-
-      expand.expandAs(output)
-      output.cmul(expand)
+      val pivotDim = Utils.getOnlyDimGtOne(expand.size())
+      if (pivotDim > 0) {
+        mulOneDimWeight(pivotDim, expand, output)
+      } else {
+        expand.expandAs(output)
+        output.cmul(expand)
+      }
     }
     output
+  }
+
+  private def mulOneDimWeight(dim: Int, expand: Tensor[T], output: Tensor[T]): Unit = {
+    val (innerNum, outerNum) = Utils.getInnerOuterNum(dim, output)
+    val weightData = expand.storage().array()
+    var outer = 0
+    var offset = output.storageOffset() - 1
+    while (outer < outerNum) {
+      var k = 0
+      while (k < expand.nElement()) {
+        ev.scal(innerNum, weightData(k), output.storage().array(), offset, 1)
+        offset += innerNum
+        k += 1
+      }
+      outer += 1
+    }
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
@@ -67,9 +91,14 @@ class CMul[@specialized(Float, Double) T: ClassTag](
       } else {
         weight.view(Array(1) ++ weight.size())
       }
-
-      expand.expandAs(gradOutput)
-      gradInput.cmul(expand, gradOutput)
+      val pivotDim = Utils.getOnlyDimGtOne(expand.size())
+      if (pivotDim > 0) {
+        gradInput.copy(gradOutput)
+        mulOneDimWeight(pivotDim, expand, gradInput)
+      } else {
+        expand.expandAs(gradOutput)
+        gradInput.cmul(expand, gradOutput)
+      }
     }
 
     gradInput
@@ -82,24 +111,23 @@ class CMul[@specialized(Float, Double) T: ClassTag](
       gradWeight.addcmul(ev.fromType[Double](scale), input, gradOutput)
     } else {
       if (weight.dim() == input.dim()) {
-        val sumFrom = Tensor[T](input.size()).copy(input)
-        sumFrom.cmul(gradOutput)
-
-        val sumInto = Tensor[T](input.size())
+        _repeat.resizeAs(input).cmul(input, gradOutput)
+        var sumFrom = _repeat
+        var sumInto = _sum
         var i = 1
         while (i <= weight.dim()) {
           if (weight.size(i) != input.size(i)) {
             sumInto.sum(sumFrom, i)
+            sumInto = sumFrom
+            sumFrom = if (sumFrom == _repeat) _sum else _repeat
           }
           i += 1
         }
-        gradWeight.add(ev.fromType[Double](scale), sumInto)
+        gradWeight.add(ev.fromType[Double](scale), sumFrom)
       } else {
-        val repeat = Tensor[T](input.size()).copy(input)
-        repeat.cmul(gradOutput)
-        val sum = Tensor[T](input.size())
-        sum.sum(repeat, 1)
-        gradWeight.view(Array(1) ++ gradWeight.size()).add(ev.fromType[Double](scale), sum)
+        _repeat.resizeAs(input).cmul(input, gradOutput)
+        _sum.sum(_repeat, 1)
+        gradWeight.add(ev.fromType[Double](scale), _sum)
       }
 
     }
@@ -115,6 +143,17 @@ class CMul[@specialized(Float, Double) T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
+  }
+
+  override def getParametersTable(): Table = {
+    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
+  }
+
+  override def clearState(): this.type = {
+    super.clearState()
+    _repeat.set()
+    _sum.set()
+    this
   }
 
   override def equals(obj: Any): Boolean = {
