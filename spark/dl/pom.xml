@@ -293,23 +293,6 @@
 
     <profiles>
         <profile>
-            <id>spark_2.1</id>
-            <dependencies>
-                <dependency>
-                    <groupId>org.apache.spark</groupId>
-                    <artifactId>spark-sql-kafka-0-10_${scala.major.version}</artifactId>
-                    <version>${spark.version}</version>
-                    <scope>${spark-scope}</scope>
-                </dependency>
-                <dependency>
-                    <groupId>org.apache.kafka</groupId>
-                    <artifactId>kafka_${scala.major.version}</artifactId>
-                    <version>0.10.1.1</version>
-                    <scope>${spark-scope}</scope>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
             <id>1.5-plus</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
