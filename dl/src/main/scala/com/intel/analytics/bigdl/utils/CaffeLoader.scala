@@ -100,7 +100,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       weightData(i) = ev.fromType[Float](weightList.get(i))
     }
 
-    if (destPara.length > 1 && destPara(1) != null) {
+    if (destPara.length > 1) {
       val caffeBias = getBlob(name, 1)
       if (caffeBias.isEmpty) return (destPara(1), null)
       val biasList = caffeBias.get.getDataList
@@ -113,8 +113,9 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       for (i <- 0 until biasList.size()) {
         biasData(i) = ev.fromType[Float](biasList.get(i))
       }
+      return (destPara(0), destPara(1))
     }
-    (destPara(0), destPara(1))
+    (destPara(0), null)
   }
 
   /**
@@ -135,8 +136,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         logger.info(s"$name uses initialized parameters")
         return
       }
-      val (weight, _) = loadParameters(name, mod.parameters()._1)
-      if (weight == null) {
+      val (weight, bias) = loadParameters(name, mod.parameters()._1)
+      if (weight == null && bias == null) {
         logger.info(s"$name uses initialized parameters")
         return
       }
