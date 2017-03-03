@@ -299,5 +299,8 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>spark_2.0</id>
+        </profile>
     </profiles>
 </project>
