@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -88,6 +88,9 @@ class RnnCell[T : ClassTag] (
     parallelTable.parameters()
   }
 
+  override def getParametersTable(): Table = {
+    parallelTable.getParametersTable()
+  }
 
   override def toString(): String = {
     var str = "nn.RnnCell"

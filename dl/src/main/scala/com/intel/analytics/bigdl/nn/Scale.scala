@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -68,6 +69,11 @@ class Scale[T: ClassTag](val size: Array[Int])
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(cmul.parameters()._1(0), cadd.parameters()._1(0)),
       Array(cmul.parameters()._2(0), cadd.parameters()._2(0)))
+  }
+
+  override def getParametersTable(): Table = {
+    T(getName() -> T("weight" -> cmul.weight, "bias" -> cadd.bias,
+      "gradWeight" -> cmul.gradWeight, "gradBias" -> cadd.gradBias))
   }
 
   override def toString: String = "nn.Scale"

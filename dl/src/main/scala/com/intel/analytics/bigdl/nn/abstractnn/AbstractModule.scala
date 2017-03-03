@@ -114,7 +114,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @return
    */
   def getName() : String = {
-    if (this.name == null) this.getClass.getName else this.name
+    if (this.name == null) {
+      s"${this.getClass.getName}@${Integer.toHexString(hashCode())}"
+    } else {
+      this.name
+    }
   }
 
   protected var forwardTime = 0L
@@ -223,6 +227,21 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = null
 
   /**
+   * This function returns a table contains ModuleName, the parameter names and parameter value
+   * in this module.
+   * The result table is a structure of Table(ModuleName -> Table(ParameterName -> ParameterValue)),
+   * and the type is Table[String, Table[String, Tensor[T]]].
+   *
+   * For example, get the weight of a module named conv1:
+   *   table[Table]("conv1")[Tensor[T]]("weight").
+   *
+   * Custom modules should override this function if they have parameters.
+   *
+   * @return (Array of weights, Array of grad)
+   */
+  def getParametersTable(): Table = null
+
+  /**
    * Module status. It is useful for modules like dropout/batch normalization
    */
   protected var train: Boolean = true
@@ -280,7 +299,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   override def hashCode(): Int = {
     def getHashCode(a: Object): Int = if (a == null) 0 else a.hashCode()
     val state = Seq(output, gradInput, this.getClass)
-    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b) + super.hashCode()
   }
 
   def save(path : String, overWrite: Boolean = false) : this.type = {

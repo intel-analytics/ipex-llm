@@ -18,9 +18,10 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -88,6 +89,17 @@ abstract class Container[A <: Activity : ClassTag,
       }
     })
     (weights.toArray, gradWeights.toArray)
+  }
+
+  override def getParametersTable(): Table = {
+    val pt = T()
+    modules.foreach(m => {
+      val params = m.getParametersTable()
+      if (params != null) {
+        params.keySet.foreach(key => pt(key) = params(key))
+      }
+    })
+    pt
   }
 
   override def copyStatus(src: Module[T]): this.type = {

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -183,6 +183,15 @@ class Bilinear[T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+  }
+
+  override def getParametersTable(): Table = {
+    if (null == bias) {
+      T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
+    } else {
+      T(getName() -> T("weight" -> weight, "bias" -> bias,
+        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
+    }
   }
 
   override def toString(): String = {

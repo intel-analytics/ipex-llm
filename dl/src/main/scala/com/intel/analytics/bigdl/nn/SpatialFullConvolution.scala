@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.concurrent.Future
@@ -682,6 +682,15 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+  }
+
+  override def getParametersTable(): Table = {
+    if (null == bias) {
+      T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
+    } else {
+      T(getName() -> T("weight" -> weight, "bias" -> bias,
+        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
+    }
   }
 
   override def clearState() : this.type = {

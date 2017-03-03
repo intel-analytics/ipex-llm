@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.concurrent.Future
@@ -615,6 +615,16 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+  }
+
+  override def getParametersTable(): Table = {
+    if (affine) {
+      T(getName() -> T("weight" -> weight, "bias" -> bias,
+        "gradWeight" -> gradWeight, "gradBias" -> gradBias,
+        "runningMean" -> runningMean, "runningVar" -> runningVar))
+    } else {
+      T(getName() -> T("runningMean" -> runningMean, "runningVar" -> runningVar))
+    }
   }
 
   override def toString(): String = {
