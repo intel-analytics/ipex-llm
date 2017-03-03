@@ -1,4 +1,3 @@
-#How to use?
 
 BigDL comes with scala API for now. However Python is a powerful programming language for data analysis and with large amount of useful libraries, we are developing a lightweight python binding on top of PySpark which can enable us use Python naively with BigDL. 
 
@@ -54,18 +53,22 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
 
 4) LeNet example can be found from: models/lenet5.py
 
-## Run a Lenet example on standalone cluster (Ubuntu) 
+## Installing on Ubuntu
 1. Build BigDL
-Build [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
+[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
 2. Install python dependensies:
   * Installing Numpy: 
     ```sudo apt-get install python-numpy```
 
   * Installing Python setuptools: 
     ```sudo apt-get install -y python-setuptools python-pip```
-  * Run commands:
-  
-    ```
+    
+  * Install Jupyter:
+    ```sudo pip install jupyter```
+    
+## Run a Lenet example on standalone cluster
+    
+ ```
     BigDL_HOME=...
     SPARK_HOME=...
     MASTER=...
@@ -86,23 +89,12 @@ Build [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
         --conf spark.executor.extraClassPath=bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
         ${BigDL_HOME}/dl/src/main/python/models/lenet/lenet5.py
         --coreNum 10 --nodeNum 8
-    ```
+ ```
 
 
-## Launch Jupyter on standalone cluster (Ubuntu) 
-1. Build BigDL
-Build [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
-2. Install python dependensies:
-  * Installing Numpy: 
-    ```sudo apt-get install python-numpy```
+## Launch Jupyter on standalone cluster
 
-  * Installing Python setuptools: 
-    ```sudo apt-get install -y python-setuptools python-pip```
-  * Install Jupyter
-    ```sudo pip install jupyter```
-  * Run command:
-  
-    ```
+ ```
     export IPYTHON_OPTS="jupyter notebook"
 
     BigDL_HOME=...                                                                                         
@@ -126,4 +118,4 @@ Build [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
         --jars ${BigDL_JAR_PATH} \
         --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
         --conf spark.executor.extraClassPath=bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar
-    ```
+ ```
