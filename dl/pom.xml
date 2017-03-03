@@ -270,6 +270,7 @@
                     <groupId>org.apache.kafka</groupId>
                     <artifactId>kafka_${scala.major.version}</artifactId>
                     <version>0.10.1.1</version>
+                    <scope>${spark-scope}</scope>
                 </dependency>
             </dependencies>
         </profile>
@@ -303,7 +304,8 @@
                         <version>3.2.0</version>
                         <configuration>
                             <excludes>
-                                <exclude>com/intel/analytics/bigdl/example/structuredStreamUdf/*.scala</exclude>
+                                <exclude>com/intel/analytics/bigdl/example/structuredStreamUdf/TextProducerKafka.scala</exclude>
+                                <exclude>com/intel/analytics/bigdl/example/structuredStreamUdf/TextClassifierConsumerKafka.scala</exclude>
                             </excludes>
                         </configuration>
                     </plugin>

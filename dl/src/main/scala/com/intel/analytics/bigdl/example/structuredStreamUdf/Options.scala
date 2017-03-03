@@ -32,12 +32,11 @@ object Options {
                                       testDir: String = "./",
                                       bootstrapServer: String = "",
                                       topic: String = "",
-                                      interval: Long = 5,
-                                      typeTable: String = "./")
+                                      interval: Long = 5
+                                     )
 
   val localParser = new OptionParser[TextClassificationParams]("BigDL Example") {
     opt[String]('b', "baseDir")
-      .required()
       .text("Base dir containing the training and word2Vec data")
       .action((x, c) => c.copy(baseDir = x))
     opt[String]('c', "coreNum")
@@ -79,12 +78,9 @@ object Options {
     opt[Long]('i', "interval")
       .text("consume interval")
       .action((x, c) => c.copy(interval = x))
-    opt[String]('f', "testDir")
+    opt[String]('f', "subDir")
       .text("Text dir containing the text data")
       .action((x, c) => c.copy(testDir = x))
-    opt[String]("typeTable")
-      .text("csv file containing text type mapping")
-      .action((x, c) => c.copy(typeTable = x))
   }
 
   /**
@@ -96,11 +92,11 @@ object Options {
     * @param interval    publish interval
     */
   case class TextKafkaProducerParams(
-                                 folder: String = "./",
-                                 brokerList: String = "",
-                                 targetTopic: String = "",
-                                 interval: Long = 1,
-                                 batchsize: Int = 2)
+                                      folder: String = "./",
+                                      brokerList: String = "",
+                                      targetTopic: String = "",
+                                      interval: Long = 1,
+                                      batchsize: Int = 2)
 
   val kafaProducerParser = new OptionParser[TextKafkaProducerParams]("BigDL Streaming Example") {
     opt[String]('f', "folder")
@@ -123,18 +119,19 @@ object Options {
 
   /**
     * Text parquet producer parameters
+    *
     * @param srcFolder
     * @param destFolder
     * @param interval
     */
   case class TextProducerParquetParams(
-                                 srcFolder: String = "./",
-                                 destFolder: String = "./",
-                                 batchsize: Int = 2,
-                                 interval: Long = 5)
+                                        srcFolder: String = "./",
+                                        destFolder: String = "./",
+                                        batchsize: Int = 2,
+                                        interval: Long = 5)
 
   val parquetProducerParser
-        = new OptionParser[TextProducerParquetParams]("BigDL Streaming Example") {
+  = new OptionParser[TextProducerParquetParams]("BigDL Streaming Example") {
     opt[String]('s', "srcFolder")
       .required()
       .text("Base dir containing the text data")
