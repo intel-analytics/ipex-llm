@@ -17,16 +17,13 @@
 package com.intel.analytics.bigdl.example.structuredStreamUdf
 
 import java.io.File
-import java.util.Properties
-
+import com.intel.analytics.bigdl.example.structuredStreamUdf.Options._
 import org.apache.log4j.Logger
+import org.apache.spark.sql.SparkSession
 
 import scala.io.Source
-import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
-import kafka.serializer.StringEncoder
-import com.intel.analytics.bigdl.example.structuredStreamUdf.Options._
 
-object TextProducerKafka {
+object TextProducerParquet {
   val logger = Logger.getLogger(getClass)
 
   case class Sample(filename: String, text: String)
@@ -40,7 +37,6 @@ object TextProducerKafka {
       val source = Source.fromFile(file, "ISO-8859-1")
       val text = try source.getLines().toList.mkString("\n") finally source.close()
       new Sample(fileName, text)
-//      (fileName, text)
     }
     }
     testData
@@ -48,50 +44,41 @@ object TextProducerKafka {
 
   def main(args: Array[String]): Unit = {
 
-    kafaProducerParser.parse(args, TextKafkaProducerParams()).map { param =>
+    parquetProducerParser.parse(args, TextProducerParquetParams()).map { param =>
 
-      // kafka config
-      val props = new Properties()
-      props.put("metadata.broker.list", param.brokerList)
-      props.put("serializer.class", "kafka.serializer.StringEncoder")
-      props.put("producer.type", "async")
-
-      // create producer
-      val config = new ProducerConfig(props)
-      //      val producer = new Producer[String, Sample](config)
-      val producer = new Producer[String, String](config)
-
-      // load messages
-      val data = loadTestData(param.folder)
-      // send
-      var iter = data.iterator
       val batchsize = param.batchsize
+      val interval = param.interval
+      // load messages
+      val data = loadTestData(param.srcFolder)
+
+      val spark = SparkSession.builder().appName("Produce Text").getOrCreate()
+      val batch: Array[Sample] = new Array[Sample](batchsize)
       var count = 0
       var send_count = 0
-      val batch: Array[Sample] = new Array[Sample](batchsize)
+      val iter = data.iterator
       while (iter.hasNext) {
         try {
           if (count < batchsize) {
             batch(count) = iter.next()
             count += 1
           } else if (count == batchsize) {
-            // send
-            producer.send(batch.map {sample =>
-              new KeyedMessage[String, String](param.targetTopic, sample.filename, sample.text)
-            }: _*)
-            println("Producer send batch " + send_count)
-            send_count += 1
+            // send batch
+            val testRDD = spark.sparkContext.parallelize(batch, 1)
+            val df = spark.createDataFrame(testRDD)
+            println("send text batch " + send_count)
+            df.write
+              .format("parquet")
+              .mode(org.apache.spark.sql.SaveMode.Append)
+              .save(param.destFolder)
             count = 0
-            Thread.sleep(param.interval*1000)
-
+            send_count += 1
+            Thread.sleep(interval*1000)
           }
 
         } catch {
           case e: Exception => println(e)
         }
       }
-
     }
   }
-
 }
