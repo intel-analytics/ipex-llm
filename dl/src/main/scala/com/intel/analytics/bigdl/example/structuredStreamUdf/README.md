@@ -12,12 +12,10 @@ Then create a UDF to do the text classification with this model, and use this UD
 * Training data: "20 Newsgroup dataset" which containing 20 categories and with totally 19997 texts.
 
 ## Get the JAR
-Since this example use Kafka source for structured streaming , please build the source code with spark_2.1 profile:
+Please build the source code with spark_2.0 profile referring the
+                                                              [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page).
 
-   ```
-   bash make-dist.sh -P spark_2.1
-   ```
-  
+
 ## Steps to run this example:
 1.  Download [Pre-train GloVe word embeddings](http://nlp.stanford.edu/data/glove.6B.zip)
 
@@ -56,25 +54,8 @@ Since this example use Kafka source for structured streaming , please build the 
     Example: python ./create_test_texts.py -s BASE_DIR/20_newsgroup -t BASE_DIR/test
        
     ```  
-5. Run this command to publish text data to the Kafka topic:
-    Example: 
-    ```
-    scala -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
-        com.intel.analytics.bigdl.example.structuredStreamUdf.TextProducerKafka \
-    -b  kafka_broker_list \
-    -t topic \
-    -f BASE_DIR/test \
-    -i 10 \
-    --batchsize 4
-    ```
-    In the above commands
-    * -b: Kafa broker List
-    * -t: target topic to publish
-    * -f: folder containing text files to be published
-    * -i: publish interval in second
-    * --batchSize: how many text files to be published at one time
 
-6. Start the consumer to subscribe the text streaming and do prediction with UDF.
+5. Start the consumer to subscribe the text streaming and do prediction with UDF.
 
     Run the commands:
     
@@ -86,28 +67,26 @@ Since this example use Kafka source for structured streaming , please build the 
 
         ```shell
         BASE_DIR=${PWD} # where is the data
-        ./bigdl.sh -- spark-submit --master "local[*]" --driver-memory 20g \
-            --class com.intel.analytics.bigdl.example.structuredStreamUdf.TextClassifierConsumerKafka \
-              bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+        ./dist/bin/bigdl.sh -- spark-submit --master "local[*]" --driver-memory 20g \
+            --class com.intel.analytics.bigdl.example.structuredStreamUdf.TextClassifierConsumerParquet \
+              ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
             -c 4 \
             -n 1 \
             --batchSize 32 \
             --baseDir BASE_DIR \
             --partitionNum 4 \
             --checkpoint  ~/model/text \
-            --bootstrap localhost:9092
-            --topic topic1
+            --subDir ~/data/text/parquet
         ```
         
        In the above commands, 
         * -c: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
         * -n: Node number.
         * --batchSize: how many text files to be trained at one time
-        * -baseDir: folder containing trainning text files.
+        * -baseDir: folder containing trainning text files and word2Vec embedding.
         * --partitionNum: number to partition training data
         * --checkpoint: location to save model
-        * --bootstrap: boot strap server to subscribe
-        * --topic: topic to subscribe
+        * --subDir: Directory to subscribe
     
       If you have saved model, you need to use this command to predict text classification of incoming text streaming with UDF.
       
@@ -115,22 +94,21 @@ Since this example use Kafka source for structured streaming , please build the 
      
         ```shell
         BASE_DIR=${PWD} # where is the data
-        ./bigdl.sh -- spark-submit --master "local[*]" --driver-memory 20g \
-                   --class com.intel.analytics.bigdl.example.structuredStreamUdf.TextClassifierConsumerKafka \
+        ./bigdl.sh -- spark-submit --master "local[*]" --driver-memory 5g \
+                   --class com.intel.analytics.bigdl.example.structuredStreamUdf.TextClassifierConsumerParquet \
                      bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
                    -c 4 \
                    -n 1 \  
+                   --baseDir BASE_DIR \
                    --modelPath  ~/model/text/model.1 \
-                   --bootstrap localhost:9092
-                   --topic topic1
+                   --subDir ~/data/text/parquet
         ```
         In the above commands, 
         * -c: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
         * -n: Node number.
-        * --partitionNum: 
+        * -baseDir: folder containing trainning text files and word2Vec embedding 
         * --modelPath: model location
-        * --bootstrap: boot strap server to subscribe
-        * --topic: topic to subscribe
+        * --subDir: Directory to subscribe
     
     * Spark cluster:
       * Execute:
@@ -141,21 +119,36 @@ Since this example use Kafka source for structured streaming , please build the 
         ./bigdl.sh -- spark-submit --master ${MASTER} \
             --driver-memory 5g --executor-memory 5g  \
             --total-executor-cores 32 --executor-cores 8 \
-            --class com.intel.analytics.bigdl.example.structuredStreamUdf.TextClassifierConsumerKafka \ 
+            --class com.intel.analytics.bigdl.example.structuredStreamUdf.TextClassifierConsumerParquet \ 
             bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
             -c 8 \ -n 4 \
+            --baseDir BASE_DIR \
             --modelPath  ~/model/text/model.1 \
-            --bootstrap localhost:9092 \
-            --topic topic1
+            --subDir ~/data/text/parquet
         ```
         In the above commands, 
          * -c: How many cores of your machine will be used in the training. Note that the core number should be physical core number. If your machine turn on hyper threading, one physical core will map to two OS core.
          * -n: Node number.
-         * --partitionNum: 
+         * -baseDir: folder containing trainning text files and word2Vec embedding 
          * --modelPath: model location
-         * --bootstrap: boot strap server to subscribe
-         * --topic: topic to subscribe
-      
+         * --subDir: Directory to subscribe
+
+6. Run this command to publish text data to the target directory:
+    Example: 
+    ```
+    spark-submit --master "local[*]" \
+        --class com.intel.analytics.bigdl.example.structuredStreamUdf.TextProducerParquet \
+        dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+        -s BASE_DIR/test \
+        -d ~/data/text/parquet \
+        -b 4 \
+        -i 5
+    ```
+    In the above commands
+    * -s: source folder containing text files to  to be published
+    * -d: target directory to be published to
+    * -i: publish interval in second
+    * -b: how many text files to be published at one time      
 
 7. Verify:
    * Show the predicted label with UDF for incoming streaming:

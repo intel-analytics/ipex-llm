@@ -1,4 +1,19 @@
-
+/*
+ * Licensed to Intel Corporation under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.intel.analytics.bigdl.example.structuredStreamUdf
 
 import java.io.File
@@ -11,9 +26,6 @@ import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
 import kafka.serializer.StringEncoder
 import com.intel.analytics.bigdl.example.structuredStreamUdf.Options._
 
-/**
-  * Created by jwang on 2/21/17.
-  */
 object TextProducerKafka {
   val logger = Logger.getLogger(getClass)
 
@@ -42,15 +54,6 @@ object TextProducerKafka {
       val props = new Properties()
       props.put("metadata.broker.list", param.brokerList)
       props.put("serializer.class", "kafka.serializer.StringEncoder")
-//      props.put("serializer.class", "kafka.serializer.StringEncoder")
-//      props.put("value.serializer",
-//        "kafka.serializer.StringEncoder")
-//            props.put("serializer.class",
-//              classOf[ItemEncoder[Sample]].getName)
-//            props.put("value.serializer",
-//              classOf[ItemEncoder[Sample]].getName)
-//      props.put("key.serializer",
-//        classOf[StringEncoder].getName)
       props.put("producer.type", "async")
 
       // create producer
@@ -66,23 +69,12 @@ object TextProducerKafka {
       var count = 0
       var send_count = 0
       val batch: Array[Sample] = new Array[Sample](batchsize)
-      //      data.map { sample => {
-      ////        val data = new KeyedMessage[String, Sample](param.targetTopic, sample);
-      //        val data = new KeyedMessage[String, String](param.targetTopic, sample.filename, sample.text);
-      //        producer.send(data);
-      //        send_count += 1
-      //        println("Producer send text " + send_count)
-      //        Thread.sleep(param.interval * 1000)
-      //      }
       while (iter.hasNext) {
         try {
           if (count < batchsize) {
             batch(count) = iter.next()
             count += 1
           } else if (count == batchsize) {
-//            batch.map { sample =>
-//              println(sample.filename)
-//            }
             // send
             producer.send(batch.map {sample =>
               new KeyedMessage[String, String](param.targetTopic, sample.filename, sample.text)

@@ -1,6 +1,8 @@
 
 package com.intel.analytics.bigdl.example.structuredStreamUdf
 
+import java.io.{File, InputStream, PrintWriter}
+
 import com.intel.analytics.bigdl.example.structuredStreamUdf.TextProducerKafka.Sample
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -11,11 +13,14 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.StructType
 import kafka.serializer.StringDecoder
+
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.reflect.ClassTag
 
-/**
+import  org.apache.spark.util.Utils
+
+ /**
   * Created by jwang on 2/14/17.
   */
 object TextClassifierConsumerKafka {
@@ -27,6 +32,16 @@ object TextClassifierConsumerKafka {
   Logger4j.getLogger("com.intel.analytics.bigdl.optim").setLevel(Levle4j.INFO)
 
   import Options._
+
+  def getResourcePath(resource: String) : String = {
+    val stream : InputStream = getClass.getResourceAsStream(resource)
+    val lines = scala.io.Source.fromInputStream( stream ).mkString
+    val file = File.createTempFile(resource, "")
+    val pw = new PrintWriter(file)
+    pw.write(lines)
+    pw.close
+    file.getAbsolutePath
+  }
 
   def main(args: Array[String]): Unit = {
 
@@ -45,7 +60,12 @@ object TextClassifierConsumerKafka {
         .appName("StructuredStreamingUdf")
         .getOrCreate()
       val sc = spark.sparkContext
-      //     val sqlContext = new SQLContext(sc)
+//      val loader = Utils.getContextOrSparkClassLoader
+      val kafka1 = getClass.getClassLoader.loadClass("org.apache.spark.sql.kafka010.KafkaSource")
+      val kafka = getClass.getClassLoader
+        .loadClass("org.apache.spark.sql.kafka010.KafkaSourceProvider")
+//      val kafka = loader.loadClass("kafka")
+
       // get train and validation rdds
       val rdds = textClassification.getData(sc)
       // get model
@@ -97,7 +117,6 @@ object TextClassifierConsumerKafka {
           }
         }.flatten
 
-
         val featureTensor: Tensor[T] = Tensor[T]()
         var featureData: Array[T] = null
 
@@ -131,7 +150,7 @@ object TextClassifierConsumerKafka {
       // register for data frame
       val classiferUDF = udf(predict[Float](_: String))
 
-      val typeFile = getClass.getResource("/types.csv").getPath
+      val typeFile = getResourcePath("/types.csv")
       val textSchema = new StructType().add("textType", "string").add("textLabel", "string")
 
       val df_stream = spark
@@ -140,9 +159,10 @@ object TextClassifierConsumerKafka {
         .option("kafka.bootstrap.servers", param.bootstrapServer)
         .option("key.deserializer", classOf[StringDecoder].getName)
         .option("value.deserializer", classOf[StringDecoder].getName)
-        //        .option("value.deserializer", classOf[ItemDecoder[Sample]].getName)
         .option("subscribe", param.topic)
         .load()
+
+      println("created kafka")
 
       val types = spark.read
         .format("csv")
