@@ -194,6 +194,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
       return
     }
     val vMethods = validationMethods.get
+    val vMethodsArr = (1 to subModelNumber).map(i => vMethods.map(_.clone())).toArray
     val dataIter = validationDataSet.get.toLocal().data(train = false)
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
 
@@ -214,7 +215,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
             val input = batch.data.narrow(1, offset + 1, length)
             val target = batch.labels.narrow(1, offset + 1, length)
             val output = workingModels(b).forward(input)
-            val validatMethods = vMethods.clone()
+            val validatMethods = vMethodsArr(b)
             validatMethods.map(validation => {
               validation(output, target)
             })
