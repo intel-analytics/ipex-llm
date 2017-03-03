@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.Linear
 import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector}
 import org.scalatest.{FlatSpec, Matchers}
+import spire.syntax.module
 
 @com.intel.analytics.bigdl.tags.Parallel
 class DenseTensorSpec extends FlatSpec with Matchers {
@@ -723,5 +724,13 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     } catch {
       case ex: IllegalArgumentException =>
     }
+  }
+
+  "squeezeNewTensor" should "work correclty" in {
+    val input = Tensor[Float](4, 10).fill(1.0f)
+    val output = input.narrow(1, 2, 1).squeezeNewTensor()
+
+    output.size() should be (Array(10))
+    input should be (Tensor[Float](4, 10).fill(1.0f))
   }
 }

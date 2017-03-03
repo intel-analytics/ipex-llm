@@ -461,6 +461,13 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def squeeze(dim: Int): Tensor[T]
 
   /**
+   * Create a new tensor that removes all singleton dimensions of the tensor
+   *
+   * @return create a new tensor
+   */
+  def squeezeNewTensor(): Tensor[T]
+
+  /**
    * Return a new tensor with specified sizes. The input tensor must be contiguous, and the
    * elements number in the given sizes must be equal to the current tensor
    *

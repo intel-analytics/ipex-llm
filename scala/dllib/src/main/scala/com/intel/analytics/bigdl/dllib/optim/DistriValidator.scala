@@ -35,7 +35,7 @@ class DistriValidator[T] private[optim](
   : Array[(ValidationResult, ValidationMethod[T])] = {
 
     val rdd = dataSet.data(train = false)
-    val broadcastModel = rdd.sparkContext.broadcast(model.evaluate())
+    val broadcastModel = rdd.sparkContext.broadcast(model.evaluate(), vMethods)
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => Engine.coreNumber()
       case _ => throw new IllegalArgumentException
@@ -44,10 +44,12 @@ class DistriValidator[T] private[optim](
     val executorCores = Engine.coreNumber()
     rdd.mapPartitions(dataIter => {
       Engine.setNodeAndCore(nExecutor, executorCores)
-      val localModel = broadcastModel.value
+      val localModel = broadcastModel.value._1
+      val localMethod = broadcastModel.value._2
       logger.info("model thread pool size is " + Engine.model.getPoolSize)
       val workingModels = (1 to _subModelNumber)
         .map(_ => localModel.cloneModule().evaluate()).toArray
+      val vMethodsArr = (1 to _subModelNumber).map(i => localMethod.map(_.clone())).toArray
       dataIter.map(batch => {
         require(batch.data.size(1) == batch.labels.size(1))
         val stackSize = batch.data.size(1) / _subModelNumber
@@ -61,7 +63,8 @@ class DistriValidator[T] private[optim](
               val input = batch.data.narrow(1, offset + 1, length)
               val target = batch.labels.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)
-              vMethods.map(validation => {
+              val validatMethods = vMethodsArr(b)
+              validatMethods.map(validation => {
                 validation(output, target)
               })
             }
