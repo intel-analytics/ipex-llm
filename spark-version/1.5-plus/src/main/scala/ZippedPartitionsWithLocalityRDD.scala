@@ -56,7 +56,8 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
       candidateLocs.append((p, rdds(1).context.getPreferredLocs(rdds(1), p).map(_.host).distinct))
     })
     val nonmatchPartitionId = new ArrayBuffer[Int]()
-    val matchedParts = new ArrayBuffer[ZippedPartitionsLocalityPartition]()
+    val parts = new Array[Partition](numParts)
+
     (0 until  numParts).foreach { i =>
       val curPrefs = rdds(0).context.getPreferredLocs(rdds(0), i).map(_.host).distinct
       var p = 0
@@ -71,8 +72,8 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
         p += 1
       }
       if (matchPartition != null) {
-        matchedParts.append(
-          new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs))
+        parts(i) =
+          new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
       } else {
         println(s"can't find locality partition for partition $i " +
           s"Partition locations are (${curPrefs}) Candidate partition locations are\n" +
@@ -86,9 +87,9 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
     val nonmatchedParts = nonmatchPartitionId.map { i =>
       val locs = rdds(0).context.getPreferredLocs(rdds(0), i).map(_.host).distinct
       val matchPartition = candidateLocs.remove(0)
-      new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
+      parts(i) = new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
     }
-    (matchedParts ++ nonmatchedParts).toArray
+    parts
   }
 }
 
