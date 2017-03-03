@@ -61,7 +61,8 @@ object DistriOptimizer {
     localCriterions: Array[Criterion[T]],
     localStates: Array[Table],
     gradient: Tensor[T],
-    var moduleTimeList: Array[Long] = null
+    var moduleTimeList: Array[Long] = null,
+    localMethods: Array[Option[Array[ValidationMethod[T]]]]
   )
 
   private[optim] def optimize[T: ClassTag](
@@ -253,6 +254,9 @@ object DistriOptimizer {
         val end = System.nanoTime()
         wallClockTime += end - start
         optimMethod.updateHyperParameter(state, driverState)
+        driverState("Loss") = lossSum.value.toFloat / finishedModelNum
+        driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
+        if (state.contains("clr")) driverState("LearningRate") = -state[Double]("clr").toFloat
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}. ${optimMethod.getHyperParameter(state)}")
@@ -404,10 +408,11 @@ object DistriOptimizer {
     nodeNumber: Int,
     coresPerNode: Int,
     checkSingleton: Boolean,
-    parameters: AllReduceParameter[T]
+    parameters: AllReduceParameter[T],
+    validationMethods: Option[Array[ValidationMethod[T]]]
     )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
-    val broadcast = sc.broadcast((model, criterion, state))
+    val broadcast = sc.broadcast((model, criterion, state, validationMethods))
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException
@@ -422,7 +427,7 @@ object DistriOptimizer {
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
     val models = dataset.originRDD().mapPartitions(_ => {
-      val (broadcastModel, broadcastCriterion, broadcastState) = broadcast.value
+      val (broadcastModel, broadcastCriterion, broadcastState, broadcastMethod) = broadcast.value
       if (!Engine.checkSingleton()) {
         if (checkSingleton) {
           require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
@@ -436,8 +441,10 @@ object DistriOptimizer {
         val localModel = broadcastModel.cloneModule()
         val localCriterion = broadcastCriterion.cloneCriterion()
         val localState = broadcastState.clone()
+        val localMethod =
+          if (broadcastMethod.isDefined) Some(broadcastMethod.get.map(_.clone())) else None
         val (weights, grads) = localModel.getParameters()
-        (localModel, weights, grads, localCriterion, localState)
+        (localModel, weights, grads, localCriterion, localState, localMethod)
       }.toArray
 
       val weights = cached.head._2
@@ -457,7 +464,8 @@ object DistriOptimizer {
         cached.map(_._4), // criterions
         cached.map(_._5), // states
         cached.head._2.clone(), // a tensor buffer
-        new Array[Long](_subModelNumber * computeThresholdbatchSize)
+        new Array[Long](_subModelNumber * computeThresholdbatchSize),
+        cached.map(_._6)
       ))
     }).persist()
     models.setName("Thread Model RDD")
@@ -487,9 +495,6 @@ object DistriOptimizer {
     }
     val vMethods = validationMethods.get
     val validateRDD = validationDataSet.get.toDistributed().data(train = false)
-    val sc = validateRDD.sparkContext
-    val broadcast = sc.broadcast(vMethods)
-
     logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
@@ -497,8 +502,9 @@ object DistriOptimizer {
     }
     val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
       val cached = modelIter.next()
+      val vMethodsArr = cached.localMethods
       val workingModels = cached.localModels
-      val method = broadcast.value
+
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
         require(batch.data.size(1) == batch.labels.size(1))
@@ -513,7 +519,7 @@ object DistriOptimizer {
               val input = batch.data.narrow(1, offset + 1, length)
               val target = batch.labels.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)
-              val validatMethods = method.clone()
+              val validatMethods = vMethodsArr(b).get
               validatMethods.map(validation => {
                 validation(output, target)
               })
@@ -615,8 +621,8 @@ class DistriOptimizer[T: ClassTag] (
     val size = model.getParameters()._1.nElement()
     val parameters = AllReduceParameter.newParameter(partitionNum, size)
 
-    models = DistriOptimizer.initThreadModels(
-      model, dataset, criterion, state, nodeNumber, coresPerNode, checkSingleton, parameters)
+    models = DistriOptimizer.initThreadModels(model, dataset, criterion, state,
+      nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods)
 
     if (checkpointPath.isDefined) {
       val file = checkpointPath.get + "/" +
@@ -681,7 +687,7 @@ class DistriOptimizer[T: ClassTag] (
             }
             optimMethod.clearHistory(state)
             models = DistriOptimizer.initThreadModels(newModel, dataset, criterion, state,
-              nodeNumber, coresPerNode, checkSingleton, parameters)
+              nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods)
           } else {
             retryNum = Int.MaxValue
             DistriOptimizer.logger.info("Failed to recover since no model snapshot" +

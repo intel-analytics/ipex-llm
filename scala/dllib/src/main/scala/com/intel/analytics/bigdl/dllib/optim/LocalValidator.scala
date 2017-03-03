@@ -43,6 +43,7 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[M
   : Array[(ValidationResult, ValidationMethod[T])] = {
     val dataIter = dataSet.data (train = false)
     var count = 0
+    val vMethodsArr = (1 to subModelNumber).map(i => vMethods.map(_.clone())).toArray
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     dataIter.map(batch => {
       require(batch.data.size(1) == batch.labels.size(1))
@@ -58,7 +59,8 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[M
             val input = batch.data.narrow(1, offset + 1, length)
             val target = batch.labels.narrow(1, offset + 1, length)
             val output = workingModels(b).forward(input)
-            vMethods.map(validation => {
+            val validatMethods = vMethodsArr(b)
+            validatMethods.map(validation => {
               validation(output.asInstanceOf[Tensor[T]], target)
             })
           }
