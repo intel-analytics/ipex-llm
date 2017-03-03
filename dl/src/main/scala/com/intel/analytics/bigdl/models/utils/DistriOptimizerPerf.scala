@@ -40,14 +40,6 @@ object DistriOptimizerPerf {
     opt[Int]('b', "batchSize")
       .text("Batch size of input data")
       .action((v, p) => p.copy(batchSize = v))
-    opt[Int]('n', "nodeNumber")
-      .text("nodes to run the perf test")
-      .action((v, p) => p.copy(nodeNumber = v))
-      .required()
-    opt[Int]('c', "corePerNode")
-      .text("core number of each nodes")
-      .action((v, p) => p.copy(corePerNode = v))
-      .required()
     opt[Int]('e', "maxEpoch")
       .text("epoch numbers of the test")
       .action((v, p) => p.copy(maxEpoch = v))
@@ -94,7 +86,7 @@ object DistriOptimizerPerf {
   def performance(param: DistriOptimizerPerfParam): Unit = {
     val conf = Engine.init.get
       .setAppName("DistriOptimizer Performance Test")
-      .set("spark.task.cpus", param.corePerNode.toString)
+      .set("spark.task.cpus", Engine.coreNumber().toString)
 
     val (_model, input) = param.module match {
       case "inception_v1" => (Inception_v1(1000), Tensor(param.batchSize, 3, 224, 224))
@@ -113,7 +105,7 @@ object DistriOptimizerPerf {
 
     val sc = new SparkContext(conf)
     val broadcast = sc.broadcast(MiniBatch(input, labels))
-    val rdd = sc.parallelize((1 to param.nodeNumber), param.nodeNumber)
+    val rdd = sc.parallelize((1 to Engine.nodeNumber()), Engine.nodeNumber())
       .mapPartitions(iter => {
         Iterator.single((broadcast.value))
       }).persist()
@@ -137,8 +129,6 @@ object DistriOptimizerPerf {
 case class DistriOptimizerPerfParam(
   batchSize: Int = 128,
   maxEpoch: Int = 5,
-  nodeNumber: Int = -1,
-  corePerNode: Int = -1,
   dataType: String = "float",
   module: String = "inception_v1",
   inputData: String = "random"
