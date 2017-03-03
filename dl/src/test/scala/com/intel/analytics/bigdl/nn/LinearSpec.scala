@@ -157,7 +157,6 @@ class LinearSpec extends FlatSpec with Matchers {
     }
     val params = linear.parameters()
     val weight = params._1(0)
-    val bias = params._1(1)
 
     val expectedWeight = Tensor[Double](outputN, inputN)
     for (y <- 1 to outputN) {
