@@ -16,10 +16,12 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.Criterion
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
 
@@ -29,6 +31,8 @@ trait ValidationMethod[T] extends Serializable {
   protected def format(): String
 
   override def toString(): String = format()
+
+  override def clone(): ValidationMethod[T] = SerializationUtils.clone(this)
 }
 
 trait ValidationResult extends Serializable {
@@ -132,7 +136,7 @@ class Top5Accuracy[T] extends ValidationMethod[T] {
   override def apply(output: Activity, target: Activity):
   AccuracyResult = {
     val _output = output.asInstanceOf[Tensor[T]]
-    val _target = target.asInstanceOf[Tensor[T]]
+    val _target = target.asInstanceOf[Tensor[T]].squeezeNewTensor()
     var correct = 0
     var count = 0
     if (_output.dim() == 2) {
@@ -211,8 +215,9 @@ class LossResult(private var loss: Float, private var count: Int)
 }
 
 class Loss[@specialized(Float, Double)T: ClassTag](
- criterion: Criterion[T])
+ var criterion: Criterion[T] = null)
 (implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
+  if (criterion == null) criterion = ClassNLLCriterion[T]()
   override def apply(output: Activity, target: Activity): LossResult = {
     val _output = output.asInstanceOf[Tensor[T]]
     val _target = target.asInstanceOf[Tensor[T]]

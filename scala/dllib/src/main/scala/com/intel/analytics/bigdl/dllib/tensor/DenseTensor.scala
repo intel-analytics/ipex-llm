@@ -59,6 +59,11 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def squeeze(dim: Int): Tensor[T] = DenseTensor.squeeze(this, dim - 1)
 
+  override def squeezeNewTensor(): Tensor[T] = {
+    val result = new DenseTensor(this.storage(), this.storageOffset(), this._size, this._stride)
+    result.squeeze()
+  }
+
   override def size(): Array[Int] = _size.slice(0, this.nDimension)
 
   override def size(dim: Int): Int = {
