@@ -20,9 +20,6 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.math._
-import com.intel.analytics.bigdl._
-
 class TemporalConvolutionSpec extends FlatSpec with Matchers {
   "A SpatialConvolution layer" should "generate correct output" in {
     val inputFrameSize = 1
@@ -293,5 +290,4 @@ class TemporalConvolutionSpec extends FlatSpec with Matchers {
     layer.gradBias(Array(2)) should be(100)
     layer.gradBias(Array(3)) should be(108)
   }
-
 }
