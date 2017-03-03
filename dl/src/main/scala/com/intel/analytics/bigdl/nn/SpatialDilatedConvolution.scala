@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DenseTensorBLAS, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -476,6 +477,11 @@ class SpatialDilatedConvolution[T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+  }
+
+  override def getParametersTable(): Table = {
+    T(getName() -> T("weight" -> weight, "bias" -> bias,
+      "gradWeight" -> gradWeight, "gradBias" -> gradBias))
   }
 
   override def equals(obj: Any): Boolean = {

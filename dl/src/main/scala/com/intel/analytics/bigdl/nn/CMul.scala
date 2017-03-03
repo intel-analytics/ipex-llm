@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -142,6 +143,10 @@ class CMul[@specialized(Float, Double) T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
+  }
+
+  override def getParametersTable(): Table = {
+    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
   }
 
   override def clearState(): this.type = {

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 
 import scala.reflect.ClassTag
 import RandomGenerator._
@@ -159,6 +159,15 @@ class Linear[T: ClassTag](
       (Array(this.weight), Array(this.gradWeight))
     } else {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    }
+  }
+
+  override def getParametersTable(): Table = {
+    if (null == bias) {
+      T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
+    } else {
+      T(getName() -> T("weight" -> weight, "bias" -> bias,
+        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
     }
   }
 

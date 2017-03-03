@@ -18,6 +18,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.{RandomGenerator, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -149,6 +150,42 @@ class ModuleSpec extends FlatSpec with Matchers {
 
     module2 should be(module)
     module2.eq(module) should be(false)
+  }
+
+  "getName for different module" should "return different name" in {
+    val module1 = new Linear[Double](2, 3)
+    val module2 = new Linear[Double](4, 5)
+
+    module1.getName() should not be (module2.getName())
+  }
+
+  "getName for different module" should "return different name even if the module equals" in {
+    val module1 = new Linear[Double](2, 3)
+    val module2 = new Linear[Double](2, 3)
+    module1.weight.copy(module2.weight)
+    module1.bias.copy(module2.bias)
+
+    module1 should be (module2)
+    module1.getName() should not be (module2.getName())
+  }
+
+  "getParameterTable" should "return right result" in {
+    val module = new Sequential[Double]
+    val subModule1 = new Linear[Double](2, 3)
+    val subModule2 = new Linear[Double](2, 3).setName("fc2")
+    module.add(subModule1)
+    module.add(subModule2)
+
+    val pt = module.getParametersTable()
+    pt[Table](subModule1.getName())[Tensor[Double]]("weight") should be (subModule1.weight)
+    pt[Table](subModule1.getName())[Tensor[Double]]("bias") should be (subModule1.bias)
+    pt[Table](subModule1.getName())[Tensor[Double]]("gradWeight") should be (subModule1.gradWeight)
+    pt[Table](subModule1.getName())[Tensor[Double]]("gradBias") should be (subModule1.gradBias)
+
+    pt[Table](subModule2.getName())[Tensor[Double]]("weight") should be (subModule2.weight)
+    pt[Table](subModule2.getName())[Tensor[Double]]("bias") should be (subModule2.bias)
+    pt[Table](subModule2.getName())[Tensor[Double]]("gradWeight") should be (subModule2.gradWeight)
+    pt[Table](subModule2.getName())[Tensor[Double]]("gradBias") should be (subModule2.gradBias)
   }
 
 }

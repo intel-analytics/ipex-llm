@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -128,6 +129,10 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.bias), Array(this.gradBias))
+  }
+
+  override def getParametersTable(): Table = {
+    T(getName() -> T("bias" -> bias, "gradBias" -> gradBias))
   }
 
   override def equals(obj: Any): Boolean = {
