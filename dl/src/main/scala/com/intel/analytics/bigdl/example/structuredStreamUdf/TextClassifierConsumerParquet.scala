@@ -1,29 +1,36 @@
-
+/*
+ * Licensed to Intel Corporation under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.intel.analytics.bigdl.example.structuredStreamUdf
 
 import java.io.{File, InputStream, PrintWriter}
 
-import com.intel.analytics.bigdl.example.structuredStreamUdf.TextProducerKafka.Sample
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
-import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.StructType
-import kafka.serializer.StringDecoder
-
 import org.slf4j.{Logger, LoggerFactory}
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.StructType
 
 import scala.reflect.ClassTag
 
-import  org.apache.spark.util.Utils
-
- /**
-  * Created by jwang on 2/14/17.
-  */
-object TextClassifierConsumerKafka {
+object TextClassifierConsumerParquet {
 
   val log: Logger = LoggerFactory.getLogger(this.getClass)
   Logger4j.getLogger("org").setLevel(Levle4j.ERROR)
@@ -33,15 +40,20 @@ object TextClassifierConsumerKafka {
 
   import Options._
 
-  def getResourcePath(resource: String) : String = {
-    val stream : InputStream = getClass.getResourceAsStream(resource)
-    val lines = scala.io.Source.fromInputStream( stream ).mkString
-    val file = File.createTempFile(resource, "")
-    val pw = new PrintWriter(file)
-    pw.write(lines)
-    pw.close
-    file.getAbsolutePath
-  }
+   /**
+     * Get resource file path
+     * @param resource
+     * @return file path
+     */
+   def getResourcePath(resource: String) : String = {
+     val stream : InputStream = getClass.getResourceAsStream(resource)
+     val lines = scala.io.Source.fromInputStream( stream ).mkString
+     val file = File.createTempFile(resource, "")
+     val pw = new PrintWriter(file)
+     pw.write(lines)
+     pw.close
+     file.getAbsolutePath
+   }
 
   def main(args: Array[String]): Unit = {
 
@@ -51,6 +63,7 @@ object TextClassifierConsumerKafka {
 
       val textClassification = new TextClassifier(param)
 
+      // Create spark session
       val spark = SparkSession
         .builder
         .config(Engine.init(param.nodeNum, param.coreNum, true).get
@@ -60,18 +73,14 @@ object TextClassifierConsumerKafka {
         .appName("StructuredStreamingUdf")
         .getOrCreate()
       val sc = spark.sparkContext
-//      val loader = Utils.getContextOrSparkClassLoader
-      val kafka1 = getClass.getClassLoader.loadClass("org.apache.spark.sql.kafka010.KafkaSource")
-      val kafka = getClass.getClassLoader
-        .loadClass("org.apache.spark.sql.kafka010.KafkaSourceProvider")
-//      val kafka = loader.loadClass("kafka")
 
-      // get train and validation rdds
-      val rdds = textClassification.getData(sc)
       // get model
       val localModel = if (param.modelPath.isDefined) {
         Module.load[Float](param.modelPath.get)
       } else {
+        // get train and validation rdds
+        val rdds = textClassification.getData(sc)
+        // train
         val trainedModel = textClassification.train(sc, rdds)
         // after trainning, save model
         if (param.checkpoint.isDefined) {
@@ -100,9 +109,7 @@ object TextClassifierConsumerKafka {
         val tokens = text.replaceAll("[^a-zA-Z]", " ").toLowerCase().split("\\s+").filter(_.size > 2)
         // shaping
         val paddedTokens = if (tokens.length > sequenceLen) {
-
           tokens.slice(tokens.length - sequenceLen, tokens.length)
-
         } else {
           tokens ++ Array.fill[String](sequenceLen - tokens.length)("invalidword")
         }
@@ -119,7 +126,6 @@ object TextClassifierConsumerKafka {
 
         val featureTensor: Tensor[T] = Tensor[T]()
         var featureData: Array[T] = null
-
         val sampleSize = sampleShape.product
         val localModel = modelBroadCast.value
 
@@ -129,10 +135,8 @@ object TextClassifierConsumerKafka {
         }
         Array.copy(data.map(ev.fromType(_)), 0,
           featureData, 0, sampleSize)
-
         featureTensor.set(Storage[T](featureData),
           storageOffset = 1, sizes = Array(1) ++ sampleShape)
-
         val tensorBuffer = featureTensor.transpose(2, 3)
 
         // predict
@@ -147,33 +151,25 @@ object TextClassifierConsumerKafka {
         ev.toType[Int](predict(0))
       }
 
-      // register for data frame
+      // register udf for data frame
       val classiferUDF = udf(predict[Float](_: String))
 
-      val typeFile = getResourcePath("/types.csv")
-      val textSchema = new StructType().add("textType", "string").add("textLabel", "string")
+      val textSchema = new StructType().add("filename", "string").add("text", "string")
+      // stream dataframe
+      val df = spark.readStream
+        .schema(textSchema)
+        .parquet(param.testDir)
 
-      val df_stream = spark
-        .readStream
-        .format("kafka")
-        .option("kafka.bootstrap.servers", param.bootstrapServer)
-        .option("key.deserializer", classOf[StringDecoder].getName)
-        .option("value.deserializer", classOf[StringDecoder].getName)
-        .option("subscribe", param.topic)
-        .load()
-
-      println("created kafka")
-
+      val typeSchema = new StructType().add("textType", "string").add("textLabel", "string")
+      // static dataframe
       val types = spark.read
         .format("csv")
         .option("header", "true")
         .option("mode", "DROPMALFORMED")
-          .schema(textSchema)
-        .csv(typeFile)
-      import spark.implicits._
+        .schema(typeSchema)
+        .csv(getResourcePath("/types.csv"))
 
-      // play with udf in data frame
-      val df = df_stream.select($"value".cast("string").as("text"), $"key".cast("string").as("filename"))
+      import spark.implicits._
 
       val classifyDF1 = df.withColumn("textLabel", classiferUDF($"text"))
         .select("fileName", "text", "textLabel")
@@ -193,7 +189,6 @@ object TextClassifierConsumerKafka {
 
       // aggregation
       val typeCount = classifyDF1.groupBy($"textLabel").count()
-
       val aggQuery = typeCount.writeStream
         .outputMode("complete")
         .format("console")
@@ -222,7 +217,6 @@ object TextClassifierConsumerKafka {
       aggQuery.awaitTermination()
       classifyQuery2.awaitTermination()
       filteredQuery2.awaitTermination()
-
     }
   }
 }
