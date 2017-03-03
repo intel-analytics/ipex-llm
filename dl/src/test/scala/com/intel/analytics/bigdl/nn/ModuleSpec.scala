@@ -163,4 +163,39 @@ class ModuleSpec extends FlatSpec with Matchers {
     pt[Table](subModule2.getName())[Tensor[Double]]("gradBias") should be (subModule2.gradBias)
   }
 
+  "getParameterTable" should "return right result for multi container" in {
+    val module = new Sequential[Double]
+    val subModule1 = new Linear[Double](2, 3)
+    val subModule2 = new Linear[Double](2, 3).setName("fc2")
+    module.add(subModule1)
+    module.add(subModule2)
+    val seq = new Sequential[Double]
+    val conv1 = new SpatialConvolution[Double](3, 3, 2, 2).setName("conv1")
+    val conv2 = new SpatialConvolution[Double](3, 3, 1, 1).setName("conv2")
+    seq.add(conv1)
+    seq.add(conv2)
+    module.add(seq)
+
+    val pt = module.getParametersTable()
+    pt.keySet.size should be (4)
+    pt[Table](subModule1.getName())[Tensor[Double]]("weight") should be (subModule1.weight)
+    pt[Table](subModule1.getName())[Tensor[Double]]("bias") should be (subModule1.bias)
+    pt[Table](subModule1.getName())[Tensor[Double]]("gradWeight") should be (subModule1.gradWeight)
+    pt[Table](subModule1.getName())[Tensor[Double]]("gradBias") should be (subModule1.gradBias)
+
+    pt[Table](subModule2.getName())[Tensor[Double]]("weight") should be (subModule2.weight)
+    pt[Table](subModule2.getName())[Tensor[Double]]("bias") should be (subModule2.bias)
+    pt[Table](subModule2.getName())[Tensor[Double]]("gradWeight") should be (subModule2.gradWeight)
+    pt[Table](subModule2.getName())[Tensor[Double]]("gradBias") should be (subModule2.gradBias)
+
+    pt[Table]("conv1")[Tensor[Double]]("weight") should be (conv1.weight)
+    pt[Table]("conv1")[Tensor[Double]]("bias") should be (conv1.bias)
+    pt[Table]("conv1")[Tensor[Double]]("gradWeight") should be (conv1.gradWeight)
+    pt[Table]("conv1")[Tensor[Double]]("gradBias") should be (conv1.gradBias)
+    pt[Table]("conv2")[Tensor[Double]]("weight") should be (conv2.weight)
+    pt[Table]("conv2")[Tensor[Double]]("bias") should be (conv2.bias)
+    pt[Table]("conv2")[Tensor[Double]]("gradWeight") should be (conv2.gradWeight)
+    pt[Table]("conv2")[Tensor[Double]]("gradBias") should be (conv2.gradBias)
+  }
+
 }
