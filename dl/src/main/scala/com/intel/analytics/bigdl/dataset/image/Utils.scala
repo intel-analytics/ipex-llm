@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.fasterrcnn
+package com.intel.analytics.bigdl.dataset.image
 
 import java.awt.image.BufferedImage
 import java.awt.{BasicStroke, Color, Font, Graphics2D}
@@ -26,14 +26,16 @@ import javax.imageio.ImageIO
 import com.intel.analytics.bigdl.tensor.Tensor
 
 /**
- * visualize detections to image
+ * used for image object detection
+ * visualize detected bounding boxes and their scores to image
  */
 object Visualizer {
   private val bgColor = new Color(0, 0, 1, 127)
   private val font = new Font("Helvetica", Font.PLAIN, 14)
   private val stroke = new BasicStroke(3)
 
-  private def vis(imgPath: String, className: String, scores: Tensor[Float], bboxes: Tensor[Float],
+  private def vis(imgPath: String, className: String,
+    scores: Tensor[Float], bboxes: Tensor[Float],
     savePath: String, thresh: Float = 0.3f): Unit = {
     var img: BufferedImage = null
     var g2d: Graphics2D = null
