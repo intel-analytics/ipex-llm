@@ -105,7 +105,9 @@ class ClassNLLCriterion[T: ClassTag](
     if (input.dim() == 1) {
       require(input.dim() == target.dim(),
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget)
-      (total_weight, total_weight) = getLoss(input, 1, target)
+      val res = getLoss(input, 1, target)
+      output = res._1
+      total_weight = res._2
     } else if (input.dim() == 2) {
       val batchSize = input.size(1)
       val targetSize = target.size()
