@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, DataSet, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -112,19 +112,15 @@ object LocalOptimizerSpecModel {
 }
 
 @com.intel.analytics.bigdl.tags.Serial
-class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
   import LocalOptimizerSpecModel._
   import DummyDataSet._
 
+  val nodeNumber = 1
   val coreNumber = 4
 
   before {
-    Engine.init
-    Engine.setCoreNumber(coreNumber)
-  }
-
-  after {
-    Engine.reset
+    Engine.init(nodeNumber, coreNumber, false)
   }
 
   "Train model with CrossEntropy and SGD" should "be good" in {

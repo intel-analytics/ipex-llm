@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.intel.analytics.bigdl.mkl.MKL
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
-import org.apache.spark.SparkConf
+import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.duration.Duration
@@ -329,19 +329,61 @@ object Engine {
     model
   }
 
-  private def initSparkConf(core : Int, node : Int): SparkConf = {
-    new SparkConf()
-      .setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
-      .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
-      .setExecutorEnv("KMP_BLOCKTIME", "0")
-      .setExecutorEnv("OMP_WAIT_POLICY", "passive")
-      .setExecutorEnv("OMP_NUM_THREADS", "1")
-      .setExecutorEnv("DL_CORE_NUMBER", core.toString)
-      .setExecutorEnv("DL_NODE_NUMBER", node.toString)
-      .setExecutorEnv("ON_SPARK", "true")
-      .set("spark.shuffle.reduceLocality.enabled", "false")
-      .set("spark.shuffle.blockTransferService", "nio")    // This is removed after Spark 1.6
-      .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
+  private def defaultConfs(nExecutor : Int, executorCore : Int) : Seq[(String, String)] = {
+    Array(
+      ("spark.executorEnv.DL_ENGINE_TYPE", "mklblas"),
+      ("spark.executorEnv.MKL_DISABLE_FAST_MM", "1"),
+      ("spark.executorEnv.KMP_BLOCKTIME", "0"),
+      ("spark.executorEnv.OMP_WAIT_POLICY", "passive"),
+      ("spark.executorEnv.OMP_NUM_THREADS", "1"),
+      ("spark.executorEnv.DL_CORE_NUMBER", executorCore.toString),
+      ("spark.executorEnv.DL_NODE_NUMBER", nExecutor.toString),
+      ("spark.executorEnv.ON_SPARK", "true"),
+      ("spark.shuffle.reduceLocality.enabled", "false"),
+      ("spark.shuffle.blockTransferService", "nio"),
+      ("spark.scheduler.minRegisteredResourcesRatio", "1.0")
+    )
+  }
+
+  case class SparkConfError(val msg : String) extends Error
+
+  private def verifySparkConf(
+    sparkConf: SparkConf,
+    nExecutor : Int,
+    executorCore : Int
+  ) : Unit = {
+    def verify(key : String, value : String): Unit = {
+      for ((k, v) <- sparkConf.getAll) {
+        if (k == key) {
+          if (value != v) {
+            throw SparkConfError(s"$k should be $value, but it is $v.")
+          }
+          return
+        }
+      }
+      throw SparkConfError(s"Can not find $key.")
+    }
+    defaultConfs(nExecutor, executorCore).foreach(c => verify(c._1, c._2))
+  }
+
+  private def initSparkConf(core : Int, node : Int, checkSparkContext : Boolean): SparkConf = {
+    val sparkConf = new SparkConf()
+    defaultConfs(node, core).foreach(c => sparkConf.set(c._1, c._2))
+    if(checkSparkContext) {
+      val tmpContext = SparkContext.getOrCreate(sparkConf.set("tmpContext", "true"))
+      try {
+        verifySparkConf(tmpContext.getConf, node, core)
+      } catch {
+        case e: SparkConfError =>
+          throw new IllegalArgumentException(e.msg + " For details please check " +
+            "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine")
+        case _ => // do nothing here
+      }
+      if (tmpContext.getConf.contains("tmpContext")) {
+        tmpContext.stop()
+      }
+    }
+    return sparkConf
   }
 
   /**
@@ -370,13 +412,14 @@ object Engine {
   def init(
     node: Int,
     cores: Int,
-    onSpark: Boolean = false
+    onSpark: Boolean = false,
+    checkSparkConf: Boolean = false
   ): Option[SparkConf] = {
     val ret = if (onSpark) {
       setNodeAndCore(node, cores)
       tryToCheckAndSetSparkProperty(node, cores)
       val sc = if (engineType == MklBlas) {
-        initSparkConf(coreNumber(), nodeNumber())
+        initSparkConf(coreNumber(), nodeNumber(), checkSparkConf)
       } else {
         throw new IllegalArgumentException(engineType.toString)
       }
@@ -407,9 +450,18 @@ object Engine {
    * @return An option of SparkConf
    */
   def init: Option[SparkConf] = {
+    init(true)
+  }
+
+  /**
+   * Allow user to check if there's an inited spark context
+   * @param checkSparkContext
+   * @return
+   */
+  def init(checkSparkContext : Boolean): Option[SparkConf] = {
     if (System.getProperty("SPARK_SUBMIT") != null) {
       val (node, cores) = sparkExecutorAndCore
-      init(node, cores, true)
+      init(node, cores, true, checkSparkContext)
     } else {
       init(1, physicalCoreNumber, false)
     }

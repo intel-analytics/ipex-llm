@@ -1,5 +1,5 @@
 /*
- * Licensed to the Intel Corporation under one or more
+ * Licensed to Intel Corporation under one or more
  * contributor license agreements.  See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  * Intel Corporation licenses this file to You under the Apache License, Version 2.0
@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.intel.analytics.bigdl.utils
 
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -28,7 +29,7 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Engine" should "be inited correct under no spark environment" in {
-    Engine.init
+    Engine.init(false)
     Engine.onSpark should be(false)
     Engine.nodeNumber should be(1)
     Engine.coreNumber should be(1)
@@ -37,7 +38,7 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Engine" should "be inited correct under spark local environment" in {
     TestUtils.sparkLocalEnv(core = 4) {
-      Engine.init
+      Engine.init(false)
       Engine.onSpark should be(true)
       Engine.nodeNumber should be(1)
       Engine.coreNumber should be(4)
@@ -67,7 +68,7 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Engine" should "be inited correct under spark standalone environment" in {
     TestUtils.sparkStandaloneEnv(totalCore = 24, core = 4) {
-      Engine.init
+      Engine.init(false)
       Engine.onSpark should be(true)
       Engine.nodeNumber should be(6)
       Engine.coreNumber should be(4)
@@ -87,7 +88,7 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Engine" should "be inited correct under spark yarn environment" in {
     TestUtils.sparkYarnEnv(executors = 6, core = 4) {
-      Engine.init
+      Engine.init(false)
       Engine.onSpark should be(true)
       Engine.nodeNumber should be(6)
       Engine.coreNumber should be(4)
@@ -108,7 +109,7 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Engine" should "be inited correct under spark mesos environment" in {
     TestUtils.sparkMesosEnv(totalCore = 24, core = 4) {
-      Engine.init
+      Engine.init(false)
       Engine.onSpark should be(true)
       Engine.nodeNumber should be(6)
       Engine.coreNumber should be(4)
