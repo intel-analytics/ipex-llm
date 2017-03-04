@@ -125,4 +125,12 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
     Engine.reset
   }
+
+  "sparkExecutorAndCore" should "parse local[*]" in {
+    System.setProperty("spark.master", "local[*]")
+    val (nExecutor, executorCore) = Engine.sparkExecutorAndCore
+    nExecutor should be(1)
+    executorCore should be(Engine.coreNumber())
+    System.clearProperty("spark.master")
+  }
 }
