@@ -30,7 +30,7 @@ import org.apache.spark.sql.types.StructType
 
 import scala.reflect.ClassTag
 
-object TextClassifierConsumerParquet {
+object  TextClassifierConsumerParquet {
 
   val log: Logger = LoggerFactory.getLogger(this.getClass)
   Logger4j.getLogger("org").setLevel(Levle4j.ERROR)
@@ -41,19 +41,20 @@ object TextClassifierConsumerParquet {
   import Options._
 
    /**
-     * Get resource file path
-     * @param resource
-     * @return file path
-     */
-   def getResourcePath(resource: String) : String = {
-     val stream : InputStream = getClass.getResourceAsStream(resource)
-     val lines = scala.io.Source.fromInputStream( stream ).mkString
-     val file = File.createTempFile(resource, "")
-     val pw = new PrintWriter(file)
-     pw.write(lines)
-     pw.close
-     file.getAbsolutePath
-   }
+    * Get resource file path
+    *
+    * @param resource
+    * @return file path
+    */
+  def getResourcePath(resource: String): String = {
+    val stream: InputStream = getClass.getResourceAsStream(resource)
+    val lines = scala.io.Source.fromInputStream(stream).mkString
+    val file = File.createTempFile(resource, "")
+    val pw = new PrintWriter(file)
+    pw.write(lines)
+    pw.close
+    file.getAbsolutePath
+  }
 
   def main(args: Array[String]): Unit = {
 
@@ -106,7 +107,8 @@ object TextClassifierConsumerParquet {
         val sequenceLen = sampleShape(0)
         val embeddingDim = sampleShape(1)
         // first to tokens
-        val tokens = text.replaceAll("[^a-zA-Z]", " ").toLowerCase().split("\\s+").filter(_.size > 2)
+        val tokens = text.replaceAll("[^a-zA-Z]", " ")
+          .toLowerCase().split("\\s+").filter(_.size > 2)
         // shaping
         val paddedTokens = if (tokens.length > sequenceLen) {
           tokens.slice(tokens.length - sequenceLen, tokens.length)
