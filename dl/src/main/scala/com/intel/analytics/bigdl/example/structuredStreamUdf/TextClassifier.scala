@@ -263,5 +263,4 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
       .setEndWhen(Trigger.maxEpoch(2))
       .optimize()
   }
-
 }
