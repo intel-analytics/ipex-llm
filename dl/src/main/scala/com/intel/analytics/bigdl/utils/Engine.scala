@@ -444,15 +444,17 @@ object Engine {
     }
   }
 
-  private def sparkExecutorAndCore : (Int, Int) = {
+  private[utils] def sparkExecutorAndCore : (Int, Int) = {
     require(System.getProperty("spark.master") != null, "Can't find spark.master, do you start " +
       "your application without spark-submit?")
     val master = System.getProperty("spark.master")
     if(master.toLowerCase.startsWith("local")) {
       // Spark local mode
-      val pattern = "local\\[(\\d+)\\]".r
+      val patternLocalN = "local\\[(\\d+)\\]".r
+      val patternLocalStar = "local\\[\\*\\]".r
       master match {
-        case pattern(n) => (1, n.toInt)
+        case patternLocalN(n) => (1, n.toInt)
+        case patternLocalStar => (1, physicalCoreNumber)
         case _ => throw new IllegalArgumentException(s"Can't parser master $master")
       }
     } else if (master.toLowerCase.startsWith("spark")) {
