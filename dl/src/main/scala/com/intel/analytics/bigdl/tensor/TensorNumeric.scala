@@ -26,9 +26,11 @@ class TensorNumericMath
 object TensorNumericMath {
 
   trait TensorNumeric[@specialized(Float, Double) T] extends Serializable {
-    def one: T = fromType[Int](1)
+    val one: T = fromType[Int](1)
 
-    def zero: T = fromType[Int](0)
+    val zero: T = fromType[Int](0)
+
+    val negativeOne: T = fromType[Int](-1)
 
     def plus(x: T, y: T): T
 
