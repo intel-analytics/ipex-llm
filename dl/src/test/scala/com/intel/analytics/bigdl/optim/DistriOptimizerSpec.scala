@@ -249,6 +249,30 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     )
   }
 
+  "Train with one partition one executor" should "won't throw mult-task exception" in {
+    System.setProperty("bigdl.check.singleton", true.toString)
+    RandomGenerator.RNG.setSeed(10)
+    Engine.setNodeNumber(Some(1))
+    val mm = bn
+    mm.getParameters()._1.fill(0.125)
+    val rdd = sc.parallelize(1 to (256 * nodeNumber), 1).map(prepareData)
+    val dataSet = new DistributedDataSet[MiniBatch[Double]] {
+      override def originRDD(): RDD[_] = rdd
+
+      override def data(train : Boolean): RDD[MiniBatch[Double]] = rdd
+
+      override def size(): Long = 256 * nodeNumber
+
+      override def shuffle(): Unit = {}
+    }
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
+      .optimize()
+
+    Engine.setNodeNumber(Some(nodeNumber))
+  }
+
   "DistriOptimizer checkpoint" should "work correclty" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
     Files.delete(Paths.get(filePath))
@@ -264,7 +288,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     ).setState(T("learningRate" -> 20.0))
       .setCheckpoint(filePath, Trigger.everyEpoch)
       .setEndWhen(Trigger.maxEpoch(1))
-      .disableCheckSingleton()
       .optimize()
 
     val state = T.load(filePath + "/state.33")
