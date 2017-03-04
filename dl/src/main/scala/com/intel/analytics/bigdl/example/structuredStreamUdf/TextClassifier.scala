@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.example.structuredStreamUdf.Options.TextClassif
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, _}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.slf4j.{Logger, LoggerFactory}
@@ -51,7 +51,7 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
   val testDataDir = s"${param.testDir}"
   var classNum = -1
 
-  /**
+    /**
     * Load the pre-trained word2Vec
     *
     * @return A map from word to vector
@@ -72,7 +72,7 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
     preWord2Vec.toMap
   }
 
-  /**
+    /**
     * Load the pre-trained word2Vec
     *
     * @return A map from word to vector
@@ -92,15 +92,12 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
     preWord2Vec.toMap
   }
 
-  /**
+    /**
     * Load the test data from the given baseDir
     *
     * @return An array of sample
     */
   def loadTestData(): Array[(String, String)] = {
-    val fileNames = ArrayBuffer[String]()
-    val texts = ArrayBuffer[String]()
-    val labels = ArrayBuffer[Float]()
     // category is a string name, label is it's index
     //     val categoryToLabel = new util.HashMap[String, Int]()
     val fileList = new File(testDataDir).listFiles()
@@ -116,7 +113,7 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
     testData
   }
 
-  /**
+    /**
     * Load the training data from the given baseDir
     *
     * @return An array of sample
@@ -151,7 +148,7 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
     }
   }
 
-  /**
+    /**
     * Go through the whole data set to gather some meta info for the tokens.
     * Tokens would be discarded if the frequency ranking is less then maxWordsNum
     */
@@ -199,7 +196,7 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
   }
 
 
-  /**
+    /**
     * Create train and val RDDs from input
     */
   def getData(sc: SparkContext):
@@ -225,7 +222,7 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
 
   }
 
-  /**
+    /**
     * Train the text classification model with train and val RDDs
     */
   def train(sc: SparkContext, rdds: Array[RDD[(String, Array[Array[Float]], Float)]])
@@ -266,4 +263,5 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
       .setEndWhen(Trigger.maxEpoch(2))
       .optimize()
   }
+
 }
