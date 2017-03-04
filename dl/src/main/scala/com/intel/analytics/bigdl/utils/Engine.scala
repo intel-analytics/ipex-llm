@@ -277,8 +277,9 @@ object Engine {
     nodeNum = n
   }
 
-  private val ERROR = "Please use bigdl.sh set the env. For spark application, please use " +
-    "Engine.sparkConf() to initialize your sparkConf"
+  private val ERROR = "Current environment variable looks not correct. Please use bigdl.sh to " +
+    "start your application. For details, see " +
+    "https://github.com/intel-analytics/BigDL/wiki/Getting-Started#before-running-a-bigdl-program"
 
   /**
    * Notice: Please use property DL_ENGINE_TYPE to set engineType.
@@ -551,7 +552,7 @@ object Engine {
     if (System.getenv("OMP_NUM_THREADS") != "1"
       || System.getenv("OMP_WAIT_POLICY") != "passive"
       || System.getenv("KMP_BLOCKTIME") != "0") {
-      logger.warn("Invalid env setting. " + ERROR)
+      logger.warn(ERROR)
     }
   } else {
     throw new IllegalArgumentException(engineType.toString)
