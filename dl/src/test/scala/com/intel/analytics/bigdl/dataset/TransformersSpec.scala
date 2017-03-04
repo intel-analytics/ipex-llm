@@ -81,7 +81,7 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "Grey Image toTensor" should "convert correctly" in {
-    Engine.setNodeNumber(1)
+    Engine.setNodeAndCore(1, 1)
     val image1 = new LabeledGreyImage(32, 32)
     val image2 = new LabeledGreyImage(32, 32)
     val image3 = new LabeledGreyImage(32, 32)
@@ -222,7 +222,7 @@ class TransformersSpec extends FlatSpec with Matchers {
   }
 
   "RGB Image toTensor" should "convert correctly" in {
-    Engine.setNodeNumber(1)
+    Engine.setNodeAndCore(1, 1)
     val image1 = new LabeledBGRImage(32, 32)
     val image2 = new LabeledBGRImage(32, 32)
     val image3 = new LabeledBGRImage(32, 32)
@@ -790,6 +790,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     batch3.label() should be (tensorTarget3)
   }
   "SampleToBatchSpec" should "be good with TensorBatch1 Double" in {
+    Engine.setNodeAndCore(1, 1)
     val tensorInput1 = Tensor[Double](Storage(
       Array(0.0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
     val tensorInput2 = Tensor[Double](Storage(
@@ -832,6 +833,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     batch2.labels should be (batch2Label)
   }
   "SampleToBatchSpec" should "be good with TensorBatch1" in {
+    Engine.setNodeAndCore(1, 1)
     val tensorInput1 = Tensor[Float](Storage(
       Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
     val tensorInput2 = Tensor[Float](Storage(
@@ -874,6 +876,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     batch2.labels should be (batch2Label)
   }
   "SampleToBatchSpec" should "be good with TensorBatch2" in {
+    Engine.setNodeAndCore(1, 1)
     val tensorInput1 = Tensor[Float](Storage(
       Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
     val tensorInput2 = Tensor[Float](Storage(

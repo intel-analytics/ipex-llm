@@ -22,17 +22,18 @@ import java.util.concurrent.{Callable, Executors}
 
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{TestUtils, Engine, RandomGenerator}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
 class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc: SparkContext = null
+  val nodeNumber = 1
+  val coreNumber = 1
 
   before {
-    Engine.setNodeNumber(1)
-    Engine.setCoreNumber(1)
+    Engine.init(nodeNumber, coreNumber, true)
     val conf = new SparkConf().setMaster("local[1]").setAppName("DataSetSpec")
     sc = new SparkContext(conf)
   }
@@ -66,22 +67,18 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "mnist rdd data source" should "load image correct" in {
-    TestUtils.sparkLocalEnv() {
-      Engine.init
-      val resource = getClass().getClassLoader().getResource("mnist")
+    val resource = getClass().getClassLoader().getResource("mnist")
 
-      val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
-        Paths.get(processPath(resource.getPath()) + File.separator, "t10k-images.idx3-ubyte"),
-        Paths.get(processPath(resource.getPath()) + File.separator, "t10k-labels.idx1-ubyte")
-      ), sc)
+    val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
+      Paths.get(processPath(resource.getPath()) + File.separator, "t10k-images.idx3-ubyte"),
+      Paths.get(processPath(resource.getPath()) + File.separator, "t10k-labels.idx1-ubyte")
+    ), sc)
 
-      dataSet.size() should be(10000)
-      var rdd = dataSet.data(train = false)
-      rdd.map(_.label).min should be(1.0f)
-      rdd = dataSet.data(train = false)
-      rdd.map(_.label).max should be(10.0f)
-      Engine.reset
-    }
+    dataSet.size() should be(10000)
+    var rdd = dataSet.data(train = false)
+    rdd.map(_.label).min should be(1.0f)
+    rdd = dataSet.data(train = false)
+    rdd.map(_.label).max should be(10.0f)
   }
 
   "cifar data source" should "load image correct" in {
@@ -120,43 +117,39 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "cifar rdd data source" should "load image correct" in {
-    TestUtils.sparkLocalEnv() {
-      Engine.init
-      val resource = getClass().getClassLoader().getResource("cifar")
-      val dataSet = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
-        sc, BGRImage.NO_SCALE)
-      dataSet.size() should be(7)
-      val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
-      labelMap("airplane") should be(1)
-      labelMap("deer") should be(2)
+    val resource = getClass().getClassLoader().getResource("cifar")
+    val dataSet = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
+      sc, BGRImage.NO_SCALE)
+    dataSet.size() should be(7)
+    val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
+    labelMap("airplane") should be(1)
+    labelMap("deer") should be(2)
 
-      val rdd = dataSet.toDistributed().data(train = false)
-      rdd.filter(_.label() == 1f).count() should be(3)
-      rdd.filter(_.label() == 2f).count() should be(4)
-      val images = rdd.map(_.clone())
-        .filter(_.label() == 1f)
-        .collect()
-        .sortWith(_.content(0) < _.content(0))
-      val img1 = images(1)
-      img1.label() should be(1f)
-      img1.content(2) should be(234 / 255f)
-      img1.content(1) should be(125 / 255f)
-      img1.content(0) should be(59 / 255f)
-      img1.content((22 + 4 * 32) * 3 + 2) should be(253 / 255f)
-      img1.content((22 + 4 * 32) * 3 + 1) should be(148 / 255f)
-      img1.content((22 + 4 * 32) * 3) should be(31 / 255f)
+    val rdd = dataSet.toDistributed().data(train = false)
+    rdd.filter(_.label() == 1f).count() should be(3)
+    rdd.filter(_.label() == 2f).count() should be(4)
+    val images = rdd.map(_.clone())
+      .filter(_.label() == 1f)
+      .collect()
+      .sortWith(_.content(0) < _.content(0))
+    val img1 = images(1)
+    img1.label() should be(1f)
+    img1.content(2) should be(234 / 255f)
+    img1.content(1) should be(125 / 255f)
+    img1.content(0) should be(59 / 255f)
+    img1.content((22 + 4 * 32) * 3 + 2) should be(253 / 255f)
+    img1.content((22 + 4 * 32) * 3 + 1) should be(148 / 255f)
+    img1.content((22 + 4 * 32) * 3) should be(31 / 255f)
 
-      val images2 = rdd.map(_.clone())
-        .filter(_.label() == 2)
-        .collect()
-        .sortWith(_.content(0) < _.content(0))
-      val img4 = images2(0)
-      img4.label() should be(2f)
-      img4.content((9 + 8 * 32) * 3 + 2) should be(40 / 255f)
-      img4.content((9 + 8 * 32) * 3 + 1) should be(51 / 255f)
-      img4.content((9 + 8 * 32) * 3) should be(37 / 255f)
-      Engine.reset
-    }
+    val images2 = rdd.map(_.clone())
+      .filter(_.label() == 2)
+      .collect()
+      .sortWith(_.content(0) < _.content(0))
+    val img4 = images2(0)
+    img4.label() should be(2f)
+    img4.content((9 + 8 * 32) * 3 + 2) should be(40 / 255f)
+    img4.content((9 + 8 * 32) * 3 + 1) should be(51 / 255f)
+    img4.content((9 + 8 * 32) * 3) should be(37 / 255f)
   }
 
   "imagenet data source" should "load image correct" in {
@@ -267,7 +260,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "image preprocess" should "be same with torch result" in {
-    Engine.setNodeNumber(1)
+    Engine.init(nodeNumber, coreNumber, false)
     val resourceImageNet = getClass().getClassLoader().getResource("imagenet")
     def test(imgFolder: String, imgFileName: String, tensorFile: String): Unit = {
       val img1Path = Paths.get(processPath(resourceImageNet.getPath()), imgFolder, imgFileName)
@@ -301,25 +294,22 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "RDD from DataSet" should "give different position every time" in {
-    TestUtils.sparkLocalEnv() {
-      Engine.init
-      val data = (1 to 4).toArray
-      val trainRDD = DataSet.rdd(sc.parallelize(data, 1).mapPartitions(_ => {
-        RandomGenerator.RNG.setSeed(100)
-        (1 to 100).iterator
-      })).data(train = true)
-      trainRDD.mapPartitions(iter => {
-        Iterator.single(iter.next())
-      }).collect()(0) should be(22)
+    val data = (1 to 4).toArray
+    val trainRDD = DataSet.rdd(sc.parallelize(data, 1).mapPartitions(_ => {
+      RandomGenerator.RNG.setSeed(100)
+      (1 to 100).iterator
+    })).data(train = true)
+    trainRDD.mapPartitions(iter => {
+      Iterator.single(iter.next())
+    }).collect()(0) should be(22)
 
-      trainRDD.mapPartitions(iter => {
-        Iterator.single(iter.next())
-      }).collect()(0) should be(41)
+    trainRDD.mapPartitions(iter => {
+      Iterator.single(iter.next())
+    }).collect()(0) should be(41)
 
-      trainRDD.mapPartitions(iter => {
-        Iterator.single(iter.next())
-      }).collect()(0) should be(62)
-      Engine.reset
-    }
+    trainRDD.mapPartitions(iter => {
+      Iterator.single(iter.next())
+    }).collect()(0) should be(62)
+
   }
 }
