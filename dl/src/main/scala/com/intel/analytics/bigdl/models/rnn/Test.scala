@@ -18,8 +18,8 @@
 package com.intel.analytics.bigdl.models.rnn
 
 
-import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch, SampleToBatch}
-import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, LabeledSentenceToSample}
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, LabeledSentenceToSample, SampleToBatch}
 import com.intel.analytics.bigdl.nn.{LogSoftMax, Module}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
@@ -60,7 +60,7 @@ object Test {
 
         val validationSet = DataSet.array(labeledInput)
           .transform(LabeledSentenceToSample(vocab.length + 1))
-          .transform(SampleToBatch(batchSize = batchSize))
+          .transform(SampleToBatch(batchSize))
           .asInstanceOf[LocalDataSet[MiniBatch[Float]]]
 
         val dataIter = validationSet.data(train = false)

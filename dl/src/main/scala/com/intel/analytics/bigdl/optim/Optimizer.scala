@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.optim
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.text.SampleToBatch
 import com.intel.analytics.bigdl.dataset.{DataSet, _}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, File, T, Table}
