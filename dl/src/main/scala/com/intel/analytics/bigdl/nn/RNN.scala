@@ -37,8 +37,8 @@ class RnnCell[T : ClassTag] (
   val parallelTable = ParallelTable[T]()
   val i2h = Linear[T](inputSize, hiddenSize)
   val h2h = Linear[T](hiddenSize, hiddenSize)
-  parallelTable.add(h2h)
   parallelTable.add(i2h)
+  parallelTable.add(h2h)
   val cAddTable = CAddTable[T]()
 
   val rnn = Sequential[T]()
@@ -82,7 +82,7 @@ class RnnCell[T : ClassTag] (
   }
 
   override def accGradParameters(input: Table, gradOutput: Table,
-                                 scale: Double = 1.0): Unit = {
+    scale: Double = 1.0): Unit = {
     rnn.accGradParameters(input, gradOutput, scale)
   }
 
@@ -147,7 +147,7 @@ object RnnCell {
     inputSize: Int = 4,
     hiddenSize: Int = 3,
     activation: TensorModule[T])
-   (implicit ev: TensorNumeric[T]) : RnnCell[T] = {
+    (implicit ev: TensorNumeric[T]) : RnnCell[T] = {
     new RnnCell[T](inputSize, hiddenSize, activation)
   }
 }
