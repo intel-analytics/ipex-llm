@@ -511,9 +511,12 @@ class DistriOptimizer[T: ClassTag] (
   private var models: RDD[DistriOptimizer.Cache[T]] = null
 
   /**
-   * Clean some flags left on executor.
+   * Clean some internal states, so this or other optimizers can run optimize again
+   *
+   * This method will be called at the end of optimize. You need not call it if optimize succeed.
+   * If the optimize fails, you may call it before next optimize.
    */
-  def cleanExecutorFlags() : Unit = {
+  def clearState() : Unit = {
     // Reset the singleton flag, so other optimizers can run
     models.mapPartitions(iter => {
       Engine.resetSingletonFlag()
@@ -563,8 +566,8 @@ class DistriOptimizer[T: ClassTag] (
 
     nn.Utils.copyModule(trainedModel, model)
 
-    // Reset the singleton flag, so other optimizers can run
-    cleanExecutorFlags()
+    // Reset some internal states, so this or other optimizers can run optimize again
+    clearState()
 
     model
   }
