@@ -29,13 +29,13 @@ class Recurrent[T : ClassTag] (
   bpttTruncate: Int = 2)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
-  var hidden: Activity = null
-  var gradHidden: Activity = null
+  var hidden: Activity = Tensor[Double]()
+  var gradHidden: Activity = Tensor[Double]()
   val inputs = T()
   val batchDim = 1
   val timeDim = 2
-  val hidDim = 1
-  val inputDim = 2
+  val hidDim = 2
+  val inputDim = 1
   var (batchSize, times) = (0, 0)
 
   override def reset(): Unit = {
@@ -48,7 +48,9 @@ class Recurrent[T : ClassTag] (
       hidden = T(Tensor[T](), Tensor[T]())
       gradHidden = T(Tensor[T](), Tensor[T]())
     } else {
-      throw new IllegalArgumentException("Cell not implemented")
+      hidden = Tensor[T]()
+      gradHidden = Tensor[T]()
+//      throw new IllegalArgumentException("Cell not implemented")
     }
   }
 
@@ -137,6 +139,7 @@ class Recurrent[T : ClassTag] (
       "Recurrent: input should be a 3D Tensor, e.g [batch, times, nDim], " +
         s"current input.dim = ${input.dim}")
 
+    // println(s"forward input = ${input}")
     batchSize = input.size(batchDim)
     times = input.size(timeDim)
     extend(times)
@@ -144,13 +147,16 @@ class Recurrent[T : ClassTag] (
     output.resize(Array(batchSize, times, hiddenSize))
 
     hidInit(hidden, Array(batchSize, hiddenSize))
-    var currentOutput = T(hidden)
+    // var currentOutput = T(hidden)
+    var currentOutput = T()
+    currentOutput(hidDim) = hidden
     var i = 1
     while (i <= times) {
       currentOutput(inputDim) = input.select(timeDim, i)
+//      println(s"forward currentOutput = ${currentOutput}")
       inputs(i) = shallowCopy(currentOutput)
       currentOutput = modules(i - 1).updateOutput(currentOutput).toTable
-      output.select(timeDim, i).copy(currentOutput(inputDim))
+      output.select(timeDim, i).copy(currentOutput(inputDim).asInstanceOf[Tensor[T]].clone())
       i += 1
     }
     output
@@ -158,7 +164,8 @@ class Recurrent[T : ClassTag] (
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
     scale: Double = 1.0): Unit = {
-    var currentGradOutput = T(Tensor[T]().resizeAs(gradOutput.select(timeDim, 1)))
+    var currentGradOutput = T()
+    currentGradOutput(hidDim) = Tensor[T]().resizeAs(gradOutput.select(timeDim, 1))
     var i = times
     while (i >= 1) {
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
@@ -169,9 +176,13 @@ class Recurrent[T : ClassTag] (
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    println("backward")
     gradInput.resizeAs(input)
     hidInit(gradHidden, Array(batchSize, hiddenSize))
-    var currentGradOutput = T(gradHidden)
+    // var currentGradOutput = T(gradHidden)
+    var currentGradOutput = T()
+    currentGradOutput(hidDim) = gradHidden
+
     var i = times
     while (i >= 1) {
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)

@@ -30,10 +30,11 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 5446858218997354022L)
 class CrossEntropyCriterion[T: ClassTag](
-   val weights: Tensor[T] = null)
+  val weights: Tensor[T] = null,
+  val sizeAverage: Boolean = true)
    (implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{
   private val lsm = new LogSoftMax[T]()
-  private val nll = new ClassNLLCriterion[T](weights)
+  private val nll = new ClassNLLCriterion[T](weights, sizeAverage)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     lsm.updateOutput(input)
@@ -56,7 +57,8 @@ class CrossEntropyCriterion[T: ClassTag](
   override def equals(other: Any): Boolean = other match {
     case that: CrossEntropyCriterion[T] =>
       (that canEqual this) &&
-        weights == that.weights
+        weights == that.weights &&
+      sizeAverage == that.sizeAverage
     case _ => false
   }
 
@@ -73,8 +75,8 @@ class CrossEntropyCriterion[T: ClassTag](
 
 object CrossEntropyCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
-      weights: Tensor[T] = null)
+    weights: Tensor[T] = null, sizeAverage: Boolean = true)
       (implicit ev: TensorNumeric[T]) : CrossEntropyCriterion[T] = {
-    new CrossEntropyCriterion[T](weights)
+    new CrossEntropyCriterion[T](weights, sizeAverage)
   }
 }
