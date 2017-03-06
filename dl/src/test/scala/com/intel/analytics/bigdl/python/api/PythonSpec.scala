@@ -74,8 +74,15 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     BigDLSerDe.javaToPython(data.toJavaRDD().asInstanceOf[JavaRDD[Any]])
 
     val model = Sequential[Double]()
-    model.add(Linear[Double](100, 10))
+    model.add(Linear[Double](100, 100))
     model.add(ReLU[Double]())
+
+    val m2 = Sequential[Double]()
+    m2.add(Linear[Double](100, 10))
+    m2.add(ReLU[Double]())
+
+    model.add(m2)
+
     model.add(LogSoftMax[Double]())
 
     val pp = PythonBigDL.ofDouble()

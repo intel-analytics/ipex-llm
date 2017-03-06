@@ -19,6 +19,9 @@
 import sys
 from util.common import callBigDlFunc
 from util.common import JavaValue
+from util.common import callJavaFunc
+from pyspark import SparkContext
+
 import numpy as np
 
 if sys.version >= '3':
@@ -39,6 +42,13 @@ class Model(JavaValue):
         model.bigdl_type = bigdl_type
         return model
 
+    def set_name(self, name):
+        callJavaFunc(SparkContext.getOrCreate(), self.value.setName, name)
+        return self
+
+    def name(self):
+        return callJavaFunc(SparkContext.getOrCreate(), self.value.getName)
+
     def get_dtype(self):
         if "float" == self.bigdl_type:
             return "float32"
@@ -46,12 +56,18 @@ class Model(JavaValue):
             return "float64"
 
     def parameters(self):
-        (w, g, wshape, gshape) = callBigDlFunc(self.bigdl_type,
-                                               "modelGetParameters",
-                                               self.value)
-        return \
-            {"weights": np.array(w, dtype=self.get_dtype()).reshape(wshape),
-             "gradients": np.array(g, dtype=self.get_dtype()).reshape(gshape)}
+        name_to_params = callBigDlFunc(self.bigdl_type,
+                                       "modelGetParameters",
+                                       self.value)
+
+        def to_ndarray(params):
+            return {
+                param_name: np.array(values[0],
+                                     dtype=self.get_dtype()).reshape(
+                    values[1]) for param_name, values in params.iteritems()}
+
+        return {layer_name: to_ndarray(params) for layer_name, params in
+                name_to_params.iteritems()}
 
     def predict(self, data_rdd):
         return callBigDlFunc(self.bigdl_type,

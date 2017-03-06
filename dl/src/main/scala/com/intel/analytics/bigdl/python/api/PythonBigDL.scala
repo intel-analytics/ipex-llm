@@ -25,10 +25,12 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, Table}
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
+import scala.collection.Map
 
 import scala.collection.JavaConverters._
 import scala.language.existentials
@@ -234,22 +236,17 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelGetParameters(model: AbstractModule[Activity, Activity, T])
-  : JList[JList[Any]] = {
-    model.getParameters()
-    val result = new JArrayList[JArrayList[T]]()
-    val item = new JArrayList[JList[T]]()
-
-    val weightTensor = model.getParameters()._1.contiguous()
-    val weightsData: JList[T] = weightTensor.storage().toList.asJava
-    val weightsShape = weightTensor.size().toList.asJava
-
-    val gradientTensor = model.getParameters()._1.contiguous()
-    val gradientData: JList[T] = gradientTensor.storage().toList.asJava
-    val gradientShape = gradientTensor.size().toList.asJava
-    List(weightsData.asInstanceOf[JList[Any]],
-      gradientData.asInstanceOf[JList[Any]],
-      weightsShape.asInstanceOf[JList[Any]],
-      gradientShape.asInstanceOf[JList[Any]]).asJava
+  : JMap[Any, JMap[Any, JList[JList[Any]]]] = {
+    model.getParametersTable().getState().mapValues {
+      case name2Values: Table =>
+        name2Values.getState().mapValues {
+          case t : Tensor[T] =>
+            val tensorClone = t.clone()
+            val item = List(tensorClone.storage().toList.asJava.asInstanceOf[JList[Any]],
+              tensorClone.size().toList.asJava.asInstanceOf[JList[Any]]).asJava
+            item
+        }.asJava
+    }.asJava
   }
 
   def predict(model: AbstractModule[Activity, Activity, T],
