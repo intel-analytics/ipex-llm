@@ -50,7 +50,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val model = Sequential[Double]()
       .add(Recurrent[Double](hiddenSize, bpttTruncate)
-      .add(RnnCell[Double](inputSize, hiddenSize, Identity[Double]())))
+      .add(RnnCell[Double](inputSize, hiddenSize, Sigmoid[Double]())))
 //      .add(RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())))
 //            .add(FastLSTMCell[Double](inputSize, hiddenSize)))
       .add(TimeDistributed[Double]().add(Linear[Double](hiddenSize, outputSize)))
@@ -151,7 +151,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       |            :add(nn.Linear($inputSize, $hiddenSize)) -- input layer
       |            :add(nn.Linear($hiddenSize, $hiddenSize))) -- recurrent layer
       |         :add(nn.CAddTable()) -- merge
-      |         :add(nn.Identity()) -- transfer
+      |         :add(nn.Sigmoid()) -- transfer
       |     --    :add(nn.Tanh()) -- transfer
       |
       | -- local rm1 =  nn.Sequential() -- input is {x[t], h[t-1]}
@@ -167,7 +167,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       |:add(nn.SplitTable(1))
       |:add(nn.Sequencer(
       | nn.Sequential()
-      |   :add(rnn)
+      |   :add(nn.LSTM($inputSize, $hiddenSize))
       |   :add(nn.Linear($hiddenSize, $outputSize))
       |   ))
       |
