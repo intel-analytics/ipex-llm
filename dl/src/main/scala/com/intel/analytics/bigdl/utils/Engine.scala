@@ -224,6 +224,13 @@ object Engine {
     (count == 1)
   }
 
+  /**
+   * Reset the singleton flag
+   */
+  def resetSingletonFlag(): Unit = {
+    singletonCounter.set(0)
+  }
+
   private var physicalCoreNumber = {
     val env = System.getenv("DL_CORE_NUMBER")
     if(env == null) {

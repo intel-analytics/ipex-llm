@@ -510,6 +510,20 @@ class DistriOptimizer[T: ClassTag] (
 
   private var models: RDD[DistriOptimizer.Cache[T]] = null
 
+  /**
+   * Clean some internal states, so this or other optimizers can run optimize again
+   *
+   * This method will be called at the end of optimize. You need not call it if optimize succeed.
+   * If the optimize fails, you may call it before next optimize.
+   */
+  def clearState() : Unit = {
+    // Reset the singleton flag, so other optimizers can run
+    models.mapPartitions(iter => {
+      Engine.resetSingletonFlag()
+      iter
+    }).count()
+  }
+
   override def optimize(): Module[T] = {
     this.assertEngineInited()
 
@@ -551,6 +565,10 @@ class DistriOptimizer[T: ClassTag] (
     val trainedModel = DistriOptimizer.getModel(models, parameters)
 
     nn.Utils.copyModule(trainedModel, model)
+
+    // Reset some internal states, so this or other optimizers can run optimize again
+    clearState()
+
     model
   }
 }

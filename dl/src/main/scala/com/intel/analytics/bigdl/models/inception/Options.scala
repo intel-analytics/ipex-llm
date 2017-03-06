@@ -34,7 +34,9 @@ object Options {
     env: String = "local",
     overWriteCheckpoint: Boolean = false,
     maxEpoch: Option[Int] = None,
-    maxIteration: Int = 62000
+    maxIteration: Int = 62000,
+    weightDecay: Double = 0.0001,
+    checkpointIteration: Int = 620
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
@@ -89,6 +91,12 @@ object Options {
       })
       .action((x, c) => c.copy(env = x.toLowerCase()))
       .required()
+    opt[Double]("weightDecay")
+      .text("weight decay")
+      .action((x, c) => c.copy(weightDecay = x))
+    opt[Int]("checkpointIteration")
+      .text("checkpoint interval of iterations")
+      .action((x, c) => c.copy(checkpointIteration = x))
   }
 
   case class TestParams(

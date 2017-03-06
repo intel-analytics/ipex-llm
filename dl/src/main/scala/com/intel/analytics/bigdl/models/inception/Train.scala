@@ -54,7 +54,7 @@ object TrainInceptionV1 {
         param.classNumber,
         1281167
       )
-      val valSet = ImageNet2012(
+      val valSet = ImageNet2012Val(
         param.folder + "/val",
         sc,
         imageSize,
@@ -73,13 +73,21 @@ object TrainInceptionV1 {
 
       val state = if (param.stateSnapshot.isDefined) {
         T.load(param.stateSnapshot.get)
+      } else if (param.maxEpoch.isDefined) {
+        T(
+          "learningRate" -> param.learningRate,
+          "weightDecay" -> param.weightDecay,
+          "momentum" -> 0.9,
+          "dampening" -> 0.0,
+          "learingRateSchedule" -> SGD.Poly(0.5, math.ceil(1281167.toDouble / param.batchSize).toInt
+            * param.maxEpoch.get))
       } else {
         T(
           "learningRate" -> param.learningRate,
-          "weightDecay" -> 0.0001,
+          "weightDecay" -> param.weightDecay,
           "momentum" -> 0.9,
           "dampening" -> 0.0,
-          "learningRateSchedule" -> SGD.Poly(0.5, 62000)
+          "learningRateSchedule" -> SGD.Poly(0.5, param.maxIteration)
         )
       }
 
@@ -93,8 +101,8 @@ object TrainInceptionV1 {
         (Trigger.everyEpoch, Trigger.everyEpoch, Trigger.maxEpoch(param.maxEpoch.get))
       } else {
         (
-          Trigger.severalIteration(620),
-          Trigger.severalIteration(620),
+          Trigger.severalIteration(param.checkpointIteration),
+          Trigger.severalIteration(param.checkpointIteration),
           Trigger.maxIteration(param.maxIteration)
           )
       }
@@ -103,7 +111,7 @@ object TrainInceptionV1 {
         optimizer.setCheckpoint(param.checkpoint.get, checkpointTrigger)
       }
 
-      if(param.overWriteCheckpoint) {
+      if (param.overWriteCheckpoint) {
         optimizer.overWriteCheckpoint()
       }
 
