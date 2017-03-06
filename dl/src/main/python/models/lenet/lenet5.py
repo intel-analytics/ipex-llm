@@ -79,7 +79,7 @@ if __name__ == "__main__":
             criterion=ClassNLLCriterion(),
             optim_method="SGD",
             state=state,
-            end_trigger=MaxEpoch(100),
+            end_trigger=MaxEpoch(2),
             batch_size=int(options.batchSize))
         optimizer.setvalidation(
             batch_size=32,
@@ -89,6 +89,7 @@ if __name__ == "__main__":
         )
         optimizer.setcheckpoint(EveryEpoch(), "/tmp/lenet5/")
         trained_model = optimizer.optimize()
+        parameters = trained_model.parameters()
     elif options.action == "test":
         test_data = get_minst("test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))

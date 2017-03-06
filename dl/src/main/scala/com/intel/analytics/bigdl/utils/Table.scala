@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.collection.mutable
 import scala.collection.mutable.Map
 import scala.collection.Set
+import scala.collection.immutable.{Map => ImmutableMap}
 
 /**
  * Simulate the Table data structure in lua
@@ -45,6 +46,9 @@ class Table private[bigdl](
     }
   }
 
+  private[bigdl] def getState(): ImmutableMap[Any, Any] = {
+    return state.toMap
+  }
   /**
    * Empty the Table
    */

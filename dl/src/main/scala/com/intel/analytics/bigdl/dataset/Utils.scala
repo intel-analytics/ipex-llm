@@ -27,7 +27,7 @@ object Utils {
     val batchPerUnit = if (Engine.nodeNumber().isDefined) {
       val nodeNumber = Engine.nodeNumber().get
       val coreNumber = Engine.coreNumber()
-      logger.info(s"node number: $nodeNumber, core number: $coreNumber")
+      logger.debug(s"node number: $nodeNumber, core number: $coreNumber")
       require(totalBatch % (nodeNumber * coreNumber) == 0
         , s"total batch size($totalBatch) can't be divided by node number($nodeNumber) * " +
           s"core number($coreNumber), please change your batch size")
@@ -42,7 +42,7 @@ object Utils {
     } else {
       totalBatch
     }
-    logger.info(s"Batch per unit: $batchPerUnit")
+    logger.debug(s"Batch per unit: $batchPerUnit")
     batchPerUnit
   }
 

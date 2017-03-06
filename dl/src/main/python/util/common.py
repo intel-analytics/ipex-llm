@@ -18,7 +18,7 @@
 import sys
 from py4j.protocol import Py4JJavaError
 from py4j.java_gateway import JavaObject
-from py4j.java_collections import ListConverter, JavaArray, JavaList
+from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap
 
 from pyspark import RDD, SparkContext
 from pyspark.serializers import PickleSerializer, AutoBatchedSerializer
@@ -163,7 +163,7 @@ def _java2py(sc, r, encoding="bytes"):
 
         if clsName in _picklable_classes:
             r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
-        elif isinstance(r, (JavaArray, JavaList)):
+        elif isinstance(r, (JavaArray, JavaList, JavaMap)):
             try:
                 r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(
                     r)
