@@ -29,8 +29,8 @@ class Recurrent[T : ClassTag] (
   bpttTruncate: Int = 2)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
-  var hidden: Activity = T(Tensor[T](), Tensor[T]())
-  var gradHidden: Activity = T(Tensor[T](), Tensor[T]())
+  var hidden: Activity = _
+  var gradHidden: Activity = _
   val inputs = T()
   val batchDim = 1
   val timeDim = 2
@@ -43,14 +43,11 @@ class Recurrent[T : ClassTag] (
     if (modules(0).isInstanceOf[RnnCell[T]]) {
       hidden = Tensor[T]()
       gradHidden = Tensor[T]()
-    } else if (modules(0).isInstanceOf[LSTMCell[T]]
-      || modules(0).isInstanceOf[FastLSTMCell[T]]) {
+    } else if (modules(0).isInstanceOf[LSTMPeephole[T]]) {
       hidden = T(Tensor[T](), Tensor[T]())
       gradHidden = T(Tensor[T](), Tensor[T]())
     } else {
-      hidden = Tensor[T]()
-      gradHidden = Tensor[T]()
-//      throw new IllegalArgumentException("Cell not implemented")
+      throw new IllegalArgumentException("Cell not implemented")
     }
   }
 
