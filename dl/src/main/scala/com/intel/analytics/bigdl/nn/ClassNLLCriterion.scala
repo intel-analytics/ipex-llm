@@ -98,15 +98,12 @@ class ClassNLLCriterion[T: ClassTag](
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.dim() == 1 || input.dim() == 2,
       "ClassNLLCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
-    require(target.nDimension() == 1, "ClassNLLCriterion: target dim should be 1D")
     // Convert 1D input to 2D so we can write same code for 1D and 2D input
     var squeeze = false
     if(input.nDimension() == 1) {
       squeeze = true
       input.addSingletonDimension()
     }
-    require(target.nElement() == input.size(1), "ClassNLLCriterion: target sample number is not " +
-      "equal to input sample number")
     val length = input.size(2)
     require(length % repeat == 0, s"ClassNLLCriterion: $repeat cannot divide $length")
     nClasses = length / repeat
@@ -114,6 +111,7 @@ class ClassNLLCriterion[T: ClassTag](
     val batchSize = input.size(1)
     val targetSize = target.size()
     target.squeeze()
+    require(target.nDimension() == 1, "ClassNLLCriterion: target dim should be 1D")
     total_weight = ev.zero
     output = ev.zero
 
@@ -151,7 +149,6 @@ class ClassNLLCriterion[T: ClassTag](
       "ClassNLLCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
     require(ev.toType[Double](total_weight) > 0.0,
       s"ClassNLLCriterion: total weight must larger than 0, current it's $total_weight")
-    require(target.nDimension() == 1, "ClassNLLCriterion: target dim should be 1D")
     var squeeze = false
     gradInput.resizeAs(input)
     gradInput.zero()
@@ -163,6 +160,7 @@ class ClassNLLCriterion[T: ClassTag](
     val batchSize = gradInput.size(1)
     val targetSize = target.size()
     target.squeeze()
+    require(target.nDimension() == 1, "ClassNLLCriterion: target dim should be 1D")
     if (resultsBackward == null || resultsBackward.length != batchSize) {
       resultsBackward = new Array[Future[_]](batchSize)
     }
