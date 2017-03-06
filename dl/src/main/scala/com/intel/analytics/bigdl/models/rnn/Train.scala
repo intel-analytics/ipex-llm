@@ -75,7 +75,8 @@ object Train {
           inputSize = dictionaryLength,
           hiddenSize = param.hiddenSize,
           outputSize = dictionaryLength,
-          bpttTruncate = param.bptt)
+          bpttTruncate = param.bptt,
+          timeDim = 2)
         curModel.reset()
         curModel
       }

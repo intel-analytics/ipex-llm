@@ -24,15 +24,49 @@ import com.intel.analytics.bigdl.utils.T
 
 import scala.reflect.ClassTag
 
+/**
+ * @param hiddenSize
+ * @param bpttTruncate
+ * @param timeDim the time dimension of the input Tensor
+ * @param ev
+ * @tparam T
+ */
+
 class Recurrent[T : ClassTag] (
   hiddenSize: Int = 3,
-  bpttTruncate: Int = 2)
+  bpttTruncate: Int = 2,
+  protected val timeDim: Int = 2)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
+  /**
+   * The Recurrent will always go along the first dimension of the Tensor given that
+   * the legacyMode is set to be false in order to boost the performance.
+   *
+   * If the timeDim is 2, this layer will transpose the first two dimensions of the input.
+   * Otherwise, the input will remain unchanged.
+   */
+
+  require(timeDim == 1 || timeDim == 2,
+    "Recurrent: the timeDim should be 1 or 2," +
+      s"Current timeDim = ${timeDim}")
+
+  protected var legacyMode: Boolean = false
   val hidden = Tensor[T]()
   var module: Module[T] = _
   var transform: Module[T] = _
-  var (batchSize, times) = (0, 0)
+  var (batchSize, times, nDim) = (0, 0, 0)
+
+  /**
+   * batchDim should be either 1 or 2 according to timeDim
+   * hiddenSelect is always equal to 1
+   * outputSelect is always equal to timeDim
+   * dataSelect is always equal to timeDim
+   */
+
+  val batchDim = 3 - timeDim
+  val hiddenSelect = 1
+  val dataSelect = timeDim
+  val outputSelect = timeDim
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 3,
@@ -45,19 +79,20 @@ class Recurrent[T : ClassTag] (
     module = modules(0)
     transform = modules(1)
 
-    batchSize = input.size(1)
-    times = input.size(2)
+    batchSize = input.size(batchDim)
+    times = input.size(timeDim)
 
-    output.resize(Array(batchSize, times, hiddenSize))
-    hidden.resize(Array(batchSize, times + 1, hiddenSize))
+    hidden.resize(Array(times + 1, batchSize, hiddenSize))
+
+    output.resize(Array(input.size(1), input.size(2), hiddenSize))
 
     var i = 1
     while (i <= times) {
-      val curInput = T(input.select(2, i), hidden.select(2, i))
+      val curInput = T(input.select(dataSelect, i), hidden.select(hiddenSelect, i))
       val currentOutput = module.updateOutput(curInput)
       transform.updateOutput(currentOutput)
-      output.select(2, i).copy(transform.output.toTensor)
-      hidden.select(2, i + 1).copy(transform.output.toTensor)
+      output.select(outputSelect, i).copy(transform.output.toTensor)
+      hidden.select(hiddenSelect, i + 1).copy(transform.output.toTensor)
       i += 1
     }
     output
@@ -67,14 +102,16 @@ class Recurrent[T : ClassTag] (
                                  scale: Double = 1.0): Unit = {
     var i = times
     while (i >= 1) {
-      transform.output = hidden.select(2, i + 1)
-      var deltaHidden = transform.updateGradInput(hidden.select(2, i), gradOutput.select(2, i))
+      transform.output = hidden.select(hiddenSelect, i + 1)
+      var deltaHidden = transform.updateGradInput(
+        hidden.select(hiddenSelect, i), gradOutput.select(dataSelect, i))
       var bpttStep = i
       while (bpttStep >= Math.max(1, i - bpttTruncate)) {
-        val curInput = T(input.select(2, bpttStep), hidden.select(2, bpttStep))
+        val curInput = T(
+          input.select(dataSelect, bpttStep), hidden.select(hiddenSelect, bpttStep))
         module.accGradParameters(curInput, deltaHidden)
         transform.output.toTensor
-          .copy(hidden.select(2, bpttStep))
+          .copy(hidden.select(hiddenSelect, bpttStep))
         deltaHidden = transform.updateGradInput(Tensor(),
           module.updateGradInput(curInput, deltaHidden).toTable(2))
         bpttStep -= 1
@@ -89,15 +126,16 @@ class Recurrent[T : ClassTag] (
     var i = times
     while (i >= 1) {
       transform.output.toTensor
-        .copy(hidden.select(2, i + 1))
-      var deltaHidden = transform.updateGradInput(hidden.select(2, i), gradOutput.select(2, i))
+        .copy(hidden.select(hiddenSelect, i + 1))
+      var deltaHidden = transform.updateGradInput(
+        hidden.select(hiddenSelect, i), gradOutput.select(dataSelect, i))
       var bpttStep = i
       while (bpttStep >= Math.max(1, i - bpttTruncate)) {
-        val curInput = T(input.select(2, bpttStep), hidden.select(2, bpttStep))
+        val curInput = T(input.select(dataSelect, bpttStep), hidden.select(hiddenSelect, bpttStep))
         val gradInputBundle = module.updateGradInput(curInput, deltaHidden).toTable
-        gradInput.select(2, bpttStep).add(gradInputBundle(1).asInstanceOf[Tensor[T]])
+        gradInput.select(outputSelect, bpttStep).add(gradInputBundle(1).asInstanceOf[Tensor[T]])
         transform.output.toTensor
-          .copy(hidden.select(2, bpttStep))
+          .copy(hidden.select(hiddenSelect, bpttStep))
         deltaHidden = transform.updateGradInput(Tensor(), gradInputBundle(2))
         bpttStep -= 1
       }
@@ -115,8 +153,9 @@ class Recurrent[T : ClassTag] (
 object Recurrent {
   def apply[@specialized(Float, Double) T: ClassTag](
     hiddenSize: Int = 3,
-    bpttTruncate: Int = 2)
+    bpttTruncate: Int = 2,
+    timeDim: Int = 2)
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
-    new Recurrent[T](hiddenSize, bpttTruncate)
+    new Recurrent[T](hiddenSize, bpttTruncate, timeDim)
   }
 }
