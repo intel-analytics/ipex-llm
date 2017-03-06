@@ -29,8 +29,8 @@ class Recurrent[T : ClassTag] (
   bpttTruncate: Int = 2)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
-  var hidden: Activity = Tensor[Double]()
-  var gradHidden: Activity = Tensor[Double]()
+  var hidden: Activity = T(Tensor[T](), Tensor[T]())
+  var gradHidden: Activity = T(Tensor[T](), Tensor[T]())
   val inputs = T()
   val batchDim = 1
   val timeDim = 2

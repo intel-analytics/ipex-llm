@@ -40,17 +40,17 @@ class LSTMCell[T : ClassTag] (
 
   def buildGate(): Sequential[T] = {
     val gate = Sequential()
-      .add(NarrowTable(2, 2))
+      .add(NarrowTable(1, 2))
 
     val i2g = Sequential()
       .add(Linear(inputSize, hiddenSize))
     val h2g = Sequential()
-      .add(Linear(hiddenSize, hiddenSize, withBias = false))
+      .add(Linear(hiddenSize, hiddenSize))
 
     gate
       .add(ParallelTable()
-        .add(h2g)
-        .add(i2g))
+        .add(i2g)
+        .add(h2g))
       .add(CAddTable())
       .add(Sigmoid())
   }
@@ -72,17 +72,17 @@ class LSTMCell[T : ClassTag] (
 
   def buildHidden(): Sequential[T] = {
     val hidden = Sequential()
-      .add(NarrowTable(2, 2))
+      .add(NarrowTable(1, 2))
 
     val i2h = Sequential()
       .add(Linear(inputSize, hiddenSize))
     val h2h = Sequential()
-      .add(Linear(hiddenSize, hiddenSize, withBias = false))
+      .add(Linear(hiddenSize, hiddenSize))
 
     hidden
       .add(ParallelTable()
-        .add(h2h)
-        .add(i2h))
+        .add(i2h)
+        .add(h2h))
       .add(CAddTable())
       .add(Tanh())
 
@@ -98,7 +98,7 @@ class LSTMCell[T : ClassTag] (
     val forgetLayer = Sequential()
       .add(ConcatTable()
         .add(forgetGate)
-        .add(SelectTable(1)))
+        .add(SelectTable(3)))
       .add(CMulTable())
 
     val inputLayer = Sequential()
@@ -124,23 +124,23 @@ class LSTMCell[T : ClassTag] (
     val LSTM = Sequential()
       .add(FlattenTable())
       .add(ConcatTable()
-        .add(cellLayer)
-        .add(NarrowTable(2, 2)))
+        .add(NarrowTable(1, 2))
+        .add(cellLayer))
       .add(FlattenTable())
       .add(ConcatTable()
-        .add(SelectTable(1))
         .add(Sequential()
           .add(ConcatTable()
             .add(outputGate)
             .add(Sequential()
-              .add(SelectTable(1))
+              .add(SelectTable(3))
               .add(Tanh())))
-          .add(CMulTable())))
+          .add(CMulTable()))
+        .add(SelectTable(3)))
       .add(ConcatTable()
-        .add(NarrowTable(1, 2))
-        .add(SelectTable(2)))
+        .add(SelectTable(1))
+        .add(Identity()))
 
-    output = T(T(), Tensor())
+    output = T(Tensor(), T())
     lstm = LSTM
     LSTM
   }

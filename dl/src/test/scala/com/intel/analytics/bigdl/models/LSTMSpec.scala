@@ -50,8 +50,8 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
     val model = Sequential[Double]()
       .add(Recurrent[Double](hiddenSize, bpttTruncate)
-      .add(RnnCell[Double](inputSize, hiddenSize, Sigmoid[Double]())))
-//      .add(RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())))
+      .add(LSTMCell[Double](inputSize, hiddenSize)))
+//      .add(RnnCell[Double](inputSize, hiddenSize, Sigmoid[Double]())))
 //            .add(FastLSTMCell[Double](inputSize, hiddenSize)))
       .add(TimeDistributed[Double]().add(Linear[Double](hiddenSize, outputSize)))
 
@@ -160,14 +160,14 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       | --           :add(nn.Identity())) -- recurrent layer
       | --        :add(nn.CAddTable()) -- merge
       | --        :add(nn.Sigmoid()) -- transfer
-      |      rnn = nn.Recurrence(rm, $hiddenSize, 1, 1)
+      |      rnn = nn.Recurrence(rm, $hiddenSize, 1)
       | --     rnn.userPrevOutput = torch.Tensor(1, $hiddenSize):zero()
       |
       |model = nn.Sequential()
       |:add(nn.SplitTable(1))
       |:add(nn.Sequencer(
       | nn.Sequential()
-      |   :add(nn.LSTM($inputSize, $hiddenSize))
+      |   :add(nn.LSTM($inputSize, $hiddenSize, 1))
       |   :add(nn.Linear($hiddenSize, $outputSize))
       |   ))
       |
@@ -176,7 +176,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       |
  |local parameters, gradParameters = model:getParameters()
       |model:zeroGradParameters()
- |parameters:copy(weights)
+ |--parameters:copy(weights)
  |
       |output2 = model:forward(input)
       |gradInput2= model.gradInput
@@ -205,7 +205,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       |return err1, gradParameters
       |end
       |
-      |for i = 1,100,1 do
+      |for i = 1,1,1 do
       |   optim.sgd(feval, parameters, state)
       |end
       |
@@ -216,25 +216,20 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       |gradInput = model.gradInput
     """.stripMargin
 
-//    val (luaTime, torchResult) = TH.run(facebookCode,
-//      Map("input" -> SplitTable[Double](1).forward(input.transpose(1, 2)), "weights" -> weights,
-//        "labels" -> SplitTable[Double](1).forward(labels.t())),
-//      Array("output", "err", "parameters", "gradweight", "output2", "gradInput2", "gradInput"))
-
     val (luaTime, torchResult) = TH.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
       Array("output", "err", "parameters", "gradParameters", "output2", "gradInput", "err2"))
 
 //    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
-    val output1 = torchResult("output2")
-    val gradInput1 = torchResult("gradInput")
-    val gradParameters = torchResult("gradParameters")
-    val err2 = torchResult("err2")
+//    val output1 = torchResult("output2")
+//    val gradInput1 = torchResult("gradInput")
+//    val gradParameters = torchResult("gradParameters")
+//    val err2 = torchResult("err2")
 
-    println("Element forward: " + output1)
-    println("BigDL forward: " + model.forward(input).toTensor[Double].clone())
-
+//    println("Element forward: " + output1)
+//    println("BigDL forward: " + model.forward(input).toTensor[Double].clone())
+//
     val luaOutput2 = torchResult("err").asInstanceOf[Double]
     val luaweight = torchResult("parameters").asInstanceOf[Tensor[Double]]
 
@@ -252,7 +247,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     val start = System.nanoTime()
     var loss: Array[Double] = null
-    for (i <- 1 to 100) {
+    for (i <- 1 to 1) {
       loss = sgd.optimize(feval, weights, state)._2
       println(s"${i}-th loss = ${loss(0)}")
     }
@@ -260,21 +255,21 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     println("Element weight: " + luaweight)
     println("BigDL weight: " + weights)
-
-    println("Element forward: " + output1)
-    println("BigDL forward: " + model.output)
-
-    println("BigDL labels: " + labels)
-
-    val crtnGradInput = criterion.backward(model.output, labels)
-    println(s"element: criterion gradInput: $err2")
-    println("BigDL criterion gradInput: " + crtnGradInput)
-
-    println(s"element: gradInput: $gradInput1")
-    println("BigDL: " + model.gradInput.toTensor[Double])
-
-    println(s"element: gradWeight: $gradParameters")
-    println("BigDL: " + model.getParameters()._2)
+//
+//    println("Element forward: " + output1)
+//    println("BigDL forward: " + model.output)
+//
+//    println("BigDL labels: " + labels)
+//
+//    val crtnGradInput = criterion.backward(model.output, labels)
+//    println(s"element: criterion gradInput: $err2")
+//    println("BigDL criterion gradInput: " + crtnGradInput)
+//
+//    println(s"element: gradInput: $gradInput1")
+//    println("BigDL: " + model.gradInput.toTensor[Double])
+//
+//    println(s"element: gradWeight: $gradParameters")
+//    println("BigDL: " + model.getParameters()._2)
 
     val end = System.nanoTime()
     println("Time: " + (end - start) / 1E6)
