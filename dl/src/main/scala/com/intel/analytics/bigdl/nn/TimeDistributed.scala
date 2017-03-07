@@ -36,21 +36,13 @@ import scala.reflect.ClassTag
  */
 
 class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
-(implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
-
-  super.add(layer)
+(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   private val fInput: Tensor[T] = Tensor[T]()
   private val fGradOutput: Tensor[T] = Tensor[T]()
   private var inputSize: Array[Int] = _
   private var gradOutputSize: Array[Int] = _
   private var outputSize: Array[Int] = _
-
-  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    throw new IllegalAccessException("TimeDistributed: cannot use this method;" +
-      " please insert your module to the constructor.")
-    this
-  }
 
   private def combine(src: Array[Int], target: Array[Int]): Unit = {
     require(src.length == target.length + 1,
@@ -84,14 +76,10 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
     }
   }
 
-
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim >= 3,
       "TimeDistributed: input should be at least a 3D Tensor, e.g [batch, time, inputDim]. " +
         s"Current input.dim = ${input.dim}")
-    require(modules.length == 1,
-      "TimeDistributed: container can only process one layer, " +
-        s"current container has ${modules.length} layers.")
 
     if (inputSize == null) {
       inputSize = new Array[Int](input.size.length - 1)
@@ -126,8 +114,77 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
     layer.accGradParameters(fInput, fGradOutput)
   }
 
+  /**
+   * If the module has parameters, this will zero the accumulation of the gradients with respect
+   * to these parameters. Otherwise, it does nothing.
+   */
+  override def zeroGradParameters(): Unit = {
+    super.zeroGradParameters()
+    layer.zeroGradParameters()
+  }
+
+  override def updateParameters(learningRate: T): Unit = layer.updateParameters(learningRate)
+
+  override def reset(): Unit = layer.reset()
+
+  override def training(): TimeDistributed.this.type = {
+    layer.training()
+    super.training()
+  }
+
+  /**
+   * get execution engine type
+   */
+  override def checkEngineType(): TimeDistributed.this.type = {
+    layer.checkEngineType()
+    super.checkEngineType()
+  }
+
+  override def resetTimes(): Unit = layer.resetTimes()
+
+  override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
+    layer.getTimes()
+  }
+
+  override def evaluate(): TimeDistributed.this.type = {
+    layer.evaluate()
+    super.evaluate()
+  }
+
+  /**
+   * This function returns two arrays. One for the weights and the other the gradients
+   * Custom modules should override this function if they have parameters
+   *
+   * @return (Array of weights, Array of grad)
+   */
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = layer.parameters()
+
+  /**
+   * This method compact all parameters and gradients of the model into two tensors. So it's easier
+   * to use optim method
+   *
+   * @return
+   */
+  override def getParameters(): (Tensor[T], Tensor[T]) = layer.getParameters()
+
+  /**
+   * Copy the useful running status from src to this.
+   *
+   * The subclass should override this method if it has some parameters besides weight and bias.
+   * Such as runningMean and runningVar of BatchNormalization.
+   *
+   * @param src source Module
+   * @return this
+   */
+  override def copyStatus(src: Module[T]): TimeDistributed.this.type = {
+    super.copyStatus(src)
+    layer.copyStatus(src)
+    this
+  }
+
   override def clearState(): TimeDistributed.this.type = {
     super.clearState()
+    layer.clearState()
     fInput.set()
     fGradOutput.set()
     inputSize = null
@@ -147,6 +204,7 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
     case that: TimeDistributed[T] =>
       super.equals(that) &&
         (that canEqual this) &&
+      layer.equals(layer) &&
         fInput == that.fInput &&
         fGradOutput == that.fGradOutput &&
         inputSize == that.inputSize &&
@@ -157,7 +215,7 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
 
   override def hashCode(): Int = {
     val state = Seq(super.hashCode(),
-      fInput, fGradOutput, inputSize, gradOutputSize, outputSize)
+      layer, fInput, fGradOutput, inputSize, gradOutputSize, outputSize)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

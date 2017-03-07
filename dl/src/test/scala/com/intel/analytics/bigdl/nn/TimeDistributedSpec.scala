@@ -127,4 +127,31 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
       i += 1
     }
   }
+
+  "A TimeDistributed Module " should "getParameters correct for linear " in {
+    RNG.setSeed(100)
+
+    val batchSize = 5
+    val times = 5
+    val inputDim = 3
+    val outputDim = 4
+    val timeDim = 1
+
+    val input = Tensor[Float](Array(batchSize, times, inputDim)).randn()
+    val linear1 = Linear[Float](inputDim, outputDim)
+    val linear2 = Linear[Float](inputDim, outputDim)
+    linear2.weight.map(linear1.weight, (a, b) => {
+      b
+    })
+    linear2.bias.map(linear1.bias, (a, b) => {
+      b
+    })
+    val model = Sequential[Float]()
+      .add(TimeDistributed[Float](linear1))
+
+    val (weight, grad) = model.parameters()
+    val (weight2, grad2) = linear2.parameters()
+    weight should be(weight2)
+    grad should be(grad2)
+  }
 }
