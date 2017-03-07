@@ -660,11 +660,23 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def split(size: Int, dim: Int): Array[Tensor[T]] = {
     val result = new ArrayBuffer[Tensor[T]]()
+    val dimLength = this.size(dim)
     var start = 1
-    while (start <= this.size(dim)) {
-      val curSize = math.min(size, this.size(dim) - start + 1)
+    while (start <= dimLength) {
+      val curSize = math.min(size, dimLength - start + 1)
       result.append(this.narrow(dim, start, curSize))
       start += curSize
+    }
+    result.toArray
+  }
+
+  override def split(dim: Int): Array[Tensor[T]] = {
+    val result = new ArrayBuffer[Tensor[T]]()
+    val dimLength = this.size(dim)
+    var start = 1
+    while (start <= dimLength) {
+      result.append(this.select(dim, start))
+      start += 1
     }
     result.toArray
   }

@@ -107,6 +107,20 @@ class TestWorkFlow(unittest.TestCase):
         for test_result in test_results:
             print(test_result)
 
+    def test_predict(self):
+        np.random.seed(100)
+        total_length = 6
+        features = np.random.uniform(0, 1, (total_length, 2))
+        label = (features).sum() + 0.4
+        predict_data = self.sc.parallelize(range(0, total_length)).map(
+            lambda i: Sample.from_ndarray(features[i], label))
+        model = Linear(2, 1, "Xavier").set_name("linear1").set_seed(1234).reset()
+        predict_result = model.predict(predict_data)
+        p = predict_result.take(6)
+        ground_label = np.array([[-0.47596836], [-0.37598032], [-0.00492062],
+                                 [-0.5906958], [-0.12307882], [-0.77907401]], dtype="float32")
+        for i in range(0, total_length):
+            self.assertTrue(np.allclose(p[i], ground_label[i], atol=1e-6, rtol=0))
 
 if __name__ == "__main__":
     unittest.main(failfast=True)

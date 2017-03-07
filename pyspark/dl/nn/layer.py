@@ -80,8 +80,9 @@ class Model(JavaValue):
                 name_to_params.iteritems()}
 
     def predict(self, data_rdd):
-        return callBigDlFunc(self.bigdl_type,
+        result = callBigDlFunc(self.bigdl_type,
                              "modelPredictRDD", self.value, data_rdd)
+        return result.map(lambda data: data.to_ndarray())
 
     def test(self, val_rdd, batch_size, val_methods):
         return callBigDlFunc(self.bigdl_type,
