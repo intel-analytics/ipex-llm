@@ -526,6 +526,13 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def split(size: Int, dim: Int = 1): Array[Tensor[T]]
 
   /**
+   * spilt one tensor into multi tensor along the `dim` dimension
+   * @param dim the specific dimension
+   * @return
+   */
+  def split(dim: Int) : Array[Tensor[T]]
+
+  /**
    * convert the tensor to BreezeVector, the dimension of the tensor need to be 1.
    *
    * @return BrzDenseVector

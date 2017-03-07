@@ -139,9 +139,14 @@ object DistriOptimizer {
             var b = 0
             require(batch.data.size(1) == batch.labels.size(1),
               "data and label batch size not match")
-            require(batch.data.size(1) >= _subModelNumber,
-              s"total batch size: ${batch.data.size(1)} " +
-                s"should be divided by total core number: ${_subModelNumber}")
+            require((batch.data.size(1) >= _subModelNumber) &&
+              (batch.data.size(1) % _subModelNumber == 0), "total batch size: " +
+              s"${batch.data.size(1)} should be divided by total core number: ${_subModelNumber}")
+            if (batch.data.size(1) < _subModelNumber * 2) {
+              logger.warn("Warning: for better training speed, " +
+                "total batch size is recommended to be at least two times of core number" +
+                  s"${_subModelNumber}, please tune your batch size accordingly")
+            }
             val stackSize = batch.data.size(1) / _subModelNumber
             while (b < _subModelNumber) {
               tensorBuffer(b) = (batch.data.narrow(1, b * stackSize + 1, stackSize),

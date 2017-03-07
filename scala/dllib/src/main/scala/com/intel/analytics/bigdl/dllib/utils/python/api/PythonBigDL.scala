@@ -1074,10 +1074,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
-                      dataRdd: JavaRDD[Sample]): JavaRDD[Sample] = {
-    val result = predict(model, dataRdd.rdd.map(toSample(_)))
-    result.map(toPySample(_))
+                      dataRdd: JavaRDD[Sample]): JavaRDD[JTensor] = {
+    val tensorRDD = model.predict(dataRdd.rdd.map(toSample(_)))
+    val listRDD = tensorRDD.map{res =>
+      val tensor = res.asInstanceOf[Tensor[T]]
+      val cloneTensor = tensor.clone()
+      toJTensor(cloneTensor)
 
+    }
+    new JavaRDD[JTensor](listRDD)
   }
 
   def modelGetParameters(model: AbstractModule[Activity, Activity, T])
