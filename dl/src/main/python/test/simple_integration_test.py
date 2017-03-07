@@ -24,7 +24,7 @@ import numpy as np
 if __name__ == "__main__":
     sparkConf = create_spark_conf(1, 4)
     sc = SparkContext(master="local[*]", appName="test model", conf=sparkConf)
-    conf = initEngine(1, 4)
+    initEngine(1, 4)
     FEATURES_DIM = 2
 
     def gen_rand_sample():
