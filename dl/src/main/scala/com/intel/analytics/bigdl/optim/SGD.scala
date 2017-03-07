@@ -132,7 +132,7 @@ object SGD {
 
   case class EpochSchedule(regimes : Array[Regime]) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
-      val epoch = config[Int]("epoch")
+      val epoch = state[Int]("epoch")
       for (r <- regimes) {
         if (epoch >= r.startEpoch && epoch <= r.endEpoch) {
           config.add(r.config)
@@ -175,7 +175,7 @@ object SGD {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-1)
       var clr = -lr
-      val epoch = config[Int]("epoch")
+      val epoch = state[Int]("epoch")
       val decay = decayType(epoch)
       clr = clr * math.pow(0.1, decay)
       config("clr") = clr
@@ -186,7 +186,7 @@ object SGD {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       var clr = -lr
-      val epoch = config[Int]("epoch")
+      val epoch = state[Int]("epoch")
       var i = 0
       while(i < epoch / stepSize) {
         clr *= gamma
