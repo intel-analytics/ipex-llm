@@ -65,4 +65,40 @@ class CrossEntropyCriterionSpec extends FlatSpec with BeforeAndAfter with Matche
       " s, Scala : " + scalaTime / 1e9 + " s")
 
   }
+
+  "A CrossEntropyCriterion(sizeAverage = false) Module" should
+    "generate correct output and grad" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val module = new CrossEntropyCriterion[Double](sizeAverage = false)
+
+    val input = Tensor[Double](3, 3).apply1(_ => Random.nextDouble())
+    val target = Tensor[Double](3)
+    target(Array(1)) = 1
+    target(Array(2)) = 2
+    target(Array(3)) = 3
+
+    val start = System.nanoTime()
+    val output = module.forward(input, target)
+    val gradInput = module.backward(input, target)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      "module = nn.CrossEntropyCriterion(nil, false)\n" +
+      "output = module:forward(input, target)\n" +
+      "gradInput = module:backward(input,target)\n"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+      Array("output", "gradInput"))
+    val luaOutput1 = torchResult("output").asInstanceOf[Double]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    luaOutput1 should be(output)
+    luaOutput2 should be(gradInput)
+
+    println("Test case : CrossEntropyCriterion, Torch : " + luaTime +
+      " s, Scala : " + scalaTime / 1e9 + " s")
+
+  }
 }
