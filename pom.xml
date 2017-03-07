@@ -194,31 +194,37 @@
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-compiler</artifactId>
                 <version>${scala.version}</version>
+                <scope>${spark-scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-reflect</artifactId>
                 <version>${scala.version}</version>
+                <scope>${spark-scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
                 <version>${scala.version}</version>
+                <scope>${spark-scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-actors</artifactId>
                 <version>${scala.version}</version>
+                <scope>${spark-scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scalap</artifactId>
                 <version>${scala.version}</version>
+                <scope>${spark-scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_${scala.major.version}</artifactId>
                 <version>${scalatest.version}</version>
+                <scope>${spark-scope}</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
