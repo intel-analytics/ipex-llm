@@ -16,12 +16,15 @@
 
 package com.intel.analytics.bigdl.optim
 
+
 import com.intel.analytics.bigdl.{Module, _}
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
+import java.io.{File, FileFilter, FilenameFilter}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
+import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
@@ -120,7 +123,7 @@ object DistriOptimizer {
 
       val driverMetrics = metrics
       val start = System.nanoTime()
-
+      
       val finishedModelNum = dataRDD.zipPartitions(
         models, true)(
         (data, modelIter) => {
@@ -606,24 +609,42 @@ class DistriOptimizer[T: ClassTag] (
     models = DistriOptimizer.initThreadModels(
       model, dataset, criterion, state, nodeNumber, coresPerNode, checkSingleton, parameters)
 
-    DistriOptimizer.optimize(
-      dataset,
-      coresPerNode,
-      state,
-      endWhen,
-      metrics,
-      models,
-      optimMethod,
-      parameters,
-      validationTrigger,
-      validationDataSet,
-      validationMethods,
-      checkpointTrigger,
-      checkpointPath,
-      trainSummary,
-      validationSummary,
-      isOverWrite
-    )
+    
+    var retryNum = 0
+    while (retryNum < 5) {
+      try {
+        DistriOptimizer.optimize(
+          dataset,
+          coresPerNode,
+          state,
+          endWhen,
+          metrics,
+          models,
+          optimMethod,
+          parameters,
+          validationTrigger,
+          validationDataSet,
+          validationMethods,
+          checkpointTrigger,
+          path,
+          trainSummary,
+          validationSummary,
+          isOverWrite
+        )
+      } catch {
+        case t: Throwable =>
+          DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+          if (checkpointPath.isDefined) {
+            val state = T.load(getLatestFile("state"))
+            val model2 = Module.load[T](getLatestFile("model"))
+            models = DistriOptimizer.initThreadModels(model2, dataset, criterion, state,
+              nodeNumber, coresPerNode, checkSingleton, parameters)
+            retryNum += 1
+          } else {
+            retryNum = Int.MaxValue
+          }
+      }
+    }
 
     val trainedModel = DistriOptimizer.getModel(models, parameters)
 
@@ -633,6 +654,25 @@ class DistriOptimizer[T: ClassTag] (
     clearState()
 
     model
+  }
+  
+  private def getLatestFile(fileName: String): String = {
+    val fl = new java.io.File(checkpointPath.get)
+    val files = fl.listFiles(new FilenameFilter {
+      override def accept(dir: File, name: String): Boolean = {
+        name.startsWith(fileName)
+      }
+    })
+    
+    var lastMod = Long.MinValue
+    var choice: String = null
+    files.map {file =>
+      if (file.lastModified() > lastMod) {
+        choice = file.getPath;
+        lastMod = file.lastModified();
+      }
+    }
+    return choice;
   }
 }
 
