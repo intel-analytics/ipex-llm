@@ -22,23 +22,18 @@ import org.apache.log4j.Logger
 object Utils {
   private val logger = Logger.getLogger(getClass)
 
-  def getBatchSize(batchSize : Int): Int = {
+  def getBatchSize(batchSize : Int, totalPartition: Option[Int] = None): Int = {
     val nodeNumber = Engine.nodeNumber()
-    val coreNumber = Engine.coreNumber()
-    logger.debug(s"node number: $nodeNumber, core number: $coreNumber")
-    require(batchSize % (nodeNumber * coreNumber) == 0
-      , s"batch size($batchSize) can't be divided by node number($nodeNumber) * " +
-        s"core number($coreNumber), please change your batch size")
+    val partitionNum = totalPartition.getOrElse(nodeNumber)
+    logger.debug(s"partition number: $partitionNum, node number: $nodeNumber")
 
-    if (batchSize < nodeNumber * coreNumber * 2) {
-      logger.warn(s"Warning: for better training speed, " +
-        s"batch size($batchSize) is recommended to be at least two times of node number" +
-        s"($nodeNumber) * core number($coreNumber), please tune your batch size accordingly")
-    }
+    require(partitionNum > 0,
+      s"Utils.getBatchSize: partitionNum should be larger than 0, but get $partitionNum")
+    require(batchSize % partitionNum == 0, s"Utils.getBatchSize: total batch size $batchSize " +
+      s"should be divided by partitionNum ${partitionNum}")
 
-    val batchPerUnit = batchSize / nodeNumber
+    val batchPerUnit = batchSize / partitionNum
     logger.debug(s"Batch per unit: $batchPerUnit")
     batchPerUnit
   }
-
 }
