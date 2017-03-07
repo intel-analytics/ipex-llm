@@ -33,7 +33,7 @@ class NarrowTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
   }
 
   "A NarrowTable Module " should "generate correct output and grad" in {
-    val module = new NarrowTable[Double](1)
+    val module = new NarrowTable[Double](1, 2)
 
     val input = T()
     input(1.0) = Tensor[Double](2, 3).apply1(e => Random.nextDouble())
@@ -44,9 +44,13 @@ class NarrowTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
     gradOutput(1.0) = Tensor[Double](5, 3).apply1(e => Random.nextDouble())
     gradOutput(2.0) = Tensor[Double](2, 5).apply1(e => Random.nextDouble())
 
-    val code = "module = nn.NarrowTable(1)\n" +
+    val code = "module = nn.NarrowTable(1, 2)\n" +
+      "local i = 0\n" +
+      "while i < 10 do\n" +
       "output = module:forward(input)\n" +
-      "gradInput = module:backward(input, gradOutput)\n"
+      "gradInput = module:backward(input, gradOutput)\n" +
+      "i = i + 1\n" +
+      "end"
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
       Array("output", "gradInput"))
@@ -55,8 +59,14 @@ class NarrowTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Table]
 
     val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input, gradOutput)
+    var i = 0
+    var output = T()
+    var gradInput = T()
+    while (i < 10) {
+      output = module.forward(input)
+      gradInput = module.backward(input, gradOutput)
+      i += 1
+    }
     val end = System.nanoTime()
     val scalaTime = end - start
 
