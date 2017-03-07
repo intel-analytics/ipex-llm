@@ -23,6 +23,9 @@ import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
+import org.apache.spark.rdd.RDD
+import com.intel.analytics.bigdl.optim.Predictor
+import com.intel.analytics.bigdl.dataset.Sample
 
 import scala.reflect.ClassTag
 
@@ -319,6 +322,22 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   def getNumericType(): TensorDataType = {
     ev.getType()
+  }
+
+  /**
+   * module predict, return the probability distribution
+   * @param dataset dataset for prediction
+   */
+  def predict(dataset: RDD[Sample[T]]): RDD[Activity] = {
+    Predictor(this).predict(dataset)
+  }
+
+  /**
+   * module predict, return the predict label
+   * @param dataset dataset for prediction
+   */
+  def predictClass(dataset: RDD[Sample[T]]): RDD[Int] = {
+    Predictor(this).predictClass(dataset)
   }
 }
 

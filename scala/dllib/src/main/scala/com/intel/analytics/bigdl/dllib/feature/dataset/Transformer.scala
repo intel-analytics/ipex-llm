@@ -79,9 +79,10 @@ object SampleToBatch {
   (batchSize : Int,
    featurePadding : Option[Tensor[T]] = None,
    labelPadding : Option[T] = None,
-   fixedLength: Option[Int] = None)
+   fixedLength: Option[Int] = None,
+   partitionNum: Option[Int] = None)
   (implicit ev: TensorNumeric[T]): SampleToBatch[T]
-  = new SampleToBatch[T](batchSize, featurePadding, labelPadding, fixedLength)
+  = new SampleToBatch[T](batchSize, featurePadding, labelPadding, fixedLength, partitionNum)
 }
 
 /**
@@ -93,13 +94,16 @@ object SampleToBatch {
  * @param fixedLength if padding, it specifies the length of feature/label after padding
  *                    (by default None, meaning the length after padding is set to the max
  *                    length of feature/label in a mini-batch)
+ * @param partitionNum partition number of dataset, default means partitionNum
+ *                     equals Engine.nodeNumber()
  */
 
 class SampleToBatch[T: ClassTag]
 (totalBatch : Int,
  featurePadding : Option[Tensor[T]] = None,
  labelPadding : Option[T] = None,
- fixedLength: Option[Int] = None)
+ fixedLength: Option[Int] = None,
+ partitionNum: Option[Int] = None)
 (implicit ev: TensorNumeric[T])
   extends Transformer[Sample[T], MiniBatch[T]] {
 
@@ -147,16 +151,16 @@ class SampleToBatch[T: ClassTag]
     if (a > b) i else j
   }
 
-  private val batchPerCore = Utils.getBatchSize(totalBatch)
+  private val batchPerPartition = Utils.getBatchSize(totalBatch, partitionNum)
 
   override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
-    val batchSizePerCore = batchPerCore
+    val batchSizePerPartition = batchPerPartition
     new Iterator[MiniBatch[T]] {
       private val featureTensor: Tensor[T] = Tensor[T]()
       private val labelTensor: Tensor[T] = Tensor[T]()
       private var featureData: Array[T] = null
       private var labelData: Array[T] = null
-      private val batchSize = batchSizePerCore
+      private val batchSize = batchSizePerPartition
 
       private val sampleData = Array.tabulate(batchSize)(_ => Sample())
       private var featureSize: Array[Int] = null
