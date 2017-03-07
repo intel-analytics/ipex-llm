@@ -119,7 +119,6 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
    * to these parameters. Otherwise, it does nothing.
    */
   override def zeroGradParameters(): Unit = {
-    super.zeroGradParameters()
     layer.zeroGradParameters()
   }
 
@@ -177,7 +176,6 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
    * @return this
    */
   override def copyStatus(src: Module[T]): TimeDistributed.this.type = {
-    super.copyStatus(src)
     layer.copyStatus(src)
     this
   }
