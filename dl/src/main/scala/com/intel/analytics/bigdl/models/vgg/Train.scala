@@ -94,6 +94,10 @@ object Train {
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
+
+      if (sc.isDefined) {
+        sc.get.stop()
+      }
     })
   }
 }
