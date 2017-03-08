@@ -17,20 +17,13 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.io.{File, FileOutputStream}
-import java.net.InetAddress
 import java.util
-import java.util.concurrent.Executors
 
-import com.google.common.primitives.{Doubles, Ints, Longs}
 import com.intel.analytics.bigdl.tensor.Tensor
-import netty.Crc32c
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.tensorflow.framework.{HistogramProto, Summary}
-import org.tensorflow.framework.{HistogramProto, Summary}
-import org.tensorflow.util.Event
 
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import scala.reflect.ClassTag
 
 // Logger for tensor board.
 object TBLogger {
@@ -45,22 +38,25 @@ object TBLogger {
 
   val limits = makeHistogramBuckets()
   val counts = new Array[Int](limits.length)
-  def histogram(tag: String, values: Tensor[Float]): Summary = {
+  def histogram[T: ClassTag](
+      tag: String,
+      values: Tensor[T])(implicit ev: TensorNumeric[T]): Summary = {
     util.Arrays.fill(counts, 0)
 
     var squares = 0.0
-    values.apply1{v =>
+    values.apply1{value =>
+      val v = ev.toType[Double](value)
       squares += v * v
       val index = bisectLeft(limits, v)
       counts(index) += 1
-      v
+      value
     }
 
     val histogram = HistogramProto.newBuilder()
-      .setMin(values.min())
-      .setMax(values.max())
+      .setMin(ev.toType[Double](values.min()))
+      .setMax(ev.toType[Double](values.max()))
       .setNum(values.nElement())
-      .setSum(values.sum())
+      .setSum(ev.toType[Double](values.sum()))
       .setSumSquares(squares)
 
     var i = 0
@@ -99,17 +95,18 @@ object TBLogger {
     low
   }
 
-  // TODO: optimize
   private def makeHistogramBuckets(): Array[Double] = {
     var v = 1e-12
-    val buckets = ArrayBuffer[Double]()
-    val negBuckets = ArrayBuffer[Double]()
-    while (v < 1e20) {
-      buckets.append(v)
-      negBuckets.append(-v)
+    val buckets = new Array[Double](1549)
+    var i = 1
+    buckets(774) = 0.0
+    while (i <= 774) {
+      buckets(774 + i) = v
+      buckets(774 - i) = -v
       v *= 1.1
+      i += 1
     }
-    (negBuckets.reverse ++ Array(0.0) ++ buckets).toArray
+    buckets
   }
 
 }

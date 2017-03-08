@@ -17,9 +17,8 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.{Module, _}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch}
-import com.intel.analytics.bigdl.optim.SGD.Default
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -74,6 +73,8 @@ object DistriOptimizer {
     validationMethods: Option[Array[ValidationMethod[T]]],
     cacheTrigger: Option[Trigger],
     cachePath: Option[String],
+    metricsTrigger: Option[mutable.HashMap[String, Trigger]],
+    metricsPath: Option[String],
     isOverWrite: Boolean
   )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
@@ -105,10 +106,17 @@ object DistriOptimizer {
     val driverSubModelNum = partitionNum * _subModelNumber
     var dropModelNumBatch = 0
     var lossArray = new Array[Double](_subModelNumber)
-    // TODO: use param to define path
-    val trainLogger = new FileWriter("./train")
-    val validationLogger = new FileWriter("./validation")
-    val tbLoggerTrigger = Some(Trigger.severalIteration(10))
+
+    val trainLogger = if (metricsPath.isDefined) {
+      Some(new FileWriter(s"${metricsPath.get}/train"))
+    } else {
+      None
+    }
+    val valLogger = if (metricsPath.isDefined) {
+      Some(new FileWriter(s"${metricsPath.get}/val"))
+    } else {
+      None
+    }
 
     var epochStart = System.nanoTime()
     var dataRDD = dataset.data(train = true)
@@ -246,25 +254,15 @@ object DistriOptimizer {
         val end = System.nanoTime()
         wallClockTime += end - start
         optimMethod.updateHyperParameter(state, driverState)
-        trainLogger.addSummary(
-          TBLogger.scalar("Throughput", recordsNum.value.toFloat / ((end - start) / 1e9f)),
-          driverState[Int]("neval")
-        )
-        trainLogger.addSummary(
-          TBLogger.scalar("Loss", lossSum.value.toFloat / finishedModelNum),
-          driverState[Int]("neval")
-        )
+        driverState("loss") = lossSum.value.toFloat / finishedModelNum
+        driverState("throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
+        driverState("learningRate") = -state[Double]("clr").toFloat
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
-          s"Throughput is ${recordsNum.value / ((end - start) / 1e9)} records/second. Loss is ${
-            lossSum.value / finishedModelNum}. ${optimMethod.getHyperParameter(state)}")
+          s"Throughput is ${driverState("throughput")} records/second. Loss is ${
+            driverState("loss")}. ${optimMethod.getHyperParameter(state)}")
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
-
-        trainLogger.addSummary(
-          TBLogger.scalar("learningRate", -state[Double]("clr").toFloat),
-          driverState[Int]("neval")
-        )
 
         // compute threshold
         iteration += 1
@@ -305,7 +303,6 @@ object DistriOptimizer {
           logger.info(s"${_header} Epoch finished. Wall clock time is ${wallClockTime / 1e6}ms")
 
           driverState("epoch") = driverState[Int]("epoch") + 1
-          trainLogger.flush()
           dataset.shuffle()
           dataRDD = dataset.data(train = true)
           accumulateCount = 0
@@ -321,16 +318,15 @@ object DistriOptimizer {
         )
         if (null != result) {
           result.foreach { r =>
-            validationLogger.addSummary(
+            valLogger.get.addSummary(
               TBLogger.scalar(r._2.toString(), r._1.getResult()),
               driverState[Int]("neval") - 1
             )
           }
-          validationLogger.flush()
         }
-        saveParameter(
-          tbLoggerTrigger,
-          Some(trainLogger),
+        saveMetrics(
+          metricsTrigger,
+          trainLogger,
           models,
           driverState,
           parameters
@@ -351,8 +347,10 @@ object DistriOptimizer {
           s"module is dropped!! Finished modules number: ${finishedModelNum}")
       }
     }
-    trainLogger.close()
-    validationLogger.close()
+
+    // close the file writer.
+    if(trainLogger.isDefined) trainLogger.get.close()
+    if(valLogger.isDefined) valLogger.get.close()
   }
 
 
@@ -380,27 +378,35 @@ object DistriOptimizer {
     }
   }
 
-  private def saveParameter[T: ClassTag](
-        saveTrigger: Option[Trigger],
+  private def saveMetrics[T: ClassTag](
+        metricsTrigger: Option[mutable.HashMap[String, Trigger]],
         tBLogger: Option[FileWriter],
         models: RDD[Cache[T]],
         driverState: Table,
-        parameters: AllReduceParameter[T]): Unit = {
-    if (saveTrigger.isDefined) {
-      val trigger = saveTrigger.get
-      if (trigger(driverState)) {
-        val model = getModel(models, parameters).asInstanceOf[Module[Float]]
-        val modules = nn.Utils.getNamedModules(model)
-        modules.foreach{v =>
-          val name = v._1
-          val module = v._2
-          val p = module.parameters
-          if (null != p) {
+        parameters: AllReduceParameter[T])(implicit ev: TensorNumeric[T]): Unit = {
+    if (tBLogger.isDefined && metricsTrigger.isDefined) {
+      val parametersTrigger = metricsTrigger.get.getOrElse[Trigger]("parameters", null)
+      if (null != parametersTrigger && parametersTrigger(driverState)) {
+        val model = getModelWithGradient(models, parameters)
+        val parametersTable = model.getParametersTable()
+        parametersTable.keySet.foreach { moduleName =>
+          val paramTable = parametersTable[Table](moduleName)
+          paramTable.keySet.foreach { paramName =>
             tBLogger.get.addSummary(
-              TBLogger.histogram(module.getName + "/weight", p._1(0)), driverState("neval"))
-            tBLogger.get.addSummary(
-              TBLogger.histogram(module.getName + "/bias", p._1(1)), driverState("neval"))
+            TBLogger.histogram(s"$moduleName/$paramName", paramTable[Tensor[T]](paramName)),
+              driverState("neval"))
+
           }
+        }
+      }
+      val scalarTrigger = metricsTrigger.get.filter(!_._1.equals("parameters"))
+      scalarTrigger.foreach { v =>
+        if (v._2(driverState)) {
+          require(driverState.contains(v._1), s"DistriOptimizer.saveMetrics: metrics ${v._1} " +
+            s"is not supported now.")
+          tBLogger.get.addSummary(
+            TBLogger.scalar(v._1, driverState[Float](v._1)), driverState[Int]("neval")
+          )
         }
       }
     }
@@ -564,6 +570,38 @@ object DistriOptimizer {
 
     trainedModel
   }
+
+  private def getModelWithGradient[T: ClassTag](
+      models: RDD[Cache[T]],
+      parameters: AllReduceParameter[T]): Module[T] = {
+    val partitionNum = models.partitions.length
+    val trainedModel = models.map(_.localModels.head.clearState()).first()
+    val (weights, gradients) = models.mapPartitions(iter => {
+      val cached = iter.next()
+      val curPartitionId = TaskContext.getPartitionId()
+      Iterator.single((Map(curPartitionId -> parameters.weightPartition),
+        Map(curPartitionId -> parameters.gradientPartition)))
+    }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
+
+    val parameterArray = trainedModel.parameters()
+    (0 until parameterArray._2.length).foreach(i =>
+      parameterArray._2(i).resizeAs(parameterArray._1(i))
+    )
+    val (parameter, gradientParameter) = trainedModel.getParameters()
+    val parameterLength = parameter.nElement()
+    val taskSize = parameterLength / partitionNum
+    require(taskSize != 0, "parameter length should not less than partition number")
+    val extraSize = parameterLength % partitionNum
+
+    (0 until partitionNum).map(pid => {
+      val start = pid * taskSize + math.min(pid, extraSize)
+      val length = taskSize + (if (pid < extraSize) 1 else 0)
+      parameter.narrow(1, start + 1, length).copy(weights(pid))
+      gradientParameter.narrow(1, start + 1, length).copy(gradients(pid))
+    })
+
+    trainedModel
+  }
 }
 
 class DistriOptimizer[T: ClassTag] (
@@ -611,7 +649,6 @@ class DistriOptimizer[T: ClassTag] (
     models = DistriOptimizer.initThreadModels(
       model, dataset, criterion, state, nodeNumber, coresPerNode, checkSingleton, parameters)
 
-
     DistriOptimizer.optimize(
       dataset,
       coresPerNode,
@@ -626,6 +663,8 @@ class DistriOptimizer[T: ClassTag] (
       validationMethods,
       checkpointTrigger,
       checkpointPath,
+      metricsTrigger,
+      metricsPath,
       isOverWrite
     )
 

@@ -17,8 +17,6 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.nio.file.Path
-
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.TBLogger._
@@ -36,7 +34,6 @@ class TBLoggerSpec extends FlatSpec with Matchers {
       val s = scalar("scalar", i)
       writer.addSummary(s, i + 1)
     }
-    writer.flush()
     for (i <- 10 to 19) {
       val s = scalar("lr", i)
       writer.addSummary(s, i + 1)
@@ -59,6 +56,7 @@ class TBLoggerSpec extends FlatSpec with Matchers {
   }
 
   "test_log_histogram_summary" should "return write result" in {
+    RandomGenerator.RNG.setSeed(1)
     val logdir = com.google.common.io.Files.createTempDir()
     val writer = new FileWriter(logdir.getPath)
     for (i <- 0 until 10) {
@@ -70,7 +68,6 @@ class TBLoggerSpec extends FlatSpec with Matchers {
       val hist = histogram("discrete_normal", values)
       writer.addSummary(hist, i + 1)
     }
-    writer.flush()
     writer.close()
   }
 
@@ -81,7 +78,6 @@ class TBLoggerSpec extends FlatSpec with Matchers {
     val parameter = alexnet.getParameters()._1
     val hist = histogram("discrete_normal", parameter)
     writer.addSummary(hist, 1)
-    writer.flush()
     writer.close()
   }
 }

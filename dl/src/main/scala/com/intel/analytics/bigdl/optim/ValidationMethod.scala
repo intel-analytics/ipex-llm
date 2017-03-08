@@ -225,5 +225,5 @@ class Loss[@specialized(Float, Double)T: ClassTag]()
     new LossResult(loss, count)
   }
 
-  override def format(): String = "Loss"
+  override def format(): String = "loss"
 }

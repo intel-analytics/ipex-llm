@@ -23,7 +23,7 @@ import com.google.common.primitives.{Ints, Longs}
 import netty.Crc32c
 import org.tensorflow.util.Event
 
-class RecordWriter(file: File, flushSeconds: Int = 2) {
+class RecordWriter(file: File) {
   val outputStream = new FileOutputStream(file)
   val crc32 = new Crc32c()
   def write(event: Event): Unit = {
