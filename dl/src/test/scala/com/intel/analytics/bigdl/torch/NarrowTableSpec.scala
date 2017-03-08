@@ -76,4 +76,44 @@ class NarrowTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
     println("Test case : NarrowTable, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
   }
+
+  "A NarrowTable Module with negative length" should "generate correct output and grad" in {
+    val module = new NarrowTable[Double](2, -2)
+
+    val input = T()
+    input(1.0) = Tensor[Double](2, 3).apply1(e => Random.nextDouble())
+    input(2.0) = Tensor[Double](2, 1).apply1(e => Random.nextDouble())
+    input(3.0) = Tensor[Double](2, 2).apply1(e => Random.nextDouble())
+    input(4.0) = Tensor[Double](2, 2).apply1(e => Random.nextDouble())
+
+    val gradOutput = T()
+    gradOutput(1.0) = Tensor[Double](5, 3).apply1(e => Random.nextDouble())
+    gradOutput(2.0) = Tensor[Double](2, 5).apply1(e => Random.nextDouble())
+
+    val start = System.nanoTime()
+    var i = 0
+    var output = T()
+    var gradInput = T()
+    output = module.forward(input)
+    gradInput = module.backward(input, gradOutput)
+    i += 1
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val gradInput1 = gradInput[Tensor[Double]](2.0)
+    val gradInput2 = gradInput[Tensor[Double]](3.0)
+    val expectedGradInput1 = gradOutput[Tensor[Double]](1.0)
+    val expectedGradInput2 = gradOutput[Tensor[Double]](2.0)
+
+    val output1 = output[Tensor[Double]](1.0)
+    val output2 = output[Tensor[Double]](2.0)
+    val expectedOutput1 = input[Tensor[Double]](2.0)
+    val expectedOutput2 = input[Tensor[Double]](3.0)
+
+    output1 should be (expectedOutput1)
+    output2 should be (expectedOutput2)
+
+    gradInput1 should be (expectedGradInput1)
+    gradInput2 should be (expectedGradInput2)
+  }
 }
