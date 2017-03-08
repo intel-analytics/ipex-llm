@@ -211,8 +211,6 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val logOutput = logSoftMax.forward(output)
     val prediction = logOutput.max(3)._2
 
-    labels.squeeze() should be (prediction.squeeze())
-
     luaOutput2 should be(loss(0) +- 1e-5)
   }
 
