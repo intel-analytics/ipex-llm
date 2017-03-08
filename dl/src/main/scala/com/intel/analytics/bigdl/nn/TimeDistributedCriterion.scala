@@ -73,7 +73,9 @@ class TimeDistributedCriterion[T : ClassTag](critrn : TensorCriterion[T])
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     val _gradInput = critrn.updateGradInput(fInput, fTarget).toTensor[T]
-    gradInput = _gradInput.resize(input.size)
+    gradInput.resizeAs(_gradInput).copy(_gradInput)
+    gradInput.resize(input.size)
+    // gradInput = _gradInput.resize(input.size)
     gradInput
   }
 

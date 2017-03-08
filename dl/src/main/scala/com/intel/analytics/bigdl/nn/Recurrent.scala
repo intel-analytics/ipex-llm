@@ -17,10 +17,10 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
@@ -29,81 +29,196 @@ class Recurrent[T : ClassTag] (
   bpttTruncate: Int = 2)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
-  val hidden = Tensor[T]()
-  var module: Module[T] = _
-  var transform: Module[T] = _
+  var hidden: Activity = _
+  var gradHidden: Activity = _
+  val inputs = T()
+  val batchDim = 1
+  val timeDim = 2
+  val hidDim = 2
+  val inputDim = 1
   var (batchSize, times) = (0, 0)
+
+  override def reset(): Unit = {
+    modules(0).reset()
+    if (modules(0).isInstanceOf[RnnCell[T]]) {
+      hidden = Tensor[T]()
+      gradHidden = Tensor[T]()
+    } else if (modules(0).isInstanceOf[LSTMPeephole[T]]) {
+      hidden = T(Tensor[T](), Tensor[T]())
+      gradHidden = T(Tensor[T](), Tensor[T]())
+    } else {
+      throw new IllegalArgumentException("Cell not implemented")
+    }
+  }
+
+  /**
+   * Clone N models; N depends on the time dimension of the input
+   * @param size
+   */
+  private def extend(size: Int): Unit = {
+    require(modules != null && modules.length >= 1,
+      "Recurrent extend: should contain at least one module")
+    var t = modules.length
+    var flag = false
+    if (t < size) {
+      flag = true
+    }
+    while (t < size) {
+      super.add(modules(0).cloneModule())
+      t += 1
+    }
+    if (flag) {
+      share()
+    }
+  }
+
+  /**
+   * Sharing weights, gradWeights across all the modules in time dim
+   */
+  def share(): Unit = {
+    val params = modules(0).parameters()
+    var i = 1
+    while (i < modules.length) {
+      val curParams = modules(i).parameters()
+      var j = 0
+      while (j < curParams._1.length) {
+        curParams._1(j).set(params._1(j))
+        j += 1
+      }
+      j = 0
+      while (j < curParams._2.length) {
+        curParams._2(j).set(params._2(j))
+        j += 1
+      }
+      i += 1
+    }
+  }
+
+  private def hidInit(hid: Activity, size: Array[Int]): Unit = {
+    if (hid.isInstanceOf[Tensor[T]]) {
+      hid.asInstanceOf[Tensor[T]].resize(size)
+    } else {
+      var j = 1
+      while (j <= hid.asInstanceOf[Table].length) {
+        hid.asInstanceOf[Table](j).asInstanceOf[Tensor[T]].resize(size)
+        j += 1
+      }
+    }
+  }
+
+  /**
+   * cloning inputs for reusing in backward
+   * @param tbl
+   * @return
+   */
+  private def shallowCopy(tbl: Table): Table = {
+    val ntbl = T()
+    var i = 1
+    while (i <= tbl.length) {
+      if (tbl(i).isInstanceOf[Tensor[T]]) {
+        ntbl(i) = Tensor[T]().resizeAs(tbl(i)).copy(tbl(i))
+      } else if (tbl(i).isInstanceOf[Table]) {
+        var j = 1
+        val table = tbl[Table](i)
+        while (j <= table.length) {
+          ntbl(i + j - 1) = Tensor[T]().resizeAs(table(j)).copy(table(j))
+          j += 1
+        }
+        i += j - 1
+      }
+      i += 1
+    }
+    ntbl
+  }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 3,
       "Recurrent: input should be a 3D Tensor, e.g [batch, times, nDim], " +
         s"current input.dim = ${input.dim}")
-    require(modules.length == 2,
-      "Recurrent: rnn container must include a cell and a non-linear layer, " +
-        s"current container length is ${modules.length}")
 
-    module = modules(0)
-    transform = modules(1)
-
-    batchSize = input.size(1)
-    times = input.size(2)
+    // println(s"forward input = ${input}")
+    batchSize = input.size(batchDim)
+    times = input.size(timeDim)
+    extend(times)
 
     output.resize(Array(batchSize, times, hiddenSize))
-    hidden.resize(Array(batchSize, times + 1, hiddenSize))
 
+    hidInit(hidden, Array(batchSize, hiddenSize))
+    // var currentOutput = T(hidden)
+    var currentOutput = T()
+    currentOutput(hidDim) = hidden
     var i = 1
     while (i <= times) {
-      val curInput = T(input.select(2, i), hidden.select(2, i))
-      val currentOutput = module.updateOutput(curInput)
-      transform.updateOutput(currentOutput)
-      output.select(2, i).copy(transform.output.toTensor)
-      hidden.select(2, i + 1).copy(transform.output.toTensor)
+      currentOutput(inputDim) = input.select(timeDim, i)
+//      println(s"forward currentOutput = ${currentOutput}")
+      inputs(i) = shallowCopy(currentOutput)
+      currentOutput = modules(i - 1).updateOutput(currentOutput).toTable
+      output.select(timeDim, i).copy(currentOutput(inputDim).asInstanceOf[Tensor[T]].clone())
       i += 1
     }
     output
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
+    scale: Double = 1.0): Unit = {
+    var currentGradOutput = T()
+    currentGradOutput(hidDim) = Tensor[T]().resizeAs(gradOutput.select(timeDim, 1))
     var i = times
     while (i >= 1) {
-      transform.output = hidden.select(2, i + 1)
-      var deltaHidden = transform.updateGradInput(hidden.select(2, i), gradOutput.select(2, i))
-      var bpttStep = i
-      while (bpttStep >= Math.max(1, i - bpttTruncate)) {
-        val curInput = T(input.select(2, bpttStep), hidden.select(2, bpttStep))
-        module.accGradParameters(curInput, deltaHidden)
-        transform.output.toTensor
-          .copy(hidden.select(2, bpttStep))
-        deltaHidden = transform.updateGradInput(Tensor(),
-          module.updateGradInput(curInput, deltaHidden).toTable(2))
-        bpttStep -= 1
-      }
+      currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
+      modules(i - 1).accGradParameters(inputs(i), currentGradOutput, scale)
+      currentGradOutput = modules(i - 1).gradInput.toTable
       i -= 1
     }
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    println("backward")
     gradInput.resizeAs(input)
+    hidInit(gradHidden, Array(batchSize, hiddenSize))
+    // var currentGradOutput = T(gradHidden)
+    var currentGradOutput = T()
+    currentGradOutput(hidDim) = gradHidden
 
     var i = times
     while (i >= 1) {
-      transform.output.toTensor
-        .copy(hidden.select(2, i + 1))
-      var deltaHidden = transform.updateGradInput(hidden.select(2, i), gradOutput.select(2, i))
-      var bpttStep = i
-      while (bpttStep >= Math.max(1, i - bpttTruncate)) {
-        val curInput = T(input.select(2, bpttStep), hidden.select(2, bpttStep))
-        val gradInputBundle = module.updateGradInput(curInput, deltaHidden).toTable
-        gradInput.select(2, bpttStep).add(gradInputBundle(1).asInstanceOf[Tensor[T]])
-        transform.output.toTensor
-          .copy(hidden.select(2, bpttStep))
-        deltaHidden = transform.updateGradInput(Tensor(), gradInputBundle(2))
-        bpttStep -= 1
-      }
+      currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
+      currentGradOutput =
+        modules(i - 1).updateGradInput(inputs(i), currentGradOutput).toTable
+      gradInput.select(timeDim, i).copy(currentGradOutput(inputDim))
       i -= 1
     }
     gradInput
+  }
+
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    val params = modules(0).parameters()
+    (params._1, params._2)
+  }
+
+  override def updateParameters(learningRate: T): Unit = {
+    modules(0).updateParameters(learningRate)
+  }
+
+  override def zeroGradParameters(): Unit = {
+    modules(0).zeroGradParameters()
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Recurrent[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Recurrent[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        hidden == that.hidden &&
+        batchSize == that.batchSize &&
+        times == that.times
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), hidden, batchSize, times)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 
   override def toString(): String = {
