@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.example.finetune_flickr_style
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{BGRImgToLocalSeqFile, LocalImgReader}
+import com.intel.analytics.bigdl.dataset.image.{BGRImgToLocalSeqFile, LocalImgReader, LocalImgReaderWithName}
 import scopt.OptionParser
 
 object ImageSeqFileGenerator {
@@ -32,7 +32,8 @@ object ImageSeqFileGenerator {
     train: Boolean = true,
     validate: Boolean = true,
     scaleSize: Int = 256,
-    isResize: Boolean = false
+    isResize: Boolean = false,
+    hasName: Boolean = false
   )
 
   private val parser = new OptionParser[ImageSeqFileGeneratorParams]("Spark-DL Image " +
@@ -62,6 +63,9 @@ object ImageSeqFileGenerator {
     opt[Unit]('r', "resize")
       .text("resize to (scaleSize, scaleSize) instead of uniform scale")
       .action((x, c) => c.copy(isResize = true))
+    opt[Unit]('h', "hasName")
+      .text("add name to seq file")
+      .action((x, c) => c.copy(hasName = true))
   }
 
   def main(args: Array[String]): Unit = {
@@ -79,12 +83,12 @@ object ImageSeqFileGenerator {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
               val imageIter = if (param.isResize) {
-                LocalImgReader(param.scaleSize, param.scaleSize, 255f)(iter)
+                LocalImgReaderWithName(param.scaleSize, param.scaleSize, 255f)(iter)
               } else {
-                LocalImgReader(param.scaleSize)(iter)
+                LocalImgReaderWithName(param.scaleSize)(iter)
               }
               val fileIter = BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "train",
-                  s"image-seq-$tid"))(imageIter)
+                s"imagenet-seq-$tid"), param.hasName)(imageIter)
               while (fileIter.hasNext) {
                 println(s"Generated file ${fileIter.next()}")
               }
@@ -110,12 +114,12 @@ object ImageSeqFileGenerator {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
               val imageIter = if (param.isResize) {
-                LocalImgReader(param.scaleSize, param.scaleSize, 255f)(iter)
+                LocalImgReaderWithName(param.scaleSize, param.scaleSize, 255f)(iter)
               } else {
-                LocalImgReader(param.scaleSize)(iter)
+                LocalImgReaderWithName(param.scaleSize)(iter)
               }
               val fileIter = BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "test",
-                  s"image-seq-$tid"))(imageIter)
+                  s"image-seq-$tid"), param.hasName)(imageIter)
               while (fileIter.hasNext) {
                 println(s"Generated file ${fileIter.next()}")
               }
