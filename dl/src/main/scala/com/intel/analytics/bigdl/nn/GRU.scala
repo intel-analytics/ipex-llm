@@ -25,17 +25,17 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
-class GRUCell[T : ClassTag] (
+class GRU[T : ClassTag] (
   inputSize: Int = 4,
   outputSize: Int = 3,
   p: Double = 0,
   private var initMethod: InitializationMethod = Default)
   (implicit ev: TensorNumeric[T])
-  extends AbstractModule[Table, Table, T] {
-  var i2g: AbstractModule[Activity, Activity, T] = _
-  var h2g: AbstractModule[Activity, Activity, T] = _
-  var gates: AbstractModule[Activity, Activity, T] = _
-  var GRU: AbstractModule[Activity, Activity, T] = buildGRU()
+  extends Cell[T] {
+  var i2g: AbstractModule[_, _, T] = _
+  var h2g: AbstractModule[_, _, T] = _
+  var gates: AbstractModule[_, _, T] = _
+  var GRU: AbstractModule[_, _, T] = buildGRU()
 
   def buildGates(): AbstractModule[Activity, Activity, T] = {
     if (p != 0) {
@@ -145,13 +145,15 @@ class GRUCell[T : ClassTag] (
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     GRU.parameters()
   }
+
+  override val nHids: Int = 1
 }
 
-object GRUCell {
+object GRU {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
     outputSize: Int = 3)
-    (implicit ev: TensorNumeric[T]): GRUCell[T] = {
-    new GRUCell[T](inputSize, outputSize)
+    (implicit ev: TensorNumeric[T]): GRU[T] = {
+    new GRU[T](inputSize, outputSize)
   }
 }
