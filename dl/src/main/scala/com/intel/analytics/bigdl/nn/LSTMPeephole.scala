@@ -29,7 +29,8 @@ class LSTMPeephole[T : ClassTag] (
   hiddenSize: Int = 3,
   p: Double = 0)
   (implicit ev: TensorNumeric[T])
-  extends AbstractModule[Table, Table, T] {
+  extends Cell[T] {
+  val nHids = 2
   var inputGate: Sequential[T] = _
   var forgetGate: Sequential[T] = _
   var outputGate: Sequential[T] = _

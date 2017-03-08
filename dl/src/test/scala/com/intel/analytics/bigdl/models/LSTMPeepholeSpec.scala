@@ -67,10 +67,7 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     println(input)
     RNG.setSeed(seed)
-    val rec = Recurrent[Double](hiddenSize, bpttTruncate)
-
-    rec.hidden = T(Tensor(), Tensor())
-    rec.gradHidden = T(Tensor(), Tensor())
+    val rec = Recurrent[Double](hiddenSize)
 
     val model = Sequential[Double]()
       .add(rec
@@ -78,11 +75,11 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       //      .add(LSTM[Double](inputSize, hiddenSize)))
       //      .add(RnnCell[Double](inputSize, hiddenSize, Sigmoid[Double]())))
       //            .add(FastLSTMCell[Double](inputSize, hiddenSize)))
-      .add(TimeDistributed[Double]().add(Linear[Double](hiddenSize, outputSize)))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
       CrossEntropyCriterion[Double](sizeAverage = false))
-    val logSoftMax = TimeDistributed[Double]().add(LogSoftMax[Double]())
+    val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
 
@@ -240,19 +237,16 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     println(input)
     RNG.setSeed(seed)
-    val rec = Recurrent[Double](hiddenSize, bpttTruncate)
-
-    rec.hidden = T(Tensor(), Tensor())
-    rec.gradHidden = T(Tensor(), Tensor())
+    val rec = Recurrent[Double](hiddenSize)
 
     val model = Sequential[Double]()
       .add(rec
         .add(LSTMPeephole[Double](inputSize, hiddenSize)))
-      .add(TimeDistributed[Double]().add(Linear[Double](hiddenSize, outputSize)))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
       CrossEntropyCriterion[Double](sizeAverage = false))
-    val logSoftMax = TimeDistributed[Double]().add(LogSoftMax[Double]())
+    val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
 
@@ -308,19 +302,16 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     println(input)
     RNG.setSeed(seed)
-    val rec = Recurrent[Double](hiddenSize, bpttTruncate)
-
-    rec.hidden = T(Tensor(), Tensor())
-    rec.gradHidden = T(Tensor(), Tensor())
+    val rec = Recurrent[Double](hiddenSize)
 
     val model = Sequential[Double]()
       .add(rec
         .add(LSTMPeephole[Double](inputSize, hiddenSize)))
-      .add(TimeDistributed[Double]().add(Linear[Double](hiddenSize, outputSize)))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
       CrossEntropyCriterion[Double](sizeAverage = false))
-    val logSoftMax = TimeDistributed[Double]().add(LogSoftMax[Double]())
+    val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
 
@@ -469,19 +460,16 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     println(input)
-    val rec = Recurrent[Double](hiddenSize, bpttTruncate)
-
-    rec.hidden = T(Tensor(), Tensor())
-    rec.gradHidden = T(Tensor(), Tensor())
+    val rec = Recurrent[Double](hiddenSize)
 
     val model = Sequential[Double]()
       .add(rec
         .add(LSTMPeephole[Double](inputSize, hiddenSize)))
-      .add(TimeDistributed[Double]().add(Linear[Double](hiddenSize, outputSize)))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
       CrossEntropyCriterion[Double](sizeAverage = false))
-    val logSoftMax = TimeDistributed[Double]().add(LogSoftMax[Double]())
+    val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
 
@@ -523,7 +511,7 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     RNG.setSeed(seed)
 
     val model = Sequential[Double]()
-      .add(Recurrent[Double](hiddenSize, bpttTruncate)
+      .add(Recurrent[Double](hiddenSize)
         .add(LSTMPeephole[Double](inputSize, hiddenSize)))
       .add(Select(1, 1))
       .add(Linear[Double](hiddenSize, outputSize))
