@@ -46,14 +46,14 @@ class Dropout[T: ClassTag](
     }
 
     if (results == null) {
-      results = new Array[Future[Unit]](Engine.coreNumber())
+      results = new Array[Future[Unit]](Engine.model.getPoolSize)
     }
     if (train) {
       noise.resizeAs(input)
       if (input.isContiguous()) {
         val noiseData = noise.storage().array()
-        var taskSize = noise.nElement() / Engine.coreNumber()
-        var extraTask = noise.nElement() % Engine.coreNumber()
+        var taskSize = noise.nElement() / Engine.model.getPoolSize
+        var extraTask = noise.nElement() % Engine.model.getPoolSize
         var allocated = 0
         val offset = this.output.storageOffset() - 1
         val data = this.output.storage.array()
@@ -106,7 +106,7 @@ class Dropout[T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     if (results == null) {
-      results = new Array[Future[Unit]](Engine.coreNumber())
+      results = new Array[Future[Unit]](Engine.model.getPoolSize)
     }
     if (train) {
       if (inplace) {
@@ -117,8 +117,8 @@ class Dropout[T: ClassTag](
 
       if (gradInput.isContiguous()) {
         val noiseData = noise.storage().array()
-        var taskSize = noise.nElement() / Engine.coreNumber()
-        var extraTask = noise.nElement() % Engine.coreNumber()
+        var taskSize = noise.nElement() / Engine.model.getPoolSize
+        var extraTask = noise.nElement() % Engine.model.getPoolSize
         val gradInputData = gradInput.storage().array()
         val gradInputOffset = gradInput.storageOffset() - 1
         var allocated = 0

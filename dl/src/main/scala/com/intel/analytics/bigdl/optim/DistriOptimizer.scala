@@ -410,6 +410,8 @@ object DistriOptimizer {
 
     val partitionNum = dataset.originRDD().partitions.length
     val computeThresholdbatchSize = state.get[Int]("computeThresholdbatchSize").get
+    val nExecutor = Engine.nodeNumber()
+    val executorCores = Engine.coreNumber()
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastModel, broadcastCriterion, broadcastState) = broadcast.value
       if (!Engine.checkSingleton()) {
@@ -420,6 +422,13 @@ object DistriOptimizer {
           logger.warn("Detect multi-task run on one Executor/Container.")
         }
       }
+      Engine.init(
+        nExecutor = nExecutor,
+        executorCores = executorCores,
+        onSpark = true,
+        isCreateSparkConf = false,
+        verifySparkContext = false
+      )
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = broadcastModel.cloneModule()
         val localCriterion = broadcastCriterion.cloneCriterion()
@@ -595,7 +604,6 @@ class DistriOptimizer[T: ClassTag] (
     state("computeThresholdbatchSize") = computeThresholdbatchSize
     state("maxDropPercentage") = maxDropPercentage
 
-    require(Engine.onSpark, "Do you submit your job with spark-submit?")
     val nodeNumber = Engine.nodeNumber()
     val coresPerNode = Engine.coreNumber()
 

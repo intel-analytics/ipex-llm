@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.{Sequential, SpatialSubtractiveNormalization}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -29,6 +30,7 @@ class SpatialSubtractiveNormalizationSpec extends FlatSpec with BeforeAndAfter w
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
+    Engine.init(1, 4, false, false, false)
   }
 
   "A SpatialSubtractiveNormalization 3D input" should "generate correct output and grad" in {

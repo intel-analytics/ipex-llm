@@ -30,9 +30,12 @@ import scala.util.Random
 
 class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
+  before {
+    Engine.init(1, 1, false, false, false)
+  }
+
   "SampleToBatchPadding " should "be good when padding first dimension to same length" +
     "in one batch" in {
-    Engine.setNodeNumber(None)
     val batchSize = 3
     val dictionaryLength = 5
 
@@ -87,7 +90,6 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "SampleToBatchPadding " should "be good when padding to same length for all batch" in {
-    Engine.setNodeNumber(None)
     val batchSize = 3
     val dictionaryLength = 5
 
@@ -149,7 +151,6 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "SampleToBatchPadding " should "be same to SampleToBatch when no padding" in {
-    Engine.setNodeNumber(None)
     val batchSize = 3
     val totalCount = 100
     val trainData = new Array[Sample[Float]](totalCount)
@@ -180,7 +181,6 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "SampleToBatchPadding " should "be same to LabeledSentenceToSample and SampleToBatch " +
     "when padding" in {
-    Engine.setNodeNumber(None)
     val batchSize = 3
     val totalCount = 9
     val trainData = new Array[LabeledSentence[Float]](totalCount)

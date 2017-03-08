@@ -251,7 +251,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "Train with one partition one executor" should "won't throw mult-task exception" in {
     System.setProperty("bigdl.check.singleton", true.toString)
     RandomGenerator.RNG.setSeed(10)
-    Engine.setNodeNumber(Some(1))
+    Engine.setNodeNumber(1)
     val mm = bn
     mm.getParameters()._1.fill(0.125)
     val rdd = sc.parallelize(1 to (256 * nodeNumber), 1).map(prepareData)
@@ -269,7 +269,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setEndWhen(Trigger.maxEpoch(5))
       .optimize()
 
-    Engine.setNodeNumber(Some(nodeNumber))
+    Engine.setNodeNumber(nodeNumber)
   }
 
   "DistriOptimizer checkpoint" should "work correclty" in {

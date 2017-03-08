@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.ReLU6
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Engine
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
@@ -27,6 +28,7 @@ class ReLU6Spec extends FlatSpec with BeforeAndAfter with Matchers {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
+    Engine.init(1, 4, false, false, false)
   }
 
   "A ReLU6 Module " should "generate correct output and grad not inplace" in {

@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, MSECriterion, ParallelCriterion}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
@@ -29,6 +29,7 @@ class ParallelCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
+    Engine.init(1, 4, false, false, false)
   }
 
   "A ParallelCriterion " should "generate correct output and grad" in {

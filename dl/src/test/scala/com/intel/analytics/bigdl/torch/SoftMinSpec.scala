@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.SoftMin
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Engine
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
@@ -28,6 +29,7 @@ class SoftMinSpec extends FlatSpec with BeforeAndAfter with Matchers {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
+    Engine.init(1, 4, false, false, false)
   }
 
   "A SoftMin 1D input" should "generate correct output and grad" in {

@@ -29,7 +29,7 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Engine" should "be inited correct under no spark environment" in {
-    Engine.init(false)
+    Engine.init(true, false)
     Engine.onSpark should be(false)
     Engine.nodeNumber should be(1)
     Engine.coreNumber should be(1)
@@ -38,7 +38,7 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Engine" should "be inited correct under spark local environment" in {
     TestUtils.sparkLocalEnv(core = 4) {
-      Engine.init(false)
+      Engine.init(true, false)
       Engine.onSpark should be(true)
       Engine.nodeNumber should be(1)
       Engine.coreNumber should be(4)
@@ -68,7 +68,7 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Engine" should "be inited correct under spark standalone environment" in {
     TestUtils.sparkStandaloneEnv(totalCore = 24, core = 4) {
-      Engine.init(false)
+      Engine.init(true, false)
       Engine.onSpark should be(true)
       Engine.nodeNumber should be(6)
       Engine.coreNumber should be(4)
@@ -88,7 +88,7 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Engine" should "be inited correct under spark yarn environment" in {
     TestUtils.sparkYarnEnv(executors = 6, core = 4) {
-      Engine.init(false)
+      Engine.init(true, false)
       Engine.onSpark should be(true)
       Engine.nodeNumber should be(6)
       Engine.coreNumber should be(4)
@@ -109,7 +109,7 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Engine" should "be inited correct under spark mesos environment" in {
     TestUtils.sparkMesosEnv(totalCore = 24, core = 4) {
-      Engine.init(false)
+      Engine.init(true, false)
       Engine.onSpark should be(true)
       Engine.nodeNumber should be(6)
       Engine.coreNumber should be(4)
@@ -131,7 +131,25 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     System.setProperty("spark.master", "local[*]")
     val (nExecutor, executorCore) = Engine.sparkExecutorAndCore
     nExecutor should be(1)
-    executorCore should be(Engine.coreNumber())
     System.clearProperty("spark.master")
+  }
+
+  "readConf" should "be right" in {
+    val conf = Engine.readConf
+    val target = Map(
+      "spark.executorEnv.DL_ENGINE_TYPE" -> "mklblas",
+      "spark.executorEnv.MKL_DISABLE_FAST_MM" -> "1",
+      "spark.executorEnv.KMP_BLOCKTIME" -> "0",
+      "spark.executorEnv.OMP_WAIT_POLICY" -> "passive",
+      "spark.executorEnv.OMP_NUM_THREADS" -> "1",
+      "spark.executorEnv.ON_SPARK" -> "true",
+      "spark.shuffle.reduceLocality.enabled" -> "false",
+      "spark.shuffle.blockTransferService" -> "nio",
+      "spark.scheduler.minRegisteredResourcesRatio" -> "1.0"
+    )
+    conf.length should be(target.keys.size)
+    conf.foreach(s => {
+      s._2 should be(target(s._1))
+    })
   }
 }

@@ -147,13 +147,16 @@ class SampleToBatch[T: ClassTag]
     if (a > b) i else j
   }
 
+  private val batchPerCore = Utils.getBatchSize(totalBatch)
+
   override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
+    val batchSizePerCore = batchPerCore
     new Iterator[MiniBatch[T]] {
       private val featureTensor: Tensor[T] = Tensor[T]()
       private val labelTensor: Tensor[T] = Tensor[T]()
       private var featureData: Array[T] = null
       private var labelData: Array[T] = null
-      private val batchSize = Utils.getBatchSize(totalBatch)
+      private val batchSize = batchSizePerCore
 
       private val sampleData = Array.tabulate(batchSize)(_ => Sample())
       private var featureSize: Array[Int] = null

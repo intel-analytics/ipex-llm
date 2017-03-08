@@ -1,11 +1,12 @@
 /*
- * Copyright 2016 The BigDL Authors.
+ * Licensed to Intel Corporation under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * Intel Corporation licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,192 +17,15 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.util.concurrent._
+import java.io.InputStream
 import java.util.concurrent.atomic.AtomicInteger
-
-import com.intel.analytics.bigdl.mkl.MKL
-import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
-
-import scala.collection.JavaConverters._
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
 
 sealed trait EngineType
 
 case object MklBlas extends EngineType
 
-/**
- * A thread pool wrapper, provide some helper functions for multi-threading
- */
-class ThreadPool(private var poolSize: Int) {
-
-  import ThreadPool._
-
-
-  private var mklPoolSize : Option[Int] = None
-  private var threadPool: ExecutorService = null
-
-  private var context = spawnThreadPool(poolSize)
-
-  private def spawnThreadPool(poolSize: Int): ExecutionContext = {
-    if (poolSize == 1) {
-      singleThreadPool
-    } else {
-      new ExecutionContext {
-        if (threadPool != null) threadPool.shutdown()
-        threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
-          override def newThread(r: Runnable): Thread = {
-            val t = Executors.defaultThreadFactory().newThread(r)
-            t.setDaemon(true)
-            t
-          }
-        })
-
-        def execute(runnable: Runnable) {
-          threadPool.submit(runnable)
-        }
-
-        def reportFailure(t: Throwable) {}
-      }
-    }
-  }
-
-  def getPoolSize : Int = poolSize
-
-  /**
-   * Set MKL thread pool size
-   *
-   * @param size
-   * @return
-   */
-  def setMKLThread(size: Int): this.type = {
-    require(MKL.isMKLLoaded)
-    mklPoolSize = Some(size)
-    (1 to poolSize).map(i => Future {
-      MKL.setNumThreads(size)
-      val tid = Thread.currentThread().getId()
-      logger.info(s"Set mkl threads to $size on thread $tid")
-    }(context)).foreach(Await.result(_, Duration.Inf))
-    this
-  }
-
-  /**
-   * Invoke a batch of tasks and wait for all them finished
-   *
-   * @param tasks
-   * @param timeout
-   * @tparam T
-   * @return
-   */
-  def invokeAndWait[T](tasks: Seq[() => T], timeout: Duration = Duration.Inf): Seq[T] = {
-    tasks.map(task => Future {
-      try {
-        task()
-      } catch {
-        case t : Throwable =>
-            logger.error("Error: " + ExceptionUtils.getStackTrace(t))
-            throw t
-      }
-    }(context)).map(future => {
-      Await.result(future, timeout)
-    })
-  }
-
-  def invokeAndWait2[T](tasks: Seq[() => T], timeout: Long = Long.MaxValue,
-    timeUnit: TimeUnit = TimeUnit.NANOSECONDS):
-    scala.collection.mutable.Buffer[java.util.concurrent.Future[T]] = {
-    val callables = tasks.map(task => new Callable[T] {
-      override def call(): T = {
-        try {
-          task()
-        } catch {
-          case t : Throwable =>
-            logger.error("Error: " + ExceptionUtils.getStackTrace(t))
-            throw t
-        }
-      }
-    })
-    threadPool.invokeAll(callables.asJava, timeout, timeUnit).asScala
-  }
-
-  def invoke2[T](tasks: Seq[() => T]): Seq[java.util.concurrent.Future[T]] = {
-    tasks.map(task => new Callable[T] {
-      override def call(): T = {
-        task()
-      }
-    }).map(threadPool.submit(_))
-  }
-
-  /**
-   * Invoke a batch of tasks
-   *
-   * @param tasks
-   */
-  def invoke[T](tasks: Seq[() => T]): Seq[Future[T]] = {
-    tasks.map(task => Future {
-      try {
-        task()
-      } catch {
-        case t : Throwable =>
-          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
-          throw t
-      }
-    }(context))
-  }
-
-  /**
-   * Invoke a single tasks
-   *
-   * @param task
-   */
-  def invoke[T](task: () => T): Future[T] = {
-    Future {
-      task()
-    }(context)
-  }
-
-  /**
-   * Wait for all the tasks in the wait queue finish
-   *
-   * @param timeout
-   */
-  def sync(futures: Seq[Future[_]], timeout: Duration = Duration.Inf): Unit = {
-    futures.foreach(f => {
-      Await.result(f, timeout)
-    })
-  }
-
-  /**
-   * Set pool size
-   *
-   * @param size
-   * @return
-   */
-  def setPoolSize(size: Int): this.type = {
-    if (size != poolSize) {
-      context = spawnThreadPool(size)
-      poolSize = size
-      if(mklPoolSize.isDefined) {
-        this.setMKLThread(mklPoolSize.get)
-      }
-    }
-    this
-  }
-}
-
-object ThreadPool {
-  val singleThreadPool = new ExecutionContext {
-    def execute(runnable: Runnable) {
-      runnable.run()
-    }
-
-    def reportFailure(t: Throwable) {}
-  }
-
-  private val logger = Logger.getLogger(getClass)
-}
 
 object Engine {
   private val logger = Logger.getLogger(getClass)
@@ -214,8 +38,18 @@ object Engine {
     true
   }
 
+  /**
+   * If the engine is initialized
+   *
+   * @return
+   */
   def isInitialized: Boolean = _isInitialized
 
+  /**
+   * If current JVM is a spark Executor
+   *
+   * @return
+   */
   def onSpark: Boolean = _onSpark
 
   /**
@@ -246,7 +80,17 @@ object Engine {
     }
   }
 
-  def coreNumber(): Int = physicalCoreNumber
+  /**
+   * Return number of cores, the engine.init must be called before use this method or an exception
+   * will be thrown
+   *
+   * @return
+   */
+  def coreNumber(): Int = {
+    if (!_isInitialized) throw new IllegalStateException("Engine is not inited")
+
+    physicalCoreNumber
+  }
 
   /**
    * This method should only be used for test purpose.
@@ -256,17 +100,21 @@ object Engine {
   private[bigdl] def setCoreNumber(n: Int): Unit = {
     require(n > 0)
     physicalCoreNumber = n
-    _model = initModelThreadPool()
+    initThreadPool(n)
   }
 
-  // Set node number
-  private var nodeNum: Int = if (System.getenv("DL_NODE_NUMBER") == null) {
-    1
-  } else {
-    System.getenv("DL_NODE_NUMBER").toInt
-  }
+  private var nodeNum: Int = -1
 
-  def nodeNumber(): Int = nodeNum
+  /**
+   * Return node number, the engine.init must be called before use this method or an
+   * exception will be thrown
+   *
+   * @return
+   */
+  def nodeNumber(): Int = {
+    if (!_isInitialized) throw new IllegalStateException("Engine is not inited")
+    nodeNum
+  }
 
   /**
    * This method should only be used for test purpose.
@@ -274,6 +122,7 @@ object Engine {
    * @param n
    */
   private[bigdl] def setNodeNumber(n : Int): Unit = {
+    require(n > 0)
     nodeNum = n
   }
 
@@ -308,136 +157,167 @@ object Engine {
     this.engineType
   }
 
-  private val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
-    (physicalCoreNumber * 50).toString).toInt
+  @volatile private var _default: ThreadPool = null
 
-  val default: ThreadPool = new ThreadPool(defaultPoolSize)
+  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(1)
 
-  @volatile private var _model: ThreadPool = initModelThreadPool()
+  def model: ThreadPool = {
+    if (_model == null) {
+      throw new IllegalStateException("Model engine is not initialized. Have you call Engine.init?")
+    }
+    _model
+  }
 
-  def model: ThreadPool = _model
+  def default: ThreadPool = {
+    if (_default == null) {
+      throw new IllegalStateException("Thread engine is not initialized. Have you call Engine" +
+        ".init?")
+    }
+    _default
+  }
 
-  private def initModelThreadPool() = {
+  private def initThreadPool(core : Int) : Unit = {
+    val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
+      (core * 50).toString).toInt
+    if(_default == null || _default.getPoolSize != defaultPoolSize) {
+      _default = new ThreadPool(defaultPoolSize)
+    }
+
     val modelPoolSize: Int = if (engineType == MklBlas) {
       1
     } else {
-      physicalCoreNumber
+      core
     }
 
-    val model = new ThreadPool(modelPoolSize)
-    model.setMKLThread(1)
-    model
-  }
-
-  private def defaultConfs(nExecutor : Int, executorCore : Int) : Seq[(String, String)] = {
-    Array(
-      ("spark.executorEnv.DL_ENGINE_TYPE", "mklblas"),
-      ("spark.executorEnv.MKL_DISABLE_FAST_MM", "1"),
-      ("spark.executorEnv.KMP_BLOCKTIME", "0"),
-      ("spark.executorEnv.OMP_WAIT_POLICY", "passive"),
-      ("spark.executorEnv.OMP_NUM_THREADS", "1"),
-      ("spark.executorEnv.DL_CORE_NUMBER", executorCore.toString),
-      ("spark.executorEnv.DL_NODE_NUMBER", nExecutor.toString),
-      ("spark.executorEnv.ON_SPARK", "true"),
-      ("spark.shuffle.reduceLocality.enabled", "false"),
-      ("spark.shuffle.blockTransferService", "nio"),
-      ("spark.scheduler.minRegisteredResourcesRatio", "1.0")
-    )
-  }
-
-  case class SparkConfError(val msg : String) extends Error
-
-  private def verifySparkConf(
-    sparkConf: SparkConf,
-    nExecutor : Int,
-    executorCore : Int
-  ) : Unit = {
-    def verify(key : String, value : String): Unit = {
-      for ((k, v) <- sparkConf.getAll) {
-        if (k == key) {
-          if (value != v) {
-            throw SparkConfError(s"$k should be $value, but it is $v.")
-          }
-          return
-        }
-      }
-      throw SparkConfError(s"Can not find $key.")
+    if(_model == null || _model.getPoolSize != modelPoolSize) {
+      _model = new ThreadPool(modelPoolSize)
+      _model.setMKLThread(1)
     }
-    defaultConfs(nExecutor, executorCore).foreach(c => verify(c._1, c._2))
-  }
-
-  private def initSparkConf(core : Int, node : Int, checkSparkContext : Boolean): SparkConf = {
-    val sparkConf = new SparkConf()
-    defaultConfs(node, core).foreach(c => sparkConf.set(c._1, c._2))
-    if(checkSparkContext) {
-      val tmpContext = SparkContext.getOrCreate(sparkConf.set("tmpContext", "true"))
-      try {
-        verifySparkConf(tmpContext.getConf, node, core)
-      } catch {
-        case e: SparkConfError =>
-          throw new IllegalArgumentException(e.msg + " For details please check " +
-            "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine")
-        case _ => // do nothing here
-      }
-      if (tmpContext.getConf.contains("tmpContext")) {
-        tmpContext.stop()
-      }
-    }
-    return sparkConf
   }
 
   /**
-   * Set core number per node and node number
+   * Read conf values from config file
+   * @return
+   */
+  private[utils] def readConf : Seq[(String, String)] = {
+    val stream : InputStream = getClass.getResourceAsStream("/spark-bigdl.conf")
+    val lines = scala.io.Source.fromInputStream(stream)
+      .getLines.filter(_.startsWith("spark")).toArray
+    lines.map(_.split("\\s+")).map(d => (d(0), d(1))).toSeq
+  }
+
+  private val errorMsg = "For details please check " +
+    "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
+
+  /**
+   * Check the spark conf of spark context if there's an exsiting one
+   */
+  private def checkSparkContext : Unit = {
+    val tmpContext = SparkContext.getOrCreate(new SparkConf().set("tmpContext", "true"))
+    if (!tmpContext.getConf.contains("tmpContext")) {
+      // The spark context already exisits
+      logger.info("Find existing spark context. Checking the spark conf...")
+      val sparkConf = tmpContext.getConf
+
+      def verify(key: String, value: String): Unit = {
+        for ((k, v) <- sparkConf.getAll) {
+          if (k == key) {
+            if (value != v) {
+              throw new IllegalArgumentException(s"$k should be $value, but it is $v. " + errorMsg)
+            }
+            return
+          }
+        }
+        throw new IllegalArgumentException(s"Can not find $key. " + errorMsg)
+      }
+
+      readConf.foreach(c => verify(c._1, c._2))
+    } else {
+      tmpContext.stop()
+    }
+  }
+
+  /**
+   * Set executor number and cores per executor
    *
    * @param nodeNum
    * @param coreNum
    */
   private[bigdl] def setNodeAndCore(nodeNum: Int, coreNum: Int): Unit = {
-    require(nodeNum > 0, "node number is negative")
-    this.nodeNum = nodeNum
-    require(coreNum > 0, "core number is negative")
-    physicalCoreNumber = coreNum
-    _model = initModelThreadPool()
+    setNodeNumber(nodeNum)
+    setCoreNumber(coreNum)
   }
 
   /**
-   * BigDL need to know the node and cores of the execution environment. This method will set the
-   * values. You should call this method before BigDL procedures.
+   * In a spark program, user will first create a spark conf then use the spark
+   * conf to create a spark context. BigDL need to special configuration in the spark conf for a
+   * better performance. You should use this method to init one with appropriate values.
    *
-   * @param node
-   * @param cores
-   * @param onSpark
+   * If you pass an existing spark conf to the method, it will populate/update the corresponding
+   * values.
+   *
    * @return
    */
+  def sparkConf(conf: SparkConf = new SparkConf()) : SparkConf = {
+    readConf.foreach(c => conf.set(c._1, c._2))
+    conf
+  }
+
+  /**
+   * This method should be call before any BigDL procedure.
+   *
+   * BigDL need some spark conf values to be set correctly to have a better performance. There's
+   * also multi-thread engines so executor number and core number per executor need to be know to
+   * set the parameter of these engines correctly.
+   *
+   * The method can set parameters of multi-thread engines, verify spark conf values of an
+   * existing spark context, initialize spark conf with appropriate values.
+   *
+   * @param nExecutor executor number, if the program not run on spark, it should be set to 1
+   * @param executorCores cores number per executor
+   * @param onSpark indicate whether the program is running on Spark
+   * @param isCreateSparkConf indicate whether create a spark conf in the method
+   * @param verifySparkContext indicate whether verify spark conf
+   * @return a spark conf if it's onSpark and createSparkConf is true, or it's None
+   */
   def init(
-    node: Int,
-    cores: Int,
+    nExecutor: Int,
+    executorCores: Int,
     onSpark: Boolean = false,
-    checkSparkConf: Boolean = false
-  ): Option[SparkConf] = {
+    isCreateSparkConf: Boolean = true,
+    verifySparkContext: Boolean = false
+  ): Option[SparkConf] = this.synchronized {
+    setNodeAndCore(nExecutor, executorCores)
+    _onSpark = onSpark
     val ret = if (onSpark) {
-      setNodeAndCore(node, cores)
-      tryToCheckAndSetSparkProperty(node, cores)
-      val sc = if (engineType == MklBlas) {
-        initSparkConf(coreNumber(), nodeNumber(), checkSparkConf)
-      } else {
-        throw new IllegalArgumentException(engineType.toString)
+      if (verifySparkContext) {
+        checkSparkContext
       }
-      _onSpark = true
-      Some(sc)
+      if(isCreateSparkConf) {
+        Some(sparkConf())
+      } else {
+        None
+      }
     } else {
-      require(node == 1, "In local mode, the node should be 1")
-      _onSpark = false
-      physicalCoreNumber = cores
+      require(nExecutor == 1, "In local mode, the node should be 1")
       None
     }
     _isInitialized = true
-
     ret
   }
 
   /**
-   * Try to automatically find node number and core number from the environment.
+   * An alias of Engine.init(isCreateSparkConf, verifySparkContext)
+   * @return An option of SparkConf
+   */
+  def init: Option[SparkConf] = {
+    init(true, true)
+  }
+
+  /**
+   * A wrapper of init(nExecutor, executorCores, onSpark, isCreateSparkConf, verifySparkContext)
+   *
+   * Try to automatically find executor number and executor core number from the environment.
    *
    * We assume that user run their spark application through spark-submit. And try to find the node
    * number and core number from the system property set by spark-submit. Application should use
@@ -447,23 +327,19 @@ object Engine {
    * Spark. Note that this is different from Spark Local mode. If you want to run in Spark Local
    * mode, you still need to submit your application through spark-submit --master local[n].
    *
-   * @return An option of SparkConf
-   */
-  def init: Option[SparkConf] = {
-    init(true)
-  }
-
-  /**
-   * Allow user to check if there's an inited spark context
-   * @param checkSparkContext
+   * @param isCreateSparkConf
+   * @param verifySparkContext
    * @return
    */
-  def init(checkSparkContext : Boolean): Option[SparkConf] = {
+  def init(
+    isCreateSparkConf: Boolean,
+    verifySparkContext: Boolean
+  ): Option[SparkConf] = {
     if (System.getProperty("SPARK_SUBMIT") != null) {
       val (node, cores) = sparkExecutorAndCore
-      init(node, cores, true, checkSparkContext)
+      init(node, cores, true, isCreateSparkConf, verifySparkContext)
     } else {
-      init(1, physicalCoreNumber, false)
+      init(1, physicalCoreNumber, false, false)
     }
   }
 
@@ -497,6 +373,10 @@ object Engine {
     }
   }
 
+  /**
+   * Extract spark executor number and executor cores from environment.
+   * @return (nExecutor, executorCore)
+   */
   private[utils] def sparkExecutorAndCore : (Int, Int) = {
     require(System.getProperty("spark.master") != null, "Can't find spark.master, do you start " +
       "your application without spark-submit?")
@@ -560,53 +440,5 @@ object Engine {
     } else {
       throw new IllegalArgumentException(s"Unsupported master format $master")
     }
-  }
-
-  private def tryToCheckAndSetSparkProperty(node: Int, core: Int) : Unit = {
-    val coreString = System.getProperty("spark.executor.cores")
-    if(coreString == null) {
-      System.setProperty("spark.executor.cores", core.toString)
-    } else if (coreString.toInt != core) {
-      logger.warn(s"Detect spark.executor.cores is set to $coreString, but you init core number " +
-        s"to $core")
-    }
-
-    val minExecutors = dynamicAllocationExecutor
-    if(minExecutors.isDefined) {
-      if (minExecutors.get != node) {
-        logger.warn(s"Detect minExecutor number to ${minExecutors.get} is not equal to node " +
-          s"number $node")
-      }
-    } else {
-      val maxString = System.getProperty("spark.cores.max")
-      if (maxString == null) {
-        System.setProperty("spark.cores.max", (core * node).toString)
-      } else if (maxString.toInt != core * node) {
-        logger.warn(s"Detect spark.cores.max is set to $maxString, but you init core number " +
-          s"to $core and node number to $node")
-      }
-    }
-    val numExecutorString = System.getProperty("spark.executor.instances")
-    if (numExecutorString == null) {
-      System.setProperty("spark.executor.instances", node.toString)
-    } else if (numExecutorString.toInt != node) {
-      logger.warn(s"Detect spark.executor.instances is set to $numExecutorString, " +
-        s"but you init node number to $node")
-    }
-
-
-    require(System.getProperty("spark.mesos.coarse") != "false", "Don't support mesos " +
-      "fine-grained mode")
-  }
-
-  // Check envs
-  if (Engine.getEngineType() == MklBlas) {
-    if (System.getenv("OMP_NUM_THREADS") != "1"
-      || System.getenv("OMP_WAIT_POLICY") != "passive"
-      || System.getenv("KMP_BLOCKTIME") != "0") {
-      logger.warn(ERROR)
-    }
-  } else {
-    throw new IllegalArgumentException(engineType.toString)
   }
 }

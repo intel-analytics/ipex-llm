@@ -38,8 +38,8 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
     require(input.isContiguous())
     validateParameters()
 
-    val taskSize = input.nElement() / Engine.coreNumber()
-    var extraTaskSize = input.nElement() % Engine.coreNumber()
+    val taskSize = input.nElement() / Engine.model.getPoolSize
+    var extraTaskSize = input.nElement() % Engine.model.getPoolSize
     var allocated = 0
     val tasks = new ArrayBuffer[(Int, Int)]()
     while (allocated < input.nElement()) {
@@ -214,8 +214,8 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
       i += 1
     }
 
-    val taskSize = gradOutput.nElement() / Engine.coreNumber()
-    var extraTaskSize = gradOutput.nElement() % Engine.coreNumber()
+    val taskSize = gradOutput.nElement() / Engine.model.getPoolSize
+    var extraTaskSize = gradOutput.nElement() % Engine.model.getPoolSize
     var allocated = 0
     val tasks = new ArrayBuffer[(Int, Int)]()
     while (allocated < gradOutput.nElement()) {

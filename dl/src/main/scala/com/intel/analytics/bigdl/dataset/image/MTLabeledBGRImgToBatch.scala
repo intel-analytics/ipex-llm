@@ -49,12 +49,14 @@ class MTLabeledBGRImgToBatch[A: ClassTag] private[bigdl](width: Int, height: Int
 
   private val batchSize = Utils.getBatchSize(totalBatchSize)
 
+  private val parallelism = Engine.coreNumber()
+
   private def getPosition(count: AtomicInteger): Int = {
     val position = count.getAndIncrement()
     if (position < batchSize) position else -1
   }
 
-  private lazy val transformers = (1 to Engine.coreNumber()).map(
+  private lazy val transformers = (1 to parallelism).map(
     _ => new PreFetch[A] -> transformer.cloneTransformer()
   ).toArray
 
@@ -74,7 +76,7 @@ class MTLabeledBGRImgToBatch[A: ClassTag] private[bigdl](width: Int, height: Int
 
       override def next(): MiniBatch[Float] = {
         val count = new AtomicInteger(0)
-        val batch = Engine.default.invokeAndWait((0 until Engine.coreNumber()).map(tid => () => {
+        val batch = Engine.default.invokeAndWait((0 until parallelism).map(tid => () => {
           var position = 0
           var record = 0
           while (iterators(tid).hasNext && {

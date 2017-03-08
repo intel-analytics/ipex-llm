@@ -37,7 +37,11 @@ object BGRImgToBatch {
 class BGRImgToBatch(totalBatch: Int, toRGB: Boolean = true)
   extends Transformer[LabeledBGRImage, MiniBatch[Float]] {
 
+  private val batchPerCore = Utils.getBatchSize(totalBatch)
+
   override def apply(prev: Iterator[LabeledBGRImage]): Iterator[MiniBatch[Float]] = {
+    val batchSizePerCore = batchPerCore
+
     new Iterator[MiniBatch[Float]] {
       private val featureTensor: Tensor[Float] = Tensor[Float]()
       private val labelTensor: Tensor[Float] = Tensor[Float]()
@@ -45,7 +49,7 @@ class BGRImgToBatch(totalBatch: Int, toRGB: Boolean = true)
       private var labelData: Array[Float] = null
       private var width = 0
       private var height = 0
-      private val batchSize = Utils.getBatchSize(totalBatch)
+      private val batchSize = batchSizePerCore
 
       override def hasNext: Boolean = prev.hasNext
 
