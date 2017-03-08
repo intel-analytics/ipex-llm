@@ -48,7 +48,7 @@ class SplitTable[T: ClassTag](
   private def getPositiveDimension(input: Tensor[T]): Int = {
     if (dimension < 0) {
       input.dim() + dimension + 1
-    } else if (dimension != Int.MinValue && input.dim() == nInputDims + 1) {
+    } else if (dimension != Int.MaxValue && input.dim() == nInputDims + 1) {
       dimension + 1
     } else {
       dimension
