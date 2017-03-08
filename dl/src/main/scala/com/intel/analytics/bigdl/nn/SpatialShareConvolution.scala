@@ -80,7 +80,7 @@ class SpatialShareConvolution[T: ClassTag](
       val batchSize = input.size(1)
       output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
 
-      val coresNum = Math.min(batchSize, Engine.coreNumber)
+      val coresNum = Math.min(batchSize, Engine.model.getPoolSize)
       fInput.resize(Array(coresNum, nGroup, kernelW * kernelH * nInputPlane / nGroup,
         outputHeight * outputWidth))
 
@@ -89,8 +89,8 @@ class SpatialShareConvolution[T: ClassTag](
       }
 
       var i, j = 0
-      val minJobNum: Int = batchSize / Engine.coreNumber
-      val remainJobNum: Int = batchSize - minJobNum * Engine.coreNumber
+      val minJobNum: Int = batchSize / Engine.model.getPoolSize
+      val remainJobNum: Int = batchSize - minJobNum * Engine.model.getPoolSize
 
       while (j < coresNum) {
         val _j = j
@@ -152,17 +152,17 @@ class SpatialShareConvolution[T: ClassTag](
     } else {
       val batchSize = input.size(1)
       val (outputWidth, outputHeight, _, _) = calcOutputWH(input)
-      fGradInput.resize(Array(Engine.coreNumber, nGroup, kernelW * kernelH * nInputPlane / nGroup,
-        outputHeight * outputWidth))
+      fGradInput.resize(Array(Engine.model.getPoolSize, nGroup,
+        kernelW * kernelH * nInputPlane / nGroup, outputHeight * outputWidth))
 
-      val coresNum = Math.min(batchSize, Engine.coreNumber)
+      val coresNum = Math.min(batchSize, Engine.model.getPoolSize)
       if (results == null || results.length != coresNum) {
         results = new Array[Future[Unit]](coresNum)
       }
 
       var i, j = 0
-      val minJobNum: Int = batchSize / Engine.coreNumber
-      val remainJobNum: Int = batchSize - minJobNum * Engine.coreNumber
+      val minJobNum: Int = batchSize / Engine.model.getPoolSize
+      val remainJobNum: Int = batchSize - minJobNum * Engine.model.getPoolSize
       while (j < coresNum) {
         val _j = j
         results(j) = Engine.model.invoke(() => {
@@ -239,17 +239,17 @@ class SpatialShareConvolution[T: ClassTag](
       if (onesBatch.dim() != 1 || onesBatch.size(1) != batchSize) {
         onesBatch.resize(Array(batchSize)).fill(ev.fromType(1.0))
       }
-      val coresNum = Math.min(batchSize, Engine.coreNumber)
+      val coresNum = Math.min(batchSize, Engine.model.getPoolSize)
       if (results == null || results.length != coresNum) {
         results = new Array[Future[Unit]](coresNum)
       }
 
       var i, j = 0
-      val minJobNum: Int = batchSize / Engine.coreNumber
-      val remainJobNum: Int = batchSize - minJobNum * Engine.coreNumber
+      val minJobNum: Int = batchSize / Engine.model.getPoolSize
+      val remainJobNum: Int = batchSize - minJobNum * Engine.model.getPoolSize
       val (outputWidth, outputHeight, inputWidth, inputHeight) = calcOutputWH(input)
-      fInput.resize(Array(Engine.coreNumber, nGroup, kernelW * kernelH * nInputPlane / nGroup,
-        outputHeight * outputWidth))
+      fInput.resize(Array(Engine.model.getPoolSize, nGroup,
+        kernelW * kernelH * nInputPlane / nGroup, outputHeight * outputWidth))
       while (j < coresNum) {
         val _j = j
         results(j) = Engine.model.invoke(() => {

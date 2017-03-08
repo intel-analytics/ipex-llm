@@ -47,13 +47,17 @@ class GreyImgToBatch private[dataset](totalBatchSize: Int)
     }
   }
 
+  private val batchPerCore = Utils.getBatchSize(totalBatchSize)
+
   override def apply(prev: Iterator[LabeledGreyImage]): Iterator[MiniBatch[Float]] = {
+    val batchSizePerCore = batchPerCore
+
     new Iterator[MiniBatch[Float]] {
       private val featureTensor: Tensor[Float] = Tensor[Float]()
       private val labelTensor: Tensor[Float] = Tensor[Float]()
       private var featureData: Array[Float] = null
       private var labelData: Array[Float] = null
-      private val batchSize = Utils.getBatchSize(totalBatchSize)
+      private val batchSize = batchSizePerCore
       private var width = 0
       private var height = 0
 

@@ -28,11 +28,14 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{SequenceFile, Text}
 import org.apache.hadoop.io.SequenceFile.Reader
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-@com.intel.analytics.bigdl.tags.Parallel
-class TransformersSpec extends FlatSpec with Matchers {
+class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
   import com.intel.analytics.bigdl.utils.TestUtils._
+
+  before {
+    Engine.init(1, 1, false, false, false)
+  }
 
   "Grey Image Cropper" should "crop image correct" in {
     val image = new LabeledGreyImage(32, 32)

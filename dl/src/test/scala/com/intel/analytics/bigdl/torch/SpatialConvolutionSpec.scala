@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{Sequential, SpatialConvolution}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -31,6 +32,7 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers 
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
+    Engine.init(1, 4, false, false, false)
   }
 
   "A SpatialConvolution" should "generate correct output" in {

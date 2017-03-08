@@ -18,11 +18,15 @@ package com.intel.analytics.bigdl.parameters
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.utils.Engine
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
 
 @com.intel.analytics.bigdl.tags.Parallel
-class FP16ParameterSpec extends FlatSpec with Matchers {
+class FP16ParameterSpec extends FlatSpec with Matchers with BeforeAndAfter {
+
+  before {
+    Engine.init(1, 4, false, false, false)
+  }
 
   "convert double tensor to fp16 array and back" should "be same when the number is integer" in {
     val tensor = Tensor[Double](5)

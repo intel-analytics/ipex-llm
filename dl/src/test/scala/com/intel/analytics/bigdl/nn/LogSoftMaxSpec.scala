@@ -16,11 +16,18 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.torch.TH
+import com.intel.analytics.bigdl.utils.Engine
 
 @com.intel.analytics.bigdl.tags.Parallel
-class LogSoftMaxSpec extends FlatSpec with Matchers {
+class LogSoftMaxSpec extends FlatSpec with Matchers with BeforeAndAfter {
+  before {
+    Engine.init(1, 4, false, false, false)
+  }
+
+
   "A LogSoftMax Module " should "generate correct output" in {
     val module = new LogSoftMax[Double]()
     val input = Tensor[Double](2)
