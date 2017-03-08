@@ -25,6 +25,18 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+/**
+ * Long Short Term Memory architecture.
+ * Ref. A.: http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
+ * B. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
+ * C. http://arxiv.org/pdf/1503.04069v1.pdf
+ * D. https://github.com/wojzaremba/lstm
+ *
+ * @param inputSize the size of each input vector
+ * @param hiddenSize Hidden unit size in the LSTM
+ * @param p p is the threshold for Dropout. If p equals 0, create
+ *          a LSTM without Dropout
+ */
 class LSTM[T : ClassTag] (
   inputSize: Int = 4,
   hiddenSize: Int = 3,

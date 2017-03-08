@@ -15,11 +15,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models
+package com.intel.analytics.bigdl.nn
 
 import java.io.PrintWriter
 
-import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
