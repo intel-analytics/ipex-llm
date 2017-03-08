@@ -24,6 +24,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 
+@com.intel.analytics.bigdl.tags.Serial
 class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc: SparkContext = null
 

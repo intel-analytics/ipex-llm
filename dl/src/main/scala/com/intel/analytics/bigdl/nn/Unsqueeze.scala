@@ -42,7 +42,7 @@ class Unsqueeze[T: ClassTag](
   }
 
   private def getActualPosition(input: Tensor[T]) : Int = {
-    // get valid dimesion offset for batchMode (if any)
+    // get valid dimension offset for batchMode (if any)
     val inputDim = input.dim() // data batch dim
     numInputDims = if (numInputDims != Int.MinValue) numInputDims else inputDim // feature map dim
     val offsetDim = inputDim - numInputDims

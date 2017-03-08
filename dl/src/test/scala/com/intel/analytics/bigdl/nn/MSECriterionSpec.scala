@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.math._
 
+@com.intel.analytics.bigdl.tags.Parallel
 class MSECriterionSpec extends FlatSpec {
   "A MSE Criterion " should "generate correct output and grad" in {
     val mse = new MSECriterion[Double]

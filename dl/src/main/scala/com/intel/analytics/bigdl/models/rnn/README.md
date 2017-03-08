@@ -40,6 +40,25 @@ Example command:
 ```
 
 ##Test the Model
+
+Please create a <code>test.txt</code> file under the folder in which you save your dictionary during training process.
+A sample <code>test.txt</code> can be as follows. Each line starts with several trigger words and ends with a period. The test script will load in the trained model and <code>test.txt</code>, then it will generate the following words per line.
+```
+Long live the.
+Upon her head.
+Her hair, nor loose.
+A thousand favours.
+This said, in top of rage.
+When forty winters shall.
+And dig deep trenches in.
+Then being ask'd where.
+Look in thy glass,.
+Now is the time that.
+Thou dost beguile.
+But if thou live,.
+Each eye that saw him.
+```
+
 Example command:
 ```bash
 ./dist/bin/bigdl.sh -- java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Test -f /textdirectory --model /modeldirectory/model.iterationNumber --state /modeldirectory/state.iterationNumber -c 4 --words 20

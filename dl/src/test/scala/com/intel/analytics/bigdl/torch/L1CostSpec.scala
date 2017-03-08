@@ -23,6 +23,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
+@com.intel.analytics.bigdl.tags.Serial
 class L1CostSpec extends FlatSpec with BeforeAndAfter with Matchers{
   before {
     if (!TH.hasTorch()) {

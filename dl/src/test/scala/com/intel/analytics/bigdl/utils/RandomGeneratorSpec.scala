@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.utils
 
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-
+@com.intel.analytics.bigdl.tags.Parallel
 class RandomGeneratorSpec extends FlatSpec with BeforeAndAfter with Matchers {
   "uniform" should "return correct value" in {
     val a = new RandomGenerator(100)

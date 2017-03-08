@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class ConcatSpec extends FlatSpec with Matchers {
 
   "toString" should "return good value" in {

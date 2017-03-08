@@ -21,7 +21,9 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.math.abs
+import com.intel.analytics.bigdl._
 
+@com.intel.analytics.bigdl.tags.Parallel
 class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
   "A SpatialAveragePooling" should "generate correct output and gradInput" in {
     val module = new SpatialAveragePooling[Double](3, 2, 2, 1)
@@ -262,7 +264,7 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
   "A SpatialAvgPooling of float" should "be good in gradient checker" in {
     val module = new SpatialAveragePooling[Float](2, 2)
     val input = Tensor[Float](1, 3, 3).rand()
-    val checker = new GradientChecker(1e-2, 1e-2)
-    checker.checkLayer(module, input) should be(true)
+    val checker = new GradientChecker(1e-4, 1e-2)
+    checker.checkLayer[Float](module, input) should be(true)
   }
 }

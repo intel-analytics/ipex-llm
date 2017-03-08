@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.AbsCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Serial
 class AbsCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers{
   before {
     if (!TH.hasTorch()) {

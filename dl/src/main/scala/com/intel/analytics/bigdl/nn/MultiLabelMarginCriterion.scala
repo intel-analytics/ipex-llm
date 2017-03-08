@@ -38,18 +38,21 @@ class MultiLabelMarginCriterion[T: ClassTag]
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     if (null == isTarget) isTarget = Tensor[T]()
-    require(input.nDimension() == 1 || input.nDimension() == 2, "vector or matrix expected")
+    require(input.nDimension() == 1 || input.nDimension() == 2,
+      "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
     val (nframe, dim) = if (input.nDimension() == 1) {
       require(target.nDimension() == 1 && target.size(1) == input.size(1),
-        "inconsistent target size")
+        "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
       (1, input.size(1))
     } else {
-      require(target.nDimension() == 2 && target.size(1) == input.size(1) &&
-        target.size(2) == input.size(2), "inconsistent target size")
+      require(target.nDimension() == 2 && target.size(1) == input.size(1) && target.size(2)
+        == input.size(2), "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
       (input.size(1), input.size(2))
     }
-    require(ev.isGreaterEq(target.min(), ev.fromType(0)) &&
-      ev.isGreaterEq(ev.fromType(dim), target.max()), "target out of range")
+    require(ev.isGreaterEq(target.min(), ev.zero) &&
+      ev.isGreaterEq(ev.fromType(dim), target.max()), "MultiLabelMarginCriterion: " +
+      s"target out of range, target min should be greater than or equal to zero, but get " +
+      s"${target.min()}, target max should be less than or equal to $dim, but get ${target.max()}")
 
     val _target = target.contiguous()
     val _input = input.contiguous()
@@ -107,25 +110,29 @@ class MultiLabelMarginCriterion[T: ClassTag]
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     require(input.nDimension() == 1 || input.nDimension() == 2,
-      "vector or matrix expected")
+      "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
     val (nframe, dim) = if (input.nDimension() == 1) {
       require(target.nDimension() == 1 && target.size(1) == input.size(1),
-        "inconsistent target size")
+        "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
       require(isTarget.nDimension() == 1 && isTarget.size(1) == input.size(1),
-        "inconsistent isTarget size")
+        "MultiLabelMarginCriterion: inconsistent isTarget size")
       (1, input.size(1))
     } else {
-      require(target.nDimension() == 2 && target.size(1) == input.size(1) &&
-        target.size(2) == input.size(2), "inconsistent target size")
+      require(target.nDimension() == 2 && target.size(1) == input.size(1) && target.size(2)
+        == input.size(2), "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
       require(isTarget.nDimension() == 2 && isTarget.size(1) == input.size(1) &&
-        isTarget.size(2) == input.size(2), "inconsistent isTarget size")
+        isTarget.size(2) == input.size(2), "MultiLabelMarginCriterion: inconsistent isTarget size")
       (input.size(1), input.size(2))
     }
 
-    require(ev.isGreaterEq(target.min(), ev.fromType(0)) &&
-      ev.isGreaterEq(ev.fromType(dim), target.max()), "target out of range")
-    require(ev.isGreaterEq(isTarget.min(), ev.fromType(0)) &&
-      ev.isGreaterEq(ev.fromType(dim), isTarget.max()), "target out of range")
+    require(ev.isGreaterEq(target.min(), ev.zero) &&
+      ev.isGreaterEq(ev.fromType(dim), target.max()), "MultiLabelMarginCriterion: " +
+      s"target out of range, target min should be greater than or equal to zero, but get " +
+      s"${target.min()}, target max should be less than or equal to $dim, but get ${target.max()}")
+
+    require(ev.isGreaterEq(isTarget.min(), ev.zero) &&
+      ev.isGreaterEq(ev.fromType(dim), isTarget.max()), "MultiLabelMarginCriterion: " +
+      "target out of range")
 
     val _target = target.contiguous()
     val _input = input.contiguous()

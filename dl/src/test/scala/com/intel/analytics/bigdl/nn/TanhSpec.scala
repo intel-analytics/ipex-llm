@@ -17,11 +17,13 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl._
+import org.scalatest.{FlatSpec, Matchers}
 
 import scala.math.abs
 
+@com.intel.analytics.bigdl.tags.Parallel
 class TanhSpec extends FlatSpec with Matchers {
   "A Tanh Module " should "generate correct output and grad" in {
     val module = new Tanh[Double]()
@@ -81,7 +83,7 @@ class TanhSpec extends FlatSpec with Matchers {
     val module = new Tanh[Double]()
     val input = Tensor[Double](2, 2, 2).rand()
 
-    val checker = new GradientChecker(1e-2, 1e-2)
-    checker.checkLayer(module, input) should be(true)
+    val checker = new GradientChecker(1e-4, 1e-2)
+    checker.checkLayer[Double](module, input) should be(true)
   }
 }

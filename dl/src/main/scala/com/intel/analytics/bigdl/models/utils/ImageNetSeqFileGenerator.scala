@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.models.utils
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{BGRImgToLocalSeqFile, LocalImgReader, LocalImageFiles}
+import com.intel.analytics.bigdl.dataset.image._
 import scopt.OptionParser
 
 object ImageNetSeqFileGenerator {
@@ -32,7 +32,8 @@ object ImageNetSeqFileGenerator {
     train: Boolean = true,
     validate: Boolean = true,
     scaleSize: Int = 256,
-    isResize: Boolean = false
+    isResize: Boolean = false,
+    hasName: Boolean = false
   )
 
   private val parser = new OptionParser[ImageNetSeqFileGeneratorParams]("Spark-DL ImageNet " +
@@ -62,7 +63,11 @@ object ImageNetSeqFileGenerator {
     opt[Unit]('r', "resize")
       .text("resize to (scaleSize, scaleSize) instead of uniform scale")
       .action((x, c) => c.copy(isResize = true))
+    opt[Unit]('h', "hasName")
+      .text("add name to seq file")
+      .action((x, c) => c.copy(hasName = true))
   }
+
 
   def main(args: Array[String]): Unit = {
     parser.parse(args, new ImageNetSeqFileGeneratorParams()).map(param => {
@@ -79,12 +84,12 @@ object ImageNetSeqFileGenerator {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
               val imageIter = if (param.isResize) {
-                LocalImgReader(param.scaleSize, param.scaleSize, 255f)(iter)
+                LocalImgReaderWithName(param.scaleSize, param.scaleSize, 255f)(iter)
               } else {
-                LocalImgReader(param.scaleSize)(iter)
+                LocalImgReaderWithName(param.scaleSize)(iter)
               }
               val fileIter = BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "train",
-                  s"imagenet-seq-$tid"))(imageIter)
+                  s"imagenet-seq-$tid"), param.hasName)(imageIter)
               while (fileIter.hasNext) {
                 println(s"Generated file ${fileIter.next()}")
               }
@@ -104,18 +109,19 @@ object ImageNetSeqFileGenerator {
           s"${validationFolderPath} is not valid")
 
         val validationDataSet = DataSet.ImageFolder.paths(validationFolderPath)
+
         validationDataSet.shuffle()
         val iter = validationDataSet.data(train = false)
         (0 until param.parallel).map(tid => {
           val workingThread = new Thread(new Runnable {
             override def run(): Unit = {
               val imageIter = if (param.isResize) {
-                LocalImgReader(param.scaleSize, param.scaleSize, 255f)(iter)
+                LocalImgReaderWithName(param.scaleSize, param.scaleSize, 255f)(iter)
               } else {
-                LocalImgReader(param.scaleSize)(iter)
+                LocalImgReaderWithName(param.scaleSize)(iter)
               }
               val fileIter = BGRImgToLocalSeqFile(param.blockSize, Paths.get(param.output, "val",
-                  s"imagenet-seq-$tid"))(imageIter)
+                  s"imagenet-seq-$tid"), param.hasName)(imageIter)
               while (fileIter.hasNext) {
                 println(s"Generated file ${fileIter.next()}")
               }
@@ -131,3 +137,4 @@ object ImageNetSeqFileGenerator {
     println("Done")
   }
 }
+

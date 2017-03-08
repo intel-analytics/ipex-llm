@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.utils.T
 
 import scala.reflect.ClassTag
 
+@com.intel.analytics.bigdl.tags.Parallel
 class GradientCheckerRNN(stepSize: Double = 0.01, threshold: Double = 0.01) {
 
   def checkLayer[T: ClassTag](

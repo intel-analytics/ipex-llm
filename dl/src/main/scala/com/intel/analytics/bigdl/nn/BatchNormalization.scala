@@ -17,15 +17,14 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
-import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 3181824540272906068L)
@@ -51,7 +50,12 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   val gradBias: Tensor[T] = if (affine) Tensor[T](nOutput) else null
 
   @transient
-  private var results: Array[Future[_]] = null
+  private var results : Array[Future[_]] = null
+  @transient
+  // BatchNormalization has internal parameters (saveMean, saveStd)
+  // that changes at every forward, so a standard gradcheck won't work with this module.
+  // if you want to do a gradcheck, you will need to fix those variables, otherwise not fix.
+  private var needFix: Boolean = false
 
   reset()
 
@@ -67,6 +71,13 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     runningMean.zero()
     runningVar.fill(ev.fromType[Int](1))
     zeroGradParameters()
+  }
+
+  @inline
+  // to fix internal parameters (saveMean, saveStd)
+  def setInit(status: Boolean = true): this.type = {
+    needFix = status
+    this
   }
 
   @inline
@@ -178,6 +189,12 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
           invstd = 1 / Math.sqrt(ev.toType[Double](runningVar.valueAt(_f)) + eps)
         }
 
+        if (needFix) {
+          mean = 0
+          invstd = 0.0001
+          saveMean.zero().fill(ev.fromType(mean))
+          saveStd.zero().fill(ev.fromType(invstd))
+        }
         val w = if (null != weight) ev.toType[Double](weight.valueAt(_f)) else 1.0
         val b = if (null != bias) ev.toType[Double](bias.valueAt(_f)) else 0.0
 
@@ -240,6 +257,13 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
         } else {
           mean = ev.toType[Float](runningMean.valueAt(_f))
           invstd = 1 / Math.sqrt(ev.toType[Double](runningVar.valueAt(_f)) + eps).toFloat
+        }
+
+        if (needFix) {
+          mean = 0
+          invstd = 0.0001f
+          saveMean.zero().fill(ev.fromType(mean))
+          saveStd.zero().fill(ev.fromType(invstd))
         }
 
         val w = if (null != weight) ev.toType[Float](weight.valueAt(_f)) else 1.0f
@@ -576,19 +600,66 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     Engine.model.sync(results)
   }
 
+  override def copyStatus(src: Module[T]): this.type = {
+    require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
+    val srcModule = src.asInstanceOf[BatchNormalization[T]]
+    runningMean.copy(srcModule.runningMean)
+    runningVar.copy(srcModule.runningVar)
+    this
+  }
+
   override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
+    if (affine) {
+      gradWeight.zero()
+      gradBias.zero()
+    }
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    if (affine) {
+      (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    } else {
+      null
+    }
+  }
+
+  override def getParametersTable(): Table = {
+    if (affine) {
+      T(getName() -> T("weight" -> weight, "bias" -> bias,
+        "gradWeight" -> gradWeight, "gradBias" -> gradBias,
+        "runningMean" -> runningMean, "runningVar" -> runningVar))
+    } else {
+      T(getName() -> T("runningMean" -> runningMean, "runningVar" -> runningVar))
+    }
   }
 
   override def toString(): String = {
     s"nn.BatchNormalization($nOutput, $eps, $momentum, $affine)"
   }
 
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[BatchNormalization[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: BatchNormalization[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        nDim == that.nDim &&
+        runningMean == that.runningMean &&
+        runningVar == that.runningVar &&
+        weight == that.weight &&
+        bias == that.bias &&
+        nOutput == that.nOutput &&
+        eps == that.eps &&
+        momentum == that.momentum &&
+        affine == that.affine
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), nDim, runningMean, runningVar, weight, bias,
+      nOutput, eps, momentum, affine)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 object BatchNormalization {

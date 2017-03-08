@@ -25,6 +25,18 @@ import scala.reflect.ClassTag
 /**
  * This module adds pad units of padding to dimension dim of the input. If pad is negative,
  * padding is added to the left, otherwise, it is added to the right of the dimension.
+ *
+ * The input to this layer is expected to be a tensor, or a batch of tensors;
+ * when using mini-batch, a batch of sample tensors will be passed to the layer and
+ * the user need to specify the number of dimensions of each sample tensor in the
+ * batch using nInputDims.
+ *
+ * @param dim the dimension to be applied padding operation
+ * @param pad num of the pad units
+ * @param nInputDim specify the number of dimensions that this module will receive
+ *                  If it is more than the dimension of input tensors, the first dimension
+ *                  would be considered as batch size
+ * @param value padding value
  */
 @SerialVersionUID(- 3401298839313169602L)
 class Padding[T: ClassTag](

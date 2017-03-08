@@ -510,7 +510,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def valueAt(d1: Int): T = {
-    require(1 == this.nDimension, "invalid size")
+    require(1 == this.nDimension, s"invalid size: 1 == ${this.nDimension}")
     var offset = this._storageOffset
     offset += getOffset(d1 - 1, 1)
     this._storage(offset)
@@ -1428,7 +1428,11 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def reshape(sizes: Array[Int]): Tensor[T] = {
-    require(sizes.reduce(_ * _) == this.nElement())
+    require(sizes.product == this.nElement(),
+      "DenseTensor: nElement of this tensor is not equal to nElement specified by sizes," +
+        s" specified sizes = (${sizes.mkString(",")})," +
+        s" nElement specified by sizes = ${sizes.reduce(_ * _)}," +
+        s" nElement of this tensor = ${this.nElement()}")
     val result = new DenseTensor[T]()
     result.resize(sizes)
     result.copy(this)
@@ -1625,7 +1629,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
   /**
-   * mplements < operator comparing each element in x with y
+   * Implements < operator comparing each element in x with y
    *
    * @param x
    * @param y
@@ -1648,7 +1652,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   /**
-   * mplements <= operator comparing each element in x with y
+   * Implements <= operator comparing each element in x with y
    *
    * @param x
    * @param y
@@ -1871,6 +1875,17 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       }
     }
     this
+  }
+
+  override def toTensor[D](implicit env: TensorNumeric[D]): Tensor[D] = {
+    if (ev.getType() == env.getType()) {
+      this.asInstanceOf[Tensor[D]]
+    } else {
+      throw new IllegalArgumentException(s"The type ${env.getType().getClass}" +
+        s" in toTensor[${env.getType().getClass}] is not same" +
+        s"as the numeric type ${ev.getType().getClass} of the " +
+        "corresponding module, please keep them same.")
+    }
   }
 }
 

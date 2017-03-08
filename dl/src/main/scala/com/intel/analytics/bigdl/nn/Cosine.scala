@@ -20,14 +20,20 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
 /**
- * the cosine similarity of the input to k mean centers
+ * [[Cosine]] calculates the cosine similarity of the input to k mean centers.
+ * The input given in `forward(input)` must be either
+ * a vector (1D tensor) or matrix (2D tensor). If the input is a vector, it must
+ * have the size of `inputSize`. If it is a matrix, then each row is assumed to be
+ * an input sample of given batch (the number of rows means the batch size and
+ * the number of columns should be equal to the `inputSize`).
  *
- * @param inputSize input size
- * @param outputSize output size
+ * @param inputSize the size of each input sample
+ * @param outputSize the size of the module output of each sample
  */
 
 @SerialVersionUID(- 8739169489135761430L)
@@ -59,7 +65,8 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2, "input must be vector or matrix")
+    require(input.dim() == 1 || input.dim() == 2,
+      "Cosine: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
     if (null == _weightNorm) _weightNorm = Tensor[T]()
     if (null == _inputNorm) _inputNorm = Tensor[T]()
@@ -92,7 +99,8 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]) : Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2, "input must be vector or matrix")
+    require(input.dim() == 1 || input.dim() == 2,
+      "Cosine: " + ErrorInfo.constrainInputAsVectorOrBatch)
     val nElement = gradInput.nElement()
     gradInput.resizeAs(input)
     if (gradInput.nElement() != nElement) gradInput.zero()
@@ -130,7 +138,8 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
    scale: Double = 1.0): Unit = {
-    require(input.dim() == 1 || input.dim() == 2, "input must be vector or matrix")
+    require(input.dim() == 1 || input.dim() == 2,
+      "Cosine: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
     if (input.dim() == 1) {
       _gradOutput.resizeAs(gradOutput).copy(gradOutput)
@@ -174,14 +183,20 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
     (Array(this.weight), Array(this.gradWeight))
   }
 
+  override def getParametersTable(): Table = {
+    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
+  }
+
   override def toString(): String = {
     s"nn.Cosine($inputSize, $outputSize)"
   }
 
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Contiguous[T]]
+
   override def equals(other: Any): Boolean = other match {
     case that: Cosine[T] =>
       super.equals(that) &&
-        (that.eq(this)) &&
+        (that canEqual this) &&
         weight == that.weight &&
         inputSize == that.inputSize &&
         outputSize == that.outputSize

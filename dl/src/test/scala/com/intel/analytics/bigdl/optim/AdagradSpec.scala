@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.collection.mutable.ArrayBuffer
 
+@com.intel.analytics.bigdl.tags.Parallel
 class AdagradSpec extends FlatSpec with Matchers {
   "adagrad" should "perform well on rosenbrock function" in {
     val x = Tensor[Double](2).fill(0)

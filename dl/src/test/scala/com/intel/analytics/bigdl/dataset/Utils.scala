@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.dataset
 
+@com.intel.analytics.bigdl.tags.Parallel
 object TestUtils {
   def processPath(path: String): String = {
     if (path.contains(":")) {

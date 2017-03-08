@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Serial
 class DropoutSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
@@ -30,7 +31,7 @@ class DropoutSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   // Todo: Test when input is contiguous
-  "Dropout module" should "converate to correct weight and bias" in {
+  "Dropout module" should "converge to correct weight and bias" in {
     val module = new Dropout[Double](0.7, false, true)
     val input = Tensor[Double](100, 100).t
     val seed = 100

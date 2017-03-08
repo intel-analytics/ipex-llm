@@ -112,11 +112,17 @@ class ThreadPool(private var poolSize: Int) {
   }
 
   def invokeAndWait2[T](tasks: Seq[() => T], timeout: Long = Long.MaxValue,
-                        timeUnit: TimeUnit = TimeUnit.NANOSECONDS):
-                        scala.collection.mutable.Buffer[java.util.concurrent.Future[T]] = {
+    timeUnit: TimeUnit = TimeUnit.NANOSECONDS):
+    scala.collection.mutable.Buffer[java.util.concurrent.Future[T]] = {
     val callables = tasks.map(task => new Callable[T] {
       override def call(): T = {
-        task()
+        try {
+          task()
+        } catch {
+          case t : Throwable =>
+            logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+            throw t
+        }
       }
     })
     threadPool.invokeAll(callables.asJava, timeout, timeUnit).asScala
@@ -218,6 +224,13 @@ object Engine {
     (count == 1)
   }
 
+  /**
+   * Reset the singleton flag
+   */
+  def resetSingletonFlag(): Unit = {
+    singletonCounter.set(0)
+  }
+
   private var physicalCoreNumber = {
     val env = System.getenv("DL_CORE_NUMBER")
     if(env == null) {
@@ -263,7 +276,7 @@ object Engine {
     if (dlEngineType == null || dlEngineType.toLowerCase == "mklblas") {
       MklBlas
     } else {
-      throw new Error(s"Unkown DL_ENGINE_TYPE. $ERROR")
+      throw new Error(s"Unknown DL_ENGINE_TYPE. $ERROR")
     }
   }
 
@@ -296,38 +309,44 @@ object Engine {
     model
   }
 
+  private[bigdl] def setNodeAndCore(nodeNum: Int, coreNum: Int): Unit = {
+    initModelThreadPool()
+    this.nodeNum = Some(nodeNum)
+    this.physicalCoreNumber = coreNum
+    this._isInitialized = true
+  }
+
+  private def calcSparkconf(): Option[SparkConf] = {
+    val sc = if (engineType == MklBlas) {
+      new SparkConf()
+        .setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
+        .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
+        .setExecutorEnv("KMP_BLOCKTIME", "0")
+        .setExecutorEnv("OMP_WAIT_POLICY", "passive")
+        .setExecutorEnv("OMP_NUM_THREADS", "1")
+        .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
+        .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
+        // Note that this is removed after Spark 1.6
+        .set("spark.shuffle.blockTransferService", "nio")
+        .set("spark.shuffle.reduceLocality.enabled", "false")
+        .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
+    } else {
+      throw new IllegalArgumentException(engineType.toString)
+    }
+    Some(sc)
+  }
+
   def init(
     node: Int,
     cores: Int,
     onSpark: Boolean = false
   ): Option[SparkConf] = {
-    val ret = if (onSpark) {
-      nodeNum = Some(node)
-      physicalCoreNumber = cores
-      _model = initModelThreadPool()
-      val sc = if (engineType == MklBlas) {
-        new SparkConf()
-          .setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
-          .setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
-          .setExecutorEnv("KMP_BLOCKTIME", "0")
-          .setExecutorEnv("OMP_WAIT_POLICY", "passive")
-          .setExecutorEnv("OMP_NUM_THREADS", "1")
-          .setExecutorEnv("DL_CORE_NUMBER", coreNumber().toString)
-          .setExecutorEnv("DL_NODE_NUMBER", nodeNum.get.toString)
-          .set("spark.shuffle.blockTransferService", "nio")
-          .set("spark.akka.frameSize", "10")
-          .set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
-      } else {
-        throw new IllegalArgumentException(engineType.toString)
-      }
-      Some(sc)
+    setNodeAndCore(node, cores)
+    if (onSpark) {
+      calcSparkconf()
     } else {
-      physicalCoreNumber = cores
       None
     }
-    _isInitialized = true
-
-    ret
   }
 
   // Check envs

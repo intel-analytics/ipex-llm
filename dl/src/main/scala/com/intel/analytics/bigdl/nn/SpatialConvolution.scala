@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.{Engine, EngineType, MklBlas, RandomGenerator}
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.concurrent.duration.Duration
@@ -103,10 +103,11 @@ class SpatialConvolution[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3 || input.dim() == 4, "Only support 3D or 4D(batch mode) input")
+    require(input.dim() == 3 || input.dim() == 4,
+      "SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
     require(input.isContiguous())
 
-    if (weightMM == null) {
+    if (weightMM == null || weightMM.storage().isEmpty) {
       weightMM = weight.view(nGroup, nOutputPlane / nGroup,
         nInputPlane * kernelH * kernelW / nGroup)
     }
@@ -119,7 +120,8 @@ class SpatialConvolution[T: ClassTag](
     val outputWidth = (inputWidth + 2 * padW - kernelW) / strideW + 1
     val outputHeight = (inputHeight + 2 * padH - kernelH) / strideH + 1
 
-    require(outputWidth >= 1 && outputHeight >= 1, "output size is too small")
+    require(outputWidth >= 1 && outputHeight >= 1,
+      s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")
 
     if (onesBias.dim() != 1 || onesBias.size(1) != outputHeight * outputWidth) {
       onesBias.resize(Array(outputHeight * outputWidth)).fill(ev.fromType(1.0))
@@ -332,6 +334,11 @@ class SpatialConvolution[T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+  }
+
+  override def getParametersTable(): Table = {
+    T(getName() -> T("weight" -> weight, "bias" -> bias,
+      "gradWeight" -> gradWeight, "gradBias" -> gradBias))
   }
 
   override def equals(obj: Any): Boolean = {

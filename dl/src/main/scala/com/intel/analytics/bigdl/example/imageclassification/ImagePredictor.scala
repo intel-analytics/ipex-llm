@@ -18,14 +18,14 @@ package com.intel.analytics.bigdl.example.imageclassification
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.dataset.image.{LocalImageFiles, _}
+import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.example.imageclassification.MlUtils._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.{DLClassifier => SparkDLClassifier}
 import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.ml.{DLClassifier => SparkDLClassifier}
 import org.apache.spark.sql.SQLContext
 
 /**
@@ -49,10 +49,8 @@ object ImagePredictor {
       val sc = scc.get
       val sqlContext = new SQLContext(sc)
 
-      val partitionNum = Engine.nodeNumber()
-          .getOrElse(throw new RuntimeException("can't get node number"))
-
       val model = loadModel(param)
+      val partitionNum = param.nodeNumber * param.coreNumber
       val valTrans = new SparkDLClassifier()
         .setInputCol("features")
         .setOutputCol("predict")
@@ -62,11 +60,15 @@ object ImagePredictor {
         valTrans.batchShape ->
         Array(param.batchSize, 3, imageSize, imageSize))
 
-      // load image set
-      val paths = LocalImageFiles.readPaths(Paths.get(param.folder), hasLabel = false)
-      val imageSet = imagesLoad(paths, 256)
+      val valRDD = if (param.isHdfs) {
+        // load image set from hdfs
+        imagesLoadSeq(param.folder, sc, param.classNum).coalesce(partitionNum, true)
+      } else {
+        // load image set from local
+        val paths = LocalImageFiles.readPaths(Paths.get(param.folder), hasLabel = false)
+        sc.parallelize(imagesLoad(paths, 256), partitionNum)
+      }
 
-      val valRDD = sc.parallelize(imageSet).repartition(partitionNum)
       val transf = RowToByteRecords() ->
           BytesToBGRImg() ->
           BGRImgCropper(imageSize, imageSize) ->
@@ -77,8 +79,9 @@ object ImagePredictor {
 
       valTrans.transform(valDF, paramsTrans)
           .select("imageName", "predict")
-          .show(param.showNum)
-
+          .collect()
+          .take(param.showNum)
+          .foreach(println)
       sc.stop()
     })
   }

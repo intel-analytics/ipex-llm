@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
  * an input image, since there is only one feature, the region is only spatial. For
  * an RGB image, the weighted average is taken over RGB channels and a spatial region.
  *
- * If the kernel is 1D, then it will be used for constructing and seperable 2D kernel.
+ * If the kernel is 1D, then it will be used for constructing and separable 2D kernel.
  * The operations will be much more efficient in this case.
  *
  * The kernel is generally chosen as a gaussian when it is believed that the correlation

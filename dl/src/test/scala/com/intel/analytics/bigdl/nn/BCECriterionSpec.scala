@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class BCECriterionSpec extends FlatSpec with Matchers {
 
   "BCECriterion " should "return return right output and gradInput" in {

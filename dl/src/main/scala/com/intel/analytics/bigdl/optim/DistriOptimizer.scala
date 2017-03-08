@@ -18,7 +18,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch, DataSet => DataSource}
+import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -98,7 +98,7 @@ object DistriOptimizer {
     var iteration = 0
     val dropPercentage = state.get[Double]("dropPercentage").get
     val warmupIterationNum = state.get[Int]("warmupIterationNum").get
-    val comupteThresholdbatchSize = state.get[Int]("comupteThresholdbatchSize").get
+    val computeThresholdbatchSize = state.get[Int]("computeThresholdbatchSize").get
     val maxDropPercentage = state.get[Double]("maxDropPercentage").get
     val driverSubModelNum = partitionNum * _subModelNumber
     var dropModelNumBatch = 0
@@ -133,7 +133,8 @@ object DistriOptimizer {
             require(batch.data.size(1) == batch.labels.size(1),
               "data and label batch size not match")
             require(batch.data.size(1) >= _subModelNumber,
-              "total batch size should be divided by total core number")
+              s"total batch size: ${batch.data.size(1)} " +
+                s"should be divided by total core number: ${_subModelNumber}")
             val stackSize = batch.data.size(1) / _subModelNumber
             while (b < _subModelNumber) {
               tensorBuffer(b) = (batch.data.narrow(1, b * stackSize + 1, stackSize),
@@ -150,10 +151,10 @@ object DistriOptimizer {
 
           // ======================Start train models===================================
           var time = System.nanoTime()
-          if(dropPercentage > 0 && iteration > warmupIterationNum + comupteThresholdbatchSize - 1) {
+          if(dropPercentage > 0 && iteration > warmupIterationNum + computeThresholdbatchSize - 1) {
             timeout = threshold - weightSyncTime
           }
-          val pre = (iteration % comupteThresholdbatchSize) * _subModelNumber
+          val pre = (iteration % computeThresholdbatchSize) * _subModelNumber
           val trainingThreads = Engine.default.invokeAndWait2((0 until _subModelNumber).map(i =>
             () => {
               val trainStart = System.nanoTime()
@@ -224,7 +225,7 @@ object DistriOptimizer {
         val value = lossSum.value / finishedModelNum
         models.mapPartitions(modelIter => {
           val modelCache = modelIter.next()
-          parameters.aggregrateGradientParition()
+          parameters.aggregrateGradientPartition()
           parameters.gradientPartition.div(ev.fromType(finishedModelNum))
           modelCache.localStates.head("neval") = driverState[Int]("neval")
           modelCache.localStates.head("epoch") = driverState[Int]("epoch")
@@ -238,10 +239,10 @@ object DistriOptimizer {
         accumulateCount += recordsNum.value
         val end = System.nanoTime()
         wallClockTime += end - start
+        optimMethod.updateHyperParameter(state, driverState)
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${recordsNum.value / ((end - start) / 1e9)} records/second. Loss is ${
-            lossSum.value / finishedModelNum
-          }. ")
+            lossSum.value / finishedModelNum}. ${optimMethod.getHyperParameter(state)}")
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
@@ -249,12 +250,12 @@ object DistriOptimizer {
         // compute threshold
         iteration += 1
         if (dropPercentage > 0 && iteration > warmupIterationNum &&
-          iteration % comupteThresholdbatchSize == 0) {
+          iteration % computeThresholdbatchSize == 0) {
           val moduleTimeList = models.mapPartitions { iter =>
             iter.next().moduleTimeList.iterator
           }.collect()
 
-          val k = (dropPercentage * comupteThresholdbatchSize * driverSubModelNum).toInt
+          val k = (dropPercentage * computeThresholdbatchSize * driverSubModelNum).toInt
           if (k > dropModelNumBatch) {
             threshold = Util.kthLargest(moduleTimeList, 0, moduleTimeList.length-1,
               k - dropModelNumBatch)
@@ -331,7 +332,10 @@ object DistriOptimizer {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
         saveModel(getModel(models, parameters), cachePath, isOverWrite,
           s".${state[Int]("neval")}")
-        saveState(models.map(_.localStates.head).first(), cachePath, isOverWrite, s"" +
+        val localState = models.map(_.localStates.head).first()
+        localState("neval") = state[Int]("neval")
+        localState("epoch") = state[Int]("epoch")
+        saveState(localState, cachePath, isOverWrite, s"" +
           s".${state[Int]("neval")}")
       }
     }
@@ -359,12 +363,16 @@ object DistriOptimizer {
         s" is not equal to configured node number ${nodeNumber}")
 
     val partitionNum = dataset.originRDD().partitions.length
-    val comupteThresholdbatchSize = state.get[Int]("comupteThresholdbatchSize").get
+    val computeThresholdbatchSize = state.get[Int]("computeThresholdbatchSize").get
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastModel, broadcastCriterion, broadcastState) = broadcast.value
-      if (checkSingleton) {
-        require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
-          "Currently not support this")
+      if (!Engine.checkSingleton()) {
+        if (checkSingleton) {
+          require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
+            "Please disable singleton check or repartition data")
+        } else {
+          logger.warn("Detect multi-task run on one Executor/Container.")
+        }
       }
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = broadcastModel.cloneModule()
@@ -391,7 +399,7 @@ object DistriOptimizer {
         cached.map(_._4), // criterions
         cached.map(_._5), // states
         cached.head._2.clone(), // a tensor buffer
-        new Array[Long](_subModelNumber * comupteThresholdbatchSize)
+        new Array[Long](_subModelNumber * computeThresholdbatchSize)
       ))
     }).persist()
     models.setName("Thread Model RDD")
@@ -426,7 +434,10 @@ object DistriOptimizer {
       case _ => throw new IllegalArgumentException
     }
     ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
-      val workingModels = modelIter.next().localModels
+      val cached = modelIter.next()
+      val criterion = cached.localCriterions
+      val workingModels = cached.localModels
+
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
         require(batch.data.size(1) == batch.labels.size(1))
@@ -442,7 +453,7 @@ object DistriOptimizer {
               val target = batch.labels.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)
               vMethods.map(validation => {
-                validation(output, target)
+                validation(output, target, criterion(b))
               })
             }
           )
@@ -461,10 +472,9 @@ object DistriOptimizer {
     })
   }
 
-
-  private def getModel[T: ClassTag](models: RDD[Cache[T]],
-      parameters: AllReduceParameter[T])
-  : Module[T] = {
+  private def getModel[T: ClassTag](
+      models: RDD[Cache[T]],
+      parameters: AllReduceParameter[T]): Module[T] = {
     val partitionNum = models.partitions.length
     val trainedModel = models.map(_.localModels.head.clearState()).first()
     val weights = models.mapPartitions(iter => {
@@ -489,24 +499,30 @@ object DistriOptimizer {
   }
 }
 
-class DistriOptimizer[T: ClassTag] private[optim](
+class DistriOptimizer[T: ClassTag] (
   model: Module[T],
   dataset: DistributedDataSet[MiniBatch[T]],
   criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
     model, dataset, criterion) {
-
-  def disableCheckSingleton(): this.type = {
-    this.checkSingleton = false
-    this
-  }
-
-  private var checkSingleton = true
-
   val metrics = new Metrics
 
   private var models: RDD[DistriOptimizer.Cache[T]] = null
+
+  /**
+   * Clean some internal states, so this or other optimizers can run optimize again
+   *
+   * This method will be called at the end of optimize. You need not call it if optimize succeed.
+   * If the optimize fails, you may call it before next optimize.
+   */
+  def clearState() : Unit = {
+    // Reset the singleton flag, so other optimizers can run
+    models.mapPartitions(iter => {
+      Engine.resetSingletonFlag()
+      iter
+    }).count()
+  }
 
   override def optimize(): Module[T] = {
     this.assertEngineInited()
@@ -514,7 +530,7 @@ class DistriOptimizer[T: ClassTag] private[optim](
     optimMethod.clearHistory(state)
     state("dropPercentage") = dropPercentage
     state("warmupIterationNum") = warmupIterationNum
-    state("comupteThresholdbatchSize") = comupteThresholdbatchSize
+    state("computeThresholdbatchSize") = computeThresholdbatchSize
     state("maxDropPercentage") = maxDropPercentage
 
     require(Engine.nodeNumber().isDefined, "Node number is not set")
@@ -546,7 +562,14 @@ class DistriOptimizer[T: ClassTag] private[optim](
       isOverWrite
     )
 
-    DistriOptimizer.getModel(models, parameters)
+    val trainedModel = DistriOptimizer.getModel(models, parameters)
+
+    nn.Utils.copyModule(trainedModel, model)
+
+    // Reset some internal states, so this or other optimizers can run optimize again
+    clearState()
+
+    model
   }
 }
 

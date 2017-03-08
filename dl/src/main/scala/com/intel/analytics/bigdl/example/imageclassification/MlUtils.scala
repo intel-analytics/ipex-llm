@@ -21,7 +21,11 @@ import com.intel.analytics.bigdl.dataset.Transformer
 import com.intel.analytics.bigdl.dataset.image.{BGRImage, LocalLabeledImagePath}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dataset.DataSet.SeqFileFolder
+import org.apache.hadoop.io.Text
+import org.apache.spark.SparkContext
 import org.apache.spark.mllib.linalg.DenseVector
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row}
 import scopt.OptionParser
 
@@ -42,10 +46,11 @@ object MlUtils {
 
   case class PredictParams(
     folder: String = "./",
-    coreNumber: Int = -1,
-    nodeNumber: Int = -1,
+    coreNumber: Int = 4,
+    nodeNumber: Int = 1,
     batchSize: Int = 32,
     classNum: Int = 1000,
+    isHdfs: Boolean = false,
 
     modelType: ModelType = BigDlModel,
     modelPath: String = "",
@@ -78,6 +83,10 @@ object MlUtils {
     opt[Int]("classNum")
       .text("class num")
       .action((x, c) => c.copy(classNum = x))
+
+    opt[Boolean]("isHdfs")
+      .text("whether the input data is from Hdfs or not")
+      .action((x, c) => c.copy(isHdfs = x))
 
     opt[Int]("showNum")
       .text("show num")
@@ -134,5 +143,11 @@ object MlUtils {
       ByteImage(BGRImage.readImage(imageFile.path, scaleTo), imageFile.path.getFileName.toString)
     })
     buffer
+  }
+
+  def imagesLoadSeq(url: String, sc: SparkContext, classNum: Int): RDD[ByteImage] = {
+    sc.sequenceFile(url, classOf[Text], classOf[Text]).map(image => {
+      ByteImage(image._2.copyBytes(), SeqFileFolder.readName(image._1))
+    })
   }
 }

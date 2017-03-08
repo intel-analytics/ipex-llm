@@ -183,6 +183,9 @@ class RandomGenerator() {
     this
   }
 
+  /**
+   * Generates a random number on [0,0xffffffff]-interval
+   */
   private def random(): Long = {
     var y: Long = 0
 
@@ -202,10 +205,16 @@ class RandomGenerator() {
     y
   }
 
+  /**
+   * Generates a random number on [0, 1)-real-interval
+   */
   private def basicUniform(): Double = {
     this.random() * (1.0 / 4294967296.0)
   }
 
+  /**
+   * Generates a random number on [a, b)-real-interval uniformly
+   */
   def uniform(a: Double, b: Double): Double = {
     this.basicUniform() * (b - a) + a
   }

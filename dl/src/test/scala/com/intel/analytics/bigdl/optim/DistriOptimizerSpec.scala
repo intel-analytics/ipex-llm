@@ -17,11 +17,15 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, DistributedDataSet}
+import java.io.File
+import java.nio.file.{Files, Paths}
+
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
+import org.apache.commons.io.FileUtils
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -67,6 +71,16 @@ object DistriOptimizerSpecModel {
     mlp
   }
 
+  def bn: Module[Double] = {
+    val mlp = Sequential[Double]
+    mlp.add(Linear(4, 2))
+    mlp.add(BatchNormalization(2))
+    mlp.add(ReLU())
+    mlp.add(Linear(2, 1))
+    mlp.add(Sigmoid())
+    mlp
+  }
+
   def cre: Module[Double] = {
     val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
@@ -75,6 +89,7 @@ object DistriOptimizerSpecModel {
   }
 }
 
+@com.intel.analytics.bigdl.tags.Serial
 class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   import DistriOptimizerSpec._
@@ -103,6 +118,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
 
     plusOne = 0.0
+    System.setProperty("bigdl.check.singleton", false.toString)
     Engine.model.setPoolSize(1)
   }
 
@@ -118,7 +134,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       mse,
       dataSet,
       new MSECriterion[Double]())
-      .setOptimMethod(new LBFGS).disableCheckSingleton()
+      .setOptimMethod(new LBFGS)
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -134,7 +150,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setState(T("learningRate" -> 20.0))
       .setEndWhen(Trigger.maxEpoch(5))
-      .disableCheckSingleton()
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -150,7 +165,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       mse,
       dataSet,
       new MSECriterion[Double]())
-      .disableCheckSingleton()
     val model = optimizer.optimize()
 
     RandomGenerator.RNG.setSeed(10)
@@ -170,7 +184,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = new DistriOptimizer[Double](cre, dataSet,
       new ClassNLLCriterion[Double]())
       .setEndWhen(Trigger.maxEpoch(3)).setOptimMethod(new LBFGS)
-      .disableCheckSingleton()
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -186,7 +199,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     RandomGenerator.RNG.setSeed(10)
     val optimizer = new DistriOptimizer[Double](cre, dataSet,
       new ClassNLLCriterion[Double]())
-      .setState(T("learningRate" -> 20.0)).disableCheckSingleton()
+      .setState(T("learningRate" -> 20.0))
     val model = optimizer.optimize()
 
     val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
@@ -203,7 +216,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       cre,
       dataSet,
       new ClassNLLCriterion[Double]()
-    ).setState(T("learningRate" -> 20.0)).disableCheckSingleton()
+    ).setState(T("learningRate" -> 20.0))
     val model = optimizer.optimize()
 
     RandomGenerator.RNG.setSeed(10)
@@ -216,5 +229,70 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     model.getParameters()._1 should be(modelRef.getParameters()._1)
 
+  }
+
+  "Train with BatchNormalization" should "return with state" in {
+    RandomGenerator.RNG.setSeed(10)
+    val mm = bn
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
+    val model = optimizer.optimize()
+    val batchNormalization = model.asInstanceOf[Sequential[Double]].modules(1).
+      asInstanceOf[BatchNormalization[Double]]
+    batchNormalization.runningMean.storage().array() should be (
+      Array(0.37499998210083496, 0.37499998210083496)
+    )
+    batchNormalization.runningVar.storage().array() should be (
+      Array(1188.2811870277535, 1188.2811870277535)
+    )
+  }
+
+  "Train with one partition one executor" should "won't throw mult-task exception" in {
+    System.setProperty("bigdl.check.singleton", true.toString)
+    RandomGenerator.RNG.setSeed(10)
+    Engine.setNodeNumber(Some(1))
+    val mm = bn
+    mm.getParameters()._1.fill(0.125)
+    val rdd = sc.parallelize(1 to (256 * nodeNumber), 1).map(prepareData)
+    val dataSet = new DistributedDataSet[MiniBatch[Double]] {
+      override def originRDD(): RDD[_] = rdd
+
+      override def data(train : Boolean): RDD[MiniBatch[Double]] = rdd
+
+      override def size(): Long = 256 * nodeNumber
+
+      override def shuffle(): Unit = {}
+    }
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
+      .optimize()
+
+    Engine.setNodeNumber(Some(nodeNumber))
+  }
+
+  "DistriOptimizer checkpoint" should "work correclty" in {
+    val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
+
+    import com.intel.analytics.bigdl._
+    plusOne = 1.0
+    RandomGenerator.RNG.setSeed(10)
+    new DistriOptimizer[Double](
+      cre,
+      dataSet,
+      new ClassNLLCriterion[Double]()
+    ).setState(T("learningRate" -> 20.0))
+      .setCheckpoint(filePath, Trigger.everyEpoch)
+      .setEndWhen(Trigger.maxEpoch(1))
+      .optimize()
+
+    val state = T.load(filePath + "/state.33")
+
+    state[Int]("epoch") should be (2)
+    state[Int]("neval") should be (33)
   }
 }

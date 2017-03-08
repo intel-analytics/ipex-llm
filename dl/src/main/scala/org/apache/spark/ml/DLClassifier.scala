@@ -17,6 +17,7 @@
 package org.apache.spark.ml
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.apache.spark.ml.param.shared.{HasInputCol, HasOutputCol}
@@ -54,13 +55,13 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag]
   override def validateParams(): Unit = {
     val params = this.extractParamMap()
     require(null != params.getOrElse(modelTrain, null),
-      "model for predict must not be null")
+      "DLClassifier: model for predict must not be null")
     require(null != params.getOrElse(batchShape, null),
-      "batchSize for predict must not be null")
+      "DLClassifier: batchSize for predict must not be null")
     require(null != params.getOrElse(inputCol, null),
-      "inputCol must not be null")
+      "DLClassifier: inputCol must not be null")
     require(null != params.getOrElse(outputCol, null),
-      "inputCol must not be null")
+      "DLClassifier: inputCol must not be null")
   }
 
   /**
@@ -86,10 +87,11 @@ object DLClassifier{
     outputCol: String,
     dataset: DataFrame)(implicit ev: TensorNumeric[T]) : DataFrame = {
     val model = modelTrain.evaluate()
-    val modelBroadCast = dataset.sqlContext.sparkContext.broadcast(model)
+
+    val modelBroadCast = ModelBroadcast[T].broadcast(dataset.sqlContext.sparkContext, model)
 
     val predictRdd = dataset.rdd.mapPartitions{ rows =>
-      val localModel = modelBroadCast.value.cloneModule()
+      val localModel = modelBroadCast.value()
       val tensorBuffer = Tensor[T](batchSize)
       val batches = rows.grouped(batchSize(0))
 

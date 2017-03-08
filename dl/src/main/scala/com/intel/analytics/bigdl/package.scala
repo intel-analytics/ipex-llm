@@ -18,7 +18,6 @@ package com.intel.analytics
 
 import com.intel.analytics.bigdl.dataset.AbstractDataSet
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.language.implicitConversions
 

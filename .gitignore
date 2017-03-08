@@ -1,5 +1,7 @@
+*.pyc
 *.class
 *.log
+dl/src/main/python/.idea/
 
 # sbt specific
 .cache
@@ -16,11 +18,11 @@ project/plugins/project/
 .scala_dependencies
 .worksheet
 *.iml
-.idea/*
+.idea/
 
 # other
 *.txt
 *.csv
 nohup.out
-model.*
-state.*
+model*.[0-9]*
+state*.[0-9]*

@@ -18,10 +18,12 @@
 package com.intel.analytics.bigdl.tensor
 
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
+import com.intel.analytics.bigdl.nn.Linear
 import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector}
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class DenseTensorSpec extends FlatSpec with Matchers {
 
   "Construct with empty parameter" should "be empty" in {
@@ -697,4 +699,30 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     tensor.size(4) should be(4)
   }
 
+  "toTensor" should "work correclty" in {
+    val input = Tensor[Float](3, 4)
+    val module = Linear[Float](4, 5)
+    val output = module.forward(input)
+
+    output.toTensor[Float] should be(output)
+    try {
+      output.toTensor[Double]
+      fail()
+    } catch {
+      case ex: IllegalArgumentException =>
+    }
+  }
+
+  "toTable" should "work correclty" in {
+    val input = Tensor[Float](3, 4)
+    val module = Linear[Float](4, 5)
+    val output = module.forward(input)
+
+    try {
+      output.toTable
+      fail()
+    } catch {
+      case ex: IllegalArgumentException =>
+    }
+  }
 }

@@ -32,7 +32,7 @@ class ParallelTable[T: ClassTag]
 
   override def updateOutput(input: Table): Table = {
     var i = 0
-    while (i < input.getState().size) {
+    while (i < input.length()) {
       output.update(i + 1, modules(i).updateOutput(input(i + 1)))
       i += 1
     }

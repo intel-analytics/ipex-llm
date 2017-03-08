@@ -17,12 +17,13 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, AbstractModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 /**
@@ -56,6 +57,7 @@ import scala.reflect.ClassTag
  * @param padH The additional zeros added per height to the input planes. Default is 0.
  * @param adjW Extra width to add to the output image. Default is 0.
  * @param adjH Extra height to add to the output image. Default is 0.
+ * @param nGroup Kernel group number.
  * @param noBias If bias is needed.
  * @param initMethod Init method, Default, Xavier, Bilinear.
  */
@@ -72,21 +74,36 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   val padH: Int = 0,
   var adjW: Int = 0,
   var adjH: Int = 0,
+  val nGroup: Int = 1,
   val noBias: Boolean = false,
   private var initMethod: InitializationMethod = Default
   )(implicit ev: TensorNumeric[T]) extends AbstractModule[A, Tensor[T], T]{
 
   require(adjW <= dW - 1 && adjH <= dH - 1,
-    "adjW and adjH must be smaller than dW - 1 and dH - 1 respectively")
+    "SpatialFullConvolution: adjW=$adjW and adjH=$adjH must be smaller than " +
+      s"(dW - 1)=${dW - 1} and (dH - 1)=${dH - 1} respectively")
 
-  val weight: Tensor[T] = Tensor[T](nInputPlane, nOutputPlane, kH, kW)
+  val weight: Tensor[T] = Tensor[T](nGroup, nInputPlane / nGroup,
+    nOutputPlane / nGroup, kH, kW)
   val bias: Tensor[T] = if (noBias) null else Tensor[T](nOutputPlane)
 
-  val gradWeight: Tensor[T] = Tensor[T](nInputPlane, nOutputPlane, kH, kW)
+  val gradWeight: Tensor[T] = Tensor[T](nGroup, nInputPlane / nGroup, nOutputPlane / nGroup, kH, kW)
   val gradBias: Tensor[T] = if (noBias) null else Tensor[T](nOutputPlane)
-  @transient private var columns: Tensor[T] = null
-  @transient private var ones: Tensor[T] = null
-  @transient private var zeroScalar: Tensor[T] = null
+  private val columns: Tensor[T] = Tensor[T]()
+  private val ones: Tensor[T] = Tensor[T]()
+  private val zeroScalar: Tensor[T] = Tensor[T]()
+  protected val onesBias = Tensor[T]()
+  protected val onesBatch = Tensor[T]()
+  protected var weightMM: Tensor[T] = null
+  protected var gradientBiasMT: Tensor[T] = Tensor[T]()
+  protected var gradWeightMMInBatch: Tensor[T] = Tensor[T]()
+
+  protected val _1x1 = if (kH == 1 && kW == 1 && dW == 1 && dH == 1
+    && padH == 0 && padW == 0) {
+    true
+  } else {
+    false
+  }
 
   reset()
 
@@ -116,11 +133,12 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         if (null != bias) {
-          bias.fill(ev.fromType(0))
+          bias.fill(ev.zero)
         }
       case BilinearFiller =>
-        require(weight.nDimension() == 4, "weight must be 4 dim")
-        require(kH == kW, "Kernel must be square")
+        require(weight.dim() == 5, s"SpatialFullConvolution: weight must be 5 dim, " +
+          s"but got ${weight.dim()}")
+        require(kH == kW, s"SpatialFullConvolution: Kernel $kH * $kW must be square")
         val f = Math.ceil(kW / 2.0).toInt
         val c = (2 * f - 1 - f % 2) / (2.0f * f)
         val weightArray = weight.storage().array()
@@ -138,7 +156,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   }
 
   private def calculateAdj(targetSize : Int, ker : Int, pad : Int, stride : Int) : Int = {
-    return (targetSize + 2 * pad - ker) % stride
+    (targetSize + 2 * pad - ker) % stride
   }
 
   private def shapeCheck(input : Tensor[T], gradOutput : Tensor[T],
@@ -148,13 +166,19 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     padH : Int, padW : Int,
     adjH : Int, adjW : Int) : Unit = {
 
-    require(kW > 0 && kH > 0, s"kernel size should be greater than zero, but got kH: $kH kW: $kW")
-    require(dW > 0 && dH > 0, s"stride should be greater than zero, but got dH: $dH dW: $dW")
-    require(weight.nDimension == 2 || weight.nDimension == 4,
-      s"2D or 4D weight tensor expected, but got size: ${weight.size()}")
+    require(kW > 0 && kH > 0, s"SpatialFullConvolution: kernel size should be greater than zero, " +
+      s"but got kH: $kH kW: $kW")
+    require(dW > 0 && dH > 0, s"SpatialFullConvolution: stride should be greater than zero, " +
+      s"but got dH: $dH dW: $dW")
+    require(weight.nDimension == 3 || weight.nDimension == 5,
+      s"SpatialFullConvolution: 3D or 5D weight tensor expected, but got size: ${weight.dim()}")
 
     if (null != bias) {
-      require(bias.nDimension() == 1 && bias.size(1) == weight.size(2))
+      require(bias.nDimension() == 1,
+        s"SpatialFullConvolution: bias should be 1 dim, but got dim:${bias.nDimension()}")
+      require(bias.size(1) == weight.size(3) * weight.size(1),
+        s"SpatialFullConvolution: bias's size equals to weight.size(3) * weight.size(1) " +
+          s"= ${weight.size(1) * weight.size(3)}, but got size:${bias.size(1)}")
     }
 
     val ndim = input.nDimension
@@ -162,7 +186,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     val dimh = if (ndim == 4) 3 else 2
     val dimw = if (ndim == 4) 4 else 3
 
-    require(ndim == 3 || ndim == 4, s"3D or 4D input tensor expected but got size: ${input.size()}")
+    require(ndim == 3 || ndim == 4, s"SpatialFullConvolution: 3D or 4D input tensor expected, " +
+      s"but got size: ${input.dim()}")
 
     val inputHeight = input.size(dimh)
     val inputWidth = input.size(dimw)
@@ -170,16 +195,81 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     val outputWidth = (inputWidth - 1) * dW - 2 * padW + kW + adjW
 
     require(outputWidth >= 1 || outputHeight >= 1,
-      s"Given input size: ($nInputPlane x $inputHeight x $inputWidth). " +
+      s"SpatialFullConvolution: Given input size: ($nInputPlane x $inputHeight x $inputWidth). " +
       s"Calculated output size: ($nOutputPlane x $outputHeight x $outputWidth). " +
       s"Output size is too small")
 
-    require(input.nDimension() == ndim && input.size(dimf) == nInputPlane)
+    require(input.nDimension() == ndim && input.size(dimf) == nInputPlane,
+      s"SpatialFullConvolution: input's feature maps should be $nInputPlane, " +
+        s"but got ${input.size(dimf)}")
 
     if (null != gradOutput) {
-      require(gradOutput.nDimension() == ndim && gradOutput.size(dimf) == nOutputPlane)
-      require(gradOutput.nDimension() == ndim && gradOutput.size(dimh) == outputHeight)
-      require(gradOutput.nDimension() == ndim && gradOutput.size(dimw) == outputWidth)
+      require(gradOutput.nDimension() == ndim, s"SpatialFullConvolution: gradOutput should be " +
+        s"$ndim, but got ${gradOutput.nDimension()}")
+      require(gradOutput.size(dimf) == nOutputPlane
+        && gradOutput.size(dimh) == outputHeight
+        && gradOutput.size(dimw) == outputWidth,
+        s"SpatialFullConvolution: GradOutput's size should be (${nOutputPlane} x ${outputHeight} " +
+          s"x ${outputWidth}), but got (${gradOutput.size(dimf)} x ${gradOutput.size(dimh)} " +
+          s"x ${gradOutput.size(dimw)})")
+    }
+  }
+
+  protected def updateOutputFrame(
+      input: Tensor[T], output: Tensor[T], weight: Tensor[T],
+      bias: Tensor[T], columns: Tensor[T],
+      kW: Int, kH: Int, dW: Int, dH: Int, padW: Int, padH: Int,
+      nInputPlane: Int,
+      inputWidth: Int, inputHeight: Int,
+      nOutputPlane: Int,
+      outputWidth: Int, outputHeight: Int)(implicit ev: TensorNumeric[T]): Unit = {
+    val output2d = output.view(nOutputPlane, outputHeight * outputWidth)
+
+    // M,N,K are dims of matrix A and B
+    // (see https://software.intel.com/en-us/node/468480)
+    val m = weight.size(2)
+    val n = columns.size(2)
+    val k = weight.size(1)
+
+    // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
+    DenseTensorBLAS.gemm[T](
+      'N', 'T',
+      n, m, k,
+      ev.one,
+      input.storage().array(), input.storageOffset() - 1, n,
+      weight.storage().array(), weight.storageOffset() - 1, m,
+      ev.zero,
+      columns.storage().array(), columns.storageOffset() - 1, n
+    )
+
+    if (!_1x1) {
+      val before = System.nanoTime()
+      ev.getType() match {
+        case DoubleType => NNPrimitive.col2imWithDilationDouble(
+          columns.asInstanceOf[Tensor[Double]], output2d.asInstanceOf[Tensor[Double]],
+          nOutputPlane, outputHeight, outputWidth,
+          kH, kW,
+          padH, padW,
+          dH, dW,
+          1, 1
+        )
+
+        case FloatType => NNPrimitive.col2imWithDilationFloat(
+          columns.asInstanceOf[Tensor[Float]], output2d.asInstanceOf[Tensor[Float]],
+          nOutputPlane, outputHeight, outputWidth,
+          kH, kW,
+          padH, padW,
+          dH, dW,
+          1, 1
+        )
+
+        case _ => throw new UnsupportedOperationException(
+          "SpatialFullConvolution: only Float/Double type supported")
+      }
+      col2imTime += System.nanoTime() - before
+    }
+    if (null != bias) {
+      output2d.addr(ev.one, bias, onesBias)
     }
   }
 
@@ -196,9 +286,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       input.toTensor[T]
     }
 
-
     shapeCheck(inputTensor, null, weight, bias, kH, kW, dH, dW, padH, padW, adjH, adjW)
-    require(inputTensor.isContiguous())
+    require(inputTensor.isContiguous(), "SpatialFullConvolution: input should be contiguous")
 
     val isBatch = if (inputTensor.nDimension() == 3) {
       // Force batch
@@ -219,24 +308,24 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
 
     // Resize output
     output.resize(batchSize, nOutputPlane, outputHeight, outputWidth)
+    output.zero()
 
-    // Resize temporary columns
-    if(null == columns) {
-      columns = Tensor[T]()
+    if (onesBias.dim() != 1 || onesBias.size(1) != outputHeight * outputWidth) {
+      onesBias.resize(Array(outputHeight * outputWidth)).fill(ev.one)
     }
-    columns.resize(nOutputPlane * kW * kH, inputHeight * inputWidth)
-    columns.zero()
 
-    // Define a buffer of ones, for bias accumulation
-    // Note: this buffer can be shared with other modules, it only ever gets increased,
-    // and always contains ones.
-    if(null == ones) {
-      ones = Tensor[T]()
+    if (_1x1) {
+      columns.set(inputTensor)
+      columns.resize(Array(batchSize, nGroup, kW * kH * nOutputPlane / nGroup,
+        inputHeight * inputWidth))
+    } else {
+      columns.resize(Array(batchSize, nGroup, kW * kH * nOutputPlane / nGroup,
+        inputHeight * inputWidth))
     }
-    if (ones.nDimension != 2 || ones.size(1) * ones.size(2) < outputHeight * outputWidth) {
-      // Resize plane and fill with ones...
-      ones.resize(outputHeight, outputWidth)
-      ones.fill(ev.fromType[Int](1))
+
+    if (weightMM == null) {
+      weightMM = weight.view(nGroup, nInputPlane / nGroup,
+        nOutputPlane * kH * kW / nGroup)
     }
 
     var elt = 1
@@ -244,66 +333,28 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     while(elt <= batchSize) {
       // Matrix mulitply per output:
       val input_n = inputTensor.select(1, elt)
+      require(input_n.isContiguous(), s"SpatialFullConvolution: input($elt) should be contiguous")
       val output_n = output.select(1, elt)
+      val columns_n = columns.select(1, elt)
 
-      // M,N,K are dims of matrix A and B
-      // (see http://docs.nvidia.com/cuda/cublas/#cublas-lt-t-gt-gemm)
-      var m = weight.size(2) * weight.size(3) * weight.size(4)
-      var n = columns.size(2)
-      var k = weight.size(1)
-
-      // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
-      DenseTensorBLAS.gemm[T](
-        'N', 'T',
-        n, m, k,
-        ev.fromType[Int](1),
-        input_n.storage().array(), input_n.storageOffset() - 1, n,
-        weight.storage().array(), weight.storageOffset() - 1, m,
-        ev.fromType[Int](0),
-        columns.storage().array(), columns.storageOffset() - 1, n
-      )
-
-      // Unpack columns back into input:
-      val before = System.nanoTime()
-      ev.getType() match {
-        case DoubleType => NNPrimitive.col2imWithDilationDouble(
-          columns.asInstanceOf[Tensor[Double]], output_n.asInstanceOf[Tensor[Double]],
-          nOutputPlane, outputHeight, outputWidth,
-          kH, kW,
-          padH, padW,
-          dH, dW,
-          1, 1
-        )
-
-        case FloatType => NNPrimitive.col2imWithDilationFloat(
-          columns.asInstanceOf[Tensor[Float]], output_n.asInstanceOf[Tensor[Float]],
-          nOutputPlane, outputHeight, outputWidth,
-          kH, kW,
-          padH, padW,
-          dH, dW,
-          1, 1
-        )
-      }
-      col2imTime += System.nanoTime() - before
-
-      // Do Bias after:
-      // M,N,K are dims of matrix A and B
-      // (see http://docs.nvidia.com/cuda/cublas/#cublas-lt-t-gt-gemm)
-      m = nOutputPlane
-      n = outputHeight * outputWidth
-      k = 1
-
-      // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
-      if(null != bias) {
-        DenseTensorBLAS.gemm[T](
-          'T', 'N',
-          n, m, k,
-          ev.fromType[Int](1),
-          ones.storage().array(), ones.storageOffset() - 1, k,
-          bias.storage().array(), bias.storageOffset() - 1, k,
-          ev.fromType[Int](1),
-          output_n.storage().array(), output_n.storageOffset() - 1, n
-        )
+      var g = 0
+      while (g < nGroup) {
+        val bias_g = if (!noBias) {
+          bias.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup)
+        } else {
+          null
+        }
+        updateOutputFrame(
+          input_n.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
+          output_n.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+          weightMM.select(1, g + 1),
+          bias_g,
+          columns_n.select(1, g + 1),
+          kW, kH, dW, dH,
+          padW, padH,
+          nInputPlane / nGroup, inputWidth, inputHeight,
+          nOutputPlane / nGroup, outputWidth, outputHeight)
+        g += 1
       }
       elt += 1
     }
@@ -315,6 +366,58 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     }
 
     output
+  }
+
+  protected def updateGradInputFrame(
+      gradInput: Tensor[T], gradOutput: Tensor[T],
+      weight: Tensor[T], columns: Tensor[T],
+      kW: Int, kH: Int,
+      dW: Int, dH: Int,
+      padW: Int, padH: Int,
+      outputHeight: Int, outputWidth: Int)(implicit ev: TensorNumeric[T]): Unit = {
+    // Extract columns:
+    val before = System.nanoTime()
+    ev.getType() match {
+      case DoubleType => NNPrimitive.im2colWithDilationDouble(
+        gradOutput.asInstanceOf[Tensor[Double]], columns.asInstanceOf[Tensor[Double]],
+        gradOutput.size(1), outputHeight, outputWidth,
+        kH, kW,
+        padH, padW,
+        dH, dW,
+        1, 1
+      )
+
+      case FloatType => NNPrimitive.im2colWithDilationFloat(
+        gradOutput.asInstanceOf[Tensor[Float]], columns.asInstanceOf[Tensor[Float]],
+        gradOutput.size(1), outputHeight, outputWidth,
+        kH, kW,
+        padH, padW,
+        dH, dW,
+        1, 1
+      )
+
+      case _ => throw new UnsupportedOperationException(
+        s"SpatialFullConvolution: only Float/Double type supported")
+    }
+    im2colTime += System.nanoTime() - before
+
+    // M,N,K are dims of matrix A and B
+    // (see https://software.intel.com/en-us/node/468480)
+    val m = weight.size(1)
+    val n = columns.size(2)
+    val k = weight.size(2)
+
+    // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
+    DenseTensorBLAS.gemm[T](
+      'N', 'N',
+      n, m, k,
+      ev.one,
+      columns.storage().array(), columns.storageOffset() - 1, n,
+      weight.storage().array(), weight.storageOffset() - 1, k,
+      ev.zero,
+      gradInput.storage().array(), gradInput.storageOffset() - 1, n
+    )
+
   }
 
   override def updateGradInput(input: A, gradOutput: Tensor[T]): A = {
@@ -350,10 +453,17 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     // Batch size + input planes
     val batchSize = inputTensor.size(1)
 
-    gradInputTensor.resize(batchSize, nInputPlane, inputHeight, inputWidth)
+    gradInputTensor.resizeAs(inputTensor)
     gradInputTensor.zero()
 
-    columns.resize(nOutputPlane * kW * kH, inputHeight * inputWidth)
+    if (_1x1) {
+      columns.set(gradInputTensor)
+      columns.resize(Array(batchSize, nGroup, kW * kH * nOutputPlane / nGroup,
+        inputHeight * inputWidth))
+    } else {
+      columns.resize(Array(batchSize, nGroup, kW * kH * nOutputPlane / nGroup,
+        inputHeight * inputWidth))
+    }
 
     var elt = 1
     // For each element in batch, do:
@@ -361,46 +471,19 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       // Matrix mulitply per sample:
       val gradInput_n = gradInputTensor.select(1, elt)
       val gradOutput_n = gradOutput.select(1, elt)
+      val columns_n = columns.select(1, elt)
 
-      // Extract columns:
-      val before = System.nanoTime()
-      ev.getType() match {
-        case DoubleType => NNPrimitive.im2colWithDilationDouble(
-          gradOutput_n.asInstanceOf[Tensor[Double]], columns.asInstanceOf[Tensor[Double]],
-          nOutputPlane, outputHeight, outputWidth,
-          kH, kW,
-          padH, padW,
-          dH, dW,
-          1, 1
-        )
-
-        case FloatType => NNPrimitive.im2colWithDilationFloat(
-          gradOutput_n.asInstanceOf[Tensor[Float]], columns.asInstanceOf[Tensor[Float]],
-          nOutputPlane, outputHeight,
-          outputWidth, kH, kW,
-          padH, padW,
-          dH, dW,
-          1, 1
-        )
+      var g = 0
+      while (g < nGroup) {
+        updateGradInputFrame(
+          gradInput_n.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
+          gradOutput_n.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+          weightMM.select(1, g + 1),
+          columns_n.select(1, g + 1),
+          kW, kH, dW, dH, padW, padH, outputHeight, outputWidth)
+        g += 1
       }
-      im2colTime += System.nanoTime() - before
 
-      // M,N,K are dims of matrix A and B
-      // (see http://docs.nvidia.com/cuda/cublas/#cublas-lt-t-gt-gemm)
-      val m = weight.size(1)
-      val n = columns.size(2)
-      val k = weight.size(2) * weight.size(3) * weight.size(4)
-
-      // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
-      DenseTensorBLAS.gemm[T](
-        'N', 'N',
-        n, m, k,
-        ev.fromType[Int](1),
-        columns.storage().array(), columns.storageOffset() - 1, n,
-        weight.storage().array(), weight.storageOffset() - 1, k,
-        ev.fromType[Int](0),
-        gradInput_n.storage().array(), gradInput_n.storageOffset() - 1, n
-      )
       elt += 1
     }
 
@@ -413,8 +496,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
 
     if (input.isInstanceOf[Table]) {
       val input2 = input.toTable[Tensor[T]](2)
-      if (null == zeroScalar) zeroScalar = input2.clone().zero()
-      ones.resizeAs(input2).fill(ev.fromType[Int](1))
+      zeroScalar.resizeAs(input2).zero()
+      ones.resizeAs(input2).fill(ev.one)
       val zeroTensor = zeroScalar.view(ones.size()).expandAs(input2)
       gradInput.toTable(1) = gradInputTensor
       gradInput.toTable(2) = zeroTensor
@@ -422,6 +505,72 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
 
     return gradInput
   }
+
+  protected def calcGradParametersFrame(
+      input: Tensor[T], gradOutput: Tensor[T], gradWeight: Tensor[T],
+      gradBias: Tensor[T], columns: Tensor[T],
+      outputHeight: Int, outputWidth: Int,
+      scale: T)(implicit ev: TensorNumeric[T]): Unit = {
+    // Extract columns:
+    val before = System.nanoTime()
+    ev.getType() match {
+      case DoubleType => NNPrimitive.im2colWithDilationDouble(
+        gradOutput.asInstanceOf[Tensor[Double]], columns.asInstanceOf[Tensor[Double]],
+        gradOutput.size(1), outputHeight, outputWidth,
+        kH, kW,
+        padH, padW,
+        dH, dW,
+        1, 1
+      )
+
+      case FloatType => NNPrimitive.im2colWithDilationFloat(
+        gradOutput.asInstanceOf[Tensor[Float]], columns.asInstanceOf[Tensor[Float]],
+        gradOutput.size(1), outputHeight, outputWidth,
+        kH, kW,
+        padH, padW,
+        dH, dW,
+        1, 1
+      )
+    }
+    im2colTime += System.nanoTime() - before
+
+    // M,N,K are dims of matrix A and B
+    // (see https://software.intel.com/en-us/node/468480)
+    val n = columns.size(1)   // nOutputPlane * kh * kw
+    var m = input.size(1)   // nInputPlane
+    var k = columns.size(2)   // inputHeight * inputWidth
+
+    // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
+    DenseTensorBLAS.gemm[T](
+      'T', 'N',
+      n, m, k,
+      scale,
+      columns.storage().array(), columns.storageOffset() - 1, k,
+      input.storage().array(), input.storageOffset() - 1, k,
+      ev.one,
+      gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
+    )
+
+    // Do Bias:
+    // M,N,K are dims of matrix A and B
+    // (see https://software.intel.com/en-us/node/468480)
+    m = gradOutput.size(1)
+    k = outputHeight * outputWidth
+
+    // Do GEMV (note: this is a bit confusing because gemv assumes column-major matrices)
+    if (null != gradBias) {
+      ev.gemv(
+        'T',
+        k, m,
+        scale,
+        gradOutput.storage().array(), gradOutput.storageOffset() - 1, k,
+        ones.storage().array(), ones.storageOffset() - 1, 1,
+        ev.one,
+        gradBias.storage().array(), gradBias.storageOffset() - 1, 1
+      )
+    }
+  }
+
 
   override def accGradParameters(input: A, gradOutput: Tensor[T],
                                  scale: Double = 1.0): Unit = {
@@ -457,15 +606,21 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     // Batch size + input planes
     val batchSize = inputTensor.size(1)
 
+    gradWeightMMInBatch.resize(Array(batchSize, nGroup, nInputPlane / nGroup,
+      nOutputPlane * kH * kW / nGroup))
+    gradWeightMMInBatch.zero()
+    gradientBiasMT.resize(Array(batchSize, nOutputPlane))
+
     // Define a buffer of ones, for bias accumulation
     if (ones.nDimension != 2 || ones.size(1) * ones.size(2) < outputHeight * outputWidth) {
       // Resize plane and fill with ones...
       ones.resize(outputHeight, outputWidth)
-      ones.fill(ev.fromType[Int](1))
+      ones.fill(ev.one)
     }
 
-    // Resize temporary columns
-    columns.resize(nOutputPlane * kW * kH, inputHeight * inputWidth)
+    if (onesBatch.dim() != 1 || onesBatch.size(1) != batchSize) {
+      onesBatch.resize(Array(batchSize)).fill(ev.one)
+    }
 
     var elt = 1
     // For each element in batch, do:
@@ -473,67 +628,37 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       // Matrix mulitply per output:
       val input_n = inputTensor.select(1, elt)
       val gradOutput_n = gradOutput.select(1, elt)
-
-      // Extract columns:
-      val before = System.nanoTime()
-      ev.getType() match {
-        case DoubleType => NNPrimitive.im2colWithDilationDouble(
-          gradOutput_n.asInstanceOf[Tensor[Double]], columns.asInstanceOf[Tensor[Double]],
-          nOutputPlane, outputHeight, outputWidth,
-          kH, kW,
-          padH, padW,
-          dH, dW,
-          1, 1
-        )
-
-        case FloatType => NNPrimitive.im2colWithDilationFloat(
-          gradOutput_n.asInstanceOf[Tensor[Float]], columns.asInstanceOf[Tensor[Float]],
-          nOutputPlane, outputHeight, outputWidth,
-          kH, kW,
-          padH, padW,
-          dH, dW,
-          1, 1
-        )
+      val column_n = columns.select(1, elt)
+      var g = 0
+      while (g < nGroup) {
+        val gradBias_G = if (noBias) {
+          null
+        } else if (isBatch) {
+          gradientBiasMT.select(1, elt).narrow(1, g * nOutputPlane / nGroup + 1,
+            nOutputPlane / nGroup)
+        } else {
+          gradBias.narrow(1, g * nOutputPlane / nGroup + 1,
+            nOutputPlane / nGroup)
+        }
+        calcGradParametersFrame(
+          input_n.narrow(1, g * nInputPlane / nGroup + 1, nInputPlane / nGroup),
+          gradOutput_n.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
+          gradWeightMMInBatch.select(1, elt).select(1, g + 1),
+          gradBias_G,
+          column_n.select(1, g + 1),
+          outputHeight, outputWidth,
+          ev.fromType[Double](scale))
+        g += 1
       }
-      im2colTime += System.nanoTime() - before
 
-      // M,N,K are dims of matrix A and B
-      // (see http://docs.nvidia.com/cuda/cublas/#cublas-lt-t-gt-gemm)
-      val n = columns.size(1)   // nOutputPlane * kh * kw
-      var m = input_n.size(1)   // nInputPlane
-      var k = columns.size(2)   // inputHeight * inputWidth
-
-      // Do GEMM (note: this is a bit confusing because gemm assumes column-major matrices)
-      DenseTensorBLAS.gemm[T](
-        'T', 'N',
-        n, m, k,
-        ev.fromType[Double](scale),
-        columns.storage().array(), columns.storageOffset() - 1, k,
-        input_n.storage().array(), input_n.storageOffset() - 1, k,
-        ev.fromType[Int](1),
-        gradWeight.storage().array(), gradWeight.storageOffset() - 1, n
-      )
-
-      // Do Bias:
-      // M,N,K are dims of matrix A and B
-      // (see http://docs.nvidia.com/cuda/cublas/#cublas-lt-t-gt-gemm)
-      m = nOutputPlane
-      k = outputHeight * outputWidth
-
-      // Do GEMV (note: this is a bit confusing because gemv assumes column-major matrices)
-      if (null != gradBias) {
-        ev.gemv(
-          'T',
-          k, m,
-          ev.fromType[Double](scale),
-          gradOutput_n.storage().array(), gradOutput_n.storageOffset() - 1, k,
-          ones.storage().array(), ones.storageOffset() - 1, 1,
-          ev.fromType[Int](1),
-          gradBias.storage().array(), gradBias.storageOffset() - 1, 1
-        )
-      }
       elt += 1
     }
+
+    val gradView = gradWeightMMInBatch.view(batchSize,
+      nOutputPlane * nInputPlane * kH * kW / nGroup).t
+    val grad = gradWeight.view(nOutputPlane * nInputPlane * kH * kW / nGroup)
+    grad.addmv(ev.one, ev.one, gradView, onesBatch)
+    if (!noBias) gradBias.addmv(ev.one, ev.one, gradientBiasMT.t, onesBatch)
 
     // Resize
     if (!isBatch) {
@@ -556,7 +681,35 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    if (null == bias) {
+      (Array(this.weight), Array(this.gradWeight))
+    } else {
+      (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    }
+  }
+
+  override def getParametersTable(): Table = {
+    if (null == bias) {
+      T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
+    } else {
+      T(getName() -> T("weight" -> weight, "bias" -> bias,
+        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
+    }
+  }
+
+  override def clearState() : this.type = {
+    super.clearState()
+    columns.set()
+    ones.set()
+    zeroScalar.set()
+    onesBias.set()
+    onesBatch.set()
+    weightMM = null
+    gradientBiasMT.set()
+    gradWeightMMInBatch.set()
+    im2colTime = 0L
+    col2imTime = 0L
+    this
   }
 
   override def equals(obj: Any): Boolean = {
@@ -628,10 +781,11 @@ object SpatialFullConvolution {
       padH: Int = 0,
       adjW: Int = 0,
       adjH: Int = 0,
+      nGroup: Int = 1,
       noBias: Boolean = false,
       initMethod: InitializationMethod = Default
   )(implicit ev: TensorNumeric[T]) : SpatialFullConvolution[A, T] = {
     new SpatialFullConvolution[A, T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH, adjW, adjH, noBias, initMethod)
+      padW, padH, adjW, adjH, nGroup, noBias, initMethod)
   }
 }

@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.utils.{File, T, Table}
 import org.apache.spark.rdd.RDD
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class OptimizerSpec extends FlatSpec with Matchers {
   val model = new Sequential[Float]()
 

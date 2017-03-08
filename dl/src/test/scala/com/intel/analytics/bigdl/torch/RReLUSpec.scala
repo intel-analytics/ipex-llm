@@ -23,6 +23,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers, fixture}
 
 import scala.math._
 
+@com.intel.analytics.bigdl.tags.Serial
 class RReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {

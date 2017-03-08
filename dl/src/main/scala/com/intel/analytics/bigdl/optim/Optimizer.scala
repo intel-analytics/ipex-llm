@@ -20,12 +20,13 @@ package com.intel.analytics.bigdl.optim
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+import com.intel.analytics.bigdl.dataset.{DataSet, _}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.utils.{Engine, File, T, Table}
+import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
-
+// TODO: remove D to be MiniBatch[T]
 abstract class Optimizer[T: ClassTag, D](
     protected val model: Module[T],
   protected val dataset: DataSet[D],
@@ -41,17 +42,28 @@ abstract class Optimizer[T: ClassTag, D](
 
   protected var validationTrigger: Option[Trigger] = None
   protected var validationMethods: Option[Array[ValidationMethod[T]]] = None
-  protected var validationDataSet: Option[DataSet[D]] = None
+  protected var validationDataSet: Option[DataSet[MiniBatch[T]]] = None
 
   // To achieve better performance, please set dropPercentage as 0.04
   protected var dropPercentage: Double = 0.0
   protected var maxDropPercentage: Double = 0.0
-  protected var comupteThresholdbatchSize: Int = 100
+  protected var computeThresholdbatchSize: Int = 100
   protected var warmupIterationNum: Int = 200
 
   def optimize(): Module[T]
 
-  def setValidation(trigger: Trigger, dataset: DataSet[D],
+  @deprecated("Use bigdl.check.singleton instead", "0.1.0")
+  def disableCheckSingleton(): this.type = {
+    this.checkSingleton = false
+    println("disableCheckSingleton is deprecated. Please use bigdl.check.singleton instead")
+    this
+  }
+
+  // TODO: Remove below code to DistriOptimizer after disableCheckSingleton is not supported
+  protected var checkSingleton = System.getProperty("bigdl.check.singleton",
+    true.toString).toBoolean
+
+  def setValidation(trigger: Trigger, dataset: DataSet[MiniBatch[T]],
     vMethods : Array[ValidationMethod[T]])
   : this.type = {
     this.validationTrigger = Some(trigger)
@@ -60,8 +72,22 @@ abstract class Optimizer[T: ClassTag, D](
     this
   }
 
+  def setValidation(trigger: Trigger, sampleRDD: RDD[Sample[T]],
+      vMethods : Array[ValidationMethod[T]], batchSize: Int)
+  : this.type = {
+    this.validationTrigger = Some(trigger)
+    val dataSet =
+      (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    this.validationDataSet = Some(dataSet)
+    this.validationMethods = Some(vMethods)
+    this
+  }
+
   def setCheckpoint(path: String, trigger: Trigger): this.type = {
-    require(Files.isDirectory(Paths.get(path)), s"$path is not a folder")
+    if (!path.startsWith(File.hdfsPrefix)) {
+      require(Files.isDirectory(Paths.get(path)), s"Optimizer.setCheckpoint: $path is not a folder")
+    }
     this.checkpointPath = Some(path)
     this.checkpointTrigger = Some(trigger)
     this
@@ -92,7 +118,7 @@ abstract class Optimizer[T: ClassTag, D](
     this.dropPercentage = dropPercentage
     this.maxDropPercentage = maxDropPercentage
     require(dropPercentage >= 0 && dropPercentage <= maxDropPercentage)
-    this.comupteThresholdbatchSize = batchsize
+    this.computeThresholdbatchSize = batchsize
     this.warmupIterationNum = warmupIteration
     this
   }
@@ -120,6 +146,20 @@ object Optimizer {
     if (checkpointPath.isDefined) {
       state.save(s"${checkpointPath.get}/state$postfix", overWrite)
     }
+  }
+
+  def apply[T: ClassTag](
+      model: Module[T],
+      sampleRDD: RDD[Sample[T]],
+      criterion: Criterion[T],
+      batchSize: Int
+      )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    new DistriOptimizer[T](
+      model = model,
+      dataset = (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
 
   def apply[T: ClassTag, D](

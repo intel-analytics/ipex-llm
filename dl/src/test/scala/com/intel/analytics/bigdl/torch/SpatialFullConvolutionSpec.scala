@@ -25,6 +25,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
+@com.intel.analytics.bigdl.tags.Serial
 class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
@@ -49,6 +50,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
 
     Random.setSeed(seed)
     val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
+    layer.updateOutput(input)
     val output = layer.updateOutput(input)
 
     val code = "torch.manualSeed(" + seed + ")\n" +
@@ -67,7 +69,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be(luaWeight)
+    weight should be(luaWeight.resizeAs(weight))
     bias should be(luaBias)
     output should be(luaOutput)
   }
@@ -107,7 +109,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be(luaWeight)
+    weight should be(luaWeight.resizeAs(weight))
     bias should be(luaBias)
     output should be(luaOutput)
   }
@@ -165,12 +167,12 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be(luaWeight)
+    weight should be(luaWeight.resizeAs(weight))
     bias should be(luaBias)
     output should be(luaOutput)
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
-    luaGradWeight should be (layer.gradWeight)
+    luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
   }
 
   "A SpatialFullConvolution" should "generate correct output and grad with 3D input" in {
@@ -226,12 +228,12 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be(luaWeight)
+    weight should be(luaWeight.resizeAs(weight))
     bias should be(luaBias)
     output should be(luaOutput)
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
-    luaGradWeight should be (layer.gradWeight)
+    luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
   }
 
   "A SpatialFullConvolution noBias" should "generate correct output and grad with 3D input" in {
@@ -247,7 +249,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val padW = 1
     val padH = 1
     val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
-      kW, kH, dW, dH, padW, padH, 0, 0, true)
+      kW, kH, dW, dH, padW, padH, 0, 0, 1, true)
     val model = new Sequential[Double]()
     model.add(layer)
 
@@ -286,10 +288,10 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be(luaWeight)
+    weight should be(luaWeight.resizeAs(weight))
     output should be(luaOutput)
     gradInput should be(luaGradInput)
-    luaGradWeight should be (layer.gradWeight)
+    luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
   }
 
   "A SpatialFullConvolution" should "generate correct output and grad with table input" in {
@@ -350,11 +352,132 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
     val weight = layer.weight
     val bias = layer.bias
 
-    weight should be(luaWeight)
+    weight should be(luaWeight.resizeAs(weight))
     bias should be(luaBias)
     output should be(luaOutput)
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
-    luaGradWeight should be (layer.gradWeight)
+    luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
   }
+
+  "A SpatialFullConvolution OneToOne" should "generate correct output and grad" in {
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val nInputPlane = 6
+    val nOutputPlane = 6
+    val kW = 3
+    val kH = 3
+    val dW = 1
+    val dH = 1
+    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, 0, 0, 0, 0, 6)
+    Random.setSeed(3)
+    val input = Tensor[Double](6, 5, 5).apply1(e => Random.nextDouble())
+    val output = layer.forward(input).toTensor[Double]
+
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+
+    val gradInput = layer.updateGradInput(input, gradOutput)
+    layer.accGradParameters(input, gradOutput)
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      """tt = nn.tables.oneToOne(6)
+      layer = nn.SpatialFullConvolutionMap(tt, 3, 3, 1, 1)
+      layer.weight:copy(weight)
+      layer.bias:copy(bias)
+      model = nn.Sequential()
+      model:add(layer)
+      model:zeroGradParameters()
+      output = model:forward(input)
+      gradInput = model:backward(input, gradOutput)
+      gradBias = layer.gradBias
+      gradWeight = layer.gradWeight
+      """
+
+    val (luaTime, torchResult) = TH.run(code,
+      Map("input" -> input, "gradOutput" -> gradOutput,
+        "weight" -> layer.weight, "bias" -> layer.bias),
+      Array("output", "gradInput", "gradBias", "gradWeight")
+    )
+
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+    val luaGradBias = torchResult("gradBias").asInstanceOf[Tensor[Double]]
+    val luaGradWeight = torchResult("gradWeight").asInstanceOf[Tensor[Double]]
+
+    val weight = layer.weight
+    val bias = layer.bias
+
+    output should be(luaOutput)
+    gradInput should be(luaGradInput)
+    luaGradBias should be (layer.gradBias)
+    luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+  }
+
+  "A SpatialFullConvolution with different input" should "generate correct output and grad" in {
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val nInputPlane = 3
+    val nOutputPlane = 6
+    val kW = 3
+    val kH = 3
+    val dW = 1
+    val dH = 1
+    val padW = 2
+    val padH = 2
+    val layer = new SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH)
+    val model = new Sequential[Double]()
+    model.add(layer)
+
+    Random.setSeed(3)
+    val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
+    val input2 = Tensor[Double](6, 3, 6, 6).apply1(e => Random.nextDouble())
+    val output = model.updateOutput(input).toTensor[Double]
+    val gradOutput = Tensor[Double]().resizeAs(output).apply1(e => Random.nextDouble())
+    val gradInput = model.backward(input, gradOutput)
+
+    model.zeroGradParameters()
+    val output2 = model.updateOutput(input2).toTensor[Double]
+    val gradOutput2 = Tensor[Double]().resizeAs(output2).apply1(e => Random.nextDouble())
+    val gradInput2 = model.backward(input2, gradOutput2)
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      """layer = nn.SpatialFullConvolution(3, 6, 3, 3, 1, 1, 2, 2)
+      model = nn.Sequential()
+      model:add(layer)
+      weight = layer.weight
+      bias = layer.bias
+      model:zeroGradParameters()
+      output = model:forward(input)
+      gradInput = model:backward(input, gradOutput)
+      gradBias = layer.gradBias
+      gradWeight = layer.gradWeight
+      """
+
+    val (luaTime, torchResult) = TH.run(code,
+      Map("input" -> input2, "gradOutput" -> gradOutput2),
+      Array("weight", "bias", "output", "gradInput", "gradBias", "gradWeight")
+    )
+
+    val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
+    val luaBias = torchResult("bias").asInstanceOf[Tensor[Double]]
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+    val luaGradBias = torchResult("gradBias").asInstanceOf[Tensor[Double]]
+    val luaGradWeight = torchResult("gradWeight").asInstanceOf[Tensor[Double]]
+
+    val weight = layer.weight
+    val bias = layer.bias
+
+    weight should be(luaWeight.resizeAs(weight))
+    bias should be(luaBias)
+    output2 should be(luaOutput)
+    gradInput2 should be(luaGradInput)
+    luaGradBias should be (layer.gradBias)
+    luaGradWeight should be (layer.gradWeight.resizeAs(luaGradWeight))
+  }
+
 }

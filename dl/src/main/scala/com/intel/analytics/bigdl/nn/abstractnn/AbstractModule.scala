@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.nn.abstractnn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -41,6 +42,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 @specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
 
+  private val namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
   /**
    * The cached output. So we don't compute it again when need it
    */
@@ -51,6 +53,18 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   var gradInput: A = Activity[A, T]()
 
+  /**
+   * Copy the useful running status from src to this.
+   *
+   * The subclass should override this method if it has some parameters besides weight and bias.
+   * Such as runningMean and runningVar of BatchNormalization.
+   *
+   * @param src source Module
+   * @return this
+   */
+  def copyStatus(src: Module[T]) : this.type = {
+    this
+  }
 
   /**
    * Clear cached activities to save storage space or network bandwidth. Note that we use
@@ -96,12 +110,16 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   /**
-   * get the module name
+   * Get the module name, default name is className@namePostfix
    *
    * @return
    */
   def getName() : String = {
-    if (this.name == null) this.getClass.getName else this.name
+    if (this.name == null) {
+      s"${this.getClass.getName}@${namePostfix}"
+    } else {
+      this.name
+    }
   }
 
   protected var forwardTime = 0L
@@ -208,6 +226,21 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @return (Array of weights, Array of grad)
    */
   def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = null
+
+  /**
+   * This function returns a table contains ModuleName, the parameter names and parameter value
+   * in this module.
+   * The result table is a structure of Table(ModuleName -> Table(ParameterName -> ParameterValue)),
+   * and the type is Table[String, Table[String, Tensor[T]]].
+   *
+   * For example, get the weight of a module named conv1:
+   *   table[Table]("conv1")[Tensor[T]]("weight").
+   *
+   * Custom modules should override this function if they have parameters.
+   *
+   * @return Table
+   */
+  def getParametersTable(): Table = null
 
   /**
    * Module status. It is useful for modules like dropout/batch normalization

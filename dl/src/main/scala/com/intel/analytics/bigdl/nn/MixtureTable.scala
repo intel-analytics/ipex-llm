@@ -64,7 +64,8 @@ class MixtureTable[T: ClassTag](var dim: Int = Int.MaxValue)
       // expertInputs is a Table
       val expertInputs = input[Table](2)
       val expertInput = expertInputs[Tensor[T]](1)
-      require(gaterInput.size(dimG) == expertInputs.length(), "Should one gater output per expert")
+      require(gaterInput.size(dimG) == expertInputs.length(),
+        "MixtureTable: Should one gater output per expert")
       if (inputBatchSize != batchSize) {
         size.resize(expertInput.dim() + 1).fill(1.0, 1, expertInput.dim() + 1)
         if (dimG > 1) size(0) = gaterInput.size(1)

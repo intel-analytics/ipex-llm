@@ -17,12 +17,8 @@
 
 package com.intel.analytics.bigdl.models.inception
 
-import java.nio.file.Paths
-
-import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{BGRImgNormalizer, BGRImgToBatch}
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{DistriValidator, Top1Accuracy, Top5Accuracy, Validator}
+import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -45,7 +41,7 @@ object Test {
           conf.setAppName("Test Inception on ImageNet")
           new SparkContext(conf)
         })
-      val valSet = ImageNet2012(
+      val valSet = ImageNet2012Val(
         param.folder,
         sc,
         imageSize,

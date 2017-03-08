@@ -17,14 +17,21 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import java.nio.file.{Path, Paths}
+import java.nio.file.Paths
 
+import com.intel.analytics.bigdl.dataset.DataSet.SeqFileFolder
 import com.intel.analytics.bigdl.dataset.image._
+import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, LabeledSentenceToSample}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.{SequenceFile, Text}
+import org.apache.hadoop.io.SequenceFile.Reader
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class TransformersSpec extends FlatSpec with Matchers {
   import TestUtils._
 
@@ -447,9 +454,9 @@ class TransformersSpec extends FlatSpec with Matchers {
     Engine.setCoreNumber(core)
   }
 
-  "RGBImage To SeqFile" should "be good" in {
+  "RGBImage To SeqFile without file name" should "be good" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
-    val pathToImage = LocalImgReader(BGRImage.NO_SCALE)
+    val pathToImage = LocalImgReaderWithName(BGRImage.NO_SCALE)
     val dataSet = DataSet.ImageFolder.paths(
       Paths.get(processPath(resource.getPath()))
     )
@@ -478,13 +485,442 @@ class TransformersSpec extends FlatSpec with Matchers {
     val readIter = readPipeline.toLocal().data(train = false)
     readIter.zip((dataSet -> pathToImage).toLocal().data(train = false))
       .foreach { case (l, r) =>
-      l.label() should be(r.label())
-      l.width() should be(r.width())
-      l.height() should be(r.height())
-      l.content.zip(r.content).foreach(d => d._1 should be(d._2))
+      l.label() should be(r._1.label())
+      l.width() should be(r._1.width())
+      l.height() should be(r._1.height())
+      l.content.zip(r._1.content).foreach(d => d._1 should be(d._2))
       count += 1
     }
 
     count should be(11)
+  }
+
+  "RGBImage To SeqFile with file name" should "be good" in {
+    val resource = getClass().getClassLoader().getResource("imagenet")
+    val pathToImage = LocalImgReaderWithName(BGRImage.NO_SCALE)
+    val dataSet = DataSet.ImageFolder.paths(
+      Paths.get(processPath(resource.getPath()))
+    )
+
+    RandomGenerator.RNG.setSeed(1000)
+
+    dataSet.shuffle()
+    val tmpFile = Paths.get(java.io.File.createTempFile("UnitTest", "RGBImageToSeqFile").getPath)
+    val seqWriter = BGRImgToLocalSeqFile(2, tmpFile, true)
+    val writePipeline = dataSet -> pathToImage -> seqWriter
+    val iter = writePipeline.toLocal().data(train = false)
+    while (iter.hasNext) {
+      println(s"writer file ${iter.next()}")
+    }
+
+    val seqDataSet = new LocalArrayDataSet[LocalSeqFilePath](Array(
+      LocalSeqFilePath(Paths.get(tmpFile + "_0.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_1.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_2.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_3.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_4.seq")),
+      LocalSeqFilePath(Paths.get(tmpFile + "_5.seq"))
+    ))
+
+    val seqData = seqDataSet.toLocal().data(train = false)
+    val data = dataSet.toLocal().data(train = false)
+
+    var reader: SequenceFile.Reader = null
+    val key = new Text()
+    val value = new Text()
+    var count = 0
+
+    while (seqData.hasNext) {
+      val l = seqData.next()
+      if ((reader == null) || (!reader.next(key, value))) {
+        reader = new SequenceFile.Reader(new Configuration,
+          Reader.file(new Path(l.path.toAbsolutePath.toString)))
+      }
+
+      while (reader.next(key, value) && data.hasNext) {
+        val r = data.next()
+        val imgData = BGRImage.readImage(r.path, BGRImage.NO_SCALE)
+        SeqFileFolder.readName(key).toString should be (r.path.getFileName.toString)
+        SeqFileFolder.readLabel(key).toFloat should be (r.label)
+        value.copyBytes() should be (imgData)
+        count += 1
+      }
+    }
+    count should be(11)
+  }
+
+  "LabeledSentence toSample" should "transform correctly for single label" in {
+    Engine.setNodeNumber(None)
+    val input1 = Array(1.0f, 2.0f, 3.0f)
+    val target1 = Array(1.0f)
+    val input2 = Array(2.0f, 1.0f, 0.0f, 4.0f)
+    val target2 = Array(0.0f)
+    val input3 = Array(0.0f, 4.0f)
+    val target3 = Array(1.0f)
+    val labeledSentence1 = new LabeledSentence[Float](input1, target1)
+    val labeledSentence2 = new LabeledSentence[Float](input2, target2)
+    val labeledSentence3 = new LabeledSentence[Float](input3, target3)
+
+    val dataSet = new LocalArrayDataSet[LabeledSentence[Float]](Array(labeledSentence1,
+      labeledSentence2, labeledSentence3))
+
+    val labeledSentenceToSample = LabeledSentenceToSample[Float](5)
+    val sampleDataSet = dataSet -> labeledSentenceToSample
+    val iter = sampleDataSet.toLocal().data(train = false)
+
+    val tensorInput1 = Tensor[Float](Storage(
+      Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
+    val tensorInput2 = Tensor[Float](Storage(
+      Array(0.0f, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1)), 1, Array(4, 5))
+    val tensorInput3 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 0, 1)), 1, Array(2, 5))
+    val tensorTarget1 = Tensor[Float](Storage(
+      Array(2.0f)), 1, Array(1))
+    val tensorTarget2 = Tensor[Float](Storage(
+      Array(1.0f)), 1, Array(1))
+    val tensorTarget3 = Tensor[Float](Storage(
+      Array(2.0f)), 1, Array(1))
+
+
+    val sample1 = Sample[Float](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Float](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Float](tensorInput3, tensorTarget3)
+
+    val batch1 = iter.next()
+    batch1.feature() should be (tensorInput1)
+    batch1.label() should be (tensorTarget1)
+
+    val batch2 = iter.next()
+    batch2.feature() should be (tensorInput2)
+    batch2.label() should be (tensorTarget2)
+
+    val batch3 = iter.next()
+    batch3.feature() should be (tensorInput3)
+    batch3.label() should be (tensorTarget3)
+  }
+  "LabeledSentence toSample" should "transform correctly for single label Double" in {
+    Engine.setNodeNumber(None)
+    val input1 = Array(1.0, 2.0, 3.0)
+    val target1 = Array(1.0)
+    val input2 = Array(2.0, 1.0, 0.0, 4.0)
+    val target2 = Array(0.0)
+    val input3 = Array(0.0, 4.0)
+    val target3 = Array(1.0)
+    val labeledSentence1 = new LabeledSentence[Double](input1, target1)
+    val labeledSentence2 = new LabeledSentence[Double](input2, target2)
+    val labeledSentence3 = new LabeledSentence[Double](input3, target3)
+
+    val dataSet = new LocalArrayDataSet[LabeledSentence[Double]](Array(labeledSentence1,
+      labeledSentence2, labeledSentence3))
+
+    val labeledSentenceToSample = LabeledSentenceToSample[Double](5)
+    val sampleDataSet = dataSet -> labeledSentenceToSample
+    val iter = sampleDataSet.toLocal().data(train = false)
+
+    val tensorInput1 = Tensor[Double](Storage(
+      Array(0.0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
+    val tensorInput2 = Tensor[Double](Storage(
+      Array(0.0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1)), 1, Array(4, 5))
+    val tensorInput3 = Tensor[Double](Storage(
+      Array(1.0, 0, 0, 0, 0, 0, 0, 0, 0, 1)), 1, Array(2, 5))
+    val tensorTarget1 = Tensor[Double](Storage(
+      Array(2.0)), 1, Array(1))
+    val tensorTarget2 = Tensor[Double](Storage(
+      Array(1.0)), 1, Array(1))
+    val tensorTarget3 = Tensor[Double](Storage(
+      Array(2.0)), 1, Array(1))
+
+
+    val sample1 = Sample[Double](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Double](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Double](tensorInput3, tensorTarget3)
+
+    val batch1 = iter.next()
+    batch1.feature() should be (tensorInput1)
+    batch1.label() should be (tensorTarget1)
+
+    val batch2 = iter.next()
+    batch2.feature() should be (tensorInput2)
+    batch2.label() should be (tensorTarget2)
+
+    val batch3 = iter.next()
+    batch3.feature() should be (tensorInput3)
+    batch3.label() should be (tensorTarget3)
+  }
+  "LabeledSentence toSample" should "transform correctly for padding sentences single label" in {
+    Engine.setNodeNumber(None)
+    val input1 = Array(1.0f, 2.0f, 3.0f)
+    val target1 = Array(1.0f)
+    val input2 = Array(2.0f, 1.0f, 0.0f, 4.0f)
+    val target2 = Array(0.0f)
+    val input3 = Array(0.0f, 4.0f)
+    val target3 = Array(1.0f)
+    val labeledSentence1 = new LabeledSentence[Float](input1, target1)
+    val labeledSentence2 = new LabeledSentence[Float](input2, target2)
+    val labeledSentence3 = new LabeledSentence[Float](input3, target3)
+
+    val dataSet = new LocalArrayDataSet[LabeledSentence[Float]](Array(labeledSentence1,
+      labeledSentence2, labeledSentence3))
+
+    val labeledSentenceToSample = LabeledSentenceToSample[Float](5, fixDataLength = Option(4))
+    val sampleDataSet = dataSet -> labeledSentenceToSample
+    val iter = sampleDataSet.toLocal().data(train = false)
+
+    val tensorInput1 = Tensor[Float](Storage(
+      Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0)), 1, Array(4, 5))
+    val tensorInput2 = Tensor[Float](Storage(
+      Array(0.0f, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1)), 1, Array(4, 5))
+    val tensorInput3 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0)), 1, Array(4, 5))
+    val tensorTarget1 = Tensor[Float](Storage(
+      Array(2.0f)), 1, Array(1))
+    val tensorTarget2 = Tensor[Float](Storage(
+      Array(1.0f)), 1, Array(1))
+    val tensorTarget3 = Tensor[Float](Storage(
+      Array(2.0f)), 1, Array(1))
+
+
+    val sample1 = Sample[Float](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Float](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Float](tensorInput3, tensorTarget3)
+
+    val batch1 = iter.next()
+    batch1.feature() should be (tensorInput1)
+    batch1.label() should be (tensorTarget1)
+
+    val batch2 = iter.next()
+    batch2.feature() should be (tensorInput2)
+    batch2.label() should be (tensorTarget2)
+
+    val batch3 = iter.next()
+    batch3.feature() should be (tensorInput3)
+    batch3.label() should be (tensorTarget3)
+  }
+  "LabeledSentence toSample" should "transform correctly for language model label" in {
+    Engine.setNodeNumber(None)
+    val input1 = Array(0.0f, 2.0f, 3.0f)
+    val target1 = Array(2.0f, 3.0f, 4.0f)
+    val input2 = Array(0.0f, 1.0f, 0.0f, 2.0f)
+    val target2 = Array(1.0f, 0.0f, 2.0f, 4.0f)
+    val input3 = Array(0.0f, 3.0f)
+    val target3 = Array(3.0f, 4.0f)
+    val labeledSentence1 = new LabeledSentence[Float](input1, target1)
+    val labeledSentence2 = new LabeledSentence[Float](input2, target2)
+    val labeledSentence3 = new LabeledSentence[Float](input3, target3)
+
+    val dataSet = new LocalArrayDataSet[LabeledSentence[Float]](Array(labeledSentence1,
+      labeledSentence2, labeledSentence3))
+
+    val labeledSentenceToSample = LabeledSentenceToSample[Float](5)
+    val sampleDataSet = dataSet -> labeledSentenceToSample
+    val iter = sampleDataSet.toLocal().data(train = false)
+
+    val tensorInput1 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
+    val tensorInput2 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0)), 1, Array(4, 5))
+    val tensorInput3 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 1, 0)), 1, Array(2, 5))
+    val tensorTarget1 = Tensor[Float](Storage(
+      Array(3.0f, 4.0f, 5.0f)), 1, Array(3))
+    val tensorTarget2 = Tensor[Float](Storage(
+      Array(2.0f, 1.0f, 3.0f, 5.0f)), 1, Array(4))
+    val tensorTarget3 = Tensor[Float](Storage(
+      Array(4.0f, 5.0f)), 1, Array(2))
+
+
+    val sample1 = Sample[Float](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Float](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Float](tensorInput3, tensorTarget3)
+
+    val batch1 = iter.next()
+    batch1.feature() should be (tensorInput1)
+    batch1.label() should be (tensorTarget1)
+
+    val batch2 = iter.next()
+    batch2.feature() should be (tensorInput2)
+    batch2.label() should be (tensorTarget2)
+
+    val batch3 = iter.next()
+    batch3.feature() should be (tensorInput3)
+    batch3.label() should be (tensorTarget3)
+  }
+  "LabeledSentence toSample" should "transform correctly" +
+    " for language model label padding sentences" in {
+    Engine.setNodeNumber(None)
+    val input1 = Array(0.0f, 2.0f, 3.0f)
+    val target1 = Array(2.0f, 3.0f, 4.0f)
+    val input2 = Array(0.0f, 1.0f, 0.0f, 2.0f)
+    val target2 = Array(1.0f, 0.0f, 2.0f, 4.0f)
+    val input3 = Array(0.0f, 3.0f)
+    val target3 = Array(3.0f, 4.0f)
+    val labeledSentence1 = new LabeledSentence[Float](input1, target1)
+    val labeledSentence2 = new LabeledSentence[Float](input2, target2)
+    val labeledSentence3 = new LabeledSentence[Float](input3, target3)
+
+    val dataSet = new LocalArrayDataSet[LabeledSentence[Float]](Array(labeledSentence1,
+      labeledSentence2, labeledSentence3))
+
+    val labeledSentenceToSample = LabeledSentenceToSample[Float](5, Option(4), Option(4))
+    val sampleDataSet = dataSet -> labeledSentenceToSample
+    val iter = sampleDataSet.toLocal().data(train = false)
+
+    val tensorInput1 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1)), 1, Array(4, 5))
+    val tensorInput2 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0)), 1, Array(4, 5))
+    val tensorInput3 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)), 1, Array(4, 5))
+    val tensorTarget1 = Tensor[Float](Storage(
+      Array(3.0f, 4.0f, 5.0f, 1.0f)), 1, Array(4))
+    val tensorTarget2 = Tensor[Float](Storage(
+      Array(2.0f, 1.0f, 3.0f, 5.0f)), 1, Array(4))
+    val tensorTarget3 = Tensor[Float](Storage(
+      Array(4.0f, 5.0f, 1.0f, 1.0f)), 1, Array(4))
+
+
+    val sample1 = Sample[Float](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Float](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Float](tensorInput3, tensorTarget3)
+
+    val batch1 = iter.next()
+    batch1.feature() should be (tensorInput1)
+    batch1.label() should be (tensorTarget1)
+
+    val batch2 = iter.next()
+    batch2.feature() should be (tensorInput2)
+    batch2.label() should be (tensorTarget2)
+
+    val batch3 = iter.next()
+    batch3.feature() should be (tensorInput3)
+    batch3.label() should be (tensorTarget3)
+  }
+  "SampleToBatchSpec" should "be good with TensorBatch1 Double" in {
+    val tensorInput1 = Tensor[Double](Storage(
+      Array(0.0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
+    val tensorInput2 = Tensor[Double](Storage(
+      Array(0.0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0)), 1, Array(3, 5))
+    val tensorInput3 = Tensor[Double](Storage(
+      Array(1.0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)), 1, Array(3, 5))
+    val tensorTarget1 = Tensor[Double](Storage(
+      Array(3.0, 4, 5)), 1, Array(3))
+    val tensorTarget2 = Tensor[Double](Storage(
+      Array(2.0, 1, 5)), 1, Array(3))
+    val tensorTarget3 = Tensor[Double](Storage(
+      Array(5.0, 2, 1)), 1, Array(3))
+    val sample1 = Sample[Double](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Double](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Double](tensorInput3, tensorTarget3)
+
+    val dataSet = new LocalArrayDataSet[Sample[Double]](Array(sample1,
+      sample2, sample3))
+    val sampleToBatch = SampleToBatch[Double](2)
+    val sampleDataSet = dataSet -> sampleToBatch
+    val iter = sampleDataSet.toLocal().data(train = false)
+
+    val batch1 = iter.next()
+
+    val batch1Data = Tensor[Double](Array(2, 3, 5))
+    batch1Data(1).resizeAs(tensorInput1).copy(tensorInput1)
+    batch1Data(2).resizeAs(tensorInput2).copy(tensorInput2)
+    val batch1Label = Tensor[Double](Array(2, 3))
+    batch1Label(1).resizeAs(tensorTarget1).copy(tensorTarget1)
+    batch1Label(2).resizeAs(tensorTarget2).copy(tensorTarget2)
+    batch1.data should be (batch1Data)
+    batch1.labels should be (batch1Label)
+
+    val batch2 = iter.next()
+    val batch2Data = Tensor[Double](Array(1, 3, 5))
+    batch2Data(1).resizeAs(tensorInput3).copy(tensorInput3)
+    val batch2Label = Tensor[Double](Array(1, 3))
+    batch2Label(1).resizeAs(tensorTarget3).copy(tensorTarget3)
+    batch2.data should be (batch2Data)
+    batch2.labels should be (batch2Label)
+  }
+  "SampleToBatchSpec" should "be good with TensorBatch1" in {
+    val tensorInput1 = Tensor[Float](Storage(
+      Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
+    val tensorInput2 = Tensor[Float](Storage(
+      Array(0.0f, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0)), 1, Array(3, 5))
+    val tensorInput3 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)), 1, Array(3, 5))
+    val tensorTarget1 = Tensor[Float](Storage(
+      Array(3.0f, 4, 5)), 1, Array(3))
+    val tensorTarget2 = Tensor[Float](Storage(
+      Array(2.0f, 1, 5)), 1, Array(3))
+    val tensorTarget3 = Tensor[Float](Storage(
+      Array(5.0f, 2, 1)), 1, Array(3))
+    val sample1 = Sample[Float](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Float](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Float](tensorInput3, tensorTarget3)
+
+    val dataSet = new LocalArrayDataSet[Sample[Float]](Array(sample1,
+      sample2, sample3))
+    val sampleToBatch = SampleToBatch[Float](2)
+    val sampleDataSet = dataSet -> sampleToBatch
+    val iter = sampleDataSet.toLocal().data(train = false)
+
+    val batch1 = iter.next()
+
+    val batch1Data = Tensor[Float](Array(2, 3, 5))
+    batch1Data(1).resizeAs(tensorInput1).copy(tensorInput1)
+    batch1Data(2).resizeAs(tensorInput2).copy(tensorInput2)
+    val batch1Label = Tensor[Float](Array(2, 3))
+    batch1Label(1).resizeAs(tensorTarget1).copy(tensorTarget1)
+    batch1Label(2).resizeAs(tensorTarget2).copy(tensorTarget2)
+    batch1.data should be (batch1Data)
+    batch1.labels should be (batch1Label)
+
+    val batch2 = iter.next()
+    val batch2Data = Tensor[Float](Array(1, 3, 5))
+    batch2Data(1).resizeAs(tensorInput3).copy(tensorInput3)
+    val batch2Label = Tensor[Float](Array(1, 3))
+    batch2Label(1).resizeAs(tensorTarget3).copy(tensorTarget3)
+    batch2.data should be (batch2Data)
+    batch2.labels should be (batch2Label)
+  }
+  "SampleToBatchSpec" should "be good with TensorBatch2" in {
+    val tensorInput1 = Tensor[Float](Storage(
+      Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
+    val tensorInput2 = Tensor[Float](Storage(
+      Array(0.0f, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0)), 1, Array(3, 5))
+    val tensorInput3 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)), 1, Array(3, 5))
+    val tensorTarget1 = Tensor[Float](Storage(
+      Array(3.0f, 4, 5)), 1, Array(3))
+    val tensorTarget2 = Tensor[Float](Storage(
+      Array(2.0f, 1, 5)), 1, Array(3))
+    val tensorTarget3 = Tensor[Float](Storage(
+      Array(5.0f, 2, 1)), 1, Array(3))
+    val sample1 = Sample[Float](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Float](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Float](tensorInput3, tensorTarget3)
+
+    val dataSet = new LocalArrayDataSet[Sample[Float]](Array(sample1,
+      sample2, sample3))
+    val sampleToBatch = SampleToBatch[Float](2)
+    val sampleDataSet = dataSet -> sampleToBatch
+    val iter = sampleDataSet.toLocal().data(train = true)
+
+    val batch1 = iter.next()
+
+    val batch1Data = Tensor[Float](Array(2, 3, 5))
+    batch1Data(1).resizeAs(tensorInput1).copy(tensorInput1)
+    batch1Data(2).resizeAs(tensorInput2).copy(tensorInput2)
+    val batch1Label = Tensor[Float](Array(2, 3))
+    batch1Label(1).resizeAs(tensorTarget1).copy(tensorTarget1)
+    batch1Label(2).resizeAs(tensorTarget2).copy(tensorTarget2)
+    batch1.data should be (batch1Data)
+    batch1.labels should be (batch1Label)
+
+    val batch2 = iter.next()
+    val batch2Data = Tensor[Float](Array(2, 3, 5))
+    batch2Data(1).resizeAs(tensorInput3).copy(tensorInput3)
+    batch2Data(2).resizeAs(tensorInput1).copy(tensorInput1)
+    val batch2Label = Tensor[Float](Array(2, 3))
+    batch2Label(1).resizeAs(tensorTarget3).copy(tensorTarget3)
+    batch2Label(2).resizeAs(tensorTarget1).copy(tensorTarget1)
+    batch2.data should be (batch2Data)
+    batch2.labels should be (batch2Label)
   }
 }

@@ -24,6 +24,7 @@ import org.apache.spark.{Partition, SparkContext, TaskContext}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.util.control.NonFatal
 
 object ZippedPartitionsWithLocalityRDD {
   def apply[T: ClassTag, B: ClassTag, V: ClassTag]
@@ -52,10 +53,13 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
 
     val candidateLocs = new ArrayBuffer[(Int, Seq[String])]()
     (0 until numParts).foreach(p => {
-      candidateLocs.append((p, rdds(1).context.getPreferredLocs(rdds(1), p).map(_.host)))
+      candidateLocs.append((p, rdds(1).context.getPreferredLocs(rdds(1), p).map(_.host).distinct))
     })
-    Array.tabulate[Partition](numParts) { i =>
-      val curPrefs = rdds(0).context.getPreferredLocs(rdds(0), i).map(_.host)
+    val nonmatchPartitionId = new ArrayBuffer[Int]()
+    val parts = new Array[Partition](numParts)
+
+    (0 until  numParts).foreach { i =>
+      val curPrefs = rdds(0).context.getPreferredLocs(rdds(0), i).map(_.host).distinct
       var p = 0
       var matchPartition: (Int, Seq[String]) = null
       var locs: Seq[String] = null
@@ -67,12 +71,25 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
         }
         p += 1
       }
-      require(matchPartition != null, s"can't find locality partition for partition $i " +
-        s"Partition locations are (${curPrefs}) Candidate partition locations are\n" +
-        s"${candidateLocs.mkString("\n")}. Are you using more executors than the node number? " +
-        s"If yes, try to change your executor number.")
-      new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
+      if (matchPartition != null) {
+        parts(i) =
+          new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
+      } else {
+        println(s"can't find locality partition for partition $i " +
+          s"Partition locations are (${curPrefs}) Candidate partition locations are\n" +
+          s"${candidateLocs.mkString("\n")}.")
+        nonmatchPartitionId.append(i)
+      }
     }
+
+    require(nonmatchPartitionId.size == candidateLocs.size,
+      "unmatched partition size should be the same with candidateLocs size")
+    val nonmatchedParts = nonmatchPartitionId.map { i =>
+      val locs = rdds(0).context.getPreferredLocs(rdds(0), i).map(_.host).distinct
+      val matchPartition = candidateLocs.remove(0)
+      parts(i) = new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
+    }
+    parts
   }
 }
 
@@ -88,10 +105,17 @@ private[spark] class ZippedPartitionsLocalityPartition(
   override def partitions: Seq[Partition] = _partitionValues
 
   @throws(classOf[IOException])
-  private def writeObject(oos: ObjectOutputStream): Unit = Utils.tryOrIOException {
-    // Update the reference to parent split at the time of task serialization
-    _partitionValues = rdds.zip(indexes).map{ case (rdd, i) => rdd.partitions(i) }
-    oos.defaultWriteObject()
+  private def writeObject(oos: ObjectOutputStream): Unit = {
+    try {
+      // Update the reference to parent split at the time of task serialization
+      _partitionValues = rdds.zip(indexes).map{ case (rdd, i) => rdd.partitions(i) }
+      oos.defaultWriteObject()
+    } catch {
+      case e: IOException =>
+        throw e
+      case NonFatal(e) =>
+        throw new IOException(e)
+    }
   }
 }
 

@@ -15,23 +15,23 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.models.rnn
+package com.intel.analytics.bigdl.models.utils
 
-import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.models.lenet.LeNet5
+import org.apache.log4j.{Level, Logger}
+import org.apache.spark.SparkContext
+import org.scalatest.{FlatSpec, Matchers}
 
-object SimpleRNN {
-  def apply(
-  inputSize: Int,
-  hiddenSize: Int,
-  outputSize: Int,
-  bpttTruncate: Int = 4)
-  : Module[Float] = {
-    val model = Sequential[Float]()
-    model.add(Recurrent[Float](hiddenSize, bpttTruncate)
-      .add(RnnCell[Float](inputSize, hiddenSize))
-      .add(Tanh[Float]()))
-      .add(Linear[Float](hiddenSize, outputSize))
-    model
-  }
+class ModelBroadcastSpec extends FlatSpec with Matchers {
+
+  Logger.getLogger("org").setLevel(Level.WARN)
+  Logger.getLogger("akka").setLevel(Level.WARN)
+
+  val sc = new SparkContext("local[1]", "ModelBroadcast")
+  val model = LeNet5(10)
+
+  val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
+  modelBroadCast.value().toString should be(model.toString)
+  modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
+  sc.stop()
 }

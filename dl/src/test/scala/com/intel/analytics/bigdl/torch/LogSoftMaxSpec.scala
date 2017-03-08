@@ -17,12 +17,15 @@
 
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.LogSoftMax
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.{GradientChecker, LogSoftMax}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
+@com.intel.analytics.bigdl.tags.Serial
 class LogSoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
@@ -30,7 +33,7 @@ class LogSoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
-  "A LogSoftMax Module " should "generate correct output and grad" in {
+  "A LogSoftMax Module " should "generate correct output and grad with input 2D" in {
     val module = new LogSoftMax[Double]()
     Random.setSeed(100)
     val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
@@ -56,5 +59,71 @@ class LogSoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
     luaGradInput should be(gradInput)
 
     println("Test case : LogSoft, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A LogSoftMax Module " should "generate correct output and grad with input 1D" in {
+    val module = new LogSoftMax[Double]()
+    Random.setSeed(100)
+    val input = Tensor[Double](10).apply1(e => Random.nextDouble())
+    val data = Tensor[Double](20).randn()
+    val gradOutput = data.narrow(1, 1, 10)
+
+    val start = System.nanoTime()
+    val output = module.forward(input)
+    val gradInput = module.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "module = nn.LogSoftMax()\n" +
+      "output1 = module:forward(input)\n " +
+      "output2 = module:backward(input, gradOutput)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output1", "output2"))
+    val luaOutput = torchResult("output1").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("output2").asInstanceOf[Tensor[Double]]
+
+    luaOutput should be(output)
+    luaGradInput should be(gradInput)
+
+    println("Test case : LogSoft, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A LogSoftMax Module " should "generate correct output and grad tiwh input 1*N" in {
+    val module = new LogSoftMax[Double]()
+    Random.setSeed(100)
+    val input = Tensor[Double](1, 10).apply1(e => Random.nextDouble())
+    val data = Tensor[Double](1, 20).randn()
+    val gradOutput = data.narrow(2, 1, 10)
+
+    val start = System.nanoTime()
+    val output = module.forward(input)
+    val gradInput = module.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "module = nn.LogSoftMax()\n" +
+      "output1 = module:forward(input)\n " +
+      "output2 = module:backward(input, gradOutput)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output1", "output2"))
+    val luaOutput = torchResult("output1").asInstanceOf[Tensor[Double]]
+    val luaGradInput = torchResult("output2").asInstanceOf[Tensor[Double]]
+
+    luaOutput should be(output)
+    luaGradInput should be(gradInput)
+
+    println("Test case : LogSoft, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "LogSoftMax module" should "be good in gradient check for input" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val layer = new LogSoftMax[Double]()
+    val input = Tensor[Double](4, 10).apply1(e => Random.nextDouble())
+
+    val checker = new GradientChecker(1e-4)
+    checker.checkLayer[Double](layer, input, 1e-3) should be(true)
   }
 }

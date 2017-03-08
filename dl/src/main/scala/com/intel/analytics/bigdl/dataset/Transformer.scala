@@ -16,9 +16,10 @@
  */
 package com.intel.analytics.bigdl.dataset
 
+import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.apache.commons.lang3.SerializationUtils
+import java.util
 
 import scala.collection.Iterator
 import scala.reflect.ClassTag
@@ -70,17 +71,82 @@ class Identity[A] extends Transformer[A, A] {
   }
 }
 
+/**
+ * Convert a sequence of Sample to a sequence of MiniBatch,
+ * optionally padding all the features (or labels) in the mini-batch to the same length
+ */
 object SampleToBatch {
   def apply[T: ClassTag]
-  (batchSize: Int)
+  (batchSize : Int,
+   featurePadding : Option[Tensor[T]] = None,
+   labelPadding : Option[T] = None,
+   fixedLength: Option[Int] = None)
   (implicit ev: TensorNumeric[T]): SampleToBatch[T]
-  = new SampleToBatch[T](batchSize)
+  = new SampleToBatch[T](batchSize, featurePadding, labelPadding, fixedLength)
 }
 
+/**
+ * Convert a sequence of Sample to a sequence of MiniBatch,
+ * optionally padding all the features (or labels) in the mini-batch to the same length
+ * @param totalBatch total batch size
+ * @param featurePadding feature padding value (by default None, meaning no feature padding)
+ * @param labelPadding label padding value (by default None, meaning no label padding)
+ * @param fixedLength if padding, it specifies the length of feature/label after padding
+ *                    (by default None, meaning the length after padding is set to the max
+ *                    length of feature/label in a mini-batch)
+ */
+
 class SampleToBatch[T: ClassTag]
-  (totalBatch: Int)
-  (implicit ev: TensorNumeric[T])
+(totalBatch : Int,
+ featurePadding : Option[Tensor[T]] = None,
+ labelPadding : Option[T] = None,
+ fixedLength: Option[Int] = None)
+(implicit ev: TensorNumeric[T])
   extends Transformer[Sample[T], MiniBatch[T]] {
+
+  private def paddingTensor(data: Array[T], padValue: Tensor[T], start: Int, end: Int): Unit = {
+    var offset = start
+    val padArr = padValue.storage().array()
+    val padOffset = padValue.storageOffset() - 1
+    while (offset < end) {
+      val length = math.min(end - offset, padArr.length)
+      System.arraycopy(padArr, padOffset, data, offset, length)
+      offset += length
+    }
+  }
+
+  private def paddingValue(data: Array[T], padValue: T, start: Int, end: Int): Unit = {
+    ev.getType() match {
+      case DoubleType =>
+        util.Arrays.fill(data.asInstanceOf[Array[Double]], start, end, ev.toType[Double](padValue))
+      case FloatType =>
+        util.Arrays.fill(data.asInstanceOf[Array[Float]], start, end, ev.toType[Float](padValue))
+      case _ => throw new UnsupportedOperationException(
+        "SampleToBatch: Only Float/Double supported")
+    }
+  }
+
+  /**
+   * get data's product form start to end
+   */
+  private def getProduct(data: Array[Int], start: Int, end: Int): Int = {
+    var i = start
+    var res = 1
+    while (i < end) {
+      res *= data(i)
+      i += 1
+    }
+    res
+  }
+
+  /**
+   * compare a and b, then return the larger one's index
+   * @param i the index of a
+   * @param j the index of b
+   */
+  private def getLarger(a: Int, i : Int, b : Int, j : Int): Int = {
+    if (a > b) i else j
+  }
 
   override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
     new Iterator[MiniBatch[T]] {
@@ -89,45 +155,82 @@ class SampleToBatch[T: ClassTag]
       private var featureData: Array[T] = null
       private var labelData: Array[T] = null
       private val batchSize = Utils.getBatchSize(totalBatch)
+
+      private val sampleData = Array.tabulate(batchSize)(_ => Sample())
       private var featureSize: Array[Int] = null
       private var labelSize: Array[Int] = null
-      private var _featureLength: Int = 0
-      private var _labelLength: Int = 0
+      private var oneFeatureElement: Int = 0
+      private var oneLabelElement: Int = 0
+      private val padFeature: Boolean = !featurePadding.isEmpty
+      private val padLabel: Boolean = !labelPadding.isEmpty
       override def hasNext: Boolean = prev.hasNext
 
       override def next(): MiniBatch[T] = {
         if (prev.hasNext) {
           var i = 0
+          var labelIndex = 0
+          var featureIndex = 0
+          var batchLength = 1
           while (i < batchSize && prev.hasNext) {
             val sample = prev.next()
-            val featureLength = sample.getFeature().nElement()
-            val labelLength = sample.getLabel().nElement()
-            if (featureSize == null || labelSize == null
-              || _featureLength != featureLength
-              || _labelLength != labelLength) {
-              featureSize = Array(1) ++ sample.getFeature().size
-              labelSize = Array(1) ++ sample.getLabel().size
-              _featureLength = featureLength
-              _labelLength = labelLength
-            }
-            if (featureData == null || featureData.length < batchSize * featureLength) {
-              featureData = new Array[T](batchSize * featureLength)
-            }
-            if (labelData == null || labelData.length < batchSize * labelLength) {
-              labelData = new Array[T](batchSize * labelLength)
-            }
-            sample.copyToLabel(labelData, i*labelLength, labelLength)
-            sample.copyToFeature(featureData, i*featureLength, featureLength)
-
+            require(sample.feature().isContiguous() && sample.label().isContiguous(),
+              "SampleToBatch: Only support contiguous tensor")
+            sampleData(i).copy(sample)
+            featureIndex = getLarger(sampleData(featureIndex).feature().nElement(),
+              featureIndex, sample.feature().nElement(), i)
+            labelIndex = getLarger(sampleData(labelIndex).label().nElement(),
+              labelIndex, sample.label().nElement(), i)
             i += 1
           }
+          batchLength = i
+          if (featureSize == null) {
+            featureSize = Array(1) ++ sampleData(featureIndex).feature().size()
+            labelSize = Array(1) ++ sampleData(labelIndex).label().size()
+          }
 
-          featureSize(0) = i
-          labelSize(0) = i
-          featureTensor.set(Storage[T](featureData),
-            storageOffset = 1, sizes = featureSize)
-          labelTensor.set(Storage[T](labelData),
-            storageOffset = 1, sizes = labelSize)
+          featureSize(0) = batchLength
+          val featureLength = sampleData(featureIndex).feature().size(1)
+          featureSize(1) = if (padFeature) fixedLength.getOrElse(featureLength) else featureLength
+          require(featureSize(1) >= featureLength,
+            "SampleToBatch: fixedLength should not be less than first dimension of feature")
+          oneFeatureElement = getProduct(featureSize, 1, featureSize.length)
+
+          labelSize(0) = batchLength
+          val labelLength = sampleData(labelIndex).label().size(1)
+          labelSize(1) = if (padLabel) fixedLength.getOrElse(labelLength) else labelLength
+          require(labelSize(1) >= labelLength,
+            "SampleToBatch: fixedLength should not be less than first dimension of label")
+          oneLabelElement = getProduct(labelSize, 1, labelSize.length)
+
+          if (featureData == null || featureData.length < batchSize * oneFeatureElement) {
+            featureData = new Array[T](batchSize * oneFeatureElement)
+          }
+          if (labelData == null || labelData.length < batchSize * oneLabelElement) {
+            labelData = new Array[T](batchSize * oneLabelElement)
+          }
+          if (padFeature) {
+            require(((featurePadding.get.dim() + 1) == sampleData(featureIndex).feature().dim())
+              && featurePadding.get.isContiguous(), "SampleToBatch: featurePadding should be" +
+              s"contiguous and dim should be ${sampleData(featureIndex).feature().dim() - 1}")
+          }
+
+          i = 0
+          while (i < batchLength) {
+            val sample = sampleData(i)
+            sample.copyFromFeature(featureData, i * oneFeatureElement, sample.feature().nElement())
+            if (padFeature) {
+              paddingTensor(featureData, featurePadding.get,
+                i * oneFeatureElement + sample.feature().nElement(), (i + 1) * oneFeatureElement)
+            }
+            sample.copyFromLabel(labelData, i * oneLabelElement, sample.label().nElement())
+            if (padLabel) {
+              paddingValue(labelData, labelPadding.get,
+                i * oneLabelElement + sample.label().nElement(), (i + 1) * oneLabelElement)
+            }
+            i += 1
+          }
+          featureTensor.set(Storage[T](featureData), storageOffset = 1, sizes = featureSize)
+          labelTensor.set(Storage[T](labelData), storageOffset = 1, sizes = labelSize)
           MiniBatch(featureTensor, labelTensor)
         } else {
           null

@@ -22,6 +22,8 @@ import java.util.concurrent.{Callable, Executors, Future, ThreadFactory}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+import org.apache.commons.lang.exception.ExceptionUtils
+import org.apache.log4j.Logger
 import org.apache.spark.sparkExtension.SparkExtension
 import org.apache.spark.{SparkEnv, TaskContext}
 import org.apache.spark.storage.{BlockId, BlockManagerWrapper, StorageLevel}
@@ -33,6 +35,7 @@ object AllReduceParameter {
   private val syncPoolSize: Int = System.getProperty(
     "bigdl.Parameter.syncPoolSize", "4").toInt
 
+  val logger = Logger.getLogger(getClass)
   val syncPool = Executors.newFixedThreadPool(syncPoolSize, new ThreadFactory {
     override def newThread(r: Runnable): Thread = {
       val t = Executors.defaultThreadFactory().newThread(r)
@@ -43,8 +46,8 @@ object AllReduceParameter {
 
   private val nextId = new AtomicLong(0)
 
-  def newParameter[T: ClassTag](parationNum: Int, size: Int): AllReduceParameter[T] = {
-    new AllReduceParameter(nextId.getAndIncrement(), parationNum, size)
+  def newParameter[T: ClassTag](partitionNum: Int, size: Int): AllReduceParameter[T] = {
+    new AllReduceParameter(nextId.getAndIncrement(), partitionNum, size)
   }
 }
 
@@ -134,36 +137,47 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
     val tasks = (0 until partitionNum).map(pid => {
       syncPool.submit(new Callable[Int] {
         override def call(): Int = {
-          val blockId = getWeightBlockId(pid)
-          val localBuffer = BlockManagerWrapper.byteBufferConvert(
-            bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId).get))
-          val start = pid * taskSize + math.min(pid, extraSize)
-          val length = taskSize + (if (pid < extraSize) 1 else 0)
-          require(localBuffer.array().length == length * 2)
-          SerializerInstance.serialize(localBuffer).deCompress(0, localParameter, start, length)
-          BlockManagerWrapper.unlock(blockId)
-          pid
+          try {
+            val blockId = getWeightBlockId(pid)
+            val localBuffer = BlockManagerWrapper.byteBufferConvert(
+              bm.getLocalBytes(blockId).getOrElse(bm.getRemoteBytes(blockId)
+                .get))
+            val start = pid * taskSize + math.min(pid, extraSize)
+            val length = taskSize + (if (pid < extraSize) 1 else 0)
+            require(localBuffer.array().length == length * 2)
+            SerializerInstance.serialize(localBuffer).deCompress(0, localParameter, start, length)
+            BlockManagerWrapper.unlock(blockId)
+            pid
+          } catch {
+            case t : Throwable =>
+              logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+              throw t
+          }
         }
       })
     })
     new FutureResult(tasks)
   }
 
-  def aggregrateGradientParition(): Unit = {
+  def aggregrateGradientPartition(): Unit = {
     val bm = SparkEnv.get.blockManager
     require(partitionId < partitionNum)
     val params = new Array[CompressedTensor[T]](partitionNum)
     val sgThreads = (0 until partitionNum).map(pid => {
       new Callable[Int] {
         override def call(): Int = {
-          val blockId = getGradientBlockId(pid, partitionId)
-          val tmp = BlockManagerWrapper.byteBufferConvert(bm.getLocalBytes(blockId)
-            .getOrElse(bm.getRemoteBytes(blockId).getOrElse(
-              throw new IllegalArgumentException(s"Can't get the block(${blockId})")
-            )))
-          params(pid) = SerializerInstance.serialize(tmp)
-          BlockManagerWrapper.unlock(blockId)
-          pid
+          try {
+            val blockId = getGradientBlockId(pid, partitionId)
+            val tmp = BlockManagerWrapper.byteBufferConvert(bm.getLocalBytes(blockId)
+              .getOrElse(bm.getRemoteBytes(blockId).get))
+            params(pid) = SerializerInstance.serialize(tmp)
+            BlockManagerWrapper.unlock(blockId)
+            pid
+          } catch {
+            case t : Throwable =>
+              logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+              throw t
+          }
         }
       }
     })

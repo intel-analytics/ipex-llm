@@ -36,7 +36,7 @@ class SelectTable[T: ClassTag](
   (implicit ev: TensorNumeric[T]) extends Container[Table, Activity, T]  {
 
   override def updateOutput(input: Table): Activity = {
-    val index = if (this.index < 0) input.getState().size + this.index else this.index
+    val index = if (this.index < 0) input.length() + this.index else this.index
 
     require(input.contains(index), "index does not exist in the input table")
     output = input[Activity](index)

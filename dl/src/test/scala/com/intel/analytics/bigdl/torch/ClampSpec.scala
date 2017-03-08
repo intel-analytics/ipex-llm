@@ -22,6 +22,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
 
+@com.intel.analytics.bigdl.tags.Serial
 class ClampSpec extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {

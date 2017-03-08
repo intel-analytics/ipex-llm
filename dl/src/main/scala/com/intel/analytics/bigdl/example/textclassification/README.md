@@ -54,10 +54,10 @@
                    --total-executor-cores 32 --executor-cores 8                                \
                    --class com.intel.analytics.bigdl.example.textclassification.TextClassifier \
                    bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar --coreNum 8                  \
-                   --nodeNum 4 --batchSize 32  --baseDir ${BASE_DIR} --partitionNum 32
+                   --nodeNum 4 --batchSize 128  --baseDir ${BASE_DIR} --partitionNum 32
         ```
 
-      * NOTE: The total batch is: 32 * 4 as we specify nodeNum to be 4
+      * NOTE: The total batch is: 128 and the batch per node is 128/nodeNum
 
 4. Verify:
    * Search accuracy from log:

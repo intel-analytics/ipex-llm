@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.tensor
 
 import org.scalatest.{FlatSpec, Matchers}
 
+@com.intel.analytics.bigdl.tags.Parallel
 class ArrayStorageSpec extends FlatSpec with Matchers {
 
   "update value" should "be test" in {

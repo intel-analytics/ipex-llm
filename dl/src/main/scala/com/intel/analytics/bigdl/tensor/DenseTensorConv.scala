@@ -60,13 +60,13 @@ object DenseTensorConv {
     nInputRows: Int, nInputCols: Int, kernel: Storage[T], _kernelOffset: Int,
     nKernelRows: Int, nKernelCols: Int, srow: Int, scol: Int)(
     implicit ev: TensorNumeric[T]): Unit = {
-    val nOuputCol = (nInputCols - 1) * scol + nKernelCols
+    val nOutputCol = (nInputCols - 1) * scol + nKernelCols
     var inputOffset = _inputOffset
     var yy = 0
     while (yy < nInputRows) {
       var xx = 0
       while (xx < nInputCols) {
-        var outputOffset = yy * srow * nOuputCol + xx * scol + _outputOffset
+        var outputOffset = yy * srow * nOutputCol + xx * scol + _outputOffset
         var kernelOffset = _kernelOffset
         var ky = 0
         while (ky < nKernelRows) {
@@ -77,7 +77,7 @@ object DenseTensorConv {
               ev.times(z, kernel(kernelOffset + kx)))
             kx += 1
           }
-          outputOffset += nOuputCol
+          outputOffset += nOutputCol
           kernelOffset += nKernelCols
           ky += 1
         }

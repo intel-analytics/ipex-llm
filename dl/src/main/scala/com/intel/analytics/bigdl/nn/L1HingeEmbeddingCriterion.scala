@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
@@ -91,16 +91,19 @@ class L1HingeEmbeddingCriterion[T: ClassTag](val margin: Double = 1)
     s"nn.L1HingeEmbeddingCriterion ($margin)"
   }
 
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[L1HingeEmbeddingCriterion[T]]
+
   override def equals(other: Any): Boolean = other match {
     case that: L1HingeEmbeddingCriterion[T] =>
-      (that.eq(this)) &&
+      super.equals(that) &&
+        (that canEqual this) &&
         margin == that.margin
     case _ => false
   }
 
   override def hashCode(): Int = {
     def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
-    val state = Seq(margin)
+    val state = Seq(super.hashCode(), margin)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

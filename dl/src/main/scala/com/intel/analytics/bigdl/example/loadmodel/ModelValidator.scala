@@ -23,12 +23,17 @@ import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
-import scala.language.existentials
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import scopt.OptionParser
 
+import scala.language.existentials
 
+/**
+ * ModelValidator provides an integrated example to load models,
+ * and test over imagenet validation dataset
+ * (running as a local Java program, or a standard Spark program).
+ */
 object ModelValidator {
 
   val logger = Logger.getLogger(getClass)
@@ -138,7 +143,8 @@ object ModelValidator {
                 ResNetPreprocessor(valPath, param.batchSize, sc))
           }
 
-        case _ => throw new IllegalArgumentException(s"${param.modelType}")
+        case _ => throw new IllegalArgumentException(s"${ param.modelType } is not" +
+          s"supported in this example, please use alexnet/inception/resnet")
       }
       println(model)
 
@@ -146,7 +152,7 @@ object ModelValidator {
       val evaluator = Array(new Top1Accuracy[Float](), new Top5Accuracy[Float]())
       val result = validator.test(evaluator)
       result.foreach(r => {
-        logger.info(s"${r._2} is ${r._1}")
+        logger.info(s"${ r._2 } is ${ r._1 }")
       })
     })
   }

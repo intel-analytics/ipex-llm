@@ -23,10 +23,17 @@ import scala.reflect.ClassTag
 /**
  * It is a simple layer which applies a mean operation over the given dimension.
  * When nInputDims is provided, the input will be considered as batches.
- * Then the mean operation will be applied in (dimension + 1)
+ * Then the mean operation will be applied in (dimension + 1).
+ *
+ * The input to this layer is expected to be a tensor, or a batch of tensors;
+ * when using mini-batch, a batch of sample tensors will be passed to the layer and
+ * the user need to specify the number of dimensions of each sample tensor in the
+ * batch using `nInputDims`.
  *
  * @param dimension the dimension to be applied mean operation
- * @param nInputDims the number of dimensions of the given input
+ * @param nInputDims specify the number of dimensions that this module will receive
+ *                   If it is more than the dimension of input tensors, the first dimension
+ *                   would be considered as batch size
  */
 
 @SerialVersionUID(2995626598003841724L)

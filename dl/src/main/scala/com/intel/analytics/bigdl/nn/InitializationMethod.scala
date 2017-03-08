@@ -17,10 +17,32 @@
 
 package com.intel.analytics.bigdl.nn
 
+/**
+ * Initialization method to initialize bias and weight
+ */
 sealed trait InitializationMethod
 
 case object Default extends InitializationMethod
 
+/**
+ * In short, it helps signals reach deep into the network.
+ *
+ * During the training process of deep nn:
+ *        1. If the weights in a network start are too small,
+ *           then the signal shrinks as it passes through
+ *           each layer until it’s too tiny to be useful.
+ *
+ *        2. If the weights in a network start too large,
+ *           then the signal grows as it passes through each
+ *           layer until it’s too massive to be useful.
+ *
+ * Xavier initialization makes sure the weights are ‘just right’,
+ * keeping the signal in a reasonable range of values through many layers.
+ *
+ * More details on the paper
+ *  [Understanding the difficulty of training deep feedforward neural networks]
+ *  (http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf)
+ */
 case object Xavier extends InitializationMethod
 
 case object BilinearFiller extends InitializationMethod

@@ -17,16 +17,9 @@
 
 package com.intel.analytics.bigdl.dataset
 
-import java.nio.ByteBuffer
 import java.nio.file.Path
 
-import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
-import com.intel.analytics.bigdl.dataset.text.LabeledSentence
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
-
-import scala.collection.Iterator
-import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.tensor.Tensor
 
 /**
  * Represent an image
@@ -61,80 +54,6 @@ class LocalImagePath(val path : Path)
  * @param path
  */
 case class LocalSeqFilePath(val path: Path)
-
-
- /**
-  * Sample, bundling input and target
-  *
-  * @param featureTensor
-  * @param labelTensor
-  * @tparam T
-  */
-
-class Sample[T: ClassTag] (
-    protected var featureTensor: Tensor[T],
-    protected var labelTensor: Tensor[T])
-    (implicit ev: TensorNumeric[T]) {
-
-  def this()(implicit ev: TensorNumeric[T]) = this(Tensor[T](), Tensor[T]())
-
-  def copy(featureData: Array[T],
-           labelData: Array[T],
-           featureSize: Array[Int],
-           labelSize: Array[Int]): Sample[T] = {
-    featureTensor.set(Storage[T](featureData), 1, featureSize)
-    labelTensor.set(Storage[T](labelData), 1, labelSize)
-    this
-  }
-
-  def copyToFeature(storage: Array[T], offset: Int, length: Int): Unit = {
-    require(offset + length <= storage.length, "index out of boundary")
-    ev.getType() match {
-      case DoubleType => Array.copy(featureTensor.storage().array
-          .asInstanceOf[Array[Double]], 0, storage
-          .asInstanceOf[Array[Double]], offset, length)
-      case FloatType => System.arraycopy(featureTensor.storage().array
-        .asInstanceOf[Array[Float]], 0, storage
-        .asInstanceOf[Array[Float]], offset, length)
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
-    }
-  }
-
-  def copyToLabel(storage: Array[T], offset: Int, length: Int): Unit = {
-    require(offset + length <= storage.length, "index out of boundary")
-    ev.getType() match {
-      case DoubleType => Array.copy(labelTensor.storage().array
-        .asInstanceOf[Array[Double]], 0, storage
-        .asInstanceOf[Array[Double]], offset, length)
-      case FloatType => Array.copy(labelTensor.storage().array
-        .asInstanceOf[Array[Float]], 0, storage
-        .asInstanceOf[Array[Float]], offset, length)
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
-    }
-  }
-
-  def copy(other: Sample[T]): Sample[T] = {
-    featureTensor.copy(other.featureTensor)
-    labelTensor.copy(other.labelTensor)
-    this
-  }
-
-  def getFeature(): Tensor[T] = featureTensor
-
-  def getLabel(): Tensor[T] = labelTensor
-
-  override def clone(): Sample[T] = {
-    new Sample[T]().copy(this)
-  }
-}
-
-object Sample {
-  def apply[@specialized(Float, Double) T: ClassTag]()
-   (implicit ev: TensorNumeric[T]) : Sample[T] = {
-    new Sample[T]()
-  }
-}
-
 
 /**
  * Represent a label

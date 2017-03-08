@@ -38,15 +38,20 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
   private var resultsBackward: Array[Future[_]] = null
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require(input.dim() == 1 || input.dim() == 2, "input tensor should be 1D or 2D")
+    require(input.dim() == 1 || input.dim() == 2,
+      "ClassNLLCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
     val nClasses = input.size(input.dim())
     if (input.dim() == 1) {
+      require(input.dim() == target.dim(),
+        "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget)
       val curTarget = ev.toType[Int](target.valueAt(1))
       assert(curTarget >= 1 && curTarget <= nClasses)
       total_weight = if (weights != null) weights(Array(curTarget)) else ev.fromType[Int](1)
       output = ev.times(ev.negative(input.valueAt(curTarget)), total_weight)
     } else if (input.dim() == 2) {
       val batchSize = input.size(1)
+      val targetSize = target.size()
+      target.squeeze()
       total_weight = ev.fromType[Int](0)
       output = ev.fromType[Int](0)
 
@@ -74,6 +79,7 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
         total_weight = ev.plus(total_weight, w)
         i += 1
       }
+      target.resize(targetSize)
     }
     if (sizeAverage && total_weight != 0) {
       output = ev.divide(output, total_weight)
@@ -82,12 +88,15 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2, "input tensor should be 1D or 2D")
+    require(input.dim() == 1 || input.dim() == 2,
+      "ClassNLLCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch)
     assert(ev.toType[Double](total_weight) > 0.0, "total weight must larger than 0")
     gradInput.resizeAs(input)
     gradInput.zero()
 
     if (input.dim() == 1) {
+      require(input.dim() == target.dim(),
+        "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget)
       val curTarget = ev.toType[Int](target.valueAt(1))
       gradInput.setValue(curTarget, if (weights != null) ev.times(ev.fromType[Int](-1),
         weights.valueAt(curTarget))
@@ -97,6 +106,8 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
     }
     else if (input.dim() == 2) {
       val batchSize = input.size(1)
+      val targetSize = target.size()
+      target.squeeze()
       if (resultsBackward == null || resultsBackward.length != batchSize) {
         resultsBackward = new Array[Future[_]](batchSize)
       }
@@ -120,6 +131,7 @@ class ClassNLLCriterion[T: ClassTag](weights: Tensor[T] = null, sizeAverage: Boo
         Await.result(resultsBackward(i), Duration.Inf)
         i += 1
       }
+      target.resize(targetSize)
     }
     gradInput
   }

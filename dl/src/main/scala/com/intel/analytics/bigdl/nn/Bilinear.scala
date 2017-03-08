@@ -36,14 +36,16 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 4838965135083645415L)
-class Bilinear[T: ClassTag](inputSize1: Int,
-  inputSize2: Int,
-  outputSize: Int,
-  biasRes: Boolean = true
+class Bilinear[T: ClassTag](
+  val inputSize1: Int,
+  val inputSize2: Int,
+  val outputSize: Int,
+  val biasRes: Boolean = true
  )(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   require((inputSize1 > 0) && (inputSize2 > 0) && (outputSize > 0),
-    "inputSize1 and inputSize2 and outputSize should be positive integer numbers")
+    s"Bilinear: inputSize1 and inputSize2 and outputSize should be positive integer numbers," +
+      "but got inputSize1 $inputSize1, inputSize2 $inputSize2, outputSize $outputSize")
 
   val weight = Tensor[T](outputSize, inputSize1, inputSize2)
   val bias: Tensor[T] = if (biasRes)Tensor[T](outputSize) else null
@@ -65,14 +67,15 @@ class Bilinear[T: ClassTag](inputSize1: Int,
 
   override def updateOutput(input: Table): Tensor[T] = {
     require(input.length() == 2,
-      "input should be a table containing two data Tensors")
+      s"Bilinear: input should be a table containing two data Tensors," +
+        s"but got input.length ${input.length()}")
     val res1 = input[Tensor[T]](1)
     val res2 = input[Tensor[T]](2)
 
     require(res1.nDimension() == 2 && res2.nDimension() == 2 && res1.size(1) == res2.size(1),
-      "input Tensors should be two-dimensional and have the same number of rows")
+      "Bilinear: input Tensors should be two-dimensional and have the same number of rows")
     require(res1.size(2) == weight.size(2) && res2.size(2) == weight.size(3),
-      "dimensionality of first input and second input is erroneous")
+      "Bilinear: dimensionality of first input and second input is erroneous")
 
     // set up buffer
     buff2.resizeAs(res2)
@@ -98,9 +101,11 @@ class Bilinear[T: ClassTag](inputSize1: Int,
     val res2 = input[Tensor[T]](2)
 
     require(res1.size(1) == gradOutput.size(1),
-      "number of rows in gradOutput does not match input")
+      s"Bilinear: number of rows in gradOutput does not match input, " +
+        s"got input rows ${res1.size(1)} and gradOutput rows ${gradOutput.size(1)}")
     require(gradOutput.size(2) == weight.size(1),
-      "number of columns in gradOutput does not output size of layer")
+      s"Bilinear: number of columns in gradOutput does not output size of layer, " +
+        s"got gradOutput columns ${gradOutput.size(2)} and output columns ${weight.size(1)}")
 
     if (!gradInput.contains(1)) gradInput.insert(1, Tensor[T]())
     if (!gradInput.contains(2)) gradInput.insert(2, Tensor[T]())
@@ -121,7 +126,7 @@ class Bilinear[T: ClassTag](inputSize1: Int,
     gradInput2.cmul(gradOutput.narrow(2, 1, 1).expand(
       Array(gradInput2.size(1), gradInput2.size(2))))
 
-    // do remaing slices of weight tensor
+    // do remaining slices of weight tensor
     if(weight.size(1) > 1) {
       buff1.resizeAs(res1)
 
@@ -177,13 +182,49 @@ class Bilinear[T: ClassTag](inputSize1: Int,
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    if (null == bias) {
+      (Array(this.weight), Array(this.gradWeight))
+    } else {
+      (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    }
+  }
+
+  override def getParametersTable(): Table = {
+    if (null == bias) {
+      T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
+    } else {
+      T(getName() -> T("weight" -> weight, "bias" -> bias,
+        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
+    }
   }
 
   override def toString(): String = {
     s"nn.Bilinear($inputSize1, $inputSize2, $outputSize, $biasRes)"
   }
 
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Bilinear[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Bilinear[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        weight == that.weight &&
+        bias == that.bias &&
+        gradWeight == that.gradWeight &&
+        gradBias == that.gradBias &&
+        inputSize1 == that.inputSize1 &&
+        inputSize2 == that.inputSize2 &&
+        outputSize == that.outputSize &&
+        biasRes == that.biasRes
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), weight, bias, gradWeight, gradBias,
+      inputSize1, inputSize2, outputSize, biasRes)
+    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 object Bilinear {

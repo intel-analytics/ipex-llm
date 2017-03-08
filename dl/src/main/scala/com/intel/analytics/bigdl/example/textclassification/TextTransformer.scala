@@ -17,12 +17,6 @@
 
 package com.intel.analytics.bigdl.example.textclassification
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Transformer}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import org.slf4j.{Logger, LoggerFactory}
-
-import scala.collection.Iterator
-
 object SimpleTokenizer {
   /**
    * Simple tokenizer to split text into separated tokens.
@@ -81,54 +75,6 @@ object SimpleTokenizer {
       } else {
         // Treat it as zeros if cannot be found from pre-trained word2Vec
         Array.fill[Float](embeddingSize)(0)
-      }
-    }
-  }
-}
-
-object Batching {
-  def apply(batchSize: Int, sampleShape: Array[Int]): Batching =
-    new Batching(batchSize, sampleShape)
-}
-
-/**
- * Batching samples into mini-batch
- * @param batchSize The desired mini-batch size.
- * @param sampleShape Shape of the training sample
- */
-class Batching(batchSize: Int, sampleShape: Array[Int])
-  extends Transformer[(Array[Array[Float]], Float), MiniBatch[Float]] {
-
-  val log: Logger = LoggerFactory.getLogger(this.getClass)
-
-  override def apply(prev: Iterator[(Array[Array[Float]], Float)]): Iterator[MiniBatch[Float]] = {
-    new Iterator[MiniBatch[Float]] {
-      private val featureTensor: Tensor[Float] = Tensor[Float]()
-      private val labelTensor: Tensor[Float] = Tensor[Float]()
-      private var featureData: Array[Float] = null
-      private var labelData: Array[Float] = null
-      private val sampleSize = sampleShape.product
-
-      override def hasNext: Boolean = prev.hasNext
-
-      override def next(): MiniBatch[Float] = {
-        var i = 0
-        while (i < batchSize && prev.hasNext) {
-          val sample = prev.next()
-          if (featureData == null) {
-            featureData = new Array[Float](batchSize * sampleSize)
-            labelData = new Array[Float](batchSize)
-          }
-          Array.copy(sample._1.flatten, 0,
-            featureData, i * sampleSize, sampleSize)
-          labelData(i) = sample._2
-          i += 1
-        }
-        featureTensor.set(Storage[Float](featureData),
-          storageOffset = 1, sizes = Array(i) ++ sampleShape)
-        labelTensor.set(Storage[Float](labelData),
-          storageOffset = 1, sizes = Array(i))
-        MiniBatch(featureTensor.transpose(2, 3), labelTensor)
       }
     }
   }

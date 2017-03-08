@@ -37,7 +37,7 @@ class Adagrad[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeri
    *                  config("learningRateDecay") : learning rate decay
    * @param state     a table describing the state of the optimizer; after each call the state
    *                  is modified
-   *                  state("paramVariance") : vector of temporal variances of paramters
+   *                  state("paramVariance") : vector of temporal variances of parameters
    * @return the new x vector and the function list, evaluated before the update
    */
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]),
