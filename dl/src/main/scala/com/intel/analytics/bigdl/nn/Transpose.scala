@@ -31,8 +31,9 @@ class Transpose[@specialized(Float, Double) T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     var i = 0
+    buffer = input
     while (i < permutations.length) {
-      buffer = input.transpose(permutations(i)._1, permutations(i)._2)
+      buffer = buffer.transpose(permutations(i)._1, permutations(i)._2)
       i += 1
     }
     output.resizeAs(buffer).copy(buffer)
@@ -41,8 +42,9 @@ class Transpose[@specialized(Float, Double) T: ClassTag](
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     var i = permutations.length - 1
+    buffer = gradOutput
     while (i >= 0) {
-      buffer = gradOutput.transpose(permutations(i)._1, permutations(i)._2)
+      buffer = buffer.transpose(permutations(i)._1, permutations(i)._2)
       i -= 1
     }
     gradInput.resizeAs(buffer).copy(buffer)
