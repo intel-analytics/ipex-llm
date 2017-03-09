@@ -82,13 +82,18 @@ class SentenceTokenizerSpec extends FlatSpec with Matchers {
       write(sentences.mkString("\n")); close
     }
 
+    val sentenceSplitter = SentenceSplitter()
+    val sentenceTokenizer = SentenceTokenizer()
     val logData = Source.fromFile(tmpFile).getLines().toArray
     val sents = DataSet.array(logData
-      .filter(!_.isEmpty)).transform(SentenceSplitter())
+      .filter(!_.isEmpty)).transform(sentenceSplitter)
       .toLocal().data(train = false).flatMap(item => item.iterator)
     val tokens = DataSet.array(sents.toArray)
-        .transform(SentenceTokenizer())
+        .transform(sentenceTokenizer)
     val output = tokens.toLocal().data(train = false).toArray
+
+    sentenceSplitter.close()
+    sentenceTokenizer.close()
 
     var count_word = 0
     println("tokenized sentences:")

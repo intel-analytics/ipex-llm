@@ -23,7 +23,7 @@ import java.net.URL
 import com.intel.analytics.bigdl.dataset.Transformer
 
 import scala.collection.Iterator
-import opennlp.tools.tokenize.{Tokenizer, SimpleTokenizer, TokenizerME, TokenizerModel}
+import opennlp.tools.tokenize.{SimpleTokenizer, Tokenizer, TokenizerME, TokenizerModel}
 
 /**
  * Transformer that tokenizes a Document (article)
@@ -43,10 +43,16 @@ class SentenceTokenizer(tokenFile: Option[String] = None)
     this(Some(tokenFile.getPath))
   }
 
+  def close(): Unit = {
+    if (modelIn != null) {
+      modelIn.close()
+    }
+  }
+
   override def apply(prev: Iterator[String]): Iterator[Array[String]] =
     prev.map(x => {
       if (tokenizer == null) {
-        if (tokenFile == None) {
+        if (!tokenFile.isDefined) {
           tokenizer = SimpleTokenizer.INSTANCE
         } else {
           modelIn = new FileInputStream(tokenFile.getOrElse(""))
