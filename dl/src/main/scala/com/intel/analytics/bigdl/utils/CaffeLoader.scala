@@ -23,7 +23,6 @@ import caffe.Caffe
 import caffe.Caffe.{LayerParameter, NetParameter, V1LayerParameter}
 import com.google.protobuf.{CodedInputStream, TextFormat}
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.Utils
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.log4j.Logger
@@ -75,79 +74,81 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def getBlob(name: String, ind: Int): Option[Caffe.BlobProto] = {
-    if (name2LayerV2.contains(name) && name2LayerV2(name).getBlobsCount != 0) {
+    if (name2LayerV2.contains(name) && name2LayerV2(name).getBlobsCount > ind) {
       Some(name2LayerV2(name).getBlobs(ind))
-    } else if (name2LayerV1.contains(name) && name2LayerV1(name).getBlobsCount != 0) {
+    } else if (name2LayerV1.contains(name) && name2LayerV1(name).getBlobsCount > ind) {
       Some(name2LayerV1(name).getBlobs(ind))
     } else {
       None
     }
   }
 
-  private def loadParameters(name: String, destPara: Array[Tensor[T]]):
-  (Tensor[T], Tensor[T]) = {
+  private def loadParameters(name: String, params: Table): Unit = {
     logger.info(s"load parameters for $name ...")
     val caffeWeight = getBlob(name, 0)
-    if (caffeWeight.isEmpty) return (null, null)
-    val weightList = caffeWeight.get.getDataList
-    require(destPara != null && destPara(0).nElement() == weightList.size(),
-      s"weight element number is not equal between caffe layer and bigdl module $name, " +
-        s"data shape in caffe is ${ caffeWeight.get.getShape() }," +
-        s" while data shape in bigdl is ${ destPara(0).size().mkString(",") }")
-    require(destPara(0).isContiguous())
-    val weightData = destPara(0).storage().array()
-    for (i <- 0 until weightList.size()) {
-      weightData(i) = ev.fromType[Float](weightList.get(i))
+    if (caffeWeight.isDefined) {
+      require(params.contains("weight"), s"$name should contain weight")
+      val caffeWeightData = caffeWeight.get.getDataList
+      val weight = params[Tensor[T]]("weight")
+      require(params != null && weight.nElement() == caffeWeightData.size(),
+        s"weight element number is not equal between caffe layer and bigdl module $name, " +
+          s"data shape in caffe is ${ caffeWeight.get.getShape() }," +
+          s" while data shape in bigdl is ${ weight.size().mkString(",") }")
+      var i = 0
+      val weightData = weight.storage().array()
+      var offset = weight.storageOffset() - 1
+      while (i < caffeWeightData.size()) {
+        weightData(offset) = ev.fromType[Float](caffeWeightData.get(i))
+        offset += 1
+        i += 1
+      }
     }
 
-    if (destPara.length > 1) {
-      val caffeBias = getBlob(name, 1)
-      if (caffeBias.isEmpty) return (destPara(1), null)
-      val biasList = caffeBias.get.getDataList
-      require(destPara(1).nElement() == biasList.size(),
+    val caffeBias = getBlob(name, 1)
+    if (caffeBias.isDefined) {
+      require(params.contains("bias"), s"$name should contain bias")
+      val caffeBiasList = caffeBias.get.getDataList
+      val bias = params[Tensor[T]]("bias")
+      require(bias.nElement() == caffeBiasList.size(),
         s"bias element number is not equal between caffe layer and bigdl module $name, " +
           s"data shape in caffe is ${ caffeBias.get.getShape() }," +
-          s" while data shape in bigdl is ${ destPara(1).size().mkString(",") }")
-      require(destPara(1).isContiguous())
-      val biasData = destPara(1).storage().array()
-      for (i <- 0 until biasList.size()) {
-        biasData(i) = ev.fromType[Float](biasList.get(i))
+          s" while data shape in bigdl is ${ bias.size().mkString(",") }")
+      var i = 0
+      val biasData = bias.storage().array()
+      var offset = bias.storageOffset() - 1
+      while (i < caffeBiasList.size()) {
+        biasData(offset) = ev.fromType[Float](caffeBiasList.get(i))
+        offset += 1
+        i += 1
       }
-      return (destPara(0), destPara(1))
     }
-    (destPara(0), null)
   }
 
   /**
    * copy caffe parameters to module
    * if matchAll, throw an exception if some layers are not mapped
-   *
    * @param model the model defined in big-dl
    * @return
    */
   private def copyParameters(model: Module[T]): Module[T] = {
     loadCaffe(prototxtPath, modelPath)
-    val namedModules = Utils.getNamedModules[T](model)
+    val parameterTable = model.getParametersTable()
 
-    def copyParameter(name: String, mod: Module[T]): Unit = {
-      if (mod.parameters() == null) return
-      if (!name2LayerV2.contains(name) && !name2LayerV1.contains(name)) {
-        if (matchAll) throw new Exception(s"module $name cannot map a layer in caffe model")
-        logger.info(s"$name uses initialized parameters")
-        return
-      }
-      val (weight, bias) = loadParameters(name, mod.parameters()._1)
-      if (weight == null && bias == null) {
-        logger.info(s"$name uses initialized parameters")
-        return
-      }
-    }
-
-    namedModules.foreach {
-      case (name: String, mod: Module[T]) =>
-        copyParameter(name, mod)
+    parameterTable.foreach {
+      case (name: String, params: Table) =>
+        copyParameter(name, params)
     }
     model
+  }
+
+  private def copyParameter(name: String, params: Table): Unit = {
+    if (params == null || (!params.contains("weight") && !params.contains("bias"))) return
+    if (!name2LayerV2.contains(name) && !name2LayerV1.contains(name)) {
+      if (matchAll) throw new Exception(s"module $name cannot map a layer in caffe model")
+      logger.info(s"$name uses initialized parameters")
+      return
+    }
+    loadParameters(name, params)
   }
 }
 
