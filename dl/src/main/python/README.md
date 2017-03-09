@@ -53,6 +53,10 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
 
 4) LeNet example can be found from: models/lenet5.py
 
+## Run python test
+* Package Scala code by: ```$BigDL_HOME/make-dist.sh```
+* Set SPARK_HOME and then run: ```$BigDL_HOME/dl/src/main/python/dev/run-all.sh``` 
+
 ## Installing on Ubuntu
 1. Build BigDL
 [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
