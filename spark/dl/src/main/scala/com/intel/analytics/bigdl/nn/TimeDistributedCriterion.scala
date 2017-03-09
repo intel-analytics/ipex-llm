@@ -19,13 +19,17 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Engine
 
+import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 /**
  * This class is intended to support inputs with 3 or more dimensions.
  * Apply Any Provided Criterion to every temporal slice of an input.
  * @param critrn
+ * @param sizeAverage
  */
 
 class TimeDistributedCriterion[T : ClassTag](
@@ -33,74 +37,103 @@ class TimeDistributedCriterion[T : ClassTag](
   val sizeAverage: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
-  private val fInput: Tensor[T] = Tensor[T]()
-  private val fTarget: Tensor[T] = Tensor[T]()
-  private var inputSize: Array[Int] = _
-  private var targetSize: Array[Int] = _
+  private var fInput: Tensor[T] = Tensor[T]()
+  private var fTarget: Tensor[T] = Tensor[T]()
+  private var _gradInput = Tensor[T]()  // list of cell criterions cloned from added criterion
+  private val cells: ArrayBuffer[TensorCriterion[T]]
+  = ArrayBuffer[TensorCriterion[T]]()
 
-  private def combine(src: Array[Int], target: Array[Int]): Unit = {
-    require(src.length == target.length + 1,
-      "TimeDistributedCriterion: combine method requires src.length == target.length + 1" +
-        s" Current src.length = ${src.length}" +
-        s" Current target.length = ${target.length}")
-    target(0) = src(0) * src(1)
-    var j = 1
-    while (j < target.length) {
-      target(j) = src(j + 1)
-      j += 1
+  @transient
+  protected var results: Array[Future[Unit]] = _
+
+
+  /**
+   * Clone N criterions; N depends on the time dimension of the input
+   * @param times
+   */
+  private def extend(times: Int): Unit = {
+    var t = cells.length
+    while (t < times) {
+      cells += critrn.cloneCriterion()
+        .asInstanceOf[TensorCriterion[T]]
+      t += 1
     }
   }
 
+
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     /**
+     * Take each time slice of input and target, and add up all outputs of slices
      * For example
-     * input.size = [B, T, D] => inputSize = [B * T, D]
-     * target.size = [B, T] => targetSize = [B * T]
+     * input.size = [B, T, D] => fInput.size = [B, D]
+     * target.size = [B, T] => fTarget.size = [B]
+     * If sizeAverage is true, the output is averaged through time dimension
      */
-    if (inputSize == null) {
-      inputSize = new Array[Int](input.size.length - 1)
-    }
-    if (targetSize == null) {
-      targetSize = new Array[Int](target.size.length - 1)
+    val timeDim = 2
+    require(input.size(timeDim) == target.size(timeDim),
+      s"target should have as many elements as input")
+
+    output = ev.fromType[Int](0)
+    val nstep = input.size(timeDim)
+    extend(nstep)
+
+    if (results == null || results.length != nstep) {
+      results = new Array[Future[Unit]](nstep)
     }
 
-    combine(input.size, inputSize)
-    combine(target.size, targetSize)
-    fInput.set(input).resize(inputSize)
-    fTarget.set(target).resize(targetSize)
-    output = critrn.updateOutput(fInput, fTarget)
-    if (!sizeAverage) {
-      output = ev.times(output, ev.fromType[Int](input.size(2)))
+    var i = 0
+    while (i < nstep) {
+      val _i = i + 1
+      results(i) = Engine.model.invoke(() => {
+        fInput = input.select(timeDim, _i)
+        fTarget = target.select(timeDim, _i)
+        cells(_i - 1).updateOutput(fInput, fTarget)
+      })
+      i += 1
+    }
+    Engine.model.sync(results)
+
+    (0 until nstep).foreach(b => {
+      output = ev.plus(output, cells(b).output)
+    })
+
+    if (sizeAverage) {
+      output = ev.divide(output, ev.fromType[Int](nstep))
     }
     output
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    val _gradInput = critrn.updateGradInput(fInput, fTarget).toTensor[T]
-    gradInput = _gradInput.resize(input.size)
-    if (!sizeAverage) {
-      gradInput.apply1(x => ev.times(x, ev.fromType[Int](input.size(2))))
+    /**
+     * Take each time slice of input and target, and calculate gradInput of each slice
+     * If sizeAverage is true, the gradInput is also averaged through time dimension
+     */
+    val timeDim = 2
+    require(input.size(timeDim) == target.size(timeDim),
+      s"target should have as many elements as input")
+    gradInput.resizeAs(input).zero()
+
+    val nstep = input.size(timeDim)
+
+    var i = 0
+    while (i < nstep) {
+      val _i = i + 1
+      results(i) = Engine.model.invoke(() => {
+        fInput = input.select(timeDim, _i)
+        fTarget = target.select(timeDim, _i)
+        _gradInput = gradInput.select(timeDim, _i)
+        _gradInput.copy(cells(_i - 1).updateGradInput(fInput, fTarget).toTensor[T])
+        if (sizeAverage) {
+          _gradInput = _gradInput.div(ev.fromType[Int](nstep))
+        }
+      })
+      i += 1
     }
+    Engine.model.sync(results)
     gradInput
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[TimeDistributedCriterion[T]]
-
-  override def equals(other: Any): Boolean = other match {
-    case that: TimeDistributedCriterion[T] =>
-      super.equals(that) &&
-        (that canEqual this) &&
-        fInput == that.fInput &&
-        fTarget == that.fTarget &&
-        inputSize == that.inputSize &&
-        targetSize == that.targetSize
-    case _ => false
-  }
-
-  override def hashCode(): Int = {
-    val state = Seq(super.hashCode(), fInput, fTarget, inputSize, targetSize)
-    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
-  }
 }
 
 object TimeDistributedCriterion {
