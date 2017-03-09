@@ -33,17 +33,15 @@ import scala.reflect.ClassTag
  *
  * @param inputSize the size of each input vector
  * @param hiddenSize Hidden unit size in the LSTM
- * @param p p is the threshold for Dropout. If p equals 0, create
- *          a LSTM without Dropout
  */
 @SerialVersionUID(- 8176191554025511686L)
 class LSTM[T : ClassTag] (
   val inputSize: Int,
   val hiddenSize: Int,
-  val p: Double = 0,
   private var initMethod: InitializationMethod = Default)
   (implicit ev: TensorNumeric[T])
   extends Cell[T] {
+  val p: Double = 0 // Dropout threshold
   var gates: Sequential[T] = _
   var cellLayer: Sequential[T] = _
   var lstm: Sequential[T] = buildLSTM()
@@ -209,9 +207,8 @@ class LSTM[T : ClassTag] (
 object LSTM {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
-    hiddenSize: Int = 3,
-    p: Double = 0)
+    hiddenSize: Int = 3)
     (implicit ev: TensorNumeric[T]): LSTM[T] = {
-    new LSTM[T](inputSize, hiddenSize, p)
+    new LSTM[T](inputSize, hiddenSize)
   }
 }

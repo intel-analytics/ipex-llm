@@ -41,8 +41,8 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     writer.close()
 
     val existsRNN =
-      Seq(System.getProperty("torch_location", "th"), tmpFile.getAbsolutePath).!!.trim.toBoolean
-    if (!existsRNN) {
+      Seq(System.getProperty("torch_location", "th"), tmpFile.getAbsolutePath).!!.trim
+    if (!existsRNN.contains("true")) {
       cancel("Torch rnn is not installed")
     }
   }
