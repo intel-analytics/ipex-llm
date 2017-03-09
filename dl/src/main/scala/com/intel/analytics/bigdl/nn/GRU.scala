@@ -30,17 +30,15 @@ import scala.reflect.ClassTag
  *
  * @param inputSize the size of each input vector
  * @param outputSize Hidden unit size in GRU
- * @param p p is the threshold for Dropout. If p equals 0, create
- *          a GRU without Dropout
  */
 @SerialVersionUID(6717988395573528459L)
 class GRU[T : ClassTag] (
   val inputSize: Int = 4,
   val outputSize: Int = 3,
-  val p: Double = 0,
   private var initMethod: InitializationMethod = Default)
   (implicit ev: TensorNumeric[T])
   extends Cell[T] {
+  val p: Double = 0 // Dropout threshold
   var i2g: AbstractModule[_, _, T] = _
   var h2g: AbstractModule[_, _, T] = _
   var gates: AbstractModule[_, _, T] = _
