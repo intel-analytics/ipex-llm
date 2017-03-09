@@ -37,8 +37,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 8176191554025511686L)
 class LSTM[T : ClassTag] (
   val inputSize: Int,
-  val hiddenSize: Int,
-  private var initMethod: InitializationMethod = Default)
+  val hiddenSize: Int)
   (implicit ev: TensorNumeric[T])
   extends Cell[T] {
   val p: Double = 0 // Dropout threshold
