@@ -161,7 +161,7 @@ class GRU[T : ClassTag] (
 
   override val nHids: Int = 1
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[GRU]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[GRU[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: GRU[T] =>
