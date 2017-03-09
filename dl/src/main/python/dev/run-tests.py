@@ -100,7 +100,7 @@ def run_individual_python_test(test_name, python_exec):
     try:
         per_test_output = tempfile.TemporaryFile()
         retcode = subprocess.Popen(
-            [os.path.join(SPARK_HOME, "bin/pyspark"), test_name],
+            [os.path.join(SPARK_HOME, "bin/pyspark"), test_name, "--properties-file ../resources/spark-bigdl.conf"],
             stderr=per_test_output, stdout=per_test_output, env=env).wait()
     except:
         LOGGER.exception("Got exception while running %s with %s", test_name, python_exec)
