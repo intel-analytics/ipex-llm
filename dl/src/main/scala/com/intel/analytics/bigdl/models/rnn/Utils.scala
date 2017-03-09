@@ -116,12 +116,10 @@ object Utils {
     opt[String]("sent")
       .text("sentence dictionary to split document into sentences")
       .action((x, c) => c.copy(sentFile = Some(x)))
-      .required()
 
     opt[String]("token")
       .text("token dictionary to split sentence into tokens")
       .action((x, c) => c.copy(tokenFile = Some(x)))
-      .required()
 
     opt[Int]('c', "core")
       .text("cores number on each node")

@@ -58,7 +58,7 @@ object Test {
         index += 1
 
         val validationSet = DataSet.array(labeledInput)
-          .transform(LabeledSentenceToSample(vocab.vocabSize() + 1))
+          .transform(LabeledSentenceToSample(vocab.getVocabSize() + 1))
           .transform(SampleToBatch(batchSize = batchSize))
           .asInstanceOf[LocalDataSet[MiniBatch[Float]]]
 

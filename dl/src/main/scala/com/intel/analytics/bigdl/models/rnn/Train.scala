@@ -55,14 +55,14 @@ object Train {
         val dictionary = Dictionary(tokens, param.vocabSize)
         dictionary.save(param.saveFolder)
 
-        var maxTrainLength = tokens.map(x => x.length).max
+        val maxTrainLength = tokens.map(x => x.length).max
 
         val valtokens = SequencePreprocess(
           param.dataFolder + "/val.txt",
           param.sentFile,
           param.tokenFile
         ).toStream
-        var maxValLength = valtokens.map(x => x.length).max
+        val maxValLength = valtokens.map(x => x.length).max
 
         logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
 
@@ -78,7 +78,7 @@ object Train {
         val dictionary = Dictionary(tokens, param.vocabSize)
         dictionary.save(param.saveFolder)
 
-        var maxTrainLength = tokens.map(x => x.length).collect().max
+        val maxTrainLength = tokens.map(x => x.length).collect().max
 
         val valtokens = SequencePreprocess(
           param.dataFolder + "/val.txt",
@@ -86,14 +86,14 @@ object Train {
           param.sentFile,
           param.tokenFile
         )
-        var maxValLength = valtokens.map(x => x.length).collect().max
+        val maxValLength = valtokens.map(x => x.length).collect().max
 
         logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
 
         (DataSet.rdd(tokens), DataSet.rdd(valtokens), dictionary, maxTrainLength, maxValLength)
       }
 
-      val totalVocabLength = dictionary.vocabSize() + 1
+      val totalVocabLength = dictionary.getVocabSize() + 1
       val startIdx = dictionary.getIndex("SENTENCESTART")
       val endIdx = dictionary.getIndex("SENTENCEEND")
       val padFeature = Tensor[Float]().resize(totalVocabLength)
