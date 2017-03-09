@@ -121,23 +121,8 @@ _picklable_classes = [
 ]
 
 
-def initEngine(nodeNum, coreNum, bigdl_type="float"):
-    callBigDlFunc(bigdl_type, "initEngine", nodeNum, coreNum)
-
-
-def create_spark_conf(nodeNum, coreNum):
-    print("coreNum:%s,  nodeNum: %s" % (coreNum, nodeNum))
-    sparkConf = SparkConf()
-    sparkConf.setExecutorEnv("DL_ENGINE_TYPE", "mklblas")
-    sparkConf.setExecutorEnv("MKL_DISABLE_FAST_MM", "1")
-    sparkConf.setExecutorEnv("KMP_BLOCKTIME", "0")
-    sparkConf.setExecutorEnv("OMP_WAIT_POLICY", "passive")
-    sparkConf.setExecutorEnv("OMP_NUM_THREADS", "1")
-    sparkConf.setExecutorEnv("DL_CORE_NUMBER", str(coreNum))
-    sparkConf.setExecutorEnv("DL_NODE_NUMBER", str(nodeNum))
-    sparkConf.set("spark.shuffle.blockTransferService", "nio")
-    sparkConf.set("spark.scheduler.minRegisteredResourcesRatio", "1.0")
-    return sparkConf
+def initEngine(bigdl_type="float"):
+    callBigDlFunc(bigdl_type, "initEngine")
 
 
 def callBigDlFunc(bigdl_type, name, *args):

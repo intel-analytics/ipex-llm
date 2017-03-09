@@ -61,9 +61,8 @@ if __name__ == "__main__":
     parser.add_option("-b", "--batchSize", dest="batchSize", default="128")
 
     (options, args) = parser.parse_args(sys.argv)
-    sparkConf = create_spark_conf(int(options.nodeNum), int(options.coreNum))
-    sc = SparkContext(appName="lenet5", conf=sparkConf)
-    conf = initEngine(int(options.nodeNum), int(options.coreNum))
+    sc = SparkContext(appName="lenet5")
+    conf = initEngine()
 
     if options.action == "train":
         train_data = get_minst(sc, "train").map(
