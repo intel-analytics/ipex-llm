@@ -106,12 +106,13 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |      rnn = nn.Recurrence(rm, $hiddenSize, 1)
          | --     rnn.userPrevOutput = torch.Tensor(1, $hiddenSize):zero()
          |
+         |lstm = nn.FastLSTM($inputSize, $hiddenSize)
       |model = nn.Sequential()
          |:add(nn.SplitTable(1))
          |:add(nn.Sequencer(
          | nn.Sequential()
          |   --:add(nn.LSTM($inputSize, $hiddenSize, 1, true))
-         |   :add(nn.FastLSTM($inputSize, $hiddenSize, 1, nil, nil, nil, 0.3))
+         |   :add(lstm)
          |   :add(nn.Linear($hiddenSize, $outputSize))
          |   ))
          |

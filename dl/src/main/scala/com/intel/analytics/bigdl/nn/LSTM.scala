@@ -37,10 +37,11 @@ import scala.reflect.ClassTag
  * @param p p is the threshold for Dropout. If p equals 0, create
  *          a LSTM without Dropout
  */
+@SerialVersionUID(- 8176191554025511686L)
 class LSTM[T : ClassTag] (
-  inputSize: Int = 4,
-  hiddenSize: Int = 3,
-  p: Double = 0,
+  val inputSize: Int,
+  val hiddenSize: Int,
+  val p: Double = 0,
   private var initMethod: InitializationMethod = Default)
   (implicit ev: TensorNumeric[T])
   extends Cell[T] {
@@ -67,9 +68,9 @@ class LSTM[T : ClassTag] (
           .add(Linear(inputSize, hiddenSize))
           .add(Linear(inputSize, hiddenSize))
           .add(Linear(inputSize, hiddenSize)))
-        .add(JoinTable(2, 1))
+        .add(JoinTable(1, 1))
 
-      val o2g = Sequential()
+      h2g = Sequential()
         .add(ConcatTable()
           .add(Dropout(p))
           .add(Dropout(p))
@@ -80,7 +81,7 @@ class LSTM[T : ClassTag] (
           .add(Linear(hiddenSize, hiddenSize, withBias = false))
           .add(Linear(hiddenSize, hiddenSize, withBias = false))
           .add(Linear(hiddenSize, hiddenSize, withBias = false)))
-        .add(JoinTable(2, 1))
+        .add(JoinTable(1, 1))
     } else {
       i2g = Linear(inputSize, 4 * hiddenSize)
       h2g = Linear(hiddenSize, 4 * hiddenSize, withBias = false)
@@ -179,6 +180,31 @@ class LSTM[T : ClassTag] (
   }
 
   override val nHids: Int = 2
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[LSTM[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: LSTM[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        inputSize == that.inputSize &&
+        hiddenSize == that.hiddenSize &&
+        p == that.p
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), inputSize, hiddenSize, p)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+  override def reset(): Unit = {
+    super.reset()
+    lstm.reset()
+  }
+
+
+  override def toString: String = s"LSTM($inputSize, $hiddenSize, $p)"
 }
 
 object LSTM {
@@ -187,6 +213,6 @@ object LSTM {
     hiddenSize: Int = 3,
     p: Double = 0)
     (implicit ev: TensorNumeric[T]): LSTM[T] = {
-    new LSTM[T](inputSize, hiddenSize)
+    new LSTM[T](inputSize, hiddenSize, p)
   }
 }
