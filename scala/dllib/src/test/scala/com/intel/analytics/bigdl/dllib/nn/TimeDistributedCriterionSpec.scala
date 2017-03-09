@@ -23,9 +23,10 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.math._
 
 class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
-  "A ClassNLL Criterion" should "generate correct output and grad" in {
+  "A ClassNLL Criterion with sizeAverage True and TimeDistributedCriterion sizeAverage True" should
+    "generate correct output and grad" in {
     val criterion = ClassNLLCriterion[Double]()
-    val layer = TimeDistributedCriterion[Double](criterion)
+    val layer = TimeDistributedCriterion[Double](criterion, true)
 
     val input = Tensor[Double](3, 2, 3)
     input(Array(1, 1, 1)) = -1.0262627674932
@@ -77,14 +78,139 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 2, 1)) = 0
     expectedGrad(Array(3, 2, 2)) = 0
     expectedGrad(Array(3, 2, 3)) = -0.16666666666666666
-    assert(abs(expectedOutput * 2 - output) < 1e-6)
+    assert(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 * 2 - v2) < 1e-6)
+      assert(abs(v1 - v2) < 1e-6)
       v1
     })
   }
 
-  "A ClassNLL Criterion with sizeAverage False" should "generate correct output and grad" in {
+  "A ClassNLL Criterion with sizeAverage True and TimeDistributedCriterion sizeAverage False" should
+    "generate correct output and grad" in {
+    val criterion = ClassNLLCriterion[Double]()
+    val layer = TimeDistributedCriterion[Double](criterion)
+
+    val input = Tensor[Double](3, 2, 3)
+    input(Array(1, 1, 1)) = -1.0262627674932
+    input(Array(1, 1, 2)) = -1.2412600935171
+    input(Array(1, 1, 3)) = -1.0423174168648
+    input(Array(1, 2, 1)) = -1.0262627674932
+    input(Array(1, 2, 2)) = -1.2412600935171
+    input(Array(1, 2, 3)) = -1.0423174168648
+    input(Array(2, 1, 1)) = -0.90330565804228
+    input(Array(2, 1, 2)) = -1.3686840144413
+    input(Array(2, 1, 3)) = -1.0778380454479
+    input(Array(2, 2, 1)) = -0.90330565804228
+    input(Array(2, 2, 2)) = -1.3686840144413
+    input(Array(2, 2, 3)) = -1.0778380454479
+    input(Array(3, 1, 1)) = -0.99131220658219
+    input(Array(3, 1, 2)) = -1.0559142847536
+    input(Array(3, 1, 3)) = -1.2692712660404
+    input(Array(3, 2, 1)) = -0.99131220658219
+    input(Array(3, 2, 2)) = -1.0559142847536
+    input(Array(3, 2, 3)) = -1.2692712660404
+    val target = Tensor[Double](3, 2)
+    target(Array(1, 1)) = 1
+    target(Array(1, 2)) = 1
+    target(Array(2, 1)) = 2
+    target(Array(2, 2)) = 2
+    target(Array(3, 1)) = 3
+    target(Array(3, 2)) = 3
+
+    val output = layer.forward(input, target)
+    val gradInput = layer.backward(input, target)
+
+    val expectedOutput = 2.4428120319832
+    val expectedGrad = Tensor[Double](3, 2, 3)
+    expectedGrad(Array(1, 1, 1)) = -0.3333333333333333
+    expectedGrad(Array(1, 1, 2)) = 0
+    expectedGrad(Array(1, 1, 3)) = 0
+    expectedGrad(Array(1, 2, 1)) = -0.3333333333333333
+    expectedGrad(Array(1, 2, 2)) = 0
+    expectedGrad(Array(1, 2, 3)) = 0
+    expectedGrad(Array(2, 1, 1)) = 0
+    expectedGrad(Array(2, 1, 2)) = -0.3333333333333333
+    expectedGrad(Array(2, 1, 3)) = 0
+    expectedGrad(Array(2, 2, 1)) = 0
+    expectedGrad(Array(2, 2, 2)) = -0.3333333333333333
+    expectedGrad(Array(2, 2, 3)) = 0
+    expectedGrad(Array(3, 1, 1)) = 0
+    expectedGrad(Array(3, 1, 2)) = 0
+    expectedGrad(Array(3, 1, 3)) = -0.3333333333333333
+    expectedGrad(Array(3, 2, 1)) = 0
+    expectedGrad(Array(3, 2, 2)) = 0
+    expectedGrad(Array(3, 2, 3)) = -0.3333333333333333
+    assert(abs(expectedOutput - output) < 1e-6)
+    expectedGrad.map(gradInput, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6)
+      v1
+    })
+  }
+
+  "A ClassNLL Criterion with sizeAverage False and TimeDistributedCriterion sizeAverage True" should
+    "generate correct output and grad" in {
+    val criterion = ClassNLLCriterion[Double](null, false)
+    val layer = TimeDistributedCriterion[Double](criterion, true)
+
+    val input = Tensor[Double](3, 2, 3)
+    input(Array(1, 1, 1)) = -1.0262627674932
+    input(Array(1, 1, 2)) = -1.2412600935171
+    input(Array(1, 1, 3)) = -1.0423174168648
+    input(Array(1, 2, 1)) = -1.0262627674932
+    input(Array(1, 2, 2)) = -1.2412600935171
+    input(Array(1, 2, 3)) = -1.0423174168648
+    input(Array(2, 1, 1)) = -0.90330565804228
+    input(Array(2, 1, 2)) = -1.3686840144413
+    input(Array(2, 1, 3)) = -1.0778380454479
+    input(Array(2, 2, 1)) = -0.90330565804228
+    input(Array(2, 2, 2)) = -1.3686840144413
+    input(Array(2, 2, 3)) = -1.0778380454479
+    input(Array(3, 1, 1)) = -0.99131220658219
+    input(Array(3, 1, 2)) = -1.0559142847536
+    input(Array(3, 1, 3)) = -1.2692712660404
+    input(Array(3, 2, 1)) = -0.99131220658219
+    input(Array(3, 2, 2)) = -1.0559142847536
+    input(Array(3, 2, 3)) = -1.2692712660404
+    val target = Tensor[Double](3, 2)
+    target(Array(1, 1)) = 1
+    target(Array(1, 2)) = 1
+    target(Array(2, 1)) = 2
+    target(Array(2, 2)) = 2
+    target(Array(3, 1)) = 3
+    target(Array(3, 2)) = 3
+
+    val output = layer.forward(input, target)
+    val gradInput = layer.backward(input, target)
+
+    val expectedOutput = 3.6642180479748996
+    val expectedGrad = Tensor[Double](3, 2, 3)
+    expectedGrad(Array(1, 1, 1)) = -0.5
+    expectedGrad(Array(1, 1, 2)) = 0
+    expectedGrad(Array(1, 1, 3)) = 0
+    expectedGrad(Array(1, 2, 1)) = -0.5
+    expectedGrad(Array(1, 2, 2)) = 0
+    expectedGrad(Array(1, 2, 3)) = 0
+    expectedGrad(Array(2, 1, 1)) = 0
+    expectedGrad(Array(2, 1, 2)) = -0.5
+    expectedGrad(Array(2, 1, 3)) = 0
+    expectedGrad(Array(2, 2, 1)) = 0
+    expectedGrad(Array(2, 2, 2)) = -0.5
+    expectedGrad(Array(2, 2, 3)) = 0
+    expectedGrad(Array(3, 1, 1)) = 0
+    expectedGrad(Array(3, 1, 2)) = 0
+    expectedGrad(Array(3, 1, 3)) = -0.5
+    expectedGrad(Array(3, 2, 1)) = 0
+    expectedGrad(Array(3, 2, 2)) = 0
+    expectedGrad(Array(3, 2, 3)) = -0.5
+    assert(abs(expectedOutput - output) < 1e-6)
+    expectedGrad.map(gradInput, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6)
+      v1
+    })
+  }
+
+  "A ClassNLL Criterion with sizeAverage False, TimeDistributedCriterion sizeAverage False" should
+    "generate correct output and grad" in {
     val criterion = ClassNLLCriterion[Double](null, false)
     val layer = TimeDistributedCriterion[Double](criterion)
 
@@ -138,9 +264,9 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 2, 1)) = 0
     expectedGrad(Array(3, 2, 2)) = 0
     expectedGrad(Array(3, 2, 3)) = -1
-    assert(abs(expectedOutput * 2 - output) < 1e-6)
+    assert(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 * 2 - v2) < 1e-6)
+      assert(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -240,7 +366,8 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     })
   }
 
-  "A MSE Criterion" should "generate correct output and grad" in {
+  "A MSE Criterion with sizeAverage True and TimeDistributedCriterion sizeAverage True" should
+    "generate correct output and grad" in {
     val criterion = MSECriterion[Double]()
     val layer = TimeDistributedCriterion[Double](criterion, true)
 
@@ -284,10 +411,57 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     })
   }
 
-  "A MSE Criterion with sizeAverage false" should "generate correct output and grad" in {
+  "A MSE Criterion with sizeAverage False and TimeDistributedCriterion sizeAverage True" should
+    "generate correct output and grad" in {
     val criterion = MSECriterion[Double]()
     criterion.sizeAverage = false
     val layer = TimeDistributedCriterion[Double](criterion, true)
+
+    val input = Tensor[Double](2, 2, 2)
+    input(Array(1, 1, 1)) = 0.64631252549589
+    input(Array(1, 1, 2)) = 0.1541522629559
+    input(Array(1, 2, 1)) = 0.6778122568503
+    input(Array(1, 2, 2)) = 0.55571207939647
+    input(Array(2, 1, 1)) = 0.53701480175368
+    input(Array(2, 1, 2)) = 0.83826910308562
+    input(Array(2, 2, 1)) = 0.27449130127206
+    input(Array(2, 2, 2)) = 0.63781907199882
+    val target = Tensor[Double](2, 2, 2)
+    target(Array(1, 1, 1)) = 0.8999215872027
+    target(Array(1, 1, 2)) = 0.7839112279471
+    target(Array(1, 2, 1)) = 0.11587709793821
+    target(Array(1, 2, 2)) = 0.39529220713302
+    target(Array(2, 1, 1)) = 0.8202251160983
+    target(Array(2, 1, 2)) = 0.41274098632857
+    target(Array(2, 2, 1)) = 0.37541538593359
+    target(Array(2, 2, 2)) = 0.34106521727517
+
+    val expectedOutput = 0.5809751749326332
+    val expectedGrad = Tensor[Double](2, 2, 2)
+    expectedGrad(Array(1, 1, 1)) = -0.50721812341362 / 2
+    expectedGrad(Array(1, 1, 2)) = -1.2595179299824 / 2
+    expectedGrad(Array(1, 2, 1)) = 1.1238703178242 / 2
+    expectedGrad(Array(1, 2, 2)) = 0.32083974452689 / 2
+    expectedGrad(Array(2, 1, 1)) = -0.56642062868923 / 2
+    expectedGrad(Array(2, 1, 2)) = 0.8510562335141 / 2
+    expectedGrad(Array(2, 2, 1)) = -0.20184816932306 / 2
+    expectedGrad(Array(2, 2, 2)) = 0.59350770944729 / 2
+
+    val output = layer.forward(input, target)
+    val gradInput = layer.backward(input, target)
+
+    assert(abs(expectedOutput - output) < 1e-6)
+    expectedGrad.map(gradInput, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6)
+      v1
+    })
+  }
+
+  "A MSE Criterion with sizeAverage False and TimeDistributedCriterion sizeAverage False" should
+    "generate correct output and grad" in {
+    val criterion = MSECriterion[Double]()
+    criterion.sizeAverage = false
+    val layer = TimeDistributedCriterion[Double](criterion, false)
 
     val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 0.64631252549589
@@ -321,6 +495,7 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
 
     val output = layer.forward(input, target)
     val gradInput = layer.backward(input, target)
+
     assert(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
       assert(abs(v1 - v2) < 1e-6)
@@ -424,4 +599,3 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     })
   }
 }
-
