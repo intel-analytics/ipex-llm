@@ -37,13 +37,13 @@ class Dictionary()
   /**
    * The length of the vocabulary
    */
-  def vocabSize(): Int = _vocabSize
+  def getVocabSize(): Int = _vocabSize
 
   /**
    * Selected words with top-k frequencies and discarded the remaining words.
    * Return the length of the discarded words.
    */
-  def discardSize(): Int = _discardSize
+  def getDiscardSize(): Int = _discardSize
 
   /**
    * Word encoding by its index in the dictionary
@@ -111,6 +111,8 @@ class Dictionary()
    */
   def save(saveFolder: String): Unit = {
     val saveTo = new File(saveFolder)
+    require(saveTo.isDirectory,
+      "Dictionary: saveFolder should be a directory.")
     new PrintWriter(saveTo.getAbsolutePath + "/dictionary.txt") {
       write(word2Index().mkString("\n")); close
     }
@@ -162,13 +164,12 @@ class Dictionary()
     this()
 
     val dictionaryFile = new File(directory, "dictionary.txt")
-    if (!dictionaryFile.exists()) {
-      throw new IllegalArgumentException("dictionary file not exists!")
-    }
+    require(dictionaryFile.exists() && dictionaryFile.isFile,
+      "dictionaryFile does not exist or is not a File type.")
+
     val discardFile = new File(directory, "discard.txt")
-    if (!discardFile.exists()) {
-      throw new IllegalArgumentException("discard file not exists!")
-    }
+    require(discardFile.exists() && discardFile.isFile,
+      "discardFile does not exist or is not a File type.")
 
     import scala.io.Source
     _word2index = Source.fromFile(dictionaryFile.getAbsolutePath)

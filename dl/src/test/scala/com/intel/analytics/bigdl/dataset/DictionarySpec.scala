@@ -53,11 +53,11 @@ class DictionarySpec extends FlatSpec with Matchers {
 
     val dictionary = Dictionary(output, 100)
 
-    dictionary.vocabSize() should be (numOfWords)
-    dictionary.discardSize() should be (0)
+    dictionary.getVocabSize() should be (numOfWords)
+    dictionary.getDiscardSize() should be (0)
     dictionary.print()
     dictionary.printDiscard()
-    dictionary.vocabSize() should be (numOfWords)
+    dictionary.getVocabSize() should be (numOfWords)
     sc.stop()
   }
 
@@ -84,10 +84,10 @@ class DictionarySpec extends FlatSpec with Matchers {
 
     val dictionary = Dictionary(output, 100)
 
-    dictionary.vocabSize() should be (numOfWords)
-    dictionary.discardSize() should be (0)
+    dictionary.getVocabSize() should be (numOfWords)
+    dictionary.getDiscardSize() should be (0)
     dictionary.print()
     dictionary.printDiscard()
-    dictionary.vocabSize() should be (numOfWords)
+    dictionary.getVocabSize() should be (numOfWords)
   }
 }

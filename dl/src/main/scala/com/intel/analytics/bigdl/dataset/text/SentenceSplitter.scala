@@ -25,20 +25,30 @@ import opennlp.tools.sentdetect.{SentenceDetector, SentenceDetectorME, SentenceM
 import opennlp.tools.tokenize.{TokenizerME, TokenizerModel}
 import scala.collection.Iterator
 
-class SentenceSplitter(sentFile: Option[String] = null)
+class SentenceSplitter(sentFile: Option[String] = None)
   extends Transformer[String, Array[String]] {
 
   var modelIn: FileInputStream = _
   var model: SentenceModel = _
   var sentenceDetector: SentenceDetector = _
 
-  def this(sentFile: URL) {
-    this(Some(sentFile.getPath))
+  def this(sentFileURL: URL) {
+    this(Some(sentFileURL.getPath))
+  }
+
+  def this(sentFile: String) {
+    this(Some(sentFile))
+  }
+
+  def close(): Unit = {
+    if (modelIn != null) {
+      modelIn.close()
+    }
   }
 
   override def apply(prev: Iterator[String]): Iterator[Array[String]] =
     prev.map(x => {
-      if (sentFile == null) {
+      if (!sentFile.isDefined) {
         x.split('.')
       } else {
         if (sentenceDetector == null) {
@@ -52,8 +62,10 @@ class SentenceSplitter(sentFile: Option[String] = null)
 }
 
 object SentenceSplitter {
-  def apply(sentFile: Option[String] = null):
+  def apply(sentFile: Option[String] = None):
     SentenceSplitter = new SentenceSplitter(sentFile)
-  def apply(sentFile: URL):
-    SentenceSplitter = new SentenceSplitter((sentFile))
+  def apply(sentFileURL: URL):
+    SentenceSplitter = new SentenceSplitter((sentFileURL))
+  def apply(sentFile: String):
+  SentenceSplitter = new SentenceSplitter((sentFile))
 }
