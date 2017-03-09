@@ -11,6 +11,7 @@
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
@@ -19,9 +20,6 @@
 import sys
 from util.common import callBigDlFunc
 from util.common import JavaValue
-from util.common import callJavaFunc
-from pyspark import SparkContext
-
 import numpy as np
 
 if sys.version >= '3':
@@ -42,13 +40,6 @@ class Model(JavaValue):
         model.bigdl_type = bigdl_type
         return model
 
-    def set_name(self, name):
-        callJavaFunc(SparkContext.getOrCreate(), self.value.setName, name)
-        return self
-
-    def name(self):
-        return callJavaFunc(SparkContext.getOrCreate(), self.value.getName)
-
     def get_dtype(self):
         if "float" == self.bigdl_type:
             return "float32"
@@ -56,18 +47,12 @@ class Model(JavaValue):
             return "float64"
 
     def parameters(self):
-        name_to_params = callBigDlFunc(self.bigdl_type,
-                                       "modelGetParameters",
-                                       self.value)
-
-        def to_ndarray(params):
-            return {
-                param_name: np.array(values[0],
-                                     dtype=self.get_dtype()).reshape(
-                    values[1]) for param_name, values in params.iteritems()}
-
-        return {layer_name: to_ndarray(params) for layer_name, params in
-                name_to_params.iteritems()}
+        (w, g, wshape, gshape) = callBigDlFunc(self.bigdl_type,
+                                               "modelGetParameters",
+                                               self.value)
+        return \
+            {"weights": np.array(w, dtype=self.get_dtype()).reshape(wshape),
+             "gradients": np.array(g, dtype=self.get_dtype()).reshape(gshape)}
 
     def predict(self, data_rdd):
         return callBigDlFunc(self.bigdl_type,
@@ -209,6 +194,7 @@ class SpatialMaxPooling(Model):
                                                 pad_h)
 
 
+
 class Reshape(Model):
     '''
     >>> reshape = Reshape([1, 28, 28])
@@ -218,6 +204,115 @@ class Reshape(Model):
     def __init__(self, size, bigdl_type="float"):
         super(Reshape, self).__init__(None, bigdl_type, size)
 
+
+class Concat(Model):
+    '''
+    >>> concat = Concat(2)
+    creating: createConcat
+    '''
+
+    def __init__(self,
+                dimension,
+                bigdl_type="float"):
+        super(Concat, self).__init__(None, bigdl_type,
+                                     dimension)
+
+
+class SpatialAveragePooling(Model):
+    '''
+    >>> spatialAveragePooling = SpatialAveragePooling(7,7)
+    creating: createSpatialAveragePooling
+    '''
+
+    def __init__(self,
+                kw,
+                kh,
+                dw=1,
+                dh=1,
+                pad_w=0,
+                pad_h=0,
+                ceil_mode=False,
+                count_include_pad=True,
+                divide=True,
+                bigdl_type="float"):
+        super(SpatialAveragePooling, self).__init__(None, bigdl_type,
+                                                    kw,
+                                                    kh,
+                                                    dw,
+                                                    dh,
+                                                    pad_w,
+                                                    pad_h,
+                                                    ceil_mode,
+                                                    count_include_pad,
+                                                    divide)       
+
+
+class SpatialBatchNormalization(Model):
+    
+    '''
+    >>> spatialBatchNormalization = SpatialBatchNormalization(1)
+    creating: createSpatialBatchNormalization
+    '''
+
+    def __init__(self,
+                n_output,
+                eps=1e-5,
+                momentum=0.1,
+                affine=True,
+                bigdl_type="float"):
+        super(SpatialBatchNormalization, self).__init__(None, bigdl_type,
+                                                        n_output,
+                                                        eps,
+                                                        momentum,
+                                                        affine)
+
+class SpatialCrossMapLRN(Model):
+    '''
+    >>> spatialCrossMapLRN = SpatialCrossMapLRN()
+    creating: createSpatialCrossMapLRN
+    '''
+
+    def __init__(self,
+                size=5,
+                alpha=1.0,
+                beta=0.75,
+                k=1.0,
+                bigdl_type="float"):
+        super(SpatialCrossMapLRN, self).__init__(None, bigdl_type,
+                                                 size,
+                                                 alpha,
+                                                 beta,
+                                                 k)
+
+
+class Dropout(Model):
+    '''
+    >>> dropout = Dropout(0.4)
+    creating: createDropout
+    '''
+
+    def __init__(self,
+                init_p=0.5,
+                inplace=False,
+                scale=True,
+                bigdl_type="float"):
+        super(Dropout, self).__init__(None, bigdl_type,
+                                      init_p,
+                                      inplace,
+                                      scale)
+
+
+class View(Model):
+    '''
+    >>> view = View([1024,2])
+    creating: createView
+    '''
+
+    def __init__(self,
+                sizes,
+                bigdl_type="float"):
+        super(View, self).__init__(None, bigdl_type,
+                                   sizes)
 
 def _test():
     import doctest
@@ -230,6 +325,7 @@ def _test():
                                                   optionflags=doctest.ELLIPSIS)
     if failure_count:
         exit(-1)
+
 
 
 if __name__ == "__main__":
