@@ -21,14 +21,23 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * Gated Recurrent Units architecture.
+ *
+ * @param inputSize the size of each input vector
+ * @param outputSize Hidden unit size in GRU
+ * @param p p is the threshold for Dropout. If p equals 0, create
+ *          a GRU without Dropout
+ */
+@SerialVersionUID(6717988395573528459L)
 class GRU[T : ClassTag] (
-  inputSize: Int = 4,
-  outputSize: Int = 3,
-  p: Double = 0,
+  val inputSize: Int = 4,
+  val outputSize: Int = 3,
+  val p: Double = 0,
   private var initMethod: InitializationMethod = Default)
   (implicit ev: TensorNumeric[T])
   extends Cell[T] {
@@ -76,6 +85,8 @@ class GRU[T : ClassTag] (
   }
 
   def buildGRU(): AbstractModule[Activity, Activity, T] = {
+    buildGates()
+
     val gru = Sequential()
       .add(ConcatTable()
         .add(Identity())
@@ -84,10 +95,10 @@ class GRU[T : ClassTag] (
 
     val h_hat = Sequential()
       .add(ConcatTable()
+        .add(SelectTable(1))
         .add(Sequential()
           .add(NarrowTable(2, 2))
-          .add(CMulTable()))
-        .add(SelectTable(1)))
+          .add(CMulTable())))
       .add(ParallelTable()
         .add(Sequential()
           .add(Dropout(p))
@@ -114,8 +125,10 @@ class GRU[T : ClassTag] (
             .add(SelectTable(4)))
           .add(CMulTable())))
       .add(CAddTable())
+      .add(ConcatTable()
+        .add(Identity[T]())
+        .add(Identity[T]()))
 
-    output = T(Tensor())
     GRU = gru
     GRU
   }
@@ -147,6 +160,23 @@ class GRU[T : ClassTag] (
   }
 
   override val nHids: Int = 1
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[GRU]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: GRU[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        inputSize == that.inputSize &&
+        outputSize == that.outputSize &&
+        p == that.p
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), inputSize, outputSize, p)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 object GRU {
