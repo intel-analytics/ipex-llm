@@ -61,7 +61,7 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args(sys.argv)
 
     sc = SparkContext(appName="lenet5", conf=spark_conf_with_bigdl())
-    initEngine()
+    init_engine()
 
     if options.action == "train":
         train_data = get_minst(sc, "train").map(

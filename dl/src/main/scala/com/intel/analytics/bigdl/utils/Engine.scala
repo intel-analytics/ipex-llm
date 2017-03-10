@@ -335,8 +335,10 @@ object Engine {
     isCreateSparkConf: Boolean,
     verifySparkContext: Boolean
   ): Option[SparkConf] = {
+    logger.info("Auto detect node number and cores number")
     if (System.getProperty("SPARK_SUBMIT") != null) {
       val (node, cores) = sparkExecutorAndCore
+      logger.info(s"Engine setting: node($node), cores($cores) ")
       init(node, cores, true, isCreateSparkConf, verifySparkContext)
     } else {
       init(1, physicalCoreNumber, false, false)
