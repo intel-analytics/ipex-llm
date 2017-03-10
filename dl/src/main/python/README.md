@@ -95,8 +95,7 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
         --jars ${BigDL_JAR_PATH} \
         --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
         --conf spark.executor.extraClassPath=bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
-        ${BigDL_HOME}/dl/src/main/python/models/lenet/lenet5.py \
-        --coreNum 10 --nodeNum 8
+        ${BigDL_HOME}/dl/src/main/python/models/lenet/lenet5.py
  ```
 
 
