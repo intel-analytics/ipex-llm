@@ -70,7 +70,7 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag]
    * @return output DataFrame
    */
   override def process(dataset: DataFrame): DataFrame = {
-    this.validateParams()
+    this.validateParameters()
     DLClassifier.process[T]($(batchShape), $(modelTrain), $(inputCol), $(outputCol), dataset)
   }
 
