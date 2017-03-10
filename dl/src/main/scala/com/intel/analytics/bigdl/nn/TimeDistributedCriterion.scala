@@ -29,8 +29,10 @@ import scala.reflect.ClassTag
  * @param critrn
  */
 
-class TimeDistributedCriterion[T : ClassTag](critrn : TensorCriterion[T])
-(implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
+class TimeDistributedCriterion[T : ClassTag](
+  val critrn : TensorCriterion[T],
+  val sizeAverage: Boolean = false)
+  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   private val fInput: Tensor[T] = Tensor[T]()
   private val fTarget: Tensor[T] = Tensor[T]()
@@ -68,12 +70,18 @@ class TimeDistributedCriterion[T : ClassTag](critrn : TensorCriterion[T])
     fInput.set(input).resize(inputSize)
     fTarget.set(target).resize(targetSize)
     output = critrn.updateOutput(fInput, fTarget)
+    if (!sizeAverage) {
+      output = ev.times(output, ev.fromType[Int](input.size(2)))
+    }
     output
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     val _gradInput = critrn.updateGradInput(fInput, fTarget).toTensor[T]
     gradInput = _gradInput.resize(input.size)
+    if (!sizeAverage) {
+      gradInput.apply1(x => ev.times(x, ev.fromType[Int](input.size(2))))
+    }
     gradInput
   }
 
@@ -98,8 +106,8 @@ class TimeDistributedCriterion[T : ClassTag](critrn : TensorCriterion[T])
 
 object TimeDistributedCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
-    critrn: TensorCriterion[T] = null)
-  (implicit ev: TensorNumeric[T]) : TimeDistributedCriterion[T] = {
+    critrn: TensorCriterion[T] = null, sizeAverage: Boolean = false)
+    (implicit ev: TensorNumeric[T]) : TimeDistributedCriterion[T] = {
     new TimeDistributedCriterion[T](critrn)
   }
 }
