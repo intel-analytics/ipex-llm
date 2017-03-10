@@ -287,6 +287,15 @@ object Engine {
     isCreateSparkConf: Boolean = true,
     verifySparkContext: Boolean = false
   ): Option[SparkConf] = this.synchronized {
+    // If user use spark-submit, check the executor number and core number
+    sparkExecutorAndCore(false).map(expect => {
+      require(expect._1 == nExecutor,
+        s"Specified executor number($nExecutor) is not equal to " +
+          s"detect executor number(${expect._1})")
+      require(expect._2 == executorCores,
+        s"Specified executorCores($executorCores) number is not equal to " +
+          s"detect executorCores number(${expect._2})")
+    })
     setNodeAndCore(nExecutor, executorCores)
     _onSpark = onSpark
     val ret = if (onSpark) {
@@ -336,8 +345,8 @@ object Engine {
     verifySparkContext: Boolean
   ): Option[SparkConf] = {
     logger.info("Auto detect node number and cores number")
-    if (System.getProperty("SPARK_SUBMIT") != null) {
-      val (node, cores) = sparkExecutorAndCore
+    if (System.getProperty("spark.master") != null) {
+      val (node, cores) = sparkExecutorAndCore(forceCheck = true).get
       logger.info(s"Engine setting: node($node), cores($cores) ")
       init(node, cores, true, isCreateSparkConf, verifySparkContext)
     } else {
@@ -377,19 +386,23 @@ object Engine {
 
   /**
    * Extract spark executor number and executor cores from environment.
+    * @param forceCheck throw exception if user doesn't set properties correctly
    * @return (nExecutor, executorCore)
    */
-  private[utils] def sparkExecutorAndCore : (Int, Int) = {
-    require(System.getProperty("spark.master") != null, "Can't find spark.master, do you start " +
-      "your application without spark-submit?")
+  private[utils] def sparkExecutorAndCore(forceCheck : Boolean) : Option[(Int, Int)] = {
     val master = System.getProperty("spark.master")
+    if (master == null) {
+      require(forceCheck == false, "Can't find spark.master, do you start " +
+        "your application without spark-submit?")
+      return None
+    }
     if(master.toLowerCase.startsWith("local")) {
       // Spark local mode
       val patternLocalN = "local\\[(\\d+)\\]".r
       val patternLocalStar = "local\\[\\*\\]".r
       master match {
-        case patternLocalN(n) => (1, n.toInt)
-        case patternLocalStar => (1, physicalCoreNumber)
+        case patternLocalN(n) => Some(1, n.toInt)
+        case patternLocalStar => Some(1, physicalCoreNumber)
         case _ => throw new IllegalArgumentException(s"Can't parser master $master")
       }
     } else if (master.toLowerCase.startsWith("spark")) {
@@ -407,7 +420,7 @@ object Engine {
           s"by single core number($core) provided to spark-submit")
         total / core
       }
-      (nodeNum, core)
+      Some(nodeNum, core)
     } else if (master.toLowerCase.startsWith("yarn")) {
       // yarn mode
       val coreString = System.getProperty("spark.executor.cores")
@@ -420,7 +433,7 @@ object Engine {
           "--num-executors option")
         numExecutorString.toInt
       }
-      (node, core)
+      Some(node, core)
     } else if (master.toLowerCase.startsWith("mesos")) {
       // mesos mode
       require(System.getProperty("spark.mesos.coarse") != "false", "Don't support mesos " +
@@ -438,7 +451,7 @@ object Engine {
           s"by single core number($core) provided to spark-submit")
         total / core
       }
-      (nodeNum, core)
+      Some(nodeNum, core)
     } else {
       throw new IllegalArgumentException(s"Unsupported master format $master")
     }

@@ -1652,7 +1652,7 @@ def _test():
     sc = SparkContext(master="local[4]", appName="test layer",
                       conf=spark_conf_with_bigdl())
     globs['sc'] = sc
-    init_engine(1, 4)
+    init_engine()
 
     (failure_count, test_count) = doctest.testmod(globs=globs,
                                                   optionflags=doctest.ELLIPSIS)

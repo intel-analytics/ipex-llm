@@ -58,10 +58,9 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Engine" should "be inited with specified value under spark local environment" in {
     TestUtils.sparkLocalEnv(core = 4) {
-      Engine.init(2, 8, true)
-      Engine.onSpark should be(true)
-      Engine.nodeNumber should be(2)
-      Engine.coreNumber should be(8)
+      intercept[IllegalArgumentException] {
+        Engine.init(2, 8, true)
+      }
     }
     Engine.reset
   }
@@ -78,10 +77,9 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Engine" should "be inited with specified value under spark standalone environment" in {
     TestUtils.sparkStandaloneEnv(totalCore = 24, core = 4) {
-      Engine.init(7, 9, true)
-      Engine.onSpark should be(true)
-      Engine.nodeNumber should be(7)
-      Engine.coreNumber should be(9)
+      intercept[IllegalArgumentException] {
+        Engine.init(7, 9, true)
+      }
     }
     Engine.reset
   }
@@ -98,10 +96,9 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Engine" should "be inited with specified value under spark yarn environment" in {
     TestUtils.sparkYarnEnv(executors = 6, core = 4) {
-      Engine.init(7, 9, true)
-      Engine.onSpark should be(true)
-      Engine.nodeNumber should be(7)
-      Engine.coreNumber should be(9)
+      intercept[IllegalArgumentException] {
+        Engine.init(7, 9, true)
+      }
     }
     Engine.reset
   }
@@ -119,17 +116,16 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Engine" should "be inited with specified value under spark mesos environment" in {
     TestUtils.sparkMesosEnv(totalCore = 24, core = 4) {
-      Engine.init(7, 9, true)
-      Engine.onSpark should be(true)
-      Engine.nodeNumber should be(7)
-      Engine.coreNumber should be(9)
+      intercept[IllegalArgumentException] {
+        Engine.init(7, 9, true)
+      }
     }
     Engine.reset
   }
 
   "sparkExecutorAndCore" should "parse local[*]" in {
     System.setProperty("spark.master", "local[*]")
-    val (nExecutor, executorCore) = Engine.sparkExecutorAndCore
+    val (nExecutor, executorCore) = Engine.sparkExecutorAndCore(true).get
     nExecutor should be(1)
     System.clearProperty("spark.master")
   }

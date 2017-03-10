@@ -113,6 +113,7 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
 
     ${SPARK_HOME}/bin/pyspark \
         --master ${MASTER} \
+        --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf
         --driver-cores 5  \
        --driver-memory 10g  \
        --total-executor-cores 8  \
