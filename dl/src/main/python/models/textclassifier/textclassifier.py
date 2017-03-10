@@ -153,8 +153,6 @@ def train(sc,
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-a", "--action", dest="action", default="train")
-    parser.add_option("-c", "--coreNum", dest="coreNum", default="2")
-    parser.add_option("-n", "--nodeNum", dest="nodeNum", default="1")
     parser.add_option("-b", "--batchSize", dest="batchSize", default="128")
     parser.add_option("-e", "--embedding_dim", dest="embedding_dim", default="50")  # noqa
     parser.add_option("-m", "--max_epoch", dest="max_epoch", default="15")
@@ -162,8 +160,6 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args(sys.argv)
     if options.action == "train":
-        node_num = int(options.nodeNum)
-        core_num = int(options.coreNum)
         batch_size = int(options.batchSize)
         embedding_dim = int(options.embedding_dim)
         max_epoch = int(options.max_epoch)

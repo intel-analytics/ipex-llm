@@ -56,8 +56,6 @@ if __name__ == "__main__":
 
     parser = OptionParser()
     parser.add_option("-a", "--action", dest="action", default="train")
-    parser.add_option("-c", "--coreNum", dest="coreNum", default="4")
-    parser.add_option("-n", "--nodeNum", dest="nodeNum", default="1")
     parser.add_option("-b", "--batchSize", dest="batchSize", default="128")
 
     (options, args) = parser.parse_args(sys.argv)
