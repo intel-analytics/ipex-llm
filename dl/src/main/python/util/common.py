@@ -121,8 +121,8 @@ _picklable_classes = [
 ]
 
 
-def init_engine(node_num=-1, core_num=-1, bigdl_type="float"):
-    callBigDlFunc(bigdl_type, "initEngine", node_num, core_num)
+def init_engine(bigdl_type="float"):
+    callBigDlFunc(bigdl_type, "initEngine")
 
 
 def get_bigdl_conf():
