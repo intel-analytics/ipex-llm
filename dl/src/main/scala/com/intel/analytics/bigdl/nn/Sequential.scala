@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(5375403296928513267L)
 class Sequential[T: ClassTag]
-  (implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
+(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
 
   override def updateOutput(input: Activity): Activity = {
     var i = 0
@@ -116,7 +116,7 @@ class Sequential[T: ClassTag]
 
 object Sequential {
   def apply[@specialized(Float, Double) T: ClassTag]()
-      (implicit ev: TensorNumeric[T]) : Sequential[T] = {
+    (implicit ev: TensorNumeric[T]) : Sequential[T] = {
     new Sequential[T]()
   }
 }

@@ -148,7 +148,7 @@ class Recurrent[T : ClassTag] (
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
+    scale: Double = 1.0): Unit = {
     currentGradOutput(hidDim) = gradHidden
     /**
      * Since we clone module along the time dimension, the output of each
@@ -164,7 +164,7 @@ class Recurrent[T : ClassTag] (
     while (i >= 1) {
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-        else hidden
+      else hidden
       _input(inputDim) = input.select(timeDim, i)
       cells(i - 1).accGradParameters(_input, currentGradOutput, scale)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
@@ -179,7 +179,7 @@ class Recurrent[T : ClassTag] (
     while (i >= 1) {
       currentGradOutput(inputDim) = gradOutput.select(timeDim, i)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
-        else hidden
+      else hidden
       _input(inputDim) = input.select(timeDim, i)
       cells(i - 1).updateGradInput(_input, currentGradOutput)
       gradInput.select(timeDim, i).copy(cells(i - 1).gradInput.toTable(inputDim))

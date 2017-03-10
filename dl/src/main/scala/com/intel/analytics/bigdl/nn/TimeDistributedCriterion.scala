@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  */
 
 class TimeDistributedCriterion[T : ClassTag](critrn : TensorCriterion[T])
-(implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
+  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   private val fInput: Tensor[T] = Tensor[T]()
   private val fTarget: Tensor[T] = Tensor[T]()
@@ -99,7 +99,7 @@ class TimeDistributedCriterion[T : ClassTag](critrn : TensorCriterion[T])
 object TimeDistributedCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
     critrn: TensorCriterion[T] = null)
-  (implicit ev: TensorNumeric[T]) : TimeDistributedCriterion[T] = {
+    (implicit ev: TensorNumeric[T]) : TimeDistributedCriterion[T] = {
     new TimeDistributedCriterion[T](critrn)
   }
 }
