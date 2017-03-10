@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 
 import java.io.PrintWriter
 
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -50,7 +51,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   "A LSTM " should "has same loss as torch rnn" in {
 
     val hiddenSize = 4
-    val inputSize = 5
+    val inputSize = 6
     val outputSize = 5
     val bpttTruncate = 3
     val seqLength = 5
@@ -78,7 +79,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
-      CrossEntropyCriterion[Double](sizeAverage = false))
+      CrossEntropyCriterion[Double](), false)
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
@@ -107,13 +108,12 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |      rnn = nn.Recurrence(rm, $hiddenSize, 1)
          | --     rnn.userPrevOutput = torch.Tensor(1, $hiddenSize):zero()
          |
-         |lstm = nn.FastLSTM($inputSize, $hiddenSize)
       |model = nn.Sequential()
          |:add(nn.SplitTable(1))
          |:add(nn.Sequencer(
          | nn.Sequential()
          |   --:add(nn.LSTM($inputSize, $hiddenSize, 1, true))
-         |   :add(lstm)
+         |   :add(nn.FastLSTM($inputSize, $hiddenSize))
          |   :add(nn.Linear($hiddenSize, $outputSize))
          |   ))
          |
@@ -219,7 +219,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   "A LSTM " should "converge" in {
 
     val hiddenSize = 4
-    val inputSize = 5
+    val inputSize = 6
     val outputSize = 5
     val bpttTruncate = 3
     val seqLength = 5
@@ -244,7 +244,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
-      CrossEntropyCriterion[Double](sizeAverage = false))
+      CrossEntropyCriterion[Double](), false)
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
@@ -281,7 +281,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   "A LSTM " should "has same loss as torch rnn in batch mode" in {
 
     val hiddenSize = 4
-    val inputSize = 5
+    val inputSize = 6
     val outputSize = 5
     val bpttTruncate = 3
     val seqLength = 5
@@ -309,7 +309,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
-      CrossEntropyCriterion[Double](sizeAverage = false))
+      CrossEntropyCriterion[Double](), false)
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
@@ -432,14 +432,14 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val output = model.forward(input).toTensor
     val logOutput = logSoftMax.forward(output)
 
-    //    luaOutput2 should be(loss(0) +- 1e-5)
+        luaOutput2 should be(loss(0) +- 1e-5)
   }
 
 
   "A LSTM " should "converge in batch mode" in {
 
     val hiddenSize = 4
-    val inputSize = 5
+    val inputSize = 6
     val outputSize = 5
     val bpttTruncate = 3
     val batchSize = 3
@@ -467,7 +467,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
-      CrossEntropyCriterion[Double](sizeAverage = false))
+      CrossEntropyCriterion[Double](), false)
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
@@ -503,7 +503,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   "A LSTM " should "perform correct gradient check" in {
 
     val hiddenSize = 4
-    val inputSize = 5
+    val inputSize = 6
     val outputSize = 5
     val bpttTruncate = 10
     val seed = 100
