@@ -108,6 +108,6 @@ object TimeDistributedCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
     critrn: TensorCriterion[T] = null, sizeAverage: Boolean = false)
     (implicit ev: TensorNumeric[T]) : TimeDistributedCriterion[T] = {
-    new TimeDistributedCriterion[T](critrn)
+    new TimeDistributedCriterion[T](critrn, sizeAverage)
   }
 }
