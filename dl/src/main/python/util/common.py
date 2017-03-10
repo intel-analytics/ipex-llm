@@ -125,6 +125,32 @@ def initEngine(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine")
 
 
+def get_bigdl_conf():
+    bigdl_conf_file = "spark-bigdl.conf"
+    bigdl_python_wrapper = "python-api.zip"
+
+    def load_conf(conf_str):
+        return dict(line.split() for line in conf_str.split("\n") if
+                    "#" not in line and line.strip())
+
+    for p in sys.path:
+        if bigdl_conf_file in p:
+            with open(p) as conf_file:
+                return load_conf(conf_file.read())
+        if bigdl_python_wrapper in p:
+            import zipfile
+            with zipfile.ZipFile(p, 'r') as zip_conf:
+                return load_conf(zip_conf.read(bigdl_conf_file))
+    raise Exception("Cannot find spark-bigdl.conf.Pls add it to PYTHONPATH.")
+
+
+def spark_conf_with_bigdl():
+    bigdl_conf = get_bigdl_conf()
+    sparkConf = SparkConf()
+    sparkConf.setAll(bigdl_conf.items())
+    return sparkConf
+
+
 def callBigDlFunc(bigdl_type, name, *args):
     """ Call API in PythonBigDL """
     sc = SparkContext.getOrCreate()

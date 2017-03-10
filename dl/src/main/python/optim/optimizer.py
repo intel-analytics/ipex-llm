@@ -153,8 +153,11 @@ def _test():
     import doctest
     from pyspark import SparkContext
     from optim import optimizer
+    from util.common import initEngine
+    from util.common import spark_conf_with_bigdl
     globs = optimizer.__dict__.copy()
-    sc = SparkContext(master="local[4]", appName="test optimizer")
+    sc = SparkContext(master="local[4]", appName="test optimizer",
+                      conf=spark_conf_with_bigdl())
     globs['sc'] = sc
     (failure_count, test_count) = doctest.testmod(globs=globs,
                                                   optionflags=doctest.ELLIPSIS)

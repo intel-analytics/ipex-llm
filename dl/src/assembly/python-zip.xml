@@ -14,5 +14,12 @@
             <outputDirectory>/</outputDirectory>
             <directory>${project.basedir}/src/main/python</directory>
         </fileSet>
+        <fileSet>
+            <includes>
+                <include>**/spark-bigdl.conf</include>
+            </includes>
+            <outputDirectory>/</outputDirectory>
+            <directory>${project.basedir}/src/main/resources</directory>
+        </fileSet>
     </fileSets>
 </assembly>
