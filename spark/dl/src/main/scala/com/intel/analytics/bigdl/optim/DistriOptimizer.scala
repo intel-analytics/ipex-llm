@@ -611,6 +611,7 @@ class DistriOptimizer[T: ClassTag] (
 
     
     var retryNum = 0
+    var lastFailureTimestamp = System.nanoTime()
     while (retryNum < 5) {
       try {
         DistriOptimizer.optimize(
@@ -635,13 +636,32 @@ class DistriOptimizer[T: ClassTag] (
         case t: Throwable =>
           DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           if (checkpointPath.isDefined) {
-            val state = T.load(getLatestFile("state"))
-            val model2 = Module.load[T](getLatestFile("model"))
-            models = DistriOptimizer.initThreadModels(model2, dataset, criterion, state,
+            if (System.nanoTime() - lastFailureTimestamp < 10*60*1e9) {
+              retryNum += 1
+            } else {
+              retryNum = 1
+            }
+            lastFailureTimestamp = System.nanoTime()
+            val stateFile = getLatestFile("state")
+            val modelFile = getLatestFile("model")
+            models.unpersist()
+            var newState: Table = null
+            var newModel: Module[T] = null
+            if (stateFile != null && modelFile != null) {
+              newState = T.load(stateFile)
+              newModel = Module.load[T](modelFile)
+              DistriOptimizer.logger.info("Recover from last snapshot")
+            } else {
+              newState = state
+              newModel = model
+              DistriOptimizer.logger.info("Recover from origin model")
+            }
+            models = DistriOptimizer.initThreadModels(newModel, dataset, criterion, newState,
               nodeNumber, coresPerNode, checkSingleton, parameters)
-            retryNum += 1
           } else {
             retryNum = Int.MaxValue
+            DistriOptimizer.logger.info("Failed to recover since no model snapshot" +
+              "checkpoint path is not set")
           }
       }
     }
