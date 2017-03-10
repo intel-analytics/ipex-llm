@@ -78,9 +78,9 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 2, 1)) = 0
     expectedGrad(Array(3, 2, 2)) = 0
     expectedGrad(Array(3, 2, 3)) = -0.16666666666666666
-    assert(abs(expectedOutput - output) < 1e-6)
+    assert(abs(expectedOutput * 2 - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      assert(abs(v1 * 2 - v2) < 1e-6)
       v1
     })
   }
@@ -139,16 +139,16 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 2, 1)) = 0
     expectedGrad(Array(3, 2, 2)) = 0
     expectedGrad(Array(3, 2, 3)) = -1
-    assert(abs(expectedOutput - output) < 1e-6)
+    assert(abs(expectedOutput * 2 - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      assert(abs(v1 * 2 - v2) < 1e-6)
       v1
     })
   }
 
   "A BCE Criterion" should "generate correct output and grad" in {
     val criterion = BCECriterion[Double]()
-    val layer = TimeDistributedCriterion[Double](criterion)
+    val layer = TimeDistributedCriterion[Double](criterion, true)
 
     val output = Tensor[Double](3, 2)
     output(Array(1, 1)) = 0.4
@@ -179,7 +179,7 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
 
   "A CrossEntropy Criterion" should "generate correct output and grad" in {
     val criterion = CrossEntropyCriterion[Double]()
-    val layer = TimeDistributedCriterion[Double](criterion)
+    val layer = TimeDistributedCriterion[Double](criterion, true)
 
     val input = Tensor[Double](3, 2, 3)
     input(Array(1, 1, 1)) = 0.33655226649716
@@ -243,7 +243,7 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
 
   "A MSE Criterion" should "generate correct output and grad" in {
     val criterion = MSECriterion[Double]()
-    val layer = TimeDistributedCriterion[Double](criterion)
+    val layer = TimeDistributedCriterion[Double](criterion, true)
 
     val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 0.17503996845335
@@ -288,7 +288,7 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
   "A MSE Criterion with sizeAverage false" should "generate correct output and grad" in {
     val criterion = MSECriterion[Double]()
     criterion.sizeAverage = false
-    val layer = TimeDistributedCriterion[Double](criterion)
+    val layer = TimeDistributedCriterion[Double](criterion, true)
 
     val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 0.64631252549589
@@ -331,7 +331,7 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
 
   "A MultiLabelSoftMargin Criterion" should "generate correct output and grad" in {
     val criterion = MultiLabelSoftMarginCriterion[Double]()
-    val layer = TimeDistributedCriterion[Double](criterion)
+    val layer = TimeDistributedCriterion[Double](criterion, true)
 
     val output = Tensor[Double](3, 2)
     output(Array(1, 1)) = 0.4
@@ -412,7 +412,7 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 2, 3)) = -0.16666666666666666
 
     val nll = ClassNLLCriterion[Double]()
-    val layer1 = TimeDistributedCriterion[Double](nll)
+    val layer1 = TimeDistributedCriterion[Double](nll, true)
     criterion.add(layer1, 1)
 
     val output = criterion.forward(T(input), T(target))
