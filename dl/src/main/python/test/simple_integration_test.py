@@ -25,8 +25,8 @@ import unittest
 
 class TestWorkFlow(unittest.TestCase):
     def setUp(self):
-        sparkConf = create_spark_conf(1, 2)
-        self.sc = SparkContext(master="local[*]", appName="test model",
+        sparkConf = create_spark_conf()
+        self.sc = SparkContext(master="local[4]", appName="test model",
                                conf=sparkConf)
         initEngine(1, 2)
 

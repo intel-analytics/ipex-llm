@@ -171,7 +171,8 @@ if __name__ == "__main__":
         sequence_len = 50
         max_words = 1000
         training_split = 0.8
-        sc = SparkContext(appName="text_classifier")
+        sc = SparkContext(appName="text_classifier",
+                          conf=spark_conf_with_bigdl())
         initEngine()
         train(sc,
               batch_size,
