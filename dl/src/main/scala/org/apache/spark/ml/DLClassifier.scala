@@ -52,7 +52,7 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag]
    */
   def setOutputCol(outputColName: String): this.type = set(outputCol, outputColName)
 
-  override def validateParams(): Unit = {
+  def validateParameters(): Unit = {
     val params = this.extractParamMap()
     require(null != params.getOrElse(modelTrain, null),
       "DLClassifier: model for predict must not be null")
@@ -70,7 +70,7 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag]
    * @return output DataFrame
    */
   override def process(dataset: DataFrame): DataFrame = {
-    this.validateParams()
+    this.validateParameters()
     DLClassifier.process[T]($(batchShape), $(modelTrain), $(inputCol), $(outputCol), dataset)
   }
 
