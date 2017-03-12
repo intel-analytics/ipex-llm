@@ -29,7 +29,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.sys.process._
 
-@com.intel.analytics.bigdl.tags.Parallel
+@com.intel.analytics.bigdl.tags.Serial
 class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
@@ -151,7 +151,6 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |
          |err=criterion.output
          |err2=criterion.gradInput
-         |gradOutput=criterion.gradInput
          |gradInput = model.gradInput
     """.stripMargin
 
@@ -309,7 +308,6 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |
          |err=criterion.output
          |err2=criterion.gradInput
-         |gradOutput=criterion.gradInput
          |gradInput = model.gradInput
     """.stripMargin
 
