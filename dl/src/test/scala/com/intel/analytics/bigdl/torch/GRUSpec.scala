@@ -494,8 +494,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val logOutput = logSoftMax.forward(output)
     val prediction = logOutput.max(3)._2
 
-    // wait for TimeDistributedCriterion to be corrected
-//    labels.squeeze() should be (prediction.squeeze())
+    labels.squeeze() should be (prediction.squeeze())
   }
 
   "A GRU " should "perform correct gradient check" in {
