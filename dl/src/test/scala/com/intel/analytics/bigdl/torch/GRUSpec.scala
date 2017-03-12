@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.torch
 
 import java.io.PrintWriter
 
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -78,7 +78,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
-      CrossEntropyCriterion[Double](sizeAverage = false))
+      CrossEntropyCriterion[Double]())
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
@@ -242,7 +242,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
-      CrossEntropyCriterion[Double](sizeAverage = false))
+      CrossEntropyCriterion[Double]())
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
@@ -307,7 +307,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
-      CrossEntropyCriterion[Double](sizeAverage = false))
+      CrossEntropyCriterion[Double]())
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
@@ -429,7 +429,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val output = model.forward(input).toTensor
     val logOutput = logSoftMax.forward(output)
 
-    //    luaOutput2 should be(loss(0) +- 1e-5)
+        luaOutput2 should be(loss(0) +- 1e-5)
   }
 
 
@@ -464,7 +464,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
-      CrossEntropyCriterion[Double](sizeAverage = false))
+      CrossEntropyCriterion[Double]())
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
