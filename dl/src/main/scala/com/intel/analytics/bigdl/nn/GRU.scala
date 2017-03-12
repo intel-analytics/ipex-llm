@@ -33,8 +33,8 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(6717988395573528459L)
 class GRU[T : ClassTag] (
-  val inputSize: Int = 4,
-  val outputSize: Int = 3)
+  val inputSize: Int,
+  val outputSize: Int)
   (implicit ev: TensorNumeric[T])
   extends Cell[T] {
   val p: Double = 0 // Dropout threshold
