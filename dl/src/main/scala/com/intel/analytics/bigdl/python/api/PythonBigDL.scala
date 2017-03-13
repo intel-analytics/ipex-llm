@@ -194,7 +194,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createConcat(dimension: Int): Concat[T] = {
     Concat[T](dimension)
-  } 
+  }
 
   def createSpatialAveragePooling(kW: Int,
                                   kH: Int,
@@ -206,7 +206,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                   countIncludePad: Boolean = true,
                                   divide: Boolean = true)
   : SpatialAveragePooling[T] = {
-    SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, ceilMode, countIncludePad, divide) 
+    SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, ceilMode, countIncludePad, divide)
   }
 
   def createSpatialBatchNormalization(nOutput: Int,
@@ -235,7 +235,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createView(sizes: JList[Int]):  View[T] = {
      View[T](sizes.asScala.toArray)
   }
-  
   //   Optimizer
   def createClassNLLCriterion: ClassNLLCriterion[T] = {
     ClassNLLCriterion[T]()
