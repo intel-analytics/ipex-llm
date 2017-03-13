@@ -59,8 +59,8 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val input = Tensor[Double](Array(1, seqLength, inputSize))
     val labels = Tensor[Double](Array(1, seqLength))
     for (i <- 1 to seqLength) {
-      val rdmLabel = Math.ceil(math.random * outputSize).toInt
-      val rdmInput = Math.ceil(math.random * inputSize).toInt
+      val rdmLabel = Math.ceil(RNG.uniform(0, 1) * outputSize).toInt
+      val rdmInput = Math.ceil(RNG.uniform(0, 1) * inputSize).toInt
       input.setValue(1, i, rdmInput, 1.0)
       labels.setValue(1, i, rdmLabel)
     }
@@ -286,19 +286,19 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     val batchSize = 5
 
+    RNG.setSeed(seed)
     val input = Tensor[Double](Array(batchSize, seqLength, inputSize))
     val labels = Tensor[Double](Array(batchSize, seqLength))
     for (b <- 1 to batchSize) {
       for (i <- 1 to seqLength) {
-        val rdmInput = Math.ceil(math.random  * inputSize).toInt
+        val rdmInput = Math.ceil(RNG.uniform(0, 1)   * inputSize).toInt
         input.setValue(b, i, rdmInput, 1.0)
-        val rdmLabel = Math.ceil(math.random  * outputSize).toInt
+        val rdmLabel = Math.ceil(RNG.uniform(0, 1)  * outputSize).toInt
         labels.setValue(b, i, rdmLabel)
       }
     }
 
     println(input)
-    RNG.setSeed(seed)
     val rec = Recurrent[Double](hiddenSize)
 
     val model = Sequential[Double]()
@@ -364,7 +364,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |return err1, gradParameters
          |end
          |
-      |for i = 1,100,1 do
+      |for i = 1,50,1 do
          |   optim.sgd(feval, parameters, state)
          |end
          |
@@ -400,7 +400,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     val start = System.nanoTime()
     var loss: Array[Double] = null
-    for (i <- 1 to 100) {
+    for (i <- 1 to 50) {
       loss = sgd.optimize(feval, weights, state)._2
       println(s"${i}-th loss = ${loss(0)}")
     }
@@ -517,8 +517,8 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val input = Tensor[Double](Array(1, 5, inputSize))
     val labels = Tensor[Double](Array(1, 5))
     for (i <- 1 to 5) {
-      val rdmLabel = Math.ceil(Math.random()*inputSize).toInt
-      val rdmInput = Math.ceil(Math.random()*inputSize).toInt
+      val rdmLabel = Math.ceil(RNG.uniform(0, 1)*inputSize).toInt
+      val rdmInput = Math.ceil(RNG.uniform(0, 1)*inputSize).toInt
       input.setValue(1, i, rdmInput, 1.0)
       labels.setValue(1, i, rdmLabel)
     }
