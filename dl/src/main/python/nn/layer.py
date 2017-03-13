@@ -202,6 +202,7 @@ class Reshape(Model):
     def __init__(self, size, bigdl_type="float"):
         super(Reshape, self).__init__(None, bigdl_type, size)
 
+
 class Concat(Model):
     '''
     >>> concat = Concat(2)
@@ -244,8 +245,7 @@ class SpatialAveragePooling(Model):
                                                     divide)       
 
 
-class SpatialBatchNormalization(Model):
-    
+class SpatialBatchNormalization(Model):    
     '''
     >>> spatialBatchNormalization = SpatialBatchNormalization(1)
     creating: createSpatialBatchNormalization
@@ -262,6 +262,7 @@ class SpatialBatchNormalization(Model):
                                                         eps,
                                                         momentum,
                                                         affine)
+
 
 class SpatialCrossMapLRN(Model):
     '''
