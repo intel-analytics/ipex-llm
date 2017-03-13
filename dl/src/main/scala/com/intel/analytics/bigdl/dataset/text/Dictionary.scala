@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dataset.text
 import java.io.{File, PrintWriter, Serializable}
 
 import org.apache.log4j.Logger
+import org.apache.log4j.spi.LoggerFactory
 import org.apache.spark.rdd.RDD
 
 import scala.util.Random

@@ -18,8 +18,8 @@ package com.intel.analytics.bigdl.dataset.text
 
 import java.io.PrintWriter
 
-import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalArrayDataSet}
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
