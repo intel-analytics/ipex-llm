@@ -21,7 +21,7 @@ LEARNING_RATE=0.01
 MAX_EPOCH=90
 ME=`basename "$0"`
 
-source ./dist/bin/bigdl.sh
+source ./bigdl.sh
 
 options=$(getopt -o p:m:c:s:o:r:n:b:t:l:f:e:h -l spark:,model:,class:,spark-url:,cores:,memory:,nodes:,batch-size:,trained-model:,learning-rate:,hdfs-data-dir:,max-epoch:,help -- "$@")
 
