@@ -236,7 +236,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
      View[T](sizes.asScala.toArray)
   }
   
-
   //   Optimizer
   def createClassNLLCriterion: ClassNLLCriterion[T] = {
     ClassNLLCriterion[T]()
