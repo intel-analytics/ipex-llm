@@ -35,19 +35,15 @@ object Train {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      val sc = Engine.init.map(conf => {
-        conf.setAppName("Train Vgg on Cifar10")
-          .set("spark.akka.frameSize", 64.toString)
-          .set("spark.task.maxFailures", "1")
-        new SparkContext(conf)
-      })
+      val conf = Engine.createSparkConf().setAppName("Train Vgg on Cifar10")
+        .set("spark.akka.frameSize", 64.toString)
+        .set("spark.task.maxFailures", "1")
+      val sc = new SparkContext(conf)
+      Engine.init
 
-      val trainDataSet = (if (sc.isDefined) {
-        DataSet.array(Utils.loadTrain(param.folder), sc.get)
-      } else {
-        DataSet.array(Utils.loadTrain(param.folder))
-      }) -> BytesToBGRImg() -> BGRImgNormalizer(trainMean, trainStd) -> BGRImgToBatch(
-        param.batchSize)
+      val trainDataSet = DataSet.array(Utils.loadTrain(param.folder), sc) ->
+        BytesToBGRImg() -> BGRImgNormalizer(trainMean, trainStd) ->
+        BGRImgToBatch(param.batchSize)
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -73,12 +69,9 @@ object Train {
         criterion = new ClassNLLCriterion[Float]()
       )
 
-      val validateSet = (if (sc.isDefined) {
-        DataSet.array(Utils.loadTest(param.folder), sc.get)
-      } else {
-        DataSet.array(Utils.loadTest(param.folder))
-      }) -> BytesToBGRImg() -> BGRImgNormalizer(testMean, testStd) -> BGRImgToBatch(param
-        .batchSize)
+      val validateSet = DataSet.array(Utils.loadTest(param.folder), sc) ->
+        BytesToBGRImg() -> BGRImgNormalizer(testMean, testStd) ->
+        BGRImgToBatch(param.batchSize)
 
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
@@ -92,9 +85,7 @@ object Train {
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
 
-      if (sc.isDefined) {
-        sc.get.stop()
-      }
+      sc.stop()
     })
   }
 }

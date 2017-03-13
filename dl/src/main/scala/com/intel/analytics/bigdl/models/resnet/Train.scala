@@ -39,29 +39,19 @@ object Train {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-
-      val sc = Engine.init.map(conf => {
-        conf.setAppName("Train ResNet on Cifar10")
-          .set("spark.akka.frameSize", 64.toString)
-          .set("spark.task.maxFailures", "1")
-        new SparkContext(conf)
-      })
+      val conf = Engine.createSparkConf().setAppName("Train ResNet on Cifar10")
+        .set("spark.akka.frameSize", 64.toString)
+        .set("spark.task.maxFailures", "1")
+      val sc = new SparkContext(conf)
+      Engine.init
 
       val batchSize = param.batchSize
       val (imageSize, lrSchedule, maxEpoch, dataSet) =
         (32, DatasetType.CIFAR10, param.nepochs, Cifar10DataSet)
 
-      val trainDataSet = if (sc.isDefined) {
-        dataSet.trainDataSet(param.folder, sc.get, imageSize, batchSize)
-      } else {
-        dataSet.trainDataSet(param.folder, batchSize, imageSize)
-      }
+      val trainDataSet = dataSet.trainDataSet(param.folder, sc, imageSize, batchSize)
 
-      val validateSet = if (sc.isDefined) {
-        dataSet.valDataSet(param.folder, sc.get, imageSize, batchSize)
-      } else {
-        dataSet.valDataSet(param.folder, batchSize, imageSize)
-      }
+      val validateSet = dataSet.valDataSet(param.folder, sc, imageSize, batchSize)
 
       val shortcut: ShortcutType = param.shortcutType match {
         case "A" => ShortcutType.A

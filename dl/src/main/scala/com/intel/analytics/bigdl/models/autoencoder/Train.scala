@@ -50,23 +50,19 @@ object Train {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
+      val conf = Engine.createSparkConf().setAppName("Train Autoencoder on MNIST")
+        .set("spark.akka.frameSize", 64.toString)
+        .set("spark.task.maxFailures", "1")
 
-      val sc = Engine.init.map(conf => {
-        conf.setAppName("Train Autoencoder on MNIST")
-          .set("spark.akka.frameSize", 64.toString)
-          .set("spark.task.maxFailures", "1")
-        new SparkContext(conf)
-      })
+      val sc = new SparkContext(conf)
+      Engine.init
 
       val trainData = Paths.get(param.folder, "/train-images-idx3-ubyte")
       val trainLabel = Paths.get(param.folder, "/train-labels-idx1-ubyte")
 
-      val trainDataSet = (if (sc.isDefined) {
-        DataSet.array(load(trainData, trainLabel), sc.get)
-      } else {
-        DataSet.array(load(trainData, trainLabel))
-      }) -> BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
-        param.batchSize) -> toAutoencoderBatch()
+      val trainDataSet = DataSet.array(load(trainData, trainLabel), sc) ->
+        BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) ->
+        GreyImgToBatch(param.batchSize) -> toAutoencoderBatch()
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)

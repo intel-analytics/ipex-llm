@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.Engine
 @com.intel.analytics.bigdl.tags.Parallel
 class LogSoftMaxSpec extends FlatSpec with Matchers with BeforeAndAfter {
   before {
-    Engine.init(1, 4, false, false, false)
+    Engine.setNodeAndCore(1, 4)
   }
 
 

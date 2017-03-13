@@ -17,33 +17,40 @@
 
 package com.intel.analytics.bigdl.utils
 
+import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
+  var sc : SparkContext = null
   before {
     Engine.reset
   }
 
   after {
     Engine.reset
+    if (sc != null) {
+      sc.stop()
+    }
+    Engine.reset
   }
 
   "Engine" should "be inited correct under no spark environment" in {
-    Engine.init(true, false)
+    Engine.setLocalMode
+    Engine.init
     Engine.onSpark should be(false)
     Engine.nodeNumber should be(1)
     Engine.coreNumber should be(1)
-    Engine.reset
   }
 
   "Engine" should "be inited correct under spark local environment" in {
     TestUtils.sparkLocalEnv(core = 4) {
-      Engine.init(true, false)
+      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
+      sc = new SparkContext(conf)
+      Engine.init
       Engine.onSpark should be(true)
       Engine.nodeNumber should be(1)
       Engine.coreNumber should be(4)
     }
-    Engine.reset
   }
 
   "Engine" should "be inited with correct value under spark local environment" in {
@@ -53,74 +60,39 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
       Engine.nodeNumber should be(1)
       Engine.coreNumber should be(4)
     }
-    Engine.reset
-  }
-
-  "Engine" should "be inited with specified value under spark local environment" in {
-    TestUtils.sparkLocalEnv(core = 4) {
-      intercept[IllegalArgumentException] {
-        Engine.init(2, 8, true)
-      }
-    }
-    Engine.reset
   }
 
   "Engine" should "be inited correct under spark standalone environment" in {
     TestUtils.sparkStandaloneEnv(totalCore = 24, core = 4) {
-      Engine.init(true, false)
+      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
+      sc = new SparkContext(conf)
+      Engine.init
       Engine.onSpark should be(true)
       Engine.nodeNumber should be(6)
       Engine.coreNumber should be(4)
     }
-    Engine.reset
-  }
-
-  "Engine" should "be inited with specified value under spark standalone environment" in {
-    TestUtils.sparkStandaloneEnv(totalCore = 24, core = 4) {
-      intercept[IllegalArgumentException] {
-        Engine.init(7, 9, true)
-      }
-    }
-    Engine.reset
   }
 
   "Engine" should "be inited correct under spark yarn environment" in {
     TestUtils.sparkYarnEnv(executors = 6, core = 4) {
-      Engine.init(true, false)
+      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
+      sc = new SparkContext(conf)
+      Engine.init
       Engine.onSpark should be(true)
       Engine.nodeNumber should be(6)
       Engine.coreNumber should be(4)
     }
-    Engine.reset
   }
-
-  "Engine" should "be inited with specified value under spark yarn environment" in {
-    TestUtils.sparkYarnEnv(executors = 6, core = 4) {
-      intercept[IllegalArgumentException] {
-        Engine.init(7, 9, true)
-      }
-    }
-    Engine.reset
-  }
-
 
   "Engine" should "be inited correct under spark mesos environment" in {
     TestUtils.sparkMesosEnv(totalCore = 24, core = 4) {
-      Engine.init(true, false)
+      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
+      sc = new SparkContext(conf)
+      Engine.init
       Engine.onSpark should be(true)
       Engine.nodeNumber should be(6)
       Engine.coreNumber should be(4)
     }
-    Engine.reset
-  }
-
-  "Engine" should "be inited with specified value under spark mesos environment" in {
-    TestUtils.sparkMesosEnv(totalCore = 24, core = 4) {
-      intercept[IllegalArgumentException] {
-        Engine.init(7, 9, true)
-      }
-    }
-    Engine.reset
   }
 
   "sparkExecutorAndCore" should "parse local[*]" in {

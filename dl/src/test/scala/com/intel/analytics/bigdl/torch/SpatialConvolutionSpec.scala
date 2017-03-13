@@ -32,7 +32,6 @@ class SpatialConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers 
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
-    Engine.init(1, 4, false, false, false)
   }
 
   "A SpatialConvolution" should "generate correct output" in {

@@ -38,13 +38,12 @@ object ImagePredictor {
 
   def main(args: Array[String]): Unit = {
     predictParser.parse(args, new PredictParams()).map(param => {
-      val scc = Engine.init.map(conf => {
-        conf.setAppName("Predict with trained model")
+      val conf = Engine.createSparkConf()
+      conf.setAppName("Predict with trained model")
           .set("spark.akka.frameSize", 64.toString)
           .set("spark.task.maxFailures", "1")
-        new SparkContext(conf)
-      })
-      val sc = scc.get
+      val sc = new SparkContext(conf)
+      Engine.init
       val sqlContext = new SQLContext(sc)
 
       val partitionNum = Engine.nodeNumber() * Engine.coreNumber()

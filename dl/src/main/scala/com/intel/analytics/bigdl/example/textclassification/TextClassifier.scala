@@ -144,11 +144,12 @@ class TextClassifier(param: TextClassificationParams) {
   }
 
   def train(): Unit = {
-    val sc = new SparkContext(
-      Engine.init.get
-        .setAppName("Text classification")
-        .set("spark.akka.frameSize", 64.toString)
-        .set("spark.task.maxFailures", "1"))
+    val conf = Engine.createSparkConf()
+      .setAppName("Text classification")
+      .set("spark.akka.frameSize", 64.toString)
+      .set("spark.task.maxFailures", "1")
+    val sc = new SparkContext(conf)
+    Engine.init
     val sequenceLen = param.maxSequenceLength
     val embeddingDim = param.embeddingDim
     val trainingSplit = param.trainingSplit

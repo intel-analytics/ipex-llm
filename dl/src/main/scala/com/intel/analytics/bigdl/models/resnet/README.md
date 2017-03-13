@@ -23,14 +23,6 @@ You can build one by refer to the
 ##Training
 * bigdl.sh would setup the essential environment for you and it would accept a spark-submit command as an input parameter.
 
-* Local, example command
-```shell
-dist/bin/bigdl.sh -c physical_core -- \
-java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
-com.intel.analytics.bigdl.models.resnet.Train \
--f ./cifar-10 --batchSize 128 \
---optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 --learningRate 0.1
-```
 * Spark local, example command
 ```shell
 dist/bin/bigdl.sh -- \

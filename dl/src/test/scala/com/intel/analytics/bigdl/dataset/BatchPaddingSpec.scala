@@ -31,7 +31,7 @@ import scala.util.Random
 class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   before {
-    Engine.init(1, 1, false, false, false)
+    Engine.setNodeAndCore(1, 1)
   }
 
   "SampleToBatchPadding " should "be good when padding first dimension to same length" +

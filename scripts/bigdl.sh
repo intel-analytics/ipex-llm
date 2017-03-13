@@ -53,6 +53,10 @@ parse() {
             export DL_CORE_NUMBER="$2"
             shift 2
             ;;
+            -l|--local)
+            export LOCAL_MODE="1"
+            shift 1
+            ;;
             --)
             shift
             CMD=$*

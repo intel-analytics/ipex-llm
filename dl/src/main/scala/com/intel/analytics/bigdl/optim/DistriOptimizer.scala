@@ -422,13 +422,7 @@ object DistriOptimizer {
           logger.warn("Detect multi-task run on one Executor/Container.")
         }
       }
-      Engine.init(
-        nExecutor = nExecutor,
-        executorCores = executorCores,
-        onSpark = true,
-        isCreateSparkConf = false,
-        verifySparkContext = false
-      )
+      Engine.setNodeAndCore(nExecutor, executorCores)
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = broadcastModel.cloneModule()
         val localCriterion = broadcastCriterion.cloneCriterion()

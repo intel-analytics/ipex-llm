@@ -84,7 +84,7 @@ object DistriOptimizerPerf {
   }
 
   def performance(param: DistriOptimizerPerfParam): Unit = {
-    val conf = Engine.init.get
+    val conf = Engine.createSparkConf()
       .setAppName("DistriOptimizer Performance Test")
       .set("spark.task.cpus", Engine.coreNumber().toString)
 
@@ -104,6 +104,7 @@ object DistriOptimizerPerf {
     val labels = Tensor(param.batchSize).fill(1)
 
     val sc = new SparkContext(conf)
+    Engine.init
     val broadcast = sc.broadcast(MiniBatch(input, labels))
     val rdd = sc.parallelize((1 to Engine.nodeNumber()), Engine.nodeNumber())
       .mapPartitions(iter => {

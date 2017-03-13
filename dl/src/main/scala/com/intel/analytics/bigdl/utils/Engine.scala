@@ -30,7 +30,13 @@ case object MklBlas extends EngineType
 object Engine {
   private val logger = Logger.getLogger(getClass)
   private val singletonCounter: AtomicInteger = new AtomicInteger(0)
-  private[this] var _isInitialized: Boolean = false
+
+  // Detect this env means Engine.init is called
+  private[this] var _isInitialized: Boolean = if (System.getenv("ON_SPARK") == null) {
+    false
+  } else {
+    true
+  }
 
   private[this] var _onSpark: Boolean = if (System.getenv("ON_SPARK") == null) {
     false
@@ -51,6 +57,17 @@ object Engine {
    * @return
    */
   def onSpark: Boolean = _onSpark
+
+  private var localMode: Boolean = {
+    val env = System.getenv("LOCAL_MODE")
+    if(env == null) {
+      false
+    } else {
+      true
+    }
+  }
+
+  private[utils] def setLocalMode = this.localMode = true
 
   /**
    * Check if current execution is a singleton on the JVM
@@ -214,27 +231,26 @@ object Engine {
    */
   private def checkSparkContext : Unit = {
     val tmpContext = SparkContext.getOrCreate(new SparkConf().set("tmpContext", "true"))
-    if (!tmpContext.getConf.contains("tmpContext")) {
-      // The spark context already exisits
-      logger.info("Find existing spark context. Checking the spark conf...")
-      val sparkConf = tmpContext.getConf
+    // If there's already a spark context, it should not include the property
+    val exisitingSparkContext = !tmpContext.getConf.contains("tmpContext")
+    require(exisitingSparkContext, "Cannot find an existing spark context. " +
+      "Do you call this method after create spark context?")
+    logger.info("Find existing spark context. Checking the spark conf...")
+    val sparkConf = tmpContext.getConf
 
-      def verify(key: String, value: String): Unit = {
-        for ((k, v) <- sparkConf.getAll) {
-          if (k == key) {
-            if (value != v) {
-              throw new IllegalArgumentException(s"$k should be $value, but it is $v. " + errorMsg)
-            }
-            return
+    def verify(key: String, value: String): Unit = {
+      for ((k, v) <- sparkConf.getAll) {
+        if (k == key) {
+          if (value != v) {
+            throw new IllegalArgumentException(s"$k should be $value, but it is $v. " + errorMsg)
           }
+          return
         }
-        throw new IllegalArgumentException(s"Can not find $key. " + errorMsg)
       }
-
-      readConf.foreach(c => verify(c._1, c._2))
-    } else {
-      tmpContext.stop()
+      throw new IllegalArgumentException(s"Can not find $key. " + errorMsg)
     }
+
+    readConf.foreach(c => verify(c._1, c._2))
   }
 
   /**
@@ -248,110 +264,65 @@ object Engine {
     setCoreNumber(coreNum)
   }
 
-  /**
-   * In a spark program, user will first create a spark conf then use the spark
-   * conf to create a spark context. BigDL need to special configuration in the spark conf for a
-   * better performance. You should use this method to init one with appropriate values.
-   *
-   * If you pass an existing spark conf to the method, it will populate/update the corresponding
-   * values.
-   *
-   * @return
-   */
-  def sparkConf(conf: SparkConf = new SparkConf()) : SparkConf = {
-    readConf.foreach(c => conf.set(c._1, c._2))
-    conf
+  @deprecated
+  def init(nExecutor: Int,
+           executorCores: Int,
+           onSpark: Boolean): Option[SparkConf] = {
+    setNodeAndCore(nExecutor, executorCores)
+    val res = if (onSpark) {
+      _onSpark = onSpark
+      Some(createSparkConf())
+    } else {
+      None
+    }
+    _isInitialized = true
+    res
   }
 
   /**
-   * This method should be call before any BigDL procedure.
+    * BigDL need some spark conf values to be set correctly to have a better performance.
+    *
+    * This method will create a spark conf, or use existing one if you provided on.
+    * Populate it with correct values.
+    *
+    * We recommand you use this method instead of setting spark conf values directly. This can the
+    * spark conf values changes transparent to you. However, if you use spark-shell or
+    * Jupiter notebook, as the spark context is created before your code, you have to
+    * set them directly(through command line options or properties-file)
+    *
+    * @return
+    */
+  def createSparkConf(exisitingConf : SparkConf = null) : SparkConf = {
+    var _conf = exisitingConf
+    if (_conf == null) {
+      _conf = new SparkConf()
+    }
+    readConf.foreach(c => _conf.set(c._1, c._2))
+    _conf
+  }
+
+  /**
+   * This method should be call before any BigDL procedure and after spark context created.
    *
    * BigDL need some spark conf values to be set correctly to have a better performance. There's
    * also multi-thread engines so executor number and core number per executor need to be know to
    * set the parameter of these engines correctly.
    *
    * The method can set parameters of multi-thread engines, verify spark conf values of an
-   * existing spark context, initialize spark conf with appropriate values.
-   *
-   * @param nExecutor executor number, if the program not run on spark, it should be set to 1
-   * @param executorCores cores number per executor
-   * @param onSpark indicate whether the program is running on Spark
-   * @param isCreateSparkConf indicate whether create a spark conf in the method
-   * @param verifySparkContext indicate whether verify spark conf
-   * @return a spark conf if it's onSpark and createSparkConf is true, or it's None
+   * existing spark context.
    */
-  def init(
-    nExecutor: Int,
-    executorCores: Int,
-    onSpark: Boolean = false,
-    isCreateSparkConf: Boolean = true,
-    verifySparkContext: Boolean = false
-  ): Option[SparkConf] = this.synchronized {
-    // If user use spark-submit, check the executor number and core number
-    sparkExecutorAndCore(false).map(expect => {
-      require(expect._1 == nExecutor,
-        s"Specified executor number($nExecutor) is not equal to " +
-          s"detect executor number(${expect._1})")
-      require(expect._2 == executorCores,
-        s"Specified executorCores($executorCores) number is not equal to " +
-          s"detect executorCores number(${expect._2})")
-    })
-    setNodeAndCore(nExecutor, executorCores)
-    _onSpark = onSpark
-    val ret = if (onSpark) {
-      if (verifySparkContext) {
-        checkSparkContext
-      }
-      if(isCreateSparkConf) {
-        Some(sparkConf())
-      } else {
-        None
-      }
+  private[bigdl] def init: Unit = this.synchronized {
+    if (localMode) {
+      // The physical core number should have been initialized by env variable in bigdl.sh
+      setNodeAndCore(1, physicalCoreNumber)
     } else {
-      require(nExecutor == 1, "In local mode, the node should be 1")
-      None
+      logger.info("Auto detect node number and cores number")
+      val (nExecutor, executorCores) = sparkExecutorAndCore(forceCheck = true).get
+      setNodeAndCore(nExecutor, executorCores)
+      checkSparkContext
+      _onSpark = true
     }
     _isInitialized = true
-    ret
-  }
-
-  /**
-   * An alias of Engine.init(isCreateSparkConf, verifySparkContext)
-   * @return An option of SparkConf
-   */
-  def init: Option[SparkConf] = {
-    init(true, true)
-  }
-
-  /**
-   * A wrapper of init(nExecutor, executorCores, onSpark, isCreateSparkConf, verifySparkContext)
-   *
-   * Try to automatically find executor number and executor core number from the environment.
-   *
-   * We assume that user run their spark application through spark-submit. And try to find the node
-   * number and core number from the system property set by spark-submit. Application should use
-   * this method to get SparkConf object to init their SparkContext.
-   *
-   * If application is not submitted by spark-submit, we consider it run on a single node without
-   * Spark. Note that this is different from Spark Local mode. If you want to run in Spark Local
-   * mode, you still need to submit your application through spark-submit --master local[n].
-   *
-   * @param isCreateSparkConf
-   * @param verifySparkContext
-   * @return
-   */
-  def init(
-    isCreateSparkConf: Boolean,
-    verifySparkContext: Boolean
-  ): Option[SparkConf] = {
-    logger.info("Auto detect node number and cores number")
-    if (System.getProperty("spark.master") != null) {
-      val (node, cores) = sparkExecutorAndCore(forceCheck = true).get
-      logger.info(s"Engine setting: node($node), cores($cores) ")
-      init(node, cores, true, isCreateSparkConf, verifySparkContext)
-    } else {
-      init(1, physicalCoreNumber, false, false)
-    }
   }
 
   /**
@@ -362,6 +333,7 @@ object Engine {
     _isInitialized = false
     nodeNum = 1
     physicalCoreNumber = 1
+    localMode = false
   }
 
   private def dynamicAllocationExecutor : Option[Int] = {
@@ -393,7 +365,7 @@ object Engine {
     val master = System.getProperty("spark.master")
     if (master == null) {
       require(forceCheck == false, "Can't find spark.master, do you start " +
-        "your application without spark-submit?")
+        "your application with spark-submit?")
       return None
     }
     if(master.toLowerCase.startsWith("local")) {

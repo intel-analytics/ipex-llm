@@ -17,15 +17,6 @@ You can build one by refer to the
 [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code.
 
 ## Train the Model
-Example command
-```
-dist/bin/bigdl.sh -c pyshical_core_number -- \
-java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
-com.intel.analytics.bigdl.models.lenet.Train \
--f path_to_mnist_folder \
---checkpoint ./model \
--b batch_size
-```
 ### Use Apache Spark
 Local mode, example command
 ```
@@ -77,25 +68,10 @@ there are some files already exist in the folder, the old file will not be overw
 safety of your model files.
 * -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.
 
-### Hyper parameter
-
-| Batch size  | Learning rate | Epoch | Accuracy |
-|---|
-| 1792 | 0.48 | 15 | 98+% |
-
 ## Test Model
 The above commands will cache the model in specified path(--checkpoint). Run this command will
 use the model to do a validation.
 
-Example command
-```
-dist/bin/bigdl.sh -c physical_core_number -- \
-java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
-com.intel.analytics.bigdl.models.lenet.Test \
--f path_to_mnist_folder \
--b batch_size \
---model ./model/model.iteration
-```
 Spark local mode, example command
 ```
 ./dist/bin/bigdl.sh -- \

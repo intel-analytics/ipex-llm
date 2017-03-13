@@ -30,7 +30,6 @@ class SpatialSubtractiveNormalizationSpec extends FlatSpec with BeforeAndAfter w
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
-    Engine.init(1, 4, false, false, false)
   }
 
   "A SpatialSubtractiveNormalization 3D input" should "generate correct output and grad" in {

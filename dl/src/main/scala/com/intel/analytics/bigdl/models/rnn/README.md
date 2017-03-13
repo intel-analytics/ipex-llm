@@ -35,7 +35,7 @@ The input text may look as follows:
 ##Train the Model
 Example command:
 ```bash
-./dist/bin/bigdl.sh -- java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Train -f /opt/text --nEpochs 30 --learningRate 0.1
+./dist/bin/bigdl.sh -l -- java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Train -f /opt/text --nEpochs 30 --learningRate 0.1
 ```
 
 ##Test the Model
@@ -58,7 +58,7 @@ Each eye that saw him.
 ```
 Example command:
 ```bash
-./dist/bin/bigdl.sh -- java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Test -f /textdirectory --model /modeldirectory/model.iterationNumber --words 20
+./dist/bin/bigdl.sh -l -- java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Test -f /textdirectory --model /modeldirectory/model.iterationNumber --words 20
 ```
 
 ##Preprocessing

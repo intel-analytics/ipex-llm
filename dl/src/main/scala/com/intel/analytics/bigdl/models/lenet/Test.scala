@@ -36,22 +36,17 @@ object Test {
 
   def main(args: Array[String]): Unit = {
     testParser.parse(args, new TestParams()).foreach { param =>
-      val sc = Engine.init.map(conf => {
-        conf.setAppName("Test Lenet on MNIST")
-          .set("spark.akka.frameSize", 64.toString)
-          .set("spark.task.maxFailures", "1")
-        new SparkContext(conf)
-      })
+      val conf = Engine.createSparkConf().setAppName("Test Lenet on MNIST")
+        .set("spark.akka.frameSize", 64.toString)
+        .set("spark.task.maxFailures", "1")
+      val sc = new SparkContext(conf)
 
       val validationData = Paths.get(param.folder, "/t10k-images-idx3-ubyte")
       val validationLabel = Paths.get(param.folder, "/t10k-labels-idx1-ubyte")
 
-      val validationSet = (if (sc.isDefined) {
-        DataSet.array(load(validationData, validationLabel), sc.get)
-      } else {
-        DataSet.array(load(validationData, validationLabel))
-      }) -> BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(
-        param.batchSize)
+      val validationSet = DataSet.array(load(validationData, validationLabel), sc) ->
+        BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) ->
+        GreyImgToBatch(param.batchSize)
 
       val model = Module.load[Float](param.model)
       val validator = Validator(model, validationSet)
