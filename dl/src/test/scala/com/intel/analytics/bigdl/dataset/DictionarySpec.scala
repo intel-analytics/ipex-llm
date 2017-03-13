@@ -22,12 +22,26 @@ import java.io.PrintWriter
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalArrayDataSet}
 import org.apache.spark.SparkContext
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 
-class DictionarySpec extends FlatSpec with Matchers {
+class DictionarySpec extends FlatSpec with Matchers with BeforeAndAfter {
+  var sc: SparkContext = null
+
+  before {
+    val nodeNumber = 1
+    val coreNumber = 1
+    Engine.init(nodeNumber, coreNumber, true)
+    sc = new SparkContext("local[1]", "DictionarySpec")
+  }
+
+  after {
+    if (sc != null) {
+      sc.stop()
+    }
+  }
 
   "DictionarySpec" should "creates dictionary correctly on Spark" in {
     val tmpFile = java.io.File
@@ -43,8 +57,6 @@ class DictionarySpec extends FlatSpec with Matchers {
       write(sentences.mkString("\n")); close
     }
 
-    Engine.init(1, 1, true)
-    val sc = new SparkContext("local[1]", "DocumentTokenizer")
     val tokens = DataSet.rdd(sc.textFile(tmpFile)
       .filter(!_.isEmpty)).transform(SentenceTokenizer())
     val output = tokens.toDistributed().data(train = false)
