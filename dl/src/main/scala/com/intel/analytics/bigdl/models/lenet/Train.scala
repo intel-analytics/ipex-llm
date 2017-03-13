@@ -46,6 +46,7 @@ object Train {
         conf.setAppName("Train Lenet on MNIST")
           .set("spark.akka.frameSize", 64.toString)
           .set("spark.task.maxFailures", "1")
+          .setMaster("local[1]")
         new SparkContext(conf)
       })
 
@@ -101,7 +102,7 @@ object Train {
           vMethods = Array(new Top1Accuracy, new Top5Accuracy[Float], new Loss[Float]))
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
-        .enableMetrics(s"${sc.get.appName}/lenet")
+        .enableSummary(sc.get.appName, "lenet")
         .optimize()
     })
   }

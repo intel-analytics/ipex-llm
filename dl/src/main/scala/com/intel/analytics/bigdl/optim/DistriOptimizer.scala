@@ -73,8 +73,8 @@ object DistriOptimizer {
     validationMethods: Option[Array[ValidationMethod[T]]],
     cacheTrigger: Option[Trigger],
     cachePath: Option[String],
-    metricsTrigger: Option[mutable.HashMap[String, Trigger]],
-    metricsPath: Option[String],
+    summaryTrigger: Option[mutable.HashMap[String, Trigger]],
+    summaryPath: Option[String],
     isOverWrite: Boolean
   )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
@@ -107,13 +107,13 @@ object DistriOptimizer {
     var dropModelNumBatch = 0
     var lossArray = new Array[Double](_subModelNumber)
 
-    val trainLogger = if (metricsPath.isDefined) {
-      Some(new FileWriter(s"${metricsPath.get}/train"))
+    val trainLogger = if (summaryPath.isDefined) {
+      Some(new FileWriter(s"${summaryPath.get}/train"))
     } else {
       None
     }
-    val valLogger = if (metricsPath.isDefined) {
-      Some(new FileWriter(s"${metricsPath.get}/val"))
+    val valLogger = if (summaryPath.isDefined) {
+      Some(new FileWriter(s"${summaryPath.get}/val"))
     } else {
       None
     }
@@ -307,25 +307,19 @@ object DistriOptimizer {
           dataRDD = dataset.data(train = true)
           accumulateCount = 0
         }
-        val result = validate(
+        validate(
           validationTrigger,
           validationDataSet,
           validationMethods,
           coresPerNode,
           models,
           wallClockTime,
-          driverState
+          driverState,
+          valLogger
         )
-        if (null != result) {
-          result.foreach { r =>
-            valLogger.get.addSummary(
-              TBLogger.scalar(r._2.toString(), r._1.getResult()),
-              driverState[Int]("neval") - 1
-            )
-          }
-        }
+
         saveMetrics(
-          metricsTrigger,
+          summaryTrigger,
           trainLogger,
           models,
           driverState,
@@ -379,13 +373,14 @@ object DistriOptimizer {
   }
 
   private def saveMetrics[T: ClassTag](
-        metricsTrigger: Option[mutable.HashMap[String, Trigger]],
+        summaryTrigger: Option[mutable.HashMap[String, Trigger]],
         tBLogger: Option[FileWriter],
         models: RDD[Cache[T]],
         driverState: Table,
         parameters: AllReduceParameter[T])(implicit ev: TensorNumeric[T]): Unit = {
-    if (tBLogger.isDefined && metricsTrigger.isDefined) {
-      val parametersTrigger = metricsTrigger.get.getOrElse[Trigger]("parameters", null)
+    val currentIteration = driverState[Int]("neval") - 1
+    if (tBLogger.isDefined && summaryTrigger.isDefined) {
+      val parametersTrigger = summaryTrigger.get.getOrElse[Trigger]("parameters", null)
       if (null != parametersTrigger && parametersTrigger(driverState)) {
         val model = getModelWithGradient(models, parameters)
         val parametersTable = model.getParametersTable()
@@ -394,18 +389,18 @@ object DistriOptimizer {
           paramTable.keySet.foreach { paramName =>
             tBLogger.get.addSummary(
             TBLogger.histogram(s"$moduleName/$paramName", paramTable[Tensor[T]](paramName)),
-              driverState("neval"))
+              currentIteration)
 
           }
         }
       }
-      val scalarTrigger = metricsTrigger.get.filter(!_._1.equals("parameters"))
+      val scalarTrigger = summaryTrigger.get.filter(!_._1.equals("parameters"))
       scalarTrigger.foreach { v =>
         if (v._2(driverState)) {
           require(driverState.contains(v._1), s"DistriOptimizer.saveMetrics: metrics ${v._1} " +
             s"is not supported now.")
           tBLogger.get.addSummary(
-            TBLogger.scalar(v._1, driverState[Float](v._1)), driverState[Int]("neval")
+            TBLogger.scalar(v._1, driverState[Float](v._1)), currentIteration
           )
         }
       }
@@ -488,7 +483,8 @@ object DistriOptimizer {
     coresPerNode: Int,
     models: RDD[Cache[T]],
     wallClockTime: Long,
-    state: Table
+    state: Table,
+    valLogger: Option[FileWriter]
   ): Array[(ValidationResult, ValidationMethod[T])] = {
     if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
       return null
@@ -542,6 +538,14 @@ object DistriOptimizer {
     results.foreach(r => {
       logger.info(s"${r._2} is ${r._1}")
     })
+    if(valLogger.isDefined) {
+      results.foreach { r =>
+        valLogger.get.addSummary(
+          TBLogger.scalar(r._2.toString(), r._1.getResult()),
+          state[Int]("neval") - 1
+        )
+      }
+    }
     results
   }
 
@@ -663,8 +667,8 @@ class DistriOptimizer[T: ClassTag] (
       validationMethods,
       checkpointTrigger,
       checkpointPath,
-      metricsTrigger,
-      metricsPath,
+      summaryTrigger,
+      summaryPath,
       isOverWrite
     )
 

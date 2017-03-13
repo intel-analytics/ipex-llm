@@ -20,7 +20,7 @@ package com.intel.analytics.bigdl.utils
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.TBLogger._
-import com.intel.analytics.bigdl.visualization.tensorboard.FileWriter
+import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
 import org.scalatest.{FlatSpec, Matchers}
 import org.tensorflow.framework.Summary
 
@@ -79,5 +79,97 @@ class TBLoggerSpec extends FlatSpec with Matchers {
     val hist = histogram("discrete_normal", parameter)
     writer.addSummary(hist, 1)
     writer.close()
+  }
+
+  "read/write event file" should "work properly" in {
+    val logdir = com.google.common.io.Files.createTempDir()
+    val writer = new FileWriter(logdir.getPath, 100)
+    for (i <- 0 to 9) {
+      val s = scalar("scalar", i)
+      writer.addSummary(s, i + 1)
+    }
+    for (i <- 10 to 19) {
+      val s = scalar("lr", i)
+      writer.addSummary(s, i + 1)
+    }
+    for (i <- 0 to 9) {
+      val s = scalar("lr", i)
+      writer.addSummary(s, i + 1)
+    }
+    writer.close()
+    Thread.sleep(1000) // Waiting for writer.
+    val tbReader = FileReader.list(logdir.getPath)
+    val result = FileReader.readScalar(tbReader(0), "lr")
+    result.length should be (20)
+    for (i <- 0 to 19) {
+      result(i)._1 should be (i + 1)
+      result(i)._2 should be (i)
+    }
+  }
+
+  "read event file with a non-existent tag" should "return a empty array" in {
+    val logdir = com.google.common.io.Files.createTempDir()
+    val writer = new FileWriter(logdir.getPath, 100)
+    for (i <- 0 to 9) {
+      val s = scalar("scalar", i)
+      writer.addSummary(s, i + 1)
+    }
+    writer.close()
+    Thread.sleep(1000) // Waiting for writer.
+    val tbReader = FileReader.list(logdir.getPath)
+    val result = FileReader.readScalar(tbReader(0), "lr")
+    result.length should be(0)
+  }
+
+  "FileReader.list" should "work properly" in {
+    val logdir = com.google.common.io.Files.createTempDir()
+    val writer1 = new FileWriter(logdir.getPath, 100)
+    for (i <- 0 to 9) {
+      val s = scalar("scalar1", i)
+      writer1.addSummary(s, i + 1)
+    }
+    writer1.close()
+    Thread.sleep(1000) // Waiting for writer.
+    val writer2 = new FileWriter(logdir.getPath, 100)
+    for (i <- 0 to 19) {
+      val s = scalar("scalar2", i)
+      writer2.addSummary(s, i + 1)
+    }
+    writer2.close()
+    Thread.sleep(1000) // Waiting for writer.
+    val tbFiles = FileReader.listFiles(logdir.getPath)
+    tbFiles.length should be (2)
+    val tbFolder = FileReader.list(logdir.getPath)
+    tbFolder.length should be (1)
+    tbFolder(0) should be (logdir.getPath)
+  }
+
+  "FileReader read from five Files" should "work properly" in {
+    val numFile = 5
+    val logdir = com.google.common.io.Files.createTempDir()
+    for (i <- 1 to numFile) {
+      val writer = new FileWriter(logdir.getPath, 10)
+      for (j <- 0 to i) {
+        val s = scalar(s"scalar$i", j)
+        writer.addSummary(s, j + 1)
+      }
+      writer.close()
+      Thread.sleep(1000) // sleep to get a different filename
+    }
+    Thread.sleep(1000) // Wait for the writing
+    val tbFiles = FileReader.listFiles(logdir.getPath)
+    tbFiles.length should be (numFile)
+    val tbFolder = FileReader.list(logdir.getPath)
+    tbFolder.length should be (1)
+    tbFolder(0) should be (logdir.getPath)
+    for (i <- 1 to numFile) {
+      val result = FileReader.readScalar(tbFolder(0), s"scalar$i")
+      result.length should be (i + 1)
+      for (j <- 0 to i) {
+        result(j)._2 should be (j)
+        result(j)._1 should be (j + 1)
+      }
+    }
+
   }
 }

@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentLinkedDeque
 
 import org.tensorflow.util.Event
 
-class EventWriter(logDir: String, flushSeconds: Int = 10) extends Runnable {
+class EventWriter(logDir: String, flushMilliSeconds: Int = 10000) extends Runnable {
   val eventQueue = new ConcurrentLinkedDeque[Event]()
   val outputFile = new File(logDir +
     s"/bigdl.tfevents.${(System.currentTimeMillis() / 1e3).toInt}" +
@@ -31,7 +31,7 @@ class EventWriter(logDir: String, flushSeconds: Int = 10) extends Runnable {
   val recordWriter = new RecordWriter(outputFile)
   // Add an empty Event to the queue.
   eventQueue.add(Event.newBuilder().setWallTime(System.currentTimeMillis() / 1e3).build())
-  var running: Boolean = true
+  @volatile var running: Boolean = true
 
   def addEvent(event: Event): this.type = {
     eventQueue.add(event)
@@ -39,7 +39,7 @@ class EventWriter(logDir: String, flushSeconds: Int = 10) extends Runnable {
   }
 
   private def flush(): this.type = {
-    while (eventQueue.size() > 0) {
+    while (!eventQueue.isEmpty) {
       recordWriter.write(eventQueue.pop())
     }
     this
@@ -47,15 +47,15 @@ class EventWriter(logDir: String, flushSeconds: Int = 10) extends Runnable {
 
   def close(): this.type = {
     running = false
-    flush()
-    recordWriter.close()
     this
   }
 
   override def run(): Unit = {
     while (running) {
       flush()
-      Thread.sleep(flushSeconds * 1000)
+      Thread.sleep((flushMilliSeconds * 1000).toInt)
     }
+    flush()
+    recordWriter.close()
   }
 }

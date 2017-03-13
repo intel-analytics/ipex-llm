@@ -129,27 +129,4 @@
             </plugin>
         </plugins>
     </reporting>
-    
-    <profiles>
-    	<profile>
-    		<id>parallel-tests</id>
-   			<properties>
-      			<runSpecsInParallel>true</runSpecsInParallel>
-      			<tagsToInclude>com.intel.analytics.bigdl.tags.Parallel</tagsToInclude>
-   			</properties>
-		</profile>
-		<profile>
-    		<id>serial-tests</id>
-   			<properties>
-      			<runSpecsInParallel>false</runSpecsInParallel>
-      			<tagsToExclude>com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
-   			</properties>
-		</profile>
-		<profile>
-    		<id>serial-all</id>
-   			<properties>
-      			<runSpecsInParallel>false</runSpecsInParallel>
-   			</properties>
-		</profile>
-    </profiles>
 </project>

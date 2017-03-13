@@ -46,8 +46,8 @@ abstract class Optimizer[T: ClassTag, D](
   protected var validationDataSet: Option[DataSet[MiniBatch[T]]] = None
 
   // To save the metrics.
-  protected var metricsTrigger: Option[mutable.HashMap[String, Trigger]] = None
-  protected var metricsPath: Option[String] = None
+  protected var summaryTrigger: Option[mutable.HashMap[String, Trigger]] = None
+  protected var summaryPath: Option[String] = None
 
   // To achieve better performance, please set dropPercentage as 0.04
   protected var dropPercentage: Double = 0.0
@@ -115,33 +115,35 @@ abstract class Optimizer[T: ClassTag, D](
    *    enableMetrics("./metrics", mutable.HashMap("learningRate" -> Trigger.severalIteration(1),
    *      "parameters" -> Trigger.severalIteration(20)))
    *
-   * @param path The Folder to save metrics.
-   * @param metricsTrigger metrics and trigger.
+   * @param logDir The Folder to save metrics.
+   * @param appName ApplicationName.
+   * @param summaryTrigger metrics and trigger.
    * @return
    */
-  def enableMetrics(
-        path: String,
-        metricsTrigger: mutable.HashMap[String, Trigger] = null): this.type = {
-    this.metricsTrigger = if (null == metricsTrigger) {
+  def enableSummary(
+        logDir: String,
+        appName: String,
+        summaryTrigger: mutable.HashMap[String, Trigger] = null): this.type = {
+    this.summaryTrigger = if (null == summaryTrigger) {
       Some(mutable.HashMap("learningRate" -> Trigger.severalIteration(1),
         "loss" -> Trigger.severalIteration(1),
         "throughput" -> Trigger.severalIteration(1)))
     } else {
-      Some(metricsTrigger)
+      Some(summaryTrigger)
     }
-    metricsPath = Some(path)
+    summaryPath = Some(s"")
     this
   }
 
   /**
-   * Add some metrics.
+   * Add more metrics trigger.
    * @param metricsTrigger
    * @return
    */
   def addMetricsTrigger(metricsTrigger: mutable.HashMap[String, Trigger]): this.type = {
-    require(!metricsPath.isEmpty, "Optimizer.addMetrics: should enableMetrics first!")
+    require(summaryPath.isDefined, "Optimizer.addMetrics: should enableMetrics first!")
     metricsTrigger.foreach{ v =>
-      this.metricsTrigger.get(v._1) = v._2
+      this.summaryTrigger.get(v._1) = v._2
     }
     this
   }
@@ -151,7 +153,7 @@ abstract class Optimizer[T: ClassTag, D](
    * @return
    */
   def getMetricsTrigger(): mutable.HashMap[String, Trigger] = {
-    metricsTrigger.get
+    summaryTrigger.get
   }
 
   def overWriteCheckpoint() : this.type = {

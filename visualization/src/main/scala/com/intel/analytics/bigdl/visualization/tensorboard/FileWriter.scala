@@ -22,11 +22,11 @@ import java.util.concurrent.Executors
 import org.tensorflow.framework.Summary
 import org.tensorflow.util.Event
 
-class FileWriter(val logDirecotry : String, flushSeconds: Int = 10) {
+class FileWriter(val logDirecotry : String, flushMilliSeconds: Int = 10000) {
   val logDir = new java.io.File(logDirecotry)
   require(!logDir.exists() || logDir.isDirectory, s"FileWriter: can not create $logDir")
   if (!logDir.exists()) logDir.mkdirs()
-  val eventWriter = new EventWriter(logDirecotry, flushSeconds)
+  val eventWriter = new EventWriter(logDirecotry, flushMilliSeconds)
   val pool = Executors.newFixedThreadPool(1)
   pool.submit(eventWriter)
   // adds a Summary protocol buffer to the event file.
@@ -35,13 +35,13 @@ class FileWriter(val logDirecotry : String, flushSeconds: Int = 10) {
   // as long as consistent.
   // refer to https://github.com/dmlc/tensorboard/tree/master/python/tensorboard for simplified
   // implementation of writers
-  def addSummary(summary: Summary, globalStep: Int): this.type = {
+  def addSummary(summary: Summary, globalStep: Long): this.type = {
     val event = Event.newBuilder().setSummary(summary).build()
     addEvent(event, globalStep)
     this
   }
 
-  def addEvent(event: Event, globalStep: Int): this.type = {
+  def addEvent(event: Event, globalStep: Long): this.type = {
     eventWriter.addEvent(
       event.toBuilder.setWallTime(System.currentTimeMillis() / 1e3).setStep(globalStep).build())
     this
