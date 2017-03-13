@@ -30,7 +30,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
-class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
+class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   before {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
@@ -47,10 +47,10 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
-  "A LSTM " should "has same loss as torch rnn" in {
+  "A GRU " should "has same loss as torch rnn" in {
 
     val hiddenSize = 4
-    val inputSize = 6
+    val inputSize = 5
     val outputSize = 5
     val bpttTruncate = 3
     val seqLength = 5
@@ -65,16 +65,16 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
       labels.setValue(1, i, rdmLabel)
     }
 
-//    println(input)
+    println(input)
     RNG.setSeed(seed)
     val rec = Recurrent[Double](hiddenSize)
 
     val model = Sequential[Double]()
       .add(rec
-        .add(LSTM[Double](inputSize, hiddenSize)))
-      //      .add(LSTM[Double](inputSize, hiddenSize)))
+        .add(GRU[Double](inputSize, hiddenSize)))
+      //      .add(GRU[Double](inputSize, hiddenSize)))
       //      .add(RnnCell[Double](inputSize, hiddenSize, Sigmoid[Double]())))
-      //            .add(FastLSTMCell[Double](inputSize, hiddenSize)))
+      //            .add(FastGRUCell[Double](inputSize, hiddenSize)))
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
@@ -111,8 +111,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |:add(nn.SplitTable(1))
          |:add(nn.Sequencer(
          | nn.Sequential()
-         |   --:add(nn.LSTM($inputSize, $hiddenSize, 1, true))
-         |   :add(nn.FastLSTM($inputSize, $hiddenSize))
+         |   :add(nn.GRU($inputSize, $hiddenSize))
          |   :add(nn.Linear($hiddenSize, $outputSize))
          |   ))
          |
@@ -149,15 +148,17 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |   optim.sgd(feval, parameters, state)
          |end
          |
+      |output=model.output
          |err=criterion.output
          |err2=criterion.gradInput
+         |gradOutput=criterion.gradInput
          |gradInput = model.gradInput
     """.stripMargin
 
     val (luaTime, torchResult) = TH.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
-      Array("err", "parameters", "gradParameters", "output2", "gradInput", "err2"))
+      Array("output", "err", "parameters", "gradParameters", "output2", "gradInput", "err2"))
 
     //    println("Element forward: " + output1)
     //    println("BigDL forward: " + model.forward(input).toTensor[Double].clone())
@@ -213,38 +214,100 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
 
-
-  "A LSTM " should "has same loss as torch rnn in batch mode" in {
+  "A GRU " should "converge" in {
 
     val hiddenSize = 4
-    val inputSize = 6
+    val inputSize = 5
+    val outputSize = 5
+    val bpttTruncate = 3
+    val seqLength = 5
+    val seed = 100
+
+    val input = Tensor[Double](Array(1, seqLength, inputSize))
+    val labels = Tensor[Double](Array(1, seqLength))
+    for (i <- 1 to seqLength) {
+      val rdmLabel = Math.ceil(math.random * outputSize).toInt
+      val rdmInput = Math.ceil(math.random * inputSize).toInt
+      input.setValue(1, i, rdmInput, 1.0)
+      labels.setValue(1, i, rdmLabel)
+    }
+
+    println(input)
+    RNG.setSeed(seed)
+    val rec = Recurrent[Double](hiddenSize)
+
+    val model = Sequential[Double]()
+      .add(rec
+        .add(GRU[Double](inputSize, hiddenSize)))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
+
+    val criterion = TimeDistributedCriterion[Double](
+      CrossEntropyCriterion[Double]())
+    val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
+
+    val (weights, grad) = model.getParameters()
+
+    val state = T("learningRate" -> 0.5, "momentum" -> 0.0,
+      "weightDecay" -> 0.0, "dampening" -> 0.0)
+    val sgd = new SGD[Double]
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model.forward(input).asInstanceOf[Tensor[Double]]
+      val _loss = criterion.forward(output, labels)
+      model.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model.backward(input, gradInput)
+      (_loss, grad)
+    }
+
+    val start = System.nanoTime()
+    var loss: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss = sgd.optimize(feval, weights, state)._2
+      println(s"${i}-th loss = ${loss(0)}")
+    }
+    val end = System.nanoTime()
+    println("Time: " + (end - start) / 1E6)
+
+    val output = model.forward(input).toTensor
+    val logOutput = logSoftMax.forward(output)
+    val prediction = logOutput.max(3)._2
+
+    labels.squeeze() should be (prediction.squeeze())
+  }
+
+
+  "A GRU " should "has same loss as torch rnn in batch mode" in {
+
+    val hiddenSize = 4
+    val inputSize = 5
     val outputSize = 5
     val bpttTruncate = 3
     val seqLength = 5
     val seed = 100
     val batchSize = 5
 
-
-    RNG.setSeed(seed)
     val input = Tensor[Double](Array(batchSize, seqLength, inputSize))
     val labels = Tensor[Double](Array(batchSize, seqLength))
     for (b <- 1 to batchSize) {
       for (i <- 1 to seqLength) {
-        val rdmInput = Math.ceil(RNG.uniform(0, 1)  * inputSize).toInt
+        val rdmInput = Math.ceil(math.random  * inputSize).toInt
         input.setValue(b, i, rdmInput, 1.0)
-        val rdmLabel = Math.ceil(RNG.uniform(0, 1)  * outputSize).toInt
+        val rdmLabel = Math.ceil(math.random  * outputSize).toInt
         labels.setValue(b, i, rdmLabel)
       }
     }
+
+    println(input)
+    RNG.setSeed(seed)
     val rec = Recurrent[Double](hiddenSize)
 
     val model = Sequential[Double]()
       .add(rec
-        .add(LSTM[Double](inputSize, hiddenSize)))
+        .add(GRU[Double](inputSize, hiddenSize)))
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
-      CrossEntropyCriterion[Double](), false)
+      CrossEntropyCriterion[Double]())
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
@@ -268,8 +331,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |:add(nn.SplitTable(1))
          |:add(nn.Sequencer(
          | nn.Sequential()
-         |   --:add(nn.LSTM($inputSize, $hiddenSize, 1, true))
-         |   :add(nn.FastLSTM($inputSize, $hiddenSize, 1))
+         |   :add(nn.GRU($inputSize, $hiddenSize))
          |   :add(nn.Linear($hiddenSize, $outputSize))
          |   ))
          |
@@ -306,15 +368,17 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |   optim.sgd(feval, parameters, state)
          |end
          |
+      |output=model.output
          |err=criterion.output
          |err2=criterion.gradInput
+         |gradOutput=criterion.gradInput
          |gradInput = model.gradInput
     """.stripMargin
 
     val (luaTime, torchResult) = TH.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights,
         "labels" -> SplitTable[Double](1).forward(labels.t())),
-      Array("err", "parameters", "gradParameters", "output2", "gradInput", "err2"))
+      Array("output", "err", "parameters", "gradParameters", "output2", "gradInput", "err2"))
 
     //    println("Element forward: " + output1)
     //    println("BigDL forward: " + model.forward(input).toTensor[Double].clone())
@@ -365,74 +429,14 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val output = model.forward(input).toTensor
     val logOutput = logSoftMax.forward(output)
 
-    luaOutput2 should be(loss(0) +- 1e-5)
+        luaOutput2 should be(loss(0) +- 1e-5)
   }
 
-  "A LSTM " should "converge" in {
+
+  "A GRU " should "converge in batch mode" in {
 
     val hiddenSize = 4
-    val inputSize = 6
-    val outputSize = 5
-    val bpttTruncate = 3
-    val seqLength = 5
-    val seed = 100
-
-    val input = Tensor[Double](Array(1, seqLength, inputSize))
-    val labels = Tensor[Double](Array(1, seqLength))
-    for (i <- 1 to seqLength) {
-      val rdmLabel = Math.ceil(math.random * outputSize).toInt
-      val rdmInput = Math.ceil(math.random * inputSize).toInt
-      input.setValue(1, i, rdmInput, 1.0)
-      labels.setValue(1, i, rdmLabel)
-    }
-
-    println(input)
-    RNG.setSeed(seed)
-    val rec = Recurrent[Double](hiddenSize)
-
-    val model = Sequential[Double]()
-      .add(rec
-        .add(LSTM[Double](inputSize, hiddenSize)))
-      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
-
-    val criterion = TimeDistributedCriterion[Double](
-      CrossEntropyCriterion[Double](), false)
-    val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
-
-    val (weights, grad) = model.getParameters()
-
-    val state = T("learningRate" -> 0.5, "momentum" -> 0.0,
-      "weightDecay" -> 0.0, "dampening" -> 0.0)
-    val sgd = new SGD[Double]
-    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
-      val output = model.forward(input).asInstanceOf[Tensor[Double]]
-      val _loss = criterion.forward(output, labels)
-      model.zeroGradParameters()
-      val gradInput = criterion.backward(output, labels)
-      model.backward(input, gradInput)
-      (_loss, grad)
-    }
-
-    val start = System.nanoTime()
-    var loss: Array[Double] = null
-    for (i <- 1 to 100) {
-      loss = sgd.optimize(feval, weights, state)._2
-      println(s"${i}-th loss = ${loss(0)}")
-    }
-    val end = System.nanoTime()
-    println("Time: " + (end - start) / 1E6)
-
-    val output = model.forward(input).toTensor
-    val logOutput = logSoftMax.forward(output)
-    val prediction = logOutput.max(3)._2
-
-    labels.squeeze() should be (prediction.squeeze())
-  }
-
-  "A LSTM " should "converge in batch mode" in {
-
-    val hiddenSize = 4
-    val inputSize = 6
+    val inputSize = 5
     val outputSize = 5
     val bpttTruncate = 3
     val batchSize = 3
@@ -456,11 +460,11 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     val model = Sequential[Double]()
       .add(rec
-        .add(LSTM[Double](inputSize, hiddenSize)))
+        .add(GRU[Double](inputSize, hiddenSize)))
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
-      CrossEntropyCriterion[Double](), false)
+      CrossEntropyCriterion[Double]())
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
 
     val (weights, grad) = model.getParameters()
@@ -479,7 +483,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     val start = System.nanoTime()
     var loss: Array[Double] = null
-    for (i <- 1 to 300) {
+    for (i <- 1 to 200) {
       loss = sgd.optimize(feval, weights, state)._2
       println(s"${i}-th loss = ${loss(0)}")
     }
@@ -491,5 +495,39 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val prediction = logOutput.max(3)._2
 
     labels.squeeze() should be (prediction.squeeze())
+  }
+
+  "A GRU " should "perform correct gradient check" in {
+
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val bpttTruncate = 10
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double](hiddenSize)
+        .add(GRU[Double](inputSize, hiddenSize)))
+      .add(Select(1, 1))
+      .add(Linear[Double](hiddenSize, outputSize))
+
+    model.reset()
+
+    val input = Tensor[Double](Array(1, 5, inputSize))
+    val labels = Tensor[Double](Array(1, 5))
+    for (i <- 1 to 5) {
+      val rdmLabel = Math.ceil(Math.random()*inputSize).toInt
+      val rdmInput = Math.ceil(Math.random()*inputSize).toInt
+      input.setValue(1, i, rdmInput, 1.0)
+      labels.setValue(1, i, rdmLabel)
+    }
+
+    println("gradient check for input")
+    val gradCheckerInput = new GradientChecker(1e-2, 1)
+    val checkFlagInput = gradCheckerInput.checkLayer[Double](model, input)
+    println("gradient check for weights")
+    val gradCheck = new GradientCheckerRNN(1e-2, 1)
+    val checkFlag = gradCheck.checkLayer(model, input, labels)
   }
 }

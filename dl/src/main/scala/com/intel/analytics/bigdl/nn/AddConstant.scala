@@ -30,17 +30,18 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 1572711921601326233L)
 class AddConstant[T: ClassTag](
-   val constant_scalar: T,
+   val constant_scalar: Double,
    val inplace: Boolean = false
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
+  val scalar = ev.fromType[Double](constant_scalar)
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     if (inplace) {
-      input.add(constant_scalar)
+      input.add(scalar)
       output.set(input)
     } else {
       output.resizeAs(input).copy(input)
-      output.add(constant_scalar)
+      output.add(scalar)
     }
     output
   }
@@ -48,7 +49,7 @@ class AddConstant[T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     if (inplace) {
       gradInput.set(gradOutput)
-      input.add(ev.negative(constant_scalar))
+      input.add(ev.negative(scalar))
     } else {
       gradInput.resizeAs(input).copy(gradOutput)
     }
@@ -79,7 +80,7 @@ class AddConstant[T: ClassTag](
 
 object AddConstant {
   def apply[@specialized(Float, Double) T: ClassTag](
-    constant_scalar: T,
+    constant_scalar: Double,
     inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : AddConstant[T] = {
     new AddConstant[T](constant_scalar, inplace)
   }
