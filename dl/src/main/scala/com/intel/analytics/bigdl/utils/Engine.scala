@@ -51,6 +51,9 @@ object Engine {
    */
   def isInitialized: Boolean = _isInitialized
 
+  // Only test purpose
+  private[bigdl] def setInit() = _isInitialized = true
+
   /**
    * If current JVM is a spark Executor
    *
@@ -280,18 +283,18 @@ object Engine {
   }
 
   /**
-    * BigDL need some spark conf values to be set correctly to have a better performance.
-    *
-    * This method will create a spark conf, or use existing one if you provided on.
-    * Populate it with correct values.
-    *
-    * We recommand you use this method instead of setting spark conf values directly. This can the
-    * spark conf values changes transparent to you. However, if you use spark-shell or
-    * Jupiter notebook, as the spark context is created before your code, you have to
-    * set them directly(through command line options or properties-file)
-    *
-    * @return
-    */
+   * BigDL need some spark conf values to be set correctly to have a better performance.
+   *
+   * This method will create a spark conf, or use existing one if you provided on.
+   * Populate it with correct values.
+   *
+   * We recommand you use this method instead of setting spark conf values directly. This can the
+   * spark conf values changes transparent to you. However, if you use spark-shell or
+   * Jupiter notebook, as the spark context is created before your code, you have to
+   * set them directly(through command line options or properties-file)
+   *
+   * @return
+   */
   def createSparkConf(exisitingConf : SparkConf = null) : SparkConf = {
     var _conf = exisitingConf
     if (_conf == null) {
@@ -316,8 +319,9 @@ object Engine {
       // The physical core number should have been initialized by env variable in bigdl.sh
       setNodeAndCore(1, physicalCoreNumber)
     } else {
-      logger.info("Auto detect node number and cores number")
+      logger.info("Auto detect executor number and executor cores number")
       val (nExecutor, executorCores) = sparkExecutorAndCore(forceCheck = true).get
+      logger.info(s"Executor number is $nExecutor and executor cores number is $executorCores")
       setNodeAndCore(nExecutor, executorCores)
       checkSparkContext
       _onSpark = true

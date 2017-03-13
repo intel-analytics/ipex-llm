@@ -34,6 +34,8 @@ object Train {
   val logger = Logger.getLogger(getClass)
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
+      Engine.init
+      Engine.setCoreNumber(1)
       require(new File(param.folder + "/input.txt").exists(),
         s"Input file ${param.folder + File.separator + "input.txt"} not exists!")
       logger.info("preprocessing input text file ..")
@@ -85,8 +87,6 @@ object Train {
           "dampening" -> param.dampening)
       }
 
-      Engine.init
-      Engine.setCoreNumber(1)
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
