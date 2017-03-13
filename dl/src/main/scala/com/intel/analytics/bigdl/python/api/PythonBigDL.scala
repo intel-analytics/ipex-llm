@@ -230,11 +230,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                     scale: Boolean = true)
   :  Dropout[T] = {
     Dropout[T](initP, inplace, scale)
-  }
+  } 
 
   def createView(sizes: JList[Int]):  View[T] = {
      View[T](sizes.asScala.toArray)
-  }
+  } 
   //   Optimizer
   def createClassNLLCriterion: ClassNLLCriterion[T] = {
     ClassNLLCriterion[T]()
