@@ -34,7 +34,7 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
   import com.intel.analytics.bigdl.utils.TestUtils._
 
   before {
-    Engine.init(1, 1, false, false, false)
+    Engine.setNodeAndCore(1, 1)
   }
 
   "Grey Image Cropper" should "crop image correct" in {

@@ -47,16 +47,6 @@ Spark yarn mode, example command:
 ```
 where `$DATA_FOLDER` is the directory containing the MNIST training data, whose default value is "./ ".
 
-## Train on Local:
-Enter the following commands to run the model on local:
-```{r, engine='sh'}
-./dist/bin/bigdl.sh -c physical_core_number -- java -cp \
-  ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
-  com.intel.analytics.bigdl.models.autoencoder.Train \
-  -b batch_size -f $DATA_FOLDER
-```
-where `$DATA_FOLDER` is the directory containing the MNIST training data, whose default value is "./ ".
-
 ## Model Brief Introduction
 Auto-encoder has the same dimension for both input and output and
 takes an unlabeled training examples in data set and encodes it to the hidden layer by linear

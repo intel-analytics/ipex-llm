@@ -2,7 +2,7 @@
 
 This example demonstrates how to use BigDL to load pre-trained [Torch](http://torch.ch/) or [Caffe](http://caffe.berkeleyvision.org/) model into Spark program for prediction.
 
-**ModelValidator** provides an integrated example to load models, and test over imagenet validation dataset (running as a local Java program, or a standard Spark program).
+**ModelValidator** provides an integrated example to load models, and test over imagenet validation dataset on Spark.
 
 ## Preparation
 
@@ -17,85 +17,6 @@ The torch model used in this example can be found in
 
 The imagenet validation dataset preparation can be found from
 [BigDL inception Prepare the data](https://github.com/intel-analytics/BigDL/tree/master/dl/src/main/scala/com/intel/analytics/bigdl/models/inception#prepare-the-data).
-
-## Run as a local Java program
-
-When running as a local Java program, we use original imagenet image folder as input.
-
-Command to run the example:
-
-```shell
-dist/bin/bigdl.sh --                                                       \
-java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
-         com.intel.analytics.bigdl.example.loadmodel.ModelValidator        \
-     -t <caffe | torch | bigdl> -f <imagenet path> -m <model name>         \
-     --caffeDefPath <caffe model prototxt path> --modelPath <model path>   \
-     -b <batch size>
-```
-
-where 
-
-- ```-t``` is the type of model to load, it can be torch, caffe.
-- ```-f``` is the folder holding validation data,
-- ```-m``` is the name of model to use, it can be inception, alexnet, or resenet in this example.
-- ```--caffeDefPath``` is the path of caffe prototxt file, this is only needed for caffe model
-- ```--modelPath``` is the path to serialized model
-- ```-b``` is the batch size to use when do the validation.
-
-Some other parameters
-
-- ```--meanFile```: mean values that is needed in alexnet caffe model preprocess part
-
-For example, following the steps below will load BVLC GoogLeNet. 
-
-+ Workspace  structure. 
-
-  ```
-  [last: 0s][~/loadmodel]$ tree . -L 2
-  .
-  ├── data
-  │   └── model
-  ├── dist
-  │   ├── bin
-  │   └── lib
-  └── imagenet
-      └── val
-
-  7 directories, 0 files
-  [last: 0s][~/loadmodel]$ tree data/
-  data/
-  └── model
-      └── bvlc_googlenet
-          ├── bvlc_googlenet.caffemodel
-          └── deploy.prototxt
-
-  2 directories, 2 files
-  [last: 0s][~/loadmodel]$ tree dist/
-  dist/
-  ├── bin
-  │   ├── bigdl.sh
-  │   ├── classes.lst
-  │   └── img_class.lst
-  └── lib
-      ├── bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar
-      └── bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar
-  ```
-
-+ Execute command.
-
-```shell
-  modelType=caffe
-  folder=imagenet
-  modelName=inception
-  pathToCaffePrototxt=data/model/bvlc_googlenet/deploy.prototxt
-  pathToModel=data/model/bvlc_googlenet/bvlc_googlenet.caffemodel
-  batchSize=64
-  dist/bin/bigdl.sh --                                                            \
-  java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar      \
-           com.intel.analytics.bigdl.example.loadmodel.ModelValidator             \
-       -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt \
-       --modelPath $pathToModel -b $batchSize
-```
 
 ## Run as a Spark program
 

@@ -1114,7 +1114,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
 
   def initEngine(): Unit = {
-    Engine.init(false, true)
+    Engine.init
   }
 }
 

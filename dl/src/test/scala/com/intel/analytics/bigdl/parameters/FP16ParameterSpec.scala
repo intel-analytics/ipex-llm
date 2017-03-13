@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 class FP16ParameterSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   before {
-    Engine.init(1, 4, false, false, false)
+    Engine.setNodeAndCore(1, 4)
   }
 
   "convert double tensor to fp16 array and back" should "be same when the number is integer" in {

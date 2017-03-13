@@ -41,12 +41,12 @@ object Train {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      val sc = Engine.init.map(conf => {
-        conf.setAppName("Train Lenet on MNIST")
-          .set("spark.akka.frameSize", 64.toString)
-          .set("spark.task.maxFailures", "1")
-        new SparkContext(conf)
-      })
+      val conf = Engine.createSparkConf()
+        .setAppName("Train Lenet on MNIST")
+        .set("spark.akka.frameSize", 64.toString)
+        .set("spark.task.maxFailures", "1")
+      val sc = new SparkContext(conf)
+      Engine.init
 
       val trainData = Paths.get(param.folder, "/train-images-idx3-ubyte")
       val trainLabel = Paths.get(param.folder, "/train-labels-idx1-ubyte")
@@ -68,11 +68,8 @@ object Train {
         )
       }
 
-      val trainSet = (if (sc.isDefined) {
-        DataSet.array(load(trainData, trainLabel), sc.get)
-      } else {
-        DataSet.array(load(trainData, trainLabel))
-      }) -> BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
+      val trainSet = DataSet.array(load(trainData, trainLabel), sc) ->
+        BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
         param.batchSize)
 
       val optimizer = Optimizer(
@@ -86,11 +83,8 @@ object Train {
         optimizer.overWriteCheckpoint()
       }
 
-      val validationSet = (if (sc.isDefined) {
-        DataSet.array(load(validationData, validationLabel), sc.get)
-      } else {
-        DataSet.array(load(validationData, validationLabel))
-      }) -> BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(
+      val validationSet = DataSet.array(load(validationData, validationLabel), sc) ->
+        BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(
         param.batchSize)
 
       optimizer

@@ -9,17 +9,6 @@ You can download CIFAR-10 dataset from [this webpage](https://www.cs.toronto.edu
 You can build one by refer to the
 [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code.
 
-## Train Model
-Example command for running as a local Java program
-```
-./dist/bin/bigdl.sh -- \
-java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
-com.intel.analytics.bigdl.models.vgg.Train \
--f Cifar-folder \
--b batch_size \
---checkpoint ./model
-```
-
 ## Train Model on Spark
 Example command for running in Spark cluster mode
 ```
@@ -69,15 +58,6 @@ there are some files already exist in the folder, the old file will not be overw
 safety of your model files.
 * -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.
 ## Test Model
-Example command for running as a local Java program
-```
-./dist/bin/bigdl.sh -- \
-java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
-com.intel.analytics.bigdl.models.vgg.Test \
--f cifar-folder \
---model model_file
-```
-
 Example command for running in Spark local mode
 ```
 ./dist/bin/bigdl.sh -- \

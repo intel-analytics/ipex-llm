@@ -25,7 +25,7 @@ import org.apache.spark.SparkContext
 object ImageNet2012 {
   def apply(
     path : String,
-    sc: Option[SparkContext],
+    sc: SparkContext,
     imageSize : Int,
     batchSize : Int,
     nodeNumber: Int,
@@ -34,36 +34,21 @@ object ImageNet2012 {
     size: Int
   )
   : DataSet[MiniBatch[Float]] = {
-    (if (sc.isDefined) {
-      DataSet.SeqFileFolder.files(path, sc.get, classNumber).transform(
-        MTLabeledBGRImgToBatch[ByteRecord](
-          width = imageSize,
-          height = imageSize,
-          batchSize = batchSize,
-          transformer = (BytesToBGRImg() -> BGRImgCropper(imageSize, imageSize)
-            -> HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225))
-        ))
-    } else {
-      DataSet.SeqFileFolder.paths(Paths.get(path), size)
-        .transform(
-          MTLabeledBGRImgToBatch(
-            width = imageSize,
-            height = imageSize,
-            batchSize = batchSize,
-            transformer = (LocalSeqFileToBytes() -> BytesToBGRImg() ->
-              BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize) -> HFlip(0.5) ->
-              BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
-              )
-          )
-        )
-    })
+    DataSet.SeqFileFolder.files(path, sc, classNumber).transform(
+      MTLabeledBGRImgToBatch[ByteRecord](
+        width = imageSize,
+        height = imageSize,
+        batchSize = batchSize,
+        transformer = (BytesToBGRImg() -> BGRImgCropper(imageSize, imageSize)
+          -> HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225))
+      ))
   }
 }
 
 object ImageNet2012Val {
    def apply(
      path : String,
-     sc: Option[SparkContext],
+     sc: SparkContext,
      imageSize : Int,
      batchSize : Int,
      nodeNumber: Int,
@@ -72,30 +57,14 @@ object ImageNet2012Val {
      size: Int
    )
    : DataSet[MiniBatch[Float]] = {
-     (if (sc.isDefined) {
-       DataSet.SeqFileFolder.files(path, sc.get, classNumber).transform(
-         MTLabeledBGRImgToBatch[ByteRecord](
-           width = imageSize,
-           height = imageSize,
-           batchSize = batchSize,
-           transformer = (BytesToBGRImg() -> BGRImgCropper(imageSize, imageSize, CropCenter)
-             -> HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225))
-         ))
-     } else {
-       DataSet.SeqFileFolder.paths(Paths.get(path), size)
-         .transform(
-           MTLabeledBGRImgToBatch(
-             width = imageSize,
-             height = imageSize,
-             batchSize = batchSize,
-             transformer = (LocalSeqFileToBytes() -> BytesToBGRImg() ->
-               BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize, CropCenter) ->
-               HFlip(0.5) ->
-               BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)
-               )
-           )
-         )
-     })
+     DataSet.SeqFileFolder.files(path, sc, classNumber).transform(
+       MTLabeledBGRImgToBatch[ByteRecord](
+         width = imageSize,
+         height = imageSize,
+         batchSize = batchSize,
+         transformer = (BytesToBGRImg() -> BGRImgCropper(imageSize, imageSize, CropCenter)
+           -> HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225))
+       ))
    }
  }
 

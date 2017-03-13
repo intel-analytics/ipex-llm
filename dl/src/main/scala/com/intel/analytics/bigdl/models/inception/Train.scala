@@ -33,12 +33,10 @@ object TrainInceptionV1 {
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
       val imageSize = 224
-      val sc = Engine.init
-        .map(conf => {
-          conf.setAppName("BigDL Inception v1 Train Example")
-            .set("spark.task.maxFailures", "1")
-          new SparkContext(conf)
-        })
+      val conf = Engine.createSparkConf().setAppName("BigDL Inception v1 Train Example")
+        .set("spark.task.maxFailures", "1")
+      val sc = new SparkContext(conf)
+      Engine.init
 
       val trainSet = ImageNet2012(
         param.folder + "/train",

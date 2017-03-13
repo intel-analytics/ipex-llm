@@ -44,13 +44,7 @@ class DistriValidator[T] private[optim](
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
     rdd.mapPartitions(dataIter => {
-      Engine.init(
-        nExecutor = nExecutor,
-        executorCores = executorCores,
-        onSpark = true,
-        isCreateSparkConf = false,
-        verifySparkContext = false
-      )
+      Engine.setNodeAndCore(nExecutor, executorCores)
       val localModel = broadcastModel.value
       logger.info("model thread pool size is " + Engine.model.getPoolSize)
       val workingModels = (1 to _subModelNumber)

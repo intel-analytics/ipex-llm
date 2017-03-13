@@ -34,17 +34,13 @@ object Test {
 
   def main(args: Array[String]) {
     testParser.parse(args, new TestParams()).foreach { param =>
-      val sc = Engine.init.map(conf => {
-          conf.setAppName("Test Vgg on Cifar10")
-            .set("spark.akka.frameSize", 64.toString)
-          new SparkContext(conf)
-        })
+      val conf = Engine.createSparkConf().setAppName("Test Vgg on Cifar10")
+        .set("spark.akka.frameSize", 64.toString)
+      val sc = new SparkContext(conf)
+      Engine.init
 
-      val validationSet = (if (sc.isDefined) {
-        DataSet.array(Utils.loadTest(param.folder), sc.get)
-      } else {
-        DataSet.array(Utils.loadTest(param.folder))
-      }) -> BytesToBGRImg() -> BGRImgNormalizer(testMean, testStd) ->
+      val validationSet = DataSet.array(Utils.loadTest(param.folder), sc) ->
+        BytesToBGRImg() -> BGRImgNormalizer(testMean, testStd) ->
         BGRImgToBatch(param.batchSize)
 
       val model = Module.load[Float](param.model)

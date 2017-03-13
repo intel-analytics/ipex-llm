@@ -92,12 +92,11 @@ object ModelValidator {
 
   def main(args: Array[String]): Unit = {
     testLocalParser.parse(args, TestLocalParams()).foreach(param => {
-      val sc = Engine.init
-        .map(conf => {
-          conf.setAppName("BigDL Image Classifier Example")
-            .set("spark.akka.frameSize", 64.toString)
-          new SparkContext(conf)
-        })
+      val conf = Engine.createSparkConf()
+      conf.setAppName("BigDL Image Classifier Example")
+        .set("spark.akka.frameSize", 64.toString)
+      val sc = new SparkContext(conf)
+      Engine.init
 
       val valPath = param.folder
 
