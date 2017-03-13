@@ -123,7 +123,7 @@ object DistriOptimizer {
 
       val driverMetrics = metrics
       val start = System.nanoTime()
-      
+
       val finishedModelNum = dataRDD.zipPartitions(
         models, true)(
         (data, modelIter) => {
@@ -611,8 +611,9 @@ class DistriOptimizer[T: ClassTag] (
 
     
     var retryNum = 0
+    val maxRetry = System.getProperty("bigdl.failure.retryTimes", "5").toInt
     var lastFailureTimestamp = System.nanoTime()
-    while (retryNum < 5) {
+    while (retryNum < maxRetry) {
       try {
         DistriOptimizer.optimize(
           dataset,
@@ -636,27 +637,29 @@ class DistriOptimizer[T: ClassTag] (
         case t: Throwable =>
           DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           if (checkpointPath.isDefined) {
-            if (System.nanoTime() - lastFailureTimestamp < 10*60*1e9) {
+            if (System.nanoTime() - lastFailureTimestamp < maxRetry * 2 * 60 * 1e9) {
               retryNum += 1
             } else {
               retryNum = 1
             }
+            DistriOptimizer.logger.info(s"Retrying $retryNum times")
             lastFailureTimestamp = System.nanoTime()
             val stateFile = getLatestFile("state")
             val modelFile = getLatestFile("model")
+            clearState()
             models.unpersist()
-            var newState: Table = null
+
             var newModel: Module[T] = null
             if (stateFile != null && modelFile != null) {
-              newState = T.load(stateFile)
               newModel = Module.load[T](modelFile)
+              state = T.load(stateFile)
               DistriOptimizer.logger.info("Recover from last snapshot")
             } else {
-              newState = state
               newModel = model
               DistriOptimizer.logger.info("Recover from origin model")
             }
-            models = DistriOptimizer.initThreadModels(newModel, dataset, criterion, newState,
+            optimMethod.clearHistory(state)
+            models = DistriOptimizer.initThreadModels(newModel, dataset, criterion, state,
               nodeNumber, coresPerNode, checkSingleton, parameters)
           } else {
             retryNum = Int.MaxValue
@@ -675,7 +678,7 @@ class DistriOptimizer[T: ClassTag] (
 
     model
   }
-  
+
   private def getLatestFile(fileName: String): String = {
     val fl = new java.io.File(checkpointPath.get)
     val files = fl.listFiles(new FilenameFilter {
@@ -683,7 +686,7 @@ class DistriOptimizer[T: ClassTag] (
         name.startsWith(fileName)
       }
     })
-    
+
     var lastMod = Long.MinValue
     var choice: String = null
     files.map {file =>

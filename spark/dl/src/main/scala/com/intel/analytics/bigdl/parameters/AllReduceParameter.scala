@@ -105,8 +105,10 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
       start + 1, length))
     val _gradients = Tensor[T](length)(_classTag, ev)
 
+    BlockManagerWrapper.removeBlock(getWeightPartitionId())
     BlockManagerWrapper.putSingle(getWeightPartitionId(),
       _weights, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
+    BlockManagerWrapper.removeBlock(getGradientPartitionId())
     BlockManagerWrapper.putSingle(getGradientPartitionId(),
       _gradients, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
     val blockId = getWeightBlockId(partitionId)

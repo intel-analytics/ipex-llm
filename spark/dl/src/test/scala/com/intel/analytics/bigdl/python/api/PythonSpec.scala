@@ -40,7 +40,6 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       Engine.init(1, 4, true).get
         .setAppName("Text classification")
         .set("spark.akka.frameSize", 64.toString)
-        .set("spark.task.maxFailures", "1")
         .setMaster("local[2]"))
   }
 
