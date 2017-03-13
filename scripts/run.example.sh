@@ -9,7 +9,6 @@ SPARK2_LINK=https://www.apache.org/dist/spark/spark-2.0.2/$SPARK2_DIR.tgz
 SPARK_DIR=$SPARK1_DIR
 SPARK_LINK=$SPARK1_LINK
 CURRENT=`pwd`
-BIGDL_SH=$CURRENT/dist/bin/bigdl.sh
 BIGDL2_JAR=$HOME/.m2/repository/com/intel/analytics/bigdl/bigdl-SPARK_2.0/${BIGDL_VERSION}/bigdl-SPARK_2.0-${BIGDL_VERSION}-jar-with-dependencies.jar
 BIGDL1_JAR=$HOME/.m2/repository/com/intel/analytics/bigdl/bigdl/${BIGDL_VERSION}/bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar
 BIGDL_JAR=$BIGDL1_JAR
