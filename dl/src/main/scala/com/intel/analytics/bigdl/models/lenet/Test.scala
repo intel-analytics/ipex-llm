@@ -40,6 +40,7 @@ object Test {
         .set("spark.akka.frameSize", 64.toString)
         .set("spark.task.maxFailures", "1")
       val sc = new SparkContext(conf)
+      Engine.init
 
       val validationData = Paths.get(param.folder, "/t10k-images-idx3-ubyte")
       val validationLabel = Paths.get(param.folder, "/t10k-labels-idx1-ubyte")

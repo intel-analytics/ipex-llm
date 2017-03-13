@@ -38,11 +38,11 @@ object Test {
   def main(args: Array[String]): Unit = {
     testParser.parse(args, new TestParams()).foreach { param =>
 
+      Engine.init
+      Engine.setCoreNumber(1)
       val vocab = new Dictionary(param.folder)
 
       val model = Module.load[Float](param.modelSnapshot.get)
-      Engine.init
-      Engine.setCoreNumber(1)
 
       val logSoftMax = LogSoftMax[Float]()
       val lines = readSentence(param.folder)

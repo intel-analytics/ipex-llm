@@ -18,17 +18,22 @@ package com.intel.analytics.bigdl.optim
 
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, DistributedDataSet}
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, Sequential}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
-import com.intel.analytics.bigdl.utils.{File, T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, File, T, Table}
 import org.apache.spark.rdd.RDD
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
-class OptimizerSpec extends FlatSpec with Matchers {
+class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val model = new Sequential[Float]()
+
+  before {
+    Engine.setNodeAndCore(1, 4)
+    Engine.setInit()
+  }
 
   "Optimizer" should "end with maxEpoch" in {
     val dummyOptimizer = new Optimizer[Float, Float](model, null, null) {
