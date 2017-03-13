@@ -26,14 +26,15 @@ import scala.reflect.ClassTag
 /**
  * Multiplies input Tensor by a (non-learnable) scalar constant.
  * This module is sometimes useful for debugging purposes.
- * @param scalar scalar constant
+ * @param constant scalar constant
  * @param inplace Can optionally do its operation in-place without using extra state memory
  */
 
 @SerialVersionUID(- 8747642888169310696L)
 class MulConstant[@specialized(Float, Double) T: ClassTag](
-  val scalar : T, val inplace : Boolean = false)(
+  val constant : Double, val inplace : Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
+  val scalar = ev.fromType[Double](constant)
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     if (inplace) {
@@ -83,8 +84,8 @@ class MulConstant[@specialized(Float, Double) T: ClassTag](
 
 object MulConstant {
   def apply[@specialized(Float, Double) T: ClassTag](
-      scalar : T,
-      inplace : Boolean = false)(implicit ev: TensorNumeric[T]) : MulConstant[T] = {
+    scalar : Double,
+    inplace : Boolean = false)(implicit ev: TensorNumeric[T]) : MulConstant[T] = {
     new MulConstant[T](scalar, inplace)
   }
 }
