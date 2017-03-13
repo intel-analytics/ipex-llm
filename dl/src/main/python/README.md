@@ -60,8 +60,8 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
 ## Installing on Ubuntu
 1. Build BigDL
 [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
-* With Spark1.6: ```  $BIGDL_HOME//make-dist.sh ``` 
-* With Spark2.0: ``` $BIGDL_HOME//make-dist.sh -P spark_2.0 ```
+    * With Spark1.6: ```  $BIGDL_HOME//make-dist.sh ``` 
+    * With Spark2.0: ``` $BIGDL_HOME//make-dist.sh -P spark_2.0 ```
 
 2. Install python dependensies:
   * Installing Numpy: 
