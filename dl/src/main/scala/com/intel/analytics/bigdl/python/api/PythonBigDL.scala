@@ -246,7 +246,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createConcat(dimension: Int): Concat[T] = {
     Concat[T](dimension)
-  } 
+  }
 
   def createSpatialAveragePooling(kW: Int,
                                   kH: Int,
