@@ -26,11 +26,22 @@ import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWrit
 
 import scala.reflect.ClassTag
 
+sealed trait SummaryTag
+
+object Loss extends SummaryTag
+
+object Top1 extends SummaryTag
+
+object Top5 extends SummaryTag
+
+object Throughput extends SummaryTag
+
+object LearningRate extends SummaryTag
+
 abstract class Summary(
       logDir: String,
       appName: String,
       trigger: Map[String, Trigger]) {
-  protected val folder: String
   protected val writer: FileWriter
 
   def getTrigger(): Map[String, Trigger] = {
@@ -57,10 +68,7 @@ abstract class Summary(
     this
   }
 
-  def readScalar(tag: String): Array[(Long, Float, Double)] = {
-    FileReader.readScalar(folder, tag)
-  }
-
+  def readScalar(tag: String): Array[(Long, Float, Double)]
 }
 
 class TrainSummary(
@@ -70,8 +78,15 @@ class TrainSummary(
         "learningRate" -> Trigger.severalIteration(1),
         "loss" -> Trigger.severalIteration(1),
         "throughput" -> Trigger.severalIteration(1))) extends Summary(logDir, appName, trigger) {
-  protected override val folder = s"$logDir/$appName/train"
+  protected val folder = s"$logDir/$appName/train"
   protected override val writer = new FileWriter(folder)
+
+  override def readScalar(tag: String): Array[(Long, Float, Double)] = {
+    while (!writer.isEmpty) {
+      Thread.sleep(100)
+    }
+    FileReader.readScalar(folder, tag)
+  }
 }
 
 object TrainSummary{
@@ -83,14 +98,22 @@ object TrainSummary{
         "throughput" -> Trigger.severalIteration(1))): TrainSummary = {
     new TrainSummary(logDir, appName, trigger)
   }
+
 }
 
 class ValidationSummary(
       logDir: String,
       appName: String,
       trigger: Map[String, Trigger] = null) extends Summary(logDir, appName, trigger) {
-  protected override val folder = s"$logDir/$appName/validation"
+  protected val folder = s"$logDir/$appName/validation"
   protected override val writer = new FileWriter(folder)
+
+  override def readScalar(tag: String): Array[(Long, Float, Double)] = {
+    while (!writer.isEmpty) {
+      Thread.sleep(100)
+    }
+    FileReader.readScalar(folder, tag)
+  }
 }
 
 object ValidationSummary{

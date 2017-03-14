@@ -47,6 +47,10 @@ class FileWriter(val logDirecotry : String, flushMilliSeconds: Int = 10000) {
     this
   }
 
+  def isEmpty(): Boolean = {
+    eventWriter.eventQueue.isEmpty
+  }
+
   def close(): this.type = {
     eventWriter.close()
     this
