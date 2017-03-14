@@ -1,0 +1,210 @@
+/*
+ * Copyright 2016 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.intel.analytics.bigdl.nn
+
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.T
+
+import scala.reflect.ClassTag
+
+@SerialVersionUID(6036047576084619110L)
+class SpatialDivisiveNormalization[T: ClassTag](
+  val nInputPlane: Int = 1,
+  var kernel: Tensor[T] = null,
+  val threshold: Double = 1e-4,
+  val thresval: Double = 1e-4
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+
+  if (kernel == null) kernel = Tensor.ones[T](9, 9)
+
+  private val kdim = kernel.nDimension()
+  require(kdim == 1 || kdim == 2, "averaging kernel must be 2D or 1D")
+  require(kernel.size(1) % 2 != 0, "averaging kernel must have ODD dimensions")
+  if (kdim == 2) {
+    require(kernel.size(2) % 2 != 0, "averaging kernel must have ODD dimensions")
+  }
+
+  val padH = math.floor(kernel.size(1).toFloat/2).toInt
+  val padW = if (kdim == 2) {
+    math.floor(kernel.size(2).toFloat/2).toInt
+  } else {
+    padH
+  }
+
+  // create convolutional mean estimator
+  private val meanestimator = new Sequential[T]()
+  meanestimator.add(new SpatialZeroPadding(padW, padW, padH, padH))
+  if (kdim == 2) {
+    meanestimator.add(new SpatialConvolution(nInputPlane, 1, kernel.size(2), kernel.size(1)))
+  } else {
+    meanestimator.add(new SpatialConvolutionMap[T](
+      SpatialConvolutionMap.oneToOne[T](nInputPlane), kernel.size(1), 1))
+    meanestimator.add(new SpatialConvolution(nInputPlane, 1, 1, kernel.size(1)))
+  }
+  meanestimator.add(new Replicate(nInputPlane, 1, 3))
+
+  // create convolutional std estimator
+  private val stdestimator = new Sequential[T]()
+  stdestimator.add(new Square())
+  stdestimator.add(new SpatialZeroPadding(padW, padW, padH, padH))
+  if (kdim == 2) {
+    stdestimator.add(new SpatialConvolution(nInputPlane, 1, kernel.size(2), kernel.size(1)))
+  } else {
+    stdestimator.add(new SpatialConvolutionMap[T](
+      SpatialConvolutionMap.oneToOne[T](nInputPlane), kernel.size(1), 1))
+    stdestimator.add(new SpatialConvolution(nInputPlane, 1, 1, kernel.size(1)))
+  }
+  stdestimator.add(new Replicate(nInputPlane, 1, 3))
+  stdestimator.add(new Sqrt())
+
+  // set kernel(parameters._1(0)) and bias(parameters._1(1))
+  if (kdim == 2) {
+    kernel.div(ev.times(kernel.sum(), ev.fromType[Int](nInputPlane)))
+    for (i <- 1 to nInputPlane) {
+      meanestimator.modules(1).parameters()._1(0)(1)(1)(i).copy(kernel)
+      stdestimator.modules(2).parameters()._1(0)(1)(1)(i).copy(kernel)
+    }
+    meanestimator.modules(1).parameters()._1(1).zero()
+    stdestimator.modules(2).parameters()._1(1).zero()
+  } else {
+    kernel.div(ev.times(kernel.sum(), ev.sqrt(ev.fromType[Int](nInputPlane))))
+    for (i <- 1 to nInputPlane) {
+      meanestimator.modules(1).parameters()._1(0)(i).copy(kernel)
+      meanestimator.modules(2).parameters()._1(0)(1)(1)(i).copy(kernel)
+      stdestimator.modules(2).parameters()._1(0)(i).copy(kernel)
+      stdestimator.modules(3).parameters()._1(0)(1)(1)(i).copy(kernel)
+    }
+    meanestimator.modules(1).parameters()._1(1).zero()
+    meanestimator.modules(2).parameters()._1(1).zero()
+    stdestimator.modules(2).parameters()._1(1).zero()
+    stdestimator.modules(3).parameters()._1(1).zero()
+  }
+
+  // other operation
+  private val normalizer = new CDivTable()
+  private val divider = new CDivTable()
+  private val thresholder = new Threshold(threshold, thresval)
+
+  // coefficient array, to adjust side effects
+  private var coef: Tensor[T] = Tensor(1, 1, 1)
+
+  private val ones: Tensor[T] = Tensor[T]()
+  private var adjustedstds: Tensor[T] = _
+  private var thresholdedstds: Tensor[T] = _
+  private var localstds: Tensor[T] = _
+
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    localstds = stdestimator.updateOutput(input).toTensor[T]
+
+    // compute side coefficients
+    val dim = input.dim()
+    if (localstds.dim() != coef.dim() || (input.size(dim) != coef.size(dim)) ||
+      (input.size(dim-1) != coef.size(dim-1)) ) {
+      if (dim == 4) {
+        // batch mode
+        ones.resizeAs(input(1)).fill(ev.fromType[Int](1))
+        val _coef = meanestimator.updateOutput(ones).toTensor[T]
+        coef = coef.resizeAs(_coef).copy(_coef).view(Array(1) ++ _coef.size()).expandAs(localstds)
+      } else {
+        ones.resizeAs(input).fill(ev.fromType[Int](1))
+        coef = meanestimator.updateOutput(ones).toTensor[T]
+      }
+    }
+
+    // normalize std dev
+    adjustedstds = divider.updateOutput(T(localstds, coef))
+    thresholdedstds = thresholder.updateOutput(adjustedstds)
+    output = normalizer.updateOutput(T(input, thresholdedstds))
+
+    output
+  }
+
+
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    // resize grad
+    gradInput.resizeAs(input).zero()
+
+    // backprop through all modules
+    val gradnorm = normalizer.updateGradInput(T(input, thresholdedstds), gradOutput)
+    val gradadj = thresholder.updateGradInput(adjustedstds, gradnorm(2))
+    val graddiv = divider.updateGradInput(T(localstds, coef), gradadj)
+    gradInput.add(stdestimator.updateGradInput(input, graddiv(1)).toTensor[T])
+    gradInput.add(gradnorm[Tensor[T]](1))
+    gradInput
+  }
+
+  override def toString(): String = {
+    s"SpatialDivisiveNormalization($nInputPlane, kernelTensor, $threshold, $thresval)"
+  }
+
+  override def canEqual(other: Any): Boolean = {
+    other.isInstanceOf[SpatialDivisiveNormalization[T]]
+  }
+
+  override def equals(other: Any): Boolean = other match {
+    case that: SpatialDivisiveNormalization[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        kdim == that.kdim &&
+        padH == that.padH &&
+        padW == that.padW &&
+        meanestimator == that.meanestimator &&
+        stdestimator == that.stdestimator &&
+        normalizer == that.normalizer &&
+        divider == that.divider &&
+        thresholder == that.thresholder &&
+        nInputPlane == that.nInputPlane &&
+        kernel == that.kernel &&
+        threshold == that.threshold &&
+        thresval == that.thresval
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), kdim, padH, padW, meanestimator, stdestimator,
+      normalizer, divider, thresholder, nInputPlane, kernel, threshold, thresval)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+
+
+  override def clearState() : this.type = {
+    super.clearState()
+    meanestimator.clearState()
+    stdestimator.clearState()
+    normalizer.clearState()
+    divider.clearState()
+    coef = Tensor(1, 1, 1)
+    ones.set()
+    adjustedstds = null
+    thresholdedstds = null
+    localstds = null
+    this
+  }
+}
+
+object SpatialDivisiveNormalization {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      nInputPlane: Int = 1,
+      kernel: Tensor[T] = null,
+      threshold: Double = 1e-4,
+      thresval: Double = 1e-4)(
+      implicit ev: TensorNumeric[T]) : SpatialDivisiveNormalization[T] = {
+    new SpatialDivisiveNormalization[T](nInputPlane, kernel, threshold, thresval)
+  }
+}
