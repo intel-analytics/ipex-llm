@@ -33,7 +33,6 @@ class RnnCell[T : ClassTag] (
   (implicit ev: TensorNumeric[T])
   extends Cell[T] {
 
-  val nHids = 1
   val parallelTable = ParallelTable[T]()
   val i2h = Linear[T](inputSize, hiddenSize)
   val h2h = Linear[T](hiddenSize, hiddenSize)
@@ -53,6 +52,8 @@ class RnnCell[T : ClassTag] (
     this.initMethod = initMethod
     this
   }
+
+  override def nHids: Array[Int] = Array(hiddenSize)
 
   override def reset(): Unit = {
     initMethod match {

@@ -156,7 +156,7 @@ class GRU[T : ClassTag] (
     GRU.parameters()
   }
 
-  override val nHids: Int = 1
+  override def nHids: Array[Int] = Array(outputSize)
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[GRU[T]]
 

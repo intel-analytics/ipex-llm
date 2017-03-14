@@ -175,7 +175,7 @@ class LSTM[T : ClassTag] (
     lstm.parameters()
   }
 
-  override val nHids: Int = 2
+  override def nHids: Array[Int] = Array(hiddenSize, hiddenSize)
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[LSTM[T]]
 
@@ -205,8 +205,8 @@ class LSTM[T : ClassTag] (
 
 object LSTM {
   def apply[@specialized(Float, Double) T: ClassTag](
-    inputSize: Int = 4,
-    hiddenSize: Int = 3)
+    inputSize: Int,
+    hiddenSize: Int)
     (implicit ev: TensorNumeric[T]): LSTM[T] = {
     new LSTM[T](inputSize, hiddenSize)
   }

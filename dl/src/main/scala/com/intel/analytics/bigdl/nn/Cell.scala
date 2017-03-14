@@ -29,7 +29,7 @@ abstract class Cell[T : ClassTag] ()
   extends AbstractModule[Table, Table, T] {
 
   // number of hidden parameters in the Cell. E.g. one for RnnCell, two for LSTM.
-  val nHids: Int
+  def nHids: Array[Int]
 
   /**
    * resize the hidden parameters wrt the size1, size2.
@@ -51,7 +51,7 @@ abstract class Cell[T : ClassTag] ()
       } else {
         val _hidden = T()
         var i = 1
-        while (i <= nHids) {
+        while (i <= nHids.length) {
           _hidden(i) = Tensor[T]()
           i += 1
         }

@@ -26,8 +26,7 @@ import com.intel.analytics.bigdl.utils.T
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-class Recurrent[T : ClassTag] (
-  hiddenSize: Int = 3)
+class Recurrent[T : ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   private var hidden: Activity = null
@@ -123,6 +122,7 @@ class Recurrent[T : ClassTag] (
     batchSize = input.size(batchDim)
     times = input.size(timeDim)
 
+    val hiddenSize = modules.last.asInstanceOf[Cell[T]].nHids(0)
     output.resize(batchSize, times, hiddenSize)
 
     // Clone N modules along the sequence dimension.
@@ -236,6 +236,6 @@ object Recurrent {
   def apply[@specialized(Float, Double) T: ClassTag](
     hiddenSize: Int = 3)
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
-    new Recurrent[T](hiddenSize)
+    new Recurrent[T]()
   }
 }
