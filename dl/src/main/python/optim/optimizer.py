@@ -134,6 +134,30 @@ class Optimizer(JavaValue):
         from nn.layer import Model
         return Model.of(jmodel)
 
+    def set_train_summary(self, summary):
+        callBigDlFunc(self.bigdl_type, "setTrainSummary", self.value,
+                      summary)
+        return self
+
+    def set_val_summary(self, summary):
+        callBigDlFunc(self.bigdl_type, "setValSummary", self.value,
+                      summary)
+        return self
+
+
+class TrainSummary(JavaValue, ):
+    def __init__(self, log_dir, app_name, trigger, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, log_dir, app_name, trigger)
+
+    def read_scalar(self, tag):
+        return callBigDlFunc(self.bigdl_type, "summaryReadScalar", self.value,
+                      tag)
+
+
+class ValidationSummary(JavaValue):
+    def __init__(self, log_dir, app_name, trigger, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, log_dir, app_name, trigger)
+
 
 def _test():
     import doctest
