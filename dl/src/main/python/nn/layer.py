@@ -39,13 +39,6 @@ class Model(JavaValue):
         model.bigdl_type = bigdl_type
         return model
 
-    def set_name(self, name):
-        callJavaFunc(SparkContext.getOrCreate(), self.value.setName, name)
-        return self
-
-    def name(self):
-        return callJavaFunc(SparkContext.getOrCreate(), self.value.getName)
-
     def get_dtype(self):
         if "float" == self.bigdl_type:
             return "float32"
