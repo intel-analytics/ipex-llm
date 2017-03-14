@@ -154,10 +154,10 @@ def _test():
     from pyspark import SparkContext
     from optim import optimizer
     from util.common import init_engine
-    from util.common import spark_conf_with_bigdl
+    from util.common import create_spark_conf
     globs = optimizer.__dict__.copy()
     sc = SparkContext(master="local[4]", appName="test optimizer",
-                      conf=spark_conf_with_bigdl())
+                      conf=create_spark_conf())
     init_engine()
     globs['sc'] = sc
     (failure_count, test_count) = doctest.testmod(globs=globs,

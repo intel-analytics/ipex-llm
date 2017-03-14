@@ -271,6 +271,8 @@ object Engine {
   def init(nExecutor: Int,
            executorCores: Int,
            onSpark: Boolean): Option[SparkConf] = {
+    logger.warn("This method is deprecated. Please refer " +
+        "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine")
     setNodeAndCore(nExecutor, executorCores)
     val res = if (onSpark) {
       _onSpark = onSpark
