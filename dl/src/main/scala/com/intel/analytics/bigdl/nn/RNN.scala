@@ -53,7 +53,7 @@ class RnnCell[T : ClassTag] (
     this
   }
 
-  override def nHids: Array[Int] = Array(hiddenSize)
+  override def hidSizes: Array[Int] = Array(hiddenSize)
 
   override def reset(): Unit = {
     initMethod match {

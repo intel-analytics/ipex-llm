@@ -28,8 +28,16 @@ abstract class Cell[T : ClassTag] ()
   (implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
 
-  // number of hidden parameters in the Cell. E.g. one for RnnCell, two for LSTM.
-  def nHids: Array[Int]
+  /**
+   * hidden sizes in the Cell, whose length is the number of hiddens.
+   * The elements correspond to the hidden sizes of returned hiddens
+   *
+   * E.g. For RnnCell, it should be Array(hiddenSize)
+   *      For LSTM, it should be Array(hiddenSize, hiddenSize)
+   *     (because each time step a LSTM return two hiddens `h` and `c` in order,
+   *     which have the same size.)
+   */
+  def hidSizes: Array[Int]
 
   /**
    * resize the hidden parameters wrt the size1, size2.
@@ -46,12 +54,12 @@ abstract class Cell[T : ClassTag] ()
    */
   def hidResize(hidden: Activity, size1: Int, size2: Int): Activity = {
     if (hidden == null) {
-      if (nHids == 1) {
+      if (hidSizes == 1) {
         hidResize(Tensor[T](), size1, size2)
       } else {
         val _hidden = T()
         var i = 1
-        while (i <= nHids.length) {
+        while (i <= hidSizes.length) {
           _hidden(i) = Tensor[T]()
           i += 1
         }

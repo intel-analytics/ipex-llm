@@ -30,7 +30,7 @@ class CellUnit[T : ClassTag] ()
   (implicit ev: TensorNumeric[T])
   extends Cell[T] {
 
-  def nHids: Array[Int] = Array(3)
+  def hidSizes: Array[Int] = Array(3)
 
   override def updateOutput(input: Table): Table = {
     T()

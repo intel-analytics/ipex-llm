@@ -175,7 +175,7 @@ class LSTM[T : ClassTag] (
     lstm.parameters()
   }
 
-  override def nHids: Array[Int] = Array(hiddenSize, hiddenSize)
+  override def hidSizes: Array[Int] = Array(hiddenSize, hiddenSize)
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[LSTM[T]]
 
