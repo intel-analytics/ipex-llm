@@ -88,9 +88,7 @@ object DistriOptimizerPerf {
   }
 
   def main(args: Array[String]): Unit = {
-    parser.parse(args, new DistriOptimizerPerfParam).map(param => {
-      performance(param)
-    })
+    parser.parse(args, new DistriOptimizerPerfParam).foreach(performance)
   }
 
   def performance(param: DistriOptimizerPerfParam): Unit = {

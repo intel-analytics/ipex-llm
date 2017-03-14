@@ -161,7 +161,8 @@ object TorchFile {
       case "nn.View" => readViewWithType(elements)
       case _ => try {
         val classTag =
-          if (elements("_type") == "torch.FloatTensor" || elements("_type") == "torch.CudaTensor") {
+          if (elements[String]("_type") == "torch.FloatTensor" ||
+              elements[String]("_type") == "torch.CudaTensor") {
             ClassTag.Float
           } else {
             ClassTag.Double

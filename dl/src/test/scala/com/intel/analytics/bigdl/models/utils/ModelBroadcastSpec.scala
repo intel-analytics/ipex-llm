@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{FlatSpec, Matchers}
 
 class ModelBroadcastSpec extends FlatSpec with Matchers {
@@ -25,7 +25,7 @@ class ModelBroadcastSpec extends FlatSpec with Matchers {
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
 
-  val sc = new SparkContext("local[1]", "ModelBroadcast")
+  val sc = new SparkContext(new SparkConf().setMaster("local[1]").setAppName("ModelBroadcast"))
   val model = LeNet5(10)
 
   val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)

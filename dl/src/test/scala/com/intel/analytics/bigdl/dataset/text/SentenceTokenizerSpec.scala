@@ -20,7 +20,7 @@ import java.io.PrintWriter
 
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.utils.Engine
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.io.Source
@@ -42,7 +42,8 @@ class SentenceTokenizerSpec extends FlatSpec with Matchers {
     }
 
     Engine.init(1, 1, true)
-    val sc = new SparkContext("local[1]", "DocumentTokenizer")
+    val conf = new SparkConf().setMaster("local[1]").setAppName("DocumentTokenizer")
+    val sc = new SparkContext(conf)
     val sents = DataSet.rdd(sc.textFile(tmpFile)
       .filter(!_.isEmpty)).transform(SentenceSplitter())
       .toDistributed().data(train = false).flatMap(item => item.iterator).collect()

@@ -18,9 +18,9 @@ package com.intel.analytics.bigdl.dataset.text
 
 import java.io.PrintWriter
 
-import com.intel.analytics.bigdl.utils.{Engine, T}
-import com.intel.analytics.bigdl.dataset.{DataSet, LocalArrayDataSet}
-import org.apache.spark.SparkContext
+import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.utils.Engine
+import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.io.Source
@@ -32,7 +32,8 @@ class DictionarySpec extends FlatSpec with Matchers with BeforeAndAfter {
     val nodeNumber = 1
     val coreNumber = 1
     Engine.init(nodeNumber, coreNumber, true)
-    sc = new SparkContext("local[1]", "DictionarySpec")
+    val conf = new SparkConf().setMaster("local[1]").setAppName("DictionarySpec")
+    sc = new SparkContext(conf)
   }
 
   after {

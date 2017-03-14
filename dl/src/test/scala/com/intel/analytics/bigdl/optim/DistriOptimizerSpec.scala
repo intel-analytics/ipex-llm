@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -100,7 +100,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var dataSet: DistributedDataSet[MiniBatch[Double]] = null
 
   before {
-    sc = new SparkContext("local[1]", "RDDOptimizerSpec")
+    val conf = new SparkConf().setMaster("local[1]").setAppName("RDDOptimizerSpec")
+    sc = new SparkContext(conf)
 
     val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber).map(prepareData)
 

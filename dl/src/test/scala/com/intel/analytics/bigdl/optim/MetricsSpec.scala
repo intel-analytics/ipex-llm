@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.utils.Engine
-import org.apache.spark.{SparkContext, SparkException}
+import org.apache.spark.{SparkConf, SparkContext, SparkException}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
@@ -49,7 +49,8 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "throw exception if it's a duplicated name in a distributed metric" in {
     val metric = new Metrics
-    sc = new SparkContext("local[1]", "MetricsSpec")
+    val conf = new SparkConf().setMaster("local[1]").setAppName("MetricsSpec")
+    sc = new SparkContext(conf)
     metric.set("test", 10.0, sc, 5)
     intercept[IllegalArgumentException] {
       metric.set("test", 10, 5)
@@ -58,7 +59,8 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Set distribute metrics" should "be able to add a new value" in {
     val metric = new Metrics
-    sc = new SparkContext("local[1]", "MetricsSpec")
+    val conf = new SparkConf().setMaster("local[1]").setAppName("MetricsSpec")
+    sc = new SparkContext(conf)
     metric.set("test", 1.0, sc, 5)
     val result = metric.get("test")
     result._1 should be(1.0)
@@ -67,7 +69,8 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "update the value if it's existed" in {
     val metric = new Metrics
-    sc = new SparkContext("local[1]", "MetricsSpec")
+    val conf = new SparkConf().setMaster("local[1]").setAppName("MetricsSpec")
+    sc = new SparkContext(conf)
     metric.set("test", 1.0, sc, 5)
     metric.set("test", 2.0, sc, 7)
     val result = metric.get("test")
@@ -77,7 +80,8 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "throw exception if it's a duplicated name in a local metric" in {
     val metric = new Metrics
-    sc = new SparkContext("local[1]", "MetricsSpec")
+    val conf = new SparkConf().setMaster("local[1]").setAppName("MetricsSpec")
+    sc = new SparkContext(conf)
     metric.set("test", 10, 5)
     intercept[IllegalArgumentException] {
       metric.set("test", 10.0, sc, 5)
@@ -115,7 +119,8 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "work on distributed metric" in {
     val metric = new Metrics
-    sc = new SparkContext("local[5]", "MetricsSpec")
+    val conf = new SparkConf().setMaster("local[5]").setAppName("MetricsSpec")
+    sc = new SparkContext(conf)
     metric.set("test", 1.0, sc, 5)
     sc.parallelize((1 to 5)).map(i => metric.add("test", i)).count
     val result = metric.get("test")
@@ -125,7 +130,8 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "throw exception when the distributed metric isn't exsited" in {
     val metric = new Metrics
-    sc = new SparkContext("local[5]", "MetricsSpec")
+    val conf = new SparkConf().setMaster("local[5]").setAppName("MetricsSpec")
+    sc = new SparkContext(conf)
     intercept[SparkException] {
       sc.parallelize((1 to 5)).map(i => metric.add("test", i)).count
     }
@@ -133,7 +139,8 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "summary" should "work" in {
     val metric = new Metrics
-    sc = new SparkContext("local[5]", "MetricsSpec")
+    val conf = new SparkConf().setMaster("local[5]").setAppName("MetricsSpec")
+    sc = new SparkContext(conf)
     metric.set("test1", 1.0, sc, 5)
     metric.set("test2", 5.0, sc, 2)
     metric.summary() should be("========== Metrics Summary ==========\n" +
@@ -142,7 +149,8 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "work when change the unit and scale" in {
     val metric = new Metrics
-    sc = new SparkContext("local[5]", "MetricsSpec")
+    val conf = new SparkConf().setMaster("local[5]").setAppName("MetricsSpec")
+    sc = new SparkContext(conf)
     metric.set("test1", 1.0, sc, 5)
     metric.set("test2", 5.0, sc, 2)
     metric.summary("ms", 1e6) should be("========== Metrics Summary ==========\n" +

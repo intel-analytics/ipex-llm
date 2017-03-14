@@ -19,7 +19,7 @@ package org.apache.spark.rdd
 import java.io.{IOException, ObjectOutputStream}
 
 import org.apache.spark.util.Utils
-import org.apache.spark.{Partition, SparkContext, TaskContext}
+import org.apache.spark.{Partition, SparkContext}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -82,7 +82,7 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
 
     require(nonmatchPartitionId.size == candidateLocs.size,
       "unmatched partition size should be the same with candidateLocs size")
-    val nonmatchedParts = nonmatchPartitionId.map { i =>
+    nonmatchPartitionId.foreach { i =>
       val locs = rdds(0).context.getPreferredLocs(rdds(0), i).map(_.host).distinct
       val matchPartition = candidateLocs.remove(0)
       parts(i) = new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
@@ -94,8 +94,8 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
 
 private[spark] class ZippedPartitionsLocalityPartition(
   idx: Int,
-  @transient indexes: Seq[Int],
-  @transient rdds: Seq[RDD[_]],
+  @transient val indexes: Seq[Int],
+  @transient val rdds: Seq[RDD[_]],
   @transient override val preferredLocations: Seq[String])
   extends ZippedPartitionsPartition(idx, rdds, preferredLocations) {
 

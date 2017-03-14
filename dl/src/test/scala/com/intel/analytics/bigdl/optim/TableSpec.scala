@@ -238,7 +238,7 @@ class TableSpec extends FlatSpec with Matchers {
     val t = T(1, 2, 3, 4, 5, 6)
 
     val r = t.clear()
-    r.get() should be(None)
+    r.get(1) should be(None)
     r.contains(1) should be(false)
     r.length() should be(0)
     t.length() should be(0)

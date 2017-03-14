@@ -65,9 +65,7 @@ object LocalOptimizerPerf {
   }
 
   def main(args: Array[String]): Unit = {
-    parser.parse(args, new LocalOptimizerPerfParam()).map(param => {
-      performance(param)
-    })
+    parser.parse(args, new LocalOptimizerPerfParam()).foreach(performance)
   }
 
   def performance(param: LocalOptimizerPerfParam): Unit = {

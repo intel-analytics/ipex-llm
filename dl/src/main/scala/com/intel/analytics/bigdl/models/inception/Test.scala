@@ -33,7 +33,7 @@ object Test {
   val imageSize = 224
 
   def main(args: Array[String]) {
-    testParser.parse(args, new TestParams()).map(param => {
+    testParser.parse(args, new TestParams()).foreach { param =>
       val batchSize = param.batchSize.getOrElse(128)
       val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
         .map(conf => {
@@ -54,9 +54,7 @@ object Test {
       val model = Module.load[Float](param.model)
       val validator = Validator(model, valSet)
       val result = validator.test(Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
-      result.foreach(r => {
-        println(s"${r._2} is ${r._1}")
-      })
-    })
+      result.foreach(r => println(s"${r._2} is ${r._1}"))
+    }
   }
 }
