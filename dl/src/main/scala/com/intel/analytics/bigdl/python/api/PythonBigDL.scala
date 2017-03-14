@@ -156,13 +156,25 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                               dW: Int,
                               dH: Int,
                               padW: Int = 0,
-                              padH: Int = 0): SpatialMaxPooling[T] = {
-    SpatialMaxPooling[T](kW,
-      kH,
-      dW,
-      dH,
-      padW,
-      padH)
+                              padH: Int = 0,
+                              to_ceil: Boolean = False: SpatialMaxPooling[T] = {
+    if(to_ceil){
+      return SpatialMaxPooling[T](kW,
+        kH,
+        dW,
+        dH,
+        padW,
+        padH).ceil()
+    }
+    else{
+      return SpatialMaxPooling[T](kW,
+        kH,
+        dW,
+        dH,
+        padW,
+        padH)
+    }
+
   }
 
   def createSpatialConvolution(nInputPlane: Int,
@@ -284,8 +296,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Dropout[T](initP, inplace, scale)
   }
 
-  def createView(sizes: JList[Int]):  View[T] = {
-     View[T](sizes.asScala.toArray)
+  def createView(sizes: JList[Int], num_input_dims: Int):  View[T] = {
+     View[T](sizes.asScala.toArray).setNumInputDims(num_input_dims)
   }
   //   Optimizer
   def createClassNLLCriterion: ClassNLLCriterion[T] = {

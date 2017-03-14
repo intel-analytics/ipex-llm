@@ -55,6 +55,9 @@ class Model(JavaValue):
         else:
             return "float64"
 
+    def reset(self):
+        return callJavaFunc(SparkContext.getOrCreate(), self.value.reset)
+
     def parameters(self):
         name_to_params = callBigDlFunc(self.bigdl_type,
                                        "modelGetParameters",
@@ -200,13 +203,16 @@ class SpatialMaxPooling(Model):
                  dw,
                  dh,
                  pad_w=0,
-                 pad_h=0, bigdl_type="float"):
+                 pad_h=0,
+                 to_ceil = False, # call floor() when False; call ceil() when True
+                 bigdl_type="float"):
         super(SpatialMaxPooling, self).__init__(None, bigdl_type, kw,
                                                 kh,
                                                 dw,
                                                 dh,
                                                 pad_w,
-                                                pad_h)
+                                                pad_h,
+                                                to_ceil)
 
 
 class Reshape(Model):
@@ -318,15 +324,19 @@ class Dropout(Model):
 
 class View(Model):
     '''
-    >>> view = View([1024,2])
+    >>> view = View([1024,2],2)
     creating: createView
     '''
 
     def __init__(self,
-                 sizes,
-                 bigdl_type="float"):
+                sizes,
+                num_input_dims,
+                bigdl_type="float"):
         super(View, self).__init__(None, bigdl_type,
-                                   sizes)
+                                   sizes,
+                                   num_input_dims)
+
+
 
 
 def _test():
