@@ -228,7 +228,7 @@ class Table private[bigdl](
         case table: Table =>
           val newTable = table.flatten(resultIndex)
           newState ++= newTable.state
-          resultIndex += newState.size
+          resultIndex += newTable.length()
         case other =>
           newState.put(resultIndex, other)
           resultIndex += 1
@@ -265,7 +265,7 @@ class Table private[bigdl](
         case table: Table =>
           val newTable = inverseFlatten(table, resultIndex)
           newState.put(i, new Table(newTable.state))
-          resultIndex += newTable.length()
+          resultIndex += newTable.length() - 1
         case other =>
           newState.put(i, state.get(resultIndex).get)
       }

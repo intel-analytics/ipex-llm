@@ -287,4 +287,161 @@ class BatchNormalizationSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val checker = new GradientChecker(1e-4)
     checker.checkWeight[Double](sbn, input, 1e-3) should be(true)
   }
+
+  "BatchNormalization updateGradientInput" should "generate correct output and gradInput" in {
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val sbn = new BatchNormalization[Double](3, 1e-3)
+
+    val input = Tensor[Double](16, 3).apply1(e => {
+      RNG.uniform(0.0, 255)
+    })
+
+    val gradOutput = Tensor[Double](16, 3).apply1(e => {
+      RNG.uniform(0.0, 255)
+    })
+
+    sbn.zeroGradParameters()
+    val parameters = sbn.getParameters()._1.asInstanceOf[Tensor[Double]]
+    val gradparameters = sbn.getParameters()._2.asInstanceOf[Tensor[Double]]
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      """
+        |sbn = nn.BatchNormalization(3, 1e-3)
+        |sbn:zeroGradParameters()
+        |local parameters, gradParameters = sbn:getParameters()
+        |parameters_initial = parameters : clone()
+        |gradParameters_initial = gradParameters : clone()
+        |
+        |output = sbn:forward(input)
+        |
+        |gradInput = sbn:updateGradInput(input, gradOutput)
+      """.stripMargin
+
+    val (luaTime, torchResult) = TH.run(code,
+      Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("parameters_initial", "gradParameters_initial", "gradParameters",
+        "output", "gradInput")
+    )
+    val parameterTorch = torchResult("parameters_initial").asInstanceOf[Tensor[Double]]
+    val gradparameterTorch = torchResult("gradParameters_initial").asInstanceOf[Tensor[Double]]
+    val gradparametersTorch = torchResult("gradParameters").asInstanceOf[Tensor[Double]]
+    val outputTorch = torchResult("output").asInstanceOf[Tensor[Double]]
+    val gradInputTorch = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    require(parameters == parameterTorch, "parameter compare failed")
+
+    require(gradparameters == gradparameterTorch, "gradparameter compare failed")
+
+    val output = sbn.forward(input)
+
+    val gradInput = sbn.updateGradInput(input, gradOutput)
+
+    outputTorch should be (output)
+
+    gradInputTorch should be (gradInput)
+
+    gradparametersTorch should be (gradparameters)
+  }
+
+  "BatchNormalization updateGradientInput and acc" should "generate correct result" in {
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val sbn = new BatchNormalization[Double](3, 1e-3)
+
+    val input = Tensor[Double](16, 3).apply1(e => {
+      RNG.uniform(0.0, 255)
+    })
+
+    val gradOutput = Tensor[Double](16, 3).apply1(e => {
+      RNG.uniform(0.0, 255)
+    })
+
+    sbn.zeroGradParameters()
+    val parameters = sbn.getParameters()._1.asInstanceOf[Tensor[Double]]
+    val gradparameters = sbn.getParameters()._2.asInstanceOf[Tensor[Double]]
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      """
+        |sbn = nn.BatchNormalization(3, 1e-3)
+        |sbn:zeroGradParameters()
+        |local parameters, gradParameters = sbn:getParameters()
+        |parameters_initial = parameters : clone()
+        |gradParameters_initial = gradParameters : clone()
+        |
+        |output = sbn:forward(input)
+        |
+        |gradInput = sbn:updateGradInput(input, gradOutput)
+        |sbn:accGradParameters(input, gradOutput)
+      """.stripMargin
+
+    val (luaTime, torchResult) = TH.run(code,
+      Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("parameters_initial", "gradParameters_initial", "gradParameters",
+        "output", "gradInput")
+    )
+    val parameterTorch = torchResult("parameters_initial").asInstanceOf[Tensor[Double]]
+    val gradparameterTorch = torchResult("gradParameters_initial").asInstanceOf[Tensor[Double]]
+    val gradparametersTorch = torchResult("gradParameters").asInstanceOf[Tensor[Double]]
+    val outputTorch = torchResult("output").asInstanceOf[Tensor[Double]]
+    val gradInputTorch = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    require(parameters == parameterTorch, "parameter compare failed")
+
+    require(gradparameters == gradparameterTorch, "gradparameter compare failed")
+
+    val output = sbn.forward(input)
+
+    val gradInput = sbn.updateGradInput(input, gradOutput)
+    sbn.accGradParameters(input, gradOutput)
+
+    outputTorch should be (output)
+
+    gradInputTorch should be (gradInput)
+
+    gradparametersTorch should be (gradparameters)
+  }
+
+  "BatchNormalization affine = false" should "generate correct result" in {
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val sbn = new BatchNormalization[Double](3, 1e-3, 0.1, false)
+
+    val input = Tensor[Double](16, 3).apply1(e => {
+      RNG.uniform(0.0, 255)
+    })
+
+    val gradOutput = Tensor[Double](16, 3).apply1(e => {
+      RNG.uniform(0.0, 255)
+    })
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      """
+        |sbn = nn.BatchNormalization(3, 1e-3, 0.1, false)
+        |
+        |output = sbn:forward(input)
+        |
+        |gradInput = sbn:updateGradInput(input, gradOutput)
+        |sbn:accGradParameters(input, gradOutput)
+      """.stripMargin
+
+    val (luaTime, torchResult) = TH.run(code,
+      Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput")
+    )
+    val outputTorch = torchResult("output").asInstanceOf[Tensor[Double]]
+    val gradInputTorch = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    val output = sbn.forward(input)
+
+    val gradInput = sbn.updateGradInput(input, gradOutput)
+    sbn.accGradParameters(input, gradOutput)
+
+    outputTorch should be (output)
+
+    gradInputTorch should be (gradInput)
+  }
 }

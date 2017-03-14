@@ -39,8 +39,8 @@ class FlattenTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     )
 
 
-    val expectedGradInput = T(Tensor[Double](
-      Storage(Array(1.1, 2.0, 3))),
+    val expectedGradInput = T(
+      Tensor[Double](Storage(Array(1.1, 2.0, 3))),
       T(
         Tensor[Double](Storage(Array(4.1, 3, 2, 1))),
         T(
@@ -50,6 +50,68 @@ class FlattenTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     )
     val gradOutput = T(Tensor[Double](
       Storage(Array(1.1, 2, 3))), Tensor[Double](Storage(Array(4.1, 3, 2, 1))),
+      Tensor[Double](Storage(Array(3.1, 2, 1)))
+    )
+
+    val start = System.nanoTime()
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, gradOutput)
+    val end = System.nanoTime()
+
+    output should be (expectedOutput)
+    gradInput should be (expectedGradInput)
+  }
+
+  "An FlattenTable" should "also generate correct output and grad" in {
+    val layer = new FlattenTable[Double]()
+    val input = T(
+      Tensor[Double](Storage(Array(1.0, 2, 3))),
+      T(
+        Tensor[Double](Storage(Array(4.0, 3, 2, 1))),
+        Tensor[Double](Storage(Array(3.0, 2, 1))),
+        T(
+          Tensor[Double](Storage(Array(3.0, 2, 1))),
+          Tensor[Double](Storage(Array(3.0, 2, 1)))
+        ),
+        T(
+          Tensor[Double](Storage(Array(3.0, 2, 1))),
+          Tensor[Double](Storage(Array(3.0, 2, 1)))
+          )
+      )
+    )
+    val expectedOutput = T(
+      Tensor[Double](Storage(Array(1.0, 2, 3))),
+      Tensor[Double](Storage(Array(4.0, 3, 2, 1))),
+      Tensor[Double](Storage(Array(3.0, 2, 1))),
+      Tensor[Double](Storage(Array(3.0, 2, 1))),
+      Tensor[Double](Storage(Array(3.0, 2, 1))),
+      Tensor[Double](Storage(Array(3.0, 2, 1))),
+      Tensor[Double](Storage(Array(3.0, 2, 1)))
+    )
+
+
+    val expectedGradInput = T(
+      Tensor[Double](Storage(Array(1.1, 2, 3))),
+      T(
+        Tensor[Double](Storage(Array(4.1, 3, 2, 1))),
+        Tensor[Double](Storage(Array(3.1, 2, 1))),
+        T(
+          Tensor[Double](Storage(Array(3.1, 2, 1))),
+          Tensor[Double](Storage(Array(3.1, 2, 1)))
+        ),
+        T(
+          Tensor[Double](Storage(Array(3.1, 2, 1))),
+          Tensor[Double](Storage(Array(3.1, 2, 1)))
+        )
+      )
+    )
+    val gradOutput = T(
+      Tensor[Double](Storage(Array(1.1, 2, 3))),
+      Tensor[Double](Storage(Array(4.1, 3, 2, 1))),
+      Tensor[Double](Storage(Array(3.1, 2, 1))),
+      Tensor[Double](Storage(Array(3.1, 2, 1))),
+      Tensor[Double](Storage(Array(3.1, 2, 1))),
+      Tensor[Double](Storage(Array(3.1, 2, 1))),
       Tensor[Double](Storage(Array(3.1, 2, 1)))
     )
 
