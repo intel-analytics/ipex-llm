@@ -16,12 +16,13 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.{Module, _}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.visualization.tensorboard.FileWriter
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
@@ -71,6 +72,8 @@ object DistriOptimizer {
     validationMethods: Option[Array[ValidationMethod[T]]],
     cacheTrigger: Option[Trigger],
     cachePath: Option[String],
+    trainSummary: Option[TrainSummary],
+    validationSummary: Option[ValidationSummary],
     isOverWrite: Boolean
   )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
@@ -239,9 +242,12 @@ object DistriOptimizer {
         val end = System.nanoTime()
         wallClockTime += end - start
         optimMethod.updateHyperParameter(state, driverState)
+        driverState("loss") = lossSum.value.toFloat / finishedModelNum
+        driverState("throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
+        driverState("learningRate") = -state[Double]("clr").toFloat
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
-          s"Throughput is ${recordsNum.value / ((end - start) / 1e9)} records/second. Loss is ${
-            lossSum.value / finishedModelNum}. ${optimMethod.getHyperParameter(state)}")
+          s"Throughput is ${driverState("throughput")} records/second. Loss is ${
+            driverState("loss")}. ${optimMethod.getHyperParameter(state)}")
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
@@ -296,7 +302,15 @@ object DistriOptimizer {
           coresPerNode,
           models,
           wallClockTime,
-          driverState
+          driverState,
+          validationSummary
+        )
+
+        saveSummary(
+          trainSummary,
+          models,
+          driverState,
+          parameters
         )
 
         checkpoint(
@@ -308,13 +322,13 @@ object DistriOptimizer {
           driverState,
           parameters
         )
+
       } else {
         logger.info(s"Warning!!! Ignore this iteration as more than maxDropPercentage " +
           s"module is dropped!! Finished modules number: ${finishedModelNum}")
       }
     }
   }
-
 
   private def checkpoint[T: ClassTag](
     cacheTrigger: Option[Trigger],
@@ -336,6 +350,40 @@ object DistriOptimizer {
         localState("epoch") = state[Int]("epoch")
         saveState(localState, cachePath, isOverWrite, s"" +
           s".${state[Int]("neval")}")
+      }
+    }
+  }
+
+  private def saveSummary[T: ClassTag](
+        trainSummary: Option[TrainSummary],
+        models: RDD[Cache[T]],
+        driverState: Table,
+        parameters: AllReduceParameter[T])(implicit ev: TensorNumeric[T]): Unit = {
+    val currentIteration = driverState[Int]("neval") - 1
+    if (trainSummary.isDefined && !trainSummary.get.getTrigger().isEmpty) {
+      val trigger = trainSummary.get.getTrigger()
+      val parametersTrigger = trigger.getOrElse[Trigger]("parameters", null)
+      if (null != parametersTrigger && parametersTrigger(driverState)) {
+        val model = getModelWithGradient(models, parameters)
+        val parametersTable = model.getParametersTable()
+        parametersTable.keySet.foreach { moduleName =>
+          val paramTable = parametersTable[Table](moduleName)
+          paramTable.keySet.foreach { paramName =>
+            trainSummary.get.addHistogram(
+              s"$moduleName/$paramName", paramTable[Tensor[T]](paramName), currentIteration
+            )
+          }
+        }
+      }
+      val scalarTrigger = trigger.filter(!_._1.equals("parameters"))
+      scalarTrigger.foreach { v =>
+        if (v._2(driverState)) {
+          require(driverState.contains(v._1), s"DistriOptimizer.saveMetrics: metrics ${v._1} " +
+            s"is not supported now.")
+          trainSummary.get.addScalar(
+            v._1, driverState[Float](v._1), currentIteration
+          )
+        }
       }
     }
   }
@@ -416,14 +464,15 @@ object DistriOptimizer {
     coresPerNode: Int,
     models: RDD[Cache[T]],
     wallClockTime: Long,
-    state: Table
-  ): Unit = {
+    state: Table,
+    validationSummary: Option[ValidationSummary]
+  ): Array[(ValidationResult, ValidationMethod[T])] = {
     if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
-      return
+      return null
     }
     val trigger = validationTrigger.get
     if (!trigger(state)) {
-      return
+      return null
     }
     val vMethods = validationMethods.get
     val validateRDD = validationDataSet.get.toDistributed().data(train = false)
@@ -432,7 +481,7 @@ object DistriOptimizer {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException
     }
-    ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
+    val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
       val cached = modelIter.next()
       val criterion = cached.localCriterions
       val workingModels = cached.localModels
@@ -466,9 +515,18 @@ object DistriOptimizer {
       left.zip(right).map { case (l, r) =>
         l + r
       }
-    }).zip(vMethods).foreach(r => {
+    }).zip(vMethods)
+    results.foreach(r => {
       logger.info(s"${r._2} is ${r._1}")
     })
+    if(validationSummary.isDefined) {
+      results.foreach { r =>
+        validationSummary.get.addScalar(r._2.toString(), r._1.getResult(),
+          state[Int]("neval") - 1
+        )
+      }
+    }
+    results
   }
 
   private def getModel[T: ClassTag](
@@ -492,6 +550,38 @@ object DistriOptimizer {
       val start = pid * taskSize + math.min(pid, extraSize)
       val length = taskSize + (if (pid < extraSize) 1 else 0)
       parameter.narrow(1, start + 1, length).copy(weights(pid))
+    })
+
+    trainedModel
+  }
+
+  private def getModelWithGradient[T: ClassTag](
+      models: RDD[Cache[T]],
+      parameters: AllReduceParameter[T]): Module[T] = {
+    val partitionNum = models.partitions.length
+    val trainedModel = models.map(_.localModels.head.clearState()).first()
+    val (weights, gradients) = models.mapPartitions(iter => {
+      val cached = iter.next()
+      val curPartitionId = TaskContext.getPartitionId()
+      Iterator.single((Map(curPartitionId -> parameters.weightPartition),
+        Map(curPartitionId -> parameters.gradientPartition)))
+    }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
+
+    val parameterArray = trainedModel.parameters()
+    (0 until parameterArray._2.length).foreach(i =>
+      parameterArray._2(i).resizeAs(parameterArray._1(i))
+    )
+    val (parameter, gradientParameter) = trainedModel.getParameters()
+    val parameterLength = parameter.nElement()
+    val taskSize = parameterLength / partitionNum
+    require(taskSize != 0, "parameter length should not less than partition number")
+    val extraSize = parameterLength % partitionNum
+
+    (0 until partitionNum).map(pid => {
+      val start = pid * taskSize + math.min(pid, extraSize)
+      val length = taskSize + (if (pid < extraSize) 1 else 0)
+      parameter.narrow(1, start + 1, length).copy(weights(pid))
+      gradientParameter.narrow(1, start + 1, length).copy(gradients(pid))
     })
 
     trainedModel
@@ -543,7 +633,6 @@ class DistriOptimizer[T: ClassTag] (
     models = DistriOptimizer.initThreadModels(
       model, dataset, criterion, state, nodeNumber, coresPerNode, checkSingleton, parameters)
 
-
     DistriOptimizer.optimize(
       dataset,
       coresPerNode,
@@ -558,6 +647,8 @@ class DistriOptimizer[T: ClassTag] (
       validationMethods,
       checkpointTrigger,
       checkpointPath,
+      trainSummary,
+      validationSummary,
       isOverWrite
     )
 

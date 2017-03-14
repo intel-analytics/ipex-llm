@@ -21,7 +21,7 @@ import java.nio.file.{Files, Paths}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, _}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Engine, File, T, Table}
+import com.intel.analytics.bigdl.utils._
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -42,6 +42,10 @@ abstract class Optimizer[T: ClassTag, D](
   protected var validationTrigger: Option[Trigger] = None
   protected var validationMethods: Option[Array[ValidationMethod[T]]] = None
   protected var validationDataSet: Option[DataSet[MiniBatch[T]]] = None
+
+  // To save the metrics.
+  protected var trainSummary: Option[TrainSummary] = None
+  protected var validationSummary: Option[ValidationSummary] = None
 
   // To achieve better performance, please set dropPercentage as 0.04
   protected var dropPercentage: Double = 0.0
@@ -89,6 +93,33 @@ abstract class Optimizer[T: ClassTag, D](
     }
     this.checkpointPath = Some(path)
     this.checkpointTrigger = Some(trigger)
+    this
+  }
+
+  /**
+   * Enable metrics and save to a folder.
+   *
+   * Metrics table should be defined as metricsName -> trigger. We support two kinds of metrics now:
+   * 1. Supported train metrics are learningRate, loss, throughput, parameters.
+   *    Parameters contains weight, bias, gradWeight, gradBias, and some running status(eg.
+   *    runningMean and runningVar in BatchNormalization).
+   * 2. Validation metrics relay on ValidationMethods set in method setValidation().
+   *
+   * Notice: If parameter metrics is empty, we record learningRate, loss and throughput each
+   * iteration. But recording parameters is disabled by default, due to get parameters from
+   * workers is a heavy operation when the model is very big, like AlexNet and Inception.
+   *
+   * Usage, to save learningRate each iteration, and parameters each 20 iteration:
+   *    enableMetrics("./metrics", mutable.HashMap("learningRate" -> Trigger.severalIteration(1),
+   *      "parameters" -> Trigger.severalIteration(20)))
+   */
+  def setTrainSummary(trainSummary: TrainSummary): this.type = {
+    this.trainSummary = Some(trainSummary)
+    this
+  }
+
+  def setValidationSummary(validationSummary: ValidationSummary): this.type = {
+    this.validationSummary = Some(validationSummary)
     this
   }
 

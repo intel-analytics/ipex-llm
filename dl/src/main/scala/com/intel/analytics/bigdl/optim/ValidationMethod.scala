@@ -43,6 +43,8 @@ trait ValidationResult extends Serializable {
   protected def format(): String
 
   override def toString(): String = format()
+
+  def getResult(): Float
 }
 
 class AccuracyResult(private var correct: Int, private var count: Int)
@@ -57,8 +59,11 @@ class AccuracyResult(private var correct: Int, private var count: Int)
     this.count += otherResult.count
     this
   }
-
   // scalastyle:on methodName
+
+  override def getResult(): Float = {
+    correct.toFloat / count
+  }
 
   override protected def format(): String = {
     s"Accuracy(correct: $correct, count: $count, accuracy: ${correct.toDouble / count})"
@@ -176,6 +181,10 @@ class LossResult(private var loss: Float, private var count: Int)
   }
 
   // scalastyle:on methodName
+
+  override def getResult(): Float = {
+    loss.toFloat / count
+  }
 
   override protected def format(): String = {
     s"(Loss: $loss, count: $count, Average Loss: ${loss.toFloat / count})"
