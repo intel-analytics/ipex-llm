@@ -33,7 +33,7 @@ object Test {
   import Utils._
 
   def main(args: Array[String]) {
-    testParser.parse(args, new TestParams()).map(param => {
+    testParser.parse(args, new TestParams()).foreach { param =>
       val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
         .map(conf => {
           conf.setAppName("Test Vgg on Cifar10")
@@ -51,10 +51,8 @@ object Test {
       val model = Module.load[Float](param.model)
       val validator = Validator(model, validationSet)
       val result = validator.test(Array(new Top1Accuracy[Float]))
-      result.foreach(r => {
-        println(s"${r._2} is ${r._1}")
-      })
-    })
+      result.foreach(r => println(s"${r._2} is ${r._1}"))
+    }
   }
 }
 

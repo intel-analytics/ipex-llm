@@ -40,7 +40,7 @@ object Utils {
       if (v.isInstanceOf[Table]) {
         t1.update(k, zeroTableCopy(if (t1.contains(k)) t1(k) else T(), t2(k)))
       } else {
-        require(v.isInstanceOf[Tensor[T]], "Input can only consist of Tensor or Table")
+        require(v.isInstanceOf[Tensor[_]], "Input can only consist of Tensor or Table")
         val tensorV = v.asInstanceOf[Tensor[T]]
         if (!t1.contains(k)) {
           t1.update(k, tensorV.clone().zero())
@@ -72,7 +72,7 @@ object Utils {
       val srcTable = src.toTable
       result = if (null == target) {
         T()
-      } else if (target.isInstanceOf[Tensor[T]]) {
+      } else if (target.isInstanceOf[Tensor[_]]) {
         T(target)
       } else {
         target
@@ -92,8 +92,8 @@ object Utils {
         resultTable.remove(i)
         i += 1
       }
-    } else if (src.isInstanceOf[Tensor[T]]) {
-      result = if (target.isInstanceOf[Tensor[T]]) {
+    } else if (src.isInstanceOf[Tensor[_]]) {
+      result = if (target.isInstanceOf[Tensor[_]]) {
         target
       } else {
         Tensor[T]()
@@ -137,7 +137,7 @@ object Utils {
    */
   def recursiveTensorApply2[T](x: Activity, y: Activity,
     func: (Tensor[T], Tensor[T]) => Tensor[T])(implicit ev: TensorNumeric[T]): Activity = {
-    if (y.isInstanceOf[Tensor[T]] && x.isInstanceOf[Tensor[T]]) {
+    if (y.isInstanceOf[Tensor[_]] && x.isInstanceOf[Tensor[_]]) {
       require(x.toTensor[T].nElement() == y.toTensor[T].nElement(),
         "x, y should have the same size")
       func(x.toTensor[T], y.toTensor[T])

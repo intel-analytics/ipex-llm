@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.utils
 
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.ZippedPartitionsWithLocalityRDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -24,7 +24,9 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 class ZippedPartitionsWithLocalityRDDSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc: SparkContext = null
   before {
-    sc = new SparkContext("local[4]", "ZippedPartitionsWithLocalityRDDSpec")
+    val conf = new SparkConf().setMaster("local[4]")
+      .setAppName("ZippedPartitionsWithLocalityRDDSpec")
+    sc = new SparkContext(conf)
   }
 
   after {

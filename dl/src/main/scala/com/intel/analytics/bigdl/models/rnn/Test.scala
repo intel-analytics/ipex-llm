@@ -36,7 +36,7 @@ object Test {
   val logger = Logger.getLogger(getClass)
 
   def main(args: Array[String]): Unit = {
-    testParser.parse(args, new TestParams()).map(param => {
+    testParser.parse(args, new TestParams()).foreach { param =>
 
       val vocab = new Dictionary(param.folder)
 
@@ -86,8 +86,7 @@ object Test {
 
       val results = labeledInput.map(x => x.data()
         .map(t => vocab.getWord(t)))
-      results.foreach(x =>
-      logger.info(x.mkString(",")))
-    })
+      results.foreach(x => logger.info(x.mkString(",")))
+    }
   }
 }

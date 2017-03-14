@@ -223,7 +223,7 @@ class Table private[bigdl](
     val newState = mutable.Map[Any, Any]()
 
     while (i <= state.size) {
-      state.get(i).get match {
+      state(i) match {
         case table: Table =>
           val newTable = table.flatten(resultIndex)
           newState ++= newTable.state
@@ -260,13 +260,13 @@ class Table private[bigdl](
     val newState = mutable.Map[Any, Any]()
 
     while (i <= target.length()) {
-      target.state.get(i).get match {
+      target.state(i) match {
         case table: Table =>
           val newTable = inverseFlatten(table, resultIndex)
           newState.put(i, new Table(newTable.state))
           resultIndex += newTable.length() - 1
-        case other =>
-          newState.put(i, state.get(resultIndex).get)
+        case _ =>
+          newState.put(i, state(resultIndex))
       }
       i += 1
       resultIndex += 1

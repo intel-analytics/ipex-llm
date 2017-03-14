@@ -137,9 +137,7 @@ object Utils {
     )
 
     val result = new ArrayBuffer[ByteRecord]()
-    allFiles.map(imageFile => {
-      load(imageFile, result)
-    })
+    allFiles.foreach(load(_, result))
     result.toArray
   }
 

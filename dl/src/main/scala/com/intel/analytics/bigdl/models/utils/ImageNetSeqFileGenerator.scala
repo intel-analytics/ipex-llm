@@ -69,7 +69,7 @@ object ImageNetSeqFileGenerator {
 
 
   def main(args: Array[String]): Unit = {
-    parser.parse(args, new ImageNetSeqFileGeneratorParams()).map(param => {
+    parser.parse(args, new ImageNetSeqFileGeneratorParams()).foreach { param =>
       if (param.train) {
         // Process train data
         println("Process train data...")
@@ -131,7 +131,7 @@ object ImageNetSeqFileGenerator {
           workingThread
         }).foreach(_.join())
       }
-    })
+    }
 
     println("Done")
   }

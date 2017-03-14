@@ -23,7 +23,7 @@ import java.util.concurrent.{Callable, Executors}
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
@@ -34,7 +34,8 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val nodeNumber = 1
     val coreNumber = 1
     Engine.init(nodeNumber, coreNumber, true)
-    sc = new SparkContext("local[1]", "DataSetSpec")
+    val conf = new SparkConf().setMaster("local[1]").setAppName("DataSetSpec")
+    sc = new SparkContext(conf)
   }
 
   after {
