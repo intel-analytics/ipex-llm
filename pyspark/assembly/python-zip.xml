@@ -11,8 +11,8 @@
             <includes>
                 <include>**/*.py</include>
             </includes>
-            <outputDirectory>/</outputDirectory>
-            <directory>${project.basedir}/src/main/python</directory>
+            <outputDirectory>/..</outputDirectory>
+            <directory>pyspark</directory>
         </fileSet>
         <fileSet>
             <includes>
