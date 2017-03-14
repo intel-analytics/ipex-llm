@@ -88,8 +88,17 @@ class TestWorkFlow(unittest.TestCase):
             val_method=["Top1Accuracy"]
         )
         optimizer.setcheckpoint(SeveralIteration(1), "/tmp/prototype/")
+        train_summary = TrainSummary(log_dir=sc.appName,
+        app_name="run1", trigger={"learningRate": "hello"})
+
+        # optimizer.set_train_summary(train_summary)
 
         trained_model = optimizer.optimize()
+
+
+        # train_summary.read_scalar("learningRate")
+
+
         # TODO: add result validation
         parameters = trained_model.parameters()
         self.assertIsNotNone(parameters["linear1"])

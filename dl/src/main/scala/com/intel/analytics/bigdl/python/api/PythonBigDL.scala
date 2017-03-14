@@ -26,10 +26,11 @@ import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Engine, Table}
+import com.intel.analytics.bigdl.utils._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
 
+import scala.collection.Map
 import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect.ClassTag
@@ -383,6 +384,34 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       optimizer.overWriteCheckpoint()
     }
   }
+
+  def setTrainSummary(optimizer: Optimizer[T, MiniBatch[T]], summary: TrainSummary): Unit = {
+    optimizer.setTrainSummary(summary)
+  }
+
+  def setValSummary(optimizer: Optimizer[T, MiniBatch[T]], summary: ValidationSummary): Unit = {
+    optimizer.setValidationSummary(summary)
+  }
+
+  def summaryReadScalar(summary: Summary, tag: String): JList[JList[Any]] = {
+    val result = summary.readScalar(tag)
+    result.toList.map{item =>
+      List(item._1, item._2, item._3).asJava.asInstanceOf[JList[Any]]}.asJava
+  }
+
+  def createTrainSummary(logDir: String,
+                         appName: String,
+                         trigger: JMap[String, String]): Summary = {
+    val a = trigger.asScala.mapValues[Trigger](_ => Trigger.severalIteration(2)).toMap
+    new TrainSummary(logDir, appName, a)
+  }
+
+  def createValidationSummary(logDir: String,
+                              appName: String,
+                              trigger: JMap[String, Trigger]): Summary = {
+    new ValidationSummary(logDir, appName, trigger.asScala.toMap)
+  }
+
 
   def initEngine(nodeNum: Int, coreNum: Int): Unit = {
     Engine.setNodeAndCore(nodeNum, coreNum)

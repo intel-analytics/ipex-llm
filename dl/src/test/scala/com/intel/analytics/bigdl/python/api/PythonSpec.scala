@@ -21,8 +21,9 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim.{SGD, Trigger}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.optim.{SGD}
+import com.intel.analytics.bigdl.optim.Trigger
+import com.intel.analytics.bigdl.utils.{Engine, TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaRDD
@@ -100,7 +101,21 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       trigger = Trigger.severalIteration(10),
       valRdd = data.toJavaRDD(),
       vMethods = util.Arrays.asList("Top1Accuracy", "Loss"))
+
+    val trainSummary = TrainSummary(sc.appName, "lenet", Map(
+      "learningRate" -> Trigger.severalIteration(1),
+      "loss" -> Trigger.severalIteration(1),
+      "throughput" -> Trigger.severalIteration(1),
+      "parameters" -> Trigger.severalIteration(20)))
+    val validationSummary = ValidationSummary(sc.appName, "lenet")
+
+    pp.setTrainSummary(optimizer, trainSummary)
+    pp.setValSummary(optimizer, validationSummary)
+
     val trainedModel = optimizer.optimize()
+
+    val lrResult = pp.summaryReadScalar(trainSummary, "learningRate")
+
     val resultRDD = pp.predict(trainedModel, data.map(pp.toSample(_)))
     val result = resultRDD.take(5)
     println(result)
