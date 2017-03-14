@@ -16,8 +16,6 @@
  */
 package com.intel.analytics.bigdl.models.resnet
 
-import java.nio.file.{Path, Paths}
-
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.dataset.image._
@@ -48,7 +46,7 @@ object Cifar10DataSet extends ResNetDataSet {
       .transform(BytesToBGRImg())
       .transform(BGRImgNormalizer(trainMean, trainStd))
       .transform(HFlip(0.5))
-      .transform(BGRImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))
+      .transform(BGRImgCropper(cropWidth = 32, cropHeight = 32, padding = 4))
       .transform(BGRImgToBatch(batchSize))
   }
 
@@ -77,7 +75,7 @@ object Cifar10DataSet extends ResNetDataSet {
       .transform(BytesToBGRImg())
       .transform(BGRImgNormalizer(testMean, testStd))
       .transform(HFlip(0.5))
-      .transform(BGRImgRdmCropper(cropWidth = 32, cropHeight = 32, padding = 4))
+      .transform(BGRImgCropper(cropWidth = 32, cropHeight = 32, padding = 4))
       .transform(BGRImgToBatch(batchSize))
   }
 }

@@ -69,7 +69,8 @@ object ResNetPreprocessor {
         BytesToBGRImg()
     } else {
       DataSet.ImageFolder.paths(path) -> LocalImgReader(256)
-    }) -> BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize, CropCenter) ->
+    }) -> BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize,
+      cropperMethod = CropCenter) ->
       BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) ->
       BGRImgToBatch(batchSize)
   }

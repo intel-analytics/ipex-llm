@@ -132,7 +132,7 @@ class TransformersSpec extends FlatSpec with Matchers {
     }
   }
 
-  "RGB Image Cropper" should "crop image correct" in {
+  "RGB Image Cropper without padding" should "crop image correct" in {
     val image = new LabeledBGRImage(32, 32)
     val tensor = Tensor[Float](Storage[Float](image.content), 1, Array(3, 32, 32))
     tensor.rand()
@@ -152,7 +152,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       while (y < 24) {
         var x = 0
         while (x < 24) {
-          resultContent((y * 24 + x) * 3 + c) should be(originContent(582 + (y * 32 + x) * 3 +
+          resultContent((y * 24 + x) * 3 + c) should be(originContent(483 + (y * 32 + x) * 3 +
             c))
           x += 1
         }
@@ -171,7 +171,7 @@ class TransformersSpec extends FlatSpec with Matchers {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
     )
 
-    val cropper = new BGRImgRdmCropper(cropHeight = cH, cropWidth = cW, padding = pad)
+    val cropper = new BGRImgCropper(cropHeight = cH, cropWidth = cW, padding = pad)
     val iter = cropper.apply(Iterator.single(image))
     val result = iter.next()
 
