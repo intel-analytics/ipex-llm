@@ -197,14 +197,14 @@ class SpatialMaxPooling(Model):
     >>> spatialMaxPooling = SpatialMaxPooling(2, 2, 2, 2)
     creating: createSpatialMaxPooling
     '''
-
+    # to_ceil: call floor() when False; call ceil() when True
     def __init__(self, kw,
                  kh,
                  dw,
                  dh,
                  pad_w=0,
                  pad_h=0,
-                 to_ceil = False, # call floor() when False; call ceil() when True
+                 to_ceil=False,
                  bigdl_type="float"):
         super(SpatialMaxPooling, self).__init__(None, bigdl_type, kw,
                                                 kh,
@@ -329,14 +329,12 @@ class View(Model):
     '''
 
     def __init__(self,
-                sizes,
-                num_input_dims,
-                bigdl_type="float"):
+                 sizes,
+                 num_input_dims,
+                 bigdl_type="float"):
         super(View, self).__init__(None, bigdl_type,
                                    sizes,
                                    num_input_dims)
-
-
 
 
 def _test():

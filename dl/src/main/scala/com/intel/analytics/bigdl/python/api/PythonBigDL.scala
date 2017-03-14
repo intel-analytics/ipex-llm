@@ -160,19 +160,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                               to_ceil: Boolean = False: SpatialMaxPooling[T] = {
     if(to_ceil){
       return SpatialMaxPooling[T](kW,
-        kH,
-        dW,
-        dH,
-        padW,
-        padH).ceil()
+                                  kH,
+                                  dW,
+                                  dH,
+                                  padW,
+                                  padH).ceil()
     }
     else{
       return SpatialMaxPooling[T](kW,
-        kH,
-        dW,
-        dH,
-        padW,
-        padH)
+                                  kH,
+                                  dW,
+                                  dH,
+                                  padW,
+                                  padH)
     }
 
   }
@@ -190,70 +190,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                initMethod: String = "default")
   : SpatialConvolution[T] = {
     SpatialConvolution[T](nInputPlane,
-      nOutputPlane,
-      kernelW,
-      kernelH,
-      strideW,
-      strideH,
-      padW,
-      padH,
-      nGroup,
-      propagateBack,
-      PythonBigDL.getInitMethod(initMethod))
-  }
-
-  def createSequential(): Sequential[T] = {
-    Sequential[T]()
-  }
-
-  def createLinear(inputSize: Int, outputSize: Int, initMethod: String): Linear[T] = {
-    Linear[T](inputSize, outputSize, PythonBigDL.getInitMethod(initMethod))
-  }
-
-  def createReLU(): ReLU[T] = {
-    ReLU[T]()
-  }
-
-  def createTanh(): Tanh[T] = {
-    Tanh[T]()
-  }
-
-  def createEcho(): Echo[T] = {
-    Echo[T]()
-  }
-
-  def createLogSoftMax(): LogSoftMax[T] = {
-    LogSoftMax[T]()
-  }
-
-  def createSpatialMaxPooling(kW: Int,
-                              kH: Int,
-                              dW: Int,
-                              dH: Int,
-                              padW: Int = 0,
-                              padH: Int = 0): SpatialMaxPooling[T] = {
-    SpatialMaxPooling[T](kW,
-      kH,
-      dW,
-      dH,
-      padW,
-      padH)
-  }
-
-  def createSpatialConvolution(nInputPlane: Int,
-                               nOutputPlane: Int,
-                               kernelW: Int,
-                               kernelH: Int,
-                               strideW: Int = 1,
-                               strideH: Int = 1,
-                               padW: Int = 0,
-                               padH: Int = 0,
-                               nGroup: Int = 1,
-                               propagateBack: Boolean = true,
-                               initMethod: String = "default")
-
-  def createReshape(size: JList[Int]): Reshape[T] = {
-    Reshape(size.asScala.toArray)
+                          nOutputPlane,
+                          kernelW,
+                          kernelH,
+                          strideW,
+                          strideH,
+                          padW,
+                          padH,
+                          nGroup,
+                          propagateBack,
+                          PythonBigDL.getInitMethod(initMethod))
   }
 
   def createConcat(dimension: Int): Concat[T] = {
@@ -299,6 +245,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createView(sizes: JList[Int], num_input_dims: Int):  View[T] = {
      View[T](sizes.asScala.toArray).setNumInputDims(num_input_dims)
   }
+  
   //   Optimizer
   def createClassNLLCriterion: ClassNLLCriterion[T] = {
     ClassNLLCriterion[T]()
