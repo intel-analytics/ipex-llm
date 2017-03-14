@@ -118,7 +118,7 @@ layer {
   dummy_data_param {
     shape: { dim: $batchSize dim: 3 dim: 227 dim: 227 }
     data_filler {
-      type: "uniform"
+      type: "gaussian"
     }
   }
 }

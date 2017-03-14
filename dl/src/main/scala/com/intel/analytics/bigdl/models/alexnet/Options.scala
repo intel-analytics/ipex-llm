@@ -30,7 +30,9 @@ object Options {
     nodeNumber: Int = -1,
     classNumber: Int = 1000,
     batchSize: Int = -1,
-    env: String = "local"
+    env: String = "local",
+    trainSize: Int = 1281167,
+    valSize: Int = 5000
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL AlexNet Example") {
@@ -61,6 +63,12 @@ object Options {
     opt[Int]("classNum")
       .text("class number")
       .action((x, c) => c.copy(classNumber = x))
+    opt[Int]('t', "trainSize")
+      .text("train size")
+      .action((x, c) => c.copy(trainSize = x))
+    opt[Int]('v', "valSize")
+      .text("validation size")
+      .action((x, c) => c.copy(valSize = x))
     opt[String]("env")
       .text("execution environment")
       .validate(x => {

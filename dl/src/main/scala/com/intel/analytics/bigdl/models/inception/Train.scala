@@ -52,7 +52,7 @@ object TrainInceptionV1 {
         param.nodeNumber,
         param.coreNumber,
         param.classNumber,
-        1281167
+        param.trainSize
       )
       val valSet = ImageNet2012(
         param.folder + "/val",
@@ -62,7 +62,7 @@ object TrainInceptionV1 {
         param.nodeNumber,
         param.coreNumber,
         param.classNumber,
-        50000
+        param.valSize
       )
 
       val model = if (param.modelSnapshot.isDefined) {
@@ -70,6 +70,8 @@ object TrainInceptionV1 {
       } else {
         Inception_v1_NoAuxClassifier(classNum = param.classNumber)
       }
+
+      println(model)
 
       if (Engine.getEngineType == MklDnn) {
         model.convertToMklDnn()
@@ -83,7 +85,7 @@ object TrainInceptionV1 {
           "weightDecay" -> 0.0001,
           "momentum" -> 0.9,
           "dampening" -> 0.0,
-          "learningRateSchedule" -> SGD.Poly(0.5, 62000)
+          "learningRateSchedule" -> SGD.Poly(0.5, param.maxIteration)
         )
       }
 
@@ -93,12 +95,17 @@ object TrainInceptionV1 {
         criterion = new ClassNLLCriterion[Float]()
       )
 
+      val iterationsEpoch = if (param.trainSize % param.batchSize == 0) {
+        param.trainSize / param.batchSize
+      } else {
+        param.trainSize / param.batchSize + 1
+      }
       val (checkpointTrigger, testTrigger, endTrigger) = if (param.maxEpoch.isDefined) {
         (Trigger.everyEpoch, Trigger.everyEpoch, Trigger.maxEpoch(param.maxEpoch.get))
       } else {
         (
-          Trigger.severalIteration(620),
-          Trigger.severalIteration(620),
+          Trigger.severalIteration(iterationsEpoch),
+          Trigger.severalIteration(iterationsEpoch),
           Trigger.maxIteration(param.maxIteration)
           )
       }

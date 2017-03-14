@@ -86,6 +86,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
     dataset.shuffle()
     var iter = dataset.data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
+    val top1 = new Top1Accuracy[T]()
     while (!endWhen(state)) {
       val start = System.nanoTime()
 
@@ -116,6 +117,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
             val (input, target) = tensorBuffer(i)
             val output = localModel.forward(input)
             val _loss = ev.toType[Double](localCriterion.forward(output, target))
+            logger.info(top1(output, target, localCriterion))
             val errors = localCriterion.backward(output, target)
             localModel.backward(input, errors)
             _loss

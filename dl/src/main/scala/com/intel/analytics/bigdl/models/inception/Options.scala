@@ -34,7 +34,9 @@ object Options {
     env: String = "local",
     overWriteCheckpoint: Boolean = false,
     maxEpoch: Option[Int] = None,
-    maxIteration: Int = 62000
+    maxIteration: Int = 62000,
+    trainSize: Int = 1281167,
+    valSize: Int = 5000
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
@@ -78,6 +80,12 @@ object Options {
     opt[Unit]("overWrite")
       .text("overwrite checkpoint files")
       .action( (_, c) => c.copy(overWriteCheckpoint = true) )
+    opt[Int]('t', "trainSize")
+      .text("train size")
+      .action((x, c) => c.copy(trainSize = x))
+    opt[Int]('v', "valSize")
+      .text("validation size")
+      .action((x, c) => c.copy(valSize = x))
     opt[String]("env")
       .text("execution environment")
       .validate(x => {

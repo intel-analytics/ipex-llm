@@ -23,12 +23,20 @@ import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
 import com.intel.analytics.bigdl.tensor.{FloatType, MklTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.utils.Engine
 
+import scala.concurrent.Future
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 4157856938968907891L)
 class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
   extends AbstractConcat[T](dimension) {
+
+  private var size: Array[Int] = null
+  @transient
+  private var results: Array[Future[Unit]] = null
+  @transient
+  private var gradouts: Array[Tensor[T]] = null
 
   class ConcatRef {
     var inputs: Array[MklTensor[T]] = null
@@ -114,6 +122,7 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
   val resources = new Array[Long](ResourceType.dnnResourceNumber)
 
   var coefficients: Array[T] = null
+  var gradOutputs: Array[Tensor[T]] = null
 
   private[this] var _isConcatInited: Boolean = false
 
@@ -155,10 +164,6 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
       case DNN => _prevModuleType = DNN
       case _ =>
     }
-  }
-
-  override def reset(): Unit = {
-    require(this.modules.length <= 4 && this.modules.nonEmpty)
   }
 
   def execute(resources: Array[Long], primitive: Long): Unit = {
@@ -467,20 +472,23 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
     execute(resources, primitive.split)
 
     // conversion depends on modules(i).output type
-    val leaves = new Array[Tensor[T]](modules.length)
+    if (gradOutputs == null) {
+      gradOutputs = new Array[Tensor[T]](modules.length)
+    }
+
     for (i <- modules.indices) {
       if (modules(i).output.asInstanceOf[Tensor[T]].isMklTensor() &&
         modules(i).output.toTensor.dim() >= 4) {
-        leaves(i) = refs.split.gradInputs(i)
+        gradOutputs(i) = refs.split.gradInputs(i)
       } else {
-        leaves(i) = Tensor[T]().resizeAs(refs.split.gradInputs(i))
-        refs.split.gradInputs(i).backToUsr(leaves(i))
+        gradOutputs(i) = Tensor[T]().resizeAs(refs.split.gradInputs(i))
+        refs.split.gradInputs(i).backToUsr(gradOutputs(i))
       }
-//      leaves(i) = refs.split.gradInputsUsr(i)
-//      refs.split.gradInputs(i).backToUsr(leaves(i))
+//      gradOutputs(i) = refs.split.gradInputsUsr(i)
+//      refs.split.gradInputs(i).backToUsr(gradOutputs(i))
     }
 
-    leaves
+    gradOutputs
   }
 
   private[this] def sum(input: Tensor[T]): Tensor[T] = {
@@ -526,13 +534,35 @@ class Concat[T: ClassTag](dimension: Int)(implicit ev: TensorNumeric[T])
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    val gradOutputs = split(gradOutput)
+    val leaves = split(gradOutput)
 
     for (i <- modules.indices) {
-      modules(i).backward(input, gradOutputs(i))
+      modules(i).updateGradInput(input, leaves(i))
     }
 
     sum(input)
+  }
+
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
+    scale: Double = 1.0): Unit = {
+    var offset = 1
+    var i = 0
+    while (i < this.modules.length) {
+      this.modules(i).accGradParameters(input.asInstanceOf[Activity], gradOutputs(i), scale)
+      i += 1
+    }
+  }
+
+  // Todo: this is different from torch accUpdateGradParameters
+  override def updateParameters(learningRate: T): Unit = {
+    var offset = 1
+    var i = 0
+    while (i < this.modules.length) {
+      val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
+      this.modules(i).updateParameters(learningRate)
+      i += 1
+      offset += currentOutput.size(dimension)
+    }
   }
 
   override def equals(obj: Any): Boolean = {

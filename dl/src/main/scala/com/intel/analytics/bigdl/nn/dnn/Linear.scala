@@ -56,6 +56,19 @@ class Linear[T: ClassTag](inputSize: Int,
     }
   }
 
+  private var weightLearningRateMult = 1
+  private var biasLearningRateMult = 1
+
+  override def setWeightLrMult(rate: Int): this.type = {
+    weightLearningRateMult = rate
+    this
+  }
+
+  override def setBiasLrMult(rate: Int): this.type = {
+    biasLearningRateMult = rate
+    this
+  }
+
   class LinearPrimitive extends Primitive[T] {
     var backWeight = 0L
     var backBias = 0L
@@ -97,7 +110,8 @@ class Linear[T: ClassTag](inputSize: Int,
       case Xavier =>
         val fanIn = weight.size(2)
         val fanOut = weight.size(1)
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
+//        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
+        val stdv = math.sqrt(3.0 / fanIn)
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         bias.fill(ev.fromType(0))
       case _ => throw new IllegalArgumentException()
@@ -328,6 +342,9 @@ class Linear[T: ClassTag](inputSize: Int,
 
     refs.gradWeight.backToUsr(gradWeight)
     refs.gradBias.backToUsr(gradBias)
+
+    gradWeight.mul(ev.fromType(weightLearningRateMult))
+    gradBias.mul(ev.fromType(biasLearningRateMult))
 
     if (this.isTraining()) {
       refs.input.setConverted(false)

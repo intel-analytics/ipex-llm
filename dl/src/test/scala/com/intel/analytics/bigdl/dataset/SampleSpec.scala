@@ -22,6 +22,15 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
 class SampleSpec extends FlatSpec with Matchers {
+  "output empty sample memory size" should "output" in {
+    val a = Sample(Tensor[Double](), Tensor[Double]())
+
+    import org.openjdk.jol.info.GraphLayout
+    println(GraphLayout.parseInstance(a).toFootprint)
+    println(GraphLayout.parseInstance(a).toPrintable)
+    println(GraphLayout.parseInstance(a).totalSize())
+    println(org.openjdk.jol.info.ClassLayout.parseInstance(a))
+  }
   "SampleSpec with Float Tensor input and Tensor label" should "initialize well" in {
     val input1 = new LabeledBGRImage(32, 32)
     val label1 = new LabeledBGRImage(32, 32)

@@ -156,7 +156,7 @@ class ReLU[T: ClassTag](ip: Boolean = false)
   }
 
   override def toString: String = {
-    s"mkl.ReLU"
+    s"mkl.ReLU($ip)"
   }
 
   override def convertToMklDnn(prevModule: Option[AbstractModule[Activity, Activity, T]] = None)

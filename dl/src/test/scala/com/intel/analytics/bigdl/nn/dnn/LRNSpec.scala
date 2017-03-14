@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.dnn
 
 import com.intel.analytics.bigdl.nn.dnn.Tools._
 import com.intel.analytics.bigdl.numeric.NumericFloat
-
+import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 class LRNSpec extends FlatSpec with Matchers {
@@ -43,7 +43,12 @@ class LRNSpec extends FlatSpec with Matchers {
          |  type: "DummyData"
          |  top: "data"
          |  dummy_data_param {
-         |    shape: { dim: 4 dim: 96 dim: 28 dim: 28}
+         |    shape: {
+         |      dim: ${test.batchSize}
+         |      dim: ${test.channel}
+         |      dim: ${test.height}
+         |      dim: ${test.width}
+         |    }
          |    data_filler {
          |      type: "gaussian"
          |      std: 0.01
@@ -51,13 +56,13 @@ class LRNSpec extends FlatSpec with Matchers {
          |  }
          |}
          |
-           |layer {
+         |layer {
          |  name: "lrn"
          |  type: "LRN"
          |  bottom: "data"
          |  top: "lrn"
          |
-           |  lrn_param {
+         |  lrn_param {
          |    local_size: 5
          |    alpha: 0.0001
          |    beta: 0.75
@@ -84,6 +89,9 @@ class LRNSpec extends FlatSpec with Matchers {
 
       for (i <- 0 until randTimes()) {
         model.forward(input)
+
+        val tmp = Tensor().resizeAs(input)
+        model.refs.input.backToUsr(tmp)
 
         val output = loadTensor("Fwrd_lrn", model.output.size(), identity)
 

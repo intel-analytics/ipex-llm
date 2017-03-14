@@ -129,11 +129,25 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
       case Xavier =>
         val fanIn = nInputPlane * kernelH * kernelW
         val fanOut = nOutputPlane * kernelH * kernelW
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
+//        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
+        val stdv = math.sqrt(3.0 / fanIn)
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-        bias.fill(ev.fromType(0))
+        bias.fill(ev.fromType(0.2))
       case _ => throw new IllegalArgumentException()
     }
+  }
+
+  private var weightLearningRateMult = 1
+  private var biasLearningRateMult = 1
+
+  override def setWeightLrMult(rate: Int): this.type = {
+    weightLearningRateMult = rate
+    this
+  }
+
+  override def setBiasLrMult(rate: Int): this.type = {
+    biasLearningRateMult = rate
+    this
   }
 
   private[this] def initLayerAttributes(input: Tensor[T]): Unit = {
@@ -400,6 +414,7 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
       execute(resources, primitive.backWeight)
 
       refs.gradWeight.backToUsr(gradWeight)
+      gradWeight.mul(ev.fromType(weightLearningRateMult))
     }
 
     {
@@ -411,6 +426,7 @@ class SpatialConvolution[T: ClassTag](nInputPlane: Int,
       execute(resources, primitive.backBias)
 
       refs.gradBias.backToUsr(gradBias)
+      gradBias.mul(ev.fromType(biasLearningRateMult))
     }
 
     if (this.isTraining()) {

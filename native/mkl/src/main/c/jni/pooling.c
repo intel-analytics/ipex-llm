@@ -117,13 +117,14 @@ jlong JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_poolCreateBackward
 static void unPadding(float* from, float* to, size_t *fromStrides,
                       size_t *toSize, size_t *toStrides)
 {
-  for (int n = 0; n < toSize[3]; n++)
-    for (int c = 0; c < toSize[2]; c++) {
+  int n, c, h;
+  for (n = 0; n < toSize[3]; n++)
+    for (c = 0; c < toSize[2]; c++) {
       int baseToIndex = n * toStrides[3] + c * toStrides[2];
       int baseFromIndex = n * fromStrides[3] + c * fromStrides[2];
 
 #pragma omp parallel for
-      for (int h = 0; h < toSize[1]; h++) {
+      for (h = 0; h < toSize[1]; h++) {
         memcpy(to + baseToIndex + h * toStrides[1],
                from + baseFromIndex + h * fromStrides[1],
                toSize[0] * sizeof(float));
@@ -134,13 +135,14 @@ static void unPadding(float* from, float* to, size_t *fromStrides,
 static void padding(float* from, float* to, size_t *fromSize,
                     size_t *fromStrides, size_t *toSize, size_t *toStrides)
 {
-  for (int n = 0; n < fromSize[3]; n++) {
-    for (int c = 0; c < fromSize[2]; c++) {
+  int n, c, h;
+  for (n = 0; n < fromSize[3]; n++) {
+    for (c = 0; c < fromSize[2]; c++) {
       int baseToIndex = n * toStrides[3] + c * toStrides[2];
       int baseFromIndex = n * fromStrides[3] + c * fromStrides[2];
 
 #pragma omp parallel for
-      for (int h = 0; h < fromSize[1]; h++) {  // height
+      for (h = 0; h < fromSize[1]; h++) {  // height
         memcpy(to + baseToIndex + h * toStrides[1],
                from + baseFromIndex + h * fromStrides[1],
                fromSize[0] * sizeof(float));

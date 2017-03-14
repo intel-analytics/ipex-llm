@@ -17,11 +17,12 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.lang.Thread.UncaughtExceptionHandler
+import java.util
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent._
 
 import com.intel.analytics.bigdl.mkl.MKL
+import net.openhft.affinity.{Affinity}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 import org.apache.spark.SparkConf
@@ -46,11 +47,24 @@ class ThreadPool(private var poolSize: Int) {
   private var mklPoolSize : Option[Int] = None
   private var threadPool: ExecutorService = null
 
-  private var context = spawnThreadPool(poolSize)
+  var context = spawnThreadPool(poolSize)
 
   private def spawnThreadPool(poolSize: Int): ExecutionContext = {
     if (poolSize == 1) {
-      singleThreadPool
+      new ExecutionContext {
+        if (threadPool != null) threadPool.shutdown()
+        threadPool = Executors.newSingleThreadExecutor()
+
+        def execute(runnable: Runnable) {
+          if (Engine.getEngineType() == MklDnn) {
+            MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
+            MKL.setAffinity()
+          }
+          runnable.run()
+        }
+
+        def reportFailure(t: Throwable) {}
+      }
     } else {
       new ExecutionContext {
         if (threadPool != null) threadPool.shutdown()
@@ -112,6 +126,25 @@ class ThreadPool(private var poolSize: Int) {
         case t : Throwable =>
             logger.error("Error: " + ExceptionUtils.getStackTrace(t))
             throw t
+      }
+    }(context)).map(future => {
+      Await.result(future, timeout)
+    })
+  }
+
+  def invokeAndWait3[T](tasks: Seq[() => T], timeout: Duration = Duration.Inf): Seq[T] = {
+    tasks.map(task => Future {
+      try {
+        val al = Affinity.acquireLock()
+        try {
+          task()
+        } finally {
+          al.release()
+        }
+      } catch {
+        case t : Throwable =>
+          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+          throw t
       }
     }(context)).map(future => {
       Await.result(future, timeout)
@@ -201,17 +234,17 @@ class ThreadPool(private var poolSize: Int) {
 }
 
 object ThreadPool {
-  val singleThreadPool = new ExecutionContext {
-    def execute(runnable: Runnable) {
-      if (Engine.getEngineType() == MklDnn) {
-        MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
-        MKL.setAffinity()
-      }
-      runnable.run()
-    }
-
-    def reportFailure(t: Throwable) {}
-  }
+//  val singleThreadPool = new ExecutionContext {
+//    def execute(runnable: Runnable) {
+//      if (Engine.getEngineType() == MklDnn) {
+//        MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
+//        MKL.setAffinity()
+//      }
+//      runnable.run()
+//    }
+//
+//    def reportFailure(t: Throwable) {}
+//  }
 
   private val logger = Logger.getLogger(getClass)
 }
@@ -297,13 +330,47 @@ object Engine {
   private val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
     (physicalCoreNumber * 50).toString).toInt
 
-  val default: ThreadPool = {
-    if (engineType == MklDnn) {
-      MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
-      MKL.setAffinity()
+  var default: ThreadPool = _
+  var io: ThreadPool = _
+
+  private def initAllThreadPools(): Unit = {
+    if (Engine.getEngineType() == MklDnn) {
+      val poolSize = 1
+      default = new ThreadPool(poolSize)
+
+      default.invokeAndWait((0 until poolSize).map(tid => () => {
+        MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
+        MKL.setAffinity()
+      }))
+    } else {
+      default = new ThreadPool(defaultPoolSize)
     }
-    new ThreadPool(defaultPoolSize)
+
+
+    val poolSize = coreNumber()
+    io = new ThreadPool(poolSize)
+
+    io.invokeAndWait((0 until poolSize).map(tid => () => {
+      Affinity.acquireLock()
+    }))
   }
+
+  initAllThreadPools()
+
+
+//  val readImages: ThreadPool = {
+//    val poolSize = coreNumber()
+//    val pool = new ThreadPool(poolSize)
+//
+//    require(poolSize <= coreNumber(), s"the thread number ($poolSize)" +
+//      s"should be less than number of cores (${coreNumber()})")
+//
+//    pool.invokeAndWait((0 until poolSize).map(tid => () => {
+//      val al = Affinity.acquireLock()
+//    }))
+//
+//    pool
+//  }
 
   @volatile private var _model: ThreadPool = initModelThreadPool()
 
@@ -311,10 +378,10 @@ object Engine {
 
   private def initModelThreadPool() = {
     val modelPoolSize = 1
-    if (engineType == MklDnn) {
-      MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
-      MKL.setAffinity()
-    }
+//    if (engineType == MklDnn) {
+//      MKL.setNumThreads(Runtime.getRuntime.availableProcessors() / 2)
+//      MKL.setAffinity()
+//    }
 
     val model = new ThreadPool(modelPoolSize)
 

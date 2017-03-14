@@ -53,6 +53,9 @@ abstract class AbstractSpatialConvolution[T: ClassTag](
   def getCol2ImgTime(): Double
 
   def setInitMethod(initMethod: InitializationMethod): this.type
+
+  def setWeightLrMult(rate: Int): this.type = {this}
+  def setBiasLrMult(rate: Int): this.type = {this}
 }
 
 @SerialVersionUID(- 8446523046224797382L)
@@ -125,9 +128,10 @@ class SpatialConvolution[T: ClassTag](
       case Xavier =>
         val fanIn = nInputPlane * kernelH * kernelW
         val fanOut = nOutputPlane * kernelH * kernelW
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
+//        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
+        val stdv = math.sqrt(3.0 / fanIn)
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-        bias.fill(ev.fromType(0))
+        bias.fill(ev.fromType(0.2))
       case _ => throw new IllegalArgumentException()
     }
     zeroGradParameters()

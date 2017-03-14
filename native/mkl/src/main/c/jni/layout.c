@@ -242,8 +242,9 @@ JNIEXPORT
 {
   jfloat* jBuffer = (jfloat*)buffer;
   jlong jLen = len / sizeof(jfloat);
+  int i;
 #pragma omp parallel for
-  for (int i = 0; i < jLen; ++i) {
+  for (i = 0; i < jLen; ++i) {
     jBuffer[i] = 0;
   }
 }
@@ -295,8 +296,9 @@ jint JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_execute
   jlong* jResources = (jlong*)((*env)->GetPrimitiveArrayCritical(env, resources, 0));
 
   // all pointer to void*
+  int i;
   void* res[dnnResourceNumber];
-  for(int i = 0; i < dnnResourceNumber; i++){
+  for(i = 0; i < dnnResourceNumber; i++){
     res[i] = (void*)jResources[i];
   }
   dnnError_t status = E_UNIMPLEMENTED;
@@ -366,8 +368,9 @@ void JNICALL Java_com_intel_analytics_bigdl_mkl_MklDnnFloat_buffercpy
   jfloat* jSrc = (jfloat*)src;
   jlong jLen = (jlong)len / sizeof(jfloat);
 
+  int i;
 #pragma omp parallel for
-  for (int i = 0; i < jLen; ++i) {
+  for (i = 0; i < jLen; ++i) {
     jDst[i] = jSrc[i];
   }
 }

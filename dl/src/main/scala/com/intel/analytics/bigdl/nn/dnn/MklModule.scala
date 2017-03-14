@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.{FloatType, MklTensor}
 import com.intel.analytics.bigdl.nn.abstractnn.ModuleType._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.utils.Engine
 
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
@@ -139,7 +140,11 @@ trait MklModuleMethods {
     ev.getType() match {
       case FloatType =>
         val start = System.nanoTime()
-        MklDnnFloat.execute(resources, primitive)
+
+//        Engine.computingMklDnn.invokeAndWait((0 until 1).map(tid => () => {
+          MklDnnFloat.execute(resources, primitive)
+//        }))
+
         if (profiling) {
           println("scala execute costs " + (System.nanoTime() - start) / 1e6)
         }

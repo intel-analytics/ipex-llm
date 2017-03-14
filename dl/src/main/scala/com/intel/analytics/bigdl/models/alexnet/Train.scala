@@ -19,15 +19,18 @@ package com.intel.analytics.bigdl.models.alexnet
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Container, Module}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.SGD.Regime
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, MklDnn, T}
+import com.intel.analytics.bigdl.utils.{Engine, MklDnn, RandomGenerator, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
+
+import scala.collection.mutable.ArrayBuffer
 
 object Train {
   Logger.getLogger("org").setLevel(Level.ERROR)
@@ -37,7 +40,7 @@ object Train {
 
   import Options._
 
-  val imageSize = 224
+  val imageSize = 227
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
@@ -56,7 +59,7 @@ object Train {
         param.nodeNumber,
         param.coreNumber,
         param.classNumber,
-        1281167)
+        param.trainSize)
       val valSet = ImageNet2012(
         param.folder + "/val",
         sc,
@@ -65,17 +68,43 @@ object Train {
         param.nodeNumber,
         param.coreNumber,
         param.classNumber,
-        50000
-      )
+        param.valSize)
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        AlexNet_OWT(classNum = 1000)
+        AlexNet(classNum = 1000)
       }
+
+      println(model)
 
       if (Engine.getEngineType() == MklDnn) {
         model.convertToMklDnn()
+
+        val modules = new ArrayBuffer[TensorModule[Float]]()
+        flattenModules(model, modules)
+
+        def gaussian(x: Double, mean: Double, std: Double): Float = {
+          (Math.exp((-0.5) * (x - mean) * (x - mean) / (std * std)) / Math.sqrt(
+            2.0 * Math.PI * std * std)).toFloat
+        }
+
+        for (i <- modules.indices) {
+          modules(i) match {
+            case conv: dnn.SpatialConvolution[Float] =>
+//              conv.weight.apply1(x => gaussian(x, 0, 0.01))
+              conv.bias.apply1(x => 0.0f)
+            case linear: dnn.Linear[Float] =>
+              if (linear.getName() == "fc6" || linear.getName() == "fc7") {
+//                linear.weight.apply1(x => gaussian(x, 0, 0.05))
+                linear.bias.fill(0.1f)
+              } else if (linear.getName() == "fc8") {
+//                linear.weight.apply1(x => gaussian(x, 0, 0.01))
+                linear.bias.fill(0.0f)
+              }
+            case _ =>
+          }
+        }
       }
 
       val state = if (param.stateSnapshot.isDefined) {
@@ -84,13 +113,16 @@ object Train {
         T(
           "momentum" -> 0.9,
           "dampening" -> 0.0,
-          "learningRateSchedule" -> SGD.EpochSchedule(Array(
-            Regime(1, 18, T("learningRate" -> 1e-2, "weightDecay" -> 2e-4)),
-            Regime(19, 29, T("learningRate" -> 5e-3, "weightDecay" -> 2e-4)),
-            Regime(30, 43, T("learningRate" -> 1e-3, "weightDecay" -> 0.0)),
-            Regime(44, 52, T("learningRate" -> 5e-4, "weightDecay" -> 0.0)),
-            Regime(53, 100, T("learningRate" -> 1e-4, "weightDecay" -> 0.0))
-          ))
+//          "learningRateSchedule" -> SGD.EpochSchedule(Array(
+//            Regime(1, 18, T("learningRate" -> 1e-2, "weightDecay" -> 2e-4)),
+//            Regime(19, 29, T("learningRate" -> 5e-3, "weightDecay" -> 2e-4)),
+//            Regime(30, 43, T("learningRate" -> 1e-3, "weightDecay" -> 0.0)),
+//            Regime(44, 52, T("learningRate" -> 5e-4, "weightDecay" -> 0.0)),
+//            Regime(53, 100, T("learningRate" -> 1e-4, "weightDecay" -> 0.0))
+//          ))
+          "weightDecay" -> 0.0005,
+          "learningRate" -> 0.01,
+          "learningRateSchedule" -> SGD.Step(100000, 0.1)
         )
       }
 
@@ -104,10 +136,24 @@ object Train {
       }
       optimizer
         .setState(state)
-        .setValidation(Trigger.severalIteration(1), valSet,
+        .setValidation(Trigger.everyEpoch, valSet,
           Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
         .setEndWhen(Trigger.maxEpoch(56))
         .optimize()
     })
   }
+
+  def flattenModules(model: Module[Float], modules: ArrayBuffer[TensorModule[Float]]): Unit = {
+    model match {
+      case container : Container[_, _, Float] =>
+        if (container.modules.nonEmpty) {
+          for (i <- container.modules) {
+            flattenModules(i.asInstanceOf[Module[Float]], modules)
+          }
+        }
+      case _ =>
+        modules += model.asInstanceOf[TensorModule[Float]]
+    }
+  }
+
 }

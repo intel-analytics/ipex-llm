@@ -37,6 +37,8 @@ abstract class AbstractLinear[T: ClassTag](
   val gradBias: Tensor[T] = Tensor[T](outputSize)
 
   def setInitMethod(initMethod: InitializationMethod): this.type
+  def setWeightLrMult(rate: Int): this.type = {this}
+  def setBiasLrMult(rate: Int): this.type = {this}
 }
 
 /**

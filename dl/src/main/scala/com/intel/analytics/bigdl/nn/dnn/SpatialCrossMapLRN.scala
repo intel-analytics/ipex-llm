@@ -83,7 +83,7 @@ class SpatialCrossMapLRN[T: ClassTag](size: Int = 5,
         this.primitive.backward = MklDnnFloat.lrnCreateBackward(
           layout,
           layout,
-          size,
+          size.toLong,
           alpha.toFloat,
           beta.toFloat,
           k.toFloat
@@ -113,6 +113,7 @@ class SpatialCrossMapLRN[T: ClassTag](size: Int = 5,
     refs.input.createConversion(inputLayout, primitive.forward, ResourceType.dnnResourceSrc)
     refs.output.createConversion(inputLayout, primitive.forward, ResourceType.dnnResourceDst)
     refs.workspace.createMklLayout(primitive.forward, ResourceType.dnnResourceWorkspace)
+    refs.workspace.zero()
 
     refs.gradInput.createConversion(inputLayout, primitive.backward,
       ResourceType.dnnResourceDiffSrc)

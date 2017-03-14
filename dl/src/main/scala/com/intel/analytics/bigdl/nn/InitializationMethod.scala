@@ -44,5 +44,6 @@ case object Default extends InitializationMethod
  *  (http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf)
  */
 case object Xavier extends InitializationMethod
+case object Gaussian extends InitializationMethod
 
 case object BilinearFiller extends InitializationMethod

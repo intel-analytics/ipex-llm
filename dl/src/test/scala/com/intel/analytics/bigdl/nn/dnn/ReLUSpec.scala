@@ -17,9 +17,10 @@
 
 package com.intel.analytics.bigdl.nn.dnn
 
+import com.intel.analytics.bigdl.nn.Sequential
 import com.intel.analytics.bigdl.nn.dnn.Tools._
 import com.intel.analytics.bigdl.numeric.NumericFloat
-
+import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 
 class ReLUSpec extends FlatSpec with Matchers {
@@ -126,9 +127,64 @@ class ReLUSpec extends FlatSpec with Matchers {
     }
   }
 
+  def diffInPlaceAndOutOfPlace(): Unit = {
+    val model1 = getModel(TestCase(4, 96, 55, 55, ip = true))
+    val model2 = getModel(TestCase(4, 96, 55, 55, ip = false))
+
+    val input1 = Tensor().resize(Array(4, 96, 55, 55)).rand()
+    val input2 = Tensor().resizeAs(input1).copy(input1)
+
+    model1.zeroGradParameters()
+    model2.zeroGradParameters()
+
+    model1.updateOutput(input1)
+    model2.updateOutput(input2)
+
+    val gradOutput1 = Tensor().resizeAs(input1).rand()
+    val gradOutput2 = Tensor().resizeAs(gradOutput1).copy(gradOutput1)
+
+    val gradInput1 = model1.updateGradInput(input1, gradOutput1)
+    val gradInput2 = model2.updateGradInput(input2, gradOutput2)
+
+    cumulativeError(gradInput1, gradInput2, "grad input") should be (0.0)
+  }
+
+  def addReLU(): Unit = {
+    val model1 = Sequential[Float]()
+    val model2 = Sequential[Float]()
+
+    model1.add(new ReLU[Float](ip = false))
+    model1.add(new SpatialCrossMapLRN[Float](5, 0.0001, 0.75))
+
+    model2.add(new ReLU[Float](ip = true))
+    model2.add(new SpatialCrossMapLRN[Float](5, 0.0001, 0.75))
+
+    model1.convertToMklDnn()
+    model2.convertToMklDnn()
+
+    val input1 = Tensor().resize(Array(4, 96, 55, 55)).rand()
+    val input2 = Tensor().resizeAs(input1).copy(input1)
+
+    model1.zeroGradParameters()
+    model2.zeroGradParameters()
+
+    val output1 = model1.updateOutput(input1).toTensor
+    val output2 = model2.updateOutput(input2).toTensor
+
+    val gradOutput1 = Tensor().resizeAs(output1).rand()
+    val gradOutput2 = Tensor().resizeAs(output2).copy(gradOutput1)
+
+    val gradInput1 = model1.updateGradInput(input1, gradOutput1).toTensor
+    val gradInput2 = model2.updateGradInput(input2, gradOutput2).toTensor
+
+    cumulativeError(gradInput1, gradInput2, "grad input") should be (0.0)
+  }
+
   def run(): Unit = {
-    diffAttributes()
-    diffBatchSizeOnSameModel()
+//    diffAttributes()
+//    diffBatchSizeOnSameModel()
+//    diffInPlaceAndOutOfPlace()
+    addReLU()
   }
 
   run()

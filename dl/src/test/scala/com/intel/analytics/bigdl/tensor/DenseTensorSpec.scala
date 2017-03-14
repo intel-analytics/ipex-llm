@@ -24,6 +24,41 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class DenseTensorSpec extends FlatSpec with Matchers {
 
+  "test the empty tensor memory size" should "be output" in {
+    val a = new DenseTensor[Double]()
+    val b = new DenseTensor[Double]()
+    val array = new Array[DenseTensor[Double]](100)
+    for (i <- array.indices) {
+      array(i) = new DenseTensor[Double]()
+    }
+
+    println(org.openjdk.jol.vm.VM.current().details())
+
+    import org.openjdk.jol.info.GraphLayout
+    import org.openjdk.jol.info.ClassLayout
+    println(GraphLayout.parseInstance(a).toFootprint)
+    println(GraphLayout.parseInstance(a).toPrintable)
+    println(GraphLayout.parseInstance(b).toPrintable)
+    println(GraphLayout.parseInstance(a).totalSize())
+    println(ClassLayout.parseClass(DenseTensor.getClass).toPrintable())
+//    println(ClassLayout.parseClass(DenseTensor.getClass).toPrintable(a))
+    println(org.openjdk.jol.info.ClassLayout.parseInstance(a))
+
+    println(GraphLayout.parseInstance(array).toFootprint)
+    println(GraphLayout.parseInstance(array).toPrintable)
+    println(org.openjdk.jol.info.ClassLayout.parseInstance(array))
+
+    val arrayDouble = new Array[Double](10)
+    println(GraphLayout.parseInstance(arrayDouble).toFootprint)
+    println(GraphLayout.parseInstance(arrayDouble).toPrintable)
+    println(org.openjdk.jol.info.ClassLayout.parseInstance(arrayDouble))
+
+    val doubleTensor = new DenseTensor[Double](1).rand()
+    println(GraphLayout.parseInstance(doubleTensor).toFootprint)
+    println(GraphLayout.parseInstance(doubleTensor).toPrintable)
+    println(org.openjdk.jol.info.ClassLayout.parseInstance(doubleTensor))
+  }
+
   "Construct with empty parameter" should "be empty" in {
     val t: Tensor[Double] = new DenseTensor[Double]()
     t.nDimension should be(0)

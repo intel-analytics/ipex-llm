@@ -50,7 +50,7 @@ class MklTensor[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Tensor[T] 
 
   var hasConverted = false
   def setConverted(value: Boolean): Unit = {
-    hasConverted = value
+    hasConverted = false
   }
 
   var _size = Array[Int]()
