@@ -45,11 +45,11 @@ class SentenceTokenizerSpec extends FlatSpec with Matchers {
     val conf = new SparkConf().setMaster("local[1]").setAppName("DocumentTokenizer")
     val sc = new SparkContext(conf)
     val sents = DataSet.rdd(sc.textFile(tmpFile)
-      .filter(!_.isEmpty)).transform(SentenceSplitter())
+      .filter(!_.isEmpty)).transform(SentenceSplitter("en-sent.bin"))
       .toDistributed().data(train = false).flatMap(item => item.iterator).collect()
       .asInstanceOf[Array[String]]
     val tokens = DataSet.rdd(sc.parallelize(sents))
-        .transform(SentenceTokenizer())
+        .transform(SentenceTokenizer("../en-token.bin"))
     val output = tokens.toDistributed().data(train = false).collect()
 
     var count = 0
