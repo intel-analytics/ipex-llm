@@ -158,18 +158,6 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>python</id>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>${project.basedir}/src/assembly/python-zip.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                    <execution>
                         <id>without-spark</id>
                         <configuration>
                             <descriptorRefs>

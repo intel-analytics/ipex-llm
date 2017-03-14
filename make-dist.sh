@@ -71,7 +71,7 @@ cp $BASEDIR/scripts/classes.lst $BIN_DIR/
 cp $BASEDIR/scripts/img_class.lst $BIN_DIR/
 cp $BASEDIR/dl/src/main/resources/spark-bigdl.conf $CONF_DIR/
 
-cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies.jar $LIB_DIR/
-cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies-and-spark.jar $LIB_DIR/
-cp $BASEDIR/dl/target/bigdl-$VERSION-python-api.zip $LIB_DIR/
+cp $BASEDIR//spark/dl/target/bigdl-$VERSION-jar-with-dependencies.jar $LIB_DIR/
+cp $BASEDIR/spark/dl/target/bigdl-$VERSION-jar-with-dependencies-and-spark.jar $LIB_DIR/
+cp $BASEDIR/target/bigdl-$VERSION-python-api.zip $LIB_DIR/
 
