@@ -31,7 +31,7 @@ class RnnCell[T : ClassTag] (
   activation: TensorModule[T],
   private var initMethod: InitializationMethod = Default)
   (implicit ev: TensorNumeric[T])
-  extends Cell[T] {
+  extends Cell[T](Array(hiddenSize)) {
 
   val parallelTable = ParallelTable[T]()
   val i2h = Linear[T](inputSize, hiddenSize)
@@ -52,8 +52,6 @@ class RnnCell[T : ClassTag] (
     this.initMethod = initMethod
     this
   }
-
-  override def hidSizes: Array[Int] = Array(hiddenSize)
 
   override def reset(): Unit = {
     initMethod match {

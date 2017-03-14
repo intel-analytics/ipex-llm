@@ -26,11 +26,9 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
-class CellUnit[T : ClassTag] ()
+class CellUnit[T : ClassTag] (hidSize: Int)
   (implicit ev: TensorNumeric[T])
-  extends Cell[T] {
-
-  def hidSizes: Array[Int] = Array(3)
+  extends Cell[T](hiddensShape = Array(hidSize, hidSize, hidSize)) {
 
   override def updateOutput(input: Table): Table = {
     T()
@@ -48,8 +46,8 @@ class CellUnit[T : ClassTag] ()
 class CellSpec extends FlatSpec with Matchers {
 
   "A Cell" should "hidResize correctly" in {
-    val cell = new CellUnit[Double]()
-    val hidden = cell.hidResize(hidden = null, size1 = 5, size2 = 4)
+    val cell = new CellUnit[Double](4)
+    val hidden = cell.hidResize(hidden = null, size = 5)
 
     hidden.isInstanceOf[Table] should be (true)
     var i = 1
@@ -58,13 +56,10 @@ class CellSpec extends FlatSpec with Matchers {
       i += 1
     }
 
-    val hidden2 = T(T(Tensor[Double](3, 4)), Tensor[Double](4, 5), T(Tensor[Double](5, 6),
-      Tensor[Double](3, 2)))
-    cell.hidResize(hidden2, 5, 4)
-    hidden2(1).asInstanceOf[Table](1).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
+    val hidden2 = T(Tensor[Double](3, 4), Tensor[Double](4, 5), Tensor[Double](5, 6))
+    cell.hidResize(hidden2, 5)
+    hidden2(1).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
     hidden2(2).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
-    val sample = hidden2(3).asInstanceOf[Table]
-    sample(1).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
-    sample(2).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
+    hidden2(3).asInstanceOf[Tensor[Double]].size should be (Array(5, 4))
   }
 }

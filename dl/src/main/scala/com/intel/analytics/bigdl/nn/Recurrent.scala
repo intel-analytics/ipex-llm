@@ -68,7 +68,7 @@ class Recurrent[T : ClassTag]()
       val cell = cells.head
 
       // The cell will help initialize or resize the hidden variable.
-      hidden = cell.hidResize(hidden = null, size1 = batchSize, size2 = hiddenSize)
+      hidden = cell.hidResize(hidden = null, size = batchSize)
 
       /*
        * Since the gradHidden is only used as an empty Tensor or Table during
@@ -77,7 +77,7 @@ class Recurrent[T : ClassTag]()
        */
       gradHidden = hidden
     } else {
-      cells.head.hidResize(hidden = hidden, size1 = batchSize, size2 = hiddenSize)
+      cells.head.hidResize(hidden = hidden, size = batchSize)
       gradHidden = hidden
     }
     var t = cells.length
@@ -122,7 +122,7 @@ class Recurrent[T : ClassTag]()
     batchSize = input.size(batchDim)
     times = input.size(timeDim)
 
-    val hiddenSize = modules.last.asInstanceOf[Cell[T]].hidSizes(0)
+    val hiddenSize = modules.last.asInstanceOf[Cell[T]].hiddensShape(0)
     output.resize(batchSize, times, hiddenSize)
 
     // Clone N modules along the sequence dimension.

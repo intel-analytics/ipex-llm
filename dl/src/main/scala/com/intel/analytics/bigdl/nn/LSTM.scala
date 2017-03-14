@@ -39,7 +39,7 @@ class LSTM[T : ClassTag] (
   val inputSize: Int,
   val hiddenSize: Int)
   (implicit ev: TensorNumeric[T])
-  extends Cell[T] {
+  extends Cell[T](hiddensShape = Array(hiddenSize, hiddenSize)) {
   val p: Double = 0 // Dropout threshold
   var gates: Sequential[T] = _
   var cellLayer: Sequential[T] = _
@@ -174,8 +174,6 @@ class LSTM[T : ClassTag] (
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     lstm.parameters()
   }
-
-  override def hidSizes: Array[Int] = Array(hiddenSize, hiddenSize)
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[LSTM[T]]
 

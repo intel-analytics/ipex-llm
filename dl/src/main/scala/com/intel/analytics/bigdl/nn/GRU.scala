@@ -36,7 +36,7 @@ class GRU[T : ClassTag] (
   val inputSize: Int,
   val outputSize: Int)
   (implicit ev: TensorNumeric[T])
-  extends Cell[T] {
+  extends Cell[T](hiddensShape = Array(outputSize)) {
   val p: Double = 0 // Dropout threshold
   var i2g: AbstractModule[_, _, T] = _
   var h2g: AbstractModule[_, _, T] = _
@@ -155,8 +155,6 @@ class GRU[T : ClassTag] (
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     GRU.parameters()
   }
-
-  override def hidSizes: Array[Int] = Array(outputSize)
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[GRU[T]]
 
