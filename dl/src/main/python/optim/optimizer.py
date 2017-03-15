@@ -31,42 +31,76 @@ if sys.version >= '3':
     unicode = str
 
 
-class Validator(JavaValue):
-    def __init__(self,  model, val_rdd, batch_size, bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, model, val_rdd, batch_size)
-
-    def test(self, val_methods):
-        return callBigDlFunc(self.bigdl_type, "test", self.value, val_methods)
-
-
 class MaxEpoch(JavaValue):
+    '''
+    >>> maxEpoch = MaxEpoch(2)
+    creating: createMaxEpoch
+    '''
     def __init__(self, max_epoch, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, max_epoch)
 
 
 class EveryEpoch(JavaValue):
+    '''
+    >>> everyEpoch = EveryEpoch()
+    creating: createEveryEpoch
+    '''
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
 
 
 class SeveralIteration(JavaValue):
+    '''
+    >>> serveralIteration = SeveralIteration(2)
+    creating: createSeveralIteration
+    '''
     def __init__(self, interval, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, interval)
 
 
 class MaxIteration(JavaValue):
+    '''
+    >>> maxIteration = MaxIteration(20)
+    creating: createMaxIteration
+    '''
     def __init__(self, max, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, max)
 
 
 class ClassNLLCriterion(JavaValue):
+    '''
+    >>> classNLLCriterion = ClassNLLCriterion()
+    creating: createClassNLLCriterion
+    '''
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
 
 
 class MSECriterion(JavaValue):
+    '''
+    >>> mSECriterion = MSECriterion()
+    creating: createMSECriterion
+    '''
     def __init__(self, bigdl_type="float"):
             JavaValue.__init__(self, None, bigdl_type)
+
+
+class Poly(JavaValue):
+    '''
+    >>> poly = Poly(0.5, 2)
+    creating: createPoly
+    '''
+    def __init__(self, power, max_iteration, bigdl_type="float"):
+            JavaValue.__init__(self, None, bigdl_type, power, max_iteration)
+
+
+class Step(JavaValue):
+    '''
+    >>> step = Step(2, 0.3)
+    creating: createStep
+    '''
+    def __init__(self, step_size, gamma, bigdl_type="float"):
+            JavaValue.__init__(self, None, bigdl_type, step_size, gamma)
 
 
 class Optimizer(JavaValue):

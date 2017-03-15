@@ -193,6 +193,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   //   Optimizer
+  def createPoly(power: Double, maxIteration: Int): SGD.Poly = {
+    SGD.Poly(power, maxIteration)
+  }
+
+  def createStep(stepSize : Int, gamma : Double): SGD.Step = {
+    SGD.Step(stepSize, gamma)
+  }
+
   def createClassNLLCriterion: ClassNLLCriterion[T] = {
     ClassNLLCriterion[T]()
   }
@@ -274,6 +282,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createMaxIteration(max: Int): Trigger = {
     Trigger.maxIteration(max)
   }
+
 
   def createOptimizer(model: AbstractModule[Activity, Activity, T],
                       trainingRdd: JavaRDD[Sample],

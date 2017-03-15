@@ -31,13 +31,16 @@ class TestWorkFlow(unittest.TestCase):
                           conf=sparkConf)
         initEngine(1, 4)
         FEATURES_DIM = 2
+        data_len = 100
+        batch_size = 32
+        epoch_num = 5
 
         def gen_rand_sample():
             features = np.random.uniform(0, 1, (FEATURES_DIM))
             label = (2 * features).sum() + 0.4
             return Sample.from_ndarray(features, label)
 
-        trainingData = sc.parallelize(range(0, 100)).map(
+        trainingData = sc.parallelize(range(0, data_len)).map(
             lambda i: gen_rand_sample())
 
         model = Sequential()
@@ -46,17 +49,18 @@ class TestWorkFlow(unittest.TestCase):
         model.add(l1)
 
         state = {"learningRate": 0.01,
-                 "learningRateDecay": 0.0002}
+                 "learningRateDecay": 0.0002,
+                 "learingRateSchedule": Poly(0.5, int((data_len/batch_size)*epoch_num))}  # noqa
         optimizer = Optimizer(
             model=model,
             training_rdd=trainingData,
             criterion=MSECriterion(),
             optim_method="Adagrad",
             state=state,
-            end_trigger=MaxEpoch(5),
-            batch_size=32)
+            end_trigger=MaxEpoch(epoch_num),
+            batch_size=batch_size)
         optimizer.setvalidation(
-            batch_size=32,
+            batch_size=batch_size,
             val_rdd=trainingData,
             trigger=EveryEpoch(),
             val_method=["top1"]
