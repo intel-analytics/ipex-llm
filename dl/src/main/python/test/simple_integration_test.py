@@ -92,11 +92,16 @@ class TestWorkFlow(unittest.TestCase):
                                      app_name="run1",
                                      trigger={
                                          "learningRate": SeveralIteration(1)})
+        val_summary = ValidationSummary(log_dir=sc.appName,
+                                        app_name="run1",
+                                        trigger={})
         optimizer.set_train_summary(train_summary)
-
-        train_summary.read_scalar("learningRate")
+        optimizer.set_val_summary(val_summary)
 
         trained_model = optimizer.optimize()
+
+        lr_result = train_summary.read_scalar("learningRate")
+        top1_result = val_summary.read_scalar("top1 accuracy")
 
         # TODO: add result validation
         parameters = trained_model.parameters()
