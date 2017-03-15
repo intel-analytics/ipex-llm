@@ -26,18 +26,6 @@ import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWrit
 
 import scala.reflect.ClassTag
 
-sealed trait SummaryTag
-
-object Loss extends SummaryTag
-
-object Top1 extends SummaryTag
-
-object Top5 extends SummaryTag
-
-object Throughput extends SummaryTag
-
-object LearningRate extends SummaryTag
-
 abstract class Summary(
       logDir: String,
       appName: String,
@@ -82,9 +70,6 @@ class TrainSummary(
   protected override val writer = new FileWriter(folder)
 
   override def readScalar(tag: String): Array[(Long, Float, Double)] = {
-    while (!writer.isEmpty) {
-      Thread.sleep(100)
-    }
     FileReader.readScalar(folder, tag)
   }
 }
@@ -98,7 +83,6 @@ object TrainSummary{
         "throughput" -> Trigger.severalIteration(1))): TrainSummary = {
     new TrainSummary(logDir, appName, trigger)
   }
-
 }
 
 class ValidationSummary(
@@ -109,9 +93,6 @@ class ValidationSummary(
   protected override val writer = new FileWriter(folder)
 
   override def readScalar(tag: String): Array[(Long, Float, Double)] = {
-    while (!writer.isEmpty) {
-      Thread.sleep(100)
-    }
     FileReader.readScalar(folder, tag)
   }
 }

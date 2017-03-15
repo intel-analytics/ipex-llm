@@ -22,11 +22,11 @@ import java.util.concurrent.Executors
 import org.tensorflow.framework.Summary
 import org.tensorflow.util.Event
 
-class FileWriter(val logDirecotry : String, flushMilliSeconds: Int = 10000) {
+class FileWriter(val logDirecotry : String, flushMillis: Int = 10000) {
   val logDir = new java.io.File(logDirecotry)
   require(!logDir.exists() || logDir.isDirectory, s"FileWriter: can not create $logDir")
   if (!logDir.exists()) logDir.mkdirs()
-  val eventWriter = new EventWriter(logDirecotry, flushMilliSeconds)
+  val eventWriter = new EventWriter(logDirecotry, flushMillis)
   val pool = Executors.newFixedThreadPool(1)
   pool.submit(eventWriter)
   // adds a Summary protocol buffer to the event file.

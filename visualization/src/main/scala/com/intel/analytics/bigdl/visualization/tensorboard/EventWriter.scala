@@ -19,12 +19,12 @@ package com.intel.analytics.bigdl.visualization.tensorboard
 
 import java.io.File
 import java.net.InetAddress
-import java.util.concurrent.ConcurrentLinkedDeque
+import java.util.concurrent.{LinkedBlockingDeque, TimeUnit}
 
 import org.tensorflow.util.Event
 
-class EventWriter(logDir: String, flushMilliSeconds: Int = 10000) extends Runnable {
-  val eventQueue = new ConcurrentLinkedDeque[Event]()
+class EventWriter(logDir: String, flushMillis: Int = 10000) extends Runnable {
+  val eventQueue = new LinkedBlockingDeque[Event]()
   val outputFile = new File(logDir +
     s"/bigdl.tfevents.${(System.currentTimeMillis() / 1e3).toInt}" +
     s".${InetAddress.getLocalHost().getHostName()}")
@@ -45,6 +45,12 @@ class EventWriter(logDir: String, flushMilliSeconds: Int = 10000) extends Runnab
     this
   }
 
+  private def writeEvent(): this.type = {
+    val e = eventQueue.poll(flushMillis, TimeUnit.MILLISECONDS)
+    if (null != e) recordWriter.write(e)
+    this
+  }
+
   def close(): this.type = {
     running = false
     this
@@ -52,8 +58,7 @@ class EventWriter(logDir: String, flushMilliSeconds: Int = 10000) extends Runnab
 
   override def run(): Unit = {
     while (running) {
-      flush()
-      Thread.sleep(flushMilliSeconds)
+      writeEvent()
     }
     flush()
     recordWriter.close()
