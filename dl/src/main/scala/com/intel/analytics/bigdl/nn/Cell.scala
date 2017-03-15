@@ -23,56 +23,58 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
-abstract class Cell[T : ClassTag] ()
+/**
+ * hidden sizes in the Cell, whose length is the number of hiddens.
+ * The elements correspond to the hidden sizes of returned hiddens
+ *
+ * E.g. For RnnCell, it should be Array(hiddenSize)
+ *      For LSTM, it should be Array(hiddenSize, hiddenSize)
+ *     (because each time step a LSTM return two hiddens `h` and `c` in order,
+ *     which have the same size.)
+ */
+abstract class Cell[T : ClassTag](val hiddensShape: Array[Int])
   (implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
 
-  // number of hidden parameters in the Cell. E.g. one for RnnCell, two for LSTM.
-  val nHids: Int
-
   /**
-   * resize the hidden parameters wrt the size1, size2.
-   * E.g. size1 = BatchSize, size2 = HiddenSize
+   * resize the hidden parameters wrt the batch size, hiddens shapes.
    *
    * e.g. RnnCell contains 1 hidden parameter (H), thus it will return Tensor(size)
    *      LSTM contains 2 hidden parameters (C and H) and will return T(Tensor(), Tensor())\
    *      and recursively intialize all the tensors in the Table.
    *
    * @param hidden
-   * @param size1 batchSize
-   * @param size2 hiddenSize
+   * @param size batchSize
    * @return
    */
-  def hidResize(hidden: Activity, size1: Int, size2: Int): Activity = {
+  def hidResize(hidden: Activity, size: Int): Activity = {
     if (hidden == null) {
-      if (nHids == 1) {
-        hidResize(Tensor[T](), size1, size2)
+      if (hiddensShape.length == 1) {
+        hidResize(Tensor[T](), size)
       } else {
         val _hidden = T()
         var i = 1
-        while (i <= nHids) {
+        while (i <= hiddensShape.length) {
           _hidden(i) = Tensor[T]()
           i += 1
         }
-        hidResize(_hidden, size1, size2)
+        hidResize(_hidden, size)
       }
     } else {
       if (hidden.isInstanceOf[Tensor[T]]) {
         require(hidden.isInstanceOf[Tensor[T]],
           "Cell: hidden should be a Tensor")
-        hidden.toTensor.resize(size1, size2)
-        hidden.toTensor
+        hidden.toTensor.resize(size, hiddensShape(0))
       } else {
         require(hidden.isInstanceOf[Table],
           "Cell: hidden should be a Table")
         var i = 1
         while (i <= hidden.toTable.length()) {
-          hidResize(hidden.toTable(i), size1, size2)
+          hidden.toTable[Tensor[T]](i).resize(size, hiddensShape(i - 1))
           i += 1
         }
         hidden
       }
     }
   }
-
 }
