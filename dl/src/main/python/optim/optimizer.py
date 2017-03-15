@@ -151,7 +151,7 @@ class TrainSummary(JavaValue, ):
 
     def read_scalar(self, tag):
         return callBigDlFunc(self.bigdl_type, "summaryReadScalar", self.value,
-                      tag)
+                             tag)
 
 
 class ValidationSummary(JavaValue):
