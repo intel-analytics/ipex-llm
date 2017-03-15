@@ -235,21 +235,21 @@ class SpatialMaxPooling(Model):
 
 class Recurrent(Model):
     '''
-    >>> recurrent = Recurrent(3)
+    >>> recurrent = Recurrent()
     creating: createRecurrent
     '''
 
-    def __init__(self, hidden_size, bigdl_type="float"):
-        super(Recurrent, self).__init__(None, bigdl_type, hiddenSize)
+    def __init__(self, bigdl_type="float"):
+        super(Recurrent, self).__init__(None, bigdl_type)
 
 class LSTM(Model):
     '''
     >>> lstm = LSTM(4, 3)
-    creating: createReshape
+    creating: createLSTM
     '''
 
     def __init__(self, input_size, hidden_size, bigdl_type="float"):
-        super(LSTM, self).__init__(None, bigdl_type, inputSize, hiddenSize)
+        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size)
 
 class GRU(Model):
     '''
@@ -258,26 +258,27 @@ class GRU(Model):
     '''
 
     def __init__(self,  input_size, hidden_size, bigdl_type="float"):
-        super(GRU, self).__init__(None, bigdl_type, inputSize, hiddenSize,)
+        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size)
 
 class RNNCell(Model):
     '''
-    >>> reshape = RNNCell(4, 3)
-    creating: createReshape
+    >>> reshape = RNNCell(4, 3, Tanh())
+    creating: createTanh
+    creating: createRNNCell
     '''
 
     def __init__(self,
                  input_size,
                  hidden_size,
                  activation,
-                 init_method="default",
                  bigdl_type="float"):
-        super(RNNCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation, init_method)
+        super(RNNCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation)
 
 
 class TimeDistributed(Model):
     '''
     >>> td = TimeDistributed(Linear(2, 3))
+    creating: createLinear
     creating: createTimeDistributed
     '''
 
@@ -286,9 +287,10 @@ class TimeDistributed(Model):
 
 class TimeDistributedCriterion(Model):
     '''
-    >>> import optim.optimizer.*
+    >>> from optim.optimizer import ClassNLLCriterion
     >>> td = TimeDistributedCriterion(ClassNLLCriterion())
-    creating: createTimeDistributed
+    creating: createClassNLLCriterion
+    creating: createTimeDistributedCriterion
     '''
 
     def __init__(self, criterion, bigdl_type="float"):
