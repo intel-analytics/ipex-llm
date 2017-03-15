@@ -32,6 +32,8 @@ object TextToLabeledSentence {
 /**
  * Transform a string of sentence to LabeledSentence.
  * e.g. ["I", "love", "Intel"] => [0, 1, 2]
+ *      data:  [0, 1]
+ *      label: [1, 2]
  *
  * The input Array[String] should be a tokenized sentence.
  * e.g. I love Intel => ["I", "love", "Intel"]
