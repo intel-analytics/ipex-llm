@@ -35,7 +35,6 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   before {
     Engine.setNodeAndCore(1, 1)
-    Engine.setInit()
   }
 
   "Grey Image Cropper" should "crop image correct" in {

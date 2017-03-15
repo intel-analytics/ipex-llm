@@ -590,8 +590,6 @@ class DistriOptimizer[T: ClassTag] (
   }
 
   override def optimize(): Module[T] = {
-    this.assertEngineInited()
-
     optimMethod.clearHistory(state)
     state("dropPercentage") = dropPercentage
     state("warmupIterationNum") = warmupIterationNum

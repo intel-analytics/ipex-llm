@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,7 +36,6 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "Engine" should "be inited correct under no spark environment" in {
     Engine.setLocalMode
     Engine.init
-    Engine.onSpark should be(false)
     Engine.nodeNumber should be(1)
     Engine.coreNumber should be(1)
   }
@@ -47,7 +45,6 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
       sc = new SparkContext(conf)
       Engine.init
-      Engine.onSpark should be(true)
       Engine.nodeNumber should be(1)
       Engine.coreNumber should be(4)
     }
@@ -56,7 +53,6 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "Engine" should "be inited with correct value under spark local environment" in {
     TestUtils.sparkLocalEnv(core = 4) {
       Engine.init(1, 4, true)
-      Engine.onSpark should be(true)
       Engine.nodeNumber should be(1)
       Engine.coreNumber should be(4)
     }
@@ -67,7 +63,6 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
       sc = new SparkContext(conf)
       Engine.init
-      Engine.onSpark should be(true)
       Engine.nodeNumber should be(6)
       Engine.coreNumber should be(4)
     }
@@ -78,7 +73,6 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
       sc = new SparkContext(conf)
       Engine.init
-      Engine.onSpark should be(true)
       Engine.nodeNumber should be(6)
       Engine.coreNumber should be(4)
     }
@@ -89,7 +83,6 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
       sc = new SparkContext(conf)
       Engine.init
-      Engine.onSpark should be(true)
       Engine.nodeNumber should be(6)
       Engine.coreNumber should be(4)
     }
@@ -110,7 +103,6 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
       "spark.executorEnv.KMP_BLOCKTIME" -> "0",
       "spark.executorEnv.OMP_WAIT_POLICY" -> "passive",
       "spark.executorEnv.OMP_NUM_THREADS" -> "1",
-      "spark.executorEnv.ON_SPARK" -> "true",
       "spark.shuffle.reduceLocality.enabled" -> "false",
       "spark.shuffle.blockTransferService" -> "nio",
       "spark.scheduler.minRegisteredResourcesRatio" -> "1.0"

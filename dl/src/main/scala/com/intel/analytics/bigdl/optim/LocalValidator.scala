@@ -41,8 +41,6 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[M
 
   override def test(vMethods: Array[ValidationMethod[T]])
   : Array[(ValidationResult, ValidationMethod[T])] = {
-    this.assertEngineInited()
-
     val dataIter = dataSet.data (train = false)
     var count = 0
     logger.info("model thread pool size is " + Engine.model.getPoolSize)

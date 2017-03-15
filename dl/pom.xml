@@ -139,6 +139,9 @@
                     <junitxml>.</junitxml>
                     <filereports>bigdl-test-report.txt</filereports>
                     <parallel>${runSpecsInParallel}</parallel>
+                    <systemProperties>
+                        <bigdl.disableCheckSysEnv>true</bigdl.disableCheckSysEnv>
+                    </systemProperties>
                 </configuration>
                 <executions>
                     <execution>

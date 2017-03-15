@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -28,259 +27,18 @@ case object MklBlas extends EngineType
 
 
 object Engine {
-  private val logger = Logger.getLogger(getClass)
-  private val singletonCounter: AtomicInteger = new AtomicInteger(0)
-
-  // Detect this env means Engine.init is called
-  private[this] var _isInitialized: Boolean = if (System.getenv("ON_SPARK") == null) {
-    false
-  } else {
-    true
-  }
-
-  private[this] var _onSpark: Boolean = if (System.getenv("ON_SPARK") == null) {
-    false
-  } else {
-    true
-  }
-
-  /**
-   * If the engine is initialized
-   *
-   * @return
-   */
-  def isInitialized: Boolean = _isInitialized
-
-  // Only test purpose
-  private[bigdl] def setInit() = _isInitialized = true
-
-  /**
-   * If current JVM is a spark Executor
-   *
-   * @return
-   */
-  def onSpark: Boolean = _onSpark
-
-  private var localMode: Boolean = {
-    val env = System.getenv("LOCAL_MODE")
-    if(env == null) {
-      false
-    } else {
-      true
-    }
-  }
-
-  private[utils] def setLocalMode = this.localMode = true
-
-  /**
-   * Check if current execution is a singleton on the JVM
-   *
-   * @return
-   */
-  def checkSingleton(): Boolean = {
-    val count = singletonCounter.incrementAndGet()
-    (count == 1)
-  }
-
-  /**
-   * Reset the singleton flag
-   */
-  def resetSingletonFlag(): Unit = {
-    singletonCounter.set(0)
-  }
-
-  private var physicalCoreNumber = {
-    val env = System.getenv("DL_CORE_NUMBER")
-    if(env == null) {
-      // We assume the HT is enabled
-      // Todo: check the Hyper threading
-      Runtime.getRuntime().availableProcessors() / 2
-    } else {
-      env.toInt
-    }
-  }
-
-  /**
-   * Return number of cores, the engine.init must be called before use this method or an exception
-   * will be thrown
-   *
-   * @return
-   */
-  def coreNumber(): Int = {
-    if (!_isInitialized) throw new IllegalStateException("Engine is not inited")
-
-    physicalCoreNumber
-  }
-
-  /**
-   * This method should only be used for test purpose.
-   *
-   * @param n
-   */
-  private[bigdl] def setCoreNumber(n: Int): Unit = {
-    require(n > 0)
-    physicalCoreNumber = n
-    initThreadPool(n)
-  }
-
-  private var nodeNum: Int = -1
-
-  /**
-   * Return node number, the engine.init must be called before use this method or an
-   * exception will be thrown
-   *
-   * @return
-   */
-  def nodeNumber(): Int = {
-    if (!_isInitialized) throw new IllegalStateException("Engine is not inited")
-    nodeNum
-  }
-
-  /**
-   * This method should only be used for test purpose.
-   *
-   * @param n
-   */
-  private[bigdl] def setNodeNumber(n : Int): Unit = {
-    require(n > 0)
-    nodeNum = n
-  }
-
-  private val ERROR = "Current environment variable looks not correct. Please use bigdl.sh to " +
-    "start your application. For details, see " +
-    "https://github.com/intel-analytics/BigDL/wiki/Getting-Started#before-running-a-bigdl-program"
-
-  /**
-   * Notice: Please use property DL_ENGINE_TYPE to set engineType.
-   * Default engine is MklBlas
-   */
-  private var engineType: EngineType = {
-    val dlEngineType = System.getenv("DL_ENGINE_TYPE")
-
-    if (dlEngineType == null || dlEngineType.toLowerCase == "mklblas") {
-      MklBlas
-    } else {
-      throw new Error(s"Unknown DL_ENGINE_TYPE. $ERROR")
-    }
-  }
-
-  /**
-   * This method should only be used for test purpose.
-   *
-   * @param engineType
-   */
-  private[bigdl] def setEngineType(engineType: EngineType): Unit = {
-    this.engineType = engineType
-  }
-
-  def getEngineType(): EngineType = {
-    this.engineType
-  }
-
-  @volatile private var _default: ThreadPool = null
-
-  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(1)
-
-  def model: ThreadPool = {
-    if (_model == null) {
-      throw new IllegalStateException("Model engine is not initialized. Have you call Engine.init?")
-    }
-    _model
-  }
-
-  def default: ThreadPool = {
-    if (_default == null) {
-      throw new IllegalStateException("Thread engine is not initialized. Have you call Engine" +
-        ".init?")
-    }
-    _default
-  }
-
-  private def initThreadPool(core : Int) : Unit = {
-    val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
-      (core * 50).toString).toInt
-    if(_default == null || _default.getPoolSize != defaultPoolSize) {
-      _default = new ThreadPool(defaultPoolSize)
-    }
-
-    val modelPoolSize: Int = if (engineType == MklBlas) {
-      1
-    } else {
-      core
-    }
-
-    if(_model == null || _model.getPoolSize != modelPoolSize) {
-      _model = new ThreadPool(modelPoolSize)
-      _model.setMKLThread(1)
-    }
-  }
-
-  /**
-   * Read conf values from config file
-   * @return
-   */
-  private[utils] def readConf : Seq[(String, String)] = {
-    val stream : InputStream = getClass.getResourceAsStream("/spark-bigdl.conf")
-    val lines = scala.io.Source.fromInputStream(stream)
-      .getLines.filter(_.startsWith("spark")).toArray
-    lines.map(_.split("\\s+")).map(d => (d(0), d(1))).toSeq
-  }
-
-  private val errorMsg = "For details please check " +
-    "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
-
-  /**
-   * Check the spark conf of spark context if there's an exsiting one
-   */
-  private def checkSparkContext : Unit = {
-    val tmpContext = SparkContext.getOrCreate(new SparkConf().set("tmpContext", "true"))
-    // If there's already a spark context, it should not include the property
-    val exisitingSparkContext = !tmpContext.getConf.contains("tmpContext")
-    require(exisitingSparkContext, "Cannot find an existing spark context. " +
-      "Do you call this method after create spark context?")
-    logger.info("Find existing spark context. Checking the spark conf...")
-    val sparkConf = tmpContext.getConf
-
-    def verify(key: String, value: String): Unit = {
-      for ((k, v) <- sparkConf.getAll) {
-        if (k == key) {
-          if (value != v) {
-            throw new IllegalArgumentException(s"$k should be $value, but it is $v. " + errorMsg)
-          }
-          return
-        }
-      }
-      throw new IllegalArgumentException(s"Can not find $key. " + errorMsg)
-    }
-
-    readConf.foreach(c => verify(c._1, c._2))
-  }
-
-  /**
-   * Set executor number and cores per executor
-   *
-   * @param nodeNum
-   * @param coreNum
-   */
-  private[bigdl] def setNodeAndCore(nodeNum: Int, coreNum: Int): Unit = {
-    setNodeNumber(nodeNum)
-    setCoreNumber(coreNum)
-  }
-
   @deprecated
   def init(nExecutor: Int,
            executorCores: Int,
            onSpark: Boolean): Option[SparkConf] = {
     logger.warn("This method is deprecated. Please refer " +
-        "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine")
+      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine")
     setNodeAndCore(nExecutor, executorCores)
     val res = if (onSpark) {
-      _onSpark = onSpark
       Some(createSparkConf())
     } else {
       None
     }
-    _isInitialized = true
     res
   }
 
@@ -316,7 +74,7 @@ object Engine {
    * The method can set parameters of multi-thread engines, verify spark conf values of an
    * existing spark context.
    */
-  private[bigdl] def init: Unit = this.synchronized {
+  def init: Unit = this.synchronized {
     if (localMode) {
       // The physical core number should have been initialized by env variable in bigdl.sh
       setNodeAndCore(1, physicalCoreNumber)
@@ -326,17 +84,231 @@ object Engine {
       logger.info(s"Executor number is $nExecutor and executor cores number is $executorCores")
       setNodeAndCore(nExecutor, executorCores)
       checkSparkContext
-      _onSpark = true
     }
-    _isInitialized = true
+  }
+
+  private val logger = Logger.getLogger(getClass)
+  private val singletonCounter: AtomicInteger = new AtomicInteger(0)
+  private var localMode: Boolean = {
+    val env = System.getenv("LOCAL_MODE")
+    if(env == null) {
+      false
+    } else {
+      true
+    }
+  }
+  private var physicalCoreNumber = {
+    if (!localMode) {
+      -1
+    } else {
+      getCoreNumberFromEnv
+    }
+  }
+  private var nodeNum: Int = -1
+
+  private val NOT_INIT_ERROR =
+    "Do you call Engine.init? See more at " +
+      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine" +
+      "On executor side, you need to call Engine.setNodeAndCore before."
+
+  private val SPARK_CONF_ERROR = "For details please check " +
+    "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
+
+  private val ENV_VAR_ERROR =
+    "Please use bigdl.sh to init the environment. See " +
+      "https://github.com/intel-analytics/BigDL/wiki/Getting-Started#before-running" +
+      "-a-bigdl-program. And init SparkConf by refering " +
+      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine."
+
+  /**
+   * Notice: Please use property DL_ENGINE_TYPE to set engineType.
+   * Default engine is MklBlas
+   */
+  private var engineType: EngineType = {
+    val dlEngineType = System.getenv("DL_ENGINE_TYPE")
+
+    if (dlEngineType == null || dlEngineType.toLowerCase == "mklblas") {
+      MklBlas
+    } else {
+      throw new Error(s"Unknown DL_ENGINE_TYPE. $ENV_VAR_ERROR")
+    }
+  }
+
+  // Thread pool for default use
+  @volatile private var _default: ThreadPool = null
+
+  // Thread pool for layer use
+  @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(1)
+
+  private def getCoreNumberFromEnv : Int = {
+    val env = System.getenv("DL_CORE_NUMBER")
+    if (env == null) {
+      // We assume the HT is enabled
+      // Todo: check the Hyper threading
+      Runtime.getRuntime().availableProcessors() / 2
+    } else {
+      env.toInt
+    }
+  }
+
+  private[utils] def setLocalMode = this.localMode = true
+
+  /**
+   * Check if current execution is a singleton on the JVM
+   *
+   * @return
+   */
+  private[bigdl] def checkSingleton(): Boolean = {
+    val count = singletonCounter.incrementAndGet()
+    (count == 1)
+  }
+
+  /**
+   * Reset the singleton flag
+   */
+  private[bigdl] def resetSingletonFlag(): Unit = {
+    singletonCounter.set(0)
+  }
+  /**
+   * Return number of cores, the engine.init must be called before use this method or an exception
+   * will be thrown
+   *
+   * @return
+   */
+  private[bigdl] def coreNumber(): Int = {
+    require(physicalCoreNumber != -1, s"Core number is not initialized. $NOT_INIT_ERROR")
+    physicalCoreNumber
+  }
+
+  /**
+   * This method should only be used for test purpose.
+   *
+   * @param n
+   */
+  private[bigdl] def setCoreNumber(n: Int): Unit = {
+    require(n > 0)
+    physicalCoreNumber = n
+    initThreadPool(n)
+  }
+
+  /**
+   * Return node number, the engine.init must be called before use this method or an
+   * exception will be thrown
+   *
+   * @return
+   */
+  private[bigdl] def nodeNumber(): Int = {
+    require(nodeNum != -1, s"Node number is not initialized. $NOT_INIT_ERROR")
+    nodeNum
+  }
+
+  /**
+   * This method should only be used for test purpose.
+   *
+   * @param n
+   */
+  private[bigdl] def setNodeNumber(n : Int): Unit = {
+    require(n > 0)
+    nodeNum = n
+  }
+
+  /**
+   * This method should only be used for test purpose.
+   *
+   * @param engineType
+   */
+  private[bigdl] def setEngineType(engineType: EngineType): Unit = {
+    this.engineType = engineType
+  }
+
+  private[bigdl] def getEngineType(): EngineType = {
+    this.engineType
+  }
+
+  private[bigdl] def model: ThreadPool = {
+    _model
+  }
+
+  private[bigdl] def default: ThreadPool = {
+    if (_default == null) {
+      throw new IllegalStateException(s"Thread engine is not initialized. $NOT_INIT_ERROR")
+    }
+    _default
+  }
+
+  private def initThreadPool(core : Int) : Unit = {
+    val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
+      (core * 50).toString).toInt
+    if(_default == null || _default.getPoolSize != defaultPoolSize) {
+      _default = new ThreadPool(defaultPoolSize)
+    }
+
+    val modelPoolSize: Int = if (engineType == MklBlas) {
+      1
+    } else {
+      core
+    }
+
+    if(_model == null || _model.getPoolSize != modelPoolSize) {
+      _model = new ThreadPool(modelPoolSize)
+      _model.setMKLThread(1)
+    }
+  }
+
+  /**
+   * Read conf values from config file
+   * @return
+   */
+  private[utils] def readConf : Seq[(String, String)] = {
+    val stream : InputStream = getClass.getResourceAsStream("/spark-bigdl.conf")
+    val lines = scala.io.Source.fromInputStream(stream)
+      .getLines.filter(_.startsWith("spark")).toArray
+    lines.map(_.split("\\s+")).map(d => (d(0), d(1))).toSeq
+  }
+
+  /**
+   * Check the spark conf of spark context if there's an exsiting one
+   */
+  private def checkSparkContext : Unit = {
+    val tmpContext = SparkContext.getOrCreate(new SparkConf().set("tmpContext", "true"))
+    // If there's already a spark context, it should not include the property
+    val exisitingSparkContext = !tmpContext.getConf.contains("tmpContext")
+    require(exisitingSparkContext, "Cannot find an existing spark context. " +
+      "Do you call this method after create spark context?")
+    logger.info("Find existing spark context. Checking the spark conf...")
+    val sparkConf = tmpContext.getConf
+
+    def verify(key: String, value: String): Unit = {
+      for ((k, v) <- sparkConf.getAll) {
+        if (k == key) {
+          if (value != v) {
+            throw new IllegalArgumentException(s"$k should be $value, but it is $v. " +
+              SPARK_CONF_ERROR)
+          }
+          return
+        }
+      }
+      throw new IllegalArgumentException(s"Can not find $key. " + SPARK_CONF_ERROR)
+    }
+
+    readConf.foreach(c => verify(c._1, c._2))
+  }
+
+  /**
+   * Set executor number and cores per executor
+   *
+   * @param nodeNum
+   * @param coreNum
+   */
+  private[bigdl] def setNodeAndCore(nodeNum: Int, coreNum: Int): Unit = {
+    setNodeNumber(nodeNum)
+    setCoreNumber(coreNum)
   }
 
   /**
    * Reset engine envs. Test purpose
    */
   private[bigdl] def reset : Unit = {
-    _onSpark = false
-    _isInitialized = false
     nodeNum = 1
     physicalCoreNumber = 1
     localMode = false
@@ -380,7 +352,7 @@ object Engine {
       val patternLocalStar = "local\\[\\*\\]".r
       master match {
         case patternLocalN(n) => Some(1, n.toInt)
-        case patternLocalStar => Some(1, physicalCoreNumber)
+        case patternLocalStar => Some(1, getCoreNumberFromEnv)
         case _ => throw new IllegalArgumentException(s"Can't parser master $master")
       }
     } else if (master.toLowerCase.startsWith("spark")) {
@@ -434,4 +406,23 @@ object Engine {
       throw new IllegalArgumentException(s"Unsupported master format $master")
     }
   }
+
+  private def checkSysEnv() : Unit = {
+    if (System.getProperty("bigdl.disableCheckSysEnv") != null) {
+      return
+    }
+
+    readConf
+      .filter(_._1.startsWith("spark.executorEnv."))
+      .map(c => (c._1.substring(18), c._2))
+      .foreach(env => {
+        require(System.getenv(env._1) != null,
+          s"Cannot find ${env._1} in environment variables. $ENV_VAR_ERROR")
+        require(System.getenv(env._1) == env._2,
+          s"Environment variable ${env._1} is ${System.getenv(env._1)}. " +
+          s"But it should be ${env._2}. $ENV_VAR_ERROR")
+    })
+  }
+
+  checkSysEnv()
 }

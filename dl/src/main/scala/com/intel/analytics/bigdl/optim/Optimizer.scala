@@ -141,10 +141,6 @@ abstract class Optimizer[T: ClassTag, D](
     this.warmupIterationNum = warmupIteration
     this
   }
-
-  def assertEngineInited(): Unit = {
-    require(Engine.isInitialized, s"you may forget to initialize Engine object.")
-  }
 }
 
 object Optimizer {

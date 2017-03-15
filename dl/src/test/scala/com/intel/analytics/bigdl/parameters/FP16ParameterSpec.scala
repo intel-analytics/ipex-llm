@@ -26,7 +26,6 @@ class FP16ParameterSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   before {
     Engine.setNodeAndCore(1, 4)
-    Engine.setInit()
   }
 
   "convert double tensor to fp16 array and back" should "be same when the number is integer" in {

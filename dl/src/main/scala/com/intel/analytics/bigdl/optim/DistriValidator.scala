@@ -33,7 +33,6 @@ class DistriValidator[T] private[optim](
 
   override def test(vMethods: Array[ValidationMethod[T]])
   : Array[(ValidationResult, ValidationMethod[T])] = {
-    this.assertEngineInited()
 
     val rdd = dataSet.data(train = false)
     val broadcastModel = rdd.sparkContext.broadcast(model.evaluate())

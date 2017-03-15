@@ -38,11 +38,12 @@ CMD=""
 EXIT_CODE=0
 
 set_mkl_blas() {
-    echo "Set engine type to mkl_blas"
+    # TODO: Generate export statements in the build from spark-bigdl.conf
     export OMP_NUM_THREADS=1
     export KMP_BLOCKTIME=0
     export OMP_WAIT_POLICY=passive
     export DL_ENGINE_TYPE=mklblas
+    export MKL_DISABLE_FAST_MM=1
 }
 
 parse() {
