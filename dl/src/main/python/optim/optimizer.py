@@ -117,7 +117,7 @@ class Optimizer(JavaValue):
                            training_rdd, criterion, optim_method,
                            state, end_trigger, batch_size)
 
-    def setvalidation(self, batch_size, val_rdd, trigger, val_method=["top1"]):
+    def setvalidation(self, batch_size, val_rdd, trigger, val_method=["Top1Accuracy"]):
         callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
                       trigger, val_rdd, val_method)
 

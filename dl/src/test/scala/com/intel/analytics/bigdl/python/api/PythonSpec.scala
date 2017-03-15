@@ -99,7 +99,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       batchSize = batchSize,
       trigger = Trigger.severalIteration(10),
       valRdd = data.toJavaRDD(),
-      vMethods = util.Arrays.asList("top1", "loss"))
+      vMethods = util.Arrays.asList("Top1Accuracy", "Loss"))
     val trainedModel = optimizer.optimize()
     val resultRDD = pp.predict(trainedModel, data.map(pp.toSample(_)))
     val result = resultRDD.take(5)
@@ -110,7 +110,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val testResult = pp.modelTest(trainedModel,
       data.toJavaRDD(),
       batchSize = 32,
-      valMethods = util.Arrays.asList("top1"))
+      valMethods = util.Arrays.asList("Top1Accuracy"))
     println(testResult)
   }
 }
