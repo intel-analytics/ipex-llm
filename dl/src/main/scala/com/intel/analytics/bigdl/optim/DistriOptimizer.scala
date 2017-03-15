@@ -17,12 +17,11 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.{Module, _}
-import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.visualization.tensorboard.FileWriter
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
@@ -244,7 +243,7 @@ object DistriOptimizer {
         optimMethod.updateHyperParameter(state, driverState)
         driverState("loss") = lossSum.value.toFloat / finishedModelNum
         driverState("throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
-        if (state.contains("clr")) driverState("learningRate") = -state[Double]("clr")
+        if (state.contains("clr")) driverState("learningRate") = -state[Double]("clr").toFloat
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${driverState("throughput")} records/second. Loss is ${
             driverState("loss")}. ${optimMethod.getHyperParameter(state)}")
@@ -366,16 +365,17 @@ object DistriOptimizer {
       if (null != parametersTrigger && parametersTrigger(driverState)) {
         val model = getModelWithGradient(models, parameters)
         val parametersTable = model.getParametersTable()
-        parametersTable.keySet.foreach { moduleName =>
-          val paramTable = parametersTable[Table](moduleName)
-          paramTable.keySet.foreach { paramName =>
-            trainSummary.get.addHistogram(
-              s"$moduleName/$paramName", paramTable[Tensor[T]](paramName), currentIteration
-            )
-          }
-        }
+        // Parallelize to create Histogram.
+        Engine.default.invoke(
+          parametersTable.keySet.toSeq.map(moduleName => () => {
+            val paramTable = parametersTable[Table](moduleName)
+            paramTable.keySet.foreach { paramName =>
+              trainSummary.get.addHistogram(
+                s"$moduleName/$paramName", paramTable[Tensor[T]](paramName), currentIteration)}
+          }))
       }
       val scalarTrigger = trigger.filter(!_._1.equals("parameters"))
+      // Not parallelizable, because driverState is changing each iteration.
       scalarTrigger.foreach { v =>
         if (v._2(driverState)) {
           require(driverState.contains(v._1), s"DistriOptimizer.saveMetrics: metrics ${v._1} " +
@@ -466,13 +466,13 @@ object DistriOptimizer {
     wallClockTime: Long,
     state: Table,
     validationSummary: Option[ValidationSummary]
-  ): Array[(ValidationResult, ValidationMethod[T])] = {
+  ): Unit = {
     if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
-      return null
+      return
     }
     val trigger = validationTrigger.get
     if (!trigger(state)) {
-      return null
+      return
     }
     val vMethods = validationMethods.get
     val validateRDD = validationDataSet.get.toDistributed().data(train = false)
@@ -526,7 +526,6 @@ object DistriOptimizer {
         )
       }
     }
-    results
   }
 
   private def getModel[T: ClassTag](
