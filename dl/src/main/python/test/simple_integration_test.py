@@ -58,7 +58,7 @@ class TestWorkFlow(unittest.TestCase):
             batch_size=32,
             val_rdd=trainingData,
             trigger=EveryEpoch(),
-            val_method=["top1"]
+            val_method=["Top1Accuracy"]
         )
         optimizer.setcheckpoint(SeveralIteration(1), "/tmp/prototype/")
 
@@ -74,7 +74,7 @@ class TestWorkFlow(unittest.TestCase):
             print(str(i) + "\n")
         print(len(p))
 
-        test_results = trained_model.test(trainingData, 32, ["top1"])
+        test_results = trained_model.test(trainingData, 32, ["Top1Accuracy"])
         for test_result in test_results:
             print(test_result)
         sc.stop()

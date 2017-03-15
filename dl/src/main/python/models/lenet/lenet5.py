@@ -84,7 +84,7 @@ if __name__ == "__main__":
             batch_size=32,
             val_rdd=test_data,
             trigger=EveryEpoch(),
-            val_method=["top1"]
+            val_method=["Top1Accuracy"]
         )
         optimizer.setcheckpoint(EveryEpoch(), "/tmp/lenet5/")
         trained_model = optimizer.optimize()
@@ -95,5 +95,5 @@ if __name__ == "__main__":
         # TODO: Pass model path through external parameter
         model = Model.from_path("/tmp/lenet5/model.431")
         validator = Validator(model, test_data, batch_size=32)
-        result = validator.test(["top1", "top5"])
+        result = validator.test(["Top1Accuracy", "Top5Accuracy"])
         print result

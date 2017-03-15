@@ -69,18 +69,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   private def toValidationMethod(vMethods: JList[String]): Array[ValidationMethod[T]] = {
-    vMethods.toArray.map{case m: String => m.toLowerCase()}.map {
-      case "top1" => new Top1Accuracy[T]()
-      case "top5" => new Top5Accuracy[T]()
-      case "loss" => new Loss[T]()
+    vMethods.toArray.map {
+      case "Top1Accuracy" => new Top1Accuracy[T]()
+      case "Top5Accuracy" => new Top5Accuracy[T]()
+      case "Loss" => new Loss[T]()
       case m: String => throw new RuntimeException(s"not supported validation method: $m")
     }
   }
 
   private def validationMethodToStr(method: ValidationMethod[T]): String = {
     method match {
-      case _: Top1Accuracy[T] => "top1"
-      case _: Top5Accuracy[T] => "top5"
+      case _: Top1Accuracy[T] => "Top1Accuracy"
+      case _: Top5Accuracy[T] => "Top5Accuracy"
       case _: Loss[T] => "loss"
       case _ => throw new RuntimeException(s"not supported validation method: $method")
     }

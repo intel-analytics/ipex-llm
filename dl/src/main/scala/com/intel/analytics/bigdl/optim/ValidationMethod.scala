@@ -119,7 +119,7 @@ class Top1Accuracy[T] extends ValidationMethod[T] {
     new AccuracyResult(correct, count)
   }
 
-  override def format(): String = "top1 accuracy"
+  override def format(): String = "Top1Accuracy"
 }
 
 class Top5Accuracy[T] extends ValidationMethod[T] {
@@ -159,7 +159,7 @@ class Top5Accuracy[T] extends ValidationMethod[T] {
     new AccuracyResult(correct, count)
   }
 
-  override def format(): String = "top5 accuracy"
+  override def format(): String = "Top5Accuracy"
 }
 
 class LossResult(private var loss: Float, private var count: Int)
@@ -215,5 +215,5 @@ class Loss[@specialized(Float, Double)T: ClassTag]()
     new LossResult(loss, count)
   }
 
-  override def format(): String = "language model Loss "
+  override def format(): String = "Loss"
 }
