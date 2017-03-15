@@ -25,10 +25,6 @@ abstract class Validator[T, D](
   dataSet: DataSet[D]
 ) {
   def test(vMethods: Array[ValidationMethod[T]]): Array[(ValidationResult, ValidationMethod[T])]
-
-  def assertEngineInited(): Unit = {
-    require(Engine.isInitialized, s"you may forget to initialize Engine.")
-  }
 }
 
 object Validator {

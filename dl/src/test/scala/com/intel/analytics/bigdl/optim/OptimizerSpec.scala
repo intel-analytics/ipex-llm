@@ -32,7 +32,6 @@ class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   before {
     Engine.setNodeAndCore(1, 4)
-    Engine.setInit()
   }
 
   "Optimizer" should "end with maxEpoch" in {
