@@ -21,7 +21,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim.Trigger
+import com.intel.analytics.bigdl.optim.{SGD, Trigger}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -82,18 +82,21 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.add(m2)
 
     model.add(LogSoftMax[Double]())
-
+    val batchSize = 32
     val pp = PythonBigDL.ofDouble()
+    val state = Map("learingRateSchedule" ->
+      SGD.Poly(0.5, math.ceil(1281167.toDouble / batchSize).toInt))
+      .asJava.asInstanceOf[JMap[Any, Any]]
     val optimizer = pp.createOptimizer(
       model,
       data.toJavaRDD(),
       ClassNLLCriterion[Double](),
       "SGD",
-      Map().asJava.asInstanceOf[JMap[Any, Any]],
+      state,
       Trigger.maxEpoch(2),
       32)
     pp.setValidation(optimizer = optimizer,
-      batchSize = 32,
+      batchSize = batchSize,
       trigger = Trigger.severalIteration(10),
       valRdd = data.toJavaRDD(),
       vMethods = util.Arrays.asList("top1", "loss"))
