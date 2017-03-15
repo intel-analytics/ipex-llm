@@ -401,9 +401,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createTrainSummary(logDir: String,
                          appName: String,
-                         trigger: JMap[String, String]): Summary = {
-    val a = trigger.asScala.mapValues[Trigger](_ => Trigger.severalIteration(2)).toMap
-    new TrainSummary(logDir, appName, a)
+                         trigger: JMap[String, Trigger]): Summary = {
+    new TrainSummary(logDir, appName, trigger.asScala.toMap)
   }
 
   def createValidationSummary(logDir: String,
