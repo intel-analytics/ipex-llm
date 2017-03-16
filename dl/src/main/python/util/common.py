@@ -43,17 +43,17 @@ class JavaValue(object):
 
 
 class TestResult():
-    def __init__(self, result, count, method):
+    def __init__(self, result, total_num, method):
         self.result = result
-        self.count = count
+        self.total_num = total_num
         self.method = method
 
     def __reduce__(self):
-        return (TestResult, (self.result, self.count, self.method))
+        return (TestResult, (self.result, self.total_num, self.method))
 
     def __str__(self):
-        return "result: %s, count: %s, method: %s" % (
-            self.result, self.count, self.method)
+        return "Test result: %s, total_num: %s, method: %s" % (
+            self.result, self.total_num, self.method)
 
 
 class Sample(object):
@@ -114,7 +114,7 @@ def initEngine(nodeNum, coreNum, bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine", nodeNum, coreNum)
 
 
-def create_spark_conf(coreNum, nodeNum):
+def create_spark_conf(nodeNum, coreNum):
     print("coreNum:%s,  nodeNum: %s" % (coreNum, nodeNum))
     sparkConf = SparkConf()
     sparkConf.setExecutorEnv("DL_ENGINE_TYPE", "mklblas")

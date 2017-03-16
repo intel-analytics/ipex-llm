@@ -33,7 +33,7 @@ trait ValidationMethod[T] extends Serializable {
 
 trait ValidationResult extends Serializable {
 
-  def result(): (Float, Int) // (Result, Count)
+  def result(): (Float, Int) // (Result, TotalNum)
 
   // scalastyle:off methodName
   def +(other: ValidationResult): ValidationResult
@@ -48,7 +48,7 @@ trait ValidationResult extends Serializable {
 class AccuracyResult(private var correct: Int, private var count: Int)
   extends ValidationResult {
 
-  override def result(): (Float, Int) = (correct.toFloat, count)
+  override def result(): (Float, Int) = (correct.toFloat/count, count)
 
   // scalastyle:off methodName
   override def +(other: ValidationResult): ValidationResult = {

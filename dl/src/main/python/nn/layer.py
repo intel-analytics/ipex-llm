@@ -83,7 +83,8 @@ class Model(JavaValue):
 
     @staticmethod
     def from_path(path, bigdl_type="float"):
-        return callBigDlFunc(bigdl_type, "modelFromPath", path)
+        jmodel = callBigDlFunc(bigdl_type, "modelFromPath", path)
+        return Model.of(jmodel, bigdl_type)
 
 
 class Linear(Model):

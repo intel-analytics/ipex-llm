@@ -40,7 +40,7 @@ case class Sample(features: JList[Any],
                   labelShape: JList[Int],
                   bigdlType: String)
 
-case class TestResult(val result: Float, count: Int, val method: String)
+case class TestResult(val result: Float, totalNum: Int, val method: String)
 
 
 object PythonBigDL {
@@ -68,6 +68,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val cls = implicitly[ClassTag[T]].runtimeClass
     cls.getSimpleName
   }
+
 
   private def toValidationMethod(vMethods: JList[String]): Array[ValidationMethod[T]] = {
     vMethods.toArray.map {
@@ -259,12 +260,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     MSECriterion[T]()
   }
 
-  def createValidator(model: AbstractModule[Activity, Activity, T],
-                      valRDD: JavaRDD[Sample],
-                      batchSize: Int)
-  : Validator[T, MiniBatch[T]] = {
-    Validator(model, batching(valRDD, batchSize))
-  }
 
   def modelTest(model: AbstractModule[Activity, Activity, T],
                 valRDD: JavaRDD[Sample],
