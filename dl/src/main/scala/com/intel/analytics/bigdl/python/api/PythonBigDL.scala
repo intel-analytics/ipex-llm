@@ -154,13 +154,26 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                               dW: Int,
                               dH: Int,
                               padW: Int = 0,
-                              padH: Int = 0): SpatialMaxPooling[T] = {
-    SpatialMaxPooling[T](kW,
-      kH,
-      dW,
-      dH,
-      padW,
-      padH)
+                              padH: Int = 0,
+                              ceilMode: Boolean = false)
+  : SpatialMaxPooling[T] = {
+    if(ceilMode){
+      return SpatialMaxPooling[T](kW,
+                                  kH,
+                                  dW,
+                                  dH,
+                                  padW,
+                                  padH).ceil()
+    }
+    else{
+      return SpatialMaxPooling[T](kW,
+                                  kH,
+                                  dW,
+                                  dH,
+                                  padW,
+                                  padH)
+    }
+
   }
 
   def createSpatialConvolution(nInputPlane: Int,
@@ -176,22 +189,62 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                                initMethod: String = "default")
   : SpatialConvolution[T] = {
     SpatialConvolution[T](nInputPlane,
-      nOutputPlane,
-      kernelW,
-      kernelH,
-      strideW,
-      strideH,
-      padW,
-      padH,
-      nGroup,
-      propagateBack,
-      PythonBigDL.getInitMethod(initMethod))
+                          nOutputPlane,
+                          kernelW,
+                          kernelH,
+                          strideW,
+                          strideH,
+                          padW,
+                          padH,
+                          nGroup,
+                          propagateBack,
+                          PythonBigDL.getInitMethod(initMethod))
   }
 
-  def createReshape(size: JList[Int]): Reshape[T] = {
-    Reshape(size.asScala.toArray)
+  def createConcat(dimension: Int): Concat[T] = {
+    Concat[T](dimension)
   }
 
+  def createSpatialAveragePooling(kW: Int,
+                                  kH: Int,
+                                  dW: Int = 1,
+                                  dH: Int = 1,
+                                  padW: Int = 0,
+                                  padH: Int = 0,
+                                  ceilMode: Boolean = false,
+                                  countIncludePad: Boolean = true,
+                                  divide: Boolean = true)
+  : SpatialAveragePooling[T] = {
+    SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, ceilMode, countIncludePad, divide) 
+  }
+
+  def createSpatialBatchNormalization(nOutput: Int,
+                                      eps: Double = 1e-5,
+                                      momentum: Double = 0.1,
+                                      affine: Boolean = true)
+  : SpatialBatchNormalization[T] = {
+    SpatialBatchNormalization[T](nOutput, eps, momentum, affine)
+  }
+
+  def createSpatialCrossMapLRN(size: Int = 5,
+                               alpha: Double = 1.0,
+                               beta: Double = 0.75,
+                               k: Double = 1.0)
+  : SpatialCrossMapLRN[T] = {
+     SpatialCrossMapLRN[T](size, alpha, beta, k)
+  }
+
+  def createDropout(initP: Double = 0.5,
+                    inplace: Boolean = false,
+                    scale: Boolean = true)
+  :  Dropout[T] = {
+    Dropout[T](initP, inplace, scale)
+  }
+
+  def createView(sizes: JList[Int], num_input_dims: Int):  View[T] = {
+     View[T](sizes.asScala.toArray).setNumInputDims(num_input_dims)
+  }
+  
   //   Optimizer
   def createPoly(power: Double, maxIteration: Int): SGD.Poly = {
     SGD.Poly(power, maxIteration)
