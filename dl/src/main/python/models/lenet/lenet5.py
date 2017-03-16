@@ -15,7 +15,6 @@
 #
 # Still in experimental stage!
 
-import sys
 from optparse import OptionParser
 
 from dataset import mnist
@@ -42,8 +41,8 @@ def build_model(class_num):
     return model
 
 
-def get_minst(data_type="train"):
-    (images, labels) = mnist.read_data_sets("/tmp/mnist/", data_type)
+def get_minst(sc, data_type="train", location="/tmp/mnist"):
+    (images, labels) = mnist.read_data_sets(location, data_type)
     images = sc.parallelize(images)
     labels = sc.parallelize(labels)
     # Target start from 1 in BigDL
@@ -66,9 +65,9 @@ if __name__ == "__main__":
     conf = initEngine(int(options.nodeNum), int(options.coreNum))
 
     if options.action == "train":
-        train_data = get_minst("train").map(
+        train_data = get_minst(sc, "train").map(
             normalizer(mnist.TRAIN_MEAN, mnist.TRAIN_STD))
-        test_data = get_minst("test").map(
+        test_data = get_minst(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
         state = {"learningRate": 0.01,
                  "learningRateDecay": 0.0002}
@@ -78,7 +77,7 @@ if __name__ == "__main__":
             criterion=ClassNLLCriterion(),
             optim_method="SGD",
             state=state,
-            end_trigger=MaxEpoch(2),
+            end_trigger=MaxEpoch(20),
             batch_size=int(options.batchSize))
         optimizer.setvalidation(
             batch_size=32,
@@ -93,7 +92,7 @@ if __name__ == "__main__":
         test_data = get_minst("test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
         # TODO: Pass model path through external parameter
-        model = Model.from_path("/tmp/lenet5/model.431")
-        validator = Validator(model, test_data, batch_size=32)
-        result = validator.test(["Top1Accuracy", "Top5Accuracy"])
-        print result
+        model = Model.from_path("/tmp/lenet5/lenet-model.470")
+        results = model.test(test_data, 32, ["Top1Accuracy"])
+        for result in results:
+            print result
