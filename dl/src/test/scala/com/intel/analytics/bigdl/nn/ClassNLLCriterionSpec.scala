@@ -200,7 +200,8 @@ class ClassNLLCriterionSpec extends FlatSpec with Matchers {
   }
 
   "A ClassNLL Criterion " should "generate correct output and grad with repeat" in {
-    val criterion = new ClassNLLCriterion[Double](repeat = 3)
+    val criterion = new ClassNLLCriterion[Double](multiInput = 3,
+      multiInputWeights = Array(1.0, 0.5, 0.2))
     val input = Tensor[Double](3, 3)
     input(Array(1, 1)) = -1.0262627674932
     input(Array(1, 2)) = -1.2412600935171
@@ -215,28 +216,28 @@ class ClassNLLCriterionSpec extends FlatSpec with Matchers {
     target(Array(1)) = 1
     target(Array(2)) = 1
     target(Array(3)) = 1
-    val expectedOutput = 0.9736268773725566
+    val expectedOutput = 1.8105650580480965
     val expectedGrad = Tensor[Double](3, 3)
     expectedGrad(Array(1, 1)) = -0.33333333333333
-    expectedGrad(Array(1, 2)) = -0.33333333333333
-    expectedGrad(Array(1, 3)) = -0.33333333333333
+    expectedGrad(Array(1, 2)) = -0.166666666666665
+    expectedGrad(Array(1, 3)) = -0.066666666666666
     expectedGrad(Array(2, 1)) = -0.33333333333333
-    expectedGrad(Array(2, 2)) = -0.33333333333333
-    expectedGrad(Array(2, 3)) = -0.33333333333333
+    expectedGrad(Array(2, 2)) = -0.166666666666665
+    expectedGrad(Array(2, 3)) = -0.066666666666666
     expectedGrad(Array(3, 1)) = -0.33333333333333
-    expectedGrad(Array(3, 2)) = -0.33333333333333
-    expectedGrad(Array(3, 3)) = -0.33333333333333
+    expectedGrad(Array(3, 2)) = -0.166666666666665
+    expectedGrad(Array(3, 3)) = -0.066666666666666
     val output = criterion.forward(input, target)
     val gradInput = criterion.backward(input, target)
     assert(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      assert(abs(v1 - v2) < 1e-6)
       v1
     })
   }
 
   "A ClassNLL Criterion " should "generate correct output and grad with repeat and sum loss" in {
-    val criterion = new ClassNLLCriterion[Double](repeat = 3, sumRepeatLoss = true)
+    val criterion = new ClassNLLCriterion[Double](multiInput = 3)
     val input = Tensor[Double](3, 3)
     input(Array(1, 1)) = -1.0262627674932
     input(Array(1, 2)) = -1.2412600935171

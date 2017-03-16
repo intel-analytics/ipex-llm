@@ -36,18 +36,18 @@ import com.intel.analytics.bigdl.utils.Engine
  *
  * @param weights define weights for different class
  * @param sizeAverage average the loss/gradient for batch input
- * @param repeat the input can contain multiple set. For example, if repeat = 2, there're two sets
- *               input, and if there are 10 classes, for a 1D tensor input, its length should be 20
- * @param sumRepeatLoss If there're multiple input set, summ the loss togethor or only return the
- *                      first loss
+ * @param multiInput the input can contain multiple set. For example, if repeat = 2,
+ *                   there're two sets input, and if there are 10 classes, for a 1D
+ *                   tensor input, its length should be 20
+ * @param multiInputWeights weights for multi-input
  * @tparam T
  */
 @SerialVersionUID(- 8696382776046599502L)
 class ClassNLLCriterion[T: ClassTag](
   weights: Tensor[T] = null,
   sizeAverage: Boolean = true,
-  repeat: Int = 1,
-  sumRepeatLoss: Boolean = false
+  multiInput: Int = 1,
+  multiInputWeights: Array[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   private var total_weight = ev.zero
@@ -68,14 +68,12 @@ class ClassNLLCriterion[T: ClassTag](
     require(curTarget >= 1 && curTarget <= nClasses,
       s"ClassNLLCriterion: curTarget ${curTarget} is out of range 1 to ${nClasses}")
     val curWeight = if (weights != null) weights(Array(curTarget)) else ev.one
-    var loss = ev.times(ev.negative(input.valueAt(i, curTarget)), curWeight)
-    if(sumRepeatLoss) {
-      var r = 1
-      while(r < repeat) {
-        loss = ev.plus(loss, ev.times(ev.negative(input.valueAt(i, curTarget + r * nClasses)),
-          curWeight))
-        r += 1
-      }
+    var loss = ev.zero
+    var r = 0
+    while(r < multiInput) {
+      loss = ev.plus(loss, ev.times(ev.negative(input.valueAt(i, curTarget + r * nClasses)),
+        ev.times(curWeight, if (multiInputWeights == null) ev.one else multiInputWeights(r))))
+      r += 1
     }
     (loss, curWeight)
   }
@@ -85,8 +83,9 @@ class ClassNLLCriterion[T: ClassTag](
     val curTarget = ev.toType[Int](target.valueAt(i))
     val curWeight = if (weights != null) ev.negative(weights.valueAt(curTarget)) else ev.negativeOne
     var r = 0
-    while (r < repeat) {
-      gradInput.setValue(i, curTarget + r * nClasses, curWeight)
+    while (r < multiInput) {
+      gradInput.setValue(i, curTarget + r * nClasses,
+        ev.times(curWeight, if (multiInputWeights == null) ev.one else multiInputWeights(r)))
       if (sizeAverage) {
         gradInput.setValue(i, curTarget + r * nClasses,
           ev.divide(gradInput.valueAt(i, curTarget + r * nClasses), total_weight))
@@ -105,8 +104,8 @@ class ClassNLLCriterion[T: ClassTag](
       input.addSingletonDimension()
     }
     val length = input.size(2)
-    require(length % repeat == 0, s"ClassNLLCriterion: $repeat cannot divide $length")
-    nClasses = length / repeat
+    require(length % multiInput == 0, s"ClassNLLCriterion: $multiInput cannot divide $length")
+    nClasses = length / multiInput
 
     val batchSize = input.size(1)
     val targetSize = target.size()
