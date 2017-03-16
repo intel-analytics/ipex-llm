@@ -116,7 +116,7 @@ def train(sc,
         model=build_model(news20.CLASS_NUM),
         training_rdd=train_rdd,
         criterion=ClassNLLCriterion(),
-        end_trigger=MaxEpoch(15),
+        end_trigger=MaxEpoch(max_epoch),
         batch_size=batch_size,
         optim_method="Adagrad",
         state=state)
@@ -136,6 +136,7 @@ if __name__ == "__main__":
     parser.add_option("-n", "--nodeNum", dest="nodeNum", default="1")
     parser.add_option("-b", "--batchSize", dest="batchSize", default="128")
     parser.add_option("-e", "--embedding_dim", dest="embedding_dim", default="50")  # noqa
+    parser.add_option("-m", "--max_epoch", dest="max_epoch", default="15")  # noqa
 
     (options, args) = parser.parse_args(sys.argv)
     if options.action == "train":
@@ -143,6 +144,7 @@ if __name__ == "__main__":
         core_num = int(options.coreNum)
         batch_size = int(options.batchSize)
         embedding_dim = int(options.embedding_dim)
+        max_epoch = int(options.max_epoch)
         sequence_len = 50
         max_words = 1000
         training_split = 0.8
