@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,15 +18,15 @@ package com.intel.analytics.bigdl.models.autoencoder
 
 import java.nio.file.Paths
 
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Transformer, image}
-import com.intel.analytics.bigdl.dataset.image._
-import com.intel.analytics.bigdl.nn.{MSECriterion, Module}
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.image._
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Transformer}
+import com.intel.analytics.bigdl.nn.{MSECriterion, Module}
 import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
 object toAutoencoderBatch {
   def apply(): toAutoencoderBatch[Float] = new toAutoencoderBatch[Float]()

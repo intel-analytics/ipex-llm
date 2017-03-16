@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,17 +16,15 @@
 
 package com.intel.analytics.bigdl.optim
 
-import java.io.File
 import java.nio.file.{Files, Paths}
 
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
-import org.apache.commons.io.FileUtils
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -103,7 +100,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var dataSet: DistributedDataSet[MiniBatch[Double]] = null
 
   before {
-    sc = new SparkContext("local[1]", "RDDOptimizerSpec")
+    val conf = new SparkConf().setMaster("local[1]").setAppName("RDDOptimizerSpec")
+    sc = new SparkContext(conf)
 
     val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber).map(prepareData)
 
@@ -249,6 +247,30 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     )
   }
 
+  "Train with one partition one executor" should "won't throw mult-task exception" in {
+    System.setProperty("bigdl.check.singleton", true.toString)
+    RandomGenerator.RNG.setSeed(10)
+    Engine.setNodeNumber(Some(1))
+    val mm = bn
+    mm.getParameters()._1.fill(0.125)
+    val rdd = sc.parallelize(1 to (256 * nodeNumber), 1).map(prepareData)
+    val dataSet = new DistributedDataSet[MiniBatch[Double]] {
+      override def originRDD(): RDD[_] = rdd
+
+      override def data(train : Boolean): RDD[MiniBatch[Double]] = rdd
+
+      override def size(): Long = 256 * nodeNumber
+
+      override def shuffle(): Unit = {}
+    }
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
+      .optimize()
+
+    Engine.setNodeNumber(Some(nodeNumber))
+  }
+
   "DistriOptimizer checkpoint" should "work correclty" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
     Files.delete(Paths.get(filePath))
@@ -264,7 +286,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     ).setState(T("learningRate" -> 20.0))
       .setCheckpoint(filePath, Trigger.everyEpoch)
       .setEndWhen(Trigger.maxEpoch(1))
-      .disableCheckSingleton()
       .optimize()
 
     val state = T.load(filePath + "/state.33")

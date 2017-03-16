@@ -1,12 +1,11 @@
 #
-# Licensed to Intel Corporation under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# Intel Corporation licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
+# Copyright 2016 The BigDL Authors.
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -31,42 +30,76 @@ if sys.version >= '3':
     unicode = str
 
 
-class Validator(JavaValue):
-    def __init__(self,  model, val_rdd, batch_size, bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, model, val_rdd, batch_size)
-
-    def test(self, val_methods):
-        return callBigDlFunc(self.bigdl_type, "test", self.value, val_methods)
-
-
 class MaxEpoch(JavaValue):
+    '''
+    >>> maxEpoch = MaxEpoch(2)
+    creating: createMaxEpoch
+    '''
     def __init__(self, max_epoch, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, max_epoch)
 
 
 class EveryEpoch(JavaValue):
+    '''
+    >>> everyEpoch = EveryEpoch()
+    creating: createEveryEpoch
+    '''
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
 
 
 class SeveralIteration(JavaValue):
+    '''
+    >>> serveralIteration = SeveralIteration(2)
+    creating: createSeveralIteration
+    '''
     def __init__(self, interval, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, interval)
 
 
 class MaxIteration(JavaValue):
+    '''
+    >>> maxIteration = MaxIteration(20)
+    creating: createMaxIteration
+    '''
     def __init__(self, max, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, max)
 
 
 class ClassNLLCriterion(JavaValue):
+    '''
+    >>> classNLLCriterion = ClassNLLCriterion()
+    creating: createClassNLLCriterion
+    '''
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
 
 
 class MSECriterion(JavaValue):
+    '''
+    >>> mSECriterion = MSECriterion()
+    creating: createMSECriterion
+    '''
     def __init__(self, bigdl_type="float"):
             JavaValue.__init__(self, None, bigdl_type)
+
+
+class Poly(JavaValue):
+    '''
+    >>> poly = Poly(0.5, 2)
+    creating: createPoly
+    '''
+    def __init__(self, power, max_iteration, bigdl_type="float"):
+            JavaValue.__init__(self, None, bigdl_type, power, max_iteration)
+
+
+class Step(JavaValue):
+    '''
+    >>> step = Step(2, 0.3)
+    creating: createStep
+    '''
+    def __init__(self, step_size, gamma, bigdl_type="float"):
+            JavaValue.__init__(self, None, bigdl_type, step_size, gamma)
 
 
 class Optimizer(JavaValue):
@@ -84,7 +117,7 @@ class Optimizer(JavaValue):
                            training_rdd, criterion, optim_method,
                            state, end_trigger, batch_size)
 
-    def setvalidation(self, batch_size, val_rdd, trigger, val_method=["top1"]):
+    def setvalidation(self, batch_size, val_rdd, trigger, val_method=["Top1Accuracy"]):
         callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
                       trigger, val_rdd, val_method)
 

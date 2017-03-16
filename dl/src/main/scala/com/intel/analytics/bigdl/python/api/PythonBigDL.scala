@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,6 +24,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, Table}
 import org.apache.spark.api.java.JavaRDD
@@ -69,18 +69,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   private def toValidationMethod(vMethods: JList[String]): Array[ValidationMethod[T]] = {
-    vMethods.toArray.map{case m: String => m.toLowerCase()}.map {
-      case "top1" => new Top1Accuracy[T]()
-      case "top5" => new Top5Accuracy[T]()
-      case "loss" => new Loss[T]()
+    vMethods.toArray.map {
+      case "Top1Accuracy" => new Top1Accuracy[T]()
+      case "Top5Accuracy" => new Top5Accuracy[T]()
+      case "Loss" => new Loss[T]()
       case m: String => throw new RuntimeException(s"not supported validation method: $m")
     }
   }
 
   private def validationMethodToStr(method: ValidationMethod[T]): String = {
     method match {
-      case _: Top1Accuracy[T] => "top1"
-      case _: Top5Accuracy[T] => "top5"
+      case _: Top1Accuracy[T] => "Top1Accuracy"
+      case _: Top5Accuracy[T] => "Top5Accuracy"
       case _: Loss[T] => "loss"
       case _ => throw new RuntimeException(s"not supported validation method: $method")
     }
@@ -193,6 +193,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   //   Optimizer
+  def createPoly(power: Double, maxIteration: Int): SGD.Poly = {
+    SGD.Poly(power, maxIteration)
+  }
+
+  def createStep(stepSize : Int, gamma : Double): SGD.Step = {
+    SGD.Step(stepSize, gamma)
+  }
+
   def createClassNLLCriterion: ClassNLLCriterion[T] = {
     ClassNLLCriterion[T]()
   }
@@ -234,22 +242,17 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelGetParameters(model: AbstractModule[Activity, Activity, T])
-  : JList[JList[Any]] = {
-    model.getParameters()
-    val result = new JArrayList[JArrayList[T]]()
-    val item = new JArrayList[JList[T]]()
-
-    val weightTensor = model.getParameters()._1.contiguous()
-    val weightsData: JList[T] = weightTensor.storage().toList.asJava
-    val weightsShape = weightTensor.size().toList.asJava
-
-    val gradientTensor = model.getParameters()._1.contiguous()
-    val gradientData: JList[T] = gradientTensor.storage().toList.asJava
-    val gradientShape = gradientTensor.size().toList.asJava
-    List(weightsData.asInstanceOf[JList[Any]],
-      gradientData.asInstanceOf[JList[Any]],
-      weightsShape.asInstanceOf[JList[Any]],
-      gradientShape.asInstanceOf[JList[Any]]).asJava
+  : JMap[Any, JMap[Any, JList[JList[Any]]]] = {
+    model.getParametersTable().getState().mapValues {
+      case name2Values: Table =>
+        name2Values.getState().mapValues {
+          case t : Tensor[T] =>
+            val tensorClone = t.clone()
+            val item = List(tensorClone.storage().toList.asJava.asInstanceOf[JList[Any]],
+              tensorClone.size().toList.asJava.asInstanceOf[JList[Any]]).asJava
+            item
+        }.asJava
+    }.asJava
   }
 
   def predict(model: AbstractModule[Activity, Activity, T],
@@ -279,6 +282,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createMaxIteration(max: Int): Trigger = {
     Trigger.maxIteration(max)
   }
+
 
   def createOptimizer(model: AbstractModule[Activity, Activity, T],
                       trainingRdd: JavaRDD[Sample],

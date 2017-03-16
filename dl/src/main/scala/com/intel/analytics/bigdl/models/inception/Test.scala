@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -34,14 +33,14 @@ object Test {
   val imageSize = 224
 
   def main(args: Array[String]) {
-    testParser.parse(args, new TestParams()).map(param => {
+    testParser.parse(args, new TestParams()).foreach { param =>
       val batchSize = param.batchSize.getOrElse(128)
       val sc = Engine.init(param.nodeNumber, param.coreNumber, param.env == "spark")
         .map(conf => {
           conf.setAppName("Test Inception on ImageNet")
           new SparkContext(conf)
         })
-      val valSet = ImageNet2012(
+      val valSet = ImageNet2012Val(
         param.folder,
         sc,
         imageSize,
@@ -55,9 +54,7 @@ object Test {
       val model = Module.load[Float](param.model)
       val validator = Validator(model, valSet)
       val result = validator.test(Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
-      result.foreach(r => {
-        println(s"${r._2} is ${r._1}")
-      })
-    })
+      result.foreach(r => println(s"${r._2} is ${r._1}"))
+    }
   }
 }

@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,9 +20,10 @@ import java.io.File
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
-import com.intel.analytics.bigdl.dataset.text.LabeledSentenceToSample
+import com.intel.analytics.bigdl.dataset.text.{LabeledSentenceToSample}
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import org.apache.log4j.Logger
@@ -55,15 +55,17 @@ object Train {
       val valMaxLength = dataArray._4
 
       val batchSize = 1
-
+      val featurePadding = Tensor[Float](dictionaryLength).fill(0.0f)
+      featurePadding(4000) = 1.0f
+      val labelPadding = 3999
       val trainSet = DataSet.array(trainData)
-           .transform(LabeledSentenceToSample(dictionaryLength,
-             Some(trainMaxLength), Some(trainMaxLength)))
-           .transform(SampleToBatch(batchSize = batchSize))
+           .transform(LabeledSentenceToSample(dictionaryLength))
+           .transform(SampleToBatch(
+             batchSize, Some(featurePadding), Some(labelPadding), Some(trainMaxLength)))
       val validationSet = DataSet.array(valData)
-           .transform(LabeledSentenceToSample(dictionaryLength,
-             Some(valMaxLength), Some(valMaxLength)))
-           .transform(SampleToBatch(batchSize = batchSize))
+           .transform(LabeledSentenceToSample(dictionaryLength))
+           .transform(SampleToBatch(
+             batchSize, Some(featurePadding), Some(labelPadding), Some(valMaxLength)))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -71,8 +73,7 @@ object Train {
         val curModel = SimpleRNN(
           inputSize = dictionaryLength,
           hiddenSize = param.hiddenSize,
-          outputSize = dictionaryLength,
-          bpttTruncate = param.bptt)
+          outputSize = dictionaryLength)
         curModel.reset()
         curModel
       }

@@ -194,31 +194,37 @@
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-compiler</artifactId>
                 <version>${scala.version}</version>
+                <scope>${spark-scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-reflect</artifactId>
                 <version>${scala.version}</version>
+                <scope>${spark-scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-library</artifactId>
                 <version>${scala.version}</version>
+                <scope>${spark-scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scala-actors</artifactId>
                 <version>${scala.version}</version>
+                <scope>${spark-scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.scala-lang</groupId>
                 <artifactId>scalap</artifactId>
                 <version>${scala.version}</version>
+                <scope>${spark-scope}</scope>
             </dependency>
             <dependency>
                 <groupId>org.scalatest</groupId>
                 <artifactId>scalatest_${scala.major.version}</artifactId>
                 <version>${scalatest.version}</version>
+                <scope>${spark-scope}</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -478,11 +484,31 @@
     </reporting>
 
     <profiles>
+	<profile>
+            <id>spark_1.6</id>
+            <properties>
+                <spark-version.project>1.5-plus</spark-version.project>
+                <spark.version>1.6.0</spark.version>
+                <scala.major.version>2.10</scala.major.version>
+                <scala.version>2.10.5</scala.version>
+                <scala.macros.version>2.0.1</scala.macros.version>
+            </properties>
+        </profile>
         <profile>
             <id>spark_2.0</id>
             <properties>
                 <spark-version.project>2.0</spark-version.project>
                 <spark.version>2.0.0</spark.version>
+                <scala.major.version>2.11</scala.major.version>
+                <scala.version>2.11.8</scala.version>
+                <scala.macros.version>2.1.0</scala.macros.version>
+            </properties>
+        </profile>
+	<profile>
+            <id>spark_2.1</id>
+            <properties>
+                <spark-version.project>2.0</spark-version.project>
+                <spark.version>2.1.0</spark.version>
                 <scala.major.version>2.11</scala.major.version>
                 <scala.version>2.11.8</scala.version>
                 <scala.macros.version>2.1.0</scala.macros.version>

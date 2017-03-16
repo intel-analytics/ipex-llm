@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,7 +36,7 @@ object Test {
   val logger = Logger.getLogger(getClass)
 
   def main(args: Array[String]): Unit = {
-    testParser.parse(args, new TestParams()).map(param => {
+    testParser.parse(args, new TestParams()).foreach { param =>
 
       val vocab = new Dictionary(param.folder)
 
@@ -87,8 +86,7 @@ object Test {
 
       val results = labeledInput.map(x => x.data()
         .map(t => vocab.getWord(t)))
-      results.foreach(x =>
-      logger.info(x.mkString(",")))
-    })
+      results.foreach(x => logger.info(x.mkString(",")))
+    }
   }
 }

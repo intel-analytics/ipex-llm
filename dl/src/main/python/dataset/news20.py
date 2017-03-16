@@ -3,20 +3,21 @@ import base
 import os
 import sys
 
-NEWS20_URL = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/www/data/news20.tar.gz'  # noqa
-GLOVE_URL = 'http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/www/data/news20.tar.gz'  # noqa
+NEWS20_URL = 'http://qwone.com/~jason/20Newsgroups/20news-19997.tar.gz'  # noqa
+GLOVE_URL = 'http://nlp.stanford.edu/data/glove.6B.zip'  # noqa
 
 CLASS_NUM = 20
 
 
 def download_news20(dest_dir):
-    file_name = "news20.tar.gz"
+    file_name = "20news-19997.tar.gz"
     file_abs_path = base.maybe_download(file_name, dest_dir, NEWS20_URL)
     tar = tarfile.open(file_abs_path, "r:gz")
-    extracted_to = os.path.join(dest_dir, "20_newsgroup")
-    print("Extracting %s to %s" % (file_abs_path, extracted_to))
-    tar.extractall(dest_dir)
-    tar.close()
+    extracted_to = os.path.join(dest_dir, "20_newsgroups")
+    if not os.path.exists(extracted_to):
+        print("Extracting %s to %s" % (file_abs_path, extracted_to))
+        tar.extractall(dest_dir)
+        tar.close()
     return extracted_to
 
 
@@ -26,9 +27,10 @@ def download_glove_w2v(dest_dir):
     import zipfile
     zip_ref = zipfile.ZipFile(file_abs_path, 'r')
     extracted_to = os.path.join(dest_dir, "glove.6B")
-    print("Extracting %s to %s" % (file_abs_path, extracted_to))
-    zip_ref.extractall(extracted_to)
-    zip_ref.close()
+    if not os.path.exists(extracted_to):
+        print("Extracting %s to %s" % (file_abs_path, extracted_to))
+        zip_ref.extractall(extracted_to)
+        zip_ref.close()
     return extracted_to
 
 

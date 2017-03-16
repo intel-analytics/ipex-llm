@@ -52,6 +52,8 @@ dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
 --core core_number \
 --nodeNumber node_number \
 --learningRate learningRate \
+--weightDecay weightDecay \
+--checkpointIteration checkpointIteration \
 -f hdfs://.../imagenet \
 --checkpoint ~/models
 ```
@@ -69,6 +71,8 @@ safety of your model files.
 core_number. In this example, node_number is 1 and the mini-batch size is suggested to be set to core_number * 4
 * --learningRate: inital learning rate. Note in this example, we use a Poly learning rate decay
 policy.
+* --weightDecay: weight decay.
+* --checkpointIteration: the checkpoint interval in iteration.
 
 ## Test the Model
 Example command

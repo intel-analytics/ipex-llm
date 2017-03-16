@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,8 +28,10 @@ import scala.reflect.ClassTag
  * @param critrn
  */
 
-class TimeDistributedCriterion[T : ClassTag](critrn : TensorCriterion[T])
-(implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
+class TimeDistributedCriterion[T : ClassTag](
+  val critrn : TensorCriterion[T],
+  val sizeAverage: Boolean = false)
+  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   private val fInput: Tensor[T] = Tensor[T]()
   private val fTarget: Tensor[T] = Tensor[T]()
@@ -68,12 +69,18 @@ class TimeDistributedCriterion[T : ClassTag](critrn : TensorCriterion[T])
     fInput.set(input).resize(inputSize)
     fTarget.set(target).resize(targetSize)
     output = critrn.updateOutput(fInput, fTarget)
+    if (!sizeAverage) {
+      output = ev.times(output, ev.fromType[Int](input.size(2)))
+    }
     output
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     val _gradInput = critrn.updateGradInput(fInput, fTarget).toTensor[T]
     gradInput = _gradInput.resize(input.size)
+    if (!sizeAverage) {
+      gradInput.apply1(x => ev.times(x, ev.fromType[Int](input.size(2))))
+    }
     gradInput
   }
 
@@ -98,8 +105,8 @@ class TimeDistributedCriterion[T : ClassTag](critrn : TensorCriterion[T])
 
 object TimeDistributedCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
-    critrn: TensorCriterion[T] = null)
-  (implicit ev: TensorNumeric[T]) : TimeDistributedCriterion[T] = {
-    new TimeDistributedCriterion[T](critrn)
+    critrn: TensorCriterion[T] = null, sizeAverage: Boolean = false)
+    (implicit ev: TensorNumeric[T]) : TimeDistributedCriterion[T] = {
+    new TimeDistributedCriterion[T](critrn, sizeAverage)
   }
 }

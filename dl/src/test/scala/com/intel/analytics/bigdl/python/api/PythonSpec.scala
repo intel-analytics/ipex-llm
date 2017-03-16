@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -22,8 +21,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.optim.Trigger
+import com.intel.analytics.bigdl.optim.{SGD, Trigger}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -74,24 +72,34 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     BigDLSerDe.javaToPython(data.toJavaRDD().asInstanceOf[JavaRDD[Any]])
 
     val model = Sequential[Double]()
-    model.add(Linear[Double](100, 10))
+    model.add(Linear[Double](100, 100))
     model.add(ReLU[Double]())
-    model.add(LogSoftMax[Double]())
 
+    val m2 = Sequential[Double]()
+    m2.add(Linear[Double](100, 10))
+    m2.add(ReLU[Double]())
+
+    model.add(m2)
+
+    model.add(LogSoftMax[Double]())
+    val batchSize = 32
     val pp = PythonBigDL.ofDouble()
+    val state = Map("learingRateSchedule" ->
+      SGD.Poly(0.5, math.ceil(1281167.toDouble / batchSize).toInt))
+      .asJava.asInstanceOf[JMap[Any, Any]]
     val optimizer = pp.createOptimizer(
       model,
       data.toJavaRDD(),
       ClassNLLCriterion[Double](),
       "SGD",
-      Map().asJava.asInstanceOf[JMap[Any, Any]],
+      state,
       Trigger.maxEpoch(2),
       32)
     pp.setValidation(optimizer = optimizer,
-      batchSize = 32,
+      batchSize = batchSize,
       trigger = Trigger.severalIteration(10),
       valRdd = data.toJavaRDD(),
-      vMethods = util.Arrays.asList("top1", "loss"))
+      vMethods = util.Arrays.asList("Top1Accuracy", "Loss"))
     val trainedModel = optimizer.optimize()
     val resultRDD = pp.predict(trainedModel, data.map(pp.toSample(_)))
     val result = resultRDD.take(5)
@@ -102,7 +110,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val testResult = pp.modelTest(trainedModel,
       data.toJavaRDD(),
       batchSize = 32,
-      valMethods = util.Arrays.asList("top1"))
+      valMethods = util.Arrays.asList("Top1Accuracy"))
     println(testResult)
   }
 }

@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,18 +16,17 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.lang.Thread.UncaughtExceptionHandler
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent._
+import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.mkl.MKL
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 import org.apache.spark.SparkConf
 
+import scala.collection.JavaConverters._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.collection.JavaConverters._
 
 sealed trait EngineType
 
@@ -222,6 +220,13 @@ object Engine {
   def checkSingleton(): Boolean = {
     val count = singletonCounter.incrementAndGet()
     (count == 1)
+  }
+
+  /**
+   * Reset the singleton flag
+   */
+  def resetSingletonFlag(): Unit = {
+    singletonCounter.set(0)
   }
 
   private var physicalCoreNumber = {

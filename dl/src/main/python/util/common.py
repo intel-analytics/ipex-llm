@@ -1,12 +1,11 @@
 #
-# Licensed to Intel Corporation under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# Intel Corporation licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
+# Copyright 2016 The BigDL Authors.
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,7 +17,7 @@
 import sys
 from py4j.protocol import Py4JJavaError
 from py4j.java_gateway import JavaObject
-from py4j.java_collections import ListConverter, JavaArray, JavaList
+from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap
 
 from pyspark import RDD, SparkContext
 from pyspark.serializers import PickleSerializer, AutoBatchedSerializer
@@ -163,7 +162,7 @@ def _java2py(sc, r, encoding="bytes"):
 
         if clsName in _picklable_classes:
             r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
-        elif isinstance(r, (JavaArray, JavaList)):
+        elif isinstance(r, (JavaArray, JavaList, JavaMap)):
             try:
                 r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(
                     r)
@@ -205,6 +204,12 @@ def _py2java(sc, obj):
     elif isinstance(obj, (list, tuple)):
         obj = ListConverter().convert([_py2java(sc, x) for x in obj],
                                       sc._gateway._gateway_client)
+    elif isinstance(obj, dict):
+        result = {}
+        for (key, value) in obj.iteritems():
+            result[key] = _py2java(sc, value) if isinstance(value, JavaValue) else value  # noqa
+        obj = result
+
     elif isinstance(obj, JavaValue):
         obj = obj.value
     elif isinstance(obj, JavaObject):

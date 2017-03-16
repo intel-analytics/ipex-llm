@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,8 +15,8 @@
  */
 package org.apache.spark.ml
 import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Dataset}
 
 /**
  * A wrapper for org.apache.spark.ml.Transformer.
@@ -28,8 +27,8 @@ abstract class MlTransformer extends Transformer{
 
   def process(dataset: DataFrame): DataFrame
 
-  override def transform(dataset: Dataset[_]): DataFrame = {
-    process(dataset.toDF())
+  override def transform(dataset: DataFrame): DataFrame = {
+    process(dataset)
   }
 
   override def transformSchema(schema: StructType): StructType = schema

@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -27,7 +26,7 @@ object Utils {
     val batchPerUnit = if (Engine.nodeNumber().isDefined) {
       val nodeNumber = Engine.nodeNumber().get
       val coreNumber = Engine.coreNumber()
-      logger.info(s"node number: $nodeNumber, core number: $coreNumber")
+      logger.debug(s"node number: $nodeNumber, core number: $coreNumber")
       require(totalBatch % (nodeNumber * coreNumber) == 0
         , s"total batch size($totalBatch) can't be divided by node number($nodeNumber) * " +
           s"core number($coreNumber), please change your batch size")
@@ -42,7 +41,7 @@ object Utils {
     } else {
       totalBatch
     }
-    logger.info(s"Batch per unit: $batchPerUnit")
+    logger.debug(s"Batch per unit: $batchPerUnit")
     batchPerUnit
   }
 

@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,7 +19,7 @@ package com.intel.analytics.bigdl.utils
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.ml.DLClassifier
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.mllib.linalg.DenseVector
@@ -46,7 +45,8 @@ class DLClassifierSpec extends FlatSpec with Matchers{
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
-    val sc = new SparkContext("local[1]", "DLClassifier")
+    val conf = new SparkConf().setMaster("local[1]").setAppName("DLClassifier")
+    val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     val batchSize = 10
     val model = LeNet5(10)

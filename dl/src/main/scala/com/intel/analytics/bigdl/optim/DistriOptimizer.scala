@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -510,6 +509,20 @@ class DistriOptimizer[T: ClassTag] (
 
   private var models: RDD[DistriOptimizer.Cache[T]] = null
 
+  /**
+   * Clean some internal states, so this or other optimizers can run optimize again
+   *
+   * This method will be called at the end of optimize. You need not call it if optimize succeed.
+   * If the optimize fails, you may call it before next optimize.
+   */
+  def clearState() : Unit = {
+    // Reset the singleton flag, so other optimizers can run
+    models.mapPartitions(iter => {
+      Engine.resetSingletonFlag()
+      iter
+    }).count()
+  }
+
   override def optimize(): Module[T] = {
     this.assertEngineInited()
 
@@ -551,6 +564,10 @@ class DistriOptimizer[T: ClassTag] (
     val trainedModel = DistriOptimizer.getModel(models, parameters)
 
     nn.Utils.copyModule(trainedModel, model)
+
+    // Reset some internal states, so this or other optimizers can run optimize again
+    clearState()
+
     model
   }
 }

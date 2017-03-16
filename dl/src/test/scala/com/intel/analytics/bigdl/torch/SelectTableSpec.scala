@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,32 +35,45 @@ class SelectTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     Random.setSeed(seed)
 
-    val module = new SelectTable[Double](1)
+    val module = new SelectTable[Double](3)
     val input1 = Tensor[Double](10).randn()
     val input2 = Tensor[Double](10).randn()
-    val input = T(1.0 -> input1, 2.0 -> input2)
+    val input3 = Tensor[Double](10).randn()
+    val input = T(1.0 -> input1, 2.0 -> input2, 3.0 -> input3)
     val gradOutput = Tensor[Double](10).randn()
+    var i = 0
+    var output = Tensor[Double]()
+    var gradInput = T()
     val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input, gradOutput)
+    while (i < 10) {
+      output = module.forward(input).toTensor
+      gradInput = module.backward(input, gradOutput)
+      i += 1
+    }
     val scalaTime = System.nanoTime() - start
 
     val code =
       s"""
       torch.manualSeed($seed)
-      module = nn.SelectTable(1)
+      module = nn.SelectTable(3)
+      local i = 0
+      while i < 10 do
       output = module:forward(input)
       gradInput = module:backward(input, gradOutput)
       gradInput1 = gradInput[1]
       gradInput2 = gradInput[2]
+      gradInput3 = gradInput[3]
+      i = i + 1
+      end
                """.stripMargin
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
-      Array("output", "gradInput1", "gradInput2"))
+      Array("output", "gradInput1", "gradInput2", "gradInput3"))
     val torchOutput = torchResult("output").asInstanceOf[Tensor[Double]]
     val torchgradInput1 = torchResult("gradInput1").asInstanceOf[Tensor[Double]]
     val torchgradInput2 = torchResult("gradInput2").asInstanceOf[Tensor[Double]]
-    val torchgradInput = T(torchgradInput1, torchgradInput2)
+    val torchgradInput3 = torchResult("gradInput3").asInstanceOf[Tensor[Double]]
+    val torchgradInput = T(torchgradInput1, torchgradInput2, torchgradInput3)
 
     torchOutput should be(output)
     torchgradInput should be(gradInput)
@@ -77,15 +89,15 @@ class SelectTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val module = new SelectTable[Double](1)
     val embeddedInput1 = T(
-        1.0 -> Tensor[Double](10).randn(),
-        2.0 -> Tensor[Double](10).randn())
+      1.0 -> Tensor[Double](10).randn(),
+      2.0 -> Tensor[Double](10).randn())
     val embeddedInput2 = Tensor[Double](10).randn()
     val input = T(
       1.0 -> embeddedInput1,
       2.0 -> embeddedInput2)
     val gradOutput = T(
-        1.0 -> Tensor[Double](10).randn(),
-        2.0 -> Tensor[Double](10).randn())
+      1.0 -> Tensor[Double](10).randn(),
+      2.0 -> Tensor[Double](10).randn())
     val start = System.nanoTime()
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)

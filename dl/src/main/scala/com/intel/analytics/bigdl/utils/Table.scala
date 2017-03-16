@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.collection.mutable
 import scala.collection.mutable.Map
 import scala.collection.Set
+import scala.collection.immutable.{Map => ImmutableMap}
 
 /**
  * Simulate the Table data structure in lua
@@ -45,6 +45,9 @@ class Table private[bigdl](
     }
   }
 
+  private[bigdl] def getState(): ImmutableMap[Any, Any] = {
+    return state.toMap
+  }
   /**
    * Empty the Table
    */
@@ -220,11 +223,11 @@ class Table private[bigdl](
     val newState = mutable.Map[Any, Any]()
 
     while (i <= state.size) {
-      state.get(i).get match {
+      state(i) match {
         case table: Table =>
           val newTable = table.flatten(resultIndex)
           newState ++= newTable.state
-          resultIndex += newState.size
+          resultIndex += newTable.length()
         case other =>
           newState.put(resultIndex, other)
           resultIndex += 1
@@ -257,13 +260,13 @@ class Table private[bigdl](
     val newState = mutable.Map[Any, Any]()
 
     while (i <= target.length()) {
-      target.state.get(i).get match {
+      target.state(i) match {
         case table: Table =>
           val newTable = inverseFlatten(table, resultIndex)
           newState.put(i, new Table(newTable.state))
-          resultIndex += newTable.length()
-        case other =>
-          newState.put(i, state.get(resultIndex).get)
+          resultIndex += newTable.length() - 1
+        case _ =>
+          newState.put(i, state(resultIndex))
       }
       i += 1
       resultIndex += 1

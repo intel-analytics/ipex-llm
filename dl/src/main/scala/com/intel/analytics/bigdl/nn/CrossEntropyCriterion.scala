@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,10 +29,11 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 5446858218997354022L)
 class CrossEntropyCriterion[T: ClassTag](
-   val weights: Tensor[T] = null)
-   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{
+  val weights: Tensor[T] = null,
+  val sizeAverage: Boolean = true)
+  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{
   private val lsm = new LogSoftMax[T]()
-  private val nll = new ClassNLLCriterion[T](weights)
+  private val nll = new ClassNLLCriterion[T](weights, sizeAverage)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     lsm.updateOutput(input)
@@ -56,7 +56,8 @@ class CrossEntropyCriterion[T: ClassTag](
   override def equals(other: Any): Boolean = other match {
     case that: CrossEntropyCriterion[T] =>
       (that canEqual this) &&
-        weights == that.weights
+        weights == that.weights &&
+        sizeAverage == that.sizeAverage
     case _ => false
   }
 
@@ -73,8 +74,8 @@ class CrossEntropyCriterion[T: ClassTag](
 
 object CrossEntropyCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
-      weights: Tensor[T] = null)
-      (implicit ev: TensorNumeric[T]) : CrossEntropyCriterion[T] = {
-    new CrossEntropyCriterion[T](weights)
+    weights: Tensor[T] = null, sizeAverage: Boolean = true)
+    (implicit ev: TensorNumeric[T]) : CrossEntropyCriterion[T] = {
+    new CrossEntropyCriterion[T](weights, sizeAverage)
   }
 }

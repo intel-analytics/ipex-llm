@@ -1,12 +1,11 @@
 #
-# Licensed to Intel Corporation under one or more
-# contributor license agreements.  See the NOTICE file distributed with
-# this work for additional information regarding copyright ownership.
-# Intel Corporation licenses this file to You under the Apache License, Version 2.0
-# (the "License"); you may not use this file except in compliance with
-# the License.  You may obtain a copy of the License at
+# Copyright 2016 The BigDL Authors.
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -79,21 +78,22 @@ if __name__ == "__main__":
             criterion=ClassNLLCriterion(),
             optim_method="SGD",
             state=state,
-            end_trigger=MaxEpoch(100),
+            end_trigger=MaxEpoch(2),
             batch_size=int(options.batchSize))
         optimizer.setvalidation(
             batch_size=32,
             val_rdd=test_data,
             trigger=EveryEpoch(),
-            val_method=["top1"]
+            val_method=["Top1Accuracy"]
         )
         optimizer.setcheckpoint(EveryEpoch(), "/tmp/lenet5/")
         trained_model = optimizer.optimize()
+        parameters = trained_model.parameters()
     elif options.action == "test":
         test_data = get_minst("test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
         # TODO: Pass model path through external parameter
         model = Model.from_path("/tmp/lenet5/model.431")
         validator = Validator(model, test_data, batch_size=32)
-        result = validator.test(["top1", "top5"])
+        result = validator.test(["Top1Accuracy", "Top5Accuracy"])
         print result

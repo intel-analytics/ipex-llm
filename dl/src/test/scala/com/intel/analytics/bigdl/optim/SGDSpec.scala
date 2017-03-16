@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -154,9 +153,9 @@ class SGDSpec extends FlatSpec with Matchers {
       return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
     }
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
-    val state = T()
+    val state = T("epoch" -> 0)
     for(e <- 1 to 10) {
-      config("epoch") = e
+      state("epoch") = e
       optimMethod.optimize(feval, x, config, state)
       if(e <= 3) {
         config[Double]("clr") should be(-1e-2)
@@ -168,6 +167,22 @@ class SGDSpec extends FlatSpec with Matchers {
         config[Double]("clr") should be(-1e-3)
         config[Double]("weightDecay") should be(0.0)
       }
+    }
+  }
+
+  "epoch step" should "generate correct learning rates" in {
+
+    val config = T("learningRate" -> 0.1, "learningRateSchedule" -> EpochStep(1, 0.5))
+    val optimMethod = new SGD[Double]
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+    }
+    val x = Tensor[Double](Storage(Array(10.0, 10.0)))
+    val state = T("epoch" -> 0)
+    for(e <- 1 to 10) {
+      state("epoch") = e
+      optimMethod.optimize(feval, x, config, state)
+      -config[Double]("clr") should be(0.1 * Math.pow(0.5, e))
     }
   }
 }

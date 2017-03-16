@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,20 +16,21 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
 class RnnCell[T : ClassTag] (
   inputSize: Int = 4,
   hiddenSize: Int = 3,
+  activation: TensorModule[T],
   private var initMethod: InitializationMethod = Default)
   (implicit ev: TensorNumeric[T])
-  extends AbstractModule[Table, Tensor[T], T] {
+  extends Cell[T](Array(hiddenSize)) {
 
   val parallelTable = ParallelTable[T]()
   val i2h = Linear[T](inputSize, hiddenSize)
@@ -38,6 +38,14 @@ class RnnCell[T : ClassTag] (
   parallelTable.add(i2h)
   parallelTable.add(h2h)
   val cAddTable = CAddTable[T]()
+
+  val rnn = Sequential[T]()
+    .add(parallelTable)
+    .add(cAddTable)
+    .add(activation)
+    .add(ConcatTable()
+      .add(Identity[T]())
+      .add(Identity[T]()))
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
@@ -61,48 +69,83 @@ class RnnCell[T : ClassTag] (
     zeroGradParameters()
   }
 
-
-  override def updateOutput(input: Table): Tensor[T] = {
-    output = cAddTable.updateOutput(parallelTable.updateOutput(input))
+  override def updateOutput(input: Table): Table = {
+    output = rnn.updateOutput(input).toTable
     output
   }
 
-  override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    val _gradOutput = cAddTable.updateGradInput(input, gradOutput)
-    parallelTable.updateGradInput(input, _gradOutput)
+  override def updateGradInput(input: Table, gradOutput: Table): Table = {
+    gradInput = rnn.updateGradInput(input, gradOutput).toTable
+    gradInput
   }
-  override def accGradParameters(input: Table, gradOutput: Tensor[T],
+
+  override def accGradParameters(input: Table, gradOutput: Table,
                                  scale: Double = 1.0): Unit = {
-    parallelTable.accGradParameters(input,
-      cAddTable.updateGradInput(input, gradOutput))
+    rnn.accGradParameters(input, gradOutput, scale)
   }
+
   override def updateParameters(learningRate: T): Unit = {
-    parallelTable.updateParameters(learningRate)
+    rnn.updateParameters(learningRate)
   }
 
   override def zeroGradParameters(): Unit = {
-    parallelTable.zeroGradParameters()
+    rnn.zeroGradParameters()
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    parallelTable.parameters()
+    rnn.parameters()
   }
 
   override def getParametersTable(): Table = {
-    parallelTable.getParametersTable()
+    rnn.getParametersTable()
   }
 
   override def toString(): String = {
-    var str = "nn.RnnCell"
+    val str = "nn.RnnCell"
     str
+  }
+
+  /**
+   * Clear cached activities to save storage space or network bandwidth. Note that we use
+   * Tensor.set to keep some information like tensor share
+   *
+   * The subclass should override this method if it allocate some extra resource, and call the
+   * super.clearState in the override method
+   *
+   * @return
+   */
+  override def clearState(): RnnCell.this.type = {
+    super.clearState()
+    rnn.clearState()
+    this
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[RnnCell[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: RnnCell[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        parallelTable == that.parallelTable &&
+        i2h == that.i2h &&
+        h2h == that.h2h &&
+        cAddTable == that.cAddTable &&
+        rnn == that.rnn
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(super.hashCode(), parallelTable, i2h, h2h, cAddTable, rnn)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
 
 object RnnCell {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
-    hiddenSize: Int = 3)
+    hiddenSize: Int = 3,
+    activation: TensorModule[T])
    (implicit ev: TensorNumeric[T]) : RnnCell[T] = {
-    new RnnCell[T](inputSize, hiddenSize)
+    new RnnCell[T](inputSize, hiddenSize, activation)
   }
 }

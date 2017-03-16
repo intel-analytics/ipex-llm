@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,13 +16,9 @@
 
 package com.intel.analytics.bigdl.nn
 
-import org.scalatest.FlatSpec
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{FlatSpec, Matchers}
-
-import scala.math.abs
-import scala.util.Random
 
 class TimeDistributedSpec extends FlatSpec with Matchers {
   "A TimeDistributed Module " should "generate correct output and grad for Linear in 3D input " +
@@ -42,8 +37,7 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
     linear2.weight.map(linear1.weight, (a, b) => {b})
     linear2.bias.map(linear1.bias, (a, b) => {b})
     val model = Sequential[Float]()
-      .add(TimeDistributed[Float]()
-        .add(linear1))
+      .add(TimeDistributed[Float](linear1))
 
     val output = model.forward(input).toTensor[Float].clone
     var i = 1
@@ -79,8 +73,7 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
     linear2.weight.map(linear1.weight, (a, b) => {b})
     linear2.bias.map(linear1.bias, (a, b) => {b})
     val model = Sequential[Float]()
-      .add(TimeDistributed[Float]()
-        .add(linear1))
+      .add(TimeDistributed[Float](linear1))
 
     val output = model.forward(input).toTensor[Float].clone
     var i = 1
@@ -115,8 +108,7 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
     val logSoftMax1 = LogSoftMax[Float]()
     val logSoftMax2 = LogSoftMax[Float]()
     val model = Sequential[Float]()
-      .add(TimeDistributed[Float]()
-        .add(logSoftMax1))
+      .add(TimeDistributed[Float](logSoftMax1))
 
     val output = model.forward(input).toTensor[Float].clone
     val gradInput = model.backward(input, gradOutput).toTensor[Float].clone
@@ -129,5 +121,32 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
       gradInput.select(timeDim, i) should be (expectedGradInput)
       i += 1
     }
+  }
+
+  "A TimeDistributed Module " should "getParameters correct for linear " in {
+    RNG.setSeed(100)
+
+    val batchSize = 5
+    val times = 5
+    val inputDim = 3
+    val outputDim = 4
+    val timeDim = 1
+
+    val input = Tensor[Float](Array(batchSize, times, inputDim)).randn()
+    val linear1 = Linear[Float](inputDim, outputDim)
+    val linear2 = Linear[Float](inputDim, outputDim)
+    linear2.weight.map(linear1.weight, (a, b) => {
+      b
+    })
+    linear2.bias.map(linear1.bias, (a, b) => {
+      b
+    })
+    val model = Sequential[Float]()
+      .add(TimeDistributed[Float](linear1))
+
+    val (weight, grad) = model.parameters()
+    val (weight2, grad2) = linear2.parameters()
+    weight should be(weight2)
+    grad should be(grad2)
   }
 }

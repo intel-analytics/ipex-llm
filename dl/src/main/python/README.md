@@ -53,9 +53,16 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
 
 4) LeNet example can be found from: models/lenet5.py
 
+## Run python test
+* Package Scala code by: ```$BigDL_HOME/make-dist.sh```
+* Set SPARK_HOME and then run: ```$BigDL_HOME/dl/src/main/python/dev/run-all.sh``` 
+
 ## Installing on Ubuntu
 1. Build BigDL
 [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
+    * With Spark1.6: ```  $BIGDL_HOME//make-dist.sh ``` 
+    * With Spark2.0: ``` $BIGDL_HOME//make-dist.sh -P spark_2.0 ```
+
 2. Install python dependensies:
   * Installing Numpy: 
     ```sudo apt-get install python-numpy```
@@ -84,6 +91,7 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
        --executor-memory 20g \
        --conf spark.akka.frameSize=64 \
         --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/dl/src/main/python/models/lenet/lenet5.py  \
+        --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
         --jars ${BigDL_JAR_PATH} \
         --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
         --conf spark.executor.extraClassPath=bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \

@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -132,7 +131,7 @@ object SGD {
 
   case class EpochSchedule(regimes : Array[Regime]) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
-      val epoch = config[Int]("epoch")
+      val epoch = state[Int]("epoch")
       for (r <- regimes) {
         if (epoch >= r.startEpoch && epoch <= r.endEpoch) {
           config.add(r.config)
@@ -175,7 +174,7 @@ object SGD {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-1)
       var clr = -lr
-      val epoch = config[Int]("epoch")
+      val epoch = state[Int]("epoch")
       val decay = decayType(epoch)
       clr = clr * math.pow(0.1, decay)
       config("clr") = clr
@@ -186,7 +185,7 @@ object SGD {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       var clr = -lr
-      val epoch = config[Int]("epoch")
+      val epoch = state[Int]("epoch")
       var i = 0
       while(i < epoch / stepSize) {
         clr *= gamma

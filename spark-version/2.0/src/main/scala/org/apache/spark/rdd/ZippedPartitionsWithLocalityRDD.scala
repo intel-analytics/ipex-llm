@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -20,11 +19,10 @@ package org.apache.spark.rdd
 import java.io.{IOException, ObjectOutputStream}
 
 import org.apache.spark.util.Utils
-import org.apache.spark.{Partition, SparkContext, TaskContext}
+import org.apache.spark.{Partition, SparkContext}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
-import scala.util.control.NonFatal
 
 object ZippedPartitionsWithLocalityRDD {
   def apply[T: ClassTag, B: ClassTag, V: ClassTag]
@@ -56,7 +54,8 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
       candidateLocs.append((p, rdds(1).context.getPreferredLocs(rdds(1), p).map(_.host).distinct))
     })
     val nonmatchPartitionId = new ArrayBuffer[Int]()
-    val matchedParts = new ArrayBuffer[ZippedPartitionsLocalityPartition]()
+    val parts = new Array[Partition](numParts)
+
     (0 until  numParts).foreach { i =>
       val curPrefs = rdds(0).context.getPreferredLocs(rdds(0), i).map(_.host).distinct
       var p = 0
@@ -71,8 +70,8 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
         p += 1
       }
       if (matchPartition != null) {
-        matchedParts.append(
-          new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs))
+        parts(i) =
+          new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
       } else {
         println(s"can't find locality partition for partition $i " +
           s"Partition locations are (${curPrefs}) Candidate partition locations are\n" +
@@ -83,19 +82,20 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
 
     require(nonmatchPartitionId.size == candidateLocs.size,
       "unmatched partition size should be the same with candidateLocs size")
-    val nonmatchedParts = nonmatchPartitionId.map { i =>
+    nonmatchPartitionId.foreach { i =>
       val locs = rdds(0).context.getPreferredLocs(rdds(0), i).map(_.host).distinct
       val matchPartition = candidateLocs.remove(0)
-      new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
+      parts(i) = new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
     }
-    (matchedParts ++ nonmatchedParts).toArray
+    parts
   }
 }
 
+
 private[spark] class ZippedPartitionsLocalityPartition(
   idx: Int,
-  @transient indexes: Seq[Int],
-  @transient rdds: Seq[RDD[_]],
+  @transient val indexes: Seq[Int],
+  @transient val rdds: Seq[RDD[_]],
   @transient override val preferredLocations: Seq[String])
   extends ZippedPartitionsPartition(idx, rdds, preferredLocations) {
 
@@ -104,19 +104,9 @@ private[spark] class ZippedPartitionsLocalityPartition(
   override def partitions: Seq[Partition] = _partitionValues
 
   @throws(classOf[IOException])
-  private def writeObject(oos: ObjectOutputStream): Unit = {
-    try {
-      // Update the reference to parent split at the time of task serialization
-      _partitionValues = rdds.zip(indexes).map{ case (rdd, i) => rdd.partitions(i) }
-      oos.defaultWriteObject()
-    } catch {
-      case e: IOException =>
-        throw e
-      case NonFatal(e) =>
-        throw new IOException(e)
-    }
+  private def writeObject(oos: ObjectOutputStream): Unit = Utils.tryOrIOException {
+    // Update the reference to parent split at the time of task serialization
+    _partitionValues = rdds.zip(indexes).map{ case (rdd, i) => rdd.partitions(i) }
+    oos.defaultWriteObject()
   }
 }
-
-
-
