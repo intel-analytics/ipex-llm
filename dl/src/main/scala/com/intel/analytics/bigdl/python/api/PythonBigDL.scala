@@ -190,6 +190,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     LogSoftMax[T]()
   }
 
+  def createSelect(dim: Int, index: Int): Select[T] = {
+    Select[T](dim, index)
+  }
+
   def createSpatialMaxPooling(kW: Int,
                               kH: Int,
                               dW: Int,

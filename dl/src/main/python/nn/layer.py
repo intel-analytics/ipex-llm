@@ -233,6 +233,15 @@ class SpatialMaxPooling(Model):
                                                 pad_h,
                                                 to_ceil)
 
+class Select(Model):
+    '''
+    >>> select = Select(1, 1)
+    creating: createSelect
+    '''
+
+    def __init__(self, bigdl_type="float", dim, index):
+        super(Select, self).__init__(None, bigdl_type, dim, index)
+
 class Recurrent(Model):
     '''
     >>> recurrent = Recurrent()
