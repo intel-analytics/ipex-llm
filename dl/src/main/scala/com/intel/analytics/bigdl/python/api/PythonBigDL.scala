@@ -39,10 +39,11 @@ case class Sample(features: JList[Any],
                   featuresShape: JList[Int],
                   labelShape: JList[Int],
                   bigdlType: String)
+
 case class TestResult(val result: Float, count: Int, val method: String)
 
 
-object PythonBigDL{
+object PythonBigDL {
   val floatInstance = new PythonBigDL[Float]()
 
   val doubleInstance = new PythonBigDL[Double]()
@@ -118,6 +119,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }
     sample.asInstanceOf[JSample[T]]
   }
+
   private def batching(rdd: RDD[Sample], batchSize: Int)
   : DistributedDataSet[MiniBatch[T]] = {
     val recordRDD = rdd.map(toSample(_))
@@ -154,13 +156,17 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                               dW: Int,
                               dH: Int,
                               padW: Int = 0,
-                              padH: Int = 0): SpatialMaxPooling[T] = {
-    SpatialMaxPooling[T](kW,
+                              padH: Int = 0,
+                              ceilMode: Boolean = false)
+  : SpatialMaxPooling[T] = {
+    val maxpooling = SpatialMaxPooling[T](kW,
       kH,
       dW,
       dH,
       padW,
       padH)
+    if (ceilMode) maxpooling.ceil()
+    else maxpooling
   }
 
   def createSpatialConvolution(nInputPlane: Int,
@@ -192,12 +198,56 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Reshape(size.asScala.toArray)
   }
 
+  def createConcat(dimension: Int): Concat[T] = {
+    Concat[T](dimension)
+  }
+
+  def createSpatialAveragePooling(kW: Int,
+                                  kH: Int,
+                                  dW: Int = 1,
+                                  dH: Int = 1,
+                                  padW: Int = 0,
+                                  padH: Int = 0,
+                                  ceilMode: Boolean = false,
+                                  countIncludePad: Boolean = true,
+                                  divide: Boolean = true)
+  : SpatialAveragePooling[T] = {
+    SpatialAveragePooling[T](kW, kH, dW, dH, padW, padH, ceilMode, countIncludePad, divide)
+  }
+
+  def createSpatialBatchNormalization(nOutput: Int,
+                                      eps: Double = 1e-5,
+                                      momentum: Double = 0.1,
+                                      affine: Boolean = true)
+  : SpatialBatchNormalization[T] = {
+    SpatialBatchNormalization[T](nOutput, eps, momentum, affine)
+  }
+
+  def createSpatialCrossMapLRN(size: Int = 5,
+                               alpha: Double = 1.0,
+                               beta: Double = 0.75,
+                               k: Double = 1.0)
+  : SpatialCrossMapLRN[T] = {
+    SpatialCrossMapLRN[T](size, alpha, beta, k)
+  }
+
+  def createDropout(initP: Double = 0.5,
+                    inplace: Boolean = false,
+                    scale: Boolean = true)
+  : Dropout[T] = {
+    Dropout[T](initP, inplace, scale)
+  }
+
+  def createView(sizes: JList[Int], num_input_dims: Int): View[T] = {
+    View[T](sizes.asScala.toArray).setNumInputDims(num_input_dims)
+  }
+
   //   Optimizer
   def createPoly(power: Double, maxIteration: Int): SGD.Poly = {
     SGD.Poly(power, maxIteration)
   }
 
-  def createStep(stepSize : Int, gamma : Double): SGD.Step = {
+  def createStep(stepSize: Int, gamma: Double): SGD.Step = {
     SGD.Step(stepSize, gamma)
   }
 
@@ -223,7 +273,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   : JList[TestResult] = {
     val validator = Validator(model, batching(valRDD, batchSize))
     val resultArray = validator.test(toValidationMethod(valMethods))
-    val testResultArray = resultArray.map{result =>
+    val testResultArray = resultArray.map { result =>
       TestResult(result._1.result()._1, result._1.result()._2,
         validationMethodToStr(result._2))
     }
@@ -246,7 +296,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     model.getParametersTable().getState().mapValues {
       case name2Values: Table =>
         name2Values.getState().mapValues {
-          case t : Tensor[T] =>
+          case t: Tensor[T] =>
             val tensorClone = t.clone()
             val item = List(tensorClone.storage().toList.asJava.asInstanceOf[JList[Any]],
               tensorClone.size().toList.asJava.asInstanceOf[JList[Any]]).asJava
@@ -256,11 +306,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def predict(model: AbstractModule[Activity, Activity, T],
-                      dataRdd: RDD[JSample[T]]): RDD[JSample[T]] = {
+              dataRdd: RDD[JSample[T]]): RDD[JSample[T]] = {
     val modelBroadCast = dataRdd.sparkContext.broadcast(model.evaluate())
-    dataRdd.mapPartitions {partition =>
+    dataRdd.mapPartitions { partition =>
       val localModel = modelBroadCast.value.cloneModule()
-      partition.map {sample =>
+      partition.map { sample =>
         val output = localModel.forward(sample.feature()).toTensor[T]
         JSample(sample.feature(), output)
       }
@@ -298,7 +348,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
     // TODO: we should provide a more convenient way to create Table
     val stateTable = new Table()
-    state.asScala.foreach{case (key, value) =>
+    state.asScala.foreach { case (key, value) =>
       stateTable.update(key, value)
     }
     optimizer.setState(stateTable)
@@ -334,7 +384,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                     checkPointPath: String,
                     isOverwrite: Boolean): Unit = {
     optimizer.setCheckpoint(checkPointPath, trigger)
-    if(isOverwrite) {
+    if (isOverwrite) {
       optimizer.overWriteCheckpoint()
     }
   }

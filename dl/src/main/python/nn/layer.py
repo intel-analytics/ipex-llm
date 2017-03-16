@@ -54,6 +54,9 @@ class Model(JavaValue):
         else:
             return "float64"
 
+    def reset(self):
+        return callJavaFunc(SparkContext.getOrCreate(), self.value.reset)
+
     def parameters(self):
         name_to_params = callBigDlFunc(self.bigdl_type,
                                        "modelGetParameters",
@@ -193,19 +196,22 @@ class SpatialMaxPooling(Model):
     >>> spatialMaxPooling = SpatialMaxPooling(2, 2, 2, 2)
     creating: createSpatialMaxPooling
     '''
-
+    # to_ceil: call floor() when False; call ceil() when True
     def __init__(self, kw,
                  kh,
                  dw,
                  dh,
                  pad_w=0,
-                 pad_h=0, bigdl_type="float"):
+                 pad_h=0,
+                 to_ceil=False,
+                 bigdl_type="float"):
         super(SpatialMaxPooling, self).__init__(None, bigdl_type, kw,
                                                 kh,
                                                 dw,
                                                 dh,
                                                 pad_w,
-                                                pad_h)
+                                                pad_h,
+                                                to_ceil)
 
 
 class Reshape(Model):
@@ -216,6 +222,118 @@ class Reshape(Model):
 
     def __init__(self, size, bigdl_type="float"):
         super(Reshape, self).__init__(None, bigdl_type, size)
+
+
+class Concat(Model):
+    '''
+    >>> concat = Concat(2)
+    creating: createConcat
+    '''
+
+    def __init__(self,
+                 dimension,
+                 bigdl_type="float"):
+        super(Concat, self).__init__(None, bigdl_type,
+                                     dimension)
+
+
+class SpatialAveragePooling(Model):
+    '''
+    >>> spatialAveragePooling = SpatialAveragePooling(7,7)
+    creating: createSpatialAveragePooling
+    '''
+
+    def __init__(self,
+                 kw,
+                 kh,
+                 dw=1,
+                 dh=1,
+                 pad_w=0,
+                 pad_h=0,
+                 ceil_mode=False,
+                 count_include_pad=True,
+                 divide=True,
+                 bigdl_type="float"):
+        super(SpatialAveragePooling, self).__init__(None, bigdl_type,
+                                                    kw,
+                                                    kh,
+                                                    dw,
+                                                    dh,
+                                                    pad_w,
+                                                    pad_h,
+                                                    ceil_mode,
+                                                    count_include_pad,
+                                                    divide)
+
+
+class SpatialBatchNormalization(Model):
+    '''
+    >>> spatialBatchNormalization = SpatialBatchNormalization(1)
+    creating: createSpatialBatchNormalization
+    '''
+
+    def __init__(self,
+                 n_output,
+                 eps=1e-5,
+                 momentum=0.1,
+                 affine=True,
+                 bigdl_type="float"):
+        super(SpatialBatchNormalization, self).__init__(None, bigdl_type,
+                                                        n_output,
+                                                        eps,
+                                                        momentum,
+                                                        affine)
+
+
+class SpatialCrossMapLRN(Model):
+    '''
+    >>> spatialCrossMapLRN = SpatialCrossMapLRN()
+    creating: createSpatialCrossMapLRN
+    '''
+
+    def __init__(self,
+                 size=5,
+                 alpha=1.0,
+                 beta=0.75,
+                 k=1.0,
+                 bigdl_type="float"):
+        super(SpatialCrossMapLRN, self).__init__(None, bigdl_type,
+                                                 size,
+                                                 alpha,
+                                                 beta,
+                                                 k)
+
+
+class Dropout(Model):
+    '''
+    >>> dropout = Dropout(0.4)
+    creating: createDropout
+    '''
+
+    def __init__(self,
+                 init_p=0.5,
+                 inplace=False,
+                 scale=True,
+                 bigdl_type="float"):
+        super(Dropout, self).__init__(None, bigdl_type,
+                                      init_p,
+                                      inplace,
+                                      scale)
+
+
+class View(Model):
+    '''
+    >>> view = View([1024,2],2)
+    creating: createView
+    '''
+
+    def __init__(self,
+                 sizes,
+                 num_input_dims,
+                 bigdl_type="float"):
+        super(View, self).__init__(None, bigdl_type,
+                                   sizes,
+                                   num_input_dims)
 
 
 def _test():
