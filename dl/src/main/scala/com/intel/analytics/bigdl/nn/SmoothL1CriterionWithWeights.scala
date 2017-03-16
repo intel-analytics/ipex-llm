@@ -37,7 +37,7 @@ import scala.reflect.ClassTag
  *            | (|d_i| - 0.5 / sigma / sigma) * w_out   otherwise
  * @tparam T
  */
-class SmoothL1CriterionWithWeights[T: ClassTag]
+class SmoothL1CriterionWithWeights[@specialized(Float, Double) T: ClassTag]
 (val sigma: Double, val num: Int = 0)
   (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Tensor[T], Table, T] {
   @transient var buffer: Tensor[T] = _

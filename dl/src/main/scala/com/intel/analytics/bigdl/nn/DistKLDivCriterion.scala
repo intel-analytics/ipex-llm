@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(5018120506588694055L)
-class DistKLDivCriterion[T: ClassTag](val sizeAverage: Boolean = true)
+class DistKLDivCriterion[@specialized(Float, Double) T: ClassTag](val sizeAverage: Boolean = true)
  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {

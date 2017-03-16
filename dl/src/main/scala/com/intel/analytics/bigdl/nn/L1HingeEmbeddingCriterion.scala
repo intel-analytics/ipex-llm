@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 1765228642089353823L)
-class L1HingeEmbeddingCriterion[T: ClassTag](val margin: Double = 1)
+class L1HingeEmbeddingCriterion[@specialized(Float, Double) T: ClassTag](val margin: Double = 1)
  (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Table, T]{
 
   private def mathSign(t: T): T = {

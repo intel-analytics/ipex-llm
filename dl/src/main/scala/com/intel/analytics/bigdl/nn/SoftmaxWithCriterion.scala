@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
  *                      should be ignored when computing the loss.
  * @param normalizeMode How to normalize the output loss.
  */
-class SoftmaxWithCriterion[T: ClassTag](ignoreLabel: Option[Int] = None,
+class SoftmaxWithCriterion[@specialized(Float, Double) T: ClassTag](ignoreLabel: Option[Int] = None,
   normalizeMode: NormMode = NormMode.VALID)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   @transient var softmax: SoftMax[T] = _

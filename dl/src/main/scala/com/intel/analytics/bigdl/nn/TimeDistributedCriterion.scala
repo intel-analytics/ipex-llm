@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
  * @param critrn
  */
 
-class TimeDistributedCriterion[T : ClassTag](
+class TimeDistributedCriterion[@specialized(Float, Double) T : ClassTag](
   val critrn : TensorCriterion[T],
   val sizeAverage: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {

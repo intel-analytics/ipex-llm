@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
  *                     can be disabled by setting
  */
 @SerialVersionUID(7573077918688542348L)
-class SoftMarginCriterion[T: ClassTag](var sizeAverage: Boolean = true)
+class SoftMarginCriterion[@specialized(Float, Double) T: ClassTag](var sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T])
   extends TensorCriterion[T] {
   def isSizeAverage: Boolean = sizeAverage

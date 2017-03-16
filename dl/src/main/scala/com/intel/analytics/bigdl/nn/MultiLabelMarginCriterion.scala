@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(9034717449427139574L)
-class MultiLabelMarginCriterion[T: ClassTag]
+class MultiLabelMarginCriterion[@specialized(Float, Double) T: ClassTag]
 (val sizeAverage: Boolean = true)(implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   @transient

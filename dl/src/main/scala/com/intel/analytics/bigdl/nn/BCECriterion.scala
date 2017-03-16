@@ -24,7 +24,8 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 1953992758534446600L)
-class BCECriterion[T: ClassTag](var weights: Tensor[T] = null, sizeAverage: Boolean = true)
+class BCECriterion[@specialized(Float, Double) T: ClassTag]
+(var weights: Tensor[T] = null, sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   var total_weight = ev.fromType[Int](0)
   val eps = ev.fromType[Double](1e-12)

@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 8679064077837483164L)
-class MultiCriterion[T: ClassTag]
+class MultiCriterion[@specialized(Float, Double) T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Activity, Activity, T] {
 
   private val weights = new ArrayBuffer[Double]
