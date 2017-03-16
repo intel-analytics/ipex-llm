@@ -434,6 +434,7 @@
                 <executions>
                     <execution>
                         <id>python</id>
+                        <inherited>false</inherited>
                         <configuration>
                             <finalName>bigdl-${project.version}</finalName>
                             <descriptors>
