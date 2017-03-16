@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 5446858218997354022L)
-class CrossEntropyCriterion[@specialized(Float, Double) T: ClassTag](
+class CrossEntropyCriterion[T: ClassTag](
   val weights: Tensor[T] = null,
   val sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{

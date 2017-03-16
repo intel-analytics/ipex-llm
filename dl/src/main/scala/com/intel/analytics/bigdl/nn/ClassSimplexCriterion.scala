@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 8696382776046599502L)
-class ClassSimplexCriterion[@specialized(Float, Double) T: ClassTag](val nClasses: Int)
+class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
  (implicit ev: TensorNumeric[T]) extends MSECriterion[T] {
 
   require(nClasses > 1, "ClassSimplexCriterion: Required positive integer argument nClasses > 1," +
