@@ -177,8 +177,7 @@
     </properties>
 
     <modules>
-        <module>dl</module>
-        <module>spark-version</module>
+        <module>spark</module>
         <module>visualization</module>
     </modules>
 
