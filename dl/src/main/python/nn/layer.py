@@ -239,7 +239,7 @@ class Select(Model):
     creating: createSelect
     '''
 
-    def __init__(self, bigdl_type="float", dim, index):
+    def __init__(self, dim, index, bigdl_type="float"):
         super(Select, self).__init__(None, bigdl_type, dim, index)
 
 class Recurrent(Model):
@@ -257,12 +257,12 @@ class Recurrent(Model):
 
 class LSTM(Model):
     '''
-    >>> lstm = LSTM(4, 3)
+    >>> lstm = LSTM(4, 3, 0.25)
     creating: createLSTM
     '''
 
-    def __init__(self, input_size, hidden_size, bigdl_type="float"):
-        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self, input_size, hidden_size, p = 0.0, bigdl_type="float"):
+        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 class GRU(Model):
     '''

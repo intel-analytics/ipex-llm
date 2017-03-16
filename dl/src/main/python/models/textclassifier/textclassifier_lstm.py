@@ -61,19 +61,17 @@ def to_sample(vectors, label, embedding_dim):
     # flatten nested list
     flatten_features = list(itertools.chain(*vectors))
     features = np.array(flatten_features, dtype='float').reshape(
-        [sequence_len, embedding_dim]).transpose(1, 0)
+        [sequence_len, embedding_dim])
     return Sample.from_ndarray(features, np.array(label))
 
 
 def build_model(class_num):
     model = Sequential()
 
-    model.add(Reshape([embedding_dim, 1, sequence_len]))
     model.add(Recurrent()
-              .add(LSTM(embedding_dim, 128)))
-    model.add(Select(2, 1))
-    model.add(Linear(128, 100))
-    model.add(Linear(100, class_num))
+              .add(LSTM(embedding_dim, 128, 0.25)))
+    model.add(Select(2, -1))
+    model.add(Linear(128, class_num))
     model.add(LogSoftMax())
     return model
 
@@ -118,7 +116,7 @@ def train(sc,
         model=build_model(news20.CLASS_NUM),
         training_rdd=train_rdd,
         criterion=ClassNLLCriterion(),
-        end_trigger=MaxEpoch(2),
+        end_trigger=MaxEpoch(15),
         batch_size=batch_size,
         optim_method="Adagrad",
         state=state)

@@ -36,10 +36,10 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 8176191554025511686L)
 class LSTM[T : ClassTag] (
   val inputSize: Int,
-  val hiddenSize: Int)
+  val hiddenSize: Int,
+  val p: Double = 0)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](hiddensShape = Array(hiddenSize, hiddenSize)) {
-  val p: Double = 0 // Dropout threshold
   var gates: Sequential[T] = _
   var cellLayer: Sequential[T] = _
   var lstm: Sequential[T] = buildLSTM()
@@ -203,8 +203,9 @@ class LSTM[T : ClassTag] (
 object LSTM {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
-    hiddenSize: Int)
+    hiddenSize: Int,
+    p: Double = 0)
     (implicit ev: TensorNumeric[T]): LSTM[T] = {
-    new LSTM[T](inputSize, hiddenSize)
+    new LSTM[T](inputSize, hiddenSize, p)
   }
 }

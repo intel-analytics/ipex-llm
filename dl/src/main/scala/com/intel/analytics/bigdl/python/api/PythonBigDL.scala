@@ -169,8 +169,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createLSTM(
     inputSize: Int,
-    hiddenSize: Int): LSTM[T] = {
-    LSTM[T](inputSize, hiddenSize)
+    hiddenSize: Int,
+    p: Double = 0): LSTM[T] = {
+    LSTM[T](inputSize, hiddenSize, p)
   }
 
   def createRecurrent(): Recurrent[T] = {
