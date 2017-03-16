@@ -38,7 +38,7 @@
                     <failOnViolation>true</failOnViolation>
                     <failOnWarning>false</failOnWarning>
                     <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
-                    <configLocation>${project.parent.parent.basedir}/scalastyle_config.xml</configLocation>
+                    <configLocation>${project.parent.parent.parent.basedir}/scalastyle_config.xml</configLocation>
                     <outputFile>${project.build.directory}/stylecheck/scalastyle-output.xml</outputFile>
                     <outputEncoding>UTF-8</outputEncoding>
                 </configuration>
