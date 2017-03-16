@@ -242,6 +242,10 @@ class Recurrent(Model):
     def __init__(self, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type)
 
+    def add(self, model):
+        self.value.add(model.value)
+        return self
+
 class LSTM(Model):
     '''
     >>> lstm = LSTM(4, 3)
