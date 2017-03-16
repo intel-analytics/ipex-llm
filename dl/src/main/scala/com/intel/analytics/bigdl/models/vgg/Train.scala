@@ -36,7 +36,6 @@ object Train {
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
       val conf = Engine.createSparkConf().setAppName("Train Vgg on Cifar10")
-        .set("spark.akka.frameSize", 64.toString)
         .set("spark.task.maxFailures", "1")
       val sc = new SparkContext(conf)
       Engine.init

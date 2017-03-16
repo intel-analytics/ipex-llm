@@ -94,7 +94,6 @@ object ModelValidator {
     testLocalParser.parse(args, TestLocalParams()).foreach(param => {
       val conf = Engine.createSparkConf()
       conf.setAppName("BigDL Image Classifier Example")
-        .set("spark.akka.frameSize", 64.toString)
       val sc = new SparkContext(conf)
       Engine.init
 
