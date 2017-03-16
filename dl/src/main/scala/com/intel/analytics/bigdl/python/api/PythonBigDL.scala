@@ -157,9 +157,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                               dH: Int,
                               padW: Int = 0,
                               padH: Int = 0,
-                              toCeil: Boolean = False)
+                              ceilMode: Boolean = false)
   : SpatialMaxPooling[T] = {
-    if(toCeil){
+    if(ceilMode){
       return SpatialMaxPooling[T](kW,
                                   kH,
                                   dW,
