@@ -205,8 +205,11 @@ def _py2java(sc, obj):
         obj = ListConverter().convert([_py2java(sc, x) for x in obj],
                                       sc._gateway._gateway_client)
     elif isinstance(obj, dict):
-        obj = {key: _py2java(sc, jv) for (key, jv) in obj.iteritems() if
-               isinstance(jv, JavaValue)}
+        result = {}
+        for (key, value) in obj.iteritems():
+            result[key] = _py2java(sc, value) if isinstance(value, JavaValue) else value  # noqa
+        obj = result
+
     elif isinstance(obj, JavaValue):
         obj = obj.value
     elif isinstance(obj, JavaObject):
