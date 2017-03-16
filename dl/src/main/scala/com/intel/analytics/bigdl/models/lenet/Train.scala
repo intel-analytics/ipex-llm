@@ -20,13 +20,15 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{GreyImgNormalizer, GreyImgToBatch, BytesToGreyImg}
+import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
+
+import scala.collection.mutable
 
 
 object Train {
@@ -43,6 +45,7 @@ object Train {
         conf.setAppName("Train Lenet on MNIST")
           .set("spark.akka.frameSize", 64.toString)
           .set("spark.task.maxFailures", "1")
+          .setMaster("local[1]")
         new SparkContext(conf)
       })
 
@@ -61,7 +64,8 @@ object Train {
         T.load(param.stateSnapshot.get)
       } else {
         T(
-          "learningRate" -> param.learningRate
+          "learningRate" -> param.learningRate,
+          "learningRateDecay" -> 1e-5
         )
       }
 
@@ -94,9 +98,10 @@ object Train {
         .setValidation(
           trigger = Trigger.everyEpoch,
           dataset = validationSet,
-          vMethods = Array(new Top1Accuracy))
+          vMethods = Array(new Top1Accuracy, new Top5Accuracy[Float], new Loss[Float]))
         .setState(state)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
+        .enableSummary(sc.get.appName, "lenet")
         .optimize()
     })
   }
