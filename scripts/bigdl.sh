@@ -55,7 +55,7 @@ parse() {
             shift 2
             ;;
             -l|--local)
-            export LOCAL_MODE="1"
+            export BIGDL_LOCAL_MODE="1"
             shift 1
             ;;
             --)
