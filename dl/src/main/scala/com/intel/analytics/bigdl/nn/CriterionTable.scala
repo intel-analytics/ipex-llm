@@ -28,7 +28,8 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 4523512241932683396L)
-class CriterionTable[T: ClassTag](val criterion: TensorCriterion[T])
+class CriterionTable[@specialized(Float, Double) T: ClassTag]
+(val criterion: TensorCriterion[T])
  (implicit ev: TensorNumeric[T]) extends  TensorCriterion[T] {
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {

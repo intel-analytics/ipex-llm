@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(3544342765989460298L)
-class L1Cost[T: ClassTag]()
+class L1Cost[@specialized(Float, Double) T: ClassTag]()
  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {

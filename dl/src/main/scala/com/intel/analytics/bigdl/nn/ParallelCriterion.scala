@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 556839979002442525L)
-class ParallelCriterion[T: ClassTag](val repeatTarget: Boolean = false)
+class ParallelCriterion[@specialized(Float, Double) T: ClassTag](val repeatTarget: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Table, T] {
 
   // list of sub criterions

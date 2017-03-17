@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 5690966547738588572L)
-class MultiMarginCriterion[T: ClassTag](val p: Int = 1,
+class MultiMarginCriterion[@specialized(Float, Double) T: ClassTag](val p: Int = 1,
  val weights: Tensor[T] = null, margin: Double = 1.0, val sizeAverage: Boolean = true)
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   require(p == 1 || p == 2, s"MultiMarginCriterion: only p=1 and p=2 supported, but get p $p")

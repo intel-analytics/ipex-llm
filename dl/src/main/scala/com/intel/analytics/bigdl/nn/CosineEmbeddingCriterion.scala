@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 4162399625587460549L)
-class CosineEmbeddingCriterion[T: ClassTag]
+class CosineEmbeddingCriterion[@specialized(Float, Double) T: ClassTag]
  (val margin: Double = 0.0, val sizeAverage: Boolean = true)
  (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Table, T]{
   @transient

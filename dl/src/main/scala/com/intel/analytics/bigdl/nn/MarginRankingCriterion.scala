@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(4746239527786180108L)
-class MarginRankingCriterion[T: ClassTag]
+class MarginRankingCriterion[@specialized(Float, Double) T: ClassTag]
 (val margin: Double = 1.0, val sizeAverage: Boolean = true)
  (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Table, T] {
 

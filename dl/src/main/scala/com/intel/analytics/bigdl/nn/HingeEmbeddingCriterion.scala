@@ -43,7 +43,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(117094129660790270L)
-class HingeEmbeddingCriterion[T: ClassTag](
+class HingeEmbeddingCriterion[@specialized(Float, Double) T: ClassTag](
   margin: Double = 1,
   sizeAverage: Boolean = true
 )(implicit ev: TensorNumeric[T])

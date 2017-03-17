@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
  * measures the mean absolute value of the element-wise difference between input
  */
 @SerialVersionUID( - 7860793007567513758L)
-class AbsCriterion[T: ClassTag](val sizeAverage: Boolean = true)
+class AbsCriterion[@specialized(Float, Double) T: ClassTag](val sizeAverage: Boolean = true)
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   @transient
   private var buffer: Tensor[T] = null
