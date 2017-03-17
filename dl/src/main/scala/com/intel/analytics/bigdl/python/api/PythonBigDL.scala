@@ -163,8 +163,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createGRU(
     inputSize: Int,
-    outputSize: Int): GRU[T] = {
-    GRU[T](inputSize, outputSize)
+    outputSize: Int,
+    p: Double = 0.0): GRU[T] = {
+    GRU[T](inputSize, outputSize, p)
   }
 
   def createLSTM(

@@ -33,10 +33,10 @@ import scala.reflect.ClassTag
 @SerialVersionUID(6717988395573528459L)
 class GRU[T : ClassTag] (
   val inputSize: Int,
-  val outputSize: Int)
+  val outputSize: Int,
+  val p: Double = 0.0)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](hiddensShape = Array(outputSize)) {
-  val p: Double = 0 // Dropout threshold
   var i2g: AbstractModule[_, _, T] = _
   var h2g: AbstractModule[_, _, T] = _
   var gates: AbstractModule[_, _, T] = _
@@ -176,8 +176,9 @@ class GRU[T : ClassTag] (
 object GRU {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
-    outputSize: Int = 3)
+    outputSize: Int = 3,
+    p: Double = 0.0)
     (implicit ev: TensorNumeric[T]): GRU[T] = {
-    new GRU[T](inputSize, outputSize)
+    new GRU[T](inputSize, outputSize, p)
   }
 }
