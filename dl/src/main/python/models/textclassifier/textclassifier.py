@@ -63,7 +63,7 @@ def to_sample(vectors, label, embedding_dim):
     features = np.array(flatten_features, dtype='float').reshape(
         [sequence_len, embedding_dim])
 
-    if model == "cnn" or model == "CNN":
+    if model_type == "cnn" or model_type == "CNN":
         features = features.transpose(1, 0)
     return Sample.from_ndarray(features, np.array(label))
 
@@ -71,7 +71,7 @@ def to_sample(vectors, label, embedding_dim):
 def build_model(class_num):
     model = Sequential()
 
-    if model == "cnn" or model == "CNN":
+    if model_type == "cnn" or model_type == "CNN":
         model.add(Reshape([embedding_dim, 1, sequence_len]))
         model.add(SpatialConvolution(embedding_dim, 128, 5, 1))
         model.add(ReLU())
@@ -80,11 +80,11 @@ def build_model(class_num):
         model.add(ReLU())
         model.add(SpatialMaxPooling(5, 1, 5, 1))
         model.add(Reshape([128]))
-    elif model =="lstm" or model == "LSTM":
+    elif model_type == "lstm" or model_type == "LSTM":
         model.add(Recurrent()
                   .add(LSTM(embedding_dim, 128, p)))
         model.add(Select(2, -1))
-    elif model == "gru" or model == "GRU":
+    elif model_type == "gru" or model_type == "GRU":
         model.add(Recurrent()
                   .add(GRU(embedding_dim, 128, p)))
         model.add(Select(2, -1))
@@ -93,6 +93,7 @@ def build_model(class_num):
 
     model.add(Linear(128, 100))
     model.add(Linear(100, class_num))
+    model.add(LogSoftMax())
     return model
 
 
@@ -158,7 +159,7 @@ if __name__ == "__main__":
     parser.add_option("-e", "--embedding_dim", dest="embedding_dim", default="50")  # noqa
     parser.add_option("-m", "--max_epoch", dest="max_epoch", default="15")  # noqa
     parser.add_option("-p", "--p", dest="p", default="0.25")  # noqa
-    parser.add_option("--model", dest="model", default="cnn")  # noqa
+    parser.add_option("--model", dest="model_type", default="cnn")  # noqa
 
     (options, args) = parser.parse_args(sys.argv)
     if options.action == "train":
@@ -167,7 +168,7 @@ if __name__ == "__main__":
         batch_size = int(options.batchSize)
         embedding_dim = int(options.embedding_dim)
         max_epoch = int(options.max_epoch)
-        model = options.model
+        model_type = options.model_type
         p = float(options.p)
         sequence_len = 50
         max_words = 1000
