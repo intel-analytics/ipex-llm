@@ -241,12 +241,12 @@ object DistriOptimizer {
         val end = System.nanoTime()
         wallClockTime += end - start
         optimMethod.updateHyperParameter(state, driverState)
-        driverState("loss") = lossSum.value.toFloat / finishedModelNum
-        driverState("throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
-        if (state.contains("clr")) driverState("learningRate") = -state[Double]("clr").toFloat
+        driverState("Loss") = lossSum.value.toFloat / finishedModelNum
+        driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
+        if (state.contains("clr")) driverState("LearningRate") = -state[Double]("clr").toFloat
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
-          s"Throughput is ${driverState("throughput")} records/second. Loss is ${
-            driverState("loss")}. ${optimMethod.getHyperParameter(state)}")
+          s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
+            driverState("Loss")}. ${optimMethod.getHyperParameter(state)}")
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
@@ -361,7 +361,7 @@ object DistriOptimizer {
         driverState: Table,
         parameters: AllReduceParameter[T])(implicit ev: TensorNumeric[T]): Unit = {
     val currentIteration = driverState[Int]("neval") - 1
-      val parametersTrigger = trainSummary.getSummaryTrigger("parameters")
+      val parametersTrigger = trainSummary.getSummaryTrigger("Parameters")
       if (parametersTrigger.isDefined && parametersTrigger.get(driverState)) {
         val model = getModel(models, parameters)
         val parametersTable = model.getParametersTable()
@@ -378,7 +378,7 @@ object DistriOptimizer {
       // Not parallelizable, because driverState is changing each iteration.
       scalarTrigger.foreach { v =>
         if (v._2(driverState)) {
-          require(driverState.contains(v._1), s"DistriOptimizer.saveMetrics: metrics ${v._1} " +
+          require(driverState.contains(v._1), s"DistriOptimizer.saveSummary: Summary ${v._1} " +
             s"is not supported now.")
           trainSummary.addScalar(
             v._1, driverState[Float](v._1), currentIteration

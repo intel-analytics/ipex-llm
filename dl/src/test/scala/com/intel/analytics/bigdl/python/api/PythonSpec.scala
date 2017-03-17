@@ -103,10 +103,10 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       vMethods = util.Arrays.asList("Top1Accuracy", "Loss"))
 
     val trainSummary = TrainSummary(sc.appName, "lenet")
-      .setSummaryTrigger("learningRate", Trigger.severalIteration(1))
-      .setSummaryTrigger("loss", Trigger.severalIteration(1))
-      .setSummaryTrigger("throughput", Trigger.severalIteration(1))
-      .setSummaryTrigger("parameters", Trigger.severalIteration(20))
+      .setSummaryTrigger("LearningRate", Trigger.severalIteration(1))
+      .setSummaryTrigger("Loss", Trigger.severalIteration(1))
+      .setSummaryTrigger("Throughput", Trigger.severalIteration(1))
+      .setSummaryTrigger("Parameters", Trigger.severalIteration(20))
     val validationSummary = ValidationSummary(sc.appName, "lenet")
 
     pp.setTrainSummary(optimizer, trainSummary)
@@ -114,7 +114,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val trainedModel = optimizer.optimize()
 
-    val lrResult = pp.summaryReadScalar(trainSummary, "learningRate")
+    val lrResult = pp.summaryReadScalar(trainSummary, "LearningRate")
 
     val resultRDD = pp.predict(trainedModel, data.map(pp.toSample(_)))
     val result = resultRDD.take(5)

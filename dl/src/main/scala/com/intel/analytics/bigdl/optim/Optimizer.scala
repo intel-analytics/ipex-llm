@@ -43,7 +43,7 @@ abstract class Optimizer[T: ClassTag, D](
   protected var validationMethods: Option[Array[ValidationMethod[T]]] = None
   protected var validationDataSet: Option[DataSet[MiniBatch[T]]] = None
 
-  // To save the metrics.
+  // To save the summaries.
   protected var trainSummary: Option[TrainSummary] = None
   protected var validationSummary: Option[ValidationSummary] = None
 

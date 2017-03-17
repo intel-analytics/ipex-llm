@@ -88,18 +88,18 @@ class TestWorkFlow(unittest.TestCase):
             val_method=["Top1Accuracy"]
         )
         optimizer.setcheckpoint(SeveralIteration(1), "/tmp/prototype/")
-        train_summary = TrainSummary(log_dir=sc.appName,
+        train_summary = TrainSummary(log_dir=self.sc.appName,
                                      app_name="run1")
-        train_summary.set_summary_trigger("learningRate", SeveralIteration(1))
-        val_summary = ValidationSummary(log_dir=sc.appName,
+        train_summary.set_summary_trigger("LearningRate", SeveralIteration(1))
+        val_summary = ValidationSummary(log_dir=self.sc.appName,
                                         app_name="run1")
         optimizer.set_train_summary(train_summary)
         optimizer.set_val_summary(val_summary)
 
         trained_model = optimizer.optimize()
 
-        lr_result = train_summary.read_scalar("learningRate")
-        top1_result = val_summary.read_scalar("top1 accuracy")
+        lr_result = train_summary.read_scalar("LearningRate")
+        top1_result = val_summary.read_scalar("Top1Accuracy")
 
         # TODO: add result validation
         parameters = trained_model.parameters()

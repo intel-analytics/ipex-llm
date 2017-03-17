@@ -59,6 +59,7 @@ class AccuracyResult(private var correct: Int, private var count: Int)
   }
   // scalastyle:on methodName
 
+
   override protected def format(): String = {
     s"Accuracy(correct: $correct, count: $count, accuracy: ${correct.toDouble / count})"
   }

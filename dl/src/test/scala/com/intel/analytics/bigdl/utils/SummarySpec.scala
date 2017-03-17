@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.Summary._
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
 import org.scalatest.{FlatSpec, Matchers}
 
-
+@com.intel.analytics.bigdl.tags.Parallel
 class SummarySpec extends FlatSpec with Matchers {
 
   "write scalar summary" should "work properly" in {
