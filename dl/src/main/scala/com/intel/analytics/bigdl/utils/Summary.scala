@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,81 +16,160 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.util
-
 import com.intel.analytics.bigdl.optim.Trigger
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
+/**
+ * Logger for tensorboard.
+ * Support scalar and histogram now.
+ * @param logDir
+ * @param appName
+ */
 abstract class Summary(
       logDir: String,
-      appName: String,
-      trigger: Map[String, Trigger]) {
+      appName: String) {
   protected val writer: FileWriter
 
-  def getTrigger(): Map[String, Trigger] = {
-    trigger
-  }
-
+  /**
+   * Add a scalar summary.
+   * @param tag tag name.
+   * @param value tag value.
+   * @param step current step.
+   * @return this
+   */
   def addScalar(
         tag: String,
         value: Float,
         step: Long): this.type = {
     writer.addSummary(
-      com.intel.analytics.bigdl.utils.Summary.scalar(tag, value), step
+      Summary.scalar(tag, value), step
     )
     this
   }
 
+  /**
+   * Add a histogram summary.
+   * @param tag tag name.
+   * @param value a tensor.
+   * @param step current step.
+   * @return this
+   */
   def addHistogram[T: ClassTag](
         tag: String,
-        values: Tensor[T],
+        value: Tensor[T],
         step: Long)(implicit ev: TensorNumeric[T]): this.type = {
     writer.addSummary(
-      Summary.histogram[T](tag, values), step
+      Summary.histogram[T](tag, value), step
     )
     this
   }
 
+  /**
+   * Read scalar values to an array of triple by tag name.
+   * First element of the triple is step, second is value, third is wallclocktime.
+   * @param tag tag name.
+   * @return an array of triple.
+   */
   def readScalar(tag: String): Array[(Long, Float, Double)]
 }
 
+/**
+ * Train logger for tensorboard.
+ * Use optimize.setTrainSummary to enable train logger. Then the log will be saved to
+ * logDir/appName/train.
+ * @param logDir log dir.
+ * @param appName application Name.
+ */
 class TrainSummary(
       logDir: String,
-      appName: String,
-      trigger: Map[String, Trigger] = Map(
-        "learningRate" -> Trigger.severalIteration(1),
-        "loss" -> Trigger.severalIteration(1),
-        "throughput" -> Trigger.severalIteration(1))) extends Summary(logDir, appName, trigger) {
+      appName: String) extends Summary(logDir, appName) {
   protected val folder = s"$logDir/$appName/train"
   protected override val writer = new FileWriter(folder)
+  private val triggers: mutable.HashMap[String, Trigger] = mutable.HashMap(
+        "learningRate" -> Trigger.severalIteration(1),
+        "loss" -> Trigger.severalIteration(1),
+        "throughput" -> Trigger.severalIteration(1))
 
+  /**
+   * Read scalar values to an array of triple by tag name.
+   * First element of the triple is step, second is value, third is wallClockTime.
+   * @param tag tag name. Supported tag names is "learningRate", "Loss", "throughput"
+   * @return an array of triple.
+   */
   override def readScalar(tag: String): Array[(Long, Float, Double)] = {
     FileReader.readScalar(folder, tag)
+  }
+
+  /**
+   * Supported tag name are learningRate, loss, throughput, parameters.
+   * Parameters contains weight, bias, gradWeight, gradBias, and some running status(eg.
+   * runningMean and runningVar in BatchNormalization).
+   *
+   * Notice: By default, we record learningRate, loss and throughput each iteration, while
+   * recording parameters is disabled. The reason is getting parameters from workers is a
+   * heavy operation when the model is very big.
+   *
+   * @param tag tag name
+   * @param trigger trigger
+   * @return
+   */
+  def setSummaryTrigger(tag: String, trigger: Trigger): this.type = {
+    require(tag.equals("learningRate") || tag.equals("Loss") ||
+      tag.equals("throughput") | tag.equals("parameters"),
+      s"TrainSummary: only support learningRate, Loss, parameters and throughput")
+    triggers(tag) = trigger
+    this
+  }
+
+  /**
+   * Get a trigger by tag name.
+   * @param tag
+   * @return
+   */
+  def getSummaryTrigger(tag: String): Option[Trigger] = {
+    if (triggers.contains(tag)) {
+      Some(triggers(tag))
+    } else {
+      None
+    }
+  }
+
+  private[bigdl] def getScalarTriggers(): mutable.HashMap[String, Trigger] = {
+    triggers.filter(!_._1.equals("parameters"))
   }
 }
 
 object TrainSummary{
   def apply(logDir: String,
-      appName: String,
-      trigger: Map[String, Trigger] = Map(
-        "learningRate" -> Trigger.severalIteration(1),
-        "loss" -> Trigger.severalIteration(1),
-        "throughput" -> Trigger.severalIteration(1))): TrainSummary = {
-    new TrainSummary(logDir, appName, trigger)
+      appName: String): TrainSummary = {
+    new TrainSummary(logDir, appName)
   }
 }
 
+/**
+ * Validation logger for tensorboard.
+ * Use optimize.setValidation to enable validation logger. Then the log will be saved to
+ * logDir/appName/Validation.
+ * @param logDir
+ * @param appName
+ */
 class ValidationSummary(
       logDir: String,
-      appName: String,
-      trigger: Map[String, Trigger] = null) extends Summary(logDir, appName, trigger) {
+      appName: String) extends Summary(logDir, appName) {
   protected val folder = s"$logDir/$appName/validation"
   protected override val writer = new FileWriter(folder)
 
+  /**
+   * ReadScalar by tag name. Optional tag name is based on ValidationMethod, "Loss",
+   * "Top1Accuracy" or "Top5Accuracy".
+   * @param tag tag name.
+   * @return an array of triple.
+   */
   override def readScalar(tag: String): Array[(Long, Float, Double)] = {
     FileReader.readScalar(folder, tag)
   }
@@ -99,29 +177,36 @@ class ValidationSummary(
 
 object ValidationSummary{
   def apply(logDir: String,
-      appName: String,
-      trigger: Map[String, Trigger] = null): ValidationSummary = {
-    new ValidationSummary(logDir, appName, trigger)
+      appName: String): ValidationSummary = {
+    new ValidationSummary(logDir, appName)
   }
 }
 
-// Logger for tensor board.
 object Summary {
-  // tag - specifying the type of the event, e.g. "learning rate", "loss", "throughput"
-  // scalar - a single float value, e.g. learning rate, loss, etc.
-  // returns a Summary protocol buffer containing a single scalar value.
-  // proto definition see  org.tensorflow/org.tensorflow/core/framework/summary.proto
+
+  /**
+   * Create a scalar summary.
+   * @param tag tag name
+   * @param scalar scalar value
+   * @return
+   */
   def scalar(tag: String, scalar : Float): org.tensorflow.framework.Summary = {
     val v = org.tensorflow.framework.Summary.Value.newBuilder().setTag(tag).setSimpleValue(scalar)
     org.tensorflow.framework.Summary.newBuilder().addValue(v).build()
   }
 
-  val limits = makeHistogramBuckets()
-  val counts = new Array[Int](limits.length)
+  private val limits = makeHistogramBuckets()
+
+  /**
+   * Create a histogram summary.
+   * @param tag tag name.
+   * @param values values.
+   * @return
+   */
   def histogram[T: ClassTag](
       tag: String,
       values: Tensor[T])(implicit ev: TensorNumeric[T]): org.tensorflow.framework.Summary = {
-    util.Arrays.fill(counts, 0)
+    val counts = new Array[Int](limits.length)
 
     var squares = 0.0
     values.apply1{value =>
@@ -151,7 +236,10 @@ object Summary {
     org.tensorflow.framework.Summary.newBuilder().addValue(v).build()
   }
 
-  def bisectLeft(
+  /**
+   * Find a bucket for x.
+   */
+  private def bisectLeft(
       a: Array[Double],
       x: Double,
       lo: Int = 0,
@@ -175,6 +263,10 @@ object Summary {
     low
   }
 
+  /**
+   * Create a histogram buckets.
+   * @return
+   */
   private def makeHistogramBuckets(): Array[Double] = {
     var v = 1e-12
     val buckets = new Array[Double](1549)

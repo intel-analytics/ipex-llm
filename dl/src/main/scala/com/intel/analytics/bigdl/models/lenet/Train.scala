@@ -94,11 +94,11 @@ object Train {
       }) -> BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(
         param.batchSize)
 
-      val trainSummary = TrainSummary(sc.get.appName, "lenet", Map(
-        "learningRate" -> Trigger.severalIteration(1),
-        "loss" -> Trigger.severalIteration(1),
-        "throughput" -> Trigger.severalIteration(1),
-        "parameters" -> Trigger.severalIteration(20)))
+      val trainSummary = TrainSummary(sc.get.appName, "lenet")
+        .setSummaryTrigger("learningRate", Trigger.severalIteration(1))
+        .setSummaryTrigger("loss", Trigger.severalIteration(1))
+        .setSummaryTrigger("throughput", Trigger.severalIteration(1))
+        .setSummaryTrigger("parameters", Trigger.severalIteration(20))
       val validationSummary = ValidationSummary(sc.get.appName, "lenet")
 
       optimizer

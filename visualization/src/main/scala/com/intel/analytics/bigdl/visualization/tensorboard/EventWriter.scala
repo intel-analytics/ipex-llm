@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,15 +22,20 @@ import java.util.concurrent.{LinkedBlockingDeque, TimeUnit}
 
 import org.tensorflow.util.Event
 
-class EventWriter(logDir: String, flushMillis: Int = 10000) extends Runnable {
-  val eventQueue = new LinkedBlockingDeque[Event]()
-  val outputFile = new File(logDir +
+/**
+ * Event writer, write event protocol buffers to file.
+ * @param logDir
+ * @param flushMillis
+ */
+private[bigdl] class EventWriter(logDir: String, flushMillis: Int = 10000) extends Runnable {
+  private val eventQueue = new LinkedBlockingDeque[Event]()
+  private val outputFile = new File(logDir +
     s"/bigdl.tfevents.${(System.currentTimeMillis() / 1e3).toInt}" +
     s".${InetAddress.getLocalHost().getHostName()}")
-  val recordWriter = new RecordWriter(outputFile)
+  private val recordWriter = new RecordWriter(outputFile)
   // Add an empty Event to the queue.
   eventQueue.add(Event.newBuilder().setWallTime(System.currentTimeMillis() / 1e3).build())
-  @volatile var running: Boolean = true
+  @volatile private var running: Boolean = true
 
   def addEvent(event: Event): this.type = {
     eventQueue.add(event)

@@ -305,12 +305,14 @@ object DistriOptimizer {
           validationSummary
         )
 
-        saveSummary(
-          trainSummary,
-          models,
-          driverState,
-          parameters
-        )
+        if (trainSummary.isDefined) {
+          saveSummary(
+            trainSummary.get,
+            models,
+            driverState,
+            parameters
+          )
+        }
 
         checkpoint(
           cacheTrigger,
@@ -354,38 +356,35 @@ object DistriOptimizer {
   }
 
   private def saveSummary[T: ClassTag](
-        trainSummary: Option[TrainSummary],
+        trainSummary: TrainSummary,
         models: RDD[Cache[T]],
         driverState: Table,
         parameters: AllReduceParameter[T])(implicit ev: TensorNumeric[T]): Unit = {
     val currentIteration = driverState[Int]("neval") - 1
-    if (trainSummary.isDefined && !trainSummary.get.getTrigger().isEmpty) {
-      val trigger = trainSummary.get.getTrigger()
-      val parametersTrigger = trigger.getOrElse[Trigger]("parameters", null)
-      if (null != parametersTrigger && parametersTrigger(driverState)) {
-        val model = getModelWithGradient(models, parameters)
+      val parametersTrigger = trainSummary.getSummaryTrigger("parameters")
+      if (parametersTrigger.isDefined && parametersTrigger.get(driverState)) {
+        val model = getModel(models, parameters)
         val parametersTable = model.getParametersTable()
         // Parallelize to create Histogram.
-        Engine.default.invoke(
+        Engine.default.invokeAndWait(
           parametersTable.keySet.toSeq.map(moduleName => () => {
             val paramTable = parametersTable[Table](moduleName)
             paramTable.keySet.foreach { paramName =>
-              trainSummary.get.addHistogram(
+              trainSummary.addHistogram(
                 s"$moduleName/$paramName", paramTable[Tensor[T]](paramName), currentIteration)}
           }))
       }
-      val scalarTrigger = trigger.filter(!_._1.equals("parameters"))
+      val scalarTrigger = trainSummary.getScalarTriggers()
       // Not parallelizable, because driverState is changing each iteration.
       scalarTrigger.foreach { v =>
         if (v._2(driverState)) {
           require(driverState.contains(v._1), s"DistriOptimizer.saveMetrics: metrics ${v._1} " +
             s"is not supported now.")
-          trainSummary.get.addScalar(
+          trainSummary.addScalar(
             v._1, driverState[Float](v._1), currentIteration
           )
         }
       }
-    }
   }
 
   private def initThreadModels[T: ClassTag](
@@ -521,7 +520,8 @@ object DistriOptimizer {
     })
     if(validationSummary.isDefined) {
       results.foreach { r =>
-        validationSummary.get.addScalar(r._2.toString(), r._1.getResult(),
+        val result = r._1.result
+        validationSummary.get.addScalar(r._2.toString(), result._1 / result._2,
           state[Int]("neval") - 1
         )
       }
@@ -529,32 +529,6 @@ object DistriOptimizer {
   }
 
   private def getModel[T: ClassTag](
-      models: RDD[Cache[T]],
-      parameters: AllReduceParameter[T]): Module[T] = {
-    val partitionNum = models.partitions.length
-    val trainedModel = models.map(_.localModels.head.clearState()).first()
-    val weights = models.mapPartitions(iter => {
-      val cached = iter.next()
-      val curPartitionId = TaskContext.getPartitionId()
-      Iterator.single(Map(curPartitionId -> parameters.weightPartition))
-    }).reduce(_ ++ _)
-
-    val parameter = trainedModel.getParameters()._1
-    val parameterLength = parameter.nElement()
-    val taskSize = parameterLength / partitionNum
-    require(taskSize != 0, "parameter length should not less than partition number")
-    val extraSize = parameterLength % partitionNum
-
-    (0 until partitionNum).map(pid => {
-      val start = pid * taskSize + math.min(pid, extraSize)
-      val length = taskSize + (if (pid < extraSize) 1 else 0)
-      parameter.narrow(1, start + 1, length).copy(weights(pid))
-    })
-
-    trainedModel
-  }
-
-  private def getModelWithGradient[T: ClassTag](
       models: RDD[Cache[T]],
       parameters: AllReduceParameter[T]): Module[T] = {
     val partitionNum = models.partitions.length

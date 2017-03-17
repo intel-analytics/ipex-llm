@@ -89,12 +89,10 @@ class TestWorkFlow(unittest.TestCase):
         )
         optimizer.setcheckpoint(SeveralIteration(1), "/tmp/prototype/")
         train_summary = TrainSummary(log_dir=sc.appName,
-                                     app_name="run1",
-                                     trigger={
-                                         "learningRate": SeveralIteration(1)})
+                                     app_name="run1")
+        train_summary.set_summary_trigger("learningRate", SeveralIteration(1))
         val_summary = ValidationSummary(log_dir=sc.appName,
-                                        app_name="run1",
-                                        trigger={})
+                                        app_name="run1")
         optimizer.set_train_summary(train_summary)
         optimizer.set_val_summary(val_summary)
 

@@ -102,11 +102,11 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       valRdd = data.toJavaRDD(),
       vMethods = util.Arrays.asList("Top1Accuracy", "Loss"))
 
-    val trainSummary = TrainSummary(sc.appName, "lenet", Map(
-      "learningRate" -> Trigger.severalIteration(1),
-      "loss" -> Trigger.severalIteration(1),
-      "throughput" -> Trigger.severalIteration(1),
-      "parameters" -> Trigger.severalIteration(20)))
+    val trainSummary = TrainSummary(sc.appName, "lenet")
+      .setSummaryTrigger("learningRate", Trigger.severalIteration(1))
+      .setSummaryTrigger("loss", Trigger.severalIteration(1))
+      .setSummaryTrigger("throughput", Trigger.severalIteration(1))
+      .setSummaryTrigger("parameters", Trigger.severalIteration(20))
     val validationSummary = ValidationSummary(sc.appName, "lenet")
 
     pp.setTrainSummary(optimizer, trainSummary)
