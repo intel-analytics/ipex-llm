@@ -146,17 +146,20 @@ class Optimizer(JavaValue):
 
 
 class TrainSummary(JavaValue, ):
-    def __init__(self, log_dir, app_name, trigger, bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, log_dir, app_name, trigger)
+    def __init__(self, log_dir, app_name, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, log_dir, app_name)
 
     def read_scalar(self, tag):
         return callBigDlFunc(self.bigdl_type, "summaryReadScalar", self.value,
                              tag)
 
+    def set_summary_trigger(self, name, trigger):
+        return callBigDlFunc(self.bigdl_type, "summarySetTrigger", self.value,
+                             name, trigger)
 
 class ValidationSummary(JavaValue):
-    def __init__(self, log_dir, app_name, trigger, bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, log_dir, app_name, trigger)
+    def __init__(self, log_dir, app_name, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, log_dir, app_name)
 
     def read_scalar(self, tag):
         return callBigDlFunc(self.bigdl_type, "summaryReadScalar", self.value,

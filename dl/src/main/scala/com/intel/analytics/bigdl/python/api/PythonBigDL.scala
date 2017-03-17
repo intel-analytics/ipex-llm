@@ -399,16 +399,22 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       List(item._1, item._2, item._3).asJava.asInstanceOf[JList[Any]]}.asJava
   }
 
+  def summarySetTrigger(
+        summary: TrainSummary,
+        summaryName: String,
+        trigger: Trigger): TrainSummary = {
+    summary.setSummaryTrigger(summaryName, trigger)
+    summary
+  }
+
   def createTrainSummary(logDir: String,
-                         appName: String,
-                         trigger: JMap[String, Trigger]): Summary = {
-    new TrainSummary(logDir, appName, trigger.asScala.toMap)
+                         appName: String): TrainSummary = {
+    new TrainSummary(logDir, appName)
   }
 
   def createValidationSummary(logDir: String,
-                              appName: String,
-                              trigger: JMap[String, Trigger]): Summary = {
-    new ValidationSummary(logDir, appName, trigger.asScala.toMap)
+                              appName: String): ValidationSummary = {
+    new ValidationSummary(logDir, appName)
   }
 
 

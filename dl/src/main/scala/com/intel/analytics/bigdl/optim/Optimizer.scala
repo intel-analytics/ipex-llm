@@ -97,27 +97,16 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   /**
-   * Enable metrics and save to a folder.
-   *
-   * Metrics table should be defined as metricsName -> trigger. We support two kinds of metrics now:
-   * 1. Supported train metrics are learningRate, loss, throughput, parameters.
-   *    Parameters contains weight, bias, gradWeight, gradBias, and some running status(eg.
-   *    runningMean and runningVar in BatchNormalization).
-   * 2. Validation metrics relay on ValidationMethods set in method setValidation().
-   *
-   * Notice: If parameter metrics is empty, we record learningRate, loss and throughput each
-   * iteration. But recording parameters is disabled by default, due to get parameters from
-   * workers is a heavy operation when the model is very big, like AlexNet and Inception.
-   *
-   * Usage, to save learningRate each iteration, and parameters each 20 iteration:
-   *    enableMetrics("./metrics", mutable.HashMap("learningRate" -> Trigger.severalIteration(1),
-   *      "parameters" -> Trigger.severalIteration(20)))
+   * Enable train summary.
    */
   def setTrainSummary(trainSummary: TrainSummary): this.type = {
     this.trainSummary = Some(trainSummary)
     this
   }
 
+  /**
+   * Enable validation summary.
+   */
   def setValidationSummary(validationSummary: ValidationSummary): this.type = {
     this.validationSummary = Some(validationSummary)
     this
