@@ -196,4 +196,3 @@ object ThreadPool {
 
   private val logger = Logger.getLogger(getClass)
 }
-
