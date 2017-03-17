@@ -37,12 +37,12 @@ object Engine {
     setNodeAndCore(nExecutor, executorCores)
     val res = if (onSpark) {
       require(localMode == false,
-        s"Engine.init: Local Mode should not be set while onSpark is set to " +
+        s"Engine.init: BIGDL_LOCAL_MODE should not be set while onSpark is set to " +
           s"true. $ENV_VAR_ERROR")
       Some(createSparkConf())
     } else {
       require(localMode == true,
-        s"Engine.init: Local Mode should be set while onSpark is set to " +
+        s"Engine.init: BIGDL_LOCAL_MODE should be set while onSpark is set to " +
           s"false. $ENV_VAR_ERROR")
       None
     }
@@ -96,7 +96,7 @@ object Engine {
 
   private val logger = Logger.getLogger(getClass)
   private val singletonCounter: AtomicInteger = new AtomicInteger(0)
-  private var localMode: Boolean = {
+  private[bigdl] var localMode: Boolean = {
     val env = System.getenv("BIGDL_LOCAL_MODE")
     if(env == null) {
       false
@@ -109,8 +109,7 @@ object Engine {
 
   private val NOT_INIT_ERROR =
     "Do you call Engine.init? See more at " +
-      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine" +
-      "On executor side, you need to call Engine.setNodeAndCore before."
+      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
 
   private val SPARK_CONF_ERROR = "For details please check " +
     "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
@@ -119,7 +118,8 @@ object Engine {
     "Please use bigdl.sh to init the environment. See " +
       "https://github.com/intel-analytics/BigDL/wiki/Getting-Started#before-running" +
       "-a-bigdl-program. And init SparkConf by refering " +
-      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine."
+      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine. " +
+      "For test purpose, set bigdl.disableCheckSysEnv to true"
 
   /**
    * Notice: Please use property DL_ENGINE_TYPE to set engineType.
@@ -151,8 +151,6 @@ object Engine {
       env.toInt
     }
   }
-
-  private[utils] def setLocalMode = this.localMode = true
 
   /**
    * Check if current execution is a singleton on the JVM
@@ -415,6 +413,7 @@ object Engine {
   }
 
   private def checkSysEnv() : Unit = {
+    // bigdl.disableCheckSysEnv is only for test purpose
     if (System.getProperty("bigdl.disableCheckSysEnv") != null) {
       return
     }

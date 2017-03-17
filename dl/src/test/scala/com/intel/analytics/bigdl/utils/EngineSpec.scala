@@ -34,10 +34,9 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Engine" should "be inited correct under no spark environment" in {
-    Engine.setLocalMode
+    Engine.localMode = true
     Engine.init
     Engine.nodeNumber should be(1)
-    Engine.coreNumber should be(1)
   }
 
   "Engine" should "be inited correct under spark local environment" in {

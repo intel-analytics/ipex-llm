@@ -260,6 +260,8 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "image preprocess" should "be same with torch result" in {
+    val originMode = Engine.localMode
+    Engine.localMode = true
     Engine.init(nodeNumber, coreNumber, false)
     val resourceImageNet = getClass().getClassLoader().getResource("imagenet")
     def test(imgFolder: String, imgFileName: String, tensorFile: String): Unit = {
@@ -291,6 +293,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     test("n15075141", "n15075141_38508.JPEG", "n15075141_38508.t7")
     RandomGenerator.RNG.setSeed(100)
     test("n99999999", "n03000134_4970.JPEG", "n03000134_4970.t7")
+    Engine.localMode = false
   }
 
   "RDD from DataSet" should "give different position every time" in {
