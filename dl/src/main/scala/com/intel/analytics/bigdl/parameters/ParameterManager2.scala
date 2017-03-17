@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.intel.analytics.bigdl.parameters
 
 import java.util.concurrent.atomic.{AtomicInteger}
@@ -41,11 +41,11 @@ object ParameterManager2 {
   private val pm = new HashMap[Int, ParameterManager2]()
 
   private var executorIdMap: HashMap[String, Int] = null
-  
+
   def setExecutorMap(map: HashMap[String, Int]): Unit = {
     executorIdMap = map
   }
-  
+
   def get(executorId: String): ParameterManager2 = {
     val id = executorIdMap(executorId)
     if (pm.contains(id)) pm(id)
@@ -83,7 +83,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
 
   val taskSize = size / executorNum
   val extraSize = size % executorNum
-  
+
   def init[T: ClassTag](parameter: Tensor[T], state: Table)
     (implicit ev: TensorNumeric[T]): Unit = {
     val _classTag = classTag[T]
@@ -96,10 +96,10 @@ class ParameterManager2(val id: Int, val executorId: Int,
 
     BlockManagerWrapper.putSingle(getWeightId(),
       parameter, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
-    
+
     BlockManagerWrapper.putSingle(getStateId(),
       state, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
-    
+
     val _gradientsExecutor = Tensor[T](length)(_classTag, ev)
     BlockManagerWrapper.putSingle(getGradientExecutorId(),
       _gradientsExecutor, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
@@ -109,14 +109,14 @@ class ParameterManager2(val id: Int, val executorId: Int,
     fp16param.compress(0, parameter, start, length)
     BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
-  
+
   def aggregateLocalGradient[T: ClassTag]() : Tensor[T] = {
     val blockIds = master.getBlockId(executorId)
     val gradientBuffer = new Array[Tensor[T]](blockIds.size)
     Engine.compute.invokeAndWait((0 until blockIds.size).map(tid => () => {
       gradientBuffer(tid) = getLocalParameter(blockIds(tid))
     }))
-    
+
     val poolSize = Engine.compute.getPoolSize
     val innerTaskSize = size / poolSize
     val innerExtraSize = size % poolSize
@@ -171,7 +171,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
       }
     })
     syncPool.invokeAll(sgThreads.asJava)
-    
+
     val length = taskSize + (if (executorId < extraSize) 1 else 0)
     val poolSize = Engine.compute.getPoolSize
     val innerTaskSize = length / poolSize
@@ -225,7 +225,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
     BlockManagerWrapper.putBytes(blockId,
       SerializerInstance.serialize(weightExecutor).bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
-  
+
   def getLocalParameter[T: ClassTag](blockId: BlockId): Tensor[T] = {
     BlockManagerWrapper.getLocal(blockId).map(_.data.next()) match {
       case Some(x) =>
@@ -245,7 +245,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
         throw new Exception("Please initialize AllReduceParameter first!!")
     }
   }
-  
+
   def sendGradientPartition[T: ClassTag](gradient: Tensor[T], pid: Int): Unit = {
     val gradientsId = getGradientPartitionId(pid)
 
@@ -253,7 +253,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
       case Some(x) =>
         val t = x.asInstanceOf[Tensor[T]]
         t.copy(gradient)
-        
+
       case None =>
         BlockManagerWrapper.putSingle(gradientsId, gradient,
           StorageLevel.MEMORY_AND_DISK, tellMaster = false)

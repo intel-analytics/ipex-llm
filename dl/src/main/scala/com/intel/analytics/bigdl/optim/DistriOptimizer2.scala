@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -25,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
 import org.apache.spark.{SparkEnv, TaskContext}
-import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
+import org.apache.spark.rdd.{CoalescedWithLocalityRDD, RDD, ZippedPartitionsWithLocalityRDD}
 
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.concurrent.Future
@@ -71,7 +70,7 @@ object DistriOptimizer2 {
   )(implicit ev: TensorNumeric[T]): Unit = {
     val sc = dataset.originRDD().sparkContext
     val partitionNum = dataset.originRDD().partitions.length
-    
+
     var wallClockTime = 0L
     var lastEpochTime = 0L
     val driverState = T("epoch" -> state.get[Int]("epoch").getOrElse(1),
@@ -102,12 +101,12 @@ object DistriOptimizer2 {
 
     var epochStart = System.nanoTime()
     var dataRDD = dataset.data(train = true)
-    
-    val dummyRDD = models.coalesce(Engine.nodeNumber().get).mapPartitions { iter =>
+    val dummyRDD = CoalescedWithLocalityRDD(models, Engine.nodeNumber().get)
+      .mapPartitions { iter =>
       Iterator(1)
     }.cache()
     dummyRDD.count()
-    
+
     while (!endWhen(driverState)) {
       val _header = header(driverState[Int]("epoch"), accumulateCount, dataset.size(),
         driverState[Int]("neval"), wallClockTime)
@@ -226,11 +225,11 @@ object DistriOptimizer2 {
             cached.localModels(i).zeroGradParameters()
           }))
           driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
-          
+
           time = System.nanoTime()
           parameters.sendGradientPartition(cached.gradient, TaskContext.getPartitionId())
           driverMetrics.add("send gradient partition", System.nanoTime() - time)
-          
+
           Iterator(finishedThreads.size)
         }).reduce(_ + _)
 
@@ -249,7 +248,7 @@ object DistriOptimizer2 {
         Iterator.empty
       }.count()
       val job2end = System.nanoTime()
-            
+
       dropModelNumBatch += (driverSubModelNum - finishedModelNum)
       if (dropPercentage == 0 || finishedModelNum >= driverSubModelNum * (1-maxDropPercentage)) {
         val value = lossSum.value / finishedModelNum
@@ -286,14 +285,14 @@ object DistriOptimizer2 {
         accumulateCount += recordsNum.value
         val end = System.nanoTime()
         wallClockTime += end - start
-        logger.debug(s"job1 driver: ${(job2start-start)/1e9} " +
+        logger.info(s"job1 driver: ${(job2start-start)/1e9} " +
           s"job2 driver: ${(job2end-job2start)/1e9} job3 driver: ${(job3end-job3start)/1e9}")
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${recordsNum.value / ((end - start) / 1e9)} records/second. Loss is ${
             lossSum.value / finishedModelNum
           }. ")
 
-        logger.debug("\n" + metrics.summary())
+        logger.info("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
 
@@ -395,8 +394,7 @@ object DistriOptimizer2 {
     dataset: DistributedDataSet[MiniBatch[T]],
     criterion: Criterion[T],
     state: Table,
-    nodeNumber: Int,
-    checkSingleton: Boolean
+    nodeNumber: Int
   )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
     val _subModelNumber = Engine.getEngineType match {
@@ -427,19 +425,12 @@ object DistriOptimizer2 {
 
     ParameterManager2.createParameterManager(executorIdMap(driver), nodeNumber,
       partitionNum, parameterSize, true)
-    
+
     val broadcast = sc.broadcast((model, criterion, state))
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastModel, broadcastCriterion, broadcastState)
       = broadcast.value
-      if (!Engine.checkSingleton()) {
-        if (checkSingleton) {
-          require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
-            "Please disable singleton check or repartition data")
-        } else {
-          logger.warn("Detect multi-task run on one Executor/Container.")
-        }
-      }
+
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = broadcastModel.cloneModule()
         val localCriterion = broadcastCriterion.cloneCriterion()
@@ -450,9 +441,8 @@ object DistriOptimizer2 {
 
       // init parameter manager
       val weights = cached.head._2
-      
+
       val executorId = SparkEnv.get.executorId
-      executorIdMap.foreach(x => println(s"key: ${x._1} value: ${x._2}"))
       ParameterManager2.synchronized {
         ParameterManager2.setExecutorMap(executorIdMap)
         var parameter = ParameterManager2.get(executorId)
@@ -558,10 +548,10 @@ object DistriOptimizer2 {
       Iterator.single(Map(parameter.executorId ->
         parameter.getLocalParameter[T](parameter.getWeightExecutorId())))
     }).reduce(_ ++ _)
-    
+
     val parameter = trainedModel.getParameters()._1
     val parameterLength = parameter.nElement()
-    
+
     val taskSize = parameterLength / weights.size
     val extraSize = parameterLength % weights.size
 
@@ -595,7 +585,7 @@ class DistriOptimizer2[T: ClassTag](
     state("warmupIterationNum") = warmupIterationNum
     state("comupteThresholdbatchSize") = computeThresholdbatchSize
     state("maxDropPercentage") = maxDropPercentage
-    
+
     val actualNodeNumber = dataset.originRDD().mapPartitions { iter =>
       Iterator(SparkEnv.get.executorId)
     }.collect().distinct.size
@@ -604,7 +594,7 @@ class DistriOptimizer2[T: ClassTag](
       actualNodeNumber.toString)
 
     models = DistriOptimizer2.initThreadModels(model, dataset, criterion, state,
-      actualNodeNumber, checkSingleton)
+      actualNodeNumber)
 
     DistriOptimizer2.optimize(
       dataset,

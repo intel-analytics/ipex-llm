@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -37,7 +36,7 @@ class ParameterManagerMasterEndpoint(
   extends ThreadSafeRpcEndpoint {
 
   private val blocks = new HashMap[Int, mutable.HashSet[BlockId]]
-  
+
   override def receiveAndReply(context: RpcCallContext): PartialFunction[Any, Unit] = {
     case GetExecutorBlockList(executorId) =>
       context.reply(getExecutorBlockList(executorId))
@@ -76,7 +75,7 @@ class ParameterManagerMaster(
   def getBlockId(executorId: Int): Seq[BlockId] = {
     driverEndpoint.askWithRetry[Seq[BlockId]](GetExecutorBlockList(executorId))
   }
- 
+
   def updateBlockId(executorId: Int, blockId: BlockId): Unit = {
     driverEndpoint.askWithRetry[Unit](UpdateExecutorBlockList(executorId, blockId))
   }
@@ -97,7 +96,7 @@ object ParameterManagerMaster {
     if (isDriver) {
       conf.set("BigDL.driver.port", rpcEnv.address.port.toString)
     }
-    
+
     def registerOrLookupEndpoint(name: String, isDriver: Boolean, endpointCreator: => RpcEndpoint):
     RpcEndpointRef = {
       if (isDriver) {

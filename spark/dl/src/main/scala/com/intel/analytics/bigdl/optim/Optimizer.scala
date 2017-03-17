@@ -268,7 +268,7 @@ object Optimizer {
       criterion: Criterion[T],
       batchSize: Int
       )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
-    new DistriOptimizer2[T](
+    new DistriOptimizer[T](
       model = model,
       dataset = (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
@@ -283,7 +283,7 @@ object Optimizer {
   )(implicit ev: TensorNumeric[T]): Optimizer[T, D] = {
     dataset match {
       case d: DistributedDataSet[_] =>
-        new DistriOptimizer2[T](
+        new DistriOptimizer[T](
           model = model,
           dataset = d.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
           criterion = criterion
