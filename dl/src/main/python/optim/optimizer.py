@@ -157,6 +157,7 @@ class TrainSummary(JavaValue, ):
         return callBigDlFunc(self.bigdl_type, "summarySetTrigger", self.value,
                              name, trigger)
 
+
 class ValidationSummary(JavaValue):
     def __init__(self, log_dir, app_name, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, log_dir, app_name)

@@ -91,14 +91,14 @@ class TrainSummary(
   protected val folder = s"$logDir/$appName/train"
   protected override val writer = new FileWriter(folder)
   private val triggers: mutable.HashMap[String, Trigger] = mutable.HashMap(
-        "learningRate" -> Trigger.severalIteration(1),
-        "loss" -> Trigger.severalIteration(1),
-        "throughput" -> Trigger.severalIteration(1))
+        "LearningRate" -> Trigger.severalIteration(1),
+        "Loss" -> Trigger.severalIteration(1),
+        "Throughput" -> Trigger.severalIteration(1))
 
   /**
    * Read scalar values to an array of triple by tag name.
    * First element of the triple is step, second is value, third is wallClockTime.
-   * @param tag tag name. Supported tag names is "learningRate", "Loss", "throughput"
+   * @param tag tag name. Supported tag names is "LearningRate", "Loss", "Throughput"
    * @return an array of triple.
    */
   override def readScalar(tag: String): Array[(Long, Float, Double)] = {
@@ -106,11 +106,11 @@ class TrainSummary(
   }
 
   /**
-   * Supported tag name are learningRate, loss, throughput, parameters.
+   * Supported tag name are LearningRate, Loss, Throughput, Parameters.
    * Parameters contains weight, bias, gradWeight, gradBias, and some running status(eg.
    * runningMean and runningVar in BatchNormalization).
    *
-   * Notice: By default, we record learningRate, loss and throughput each iteration, while
+   * Notice: By default, we record LearningRate, Loss and Throughput each iteration, while
    * recording parameters is disabled. The reason is getting parameters from workers is a
    * heavy operation when the model is very big.
    *
@@ -119,9 +119,9 @@ class TrainSummary(
    * @return
    */
   def setSummaryTrigger(tag: String, trigger: Trigger): this.type = {
-    require(tag.equals("learningRate") || tag.equals("Loss") ||
-      tag.equals("throughput") | tag.equals("parameters"),
-      s"TrainSummary: only support learningRate, Loss, parameters and throughput")
+    require(tag.equals("LearningRate") || tag.equals("Loss") ||
+      tag.equals("Throughput") | tag.equals("Parameters"),
+      s"TrainSummary: only support LearningRate, Loss, Parameters and Throughput")
     triggers(tag) = trigger
     this
   }
@@ -139,8 +139,8 @@ class TrainSummary(
     }
   }
 
-  private[bigdl] def getScalarTriggers(): mutable.HashMap[String, Trigger] = {
-    triggers.filter(!_._1.equals("parameters"))
+  private[bigdl] def getScalarTriggers(): Iterator[(String, Trigger)] = {
+    triggers.filter(!_._1.equals("Parameters")).toIterator
   }
 }
 
