@@ -30,6 +30,8 @@ object TensorNumericMath {
 
     def zero: T = fromType[Int](0)
 
+    def negativeOne: T = fromType[Int](-1)
+
     def plus(x: T, y: T): T
 
     def minus(x: T, y: T): T
