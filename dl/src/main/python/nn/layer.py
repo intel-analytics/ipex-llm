@@ -260,12 +260,12 @@ class Recurrent(Model):
 
 class LSTM(Model):
     '''
-    >>> lstm = LSTM(4, 3, 0.25)
+    >>> lstm = LSTM(4, 3)
     creating: createLSTM
     '''
 
-    def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
-        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size, p)
+    def __init__(self, input_size, hidden_size, bigdl_type="float"):
+        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size)
 
 
 class GRU(Model):
@@ -274,8 +274,8 @@ class GRU(Model):
     creating: createGRU
     '''
 
-    def __init__(self,  input_size, hidden_size, p=0.0, bigdl_type="float"):
-        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size, p)
+    def __init__(self,  input_size, hidden_size, bigdl_type="float"):
+        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size)
 
 
 class RNNCell(Model):
