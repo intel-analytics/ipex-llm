@@ -233,6 +233,7 @@ class SpatialMaxPooling(Model):
                                                 pad_h,
                                                 to_ceil)
 
+
 class Select(Model):
     '''
     >>> select = Select(1, 1)
@@ -241,6 +242,7 @@ class Select(Model):
 
     def __init__(self, dim, index, bigdl_type="float"):
         super(Select, self).__init__(None, bigdl_type, dim, index)
+
 
 class Recurrent(Model):
     '''
@@ -255,14 +257,16 @@ class Recurrent(Model):
         self.value.add(model.value)
         return self
 
+
 class LSTM(Model):
     '''
     >>> lstm = LSTM(4, 3, 0.25)
     creating: createLSTM
     '''
 
-    def __init__(self, input_size, hidden_size, p = 0.0, bigdl_type="float"):
+    def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
         super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size, p)
+
 
 class GRU(Model):
     '''
@@ -270,8 +274,9 @@ class GRU(Model):
     creating: createGRU
     '''
 
-    def __init__(self,  input_size, hidden_size, p = 0.0, bigdl_type="float"):
+    def __init__(self,  input_size, hidden_size, p=0.0, bigdl_type="float"):
         super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size, p)
+
 
 class RNNCell(Model):
     '''
@@ -298,16 +303,6 @@ class TimeDistributed(Model):
     def __init__(self, model, bigdl_type="float"):
         super(TimeDistributed, self).__init__(None, bigdl_type, model)
 
-class TimeDistributedCriterion(Model):
-    '''
-    >>> from optim.optimizer import ClassNLLCriterion
-    >>> td = TimeDistributedCriterion(ClassNLLCriterion())
-    creating: createClassNLLCriterion
-    creating: createTimeDistributedCriterion
-    '''
-
-    def __init__(self, criterion, bigdl_type="float"):
-        super(TimeDistributedCriterion, self).__init__(None, bigdl_type, criterion)
 
 class Concat(Model):
 
