@@ -37,12 +37,12 @@ object Engine {
     setNodeAndCore(nExecutor, executorCores)
     val res = if (onSpark) {
       require(localMode == false,
-        s"Engine.init: BIGDL_LOCAL_MODE should not be set while onSpark is set to " +
+        s"Engine.init: BIGDL_LOCAL_MODE should not be set while onSpark is " +
           s"true. $ENV_VAR_ERROR")
       Some(createSparkConf())
     } else {
       require(localMode == true,
-        s"Engine.init: BIGDL_LOCAL_MODE should be set while onSpark is set to " +
+        s"Engine.init: BIGDL_LOCAL_MODE should be set while onSpark is " +
           s"false. $ENV_VAR_ERROR")
       None
     }
@@ -83,6 +83,10 @@ object Engine {
    */
   def init: Unit = this.synchronized {
     if (localMode) {
+      require(getSparkMaster == null, "Detect BIGDL_LOCAL_MODE and spark.master are both set." +
+        " They're conflict. Please reset BIGDL_LOCAL_MODE if you're use Spark or remove " +
+        "spark.master if you're run without spark")
+      logger.info("Detect BIGDL_LOCAL_MODE is set. Run workload without spark")
       // The physical core number should have been initialized by env variable in bigdl.sh
       setNodeAndCore(1, getCoreNumberFromEnv)
     } else {
@@ -272,11 +276,14 @@ object Engine {
    */
   private def checkSparkContext : Unit = {
     val tmpContext = SparkContext.getOrCreate(new SparkConf()
-      .set("bigdl.temp.context", "true"))
+      .set("bigdl.temp.context", "true").setAppName("tmp context for Engine check"))
     // If there's already a spark context, it should not include the property
     val existingSparkContext = !tmpContext.getConf.contains("bigdl.temp.context")
-    require(existingSparkContext, "Engine.init: Cannot find an existing spark context. " +
-      "Do you call this method after create spark context?")
+    if (!existingSparkContext) {
+      tmpContext.stop()
+      throw new IllegalArgumentException("Engine.init: Cannot find an existing"
+        + " spark context. Do you call this method after create spark context?")
+    }
     logger.info("Find existing spark context. Checking the spark conf...")
     val sparkConf = tmpContext.getConf
 
@@ -335,13 +342,17 @@ object Engine {
     }
   }
 
+  private def getSparkMaster : String = {
+    System.getProperty("spark.master")
+  }
+
   /**
    * Extract spark executor number and executor cores from environment.
     * @param forceCheck throw exception if user doesn't set properties correctly
    * @return (nExecutor, executorCore)
    */
   private[utils] def sparkExecutorAndCore(forceCheck : Boolean) : Option[(Int, Int)] = {
-    val master = System.getProperty("spark.master")
+    val master = getSparkMaster
     if (master == null) {
       require(forceCheck == false, "Engine.init: Can't find spark.master, " +
         "do you start your application with spark-submit?")
