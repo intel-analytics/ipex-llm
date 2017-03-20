@@ -26,8 +26,7 @@ import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-
-
+@SerialVersionUID(5876322619614900645L)
 private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   private[tensor] var _storage: Storage[T],
   private[tensor] var _storageOffset: Int,
