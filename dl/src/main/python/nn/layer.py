@@ -1306,22 +1306,6 @@ class Scale(Model):
                                     size)
 
 
-class Select(Model):
-
-    '''
-    >>> select = Select(1, 1)
-    creating: createSelect
-    '''
-
-    def __init__(self,
-                 dimension,
-                 index,
-                 bigdl_type="float"):
-        super(Select, self).__init__(None, bigdl_type,
-                                     dimension,
-                                     index)
-
-
 class SelectTable(Model):
 
     '''

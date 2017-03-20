@@ -60,7 +60,6 @@ class MSECriterion(Criterion):
             JavaValue.__init__(self, None, bigdl_type)
 
 
-<<<<<<< HEAD
 class AbsCriterion(Criterion):
 
     '''
