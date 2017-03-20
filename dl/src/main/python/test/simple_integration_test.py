@@ -32,6 +32,13 @@ class TestWorkFlow(unittest.TestCase):
     def tearDown(self):
         self.sc.stop()
 
+    def test_set_seed(self):
+        l1 = Linear(10, 20, "Xavier").set_name("linear1").set_seed(1234).reset()  # noqa
+        l2 = Linear(10, 20, "Xavier").set_name("linear2").set_seed(1234).reset()  # noqa
+        p1 = l1.parameters()
+        p2 = l2.parameters()
+        self.assertTrue((p1["linear1"]["weight"] == p2["linear2"]["weight"]).all())  # noqa
+
     def test_load_bigdl_model(self):
         from dataset.transformer import normalizer
         from dataset import mnist
