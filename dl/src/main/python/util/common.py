@@ -57,45 +57,44 @@ class TestResult():
 
 
 class Sample(object):
-    def __init__(self, features, label, features_shape, label_shape,
-                 bigdl_type="float"):
+    def __init__(self, features, label, bigdl_type="float"):
+        """
+        :param features is a ndarray
+        :param label is a ndarray
+        """
         self.features = features
         self.label = label
-        self.features_shape = features_shape
-        self.label_shape = label_shape
         self.bigdl_type = bigdl_type
 
-    # features is a ndarray
-    # label is a ndarray
     @classmethod
-    def from_ndarray(cls, features, label, bigdl_type="float"):
-        return cls(
-            features=[float(i) for i in features.ravel()],
-            label=[float(i) for i in label.ravel()],
-            features_shape=list(features.shape),
-            label_shape=list(label.shape) if label.shape else [label.size],
-            bigdl_type=bigdl_type)
-
-    @classmethod
-    def of(cls, features, label, features_shape, bigdl_type="float"):
-        return cls(
-            features=[float(i) for i in features],
-            label=[float(label)],
-            features_shape=features_shape,
-            label_shape=[1],
-            bigdl_type=bigdl_type)
+    def flatten(cls, a_ndarray):
+        """
+        Utility method to flatten a ndarray
+        :return (storage, shape)
+        >>> import numpy as np
+        >>> from util.common import Sample
+        >>> np.random.seed(123)
+        >>> data = np.random.uniform(0, 1, (2, 3))
+        >>> (storage, shape) = Sample.flatten(data)
+        >>> shape
+        [2, 3]
+        >>> (storage, shape) = Sample.flatten(np.array(2))
+        >>> shape
+        [1]
+        """
+        storage = [float(i) for i in a_ndarray.ravel()]
+        shape = list(a_ndarray.shape) if a_ndarray.shape else [a_ndarray.size]
+        return storage, shape
 
     def __reduce__(self):
+        (features_storage, features_shape) = Sample.flatten(self.features)
+        (label_storage, label_shape) = Sample.flatten(self.label)
         return (Sample, (
-            self.features, self.label, self.features_shape, self.label_shape,
+            features_storage, label_storage, features_shape, label_shape,
             self.bigdl_type))
 
     def __str__(self):
-        return "features: %s, label: %s," \
-               "features_shape: %s, label_shape: %s, bigdl_type: %s" % (
-                   self.features, self.label, self.features_shape,
-                   self.label_shape,
-                   self.bigdl_type)
+        return "features: %s, label: %s," % (self.features, self.label)
 
 
 _picklable_classes = [
@@ -220,3 +219,20 @@ def _py2java(sc, obj):
         data = bytearray(PickleSerializer().dumps(obj))
         obj = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.loads(data)
     return obj
+
+
+def _test():
+    import doctest
+    from pyspark import SparkContext
+    from nn import layer
+    globs = layer.__dict__.copy()
+    sc = SparkContext(master="local[2]", appName="test common utility")
+    globs['sc'] = sc
+    (failure_count, test_count) = doctest.testmod(globs=globs,
+                                                  optionflags=doctest.ELLIPSIS)
+    if failure_count:
+        exit(-1)
+
+
+if __name__ == "__main__":
+    _test()

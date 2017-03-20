@@ -27,6 +27,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 
+
 private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   private[tensor] var _storage: Storage[T],
   private[tensor] var _storageOffset: Int,

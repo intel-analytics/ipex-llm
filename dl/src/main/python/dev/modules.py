@@ -58,6 +58,12 @@ bigdl_layer = Module(
         "nn.layer"
     ])
 
+bigdl_layer = Module(
+    name="bigdl_common",
+    python_test_goals=[
+        "util.common"
+    ])
+
 bigdl_optimizer = Module(
     name="bigdl_optimizer",
     python_test_goals=[
