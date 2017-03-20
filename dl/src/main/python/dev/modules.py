@@ -59,6 +59,12 @@ bigdl_layer = Module(
     ])
 
 bigdl_layer = Module(
+    name="bigdl_layer",
+    python_test_goals=[
+        "nn.criterion"
+    ])
+
+bigdl_layer = Module(
     name="bigdl_common",
     python_test_goals=[
         "util.common"
