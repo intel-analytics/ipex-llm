@@ -157,7 +157,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createTimeDistributedCriterion(
     critrn: TensorCriterion[T],
-    sizeAverage: Boolean): TimeDistributedCriterion[T] = {
+    sizeAverage: Boolean = false): TimeDistributedCriterion[T] = {
     TimeDistributedCriterion[T](critrn, sizeAverage)
   }
 
@@ -175,11 +175,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createRecurrent(): Recurrent[T] = {
     Recurrent[T]()
-  }
-
-  def createTimeDistributedCriterion(
-    critrn: TensorCriterion[T]): TimeDistributedCriterion[T] = {
-    TimeDistributedCriterion[T](critrn)
   }
 
   def createEcho(): Echo[T] = {

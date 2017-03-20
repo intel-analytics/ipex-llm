@@ -63,7 +63,7 @@ def to_sample(vectors, label, embedding_dim):
     features = np.array(flatten_features, dtype='float').reshape(
         [sequence_len, embedding_dim])
 
-    if model_type == "cnn" or model_type == "CNN":
+    if model_type.lower() == "cnn":
         features = features.transpose(1, 0)
     return Sample.from_ndarray(features, np.array(label))
 
@@ -71,7 +71,7 @@ def to_sample(vectors, label, embedding_dim):
 def build_model(class_num):
     model = Sequential()
 
-    if model_type == "cnn" or model_type == "CNN":
+    if model_type.lower() == "cnn":
         model.add(Reshape([embedding_dim, 1, sequence_len]))
         model.add(SpatialConvolution(embedding_dim, 128, 5, 1))
         model.add(ReLU())
@@ -80,11 +80,11 @@ def build_model(class_num):
         model.add(ReLU())
         model.add(SpatialMaxPooling(5, 1, 5, 1))
         model.add(Reshape([128]))
-    elif model_type == "lstm" or model_type == "LSTM":
+    elif model_type.lower() == "lstm":
         model.add(Recurrent()
                   .add(LSTM(embedding_dim, 128)))
         model.add(Select(2, -1))
-    elif model_type == "gru" or model_type == "GRU":
+    elif model_type.lower() == "gru":
         model.add(Recurrent()
                   .add(GRU(embedding_dim, 128)))
         model.add(Select(2, -1))

@@ -60,6 +60,7 @@ class MSECriterion(Criterion):
             JavaValue.__init__(self, None, bigdl_type)
 
 
+<<<<<<< HEAD
 class AbsCriterion(Criterion):
 
     '''
@@ -272,5 +273,5 @@ class TimeDistributedCriterion(JavaValue):
     creating: createTimeDistributedCriterion
     '''
 
-    def __init__(self, criterion, bigdl_type="float"):
-        super(TimeDistributedCriterion, self).__init__(None, bigdl_type, criterion)
+    def __init__(self, criterion, size_average=False, bigdl_type="float"):
+        super(TimeDistributedCriterion, self).__init__(None, bigdl_type, criterion, size_average)
