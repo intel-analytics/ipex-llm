@@ -26,7 +26,9 @@ echo "SPARK_HOME": $SPARK_HOME
 
 if [ -z ${SPARK_HOME+x} ]; then echo "SPARK_HOME is unset"; exit 1; else echo "SPARK_HOME is set to '$SPARK_HOME'"; fi
 
-export PYTHONPATH=$SPARK_HOME/python:$DL_PYTHON_HOME:$BIGDL_HOME/dl/src/main/resources/spark-bigdl.conf
+PYSPARK_ZIP=`find $SPARK_HOME/python/lib  -type f -iname '*.zip' | tr "\n" ":"`
+
+export PYTHONPATH=$PYSPARK_ZIP:$DL_PYTHON_HOME:$BIGDL_HOME/dl/src/main/resources/spark-bigdl.conf
 
 export SPARK_CLASSPATH=$BIGDL_HOME/dl/target/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar
 

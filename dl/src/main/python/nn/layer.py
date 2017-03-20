@@ -1642,6 +1642,16 @@ class Unsqueeze(Model):
                                         num_input_dims)
 
 
+class Reshape(Model):
+    '''
+    >>> reshape = Reshape([1, 28, 28])
+    creating: createReshape
+    '''
+
+    def __init__(self, size, bigdl_type="float"):
+        super(Reshape, self).__init__(None, bigdl_type, size)
+
+
 def _test():
     import doctest
     from pyspark import SparkContext
@@ -1659,14 +1669,5 @@ def _test():
     if failure_count:
         exit(-1)
 
-
-class Reshape(Model):
-    '''
-    >>> reshape = Reshape([1, 28, 28])
-    creating: createReshape
-    '''
-
-    def __init__(self, size, bigdl_type="float"):
-        super(Reshape, self).__init__(None, bigdl_type, size)
 if __name__ == "__main__":
     _test()
