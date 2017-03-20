@@ -30,7 +30,6 @@ import com.intel.analytics.bigdl.utils._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
 
-import scala.collection.Map
 import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect.ClassTag
@@ -261,6 +260,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     MSECriterion[T]()
   }
 
+  def setModelSeed(seed: Long): Unit = {
+    RandomGenerator.RNG.setSeed(seed)
+  }
 
   def modelTest(model: AbstractModule[Activity, Activity, T],
                 valRDD: JavaRDD[Sample],
