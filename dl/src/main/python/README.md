@@ -103,7 +103,6 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
 ## Launch Jupyter on standalone cluster
 
  ```
-    export IPYTHON_OPTS="jupyter notebook"
 
     BigDL_HOME=...                                                                                         
     SPARK_HOME=...
