@@ -35,8 +35,7 @@ The input text may look as follows:
 ##Train the Model
 Example command:
 ```bash
-./dist/bin/bigdl.sh -- java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Train -f /opt/text --core 4 --nEpochs 30 --learningRate 0.1
-
+./dist/bin/bigdl.sh -- java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.rnn.Train -f /opt/text -s /opt/save -n 1 -c 4 -b 12 --sent /opt/sent.bin --token /opt/token.bin --checkpoint /opt/model/ --env local
 ```
 
 ##Test the Model
@@ -66,13 +65,11 @@ Example command:
 
 ##Preprocessing
 
-The <code>WordTokenizer</code> class in the <code>rnn/Utils.scala</code> file implements the preprocessing procedure for the input text.
-It will create a dictionary with a key-value map format. Each key is a word from the input text data; each value is a corresponding index of such a word.
-The words in the dictionary are selected with regard to their frequencies in the texts (top-k frequencies).
-The <code>dictionaryLength</code> is passed to the class as a user-defined parameter. The script will add  <code>SENTENCE_START</code> and <code>SENTENCE_END</code> tokens to the beginning and end of every sentence.
-A <code>mapped_data.txt</code> file will be created to store the preprocessed texts. Each word is indicated by its index number in the dictionary.
-Note that all the words not included in the dictionary will merely be indicated as an <code>UNKNOWN_TOKEN</code> index.
-Both files will be saved to the <code>saveDirectory</code>, which is defined by the user.
+The <code>SentenceSplitter</code>, <code>SentenceTokenizer</code> classes use [Apache OpenNLP library](https://opennlp.apache.org/).
+The trained model <code>en-token.bin</code> and <code>en-sent.bin</code> can be reached via [here](http://opennlp.sourceforge.net/models-1.5/).
+The <code>Dictionary.scala</code> accepts an array of string indicating for tokenized sentences or a file directory storing all the vocabulary.
+It provides profuse API to reach the contents of dictionary. Such as <code>vocabSize()</code>, <code>word2Index()</code>, <code>vocabulary()</code>.
+The dictionary information will be saved to <code>/opt/save/dictionary.txt</code>.
 
 ###Sample Sequence of Processed Data
 ```
@@ -83,10 +80,6 @@ Both files will be saved to the <code>saveDirectory</code>, which is defined by 
       3998,3875,3690,3999
 ```
 
-##Data Loading
-The <code>readSentence</code> function in <code>rnn/Utils.scala</code> file will load in the training data from disk. It will shuffle the input data and split this data into training and testing parts with a ratio of 8:2.
-The <code>Dataset.array()</code> is a pipeline that will load the data and transform it to the expected training format.
-
 ##Model
 A SimpleRNN model is implemented in the <code>Model.scala</code> script. It is a one hidden layer recurrent neural network with arbitrary hidden circles.
 Users can define the <code>inputSize</code>, <code>hiddenSize</code>, <code>outputSize</code> and <code>bptt</code> (back propagation through time) parameters to fine-tune the model.
@@ -94,23 +87,11 @@ Users can define the <code>inputSize</code>, <code>hiddenSize</code>, <code>outp
 ##Expected Training Output
 Users can see the Loss of the model printed by the program. The Loss, in this case, is the perplexity of the language model. The lower, the better.
 ```
-INFO  LocalOptimizer$:152 - [Epoch 1 1/26221][Iteration 1][Wall Clock 0.225452714s] loss is 8.3017578125, iteration time is 0.225452714s data fetch time is 0.001966759s, train time 0.223485955s. Throughput is 4.435519902412885 record / second
+INFO  LocalOptimizer$:152 - [Epoch 1 12/7484][Iteration 1][Wall Clock 1.872321596s] loss is 8.302657127380371, iteration time is 1.872321596s data fetch time is 0.018143926s, train time 1.85417767s. Throughput is 6.409155363927127 record / second
+INFO  LocalOptimizer$:152 - [Epoch 1 24/7484][Iteration 2][Wall Clock 3.105456523s] loss is 8.141095399856567, iteration time is 1.233134927s data fetch time is 0.006831927s, train time 1.226303s. Throughput is 9.731295203189067 record / second
+INFO  LocalOptimizer$:152 - [Epoch 1 36/7484][Iteration 3][Wall Clock 4.293285676s] loss is 7.992086887359619, iteration time is 1.187829153s data fetch time is 0.007491824s, train time 1.180337329s. Throughput is 10.102462942328541 record / second
+INFO  LocalOptimizer$:152 - [Epoch 1 48/7484][Iteration 4][Wall Clock 5.38083842s] loss is 7.7980124950408936, iteration time is 1.087552744s data fetch time is 0.007037109s, train time 1.080515635s. Throughput is 11.033947609625082 record / second
 ```
 
 ##Expected Testing Output
 The test program will load the dictionary and test.txt(with several trigger words as the start tokens of the sentences) and generate the predicted output. The number of words to predict is defined by user with arguments --words.
-
-
-##Parameters
-```
-  --folder | -f  [the directory to reach the data and save generated dictionary]
-  --learningRate [default 0.1]
-  --momentum     [default 0.0]
-  --weightDecay  [default 0.0]
-  --dampening    [default 0.0]
-  --hiddenSize   [the size of recurrent layer, default 40]
-  --vocabSize    [the vocabulary size that users would like to set, default 4000]
-  --bptt         [back propagation through time, default 4]
-  --nEpochs      [number of epochs to train, default 30]
-  --coreNumber   [engine core numbers, e.g 4 for a desktop]
-```

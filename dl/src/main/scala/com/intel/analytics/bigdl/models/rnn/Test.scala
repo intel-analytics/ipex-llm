@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.models.rnn
 
 
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch, SampleToBatch}
-import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, LabeledSentenceToSample}
+import com.intel.analytics.bigdl.dataset.text.{Dictionary, LabeledSentence, LabeledSentenceToSample}
 import com.intel.analytics.bigdl.nn.{LogSoftMax, Module}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
@@ -38,7 +38,7 @@ object Test {
   def main(args: Array[String]): Unit = {
     testParser.parse(args, new TestParams()).foreach { param =>
 
-      val vocab = new Dictionary(param.folder)
+      val vocab = Dictionary(param.folder)
 
       val model = Module.load[Float](param.modelSnapshot.get)
       Engine.setCoreNumber(param.coreNumber)
@@ -58,7 +58,7 @@ object Test {
         index += 1
 
         val validationSet = DataSet.array(labeledInput)
-          .transform(LabeledSentenceToSample(vocab.length + 1))
+          .transform(LabeledSentenceToSample(vocab.getVocabSize() + 1))
           .transform(SampleToBatch(batchSize = batchSize))
           .asInstanceOf[LocalDataSet[MiniBatch[Float]]]
 
