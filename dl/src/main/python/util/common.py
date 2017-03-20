@@ -24,6 +24,7 @@ from pyspark.serializers import PickleSerializer, AutoBatchedSerializer
 from pyspark.sql import DataFrame, SQLContext
 from pyspark.mllib.common import callJavaFunc
 from pyspark import SparkConf
+import numpy as np
 
 if sys.version >= '3':
     long = int
@@ -57,14 +58,25 @@ class TestResult():
 
 
 class Sample(object):
-    def __init__(self, features, label, bigdl_type="float"):
-        """
-        :param features is a ndarray
-        :param label is a ndarray
-        """
-        self.features = features
-        self.label = label
+    def __init__(self, features, label, features_shape, label_shape,
+                 bigdl_type="float"):
+        def get_dtype():
+            if "float" == bigdl_type:
+                return "float32"
+            else:
+                return "float64"
+        self.features = np.array(features, dtype=get_dtype()).reshape(features_shape)  # noqa
+        self.label = np.array(label, dtype=get_dtype()).reshape(label_shape)
         self.bigdl_type = bigdl_type
+
+    @classmethod
+    def from_ndarray(cls, features, label, bigdl_type="float"):
+        return cls(
+            features=[float(i) for i in features.ravel()],
+            label=[float(i) for i in label.ravel()],
+            features_shape=list(features.shape),
+            label_shape=list(label.shape) if label.shape else [label.size],
+            bigdl_type=bigdl_type)
 
     @classmethod
     def flatten(cls, a_ndarray):

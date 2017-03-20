@@ -62,7 +62,7 @@ def to_sample(vectors, label, embedding_dim):
     flatten_features = list(itertools.chain(*vectors))
     features = np.array(flatten_features, dtype='float').reshape(
         [sequence_len, embedding_dim]).transpose(1, 0)
-    return Sample(features, np.array(label))
+    return Sample.from_ndarray(features, np.array(label))
 
 
 def build_model(class_num):
