@@ -23,7 +23,7 @@ import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
 
-abstract class TensorCriterion[@specialized(Float, Double) T: ClassTag]
+abstract class TensorCriterion[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Tensor[T], Tensor[T], T]
 
 abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTag,

@@ -263,3 +263,14 @@ class SoftmaxWithCriterion(Criterion):
         super(SoftmaxWithCriterion, self).__init__(None, bigdl_type,
                                                    None,
                                                    normalize_mode)
+
+
+class TimeDistributedCriterion(JavaValue):
+    '''
+    >>> td = TimeDistributedCriterion(ClassNLLCriterion())
+    creating: createClassNLLCriterion
+    creating: createTimeDistributedCriterion
+    '''
+
+    def __init__(self, criterion, size_average=False, bigdl_type="float"):
+        super(TimeDistributedCriterion, self).__init__(None, bigdl_type, criterion, size_average)

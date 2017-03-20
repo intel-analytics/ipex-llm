@@ -21,7 +21,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{Sample => JSample, _}
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorCriterion, TensorModule}
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -142,6 +142,39 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createTanh(): Tanh[T] = {
     Tanh[T]()
+  }
+
+  def createTimeDistributed(layer: TensorModule[T]): TimeDistributed[T] = {
+    TimeDistributed[T](layer)
+  }
+
+  def createRNNCell(
+    inputSize: Int,
+    hiddenSize: Int,
+    activation: TensorModule[T]): RnnCell[T] = {
+    RnnCell[T](inputSize, hiddenSize, activation)
+  }
+
+  def createTimeDistributedCriterion(
+    critrn: TensorCriterion[T],
+    sizeAverage: Boolean = false): TimeDistributedCriterion[T] = {
+    TimeDistributedCriterion[T](critrn, sizeAverage)
+  }
+
+  def createGRU(
+    inputSize: Int,
+    outputSize: Int): GRU[T] = {
+    GRU[T](inputSize, outputSize)
+  }
+
+  def createLSTM(
+    inputSize: Int,
+    hiddenSize: Int): LSTM[T] = {
+    LSTM[T](inputSize, hiddenSize)
+  }
+
+  def createRecurrent(): Recurrent[T] = {
+    Recurrent[T]()
   }
 
   def createEcho(): Echo[T] = {

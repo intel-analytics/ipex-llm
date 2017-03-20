@@ -234,15 +234,74 @@ class SpatialMaxPooling(Model):
                                                 to_ceil)
 
 
-class Reshape(Model):
-
+class Select(Model):
     '''
-    >>> reshape = Reshape([1, 28, 28])
-    creating: createReshape
+    >>> select = Select(1, 1)
+    creating: createSelect
     '''
 
-    def __init__(self, size, bigdl_type="float"):
-        super(Reshape, self).__init__(None, bigdl_type, size)
+    def __init__(self, dim, index, bigdl_type="float"):
+        super(Select, self).__init__(None, bigdl_type, dim, index)
+
+
+class Recurrent(Model):
+    '''
+    >>> recurrent = Recurrent()
+    creating: createRecurrent
+    '''
+
+    def __init__(self, bigdl_type="float"):
+        super(Recurrent, self).__init__(None, bigdl_type)
+
+    def add(self, model):
+        self.value.add(model.value)
+        return self
+
+
+class LSTM(Model):
+    '''
+    >>> lstm = LSTM(4, 3)
+    creating: createLSTM
+    '''
+
+    def __init__(self, input_size, hidden_size, bigdl_type="float"):
+        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size)
+
+
+class GRU(Model):
+    '''
+    >>> gru = GRU(4, 3)
+    creating: createGRU
+    '''
+
+    def __init__(self,  input_size, hidden_size, bigdl_type="float"):
+        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size)
+
+
+class RNNCell(Model):
+    '''
+    >>> reshape = RNNCell(4, 3, Tanh())
+    creating: createTanh
+    creating: createRNNCell
+    '''
+
+    def __init__(self,
+                 input_size,
+                 hidden_size,
+                 activation,
+                 bigdl_type="float"):
+        super(RNNCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation)
+
+
+class TimeDistributed(Model):
+    '''
+    >>> td = TimeDistributed(Linear(2, 3))
+    creating: createLinear
+    creating: createTimeDistributed
+    '''
+
+    def __init__(self, model, bigdl_type="float"):
+        super(TimeDistributed, self).__init__(None, bigdl_type, model)
 
 
 class Concat(Model):
@@ -1247,22 +1306,6 @@ class Scale(Model):
                                     size)
 
 
-class Select(Model):
-
-    '''
-    >>> select = Select(1, 1)
-    creating: createSelect
-    '''
-
-    def __init__(self,
-                 dimension,
-                 index,
-                 bigdl_type="float"):
-        super(Select, self).__init__(None, bigdl_type,
-                                     dimension,
-                                     index)
-
-
 class SelectTable(Model):
 
     '''
@@ -1612,5 +1655,13 @@ def _test():
         exit(-1)
 
 
+class Reshape(Model):
+    '''
+    >>> reshape = Reshape([1, 28, 28])
+    creating: createReshape
+    '''
+
+    def __init__(self, size, bigdl_type="float"):
+        super(Reshape, self).__init__(None, bigdl_type, size)
 if __name__ == "__main__":
     _test()

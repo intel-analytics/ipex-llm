@@ -61,21 +61,36 @@ def to_sample(vectors, label, embedding_dim):
     # flatten nested list
     flatten_features = list(itertools.chain(*vectors))
     features = np.array(flatten_features, dtype='float').reshape(
-        [sequence_len, embedding_dim]).transpose(1, 0)
+        [sequence_len, embedding_dim])
+
+    if model_type.lower() == "cnn":
+        features = features.transpose(1, 0)
     return Sample.from_ndarray(features, np.array(label))
 
 
 def build_model(class_num):
     model = Sequential()
 
-    model.add(Reshape([embedding_dim, 1, sequence_len]))
-    model.add(SpatialConvolution(embedding_dim, 128, 5, 1))
-    model.add(ReLU())
-    model.add(SpatialMaxPooling(5, 1, 5, 1))
-    model.add(SpatialConvolution(128, 128, 5, 1))
-    model.add(ReLU())
-    model.add(SpatialMaxPooling(5, 1, 5, 1))
-    model.add(Reshape([128]))
+    if model_type.lower() == "cnn":
+        model.add(Reshape([embedding_dim, 1, sequence_len]))
+        model.add(SpatialConvolution(embedding_dim, 128, 5, 1))
+        model.add(ReLU())
+        model.add(SpatialMaxPooling(5, 1, 5, 1))
+        model.add(SpatialConvolution(128, 128, 5, 1))
+        model.add(ReLU())
+        model.add(SpatialMaxPooling(5, 1, 5, 1))
+        model.add(Reshape([128]))
+    elif model_type.lower() == "lstm":
+        model.add(Recurrent()
+                  .add(LSTM(embedding_dim, 128)))
+        model.add(Select(2, -1))
+    elif model_type.lower() == "gru":
+        model.add(Recurrent()
+                  .add(GRU(embedding_dim, 128)))
+        model.add(Select(2, -1))
+    else:
+        raise ValueError('model can only be cnn, lstm, or gru')
+
     model.add(Linear(128, 100))
     model.add(Linear(100, class_num))
     model.add(LogSoftMax())
@@ -122,7 +137,7 @@ def train(sc,
         model=build_model(news20.CLASS_NUM),
         training_rdd=train_rdd,
         criterion=ClassNLLCriterion(),
-        end_trigger=MaxEpoch(2),
+        end_trigger=MaxEpoch(max_epoch),
         batch_size=batch_size,
         optim_method="Adagrad",
         state=state)
@@ -142,6 +157,8 @@ if __name__ == "__main__":
     parser.add_option("-n", "--nodeNum", dest="nodeNum", default="1")
     parser.add_option("-b", "--batchSize", dest="batchSize", default="128")
     parser.add_option("-e", "--embedding_dim", dest="embedding_dim", default="50")  # noqa
+    parser.add_option("-m", "--max_epoch", dest="max_epoch", default="15")
+    parser.add_option("--model", dest="model_type", default="cnn")
 
     (options, args) = parser.parse_args(sys.argv)
     if options.action == "train":
@@ -149,6 +166,8 @@ if __name__ == "__main__":
         core_num = int(options.coreNum)
         batch_size = int(options.batchSize)
         embedding_dim = int(options.embedding_dim)
+        max_epoch = int(options.max_epoch)
+        model_type = options.model_type
         sequence_len = 50
         max_words = 1000
         training_split = 0.8
