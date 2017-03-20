@@ -19,5 +19,5 @@ from util.common import Sample
 
 
 def normalizer(mean, std):
-    return lambda sample: Sample((sample.features - mean) / std,
-                                 sample.label, sample.bigdl_type)
+    return lambda sample: Sample.from_ndarray((sample.features - mean) / std,
+                                              sample.label, sample.bigdl_type)

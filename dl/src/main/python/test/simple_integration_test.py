@@ -16,6 +16,7 @@
 # Still in experimental stage!
 
 from nn.layer import *
+from nn.criterion import *
 from optim.optimizer import *
 from util.common import *
 import numpy as np
@@ -38,25 +39,6 @@ class TestWorkFlow(unittest.TestCase):
         p1 = l1.parameters()
         p2 = l2.parameters()
         self.assertTrue((p1["linear1"]["weight"] == p2["linear2"]["weight"]).all())  # noqa
-
-    def test_load_bigdl_model(self):
-        from dataset.transformer import normalizer
-        from dataset import mnist
-        import pickle
-
-        data_location = "../test/resources/mnist-data/testing_data.pickle"  # noqa
-        with open(data_location, 'r') as dfile:
-            (images, labels) = pickle.load(dfile)
-            sample_rdd = self.sc.parallelize(images).zip(
-                self.sc.parallelize(labels)).map(lambda (features, label):
-                                                 Sample.from_ndarray(features,
-                                                                     label + 1)).map(
-                normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
-        model = Model.from_path("../test/resources/pre_trained_lenet/lenet-model.9381")  # noqa
-        results = model.test(sample_rdd, 32, ["Top1Accuracy"])
-        self.assertEqual(32, results[0].total_num)
-        self.assertEqual(1.0, results[0].result)
-        self.assertEqual('Top1Accuracy', results[0].method)
 
     def test_simple_flow(self):
         FEATURES_DIM = 2
