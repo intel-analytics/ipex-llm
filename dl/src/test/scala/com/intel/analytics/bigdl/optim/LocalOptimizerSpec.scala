@@ -120,6 +120,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
   val coreNumber = 4
 
   before {
+    Engine.localMode = true
     Engine.init(nodeNumber, coreNumber, false)
   }
 

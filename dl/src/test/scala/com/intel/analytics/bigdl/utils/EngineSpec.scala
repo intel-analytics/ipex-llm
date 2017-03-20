@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.utils
 
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -110,5 +110,49 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     conf.foreach(s => {
       s._2 should be(target(s._1))
     })
+  }
+
+  "LocalMode" should "false if onSpark" in {
+    intercept[IllegalArgumentException] {
+      Engine.localMode = true
+      Engine.init(1, 1, true)
+    }
+  }
+
+  "LocalMode" should "true if not onSpark" in {
+    intercept[IllegalArgumentException] {
+      Engine.localMode = false
+      Engine.init(1, 1, false)
+    }
+  }
+
+  "LocalMode" should "be false under spark local environment" in {
+    TestUtils.sparkLocalEnv(core = 4) {
+      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
+      sc = new SparkContext(conf)
+      intercept[IllegalArgumentException] {
+        Engine.localMode = true
+        Engine.init
+      }
+    }
+  }
+
+  "SparkContext" should "be inited when call Engine.init" in {
+    TestUtils.sparkLocalEnv(core = 4) {
+      intercept[IllegalArgumentException] {
+        Engine.init
+      }
+    }
+  }
+
+  "SparkConf" should "be right whenc all Engine.init" in {
+    TestUtils.sparkLocalEnv(core = 4) {
+      val conf = new SparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
+      sc = new SparkContext(conf)
+      intercept[IllegalArgumentException] {
+        Engine.localMode = true
+        Engine.init
+      }
+    }
   }
 }

@@ -21,6 +21,7 @@ from optim.optimizer import *
 from util.common import *
 import numpy as np
 import unittest
+import tempfile
 
 
 class TestWorkFlow(unittest.TestCase):
@@ -28,7 +29,7 @@ class TestWorkFlow(unittest.TestCase):
         sparkConf = create_spark_conf()
         self.sc = SparkContext(master="local[4]", appName="test model",
                                conf=sparkConf)
-        initEngine(1, 2)
+        init_engine()
 
     def tearDown(self):
         self.sc.stop()
@@ -76,11 +77,12 @@ class TestWorkFlow(unittest.TestCase):
             trigger=EveryEpoch(),
             val_method=["Top1Accuracy"]
         )
-        optimizer.setcheckpoint(SeveralIteration(1), "/tmp/prototype/")
-        train_summary = TrainSummary(log_dir=self.sc.appName,
+        tmp_dir = tempfile.mkdtemp()
+        optimizer.setcheckpoint(SeveralIteration(1), tmp_dir)
+        train_summary = TrainSummary(log_dir=tmp_dir,
                                      app_name="run1")
         train_summary.set_summary_trigger("LearningRate", SeveralIteration(1))
-        val_summary = ValidationSummary(log_dir=self.sc.appName,
+        val_summary = ValidationSummary(log_dir=tmp_dir,
                                         app_name="run1")
         optimizer.set_train_summary(train_summary)
         optimizer.set_val_summary(val_summary)
