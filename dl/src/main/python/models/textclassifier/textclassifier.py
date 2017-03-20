@@ -22,6 +22,7 @@ from optparse import OptionParser
 
 from dataset import news20
 from nn.layer import *
+from nn.criterion import *
 from optim.optimizer import *
 from util.common import *
 from util.common import Sample

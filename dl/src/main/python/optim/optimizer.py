@@ -30,6 +30,15 @@ if sys.version >= '3':
     unicode = str
 
 
+class MaxIteration(JavaValue):
+    '''
+    >>> maxIteration = MaxIteration(20)
+    creating: createMaxIteration
+    '''
+    def __init__(self, max, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, max)
+
+
 class MaxEpoch(JavaValue):
     '''
     >>> maxEpoch = MaxEpoch(2)
@@ -55,33 +64,6 @@ class SeveralIteration(JavaValue):
     '''
     def __init__(self, interval, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, interval)
-
-
-class MaxIteration(JavaValue):
-    '''
-    >>> maxIteration = MaxIteration(20)
-    creating: createMaxIteration
-    '''
-    def __init__(self, max, bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type, max)
-
-
-class ClassNLLCriterion(JavaValue):
-    '''
-    >>> classNLLCriterion = ClassNLLCriterion()
-    creating: createClassNLLCriterion
-    '''
-    def __init__(self, bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type)
-
-
-class MSECriterion(JavaValue):
-    '''
-    >>> mSECriterion = MSECriterion()
-    creating: createMSECriterion
-    '''
-    def __init__(self, bigdl_type="float"):
-            JavaValue.__init__(self, None, bigdl_type)
 
 
 class Poly(JavaValue):

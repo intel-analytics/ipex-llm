@@ -20,6 +20,7 @@ from optparse import OptionParser
 from dataset import mnist
 from dataset.transformer import *
 from nn.layer import *
+from nn.criterion import *
 from optim.optimizer import *
 from util.common import *
 

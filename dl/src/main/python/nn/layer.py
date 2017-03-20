@@ -48,6 +48,10 @@ class Model(JavaValue):
     def name(self):
         return callJavaFunc(SparkContext.getOrCreate(), self.value.getName)
 
+    def set_seed(self, seed=123):
+        callBigDlFunc(self.bigdl_type, "setModelSeed", seed)
+        return self
+
     def get_dtype(self):
         if "float" == self.bigdl_type:
             return "float32"
@@ -55,7 +59,8 @@ class Model(JavaValue):
             return "float64"
 
     def reset(self):
-        return callJavaFunc(SparkContext.getOrCreate(), self.value.reset)
+        callJavaFunc(SparkContext.getOrCreate(), self.value.reset)
+        return self
 
     def parameters(self):
         name_to_params = callBigDlFunc(self.bigdl_type,
