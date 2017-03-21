@@ -148,28 +148,24 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     TimeDistributed[T](layer)
   }
 
-  def createRNNCell(
-    inputSize: Int,
-    hiddenSize: Int,
-    activation: TensorModule[T]): RnnCell[T] = {
+  def createRNNCell(inputSize: Int,
+                    hiddenSize: Int,
+                    activation: TensorModule[T]): RnnCell[T] = {
     RnnCell[T](inputSize, hiddenSize, activation)
   }
 
-  def createTimeDistributedCriterion(
-    critrn: TensorCriterion[T],
-    sizeAverage: Boolean = false): TimeDistributedCriterion[T] = {
+  def createTimeDistributedCriterion(critrn: TensorCriterion[T],
+                                     sizeAverage: Boolean = false): TimeDistributedCriterion[T] = {
     TimeDistributedCriterion[T](critrn, sizeAverage)
   }
 
-  def createGRU(
-    inputSize: Int,
-    outputSize: Int): GRU[T] = {
+  def createGRU(inputSize: Int,
+                outputSize: Int): GRU[T] = {
     GRU[T](inputSize, outputSize)
   }
 
-  def createLSTM(
-    inputSize: Int,
-    hiddenSize: Int): LSTM[T] = {
+  def createLSTM(inputSize: Int,
+                 hiddenSize: Int): LSTM[T] = {
     LSTM[T](inputSize, hiddenSize)
   }
 
@@ -855,8 +851,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SGD.Step(stepSize, gamma)
   }
 
-  def createClassNLLCriterion: ClassNLLCriterion[T] = {
-    ClassNLLCriterion[T]()
+  def createClassNLLCriterion(sizeAverage: Boolean = true)
+  : ClassNLLCriterion[T] = {
+    ClassNLLCriterion[T](null,
+      sizeAverage)
   }
 
   def createMSECriterion: MSECriterion[T] = {
