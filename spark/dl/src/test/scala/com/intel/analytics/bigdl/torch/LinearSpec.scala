@@ -245,18 +245,17 @@ class LinearSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "linear:reset()\n" +
-      "weight = linear.weight\n" +
-      "bias = linear.bias\n" +
-      "output1 = linear:forward(input)\n" +
-      "output2 = linear:backward(input, grad)"
+      "output = linear:forward(input)\n" +
+      "gradInput = linear:backward(input, grad)"
 
     val (luaTime, torchResult) = TH.run(code, Map("linear" -> linear,
       "input" -> input, "grad" -> grad),
-      Array("weight", "bias", "output1", "output2"))
-    val luaOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]
-    val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
-    val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
-    val luaBias = torchResult("bias").asInstanceOf[Tensor[Double]]
+      Array("linear", "output", "gradInput"))
+    val torchLinear = torchResult("linear").asInstanceOf[Linear[Double]]
+    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+    val luaWeight = torchLinear.weight
+    val luaBias = torchLinear.bias
 
     val start = System.nanoTime()
     RNG.setSeed(seed)

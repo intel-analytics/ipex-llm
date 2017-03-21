@@ -907,13 +907,17 @@ object TorchFile {
 
   private def readLinearWithType[T: ClassTag](
       elements: Table)(implicit ev: TensorNumeric[T]) : Linear[T] = {
-    val bias = elements("bias").asInstanceOf[Tensor[T]]
     val weight = elements("weight").asInstanceOf[Tensor[T]]
-    val result = Linear[T](weight.size(2), weight.size(1))
-    result.bias.copy(bias)
-    result.weight.copy(weight)
-    result
-
+    if (elements.contains("bias")) {
+      val result = Linear[T](weight.size(2), weight.size(1))
+      result.weight.copy(weight)
+      result.bias.copy(elements("bias").asInstanceOf[Tensor[T]])
+      result
+    } else {
+      val result = Linear[T](weight.size(2), weight.size(1), withBias = false)
+      result.weight.copy(weight)
+      result
+    }
   }
 
   private def readSpatialConvolutionMapWithType[T: ClassTag](
