@@ -36,6 +36,8 @@ abstract class Cell[T : ClassTag](val hiddensShape: Array[Int])
   (implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
 
+  var cell: AbstractModule[Activity, Activity, T]
+
   /**
    * resize the hidden parameters wrt the batch size, hiddens shapes.
    *
@@ -76,5 +78,36 @@ abstract class Cell[T : ClassTag](val hiddensShape: Array[Int])
         hidden
       }
     }
+  }
+
+  override def updateOutput(input: Table): Table = {
+    output = cell.updateOutput(input).toTable
+    output
+  }
+
+  override def updateGradInput(input: Table, gradOutput: Table): Table = {
+    gradInput = cell.updateGradInput(input, gradOutput).toTable
+    gradInput
+  }
+
+  override def accGradParameters(input: Table, gradOutput: Table,
+    scale: Double = 1.0): Unit = {
+    cell.accGradParameters(input, gradOutput, scale)
+  }
+
+  override def updateParameters(learningRate: T): Unit = {
+    cell.updateParameters(learningRate)
+  }
+
+  override def zeroGradParameters(): Unit = {
+    cell.zeroGradParameters()
+  }
+
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    cell.parameters()
+  }
+
+  override def getParametersTable(): Table = {
+    cell.getParametersTable()
   }
 }
