@@ -40,6 +40,8 @@ case class Sample(features: JList[Any],
                   labelShape: JList[Int],
                   bigdlType: String)
 
+case class JTensor(storage: JList[Any], shape: JList[Int], bigdlType: String)
+
 case class TestResult(val result: Float, totalNum: Int, val method: String)
 
 
@@ -97,6 +99,23 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       sample.feature().size().toList.asJava,
       sample.label().size().toList.asJava,
       cls.getSimpleName)
+  }
+
+  def toTensor(jTensor: JTensor): Tensor[T] = {
+    Tensor(jTensor.storage.asScala.toArray.asInstanceOf[Array[T]],
+      jTensor.shape.asScala.toArray)
+  }
+
+  def toJTensor(tensor: Tensor[T]): JTensor = {
+    // TODO: we should clone here, in case the underlying storage large than the tensor size.
+    val cloneTensor = tensor
+    JTensor(cloneTensor.storage().toList.asJava.asInstanceOf[JList[Any]],
+      cloneTensor.size().toList.asJava, typeName)
+  }
+
+  def testTensor(jTensor: JTensor): JTensor = {
+    val tensor = toTensor(jTensor)
+    toJTensor(tensor)
   }
 
   def toSample(record: Sample): JSample[T] = {
@@ -870,6 +889,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   : ClassSimplexCriterion[T] = {
     ClassSimplexCriterion[T](nClasses)
   }
+
+  def createCrossEntropyCriterion(weights: JTensor = null,
+                                  sizeAverage: Boolean = true): CrossEntropyCriterion[T] = {
+
+    new CrossEntropyCriterion[T](toTensor(weights), sizeAverage)
+  }
+
 
   def createCosineEmbeddingCriterion(margin: Double = 0.0,
                                      sizeAverage: Boolean = true)
