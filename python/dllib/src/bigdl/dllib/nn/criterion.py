@@ -29,6 +29,7 @@ if sys.version >= '3':
 
 
 class Criterion(JavaValue):
+
     def __init__(self, jvalue, bigdl_type, *args):
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, JavaValue.jvm_class_constructor(self), *args)
@@ -43,21 +44,28 @@ class Criterion(JavaValue):
 
 
 class ClassNLLCriterion(Criterion):
+
     '''
     >>> classNLLCriterion = ClassNLLCriterion()
     creating: createClassNLLCriterion
     '''
-    def __init__(self, bigdl_type="float"):
-        JavaValue.__init__(self, None, bigdl_type)
+
+    def __init__(self,
+                 size_average=True,
+                 bigdl_type="float"):
+        super(ClassNLLCriterion, self).__init__(None, bigdl_type,
+                                                size_average)
 
 
 class MSECriterion(Criterion):
+
     '''
     >>> mSECriterion = MSECriterion()
     creating: createMSECriterion
     '''
+
     def __init__(self, bigdl_type="float"):
-            JavaValue.__init__(self, None, bigdl_type)
+        super(MSECriterion, self).__init__(None, bigdl_type)
 
 
 class AbsCriterion(Criterion):
@@ -266,6 +274,7 @@ class SoftmaxWithCriterion(Criterion):
 
 
 class TimeDistributedCriterion(JavaValue):
+
     '''
     >>> td = TimeDistributedCriterion(ClassNLLCriterion())
     creating: createClassNLLCriterion
@@ -273,4 +282,27 @@ class TimeDistributedCriterion(JavaValue):
     '''
 
     def __init__(self, criterion, size_average=False, bigdl_type="float"):
-        super(TimeDistributedCriterion, self).__init__(None, bigdl_type, criterion, size_average)
+        super(TimeDistributedCriterion, self).__init__(
+            None, bigdl_type, criterion, size_average)
+
+
+def _test():
+    import doctest
+    from pyspark import SparkContext
+    from nn import criterion
+    from util.common import init_engine
+    from util.common import create_spark_conf
+    globs = criterion.__dict__.copy()
+    sc = SparkContext(master="local[4]", appName="test criterion",
+                      conf=create_spark_conf())
+    globs['sc'] = sc
+    init_engine()
+
+    (failure_count, test_count) = doctest.testmod(globs=globs,
+                                                  optionflags=doctest.ELLIPSIS)
+    if failure_count:
+        exit(-1)
+
+
+if __name__ == "__main__":
+    _test()
