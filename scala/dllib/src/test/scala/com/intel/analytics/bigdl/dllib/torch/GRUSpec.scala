@@ -54,6 +54,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val bpttTruncate = 3
     val seqLength = 5
     val seed = 100
+    RNG.setSeed(seed)
 
     val input = Tensor[Double](Array(1, seqLength, inputSize))
     val labels = Tensor[Double](Array(1, seqLength))
@@ -65,7 +66,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     println(input)
-    RNG.setSeed(seed)
+    // RNG.setSeed(seed)
     val rec = Recurrent[Double](hiddenSize)
 
     val model = Sequential[Double]()
@@ -221,6 +222,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val bpttTruncate = 3
     val seqLength = 5
     val seed = 100
+    RNG.setSeed(seed)
 
     val input = Tensor[Double](Array(1, seqLength, inputSize))
     val labels = Tensor[Double](Array(1, seqLength))
@@ -232,7 +234,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     println(input)
-    RNG.setSeed(seed)
+    // RNG.setSeed(seed)
     val rec = Recurrent[Double](hiddenSize)
 
     val model = Sequential[Double]()
