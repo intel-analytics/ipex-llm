@@ -421,6 +421,21 @@ class View(Model):
                                    sizes,
                                    num_input_dims)
 
+class View(Model):
+
+    '''
+    >>> view = View([1024,2])
+    creating: createView
+    '''
+
+    def __init__(self,
+                 sizes,
+                 num_input_dims=0,
+                 bigdl_type="float"):
+        super(View, self).__init__(None, bigdl_type,
+                                   sizes,
+                                   num_input_dims)
+
 
 class Abs(Model):
 

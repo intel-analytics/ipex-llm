@@ -16,11 +16,10 @@
 
 
 import sys
-from util.common import callBigDlFunc
-from util.common import JavaValue
-from util.common import callJavaFunc
-from pyspark import SparkContext
 
+from util.common import JavaValue
+from util.common import callBigDlFunc
+from util.common import JTensor
 import numpy as np
 
 if sys.version >= '3':
@@ -273,8 +272,7 @@ class SoftmaxWithCriterion(Criterion):
                                                    normalize_mode)
 
 
-class TimeDistributedCriterion(JavaValue):
-
+class TimeDistributedCriterion(Criterion):
     '''
     >>> td = TimeDistributedCriterion(ClassNLLCriterion())
     creating: createClassNLLCriterion
@@ -285,6 +283,25 @@ class TimeDistributedCriterion(JavaValue):
         super(TimeDistributedCriterion, self).__init__(
             None, bigdl_type, criterion, size_average)
 
+
+class CrossEntropyCriterion(Criterion):
+    """
+    >>> np.random.seed(123)
+    >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
+    >>> cec = CrossEntropyCriterion(weights)
+    creating: createCrossEntropyCriterion
+    >>> cec = CrossEntropyCriterion()
+    creating: createCrossEntropyCriterion
+    """
+
+    def __init__(self,
+                 weights=np.zeros([2]),
+                 size_average=True,
+                 bigdl_type="float"):
+        super(CrossEntropyCriterion, self).__init__(None, bigdl_type,
+                                                    JTensor.from_ndarray(
+                                                        weights),
+                                                    size_average)
 
 def _test():
     import doctest
@@ -303,6 +320,6 @@ def _test():
     if failure_count:
         exit(-1)
 
-
+        
 if __name__ == "__main__":
     _test()

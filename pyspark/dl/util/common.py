@@ -57,6 +57,72 @@ class TestResult():
             self.result, self.total_num, self.method)
 
 
+class JTensor(object):
+    """
+    >>> import numpy as np
+    >>> from util.common import JTensor
+    >>> np.random.seed(123)
+    >>>
+    """
+    def __init__(self, storage, shape, bigdl_type="float"):
+        self.storage = storage
+        self.shape = shape
+        self.bigdl_type = bigdl_type
+
+    @classmethod
+    def from_ndarray(cls, a_ndarray):
+        """
+        Convert a ndarray to Tensor which would be used in Java side.
+        >>> import numpy as np
+        >>> from util.common import JTensor
+        >>> from util.common import callBigDlFunc
+        >>> np.random.seed(123)
+        >>> data = np.random.uniform(0, 1, (2, 3)).astype("float32")
+        >>> result = JTensor.from_ndarray(data)
+        >>> data_back = result.to_ndarray()
+        >>> (data == data_back).all()
+        True
+        >>> tensor1 = callBigDlFunc("float", "testTensor", JTensor.from_ndarray(data))  # noqa
+        >>> array_from_tensor = tensor1.to_ndarray()
+        >>> (array_from_tensor == data).all()
+        True
+        """
+        return cls(*JTensor.flatten_ndarray(a_ndarray))
+
+    def to_ndarray(self):
+        def get_dtype():
+            if "float" == self.bigdl_type:
+                return "float32"
+            else:
+                return "float64"
+        return np.array(self.storage, dtype=get_dtype()).reshape(self.shape)  # noqa
+
+    @classmethod
+    def flatten_ndarray(cls, a_ndarray):
+        """
+        Utility method to flatten a ndarray
+        :return (storage, shape)
+        >>> from util.common import JTensor
+        >>> np.random.seed(123)
+        >>> data = np.random.uniform(0, 1, (2, 3))
+        >>> (storage, shape) = JTensor.flatten_ndarray(data)
+        >>> shape
+        [2, 3]
+        >>> (storage, shape) = JTensor.flatten_ndarray(np.array(2))
+        >>> shape
+        [1]
+        """
+        storage = [float(i) for i in a_ndarray.ravel()]
+        shape = list(a_ndarray.shape) if a_ndarray.shape else [a_ndarray.size]
+        return storage, shape
+
+    def __reduce__(self):
+        return (JTensor, (self.storage, self.shape, self.bigdl_type))
+
+    def __str__(self):
+        return "storage: %s, shape: %s," % (self.storage, self.storage)
+
+
 class Sample(object):
     def __init__(self, features, label, features_shape, label_shape,
                  bigdl_type="float"):
@@ -78,29 +144,9 @@ class Sample(object):
             label_shape=list(label.shape) if label.shape else [label.size],
             bigdl_type=bigdl_type)
 
-    @classmethod
-    def flatten(cls, a_ndarray):
-        """
-        Utility method to flatten a ndarray
-        :return (storage, shape)
-        >>> import numpy as np
-        >>> from util.common import Sample
-        >>> np.random.seed(123)
-        >>> data = np.random.uniform(0, 1, (2, 3))
-        >>> (storage, shape) = Sample.flatten(data)
-        >>> shape
-        [2, 3]
-        >>> (storage, shape) = Sample.flatten(np.array(2))
-        >>> shape
-        [1]
-        """
-        storage = [float(i) for i in a_ndarray.ravel()]
-        shape = list(a_ndarray.shape) if a_ndarray.shape else [a_ndarray.size]
-        return storage, shape
-
     def __reduce__(self):
-        (features_storage, features_shape) = Sample.flatten(self.features)
-        (label_storage, label_shape) = Sample.flatten(self.label)
+        (features_storage, features_shape) = JTensor.flatten_ndarray(self.features)
+        (label_storage, label_shape) = JTensor.flatten_ndarray(self.label)
         return (Sample, (
             features_storage, label_storage, features_shape, label_shape,
             self.bigdl_type))
@@ -117,7 +163,8 @@ _picklable_classes = [
     'Rating',
     'LabeledPoint',
     'Sample',
-    'TestResult'
+    'TestResult',
+    'JTensor'
 ]
 
 

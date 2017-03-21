@@ -50,6 +50,15 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
+  "to jtensor" should "be test" in {
+    import com.intel.analytics.bigdl.tensor.Tensor
+    val pythonBigDL = PythonBigDL.ofFloat()
+    val tensor: Tensor[Float] = Tensor.ones[Float](10)
+    val jTensor = pythonBigDL.toJTensor(tensor)
+    val tensorBack = pythonBigDL.toTensor(jTensor)
+    require(tensorBack == tensor)
+  }
+
   "Double prototype" should "be test" in {
 
     Logger.getLogger("org").setLevel(Level.WARN)

@@ -21,7 +21,7 @@ package org.apache.spark.bigdl.api.python
 import java.io.OutputStream
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.python.api.{Sample, TestResult}
+import com.intel.analytics.bigdl.python.api.{JTensor, Sample, TestResult}
 import net.razorvine.pickle._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.api.python.SerDeUtil
@@ -198,6 +198,26 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
     }
   }
 
+  private[python] class JTensorPickler extends BigDLBasePickler[JTensor] {
+
+    def saveState(obj: Object, out: OutputStream, pickler: Pickler): Unit = {
+      val testResult = obj.asInstanceOf[JTensor]
+      saveObjects(out,
+        pickler,
+        testResult.storage,
+        testResult.shape, testResult.bigdlType)
+    }
+
+    def construct(args: Array[Object]): Object = {
+      if (args.length != 3) {
+        throw new PickleException("should be 3, not : " + args.length)
+      }
+      new JTensor(args(0).asInstanceOf[JArrayList[Any]],
+        args(1).asInstanceOf[JArrayList[Int]],
+        args(2).asInstanceOf[String])
+    }
+  }
+
   var initialized = false
 
   override def initialize(): Unit = {
@@ -206,6 +226,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
         SerDe.initialize()
         new SamplePickler().register()
         new TestResultPickler().register()
+        new JTensorPickler().register()
         initialized = true
       }
     }
