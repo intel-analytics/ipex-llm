@@ -39,10 +39,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     if (sc != null) { sc.stop() }
   }
 
-  "A LoggerFilter" should "output correct info on console and bigdl.log" in {
-    val logFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
-    val optimClz = "com.intel.analytics.bigdl.optim"
-
+  def writerAndAppender: (WriterAppender, StringWriter) = {
     // add an appender to optmClz because it's very hard to get the stdout of Log4j.
     // and `Console.setOut` or `Console.err` can't work for this case.
     // another way is to write a class extends `OutputStream`, see
@@ -53,6 +50,15 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     writerAppender.setEncoding("UTF-8")
     writerAppender.setThreshold(Level.ALL)
     writerAppender.activateOptions()
+
+    (writerAppender, writer)
+  }
+
+  "A LoggerFilter" should "output correct info on console and bigdl.log" in {
+    val logFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
+    val optimClz = "com.intel.analytics.bigdl.optim"
+
+    val (writerAppender, writer) = writerAndAppender
     Logger.getLogger(optimClz).addAppender(writerAppender)
 
     Files.deleteIfExists(Paths.get(logFile))
@@ -183,6 +189,74 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     Files.deleteIfExists(Paths.get(logFile))
     Files.deleteIfExists(Paths.get(defaultFile))
-    System.setProperty("bigdl.utils.LoggerFilter.logFile", "")
+    System.clearProperty("bigdl.utils.LoggerFilter.logFile")
+  }
+
+  "A LoggerFilter generate log" should "not modify log level user defined" in {
+    val optimClz = "com.intel.analytics.bigdl.optim"
+    val defaultFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
+
+    Files.deleteIfExists(Paths.get(defaultFile))
+
+    Logger.getLogger("org").setLevel(Level.INFO)
+    LoggerFilter.redirectSparkInfoLogs()
+    Logger.getLogger(optimClz).setLevel(Level.INFO)
+
+    val (writerAppender, writer) = writerAndAppender
+
+    val logger = Logger.getLogger(getClass)
+    logger.setLevel(Level.INFO)
+    logger.addAppender(writerAppender)
+
+    logger.info("HELLO")
+
+    sc = new SparkContext(
+      Engine.init(1, 1, true).get
+        .setAppName(s"LoggerFilter test")
+        .set("spark.task.maxFailures", "1")
+        .setMaster("local[1]")
+    )
+
+    val data = sc.parallelize(List("bigdl", "spark", "deep", "learning"))
+    val y = data.map(x => (x, x.length))
+
+    val allString = writer.toString
+    writerAppender.close
+
+    // check the first line and the last line of BigDL
+    {
+      val pattern = ".*INFO.*LoggerFilterSpec:.*HELLO"
+      val firstLine = allString.split('\n')(0)
+      println("-")
+      require(firstLine.matches(pattern), s"output can't matchs the specific output")
+    }
+
+    Files.deleteIfExists(Paths.get(defaultFile))
+  }
+
+  "A LoggerFilter generate log" should "be controled by the property" in {
+    val optimClz = "com.intel.analytics.bigdl.optim"
+    val defaultFile = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
+
+    System.setProperty("bigdl.utils.LoggerFilter.disable", "true")
+
+    Files.deleteIfExists(Paths.get(defaultFile))
+
+    Logger.getLogger("org").setLevel(Level.INFO)
+    LoggerFilter.redirectSparkInfoLogs()
+    Logger.getLogger(optimClz).setLevel(Level.INFO)
+
+    sc = new SparkContext(
+      Engine.init(1, 1, true).get
+        .setAppName(s"LoggerFilter test")
+        .set("spark.task.maxFailures", "1")
+        .setMaster("local[1]")
+    )
+
+    val data = sc.parallelize(List("bigdl", "spark", "deep", "learning"))
+    val y = data.map(x => (x, x.length))
+
+    Files.exists(Paths.get(defaultFile)) should be (false)
+    System.clearProperty("bigdl.utils.LoggerFilter.disable")
   }
 }

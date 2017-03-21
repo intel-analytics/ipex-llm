@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.utils
 
 import org.apache.log4j._
-import java.nio.file.Paths
+import java.nio.file.{Paths, Files}
 import scala.collection.JavaConverters._
 
 /**
@@ -74,27 +74,41 @@ object LoggerFilter {
   }
 
   /**
-   * redirect all logs of Spark to file, which can be set by `-Dbigdl.utils.LoggerFilter.logFile`
+   * 1. redirect all logs of Spark to file, which can be set by `-Dbigdl.utils.LoggerFilter.logFile`
    * the default file is under current workspace named `bigdl.log`.
+   * 2. `-Dbigdl.utils.LoggerFilter.disable=true` will disable redirection.
    * and add an console appender for `com.intel.analytics.bigdl.optim`, because we set the threshold
    * to ERROR first.
    */
   def redirectSparkInfoLogs(): Unit = {
-    val optimClass = "com.intel.analytics.bigdl.optim"
-    val default = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
-    val logFile = System.getProperty("bigdl.utils.LoggerFilter.logFile", default)
+    val disable = System.getProperty("bigdl.utils.LoggerFilter.disable", "false")
+    if (disable.equalsIgnoreCase("false")) {
+      val optimClass = "com.intel.analytics.bigdl.optim"
+      val default = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
+      val logFile = System.getProperty("bigdl.utils.LoggerFilter.logFile", default)
 
-    val defaultClasses = List("org", "akka", "breeze")
+      // If file doesn't exist, create a new one. If it's a directory, throw an error.
+      println(logFile)
+      val logFilePath = Paths.get(logFile)
+      if (!Files.exists(logFilePath)) {
+        Files.createFile(logFilePath)
+      } else if (Files.isDirectory(logFilePath)) {
+        Logger.getLogger(getClass)
+          .error(s"$logFile exists and is an directory. Can't redirect to it.")
+      }
 
-    for (clz <- defaultClasses) {
-      classLogToAppender(clz, consoleAppender(Level.ERROR))
-      Logger.getLogger(clz).setAdditivity(false)
+      val defaultClasses = List("org", "akka", "breeze")
+
+      for (clz <- defaultClasses) {
+        classLogToAppender(clz, consoleAppender(Level.ERROR))
+        Logger.getLogger(clz).setAdditivity(false)
+      }
+
+      for (clz <- optimClass :: defaultClasses) {
+        classLogToAppender(clz, fileAppender(logFile, Level.INFO))
+      }
+
+      classLogToAppender(optimClass, consoleAppender(Level.INFO))
     }
-
-    for (clz <- optimClass :: defaultClasses) {
-      classLogToAppender(clz, fileAppender(logFile, Level.INFO))
-    }
-
-    classLogToAppender(optimClass, consoleAppender(Level.INFO))
   }
 }
