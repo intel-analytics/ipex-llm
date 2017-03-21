@@ -178,7 +178,6 @@
 
     <modules>
         <module>spark</module>
-        <module>visualization</module>
     </modules>
 
     <distributionManagement>
