@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -43,6 +43,8 @@ class Recurrent[T : ClassTag]()
   private val inputDim = 1
   private val hidDim = 2
   private var (batchSize, times) = (0, 0)
+  private val dropouts: ArrayBuffer[Array[Dropout[T]]] =
+    new ArrayBuffer[Array[Dropout[T]]]
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
     require(module.isInstanceOf[Cell[T]],
@@ -103,7 +105,7 @@ class Recurrent[T : ClassTag]()
    */
   def share(cells: ArrayBuffer[Cell[T]]): Unit = {
     val params = cells.head.parameters()
-    cells.map(c => {
+    cells.foreach(c => {
       if (!c.parameters().eq(params)) {
         var i = 0
         while (i < c.parameters()._1.length) {
@@ -115,9 +117,36 @@ class Recurrent[T : ClassTag]()
           c.parameters()._2(i).set(params._2(i))
           i += 1
         }
+
+        dropouts.append(findDropouts(c))
       }
-      c
     })
+
+    val stepLength = dropouts.length
+    for (i <- dropouts.head.indices) {
+      val head = dropouts.head.apply(i)
+      val noise = head.noise.resize(1)
+      val flag = head.flag
+      for (j <- 0 until stepLength) {
+        val current = dropouts(j)(i)
+        current.noise = noise
+        current.flag = flag
+      }
+    }
+  }
+
+  def findDropouts(cell: Cell[T]): Array[Dropout[T]] = {
+    var result: Array[Dropout[T]] = null
+    cell.cell match {
+      case container: Container[_, _, T] =>
+        result = container
+          .findModules("Dropout")
+          .toArray
+          .map(_.asInstanceOf[Dropout[T]])
+      case _ =>
+    }
+
+    result
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

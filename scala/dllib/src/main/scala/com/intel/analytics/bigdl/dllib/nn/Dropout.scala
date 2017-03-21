@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -36,10 +36,14 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 4636332259181125718L)
 class Dropout[T: ClassTag](
-  val initP: Double = 0.5, val inplace: Boolean = false, var scale: Boolean = true)(
+  val initP: Double = 0.5,
+  val inplace: Boolean = false,
+  var scale: Boolean = true,
+  val isLazy: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   private var p = initP
-  val noise = Tensor[T]()
+  var noise = Tensor[T]()
+  var flag = Array(true) // used by lazy noise
 
   @transient
   protected var results: Array[Future[Unit]] = null
@@ -63,45 +67,48 @@ class Dropout[T: ClassTag](
       results = new Array[Future[Unit]](Engine.model.getPoolSize)
     }
     if (train) {
-      noise.resizeAs(input)
-      if (input.isContiguous()) {
-        val noiseData = noise.storage().array()
-        var taskSize = noise.nElement() / Engine.model.getPoolSize
-        var extraTask = noise.nElement() % Engine.model.getPoolSize
-        var allocated = 0
-        val offset = this.output.storageOffset() - 1
-        val data = this.output.storage.array()
-        var i = 0
-        while (allocated < noise.nElement()) {
-          val start = allocated
-          allocated += taskSize
-          if (extraTask > 0) {
-            allocated += 1
-            extraTask -= 1
-          }
-          val end = allocated
-          results(i) = Engine.model.invoke(() => {
-            var k = start
-            while (k < end) {
-              noiseData(k) = if (RNG.bernoulli(1 - p)) {
-                if (scale) {
-                  data(offset + k) = ev.divide(data(offset + k), ev.fromType[Double](1 - p))
-                  ev.fromType[Double](1.0 / (1 - p))
-                } else {
-                  ev.fromType[Int](1)
-                }
-              } else {
-                data(offset + k) = ev.fromType[Int](0)
-                ev.fromType[Int](0)
-              }
-
-              k += 1
+      if (!isLazy || flag(0)) {
+        noise.resizeAs(input)
+        if (input.isContiguous()) {
+          val noiseData = noise.storage().array()
+          var taskSize = noise.nElement() / Engine.coreNumber()
+          var extraTask = noise.nElement() % Engine.coreNumber()
+          var allocated = 0
+          val offset = this.output.storageOffset() - 1
+          val data = this.output.storage.array()
+          var i = 0
+          while (allocated < noise.nElement()) {
+            val start = allocated
+            allocated += taskSize
+            if (extraTask > 0) {
+              allocated += 1
+              extraTask -= 1
             }
-          })
-          i += 1
-        }
+            val end = allocated
+            results(i) = Engine.model.invoke(() => {
+              var k = start
+              while (k < end) {
+                noiseData(k) = if (RNG.bernoulli(1 - p)) {
+                  if (scale) {
+                    data(offset + k) = ev.divide(data(offset + k), ev.fromType[Double](1 - p))
+                    ev.fromType[Double](1.0 / (1 - p))
+                  } else {
+                    ev.fromType[Int](1)
+                  }
+                } else {
+                  data(offset + k) = ev.fromType[Int](0)
+                  ev.fromType[Int](0)
+                }
 
-        Engine.model.sync(results)
+                k += 1
+              }
+            })
+            i += 1
+          }
+
+          Engine.model.sync(results)
+          flag(0) = false
+        }
         this.output
       } else {
         noise.bernoulli(1 - p)
@@ -119,6 +126,9 @@ class Dropout[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    if (isLazy) {
+      flag(0) = true
+    }
     if (results == null) {
       results = new Array[Future[Unit]](Engine.model.getPoolSize)
     }
@@ -192,9 +202,10 @@ class Dropout[T: ClassTag](
 
 object Dropout {
   def apply[@specialized(Float, Double) T: ClassTag](
-      initP: Double = 0.5,
-      inplace: Boolean = false,
-      scale: Boolean = true)(implicit ev: TensorNumeric[T]) : Dropout[T] = {
-    new Dropout[T](initP, inplace, scale)
+    initP: Double = 0.5,
+    inplace: Boolean = false,
+    scale: Boolean = true,
+    isLazy: Boolean = false)(implicit ev: TensorNumeric[T]) : Dropout[T] = {
+    new Dropout[T](initP, inplace, scale, isLazy)
   }
 }
