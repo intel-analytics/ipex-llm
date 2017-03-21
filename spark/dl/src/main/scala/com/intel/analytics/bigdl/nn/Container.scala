@@ -118,6 +118,26 @@ abstract class Container[A <: Activity : ClassTag,
     pt
   }
 
+
+  def findModules(moduleType: String): ArrayBuffer[AbstractModule[_, _, T]] = {
+    def getName = (x: AbstractModule[_, _, T]) =>
+      x.getClass.getName.split("\\.").last
+
+    val nodes = ArrayBuffer[AbstractModule[_, _, T]]()
+    if (getName(this) == moduleType) {
+      nodes.append(this)
+    }
+    modules.foreach {
+      case container: Container[_, _, T] =>
+        nodes ++= container.findModules(moduleType)
+      case m =>
+        if (getName(m) == moduleType) nodes.append(m)
+        print(getName(m))
+    }
+
+    nodes
+  }
+
   override def copyStatus(src: Module[T]): this.type = {
     require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
     val srcContainer = src.asInstanceOf[Container[A, B, T]]
