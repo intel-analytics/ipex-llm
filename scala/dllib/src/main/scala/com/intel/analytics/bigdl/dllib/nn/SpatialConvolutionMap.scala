@@ -23,6 +23,12 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+/*
+ * This class is a generalization of SpatialConvolution.
+ * It uses a generic connection table between input and output features.
+ * The SpatialConvolution is equivalent to using a full connection table.
+ */
+
 @SerialVersionUID(5288662921102331388L)
 class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val connTable: Tensor[T],

@@ -22,6 +22,11 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Applies the Sigmoid function element-wise to the input Tensor,
+ * thus outputting a Tensor of the same dimension.
+ */
+
 @SerialVersionUID(6855417348268610044L)
 class Sigmoid[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
