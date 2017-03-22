@@ -23,6 +23,9 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 class TensorNumericMath
 
+/**
+ * Math operation for tensor
+ */
 object TensorNumericMath {
 
   trait TensorNumeric[@specialized(Float, Double) T] extends Serializable {
@@ -124,6 +127,9 @@ object TensorNumericMath {
     def getType(): TensorDataType
   }
 
+  /**
+   * Numerical operation for type T
+   */
   class TensorNumericOps[@specialized(Float, Double) T](lhs: T)(implicit ev: TensorNumeric[T]) {
     // scalastyle:off methodName
     def +(rhs: T): T = ev.plus(lhs, rhs)
