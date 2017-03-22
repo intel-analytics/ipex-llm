@@ -320,6 +320,6 @@ def _test():
     if failure_count:
         exit(-1)
 
-        
+
 if __name__ == "__main__":
     _test()

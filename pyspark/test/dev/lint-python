@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Originally from Spark
+SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
+PYTHON_ROOT_DIR="$SCRIPT_DIR/.."
+echo $PYTHON_ROOT_DIR
+PATHS_TO_CHECK="."
+PEP8_REPORT_PATH="$PYTHON_ROOT_DIR/dev/pep8-report.txt"
+PYLINT_REPORT_PATH="$PYTHON_ROOT_DIR/dev/pylint-report.txt"
+PYLINT_INSTALL_INFO="$PYTHON_ROOT_DIR/dev/pylint-info.txt"
+SPHINXBUILD=${SPHINXBUILD:=sphinx-build}
+SPHINX_REPORT_PATH="$PYTHON_ROOT_DIR/dev/sphinx-report.txt"
+
+cd "$PYTHON_ROOT_DIR"
+
+# compileall: https://docs.python.org/2/library/compileall.html
+python -B -m compileall -q -l $PATHS_TO_CHECK > "$PEP8_REPORT_PATH"
+compile_status="${PIPESTATUS[0]}"
+
+PEP8_VERSION="1.7.0"
+PEP8_SCRIPT_PATH="$PYTHON_ROOT_DIR/dev/pep8-$PEP8_VERSION.py"
+PEP8_SCRIPT_REMOTE_PATH="https://raw.githubusercontent.com/jcrocholl/pep8/$PEP8_VERSION/pep8.py"
+
+echo "PEP8_SCRIPT_PATH" "$PEP8_SCRIPT_PATH"
+
+# Easy install pylint in /dev/pylint. To easy_install into a directory, the PYTHONPATH should
+# be set to the directory.
+# dev/pylint should be appended to the PATH variable as well.
+# Jenkins by default installs the pylint3 version, so for now this just checks the code quality
+# of python3.
+export "PYTHONPATH=$PYTHON_ROOT_DIR/dev/pylint"
+export "PYLINT_HOME=$PYTHONPATH"
+export "PATH=$PYTHONPATH:$PATH"
+
+# There is no need to write this output to a file
+#+ first, but we do so so that the check status can
+#+ be output before the report, like with the
+#+ scalastyle and RAT checks.
+python "$PEP8_SCRIPT_PATH" --ignore=E402,E731,E241,W503,E226 --config=dev/tox.ini $PATHS_TO_CHECK >> "$PEP8_REPORT_PATH"
+pep8_status="${PIPESTATUS[0]}"
+
+if [ "$compile_status" -eq 0 -a "$pep8_status" -eq 0 ]; then
+    lint_status=0
+else
+    lint_status=1
+fi
+
+if [ "$lint_status" -ne 0 ]; then
+    echo "PEP8 checks failed."
+    cat "$PEP8_REPORT_PATH"
+    rm "$PEP8_REPORT_PATH"
+    exit "$lint_status"
+else
+    echo "PEP8 checks passed."
+    rm "$PEP8_REPORT_PATH"
+fi
