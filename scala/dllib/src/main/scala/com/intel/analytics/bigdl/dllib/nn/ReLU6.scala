@@ -20,6 +20,12 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Same as ReLU except that the rectifying function f(x) saturates at x = 6
+ *
+ * @param inplace either true = in-place or false = keeping separate state
+ */
+
 @SerialVersionUID(8169462538025916360L)
 class ReLU6[T: ClassTag](inplace: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends HardTanh[T](0, 6, inplace) {

@@ -26,6 +26,12 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 
+/**
+ * Applies a 2D convolution over an input image composed of several input planes.
+ * The input tensor in forward(input) is expected to be
+ * a 3D tensor (nInputPlane x height x width).
+ */
+
 @SerialVersionUID(- 8446523046224797382L)
 class SpatialConvolution[T: ClassTag](
   val nInputPlane: Int, // The number of expected input planes in the image given into forward()

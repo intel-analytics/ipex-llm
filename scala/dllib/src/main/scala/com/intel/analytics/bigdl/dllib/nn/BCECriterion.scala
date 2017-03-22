@@ -22,6 +22,14 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.reflect.ClassTag
 
+/**
+ * Creates a criterion that measures the Binary Cross Entropy
+ * between the target and the output
+ *
+ * @param weights weights for each class
+ * @param sizeAverage whether to average the loss or not
+ */
+
 @SerialVersionUID(- 1953992758534446600L)
 class BCECriterion[@specialized(Float, Double) T: ClassTag]
 (var weights: Tensor[T] = null, sizeAverage: Boolean = true)

@@ -25,6 +25,21 @@ import scala.concurrent.{Await, Future}
 import scala.reflect._
 import com.intel.analytics.bigdl.utils.Engine
 
+/**
+ * Applies 2D average-pooling operation in kWxkH regions by step size dWxdH steps.
+ * The number of output features is equal to the number of input planes.
+ *
+ * @param kW kernel width
+ * @param kH kernel height
+ * @param dW step width
+ * @param dH step height
+ * @param padW padding width
+ * @param padH padding height
+ * @param ceilMode whether the output size is to be ceiled or floored
+ * @param countIncludePad whether to include padding when dividing the
+ *                        number of elements in pooling region
+ * @param divide whether to do the averaging
+ */
 @SerialVersionUID(4533142511857387857L)
 class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
   val kW: Int,

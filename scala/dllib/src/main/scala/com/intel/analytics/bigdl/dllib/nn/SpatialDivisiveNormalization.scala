@@ -23,6 +23,27 @@ import com.intel.analytics.bigdl.utils.T
 
 import scala.reflect.ClassTag
 
+/**
+ * Applies a spatial division operation on a series of 2D inputs using kernel for
+ * computing the weighted average in a neighborhood. The neighborhood is defined for
+ * a local spatial region that is the size as kernel and across all features. For
+ * an input image, since there is only one feature, the region is only spatial. For
+ * an RGB image, the weighted average is taken over RGB channels and a spatial region.
+ *
+ * If the kernel is 1D, then it will be used for constructing and separable 2D kernel.
+ * The operations will be much more efficient in this case.
+ *
+ * The kernel is generally chosen as a gaussian when it is believed that the correlation
+ * of two pixel locations decrease with increasing distance. On the feature dimension,
+ * a uniform average is used since the weighting across features is not known.
+ *
+ * @param nInputPlane number of input plane, default is 1.
+ * @param kernel kernel tensor, default is a 9 x 9 tensor.
+ * @param threshold threshold
+ * @param thresval threshhold value to replace with
+ *                 if data is smaller than theshold
+ */
+
 @SerialVersionUID(6036047576084619110L)
 class SpatialDivisiveNormalization[T: ClassTag](
   val nInputPlane: Int = 1,
