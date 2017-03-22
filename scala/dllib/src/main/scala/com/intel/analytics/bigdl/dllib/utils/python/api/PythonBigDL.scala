@@ -197,14 +197,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     TimeDistributedCriterion[T](critrn, sizeAverage)
   }
 
-  def createGRU(inputSize: Int,
-                outputSize: Int): GRU[T] = {
-    GRU[T](inputSize, outputSize)
+  def createGRU(
+    inputSize: Int,
+    outputSize: Int,
+    p: Double = 0): GRU[T] = {
+    GRU[T](inputSize, outputSize, p)
   }
 
-  def createLSTM(inputSize: Int,
-                 hiddenSize: Int): LSTM[T] = {
-    LSTM[T](inputSize, hiddenSize)
+  def createLSTM(
+    inputSize: Int,
+    hiddenSize: Int,
+    p: Double = 0): LSTM[T] = {
+    LSTM[T](inputSize, hiddenSize, p)
   }
 
   def createLSTMPeephole(inputSize: Int,
