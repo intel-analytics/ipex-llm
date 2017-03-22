@@ -18,11 +18,13 @@ package com.intel.analytics.bigdl.models.rnn
 
 
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch, SampleToBatch}
-import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, LabeledSentenceToSample}
-import com.intel.analytics.bigdl.nn.{LogSoftMax, Module}
+import com.intel.analytics.bigdl.dataset.text.{Dictionary, LabeledSentence, LabeledSentenceToSample}
+import com.intel.analytics.bigdl.nn.{Concat, Identity, LogSoftMax, Module}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 import scala.util.Random
 
@@ -38,56 +40,58 @@ object Test {
   def main(args: Array[String]): Unit = {
     testParser.parse(args, new TestParams()).foreach { param =>
 
+      val vocab = Dictionary(param.folder)
+      val conf = Engine.createSparkConf()
+        .setAppName("Test rnn on text")
+        .set("spark.task.maxFailures", "1")
+      val sc = new SparkContext(conf)
       Engine.init
-      Engine.setCoreNumber(1)
-      val vocab = new Dictionary(param.folder)
 
       val model = Module.load[Float](param.modelSnapshot.get)
 
-      val logSoftMax = LogSoftMax[Float]()
+      val timeDim = 2
+      val featDim = 3
+      val concat = Tensor[Float]()
       val lines = readSentence(param.folder)
       val input = lines.map(x =>
-      x.map(t => vocab.getIndex(t).toFloat))
-
-      var labeledInput = input.map(x =>
+        x.map(t => vocab.getIndex(t).toFloat))
+      val labeledInput = input.map(x =>
         new LabeledSentence[Float](x, x))
 
-      val batchSize = 1
+      val vocabSize = vocab.getVocabSize() + 1
+      val batchSize = param.batchSize
 
-      var index = 0
-      while (index < param.numOfWords.getOrElse(0)) {
-        index += 1
+      val rdd = sc.parallelize(labeledInput).mapPartitions(iter =>
+        LabeledSentenceToSample[Float](vocabSize).apply(iter)
+      ).mapPartitions(iter =>
+        SampleToBatch[Float](batchSize).apply(iter)
+      )
 
-        val validationSet = DataSet.array(labeledInput)
-          .transform(LabeledSentenceToSample(vocab.length + 1))
-          .transform(SampleToBatch(batchSize = batchSize))
-          .asInstanceOf[LocalDataSet[MiniBatch[Float]]]
-
-        val dataIter = validationSet.data(train = false)
-        val predict = dataIter.map(batch => {
-          require(batch.data.size(1) == 1, "predict sentence one by one")
-          val output = model.forward(batch.data)
-            .asInstanceOf[Tensor[Float]]
-          val predictProbDist = logSoftMax.forward(output(output.size(1)))
-            .storage().map(x => math.exp(x).toFloat).toArray
-            .map {
-              var s = 0.0f; d => {
-                s += d; s
-              }
+      val flow = rdd.mapPartitions(iter => {
+        iter.map(batch => {
+          var curInput = batch.data
+          // Iteratively output predicted words
+          for (i <- 1 to param.numOfWords.getOrElse(0)) {
+            val input = curInput.max(featDim)._2
+            val output = model.forward(curInput).toTensor[Float]
+            val predict = output.max(featDim)._2.select(timeDim, output.size(timeDim))
+            concat.resize(curInput.size(1), curInput.size(timeDim) + 1, curInput.size(featDim))
+            concat.narrow(timeDim, 1, curInput.size(timeDim)).copy(curInput)
+            for (j <- 1 to curInput.size(1)) {
+              concat.setValue(j, concat.size(timeDim), predict.valueAt(j, 1).toInt + 1, 1.0f)
             }
-            .filter(_ < Random.nextFloat())
-          (predictProbDist.length - 1).toFloat
-        }).toArray
-        labeledInput = (labeledInput zip predict).map(x => {
-          val addedInput = x._1.asInstanceOf[LabeledSentence[Float]]
-            .data() ++ Array(x._2)
-          new LabeledSentence[Float](addedInput, addedInput)
+            curInput = concat
+          }
+          val predIdx = curInput.max(featDim)._2
+          val predArray = new Array[Float](predIdx.nElement())
+          Array.copy(predIdx.storage().array(), predIdx.storageOffset() - 1,
+            predArray, 0, predIdx.nElement())
+          predArray.grouped(predIdx.size(timeDim)).toArray[Array[Float]]
         })
-      }
+      }).collect().flatMap(x => x)
 
-      val results = labeledInput.map(x => x.data()
-        .map(t => vocab.getWord(t)))
-      results.foreach(x => logger.info(x.mkString(",")))
+      val results = flow.map(x => x.map(t => vocab.getWord(t)))
+      results.foreach(x => logger.info(x.mkString(" ")))
     }
   }
 }
