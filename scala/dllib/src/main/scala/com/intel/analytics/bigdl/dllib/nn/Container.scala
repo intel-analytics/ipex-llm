@@ -132,7 +132,6 @@ abstract class Container[A <: Activity : ClassTag,
         nodes ++= container.findModules(moduleType)
       case m =>
         if (getName(m) == moduleType) nodes.append(m)
-        print(getName(m))
     }
 
     nodes
