@@ -63,6 +63,14 @@ class LocalScaleImgWithName private[dataset](scaleTo: Int, normalize: Float)
   }
 }
 
+/**
+ * Read BGR images from local given paths. After read the image, it will resize the images to the
+ * given width and height. It will also divide the pixel value by the given normalize value.
+ * Besides, it will return the file name.
+ * @param resizeW the given width to resize
+ * @param resizeH the given hight to resize
+ * @param normalize the value to normalize
+ */
 class LocalResizeImgWithName private[dataset](resizeW: Int, resizeH: Int, normalize: Float)
   extends Transformer[LocalLabeledImagePath, (LabeledBGRImage, String)] {
 
