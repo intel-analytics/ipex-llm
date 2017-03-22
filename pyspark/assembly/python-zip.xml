@@ -12,14 +12,14 @@
                 <include>**/*.py</include>
             </includes>
             <outputDirectory>/..</outputDirectory>
-            <directory>pyspark</directory>
+            <directory>pyspark/bigdl</directory>
         </fileSet>
         <fileSet>
             <includes>
                 <include>**/spark-bigdl.conf</include>
             </includes>
             <outputDirectory>/</outputDirectory>
-            <directory>${project.basedir}/src/main/resources</directory>
+            <directory>spark/dl/src/main/resources</directory>
         </fileSet>
     </fileSets>
 </assembly>
