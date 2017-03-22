@@ -55,7 +55,8 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
 
 ## Run python test
 * Package Scala code by: ```$BigDL_HOME/make-dist.sh```
-* Set SPARK_HOME and then run: ```$BigDL_HOME/pyspark/dev/run-all.sh``` 
+
+* Set SPARK_HOME and then run: ```$BigDL_HOME/pyspark/test/dev/run-all.sh``` 
 
 ## Installing on Ubuntu
 1. Build BigDL

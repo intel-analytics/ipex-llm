@@ -12,7 +12,7 @@
                 <include>**/*.py</include>
             </includes>
             <outputDirectory>/..</outputDirectory>
-            <directory>pyspark/bigdl</directory>
+            <directory>pyspark/dl</directory>
         </fileSet>
         <fileSet>
             <includes>
