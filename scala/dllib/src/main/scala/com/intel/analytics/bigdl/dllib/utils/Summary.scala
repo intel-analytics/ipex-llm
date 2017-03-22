@@ -76,6 +76,13 @@ abstract class Summary(
    * @return an array of triple.
    */
   def readScalar(tag: String): Array[(Long, Float, Double)]
+
+  /**
+   * Close this logger.
+   */
+  def close(): Unit = {
+    writer.close()
+  }
 }
 
 /**
@@ -91,7 +98,6 @@ class TrainSummary(
   protected val folder = s"$logDir/$appName/train"
   protected override val writer = new FileWriter(folder)
   private val triggers: mutable.HashMap[String, Trigger] = mutable.HashMap(
-        "LearningRate" -> Trigger.severalIteration(1),
         "Loss" -> Trigger.severalIteration(1),
         "Throughput" -> Trigger.severalIteration(1))
 
@@ -110,9 +116,9 @@ class TrainSummary(
    * Parameters contains weight, bias, gradWeight, gradBias, and some running status(eg.
    * runningMean and runningVar in BatchNormalization).
    *
-   * Notice: By default, we record LearningRate, Loss and Throughput each iteration, while
-   * recording parameters is disabled. The reason is getting parameters from workers is a
-   * heavy operation when the model is very big.
+   * Notice: By default, we record Loss and Throughput each iteration, while recording parameters
+   * and LearningRate is disabled. The reason is getting parameters from workers is a heavy
+   * operation when the model is very big. LearningRate is not a right option for all OptimMethod.
    *
    * @param tag tag name
    * @param trigger trigger
