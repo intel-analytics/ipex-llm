@@ -22,6 +22,13 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * This module creates a new view of the input tensor using the sizes passed to the constructor.
+ * The method setNumInputDims() allows to specify the expected number of dimensions of the inputs
+ * of the modules. This makes it possible to use minibatch inputs
+ * when using a size -1 for one of the dimensions.
+ * @param sizes sizes use for creates a new view
+ */
 @SerialVersionUID(1238814703013238333L)
 class View[T: ClassTag](sizes: Array[Int])(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
