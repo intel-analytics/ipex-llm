@@ -25,6 +25,16 @@ import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.utils.Engine
 
+/**
+ * The negative log likelihood criterion.
+ * It is useful to train a classification problem with n classes.
+ * If provided, the optional argument weights should be a 1D Tensor
+ * assigning weight to each of the classes.
+ *
+ * @param weights weights of each class
+ * @param sizeAverage whether to average or not
+ */
+
 @SerialVersionUID(- 8696382776046599502L)
 class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
 (weights: Tensor[T] = null, sizeAverage: Boolean = true)

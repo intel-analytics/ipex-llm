@@ -25,6 +25,15 @@ import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
+/**
+ * Threshold input Tensor.
+ * If values in the Tensor smaller than th, then replace it with v
+ *
+ * @param th the threshold to compare with
+ * @param v the value to replace with
+ * @param ip inplace mode
+ */
+
 @SerialVersionUID(3953292249027271493L)
 class Threshold[@specialized(Float, Double) T: ClassTag](
   th: Double = 1e-6, v: Double = 0.0, ip: Boolean = false)(

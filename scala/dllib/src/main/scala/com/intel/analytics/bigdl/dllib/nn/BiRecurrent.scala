@@ -24,6 +24,12 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+/**
+ * Create a Bidirectional recurrent layer
+ *
+ * @param merge merge layer
+ */
+
 class BiRecurrent[T : ClassTag] (
   merge: AbstractModule[Table, Tensor[T], T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
