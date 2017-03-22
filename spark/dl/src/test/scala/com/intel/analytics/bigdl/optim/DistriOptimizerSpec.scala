@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, TrainSummary}
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -272,7 +272,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     Engine.setNodeNumber(nodeNumber)
   }
 
-  "DistriOptimizer checkpoint" should "work correclty" in {
+  "DistriOptimizer checkpoint" should "work correctly" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
     Files.delete(Paths.get(filePath))
     Files.createDirectory(Paths.get(filePath))
@@ -293,5 +293,69 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     state[Int]("epoch") should be (2)
     state[Int]("neval") should be (33)
+  }
+
+  "TrainSummary with MSE and LBFGS" should "work correctly" in {
+    RandomGenerator.RNG.setSeed(10)
+    val logdir = com.google.common.io.Files.createTempDir()
+    val trainSummary = TrainSummary(logdir.getPath, "lbfgs")
+    val optimizer = new DistriOptimizer(
+      mse,
+      dataSet,
+      new MSECriterion[Double]())
+      .setOptimMethod(new LBFGS)
+      .setTrainSummary(trainSummary)
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 1e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 1e-2)
+    trainSummary.readScalar("Loss").last._2 should be (0.0f +- 1e-3f)
+    trainSummary.close()
+  }
+
+  "TrainSummary with MSE and SGD" should "work correctly" in {
+    RandomGenerator.RNG.setSeed(10)
+    val logdir = com.google.common.io.Files.createTempDir()
+    val trainSummary = TrainSummary(logdir.getPath, "sgd")
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
+      .setTrainSummary(trainSummary)
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
+    trainSummary.readScalar("Loss").last._2 should be (0.0f +- 1e-3f)
+    trainSummary.close()
+  }
+
+  "TrainSummary with MSE and Adagrad" should "work correctly" in {
+    RandomGenerator.RNG.setSeed(10)
+    val logdir = com.google.common.io.Files.createTempDir()
+    val trainSummary = TrainSummary(logdir.getPath, "adagrad")
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 1.0))
+      .setOptimMethod(new Adagrad[Double]())
+      .setEndWhen(Trigger.maxEpoch(5))
+      .setTrainSummary(trainSummary)
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
+    trainSummary.readScalar("Loss").last._2 should be (0.0f +- 1e-3f)
+    trainSummary.close()
   }
 }
