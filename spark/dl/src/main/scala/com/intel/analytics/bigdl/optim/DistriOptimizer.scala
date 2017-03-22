@@ -16,14 +16,17 @@
 
 package com.intel.analytics.bigdl.optim
 
-
 import com.intel.analytics.bigdl.{Module, _}
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
-import java.io.{File, FileFilter, FilenameFilter}
+import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
+import java.io.{File, FileFilter, FilenameFilter}
+import java.text.SimpleDateFormat
+import java.util.Calendar
+
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
@@ -609,7 +612,13 @@ class DistriOptimizer[T: ClassTag] (
     models = DistriOptimizer.initThreadModels(
       model, dataset, criterion, state, nodeNumber, coresPerNode, checkSingleton, parameters)
 
-    
+    val path = if (checkpointPath.isDefined) {
+      val file = checkpointPath.get + "/" +
+        new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime())
+      new File(file).mkdir()
+      Some(file)
+    } else None
+
     var retryNum = 0
     val maxRetry = System.getProperty("bigdl.failure.retryTimes", "5").toInt
     var lastFailureTimestamp = System.nanoTime()
@@ -637,6 +646,10 @@ class DistriOptimizer[T: ClassTag] (
         case t: Throwable =>
           DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           if (checkpointPath.isDefined) {
+            /* To avoid retry number is used up by first few exceptions, we count time here.
+             * If exception exceeds maxRetry times in maxRetry*2 minutes, we will give up retry.
+             * or we will reset retryNum
+             */
             if (System.nanoTime() - lastFailureTimestamp < maxRetry * 2 * 60 * 1e9) {
               retryNum += 1
             } else {
@@ -644,8 +657,8 @@ class DistriOptimizer[T: ClassTag] (
             }
             DistriOptimizer.logger.info(s"Retrying $retryNum times")
             lastFailureTimestamp = System.nanoTime()
-            val stateFile = getLatestFile("state")
-            val modelFile = getLatestFile("model")
+            val stateFile = getLatestFile(path.get, "state")
+            val modelFile = getLatestFile(path.get, "model")
             clearState()
             models.unpersist()
 
@@ -679,8 +692,8 @@ class DistriOptimizer[T: ClassTag] (
     model
   }
 
-  private def getLatestFile(fileName: String): String = {
-    val fl = new java.io.File(checkpointPath.get)
+  private def getLatestFile(path: String, fileName: String): String = {
+    val fl = new java.io.File(path)
     val files = fl.listFiles(new FilenameFilter {
       override def accept(dir: File, name: String): Boolean = {
         name.startsWith(fileName)
