@@ -67,9 +67,9 @@ class Dropout[T: ClassTag](
       results = new Array[Future[Unit]](Engine.model.getPoolSize)
     }
     if (train) {
-      if (!isLazy || flag(0)) {
-        noise.resizeAs(input)
-        if (input.isContiguous()) {
+      noise.resizeAs(input)
+      if (input.isContiguous()) {
+        if (!isLazy || flag(0)) {
           val noiseData = noise.storage().array()
           var taskSize = noise.nElement() / Engine.coreNumber()
           var extraTask = noise.nElement() % Engine.coreNumber()
@@ -104,14 +104,20 @@ class Dropout[T: ClassTag](
               }
             })
             i += 1
+
           }
 
           Engine.model.sync(results)
           flag(0) = false
+        } else {
+          this.output.cmul(noise)
         }
         this.output
       } else {
-        noise.bernoulli(1 - p)
+        if (!isLazy || flag(0)) {
+          noise.bernoulli(1 - p)
+          flag(0) = false
+        }
 
         if (scale) {
           noise.div(ev.fromType[Double](1 - p))
