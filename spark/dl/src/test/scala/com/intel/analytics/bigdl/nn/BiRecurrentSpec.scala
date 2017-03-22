@@ -76,9 +76,6 @@ class BiRecurrentSpec  extends FlatSpec with BeforeAndAfter with Matchers {
           .add(RnnCell[Double](inputSize, hiddenSize, Sigmoid[Double]())))
     }
 
-    val brec = BiRecurrent[Double](CAddTable[Double]())
-      .add(RnnCell[Double](inputSize, hiddenSize, Sigmoid[Double]()))
-
     val model = Sequential[Double]()
     for (i <- 1 to depth) {
       if (i == 1) {

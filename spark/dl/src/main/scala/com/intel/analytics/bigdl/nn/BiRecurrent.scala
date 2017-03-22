@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect.ClassTag
 
 class BiRecurrent[T : ClassTag] (
-  merge: AbstractModule[Table, Tensor[T], T])
+  merge: AbstractModule[Table, Tensor[T], T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   val timeDim = 2
@@ -41,7 +41,8 @@ class BiRecurrent[T : ClassTag] (
           .add(Reverse[T](timeDim))
           .add(revLayer)
           .add(Reverse[T](timeDim))))
-      .add(merge)
+    if (merge == null) birnn.add(CAddTable[T]())
+    else birnn.add(merge)
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]):
     BiRecurrent.this.type = {
@@ -131,7 +132,7 @@ class BiRecurrent[T : ClassTag] (
 
 object BiRecurrent {
   def apply[@specialized(Float, Double) T: ClassTag](
-    merge: AbstractModule[Table, Tensor[T], T])
+    merge: AbstractModule[Table, Tensor[T], T] = null)
     (implicit ev: TensorNumeric[T]) : BiRecurrent[T] = {
     new BiRecurrent[T](merge)
   }
