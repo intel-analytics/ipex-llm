@@ -29,7 +29,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
-
+import java.lang.Integer
 import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect.ClassTag
@@ -961,7 +961,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       num)
   }
 
-  def createSoftmaxWithCriterion(ignoreLabel: Option[Int] = None,
+  def createSoftmaxWithCriterion(ignoreLabel: Integer = null,
                                  normalizeMode: String = "VALID")
   : SoftmaxWithCriterion[T] = {
     val normM = normalizeMode match {
@@ -973,7 +973,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
         throw new IllegalArgumentException(s"Only support 'FULL', " +
           s"'VALID', 'BATCH_SIZE' and 'NONE': $n")
     }
-    SoftmaxWithCriterion[T](ignoreLabel, normM)
+    val labelToIgnore = ignoreLabel match {
+      case i: Integer => Some(i.toInt)
+      case null => None
+    }
+    SoftmaxWithCriterion[T](labelToIgnore, normM)
   }
 
   def setModelSeed(seed: Long): Unit = {
