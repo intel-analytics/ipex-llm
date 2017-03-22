@@ -53,6 +53,14 @@ class Criterion(JavaValue):
 class ClassNLLCriterion(Criterion):
 
     '''
+    The negative log likelihood criterion.
+    It is useful to train a classification problem with n classes.
+    If provided, the optional argument weights should be a 1D Tensor
+    assigning weight to each of the classes.
+
+    :param weights weights of each class
+    :param size_average whether to average or not
+
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
     >>> classNLLCriterion = ClassNLLCriterion(weights,True)
@@ -84,6 +92,8 @@ class MSECriterion(Criterion):
 class AbsCriterion(Criterion):
 
     '''
+    measures the mean absolute value of the element-wise difference between input
+
     >>> absCriterion = AbsCriterion(True)
     creating: createAbsCriterion
     '''
@@ -133,6 +143,10 @@ class CosineEmbeddingCriterion(Criterion):
 class DistKLDivCriterion(Criterion):
 
     '''
+    The Kullback-Leibler divergence criterion
+
+    :param sizeAverage
+
     >>> distKLDivCriterion = DistKLDivCriterion(True)
     creating: createDistKLDivCriterion
     '''
@@ -163,6 +177,11 @@ class HingeEmbeddingCriterion(Criterion):
 class L1HingeEmbeddingCriterion(Criterion):
 
     '''
+    Creates a criterion that measures the loss given an input x = {x1, x2},
+    a table of two Tensors, and a label y (1 or -1):
+
+    :param margin
+
     >>> l1HingeEmbeddingCriterion = L1HingeEmbeddingCriterion(1e-5)
     creating: createL1HingeEmbeddingCriterion
     '''
@@ -209,6 +228,8 @@ class MarginRankingCriterion(Criterion):
 class MultiCriterion(Criterion):
 
     '''
+    a weighted sum of other criterions each applied to the same input and target
+
     >>> multiCriterion = MultiCriterion()
     creating: createMultiCriterion
     '''
@@ -235,6 +256,13 @@ class MultiLabelMarginCriterion(Criterion):
 class ParallelCriterion(Criterion):
 
     '''
+    ParallelCriterion is a weighted sum of other criterions each applied to a different input
+    and target. Set repeatTarget = true to share the target for criterions.
+
+    Use add(criterion[, weight]) method to add criterion. Where weight is a scalar(default 1).
+
+    :param repeat_target Whether to share the target for all criterions.
+
     >>> parallelCriterion = ParallelCriterion(True)
     creating: createParallelCriterion
     '''
@@ -316,6 +344,10 @@ class TimeDistributedCriterion(Criterion):
 
 class CrossEntropyCriterion(Criterion):
     """
+    This criterion combines LogSoftMax and ClassNLLCriterion in one single class.
+
+    :param weights A tensor assigning weight to each of the classes
+
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
     >>> cec = CrossEntropyCriterion(weights)
@@ -336,6 +368,12 @@ class CrossEntropyCriterion(Criterion):
 
 class BCECriterion(Criterion):
     '''
+    Creates a criterion that measures the Binary Cross Entropy
+    between the target and the output
+
+    :param weights weights for each class
+    :param sizeAverage whether to average the loss or not
+
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
     >>> bCECriterion = BCECriterion(weights)
@@ -355,6 +393,13 @@ class BCECriterion(Criterion):
 
 class MultiLabelSoftMarginCriterion(Criterion):
     '''
+    A MultiLabel multiclass criterion based on sigmoid:
+    the loss is:
+     l(x,y) = - sum_i y[i] * log(p[i]) + (1 - y[i]) * log (1 - p[i])
+    where p[i] = exp(x[i]) / (1 + exp(x[i]))
+    and with weights:
+     l(x,y) = - sum_i weights[i] (y[i] * log(p[i]) + (1 - y[i]) * log (1 - p[i]))
+
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
     >>> multiLabelSoftMarginCriterion = MultiLabelSoftMarginCriterion(weights)
@@ -374,6 +419,14 @@ class MultiLabelSoftMarginCriterion(Criterion):
 
 class MultiMarginCriterion(Criterion):
     '''
+    Creates a criterion that optimizes a multi-class classification hinge loss (margin-based loss)
+    between input x and output y (which is a target class index).
+
+    :param p
+    :param weights
+    :param margin
+    :param size_average
+
     >>> np.random.seed(123)
     >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
     >>> multiMarginCriterion = MultiMarginCriterion(1,weights)
