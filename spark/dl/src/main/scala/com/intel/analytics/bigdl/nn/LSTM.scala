@@ -37,7 +37,7 @@ import scala.reflect.ClassTag
 class LSTM[T : ClassTag] (
   val inputSize: Int,
   val hiddenSize: Int,
-  val p: Double = 0.2)
+  val p: Double = 0)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](hiddensShape = Array(hiddenSize, hiddenSize)) {
   var gates: Sequential[T] = _
@@ -176,8 +176,9 @@ class LSTM[T : ClassTag] (
 object LSTM {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
-    hiddenSize: Int)
+    hiddenSize: Int,
+    p: Double = 0)
     (implicit ev: TensorNumeric[T]): LSTM[T] = {
-    new LSTM[T](inputSize, hiddenSize)
+    new LSTM[T](inputSize, hiddenSize, p)
   }
 }
