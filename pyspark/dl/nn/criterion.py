@@ -266,6 +266,14 @@ class SmoothL1CriterionWithWeights(Criterion):
 class SoftmaxWithCriterion(Criterion):
 
     '''
+    Computes the multinomial logistic loss for a one-of-many classification task,
+    passing real-valued predictions through a softmax to get a probability distribution over classes.
+    It should be preferred over separate SoftmaxLayer + MultinomialLogisticLossLayer
+    as its gradient computation is more numerically stable.
+    :param ignoreLabel   (optional) Specify a label value that
+    should be ignored when computing the loss.
+    :param normalizeMode How to normalize the output loss.
+
     >>> softmaxWithCriterion = SoftmaxWithCriterion()
     creating: createSoftmaxWithCriterion
     >>> softmaxWithCriterion = SoftmaxWithCriterion(1, "FULL")

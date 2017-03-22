@@ -456,6 +456,8 @@ class Abs(Model):
 class Add(Model):
 
     '''
+    adds a bias term to input data ;
+    :param inputSize size of input data
     >>> add = Add(1)
     creating: createAdd
     '''
@@ -597,6 +599,7 @@ class CMaxTable(Model):
 class CMinTable(Model):
 
     '''
+    Takes a table of Tensors and outputs the min of all of them.
     >>> cMinTable = CMinTable()
     creating: createCMinTable
     '''
@@ -861,6 +864,19 @@ class InferReshape(Model):
 class JoinTable(Model):
 
     '''
+    It is a table module which takes a table of Tensors as input and
+    outputs a Tensor by joining them together along the dimension `dimension`.
+
+    The input to this layer is expected to be a tensor, or a batch of tensors;
+    when using mini-batch, a batch of sample tensors will be passed to the layer and
+    the user need to specify the number of dimensions of each sample tensor in the
+    batch using `nInputDims`.
+
+    :param dimension to be join in this dimension
+    :param nInputDims specify the number of dimensions that this module will receive
+    If it is more than the dimension of input tensors, the first dimension
+    would be considered as batch size
+
     >>> joinTable = JoinTable(1, 1)
     creating: createJoinTable
     '''
@@ -1116,6 +1132,8 @@ class MulConstant(Model):
 class Narrow(Model):
 
     '''
+    Narrow is application of narrow operation in a module.
+    The module further supports a negative length in order to handle inputs with an unknown size.
     >>> narrow = Narrow(1, 1, 1)
     creating: createNarrow
     '''
@@ -1134,6 +1152,14 @@ class Narrow(Model):
 class NarrowTable(Model):
 
     '''
+    Creates a module that takes a table as input and outputs the subtable starting at index
+    offset having length elements (defaults to 1 element). The elements can be either
+    a table or a Tensor. If `length` is negative, it means selecting the elements from the
+    offset to element which located at the abs(`length`) to the last element of the input.
+
+    :param offset the start index of table
+    :param length the length want to select
+
     >>> narrowTable = NarrowTable(1, 1)
     creating: createNarrowTable
     '''
@@ -1202,6 +1228,15 @@ class Padding(Model):
 class PairwiseDistance(Model):
 
     '''
+    It is a module that takes a table of two vectors as input and outputs
+    the distance between them using the p-norm.
+    The input given in `forward(input)` is a [[Table]] that contains two tensors which
+    must be either a vector (1D tensor) or matrix (2D tensor). If the input is a vector,
+    it must have the size of `inputSize`. If it is a matrix, then each row is assumed to be
+    an input sample of the given batch (the number of rows means the batch size and
+    the number of columns should be equal to the `inputSize`).
+    :param norm the norm of distance
+
     >>> pairwiseDistance = PairwiseDistance(2)
     creating: createPairwiseDistance
     '''
@@ -1450,8 +1485,40 @@ class SpatialDilatedConvolution(Model):
 
 
 class SpatialFullConvolution(Model):
-
     '''
+    Apply a 2D full convolution over an input image.
+    The input tensor is expected to be a 3D or 4D(with batch) tensor. Note that instead
+    of setting adjW and adjH, SpatialFullConvolution[Table, T] also accepts a table input
+    with two tensors: T(convInput, sizeTensor) where convInput is the standard input tensor,
+    and the size of sizeTensor is used to set the size of the output (will ignore the adjW and
+    adjH values used to construct the module). This module can be used without a bias by setting
+    parameter noBias = true while constructing the module.
+
+    If input is a 3D tensor nInputPlane x height x width,
+    owidth  = (width  - 1) * dW - 2*padW + kW + adjW
+    oheight = (height - 1) * dH - 2*padH + kH + adjH
+
+    Other frameworks call this operation "In-network Upsampling", "Fractionally-strided convolution",
+    "Backwards Convolution," "Deconvolution", or "Upconvolution."
+
+    Reference Paper: Long J, Shelhamer E, Darrell T. Fully convolutional networks for semantic
+    segmentation[C]//Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition.
+    2015: 3431-3440.
+
+    :param nInputPlane The number of expected input planes in the image given into forward()
+    :param nOutputPlane The number of output planes the convolution layer will produce.
+    :param kW The kernel width of the convolution.
+    :param kH The kernel height of the convolution.
+    :param dW The step of the convolution in the width dimension. Default is 1.
+    :param dH The step of the convolution in the height dimension. Default is 1.
+    :param padW The additional zeros added per width to the input planes. Default is 0.
+    :param padH The additional zeros added per height to the input planes. Default is 0.
+    :param adjW Extra width to add to the output image. Default is 0.
+    :param adjH Extra height to add to the output image. Default is 0.
+    :param nGroup Kernel group number.
+    :param noBias If bias is needed.
+    :param initMethod Init method, Default, Xavier, Bilinear.
+
     >>> spatialFullConvolution = SpatialFullConvolution(1, 1, 1, 1)
     creating: createSpatialFullConvolution
     '''
@@ -1572,6 +1639,7 @@ class Sqrt(Model):
 class Square(Model):
 
     '''
+    Apply an element-wise square operation.
     >>> square = Square()
     creating: createSquare
     '''

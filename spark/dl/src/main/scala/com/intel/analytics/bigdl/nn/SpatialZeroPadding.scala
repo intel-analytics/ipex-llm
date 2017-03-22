@@ -22,6 +22,14 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Each feature map of a given input is padded with specified number of zeros.
+ * If padding values are negative, then input is cropped.
+ * @param padLeft pad left position
+ * @param padRight pad right position
+ * @param padTop pad top position
+ * @param padBottom pad bottom position
+ */
 @SerialVersionUID(- 5144173515559923276L)
 class SpatialZeroPadding[@specialized(Float, Double) T: ClassTag](
   padLeft: Int, padRight: Int, padTop: Int, padBottom: Int)(
