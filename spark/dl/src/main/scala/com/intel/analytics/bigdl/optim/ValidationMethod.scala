@@ -87,6 +87,9 @@ class AccuracyResult(private var correct: Int, private var count: Int)
   }
 }
 
+/**
+ * Caculate the percentage that output's max probability index equals target
+ */
 class Top1Accuracy[T] extends ValidationMethod[T] {
   override def apply(output: Activity, target: Activity, criterion: Criterion[T] = null):
   ValidationResult = {
@@ -122,6 +125,9 @@ class Top1Accuracy[T] extends ValidationMethod[T] {
   override def format(): String = "Top1Accuracy"
 }
 
+/**
+ * Caculate the percentage that target in output's top5 probability indexes
+ */
 class Top5Accuracy[T] extends ValidationMethod[T] {
   override def apply(output: Activity, target: Activity, criterion: Criterion[T] = null):
   AccuracyResult = {
