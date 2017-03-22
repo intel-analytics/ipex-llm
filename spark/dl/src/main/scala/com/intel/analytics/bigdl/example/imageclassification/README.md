@@ -8,7 +8,7 @@ To start with this example, you need prepare your model and dataset.
 1. Prepare model.
 
     The Torch ResNet model used in this example can be found in [Resnet Torch Model](https://github.com/facebook/fb.resnet.torch/tree/master/pretrained).
-    The BigDL Inception model used in this example can be trained with [BigDL Inception](https://github.com/intel-analytics/BigDL/tree/master/dl/src/main/scala/com/intel/analytics/bigdl/models/inception).
+    The BigDL Inception model used in this example can be trained with [BigDL Inception](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception).
     You can choose one of them, and then put the trained model in $modelPath, and set corresponding $modelType（torch or bigdl）.
    
 2. Prepare predict dataset
