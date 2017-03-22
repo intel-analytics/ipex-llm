@@ -18,12 +18,14 @@ package com.intel.analytics.bigdl.torch
 
 import java.io.PrintWriter
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.sys.process._
@@ -55,6 +57,7 @@ class BiRecurrentSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val bpttTruncate = 3
     val seqLength = 5
     val seed = 100
+    val depth = 2
 
     val input = Tensor[Double](Array(1, seqLength, inputSize))
     val labels = Tensor[Double](Array(1, seqLength))
@@ -67,12 +70,24 @@ class BiRecurrentSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     RNG.setSeed(seed)
 
-    val brec = BiRecurrent[Double]()
+    def basicBlock(inputSize: Int, hiddenSize: Int): Module[Double] = {
+      Sequential()
+        .add(BiRecurrent[Double](CAddTable[Double]())
+          .add(RnnCell[Double](inputSize, hiddenSize, Sigmoid[Double]())))
+    }
+
+    val brec = BiRecurrent[Double](CAddTable[Double]())
       .add(RnnCell[Double](inputSize, hiddenSize, Sigmoid[Double]()))
 
     val model = Sequential[Double]()
-      .add(brec)
-      .add(TimeDistributed[Double](Linear[Double](linearHidden, outputSize)))
+    for (i <- 1 to depth) {
+      if (i == 1) {
+        model.add(basicBlock(inputSize, hiddenSize))
+      } else {
+        model.add(basicBlock(hiddenSize, hiddenSize))
+      }
+    }
+      model.add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
     val criterion = TimeDistributedCriterion[Double](
       CrossEntropyCriterion[Double]())
     val logSoftMax = TimeDistributed[Double](LogSoftMax[Double]())
@@ -85,33 +100,44 @@ class BiRecurrentSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |require 'rnn'
          |torch.manualSeed($seed)
          |
-      |local rm =  nn.Sequential() -- input is {x[t], h[t-1]}
+         |local function basicblock(inputSize, hiddenSize)
+         |      local rm =  nn.Sequential() -- input is {x[t], h[t-1]}
          |         :add(nn.ParallelTable()
-         |            :add(nn.Linear($inputSize, $hiddenSize)) -- input layer
-         |            :add(nn.Linear($hiddenSize, $hiddenSize))) -- recurrent layer
+         |            :add(nn.Linear(inputSize, hiddenSize)) -- input layer
+         |            :add(nn.Linear(hiddenSize, hiddenSize))) -- recurrent layer
          |         :add(nn.CAddTable()) -- merge
          |         :add(nn.Sigmoid()) -- transfer
-         |     --    :add(nn.Tanh()) -- transfer
+         |      local rm1 =  nn.Sequential() -- input is {x[t], h[t-1]}
+         |         :add(nn.ParallelTable()
+         |            :add(nn.Linear(inputSize, hiddenSize)) -- input layer
+         |            :add(nn.Linear(hiddenSize, hiddenSize))) -- recurrent layer
+         |         :add(nn.CAddTable()) -- merge
+         |         :add(nn.Sigmoid()) -- transfer
          |
-      |  local rm1 =  nn.Sequential() -- input is {x[t], h[t-1]}
-         |         :add(nn.ParallelTable()
-         |            :add(nn.Linear($inputSize, $hiddenSize)) -- input layer
-         |            :add(nn.Linear($hiddenSize, $hiddenSize))) -- recurrent layer
-         |         :add(nn.CAddTable()) -- merge
-         |         :add(nn.Sigmoid()) -- transfer
-         |      rnn = nn.Recurrence(rm, $hiddenSize, 1)
-         |      rnn1 = nn.Recurrence(rm1, $hiddenSize, 1)
-         | --     rnn.userPrevOutput = torch.Tensor(1, $hiddenSize):zero()
+         |      local rnn = nn.Recurrence(rm, hiddenSize, 1)
+         |      local rnn1 = nn.Recurrence(rm1, hiddenSize, 1)
+         |  return nn.Sequential()
+         |          :add(nn.BiSequencer(rnn, rnn1, nn.CAddTable()))
+         |end
+         |
          |
       |model = nn.Sequential()
          |:add(nn.SplitTable(1))
-         |  :add(nn.BiSequencer(rnn, rnn1))
-         |  :add(nn.JoinTable(1, 5))
+         |
+         |  for i=1,$depth do
+         |    if i == 1 then
+         |    model:add(basicblock($inputSize, $hiddenSize))
+         |    else
+         |    model:add(basicblock($hiddenSize, $hiddenSize))
+         |    end
+         |  end
+         |
+         |  model:add(nn.JoinTable(1, 5))
          |--:add(nn.Sequencer(
          |-- nn.Sequential()
          |--   --:add(nn.LSTM($inputSize, $hiddenSize, 1, true))
          |--   :add(nn.FastLSTM($inputSize, $hiddenSize))
-         |   :add(nn.Linear($linearHidden, $outputSize))
+         |   :add(nn.Linear($hiddenSize, $outputSize))
          |--   ))
          |
          |
@@ -157,7 +183,6 @@ class BiRecurrentSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val (luaTime, torchResult) = TH.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights,
         "labels" -> labels(1)),
-        // "labels" -> SplitTable[Double](1).forward(labels.t())),
       Array("err", "parameters", "gradParameters", "output", "gradInput", "err2", "labels"))
 
     val luaOutput2 = torchResult("err").asInstanceOf[Double]
