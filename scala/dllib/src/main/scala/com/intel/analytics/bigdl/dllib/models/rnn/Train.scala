@@ -16,64 +16,86 @@
 
 package com.intel.analytics.bigdl.models.rnn
 
-import java.io.File
-
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
-import com.intel.analytics.bigdl.dataset.text.{LabeledSentenceToSample}
-import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
+import com.intel.analytics.bigdl.dataset.text.LabeledSentenceToSample
+import com.intel.analytics.bigdl.dataset.text._
+import com.intel.analytics.bigdl.dataset.text.utils.SentenceToken
+import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module, TimeDistributedCriterion}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
-import org.apache.log4j.Logger
+import org.apache.log4j.{Level, Logger}
+import org.apache.spark.SparkContext
 
 object Train {
-
+  Logger.getLogger("org").setLevel(Level.ERROR)
+  Logger.getLogger("akka").setLevel(Level.ERROR)
+  Logger.getLogger("breeze").setLevel(Level.ERROR)
+  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
   import Utils._
   val logger = Logger.getLogger(getClass)
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
+
+      val conf = Engine.createSparkConf()
+        .setAppName("Train rnn on text")
+        .set("spark.task.maxFailures", "1")
+      val sc = new SparkContext(conf)
       Engine.init
-      Engine.setCoreNumber(1)
-      require(new File(param.folder + "/input.txt").exists(),
-        s"Input file ${param.folder + File.separator + "input.txt"} not exists!")
-      logger.info("preprocessing input text file ..")
-      val dictionaryLength = param.vocabSize + 1
-      val wt = new WordTokenizer(
-        param.folder + "/input.txt",
-        param.folder,
-        dictionaryLength = dictionaryLength
+
+      val tokens = SequencePreprocess(
+        param.dataFolder + "/train.txt",
+        sc = sc,
+        param.sentFile,
+        param.tokenFile)
+
+      val dictionary = Dictionary(tokens.toDistributed().data(false), param.vocabSize)
+      dictionary.save(param.saveFolder)
+
+      val maxTrainLength = tokens.toDistributed().data(false).map(x => x.length).max
+
+      val valtokens = SequencePreprocess(
+        param.dataFolder + "/val.txt",
+        sc = sc,
+        param.sentFile,
+        param.tokenFile
       )
-      wt.process()
+      val maxValLength = valtokens.toDistributed().data(false).map(x => x.length).max
 
-      logger.info("loading the training and testing data ..")
-      val dataArray = loadInData(param.folder, dictionaryLength)
-      val trainData = dataArray._1
-      val valData = dataArray._2
-      val trainMaxLength = dataArray._3
-      val valMaxLength = dataArray._4
+      logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
 
-      val batchSize = 1
-      val featurePadding = Tensor[Float](dictionaryLength).fill(0.0f)
-      featurePadding(4000) = 1.0f
-      val labelPadding = 3999
-      val trainSet = DataSet.array(trainData)
-           .transform(LabeledSentenceToSample(dictionaryLength))
-           .transform(SampleToBatch(
-             batchSize, Some(featurePadding), Some(labelPadding), Some(trainMaxLength)))
-      val validationSet = DataSet.array(valData)
-           .transform(LabeledSentenceToSample(dictionaryLength))
-           .transform(SampleToBatch(
-             batchSize, Some(featurePadding), Some(labelPadding), Some(valMaxLength)))
+      val totalVocabLength = dictionary.getVocabSize() + 1
+      val startIdx = dictionary.getIndex(SentenceToken.start)
+      val endIdx = dictionary.getIndex(SentenceToken.end)
+      val padFeature = Tensor[Float]().resize(totalVocabLength)
+      padFeature.setValue(endIdx + 1, 1.0f)
+      val padLabel = startIdx
+
+      val trainSet = tokens
+        .transform(TextToLabeledSentence[Float](dictionary))
+        .transform(LabeledSentenceToSample[Float](totalVocabLength))
+        .transform(SampleToBatch[Float](batchSize = param.batchSize,
+          featurePadding = Some(padFeature),
+          labelPadding = Some(padLabel),
+          fixedLength = Some(maxTrainLength)))
+
+      val validationSet = valtokens
+        .transform(TextToLabeledSentence[Float](dictionary))
+        .transform(LabeledSentenceToSample[Float](totalVocabLength))
+        .transform(SampleToBatch[Float](batchSize = param.batchSize,
+          featurePadding = Some(padFeature),
+          labelPadding = Some(padLabel),
+          fixedLength = Some(maxValLength)))
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
         val curModel = SimpleRNN(
-          inputSize = dictionaryLength,
+          inputSize = totalVocabLength,
           hiddenSize = param.hiddenSize,
-          outputSize = dictionaryLength)
+          outputSize = totalVocabLength)
         curModel.reset()
         curModel
       }
@@ -90,10 +112,16 @@ object Train {
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
-        criterion = new CrossEntropyCriterion[Float]()
+        criterion = TimeDistributedCriterion[Float](
+          CrossEntropyCriterion[Float](), sizeAverage = true)
       )
+
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
+      }
+
+      if(param.overWriteCheckpoint) {
+        optimizer.overWriteCheckpoint()
       }
 
       optimizer
