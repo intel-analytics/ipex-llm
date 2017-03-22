@@ -260,15 +260,18 @@ class SmoothL1CriterionWithWeights(Criterion):
 class SoftmaxWithCriterion(Criterion):
 
     '''
-    >>> softmaxWithCriterion = SoftmaxWithCriterion("VALID")
+    >>> softmaxWithCriterion = SoftmaxWithCriterion()
+    creating: createSoftmaxWithCriterion
+    >>> softmaxWithCriterion = SoftmaxWithCriterion(1, "FULL")
     creating: createSoftmaxWithCriterion
     '''
 
     def __init__(self,
+                 ignore_label=None,
                  normalize_mode="VALID",
                  bigdl_type="float"):
         super(SoftmaxWithCriterion, self).__init__(None, bigdl_type,
-                                                   None,
+                                                   ignore_label,
                                                    normalize_mode)
 
 
