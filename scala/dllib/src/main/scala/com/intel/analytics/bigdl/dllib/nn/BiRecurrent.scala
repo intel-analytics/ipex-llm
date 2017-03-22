@@ -20,11 +20,12 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
-class BiRecurrent[T : ClassTag] ()
+class BiRecurrent[T : ClassTag] (
+  merge: AbstractModule[Table, Tensor[T], T])
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   val timeDim = 2
@@ -40,7 +41,7 @@ class BiRecurrent[T : ClassTag] ()
           .add(Reverse[T](timeDim))
           .add(revLayer)
           .add(Reverse[T](timeDim))))
-      .add(JoinTable[T](timeDim, 2))
+      .add(merge)
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]):
     BiRecurrent.this.type = {
@@ -115,19 +116,23 @@ class BiRecurrent[T : ClassTag] ()
     case that: BiRecurrent[T] =>
       super.equals(that) &&
         (that canEqual this) &&
+        timeDim == that.timeDim &&
+        layer == that.layer &&
+        revLayer == that.revLayer &&
         birnn == that.birnn
     case _ => false
   }
 
   override def hashCode(): Int = {
-    val state = Seq(super.hashCode(), birnn)
+    val state = Seq(super.hashCode(), timeDim, layer, revLayer, birnn)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
 
 object BiRecurrent {
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[@specialized(Float, Double) T: ClassTag](
+    merge: AbstractModule[Table, Tensor[T], T])
     (implicit ev: TensorNumeric[T]) : BiRecurrent[T] = {
-    new BiRecurrent[T]()
+    new BiRecurrent[T](merge)
   }
 }
