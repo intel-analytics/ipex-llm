@@ -19,6 +19,16 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Clamps all elements into the range [min_value, max_value].
+ * Output is identical to input in the range,
+ * otherwise elements less than min_value (or greater than max_value)
+ * are saturated to min_value (or max_value).
+ *
+ * @param min
+ * @param max
+ */
+
 @SerialVersionUID(- 3787689437971361185L)
 class Clamp[T: ClassTag](min: Int, max: Int)(
   implicit ev: TensorNumeric[T]) extends HardTanh[T](min, max) {

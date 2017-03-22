@@ -24,6 +24,12 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+/**
+ *  Applies a component-wise multiplication to the incoming data
+ *
+ *  @param size size of the data
+ */
+
 @SerialVersionUID(8888147326550637025L)
 class CMul[@specialized(Float, Double) T: ClassTag](
   val size: Array[Int])(
