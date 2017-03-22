@@ -23,13 +23,15 @@ import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
 class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
+  System.setProperty("bigdl.disableCheckSysEnv", "true")
+  Engine.init(1, 1, true)
   before {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
@@ -70,7 +72,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     val model = Sequential[Double]()
       .add(rec
-        .add(GRU[Double](inputSize, hiddenSize)))
+        .add(GRU[Double](inputSize, hiddenSize, 0.2)))
       //      .add(GRU[Double](inputSize, hiddenSize)))
       //      .add(RnnCell[Double](inputSize, hiddenSize, Sigmoid[Double]())))
       //            .add(FastGRUCell[Double](inputSize, hiddenSize)))
@@ -110,7 +112,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |:add(nn.SplitTable(1))
          |:add(nn.Sequencer(
          | nn.Sequential()
-         |   :add(nn.GRU($inputSize, $hiddenSize, 1))
+         |   :add(nn.GRU($inputSize, $hiddenSize, 1, 0.2))
          |   :add(nn.Linear($hiddenSize, $outputSize))
          |   ))
          |
