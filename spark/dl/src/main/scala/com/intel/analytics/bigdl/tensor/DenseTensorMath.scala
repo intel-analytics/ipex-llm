@@ -601,7 +601,7 @@ object DenseTensorMath {
     require(mat.nDimension() == 2 && vec.nDimension() == 1)
     require(mat.size(2) == vec.size(1))
     require(t.nDimension() == 1)
-    require(t.size(1) == mat.size(1))
+    require(t.size(1) == mat.size(1), s"${t.size(1)} == ${mat.size(1)}")
 
     if (!r.eq(t)) {
       r.resizeAs(t).copy(t)
