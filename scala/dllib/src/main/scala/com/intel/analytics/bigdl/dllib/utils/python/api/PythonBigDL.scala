@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.python.api
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{Sample => JSample, _}
+import com.intel.analytics.bigdl.dataset.{Sample => JSample, Identity => DIdentity, _}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorCriterion, TensorModule}
 import com.intel.analytics.bigdl.numeric._
@@ -862,6 +862,65 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       numInputDims)
   }
 
+  def createBCECriterion(weights: JTensor = null,
+                         sizeAverage: Boolean = true)
+  : BCECriterion[T] = {
+    BCECriterion[T](if (weights == null) null else toTensor(weights),
+      sizeAverage)
+  }
+
+  def createBiRecurrent()
+  : BiRecurrent[T] = {
+    BiRecurrent[T]()
+  }
+
+  def createConcatTable()
+  : ConcatTable[T] = {
+    ConcatTable[Activity, T]()
+  }
+
+  def createCriterionTable(criterion: TensorCriterion[T])
+  : CriterionTable[T] = {
+    CriterionTable[T](criterion)
+  }
+
+
+  def createIdentity()
+  : Identity[T] = {
+    Identity[T]()
+  }
+
+  def createMultiLabelSoftMarginCriterion(weights: JTensor = null,
+                                          sizeAverage: Boolean = true)
+  : MultiLabelSoftMarginCriterion[T] = {
+    MultiLabelSoftMarginCriterion[T](if (weights == null) null else toTensor(weights),
+      sizeAverage)
+  }
+
+  def createMultiMarginCriterion(p: Int = 1,
+                                 weights: JTensor = null,
+                                 margin: Double = 1.0,
+                                 sizeAverage: Boolean = true)
+  : MultiMarginCriterion[T] = {
+    MultiMarginCriterion[T](p,
+      if (weights == null) null else toTensor(weights),
+      margin,
+      sizeAverage)
+  }
+
+  def createReverse(dimension: Int = 1)
+  : Reverse[T] = {
+    Reverse[T](dimension)
+  }
+
+  def createTranspose(permutations: JList[JList[Int]])
+  : Transpose[T] = {
+    Transpose[T](permutations.asScala.toArray.map { item =>
+      val itemArray = item.asScala.toArray
+      (itemArray(0), itemArray(1))
+    })
+  }
+
   //   Optimizer
   def createPoly(power: Double, maxIteration: Int): SGD.Poly = {
     SGD.Poly(power, maxIteration)
@@ -871,9 +930,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SGD.Step(stepSize, gamma)
   }
 
-  def createClassNLLCriterion(sizeAverage: Boolean = true)
+  def createClassNLLCriterion(weights: JTensor = null,
+                              sizeAverage: Boolean = true)
   : ClassNLLCriterion[T] = {
-    ClassNLLCriterion[T](null,
+    ClassNLLCriterion[T](if (weights == null) null else toTensor(weights),
       sizeAverage)
   }
 
