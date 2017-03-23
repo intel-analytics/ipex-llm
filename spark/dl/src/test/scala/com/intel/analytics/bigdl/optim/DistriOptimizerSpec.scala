@@ -88,7 +88,7 @@ object DistriOptimizerSpecModel {
     mlp
   }
 
-  def mserf(failOnce: Boolean): Module[Double] = {
+  def mserf(): Module[Double] = {
     val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
@@ -291,16 +291,17 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     import com.intel.analytics.bigdl._
     plusOne = 1.0
     RandomGenerator.RNG.setSeed(10)
-    new DistriOptimizer[Double](
+    val optimizer = new DistriOptimizer[Double](
       cre,
       dataSet,
       new ClassNLLCriterion[Double]()
-    ).setState(T("learningRate" -> 20.0))
-      .setCheckpoint(filePath, Trigger.everyEpoch)
-      .setEndWhen(Trigger.maxEpoch(1))
-      .optimize()
+    )
+    optimizer.setState(T("learningRate" -> 20.0))
+    .setCheckpoint(filePath, Trigger.everyEpoch)
+    .setEndWhen(Trigger.maxEpoch(1))
+    .optimize()
 
-    val state = T.load(filePath + "/state.33")
+    val state = T.load(optimizer.getCheckpointPath().get + "/state.33")
 
     state[Int]("epoch") should be (2)
     state[Int]("neval") should be (33)
@@ -374,7 +375,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
     Files.delete(Paths.get(filePath))
     Files.createDirectory(Paths.get(filePath))
-    val mm = mserf(true)
+    val mm = mserf()
     mm.getParameters()._1.fill(0.125)
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setState(T("learningRate" -> 20.0))
