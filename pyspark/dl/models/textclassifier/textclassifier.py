@@ -156,7 +156,7 @@ if __name__ == "__main__":
     parser.add_option("-e", "--embedding_dim", dest="embedding_dim", default="50")  # noqa
     parser.add_option("-m", "--max_epoch", dest="max_epoch", default="15")
     parser.add_option("--model", dest="model_type", default="cnn")
-    parser.add_option("-p", "--p", dest="p", default="cnn")
+    parser.add_option("-p", "--p", dest="p", default="0.0")
 
     (options, args) = parser.parse_args(sys.argv)
     if options.action == "train":
