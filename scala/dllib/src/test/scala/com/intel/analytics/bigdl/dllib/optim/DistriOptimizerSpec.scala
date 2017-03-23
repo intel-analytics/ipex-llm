@@ -88,13 +88,13 @@ object DistriOptimizerSpecModel {
     mlp
   }
 
-  def mserf(): Module[Double] = {
+  def mserf(failCountNumberLists: Array[Int], sleep: Boolean = false): Module[Double] = {
     val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new Sigmoid)
     mlp.add(new Linear(2, 1))
     mlp.add(new Sigmoid)
-    mlp.add(new ExceptionTest(800))
+    mlp.add(new ExceptionTest(failCountNumberLists, sleep))
     mlp
   }
 }
@@ -371,11 +371,34 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     trainSummary.close()
   }
 
-  "Train with MSE and SGD" should "be trained with good result with fail recovery" in {
+  "Train with MSE and SGD" should "be trained with good result with failures in small interval" in {
     val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
     Files.delete(Paths.get(filePath))
     Files.createDirectory(Paths.get(filePath))
-    val mm = mserf()
+    val failCountNumberList = Array(800, 850, 900)
+    val mm = mserf(failCountNumberList)
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
+      .setCheckpoint(filePath, Trigger.everyEpoch)
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
+  }
+
+  "Train with MSE and SGD" should "be trained with good result with failures in big interval" in {
+    val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
+    val failCountNumberList = Array(800, 850, 900, 1500)
+    System.setProperty("bigdl.failure.retryTimeInterval", "3")
+    System.setProperty("bigdl.failure.retryTimes", "2")
+    val mm = mserf(failCountNumberList, true)
     mm.getParameters()._1.fill(0.125)
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setState(T("learningRate" -> 20.0))

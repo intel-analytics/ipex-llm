@@ -156,13 +156,16 @@ object TestUtils {
   }
 }
 
-class ExceptionTest[T: ClassTag](failCountNumber: Int)
-                                (implicit ev: TensorNumeric[T])
+class ExceptionTest[T: ClassTag](failCountNumberLists: Array[Int], sleep: Boolean)
+  (implicit ev: TensorNumeric[T])
   extends TensorModule[T]  {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     this.output = input
-    if (ExceptionTest.count.incrementAndGet() == failCountNumber) {
+    if (failCountNumberLists.contains(ExceptionTest.count.incrementAndGet())) {
+      if (sleep) {
+        Thread.sleep(10000)
+      }
       throw new Exception("Fail task")
     }
     this.output
