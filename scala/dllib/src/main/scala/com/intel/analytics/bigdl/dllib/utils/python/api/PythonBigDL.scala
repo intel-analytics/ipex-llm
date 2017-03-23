@@ -103,14 +103,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def toTensor(jTensor: JTensor): Tensor[T] = {
-    Tensor(jTensor.storage.asScala.toArray.asInstanceOf[Array[T]],
+    Tensor(jTensor.storage.asScala.map(_.asInstanceOf[T]).toArray,
       jTensor.shape.asScala.toArray)
   }
 
   def toJTensor(tensor: Tensor[T]): JTensor = {
-    // TODO: we should clone here, in case the underlying storage large than the tensor size.
-    val cloneTensor = tensor
-    JTensor(cloneTensor.storage().toList.asJava.asInstanceOf[JList[Any]],
+    val cloneTensor = tensor.clone()
+    JTensor(cloneTensor.storage().toList.map(_.asInstanceOf[Any]).asJava,
       cloneTensor.size().toList.asJava, typeName)
   }
 
@@ -925,6 +924,17 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       val itemArray = item.asScala.toArray
       (itemArray(0), itemArray(1))
     })
+  }
+
+  def createSpatialContrastiveNormalization(nInputPlane: Int = 1,
+                                            kernel: JTensor = null,
+                                            threshold: Double = 1e-4,
+                                            thresval: Double = 1e-4)
+  : SpatialContrastiveNormalization[T] = {
+    SpatialContrastiveNormalization[T](nInputPlane,
+      if (kernel == null) null else toTensor(kernel),
+      threshold,
+      thresval)
   }
 
   //   Optimizer

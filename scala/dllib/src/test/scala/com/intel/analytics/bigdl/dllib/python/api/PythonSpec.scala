@@ -30,6 +30,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.bigdl.api.python.BigDLSerDe
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 
 class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -50,13 +52,25 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
+
   "to jtensor" should "be test" in {
-    import com.intel.analytics.bigdl.tensor.Tensor
     val pythonBigDL = PythonBigDL.ofFloat()
     val tensor: Tensor[Float] = Tensor.ones[Float](10)
     val jTensor = pythonBigDL.toJTensor(tensor)
     val tensorBack = pythonBigDL.toTensor(jTensor)
     require(tensorBack == tensor)
+
+    RNG.setSeed(100)
+    val linear = Linear[Float](4, 5)
+    val input: Tensor[Float] = Tensor[Float](4).apply1(_ => RNG.uniform(0, 1).toFloat)
+    val jinput = pythonBigDL.toJTensor(input)
+    val output = linear.forward(pythonBigDL.toTensor(jinput))
+    val expectedResult = Tensor(Array(0.41366524f,
+      0.009532653f,
+      -0.677581f,
+      0.07945433f,
+      -0.5742568f), Array(5))
+    require(output == expectedResult)
   }
 
   "Double prototype" should "be test" in {
