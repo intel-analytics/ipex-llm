@@ -70,7 +70,7 @@ class JTensor(object):
         self.bigdl_type = bigdl_type
 
     @classmethod
-    def from_ndarray(cls, a_ndarray):
+    def from_ndarray(cls, a_ndarray, bigdl_type="float"):
         """
         Convert a ndarray to Tensor which would be used in Java side.
         >>> import numpy as np
@@ -87,7 +87,8 @@ class JTensor(object):
         >>> (array_from_tensor == data).all()
         True
         """
-        return cls(*JTensor.flatten_ndarray(a_ndarray)) if a_ndarray is not None else None  # noqa
+        return cls(*JTensor.flatten_ndarray(a_ndarray),
+                   bigdl_type= bigdl_type) if a_ndarray is not None else None  # noqa
 
     def to_ndarray(self):
         def get_dtype():

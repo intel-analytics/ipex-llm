@@ -18,9 +18,9 @@
 import sys
 from util.common import callBigDlFunc
 from util.common import JavaValue
+from util.common import JTensor
 from util.common import callJavaFunc
 from pyspark import SparkContext
-from util.common import JTensor
 import numpy as np
 
 if sys.version >= '3':
@@ -1662,7 +1662,6 @@ class Unsqueeze(Model):
 
 
 class Reshape(Model):
-
     '''
     >>> reshape = Reshape([1, 28, 28])
     creating: createReshape
