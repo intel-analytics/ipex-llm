@@ -38,25 +38,16 @@ import scala.reflect.ClassTag
  * @param initP the probability p
  * @param inplace whether to make `input` and `output` share the same storage
  * @param scale whether to scale the output by a factor of `1 / (1 - p)`
- * @param isLazy `lazy` option is used to to only resample after backward is called.
- *              This mechanism is used by recurrent networks to use the same dropout mask
- *              for each sequence, not for each word. For more details, please refer to
- *
- *              [RnnDrop: A Novel Dropout for RNNs in ASR]
- *              (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
- *              [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
- *              (https://arxiv.org/pdf/1512.05287.pdf)
  */
 @SerialVersionUID(- 4636332259181125718L)
 class Dropout[T: ClassTag](
   val initP: Double = 0.5,
   val inplace: Boolean = false,
-  var scale: Boolean = true,
-  val isLazy: Boolean = false)(
+  var scale: Boolean = true)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   private var p = initP
   var noise = Tensor[T]()
-  var flag = Array(true) // used by lazy noise
+  var isResampling = true
 
   @transient
   protected var results: Array[Future[Unit]] = null
@@ -82,7 +73,7 @@ class Dropout[T: ClassTag](
     if (train) {
       noise.resizeAs(input)
       if (input.isContiguous()) {
-        if (!isLazy || flag(0)) {
+        if (isResampling) {
           val noiseData = noise.storage().array()
           var taskSize = noise.nElement() / Engine.model.getPoolSize
           var extraTask = noise.nElement() % Engine.model.getPoolSize
@@ -121,15 +112,13 @@ class Dropout[T: ClassTag](
           }
 
           Engine.model.sync(results)
-          flag(0) = false
         } else {
           this.output.cmul(noise)
         }
         this.output
       } else {
-        if (!isLazy || flag(0)) {
+        if (isResampling) {
           noise.bernoulli(1 - p)
-          flag(0) = false
 
           if (scale) {
             noise.div(ev.fromType[Double](1 - p))
@@ -146,9 +135,6 @@ class Dropout[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    if (isLazy) {
-      flag(0) = true
-    }
     if (results == null) {
       results = new Array[Future[Unit]](Engine.model.getPoolSize)
     }
@@ -224,8 +210,7 @@ object Dropout {
   def apply[@specialized(Float, Double) T: ClassTag](
     initP: Double = 0.5,
     inplace: Boolean = false,
-    scale: Boolean = true,
-    isLazy: Boolean = false)(implicit ev: TensorNumeric[T]) : Dropout[T] = {
-    new Dropout[T](initP, inplace, scale, isLazy)
+    scale: Boolean = true)(implicit ev: TensorNumeric[T]) : Dropout[T] = {
+    new Dropout[T](initP, inplace, scale)
   }
 }
