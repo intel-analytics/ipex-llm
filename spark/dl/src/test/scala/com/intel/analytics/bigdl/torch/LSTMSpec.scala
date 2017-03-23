@@ -111,7 +111,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |:add(nn.Sequencer(
          | nn.Sequential()
          |   --:add(nn.LSTM($inputSize, $hiddenSize, 1, true))
-         |   :add(nn.GRU($inputSize, $hiddenSize))
+         |   :add(nn.FastLSTM($inputSize, $hiddenSize))
          |   :add(nn.Linear($hiddenSize, $outputSize))
          |   ))
          |

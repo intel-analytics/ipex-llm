@@ -124,13 +124,12 @@ class Recurrent[T : ClassTag]()
 
     val stepLength = dropouts.length
     for (i <- dropouts.head.indices) {
-      val head = dropouts.head.apply(i)
-      val noise = head.noise.resize(1)
-      val flag = head.flag
-      for (j <- 0 until stepLength) {
+      val head = dropouts.head(i)
+      val noise = head.noise
+      for (j <- 1 until stepLength) {
         val current = dropouts(j)(i)
         current.noise = noise
-        current.flag = flag
+        current.isResampling = false
       }
     }
   }
