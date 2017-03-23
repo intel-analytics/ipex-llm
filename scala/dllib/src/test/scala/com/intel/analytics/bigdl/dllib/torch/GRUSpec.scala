@@ -305,7 +305,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
     val model = Sequential[Double]()
       .add(rec
-        .add(GRU[Double](inputSize, hiddenSize, 0.2)))
+        .add(GRU[Double](inputSize, hiddenSize)))
       .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val criterion = TimeDistributedCriterion[Double](
@@ -333,7 +333,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |:add(nn.SplitTable(1))
          |:add(nn.Sequencer(
          | nn.Sequential()
-         |   :add(nn.GRU($inputSize, $hiddenSize, 0.2))
+         |   :add(nn.GRU($inputSize, $hiddenSize, 1))
          |   :add(nn.Linear($hiddenSize, $outputSize))
          |   ))
          |
