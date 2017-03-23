@@ -45,14 +45,20 @@ class Criterion(JavaValue):
 class ClassNLLCriterion(Criterion):
 
     '''
+    >>> np.random.seed(123)
+    >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
+    >>> classNLLCriterion = ClassNLLCriterion(weights,True)
+    creating: createClassNLLCriterion
     >>> classNLLCriterion = ClassNLLCriterion()
     creating: createClassNLLCriterion
     '''
 
     def __init__(self,
+                 weights=None,
                  size_average=True,
                  bigdl_type="float"):
         super(ClassNLLCriterion, self).__init__(None, bigdl_type,
+                                                JTensor.from_ndarray(weights),
                                                 size_average)
 
 
@@ -305,6 +311,68 @@ class CrossEntropyCriterion(Criterion):
                                                     JTensor.from_ndarray(
                                                         weights),
                                                     size_average)
+
+
+class BCECriterion(Criterion):
+    '''
+    >>> np.random.seed(123)
+    >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
+    >>> bCECriterion = BCECriterion(weights)
+    creating: createBCECriterion
+    >>> bCECriterion = BCECriterion()
+    creating: createBCECriterion
+    '''
+
+    def __init__(self,
+                 weights=None,
+                 size_average=True,
+                 bigdl_type="float"):
+        super(BCECriterion, self).__init__(None, bigdl_type,
+                                           JTensor.from_ndarray(weights),
+                                           size_average)
+
+
+class MultiLabelSoftMarginCriterion(Criterion):
+    '''
+    >>> np.random.seed(123)
+    >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
+    >>> multiLabelSoftMarginCriterion = MultiLabelSoftMarginCriterion(weights)
+    creating: createMultiLabelSoftMarginCriterion
+    >>> multiLabelSoftMarginCriterion = MultiLabelSoftMarginCriterion()
+    creating: createMultiLabelSoftMarginCriterion
+    '''
+
+    def __init__(self,
+                 weights=None,
+                 size_average=True,
+                 bigdl_type="float"):
+        super(MultiLabelSoftMarginCriterion, self).__init__(None, bigdl_type,
+                                                            JTensor.from_ndarray(weights),
+                                                            size_average)
+
+
+class MultiMarginCriterion(Criterion):
+    '''
+    >>> np.random.seed(123)
+    >>> weights = np.random.uniform(0, 1, (2,)).astype("float32")
+    >>> multiMarginCriterion = MultiMarginCriterion(1,weights)
+    creating: createMultiMarginCriterion
+    >>> multiMarginCriterion = MultiMarginCriterion()
+    creating: createMultiMarginCriterion
+    '''
+
+    def __init__(self,
+                 p=1,
+                 weights=None,
+                 margin=1.0,
+                 size_average=True,
+                 bigdl_type="float"):
+        super(MultiMarginCriterion, self).__init__(None, bigdl_type,
+                                                   p,
+                                                   JTensor.from_ndarray(weights),
+                                                   margin,
+                                                   size_average)
+
 
 def _test():
     import doctest

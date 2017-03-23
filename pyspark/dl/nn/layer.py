@@ -20,7 +20,7 @@ from util.common import callBigDlFunc
 from util.common import JavaValue
 from util.common import callJavaFunc
 from pyspark import SparkContext
-
+from util.common import JTensor
 import numpy as np
 
 if sys.version >= '3':
@@ -1651,6 +1651,80 @@ class Reshape(Model):
 
     def __init__(self, size, bigdl_type="float"):
         super(Reshape, self).__init__(None, bigdl_type, size)
+
+
+class BiRecurrent(Model):
+    '''
+    >>> biRecurrent = BiRecurrent()
+    creating: createBiRecurrent
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(BiRecurrent, self).__init__(None, bigdl_type)
+
+
+class ConcatTable(Model):
+    '''
+    >>> concatTable = ConcatTable()
+    creating: createConcatTable
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(ConcatTable, self).__init__(None, bigdl_type)
+
+
+class CriterionTable(Model):
+    '''
+    >>> from nn.criterion import MSECriterion
+    >>> criterionTable = CriterionTable(MSECriterion())
+    creating: createMSECriterion
+    creating: createCriterionTable
+    '''
+
+    def __init__(self,
+                 criterion,
+                 bigdl_type="float"):
+        super(CriterionTable, self).__init__(None, bigdl_type,
+                                             criterion)
+
+
+class Identity(Model):
+    '''
+    >>> identity = Identity()
+    creating: createIdentity
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(Identity, self).__init__(None, bigdl_type)
+
+
+class Reverse(Model):
+    '''
+    >>> reverse = Reverse()
+    creating: createReverse
+    '''
+
+    def __init__(self,
+                 dimension=1,
+                 bigdl_type="float"):
+        super(Reverse, self).__init__(None, bigdl_type,
+                                      dimension)
+
+
+class Transpose(Model):
+    '''
+    >>> transpose = Transpose([(1,2)])
+    creating: createTranspose
+    '''
+
+    def __init__(self,
+                 permutations,
+                 bigdl_type="float"):
+        super(Transpose, self).__init__(None, bigdl_type,
+                                        permutations)
 
 
 def _test():
