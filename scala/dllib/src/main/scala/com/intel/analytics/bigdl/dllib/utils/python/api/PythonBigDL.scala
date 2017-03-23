@@ -892,8 +892,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createCrossEntropyCriterion(weights: JTensor = null,
                                   sizeAverage: Boolean = true): CrossEntropyCriterion[T] = {
-
-    new CrossEntropyCriterion[T](toTensor(weights), sizeAverage)
+    new CrossEntropyCriterion[T](if (null == weights) null else toTensor(weights), sizeAverage)
   }
 
 
