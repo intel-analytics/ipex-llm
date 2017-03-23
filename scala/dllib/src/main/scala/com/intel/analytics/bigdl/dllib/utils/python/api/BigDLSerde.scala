@@ -212,9 +212,19 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       if (args.length != 3) {
         throw new PickleException("should be 3, not : " + args.length)
       }
-      new JTensor(args(0).asInstanceOf[JArrayList[Any]],
+      val bigdl_type = args(2).asInstanceOf[String]
+      // Only allow float and double for now same as Tensor
+      val rawStorage = args(0).asInstanceOf[JArrayList[Double]].asScala
+      val storage = bigdl_type match {
+        case "float" =>
+          rawStorage.map(_.toFloat).toList.asJava
+        case "double" =>
+          rawStorage.toList.asJava
+        case _ => throw new IllegalArgumentException("Only support float and double for now")
+      }
+      new JTensor(storage.asInstanceOf[JList[Any]],
         args(1).asInstanceOf[JArrayList[Int]],
-        args(2).asInstanceOf[String])
+        bigdl_type)
     }
   }
 
