@@ -29,7 +29,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
-
+import java.lang.Integer
 import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect.ClassTag
@@ -151,12 +151,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Sequential[T]()
   }
 
-  def createLinear(inputSize: Int, outputSize: Int, initMethod: String): Linear[T] = {
-    Linear[T](inputSize, outputSize, PythonBigDL.getInitMethod(initMethod))
+  def createLinear(inputSize: Int, outputSize: Int,
+                   initMethod: String, withBias: Boolean): Linear[T] = {
+    Linear[T](inputSize, outputSize, PythonBigDL.getInitMethod(initMethod), withBias)
   }
 
-  def createReLU(): ReLU[T] = {
-    ReLU[T]()
+  def createReLU(ip: Boolean = false): ReLU[T] = {
+    ReLU[T](ip)
   }
 
   def createTanh(): Tanh[T] = {
@@ -961,7 +962,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       num)
   }
 
-  def createSoftmaxWithCriterion(ignoreLabel: Option[Int] = None,
+  def createSoftmaxWithCriterion(ignoreLabel: Integer = null,
                                  normalizeMode: String = "VALID")
   : SoftmaxWithCriterion[T] = {
     val normM = normalizeMode match {
@@ -973,7 +974,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
         throw new IllegalArgumentException(s"Only support 'FULL', " +
           s"'VALID', 'BATCH_SIZE' and 'NONE': $n")
     }
-    SoftmaxWithCriterion[T](ignoreLabel, normM)
+    val labelToIgnore = ignoreLabel match {
+      case i: Integer => Some(i.toInt)
+      case null => None
+    }
+    SoftmaxWithCriterion[T](labelToIgnore, normM)
   }
 
   def setModelSeed(seed: Long): Unit = {
@@ -994,8 +999,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     testResultArray.toList.asJava
   }
 
-  def modelFromPath(path: String): AbstractModule[Activity, Activity, T] = {
+  def loadBigDL(path: String): AbstractModule[Activity, Activity, T] = {
     Module.load[T](path)
+  }
+
+  def loadTorch(path: String): AbstractModule[Activity, Activity, T] = {
+    Module.loadTorch[T](path)
+  }
+
+  def loadCaffe(model: AbstractModule[Activity, Activity, T],
+                defPath: String,
+                modelPath: String,
+                matchAll: Boolean = true): AbstractModule[Activity, Activity, T] = {
+    Module.loadCaffe[T](model, defPath, modelPath, matchAll)
   }
 
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
