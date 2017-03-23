@@ -83,3 +83,10 @@ test_simple_integration_test = Module(
         "test.simple_integration_test"
     ]
 )
+
+test_load_caffe = Module(
+    name="load_caffe_test",
+    python_test_goals=[
+        "test.load_caffe_test"
+    ]
+)
