@@ -41,9 +41,7 @@ class Model(JavaValue):
 
     @classmethod
     def of(cls, jmodel, bigdl_type="float"):
-        model = Model(bigdl_type, jmodel)
-        model.value = jmodel
-        model.bigdl_type = bigdl_type
+        model = Model(jmodel,bigdl_type)
         return model
 
     def set_name(self, name):
@@ -92,9 +90,19 @@ class Model(JavaValue):
                              val_rdd, batch_size, val_methods)
 
     @staticmethod
-    def from_path(path, bigdl_type="float"):
-        jmodel = callBigDlFunc(bigdl_type, "modelFromPath", path)
-        return Model.of(jmodel, bigdl_type)
+    def load(path, bigdl_type="float"):
+        jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
+        return Model.of(jmodel)
+
+    @staticmethod
+    def load_torch(path, bigdl_type="float"):
+        jmodel = callBigDlFunc(bigdl_type, "loadTorch", path)
+        return Model.of(jmodel)
+
+    @staticmethod
+    def load_caffe(model, defPath, modelPath, match_all=True, bigdl_type="float"):
+        jmodel = callBigDlFunc(bigdl_type, "loadCaffe", model, defPath, modelPath, match_all)
+        return Model.of(jmodel)
 
 
 class Linear(Model):
@@ -104,10 +112,10 @@ class Linear(Model):
     creating: createLinear
     '''
 
-    def __init__(self, input_size, output_size, init_method="default",
+    def __init__(self, input_size, output_size, init_method="default", with_bias=True,
                  bigdl_type="float"):
         super(Linear, self).__init__(None, bigdl_type, input_size, output_size,
-                                     init_method)
+                                     init_method, with_bias)
 
 
 class ReLU(Model):
@@ -117,8 +125,8 @@ class ReLU(Model):
     creating: createReLU
     '''
 
-    def __init__(self, bigdl_type="float"):
-        super(ReLU, self).__init__(None, bigdl_type)
+    def __init__(self, ip=False, bigdl_type="float"):
+        super(ReLU, self).__init__(None, bigdl_type, ip)
 
 
 class Tanh(Model):
