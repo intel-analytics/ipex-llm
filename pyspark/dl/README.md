@@ -91,12 +91,12 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
        --executor-cores 10  \
        --executor-memory 20g \
        --conf spark.akka.frameSize=64 \
-        --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py  \
+        --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py  \
         --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
         --jars ${BigDL_JAR_PATH} \
         --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
         --conf spark.executor.extraClassPath=bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
-        ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py
+        ${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py
  ```
 
 
@@ -110,11 +110,13 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
     BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar
 
     export PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
-    export IPYTHON_OPTS="notebook --notebook-dir=./  --ip=* --no-browser"
+    export PYSPARK_DRIVER_PYTHON=jupyter
+    export PYSPARK_DRIVER_PYTHON_OPTS="notebook --notebook-dir=./  --ip=* --no-browser"
+
 
     ${SPARK_HOME}/bin/pyspark \
         --master ${MASTER} \
-        --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf
+        --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
         --driver-cores 5  \
        --driver-memory 10g  \
        --total-executor-cores 8  \
