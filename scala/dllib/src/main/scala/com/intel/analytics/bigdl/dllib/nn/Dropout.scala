@@ -30,9 +30,22 @@ import scala.reflect.ClassTag
  * set, the outputs are scaled by a factor of 1/(1-initP) during training.
  * During evaluating, output is the same as input.
  *
- * @param initP probability to be dropped
- * @param inplace inplace model
- * @param scale if scale by a factor of 1/(1-initP)
+ * It has been proven an effective approach for regularization and preventing
+ * co-adaptation of feature detectors. For more details, plese see
+ * [Improving neural networks by preventing co-adaptation of feature detectors]
+ * (https://arxiv.org/abs/1207.0580)
+ *
+ * @param initP the probability p
+ * @param inplace whether to make `input` and `output` share the same storage
+ * @param scale whether to scale the output by a factor of `1 / (1 - p)`
+ * @param isLazy `lazy` option is used to to only resample after backward is called.
+ *              This mechanism is used by recurrent networks to use the same dropout mask
+ *              for each sequence, not for each word. For more details, please refer to
+ *
+ *              [RnnDrop: A Novel Dropout for RNNs in ASR]
+ *              (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+ *              [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+ *              (https://arxiv.org/pdf/1512.05287.pdf)
  */
 @SerialVersionUID(- 4636332259181125718L)
 class Dropout[T: ClassTag](
@@ -71,8 +84,8 @@ class Dropout[T: ClassTag](
       if (input.isContiguous()) {
         if (!isLazy || flag(0)) {
           val noiseData = noise.storage().array()
-          var taskSize = noise.nElement() / Engine.coreNumber()
-          var extraTask = noise.nElement() % Engine.coreNumber()
+          var taskSize = noise.nElement() / Engine.model.getPoolSize
+          var extraTask = noise.nElement() % Engine.model.getPoolSize
           var allocated = 0
           val offset = this.output.storageOffset() - 1
           val data = this.output.storage.array()
@@ -117,11 +130,12 @@ class Dropout[T: ClassTag](
         if (!isLazy || flag(0)) {
           noise.bernoulli(1 - p)
           flag(0) = false
+
+          if (scale) {
+            noise.div(ev.fromType[Double](1 - p))
+          }
         }
 
-        if (scale) {
-          noise.div(ev.fromType[Double](1 - p))
-        }
         this.output.cmul(noise)
       }
     } else if (!scale) {
