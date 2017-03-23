@@ -16,17 +16,18 @@
 
 package com.intel.analytics.bigdl.optim
 
-import java.io.File
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, TrainSummary}
+
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, TrainSummary, ExceptionTest}
 import org.apache.commons.io.FileUtils
+
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -84,6 +85,16 @@ object DistriOptimizerSpecModel {
     val mlp = new Sequential[Double]
     mlp.add(new Linear(4, 2))
     mlp.add(new LogSoftMax)
+    mlp
+  }
+
+  def mserf(failOnce: Boolean): Module[Double] = {
+    val mlp = new Sequential[Double]
+    mlp.add(new Linear(4, 2))
+    mlp.add(new Sigmoid)
+    mlp.add(new Linear(2, 1))
+    mlp.add(new Sigmoid)
+    mlp.add(new ExceptionTest(800))
     mlp
   }
 }
@@ -357,5 +368,24 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     result2(Array(1)) should be(1.0 +- 5e-2)
     trainSummary.readScalar("Loss").last._2 should be (0.0f +- 1e-3f)
     trainSummary.close()
+  }
+
+  "Train with MSE and SGD" should "be trained with good result with fail recovery" in {
+    val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
+    val mm = mserf(true)
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
+      .setCheckpoint(filePath, Trigger.everyEpoch)
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
   }
 }

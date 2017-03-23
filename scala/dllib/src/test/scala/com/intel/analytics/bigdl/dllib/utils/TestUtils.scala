@@ -16,7 +16,13 @@
 
 package com.intel.analytics.bigdl.utils
 
+import java.util.concurrent.atomic.AtomicInteger
+
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+
+import scala.reflect.ClassTag
 
 object TestUtils {
   /**
@@ -148,4 +154,29 @@ object TestUtils {
 
     (fout, dxout)
   }
+}
+
+class ExceptionTest[T: ClassTag](failCountNumber: Int)
+                                (implicit ev: TensorNumeric[T])
+  extends TensorModule[T]  {
+
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    this.output = input
+    if (ExceptionTest.count.incrementAndGet() == failCountNumber) {
+      throw new Exception("Fail task")
+    }
+    this.output
+  }
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    this.gradInput = gradOutput
+    this.gradInput
+  }
+
+  override def toString(): String = {
+    s"nn.ExceptionTest"
+  }
+}
+
+object ExceptionTest {
+  var count = new AtomicInteger(0)
 }
