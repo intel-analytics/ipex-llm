@@ -295,7 +295,7 @@ class CrossEntropyCriterion(Criterion):
     """
 
     def __init__(self,
-                 weights=np.zeros([2]),
+                 weights=None,
                  size_average=True,
                  bigdl_type="float"):
         super(CrossEntropyCriterion, self).__init__(None, bigdl_type,

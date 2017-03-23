@@ -87,7 +87,7 @@ class JTensor(object):
         >>> (array_from_tensor == data).all()
         True
         """
-        return cls(*JTensor.flatten_ndarray(a_ndarray))
+        return cls(*JTensor.flatten_ndarray(a_ndarray)) if a_ndarray is not None else None  # noqa
 
     def to_ndarray(self):
         def get_dtype():
