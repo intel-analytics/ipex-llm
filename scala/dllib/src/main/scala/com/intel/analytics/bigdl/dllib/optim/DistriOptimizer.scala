@@ -612,12 +612,12 @@ class DistriOptimizer[T: ClassTag] (
     models = DistriOptimizer.initThreadModels(
       model, dataset, criterion, state, nodeNumber, coresPerNode, checkSingleton, parameters)
 
-    val path = if (checkpointPath.isDefined) {
+    if (checkpointPath.isDefined) {
       val file = checkpointPath.get + "/" +
         new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime())
       new File(file).mkdir()
-      Some(file)
-    } else None
+      checkpointPath = Some(file)
+    }
 
     var retryNum = 0
     val maxRetry = System.getProperty("bigdl.failure.retryTimes", "5").toInt
@@ -638,7 +638,7 @@ class DistriOptimizer[T: ClassTag] (
           validationDataSet,
           validationMethods,
           checkpointTrigger,
-          path,
+          checkpointPath,
           trainSummary,
           validationSummary,
           isOverWrite
@@ -659,8 +659,8 @@ class DistriOptimizer[T: ClassTag] (
             }
             DistriOptimizer.logger.info(s"Retrying $retryNum times")
             lastFailureTimestamp = System.nanoTime()
-            val stateFile = getLatestFile(path.get, "state")
-            val modelFile = getLatestFile(path.get, "model")
+            val stateFile = getLatestFile(checkpointPath.get, "state")
+            val modelFile = getLatestFile(checkpointPath.get, "model")
             clearState()
             models.unpersist()
 

@@ -96,6 +96,10 @@ abstract class Optimizer[T: ClassTag, D](
     this
   }
 
+  def getCheckpointPath(): Option[String] = {
+    this.checkpointPath
+  }
+
   /**
    * Enable train summary.
    */
