@@ -36,6 +36,12 @@ import scala.reflect.ClassTag
  *
  * @param inputSize the size of each input vector
  * @param outputSize Hidden unit size in GRU
+ * @param  p is used for [[Dropout]] probability. For more details about
+ *           RNN dropouts, please refer to
+ *           [RnnDrop: A Novel Dropout for RNNs in ASR]
+ *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+ *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+ *           (https://arxiv.org/pdf/1512.05287.pdf)
  */
 @SerialVersionUID(6717988395573528459L)
 class GRU[T : ClassTag] (
@@ -53,8 +59,8 @@ class GRU[T : ClassTag] (
     if (p != 0) {
       i2g = Sequential()
         .add(ConcatTable()
-          .add(Dropout(p, isLazy = true))
-          .add(Dropout(p, isLazy = true)))
+          .add(Dropout(p))
+          .add(Dropout(p)))
         .add(ParallelTable()
           .add(Linear(inputSize, outputSize))
           .add(Linear(inputSize, outputSize)))
@@ -62,8 +68,8 @@ class GRU[T : ClassTag] (
 
       h2g = Sequential()
         .add(ConcatTable()
-          .add(Dropout(p, isLazy = true))
-          .add(Dropout(p, isLazy = true)))
+          .add(Dropout(p))
+          .add(Dropout(p)))
         .add(ParallelTable()
           .add(Linear(outputSize, outputSize, withBias = false))
           .add(Linear(outputSize, outputSize, withBias = false)))
@@ -104,10 +110,10 @@ class GRU[T : ClassTag] (
           .add(CMulTable())))
       .add(ParallelTable()
         .add(Sequential()
-          .add(Dropout(p, isLazy = true))
+          .add(Dropout(p))
           .add(Linear(inputSize, outputSize)))
         .add(Sequential()
-          .add(Dropout(p, isLazy = true))
+          .add(Dropout(p))
           .add(Linear(outputSize, outputSize, withBias = false))))
       .add(CAddTable())
       .add(Tanh())
