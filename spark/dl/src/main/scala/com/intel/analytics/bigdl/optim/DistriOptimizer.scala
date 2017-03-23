@@ -621,6 +621,7 @@ class DistriOptimizer[T: ClassTag] (
 
     var retryNum = 0
     val maxRetry = System.getProperty("bigdl.failure.retryTimes", "5").toInt
+    val retryTimeInterval = System.getProperty("bigdl.failure.retryTimeInterval", "120").toInt
     var lastFailureTimestamp = System.nanoTime()
     while (retryNum < maxRetry) {
       try {
@@ -642,15 +643,16 @@ class DistriOptimizer[T: ClassTag] (
           validationSummary,
           isOverWrite
         )
+        retryNum = Int.MaxValue
       } catch {
         case t: Throwable =>
           DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           if (checkpointPath.isDefined) {
             /* To avoid retry number is used up by first few exceptions, we count time here.
-             * If exception exceeds maxRetry times in maxRetry*2 minutes, we will give up retry.
-             * or we will reset retryNum
+             * If exception exceeds maxRetry times in maxRetry*retryTimeInterval seconds,
+             * we will give up retry Or we will reset retryNum
              */
-            if (System.nanoTime() - lastFailureTimestamp < maxRetry * 2 * 60 * 1e9) {
+            if (System.nanoTime() - lastFailureTimestamp < maxRetry * retryTimeInterval * 1e9) {
               retryNum += 1
             } else {
               retryNum = 1
