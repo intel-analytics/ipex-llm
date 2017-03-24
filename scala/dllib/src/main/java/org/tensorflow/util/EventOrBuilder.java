@@ -3,9 +3,6 @@
 
 package org.tensorflow.util;
 
-import org.tensorflow.framework.Summary;
-import org.tensorflow.framework.SummaryOrBuilder;
-
 public interface EventOrBuilder extends
     // @@protoc_insertion_point(interface_extends:tensorboard.Event)
     com.google.protobuf.MessageOrBuilder {
@@ -68,7 +65,7 @@ public interface EventOrBuilder extends
    *
    * <code>optional .tensorboard.Summary summary = 5;</code>
    */
-  Summary getSummary();
+  org.tensorflow.framework.Summary getSummary();
   /**
    * <pre>
    * A summary was generated.
@@ -76,7 +73,7 @@ public interface EventOrBuilder extends
    *
    * <code>optional .tensorboard.Summary summary = 5;</code>
    */
-  SummaryOrBuilder getSummaryOrBuilder();
+  org.tensorflow.framework.SummaryOrBuilder getSummaryOrBuilder();
 
   /**
    * <pre>
@@ -86,7 +83,7 @@ public interface EventOrBuilder extends
    *
    * <code>optional .tensorboard.LogMessage log_message = 6;</code>
    */
-  LogMessage getLogMessage();
+  org.tensorflow.util.LogMessage getLogMessage();
   /**
    * <pre>
    * The user output a log message. Not all messages are logged, only ones
@@ -95,7 +92,7 @@ public interface EventOrBuilder extends
    *
    * <code>optional .tensorboard.LogMessage log_message = 6;</code>
    */
-  LogMessageOrBuilder getLogMessageOrBuilder();
+  org.tensorflow.util.LogMessageOrBuilder getLogMessageOrBuilder();
 
   /**
    * <pre>
@@ -104,7 +101,7 @@ public interface EventOrBuilder extends
    *
    * <code>optional .tensorboard.SessionLog session_log = 7;</code>
    */
-  SessionLog getSessionLog();
+  org.tensorflow.util.SessionLog getSessionLog();
   /**
    * <pre>
    * The state of the session which can be used for restarting after crashes.
@@ -112,7 +109,7 @@ public interface EventOrBuilder extends
    *
    * <code>optional .tensorboard.SessionLog session_log = 7;</code>
    */
-  SessionLogOrBuilder getSessionLogOrBuilder();
+  org.tensorflow.util.SessionLogOrBuilder getSessionLogOrBuilder();
 
   /**
    * <pre>
@@ -121,7 +118,7 @@ public interface EventOrBuilder extends
    *
    * <code>optional .tensorboard.TaggedRunMetadata tagged_run_metadata = 8;</code>
    */
-  TaggedRunMetadata getTaggedRunMetadata();
+  org.tensorflow.util.TaggedRunMetadata getTaggedRunMetadata();
   /**
    * <pre>
    * The metadata returned by running a session.run() call.
@@ -129,7 +126,7 @@ public interface EventOrBuilder extends
    *
    * <code>optional .tensorboard.TaggedRunMetadata tagged_run_metadata = 8;</code>
    */
-  TaggedRunMetadataOrBuilder getTaggedRunMetadataOrBuilder();
+  org.tensorflow.util.TaggedRunMetadataOrBuilder getTaggedRunMetadataOrBuilder();
 
   /**
    * <pre>
@@ -140,5 +137,5 @@ public interface EventOrBuilder extends
    */
   com.google.protobuf.ByteString getMetaGraphDef();
 
-  public Event.WhatCase getWhatCase();
+  public org.tensorflow.util.Event.WhatCase getWhatCase();
 }

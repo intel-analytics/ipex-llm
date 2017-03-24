@@ -66,14 +66,14 @@ public  final class SummaryDescription extends
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return SummaryProtos.internal_static_tensorboard_SummaryDescription_descriptor;
+    return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_SummaryDescription_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return SummaryProtos.internal_static_tensorboard_SummaryDescription_fieldAccessorTable
+    return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_SummaryDescription_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            SummaryDescription.class, SummaryDescription.Builder.class);
+            org.tensorflow.framework.SummaryDescription.class, org.tensorflow.framework.SummaryDescription.Builder.class);
   }
 
   public static final int TYPE_HINT_FIELD_NUMBER = 1;
@@ -155,10 +155,10 @@ public  final class SummaryDescription extends
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof SummaryDescription)) {
+    if (!(obj instanceof org.tensorflow.framework.SummaryDescription)) {
       return super.equals(obj);
     }
-    SummaryDescription other = (SummaryDescription) obj;
+    org.tensorflow.framework.SummaryDescription other = (org.tensorflow.framework.SummaryDescription) obj;
 
     boolean result = true;
     result = result && getTypeHint()
@@ -180,58 +180,58 @@ public  final class SummaryDescription extends
     return hash;
   }
 
-  public static SummaryDescription parseFrom(
+  public static org.tensorflow.framework.SummaryDescription parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static SummaryDescription parseFrom(
+  public static org.tensorflow.framework.SummaryDescription parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static SummaryDescription parseFrom(byte[] data)
+  public static org.tensorflow.framework.SummaryDescription parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static SummaryDescription parseFrom(
+  public static org.tensorflow.framework.SummaryDescription parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static SummaryDescription parseFrom(java.io.InputStream input)
+  public static org.tensorflow.framework.SummaryDescription parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static SummaryDescription parseFrom(
+  public static org.tensorflow.framework.SummaryDescription parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static SummaryDescription parseDelimitedFrom(java.io.InputStream input)
+  public static org.tensorflow.framework.SummaryDescription parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static SummaryDescription parseDelimitedFrom(
+  public static org.tensorflow.framework.SummaryDescription parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static SummaryDescription parseFrom(
+  public static org.tensorflow.framework.SummaryDescription parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static SummaryDescription parseFrom(
+  public static org.tensorflow.framework.SummaryDescription parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -243,7 +243,7 @@ public  final class SummaryDescription extends
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(SummaryDescription prototype) {
+  public static Builder newBuilder(org.tensorflow.framework.SummaryDescription prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -267,20 +267,20 @@ public  final class SummaryDescription extends
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:tensorboard.SummaryDescription)
-    SummaryDescriptionOrBuilder {
+      org.tensorflow.framework.SummaryDescriptionOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return SummaryProtos.internal_static_tensorboard_SummaryDescription_descriptor;
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_SummaryDescription_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return SummaryProtos.internal_static_tensorboard_SummaryDescription_fieldAccessorTable
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_SummaryDescription_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              SummaryDescription.class, SummaryDescription.Builder.class);
+              org.tensorflow.framework.SummaryDescription.class, org.tensorflow.framework.SummaryDescription.Builder.class);
     }
 
-    // Construct using SummaryDescription.newBuilder()
+    // Construct using org.tensorflow.framework.SummaryDescription.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -304,23 +304,23 @@ public  final class SummaryDescription extends
 
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return SummaryProtos.internal_static_tensorboard_SummaryDescription_descriptor;
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_SummaryDescription_descriptor;
     }
 
-    public SummaryDescription getDefaultInstanceForType() {
-      return SummaryDescription.getDefaultInstance();
+    public org.tensorflow.framework.SummaryDescription getDefaultInstanceForType() {
+      return org.tensorflow.framework.SummaryDescription.getDefaultInstance();
     }
 
-    public SummaryDescription build() {
-      SummaryDescription result = buildPartial();
+    public org.tensorflow.framework.SummaryDescription build() {
+      org.tensorflow.framework.SummaryDescription result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public SummaryDescription buildPartial() {
-      SummaryDescription result = new SummaryDescription(this);
+    public org.tensorflow.framework.SummaryDescription buildPartial() {
+      org.tensorflow.framework.SummaryDescription result = new org.tensorflow.framework.SummaryDescription(this);
       result.typeHint_ = typeHint_;
       onBuilt();
       return result;
@@ -353,16 +353,16 @@ public  final class SummaryDescription extends
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof SummaryDescription) {
-        return mergeFrom((SummaryDescription)other);
+      if (other instanceof org.tensorflow.framework.SummaryDescription) {
+        return mergeFrom((org.tensorflow.framework.SummaryDescription)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(SummaryDescription other) {
-      if (other == SummaryDescription.getDefaultInstance()) return this;
+    public Builder mergeFrom(org.tensorflow.framework.SummaryDescription other) {
+      if (other == org.tensorflow.framework.SummaryDescription.getDefaultInstance()) return this;
       if (!other.getTypeHint().isEmpty()) {
         typeHint_ = other.typeHint_;
         onChanged();
@@ -379,11 +379,11 @@ public  final class SummaryDescription extends
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      SummaryDescription parsedMessage = null;
+      org.tensorflow.framework.SummaryDescription parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (SummaryDescription) e.getUnfinishedMessage();
+        parsedMessage = (org.tensorflow.framework.SummaryDescription) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -501,12 +501,12 @@ public  final class SummaryDescription extends
   }
 
   // @@protoc_insertion_point(class_scope:tensorboard.SummaryDescription)
-  private static final SummaryDescription DEFAULT_INSTANCE;
+  private static final org.tensorflow.framework.SummaryDescription DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new SummaryDescription();
+    DEFAULT_INSTANCE = new org.tensorflow.framework.SummaryDescription();
   }
 
-  public static SummaryDescription getDefaultInstance() {
+  public static org.tensorflow.framework.SummaryDescription getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -529,7 +529,7 @@ public  final class SummaryDescription extends
     return PARSER;
   }
 
-  public SummaryDescription getDefaultInstanceForType() {
+  public org.tensorflow.framework.SummaryDescription getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 
