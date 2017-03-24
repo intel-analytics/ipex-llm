@@ -1,12 +1,11 @@
 /*
- * Licensed to Intel Corporation under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * Intel Corporation licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Copyright 2016 The BigDL Authors.
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -57,6 +56,7 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val seed = 100
     val batchSize = 1
 
+    RNG.setSeed(seed)
     val input = Tensor[Double](Array(batchSize, seqLength, inputSize))
     val labels = Tensor[Double](Array(batchSize, seqLength))
     for (b <- 1 to batchSize) {
@@ -69,7 +69,6 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     println(input)
-    RNG.setSeed(seed)
     val rec = Recurrent[Double](hiddenSize)
 
     val model = Sequential[Double]()
@@ -228,17 +227,17 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val seqLength = 5
     val seed = 100
 
+    RNG.setSeed(seed)
     val input = Tensor[Double](Array(1, seqLength, inputSize))
     val labels = Tensor[Double](Array(1, seqLength))
     for (i <- 1 to seqLength) {
-      val rdmLabel = Math.ceil(math.random * outputSize).toInt
-      val rdmInput = Math.ceil(math.random * inputSize).toInt
+      val rdmLabel = Math.ceil(RNG.uniform(0, 1) * outputSize).toInt
+      val rdmInput = Math.ceil(RNG.uniform(0, 1) * inputSize).toInt
       input.setValue(1, i, rdmInput, 1.0)
       labels.setValue(1, i, rdmLabel)
     }
 
     println(input)
-    RNG.setSeed(seed)
     val rec = Recurrent[Double](hiddenSize)
 
     val model = Sequential[Double]()
