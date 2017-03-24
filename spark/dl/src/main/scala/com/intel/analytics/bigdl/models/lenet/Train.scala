@@ -28,9 +28,6 @@ import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
-import scala.collection.mutable
-
-
 object Train {
   LoggerFilter.redirectSparkInfoLogs()
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)

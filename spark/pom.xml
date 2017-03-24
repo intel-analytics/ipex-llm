@@ -16,6 +16,5 @@
     <modules>
         <module>dl</module>
         <module>spark-version</module>
-        <module>visualization</module>
     </modules>
 </project>
