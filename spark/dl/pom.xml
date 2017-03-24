@@ -78,17 +78,6 @@
             <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
         </dependency>
-        <!--dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql-kafka-0-10_${scala.major.version}</artifactId>
-            <version>${spark.version}</version>
-            <scope>${spark-scope}</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_${scala.major.version}</artifactId>
-            <version>0.10.1.1</version>
-        </dependency-->
         <dependency>
             <groupId>com.intel.analytics.bigdl.spark-version</groupId>
             <artifactId>${spark-version.project}</artifactId>
@@ -271,8 +260,6 @@
                     </execution>
                 </executions>
             </plugin>
-<<<<<<< d45ed36495c3df55a2a78ded7395ec65a8e70fe8
-=======
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -300,7 +287,6 @@
                     </execution>
                 </executions>
             </plugin>
->>>>>>> update style check and profile settings
         </plugins>
     </build>
 
@@ -336,24 +322,6 @@
                         <configuration>
                             <excludes>
                                 <exclude>com/intel/analytics/bigdl/example/modeludf/File*.scala</exclude>
-                                <exclude>com/intel/analytics/bigdl/example/modeludf/Kafka*.scala</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-		</profile>
-        <profile>
-            <id>spark_2.0</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>net.alchim31.maven</groupId>
-                        <artifactId>scala-maven-plugin</artifactId>
-                        <version>3.2.0</version>
-                        <configuration>
-                            <excludes>
-                                <exclude>com/intel/analytics/bigdl/example/modeludf/Kafka*.scala</exclude>
                             </excludes>
                         </configuration>
                     </plugin>

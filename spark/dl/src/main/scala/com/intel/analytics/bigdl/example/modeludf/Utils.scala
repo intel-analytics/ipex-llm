@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.example.modeludf
 
 import java.io.{File, InputStream, PrintWriter}
 
+import com.intel.analytics.bigdl.example.modeludf.FileProducer.Sample
 import com.intel.analytics.bigdl.example.modeludf.Options.TextClassificationParams
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
@@ -35,7 +36,7 @@ object Utils {
   type SampleShape = Array[Int]
   type TFP = TextClassificationParams
 
-  case class Sample(filename: String, text: String)
+
 
   def getModel(sc: SparkContext, param: TFP): (Model, Word2Vec, SampleShape) = {
     val textClassification = new TextClassifier(param)
