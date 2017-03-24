@@ -48,8 +48,13 @@ class Adagrad[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeri
     val lr = _config.get[Double]("learningRate").getOrElse(1e-3)
     val lrd = _config.get[Double]("learningRateDecay").getOrElse(0.0)
     val nevals = _state.get[Int]("evalCounter").getOrElse(0)
+    val wd = config.get[Double]("weightDecay").getOrElse(0.0)
 
     val (fx, dfdx) = feval(parameter)
+
+    if (wd != 0) {
+      dfdx.add(ev.fromType[Double](wd), parameter)
+    }
 
     val clr = lr / (1 + nevals * lrd)
 
