@@ -14,13 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.visualization
 
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Summary._
+import com.intel.analytics.bigdl.utils.RandomGenerator
+import Summary._
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
 import org.scalatest.{FlatSpec, Matchers}
+import org.tensorflow.framework
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SummarySpec extends FlatSpec with Matchers {
@@ -48,7 +50,7 @@ class SummarySpec extends FlatSpec with Matchers {
     assert(values.getSimpleValue == 1.0)
 
     val byte_str = s.toByteArray
-    val s_recovered = org.tensorflow.framework.Summary.parseFrom(byte_str)
+    val s_recovered = framework.Summary.parseFrom(byte_str)
     assert(values.getTag == s_recovered.getValue(0).getTag())
     assert(values.getSimpleValue == s_recovered.getValue(0).getSimpleValue)
   }

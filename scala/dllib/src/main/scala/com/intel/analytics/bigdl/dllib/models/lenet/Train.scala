@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalize
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, T, TrainSummary, ValidationSummary, LoggerFilter}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
