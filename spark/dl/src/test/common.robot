@@ -18,7 +18,7 @@ Operate Vertical
 
 Status Equal
    [Documentation]                  Match certain vertical's status
-   [Arguments]                      ${verticalId}	                             ${status}
+   [Arguments]                      ${verticalId}                              ${status}
    Create Session                   host                                       http://${ardaHost}:10021
    Log To Console                   Get vertical ${verticalId}'s status ...
    ${resp}=                         Get Request                                host                       /vertical/${verticalId}
