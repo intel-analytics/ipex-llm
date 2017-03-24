@@ -24,9 +24,9 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.StructType
 
 
-object  FileConsumer {
+object  FileStreamingConsumer {
 
-  val log: Logger = LoggerFactory.getLogger(this.getClass)
+  private val log: Logger = LoggerFactory.getLogger(this.getClass)
   Logger4j.getLogger("org").setLevel(Levle4j.ERROR)
   Logger4j.getLogger("akka").setLevel(Levle4j.ERROR)
   Logger4j.getLogger("breeze").setLevel(Levle4j.ERROR)

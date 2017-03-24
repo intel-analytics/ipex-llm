@@ -319,7 +319,7 @@
                         <version>3.2.0</version>
                         <configuration>
                             <excludes>
-                                <exclude>com/intel/analytics/bigdl/example/modeludf/*.scala</exclude>
+                                <exclude>com/intel/analytics/bigdl/example/modeludf/File*.scala</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
@@ -341,7 +341,7 @@
                         <version>3.2.0</version>
                         <configuration>
                             <excludes>
-                                <exclude>com/intel/analytics/bigdl/example/modeludf/*.scala</exclude>
+                                <exclude>com/intel/analytics/bigdl/example/modeludf/File*.scala</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
@@ -365,7 +365,7 @@
                         <version>3.2.0</version>
                         <configuration>
                             <excludes>
-                                <exclude>com/intel/analytics/bigdl/example/modeludf/*.scala</exclude>
+                                <exclude>com/intel/analytics/bigdl/example/modeludf/File*.scala</exclude>
                             </excludes>
                         </configuration>
                     </plugin>

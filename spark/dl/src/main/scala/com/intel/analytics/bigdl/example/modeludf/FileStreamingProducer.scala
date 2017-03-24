@@ -20,9 +20,7 @@ import com.intel.analytics.bigdl.example.modeludf.Options._
 import org.apache.spark.sql.SparkSession
 
 
-object FileProducer {
-
-  case class Sample(filename: String, text: String)
+object FileStreamingProducer {
 
   def main(args: Array[String]): Unit = {
 
