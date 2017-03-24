@@ -78,17 +78,6 @@
             <version>${spark.version}</version>
             <scope>${spark-scope}</scope>
         </dependency>
-        <!--dependency>
-            <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql-kafka-0-10_${scala.major.version}</artifactId>
-            <version>${spark.version}</version>
-            <scope>${spark-scope}</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_${scala.major.version}</artifactId>
-            <version>0.10.1.1</version>
-        </dependency-->
         <dependency>
             <groupId>com.intel.analytics.bigdl.spark-version</groupId>
             <artifactId>${spark-version.project}</artifactId>
@@ -306,24 +295,6 @@
                         <configuration>
                             <excludes>
                                 <exclude>com/intel/analytics/bigdl/example/modeludf/File*.scala</exclude>
-                                <exclude>com/intel/analytics/bigdl/example/modeludf/Kafka*.scala</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-		</profile>
-        <profile>
-            <id>spark_2.0</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>net.alchim31.maven</groupId>
-                        <artifactId>scala-maven-plugin</artifactId>
-                        <version>3.2.0</version>
-                        <configuration>
-                            <excludes>
-                                <exclude>com/intel/analytics/bigdl/example/modeludf/Kafka*.scala</exclude>
                             </excludes>
                         </configuration>
                     </plugin>
@@ -337,13 +308,42 @@
                 <tagsToInclude>com.intel.analytics.bigdl.tags.Parallel</tagsToInclude>
                 <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/intel/analytics/bigdl/example/modeludf/*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>serial-tests</id>
             <properties>
                 <runSpecsInParallel>false</runSpecsInParallel>
-                <tagsToExclude>com.intel.analytics.bigdl.tags.Parallel,com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
+                <tagsToExclude>com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
+                <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/intel/analytics/bigdl/example/modeludf/*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>serial-all</id>
@@ -354,6 +354,20 @@
                 <runSpecsInParallel>false</runSpecsInParallel>
                 <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/intel/analytics/bigdl/example/modeludf/*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>
