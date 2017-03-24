@@ -42,7 +42,7 @@ public final class TensorProtos {
       "\n\tint64_val\030\n \003(\003B\002\020\001\022\024\n\010bool_val\030\013 \003(\010B" +
       "\002\020\001\022\030\n\014dcomplex_val\030\014 \003(\001B\002\020\001\0228\n\023resourc" +
       "e_handle_val\030\016 \003(\0132\033.tensorboard.Resourc" +
-      "eHandleB-\n\030org.org.org.tensorflow.frameworkB\014Ten" +
+      "eHandleB-\n\030org.tensorflow.frameworkB\014Ten" +
       "sorProtosP\001\370\001\001b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
@@ -56,9 +56,9 @@ public final class TensorProtos {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          ResourceHandleProto.getDescriptor(),
-          TensorShapeProtos.getDescriptor(),
-          TypesProtos.getDescriptor(),
+          org.tensorflow.framework.ResourceHandleProto.getDescriptor(),
+          org.tensorflow.framework.TensorShapeProtos.getDescriptor(),
+          org.tensorflow.framework.TypesProtos.getDescriptor(),
         }, assigner);
     internal_static_tensorboard_TensorProto_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -66,9 +66,9 @@ public final class TensorProtos {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_tensorboard_TensorProto_descriptor,
         new java.lang.String[] { "Dtype", "TensorShape", "VersionNumber", "TensorContent", "HalfVal", "FloatVal", "DoubleVal", "IntVal", "StringVal", "ScomplexVal", "Int64Val", "BoolVal", "DcomplexVal", "ResourceHandleVal", });
-    ResourceHandleProto.getDescriptor();
-    TensorShapeProtos.getDescriptor();
-    TypesProtos.getDescriptor();
+    org.tensorflow.framework.ResourceHandleProto.getDescriptor();
+    org.tensorflow.framework.TensorShapeProtos.getDescriptor();
+    org.tensorflow.framework.TypesProtos.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

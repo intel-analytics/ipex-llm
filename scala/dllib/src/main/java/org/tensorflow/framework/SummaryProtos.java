@@ -73,7 +73,7 @@ public final class SummaryProtos {
       "histo\030\005 \001(\0132\033.tensorboard.HistogramProto" +
       "H\000\022+\n\005audio\030\006 \001(\0132\032.tensorboard.Summary." +
       "AudioH\000\022*\n\006tensor\030\010 \001(\0132\030.tensorboard.Te",
-      "nsorProtoH\000B\007\n\005valueB.\n\030org.org.org.tensorflow.f" +
+      "nsorProtoH\000B\007\n\005valueB.\n\030org.tensorflow.f" +
       "rameworkB\rSummaryProtosP\001\370\001\001b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
@@ -87,7 +87,7 @@ public final class SummaryProtos {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          TensorProtos.getDescriptor(),
+          org.tensorflow.framework.TensorProtos.getDescriptor(),
         }, assigner);
     internal_static_tensorboard_SummaryDescription_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -125,7 +125,7 @@ public final class SummaryProtos {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_tensorboard_Summary_Value_descriptor,
         new java.lang.String[] { "NodeName", "Tag", "SimpleValue", "ObsoleteOldStyleHistogram", "Image", "Histo", "Audio", "Tensor", "Value", });
-    TensorProtos.getDescriptor();
+    org.tensorflow.framework.TensorProtos.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

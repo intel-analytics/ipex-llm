@@ -23,7 +23,7 @@ public interface TensorShapeProtoOrBuilder extends
    *
    * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
    */
-  java.util.List<TensorShapeProto.Dim>
+  java.util.List<org.tensorflow.framework.TensorShapeProto.Dim> 
       getDimList();
   /**
    * <pre>
@@ -41,7 +41,7 @@ public interface TensorShapeProtoOrBuilder extends
    *
    * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
    */
-  TensorShapeProto.Dim getDim(int index);
+  org.tensorflow.framework.TensorShapeProto.Dim getDim(int index);
   /**
    * <pre>
    * Dimensions of the tensor, such as {"input", 30}, {"output", 40}
@@ -75,7 +75,7 @@ public interface TensorShapeProtoOrBuilder extends
    *
    * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
    */
-  java.util.List<? extends TensorShapeProto.DimOrBuilder>
+  java.util.List<? extends org.tensorflow.framework.TensorShapeProto.DimOrBuilder> 
       getDimOrBuilderList();
   /**
    * <pre>
@@ -93,7 +93,7 @@ public interface TensorShapeProtoOrBuilder extends
    *
    * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
    */
-  TensorShapeProto.DimOrBuilder getDimOrBuilder(
+  org.tensorflow.framework.TensorShapeProto.DimOrBuilder getDimOrBuilder(
       int index);
 
   /**

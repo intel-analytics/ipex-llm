@@ -80,14 +80,14 @@ public  final class SessionLog extends
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return EventProtos.internal_static_tensorboard_SessionLog_descriptor;
+    return org.tensorflow.util.EventProtos.internal_static_tensorboard_SessionLog_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return EventProtos.internal_static_tensorboard_SessionLog_fieldAccessorTable
+    return org.tensorflow.util.EventProtos.internal_static_tensorboard_SessionLog_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            SessionLog.class, SessionLog.Builder.class);
+            org.tensorflow.util.SessionLog.class, org.tensorflow.util.SessionLog.Builder.class);
   }
 
   /**
@@ -180,7 +180,7 @@ public  final class SessionLog extends
     }
     public static final com.google.protobuf.Descriptors.EnumDescriptor
         getDescriptor() {
-      return SessionLog.getDescriptor().getEnumTypes().get(0);
+      return org.tensorflow.util.SessionLog.getDescriptor().getEnumTypes().get(0);
     }
 
     private static final SessionStatus[] VALUES = values();
@@ -217,9 +217,9 @@ public  final class SessionLog extends
   /**
    * <code>optional .tensorboard.SessionLog.SessionStatus status = 1;</code>
    */
-  public SessionLog.SessionStatus getStatus() {
-    SessionLog.SessionStatus result = SessionLog.SessionStatus.valueOf(status_);
-    return result == null ? SessionLog.SessionStatus.UNRECOGNIZED : result;
+  public org.tensorflow.util.SessionLog.SessionStatus getStatus() {
+    org.tensorflow.util.SessionLog.SessionStatus result = org.tensorflow.util.SessionLog.SessionStatus.valueOf(status_);
+    return result == null ? org.tensorflow.util.SessionLog.SessionStatus.UNRECOGNIZED : result;
   }
 
   public static final int CHECKPOINT_PATH_FIELD_NUMBER = 2;
@@ -310,7 +310,7 @@ public  final class SessionLog extends
 
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (status_ != SessionLog.SessionStatus.STATUS_UNSPECIFIED.getNumber()) {
+    if (status_ != org.tensorflow.util.SessionLog.SessionStatus.STATUS_UNSPECIFIED.getNumber()) {
       output.writeEnum(1, status_);
     }
     if (!getCheckpointPathBytes().isEmpty()) {
@@ -326,7 +326,7 @@ public  final class SessionLog extends
     if (size != -1) return size;
 
     size = 0;
-    if (status_ != SessionLog.SessionStatus.STATUS_UNSPECIFIED.getNumber()) {
+    if (status_ != org.tensorflow.util.SessionLog.SessionStatus.STATUS_UNSPECIFIED.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
         .computeEnumSize(1, status_);
     }
@@ -346,10 +346,10 @@ public  final class SessionLog extends
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof SessionLog)) {
+    if (!(obj instanceof org.tensorflow.util.SessionLog)) {
       return super.equals(obj);
     }
-    SessionLog other = (SessionLog) obj;
+    org.tensorflow.util.SessionLog other = (org.tensorflow.util.SessionLog) obj;
 
     boolean result = true;
     result = result && status_ == other.status_;
@@ -378,58 +378,58 @@ public  final class SessionLog extends
     return hash;
   }
 
-  public static SessionLog parseFrom(
+  public static org.tensorflow.util.SessionLog parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static SessionLog parseFrom(
+  public static org.tensorflow.util.SessionLog parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static SessionLog parseFrom(byte[] data)
+  public static org.tensorflow.util.SessionLog parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static SessionLog parseFrom(
+  public static org.tensorflow.util.SessionLog parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static SessionLog parseFrom(java.io.InputStream input)
+  public static org.tensorflow.util.SessionLog parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static SessionLog parseFrom(
+  public static org.tensorflow.util.SessionLog parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static SessionLog parseDelimitedFrom(java.io.InputStream input)
+  public static org.tensorflow.util.SessionLog parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static SessionLog parseDelimitedFrom(
+  public static org.tensorflow.util.SessionLog parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static SessionLog parseFrom(
+  public static org.tensorflow.util.SessionLog parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static SessionLog parseFrom(
+  public static org.tensorflow.util.SessionLog parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -441,7 +441,7 @@ public  final class SessionLog extends
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(SessionLog prototype) {
+  public static Builder newBuilder(org.tensorflow.util.SessionLog prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -465,20 +465,20 @@ public  final class SessionLog extends
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:tensorboard.SessionLog)
-    SessionLogOrBuilder {
+      org.tensorflow.util.SessionLogOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return EventProtos.internal_static_tensorboard_SessionLog_descriptor;
+      return org.tensorflow.util.EventProtos.internal_static_tensorboard_SessionLog_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return EventProtos.internal_static_tensorboard_SessionLog_fieldAccessorTable
+      return org.tensorflow.util.EventProtos.internal_static_tensorboard_SessionLog_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              SessionLog.class, SessionLog.Builder.class);
+              org.tensorflow.util.SessionLog.class, org.tensorflow.util.SessionLog.Builder.class);
     }
 
-    // Construct using SessionLog.newBuilder()
+    // Construct using org.tensorflow.util.SessionLog.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -506,23 +506,23 @@ public  final class SessionLog extends
 
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return EventProtos.internal_static_tensorboard_SessionLog_descriptor;
+      return org.tensorflow.util.EventProtos.internal_static_tensorboard_SessionLog_descriptor;
     }
 
-    public SessionLog getDefaultInstanceForType() {
-      return SessionLog.getDefaultInstance();
+    public org.tensorflow.util.SessionLog getDefaultInstanceForType() {
+      return org.tensorflow.util.SessionLog.getDefaultInstance();
     }
 
-    public SessionLog build() {
-      SessionLog result = buildPartial();
+    public org.tensorflow.util.SessionLog build() {
+      org.tensorflow.util.SessionLog result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public SessionLog buildPartial() {
-      SessionLog result = new SessionLog(this);
+    public org.tensorflow.util.SessionLog buildPartial() {
+      org.tensorflow.util.SessionLog result = new org.tensorflow.util.SessionLog(this);
       result.status_ = status_;
       result.checkpointPath_ = checkpointPath_;
       result.msg_ = msg_;
@@ -557,16 +557,16 @@ public  final class SessionLog extends
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof SessionLog) {
-        return mergeFrom((SessionLog)other);
+      if (other instanceof org.tensorflow.util.SessionLog) {
+        return mergeFrom((org.tensorflow.util.SessionLog)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(SessionLog other) {
-      if (other == SessionLog.getDefaultInstance()) return this;
+    public Builder mergeFrom(org.tensorflow.util.SessionLog other) {
+      if (other == org.tensorflow.util.SessionLog.getDefaultInstance()) return this;
       if (other.status_ != 0) {
         setStatusValue(other.getStatusValue());
       }
@@ -590,11 +590,11 @@ public  final class SessionLog extends
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      SessionLog parsedMessage = null;
+      org.tensorflow.util.SessionLog parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (SessionLog) e.getUnfinishedMessage();
+        parsedMessage = (org.tensorflow.util.SessionLog) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -622,14 +622,14 @@ public  final class SessionLog extends
     /**
      * <code>optional .tensorboard.SessionLog.SessionStatus status = 1;</code>
      */
-    public SessionLog.SessionStatus getStatus() {
-      SessionLog.SessionStatus result = SessionLog.SessionStatus.valueOf(status_);
-      return result == null ? SessionLog.SessionStatus.UNRECOGNIZED : result;
+    public org.tensorflow.util.SessionLog.SessionStatus getStatus() {
+      org.tensorflow.util.SessionLog.SessionStatus result = org.tensorflow.util.SessionLog.SessionStatus.valueOf(status_);
+      return result == null ? org.tensorflow.util.SessionLog.SessionStatus.UNRECOGNIZED : result;
     }
     /**
      * <code>optional .tensorboard.SessionLog.SessionStatus status = 1;</code>
      */
-    public Builder setStatus(SessionLog.SessionStatus value) {
+    public Builder setStatus(org.tensorflow.util.SessionLog.SessionStatus value) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -820,12 +820,12 @@ public  final class SessionLog extends
   }
 
   // @@protoc_insertion_point(class_scope:tensorboard.SessionLog)
-  private static final SessionLog DEFAULT_INSTANCE;
+  private static final org.tensorflow.util.SessionLog DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new SessionLog();
+    DEFAULT_INSTANCE = new org.tensorflow.util.SessionLog();
   }
 
-  public static SessionLog getDefaultInstance() {
+  public static org.tensorflow.util.SessionLog getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -848,7 +848,7 @@ public  final class SessionLog extends
     return PARSER;
   }
 
-  public SessionLog getDefaultInstanceForType() {
+  public org.tensorflow.util.SessionLog getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

@@ -5,7 +5,7 @@ package org.tensorflow.framework;
 
 /**
  * <pre>
- * Protocol buffer representing a handle to a org.org.tensorflow resource. Handles are
+ * Protocol buffer representing a handle to a tensorflow resource. Handles are
  * not valid across executions, but can be serialized back and forth from within
  * a single run.
  * </pre>
@@ -95,14 +95,14 @@ public  final class ResourceHandle extends
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return ResourceHandleProto.internal_static_tensorboard_ResourceHandle_descriptor;
+    return org.tensorflow.framework.ResourceHandleProto.internal_static_tensorboard_ResourceHandle_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return ResourceHandleProto.internal_static_tensorboard_ResourceHandle_fieldAccessorTable
+    return org.tensorflow.framework.ResourceHandleProto.internal_static_tensorboard_ResourceHandle_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            ResourceHandle.class, ResourceHandle.Builder.class);
+            org.tensorflow.framework.ResourceHandle.class, org.tensorflow.framework.ResourceHandle.Builder.class);
   }
 
   public static final int DEVICE_FIELD_NUMBER = 1;
@@ -349,10 +349,10 @@ public  final class ResourceHandle extends
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof ResourceHandle)) {
+    if (!(obj instanceof org.tensorflow.framework.ResourceHandle)) {
       return super.equals(obj);
     }
-    ResourceHandle other = (ResourceHandle) obj;
+    org.tensorflow.framework.ResourceHandle other = (org.tensorflow.framework.ResourceHandle) obj;
 
     boolean result = true;
     result = result && getDevice()
@@ -391,58 +391,58 @@ public  final class ResourceHandle extends
     return hash;
   }
 
-  public static ResourceHandle parseFrom(
+  public static org.tensorflow.framework.ResourceHandle parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static ResourceHandle parseFrom(
+  public static org.tensorflow.framework.ResourceHandle parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static ResourceHandle parseFrom(byte[] data)
+  public static org.tensorflow.framework.ResourceHandle parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static ResourceHandle parseFrom(
+  public static org.tensorflow.framework.ResourceHandle parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static ResourceHandle parseFrom(java.io.InputStream input)
+  public static org.tensorflow.framework.ResourceHandle parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static ResourceHandle parseFrom(
+  public static org.tensorflow.framework.ResourceHandle parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static ResourceHandle parseDelimitedFrom(java.io.InputStream input)
+  public static org.tensorflow.framework.ResourceHandle parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static ResourceHandle parseDelimitedFrom(
+  public static org.tensorflow.framework.ResourceHandle parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static ResourceHandle parseFrom(
+  public static org.tensorflow.framework.ResourceHandle parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static ResourceHandle parseFrom(
+  public static org.tensorflow.framework.ResourceHandle parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -454,7 +454,7 @@ public  final class ResourceHandle extends
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(ResourceHandle prototype) {
+  public static Builder newBuilder(org.tensorflow.framework.ResourceHandle prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -470,7 +470,7 @@ public  final class ResourceHandle extends
   }
   /**
    * <pre>
-   * Protocol buffer representing a handle to a org.org.tensorflow resource. Handles are
+   * Protocol buffer representing a handle to a tensorflow resource. Handles are
    * not valid across executions, but can be serialized back and forth from within
    * a single run.
    * </pre>
@@ -480,20 +480,20 @@ public  final class ResourceHandle extends
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:tensorboard.ResourceHandle)
-    ResourceHandleOrBuilder {
+      org.tensorflow.framework.ResourceHandleOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return ResourceHandleProto.internal_static_tensorboard_ResourceHandle_descriptor;
+      return org.tensorflow.framework.ResourceHandleProto.internal_static_tensorboard_ResourceHandle_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return ResourceHandleProto.internal_static_tensorboard_ResourceHandle_fieldAccessorTable
+      return org.tensorflow.framework.ResourceHandleProto.internal_static_tensorboard_ResourceHandle_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              ResourceHandle.class, ResourceHandle.Builder.class);
+              org.tensorflow.framework.ResourceHandle.class, org.tensorflow.framework.ResourceHandle.Builder.class);
     }
 
-    // Construct using ResourceHandle.newBuilder()
+    // Construct using org.tensorflow.framework.ResourceHandle.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -525,23 +525,23 @@ public  final class ResourceHandle extends
 
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return ResourceHandleProto.internal_static_tensorboard_ResourceHandle_descriptor;
+      return org.tensorflow.framework.ResourceHandleProto.internal_static_tensorboard_ResourceHandle_descriptor;
     }
 
-    public ResourceHandle getDefaultInstanceForType() {
-      return ResourceHandle.getDefaultInstance();
+    public org.tensorflow.framework.ResourceHandle getDefaultInstanceForType() {
+      return org.tensorflow.framework.ResourceHandle.getDefaultInstance();
     }
 
-    public ResourceHandle build() {
-      ResourceHandle result = buildPartial();
+    public org.tensorflow.framework.ResourceHandle build() {
+      org.tensorflow.framework.ResourceHandle result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public ResourceHandle buildPartial() {
-      ResourceHandle result = new ResourceHandle(this);
+    public org.tensorflow.framework.ResourceHandle buildPartial() {
+      org.tensorflow.framework.ResourceHandle result = new org.tensorflow.framework.ResourceHandle(this);
       result.device_ = device_;
       result.container_ = container_;
       result.name_ = name_;
@@ -578,16 +578,16 @@ public  final class ResourceHandle extends
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof ResourceHandle) {
-        return mergeFrom((ResourceHandle)other);
+      if (other instanceof org.tensorflow.framework.ResourceHandle) {
+        return mergeFrom((org.tensorflow.framework.ResourceHandle)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(ResourceHandle other) {
-      if (other == ResourceHandle.getDefaultInstance()) return this;
+    public Builder mergeFrom(org.tensorflow.framework.ResourceHandle other) {
+      if (other == org.tensorflow.framework.ResourceHandle.getDefaultInstance()) return this;
       if (!other.getDevice().isEmpty()) {
         device_ = other.device_;
         onChanged();
@@ -619,11 +619,11 @@ public  final class ResourceHandle extends
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      ResourceHandle parsedMessage = null;
+      org.tensorflow.framework.ResourceHandle parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (ResourceHandle) e.getUnfinishedMessage();
+        parsedMessage = (org.tensorflow.framework.ResourceHandle) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -1049,12 +1049,12 @@ public  final class ResourceHandle extends
   }
 
   // @@protoc_insertion_point(class_scope:tensorboard.ResourceHandle)
-  private static final ResourceHandle DEFAULT_INSTANCE;
+  private static final org.tensorflow.framework.ResourceHandle DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new ResourceHandle();
+    DEFAULT_INSTANCE = new org.tensorflow.framework.ResourceHandle();
   }
 
-  public static ResourceHandle getDefaultInstance() {
+  public static org.tensorflow.framework.ResourceHandle getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -1077,7 +1077,7 @@ public  final class ResourceHandle extends
     return PARSER;
   }
 
-  public ResourceHandle getDefaultInstanceForType() {
+  public org.tensorflow.framework.ResourceHandle getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

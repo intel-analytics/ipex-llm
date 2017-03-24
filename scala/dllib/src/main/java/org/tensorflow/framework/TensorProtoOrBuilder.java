@@ -14,7 +14,7 @@ public interface TensorProtoOrBuilder extends
   /**
    * <code>optional .tensorboard.DataType dtype = 1;</code>
    */
-  DataType getDtype();
+  org.tensorflow.framework.DataType getDtype();
 
   /**
    * <pre>
@@ -31,7 +31,7 @@ public interface TensorProtoOrBuilder extends
    *
    * <code>optional .tensorboard.TensorShapeProto tensor_shape = 2;</code>
    */
-  TensorShapeProto getTensorShape();
+  org.tensorflow.framework.TensorShapeProto getTensorShape();
   /**
    * <pre>
    * Shape of the tensor.  TODO(touts): sort out the 0-rank issues.
@@ -39,7 +39,7 @@ public interface TensorProtoOrBuilder extends
    *
    * <code>optional .tensorboard.TensorShapeProto tensor_shape = 2;</code>
    */
-  TensorShapeProtoOrBuilder getTensorShapeOrBuilder();
+  org.tensorflow.framework.TensorShapeProtoOrBuilder getTensorShapeOrBuilder();
 
   /**
    * <pre>
@@ -304,7 +304,7 @@ public interface TensorProtoOrBuilder extends
    *
    * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
    */
-  java.util.List<ResourceHandle>
+  java.util.List<org.tensorflow.framework.ResourceHandle> 
       getResourceHandleValList();
   /**
    * <pre>
@@ -313,7 +313,7 @@ public interface TensorProtoOrBuilder extends
    *
    * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
    */
-  ResourceHandle getResourceHandleVal(int index);
+  org.tensorflow.framework.ResourceHandle getResourceHandleVal(int index);
   /**
    * <pre>
    * DT_RESOURCE
@@ -329,7 +329,7 @@ public interface TensorProtoOrBuilder extends
    *
    * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
    */
-  java.util.List<? extends ResourceHandleOrBuilder>
+  java.util.List<? extends org.tensorflow.framework.ResourceHandleOrBuilder> 
       getResourceHandleValOrBuilderList();
   /**
    * <pre>
@@ -338,6 +338,6 @@ public interface TensorProtoOrBuilder extends
    *
    * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
    */
-  ResourceHandleOrBuilder getResourceHandleValOrBuilder(
+  org.tensorflow.framework.ResourceHandleOrBuilder getResourceHandleValOrBuilder(
       int index);
 }
