@@ -62,7 +62,6 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     Logger.getLogger(optimClz).addAppender(writerAppender)
 
     Files.deleteIfExists(Paths.get(logFile))
-    Logger.getLogger("org").setLevel(Level.INFO)
     LoggerFilter.redirectSparkInfoLogs()
     Logger.getLogger(optimClz).setLevel(Level.INFO)
 
@@ -105,14 +104,6 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
       optimize()
 
     require(Files.exists(Paths.get(logFile)), s"didn't generate $logFile")
-
-    // only check the first line of the log
-    {
-      val pattern = ".*INFO.*SparkContext:.*Running Spark version.*"
-      val firstLine = Source.fromFile(logFile).getLines.next()
-      require(firstLine.matches(pattern), s"$logFile can't matchs the specific output")
-      Files.deleteIfExists(Paths.get(logFile))
-    }
 
     val allString = writer.toString
     writerAppender.close
