@@ -23,8 +23,8 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, TrainSummary, ExceptionTest}
-import org.apache.commons.io.FileUtils
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, ExceptionTest}
+import com.intel.analytics.bigdl.visualization.TrainSummary
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
