@@ -30,8 +30,8 @@ import scala.reflect.ClassTag
  * @param appName
  */
 abstract class Summary(
-      logDir: String,
-      appName: String) {
+                        logDir: String,
+                        appName: String) {
   protected val writer: FileWriter
 
   /**
@@ -42,9 +42,9 @@ abstract class Summary(
    * @return this
    */
   def addScalar(
-        tag: String,
-        value: Float,
-        step: Long): this.type = {
+                 tag: String,
+                 value: Float,
+                 step: Long): this.type = {
     writer.addSummary(
       Summary.scalar(tag, value), step
     )
@@ -59,9 +59,9 @@ abstract class Summary(
    * @return this
    */
   def addHistogram[T: ClassTag](
-        tag: String,
-        value: Tensor[T],
-        step: Long)(implicit ev: TensorNumeric[T]): this.type = {
+                                 tag: String,
+                                 value: Tensor[T],
+                                 step: Long)(implicit ev: TensorNumeric[T]): this.type = {
     writer.addSummary(
       Summary.histogram[T](tag, value), step
     )
@@ -75,6 +75,13 @@ abstract class Summary(
    * @return an array of triple.
    */
   def readScalar(tag: String): Array[(Long, Float, Double)]
+
+  /**
+   * Close this logger.
+   */
+  def close(): Unit = {
+    writer.close()
+  }
 }
 
 object Summary {
@@ -135,10 +142,10 @@ object Summary {
    * Find a bucket for x.
    */
   private def bisectLeft(
-      a: Array[Double],
-      x: Double,
-      lo: Int = 0,
-      hi: Int = -1): Int = {
+                          a: Array[Double],
+                          x: Double,
+                          lo: Int = 0,
+                          hi: Int = -1): Int = {
     require(lo >= 0)
     var high = if (hi == -1) {
       a.length
@@ -177,6 +184,3 @@ object Summary {
   }
 
 }
-
-
-
