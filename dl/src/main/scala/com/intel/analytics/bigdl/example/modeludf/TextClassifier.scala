@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.structuredStreamUdf
+package com.intel.analytics.bigdl.example.modeludf
 
 import java.io.File
 import java.util
@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.example.textclassification.SimpleTokenizer._
 import com.intel.analytics.bigdl.example.textclassification.{SimpleTokenizer, WordMeta}
-import com.intel.analytics.bigdl.example.structuredStreamUdf.Options.TextClassificationParams
+import com.intel.analytics.bigdl.example.modeludf.Options.TextClassificationParams
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, _}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -45,11 +45,11 @@ import scala.language.existentials
   * 2 epoches training.
   */
 class TextClassifier(param: TextClassificationParams) extends Serializable {
-  val log: Logger = LoggerFactory.getLogger(this.getClass)
-  val gloveDir = s"${param.baseDir}/glove.6B/"
-  val textDataDir = s"${param.baseDir}/20_newsgroup/"
-  val testDataDir = s"${param.testDir}"
-  var classNum = -1
+  private val log: Logger = LoggerFactory.getLogger(this.getClass)
+  private val gloveDir = s"${param.baseDir}/glove.6B/"
+  private val textDataDir = s"${param.baseDir}/20_newsgroup/"
+  private val testDataDir = s"${param.testDir}"
+  private var classNum = -1
 
     /**
     * Load the pre-trained word2Vec
@@ -101,7 +101,7 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
     // category is a string name, label is it's index
     //     val categoryToLabel = new util.HashMap[String, Int]()
     val fileList = new File(testDataDir).listFiles()
-      .filter(_.isFile).filter(_.getName.forall(Character.isDigit(_))).sorted
+      .filter(_.isFile).filter(_.getName.forall(Character.isDigit)).sorted
 
     val testData = fileList.map { file => {
       val fileName = file.getName
@@ -128,9 +128,9 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
 
     categoryPathList.foreach { categoryPath =>
       val label_id = categoryToLabel.size() + 1 // one-base index
-      categoryToLabel.put(categoryPath.getName(), label_id)
+      categoryToLabel.put(categoryPath.getName, label_id)
       val textFiles = categoryPath.listFiles()
-        .filter(_.isFile).filter(_.getName.forall(Character.isDigit(_))).sorted
+        .filter(_.isFile).filter(_.getName.forall(Character.isDigit)).sorted
       textFiles.foreach { file =>
         val fileName = file.getName
         val source = Source.fromFile(file, "ISO-8859-1")
@@ -142,7 +142,7 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
     }
     this.classNum = labels.toSet.size
     log.info(s"Found ${texts.length} texts.")
-    log.info(s"Found ${classNum} classes")
+    log.info(s"Found $classNum classes")
     fileNames.zip(texts).zip(labels).map {
       case ((filename, text), label) => (filename, text, label)
     }
@@ -155,7 +155,7 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
   def analyzeTexts(dataRdd: RDD[(String, String, Float)])
   : (Map[String, WordMeta], Map[Float, Array[Float]]) = {
     // Remove the top 10 words roughly, you might want to fine tuning this.
-    val frequencies = dataRdd.flatMap { case (filename: String, text: String, label: Float) =>
+    val frequencies = dataRdd.flatMap { case (_: String, text: String, _: Float) =>
       SimpleTokenizer.toTokens(text)
     }.map(word => (word, 1)).reduceByKey(_ + _)
       .sortBy(-_._2).collect().slice(10, param.maxWordsNum)
@@ -230,7 +230,7 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
 
     // create rdd from input directory
     val trainingRDD = rdds(0).map {
-      case (filename, text, label) => (text, label)
+      case (_, text, label) => (text, label)
     }.map { case (input: Array[Array[Float]], label: Float) =>
       Sample(
         featureTensor = Tensor(input.flatten, Array(param.maxSequenceLength, param.embeddingDim))
@@ -239,7 +239,7 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
     }
 
     val valRDD = rdds(1).map {
-      case (filename, text, label) => (text, label)
+      case (_, text, label) => (text, label)
     }.map { case (input: Array[Array[Float]], label: Float) =>
       Sample(
         featureTensor = Tensor(input.flatten, Array(param.maxSequenceLength, param.embeddingDim))

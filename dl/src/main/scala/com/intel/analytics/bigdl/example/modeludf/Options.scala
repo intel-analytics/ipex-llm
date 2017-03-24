@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.example.structuredStreamUdf
+package com.intel.analytics.bigdl.example.modeludf
 
 import scopt.OptionParser
 
@@ -111,9 +111,9 @@ object Options {
                                       brokerList: String = "",
                                       targetTopic: String = "",
                                       interval: Long = 1,
-                                      batchsize: Int = 2)
+                                      batchSize: Int = 2)
 
-  val kafaProducerParser = new OptionParser[TextKafkaProducerParams]("BigDL Streaming Example") {
+  val kafkaProducerParser = new OptionParser[TextKafkaProducerParams]("BigDL Streaming Example") {
     opt[String]('f', "folder")
       .required()
       .text("Base dir containing the text data")
@@ -129,7 +129,7 @@ object Options {
       .action((x, c) => c.copy(interval = x))
     opt[Int]("batchsize")
       .text("produce batchsize")
-      .action((x, c) => c.copy(batchsize = x))
+      .action((x, c) => c.copy(batchSize = x))
   }
 
       /**
