@@ -35,7 +35,6 @@ class TrainSummary(
   protected val folder = s"$logDir/$appName/train"
   protected override val writer = new FileWriter(folder)
   private val triggers: mutable.HashMap[String, Trigger] = mutable.HashMap(
-    "LearningRate" -> Trigger.severalIteration(1),
     "Loss" -> Trigger.severalIteration(1),
     "Throughput" -> Trigger.severalIteration(1))
 
