@@ -277,6 +277,16 @@ class LSTM(Model):
         super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size)
 
 
+class LSTMPeephole(Model):
+    '''
+    >>> lstm = LSTMPeephole(4, 3)
+    creating: createLSTMPeephole
+    '''
+
+    def __init__(self, input_size, hidden_size, bigdl_type="float"):
+        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size)
+
+
 class GRU(Model):
     '''
     >>> gru = GRU(4, 3)
