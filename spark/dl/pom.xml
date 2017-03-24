@@ -294,8 +294,7 @@
             <id>serial-tests</id>
             <properties>
                 <runSpecsInParallel>false</runSpecsInParallel>
-                <tagsToExclude>com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
-                <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
+                <tagsToExclude>com.intel.analytics.bigdl.tags.Parallel,com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
             </properties>
         </profile>
         <profile>
