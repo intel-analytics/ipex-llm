@@ -50,11 +50,11 @@ public  final class TensorShapeProto extends
           }
           case 18: {
             if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-              dim_ = new java.util.ArrayList<TensorShapeProto.Dim>();
+              dim_ = new java.util.ArrayList<org.tensorflow.framework.TensorShapeProto.Dim>();
               mutable_bitField0_ |= 0x00000001;
             }
             dim_.add(
-                input.readMessage(TensorShapeProto.Dim.parser(), extensionRegistry));
+                input.readMessage(org.tensorflow.framework.TensorShapeProto.Dim.parser(), extensionRegistry));
             break;
           }
           case 24: {
@@ -78,14 +78,14 @@ public  final class TensorShapeProto extends
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_descriptor;
+    return org.tensorflow.framework.TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_fieldAccessorTable
+    return org.tensorflow.framework.TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            TensorShapeProto.class, TensorShapeProto.Builder.class);
+            org.tensorflow.framework.TensorShapeProto.class, org.tensorflow.framework.TensorShapeProto.Builder.class);
   }
 
   public interface DimOrBuilder extends
@@ -192,14 +192,14 @@ public  final class TensorShapeProto extends
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_Dim_descriptor;
+      return org.tensorflow.framework.TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_Dim_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_Dim_fieldAccessorTable
+      return org.tensorflow.framework.TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_Dim_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              TensorShapeProto.Dim.class, TensorShapeProto.Dim.Builder.class);
+              org.tensorflow.framework.TensorShapeProto.Dim.class, org.tensorflow.framework.TensorShapeProto.Dim.Builder.class);
     }
 
     public static final int SIZE_FIELD_NUMBER = 1;
@@ -303,10 +303,10 @@ public  final class TensorShapeProto extends
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof TensorShapeProto.Dim)) {
+      if (!(obj instanceof org.tensorflow.framework.TensorShapeProto.Dim)) {
         return super.equals(obj);
       }
-      TensorShapeProto.Dim other = (TensorShapeProto.Dim) obj;
+      org.tensorflow.framework.TensorShapeProto.Dim other = (org.tensorflow.framework.TensorShapeProto.Dim) obj;
 
       boolean result = true;
       result = result && (getSize()
@@ -333,58 +333,58 @@ public  final class TensorShapeProto extends
       return hash;
     }
 
-    public static TensorShapeProto.Dim parseFrom(
+    public static org.tensorflow.framework.TensorShapeProto.Dim parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TensorShapeProto.Dim parseFrom(
+    public static org.tensorflow.framework.TensorShapeProto.Dim parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TensorShapeProto.Dim parseFrom(byte[] data)
+    public static org.tensorflow.framework.TensorShapeProto.Dim parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TensorShapeProto.Dim parseFrom(
+    public static org.tensorflow.framework.TensorShapeProto.Dim parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TensorShapeProto.Dim parseFrom(java.io.InputStream input)
+    public static org.tensorflow.framework.TensorShapeProto.Dim parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TensorShapeProto.Dim parseFrom(
+    public static org.tensorflow.framework.TensorShapeProto.Dim parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TensorShapeProto.Dim parseDelimitedFrom(java.io.InputStream input)
+    public static org.tensorflow.framework.TensorShapeProto.Dim parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static TensorShapeProto.Dim parseDelimitedFrom(
+    public static org.tensorflow.framework.TensorShapeProto.Dim parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TensorShapeProto.Dim parseFrom(
+    public static org.tensorflow.framework.TensorShapeProto.Dim parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TensorShapeProto.Dim parseFrom(
+    public static org.tensorflow.framework.TensorShapeProto.Dim parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -396,7 +396,7 @@ public  final class TensorShapeProto extends
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(TensorShapeProto.Dim prototype) {
+    public static Builder newBuilder(org.tensorflow.framework.TensorShapeProto.Dim prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -420,20 +420,20 @@ public  final class TensorShapeProto extends
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:tensorboard.TensorShapeProto.Dim)
-        TensorShapeProto.DimOrBuilder {
+        org.tensorflow.framework.TensorShapeProto.DimOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_Dim_descriptor;
+        return org.tensorflow.framework.TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_Dim_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_Dim_fieldAccessorTable
+        return org.tensorflow.framework.TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_Dim_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                TensorShapeProto.Dim.class, TensorShapeProto.Dim.Builder.class);
+                org.tensorflow.framework.TensorShapeProto.Dim.class, org.tensorflow.framework.TensorShapeProto.Dim.Builder.class);
       }
 
-      // Construct using TensorShapeProto.Dim.newBuilder()
+      // Construct using org.tensorflow.framework.TensorShapeProto.Dim.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -459,23 +459,23 @@ public  final class TensorShapeProto extends
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_Dim_descriptor;
+        return org.tensorflow.framework.TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_Dim_descriptor;
       }
 
-      public TensorShapeProto.Dim getDefaultInstanceForType() {
-        return TensorShapeProto.Dim.getDefaultInstance();
+      public org.tensorflow.framework.TensorShapeProto.Dim getDefaultInstanceForType() {
+        return org.tensorflow.framework.TensorShapeProto.Dim.getDefaultInstance();
       }
 
-      public TensorShapeProto.Dim build() {
-        TensorShapeProto.Dim result = buildPartial();
+      public org.tensorflow.framework.TensorShapeProto.Dim build() {
+        org.tensorflow.framework.TensorShapeProto.Dim result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public TensorShapeProto.Dim buildPartial() {
-        TensorShapeProto.Dim result = new TensorShapeProto.Dim(this);
+      public org.tensorflow.framework.TensorShapeProto.Dim buildPartial() {
+        org.tensorflow.framework.TensorShapeProto.Dim result = new org.tensorflow.framework.TensorShapeProto.Dim(this);
         result.size_ = size_;
         result.name_ = name_;
         onBuilt();
@@ -509,16 +509,16 @@ public  final class TensorShapeProto extends
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof TensorShapeProto.Dim) {
-          return mergeFrom((TensorShapeProto.Dim)other);
+        if (other instanceof org.tensorflow.framework.TensorShapeProto.Dim) {
+          return mergeFrom((org.tensorflow.framework.TensorShapeProto.Dim)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(TensorShapeProto.Dim other) {
-        if (other == TensorShapeProto.Dim.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.tensorflow.framework.TensorShapeProto.Dim other) {
+        if (other == org.tensorflow.framework.TensorShapeProto.Dim.getDefaultInstance()) return this;
         if (other.getSize() != 0L) {
           setSize(other.getSize());
         }
@@ -538,11 +538,11 @@ public  final class TensorShapeProto extends
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        TensorShapeProto.Dim parsedMessage = null;
+        org.tensorflow.framework.TensorShapeProto.Dim parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (TensorShapeProto.Dim) e.getUnfinishedMessage();
+          parsedMessage = (org.tensorflow.framework.TensorShapeProto.Dim) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -705,12 +705,12 @@ public  final class TensorShapeProto extends
     }
 
     // @@protoc_insertion_point(class_scope:tensorboard.TensorShapeProto.Dim)
-    private static final TensorShapeProto.Dim DEFAULT_INSTANCE;
+    private static final org.tensorflow.framework.TensorShapeProto.Dim DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new TensorShapeProto.Dim();
+      DEFAULT_INSTANCE = new org.tensorflow.framework.TensorShapeProto.Dim();
     }
 
-    public static TensorShapeProto.Dim getDefaultInstance() {
+    public static org.tensorflow.framework.TensorShapeProto.Dim getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -733,7 +733,7 @@ public  final class TensorShapeProto extends
       return PARSER;
     }
 
-    public TensorShapeProto.Dim getDefaultInstanceForType() {
+    public org.tensorflow.framework.TensorShapeProto.Dim getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -741,7 +741,7 @@ public  final class TensorShapeProto extends
 
   private int bitField0_;
   public static final int DIM_FIELD_NUMBER = 2;
-  private java.util.List<TensorShapeProto.Dim> dim_;
+  private java.util.List<org.tensorflow.framework.TensorShapeProto.Dim> dim_;
   /**
    * <pre>
    * Dimensions of the tensor, such as {"input", 30}, {"output", 40}
@@ -758,7 +758,7 @@ public  final class TensorShapeProto extends
    *
    * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
    */
-  public java.util.List<TensorShapeProto.Dim> getDimList() {
+  public java.util.List<org.tensorflow.framework.TensorShapeProto.Dim> getDimList() {
     return dim_;
   }
   /**
@@ -777,7 +777,7 @@ public  final class TensorShapeProto extends
    *
    * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
    */
-  public java.util.List<? extends TensorShapeProto.DimOrBuilder>
+  public java.util.List<? extends org.tensorflow.framework.TensorShapeProto.DimOrBuilder> 
       getDimOrBuilderList() {
     return dim_;
   }
@@ -816,7 +816,7 @@ public  final class TensorShapeProto extends
    *
    * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
    */
-  public TensorShapeProto.Dim getDim(int index) {
+  public org.tensorflow.framework.TensorShapeProto.Dim getDim(int index) {
     return dim_.get(index);
   }
   /**
@@ -835,7 +835,7 @@ public  final class TensorShapeProto extends
    *
    * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
    */
-  public TensorShapeProto.DimOrBuilder getDimOrBuilder(
+  public org.tensorflow.framework.TensorShapeProto.DimOrBuilder getDimOrBuilder(
       int index) {
     return dim_.get(index);
   }
@@ -897,10 +897,10 @@ public  final class TensorShapeProto extends
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof TensorShapeProto)) {
+    if (!(obj instanceof org.tensorflow.framework.TensorShapeProto)) {
       return super.equals(obj);
     }
-    TensorShapeProto other = (TensorShapeProto) obj;
+    org.tensorflow.framework.TensorShapeProto other = (org.tensorflow.framework.TensorShapeProto) obj;
 
     boolean result = true;
     result = result && getDimList()
@@ -929,58 +929,58 @@ public  final class TensorShapeProto extends
     return hash;
   }
 
-  public static TensorShapeProto parseFrom(
+  public static org.tensorflow.framework.TensorShapeProto parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static TensorShapeProto parseFrom(
+  public static org.tensorflow.framework.TensorShapeProto parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static TensorShapeProto parseFrom(byte[] data)
+  public static org.tensorflow.framework.TensorShapeProto parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static TensorShapeProto parseFrom(
+  public static org.tensorflow.framework.TensorShapeProto parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static TensorShapeProto parseFrom(java.io.InputStream input)
+  public static org.tensorflow.framework.TensorShapeProto parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static TensorShapeProto parseFrom(
+  public static org.tensorflow.framework.TensorShapeProto parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static TensorShapeProto parseDelimitedFrom(java.io.InputStream input)
+  public static org.tensorflow.framework.TensorShapeProto parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static TensorShapeProto parseDelimitedFrom(
+  public static org.tensorflow.framework.TensorShapeProto parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static TensorShapeProto parseFrom(
+  public static org.tensorflow.framework.TensorShapeProto parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static TensorShapeProto parseFrom(
+  public static org.tensorflow.framework.TensorShapeProto parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -992,7 +992,7 @@ public  final class TensorShapeProto extends
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(TensorShapeProto prototype) {
+  public static Builder newBuilder(org.tensorflow.framework.TensorShapeProto prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -1016,20 +1016,20 @@ public  final class TensorShapeProto extends
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:tensorboard.TensorShapeProto)
-    TensorShapeProtoOrBuilder {
+      org.tensorflow.framework.TensorShapeProtoOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_descriptor;
+      return org.tensorflow.framework.TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_fieldAccessorTable
+      return org.tensorflow.framework.TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              TensorShapeProto.class, TensorShapeProto.Builder.class);
+              org.tensorflow.framework.TensorShapeProto.class, org.tensorflow.framework.TensorShapeProto.Builder.class);
     }
 
-    // Construct using TensorShapeProto.newBuilder()
+    // Construct using org.tensorflow.framework.TensorShapeProto.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -1060,23 +1060,23 @@ public  final class TensorShapeProto extends
 
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_descriptor;
+      return org.tensorflow.framework.TensorShapeProtos.internal_static_tensorboard_TensorShapeProto_descriptor;
     }
 
-    public TensorShapeProto getDefaultInstanceForType() {
-      return TensorShapeProto.getDefaultInstance();
+    public org.tensorflow.framework.TensorShapeProto getDefaultInstanceForType() {
+      return org.tensorflow.framework.TensorShapeProto.getDefaultInstance();
     }
 
-    public TensorShapeProto build() {
-      TensorShapeProto result = buildPartial();
+    public org.tensorflow.framework.TensorShapeProto build() {
+      org.tensorflow.framework.TensorShapeProto result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public TensorShapeProto buildPartial() {
-      TensorShapeProto result = new TensorShapeProto(this);
+    public org.tensorflow.framework.TensorShapeProto buildPartial() {
+      org.tensorflow.framework.TensorShapeProto result = new org.tensorflow.framework.TensorShapeProto(this);
       int from_bitField0_ = bitField0_;
       int to_bitField0_ = 0;
       if (dimBuilder_ == null) {
@@ -1121,16 +1121,16 @@ public  final class TensorShapeProto extends
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof TensorShapeProto) {
-        return mergeFrom((TensorShapeProto)other);
+      if (other instanceof org.tensorflow.framework.TensorShapeProto) {
+        return mergeFrom((org.tensorflow.framework.TensorShapeProto)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(TensorShapeProto other) {
-      if (other == TensorShapeProto.getDefaultInstance()) return this;
+    public Builder mergeFrom(org.tensorflow.framework.TensorShapeProto other) {
+      if (other == org.tensorflow.framework.TensorShapeProto.getDefaultInstance()) return this;
       if (dimBuilder_ == null) {
         if (!other.dim_.isEmpty()) {
           if (dim_.isEmpty()) {
@@ -1172,11 +1172,11 @@ public  final class TensorShapeProto extends
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      TensorShapeProto parsedMessage = null;
+      org.tensorflow.framework.TensorShapeProto parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (TensorShapeProto) e.getUnfinishedMessage();
+        parsedMessage = (org.tensorflow.framework.TensorShapeProto) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -1187,17 +1187,17 @@ public  final class TensorShapeProto extends
     }
     private int bitField0_;
 
-    private java.util.List<TensorShapeProto.Dim> dim_ =
+    private java.util.List<org.tensorflow.framework.TensorShapeProto.Dim> dim_ =
       java.util.Collections.emptyList();
     private void ensureDimIsMutable() {
       if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-        dim_ = new java.util.ArrayList<TensorShapeProto.Dim>(dim_);
+        dim_ = new java.util.ArrayList<org.tensorflow.framework.TensorShapeProto.Dim>(dim_);
         bitField0_ |= 0x00000001;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        TensorShapeProto.Dim, TensorShapeProto.Dim.Builder, TensorShapeProto.DimOrBuilder> dimBuilder_;
+        org.tensorflow.framework.TensorShapeProto.Dim, org.tensorflow.framework.TensorShapeProto.Dim.Builder, org.tensorflow.framework.TensorShapeProto.DimOrBuilder> dimBuilder_;
 
     /**
      * <pre>
@@ -1215,7 +1215,7 @@ public  final class TensorShapeProto extends
      *
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
-    public java.util.List<TensorShapeProto.Dim> getDimList() {
+    public java.util.List<org.tensorflow.framework.TensorShapeProto.Dim> getDimList() {
       if (dimBuilder_ == null) {
         return java.util.Collections.unmodifiableList(dim_);
       } else {
@@ -1261,7 +1261,7 @@ public  final class TensorShapeProto extends
      *
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
-    public TensorShapeProto.Dim getDim(int index) {
+    public org.tensorflow.framework.TensorShapeProto.Dim getDim(int index) {
       if (dimBuilder_ == null) {
         return dim_.get(index);
       } else {
@@ -1285,7 +1285,7 @@ public  final class TensorShapeProto extends
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
     public Builder setDim(
-        int index, TensorShapeProto.Dim value) {
+        int index, org.tensorflow.framework.TensorShapeProto.Dim value) {
       if (dimBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1315,7 +1315,7 @@ public  final class TensorShapeProto extends
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
     public Builder setDim(
-        int index, TensorShapeProto.Dim.Builder builderForValue) {
+        int index, org.tensorflow.framework.TensorShapeProto.Dim.Builder builderForValue) {
       if (dimBuilder_ == null) {
         ensureDimIsMutable();
         dim_.set(index, builderForValue.build());
@@ -1341,7 +1341,7 @@ public  final class TensorShapeProto extends
      *
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
-    public Builder addDim(TensorShapeProto.Dim value) {
+    public Builder addDim(org.tensorflow.framework.TensorShapeProto.Dim value) {
       if (dimBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1371,7 +1371,7 @@ public  final class TensorShapeProto extends
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
     public Builder addDim(
-        int index, TensorShapeProto.Dim value) {
+        int index, org.tensorflow.framework.TensorShapeProto.Dim value) {
       if (dimBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1401,7 +1401,7 @@ public  final class TensorShapeProto extends
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
     public Builder addDim(
-        TensorShapeProto.Dim.Builder builderForValue) {
+        org.tensorflow.framework.TensorShapeProto.Dim.Builder builderForValue) {
       if (dimBuilder_ == null) {
         ensureDimIsMutable();
         dim_.add(builderForValue.build());
@@ -1428,7 +1428,7 @@ public  final class TensorShapeProto extends
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
     public Builder addDim(
-        int index, TensorShapeProto.Dim.Builder builderForValue) {
+        int index, org.tensorflow.framework.TensorShapeProto.Dim.Builder builderForValue) {
       if (dimBuilder_ == null) {
         ensureDimIsMutable();
         dim_.add(index, builderForValue.build());
@@ -1455,7 +1455,7 @@ public  final class TensorShapeProto extends
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
     public Builder addAllDim(
-        java.lang.Iterable<? extends TensorShapeProto.Dim> values) {
+        java.lang.Iterable<? extends org.tensorflow.framework.TensorShapeProto.Dim> values) {
       if (dimBuilder_ == null) {
         ensureDimIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -1534,7 +1534,7 @@ public  final class TensorShapeProto extends
      *
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
-    public TensorShapeProto.Dim.Builder getDimBuilder(
+    public org.tensorflow.framework.TensorShapeProto.Dim.Builder getDimBuilder(
         int index) {
       return getDimFieldBuilder().getBuilder(index);
     }
@@ -1554,7 +1554,7 @@ public  final class TensorShapeProto extends
      *
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
-    public TensorShapeProto.DimOrBuilder getDimOrBuilder(
+    public org.tensorflow.framework.TensorShapeProto.DimOrBuilder getDimOrBuilder(
         int index) {
       if (dimBuilder_ == null) {
         return dim_.get(index);  } else {
@@ -1577,7 +1577,7 @@ public  final class TensorShapeProto extends
      *
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
-    public java.util.List<? extends TensorShapeProto.DimOrBuilder>
+    public java.util.List<? extends org.tensorflow.framework.TensorShapeProto.DimOrBuilder> 
          getDimOrBuilderList() {
       if (dimBuilder_ != null) {
         return dimBuilder_.getMessageOrBuilderList();
@@ -1601,9 +1601,9 @@ public  final class TensorShapeProto extends
      *
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
-    public TensorShapeProto.Dim.Builder addDimBuilder() {
+    public org.tensorflow.framework.TensorShapeProto.Dim.Builder addDimBuilder() {
       return getDimFieldBuilder().addBuilder(
-          TensorShapeProto.Dim.getDefaultInstance());
+          org.tensorflow.framework.TensorShapeProto.Dim.getDefaultInstance());
     }
     /**
      * <pre>
@@ -1621,10 +1621,10 @@ public  final class TensorShapeProto extends
      *
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
-    public TensorShapeProto.Dim.Builder addDimBuilder(
+    public org.tensorflow.framework.TensorShapeProto.Dim.Builder addDimBuilder(
         int index) {
       return getDimFieldBuilder().addBuilder(
-          index, TensorShapeProto.Dim.getDefaultInstance());
+          index, org.tensorflow.framework.TensorShapeProto.Dim.getDefaultInstance());
     }
     /**
      * <pre>
@@ -1642,16 +1642,16 @@ public  final class TensorShapeProto extends
      *
      * <code>repeated .tensorboard.TensorShapeProto.Dim dim = 2;</code>
      */
-    public java.util.List<TensorShapeProto.Dim.Builder>
+    public java.util.List<org.tensorflow.framework.TensorShapeProto.Dim.Builder> 
          getDimBuilderList() {
       return getDimFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        TensorShapeProto.Dim, TensorShapeProto.Dim.Builder, TensorShapeProto.DimOrBuilder>
+        org.tensorflow.framework.TensorShapeProto.Dim, org.tensorflow.framework.TensorShapeProto.Dim.Builder, org.tensorflow.framework.TensorShapeProto.DimOrBuilder> 
         getDimFieldBuilder() {
       if (dimBuilder_ == null) {
         dimBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-            TensorShapeProto.Dim, TensorShapeProto.Dim.Builder, TensorShapeProto.DimOrBuilder>(
+            org.tensorflow.framework.TensorShapeProto.Dim, org.tensorflow.framework.TensorShapeProto.Dim.Builder, org.tensorflow.framework.TensorShapeProto.DimOrBuilder>(
                 dim_,
                 ((bitField0_ & 0x00000001) == 0x00000001),
                 getParentForChildren(),
@@ -1716,12 +1716,12 @@ public  final class TensorShapeProto extends
   }
 
   // @@protoc_insertion_point(class_scope:tensorboard.TensorShapeProto)
-  private static final TensorShapeProto DEFAULT_INSTANCE;
+  private static final org.tensorflow.framework.TensorShapeProto DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new TensorShapeProto();
+    DEFAULT_INSTANCE = new org.tensorflow.framework.TensorShapeProto();
   }
 
-  public static TensorShapeProto getDefaultInstance() {
+  public static org.tensorflow.framework.TensorShapeProto getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -1744,7 +1744,7 @@ public  final class TensorShapeProto extends
     return PARSER;
   }
 
-  public TensorShapeProto getDefaultInstanceForType() {
+  public org.tensorflow.framework.TensorShapeProto getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

@@ -14,7 +14,7 @@ public interface LogMessageOrBuilder extends
   /**
    * <code>optional .tensorboard.LogMessage.Level level = 1;</code>
    */
-  LogMessage.Level getLevel();
+  org.tensorflow.util.LogMessage.Level getLevel();
 
   /**
    * <code>optional string message = 2;</code>

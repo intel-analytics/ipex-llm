@@ -72,14 +72,14 @@ public  final class TaggedRunMetadata extends
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return EventProtos.internal_static_tensorboard_TaggedRunMetadata_descriptor;
+    return org.tensorflow.util.EventProtos.internal_static_tensorboard_TaggedRunMetadata_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return EventProtos.internal_static_tensorboard_TaggedRunMetadata_fieldAccessorTable
+    return org.tensorflow.util.EventProtos.internal_static_tensorboard_TaggedRunMetadata_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            TaggedRunMetadata.class, TaggedRunMetadata.Builder.class);
+            org.tensorflow.util.TaggedRunMetadata.class, org.tensorflow.util.TaggedRunMetadata.Builder.class);
   }
 
   public static final int TAG_FIELD_NUMBER = 1;
@@ -180,10 +180,10 @@ public  final class TaggedRunMetadata extends
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof TaggedRunMetadata)) {
+    if (!(obj instanceof org.tensorflow.util.TaggedRunMetadata)) {
       return super.equals(obj);
     }
-    TaggedRunMetadata other = (TaggedRunMetadata) obj;
+    org.tensorflow.util.TaggedRunMetadata other = (org.tensorflow.util.TaggedRunMetadata) obj;
 
     boolean result = true;
     result = result && getTag()
@@ -209,58 +209,58 @@ public  final class TaggedRunMetadata extends
     return hash;
   }
 
-  public static TaggedRunMetadata parseFrom(
+  public static org.tensorflow.util.TaggedRunMetadata parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static TaggedRunMetadata parseFrom(
+  public static org.tensorflow.util.TaggedRunMetadata parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static TaggedRunMetadata parseFrom(byte[] data)
+  public static org.tensorflow.util.TaggedRunMetadata parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static TaggedRunMetadata parseFrom(
+  public static org.tensorflow.util.TaggedRunMetadata parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static TaggedRunMetadata parseFrom(java.io.InputStream input)
+  public static org.tensorflow.util.TaggedRunMetadata parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static TaggedRunMetadata parseFrom(
+  public static org.tensorflow.util.TaggedRunMetadata parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static TaggedRunMetadata parseDelimitedFrom(java.io.InputStream input)
+  public static org.tensorflow.util.TaggedRunMetadata parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static TaggedRunMetadata parseDelimitedFrom(
+  public static org.tensorflow.util.TaggedRunMetadata parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static TaggedRunMetadata parseFrom(
+  public static org.tensorflow.util.TaggedRunMetadata parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static TaggedRunMetadata parseFrom(
+  public static org.tensorflow.util.TaggedRunMetadata parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -272,7 +272,7 @@ public  final class TaggedRunMetadata extends
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(TaggedRunMetadata prototype) {
+  public static Builder newBuilder(org.tensorflow.util.TaggedRunMetadata prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -296,20 +296,20 @@ public  final class TaggedRunMetadata extends
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:tensorboard.TaggedRunMetadata)
-    TaggedRunMetadataOrBuilder {
+      org.tensorflow.util.TaggedRunMetadataOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return EventProtos.internal_static_tensorboard_TaggedRunMetadata_descriptor;
+      return org.tensorflow.util.EventProtos.internal_static_tensorboard_TaggedRunMetadata_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return EventProtos.internal_static_tensorboard_TaggedRunMetadata_fieldAccessorTable
+      return org.tensorflow.util.EventProtos.internal_static_tensorboard_TaggedRunMetadata_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              TaggedRunMetadata.class, TaggedRunMetadata.Builder.class);
+              org.tensorflow.util.TaggedRunMetadata.class, org.tensorflow.util.TaggedRunMetadata.Builder.class);
     }
 
-    // Construct using TaggedRunMetadata.newBuilder()
+    // Construct using org.tensorflow.util.TaggedRunMetadata.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -335,23 +335,23 @@ public  final class TaggedRunMetadata extends
 
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return EventProtos.internal_static_tensorboard_TaggedRunMetadata_descriptor;
+      return org.tensorflow.util.EventProtos.internal_static_tensorboard_TaggedRunMetadata_descriptor;
     }
 
-    public TaggedRunMetadata getDefaultInstanceForType() {
-      return TaggedRunMetadata.getDefaultInstance();
+    public org.tensorflow.util.TaggedRunMetadata getDefaultInstanceForType() {
+      return org.tensorflow.util.TaggedRunMetadata.getDefaultInstance();
     }
 
-    public TaggedRunMetadata build() {
-      TaggedRunMetadata result = buildPartial();
+    public org.tensorflow.util.TaggedRunMetadata build() {
+      org.tensorflow.util.TaggedRunMetadata result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public TaggedRunMetadata buildPartial() {
-      TaggedRunMetadata result = new TaggedRunMetadata(this);
+    public org.tensorflow.util.TaggedRunMetadata buildPartial() {
+      org.tensorflow.util.TaggedRunMetadata result = new org.tensorflow.util.TaggedRunMetadata(this);
       result.tag_ = tag_;
       result.runMetadata_ = runMetadata_;
       onBuilt();
@@ -385,16 +385,16 @@ public  final class TaggedRunMetadata extends
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof TaggedRunMetadata) {
-        return mergeFrom((TaggedRunMetadata)other);
+      if (other instanceof org.tensorflow.util.TaggedRunMetadata) {
+        return mergeFrom((org.tensorflow.util.TaggedRunMetadata)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(TaggedRunMetadata other) {
-      if (other == TaggedRunMetadata.getDefaultInstance()) return this;
+    public Builder mergeFrom(org.tensorflow.util.TaggedRunMetadata other) {
+      if (other == org.tensorflow.util.TaggedRunMetadata.getDefaultInstance()) return this;
       if (!other.getTag().isEmpty()) {
         tag_ = other.tag_;
         onChanged();
@@ -414,11 +414,11 @@ public  final class TaggedRunMetadata extends
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      TaggedRunMetadata parsedMessage = null;
+      org.tensorflow.util.TaggedRunMetadata parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (TaggedRunMetadata) e.getUnfinishedMessage();
+        parsedMessage = (org.tensorflow.util.TaggedRunMetadata) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -575,12 +575,12 @@ public  final class TaggedRunMetadata extends
   }
 
   // @@protoc_insertion_point(class_scope:tensorboard.TaggedRunMetadata)
-  private static final TaggedRunMetadata DEFAULT_INSTANCE;
+  private static final org.tensorflow.util.TaggedRunMetadata DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new TaggedRunMetadata();
+    DEFAULT_INSTANCE = new org.tensorflow.util.TaggedRunMetadata();
   }
 
-  public static TaggedRunMetadata getDefaultInstance() {
+  public static org.tensorflow.util.TaggedRunMetadata getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -603,7 +603,7 @@ public  final class TaggedRunMetadata extends
     return PARSER;
   }
 
-  public TaggedRunMetadata getDefaultInstanceForType() {
+  public org.tensorflow.util.TaggedRunMetadata getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

@@ -53,11 +53,11 @@ public  final class Summary extends
           }
           case 10: {
             if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
-              value_ = new java.util.ArrayList<Summary.Value>();
+              value_ = new java.util.ArrayList<org.tensorflow.framework.Summary.Value>();
               mutable_bitField0_ |= 0x00000001;
             }
             value_.add(
-                input.readMessage(Summary.Value.parser(), extensionRegistry));
+                input.readMessage(org.tensorflow.framework.Summary.Value.parser(), extensionRegistry));
             break;
           }
         }
@@ -76,14 +76,14 @@ public  final class Summary extends
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return SummaryProtos.internal_static_tensorboard_Summary_descriptor;
+    return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return SummaryProtos.internal_static_tensorboard_Summary_fieldAccessorTable
+    return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            Summary.class, Summary.Builder.class);
+            org.tensorflow.framework.Summary.class, org.tensorflow.framework.Summary.Builder.class);
   }
 
   public interface ImageOrBuilder extends
@@ -205,14 +205,14 @@ public  final class Summary extends
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return SummaryProtos.internal_static_tensorboard_Summary_Image_descriptor;
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Image_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return SummaryProtos.internal_static_tensorboard_Summary_Image_fieldAccessorTable
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Image_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              Summary.Image.class, Summary.Image.Builder.class);
+              org.tensorflow.framework.Summary.Image.class, org.tensorflow.framework.Summary.Image.Builder.class);
     }
 
     public static final int HEIGHT_FIELD_NUMBER = 1;
@@ -327,10 +327,10 @@ public  final class Summary extends
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof Summary.Image)) {
+      if (!(obj instanceof org.tensorflow.framework.Summary.Image)) {
         return super.equals(obj);
       }
-      Summary.Image other = (Summary.Image) obj;
+      org.tensorflow.framework.Summary.Image other = (org.tensorflow.framework.Summary.Image) obj;
 
       boolean result = true;
       result = result && (getHeight()
@@ -364,58 +364,58 @@ public  final class Summary extends
       return hash;
     }
 
-    public static Summary.Image parseFrom(
+    public static org.tensorflow.framework.Summary.Image parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static Summary.Image parseFrom(
+    public static org.tensorflow.framework.Summary.Image parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static Summary.Image parseFrom(byte[] data)
+    public static org.tensorflow.framework.Summary.Image parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static Summary.Image parseFrom(
+    public static org.tensorflow.framework.Summary.Image parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static Summary.Image parseFrom(java.io.InputStream input)
+    public static org.tensorflow.framework.Summary.Image parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static Summary.Image parseFrom(
+    public static org.tensorflow.framework.Summary.Image parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static Summary.Image parseDelimitedFrom(java.io.InputStream input)
+    public static org.tensorflow.framework.Summary.Image parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static Summary.Image parseDelimitedFrom(
+    public static org.tensorflow.framework.Summary.Image parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static Summary.Image parseFrom(
+    public static org.tensorflow.framework.Summary.Image parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static Summary.Image parseFrom(
+    public static org.tensorflow.framework.Summary.Image parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -427,7 +427,7 @@ public  final class Summary extends
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(Summary.Image prototype) {
+    public static Builder newBuilder(org.tensorflow.framework.Summary.Image prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -447,20 +447,20 @@ public  final class Summary extends
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:tensorboard.Summary.Image)
-        Summary.ImageOrBuilder {
+        org.tensorflow.framework.Summary.ImageOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return SummaryProtos.internal_static_tensorboard_Summary_Image_descriptor;
+        return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Image_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return SummaryProtos.internal_static_tensorboard_Summary_Image_fieldAccessorTable
+        return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Image_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                Summary.Image.class, Summary.Image.Builder.class);
+                org.tensorflow.framework.Summary.Image.class, org.tensorflow.framework.Summary.Image.Builder.class);
       }
 
-      // Construct using Summary.Image.newBuilder()
+      // Construct using org.tensorflow.framework.Summary.Image.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -490,23 +490,23 @@ public  final class Summary extends
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return SummaryProtos.internal_static_tensorboard_Summary_Image_descriptor;
+        return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Image_descriptor;
       }
 
-      public Summary.Image getDefaultInstanceForType() {
-        return Summary.Image.getDefaultInstance();
+      public org.tensorflow.framework.Summary.Image getDefaultInstanceForType() {
+        return org.tensorflow.framework.Summary.Image.getDefaultInstance();
       }
 
-      public Summary.Image build() {
-        Summary.Image result = buildPartial();
+      public org.tensorflow.framework.Summary.Image build() {
+        org.tensorflow.framework.Summary.Image result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public Summary.Image buildPartial() {
-        Summary.Image result = new Summary.Image(this);
+      public org.tensorflow.framework.Summary.Image buildPartial() {
+        org.tensorflow.framework.Summary.Image result = new org.tensorflow.framework.Summary.Image(this);
         result.height_ = height_;
         result.width_ = width_;
         result.colorspace_ = colorspace_;
@@ -542,16 +542,16 @@ public  final class Summary extends
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof Summary.Image) {
-          return mergeFrom((Summary.Image)other);
+        if (other instanceof org.tensorflow.framework.Summary.Image) {
+          return mergeFrom((org.tensorflow.framework.Summary.Image)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(Summary.Image other) {
-        if (other == Summary.Image.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.tensorflow.framework.Summary.Image other) {
+        if (other == org.tensorflow.framework.Summary.Image.getDefaultInstance()) return this;
         if (other.getHeight() != 0) {
           setHeight(other.getHeight());
         }
@@ -576,11 +576,11 @@ public  final class Summary extends
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        Summary.Image parsedMessage = null;
+        org.tensorflow.framework.Summary.Image parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (Summary.Image) e.getUnfinishedMessage();
+          parsedMessage = (org.tensorflow.framework.Summary.Image) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -768,12 +768,12 @@ public  final class Summary extends
     }
 
     // @@protoc_insertion_point(class_scope:tensorboard.Summary.Image)
-    private static final Summary.Image DEFAULT_INSTANCE;
+    private static final org.tensorflow.framework.Summary.Image DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new Summary.Image();
+      DEFAULT_INSTANCE = new org.tensorflow.framework.Summary.Image();
     }
 
-    public static Summary.Image getDefaultInstance() {
+    public static org.tensorflow.framework.Summary.Image getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -796,7 +796,7 @@ public  final class Summary extends
       return PARSER;
     }
 
-    public Summary.Image getDefaultInstanceForType() {
+    public org.tensorflow.framework.Summary.Image getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -936,14 +936,14 @@ public  final class Summary extends
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return SummaryProtos.internal_static_tensorboard_Summary_Audio_descriptor;
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Audio_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return SummaryProtos.internal_static_tensorboard_Summary_Audio_fieldAccessorTable
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Audio_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              Summary.Audio.class, Summary.Audio.Builder.class);
+              org.tensorflow.framework.Summary.Audio.class, org.tensorflow.framework.Summary.Audio.Builder.class);
     }
 
     public static final int SAMPLE_RATE_FIELD_NUMBER = 1;
@@ -1096,10 +1096,10 @@ public  final class Summary extends
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof Summary.Audio)) {
+      if (!(obj instanceof org.tensorflow.framework.Summary.Audio)) {
         return super.equals(obj);
       }
-      Summary.Audio other = (Summary.Audio) obj;
+      org.tensorflow.framework.Summary.Audio other = (org.tensorflow.framework.Summary.Audio) obj;
 
       boolean result = true;
       result = result && (
@@ -1142,58 +1142,58 @@ public  final class Summary extends
       return hash;
     }
 
-    public static Summary.Audio parseFrom(
+    public static org.tensorflow.framework.Summary.Audio parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static Summary.Audio parseFrom(
+    public static org.tensorflow.framework.Summary.Audio parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static Summary.Audio parseFrom(byte[] data)
+    public static org.tensorflow.framework.Summary.Audio parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static Summary.Audio parseFrom(
+    public static org.tensorflow.framework.Summary.Audio parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static Summary.Audio parseFrom(java.io.InputStream input)
+    public static org.tensorflow.framework.Summary.Audio parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static Summary.Audio parseFrom(
+    public static org.tensorflow.framework.Summary.Audio parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static Summary.Audio parseDelimitedFrom(java.io.InputStream input)
+    public static org.tensorflow.framework.Summary.Audio parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static Summary.Audio parseDelimitedFrom(
+    public static org.tensorflow.framework.Summary.Audio parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static Summary.Audio parseFrom(
+    public static org.tensorflow.framework.Summary.Audio parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static Summary.Audio parseFrom(
+    public static org.tensorflow.framework.Summary.Audio parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1205,7 +1205,7 @@ public  final class Summary extends
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(Summary.Audio prototype) {
+    public static Builder newBuilder(org.tensorflow.framework.Summary.Audio prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -1225,20 +1225,20 @@ public  final class Summary extends
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:tensorboard.Summary.Audio)
-        Summary.AudioOrBuilder {
+        org.tensorflow.framework.Summary.AudioOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return SummaryProtos.internal_static_tensorboard_Summary_Audio_descriptor;
+        return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Audio_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return SummaryProtos.internal_static_tensorboard_Summary_Audio_fieldAccessorTable
+        return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Audio_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                Summary.Audio.class, Summary.Audio.Builder.class);
+                org.tensorflow.framework.Summary.Audio.class, org.tensorflow.framework.Summary.Audio.Builder.class);
       }
 
-      // Construct using Summary.Audio.newBuilder()
+      // Construct using org.tensorflow.framework.Summary.Audio.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1270,23 +1270,23 @@ public  final class Summary extends
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return SummaryProtos.internal_static_tensorboard_Summary_Audio_descriptor;
+        return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Audio_descriptor;
       }
 
-      public Summary.Audio getDefaultInstanceForType() {
-        return Summary.Audio.getDefaultInstance();
+      public org.tensorflow.framework.Summary.Audio getDefaultInstanceForType() {
+        return org.tensorflow.framework.Summary.Audio.getDefaultInstance();
       }
 
-      public Summary.Audio build() {
-        Summary.Audio result = buildPartial();
+      public org.tensorflow.framework.Summary.Audio build() {
+        org.tensorflow.framework.Summary.Audio result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public Summary.Audio buildPartial() {
-        Summary.Audio result = new Summary.Audio(this);
+      public org.tensorflow.framework.Summary.Audio buildPartial() {
+        org.tensorflow.framework.Summary.Audio result = new org.tensorflow.framework.Summary.Audio(this);
         result.sampleRate_ = sampleRate_;
         result.numChannels_ = numChannels_;
         result.lengthFrames_ = lengthFrames_;
@@ -1323,16 +1323,16 @@ public  final class Summary extends
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof Summary.Audio) {
-          return mergeFrom((Summary.Audio)other);
+        if (other instanceof org.tensorflow.framework.Summary.Audio) {
+          return mergeFrom((org.tensorflow.framework.Summary.Audio)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(Summary.Audio other) {
-        if (other == Summary.Audio.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.tensorflow.framework.Summary.Audio other) {
+        if (other == org.tensorflow.framework.Summary.Audio.getDefaultInstance()) return this;
         if (other.getSampleRate() != 0F) {
           setSampleRate(other.getSampleRate());
         }
@@ -1361,11 +1361,11 @@ public  final class Summary extends
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        Summary.Audio parsedMessage = null;
+        org.tensorflow.framework.Summary.Audio parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (Summary.Audio) e.getUnfinishedMessage();
+          parsedMessage = (org.tensorflow.framework.Summary.Audio) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1616,12 +1616,12 @@ public  final class Summary extends
     }
 
     // @@protoc_insertion_point(class_scope:tensorboard.Summary.Audio)
-    private static final Summary.Audio DEFAULT_INSTANCE;
+    private static final org.tensorflow.framework.Summary.Audio DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new Summary.Audio();
+      DEFAULT_INSTANCE = new org.tensorflow.framework.Summary.Audio();
     }
 
-    public static Summary.Audio getDefaultInstance() {
+    public static org.tensorflow.framework.Summary.Audio getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1644,7 +1644,7 @@ public  final class Summary extends
       return PARSER;
     }
 
-    public Summary.Audio getDefaultInstanceForType() {
+    public org.tensorflow.framework.Summary.Audio getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1721,40 +1721,40 @@ public  final class Summary extends
     /**
      * <code>optional .tensorboard.Summary.Image image = 4;</code>
      */
-    Summary.Image getImage();
+    org.tensorflow.framework.Summary.Image getImage();
     /**
      * <code>optional .tensorboard.Summary.Image image = 4;</code>
      */
-    Summary.ImageOrBuilder getImageOrBuilder();
+    org.tensorflow.framework.Summary.ImageOrBuilder getImageOrBuilder();
 
     /**
      * <code>optional .tensorboard.HistogramProto histo = 5;</code>
      */
-    HistogramProto getHisto();
+    org.tensorflow.framework.HistogramProto getHisto();
     /**
      * <code>optional .tensorboard.HistogramProto histo = 5;</code>
      */
-    HistogramProtoOrBuilder getHistoOrBuilder();
+    org.tensorflow.framework.HistogramProtoOrBuilder getHistoOrBuilder();
 
     /**
      * <code>optional .tensorboard.Summary.Audio audio = 6;</code>
      */
-    Summary.Audio getAudio();
+    org.tensorflow.framework.Summary.Audio getAudio();
     /**
      * <code>optional .tensorboard.Summary.Audio audio = 6;</code>
      */
-    Summary.AudioOrBuilder getAudioOrBuilder();
+    org.tensorflow.framework.Summary.AudioOrBuilder getAudioOrBuilder();
 
     /**
      * <code>optional .tensorboard.TensorProto tensor = 8;</code>
      */
-    TensorProto getTensor();
+    org.tensorflow.framework.TensorProto getTensor();
     /**
      * <code>optional .tensorboard.TensorProto tensor = 8;</code>
      */
-    TensorProtoOrBuilder getTensorOrBuilder();
+    org.tensorflow.framework.TensorProtoOrBuilder getTensorOrBuilder();
 
-    public Summary.Value.ValueCase getValueCase();
+    public org.tensorflow.framework.Summary.Value.ValueCase getValueCase();
   }
   /**
    * Protobuf type {@code tensorboard.Summary.Value}
@@ -1814,42 +1814,42 @@ public  final class Summary extends
               break;
             }
             case 34: {
-              Summary.Image.Builder subBuilder = null;
+              org.tensorflow.framework.Summary.Image.Builder subBuilder = null;
               if (valueCase_ == 4) {
-                subBuilder = ((Summary.Image) value_).toBuilder();
+                subBuilder = ((org.tensorflow.framework.Summary.Image) value_).toBuilder();
               }
               value_ =
-                  input.readMessage(Summary.Image.parser(), extensionRegistry);
+                  input.readMessage(org.tensorflow.framework.Summary.Image.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom((Summary.Image) value_);
+                subBuilder.mergeFrom((org.tensorflow.framework.Summary.Image) value_);
                 value_ = subBuilder.buildPartial();
               }
               valueCase_ = 4;
               break;
             }
             case 42: {
-              HistogramProto.Builder subBuilder = null;
+              org.tensorflow.framework.HistogramProto.Builder subBuilder = null;
               if (valueCase_ == 5) {
-                subBuilder = ((HistogramProto) value_).toBuilder();
+                subBuilder = ((org.tensorflow.framework.HistogramProto) value_).toBuilder();
               }
               value_ =
-                  input.readMessage(HistogramProto.parser(), extensionRegistry);
+                  input.readMessage(org.tensorflow.framework.HistogramProto.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom((HistogramProto) value_);
+                subBuilder.mergeFrom((org.tensorflow.framework.HistogramProto) value_);
                 value_ = subBuilder.buildPartial();
               }
               valueCase_ = 5;
               break;
             }
             case 50: {
-              Summary.Audio.Builder subBuilder = null;
+              org.tensorflow.framework.Summary.Audio.Builder subBuilder = null;
               if (valueCase_ == 6) {
-                subBuilder = ((Summary.Audio) value_).toBuilder();
+                subBuilder = ((org.tensorflow.framework.Summary.Audio) value_).toBuilder();
               }
               value_ =
-                  input.readMessage(Summary.Audio.parser(), extensionRegistry);
+                  input.readMessage(org.tensorflow.framework.Summary.Audio.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom((Summary.Audio) value_);
+                subBuilder.mergeFrom((org.tensorflow.framework.Summary.Audio) value_);
                 value_ = subBuilder.buildPartial();
               }
               valueCase_ = 6;
@@ -1862,14 +1862,14 @@ public  final class Summary extends
               break;
             }
             case 66: {
-              TensorProto.Builder subBuilder = null;
+              org.tensorflow.framework.TensorProto.Builder subBuilder = null;
               if (valueCase_ == 8) {
-                subBuilder = ((TensorProto) value_).toBuilder();
+                subBuilder = ((org.tensorflow.framework.TensorProto) value_).toBuilder();
               }
               value_ =
-                  input.readMessage(TensorProto.parser(), extensionRegistry);
+                  input.readMessage(org.tensorflow.framework.TensorProto.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom((TensorProto) value_);
+                subBuilder.mergeFrom((org.tensorflow.framework.TensorProto) value_);
                 value_ = subBuilder.buildPartial();
               }
               valueCase_ = 8;
@@ -1888,14 +1888,14 @@ public  final class Summary extends
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return SummaryProtos.internal_static_tensorboard_Summary_Value_descriptor;
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Value_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return SummaryProtos.internal_static_tensorboard_Summary_Value_fieldAccessorTable
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Value_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              Summary.Value.class, Summary.Value.Builder.class);
+              org.tensorflow.framework.Summary.Value.class, org.tensorflow.framework.Summary.Value.Builder.class);
     }
 
     private int valueCase_ = 0;
@@ -2072,80 +2072,80 @@ public  final class Summary extends
     /**
      * <code>optional .tensorboard.Summary.Image image = 4;</code>
      */
-    public Summary.Image getImage() {
+    public org.tensorflow.framework.Summary.Image getImage() {
       if (valueCase_ == 4) {
-         return (Summary.Image) value_;
+         return (org.tensorflow.framework.Summary.Image) value_;
       }
-      return Summary.Image.getDefaultInstance();
+      return org.tensorflow.framework.Summary.Image.getDefaultInstance();
     }
     /**
      * <code>optional .tensorboard.Summary.Image image = 4;</code>
      */
-    public Summary.ImageOrBuilder getImageOrBuilder() {
+    public org.tensorflow.framework.Summary.ImageOrBuilder getImageOrBuilder() {
       if (valueCase_ == 4) {
-         return (Summary.Image) value_;
+         return (org.tensorflow.framework.Summary.Image) value_;
       }
-      return Summary.Image.getDefaultInstance();
+      return org.tensorflow.framework.Summary.Image.getDefaultInstance();
     }
 
     public static final int HISTO_FIELD_NUMBER = 5;
     /**
      * <code>optional .tensorboard.HistogramProto histo = 5;</code>
      */
-    public HistogramProto getHisto() {
+    public org.tensorflow.framework.HistogramProto getHisto() {
       if (valueCase_ == 5) {
-         return (HistogramProto) value_;
+         return (org.tensorflow.framework.HistogramProto) value_;
       }
-      return HistogramProto.getDefaultInstance();
+      return org.tensorflow.framework.HistogramProto.getDefaultInstance();
     }
     /**
      * <code>optional .tensorboard.HistogramProto histo = 5;</code>
      */
-    public HistogramProtoOrBuilder getHistoOrBuilder() {
+    public org.tensorflow.framework.HistogramProtoOrBuilder getHistoOrBuilder() {
       if (valueCase_ == 5) {
-         return (HistogramProto) value_;
+         return (org.tensorflow.framework.HistogramProto) value_;
       }
-      return HistogramProto.getDefaultInstance();
+      return org.tensorflow.framework.HistogramProto.getDefaultInstance();
     }
 
     public static final int AUDIO_FIELD_NUMBER = 6;
     /**
      * <code>optional .tensorboard.Summary.Audio audio = 6;</code>
      */
-    public Summary.Audio getAudio() {
+    public org.tensorflow.framework.Summary.Audio getAudio() {
       if (valueCase_ == 6) {
-         return (Summary.Audio) value_;
+         return (org.tensorflow.framework.Summary.Audio) value_;
       }
-      return Summary.Audio.getDefaultInstance();
+      return org.tensorflow.framework.Summary.Audio.getDefaultInstance();
     }
     /**
      * <code>optional .tensorboard.Summary.Audio audio = 6;</code>
      */
-    public Summary.AudioOrBuilder getAudioOrBuilder() {
+    public org.tensorflow.framework.Summary.AudioOrBuilder getAudioOrBuilder() {
       if (valueCase_ == 6) {
-         return (Summary.Audio) value_;
+         return (org.tensorflow.framework.Summary.Audio) value_;
       }
-      return Summary.Audio.getDefaultInstance();
+      return org.tensorflow.framework.Summary.Audio.getDefaultInstance();
     }
 
     public static final int TENSOR_FIELD_NUMBER = 8;
     /**
      * <code>optional .tensorboard.TensorProto tensor = 8;</code>
      */
-    public TensorProto getTensor() {
+    public org.tensorflow.framework.TensorProto getTensor() {
       if (valueCase_ == 8) {
-         return (TensorProto) value_;
+         return (org.tensorflow.framework.TensorProto) value_;
       }
-      return TensorProto.getDefaultInstance();
+      return org.tensorflow.framework.TensorProto.getDefaultInstance();
     }
     /**
      * <code>optional .tensorboard.TensorProto tensor = 8;</code>
      */
-    public TensorProtoOrBuilder getTensorOrBuilder() {
+    public org.tensorflow.framework.TensorProtoOrBuilder getTensorOrBuilder() {
       if (valueCase_ == 8) {
-         return (TensorProto) value_;
+         return (org.tensorflow.framework.TensorProto) value_;
       }
-      return TensorProto.getDefaultInstance();
+      return org.tensorflow.framework.TensorProto.getDefaultInstance();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -2172,19 +2172,19 @@ public  final class Summary extends
             3, (com.google.protobuf.ByteString)((com.google.protobuf.ByteString) value_));
       }
       if (valueCase_ == 4) {
-        output.writeMessage(4, (Summary.Image) value_);
+        output.writeMessage(4, (org.tensorflow.framework.Summary.Image) value_);
       }
       if (valueCase_ == 5) {
-        output.writeMessage(5, (HistogramProto) value_);
+        output.writeMessage(5, (org.tensorflow.framework.HistogramProto) value_);
       }
       if (valueCase_ == 6) {
-        output.writeMessage(6, (Summary.Audio) value_);
+        output.writeMessage(6, (org.tensorflow.framework.Summary.Audio) value_);
       }
       if (!getNodeNameBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 7, nodeName_);
       }
       if (valueCase_ == 8) {
-        output.writeMessage(8, (TensorProto) value_);
+        output.writeMessage(8, (org.tensorflow.framework.TensorProto) value_);
       }
     }
 
@@ -2208,22 +2208,22 @@ public  final class Summary extends
       }
       if (valueCase_ == 4) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(4, (Summary.Image) value_);
+          .computeMessageSize(4, (org.tensorflow.framework.Summary.Image) value_);
       }
       if (valueCase_ == 5) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(5, (HistogramProto) value_);
+          .computeMessageSize(5, (org.tensorflow.framework.HistogramProto) value_);
       }
       if (valueCase_ == 6) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(6, (Summary.Audio) value_);
+          .computeMessageSize(6, (org.tensorflow.framework.Summary.Audio) value_);
       }
       if (!getNodeNameBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(7, nodeName_);
       }
       if (valueCase_ == 8) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(8, (TensorProto) value_);
+          .computeMessageSize(8, (org.tensorflow.framework.TensorProto) value_);
       }
       memoizedSize = size;
       return size;
@@ -2235,10 +2235,10 @@ public  final class Summary extends
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof Summary.Value)) {
+      if (!(obj instanceof org.tensorflow.framework.Summary.Value)) {
         return super.equals(obj);
       }
-      Summary.Value other = (Summary.Value) obj;
+      org.tensorflow.framework.Summary.Value other = (org.tensorflow.framework.Summary.Value) obj;
 
       boolean result = true;
       result = result && getNodeName()
@@ -2326,58 +2326,58 @@ public  final class Summary extends
       return hash;
     }
 
-    public static Summary.Value parseFrom(
+    public static org.tensorflow.framework.Summary.Value parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static Summary.Value parseFrom(
+    public static org.tensorflow.framework.Summary.Value parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static Summary.Value parseFrom(byte[] data)
+    public static org.tensorflow.framework.Summary.Value parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static Summary.Value parseFrom(
+    public static org.tensorflow.framework.Summary.Value parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static Summary.Value parseFrom(java.io.InputStream input)
+    public static org.tensorflow.framework.Summary.Value parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static Summary.Value parseFrom(
+    public static org.tensorflow.framework.Summary.Value parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static Summary.Value parseDelimitedFrom(java.io.InputStream input)
+    public static org.tensorflow.framework.Summary.Value parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static Summary.Value parseDelimitedFrom(
+    public static org.tensorflow.framework.Summary.Value parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static Summary.Value parseFrom(
+    public static org.tensorflow.framework.Summary.Value parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static Summary.Value parseFrom(
+    public static org.tensorflow.framework.Summary.Value parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2389,7 +2389,7 @@ public  final class Summary extends
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(Summary.Value prototype) {
+    public static Builder newBuilder(org.tensorflow.framework.Summary.Value prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -2409,20 +2409,20 @@ public  final class Summary extends
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:tensorboard.Summary.Value)
-        Summary.ValueOrBuilder {
+        org.tensorflow.framework.Summary.ValueOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return SummaryProtos.internal_static_tensorboard_Summary_Value_descriptor;
+        return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Value_descriptor;
       }
 
       protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return SummaryProtos.internal_static_tensorboard_Summary_Value_fieldAccessorTable
+        return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Value_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                Summary.Value.class, Summary.Value.Builder.class);
+                org.tensorflow.framework.Summary.Value.class, org.tensorflow.framework.Summary.Value.Builder.class);
       }
 
-      // Construct using Summary.Value.newBuilder()
+      // Construct using org.tensorflow.framework.Summary.Value.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -2450,23 +2450,23 @@ public  final class Summary extends
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return SummaryProtos.internal_static_tensorboard_Summary_Value_descriptor;
+        return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_Value_descriptor;
       }
 
-      public Summary.Value getDefaultInstanceForType() {
-        return Summary.Value.getDefaultInstance();
+      public org.tensorflow.framework.Summary.Value getDefaultInstanceForType() {
+        return org.tensorflow.framework.Summary.Value.getDefaultInstance();
       }
 
-      public Summary.Value build() {
-        Summary.Value result = buildPartial();
+      public org.tensorflow.framework.Summary.Value build() {
+        org.tensorflow.framework.Summary.Value result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public Summary.Value buildPartial() {
-        Summary.Value result = new Summary.Value(this);
+      public org.tensorflow.framework.Summary.Value buildPartial() {
+        org.tensorflow.framework.Summary.Value result = new org.tensorflow.framework.Summary.Value(this);
         result.nodeName_ = nodeName_;
         result.tag_ = tag_;
         if (valueCase_ == 2) {
@@ -2535,16 +2535,16 @@ public  final class Summary extends
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof Summary.Value) {
-          return mergeFrom((Summary.Value)other);
+        if (other instanceof org.tensorflow.framework.Summary.Value) {
+          return mergeFrom((org.tensorflow.framework.Summary.Value)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(Summary.Value other) {
-        if (other == Summary.Value.getDefaultInstance()) return this;
+      public Builder mergeFrom(org.tensorflow.framework.Summary.Value other) {
+        if (other == org.tensorflow.framework.Summary.Value.getDefaultInstance()) return this;
         if (!other.getNodeName().isEmpty()) {
           nodeName_ = other.nodeName_;
           onChanged();
@@ -2594,11 +2594,11 @@ public  final class Summary extends
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        Summary.Value parsedMessage = null;
+        org.tensorflow.framework.Summary.Value parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (Summary.Value) e.getUnfinishedMessage();
+          parsedMessage = (org.tensorflow.framework.Summary.Value) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2910,27 +2910,27 @@ public  final class Summary extends
       }
 
       private com.google.protobuf.SingleFieldBuilderV3<
-          Summary.Image, Summary.Image.Builder, Summary.ImageOrBuilder> imageBuilder_;
+          org.tensorflow.framework.Summary.Image, org.tensorflow.framework.Summary.Image.Builder, org.tensorflow.framework.Summary.ImageOrBuilder> imageBuilder_;
       /**
        * <code>optional .tensorboard.Summary.Image image = 4;</code>
        */
-      public Summary.Image getImage() {
+      public org.tensorflow.framework.Summary.Image getImage() {
         if (imageBuilder_ == null) {
           if (valueCase_ == 4) {
-            return (Summary.Image) value_;
+            return (org.tensorflow.framework.Summary.Image) value_;
           }
-          return Summary.Image.getDefaultInstance();
+          return org.tensorflow.framework.Summary.Image.getDefaultInstance();
         } else {
           if (valueCase_ == 4) {
             return imageBuilder_.getMessage();
           }
-          return Summary.Image.getDefaultInstance();
+          return org.tensorflow.framework.Summary.Image.getDefaultInstance();
         }
       }
       /**
        * <code>optional .tensorboard.Summary.Image image = 4;</code>
        */
-      public Builder setImage(Summary.Image value) {
+      public Builder setImage(org.tensorflow.framework.Summary.Image value) {
         if (imageBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2947,7 +2947,7 @@ public  final class Summary extends
        * <code>optional .tensorboard.Summary.Image image = 4;</code>
        */
       public Builder setImage(
-          Summary.Image.Builder builderForValue) {
+          org.tensorflow.framework.Summary.Image.Builder builderForValue) {
         if (imageBuilder_ == null) {
           value_ = builderForValue.build();
           onChanged();
@@ -2960,11 +2960,11 @@ public  final class Summary extends
       /**
        * <code>optional .tensorboard.Summary.Image image = 4;</code>
        */
-      public Builder mergeImage(Summary.Image value) {
+      public Builder mergeImage(org.tensorflow.framework.Summary.Image value) {
         if (imageBuilder_ == null) {
           if (valueCase_ == 4 &&
-              value_ != Summary.Image.getDefaultInstance()) {
-            value_ = Summary.Image.newBuilder((Summary.Image) value_)
+              value_ != org.tensorflow.framework.Summary.Image.getDefaultInstance()) {
+            value_ = org.tensorflow.framework.Summary.Image.newBuilder((org.tensorflow.framework.Summary.Image) value_)
                 .mergeFrom(value).buildPartial();
           } else {
             value_ = value;
@@ -3001,35 +3001,35 @@ public  final class Summary extends
       /**
        * <code>optional .tensorboard.Summary.Image image = 4;</code>
        */
-      public Summary.Image.Builder getImageBuilder() {
+      public org.tensorflow.framework.Summary.Image.Builder getImageBuilder() {
         return getImageFieldBuilder().getBuilder();
       }
       /**
        * <code>optional .tensorboard.Summary.Image image = 4;</code>
        */
-      public Summary.ImageOrBuilder getImageOrBuilder() {
+      public org.tensorflow.framework.Summary.ImageOrBuilder getImageOrBuilder() {
         if ((valueCase_ == 4) && (imageBuilder_ != null)) {
           return imageBuilder_.getMessageOrBuilder();
         } else {
           if (valueCase_ == 4) {
-            return (Summary.Image) value_;
+            return (org.tensorflow.framework.Summary.Image) value_;
           }
-          return Summary.Image.getDefaultInstance();
+          return org.tensorflow.framework.Summary.Image.getDefaultInstance();
         }
       }
       /**
        * <code>optional .tensorboard.Summary.Image image = 4;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          Summary.Image, Summary.Image.Builder, Summary.ImageOrBuilder>
+          org.tensorflow.framework.Summary.Image, org.tensorflow.framework.Summary.Image.Builder, org.tensorflow.framework.Summary.ImageOrBuilder> 
           getImageFieldBuilder() {
         if (imageBuilder_ == null) {
           if (!(valueCase_ == 4)) {
-            value_ = Summary.Image.getDefaultInstance();
+            value_ = org.tensorflow.framework.Summary.Image.getDefaultInstance();
           }
           imageBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              Summary.Image, Summary.Image.Builder, Summary.ImageOrBuilder>(
-                  (Summary.Image) value_,
+              org.tensorflow.framework.Summary.Image, org.tensorflow.framework.Summary.Image.Builder, org.tensorflow.framework.Summary.ImageOrBuilder>(
+                  (org.tensorflow.framework.Summary.Image) value_,
                   getParentForChildren(),
                   isClean());
           value_ = null;
@@ -3040,27 +3040,27 @@ public  final class Summary extends
       }
 
       private com.google.protobuf.SingleFieldBuilderV3<
-        HistogramProto, HistogramProto.Builder, HistogramProtoOrBuilder> histoBuilder_;
+          org.tensorflow.framework.HistogramProto, org.tensorflow.framework.HistogramProto.Builder, org.tensorflow.framework.HistogramProtoOrBuilder> histoBuilder_;
       /**
        * <code>optional .tensorboard.HistogramProto histo = 5;</code>
        */
-      public HistogramProto getHisto() {
+      public org.tensorflow.framework.HistogramProto getHisto() {
         if (histoBuilder_ == null) {
           if (valueCase_ == 5) {
-            return (HistogramProto) value_;
+            return (org.tensorflow.framework.HistogramProto) value_;
           }
-          return HistogramProto.getDefaultInstance();
+          return org.tensorflow.framework.HistogramProto.getDefaultInstance();
         } else {
           if (valueCase_ == 5) {
             return histoBuilder_.getMessage();
           }
-          return HistogramProto.getDefaultInstance();
+          return org.tensorflow.framework.HistogramProto.getDefaultInstance();
         }
       }
       /**
        * <code>optional .tensorboard.HistogramProto histo = 5;</code>
        */
-      public Builder setHisto(HistogramProto value) {
+      public Builder setHisto(org.tensorflow.framework.HistogramProto value) {
         if (histoBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3077,7 +3077,7 @@ public  final class Summary extends
        * <code>optional .tensorboard.HistogramProto histo = 5;</code>
        */
       public Builder setHisto(
-          HistogramProto.Builder builderForValue) {
+          org.tensorflow.framework.HistogramProto.Builder builderForValue) {
         if (histoBuilder_ == null) {
           value_ = builderForValue.build();
           onChanged();
@@ -3090,11 +3090,11 @@ public  final class Summary extends
       /**
        * <code>optional .tensorboard.HistogramProto histo = 5;</code>
        */
-      public Builder mergeHisto(HistogramProto value) {
+      public Builder mergeHisto(org.tensorflow.framework.HistogramProto value) {
         if (histoBuilder_ == null) {
           if (valueCase_ == 5 &&
-              value_ != HistogramProto.getDefaultInstance()) {
-            value_ = HistogramProto.newBuilder((HistogramProto) value_)
+              value_ != org.tensorflow.framework.HistogramProto.getDefaultInstance()) {
+            value_ = org.tensorflow.framework.HistogramProto.newBuilder((org.tensorflow.framework.HistogramProto) value_)
                 .mergeFrom(value).buildPartial();
           } else {
             value_ = value;
@@ -3131,35 +3131,35 @@ public  final class Summary extends
       /**
        * <code>optional .tensorboard.HistogramProto histo = 5;</code>
        */
-      public HistogramProto.Builder getHistoBuilder() {
+      public org.tensorflow.framework.HistogramProto.Builder getHistoBuilder() {
         return getHistoFieldBuilder().getBuilder();
       }
       /**
        * <code>optional .tensorboard.HistogramProto histo = 5;</code>
        */
-      public HistogramProtoOrBuilder getHistoOrBuilder() {
+      public org.tensorflow.framework.HistogramProtoOrBuilder getHistoOrBuilder() {
         if ((valueCase_ == 5) && (histoBuilder_ != null)) {
           return histoBuilder_.getMessageOrBuilder();
         } else {
           if (valueCase_ == 5) {
-            return (HistogramProto) value_;
+            return (org.tensorflow.framework.HistogramProto) value_;
           }
-          return HistogramProto.getDefaultInstance();
+          return org.tensorflow.framework.HistogramProto.getDefaultInstance();
         }
       }
       /**
        * <code>optional .tensorboard.HistogramProto histo = 5;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-        HistogramProto, HistogramProto.Builder, HistogramProtoOrBuilder>
+          org.tensorflow.framework.HistogramProto, org.tensorflow.framework.HistogramProto.Builder, org.tensorflow.framework.HistogramProtoOrBuilder> 
           getHistoFieldBuilder() {
         if (histoBuilder_ == null) {
           if (!(valueCase_ == 5)) {
-            value_ = HistogramProto.getDefaultInstance();
+            value_ = org.tensorflow.framework.HistogramProto.getDefaultInstance();
           }
           histoBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            HistogramProto, HistogramProto.Builder, HistogramProtoOrBuilder>(
-                  (HistogramProto) value_,
+              org.tensorflow.framework.HistogramProto, org.tensorflow.framework.HistogramProto.Builder, org.tensorflow.framework.HistogramProtoOrBuilder>(
+                  (org.tensorflow.framework.HistogramProto) value_,
                   getParentForChildren(),
                   isClean());
           value_ = null;
@@ -3170,27 +3170,27 @@ public  final class Summary extends
       }
 
       private com.google.protobuf.SingleFieldBuilderV3<
-          Summary.Audio, Summary.Audio.Builder, Summary.AudioOrBuilder> audioBuilder_;
+          org.tensorflow.framework.Summary.Audio, org.tensorflow.framework.Summary.Audio.Builder, org.tensorflow.framework.Summary.AudioOrBuilder> audioBuilder_;
       /**
        * <code>optional .tensorboard.Summary.Audio audio = 6;</code>
        */
-      public Summary.Audio getAudio() {
+      public org.tensorflow.framework.Summary.Audio getAudio() {
         if (audioBuilder_ == null) {
           if (valueCase_ == 6) {
-            return (Summary.Audio) value_;
+            return (org.tensorflow.framework.Summary.Audio) value_;
           }
-          return Summary.Audio.getDefaultInstance();
+          return org.tensorflow.framework.Summary.Audio.getDefaultInstance();
         } else {
           if (valueCase_ == 6) {
             return audioBuilder_.getMessage();
           }
-          return Summary.Audio.getDefaultInstance();
+          return org.tensorflow.framework.Summary.Audio.getDefaultInstance();
         }
       }
       /**
        * <code>optional .tensorboard.Summary.Audio audio = 6;</code>
        */
-      public Builder setAudio(Summary.Audio value) {
+      public Builder setAudio(org.tensorflow.framework.Summary.Audio value) {
         if (audioBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3207,7 +3207,7 @@ public  final class Summary extends
        * <code>optional .tensorboard.Summary.Audio audio = 6;</code>
        */
       public Builder setAudio(
-          Summary.Audio.Builder builderForValue) {
+          org.tensorflow.framework.Summary.Audio.Builder builderForValue) {
         if (audioBuilder_ == null) {
           value_ = builderForValue.build();
           onChanged();
@@ -3220,11 +3220,11 @@ public  final class Summary extends
       /**
        * <code>optional .tensorboard.Summary.Audio audio = 6;</code>
        */
-      public Builder mergeAudio(Summary.Audio value) {
+      public Builder mergeAudio(org.tensorflow.framework.Summary.Audio value) {
         if (audioBuilder_ == null) {
           if (valueCase_ == 6 &&
-              value_ != Summary.Audio.getDefaultInstance()) {
-            value_ = Summary.Audio.newBuilder((Summary.Audio) value_)
+              value_ != org.tensorflow.framework.Summary.Audio.getDefaultInstance()) {
+            value_ = org.tensorflow.framework.Summary.Audio.newBuilder((org.tensorflow.framework.Summary.Audio) value_)
                 .mergeFrom(value).buildPartial();
           } else {
             value_ = value;
@@ -3261,35 +3261,35 @@ public  final class Summary extends
       /**
        * <code>optional .tensorboard.Summary.Audio audio = 6;</code>
        */
-      public Summary.Audio.Builder getAudioBuilder() {
+      public org.tensorflow.framework.Summary.Audio.Builder getAudioBuilder() {
         return getAudioFieldBuilder().getBuilder();
       }
       /**
        * <code>optional .tensorboard.Summary.Audio audio = 6;</code>
        */
-      public Summary.AudioOrBuilder getAudioOrBuilder() {
+      public org.tensorflow.framework.Summary.AudioOrBuilder getAudioOrBuilder() {
         if ((valueCase_ == 6) && (audioBuilder_ != null)) {
           return audioBuilder_.getMessageOrBuilder();
         } else {
           if (valueCase_ == 6) {
-            return (Summary.Audio) value_;
+            return (org.tensorflow.framework.Summary.Audio) value_;
           }
-          return Summary.Audio.getDefaultInstance();
+          return org.tensorflow.framework.Summary.Audio.getDefaultInstance();
         }
       }
       /**
        * <code>optional .tensorboard.Summary.Audio audio = 6;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          Summary.Audio, Summary.Audio.Builder, Summary.AudioOrBuilder>
+          org.tensorflow.framework.Summary.Audio, org.tensorflow.framework.Summary.Audio.Builder, org.tensorflow.framework.Summary.AudioOrBuilder> 
           getAudioFieldBuilder() {
         if (audioBuilder_ == null) {
           if (!(valueCase_ == 6)) {
-            value_ = Summary.Audio.getDefaultInstance();
+            value_ = org.tensorflow.framework.Summary.Audio.getDefaultInstance();
           }
           audioBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              Summary.Audio, Summary.Audio.Builder, Summary.AudioOrBuilder>(
-                  (Summary.Audio) value_,
+              org.tensorflow.framework.Summary.Audio, org.tensorflow.framework.Summary.Audio.Builder, org.tensorflow.framework.Summary.AudioOrBuilder>(
+                  (org.tensorflow.framework.Summary.Audio) value_,
                   getParentForChildren(),
                   isClean());
           value_ = null;
@@ -3300,27 +3300,27 @@ public  final class Summary extends
       }
 
       private com.google.protobuf.SingleFieldBuilderV3<
-        TensorProto, TensorProto.Builder, TensorProtoOrBuilder> tensorBuilder_;
+          org.tensorflow.framework.TensorProto, org.tensorflow.framework.TensorProto.Builder, org.tensorflow.framework.TensorProtoOrBuilder> tensorBuilder_;
       /**
        * <code>optional .tensorboard.TensorProto tensor = 8;</code>
        */
-      public TensorProto getTensor() {
+      public org.tensorflow.framework.TensorProto getTensor() {
         if (tensorBuilder_ == null) {
           if (valueCase_ == 8) {
-            return (TensorProto) value_;
+            return (org.tensorflow.framework.TensorProto) value_;
           }
-          return TensorProto.getDefaultInstance();
+          return org.tensorflow.framework.TensorProto.getDefaultInstance();
         } else {
           if (valueCase_ == 8) {
             return tensorBuilder_.getMessage();
           }
-          return TensorProto.getDefaultInstance();
+          return org.tensorflow.framework.TensorProto.getDefaultInstance();
         }
       }
       /**
        * <code>optional .tensorboard.TensorProto tensor = 8;</code>
        */
-      public Builder setTensor(TensorProto value) {
+      public Builder setTensor(org.tensorflow.framework.TensorProto value) {
         if (tensorBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3337,7 +3337,7 @@ public  final class Summary extends
        * <code>optional .tensorboard.TensorProto tensor = 8;</code>
        */
       public Builder setTensor(
-          TensorProto.Builder builderForValue) {
+          org.tensorflow.framework.TensorProto.Builder builderForValue) {
         if (tensorBuilder_ == null) {
           value_ = builderForValue.build();
           onChanged();
@@ -3350,11 +3350,11 @@ public  final class Summary extends
       /**
        * <code>optional .tensorboard.TensorProto tensor = 8;</code>
        */
-      public Builder mergeTensor(TensorProto value) {
+      public Builder mergeTensor(org.tensorflow.framework.TensorProto value) {
         if (tensorBuilder_ == null) {
           if (valueCase_ == 8 &&
-              value_ != TensorProto.getDefaultInstance()) {
-            value_ = TensorProto.newBuilder((TensorProto) value_)
+              value_ != org.tensorflow.framework.TensorProto.getDefaultInstance()) {
+            value_ = org.tensorflow.framework.TensorProto.newBuilder((org.tensorflow.framework.TensorProto) value_)
                 .mergeFrom(value).buildPartial();
           } else {
             value_ = value;
@@ -3391,35 +3391,35 @@ public  final class Summary extends
       /**
        * <code>optional .tensorboard.TensorProto tensor = 8;</code>
        */
-      public TensorProto.Builder getTensorBuilder() {
+      public org.tensorflow.framework.TensorProto.Builder getTensorBuilder() {
         return getTensorFieldBuilder().getBuilder();
       }
       /**
        * <code>optional .tensorboard.TensorProto tensor = 8;</code>
        */
-      public TensorProtoOrBuilder getTensorOrBuilder() {
+      public org.tensorflow.framework.TensorProtoOrBuilder getTensorOrBuilder() {
         if ((valueCase_ == 8) && (tensorBuilder_ != null)) {
           return tensorBuilder_.getMessageOrBuilder();
         } else {
           if (valueCase_ == 8) {
-            return (TensorProto) value_;
+            return (org.tensorflow.framework.TensorProto) value_;
           }
-          return TensorProto.getDefaultInstance();
+          return org.tensorflow.framework.TensorProto.getDefaultInstance();
         }
       }
       /**
        * <code>optional .tensorboard.TensorProto tensor = 8;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-        TensorProto, TensorProto.Builder, TensorProtoOrBuilder>
+          org.tensorflow.framework.TensorProto, org.tensorflow.framework.TensorProto.Builder, org.tensorflow.framework.TensorProtoOrBuilder> 
           getTensorFieldBuilder() {
         if (tensorBuilder_ == null) {
           if (!(valueCase_ == 8)) {
-            value_ = TensorProto.getDefaultInstance();
+            value_ = org.tensorflow.framework.TensorProto.getDefaultInstance();
           }
           tensorBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-            TensorProto, TensorProto.Builder, TensorProtoOrBuilder>(
-                  (TensorProto) value_,
+              org.tensorflow.framework.TensorProto, org.tensorflow.framework.TensorProto.Builder, org.tensorflow.framework.TensorProtoOrBuilder>(
+                  (org.tensorflow.framework.TensorProto) value_,
                   getParentForChildren(),
                   isClean());
           value_ = null;
@@ -3443,12 +3443,12 @@ public  final class Summary extends
     }
 
     // @@protoc_insertion_point(class_scope:tensorboard.Summary.Value)
-    private static final Summary.Value DEFAULT_INSTANCE;
+    private static final org.tensorflow.framework.Summary.Value DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new Summary.Value();
+      DEFAULT_INSTANCE = new org.tensorflow.framework.Summary.Value();
     }
 
-    public static Summary.Value getDefaultInstance() {
+    public static org.tensorflow.framework.Summary.Value getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3471,14 +3471,14 @@ public  final class Summary extends
       return PARSER;
     }
 
-    public Summary.Value getDefaultInstanceForType() {
+    public org.tensorflow.framework.Summary.Value getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
   public static final int VALUE_FIELD_NUMBER = 1;
-  private java.util.List<Summary.Value> value_;
+  private java.util.List<org.tensorflow.framework.Summary.Value> value_;
   /**
    * <pre>
    * Set of values for the summary.
@@ -3486,7 +3486,7 @@ public  final class Summary extends
    *
    * <code>repeated .tensorboard.Summary.Value value = 1;</code>
    */
-  public java.util.List<Summary.Value> getValueList() {
+  public java.util.List<org.tensorflow.framework.Summary.Value> getValueList() {
     return value_;
   }
   /**
@@ -3496,7 +3496,7 @@ public  final class Summary extends
    *
    * <code>repeated .tensorboard.Summary.Value value = 1;</code>
    */
-  public java.util.List<? extends Summary.ValueOrBuilder>
+  public java.util.List<? extends org.tensorflow.framework.Summary.ValueOrBuilder> 
       getValueOrBuilderList() {
     return value_;
   }
@@ -3517,7 +3517,7 @@ public  final class Summary extends
    *
    * <code>repeated .tensorboard.Summary.Value value = 1;</code>
    */
-  public Summary.Value getValue(int index) {
+  public org.tensorflow.framework.Summary.Value getValue(int index) {
     return value_.get(index);
   }
   /**
@@ -3527,7 +3527,7 @@ public  final class Summary extends
    *
    * <code>repeated .tensorboard.Summary.Value value = 1;</code>
    */
-  public Summary.ValueOrBuilder getValueOrBuilder(
+  public org.tensorflow.framework.Summary.ValueOrBuilder getValueOrBuilder(
       int index) {
     return value_.get(index);
   }
@@ -3568,10 +3568,10 @@ public  final class Summary extends
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof Summary)) {
+    if (!(obj instanceof org.tensorflow.framework.Summary)) {
       return super.equals(obj);
     }
-    Summary other = (Summary) obj;
+    org.tensorflow.framework.Summary other = (org.tensorflow.framework.Summary) obj;
 
     boolean result = true;
     result = result && getValueList()
@@ -3595,58 +3595,58 @@ public  final class Summary extends
     return hash;
   }
 
-  public static Summary parseFrom(
+  public static org.tensorflow.framework.Summary parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static Summary parseFrom(
+  public static org.tensorflow.framework.Summary parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static Summary parseFrom(byte[] data)
+  public static org.tensorflow.framework.Summary parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static Summary parseFrom(
+  public static org.tensorflow.framework.Summary parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static Summary parseFrom(java.io.InputStream input)
+  public static org.tensorflow.framework.Summary parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static Summary parseFrom(
+  public static org.tensorflow.framework.Summary parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static Summary parseDelimitedFrom(java.io.InputStream input)
+  public static org.tensorflow.framework.Summary parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static Summary parseDelimitedFrom(
+  public static org.tensorflow.framework.Summary parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static Summary parseFrom(
+  public static org.tensorflow.framework.Summary parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static Summary parseFrom(
+  public static org.tensorflow.framework.Summary parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -3658,7 +3658,7 @@ public  final class Summary extends
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(Summary prototype) {
+  public static Builder newBuilder(org.tensorflow.framework.Summary prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -3686,20 +3686,20 @@ public  final class Summary extends
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:tensorboard.Summary)
-    SummaryOrBuilder {
+      org.tensorflow.framework.SummaryOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return SummaryProtos.internal_static_tensorboard_Summary_descriptor;
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return SummaryProtos.internal_static_tensorboard_Summary_fieldAccessorTable
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              Summary.class, Summary.Builder.class);
+              org.tensorflow.framework.Summary.class, org.tensorflow.framework.Summary.Builder.class);
     }
 
-    // Construct using Summary.newBuilder()
+    // Construct using org.tensorflow.framework.Summary.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -3728,23 +3728,23 @@ public  final class Summary extends
 
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return SummaryProtos.internal_static_tensorboard_Summary_descriptor;
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_Summary_descriptor;
     }
 
-    public Summary getDefaultInstanceForType() {
-      return Summary.getDefaultInstance();
+    public org.tensorflow.framework.Summary getDefaultInstanceForType() {
+      return org.tensorflow.framework.Summary.getDefaultInstance();
     }
 
-    public Summary build() {
-      Summary result = buildPartial();
+    public org.tensorflow.framework.Summary build() {
+      org.tensorflow.framework.Summary result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public Summary buildPartial() {
-      Summary result = new Summary(this);
+    public org.tensorflow.framework.Summary buildPartial() {
+      org.tensorflow.framework.Summary result = new org.tensorflow.framework.Summary(this);
       int from_bitField0_ = bitField0_;
       if (valueBuilder_ == null) {
         if (((bitField0_ & 0x00000001) == 0x00000001)) {
@@ -3786,16 +3786,16 @@ public  final class Summary extends
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof Summary) {
-        return mergeFrom((Summary)other);
+      if (other instanceof org.tensorflow.framework.Summary) {
+        return mergeFrom((org.tensorflow.framework.Summary)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(Summary other) {
-      if (other == Summary.getDefaultInstance()) return this;
+    public Builder mergeFrom(org.tensorflow.framework.Summary other) {
+      if (other == org.tensorflow.framework.Summary.getDefaultInstance()) return this;
       if (valueBuilder_ == null) {
         if (!other.value_.isEmpty()) {
           if (value_.isEmpty()) {
@@ -3834,11 +3834,11 @@ public  final class Summary extends
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      Summary parsedMessage = null;
+      org.tensorflow.framework.Summary parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (Summary) e.getUnfinishedMessage();
+        parsedMessage = (org.tensorflow.framework.Summary) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -3849,17 +3849,17 @@ public  final class Summary extends
     }
     private int bitField0_;
 
-    private java.util.List<Summary.Value> value_ =
+    private java.util.List<org.tensorflow.framework.Summary.Value> value_ =
       java.util.Collections.emptyList();
     private void ensureValueIsMutable() {
       if (!((bitField0_ & 0x00000001) == 0x00000001)) {
-        value_ = new java.util.ArrayList<Summary.Value>(value_);
+        value_ = new java.util.ArrayList<org.tensorflow.framework.Summary.Value>(value_);
         bitField0_ |= 0x00000001;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        Summary.Value, Summary.Value.Builder, Summary.ValueOrBuilder> valueBuilder_;
+        org.tensorflow.framework.Summary.Value, org.tensorflow.framework.Summary.Value.Builder, org.tensorflow.framework.Summary.ValueOrBuilder> valueBuilder_;
 
     /**
      * <pre>
@@ -3868,7 +3868,7 @@ public  final class Summary extends
      *
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
-    public java.util.List<Summary.Value> getValueList() {
+    public java.util.List<org.tensorflow.framework.Summary.Value> getValueList() {
       if (valueBuilder_ == null) {
         return java.util.Collections.unmodifiableList(value_);
       } else {
@@ -3896,7 +3896,7 @@ public  final class Summary extends
      *
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
-    public Summary.Value getValue(int index) {
+    public org.tensorflow.framework.Summary.Value getValue(int index) {
       if (valueBuilder_ == null) {
         return value_.get(index);
       } else {
@@ -3911,7 +3911,7 @@ public  final class Summary extends
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
     public Builder setValue(
-        int index, Summary.Value value) {
+        int index, org.tensorflow.framework.Summary.Value value) {
       if (valueBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -3932,7 +3932,7 @@ public  final class Summary extends
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
     public Builder setValue(
-        int index, Summary.Value.Builder builderForValue) {
+        int index, org.tensorflow.framework.Summary.Value.Builder builderForValue) {
       if (valueBuilder_ == null) {
         ensureValueIsMutable();
         value_.set(index, builderForValue.build());
@@ -3949,7 +3949,7 @@ public  final class Summary extends
      *
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
-    public Builder addValue(Summary.Value value) {
+    public Builder addValue(org.tensorflow.framework.Summary.Value value) {
       if (valueBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -3970,7 +3970,7 @@ public  final class Summary extends
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
     public Builder addValue(
-        int index, Summary.Value value) {
+        int index, org.tensorflow.framework.Summary.Value value) {
       if (valueBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -3991,7 +3991,7 @@ public  final class Summary extends
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
     public Builder addValue(
-        Summary.Value.Builder builderForValue) {
+        org.tensorflow.framework.Summary.Value.Builder builderForValue) {
       if (valueBuilder_ == null) {
         ensureValueIsMutable();
         value_.add(builderForValue.build());
@@ -4009,7 +4009,7 @@ public  final class Summary extends
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
     public Builder addValue(
-        int index, Summary.Value.Builder builderForValue) {
+        int index, org.tensorflow.framework.Summary.Value.Builder builderForValue) {
       if (valueBuilder_ == null) {
         ensureValueIsMutable();
         value_.add(index, builderForValue.build());
@@ -4027,7 +4027,7 @@ public  final class Summary extends
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
     public Builder addAllValue(
-        java.lang.Iterable<? extends Summary.Value> values) {
+        java.lang.Iterable<? extends org.tensorflow.framework.Summary.Value> values) {
       if (valueBuilder_ == null) {
         ensureValueIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -4079,7 +4079,7 @@ public  final class Summary extends
      *
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
-    public Summary.Value.Builder getValueBuilder(
+    public org.tensorflow.framework.Summary.Value.Builder getValueBuilder(
         int index) {
       return getValueFieldBuilder().getBuilder(index);
     }
@@ -4090,7 +4090,7 @@ public  final class Summary extends
      *
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
-    public Summary.ValueOrBuilder getValueOrBuilder(
+    public org.tensorflow.framework.Summary.ValueOrBuilder getValueOrBuilder(
         int index) {
       if (valueBuilder_ == null) {
         return value_.get(index);  } else {
@@ -4104,7 +4104,7 @@ public  final class Summary extends
      *
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
-    public java.util.List<? extends Summary.ValueOrBuilder>
+    public java.util.List<? extends org.tensorflow.framework.Summary.ValueOrBuilder> 
          getValueOrBuilderList() {
       if (valueBuilder_ != null) {
         return valueBuilder_.getMessageOrBuilderList();
@@ -4119,9 +4119,9 @@ public  final class Summary extends
      *
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
-    public Summary.Value.Builder addValueBuilder() {
+    public org.tensorflow.framework.Summary.Value.Builder addValueBuilder() {
       return getValueFieldBuilder().addBuilder(
-          Summary.Value.getDefaultInstance());
+          org.tensorflow.framework.Summary.Value.getDefaultInstance());
     }
     /**
      * <pre>
@@ -4130,10 +4130,10 @@ public  final class Summary extends
      *
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
-    public Summary.Value.Builder addValueBuilder(
+    public org.tensorflow.framework.Summary.Value.Builder addValueBuilder(
         int index) {
       return getValueFieldBuilder().addBuilder(
-          index, Summary.Value.getDefaultInstance());
+          index, org.tensorflow.framework.Summary.Value.getDefaultInstance());
     }
     /**
      * <pre>
@@ -4142,16 +4142,16 @@ public  final class Summary extends
      *
      * <code>repeated .tensorboard.Summary.Value value = 1;</code>
      */
-    public java.util.List<Summary.Value.Builder>
+    public java.util.List<org.tensorflow.framework.Summary.Value.Builder> 
          getValueBuilderList() {
       return getValueFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilderV3<
-        Summary.Value, Summary.Value.Builder, Summary.ValueOrBuilder>
+        org.tensorflow.framework.Summary.Value, org.tensorflow.framework.Summary.Value.Builder, org.tensorflow.framework.Summary.ValueOrBuilder> 
         getValueFieldBuilder() {
       if (valueBuilder_ == null) {
         valueBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-            Summary.Value, Summary.Value.Builder, Summary.ValueOrBuilder>(
+            org.tensorflow.framework.Summary.Value, org.tensorflow.framework.Summary.Value.Builder, org.tensorflow.framework.Summary.ValueOrBuilder>(
                 value_,
                 ((bitField0_ & 0x00000001) == 0x00000001),
                 getParentForChildren(),
@@ -4175,12 +4175,12 @@ public  final class Summary extends
   }
 
   // @@protoc_insertion_point(class_scope:tensorboard.Summary)
-  private static final Summary DEFAULT_INSTANCE;
+  private static final org.tensorflow.framework.Summary DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new Summary();
+    DEFAULT_INSTANCE = new org.tensorflow.framework.Summary();
   }
 
-  public static Summary getDefaultInstance() {
+  public static org.tensorflow.framework.Summary getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -4203,7 +4203,7 @@ public  final class Summary extends
     return PARSER;
   }
 
-  public Summary getDefaultInstanceForType() {
+  public org.tensorflow.framework.Summary getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

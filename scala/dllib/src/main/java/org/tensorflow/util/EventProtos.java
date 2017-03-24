@@ -3,8 +3,6 @@
 
 package org.tensorflow.util;
 
-import org.tensorflow.framework.SummaryProtos;
-
 public final class EventProtos {
   private EventProtos() {}
   public static void registerAllExtensions(
@@ -78,7 +76,7 @@ public final class EventProtos {
     com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          SummaryProtos.getDescriptor(),
+          org.tensorflow.framework.SummaryProtos.getDescriptor(),
         }, assigner);
     internal_static_tensorboard_Event_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -104,7 +102,7 @@ public final class EventProtos {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_tensorboard_TaggedRunMetadata_descriptor,
         new java.lang.String[] { "Tag", "RunMetadata", });
-    SummaryProtos.getDescriptor();
+    org.tensorflow.framework.SummaryProtos.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)
