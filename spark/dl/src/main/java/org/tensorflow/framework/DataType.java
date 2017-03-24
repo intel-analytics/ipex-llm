@@ -524,7 +524,7 @@ public enum DataType
   }
   public static final com.google.protobuf.Descriptors.EnumDescriptor
       getDescriptor() {
-    return TypesProtos.getDescriptor()
+    return org.tensorflow.framework.TypesProtos.getDescriptor()
         .getEnumTypes().get(0);
   }
 

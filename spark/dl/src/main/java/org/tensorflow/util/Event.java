@@ -3,9 +3,6 @@
 
 package org.tensorflow.util;
 
-import org.tensorflow.framework.Summary;
-import org.tensorflow.framework.SummaryOrBuilder;
-
 /**
  * <pre>
  * Protocol buffer representing an event that happened during
@@ -74,56 +71,56 @@ public  final class Event extends
             break;
           }
           case 42: {
-            Summary.Builder subBuilder = null;
+            org.tensorflow.framework.Summary.Builder subBuilder = null;
             if (whatCase_ == 5) {
-              subBuilder = ((Summary) what_).toBuilder();
+              subBuilder = ((org.tensorflow.framework.Summary) what_).toBuilder();
             }
             what_ =
-                input.readMessage(Summary.parser(), extensionRegistry);
+                input.readMessage(org.tensorflow.framework.Summary.parser(), extensionRegistry);
             if (subBuilder != null) {
-              subBuilder.mergeFrom((Summary) what_);
+              subBuilder.mergeFrom((org.tensorflow.framework.Summary) what_);
               what_ = subBuilder.buildPartial();
             }
             whatCase_ = 5;
             break;
           }
           case 50: {
-            LogMessage.Builder subBuilder = null;
+            org.tensorflow.util.LogMessage.Builder subBuilder = null;
             if (whatCase_ == 6) {
-              subBuilder = ((LogMessage) what_).toBuilder();
+              subBuilder = ((org.tensorflow.util.LogMessage) what_).toBuilder();
             }
             what_ =
-                input.readMessage(LogMessage.parser(), extensionRegistry);
+                input.readMessage(org.tensorflow.util.LogMessage.parser(), extensionRegistry);
             if (subBuilder != null) {
-              subBuilder.mergeFrom((LogMessage) what_);
+              subBuilder.mergeFrom((org.tensorflow.util.LogMessage) what_);
               what_ = subBuilder.buildPartial();
             }
             whatCase_ = 6;
             break;
           }
           case 58: {
-            SessionLog.Builder subBuilder = null;
+            org.tensorflow.util.SessionLog.Builder subBuilder = null;
             if (whatCase_ == 7) {
-              subBuilder = ((SessionLog) what_).toBuilder();
+              subBuilder = ((org.tensorflow.util.SessionLog) what_).toBuilder();
             }
             what_ =
-                input.readMessage(SessionLog.parser(), extensionRegistry);
+                input.readMessage(org.tensorflow.util.SessionLog.parser(), extensionRegistry);
             if (subBuilder != null) {
-              subBuilder.mergeFrom((SessionLog) what_);
+              subBuilder.mergeFrom((org.tensorflow.util.SessionLog) what_);
               what_ = subBuilder.buildPartial();
             }
             whatCase_ = 7;
             break;
           }
           case 66: {
-            TaggedRunMetadata.Builder subBuilder = null;
+            org.tensorflow.util.TaggedRunMetadata.Builder subBuilder = null;
             if (whatCase_ == 8) {
-              subBuilder = ((TaggedRunMetadata) what_).toBuilder();
+              subBuilder = ((org.tensorflow.util.TaggedRunMetadata) what_).toBuilder();
             }
             what_ =
-                input.readMessage(TaggedRunMetadata.parser(), extensionRegistry);
+                input.readMessage(org.tensorflow.util.TaggedRunMetadata.parser(), extensionRegistry);
             if (subBuilder != null) {
-              subBuilder.mergeFrom((TaggedRunMetadata) what_);
+              subBuilder.mergeFrom((org.tensorflow.util.TaggedRunMetadata) what_);
               what_ = subBuilder.buildPartial();
             }
             whatCase_ = 8;
@@ -147,14 +144,14 @@ public  final class Event extends
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return EventProtos.internal_static_tensorboard_Event_descriptor;
+    return org.tensorflow.util.EventProtos.internal_static_tensorboard_Event_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return EventProtos.internal_static_tensorboard_Event_fieldAccessorTable
+    return org.tensorflow.util.EventProtos.internal_static_tensorboard_Event_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            Event.class, Event.Builder.class);
+            org.tensorflow.util.Event.class, org.tensorflow.util.Event.Builder.class);
   }
 
   private int whatCase_ = 0;
@@ -311,11 +308,11 @@ public  final class Event extends
    *
    * <code>optional .tensorboard.Summary summary = 5;</code>
    */
-  public Summary getSummary() {
+  public org.tensorflow.framework.Summary getSummary() {
     if (whatCase_ == 5) {
-       return (Summary) what_;
+       return (org.tensorflow.framework.Summary) what_;
     }
-    return Summary.getDefaultInstance();
+    return org.tensorflow.framework.Summary.getDefaultInstance();
   }
   /**
    * <pre>
@@ -324,11 +321,11 @@ public  final class Event extends
    *
    * <code>optional .tensorboard.Summary summary = 5;</code>
    */
-  public SummaryOrBuilder getSummaryOrBuilder() {
+  public org.tensorflow.framework.SummaryOrBuilder getSummaryOrBuilder() {
     if (whatCase_ == 5) {
-       return (Summary) what_;
+       return (org.tensorflow.framework.Summary) what_;
     }
-    return Summary.getDefaultInstance();
+    return org.tensorflow.framework.Summary.getDefaultInstance();
   }
 
   public static final int LOG_MESSAGE_FIELD_NUMBER = 6;
@@ -340,11 +337,11 @@ public  final class Event extends
    *
    * <code>optional .tensorboard.LogMessage log_message = 6;</code>
    */
-  public LogMessage getLogMessage() {
+  public org.tensorflow.util.LogMessage getLogMessage() {
     if (whatCase_ == 6) {
-       return (LogMessage) what_;
+       return (org.tensorflow.util.LogMessage) what_;
     }
-    return LogMessage.getDefaultInstance();
+    return org.tensorflow.util.LogMessage.getDefaultInstance();
   }
   /**
    * <pre>
@@ -354,11 +351,11 @@ public  final class Event extends
    *
    * <code>optional .tensorboard.LogMessage log_message = 6;</code>
    */
-  public LogMessageOrBuilder getLogMessageOrBuilder() {
+  public org.tensorflow.util.LogMessageOrBuilder getLogMessageOrBuilder() {
     if (whatCase_ == 6) {
-       return (LogMessage) what_;
+       return (org.tensorflow.util.LogMessage) what_;
     }
-    return LogMessage.getDefaultInstance();
+    return org.tensorflow.util.LogMessage.getDefaultInstance();
   }
 
   public static final int SESSION_LOG_FIELD_NUMBER = 7;
@@ -369,11 +366,11 @@ public  final class Event extends
    *
    * <code>optional .tensorboard.SessionLog session_log = 7;</code>
    */
-  public SessionLog getSessionLog() {
+  public org.tensorflow.util.SessionLog getSessionLog() {
     if (whatCase_ == 7) {
-       return (SessionLog) what_;
+       return (org.tensorflow.util.SessionLog) what_;
     }
-    return SessionLog.getDefaultInstance();
+    return org.tensorflow.util.SessionLog.getDefaultInstance();
   }
   /**
    * <pre>
@@ -382,11 +379,11 @@ public  final class Event extends
    *
    * <code>optional .tensorboard.SessionLog session_log = 7;</code>
    */
-  public SessionLogOrBuilder getSessionLogOrBuilder() {
+  public org.tensorflow.util.SessionLogOrBuilder getSessionLogOrBuilder() {
     if (whatCase_ == 7) {
-       return (SessionLog) what_;
+       return (org.tensorflow.util.SessionLog) what_;
     }
-    return SessionLog.getDefaultInstance();
+    return org.tensorflow.util.SessionLog.getDefaultInstance();
   }
 
   public static final int TAGGED_RUN_METADATA_FIELD_NUMBER = 8;
@@ -397,11 +394,11 @@ public  final class Event extends
    *
    * <code>optional .tensorboard.TaggedRunMetadata tagged_run_metadata = 8;</code>
    */
-  public TaggedRunMetadata getTaggedRunMetadata() {
+  public org.tensorflow.util.TaggedRunMetadata getTaggedRunMetadata() {
     if (whatCase_ == 8) {
-       return (TaggedRunMetadata) what_;
+       return (org.tensorflow.util.TaggedRunMetadata) what_;
     }
-    return TaggedRunMetadata.getDefaultInstance();
+    return org.tensorflow.util.TaggedRunMetadata.getDefaultInstance();
   }
   /**
    * <pre>
@@ -410,11 +407,11 @@ public  final class Event extends
    *
    * <code>optional .tensorboard.TaggedRunMetadata tagged_run_metadata = 8;</code>
    */
-  public TaggedRunMetadataOrBuilder getTaggedRunMetadataOrBuilder() {
+  public org.tensorflow.util.TaggedRunMetadataOrBuilder getTaggedRunMetadataOrBuilder() {
     if (whatCase_ == 8) {
-       return (TaggedRunMetadata) what_;
+       return (org.tensorflow.util.TaggedRunMetadata) what_;
     }
-    return TaggedRunMetadata.getDefaultInstance();
+    return org.tensorflow.util.TaggedRunMetadata.getDefaultInstance();
   }
 
   public static final int META_GRAPH_DEF_FIELD_NUMBER = 9;
@@ -458,16 +455,16 @@ public  final class Event extends
           4, (com.google.protobuf.ByteString)((com.google.protobuf.ByteString) what_));
     }
     if (whatCase_ == 5) {
-      output.writeMessage(5, (Summary) what_);
+      output.writeMessage(5, (org.tensorflow.framework.Summary) what_);
     }
     if (whatCase_ == 6) {
-      output.writeMessage(6, (LogMessage) what_);
+      output.writeMessage(6, (org.tensorflow.util.LogMessage) what_);
     }
     if (whatCase_ == 7) {
-      output.writeMessage(7, (SessionLog) what_);
+      output.writeMessage(7, (org.tensorflow.util.SessionLog) what_);
     }
     if (whatCase_ == 8) {
-      output.writeMessage(8, (TaggedRunMetadata) what_);
+      output.writeMessage(8, (org.tensorflow.util.TaggedRunMetadata) what_);
     }
     if (whatCase_ == 9) {
       output.writeBytes(
@@ -498,19 +495,19 @@ public  final class Event extends
     }
     if (whatCase_ == 5) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(5, (Summary) what_);
+        .computeMessageSize(5, (org.tensorflow.framework.Summary) what_);
     }
     if (whatCase_ == 6) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(6, (LogMessage) what_);
+        .computeMessageSize(6, (org.tensorflow.util.LogMessage) what_);
     }
     if (whatCase_ == 7) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(7, (SessionLog) what_);
+        .computeMessageSize(7, (org.tensorflow.util.SessionLog) what_);
     }
     if (whatCase_ == 8) {
       size += com.google.protobuf.CodedOutputStream
-        .computeMessageSize(8, (TaggedRunMetadata) what_);
+        .computeMessageSize(8, (org.tensorflow.util.TaggedRunMetadata) what_);
     }
     if (whatCase_ == 9) {
       size += com.google.protobuf.CodedOutputStream
@@ -527,10 +524,10 @@ public  final class Event extends
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof Event)) {
+    if (!(obj instanceof org.tensorflow.util.Event)) {
       return super.equals(obj);
     }
-    Event other = (Event) obj;
+    org.tensorflow.util.Event other = (org.tensorflow.util.Event) obj;
 
     boolean result = true;
     result = result && (
@@ -627,58 +624,58 @@ public  final class Event extends
     return hash;
   }
 
-  public static Event parseFrom(
+  public static org.tensorflow.util.Event parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static Event parseFrom(
+  public static org.tensorflow.util.Event parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static Event parseFrom(byte[] data)
+  public static org.tensorflow.util.Event parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static Event parseFrom(
+  public static org.tensorflow.util.Event parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static Event parseFrom(java.io.InputStream input)
+  public static org.tensorflow.util.Event parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static Event parseFrom(
+  public static org.tensorflow.util.Event parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static Event parseDelimitedFrom(java.io.InputStream input)
+  public static org.tensorflow.util.Event parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static Event parseDelimitedFrom(
+  public static org.tensorflow.util.Event parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static Event parseFrom(
+  public static org.tensorflow.util.Event parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static Event parseFrom(
+  public static org.tensorflow.util.Event parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -690,7 +687,7 @@ public  final class Event extends
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(Event prototype) {
+  public static Builder newBuilder(org.tensorflow.util.Event prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -715,20 +712,20 @@ public  final class Event extends
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:tensorboard.Event)
-    EventOrBuilder {
+      org.tensorflow.util.EventOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return EventProtos.internal_static_tensorboard_Event_descriptor;
+      return org.tensorflow.util.EventProtos.internal_static_tensorboard_Event_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return EventProtos.internal_static_tensorboard_Event_fieldAccessorTable
+      return org.tensorflow.util.EventProtos.internal_static_tensorboard_Event_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              Event.class, Event.Builder.class);
+              org.tensorflow.util.Event.class, org.tensorflow.util.Event.Builder.class);
     }
 
-    // Construct using Event.newBuilder()
+    // Construct using org.tensorflow.util.Event.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -756,23 +753,23 @@ public  final class Event extends
 
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return EventProtos.internal_static_tensorboard_Event_descriptor;
+      return org.tensorflow.util.EventProtos.internal_static_tensorboard_Event_descriptor;
     }
 
-    public Event getDefaultInstanceForType() {
-      return Event.getDefaultInstance();
+    public org.tensorflow.util.Event getDefaultInstanceForType() {
+      return org.tensorflow.util.Event.getDefaultInstance();
     }
 
-    public Event build() {
-      Event result = buildPartial();
+    public org.tensorflow.util.Event build() {
+      org.tensorflow.util.Event result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public Event buildPartial() {
-      Event result = new Event(this);
+    public org.tensorflow.util.Event buildPartial() {
+      org.tensorflow.util.Event result = new org.tensorflow.util.Event(this);
       result.wallTime_ = wallTime_;
       result.step_ = step_;
       if (whatCase_ == 3) {
@@ -844,16 +841,16 @@ public  final class Event extends
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof Event) {
-        return mergeFrom((Event)other);
+      if (other instanceof org.tensorflow.util.Event) {
+        return mergeFrom((org.tensorflow.util.Event)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(Event other) {
-      if (other == Event.getDefaultInstance()) return this;
+    public Builder mergeFrom(org.tensorflow.util.Event other) {
+      if (other == org.tensorflow.util.Event.getDefaultInstance()) return this;
       if (other.getWallTime() != 0D) {
         setWallTime(other.getWallTime());
       }
@@ -907,11 +904,11 @@ public  final class Event extends
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      Event parsedMessage = null;
+      org.tensorflow.util.Event parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (Event) e.getUnfinishedMessage();
+        parsedMessage = (org.tensorflow.util.Event) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -1173,7 +1170,7 @@ public  final class Event extends
     }
 
     private com.google.protobuf.SingleFieldBuilderV3<
-      Summary, Summary.Builder, SummaryOrBuilder> summaryBuilder_;
+        org.tensorflow.framework.Summary, org.tensorflow.framework.Summary.Builder, org.tensorflow.framework.SummaryOrBuilder> summaryBuilder_;
     /**
      * <pre>
      * A summary was generated.
@@ -1181,17 +1178,17 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.Summary summary = 5;</code>
      */
-    public Summary getSummary() {
+    public org.tensorflow.framework.Summary getSummary() {
       if (summaryBuilder_ == null) {
         if (whatCase_ == 5) {
-          return (Summary) what_;
+          return (org.tensorflow.framework.Summary) what_;
         }
-        return Summary.getDefaultInstance();
+        return org.tensorflow.framework.Summary.getDefaultInstance();
       } else {
         if (whatCase_ == 5) {
           return summaryBuilder_.getMessage();
         }
-        return Summary.getDefaultInstance();
+        return org.tensorflow.framework.Summary.getDefaultInstance();
       }
     }
     /**
@@ -1201,7 +1198,7 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.Summary summary = 5;</code>
      */
-    public Builder setSummary(Summary value) {
+    public Builder setSummary(org.tensorflow.framework.Summary value) {
       if (summaryBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1222,7 +1219,7 @@ public  final class Event extends
      * <code>optional .tensorboard.Summary summary = 5;</code>
      */
     public Builder setSummary(
-        Summary.Builder builderForValue) {
+        org.tensorflow.framework.Summary.Builder builderForValue) {
       if (summaryBuilder_ == null) {
         what_ = builderForValue.build();
         onChanged();
@@ -1239,11 +1236,11 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.Summary summary = 5;</code>
      */
-    public Builder mergeSummary(Summary value) {
+    public Builder mergeSummary(org.tensorflow.framework.Summary value) {
       if (summaryBuilder_ == null) {
         if (whatCase_ == 5 &&
-            what_ != Summary.getDefaultInstance()) {
-          what_ = Summary.newBuilder((Summary) what_)
+            what_ != org.tensorflow.framework.Summary.getDefaultInstance()) {
+          what_ = org.tensorflow.framework.Summary.newBuilder((org.tensorflow.framework.Summary) what_)
               .mergeFrom(value).buildPartial();
         } else {
           what_ = value;
@@ -1288,7 +1285,7 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.Summary summary = 5;</code>
      */
-    public Summary.Builder getSummaryBuilder() {
+    public org.tensorflow.framework.Summary.Builder getSummaryBuilder() {
       return getSummaryFieldBuilder().getBuilder();
     }
     /**
@@ -1298,14 +1295,14 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.Summary summary = 5;</code>
      */
-    public SummaryOrBuilder getSummaryOrBuilder() {
+    public org.tensorflow.framework.SummaryOrBuilder getSummaryOrBuilder() {
       if ((whatCase_ == 5) && (summaryBuilder_ != null)) {
         return summaryBuilder_.getMessageOrBuilder();
       } else {
         if (whatCase_ == 5) {
-          return (Summary) what_;
+          return (org.tensorflow.framework.Summary) what_;
         }
-        return Summary.getDefaultInstance();
+        return org.tensorflow.framework.Summary.getDefaultInstance();
       }
     }
     /**
@@ -1316,15 +1313,15 @@ public  final class Event extends
      * <code>optional .tensorboard.Summary summary = 5;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-      Summary, Summary.Builder, SummaryOrBuilder>
+        org.tensorflow.framework.Summary, org.tensorflow.framework.Summary.Builder, org.tensorflow.framework.SummaryOrBuilder> 
         getSummaryFieldBuilder() {
       if (summaryBuilder_ == null) {
         if (!(whatCase_ == 5)) {
-          what_ = Summary.getDefaultInstance();
+          what_ = org.tensorflow.framework.Summary.getDefaultInstance();
         }
         summaryBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-          Summary, Summary.Builder, SummaryOrBuilder>(
-                (Summary) what_,
+            org.tensorflow.framework.Summary, org.tensorflow.framework.Summary.Builder, org.tensorflow.framework.SummaryOrBuilder>(
+                (org.tensorflow.framework.Summary) what_,
                 getParentForChildren(),
                 isClean());
         what_ = null;
@@ -1335,7 +1332,7 @@ public  final class Event extends
     }
 
     private com.google.protobuf.SingleFieldBuilderV3<
-      LogMessage, LogMessage.Builder, LogMessageOrBuilder> logMessageBuilder_;
+        org.tensorflow.util.LogMessage, org.tensorflow.util.LogMessage.Builder, org.tensorflow.util.LogMessageOrBuilder> logMessageBuilder_;
     /**
      * <pre>
      * The user output a log message. Not all messages are logged, only ones
@@ -1344,17 +1341,17 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.LogMessage log_message = 6;</code>
      */
-    public LogMessage getLogMessage() {
+    public org.tensorflow.util.LogMessage getLogMessage() {
       if (logMessageBuilder_ == null) {
         if (whatCase_ == 6) {
-          return (LogMessage) what_;
+          return (org.tensorflow.util.LogMessage) what_;
         }
-        return LogMessage.getDefaultInstance();
+        return org.tensorflow.util.LogMessage.getDefaultInstance();
       } else {
         if (whatCase_ == 6) {
           return logMessageBuilder_.getMessage();
         }
-        return LogMessage.getDefaultInstance();
+        return org.tensorflow.util.LogMessage.getDefaultInstance();
       }
     }
     /**
@@ -1365,7 +1362,7 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.LogMessage log_message = 6;</code>
      */
-    public Builder setLogMessage(LogMessage value) {
+    public Builder setLogMessage(org.tensorflow.util.LogMessage value) {
       if (logMessageBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1387,7 +1384,7 @@ public  final class Event extends
      * <code>optional .tensorboard.LogMessage log_message = 6;</code>
      */
     public Builder setLogMessage(
-        LogMessage.Builder builderForValue) {
+        org.tensorflow.util.LogMessage.Builder builderForValue) {
       if (logMessageBuilder_ == null) {
         what_ = builderForValue.build();
         onChanged();
@@ -1405,11 +1402,11 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.LogMessage log_message = 6;</code>
      */
-    public Builder mergeLogMessage(LogMessage value) {
+    public Builder mergeLogMessage(org.tensorflow.util.LogMessage value) {
       if (logMessageBuilder_ == null) {
         if (whatCase_ == 6 &&
-            what_ != LogMessage.getDefaultInstance()) {
-          what_ = LogMessage.newBuilder((LogMessage) what_)
+            what_ != org.tensorflow.util.LogMessage.getDefaultInstance()) {
+          what_ = org.tensorflow.util.LogMessage.newBuilder((org.tensorflow.util.LogMessage) what_)
               .mergeFrom(value).buildPartial();
         } else {
           what_ = value;
@@ -1456,7 +1453,7 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.LogMessage log_message = 6;</code>
      */
-    public LogMessage.Builder getLogMessageBuilder() {
+    public org.tensorflow.util.LogMessage.Builder getLogMessageBuilder() {
       return getLogMessageFieldBuilder().getBuilder();
     }
     /**
@@ -1467,14 +1464,14 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.LogMessage log_message = 6;</code>
      */
-    public LogMessageOrBuilder getLogMessageOrBuilder() {
+    public org.tensorflow.util.LogMessageOrBuilder getLogMessageOrBuilder() {
       if ((whatCase_ == 6) && (logMessageBuilder_ != null)) {
         return logMessageBuilder_.getMessageOrBuilder();
       } else {
         if (whatCase_ == 6) {
-          return (LogMessage) what_;
+          return (org.tensorflow.util.LogMessage) what_;
         }
-        return LogMessage.getDefaultInstance();
+        return org.tensorflow.util.LogMessage.getDefaultInstance();
       }
     }
     /**
@@ -1486,15 +1483,15 @@ public  final class Event extends
      * <code>optional .tensorboard.LogMessage log_message = 6;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-      LogMessage, LogMessage.Builder, LogMessageOrBuilder>
+        org.tensorflow.util.LogMessage, org.tensorflow.util.LogMessage.Builder, org.tensorflow.util.LogMessageOrBuilder> 
         getLogMessageFieldBuilder() {
       if (logMessageBuilder_ == null) {
         if (!(whatCase_ == 6)) {
-          what_ = LogMessage.getDefaultInstance();
+          what_ = org.tensorflow.util.LogMessage.getDefaultInstance();
         }
         logMessageBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-          LogMessage, LogMessage.Builder, LogMessageOrBuilder>(
-                (LogMessage) what_,
+            org.tensorflow.util.LogMessage, org.tensorflow.util.LogMessage.Builder, org.tensorflow.util.LogMessageOrBuilder>(
+                (org.tensorflow.util.LogMessage) what_,
                 getParentForChildren(),
                 isClean());
         what_ = null;
@@ -1505,7 +1502,7 @@ public  final class Event extends
     }
 
     private com.google.protobuf.SingleFieldBuilderV3<
-      SessionLog, SessionLog.Builder, SessionLogOrBuilder> sessionLogBuilder_;
+        org.tensorflow.util.SessionLog, org.tensorflow.util.SessionLog.Builder, org.tensorflow.util.SessionLogOrBuilder> sessionLogBuilder_;
     /**
      * <pre>
      * The state of the session which can be used for restarting after crashes.
@@ -1513,17 +1510,17 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.SessionLog session_log = 7;</code>
      */
-    public SessionLog getSessionLog() {
+    public org.tensorflow.util.SessionLog getSessionLog() {
       if (sessionLogBuilder_ == null) {
         if (whatCase_ == 7) {
-          return (SessionLog) what_;
+          return (org.tensorflow.util.SessionLog) what_;
         }
-        return SessionLog.getDefaultInstance();
+        return org.tensorflow.util.SessionLog.getDefaultInstance();
       } else {
         if (whatCase_ == 7) {
           return sessionLogBuilder_.getMessage();
         }
-        return SessionLog.getDefaultInstance();
+        return org.tensorflow.util.SessionLog.getDefaultInstance();
       }
     }
     /**
@@ -1533,7 +1530,7 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.SessionLog session_log = 7;</code>
      */
-    public Builder setSessionLog(SessionLog value) {
+    public Builder setSessionLog(org.tensorflow.util.SessionLog value) {
       if (sessionLogBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1554,7 +1551,7 @@ public  final class Event extends
      * <code>optional .tensorboard.SessionLog session_log = 7;</code>
      */
     public Builder setSessionLog(
-        SessionLog.Builder builderForValue) {
+        org.tensorflow.util.SessionLog.Builder builderForValue) {
       if (sessionLogBuilder_ == null) {
         what_ = builderForValue.build();
         onChanged();
@@ -1571,11 +1568,11 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.SessionLog session_log = 7;</code>
      */
-    public Builder mergeSessionLog(SessionLog value) {
+    public Builder mergeSessionLog(org.tensorflow.util.SessionLog value) {
       if (sessionLogBuilder_ == null) {
         if (whatCase_ == 7 &&
-            what_ != SessionLog.getDefaultInstance()) {
-          what_ = SessionLog.newBuilder((SessionLog) what_)
+            what_ != org.tensorflow.util.SessionLog.getDefaultInstance()) {
+          what_ = org.tensorflow.util.SessionLog.newBuilder((org.tensorflow.util.SessionLog) what_)
               .mergeFrom(value).buildPartial();
         } else {
           what_ = value;
@@ -1620,7 +1617,7 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.SessionLog session_log = 7;</code>
      */
-    public SessionLog.Builder getSessionLogBuilder() {
+    public org.tensorflow.util.SessionLog.Builder getSessionLogBuilder() {
       return getSessionLogFieldBuilder().getBuilder();
     }
     /**
@@ -1630,14 +1627,14 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.SessionLog session_log = 7;</code>
      */
-    public SessionLogOrBuilder getSessionLogOrBuilder() {
+    public org.tensorflow.util.SessionLogOrBuilder getSessionLogOrBuilder() {
       if ((whatCase_ == 7) && (sessionLogBuilder_ != null)) {
         return sessionLogBuilder_.getMessageOrBuilder();
       } else {
         if (whatCase_ == 7) {
-          return (SessionLog) what_;
+          return (org.tensorflow.util.SessionLog) what_;
         }
-        return SessionLog.getDefaultInstance();
+        return org.tensorflow.util.SessionLog.getDefaultInstance();
       }
     }
     /**
@@ -1648,15 +1645,15 @@ public  final class Event extends
      * <code>optional .tensorboard.SessionLog session_log = 7;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-      SessionLog, SessionLog.Builder, SessionLogOrBuilder>
+        org.tensorflow.util.SessionLog, org.tensorflow.util.SessionLog.Builder, org.tensorflow.util.SessionLogOrBuilder> 
         getSessionLogFieldBuilder() {
       if (sessionLogBuilder_ == null) {
         if (!(whatCase_ == 7)) {
-          what_ = SessionLog.getDefaultInstance();
+          what_ = org.tensorflow.util.SessionLog.getDefaultInstance();
         }
         sessionLogBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-          SessionLog, SessionLog.Builder, SessionLogOrBuilder>(
-                (SessionLog) what_,
+            org.tensorflow.util.SessionLog, org.tensorflow.util.SessionLog.Builder, org.tensorflow.util.SessionLogOrBuilder>(
+                (org.tensorflow.util.SessionLog) what_,
                 getParentForChildren(),
                 isClean());
         what_ = null;
@@ -1667,7 +1664,7 @@ public  final class Event extends
     }
 
     private com.google.protobuf.SingleFieldBuilderV3<
-      TaggedRunMetadata, TaggedRunMetadata.Builder, TaggedRunMetadataOrBuilder> taggedRunMetadataBuilder_;
+        org.tensorflow.util.TaggedRunMetadata, org.tensorflow.util.TaggedRunMetadata.Builder, org.tensorflow.util.TaggedRunMetadataOrBuilder> taggedRunMetadataBuilder_;
     /**
      * <pre>
      * The metadata returned by running a session.run() call.
@@ -1675,17 +1672,17 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.TaggedRunMetadata tagged_run_metadata = 8;</code>
      */
-    public TaggedRunMetadata getTaggedRunMetadata() {
+    public org.tensorflow.util.TaggedRunMetadata getTaggedRunMetadata() {
       if (taggedRunMetadataBuilder_ == null) {
         if (whatCase_ == 8) {
-          return (TaggedRunMetadata) what_;
+          return (org.tensorflow.util.TaggedRunMetadata) what_;
         }
-        return TaggedRunMetadata.getDefaultInstance();
+        return org.tensorflow.util.TaggedRunMetadata.getDefaultInstance();
       } else {
         if (whatCase_ == 8) {
           return taggedRunMetadataBuilder_.getMessage();
         }
-        return TaggedRunMetadata.getDefaultInstance();
+        return org.tensorflow.util.TaggedRunMetadata.getDefaultInstance();
       }
     }
     /**
@@ -1695,7 +1692,7 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.TaggedRunMetadata tagged_run_metadata = 8;</code>
      */
-    public Builder setTaggedRunMetadata(TaggedRunMetadata value) {
+    public Builder setTaggedRunMetadata(org.tensorflow.util.TaggedRunMetadata value) {
       if (taggedRunMetadataBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1716,7 +1713,7 @@ public  final class Event extends
      * <code>optional .tensorboard.TaggedRunMetadata tagged_run_metadata = 8;</code>
      */
     public Builder setTaggedRunMetadata(
-        TaggedRunMetadata.Builder builderForValue) {
+        org.tensorflow.util.TaggedRunMetadata.Builder builderForValue) {
       if (taggedRunMetadataBuilder_ == null) {
         what_ = builderForValue.build();
         onChanged();
@@ -1733,11 +1730,11 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.TaggedRunMetadata tagged_run_metadata = 8;</code>
      */
-    public Builder mergeTaggedRunMetadata(TaggedRunMetadata value) {
+    public Builder mergeTaggedRunMetadata(org.tensorflow.util.TaggedRunMetadata value) {
       if (taggedRunMetadataBuilder_ == null) {
         if (whatCase_ == 8 &&
-            what_ != TaggedRunMetadata.getDefaultInstance()) {
-          what_ = TaggedRunMetadata.newBuilder((TaggedRunMetadata) what_)
+            what_ != org.tensorflow.util.TaggedRunMetadata.getDefaultInstance()) {
+          what_ = org.tensorflow.util.TaggedRunMetadata.newBuilder((org.tensorflow.util.TaggedRunMetadata) what_)
               .mergeFrom(value).buildPartial();
         } else {
           what_ = value;
@@ -1782,7 +1779,7 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.TaggedRunMetadata tagged_run_metadata = 8;</code>
      */
-    public TaggedRunMetadata.Builder getTaggedRunMetadataBuilder() {
+    public org.tensorflow.util.TaggedRunMetadata.Builder getTaggedRunMetadataBuilder() {
       return getTaggedRunMetadataFieldBuilder().getBuilder();
     }
     /**
@@ -1792,14 +1789,14 @@ public  final class Event extends
      *
      * <code>optional .tensorboard.TaggedRunMetadata tagged_run_metadata = 8;</code>
      */
-    public TaggedRunMetadataOrBuilder getTaggedRunMetadataOrBuilder() {
+    public org.tensorflow.util.TaggedRunMetadataOrBuilder getTaggedRunMetadataOrBuilder() {
       if ((whatCase_ == 8) && (taggedRunMetadataBuilder_ != null)) {
         return taggedRunMetadataBuilder_.getMessageOrBuilder();
       } else {
         if (whatCase_ == 8) {
-          return (TaggedRunMetadata) what_;
+          return (org.tensorflow.util.TaggedRunMetadata) what_;
         }
-        return TaggedRunMetadata.getDefaultInstance();
+        return org.tensorflow.util.TaggedRunMetadata.getDefaultInstance();
       }
     }
     /**
@@ -1810,15 +1807,15 @@ public  final class Event extends
      * <code>optional .tensorboard.TaggedRunMetadata tagged_run_metadata = 8;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-      TaggedRunMetadata, TaggedRunMetadata.Builder, TaggedRunMetadataOrBuilder>
+        org.tensorflow.util.TaggedRunMetadata, org.tensorflow.util.TaggedRunMetadata.Builder, org.tensorflow.util.TaggedRunMetadataOrBuilder> 
         getTaggedRunMetadataFieldBuilder() {
       if (taggedRunMetadataBuilder_ == null) {
         if (!(whatCase_ == 8)) {
-          what_ = TaggedRunMetadata.getDefaultInstance();
+          what_ = org.tensorflow.util.TaggedRunMetadata.getDefaultInstance();
         }
         taggedRunMetadataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-          TaggedRunMetadata, TaggedRunMetadata.Builder, TaggedRunMetadataOrBuilder>(
-                (TaggedRunMetadata) what_,
+            org.tensorflow.util.TaggedRunMetadata, org.tensorflow.util.TaggedRunMetadata.Builder, org.tensorflow.util.TaggedRunMetadataOrBuilder>(
+                (org.tensorflow.util.TaggedRunMetadata) what_,
                 getParentForChildren(),
                 isClean());
         what_ = null;
@@ -1887,12 +1884,12 @@ public  final class Event extends
   }
 
   // @@protoc_insertion_point(class_scope:tensorboard.Event)
-  private static final Event DEFAULT_INSTANCE;
+  private static final org.tensorflow.util.Event DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new Event();
+    DEFAULT_INSTANCE = new org.tensorflow.util.Event();
   }
 
-  public static Event getDefaultInstance() {
+  public static org.tensorflow.util.Event getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -1915,7 +1912,7 @@ public  final class Event extends
     return PARSER;
   }
 
-  public Event getDefaultInstanceForType() {
+  public org.tensorflow.util.Event getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

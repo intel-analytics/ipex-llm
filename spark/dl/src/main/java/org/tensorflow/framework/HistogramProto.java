@@ -140,14 +140,14 @@ public  final class HistogramProto extends
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return SummaryProtos.internal_static_tensorboard_HistogramProto_descriptor;
+    return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_HistogramProto_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return SummaryProtos.internal_static_tensorboard_HistogramProto_fieldAccessorTable
+    return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_HistogramProto_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            HistogramProto.class, HistogramProto.Builder.class);
+            org.tensorflow.framework.HistogramProto.class, org.tensorflow.framework.HistogramProto.Builder.class);
   }
 
   private int bitField0_;
@@ -367,10 +367,10 @@ public  final class HistogramProto extends
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof HistogramProto)) {
+    if (!(obj instanceof org.tensorflow.framework.HistogramProto)) {
       return super.equals(obj);
     }
-    HistogramProto other = (HistogramProto) obj;
+    org.tensorflow.framework.HistogramProto other = (org.tensorflow.framework.HistogramProto) obj;
 
     boolean result = true;
     result = result && (
@@ -435,58 +435,58 @@ public  final class HistogramProto extends
     return hash;
   }
 
-  public static HistogramProto parseFrom(
+  public static org.tensorflow.framework.HistogramProto parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static HistogramProto parseFrom(
+  public static org.tensorflow.framework.HistogramProto parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static HistogramProto parseFrom(byte[] data)
+  public static org.tensorflow.framework.HistogramProto parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static HistogramProto parseFrom(
+  public static org.tensorflow.framework.HistogramProto parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static HistogramProto parseFrom(java.io.InputStream input)
+  public static org.tensorflow.framework.HistogramProto parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static HistogramProto parseFrom(
+  public static org.tensorflow.framework.HistogramProto parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static HistogramProto parseDelimitedFrom(java.io.InputStream input)
+  public static org.tensorflow.framework.HistogramProto parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static HistogramProto parseDelimitedFrom(
+  public static org.tensorflow.framework.HistogramProto parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static HistogramProto parseFrom(
+  public static org.tensorflow.framework.HistogramProto parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static HistogramProto parseFrom(
+  public static org.tensorflow.framework.HistogramProto parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -498,7 +498,7 @@ public  final class HistogramProto extends
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(HistogramProto prototype) {
+  public static Builder newBuilder(org.tensorflow.framework.HistogramProto prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -523,20 +523,20 @@ public  final class HistogramProto extends
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:tensorboard.HistogramProto)
-    HistogramProtoOrBuilder {
+      org.tensorflow.framework.HistogramProtoOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return SummaryProtos.internal_static_tensorboard_HistogramProto_descriptor;
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_HistogramProto_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return SummaryProtos.internal_static_tensorboard_HistogramProto_fieldAccessorTable
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_HistogramProto_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              HistogramProto.class, HistogramProto.Builder.class);
+              org.tensorflow.framework.HistogramProto.class, org.tensorflow.framework.HistogramProto.Builder.class);
     }
 
-    // Construct using HistogramProto.newBuilder()
+    // Construct using org.tensorflow.framework.HistogramProto.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -572,23 +572,23 @@ public  final class HistogramProto extends
 
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return SummaryProtos.internal_static_tensorboard_HistogramProto_descriptor;
+      return org.tensorflow.framework.SummaryProtos.internal_static_tensorboard_HistogramProto_descriptor;
     }
 
-    public HistogramProto getDefaultInstanceForType() {
-      return HistogramProto.getDefaultInstance();
+    public org.tensorflow.framework.HistogramProto getDefaultInstanceForType() {
+      return org.tensorflow.framework.HistogramProto.getDefaultInstance();
     }
 
-    public HistogramProto build() {
-      HistogramProto result = buildPartial();
+    public org.tensorflow.framework.HistogramProto build() {
+      org.tensorflow.framework.HistogramProto result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public HistogramProto buildPartial() {
-      HistogramProto result = new HistogramProto(this);
+    public org.tensorflow.framework.HistogramProto buildPartial() {
+      org.tensorflow.framework.HistogramProto result = new org.tensorflow.framework.HistogramProto(this);
       int from_bitField0_ = bitField0_;
       int to_bitField0_ = 0;
       result.min_ = min_;
@@ -638,16 +638,16 @@ public  final class HistogramProto extends
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof HistogramProto) {
-        return mergeFrom((HistogramProto)other);
+      if (other instanceof org.tensorflow.framework.HistogramProto) {
+        return mergeFrom((org.tensorflow.framework.HistogramProto)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(HistogramProto other) {
-      if (other == HistogramProto.getDefaultInstance()) return this;
+    public Builder mergeFrom(org.tensorflow.framework.HistogramProto other) {
+      if (other == org.tensorflow.framework.HistogramProto.getDefaultInstance()) return this;
       if (other.getMin() != 0D) {
         setMin(other.getMin());
       }
@@ -695,11 +695,11 @@ public  final class HistogramProto extends
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      HistogramProto parsedMessage = null;
+      org.tensorflow.framework.HistogramProto parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (HistogramProto) e.getUnfinishedMessage();
+        parsedMessage = (org.tensorflow.framework.HistogramProto) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -1042,12 +1042,12 @@ public  final class HistogramProto extends
   }
 
   // @@protoc_insertion_point(class_scope:tensorboard.HistogramProto)
-  private static final HistogramProto DEFAULT_INSTANCE;
+  private static final org.tensorflow.framework.HistogramProto DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new HistogramProto();
+    DEFAULT_INSTANCE = new org.tensorflow.framework.HistogramProto();
   }
 
-  public static HistogramProto getDefaultInstance() {
+  public static org.tensorflow.framework.HistogramProto getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -1070,7 +1070,7 @@ public  final class HistogramProto extends
     return PARSER;
   }
 
-  public HistogramProto getDefaultInstanceForType() {
+  public org.tensorflow.framework.HistogramProto getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

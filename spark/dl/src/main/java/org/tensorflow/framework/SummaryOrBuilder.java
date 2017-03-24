@@ -14,7 +14,7 @@ public interface SummaryOrBuilder extends
    *
    * <code>repeated .tensorboard.Summary.Value value = 1;</code>
    */
-  java.util.List<Summary.Value>
+  java.util.List<org.tensorflow.framework.Summary.Value> 
       getValueList();
   /**
    * <pre>
@@ -23,7 +23,7 @@ public interface SummaryOrBuilder extends
    *
    * <code>repeated .tensorboard.Summary.Value value = 1;</code>
    */
-  Summary.Value getValue(int index);
+  org.tensorflow.framework.Summary.Value getValue(int index);
   /**
    * <pre>
    * Set of values for the summary.
@@ -39,7 +39,7 @@ public interface SummaryOrBuilder extends
    *
    * <code>repeated .tensorboard.Summary.Value value = 1;</code>
    */
-  java.util.List<? extends Summary.ValueOrBuilder>
+  java.util.List<? extends org.tensorflow.framework.Summary.ValueOrBuilder> 
       getValueOrBuilderList();
   /**
    * <pre>
@@ -48,6 +48,6 @@ public interface SummaryOrBuilder extends
    *
    * <code>repeated .tensorboard.Summary.Value value = 1;</code>
    */
-  Summary.ValueOrBuilder getValueOrBuilder(
+  org.tensorflow.framework.Summary.ValueOrBuilder getValueOrBuilder(
       int index);
 }

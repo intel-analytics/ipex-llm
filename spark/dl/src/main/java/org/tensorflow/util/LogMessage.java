@@ -73,14 +73,14 @@ public  final class LogMessage extends
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return EventProtos.internal_static_tensorboard_LogMessage_descriptor;
+    return org.tensorflow.util.EventProtos.internal_static_tensorboard_LogMessage_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return EventProtos.internal_static_tensorboard_LogMessage_fieldAccessorTable
+    return org.tensorflow.util.EventProtos.internal_static_tensorboard_LogMessage_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            LogMessage.class, LogMessage.Builder.class);
+            org.tensorflow.util.LogMessage.class, org.tensorflow.util.LogMessage.Builder.class);
   }
 
   /**
@@ -191,7 +191,7 @@ public  final class LogMessage extends
     }
     public static final com.google.protobuf.Descriptors.EnumDescriptor
         getDescriptor() {
-      return LogMessage.getDescriptor().getEnumTypes().get(0);
+      return org.tensorflow.util.LogMessage.getDescriptor().getEnumTypes().get(0);
     }
 
     private static final Level[] VALUES = values();
@@ -228,9 +228,9 @@ public  final class LogMessage extends
   /**
    * <code>optional .tensorboard.LogMessage.Level level = 1;</code>
    */
-  public LogMessage.Level getLevel() {
-    LogMessage.Level result = LogMessage.Level.valueOf(level_);
-    return result == null ? LogMessage.Level.UNRECOGNIZED : result;
+  public org.tensorflow.util.LogMessage.Level getLevel() {
+    org.tensorflow.util.LogMessage.Level result = org.tensorflow.util.LogMessage.Level.valueOf(level_);
+    return result == null ? org.tensorflow.util.LogMessage.Level.UNRECOGNIZED : result;
   }
 
   public static final int MESSAGE_FIELD_NUMBER = 2;
@@ -279,7 +279,7 @@ public  final class LogMessage extends
 
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
-    if (level_ != LogMessage.Level.UNKNOWN.getNumber()) {
+    if (level_ != org.tensorflow.util.LogMessage.Level.UNKNOWN.getNumber()) {
       output.writeEnum(1, level_);
     }
     if (!getMessageBytes().isEmpty()) {
@@ -292,7 +292,7 @@ public  final class LogMessage extends
     if (size != -1) return size;
 
     size = 0;
-    if (level_ != LogMessage.Level.UNKNOWN.getNumber()) {
+    if (level_ != org.tensorflow.util.LogMessage.Level.UNKNOWN.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
         .computeEnumSize(1, level_);
     }
@@ -309,10 +309,10 @@ public  final class LogMessage extends
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof LogMessage)) {
+    if (!(obj instanceof org.tensorflow.util.LogMessage)) {
       return super.equals(obj);
     }
-    LogMessage other = (LogMessage) obj;
+    org.tensorflow.util.LogMessage other = (org.tensorflow.util.LogMessage) obj;
 
     boolean result = true;
     result = result && level_ == other.level_;
@@ -337,58 +337,58 @@ public  final class LogMessage extends
     return hash;
   }
 
-  public static LogMessage parseFrom(
+  public static org.tensorflow.util.LogMessage parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static LogMessage parseFrom(
+  public static org.tensorflow.util.LogMessage parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static LogMessage parseFrom(byte[] data)
+  public static org.tensorflow.util.LogMessage parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static LogMessage parseFrom(
+  public static org.tensorflow.util.LogMessage parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static LogMessage parseFrom(java.io.InputStream input)
+  public static org.tensorflow.util.LogMessage parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static LogMessage parseFrom(
+  public static org.tensorflow.util.LogMessage parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static LogMessage parseDelimitedFrom(java.io.InputStream input)
+  public static org.tensorflow.util.LogMessage parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static LogMessage parseDelimitedFrom(
+  public static org.tensorflow.util.LogMessage parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static LogMessage parseFrom(
+  public static org.tensorflow.util.LogMessage parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static LogMessage parseFrom(
+  public static org.tensorflow.util.LogMessage parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -400,7 +400,7 @@ public  final class LogMessage extends
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(LogMessage prototype) {
+  public static Builder newBuilder(org.tensorflow.util.LogMessage prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -424,20 +424,20 @@ public  final class LogMessage extends
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:tensorboard.LogMessage)
-    LogMessageOrBuilder {
+      org.tensorflow.util.LogMessageOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return EventProtos.internal_static_tensorboard_LogMessage_descriptor;
+      return org.tensorflow.util.EventProtos.internal_static_tensorboard_LogMessage_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return EventProtos.internal_static_tensorboard_LogMessage_fieldAccessorTable
+      return org.tensorflow.util.EventProtos.internal_static_tensorboard_LogMessage_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              LogMessage.class, LogMessage.Builder.class);
+              org.tensorflow.util.LogMessage.class, org.tensorflow.util.LogMessage.Builder.class);
     }
 
-    // Construct using LogMessage.newBuilder()
+    // Construct using org.tensorflow.util.LogMessage.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -463,23 +463,23 @@ public  final class LogMessage extends
 
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return EventProtos.internal_static_tensorboard_LogMessage_descriptor;
+      return org.tensorflow.util.EventProtos.internal_static_tensorboard_LogMessage_descriptor;
     }
 
-    public LogMessage getDefaultInstanceForType() {
-      return LogMessage.getDefaultInstance();
+    public org.tensorflow.util.LogMessage getDefaultInstanceForType() {
+      return org.tensorflow.util.LogMessage.getDefaultInstance();
     }
 
-    public LogMessage build() {
-      LogMessage result = buildPartial();
+    public org.tensorflow.util.LogMessage build() {
+      org.tensorflow.util.LogMessage result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public LogMessage buildPartial() {
-      LogMessage result = new LogMessage(this);
+    public org.tensorflow.util.LogMessage buildPartial() {
+      org.tensorflow.util.LogMessage result = new org.tensorflow.util.LogMessage(this);
       result.level_ = level_;
       result.message_ = message_;
       onBuilt();
@@ -513,16 +513,16 @@ public  final class LogMessage extends
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof LogMessage) {
-        return mergeFrom((LogMessage)other);
+      if (other instanceof org.tensorflow.util.LogMessage) {
+        return mergeFrom((org.tensorflow.util.LogMessage)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(LogMessage other) {
-      if (other == LogMessage.getDefaultInstance()) return this;
+    public Builder mergeFrom(org.tensorflow.util.LogMessage other) {
+      if (other == org.tensorflow.util.LogMessage.getDefaultInstance()) return this;
       if (other.level_ != 0) {
         setLevelValue(other.getLevelValue());
       }
@@ -542,11 +542,11 @@ public  final class LogMessage extends
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      LogMessage parsedMessage = null;
+      org.tensorflow.util.LogMessage parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (LogMessage) e.getUnfinishedMessage();
+        parsedMessage = (org.tensorflow.util.LogMessage) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -574,14 +574,14 @@ public  final class LogMessage extends
     /**
      * <code>optional .tensorboard.LogMessage.Level level = 1;</code>
      */
-    public LogMessage.Level getLevel() {
-      LogMessage.Level result = LogMessage.Level.valueOf(level_);
-      return result == null ? LogMessage.Level.UNRECOGNIZED : result;
+    public org.tensorflow.util.LogMessage.Level getLevel() {
+      org.tensorflow.util.LogMessage.Level result = org.tensorflow.util.LogMessage.Level.valueOf(level_);
+      return result == null ? org.tensorflow.util.LogMessage.Level.UNRECOGNIZED : result;
     }
     /**
      * <code>optional .tensorboard.LogMessage.Level level = 1;</code>
      */
-    public Builder setLevel(LogMessage.Level value) {
+    public Builder setLevel(org.tensorflow.util.LogMessage.Level value) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -683,12 +683,12 @@ public  final class LogMessage extends
   }
 
   // @@protoc_insertion_point(class_scope:tensorboard.LogMessage)
-  private static final LogMessage DEFAULT_INSTANCE;
+  private static final org.tensorflow.util.LogMessage DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new LogMessage();
+    DEFAULT_INSTANCE = new org.tensorflow.util.LogMessage();
   }
 
-  public static LogMessage getDefaultInstance() {
+  public static org.tensorflow.util.LogMessage getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -711,7 +711,7 @@ public  final class LogMessage extends
     return PARSER;
   }
 
-  public LogMessage getDefaultInstanceForType() {
+  public org.tensorflow.util.LogMessage getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 
