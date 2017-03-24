@@ -26,7 +26,7 @@ SPARK2_LINK=https://www.apache.org/dist/spark/spark-2.0.2/$SPARK2_DIR.tgz
 SPARK_DIR=$SPARK1_DIR
 SPARK_LINK=$SPARK1_LINK
 CURRENT=`pwd`
-BIGDL_SH=$CURRENT/dist/bin/bigdl.sh
+BIGDL_SH=$CURRENT/bigdl.sh
 BIGDL2_JAR=$HOME/.m2/repository/com/intel/analytics/bigdl/bigdl-SPARK_2.0/${BIGDL_VERSION}/bigdl-SPARK_2.0-${BIGDL_VERSION}-jar-with-dependencies.jar
 BIGDL1_JAR=$HOME/.m2/repository/com/intel/analytics/bigdl/bigdl/${BIGDL_VERSION}/bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar
 BIGDL_JAR=$BIGDL1_JAR
@@ -38,7 +38,7 @@ LEARNING_RATE=0.01
 MAX_EPOCH=90
 ME=`basename "$0"`
 
-source ./dist/bin/bigdl.sh
+source ./bigdl.sh
 
 options=$(getopt -o p:m:c:s:o:r:n:b:t:l:f:e:h -l spark:,model:,class:,spark-url:,cores:,memory:,nodes:,batch-size:,trained-model:,learning-rate:,hdfs-data-dir:,max-epoch:,help -- "$@")
 
