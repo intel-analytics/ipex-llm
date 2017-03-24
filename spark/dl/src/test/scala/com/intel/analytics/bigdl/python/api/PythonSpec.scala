@@ -21,9 +21,10 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim.{SGD}
+import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.optim.Trigger
-import com.intel.analytics.bigdl.utils.{Engine, TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.utils.{Engine}
+import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaRDD

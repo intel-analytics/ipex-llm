@@ -24,6 +24,7 @@ import org.tensorflow.util.Event
 
 /**
  * Event writer, write event protocol buffers to file.
+ *
  * @param logDir
  * @param flushMillis
  */

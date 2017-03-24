@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 
 import org.apache.commons.lang.exception.ExceptionUtils
+import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.Logger
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
