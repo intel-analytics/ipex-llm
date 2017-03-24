@@ -88,7 +88,6 @@ object LoggerFilter {
       val logFile = System.getProperty("bigdl.utils.LoggerFilter.logFile", default)
 
       // If file doesn't exist, create a new one. If it's a directory, throw an error.
-      println(logFile)
       val logFilePath = Paths.get(logFile)
       if (!Files.exists(logFilePath)) {
         Files.createFile(logFilePath)
@@ -104,11 +103,11 @@ object LoggerFilter {
         Logger.getLogger(clz).setAdditivity(false)
       }
 
+      Logger.getLogger("org.apache.spark.SparkContext").setLevel(Level.WARN)
+
       for (clz <- optimClass :: defaultClasses) {
         classLogToAppender(clz, fileAppender(logFile, Level.INFO))
       }
-
-      classLogToAppender(optimClass, consoleAppender(Level.INFO))
     }
   }
 }
