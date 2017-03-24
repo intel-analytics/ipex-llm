@@ -37,7 +37,7 @@ public final class TensorShapeProtos {
       "nsorboard\"{\n\020TensorShapeProto\022.\n\003dim\030\002 \003" +
       "(\0132!.tensorboard.TensorShapeProto.Dim\022\024\n" +
       "\014unknown_rank\030\003 \001(\010\032!\n\003Dim\022\014\n\004size\030\001 \001(\003" +
-      "\022\014\n\004name\030\002 \001(\tB2\n\030org.org.org.tensorflow.framewo" +
+      "\022\014\n\004name\030\002 \001(\tB2\n\030org.tensorflow.framewo" +
       "rkB\021TensorShapeProtosP\001\370\001\001b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
