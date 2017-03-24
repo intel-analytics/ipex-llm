@@ -66,11 +66,11 @@ public  final class TensorProto extends
             break;
           }
           case 18: {
-            TensorShapeProto.Builder subBuilder = null;
+            org.tensorflow.framework.TensorShapeProto.Builder subBuilder = null;
             if (tensorShape_ != null) {
               subBuilder = tensorShape_.toBuilder();
             }
-            tensorShape_ = input.readMessage(TensorShapeProto.parser(), extensionRegistry);
+            tensorShape_ = input.readMessage(org.tensorflow.framework.TensorShapeProto.parser(), extensionRegistry);
             if (subBuilder != null) {
               subBuilder.mergeFrom(tensorShape_);
               tensorShape_ = subBuilder.buildPartial();
@@ -266,11 +266,11 @@ public  final class TensorProto extends
           }
           case 114: {
             if (!((mutable_bitField0_ & 0x00002000) == 0x00002000)) {
-              resourceHandleVal_ = new java.util.ArrayList<ResourceHandle>();
+              resourceHandleVal_ = new java.util.ArrayList<org.tensorflow.framework.ResourceHandle>();
               mutable_bitField0_ |= 0x00002000;
             }
             resourceHandleVal_.add(
-                input.readMessage(ResourceHandle.parser(), extensionRegistry));
+                input.readMessage(org.tensorflow.framework.ResourceHandle.parser(), extensionRegistry));
             break;
           }
         }
@@ -316,14 +316,14 @@ public  final class TensorProto extends
   }
   public static final com.google.protobuf.Descriptors.Descriptor
       getDescriptor() {
-    return TensorProtos.internal_static_tensorboard_TensorProto_descriptor;
+    return org.tensorflow.framework.TensorProtos.internal_static_tensorboard_TensorProto_descriptor;
   }
 
   protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internalGetFieldAccessorTable() {
-    return TensorProtos.internal_static_tensorboard_TensorProto_fieldAccessorTable
+    return org.tensorflow.framework.TensorProtos.internal_static_tensorboard_TensorProto_fieldAccessorTable
         .ensureFieldAccessorsInitialized(
-            TensorProto.class, TensorProto.Builder.class);
+            org.tensorflow.framework.TensorProto.class, org.tensorflow.framework.TensorProto.Builder.class);
   }
 
   private int bitField0_;
@@ -338,13 +338,13 @@ public  final class TensorProto extends
   /**
    * <code>optional .tensorboard.DataType dtype = 1;</code>
    */
-  public DataType getDtype() {
-    DataType result = DataType.valueOf(dtype_);
-    return result == null ? DataType.UNRECOGNIZED : result;
+  public org.tensorflow.framework.DataType getDtype() {
+    org.tensorflow.framework.DataType result = org.tensorflow.framework.DataType.valueOf(dtype_);
+    return result == null ? org.tensorflow.framework.DataType.UNRECOGNIZED : result;
   }
 
   public static final int TENSOR_SHAPE_FIELD_NUMBER = 2;
-  private TensorShapeProto tensorShape_;
+  private org.tensorflow.framework.TensorShapeProto tensorShape_;
   /**
    * <pre>
    * Shape of the tensor.  TODO(touts): sort out the 0-rank issues.
@@ -362,8 +362,8 @@ public  final class TensorProto extends
    *
    * <code>optional .tensorboard.TensorShapeProto tensor_shape = 2;</code>
    */
-  public TensorShapeProto getTensorShape() {
-    return tensorShape_ == null ? TensorShapeProto.getDefaultInstance() : tensorShape_;
+  public org.tensorflow.framework.TensorShapeProto getTensorShape() {
+    return tensorShape_ == null ? org.tensorflow.framework.TensorShapeProto.getDefaultInstance() : tensorShape_;
   }
   /**
    * <pre>
@@ -372,7 +372,7 @@ public  final class TensorProto extends
    *
    * <code>optional .tensorboard.TensorShapeProto tensor_shape = 2;</code>
    */
-  public TensorShapeProtoOrBuilder getTensorShapeOrBuilder() {
+  public org.tensorflow.framework.TensorShapeProtoOrBuilder getTensorShapeOrBuilder() {
     return getTensorShape();
   }
 
@@ -730,7 +730,7 @@ public  final class TensorProto extends
   private int dcomplexValMemoizedSerializedSize = -1;
 
   public static final int RESOURCE_HANDLE_VAL_FIELD_NUMBER = 14;
-  private java.util.List<ResourceHandle> resourceHandleVal_;
+  private java.util.List<org.tensorflow.framework.ResourceHandle> resourceHandleVal_;
   /**
    * <pre>
    * DT_RESOURCE
@@ -738,7 +738,7 @@ public  final class TensorProto extends
    *
    * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
    */
-  public java.util.List<ResourceHandle> getResourceHandleValList() {
+  public java.util.List<org.tensorflow.framework.ResourceHandle> getResourceHandleValList() {
     return resourceHandleVal_;
   }
   /**
@@ -748,7 +748,7 @@ public  final class TensorProto extends
    *
    * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
    */
-  public java.util.List<? extends ResourceHandleOrBuilder>
+  public java.util.List<? extends org.tensorflow.framework.ResourceHandleOrBuilder> 
       getResourceHandleValOrBuilderList() {
     return resourceHandleVal_;
   }
@@ -769,7 +769,7 @@ public  final class TensorProto extends
    *
    * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
    */
-  public ResourceHandle getResourceHandleVal(int index) {
+  public org.tensorflow.framework.ResourceHandle getResourceHandleVal(int index) {
     return resourceHandleVal_.get(index);
   }
   /**
@@ -779,7 +779,7 @@ public  final class TensorProto extends
    *
    * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
    */
-  public ResourceHandleOrBuilder getResourceHandleValOrBuilder(
+  public org.tensorflow.framework.ResourceHandleOrBuilder getResourceHandleValOrBuilder(
       int index) {
     return resourceHandleVal_.get(index);
   }
@@ -797,7 +797,7 @@ public  final class TensorProto extends
   public void writeTo(com.google.protobuf.CodedOutputStream output)
                       throws java.io.IOException {
     getSerializedSize();
-    if (dtype_ != DataType.DT_INVALID.getNumber()) {
+    if (dtype_ != org.tensorflow.framework.DataType.DT_INVALID.getNumber()) {
       output.writeEnum(1, dtype_);
     }
     if (tensorShape_ != null) {
@@ -878,7 +878,7 @@ public  final class TensorProto extends
     if (size != -1) return size;
 
     size = 0;
-    if (dtype_ != DataType.DT_INVALID.getNumber()) {
+    if (dtype_ != org.tensorflow.framework.DataType.DT_INVALID.getNumber()) {
       size += com.google.protobuf.CodedOutputStream
         .computeEnumSize(1, dtype_);
     }
@@ -1014,10 +1014,10 @@ public  final class TensorProto extends
     if (obj == this) {
      return true;
     }
-    if (!(obj instanceof TensorProto)) {
+    if (!(obj instanceof org.tensorflow.framework.TensorProto)) {
       return super.equals(obj);
     }
-    TensorProto other = (TensorProto) obj;
+    org.tensorflow.framework.TensorProto other = (org.tensorflow.framework.TensorProto) obj;
 
     boolean result = true;
     result = result && dtype_ == other.dtype_;
@@ -1115,58 +1115,58 @@ public  final class TensorProto extends
     return hash;
   }
 
-  public static TensorProto parseFrom(
+  public static org.tensorflow.framework.TensorProto parseFrom(
       com.google.protobuf.ByteString data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static TensorProto parseFrom(
+  public static org.tensorflow.framework.TensorProto parseFrom(
       com.google.protobuf.ByteString data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static TensorProto parseFrom(byte[] data)
+  public static org.tensorflow.framework.TensorProto parseFrom(byte[] data)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data);
   }
-  public static TensorProto parseFrom(
+  public static org.tensorflow.framework.TensorProto parseFrom(
       byte[] data,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws com.google.protobuf.InvalidProtocolBufferException {
     return PARSER.parseFrom(data, extensionRegistry);
   }
-  public static TensorProto parseFrom(java.io.InputStream input)
+  public static org.tensorflow.framework.TensorProto parseFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static TensorProto parseFrom(
+  public static org.tensorflow.framework.TensorProto parseFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input, extensionRegistry);
   }
-  public static TensorProto parseDelimitedFrom(java.io.InputStream input)
+  public static org.tensorflow.framework.TensorProto parseDelimitedFrom(java.io.InputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input);
   }
-  public static TensorProto parseDelimitedFrom(
+  public static org.tensorflow.framework.TensorProto parseDelimitedFrom(
       java.io.InputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
   }
-  public static TensorProto parseFrom(
+  public static org.tensorflow.framework.TensorProto parseFrom(
       com.google.protobuf.CodedInputStream input)
       throws java.io.IOException {
     return com.google.protobuf.GeneratedMessageV3
         .parseWithIOException(PARSER, input);
   }
-  public static TensorProto parseFrom(
+  public static org.tensorflow.framework.TensorProto parseFrom(
       com.google.protobuf.CodedInputStream input,
       com.google.protobuf.ExtensionRegistryLite extensionRegistry)
       throws java.io.IOException {
@@ -1178,7 +1178,7 @@ public  final class TensorProto extends
   public static Builder newBuilder() {
     return DEFAULT_INSTANCE.toBuilder();
   }
-  public static Builder newBuilder(TensorProto prototype) {
+  public static Builder newBuilder(org.tensorflow.framework.TensorProto prototype) {
     return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
   }
   public Builder toBuilder() {
@@ -1202,20 +1202,20 @@ public  final class TensorProto extends
   public static final class Builder extends
       com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
       // @@protoc_insertion_point(builder_implements:tensorboard.TensorProto)
-    TensorProtoOrBuilder {
+      org.tensorflow.framework.TensorProtoOrBuilder {
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return TensorProtos.internal_static_tensorboard_TensorProto_descriptor;
+      return org.tensorflow.framework.TensorProtos.internal_static_tensorboard_TensorProto_descriptor;
     }
 
     protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return TensorProtos.internal_static_tensorboard_TensorProto_fieldAccessorTable
+      return org.tensorflow.framework.TensorProtos.internal_static_tensorboard_TensorProto_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              TensorProto.class, TensorProto.Builder.class);
+              org.tensorflow.framework.TensorProto.class, org.tensorflow.framework.TensorProto.Builder.class);
     }
 
-    // Construct using TensorProto.newBuilder()
+    // Construct using org.tensorflow.framework.TensorProto.newBuilder()
     private Builder() {
       maybeForceBuilderInitialization();
     }
@@ -1274,23 +1274,23 @@ public  final class TensorProto extends
 
     public com.google.protobuf.Descriptors.Descriptor
         getDescriptorForType() {
-      return TensorProtos.internal_static_tensorboard_TensorProto_descriptor;
+      return org.tensorflow.framework.TensorProtos.internal_static_tensorboard_TensorProto_descriptor;
     }
 
-    public TensorProto getDefaultInstanceForType() {
-      return TensorProto.getDefaultInstance();
+    public org.tensorflow.framework.TensorProto getDefaultInstanceForType() {
+      return org.tensorflow.framework.TensorProto.getDefaultInstance();
     }
 
-    public TensorProto build() {
-      TensorProto result = buildPartial();
+    public org.tensorflow.framework.TensorProto build() {
+      org.tensorflow.framework.TensorProto result = buildPartial();
       if (!result.isInitialized()) {
         throw newUninitializedMessageException(result);
       }
       return result;
     }
 
-    public TensorProto buildPartial() {
-      TensorProto result = new TensorProto(this);
+    public org.tensorflow.framework.TensorProto buildPartial() {
+      org.tensorflow.framework.TensorProto result = new org.tensorflow.framework.TensorProto(this);
       int from_bitField0_ = bitField0_;
       int to_bitField0_ = 0;
       result.dtype_ = dtype_;
@@ -1387,16 +1387,16 @@ public  final class TensorProto extends
       return (Builder) super.addRepeatedField(field, value);
     }
     public Builder mergeFrom(com.google.protobuf.Message other) {
-      if (other instanceof TensorProto) {
-        return mergeFrom((TensorProto)other);
+      if (other instanceof org.tensorflow.framework.TensorProto) {
+        return mergeFrom((org.tensorflow.framework.TensorProto)other);
       } else {
         super.mergeFrom(other);
         return this;
       }
     }
 
-    public Builder mergeFrom(TensorProto other) {
-      if (other == TensorProto.getDefaultInstance()) return this;
+    public Builder mergeFrom(org.tensorflow.framework.TensorProto other) {
+      if (other == org.tensorflow.framework.TensorProto.getDefaultInstance()) return this;
       if (other.dtype_ != 0) {
         setDtypeValue(other.getDtypeValue());
       }
@@ -1537,11 +1537,11 @@ public  final class TensorProto extends
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
-      TensorProto parsedMessage = null;
+      org.tensorflow.framework.TensorProto parsedMessage = null;
       try {
         parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-        parsedMessage = (TensorProto) e.getUnfinishedMessage();
+        parsedMessage = (org.tensorflow.framework.TensorProto) e.getUnfinishedMessage();
         throw e.unwrapIOException();
       } finally {
         if (parsedMessage != null) {
@@ -1570,14 +1570,14 @@ public  final class TensorProto extends
     /**
      * <code>optional .tensorboard.DataType dtype = 1;</code>
      */
-    public DataType getDtype() {
-      DataType result = DataType.valueOf(dtype_);
-      return result == null ? DataType.UNRECOGNIZED : result;
+    public org.tensorflow.framework.DataType getDtype() {
+      org.tensorflow.framework.DataType result = org.tensorflow.framework.DataType.valueOf(dtype_);
+      return result == null ? org.tensorflow.framework.DataType.UNRECOGNIZED : result;
     }
     /**
      * <code>optional .tensorboard.DataType dtype = 1;</code>
      */
-    public Builder setDtype(DataType value) {
+    public Builder setDtype(org.tensorflow.framework.DataType value) {
       if (value == null) {
         throw new NullPointerException();
       }
@@ -1596,9 +1596,9 @@ public  final class TensorProto extends
       return this;
     }
 
-    private TensorShapeProto tensorShape_ = null;
+    private org.tensorflow.framework.TensorShapeProto tensorShape_ = null;
     private com.google.protobuf.SingleFieldBuilderV3<
-      TensorShapeProto, TensorShapeProto.Builder, TensorShapeProtoOrBuilder> tensorShapeBuilder_;
+        org.tensorflow.framework.TensorShapeProto, org.tensorflow.framework.TensorShapeProto.Builder, org.tensorflow.framework.TensorShapeProtoOrBuilder> tensorShapeBuilder_;
     /**
      * <pre>
      * Shape of the tensor.  TODO(touts): sort out the 0-rank issues.
@@ -1616,9 +1616,9 @@ public  final class TensorProto extends
      *
      * <code>optional .tensorboard.TensorShapeProto tensor_shape = 2;</code>
      */
-    public TensorShapeProto getTensorShape() {
+    public org.tensorflow.framework.TensorShapeProto getTensorShape() {
       if (tensorShapeBuilder_ == null) {
-        return tensorShape_ == null ? TensorShapeProto.getDefaultInstance() : tensorShape_;
+        return tensorShape_ == null ? org.tensorflow.framework.TensorShapeProto.getDefaultInstance() : tensorShape_;
       } else {
         return tensorShapeBuilder_.getMessage();
       }
@@ -1630,7 +1630,7 @@ public  final class TensorProto extends
      *
      * <code>optional .tensorboard.TensorShapeProto tensor_shape = 2;</code>
      */
-    public Builder setTensorShape(TensorShapeProto value) {
+    public Builder setTensorShape(org.tensorflow.framework.TensorShapeProto value) {
       if (tensorShapeBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -1651,7 +1651,7 @@ public  final class TensorProto extends
      * <code>optional .tensorboard.TensorShapeProto tensor_shape = 2;</code>
      */
     public Builder setTensorShape(
-        TensorShapeProto.Builder builderForValue) {
+        org.tensorflow.framework.TensorShapeProto.Builder builderForValue) {
       if (tensorShapeBuilder_ == null) {
         tensorShape_ = builderForValue.build();
         onChanged();
@@ -1668,11 +1668,11 @@ public  final class TensorProto extends
      *
      * <code>optional .tensorboard.TensorShapeProto tensor_shape = 2;</code>
      */
-    public Builder mergeTensorShape(TensorShapeProto value) {
+    public Builder mergeTensorShape(org.tensorflow.framework.TensorShapeProto value) {
       if (tensorShapeBuilder_ == null) {
         if (tensorShape_ != null) {
           tensorShape_ =
-            TensorShapeProto.newBuilder(tensorShape_).mergeFrom(value).buildPartial();
+            org.tensorflow.framework.TensorShapeProto.newBuilder(tensorShape_).mergeFrom(value).buildPartial();
         } else {
           tensorShape_ = value;
         }
@@ -1708,7 +1708,7 @@ public  final class TensorProto extends
      *
      * <code>optional .tensorboard.TensorShapeProto tensor_shape = 2;</code>
      */
-    public TensorShapeProto.Builder getTensorShapeBuilder() {
+    public org.tensorflow.framework.TensorShapeProto.Builder getTensorShapeBuilder() {
       
       onChanged();
       return getTensorShapeFieldBuilder().getBuilder();
@@ -1720,12 +1720,12 @@ public  final class TensorProto extends
      *
      * <code>optional .tensorboard.TensorShapeProto tensor_shape = 2;</code>
      */
-    public TensorShapeProtoOrBuilder getTensorShapeOrBuilder() {
+    public org.tensorflow.framework.TensorShapeProtoOrBuilder getTensorShapeOrBuilder() {
       if (tensorShapeBuilder_ != null) {
         return tensorShapeBuilder_.getMessageOrBuilder();
       } else {
         return tensorShape_ == null ?
-            TensorShapeProto.getDefaultInstance() : tensorShape_;
+            org.tensorflow.framework.TensorShapeProto.getDefaultInstance() : tensorShape_;
       }
     }
     /**
@@ -1736,11 +1736,11 @@ public  final class TensorProto extends
      * <code>optional .tensorboard.TensorShapeProto tensor_shape = 2;</code>
      */
     private com.google.protobuf.SingleFieldBuilderV3<
-      TensorShapeProto, TensorShapeProto.Builder, TensorShapeProtoOrBuilder>
+        org.tensorflow.framework.TensorShapeProto, org.tensorflow.framework.TensorShapeProto.Builder, org.tensorflow.framework.TensorShapeProtoOrBuilder> 
         getTensorShapeFieldBuilder() {
       if (tensorShapeBuilder_ == null) {
         tensorShapeBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-          TensorShapeProto, TensorShapeProto.Builder, TensorShapeProtoOrBuilder>(
+            org.tensorflow.framework.TensorShapeProto, org.tensorflow.framework.TensorShapeProto.Builder, org.tensorflow.framework.TensorShapeProtoOrBuilder>(
                 getTensorShape(),
                 getParentForChildren(),
                 isClean());
@@ -2713,17 +2713,17 @@ public  final class TensorProto extends
       return this;
     }
 
-    private java.util.List<ResourceHandle> resourceHandleVal_ =
+    private java.util.List<org.tensorflow.framework.ResourceHandle> resourceHandleVal_ =
       java.util.Collections.emptyList();
     private void ensureResourceHandleValIsMutable() {
       if (!((bitField0_ & 0x00002000) == 0x00002000)) {
-        resourceHandleVal_ = new java.util.ArrayList<ResourceHandle>(resourceHandleVal_);
+        resourceHandleVal_ = new java.util.ArrayList<org.tensorflow.framework.ResourceHandle>(resourceHandleVal_);
         bitField0_ |= 0x00002000;
        }
     }
 
     private com.google.protobuf.RepeatedFieldBuilderV3<
-      ResourceHandle, ResourceHandle.Builder, ResourceHandleOrBuilder> resourceHandleValBuilder_;
+        org.tensorflow.framework.ResourceHandle, org.tensorflow.framework.ResourceHandle.Builder, org.tensorflow.framework.ResourceHandleOrBuilder> resourceHandleValBuilder_;
 
     /**
      * <pre>
@@ -2732,7 +2732,7 @@ public  final class TensorProto extends
      *
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
-    public java.util.List<ResourceHandle> getResourceHandleValList() {
+    public java.util.List<org.tensorflow.framework.ResourceHandle> getResourceHandleValList() {
       if (resourceHandleValBuilder_ == null) {
         return java.util.Collections.unmodifiableList(resourceHandleVal_);
       } else {
@@ -2760,7 +2760,7 @@ public  final class TensorProto extends
      *
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
-    public ResourceHandle getResourceHandleVal(int index) {
+    public org.tensorflow.framework.ResourceHandle getResourceHandleVal(int index) {
       if (resourceHandleValBuilder_ == null) {
         return resourceHandleVal_.get(index);
       } else {
@@ -2775,7 +2775,7 @@ public  final class TensorProto extends
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
     public Builder setResourceHandleVal(
-        int index, ResourceHandle value) {
+        int index, org.tensorflow.framework.ResourceHandle value) {
       if (resourceHandleValBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -2796,7 +2796,7 @@ public  final class TensorProto extends
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
     public Builder setResourceHandleVal(
-        int index, ResourceHandle.Builder builderForValue) {
+        int index, org.tensorflow.framework.ResourceHandle.Builder builderForValue) {
       if (resourceHandleValBuilder_ == null) {
         ensureResourceHandleValIsMutable();
         resourceHandleVal_.set(index, builderForValue.build());
@@ -2813,7 +2813,7 @@ public  final class TensorProto extends
      *
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
-    public Builder addResourceHandleVal(ResourceHandle value) {
+    public Builder addResourceHandleVal(org.tensorflow.framework.ResourceHandle value) {
       if (resourceHandleValBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -2834,7 +2834,7 @@ public  final class TensorProto extends
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
     public Builder addResourceHandleVal(
-        int index, ResourceHandle value) {
+        int index, org.tensorflow.framework.ResourceHandle value) {
       if (resourceHandleValBuilder_ == null) {
         if (value == null) {
           throw new NullPointerException();
@@ -2855,7 +2855,7 @@ public  final class TensorProto extends
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
     public Builder addResourceHandleVal(
-        ResourceHandle.Builder builderForValue) {
+        org.tensorflow.framework.ResourceHandle.Builder builderForValue) {
       if (resourceHandleValBuilder_ == null) {
         ensureResourceHandleValIsMutable();
         resourceHandleVal_.add(builderForValue.build());
@@ -2873,7 +2873,7 @@ public  final class TensorProto extends
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
     public Builder addResourceHandleVal(
-        int index, ResourceHandle.Builder builderForValue) {
+        int index, org.tensorflow.framework.ResourceHandle.Builder builderForValue) {
       if (resourceHandleValBuilder_ == null) {
         ensureResourceHandleValIsMutable();
         resourceHandleVal_.add(index, builderForValue.build());
@@ -2891,7 +2891,7 @@ public  final class TensorProto extends
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
     public Builder addAllResourceHandleVal(
-        java.lang.Iterable<? extends ResourceHandle> values) {
+        java.lang.Iterable<? extends org.tensorflow.framework.ResourceHandle> values) {
       if (resourceHandleValBuilder_ == null) {
         ensureResourceHandleValIsMutable();
         com.google.protobuf.AbstractMessageLite.Builder.addAll(
@@ -2943,7 +2943,7 @@ public  final class TensorProto extends
      *
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
-    public ResourceHandle.Builder getResourceHandleValBuilder(
+    public org.tensorflow.framework.ResourceHandle.Builder getResourceHandleValBuilder(
         int index) {
       return getResourceHandleValFieldBuilder().getBuilder(index);
     }
@@ -2954,7 +2954,7 @@ public  final class TensorProto extends
      *
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
-    public ResourceHandleOrBuilder getResourceHandleValOrBuilder(
+    public org.tensorflow.framework.ResourceHandleOrBuilder getResourceHandleValOrBuilder(
         int index) {
       if (resourceHandleValBuilder_ == null) {
         return resourceHandleVal_.get(index);  } else {
@@ -2968,7 +2968,7 @@ public  final class TensorProto extends
      *
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
-    public java.util.List<? extends ResourceHandleOrBuilder>
+    public java.util.List<? extends org.tensorflow.framework.ResourceHandleOrBuilder> 
          getResourceHandleValOrBuilderList() {
       if (resourceHandleValBuilder_ != null) {
         return resourceHandleValBuilder_.getMessageOrBuilderList();
@@ -2983,9 +2983,9 @@ public  final class TensorProto extends
      *
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
-    public ResourceHandle.Builder addResourceHandleValBuilder() {
+    public org.tensorflow.framework.ResourceHandle.Builder addResourceHandleValBuilder() {
       return getResourceHandleValFieldBuilder().addBuilder(
-          ResourceHandle.getDefaultInstance());
+          org.tensorflow.framework.ResourceHandle.getDefaultInstance());
     }
     /**
      * <pre>
@@ -2994,10 +2994,10 @@ public  final class TensorProto extends
      *
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
-    public ResourceHandle.Builder addResourceHandleValBuilder(
+    public org.tensorflow.framework.ResourceHandle.Builder addResourceHandleValBuilder(
         int index) {
       return getResourceHandleValFieldBuilder().addBuilder(
-          index, ResourceHandle.getDefaultInstance());
+          index, org.tensorflow.framework.ResourceHandle.getDefaultInstance());
     }
     /**
      * <pre>
@@ -3006,16 +3006,16 @@ public  final class TensorProto extends
      *
      * <code>repeated .tensorboard.ResourceHandle resource_handle_val = 14;</code>
      */
-    public java.util.List<ResourceHandle.Builder>
+    public java.util.List<org.tensorflow.framework.ResourceHandle.Builder> 
          getResourceHandleValBuilderList() {
       return getResourceHandleValFieldBuilder().getBuilderList();
     }
     private com.google.protobuf.RepeatedFieldBuilderV3<
-      ResourceHandle, ResourceHandle.Builder, ResourceHandleOrBuilder>
+        org.tensorflow.framework.ResourceHandle, org.tensorflow.framework.ResourceHandle.Builder, org.tensorflow.framework.ResourceHandleOrBuilder> 
         getResourceHandleValFieldBuilder() {
       if (resourceHandleValBuilder_ == null) {
         resourceHandleValBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
-          ResourceHandle, ResourceHandle.Builder, ResourceHandleOrBuilder>(
+            org.tensorflow.framework.ResourceHandle, org.tensorflow.framework.ResourceHandle.Builder, org.tensorflow.framework.ResourceHandleOrBuilder>(
                 resourceHandleVal_,
                 ((bitField0_ & 0x00002000) == 0x00002000),
                 getParentForChildren(),
@@ -3039,12 +3039,12 @@ public  final class TensorProto extends
   }
 
   // @@protoc_insertion_point(class_scope:tensorboard.TensorProto)
-  private static final TensorProto DEFAULT_INSTANCE;
+  private static final org.tensorflow.framework.TensorProto DEFAULT_INSTANCE;
   static {
-    DEFAULT_INSTANCE = new TensorProto();
+    DEFAULT_INSTANCE = new org.tensorflow.framework.TensorProto();
   }
 
-  public static TensorProto getDefaultInstance() {
+  public static org.tensorflow.framework.TensorProto getDefaultInstance() {
     return DEFAULT_INSTANCE;
   }
 
@@ -3067,7 +3067,7 @@ public  final class TensorProto extends
     return PARSER;
   }
 
-  public TensorProto getDefaultInstanceForType() {
+  public org.tensorflow.framework.TensorProto getDefaultInstanceForType() {
     return DEFAULT_INSTANCE;
   }
 

@@ -14,7 +14,7 @@ public interface SessionLogOrBuilder extends
   /**
    * <code>optional .tensorboard.SessionLog.SessionStatus status = 1;</code>
    */
-  SessionLog.SessionStatus getStatus();
+  org.tensorflow.util.SessionLog.SessionStatus getStatus();
 
   /**
    * <pre>
