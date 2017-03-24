@@ -73,7 +73,7 @@ public final class SummaryProtos {
       "histo\030\005 \001(\0132\033.tensorboard.HistogramProto" +
       "H\000\022+\n\005audio\030\006 \001(\0132\032.tensorboard.Summary." +
       "AudioH\000\022*\n\006tensor\030\010 \001(\0132\030.tensorboard.Te",
-      "nsorProtoH\000B\007\n\005valueB.\n\030org.org.tensorflow.f" +
+      "nsorProtoH\000B\007\n\005valueB.\n\030org.org.org.tensorflow.f" +
       "rameworkB\rSummaryProtosP\001\370\001\001b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =

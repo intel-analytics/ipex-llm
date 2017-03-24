@@ -5,7 +5,7 @@ package org.tensorflow.framework;
 
 /**
  * <pre>
- * Protocol buffer representing a handle to a org.tensorflow resource. Handles are
+ * Protocol buffer representing a handle to a org.org.tensorflow resource. Handles are
  * not valid across executions, but can be serialized back and forth from within
  * a single run.
  * </pre>
@@ -470,7 +470,7 @@ public  final class ResourceHandle extends
   }
   /**
    * <pre>
-   * Protocol buffer representing a handle to a org.tensorflow resource. Handles are
+   * Protocol buffer representing a handle to a org.org.tensorflow resource. Handles are
    * not valid across executions, but can be serialized back and forth from within
    * a single run.
    * </pre>

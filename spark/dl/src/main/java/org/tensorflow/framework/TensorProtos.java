@@ -42,7 +42,7 @@ public final class TensorProtos {
       "\n\tint64_val\030\n \003(\003B\002\020\001\022\024\n\010bool_val\030\013 \003(\010B" +
       "\002\020\001\022\030\n\014dcomplex_val\030\014 \003(\001B\002\020\001\0228\n\023resourc" +
       "e_handle_val\030\016 \003(\0132\033.tensorboard.Resourc" +
-      "eHandleB-\n\030org.org.tensorflow.frameworkB\014Ten" +
+      "eHandleB-\n\030org.org.org.tensorflow.frameworkB\014Ten" +
       "sorProtosP\001\370\001\001b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =

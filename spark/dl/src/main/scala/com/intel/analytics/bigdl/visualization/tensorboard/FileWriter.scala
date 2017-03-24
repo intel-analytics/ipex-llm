@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.visualization.tensorboard
 
 import java.util.concurrent.Executors
 
-import org.tensorflow.framework.Summary
+import org.tensorflow
 import org.tensorflow.util.Event
 
 /**
@@ -43,7 +43,7 @@ class FileWriter(val logDirecotry : String, flushMillis: Int = 10000) {
    * @param globalStep a consistent global count of the event.
    * @return
    */
-  def addSummary(summary: Summary, globalStep: Long): this.type = {
+  def addSummary(summary: tensorflow.framework.Summary, globalStep: Long): this.type = {
     val event = Event.newBuilder().setSummary(summary).build()
     addEvent(event, globalStep)
     this
