@@ -128,3 +128,7 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
         --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
         --conf spark.executor.extraClassPath=bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar
  ```
+
+## Run a Lenet example on standalone cluster
+Please refer to the page
+[python text classifier](https://github.com/intel-analytics/BigDL/tree/master/pyspark/dl/models/textclassifier/README.md).
