@@ -31,7 +31,9 @@ then running the flowing script would automatically download the data during the
         PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-0.1.0-SNAPSHOT-python-api.zip
         BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar
         PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
-        ${BigDL_HOME}/dist/bin/bigdl.sh -- ${SPARK_HOME}/bin/spark-submit \
+        source ${BigDL_HOME}/dist/bin/bigdl.sh
+
+        ${SPARK_HOME}/bin/spark-submit \
             --master ${MASTER} \
             --driver-cores 4  \
             --driver-memory 10g  \
