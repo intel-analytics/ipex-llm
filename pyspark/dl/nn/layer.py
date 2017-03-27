@@ -1745,6 +1745,94 @@ class Transpose(Model):
                                         permutations)
 
 
+class SpatialContrastiveNormalization(Model):
+    '''
+    >>> kernel = np.ones([9,9]).astype("float32")
+    >>> spatialContrastiveNormalization = SpatialContrastiveNormalization(1, kernel)
+    creating: createSpatialContrastiveNormalization
+    >>> spatialContrastiveNormalization = SpatialContrastiveNormalization()
+    creating: createSpatialContrastiveNormalization
+    '''
+
+    def __init__(self,
+                 n_input_plane=1,
+                 kernel=None,
+                 threshold=1e-4,
+                 thresval=1e-4,
+                 bigdl_type="float"):
+        super(SpatialContrastiveNormalization, self).__init__(None, bigdl_type,
+                                                              n_input_plane,
+                                                              JTensor.from_ndarray(kernel),
+                                                              threshold,
+                                                              thresval)
+
+
+class SpatialConvolutionMap(Model):
+    '''
+    >>> ct = np.ones([9,9]).astype("float32")
+    >>> spatialConvolutionMap = SpatialConvolutionMap(ct, 9, 9)
+    creating: createSpatialConvolutionMap
+    '''
+
+    def __init__(self,
+                 conn_table,
+                 kw,
+                 kh,
+                 dw=1,
+                 dh=1,
+                 pad_w=0,
+                 pad_h=0,
+                 bigdl_type="float"):
+        super(SpatialConvolutionMap, self).__init__(None, bigdl_type,
+                                                    JTensor.from_ndarray(conn_table),
+                                                    kw,
+                                                    kh,
+                                                    dw,
+                                                    dh,
+                                                    pad_w,
+                                                    pad_h)
+
+
+class SpatialDivisiveNormalization(Model):
+    '''
+    >>> kernel = np.ones([9,9]).astype("float32")
+    >>> spatialDivisiveNormalization = SpatialDivisiveNormalization(2,kernel)
+    creating: createSpatialDivisiveNormalization
+    >>> spatialDivisiveNormalization = SpatialDivisiveNormalization()
+    creating: createSpatialDivisiveNormalization
+    '''
+
+    def __init__(self,
+                 n_input_plane=1,
+                 kernel=None,
+                 threshold=1e-4,
+                 thresval=1e-4,
+                 bigdl_type="float"):
+        super(SpatialDivisiveNormalization, self).__init__(None, bigdl_type,
+                                                           n_input_plane,
+                                                           JTensor.from_ndarray(kernel),
+                                                           threshold,
+                                                           thresval)
+
+
+class SpatialSubtractiveNormalization(Model):
+    '''
+    >>> kernel = np.ones([9,9]).astype("float32")
+    >>> spatialSubtractiveNormalization = SpatialSubtractiveNormalization(2,kernel)
+    creating: createSpatialSubtractiveNormalization
+    >>> spatialSubtractiveNormalization = SpatialSubtractiveNormalization()
+    creating: createSpatialSubtractiveNormalization
+    '''
+
+    def __init__(self,
+                 n_input_plane=1,
+                 kernel=None,
+                 bigdl_type="float"):
+        super(SpatialSubtractiveNormalization, self).__init__(None, bigdl_type,
+                                                              n_input_plane,
+                                                              JTensor.from_ndarray(kernel))
+
+
 def _test():
     import doctest
     from pyspark import SparkContext
