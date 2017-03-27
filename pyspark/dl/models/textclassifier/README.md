@@ -15,10 +15,10 @@ or [20 Newsgroup dataset](http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/w
 `/tmp/news20` directory with the following structure looks like:
 
 ```{r, engine='sh'}
-[/tmp/news20]$ tree . -L 1
-.
-├── 20_newsgroup
-└── glove.6B
+$ [/tmp/news20]$ tree . -L 1
+  .
+  ├── 20_newsgroup
+  └── glove.6B
 ```
 
 then running the flowing script would automatically download the data during the first run.
