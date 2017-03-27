@@ -281,7 +281,8 @@
             <id>parallel-tests</id>
             <properties>
                 <runSpecsInParallel>true</runSpecsInParallel>
-                <tagsToExclude>com.intel.analytics.bigdl.tags.Parallel,com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
+                <tagsToInclude>com.intel.analytics.bigdl.tags.Parallel</tagsToInclude>
+                <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
             </properties>
             <build>
                 <plugins>
@@ -302,8 +303,7 @@
             <id>serial-tests</id>
             <properties>
                 <runSpecsInParallel>false</runSpecsInParallel>
-                <tagsToExclude>com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
-                <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
+                <tagsToExclude>com.intel.analytics.bigdl.tags.Parallel,com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
             </properties>
             <build>
                 <plugins>
