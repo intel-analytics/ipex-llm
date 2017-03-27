@@ -61,7 +61,7 @@ object BatchPredictor {
       val df = spark.createDataFrame(data)
 
       // static dataframe
-      val types = sc.textFile(Utils.getResourcePath("/types.csv"))
+      val types = sc.textFile(Utils.getResourcePath("/types"))
         .filter(!_.contains("textType"))
         .map { line =>
           val words = line.split(",")
@@ -69,18 +69,17 @@ object BatchPredictor {
         }.toDF("textType", "textLabel")
 
       val classifyDF1 = df.withColumn("textLabel", classifierUDF($"text"))
-        .select("filename", "text", "textLabel")
-
+        .select("filename", "text", "textLabel").orderBy("filename")
       classifyDF1.show()
 
-      val df_join = classifyDF1.join(types, "textLabel")
-      df_join.show()
-
-      val filteredDF1 = df.filter(classifierUDF($"text") === 8)
+      val filteredDF1 = df.filter(classifierUDF($"text") === 8).orderBy("filename")
       filteredDF1.show()
 
+      val df_join = classifyDF1.join(types, "textLabel").orderBy("filename")
+      df_join.show()
+
       // aggregation
-      val typeCount = classifyDF1.groupBy($"textLabel").count()
+      val typeCount = classifyDF1.groupBy($"textLabel").count().orderBy("textLabel")
       typeCount.show()
 
       // play with udf in sqlcontext
@@ -88,12 +87,13 @@ object BatchPredictor {
       df.registerTempTable("textTable")
 
       val classifyDF2 = spark
-        .sql("SELECT filename, textClassifier(text) AS textType_sql, text FROM textTable")
+        .sql("SELECT filename, textClassifier(text) AS textType_sql, text " +
+          "FROM textTable order by filename")
       classifyDF2.show()
 
       val filteredDF2 = spark
         .sql("SELECT filename, textClassifier(text) AS textType_sql, text " +
-          "FROM textTable WHERE textClassifier(text) = 9")
+          "FROM textTable WHERE textClassifier(text) = 9 order by filename")
       filteredDF2.show()
     }
 

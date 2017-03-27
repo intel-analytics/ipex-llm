@@ -93,7 +93,7 @@ object Options {
     opt[Long]('i', "interval")
       .text("consume interval")
       .action((x, c) => c.copy(interval = x))
-    opt[String]('f', "subDir")
+    opt[String]('f', "dataDir")
       .text("Text dir containing the text data")
       .action((x, c) => c.copy(testDir = x))
   }
