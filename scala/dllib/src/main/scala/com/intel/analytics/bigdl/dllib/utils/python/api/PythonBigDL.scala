@@ -108,6 +108,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def toJTensor(tensor: Tensor[T]): JTensor = {
+    // clone here in case the the size of storage larger then the size of tensor.
     val cloneTensor = tensor.clone()
     JTensor(cloneTensor.storage().toList.map(_.asInstanceOf[Any]).asJava,
       cloneTensor.size().toList.asJava, typeName)
@@ -935,6 +936,41 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       if (kernel == null) null else toTensor(kernel),
       threshold,
       thresval)
+  }
+
+  def createSpatialConvolutionMap(connTable: JTensor,
+                                  kW: Int,
+                                  kH: Int,
+                                  dW: Int = 1,
+                                  dH: Int = 1,
+                                  padW: Int = 0,
+                                  padH: Int = 0)
+  : SpatialConvolutionMap[T] = {
+    SpatialConvolutionMap[T](if (connTable == null) null else toTensor(connTable),
+      kW,
+      kH,
+      dW,
+      dH,
+      padW,
+      padH)
+  }
+
+  def createSpatialDivisiveNormalization(nInputPlane: Int = 1,
+                                         kernel: JTensor = null,
+                                         threshold: Double = 1e-4,
+                                         thresval: Double = 1e-4)
+  : SpatialDivisiveNormalization[T] = {
+    SpatialDivisiveNormalization[T](nInputPlane,
+      if (kernel == null) null else toTensor(kernel),
+      threshold,
+      thresval)
+  }
+
+  def createSpatialSubtractiveNormalization(nInputPlane: Int = 1,
+                                            kernel: JTensor = null)
+  : SpatialSubtractiveNormalization[T] = {
+    SpatialSubtractiveNormalization[T](nInputPlane,
+      if (kernel == null) null else toTensor(kernel))
   }
 
   //   Optimizer
