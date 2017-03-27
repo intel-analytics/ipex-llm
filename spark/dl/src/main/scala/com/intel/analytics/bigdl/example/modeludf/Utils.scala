@@ -128,12 +128,6 @@ object Utils {
     testData
   }
 
-  /**
-    * Get resource file path
-    *
-    * @param resource
-    * @return file path
-    */
   def getResourcePath(resource: String): String = {
     val stream: InputStream = getClass.getResourceAsStream(resource)
     val lines = scala.io.Source.fromInputStream(stream).mkString
