@@ -14,17 +14,18 @@ If there is no [Pre-train GloVe word embeddings](http://nlp.stanford.edu/data/gl
 or [20 Newsgroup dataset](http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/www/data/news20.html) in
 `/tmp/news20` directory with the following structure looks like:
 
-    ```{r, engine='sh'}
+```{r, engine='sh'}
      [/tmp/news20]$ tree . -L 1
      .
      ├── 20_newsgroup
      └── glove.6B
-    ```
+```
 
 then running the flowing script would automatically download the data during the first run.
 
-    bigdl.sh would setup the essential environment for you and it would accept a spark-submit command as an input parameter.
-    ```{r, engine='sh'}
+bigdl.sh would setup the essential environment for you and it would accept a spark-submit command as an input parameter.
+
+```{r, engine='sh'}
         BigDL_HOME=...
         SPARK_HOME=...
         MASTER=...
@@ -48,7 +49,7 @@ then running the flowing script would automatically download the data during the
             ${BigDL_HOME}/pyspark/dl/models/textclassifier/textclassifier.py \
              --max_epoch 3
              --model cnn
-        ```
+```
 
 * `--max_epoch` option can be used to set how many epochs the model to be trained
 
@@ -61,9 +62,9 @@ which are `cnn`, `lstm` and `gru`, default is `cnn`
 
 To verify the accuracy, search "accuracy" from log:
 
-   ```{r, engine='sh'}
+```{r, engine='sh'}
    [Epoch 1 0/15964][Iteration 1][Wall Clock 0.0s]
 
    top1 accuracy is Accuracy(correct: 14749, count: 15964, accuracy: 0.9238912
       553244801)
-   ```
+```
