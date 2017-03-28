@@ -64,7 +64,7 @@ abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTa
    *
    * @param input input data
    * @param target target
-   * @return output data
+   * @return the loss of criterion
    */
   def forward(input: A, target: B): T = {
     updateOutput(input, target)
@@ -85,8 +85,8 @@ abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTa
    * Computes the loss using input and objective function. This function
    * returns the result which is stored in the output field.
    *
-   * @param input
-   * @return
+   * @param input input of the criterion
+   * @return the loss of the criterion
    */
   def updateOutput(input: A, target: B): T = {
     this.output
@@ -98,9 +98,14 @@ abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTa
    *
    * @param input input data
    * @param target target data / labels
+   * @return gradient of input
    */
   def updateGradInput(input: A, target: B): A
 
+  /**
+   * Deep copy this criterion
+   * @return a deep copied criterion
+   */
   def cloneCriterion(): AbstractCriterion[A, B, T] = {
     SerializationUtils.clone(this)
   }
