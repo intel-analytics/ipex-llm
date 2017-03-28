@@ -86,6 +86,7 @@ abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTa
    * returns the result which is stored in the output field.
    *
    * @param input input of the criterion
+   * @param target target or labels
    * @return the loss of the criterion
    */
   def updateOutput(input: A, target: B): T = {
