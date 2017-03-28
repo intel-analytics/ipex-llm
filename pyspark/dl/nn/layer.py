@@ -33,6 +33,11 @@ DOUBLEMAX = 1.7976931348623157E308
 
 
 class Model(JavaValue):
+    """
+    Model is the basic component of a neural network
+    and it's also the base class of layers.
+    Model can connect to others to construct a complex neural network.
+    """
 
     def __init__(self, jvalue, bigdl_type, *args):
         self.value = jvalue if jvalue else callBigDlFunc(
@@ -41,17 +46,34 @@ class Model(JavaValue):
 
     @classmethod
     def of(cls, jmodel, bigdl_type="float"):
+        """
+        Create a Python Model
+        :param jmodel: Java model create by Py4j
+        :return: A Python Model
+        """
         model = Model(jmodel,bigdl_type)
         return model
 
     def set_name(self, name):
+        """
+        Give this model a name. There would be a generated name
+        consist of class name and UUID if user doesn't set it.
+        """
         callJavaFunc(SparkContext.getOrCreate(), self.value.setName, name)
         return self
 
     def name(self):
+        """
+        Name of this layer
+        """
         return callJavaFunc(SparkContext.getOrCreate(), self.value.getName)
 
     def set_seed(self, seed=123):
+        """
+        You can control the random seed which used to init weights for this model.
+        :param seed: random seed
+        :return: Model itself.
+        """
         callBigDlFunc(self.bigdl_type, "setModelSeed", seed)
         return self
 
@@ -62,10 +84,17 @@ class Model(JavaValue):
             return "float64"
 
     def reset(self):
+        """
+        Initialize the model weights.
+        """
         callJavaFunc(SparkContext.getOrCreate(), self.value.reset)
         return self
 
     def parameters(self):
+        """
+        Get the model parameters which containing: weight, bias, gradBias, gradWeight
+        :return: dict(layername -> dict(parametername -> ndarray))
+        """
         name_to_params = callBigDlFunc(self.bigdl_type,
                                        "modelGetParameters",
                                        self.value)
@@ -80,11 +109,26 @@ class Model(JavaValue):
                 name_to_params.iteritems()}
 
     def predict(self, data_rdd):
+        """
+        Model inference base on the given data.
+        You need to invoke collect() to trigger those action \
+        as the returning result is an RDD.
+        :param data_rdd: the data to be predict.
+        :return: An RDD represent the predict result.
+        """
         result = callBigDlFunc(self.bigdl_type,
                              "modelPredictRDD", self.value, data_rdd)
         return result.map(lambda data: data.to_ndarray())
 
     def test(self, val_rdd, batch_size, val_methods):
+        """
+        A method to benchmark the model quality.
+        :param val_rdd: the input data
+        :param batch_size: batch size
+        :param val_methods: a list of validation methods. i.e: Top1Accuracy,
+        Top5Accuracy and Loss.
+        :return:
+        """
         return callBigDlFunc(self.bigdl_type,
                              "modelTest",
                              self.value,
@@ -92,16 +136,35 @@ class Model(JavaValue):
 
     @staticmethod
     def load(path, bigdl_type="float"):
+        """
+        Load a pre-trained Bigdl model.
+        :param path: The path containing the pre-trained model.
+        :return: A pre-trained model.
+        """
         jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
         return Model.of(jmodel)
 
     @staticmethod
     def load_torch(path, bigdl_type="float"):
+        """
+        Load a pre-trained Torch model.
+        :param path: The path containing the pre-trained model.
+        :return: A pre-trained model.
+        """
         jmodel = callBigDlFunc(bigdl_type, "loadTorch", path)
         return Model.of(jmodel)
 
     @staticmethod
     def load_caffe(model, defPath, modelPath, match_all=True, bigdl_type="float"):
+        """
+        Load a pre-trained Caffe model.
+
+        :param model: A bigdl model definition \
+        which equivalent to the pre-trained caffe model.
+        :param defPath: The path containing the caffe model definition.
+        :param modelPath: The path containing the pre-trained caffe model.
+        :return: A pre-trained model.
+        """
         jmodel = callBigDlFunc(bigdl_type, "loadCaffe", model, defPath, modelPath, match_all)
         return Model.of(jmodel)
 

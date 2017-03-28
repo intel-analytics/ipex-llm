@@ -28,7 +28,10 @@ if sys.version >= '3':
 
 
 class Criterion(JavaValue):
-
+    """
+    Criterion is helpful to train a neural network.
+    Given an input and a target, they compute a gradient according to a given loss function.
+    """
     def __init__(self, jvalue, bigdl_type, *args):
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, JavaValue.jvm_class_constructor(self), *args)
@@ -36,6 +39,11 @@ class Criterion(JavaValue):
 
     @classmethod
     def of(cls, jcriterion, bigdl_type="float"):
+        """
+        Create a python Criterion by a java criterion object
+        :param jcriterion: A java criterion object which created by Py4j
+        :return: a criterion.
+        """
         criterion = Criterion(bigdl_type, jcriterion)
         criterion.value = jcriterion
         criterion.bigdl_type = bigdl_type
