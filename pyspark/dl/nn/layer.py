@@ -675,18 +675,6 @@ class Contiguous(Model):
         super(Contiguous, self).__init__(None, bigdl_type)
 
 
-class Copy(Model):
-
-    '''
-    >>> copy = Copy()
-    creating: createCopy
-    '''
-
-    def __init__(self,
-                 bigdl_type="float"):
-        super(Copy, self).__init__(None, bigdl_type)
-
-
 class Cosine(Model):
 
     '''
