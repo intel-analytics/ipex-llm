@@ -22,6 +22,13 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect._
 
+/**
+ * [[Activity]] is a trait which represents
+ * the concept of neural input within neural
+ * networks. For now, two type of input are
+ * supported and extending this trait, which
+ * are [[Tensor]] and [[Table]].
+ */
 trait Activity {
   def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D]
 

@@ -129,6 +129,14 @@ object SGD {
     def updateHyperParameter(config : Table, state : Table) : Unit
   }
 
+  /**
+   * [[EpochSchedule]] is a learning rate schedule which configure the learning
+   * rate according to some pre-defined [[Regime]]. If the running epoch is within
+   * the interval of a regime `r` [r.startEpoch, r.endEpoch], then the learning
+   * rate will take the "learningRate" in r.config.
+   *
+   * @param regimes an array of pre-defined [[Regime]].
+   */
   case class EpochSchedule(regimes : Array[Regime]) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val epoch = state[Int]("epoch")
@@ -170,6 +178,14 @@ object SGD {
     }
   }
 
+  /**
+   * It is an epoch decay learning rate schedule
+   * The learning rate decays through a function argument on number of run epochs
+   *
+   * l_{n + 1} = l_{n} * 0.1 `^` decayType(epoch)
+   *
+   * @param decayType is a function with number of run epochs as the argument
+   */
   case class EpochDecay(decayType: (Int) => Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-1)
@@ -181,6 +197,13 @@ object SGD {
     }
   }
 
+  /**
+   * [[EpochStep]] is a learning rate schedule, which rescale the learning rate by `gamma`
+   * for each `stepSize` epochs.
+   *
+   * @param stepSize For how many epochs to update the learning rate once
+   * @param gamma the rescale factor
+   */
   case class EpochStep(stepSize : Int, gamma : Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
@@ -195,6 +218,15 @@ object SGD {
     }
   }
 
+  /**
+   * It is the default learning rate schedule.
+   * For each iteration, the learning rate would
+   * update with the following formula:
+   *
+   * l_{n + 1} = l / (1 + n * learning_rate_decay)
+   *
+   * where `l` is the initial learning rate
+   */
   case class Default() extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
