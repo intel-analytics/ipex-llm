@@ -23,9 +23,29 @@ import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
 
+/**
+ * [[TensorCriterion]] is an abstract sub-class of [[AbstractCriterion]], whose
+ * input and output type both are [[Tensor]].
+ *
+ * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ */
 abstract class TensorCriterion[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends AbstractCriterion[Tensor[T], Tensor[T], T]
 
+/**
+ * [[AbstractCriterion]] is an abstract class the concrete criterion should extend.
+ * `Criterion`s are helpful to train a neural network. Given an input and a target,
+ * they compute the gradient according to a loss function.
+ *
+ * It provides some important method such as `forward`, `backward`, `updateOutput`,
+ * `updateGradInput` frequently used as a criteria. Some of them need to be override
+ * in a concrete criterion class.
+ *
+ * @tparam A represents the input type of the criterion, which an be abstract type [[Activity]],
+ *           or concrete type [[Tensor]] or [[Table]]
+ * @tparam B represents the output type of the criterion
+ * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ */
 abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTag,
  T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
@@ -38,18 +58,47 @@ abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTa
     case _ => throw new IllegalArgumentException("Activity only support tensor and table now")
   }
 
+  /**
+   * Takes an input object, and computes the corresponding loss of the criterion,
+   * compared with `target`.
+   *
+   * @param input input data
+   * @param target target
+   * @return output data
+   */
   def forward(input: A, target: B): T = {
     updateOutput(input, target)
   }
 
+  /**
+   * Performs a back-propagation step through the criterion, with respect to the given input.
+   *
+   * @param input input data
+   * @param target target
+   * @return gradient corresponding to input data
+   */
   def backward(input: A, target: B): A = {
     updateGradInput(input, target)
   }
 
+  /**
+   * Computes the loss using input and objective function. This function
+   * returns the result which is stored in the output field.
+   *
+   * @param input
+   * @return
+   */
   def updateOutput(input: A, target: B): T = {
     this.output
   }
 
+  /**
+   * Computing the gradient of the criterion with respect to its own input. This is returned in
+   * gradInput. Also, the gradInput state variable is updated accordingly.
+   *
+   * @param input input data
+   * @param target target data / labels
+   */
   def updateGradInput(input: A, target: B): A
 
   def cloneCriterion(): AbstractCriterion[A, B, T] = {

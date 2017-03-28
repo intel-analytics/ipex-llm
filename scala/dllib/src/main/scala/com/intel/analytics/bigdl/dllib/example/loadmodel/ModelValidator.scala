@@ -37,6 +37,12 @@ object ModelValidator {
 
   val logger = Logger.getLogger(getClass)
 
+  /**
+   * This is a trait meaning the model type.
+   * There are three sorts of model type, which
+   * are torch model [[TorchModel]], caffe model
+   * [[CaffeModel]] and BigDL model [[BigDlModel]].
+   */
   sealed trait ModelType
 
   case object TorchModel extends ModelType
