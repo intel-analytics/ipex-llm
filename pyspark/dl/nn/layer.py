@@ -797,9 +797,16 @@ class ELU(Model):
 class Euclidean(Model):
 
     '''
+    Outputs the Euclidean distance of the input to outputSize centers
+    :param inputSize inputSize
+    :param outputSize outputSize
+    :param T Numeric type. Only support float/double now
+
     >>> euclidean = Euclidean(1, 1, True)
     creating: createEuclidean
     '''
+
+
 
     def __init__(self,
                  input_size,
@@ -815,6 +822,7 @@ class Euclidean(Model):
 class Exp(Model):
 
     '''
+    Applies element-wise exp to input tensor.
     >>> exp = Exp()
     creating: createExp
     '''

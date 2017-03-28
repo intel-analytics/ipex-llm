@@ -30,9 +30,15 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.collection.mutable
 
-
+/**
+ * torch object type
+ * @param typeId type id
+ */
 sealed abstract class TorchObject(val typeId: Int)
 
+/**
+ * define some torch object types
+ */
 object TorchObject {
 
   case object TYPE_NIL extends TorchObject(0)

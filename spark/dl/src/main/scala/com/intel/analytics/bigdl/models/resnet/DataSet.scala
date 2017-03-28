@@ -20,6 +20,9 @@ import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.dataset.image._
 import org.apache.spark.SparkContext
 
+/**
+ * define some resnet datasets: trainDataSet and valDataSet.
+ */
 trait ResNetDataSet {
   def trainDataSet(path: String, batchSize: Int, size: Int)
   : DataSet[MiniBatch[Float]]
