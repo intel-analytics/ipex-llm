@@ -401,6 +401,17 @@ class Recurrent(Model):
 
 class LSTM(Model):
     '''
+    Long Short Term Memory architecture.
+    Ref.
+    A.: http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
+    B. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
+    C. http://arxiv.org/pdf/1503.04069v1.pdf
+    D. https://github.com/wojzaremba/lstm
+    E. https://github.com/Element-Research/rnn/blob/master/FastLSTM.lua
+
+    :param inputSize: the size of each input vector
+    :param hiddenSize: Hidden unit size in the LSTM
+
     >>> lstm = LSTM(4, 3)
     creating: createLSTM
     '''
@@ -411,6 +422,16 @@ class LSTM(Model):
 
 class LSTMPeephole(Model):
     '''
+    Long Short Term Memory architecture with peephole.
+    Ref. A.: http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
+    B. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
+    C. http://arxiv.org/pdf/1503.04069v1.pdf
+    D. https://github.com/wojzaremba/lstm
+    E. https://github.com/Element-Research/rnn/blob/master/LSTM.lua
+
+    :param input_size: the size of each input vector
+    :param hidden_size: Hidden unit size in the LSTM
+
     >>> lstm = LSTMPeephole(4, 3)
     creating: createLSTMPeephole
     '''
@@ -421,6 +442,16 @@ class LSTMPeephole(Model):
 
 class GRU(Model):
     '''
+    Gated Recurrent Units architecture.
+    The first input in sequence uses zero value for cell and hidden state
+
+    Ref.
+    http://www.wildml.com/2015/10/recurrent-neural-network-tutorial-part-4-implementing-a-grulstm-rnn-with-python-and-theano/
+    https://github.com/Element-Research/rnn/blob/master/GRU.lua
+
+    :param input_size: the size of each input vector
+    :param hidden_size: Hidden unit size in GRU
+
     >>> gru = GRU(4, 3)
     creating: createGRU
     '''
@@ -431,6 +462,12 @@ class GRU(Model):
 
 class RnnCell(Model):
     '''
+    It is a simple RNN. User can pass an activation function to the RNN.
+
+    :param input_size: the size of each input vector
+    :param hidden_size: Hidden unit size in simple RNN
+    :param activation: activation function
+
     >>> reshape = RnnCell(4, 3, Tanh())
     creating: createTanh
     creating: createRnnCell
@@ -446,6 +483,12 @@ class RnnCell(Model):
 
 class TimeDistributed(Model):
     '''
+    This layer is intended to apply contained layer to each temporal time slice
+    of input tensor.
+
+    For instance, The TimeDistributed Layer can feed each time slice of input tensor
+    to the Linear layer.
+
     >>> td = TimeDistributed(Linear(2, 3))
     creating: createLinear
     creating: createTimeDistributed
@@ -815,6 +858,8 @@ class CDivTable(Model):
 class CMaxTable(Model):
 
     '''
+    Takes a table of Tensors and outputs the max of all of them.
+
     >>> cMaxTable = CMaxTable()
     creating: createCMaxTable
     '''
@@ -1756,6 +1801,21 @@ class Replicate(Model):
 class RoiPooling(Model):
 
     '''
+    Region of interest pooling
+    The RoIPooling uses max pooling to convert the features inside any valid region of interest
+    into a small feature map with a fixed spatial extent of pooledH * pooledW (e.g., 7 * 7)
+    an RoI is a rectangular window into a conv feature map.
+    Each RoI is defined by a four-tuple (x1, y1, x2, y2) that specifies its
+    top-left corner (x1, y1) and its bottom-right corner (x2, y2).
+    RoI max pooling works by dividing the h * w RoI window into an pooledH * pooledW grid of
+    sub-windows of approximate size h/H * w/W and then max-pooling the values in each sub-window
+    into the corresponding output grid cell.
+    Pooling is applied independently to each feature map channel
+
+    :param pooled_w:      spatial extent in width
+    :param pooled_h:      spatial extent in height
+    :param spatial_scale spatial scale
+
     >>> roiPooling = RoiPooling(1, 1, 1e-5)
     creating: createRoiPooling
     '''
@@ -1899,6 +1959,10 @@ class SoftShrink(Model):
 class SoftSign(Model):
 
     '''
+    Apply SoftSign function to an n-dimensional input Tensor.
+
+    SoftSign function: f_i(x) = x_i / (1+|x_i|)
+
     >>> softSign = SoftSign()
     creating: createSoftSign
     '''

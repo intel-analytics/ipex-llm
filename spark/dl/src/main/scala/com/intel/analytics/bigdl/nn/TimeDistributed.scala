@@ -30,8 +30,7 @@ import scala.reflect.ClassTag
  * For instance, The TimeDistributed Layer can feed each time slice of input tensor
  * to the Linear layer.
  *
- * @param ev
- * @tparam T
+ * @tparam T data type, which can be [[Double]] or [[Float]]
  */
 
 class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
