@@ -242,6 +242,13 @@ class BGRImage(
 }
 
 
+/**
+ * A BGR Image with label.
+ * @param d data
+ * @param w width
+ * @param h height
+ * @param _label a float label
+ */
 class LabeledBGRImage(d: Array[Float], w: Int, h: Int,
   protected var _label : Float) extends BGRImage(d, w, h) with Label[Float] {
 
