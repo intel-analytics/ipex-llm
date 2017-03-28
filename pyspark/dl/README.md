@@ -1,57 +1,7 @@
-
-BigDL comes with scala API for now. However Python is a powerful programming language for data analysis and with large amount of useful libraries, we are developing a lightweight python binding on top of PySpark which can enable us use Python naively with BigDL. 
-
 The Python API is almost identical to the scala version, and it would map ndarray to tensor for the training samples, so basically user only need to care about how to manipulate ndarray.
 
-This Python binding tested with Python 2.7 and Spark 1.6.0.
+This Python binding has been tested with Python 2.7 and Spark 1.6.0 / Spark 2.0.0.
 
-Here are the steps for training a simple LeNet model:
-
-1). Create a RDD[Sample]:
-```
-RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, label)) --> RDD[Sample]
-```
-    
-2). Define a model:
-```
-    def build_model(class_num):
-        model = Sequential()
-        model.add(Reshape([1, 28, 28]))
-        model.add(SpatialConvolution(1, 6, 5, 5))
-        model.add(Tanh())
-        model.add(SpatialMaxPooling(2, 2, 2, 2))
-        model.add(Tanh())
-        model.add(SpatialConvolution(6, 12, 5, 5))
-        model.add(SpatialMaxPooling(2, 2, 2, 2))
-        model.add(Reshape([12 * 4 * 4]))
-        model.add(Linear(12 * 4 * 4, 100))
-        model.add(Tanh())
-        model.add(Linear(100, class_num))
-        model.add(LogSoftMax())
-        return model
- ```
-    
-3). Create Optimizer and train:
-```
-    optimizer = Optimizer(
-        model=build_model(10),
-        training_rdd=train_data,
-        criterion=ClassNLLCriterion(),
-        optim_method="SGD",
-        state=state,
-        end_trigger=MaxEpoch(100),
-        batch_size=int(options.batchSize))
-    optimizer.setvalidation(
-        batch_size=32,
-        val_rdd=test_data,
-        trigger=EveryEpoch(),
-        val_method=["top1"]
-    )
-    optimizer.setcheckpoint(EveryEpoch(), "/tmp/lenet5/")
-    trained_model = optimizer.optimize()
-```
-
-4) LeNet example can be found from: models/lenet5.py
 
 ## Run python test
 * Package Scala code by: ```$BigDL_HOME/make-dist.sh```
@@ -64,7 +14,7 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
     * With Spark1.6: ```  $BIGDL_HOME/make-dist.sh ``` 
     * With Spark2.0: ``` $BIGDL_HOME/make-dist.sh -P spark_2.0 ```
 
-2. Install python dependensies:
+2. Install python dependensies(You might want to install them for each worker node):
   * Installing Numpy: 
     ```sudo apt-get install python-numpy```
 
@@ -98,7 +48,7 @@ RDD[..] --transform-->RDD[ndarray, ndarray].map(Sample.from_ndarray(features, la
         --conf spark.executor.extraClassPath=bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
         ${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py
  ```
-
+details can be found at: [LeNet5](https://github.com/intel-analytics/BigDL/tree/master/pyspark/dl/models/lenet/README.md).
 
 ## Launch Jupyter on standalone cluster
 

@@ -43,6 +43,14 @@ def build_model(class_num):
 
 
 def get_minst(sc, data_type="train", location="/tmp/mnist"):
+    """
+    Get and normalize the mnist data. We would download it automatically
+    if the data doesn't present at the specific location.
+    :param sc: SparkContext
+    :param data_type: training data or testing data
+    :param location: Location storing the mnist
+    :return: A RDD of Sample
+    """
     (images, labels) = mnist.read_data_sets(location, data_type)
     images = sc.parallelize(images)
     labels = sc.parallelize(labels)
@@ -88,7 +96,8 @@ if __name__ == "__main__":
         trained_model = optimizer.optimize()
         parameters = trained_model.parameters()
     elif options.action == "test":
-        test_data = get_minst("test").map(
+        # Load a pre-trained model and then validate it through top1 accuracy.
+        test_data = get_minst(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
         # TODO: Pass model path through external parameter
         model = Model.from_path("/tmp/lenet5/lenet-model.470")

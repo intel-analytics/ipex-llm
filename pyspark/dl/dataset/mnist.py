@@ -79,6 +79,13 @@ def extract_labels(f):
 
 
 def read_data_sets(train_dir, data_type="train"):
+    """
+    Parse or download mnist data if train_dir is empty.
+    :param train_dir: The directory storing the mnist data
+    :param data_type: Reading training set or testing set.
+           It can be either "train" or "test"
+    :return: (ndarray, ndarray) representing (features, labels)
+    """
     TRAIN_IMAGES = 'train-images-idx3-ubyte.gz'
     TRAIN_LABELS = 'train-labels-idx1-ubyte.gz'
     TEST_IMAGES = 't10k-images-idx3-ubyte.gz'
