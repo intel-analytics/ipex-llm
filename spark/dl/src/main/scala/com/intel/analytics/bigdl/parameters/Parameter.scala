@@ -22,7 +22,12 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.reflect.ClassTag
 
-private[bigdl] trait CompressedTensor[T] extends Serializable {
+/**
+ * This trait represents the compressed tensor.
+ *
+ * @tparam T data type ([[Double]] or [[Float]])
+ */
+abstract trait CompressedTensor[T] extends Serializable {
 
   def deCompress(srcOffset: Int, tensor: Tensor[T], tgtOffset: Int, length: Int): Unit
 

@@ -26,6 +26,17 @@ import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
+
+/**
+ * [[Optimizer]] is an abstract class which is used to train a model automatically
+ * with some certain optimization algorithms.
+ *
+ * @param model the model to be trained
+ * @param dataset the data set used to train a model
+ * @param criterion the criterion used to evaluate the loss of the model given an input
+ * @tparam T numeric type, which can be [[Float]] or [[Double]]
+ * @tparam D the type of elements in DataSet, such as [[MiniBatch]]
+ */
 // TODO: remove D to be MiniBatch[T]
 abstract class Optimizer[T: ClassTag, D](
     protected val model: Module[T],
@@ -54,8 +65,16 @@ abstract class Optimizer[T: ClassTag, D](
   protected var computeThresholdbatchSize: Int = 100
   protected var warmupIterationNum: Int = 200
 
+  /**
+   * Trigger the opmize process
+   * @return the model to be trained
+   */
   def optimize(): Module[T]
 
+  /**
+   * make optimzer not check the singleton model on a node
+   * @return
+   */
   @deprecated("Use bigdl.check.singleton instead", "0.1.0")
   def disableCheckSingleton(): this.type = {
     this.checkSingleton = false
@@ -67,6 +86,14 @@ abstract class Optimizer[T: ClassTag, D](
   protected var checkSingleton = System.getProperty("bigdl.check.singleton",
     true.toString).toBoolean
 
+  /**
+   * Set a validate evaluation
+   *
+   * @param trigger how offten to evaluation validation set
+   * @param dataset validate data set in type of [[DataSet]] of [[MiniBatch]]
+   * @param vMethods a set of validation method [[ValidationMethod]]
+   * @return this optimizer
+   */
   def setValidation(trigger: Trigger, dataset: DataSet[MiniBatch[T]],
     vMethods : Array[ValidationMethod[T]])
   : this.type = {
@@ -76,6 +103,15 @@ abstract class Optimizer[T: ClassTag, D](
     this
   }
 
+  /**
+   * Set a validate evaluation
+   *
+   * @param trigger how offten to evaluation validation set
+   * @param sampleRDD validate data set in type of [[RDD]] of [[Sample]]
+   * @param vMethods a set of validation method [[ValidationMethod]]
+   * @param batchSize batch size
+   * @return this optimizer
+   */
   def setValidation(trigger: Trigger, sampleRDD: RDD[Sample[T]],
       vMethods : Array[ValidationMethod[T]], batchSize: Int)
   : this.type = {
@@ -88,6 +124,13 @@ abstract class Optimizer[T: ClassTag, D](
     this
   }
 
+  /**
+   * Set a check point saved at `path` triggered by `trigger`
+   *
+   * @param path the directory to save
+   * @param trigger how offten to save the check point
+   * @return the optimizer
+   */
   def setCheckpoint(path: String, trigger: Trigger): this.type = {
     if (!path.startsWith(File.hdfsPrefix)) {
       require(Files.isDirectory(Paths.get(path)), s"Optimizer.setCheckpoint: $path is not a folder")
@@ -97,6 +140,9 @@ abstract class Optimizer[T: ClassTag, D](
     this
   }
 
+  /**
+   * Get the directory of saving checkpoint
+   */
   def getCheckpointPath(): Option[String] = {
     this.checkpointPath
   }
@@ -117,26 +163,55 @@ abstract class Optimizer[T: ClassTag, D](
     this
   }
 
+  /**
+   * Enable overwrite saving checkpoint
+   */
   def overWriteCheckpoint() : this.type = {
     isOverWrite = true
     this
   }
 
+  /**
+   * Set a state(learning rate, epochs...) to the optimizer
+   *
+   * @param state the state to be saved
+   */
   def setState(state: Table): this.type = {
     this.state = state
     this
   }
 
+  /**
+   * Set an optimization method
+   *
+   * @param method optimization method
+   */
   def setOptimMethod(method : OptimMethod[T]): this.type = {
     this.optimMethod = method
     this
   }
 
+  /**
+   * When to stop, passed in a [[Trigger]]
+   *
+   * @param endWhen when to end
+   * @return the optimizer
+   */
   def setEndWhen(endWhen: Trigger): this.type = {
     this.endWhen = endWhen
     this
   }
 
+  /**
+   * Set dropping a certain percentage (`dropPercentage`) of models during distributed
+   * training to accelerate, because some cached model may take too long.
+   *
+   * @param dropPercentage drop percentage
+   * @param maxDropPercentage max drop percentage
+   * @param batchsize batch size
+   * @param warmupIteration how may iteration to warm up
+   * @return this optimizer
+   */
   def setDropMoudleProperty(dropPercentage: Double, maxDropPercentage: Double,
     batchsize: Int = 100, warmupIteration: Int = 200): this.type = {
     this.dropPercentage = dropPercentage
@@ -154,6 +229,16 @@ object Optimizer {
     s"[Epoch $epoch $count/$total][Iteration $iter][Wall Clock ${wallClockTime / 1e9}s]"
   }
 
+  /**
+   * Save a model to a directory as a checkpoint
+   *
+   * @param model the model to be saved
+   * @param checkpointPath the directory to save at
+   * @param overWrite if save name model exists in the directory,
+   *                  is overwrite or not.
+   * @param postfix the postfix of a model name
+   * @tparam T model data type [[Double]] or [[Float]]
+   */
   private[bigdl] def saveModel[T](model: Module[T], checkpointPath : Option[String],
     overWrite : Boolean, postfix: String = ""): Unit = {
     if (checkpointPath.isDefined) {
@@ -161,6 +246,15 @@ object Optimizer {
     }
   }
 
+  /**
+   * Save a state to a directory as a checkpoint
+   *
+   * @param state the state (learning rate, epochs...) to be saved
+   * @param checkpointPath the directory to save at
+   * @param overWrite if save name model exists in the directory,
+   *                  is overwrite or not.
+   * @param postfix the postfix of a state name
+   */
   private[bigdl] def saveState(state: Table, checkpointPath : Option[String], overWrite : Boolean,
     postfix: String = ""): Unit = {
     if (checkpointPath.isDefined) {
