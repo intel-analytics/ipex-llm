@@ -34,6 +34,24 @@ object ZippedPartitionsWithLocalityRDD {
   }
 }
 
+/**
+ * Prefer to zip partitions of rdd1 and rdd2 in the same location.
+ * Remaining partitions not in same location will be zipped by order.
+ * For example:
+ * Say we have two RDDs, rdd1 and rdd2. The first partition of rdd1 is on node A, and the second
+ * is on node B. The first partition of rdd2 is on node B and the second one is on node A.
+ * If we just use rdd1.zipPartition(rdd2), the result will be the first partition of rdd1 is
+ * zipped with the first partition of rdd2, so there will be cross node communication. This is
+ * bad for performance. That's why we introduce the ZippedPartitionsWithLocalityRDD.
+ * In our method, the first partition of rdd1 will be zipped with the second partition of rdd2,
+ * as they are on the same node. This will reduce the network communication cost and result in
+ * a better performance.
+ * @param sc spark context
+ * @param _f
+ * @param _rdd1
+ * @param _rdd2
+ * @param preservesPartitioning
+ */
 class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
   sc: SparkContext,
   _f: (Iterator[A], Iterator[B]) => Iterator[V],

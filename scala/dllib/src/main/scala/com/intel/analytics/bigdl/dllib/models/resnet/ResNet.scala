@@ -264,16 +264,32 @@ object ResNet {
     model
   }
 
+  /**
+   * dataset type
+   * @param typeId type id
+   */
   sealed abstract class DatasetType(typeId: Int)
     extends Serializable
 
+  /**
+   *  define some dataset type
+   */
   object DatasetType {
     case object CIFAR10 extends DatasetType(0)
     case object ImageNet extends DatasetType(1)
   }
+
+  /**
+   * ShortcutType
+   * @param typeId type id
+   */
   sealed abstract class ShortcutType(typeId: Int)
     extends Serializable
 
+  /**
+   * ShortcutType-A is used for Cifar-10, ShortcutType-B is used for ImageNet.
+   * ShortcutType-C is used for others.
+   */
   object ShortcutType{
     case object A extends ShortcutType(0)
     case object B extends ShortcutType(1)
