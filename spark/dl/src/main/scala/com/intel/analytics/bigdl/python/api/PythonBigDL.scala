@@ -399,11 +399,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Contiguous[T]()
   }
 
-  def createCopy()
-  : Copy[T] = {
-    Copy[T]()
-  }
-
   def createCosine(inputSize: Int,
                    outputSize: Int)
   : Cosine[T] = {
