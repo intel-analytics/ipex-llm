@@ -20,6 +20,10 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Identity just return the input to output.
+ * It's useful in same parallel container to get an origin input.
+ */
 @SerialVersionUID(- 8429221694319933625L)
 class Identity[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Activity, T] {

@@ -23,6 +23,13 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+/**
+ * ConcateTable is a container module like Concate. Applies an input
+ * to each member module, input can be a tensor or a table.
+ *
+ * ConcateTable usually works with CAddTable and CMulTable to
+ * implement element wise add/multiply on outputs of two modules.
+ */
 @SerialVersionUID(- 704681653938468956L)
 class ConcatTable[T : ClassTag]
   (implicit ev: TensorNumeric[T]) extends Container[Activity, Table, T] {
