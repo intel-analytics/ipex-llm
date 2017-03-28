@@ -45,6 +45,12 @@ abstract class Container[A <: Activity : ClassTag,
   val modules: ArrayBuffer[AbstractModule[Activity, Activity, T]]
   = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
 
+  /**
+   * Add a sub-module to the contained `modules`
+   *
+   * @param module module to be add
+   * @return this container
+   */
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     this
