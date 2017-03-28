@@ -98,6 +98,11 @@ class AbsCriterion(Criterion):
 class ClassSimplexCriterion(Criterion):
 
     '''
+    ClassSimplexCriterion implements a criterion for classification.
+    It learns an embedding per class, where each class' embedding is a
+    point on an (N-1)-dimensional simplex, where N is the number of classes.
+    :param nClasses the number of classes.
+
     >>> classSimplexCriterion = ClassSimplexCriterion(2)
     creating: createClassSimplexCriterion
     '''

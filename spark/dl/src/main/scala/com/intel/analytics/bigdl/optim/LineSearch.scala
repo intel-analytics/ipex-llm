@@ -19,6 +19,9 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Table
 
+/**
+ * Line Search strategy
+ */
 trait LineSearch[@specialized(Float, Double) T] {
   /**
    * A Line Search function
