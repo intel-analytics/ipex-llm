@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.modeludf
+package com.intel.analytics.bigdl.example.udfpredictor
 
 import java.io.{File, InputStream, PrintWriter}
 
-import com.intel.analytics.bigdl.example.modeludf.Options.TextClassificationParams
+import com.intel.analytics.bigdl.example.udfpredictor.Options.TextClassificationParams
+import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -64,6 +65,7 @@ object Utils {
              word2Vec: Word2Vec)
             (implicit ev: TensorNumeric[Float]): (String) => Int = {
 
+    // val broadcastModel = ModelBroadcast[Float].broadcast(sc, model)
     val broadcastModel = sc.broadcast(model)
     val broadcastWord2Vec = sc.broadcast(word2Vec)
 

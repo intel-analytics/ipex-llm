@@ -1,5 +1,5 @@
 ## Summary
- This example is to show how to create a user defined function to do the text classification with BigDL, and use this UDF in Spark SQL (spark 1.5, spark 1.6) and structured streaming (spark 2.0+).
+ This example is to show how to load BigDL model as UDF to perform predictions in Spark SQL/Dataframes and StructuredStreaming (Spark 2.0+ only).
  
  First use a (pre-trained GloVe embedding) to convert word to vector,
  and uses it to train the text classification model on a 20 Newsgroup dataset
@@ -130,31 +130,31 @@ Please build the source code with your specific version of spark referring the
 
     ``` 
     val classifyDF1 = df.withColumn("textLabel", classifierUDF($"text"))
-        .select("filename", "text", "textLabel").orderBy("filename")
+        .select("filename", "text", "textLabel")
     classifyDF1.show() 
     +--------+--------------------+---------+
     |filename|                text|textLabel|
     +--------+--------------------+---------+
-    |  101602|Xref: cantaloupe....|        8|
-    |  101661|Xref: cantaloupe....|        8|
-    |  101725|Path: cantaloupe....|        9|
-    |   10191|Newsgroups: comp....|        3|
-    |  102852|Path: cantaloupe....|        8|
-    |  102903|Newsgroups: rec.a...|        8|
-    |  103018|Path: cantaloupe....|        8|
-    |  103031|Path: cantaloupe....|        8|
-    |  103073|Path: cantaloupe....|        8|
-    |  103167|Path: cantaloupe....|        9|
-    |  103171|Xref: cantaloupe....|        9|
-    |  103188|Path: cantaloupe....|        9|
-    |  103264|Xref: cantaloupe....|        8|
-    |  103335|Newsgroups: rec.a...|        8|
-    |  103411|Newsgroups: rec.a...|        8|
-    |  104375|Path: cantaloupe....|       10|
-    |  104410|Newsgroups: rec.s...|       10|
-    |  104503|Path: cantaloupe....|       10|
-    |  104512|Newsgroups: rec.s...|       10|
-    |  104557|Newsgroups: rec.m...|        9|
+    |   10014|Xref: cantaloupe....|        3|
+    |  102615|Newsgroups: rec.s...|       10|
+    |  102642|Newsgroups: rec.s...|       10|
+    |  102685|Path: cantaloupe....|       10|
+    |  102741|Newsgroups: rec.a...|        8|
+    |  102771|Xref: cantaloupe....|        8|
+    |  102826|Newsgroups: rec.a...|        8|
+    |  102970|Newsgroups: rec.a...|        8|
+    |  102982|Newsgroups: rec.a...|        8|
+    |  103125|Newsgroups: rec.a...|        8|
+    |  103329|Path: cantaloupe....|        8|
+    |  103497|Path: cantaloupe....|        8|
+    |  103515|Path: cantaloupe....|        8|
+    |  103781|Xref: cantaloupe....|        8|
+    |  104333|Newsgroups: rec.m...|        9|
+    |  104341|Path: cantaloupe....|        9|
+    |  104381|Newsgroups: rec.m...|        9|
+    |  104509|Newsgroups: rec.m...|        9|
+    |  104542|Xref: cantaloupe....|        9|
+    |  104590|Newsgroups: rec.s...|       10|
     +--------+--------------------+---------+
     ```
          
@@ -163,89 +163,80 @@ Please build the source code with your specific version of spark referring the
      * Filter text label with UDF:
              
       ```
-      val filteredDF1 = df.filter(classifierUDF($"text") === 8).orderBy("filename")
+      val filteredDF1 = df.filter(classifierUDF($"text") === 9)
       filteredDF1.show()
       +--------+--------------------+
       |filename|                text|
       +--------+--------------------+
-      |  101602|Xref: cantaloupe....|
-      |  101661|Xref: cantaloupe....|
-      |  103031|Path: cantaloupe....|
-      |  103073|Path: cantaloupe....|
-      |  103411|Newsgroups: rec.a...|
-      |  178894|Xref: cantaloupe....|
-      |  178899|Xref: cantaloupe....|
-      |   20765|Path: cantaloupe....|
-      |   53658|From: myers@hpfcs...|
-      |   53712|Newsgroups: sci.e...|
-      |   54091|Newsgroups: rec.s...|
-      |   54135|Path: cantaloupe....|
-      |   54454|Newsgroups: talk....|
-      |   61478|Newsgroups: sci.s...|
-      |   74766|Newsgroups: misc....|
+      |  104333|Newsgroups: rec.m...|
+      |  104341|Path: cantaloupe....|
+      |  104381|Newsgroups: rec.m...|
+      |  104509|Newsgroups: rec.m...|
+      |  104542|Xref: cantaloupe....|
+      |  104595|Newsgroups: rec.m...|
+      |  104753|Path: cantaloupe....|
+      |  104806|Newsgroups: rec.m...|
       +--------+--------------------+
       ```
             
      * Join the text type table to show the text type name :
              
      ``` 
-     val df_join = classifyDF1.join(types, "textLabel").orderBy("filename")
+     val df_join = classifyDF1.join(types, "textLabel")
      df_join.show()
-     +---------+--------+--------------------+--------------------+
-     |textLabel|filename|                text|            textType|
-     +---------+--------+--------------------+--------------------+
-     |        8|  101602|Xref: cantaloupe....|           rec.autos|
-     |        8|  101661|Xref: cantaloupe....|           rec.autos|
-     |        9|  101725|Path: cantaloupe....|     rec.motorcycles|
-     |        3|   10191|Newsgroups: comp....|comp.os.ms-window...|
-     |        8|  102852|Path: cantaloupe....|           rec.autos|
-     |        8|  102903|Newsgroups: rec.a...|           rec.autos|
-     |        8|  103018|Path: cantaloupe....|           rec.autos|
-     |        8|  103031|Path: cantaloupe....|           rec.autos|
-     |        8|  103073|Path: cantaloupe....|           rec.autos|
-     |        9|  103167|Path: cantaloupe....|     rec.motorcycles|
-     |        9|  103171|Xref: cantaloupe....|     rec.motorcycles|
-     |        9|  103188|Path: cantaloupe....|     rec.motorcycles|
-     |        8|  103264|Xref: cantaloupe....|           rec.autos|
-     |        8|  103335|Newsgroups: rec.a...|           rec.autos|
-     |        8|  103411|Newsgroups: rec.a...|           rec.autos|
-     |       10|  104375|Path: cantaloupe....|  rec.sport.baseball|
-     |       10|  104410|Newsgroups: rec.s...|  rec.sport.baseball|
-     |       10|  104503|Path: cantaloupe....|  rec.sport.baseball|
-     |       10|  104512|Newsgroups: rec.s...|  rec.sport.baseball|
-     |        9|  104557|Newsgroups: rec.m...|     rec.motorcycles|
-     +---------+--------+--------------------+--------------------+
+     +--------+--------------------+---------+-------------+
+     |filename|                text|textLabel|     textType|
+     +--------+--------------------+---------+-------------+
+     |   51141|Path: cantaloupe....|        1|  alt.atheism|
+     |   51189|Newsgroups: alt.a...|        1|  alt.atheism|
+     |   51202|Newsgroups: alt.a...|        1|  alt.atheism|
+     |   51313|Newsgroups: alt.a...|        1|  alt.atheism|
+     |   53165|Path: cantaloupe....|        1|  alt.atheism|
+     |   53237|Path: cantaloupe....|        1|  alt.atheism|
+     |   53252|Path: cantaloupe....|        1|  alt.atheism|
+     |   53383|Path: cantaloupe....|        1|  alt.atheism|
+     |   53577|Xref: cantaloupe....|        1|  alt.atheism|
+     |   84114|Xref: cantaloupe....|        1|  alt.atheism|
+     |   15244|Xref: cantaloupe....|        2|comp.graphics|
+     |   38265|Newsgroups: comp....|        2|comp.graphics|
+     |   38330|Path: cantaloupe....|        2|comp.graphics|
+     |   38363|Xref: cantaloupe....|        2|comp.graphics|
+     |   38600|Xref: cantaloupe....|        2|comp.graphics|
+     |   38684|Newsgroups: comp....|        2|comp.graphics|
+     |   38766|Newsgroups: comp....|        2|comp.graphics|
+     |   38865|Path: cantaloupe....|        2|comp.graphics|
+     |   38958|Newsgroups: comp....|        2|comp.graphics|
+     |   38999|Path: cantaloupe....|        2|comp.graphics|
+     +--------+--------------------+---------+-------------+
      ```
           
     * Do the aggregation of stream with predicted text label:    
                 
      ``` 
-     val typeCount = classifyDF1.groupBy($"textLabel").count().orderBy("textLabel")
+     val typeCount = classifyDF1.groupBy($"textLabel").count()
      typeCount.show()
                          
-     +---------+-----+                                                               
-     |textLabel|count|
      +---------+-----+
-     |        1|    9|
-     |        2|   10|
-     |        3|   10|
+     |        1|   10|
+     |        2|   11|
+     |        3|   11|
      |        4|   10|
      |        5|   10|
-     |        6|   10|
-     |        7|   10|
+     |        6|    9|
+     |        7|   11|
      |        8|   10|
      |        9|   10|
-     |       10|   10|
+     |       10|    9|
      |       11|   10|
-     |       12|   11|
-     |       13|   10|
+     |       12|    9|
+     |       13|   11|
      |       14|   10|
-     |       15|   11|
-     |       16|    9|
-     |       17|    9|
-     |       18|   10|
-     |       19|    8|
-     |       20|   13|
+     |       15|   10|
+     |       16|   10|
+     |       17|   10|
+     |       18|   11|
+     |       19|   13|
+     |       20|    5|
      +---------+-----+
      ```
           
@@ -254,32 +245,32 @@ Please build the source code with your specific version of spark referring the
      ```
      val classifyDF2 = spark
        .sql("SELECT filename, textClassifier(text) AS textType_sql, text " +
-         "FROM textTable order by filename")
+         "FROM textTable")
        classifyDF2.show()
                              
        +--------+------------+--------------------+
        |filename|textType_sql|                text|
        +--------+------------+--------------------+
-       |  101602|           8|Xref: cantaloupe....|
-       |  101661|           8|Xref: cantaloupe....|
-       |  101725|           9|Path: cantaloupe....|
-       |   10191|           3|Newsgroups: comp....|
-       |  102852|           8|Path: cantaloupe....|
-       |  102903|           8|Newsgroups: rec.a...|
-       |  103018|           8|Path: cantaloupe....|
-       |  103031|           8|Path: cantaloupe....|
-       |  103073|           8|Path: cantaloupe....|
-       |  103167|           9|Path: cantaloupe....|
-       |  103171|           9|Xref: cantaloupe....|
-       |  103188|           9|Path: cantaloupe....|
-       |  103264|           8|Xref: cantaloupe....|
-       |  103335|           8|Newsgroups: rec.a...|
-       |  103411|           8|Newsgroups: rec.a...|
-       |  104375|          10|Path: cantaloupe....|
-       |  104410|          10|Newsgroups: rec.s...|
-       |  104503|          10|Path: cantaloupe....|
-       |  104512|          10|Newsgroups: rec.s...|
-       |  104557|           9|Newsgroups: rec.m...|
+       |   10014|           3|Xref: cantaloupe....|
+       |  102615|          10|Newsgroups: rec.s...|
+       |  102642|          10|Newsgroups: rec.s...|
+       |  102685|          10|Path: cantaloupe....|
+       |  102741|           8|Newsgroups: rec.a...|
+       |  102771|           8|Xref: cantaloupe....|
+       |  102826|           8|Newsgroups: rec.a...|
+       |  102970|           8|Newsgroups: rec.a...|
+       |  102982|           8|Newsgroups: rec.a...|
+       |  103125|           8|Newsgroups: rec.a...|
+       |  103329|           8|Path: cantaloupe....|
+       |  103497|           8|Path: cantaloupe....|
+       |  103515|           8|Path: cantaloupe....|
+       |  103781|           8|Xref: cantaloupe....|
+       |  104333|           9|Newsgroups: rec.m...|
+       |  104341|           9|Path: cantaloupe....|
+       |  104381|           9|Newsgroups: rec.m...|
+       |  104509|           9|Newsgroups: rec.m...|
+       |  104542|           9|Xref: cantaloupe....|
+       |  104590|          10|Newsgroups: rec.s...|
        +--------+------------+--------------------+
      ```
              
@@ -288,30 +279,19 @@ Please build the source code with your specific version of spark referring the
      ```
      val filteredDF2 = spark
         .sql("SELECT filename, textClassifier(text) AS textType_sql, text " +
-          "FROM textTable WHERE textClassifier(text) = 9 order by filename")
+          "FROM textTable WHERE textClassifier(text) = 9")
      filteredDF2.show()
-     +--------+------------+--------------------+                                    
+     +--------+------------+--------------------+
      |filename|textType_sql|                text|
      +--------+------------+--------------------+
-     |  101725|           9|Path: cantaloupe....|
-     |  103167|           9|Path: cantaloupe....|
-     |  103171|           9|Xref: cantaloupe....|
-     |  104557|           9|Newsgroups: rec.m...|
-     |  104634|          14|Newsgroups: rec.m...|
-     |  104684|           9|Path: cantaloupe....|
-     |  105253|           9|Newsgroups: rec.m...|
-     |   21565|           9|Xref: cantaloupe....|
-     |   38516|           2|Path: cantaloupe....|
-     |   38567|           2|Newsgroups: comp....|
-     |   39002|          14|Path: cantaloupe....|
-     |   54251|           9|Path: cantaloupe....|
-     |   54273|           9|Newsgroups: sci.e...|
-     |   55120|           9|Path: cantaloupe....|
-     |   58128|          14|Path: cantaloupe....|
-     |   58146|          18|Path: cantaloupe....|
-     |   75373|          18|Path: cantaloupe....|
-     |   75896|           7|Xref: cantaloupe....|
-     |   76325|          18|Newsgroups: talk....|
+     |  104333|           9|Newsgroups: rec.m...|
+     |  104341|           9|Path: cantaloupe....|
+     |  104381|           9|Newsgroups: rec.m...|
+     |  104509|           9|Newsgroups: rec.m...|
+     |  104542|           9|Xref: cantaloupe....|
+     |  104595|           9|Newsgroups: rec.m...|
+     |  104753|           9|Path: cantaloupe....|
+     |  104806|           9|Newsgroups: rec.m...|
      +--------+------------+--------------------+
      ```
    

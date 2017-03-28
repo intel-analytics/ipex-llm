@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.modeludf
+package com.intel.analytics.bigdl.example.udfpredictor
 
 import java.io.File
 import java.util
@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.example.textclassification.SimpleTokenizer._
 import com.intel.analytics.bigdl.example.textclassification.{SimpleTokenizer, WordMeta}
-import com.intel.analytics.bigdl.example.modeludf.Options.TextClassificationParams
+import com.intel.analytics.bigdl.example.udfpredictor.Options.TextClassificationParams
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, _}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor

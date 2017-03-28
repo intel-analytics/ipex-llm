@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.example.modeludf
+package com.intel.analytics.bigdl.example.udfpredictor
 
-import com.intel.analytics.bigdl.example.modeludf.Options._
+import com.intel.analytics.bigdl.example.udfpredictor.Options._
 import org.apache.spark.sql.SparkSession
 
 
-object FileStreamingProducer {
+object FileStreamProducer {
 
   def main(args: Array[String]): Unit = {
 

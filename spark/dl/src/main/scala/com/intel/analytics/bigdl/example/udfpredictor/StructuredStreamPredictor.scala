@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.example.modeludf
+package com.intel.analytics.bigdl.example.udfpredictor
 
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
@@ -23,7 +23,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.types.StructType
 
 
-object  FileStreamingConsumer {
+object  StructuredStreamPredictor {
 
   private val log: Logger = LoggerFactory.getLogger(this.getClass)
   Logger4j.getLogger("org").setLevel(Levle4j.ERROR)
@@ -40,14 +40,14 @@ object  FileStreamingConsumer {
       log.info(s"Current parameters: $param")
 
       // Create spark session
+      val sparkConf = Engine.createSparkConf()
+      sparkConf.setAppName("Text classification")
+        .set("spark.akka.frameSize", 64.toString)
       val spark = SparkSession
         .builder
-        .config(Engine.init(param.nodeNum, param.coreNum, onSpark = true).get
-          .setAppName("Text classification")
-          .set("spark.akka.frameSize", 64.toString)
-          .set("spark.task.maxFailures", "1"))
-        .appName("StructuredStreamingUdf")
+        .config(sparkConf)
         .getOrCreate()
+      Engine.init
       val sc = spark.sparkContext
 
       val (model, word2Vec, sampleShape) = Utils.getModel(sc, param)
@@ -70,7 +70,7 @@ object  FileStreamingConsumer {
         .option("header", "true")
         .option("mode", "DROPMALFORMED")
         .schema(typeSchema)
-        .csv(Utils.getResourcePath("/types.csv"))
+        .csv(Utils.getResourcePath("/example/udfpredictor/types"))
 
       import spark.implicits._
 

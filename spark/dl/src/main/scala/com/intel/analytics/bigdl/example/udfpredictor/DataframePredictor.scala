@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.example.modeludf
+package com.intel.analytics.bigdl.example.udfpredictor
 
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
@@ -22,7 +22,7 @@ import org.apache.spark.sql.functions._
 import org.slf4j.{Logger, LoggerFactory}
 import org.apache.spark.sql.SQLContext
 
-object BatchPredictor {
+object DataframePredictor {
 
   private val log: Logger = LoggerFactory.getLogger(this.getClass)
   Logger4j.getLogger("org").setLevel(Levle4j.ERROR)
@@ -60,7 +60,7 @@ object BatchPredictor {
       val df = spark.createDataFrame(data)
 
       // static dataframe
-      val types = sc.textFile(Utils.getResourcePath("/types"))
+      val types = sc.textFile(Utils.getResourcePath("/example/udfpredictor/types"))
         .filter(!_.contains("textType"))
         .map { line =>
           val words = line.split(",")
@@ -68,17 +68,17 @@ object BatchPredictor {
         }.toDF("textType", "textLabel")
 
       val classifyDF1 = df.withColumn("textLabel", classifierUDF($"text"))
-        .select("filename", "text", "textLabel").orderBy("filename")
+        .select("filename", "text", "textLabel")
       classifyDF1.show()
 
-      val filteredDF1 = df.filter(classifierUDF($"text") === 8).orderBy("filename")
+      val filteredDF1 = df.filter(classifierUDF($"text") === 9)
       filteredDF1.show()
 
-      val df_join = classifyDF1.join(types, "textLabel").orderBy("filename")
+      val df_join = classifyDF1.join(types, "textLabel")
       df_join.show()
 
       // aggregation
-      val typeCount = classifyDF1.groupBy($"textLabel").count().orderBy("textLabel")
+      val typeCount = classifyDF1.groupBy($"textLabel").count()
       typeCount.show()
 
       // play with udf in sqlcontext
@@ -87,12 +87,12 @@ object BatchPredictor {
 
       val classifyDF2 = spark
         .sql("SELECT filename, textClassifier(text) AS textType_sql, text " +
-          "FROM textTable order by filename")
+          "FROM textTable")
       classifyDF2.show()
 
       val filteredDF2 = spark
         .sql("SELECT filename, textClassifier(text) AS textType_sql, text " +
-          "FROM textTable WHERE textClassifier(text) = 9 order by filename")
+          "FROM textTable WHERE textClassifier(text) = 9")
       filteredDF2.show()
     }
 
