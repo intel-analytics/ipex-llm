@@ -29,7 +29,6 @@ import scala.util.Random
  * either from tokenized text or from saved dictionary
  *
  */
-
 class Dictionary()
   extends Serializable {
 
@@ -64,7 +63,7 @@ class Dictionary()
   /**
    * return the encoding number of a word,
    * if word does not existed in the dictionary,
-   * it will return the dictionarylength as the default index.
+   * it will return the dictionary length as the default index.
    * @param word
    */
   def getIndex(word: String): Int = {
@@ -81,7 +80,7 @@ class Dictionary()
 
   /**
    * return the word with regard to the index,
-   * if index is out of bounary, it will randomly
+   * if index is out of boundary, it will randomly
    * return a word in the discarded word list.
    * If discard word list is Empty, it will randomly
    * return a word in the existed dictionary.
@@ -93,11 +92,17 @@ class Dictionary()
       else getWord(Random.nextInt(_vocabSize)))
   }
 
+  /**
+   * print word-to-index dictionary
+   */
   def print(): Unit = {
     _word2index.foreach(x =>
       logger.info(x._1 + " -> " + x._2))
   }
 
+  /**
+   * print discard dictionary
+   */
   def printDiscard(): Unit = {
     _discardVocab.foreach(x =>
       logger.info(x))
@@ -135,6 +140,7 @@ class Dictionary()
 
     update(freqDict.toSeq, vocabSize)
   }
+
   def this(sentences: Iterator[Array[String]],
            vocabSize: Int) = {
     this()
@@ -207,10 +213,13 @@ class Dictionary()
 object Dictionary {
   def apply[S <: Iterator[Array[String]]](sentences: S, vocabSize: Int)
   : Dictionary = new Dictionary(sentences, vocabSize)
+
   def apply(dataset: Stream[Array[String]], vocabSize: Int)
   : Dictionary = new Dictionary(dataset, vocabSize)
+
   def apply(directory: String)
   : Dictionary = new Dictionary(directory)
+
   def apply(dataset: RDD[Array[String]], vocabSize: Int = 10000)
   : Dictionary = new Dictionary(dataset, vocabSize)
 }

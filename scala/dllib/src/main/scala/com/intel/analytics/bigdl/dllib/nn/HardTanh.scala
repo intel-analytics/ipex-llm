@@ -23,6 +23,16 @@ import com.intel.analytics.bigdl.utils.Engine
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
+/**
+ * Applies HardTanh to each element of input, HardTanh is defined:
+ *          ⎧  maxValue, if x > maxValue
+ *   f(x) = ⎨  minValue, if x < minValue
+ *          ⎩  x, otherwise
+ *
+ * @param minValue minValue in f(x), default is -1.
+ * @param maxValue maxValue in f(x), default is 1.
+ * @param inplace inplace model.
+ */
 @SerialVersionUID(- 8953866090802444183L)
 class HardTanh[T: ClassTag](
   val minValue: Double = -1,
