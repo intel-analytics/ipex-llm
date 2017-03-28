@@ -21,6 +21,9 @@ import java.util
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
+/**
+ * class of math operation
+ */
 class TensorNumericMath
 
 /**
@@ -28,6 +31,9 @@ class TensorNumericMath
  */
 object TensorNumericMath {
 
+  /**
+   * define tensor math operation
+   */
   trait TensorNumeric[@specialized(Float, Double) T] extends Serializable {
     def one: T = fromType[Int](1)
 
