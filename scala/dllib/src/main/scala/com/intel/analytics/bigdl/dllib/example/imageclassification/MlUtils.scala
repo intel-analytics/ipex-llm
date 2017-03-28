@@ -37,6 +37,12 @@ object MlUtils {
 
   val imageSize = 224
 
+  /**
+   * This is a trait meaning the model type.
+   * There are two sorts of model type, which
+   * are torch model [[TorchModel]] and BigDL
+   * model [[BigDlModel]].
+   */
   sealed trait ModelType
 
   case object TorchModel extends ModelType
@@ -109,8 +115,21 @@ object MlUtils {
     model
   }
 
+  /**
+   * It is used to store single data frame information
+   *
+   * @param features extracted features after the transformers
+   * @param imageName image name
+   */
   case class DfPoint(features: DenseVector, imageName: String)
 
+  /**
+   * [[ByteImage]] is case class, which represents an object
+   * of image in byte format.
+   *
+   * @param data image byte data
+   * @param imageName image name
+   */
   case class ByteImage(data: Array[Byte], imageName: String)
 
   def transformDF(data: DataFrame, f: Transformer[Row, DenseVector]): DataFrame = {
