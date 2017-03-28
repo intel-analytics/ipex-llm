@@ -57,27 +57,47 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     lrSchedule.updateHyperParameter(config, _state)
 
     val wd = config.get[Double]("weightDecay").getOrElse(0.0)
+    val l1wd = config.get[Double]("l1WeightDecay").getOrElse(0.0)
+    val l2wd = config.get[Double]("l2WeightDecay").getOrElse(wd)
     val mom = config.get[Double]("momentum").getOrElse(0.0)
     val damp = config.get[Double]("dampening").getOrElse(mom)
     val nesterov = config.get[Boolean]("nesterov").getOrElse(false)
-    val lrs = config.get[Tensor[T]]("learningRates").getOrElse(null)
-    val wds = config.get[Tensor[T]]("weightDecays").getOrElse(null)
+    val lrs = config.get[Tensor[T]]("learningRates")
+    val wds = config.get[Tensor[T]]("l2weightDecays")
+    val l2wds = if (wds.isDefined) wds else config.get[Tensor[T]]("weightDecays")
+    val l1wds = config.get[Tensor[T]]("l1WeightDecays")
+    val weightsSignBuffer = _state.get[Tensor[T]]("weightSigns").getOrElse({
+      val buffer = Tensor[T](x.size())
+      _state("weightSigns") = buffer
+      buffer
+    })
+    val decayParameters = _state.get[Tensor[T]]("decayParameters").getOrElse({
+      val DP = Tensor[T]().resizeAs(x)
+      _state("decayParameters") = DP
+      DP
+    })
 
     require(!nesterov || (mom > 0 && damp == 0),
       "Nesterov momentum requires a momentum and zero dampening")
 
     var (fx, dfdx) = feval(x)
 
-    if (wd != 0) {
-      dfdx.add(ev.fromType[Double](wd), x)
-    } else if (wds != null) {
-      val decayParameters = _state.get[Tensor[T]]("decayParameters").getOrElse({
-        val DP = Tensor[T]().resizeAs(dfdx)
-        _state("decayParameters") = DP
-        DP
-      })
-      decayParameters.copy(wds).cmul(x)
-      dfdx.add(decayParameters)
+    val l1Regularizer = weightsSignBuffer.copy(x).sign()
+    val l2Regularizer = x
+
+    if (l1wd != 0 || l2wd != 0) {
+      dfdx.add(ev.fromType[Double](l2wd), l2Regularizer)
+        .add(ev.fromType[Double](l1wd), l1Regularizer)
+    } else {
+      if (l2wds.isDefined) {
+        decayParameters.copy(wds.get).cmul(l2Regularizer)
+        dfdx.add(decayParameters)
+      }
+
+      if (l1wds.isDefined) {
+        decayParameters.copy(wds.get).cmul(l1Regularizer)
+        dfdx.add(decayParameters)
+      }
     }
 
     if (mom != 0) {
@@ -98,13 +118,13 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     }
 
     val clr = ev.fromType(config[Double]("clr"))
-    if (lrs != null) {
+    if (lrs.isDefined) {
       val deltaParameters = _state.get[Tensor[T]]("deltaParameters").getOrElse({
         val deltaP = Tensor[T]().resizeAs(dfdx)
         _state("deltaParameters") = deltaP
         deltaP
       })
-      deltaParameters.copy(lrs).cmul(dfdx)
+      deltaParameters.copy(lrs.get).cmul(dfdx)
       x.add(clr, deltaParameters)
     } else {
       x.add(clr, dfdx)
@@ -129,8 +149,8 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     val mom = config.get[Double]("momentum").getOrElse(0.0)
     val damp = config.get[Double]("dampening").getOrElse(mom)
     val nesterov = config.get[Boolean]("nesterov").getOrElse(false)
-    val lrs = config.get[Tensor[T]]("learningRates").getOrElse(null)
-    val wds = config.get[Tensor[T]]("weightDecays").getOrElse(null)
+    val lrs = config.get[Tensor[T]]("learningRates").orNull
+    val wds = config.get[Tensor[T]]("weightDecays").orNull
     s"Current learning rate is $clr. " +
       {if (wd != 0) s"Current weight decay is $wd. " else ""} +
       {if (mom != 0) s"Current momentum is $mom. " else ""} +
@@ -157,6 +177,7 @@ object SGD {
      * @param config init config.
      * @param state current state.
      */
+
     def updateHyperParameter(config : Table, state : Table) : Unit
   }
 
@@ -197,7 +218,7 @@ object SGD {
       } else {
         -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
       }
-      println(s"iteration is : ${nevals}. current learning rate is $clr")
+      println(s"iteration is : $nevals. current learning rate is $clr")
       state("evalCounter") = nevals + 1
       config("clr") = clr
     }

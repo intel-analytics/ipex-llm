@@ -1731,9 +1731,9 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   /**
-   * returns a new Tensor with the sign (+/- 1 or 0) of the elements of x.
+   * Modify this Tensor in place with the sign (+/- 1 or 0) of the elements of x.
    *
-   * @return
+   * @return this
    */
   override def sign(): Tensor[T] = {
     val func = new TensorFunc2[T] {
