@@ -25,6 +25,17 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
+/**
+ * [[Container]] is an abstract [[AbstractModule]] class which
+ * declares methods defined in all containers. A container usually
+ * contain some other modules in the `modules` variable. It overrides
+ * many module methods such that calls are propogated to the contained
+ * modules.
+ *
+ * @tparam A Input data type
+ * @tparam B Output data type
+ * @tparam T Numeric type. Only support float/double now
+ */
 @SerialVersionUID(- 2120105647780417237L)
 abstract class Container[A <: Activity : ClassTag,
     B <: Activity : ClassTag, T: ClassTag](

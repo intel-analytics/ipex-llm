@@ -20,6 +20,16 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, LocalDataSet, MiniBatch}
 
+/**
+ * [[Validator]] is an abstract class which is used to test a model automatically
+ * with some certain validation methods such as [[Top1Accuracy]], as an argument of
+ * its `test` method.
+ *
+ * @param model the model to be validated
+ * @param dataSet the data set used to validate a model
+ * @tparam T numeric type, which can be [[Float]] or [[Double]]
+ * @tparam D the type of elements in DataSet, such as [[MiniBatch]]
+ */
 abstract class Validator[T, D](
   model: Module[T],
   dataSet: DataSet[D]
