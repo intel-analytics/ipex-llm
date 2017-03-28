@@ -66,13 +66,13 @@ abstract class Optimizer[T: ClassTag, D](
   protected var warmupIterationNum: Int = 200
 
   /**
-   * Trigger the opmize process
+   * Trigger the optimization process
    * @return the model to be trained
    */
   def optimize(): Module[T]
 
   /**
-   * make optimzer not check the singleton model on a node
+   * make optimizer not check the singleton model on a node
    * @return
    */
   @deprecated("Use bigdl.check.singleton instead", "0.1.0")
@@ -89,7 +89,7 @@ abstract class Optimizer[T: ClassTag, D](
   /**
    * Set a validate evaluation
    *
-   * @param trigger how offten to evaluation validation set
+   * @param trigger how often to evaluation validation set
    * @param dataset validate data set in type of [[DataSet]] of [[MiniBatch]]
    * @param vMethods a set of validation method [[ValidationMethod]]
    * @return this optimizer
@@ -106,7 +106,7 @@ abstract class Optimizer[T: ClassTag, D](
   /**
    * Set a validate evaluation
    *
-   * @param trigger how offten to evaluation validation set
+   * @param trigger how often to evaluation validation set
    * @param sampleRDD validate data set in type of [[RDD]] of [[Sample]]
    * @param vMethods a set of validation method [[ValidationMethod]]
    * @param batchSize batch size
