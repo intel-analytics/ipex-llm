@@ -21,12 +21,17 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Applies element-wise exp to input tensor.
+ */
 @SerialVersionUID(4918769744611296463L)
 class Exp[@specialized(Float, Double) T: ClassTag] (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.exp(input)
   }
+
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput
       .resizeAs(gradOutput)
