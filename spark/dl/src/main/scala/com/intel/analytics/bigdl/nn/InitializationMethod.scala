@@ -48,6 +48,9 @@ case object Xavier extends InitializationMethod
 
 case object BilinearFiller extends InitializationMethod
 
+/**
+ * Initialize certain layer to user specified weights and bias
+ */
 case class CustomInitializer[T](weights: Tensor[T], bias: Tensor[T])
   extends InitializationMethod {
 
