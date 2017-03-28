@@ -60,8 +60,9 @@ class LocalScaleImgReader private[dataset](scaleTo: Int, normalize: Float)
 }
 
 /**
- * Read BGR images from local given paths. After read the image, it will resize the images to the given
- * width and height. Besides, it will also divide the pixel value by the given normalize value.
+ * Read BGR images from local given paths. After read the image, it will resize the images
+ * to the given width and height.
+ * Besides, it will also divide the pixel value by the given normalize value.
  * @param resizeW the given width to resize
  * @param resizeH the given hight to resize
  * @param normalize the value to normalize
