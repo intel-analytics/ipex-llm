@@ -64,6 +64,9 @@ object Identity {
   def apply[A](): Identity[A] = new Identity[A]()
 }
 
+/**
+ * Just transform the input to output.
+ */
 class Identity[A] extends Transformer[A, A] {
   override def apply(prev: Iterator[A]): Iterator[A] = {
     prev
