@@ -21,6 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger
 import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
 
+/**
+ * define engine type trait
+ */
 sealed trait EngineType
 
 case object MklBlas extends EngineType
