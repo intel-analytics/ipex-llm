@@ -68,4 +68,21 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
 
     conv.weight should be (caffeWeight)
   }
+
+  "SpatialFullConvolution module using CustomInitializer" should
+    "initialized to correct weight and bias" in {
+    val conv = new SpatialFullConvolution[Tensor[Double], Double](1, 2, 4, 4, 2, 2,
+      0, 0, 0, 0, 1, false, BilinearFiller)
+
+    val weight = conv.weight.clone()
+    val bias = conv.bias.clone()
+    val init = CustomInitializer(weight, bias)
+
+    val newConv = new SpatialFullConvolution[Tensor[Double], Double](1, 2, 4, 4, 2, 2,
+      0, 0, 0, 0, 1, false, init)
+    newConv.reset()
+
+    newConv.weight should be (conv.weight)
+    newConv.bias should be (conv.bias)
+  }
 }

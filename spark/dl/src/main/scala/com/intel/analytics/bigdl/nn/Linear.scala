@@ -71,6 +71,8 @@ class Linear[T: ClassTag](
         val stdv = math.sqrt(6.0 / (fanIn + fanOut))
         weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
         if (withBias) bias.fill(ev.fromType(0))
+      case init: CustomInitializer[T] =>
+        init.initialize(weight, bias)
       case _ =>
         throw new IllegalArgumentException(s"Unsupported initMethod type ${initMethod}")
     }

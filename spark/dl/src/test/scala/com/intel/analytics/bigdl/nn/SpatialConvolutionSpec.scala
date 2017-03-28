@@ -2540,4 +2540,27 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     checker.checkLayer[Double](layer, input) should be(true)
 
   }
+
+  "SpatialConvolution module using CustomInitializer" should
+    "initialized to correct weight and bias" in {
+
+    val kW = 5
+    val kH = 5
+    val dW = 1
+    val dH = 1
+    val padW = 0
+    val padH = 0
+    val layer = new SpatialConvolution[Double](3, 16, kW, kH, dW, dH, padW, padH)
+    layer.reset()
+    val weight = layer.weight.clone()
+    val bias = layer.bias.clone()
+    val init = CustomInitializer(weight, bias)
+
+    val newLayer = new SpatialConvolution[Double](3, 16, kW, kH, dW, dH,
+      padW, padH, initMethod = init)
+    newLayer.reset()
+
+    newLayer.weight should be (layer.weight)
+    newLayer.bias should be (layer.bias)
+  }
 }

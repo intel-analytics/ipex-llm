@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.tensor.Tensor
+
 /**
  * Initialization method to initialize bias and weight
  */
@@ -45,3 +47,14 @@ case object Default extends InitializationMethod
 case object Xavier extends InitializationMethod
 
 case object BilinearFiller extends InitializationMethod
+
+case class CustomInitializer[T](weights: Tensor[T], bias: Tensor[T])
+  extends InitializationMethod {
+
+  def initialize(weights: Tensor[T], bias: Tensor[T]): Unit = {
+    require(weights.isSameSizeAs(this.weights), "weights must be the same size")
+    require(bias.isSameSizeAs(this.bias), "biases must be the same size")
+    weights.copy(this.weights)
+    bias.copy(this.bias)
+  }
+}

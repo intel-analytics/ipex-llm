@@ -150,6 +150,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
             (1f - math.abs(x / f - c)) * (1f - math.abs(y / f - c)))
           i += 1
         }
+      case init: CustomInitializer[T] =>
+        init.initialize(weight, bias)
     }
     zeroGradParameters()
   }

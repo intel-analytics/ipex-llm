@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.{SpatialDilatedConvolution, Sequential}
+import com.intel.analytics.bigdl.nn.{CustomInitializer, Sequential, SpatialConvolution, SpatialDilatedConvolution}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -191,5 +191,29 @@ class SpatialDilatedConvolutionSpec extends FlatSpec with BeforeAndAfter with Ma
     gradInput should be(luaGradInput)
     luaGradBias should be (layer.gradBias)
     luaGradWeight should be (layer.gradWeight)
+  }
+
+  "SpatialDilatedConvolution module using CustomInitializer" should
+    "initialized to correct weight and bias" in {
+    val nInputPlane = 3
+    val nOutputPlane = 6
+    val kW = 3
+    val kH = 3
+    val dW = 2
+    val dH = 2
+    val padW = 1
+    val padH = 1
+    val layer = new SpatialDilatedConvolution[Double](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH)
+    layer.reset()
+    val weight = layer.weight.clone()
+    val bias = layer.bias.clone()
+    val init = CustomInitializer(weight, bias)
+
+    val newLayer = new SpatialDilatedConvolution[Double](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH, initMethod = init)
+    newLayer.reset()
+    newLayer.weight should be (layer.weight)
+    newLayer.bias should be (layer.bias)
   }
 }
