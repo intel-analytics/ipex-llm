@@ -513,7 +513,6 @@ object TorchFile {
     for (i <- 1 to source.modules.length) {
       modules(i) = source.modules(i - 1)
     }
-    table("size") = source.getSize()
     table("dimension") = source.dimension
     table("modules") = modules
     writeObject(table, rawData, path, TYPE_TABLE)

@@ -23,7 +23,10 @@ import com.intel.analytics.bigdl.utils.Engine
 
 import scala.reflect._
 
-class FP16CompressedTensor[T: ClassTag](buffer: Array[Byte], bufferOffset: Int, bufferLength: Int)
+private[bigdl] class FP16CompressedTensor[T: ClassTag](
+      buffer: Array[Byte],
+      bufferOffset: Int,
+      bufferLength: Int)
   extends CompressedTensor[T] {
 
   def this(tensor: Tensor[T]) {

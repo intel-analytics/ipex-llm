@@ -230,7 +230,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
   }
 }
 
-class FutureResult[T](private val futures: Seq[Future[T]]) {
+private[bigdl] class FutureResult[T](private val futures: Seq[Future[T]]) {
   def waitResult(): Seq[T] = {
     futures.map(_.get())
   }
