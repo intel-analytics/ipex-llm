@@ -165,10 +165,6 @@ class HingeEmbeddingCriterion(Criterion):
     e.g. using the L1 pairwise distance, and is typically used for
     learning nonlinear embeddings or semi-supervised learning.
 
-                    *⎧ x_i,                  if y_i ==  1
-    loss(x, y) = 1/n ⎨
-                    *⎩ max(0, margin - x_i), if y_i == -1
-
     If x and y are n-dimensional Tensors, the sum operation still operates
     over all the elements, and divides by n (this can be avoided if one sets
     the internal variable sizeAverage to false). The margin has a default
