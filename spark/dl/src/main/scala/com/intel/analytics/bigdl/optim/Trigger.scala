@@ -57,7 +57,7 @@ object Trigger {
    * A trigger that triggers an action every "n" iterations.
    * Could be used as trigger in setValidation and setCheckpoint
    * in Optimizer, and also in TrainSummary.setSummaryTrigger.
-   * 
+   *
    * @param interval - trigger interval "n"
    */
   def severalIteration(interval: Int): Trigger = {
