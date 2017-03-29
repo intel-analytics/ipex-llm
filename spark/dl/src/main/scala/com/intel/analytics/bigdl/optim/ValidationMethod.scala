@@ -49,6 +49,11 @@ trait ValidationResult extends Serializable {
   override def toString(): String = format()
 }
 
+/**
+ * Represent an accuracy result. Accuracy means a ratio of correct number and total number.
+ * @param correct correct number
+ * @param count total count number
+ */
 class AccuracyResult(private var correct: Int, private var count: Int)
   extends ValidationResult {
 

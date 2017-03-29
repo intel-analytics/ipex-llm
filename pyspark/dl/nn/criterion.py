@@ -242,6 +242,11 @@ class MultiCriterion(Criterion):
 class MultiLabelMarginCriterion(Criterion):
 
     '''
+    Creates a criterion that optimizes a multi-class multi-classification hinge loss (
+    margin-based loss) between input x and output y (which is a Tensor of target class indices)
+
+    :param size_average: size average in a mini-batch
+
     >>> multiLabelMarginCriterion = MultiLabelMarginCriterion(True)
     creating: createMultiLabelMarginCriterion
     '''
