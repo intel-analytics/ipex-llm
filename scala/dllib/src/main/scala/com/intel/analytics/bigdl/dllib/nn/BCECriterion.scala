@@ -23,13 +23,18 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import scala.reflect.ClassTag
 
 /**
- * Creates a criterion that measures the Binary Cross Entropy
- * between the target and the output
+ * This loss function measures the Binary Cross Entropy between the target and the output
+ *         loss(o, t) = - 1/n sum_i (t[i] * log(o[i]) + (1 - t[i]) * log(1 - o[i]))
+ * or in the case of the weights argument being specified:
+ *         loss(o, t) = - 1/n sum_i weights[i] * (t[i] * log(o[i]) + (1 - t[i]) * log(1 - o[i]))
  *
- * @param weights weights for each class
- * @param sizeAverage whether to average the loss or not
+ * By default, the losses are averaged for each mini-batch over observations as well as over
+ * dimensions. However, if the field sizeAverage is set to false, the losses are instead summed.
+ * @param weights weights over the input dimension
+ * @param sizeAverage avgerage or not in each mini-batch
+ * @param ev numeric operator
+ * @tparam T numeric type
  */
-
 @SerialVersionUID(- 1953992758534446600L)
 class BCECriterion[@specialized(Float, Double) T: ClassTag]
 (var weights: Tensor[T] = null, sizeAverage: Boolean = true)
