@@ -31,13 +31,22 @@ Status Equal
    Should Be Equal As Strings       ${status}                                  ${realStatus}
 
 BigDL Integration Test
-   [Arguments]        ${verticalId}                                                      ${suite}         ${argLine}
+   [Arguments]        ${verticalId}                                                      ${suite}         ${mvnarg}    ${argLine}
    Operate Vertical   ${verticalId}                                                      start            running
-   Run                mvn test -Dsuites=${suite} -DargLine=${argLine} -P integration-test > temp.log 2>&1
+   ${build}= 	      Catenate                         SEPARATOR=/                       ${curDir}        make-dist.sh
+   Run Keyword If     '${mvnarg}' == 'spark_2.0'       Log To Console   start to build jar for spark2.0
+#   Run Keyword If     '${mvnarg}' == 'spark_2.0'       Run                               ${build} -P ${mvnarg}
+#   Run Keyword If     '${mvnarg}' == 'spark_2.0'       Run                               \cp spark/dl/target/bigdl-0.2.0-SNAPSHOT-jar-with-dependencies.jar ${jar_path}
+   Run Keyword If     '${mvnarg}' == 'spark_2.0'       Log To Console                    build jar spark2.0 finished
+   Run Keyword If     '${mvnarg}' == 'spark_2.1'       Log To Console                    start to build jar for spark2.1
+   Run Keyword If     '${mvnarg}' == 'spark_2.1'       Run                               ${build} -P ${mvnarg}
+   Run Keyword If     '${mvnarg}' == 'spark_2.1'       Run                               \cp spark/dl/target/bigdl-0.2.0-SNAPSHOT-jar-with-dependencies.jar ${jar_path} 
+   Run Keyword If     '${mvnarg}' == 'spark_2.1'       Log To Console                    build jar spark2.1 finished
+   Run                mvn clean test -Dsuites=${suite} -DargLine="${argLine}" -P integration-test -P ${mvnarg} > temp.log 2>&1
    ${stdout}=         Get File                                                           temp.log
    Log To Console     ${stdout}
    Should Contain     ${stdout}                                                          BUILD SUCCESS
-   [Teardown]         Operate Vertical                                                   ${verticalId}    stop          deployed/stopped
+   [Teardown]         Operate Vertical                                                   ${verticalId}    stop         deployed/stopped
    
 BigDL Example Test
    [Arguments]        ${verticalId}       ${suite}                                                         ${argLine}
@@ -56,8 +65,7 @@ Check DataSource
    Should Contain   ${resp.content}       DIRECTORY
 
 Prepare DataSource And Verticals
-   Data Source 
    Check DataSource
    :FOR                ${vertical}           IN             @{verticals}
    \                   Status Equal          ${vertical}    deployed/stopped
-tatus Equal ${public_hdfs_vid} running
+   Status Equal        ${public_hdfs_vid}    running
