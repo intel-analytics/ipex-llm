@@ -407,7 +407,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * 1 2 3
    * 4 5 6
    * tensor.narrow(1, 1, 1) is [1 2 3]
-   * tensor.narrow(2, 2, 3) is
+   * tensor.narrow(2, 2, 2) is
    * 2 3
    * 5 6
    *
