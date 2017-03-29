@@ -22,11 +22,33 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * A plain implementation of SGD
+ * @tparam T data type
+ */
 class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T])
   extends OptimMethod[T] {
 
   import SGD._
 
+  /**
+   *
+   * @param feval a function that takes a single input (X), the point of a evaluation,
+   * and returns f(X) and df/dX
+   * @param x the initial point
+   * @param config a table with configuration parameters for the optimizer
+   * learningRate: learning rate
+   * learningRateDecay: learning rate decay
+   * weightDecay: weight decay
+   * weightDecays: 1D tensor of individual weight decays
+   * momentum: momentum
+   * dampening: dampening for momentum
+   * nesterov: enables Nesterov momentum
+   * learningRates: 1D tensor of individual learning rates
+   * @param state a table describing the state of the optimizer; after each call the state
+   * is modified
+   * @return the new x 1D tensor and the function list, evaluated before the update
+   */
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]), x: Tensor[T],
     config: Table, state: Table = null): (Tensor[T], Array[T]) = {
 
