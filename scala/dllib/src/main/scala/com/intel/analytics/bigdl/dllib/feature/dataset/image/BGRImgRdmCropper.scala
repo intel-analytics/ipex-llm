@@ -25,6 +25,12 @@ object BGRImgRdmCropper {
     new BGRImgRdmCropper(cropHeight, cropWidth, padding)
 }
 
+/**
+ * Random crop a specified area from the Image. The result is also a image
+ * @param cropHeight crop area height
+ * @param cropWidth crop area width
+ * @param padding padding of the image area to be cropped
+ */
 class BGRImgRdmCropper(cropHeight: Int, cropWidth: Int, padding: Int)
   extends Transformer[LabeledBGRImage, LabeledBGRImage] {
   import com.intel.analytics.bigdl.utils.RandomGenerator.RNG

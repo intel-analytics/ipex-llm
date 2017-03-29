@@ -26,6 +26,26 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
+/**
+ * This layer implements Batch Normalization as described in the paper:
+ * "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift"
+ * by Sergey Ioffe, Christian Szegedy https://arxiv.org/abs/1502.03167
+ *
+ * This implementation is useful for inputs NOT coming from convolution layers.
+ * For convolution layers, use nn.SpatialBatchNormalization.
+ *
+ * The operation implemented is:
+ *     y =     ( x - mean(x) )
+ *          -------------------- * gamma + beta
+ *             standard-deviation(x)
+ * where gamma and beta are learnable parameters.The learning of gamma and beta is optional.
+ * @param nOutput output feature map number
+ * @param eps avoid divide zero
+ * @param momentum momentum for weight update
+ * @param affine affine operation on output or not
+ * @param ev numeric operator
+ * @tparam T numeric type
+ */
 @SerialVersionUID(- 3181824540272906068L)
 class BatchNormalization[@specialized(Float, Double) T: ClassTag](
   val nOutput: Int, // output feature map number

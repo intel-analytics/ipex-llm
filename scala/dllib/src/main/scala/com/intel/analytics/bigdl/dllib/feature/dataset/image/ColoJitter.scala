@@ -28,10 +28,14 @@ object ColorJitter {
   }
 }
 
+/**
+ * Process an image with brightness, contrast, saturation in a random order
+ */
 class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
-  val bcsParameters = Map("brightness" -> 0.4f, "contrast" -> 0.4f, "saturation" -> 0.4f)
+  // Todo: make the bcs parameter configurable
+  private val bcsParameters = Map("brightness" -> 0.4f, "contrast" -> 0.4f, "saturation" -> 0.4f)
 
-  def grayScale(dst: Array[Float], img: Array[Float]): Array[Float] = {
+  private def grayScale(dst: Array[Float], img: Array[Float]): Array[Float] = {
     var i = 0
     while (i < img.length) {
       dst(i) = img(i)*0.299f + img(i + 1)*0.587f + img(i + 2)*0.114f
@@ -42,10 +46,10 @@ class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
     dst
   }
 
-  def blend(img1: Array[Float], img2: Array[Float], alpha: Float): Unit =
+  private def blend(img1: Array[Float], img2: Array[Float], alpha: Float): Unit =
     (img1 zip img2) map {case (a, b) => a + (1-alpha)*b }
 
-  def saturation(variance: Float)(input: Array[Float]): Array[Float] = {
+  private def saturation(variance: Float)(input: Array[Float]): Array[Float] = {
     val gs = new Array[Float](input.length)
     grayScale(gs, input)
     val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
@@ -53,14 +57,14 @@ class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
     input
   }
 
-  def brightness(variance: Float)(input: Array[Float]): Array[Float] = {
+  private def brightness(variance: Float)(input: Array[Float]): Array[Float] = {
     val gs = new Array[Float](input.length)
     val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
     blend(input, gs, alpha)
     input
   }
 
-  def contrast(variance: Float)(input: Array[Float]): Array[Float] = {
+  private def contrast(variance: Float)(input: Array[Float]): Array[Float] = {
     val gs = new Array[Float](input.length)
     grayScale(gs, input)
     val mean = gs.sum / gs.length
@@ -70,13 +74,13 @@ class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
     input
   }
 
-  val ts = Map(
+  private val ts = Map(
     "brightness" -> {brightness(bcsParameters.get("brightness").get)(_)},
     "contrast" -> {contrast(bcsParameters.get("contrast").get)(_)},
     "saturation" -> {saturation(bcsParameters.get("saturation").get)(_)}
   )
 
-  def randomOrder(input: Array[Float]): Unit = {
+  private def randomOrder(input: Array[Float]): Unit = {
     val randOrder = Random.shuffle(List("brightness", "contrast", "saturation"))
     randOrder.map( x => ts(x))
   }

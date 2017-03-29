@@ -16,6 +16,10 @@
 
 package com.intel.analytics.bigdl.tensor
 
+/**
+ * Tensor function contain two parameters.
+ * @tparam T
+ */
 trait TensorFunc2[@specialized(Float, Double) T] {
   self =>
   def apply(v1: Array[T], v2: Int): Unit
@@ -23,6 +27,10 @@ trait TensorFunc2[@specialized(Float, Double) T] {
   override def toString(): String = "<TensorFunction2>"
 }
 
+/**
+ * Tensor function contain four parameters.
+ * @tparam T
+ */
 trait TensorFunc4[@specialized(Float, Double) T] {
   self =>
   def apply(v1: Array[T], v2: Int, v3: Array[T], v4: Int): Unit
@@ -30,6 +38,10 @@ trait TensorFunc4[@specialized(Float, Double) T] {
   override def toString(): String = "<TensorFunction4>"
 }
 
+/**
+ * Tensor function contain six parameters.
+ * @tparam T
+ */
 trait TensorFunc6[@specialized(Float, Double) T] {
   self =>
   def apply(v1: Array[T], v2: Int, v3: Array[T], v4: Int,

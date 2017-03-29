@@ -23,7 +23,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.reflect.ClassTag
 
-class CellUnit[T : ClassTag] (hidSize: Int)
+private[bigdl] class CellUnit[T : ClassTag] (hidSize: Int)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](hiddensShape = Array(hidSize, hidSize, hidSize)) {
 

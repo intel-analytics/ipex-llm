@@ -30,6 +30,9 @@ object BGRImgToImageVector {
   }
 }
 
+/**
+ * Convert a BGR image to dense vector of spark mllib
+ */
 class BGRImgToImageVector()
   extends Transformer[LabeledBGRImage, DenseVector] {
 
