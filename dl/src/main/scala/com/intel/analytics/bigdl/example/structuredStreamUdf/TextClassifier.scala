@@ -20,6 +20,7 @@ package com.intel.analytics.bigdl.example.structuredStreamUdf
 import java.io.File
 import java.util
 
+import breeze.linalg.BroadcastedColumns
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.example.textclassification.SimpleTokenizer._
@@ -30,6 +31,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.SparkContext
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -56,7 +58,7 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
     *
     * @return A map from word to vector
     */
-  private def buildWord2Vec(word2Meta: Map[String, WordMeta]): Map[Float, Array[Float]] = {
+  def buildWord2Vec(word2Meta: Map[String, WordMeta]): Map[Float, Array[Float]] = {
     log.info("Indexing word vectors.")
     val preWord2Vec = MMap[Float, Array[Float]]()
     val filename = s"$gloveDir/glove.6B.100d.txt"
@@ -118,7 +120,7 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
     *
     * @return An array of sample
     */
-  private def loadRawData(): ArrayBuffer[(String, String, Float)] = {
+  def loadRawData(): ArrayBuffer[(String, String, Float)] = {
     val fileNames = ArrayBuffer[String]()
     val texts = ArrayBuffer[String]()
     val labels = ArrayBuffer[Float]()
@@ -208,6 +210,8 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
     // For large dataset, you might want to get such RDD[(String, Float)] from HDFS
     val dataRdd = sc.parallelize(loadRawData(), param.partitionNum)
     val (word2Meta, word2Vec) = analyzeTexts(dataRdd)
+    // save word2Meta for later generate vectors
+    sc.parallelize(word2Meta.toSeq).saveAsTextFile(s"${param.baseDir}/word2Meta.txt")
     val word2MetaBC = sc.broadcast(word2Meta)
     val word2VecBC = sc.broadcast(word2Vec)
     val vectorizedRdd = dataRdd
@@ -220,6 +224,24 @@ class TextClassifier(param: TextClassificationParams) extends Serializable {
     vectorizedRdd.randomSplit(
       Array(trainingSplit, 1 - trainingSplit))
 
+  }
+
+  def createSamples(dataRdd: RDD[(String, String, Float)],
+                    word2MetaBC: Broadcast[Map[String, WordMeta]],
+                    word2VecBC: Broadcast[Map[Float, Array[Float]]]):
+  Array[RDD[(String, Array[Array[Float]], Float)]] = {
+    val sequenceLen = param.maxSequenceLength
+    val embeddingDim = param.embeddingDim
+    val trainingSplit = param.trainingSplit
+    val vectorizedRdd = dataRdd
+      .map { case (filename, text, label) => (filename, toTokens(text, word2MetaBC.value), label) }
+      .map { case (filename, tokens, label) => (filename, shaping(tokens, sequenceLen), label) }
+      .map { case (filename, tokens, label) => (filename, vectorization(
+        tokens, embeddingDim, word2VecBC.value), label)
+      }
+
+    vectorizedRdd.randomSplit(
+      Array(trainingSplit, 1 - trainingSplit))
   }
 
     /**

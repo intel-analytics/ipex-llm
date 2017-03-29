@@ -18,11 +18,13 @@ package com.intel.analytics.bigdl.example.structuredStreamUdf
 
 import java.io.{File, InputStream, PrintWriter}
 
+import com.intel.analytics.bigdl.example.textclassification.WordMeta
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.functions._
 import org.slf4j.{Logger, LoggerFactory}
 import org.apache.spark.sql.SparkSession
@@ -75,12 +77,27 @@ object  TextClassifierConsumerParquet {
         .getOrCreate()
       val sc = spark.sparkContext
 
+      var word2Meta = None: Option[Map[String, WordMeta]]
+      var word2Vec = None: Option[Map[Float, Array[Float]]]
+
+      var word2MetaBC = null.asInstanceOf[Broadcast[Map[String, WordMeta]]]
+      var word2VecBC = null.asInstanceOf[Broadcast[Map[Float, Array[Float]]]]
       // get model
       val localModel = if (param.modelPath.isDefined) {
         Module.load[Float](param.modelPath.get)
       } else {
-        // get train and validation rdds
-        val rdds = textClassification.getData(sc)
+        // For large dataset, you might want to get such RDD[(String, Float)] from HDFS
+        val dataRdd = sc.parallelize(textClassification.loadRawData(), param.partitionNum)
+//        (word2Meta, word2Vec) = textClassification.analyzeTexts(dataRdd)
+        val dict = textClassification.analyzeTexts(dataRdd)
+        word2Meta = Some(dict._1)
+        word2Vec = Some(dict._2)
+        // save word2Meta for later generate vectors
+        sc.parallelize(word2Meta.toSeq).saveAsTextFile(s"${param.baseDir}/word2Meta.txt")
+        word2MetaBC = sc.broadcast(word2Meta.get)
+        word2VecBC = sc.broadcast(word2Vec.get)
+        val rdds = textClassification.createSamples(dataRdd, word2MetaBC, word2VecBC)
+//        val rdds = textClassification.getData(sc)
         // train
         val trainedModel = textClassification.train(sc, rdds)
         // after trainning, save model
@@ -96,8 +113,18 @@ object  TextClassifierConsumerParquet {
       val modelBroadCast = sc.broadcast(model)
       val sampleShape = Array(param.maxSequenceLength, param.embeddingDim)
       val sampleShapeBroadCast = sc.broadcast(sampleShape)
-      val word2Vec = textClassification.buildWord2VecMap()
-      val word2VecBroadcast = sc.broadcast(word2Vec)
+      // get word2Meta for this dataset
+      if (!word2Meta.isDefined) {
+        word2Meta = Some(sc.textFile(s"${param.baseDir}/word2Meta.txt")
+          .collect()
+          .toMap[String, WordMeta])
+        word2MetaBC = sc.broadcast(word2Meta.get)
+      }
+//      val word2MetaBC = sc.broadcast(word2Meta)
+      if (!word2Vec.isDefined) {
+        word2Vec = Some(textClassification.buildWord2Vec(word2Meta.get))
+        word2VecBC = sc.broadcast(word2Vec.get)
+      }
 
       // define udf
       def predict[T: ClassTag](text: String)
@@ -108,7 +135,7 @@ object  TextClassifierConsumerParquet {
         val embeddingDim = sampleShape(1)
         // first to tokens
         val tokens = text.replaceAll("[^a-zA-Z]", " ")
-          .toLowerCase().split("\\s+").filter(_.size > 2)
+          .toLowerCase().split("\\s+").filter(_.length > 2)
         // shaping
         val paddedTokens = if (tokens.length > sequenceLen) {
           tokens.slice(tokens.length - sequenceLen, tokens.length)
@@ -116,10 +143,11 @@ object  TextClassifierConsumerParquet {
           tokens ++ Array.fill[String](sequenceLen - tokens.length)("invalidword")
         }
         // to vectors
-        val word2Vec = word2VecBroadcast.value
+        val word2Meta = word2MetaBC.value
+        val word2Vec = word2VecBC.value
         val data = paddedTokens.map { word: String =>
-          if (word2Vec.contains(word)) {
-            word2Vec(word)
+          if (word2Meta.contains(word)) {
+            word2Vec(word2Meta(word).index)
           } else {
             // Treat it as zeros if cannot be found from pre-trained word2Vec
             Array.fill[Float](embeddingDim)(0)
@@ -154,7 +182,7 @@ object  TextClassifierConsumerParquet {
       }
 
       // register udf for data frame
-      val classiferUDF = udf(predict[Float](_: String))
+      val classifierUDF = udf(predict[Float](_: String))
 
       val textSchema = new StructType().add("filename", "string").add("text", "string")
       // stream dataframe
@@ -173,7 +201,7 @@ object  TextClassifierConsumerParquet {
 
       import spark.implicits._
 
-      val classifyDF1 = df.withColumn("textLabel", classiferUDF($"text"))
+      val classifyDF1 = df.withColumn("textLabel", classifierUDF($"text"))
         .select("fileName", "text", "textLabel")
       val classifyQuery1 = classifyDF1.writeStream
         .format("console")
@@ -184,7 +212,7 @@ object  TextClassifierConsumerParquet {
         .format("console")
         .start()
 
-      val filteredDF1 = df.filter(classiferUDF($"text") === 8)
+      val filteredDF1 = df.filter(classifierUDF($"text") === 8)
       val filteredQuery1 = filteredDF1.writeStream
         .format("console")
         .start()

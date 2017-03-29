@@ -50,35 +50,53 @@ object TextProducerParquet {
       val interval = param.interval
       // load messages
       val data = loadTestData(param.srcFolder)
+      val batchIter = data.grouped(batchsize)
 
       val spark = SparkSession.builder().appName("Produce Text").getOrCreate()
       val batch: Array[Sample] = new Array[Sample](batchsize)
       var count = 0
       var send_count = 0
       val iter = data.iterator
-      while (iter.hasNext) {
+      while (batchIter.hasNext) {
         try {
-          if (count < batchsize) {
-            batch(count) = iter.next()
-            count += 1
-          } else if (count == batchsize) {
-            // send batch
-            val testRDD = spark.sparkContext.parallelize(batch, 1)
-            val df = spark.createDataFrame(testRDD)
-            println("send text batch " + send_count)
-            df.write
-              .format("parquet")
-              .mode(org.apache.spark.sql.SaveMode.Append)
-              .save(param.destFolder)
-            count = 0
-            send_count += 1
-            Thread.sleep(interval*1000)
-          }
-
+          // send batch
+          val testRDD = spark.sparkContext.parallelize(batchIter.next(), 1)
+          val df = spark.createDataFrame(testRDD)
+          println("send text batch " + send_count)
+          df.write
+            .format("parquet")
+            .mode(org.apache.spark.sql.SaveMode.Append)
+            .save(param.destFolder)
+          count = 0
+          send_count += 1
+          Thread.sleep(interval * 1000)
         } catch {
           case e: Exception => println(e)
         }
       }
+//      while (iter.hasNext) {
+//        try {
+//          if (count < batchsize) {
+//            batch(count) = iter.next()
+//            count += 1
+//          } else if (count == batchsize) {
+//            // send batch
+//            val testRDD = spark.sparkContext.parallelize(batch, 1)
+//            val df = spark.createDataFrame(testRDD)
+//            println("send text batch " + send_count)
+//            df.write
+//              .format("parquet")
+//              .mode(org.apache.spark.sql.SaveMode.Append)
+//              .save(param.destFolder)
+//            count = 0
+//            send_count += 1
+//            Thread.sleep(interval * 1000)
+//          }
+//
+//        } catch {
+//          case e: Exception => println(e)
+//        }
+//      }
     }
   }
 }
