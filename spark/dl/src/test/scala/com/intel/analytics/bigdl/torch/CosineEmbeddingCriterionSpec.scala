@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.CosineEmbeddingCriterion
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{RandomGenerator, Table}
 
 import scala.collection.mutable.HashMap
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -38,8 +38,8 @@ class CosineEmbeddingCriterionSpec extends FlatSpec with BeforeAndAfter with Mat
     RNG.setSeed(seed)
     val module = new CosineEmbeddingCriterion[Double](0.2)
 
-    val input1 = Tensor[Double](5).apply1(e => Random.nextDouble())
-    val input2 = Tensor[Double](5).apply1(e => Random.nextDouble())
+    val input1 = Tensor[Double](5).apply1(e => RandomGenerator.RNG.uniform(0, 2))
+    val input2 = Tensor[Double](5).apply1(e => RandomGenerator.RNG.uniform(0, 1))
     val input = new Table()
     input(1.0) = input1
     input(2.0) = input2
