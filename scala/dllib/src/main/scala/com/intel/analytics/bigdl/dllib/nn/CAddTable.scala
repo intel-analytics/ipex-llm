@@ -23,6 +23,13 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect._
 
+/**
+ * Merge the input tensors in the input table by element wise adding them together. The input table
+ * is actually an array of tensor with same size.
+ * @param inplace reuse the input memory
+ * @param ev numeric operator
+ * @tparam T Numeric type. Only support float/double now
+ */
 @SerialVersionUID(7959261460060075605L)
 class CAddTable[T: ClassTag](val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {

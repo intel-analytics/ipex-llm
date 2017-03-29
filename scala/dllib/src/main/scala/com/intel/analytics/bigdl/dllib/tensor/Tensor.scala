@@ -615,6 +615,9 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
     throw new IllegalArgumentException("Tensor cannot be cast to Table")
 }
 
+/**
+ * Numeric type of tensor.
+ */
 sealed trait TensorDataType
 
 object DoubleType extends TensorDataType
