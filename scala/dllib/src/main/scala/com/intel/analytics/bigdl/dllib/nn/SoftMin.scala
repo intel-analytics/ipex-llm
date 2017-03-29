@@ -23,6 +23,12 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
+/**
+ * Applies the SoftMin function to an n-dimensional input Tensor, rescaling them so that the
+ * elements of the n-dimensional output Tensor lie in the range (0,1) and sum to 1.
+ * Softmin is defined as: f_i(x) = exp(-x_i - shift) / sum_j exp(-x_j - shift)
+ * where shift = max_i(-x_i).
+ */
 @SerialVersionUID(- 8738615460960887232L)
 class SoftMin[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 

@@ -56,21 +56,37 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
   @transient
   private var results: Array[Future[Unit]] = null
 
+  /**
+   * set ceil mode
+   * @return this
+   */
   def ceil(): SpatialAveragePooling[T] = {
     ceilMode = true
     this
   }
 
+  /**
+   * set floor mode
+   * @return this
+   */
   def floor(): SpatialAveragePooling[T] = {
     ceilMode = false
     this
   }
 
+  /**
+   * set countIncludePad to true
+   * @return this
+   */
   def setCountIncludePad(): SpatialAveragePooling[T] = {
     countIncludePad = true
     this
   }
 
+  /**
+   * set countIncludePad to false
+   * @return this
+   */
   def setCountExcludePad(): SpatialAveragePooling[T] = {
     countIncludePad = false
     this
