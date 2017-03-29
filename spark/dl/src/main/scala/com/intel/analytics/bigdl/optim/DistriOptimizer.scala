@@ -251,7 +251,7 @@ object DistriOptimizer {
             cached.localModels(i).training()
             cached.localModels(i).zeroGradParameters()
           }))
-          Iterator(finishedThreads.size)
+          Iterator.single(finishedThreads.size)
         }).reduce(_ + _)
 
       dropModelNumBatch += (driverSubModelNum - finishedModelNum)
@@ -511,7 +511,7 @@ object DistriOptimizer {
       logger.info("model thread pool size is " + Engine.model.getPoolSize)
       parameters.init(weights)
 
-      Iterator(Cache(
+      Iterator.single(Cache(
         cached.map(_._1), // models
         cached.map(_._2), // weights
         cached.map(_._3), // gradients
