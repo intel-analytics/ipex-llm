@@ -202,6 +202,9 @@ class ReLU(Model):
 class Tanh(Model):
 
     '''
+    Applies the Tanh function element-wise to the input Tensor, thus outputting a Tensor of the same
+    dimension. Tanh is defined as f(x) = (exp(x)-exp(-x))/(exp(x)+exp(-x)).
+
     >>> tanh = Tanh()
     creating: createTanh
     '''
@@ -562,6 +565,13 @@ class Dropout(Model):
 class View(Model):
 
     '''
+    This module creates a new view of the input tensor using the sizes passed to the constructor.
+    The method setNumInputDims() allows to specify the expected number of dimensions of the
+    inputs of the modules. This makes it possible to use minibatch inputs when using a size -1
+    for one of the dimensions.
+
+    :param size: sizes use for creates a new view
+
     >>> view = View([1024,2])
     creating: createView
     '''
@@ -618,14 +628,31 @@ class AddConstant(Model):
                                           constant_scalar,
                                           inplace)
 
-
 class BatchNormalization(Model):
 
     '''
+    This layer implements Batch Normalization as described in the paper:
+             "Batch Normalization: Accelerating Deep Network Training by Reducing Internal
+             Covariate Shift"
+    by Sergey Ioffe, Christian Szegedy https://arxiv.org/abs/1502.03167
+
+    This implementation is useful for inputs NOT coming from convolution layers. For convolution
+    layers, use nn.SpatialBatchNormalization.
+
+    The operation implemented is:
+         y = ( x - mean(x) )
+             -------------------- * gamma + beta
+             standard-deviation(x)
+    where gamma and beta are learnable parameters.The learning of gamma and beta is optional.
+
+    :param n_output: output feature map number
+    :param eps: avoid divide zero
+    :param momentum: momentum for weight update
+    :param affine: affine operation on output or not
+
     >>> batchNormalization = BatchNormalization(1, 1e-5, 1e-5, True)
     creating: createBatchNormalization
     '''
-
     def __init__(self,
                  n_output,
                  eps=1e-5,
@@ -687,6 +714,15 @@ class Bottle(Model):
 class CAdd(Model):
 
     '''
+    This layer has a bias tensor with given size. The bias will be added element wise to the input
+    tensor. If the element number of the bias tensor match the input tensor, a simply element wise
+    will be done. Or the bias will be expanded to the same size of the input. The expand means
+    repeat on unmatched singleton dimension(if some unmatched dimension isn't singleton dimension,
+    it will report an error). If the input is a batch, a singleton dimension will be add to the
+    first dimension before the expand.
+
+    :param size: the size of the bias
+
     >>> cAdd = CAdd([1,2])
     creating: createCAdd
     '''
@@ -701,6 +737,11 @@ class CAdd(Model):
 class CAddTable(Model):
 
     '''
+    Merge the input tensors in the input table by element wise adding them together. The input
+    table is actually an array of tensor with same size.
+
+    :param inplace: reuse the input memory
+
     >>> cAddTable = CAddTable(True)
     creating: createCAddTable
     '''
@@ -715,6 +756,8 @@ class CAddTable(Model):
 class CDivTable(Model):
 
     '''
+    Takes a table with two Tensor and returns the component-wise division between them.
+
     >>> cDivTable = CDivTable()
     creating: createCDivTable
     '''
@@ -834,6 +877,15 @@ class Contiguous(Model):
 class Cosine(Model):
 
     '''
+    Cosine calculates the cosine similarity of the input to k mean centers. The input given in
+    forward(input) must be either a vector (1D tensor) or matrix (2D tensor). If the input is a
+    vector, it must have the size of inputSize. If it is a matrix, then each row is assumed to be
+    an input sample of given batch (the number of rows means the batch size and the number of
+    columns should be equal to the inputSize).
+
+    :param input_size: the size of each input sample
+    :param output_size: the size of the module output of each sample
+
     >>> cosine = Cosine(2,3)
     creating: createCosine
     '''
@@ -1089,6 +1141,12 @@ class L1Penalty(Model):
 class LeakyReLU(Model):
 
     '''
+    It is a transfer module that applies LeakyReLU, which parameter negval sets the slope of the
+    negative part: LeakyReLU is defined as: f(x) = max(0, x) + negval * min(0, x)
+
+    :param negval: sets the slope of the negative partl
+    :param inplace: if it is true, doing the operation in-place without using extra state memory
+
     >>> leakyReLU = LeakyReLU(1e-5, True)
     creating: createLeakyReLU
     '''
@@ -1158,10 +1216,14 @@ class LookupTable(Model):
 class MM(Model):
 
     '''
+    Module to perform matrix multiplication on two mini-batch inputs, producing a mini-batch.
+
+    :param trans_a: specifying whether or not transpose the first input matrix
+    :param trans_b: specifying whether or not transpose the second input matrix
+
     >>> mM = MM(True, True)
     creating: createMM
     '''
-
     def __init__(self,
                  trans_a=False,
                  trans_b=False,
@@ -1208,10 +1270,11 @@ class MapTable(Model):
         super(MapTable, self).__init__(None, bigdl_type,
                                        module)
 
-
 class MaskedSelect(Model):
 
     '''
+    Performs a torch.MaskedSelect on a Tensor. The mask is supplied as a tabular argument with
+    the input on the forward and backward passes.
     >>> maskedSelect = MaskedSelect()
     creating: createMaskedSelect
     '''
@@ -1240,6 +1303,18 @@ class Max(Model):
 class Mean(Model):
 
     '''
+    It is a simple layer which applies a mean operation over the given dimension. When nInputDims
+    is provided, the input will be considered as batches. Then the mean operation will be applied
+    in (dimension + 1). The input to this layer is expected to be a tensor, or a batch of
+    tensors; when using mini-batch, a batch of sample tensors will be passed to the layer and the
+    user need to specify the number of dimensions of each sample tensor in the batch using
+    nInputDims.
+
+    :param dimension: the dimension to be applied mean operation
+    :param n_input_dims: specify the number of dimensions that this module will receive
+        If it is more than the dimension of input tensors, the first dimension would be considered
+        as batch size
+
     >>> mean = Mean(1, 1)
     creating: createMean
     '''
@@ -1277,6 +1352,12 @@ class Min(Model):
 class MixtureTable(Model):
 
     '''
+    Creates a module that takes a table {gater, experts} as input and outputs the mixture of experts
+    (a Tensor or table of Tensors) using a gater Tensor. When dim is provided, it specifies the
+    dimension of the experts Tensor that will be interpolated (or mixed). Otherwise, the experts
+    should take the form of a table of Tensors. This Module works for experts of dimension 1D or
+    more, and for a 1D or 2D gater, i.e. for single examples or mini-batches.
+
     >>> mixtureTable = MixtureTable()
     creating: createMixtureTable
     '''
@@ -1494,6 +1575,31 @@ class Power(Model):
 class RReLU(Model):
 
     '''
+    Applies the randomized leaky rectified linear unit (RReLU) element-wise to the input Tensor,
+    thus outputting a Tensor of the same dimension. Informally the RReLU is also known as
+    'insanity' layer. RReLU is defined as:
+        f(x) = max(0,x) + a * min(0, x) where a ~ U(l, u).
+
+    In training mode negative inputs are multiplied by a factor a drawn from a uniform random
+    distribution U(l, u).
+
+    In evaluation mode a RReLU behaves like a LeakyReLU with a constant mean factor
+        a = (l + u) / 2.
+
+    By default, l = 1/8 and u = 1/3. If l == u a RReLU effectively becomes a LeakyReLU.
+
+    Regardless of operating in in-place mode a RReLU will internally allocate an input-sized
+    noise tensor to store random factors for negative inputs.
+
+    The backward() operation assumes that forward() has been called before.
+
+    For reference see [Empirical Evaluation of Rectified Activations in Convolutional Network](
+    http://arxiv.org/abs/1505.00853).
+
+    :param lower: lower boundary of uniform random distribution
+    :param upper: upper boundary of uniform random distribution
+    :param inplace: optionally do its operation in-place without using extra state memory
+
     >>> rReLU = RReLU(1e-5, 1e5, True)
     creating: createRReLU
     '''
@@ -1530,10 +1636,16 @@ class ReLU6(Model):
 class Replicate(Model):
 
     '''
+    Replicate repeats input `nFeatures` times along its `dim` dimension.
+    Notice: No memory copy, it set the stride along the `dim`-th dimension to zero.
+
+    :param n_features: replicate times.
+    :param dim: dimension to be replicated.
+    :param n_dim: specify the number of non-batch dimensions.
+
     >>> replicate = Replicate(2)
     creating: createReplicate
     '''
-
     def __init__(self,
                  n_features,
                  dim=1,
@@ -2030,6 +2142,11 @@ class Unsqueeze(Model):
 
 class Reshape(Model):
     '''
+    The forward(input) reshape the input tensor into a size(0) * size(1) * ... tensor, taking the
+    elements row-wise.
+
+    :param size: the reshape size
+
     >>> reshape = Reshape([1, 28, 28])
     creating: createReshape
     '''

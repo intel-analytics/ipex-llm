@@ -25,11 +25,11 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect.ClassTag
 
 /**
- * Create a Bidirectional recurrent layer
- *
- * @param merge merge layer
+ * This layer implement a bidirectional recurrent neural network
+ * @param merge concat or add the output tensor of the two RNNs. Default is concat
+ * @param ev numeric operator
+ * @tparam T numeric type
  */
-
 class BiRecurrent[T : ClassTag] (
   merge: AbstractModule[Table, Tensor[T], T] = null)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {

@@ -24,6 +24,10 @@ object BGRImgPixelNormalizer {
   = new BGRImgPixelNormalizer(means)
 }
 
+/**
+ * Each pixel value of the input BGR Image sub the given mean value of the corresponding chanel
+ * @param means mean value of BGR
+ */
 class BGRImgPixelNormalizer(means: Tensor[Float])
   extends Transformer[LabeledBGRImage, LabeledBGRImage] {
 

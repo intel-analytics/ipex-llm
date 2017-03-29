@@ -53,6 +53,15 @@ trait Transformer[A, B] extends Serializable {
   }
 }
 
+/**
+ * A transformer chain two transformer together. The output type of the first transformer should be
+ * same with the input type of the second transformer.
+ * @param first first transformer
+ * @param last last transformer
+ * @tparam A input type of the first transformer
+ * @tparam B output type of the first transformer, as well as the input type of the last transformer
+ * @tparam C output of the last transformer
+ */
 class ChainedTransformer[A, B, C](first: Transformer[A, B], last: Transformer[B, C])
   extends Transformer[A, C] {
   override def apply(prev: Iterator[A]): Iterator[C] = {
