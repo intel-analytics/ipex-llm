@@ -150,8 +150,8 @@ object SGD {
   }
 
   /**
-   * A learning rate decay policy, where the effective learning rate 
-   * follows a polynomial decay, to be zero by the max_iteration. 
+   * A learning rate decay policy, where the effective learning rate
+   * follows a polynomial decay, to be zero by the max_iteration.
    * Calculation: base_lr (1 - iter/maxIteration) ^ (power)
    */
   case class Poly(power : Double, maxIteration : Int) extends LearningRateSchedule {
@@ -169,7 +169,7 @@ object SGD {
     }
   }
   /**
-   * A learning rate decay policy, where the effective learning rate 
+   * A learning rate decay policy, where the effective learning rate
    * is calculated as base_lr * gamma ^ (floor(iter / stepSize))
    */
   case class Step(stepSize : Int, gamma : Double) extends LearningRateSchedule {

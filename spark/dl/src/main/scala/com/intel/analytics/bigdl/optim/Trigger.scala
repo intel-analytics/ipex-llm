@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.utils.Table
 
 /**
  * A trigger specifies a timespot or several timespots during training,
- * and a corresponding action will be taken when the timespot(s) 
+ * and a corresponding action will be taken when the timespot(s)
  * is reached.
  */
 trait Trigger {
@@ -31,7 +31,7 @@ object Trigger {
 
   /**
    * A trigger that triggers an action when each epoch finishs.
-   * Could be used as trigger in setValidation and setCheckpoint 
+   * Could be used as trigger in setValidation and setCheckpoint
    * in Optimizer, and also in TrainSummary.setSummaryTrigger.
    */
   def everyEpoch: Trigger = {
@@ -53,9 +53,9 @@ object Trigger {
       }
     }
   }
-  /*
+  /**
    * A trigger that triggers an action every "n" iterations.
-   * Could be used as trigger in setValidation and setCheckpoint 
+   * Could be used as trigger in setValidation and setCheckpoint
    * in Optimizer, and also in TrainSummary.setSummaryTrigger.
    * 
    * @param interval - trigger interval "n"
@@ -69,7 +69,7 @@ object Trigger {
     }
   }
 
-  /*
+  /**
    * A trigger that triggers an action when training reaches
    * the number of epochs specified by "max".
    * Usually used in Optimizer.setEndWhen.
