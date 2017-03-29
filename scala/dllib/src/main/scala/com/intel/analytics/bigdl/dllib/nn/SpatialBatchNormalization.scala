@@ -20,6 +20,21 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * This file implements Batch Normalization as described in the paper:
+ * "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift"
+ * by Sergey Ioffe, Christian Szegedy
+ * This implementation is useful for inputs coming from convolution layers.
+ * For non-convolutional layers, see [[BatchNormalization]]
+ * The operation implemented is:
+ *
+ *         ( x - mean(x) )
+ * y = -------------------- * gamma + beta
+ *      standard-deviation(x)
+ *
+ * where gamma and beta are learnable parameters.
+ * The learning of gamma and beta is optional.
+ */
 @SerialVersionUID(- 9106336963903528047L)
 class SpatialBatchNormalization[T: ClassTag](
   nOutput: Int, eps: Double = 1e-5, momentum: Double = 0.1, affine: Boolean = true)(
