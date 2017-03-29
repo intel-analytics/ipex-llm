@@ -42,8 +42,8 @@ object Test {
       val sc = new SparkContext(conf)
       Engine.init
 
-      val validationData = Paths.get(param.folder, "/t10k-images-idx3-ubyte")
-      val validationLabel = Paths.get(param.folder, "/t10k-labels-idx1-ubyte")
+      val validationData = param.folder + "/t10k-images-idx3-ubyte"
+      val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
 
       val validationSet = DataSet.array(load(validationData, validationLabel), sc) ->
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) ->
