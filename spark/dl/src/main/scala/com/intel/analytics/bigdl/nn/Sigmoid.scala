@@ -25,8 +25,8 @@ import scala.reflect.ClassTag
 /**
  * Applies the Sigmoid function element-wise to the input Tensor,
  * thus outputting a Tensor of the same dimension.
+ * Sigmoid is defined as: f(x) = 1 / (1 + exp(-x))
  */
-
 @SerialVersionUID(6855417348268610044L)
 class Sigmoid[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {

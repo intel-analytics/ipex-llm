@@ -23,6 +23,22 @@ import com.intel.analytics.bigdl.utils.Engine
 
 import scala.reflect._
 
+/**
+ * Applies 2D max-pooling operation in kWxkH regions by step size dWxdH steps.
+ * The number of output features is equal to the number of input planes.
+ * If the input image is a 3D tensor nInputPlane x height x width,
+ * the output image size will be nOutputPlane x oheight x owidth where
+ * owidth  = op((width  + 2*padW - kW) / dW + 1)
+ * oheight = op((height + 2*padH - kH) / dH + 1)
+ * op is a rounding operator. By default, it is floor.
+ * It can be changed by calling :ceil() or :floor() methods.
+ * @param kW              kernel width
+ * @param kH              kernel height
+ * @param dW              step size in width
+ * @param dH              step size in height
+ * @param padW            padding in width
+ * @param padH            padding in height
+ */
 @SerialVersionUID(2277597677473874749L)
 class SpatialMaxPooling[T: ClassTag](
   val kW: Int, val kH: Int, val dW: Int, val dH: Int, val padW: Int = 0, val padH: Int = 0)
@@ -35,11 +51,19 @@ class SpatialMaxPooling[T: ClassTag](
     this(kW, kH, kW, kH)
   }
 
+  /**
+   * set ceil mode
+   * @return this
+   */
   def ceil(): SpatialMaxPooling[T] = {
     ceil_mode = true
     this
   }
 
+  /**
+   * set floor mode
+   * @return this
+   */
   def floor(): SpatialMaxPooling[T] = {
     ceil_mode = false
     this
