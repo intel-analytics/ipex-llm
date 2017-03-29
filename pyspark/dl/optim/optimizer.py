@@ -42,11 +42,11 @@ class MaxIteration(JavaValue):
     creating: createMaxIteration
     """
     def __init__(self, max, bigdl_type="float"):
-    """
-    Create a MaxIteration trigger.
+        """
+        Create a MaxIteration trigger.
 
-    :param max: max
-    """
+        :param max: max
+        """
         JavaValue.__init__(self, None, bigdl_type, max)
 
 
@@ -62,11 +62,11 @@ class MaxEpoch(JavaValue):
     creating: createMaxEpoch
     """
     def __init__(self, max_epoch, bigdl_type="float"):
-    """
-    Create a MaxEpoch trigger.
+        """
+        Create a MaxEpoch trigger.
  
-    :param max_epoch: max_epoch
-    """
+        :param max_epoch: max_epoch
+        """
         JavaValue.__init__(self, None, bigdl_type, max_epoch)
 
 
@@ -82,9 +82,9 @@ class EveryEpoch(JavaValue):
     creating: createEveryEpoch
     """
     def __init__(self, bigdl_type="float"):
-    """
-    Create a EveryEpoch trigger.     
-    """
+        """
+        Create a EveryEpoch trigger.     
+        """
         JavaValue.__init__(self, None, bigdl_type)
 
 
