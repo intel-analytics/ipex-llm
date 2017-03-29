@@ -30,6 +30,10 @@ object RowToByteRecords {
   }
 }
 
+/**
+ * transform [[Row]] to [[ByteRecord]]
+ * @param colName column name
+ */
 class RowToByteRecords(colName: String)
   extends Transformer[Row, ByteRecord] {
 
