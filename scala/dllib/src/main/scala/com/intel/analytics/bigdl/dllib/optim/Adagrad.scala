@@ -22,11 +22,17 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+/**
+ * An implementation of Adagrad. See the original paper:
+ * http://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf
+ * @param ev numeric operator
+ * @tparam T numeric type
+ */
 class Adagrad[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T])
   extends OptimMethod[T] {
 
   /**
-   * Adagrad implementation for SGD
+   * Adagrad implementation for Adagrad
    *
    * @param feval     a function that takes a single input (X), the point of a evaluation, and
    *                  returns f(X) and df/dX
