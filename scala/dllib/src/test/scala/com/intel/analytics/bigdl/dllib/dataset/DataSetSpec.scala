@@ -58,9 +58,9 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val resource = getClass().getClassLoader().getResource("mnist")
 
     val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
-      Paths.get(processPath(resource.getPath()) + File.separator, "t10k-images.idx3-ubyte"),
-      Paths.get(processPath(resource.getPath()) + File.separator, "t10k-labels.idx1-ubyte")
-    ))
+      processPath(resource.getPath()) + File.separator + "t10k-images.idx3-ubyte",
+      processPath(resource.getPath()) + File.separator + "t10k-labels.idx1-ubyte")
+    )
     dataSet.size() should be(10000)
     var iter = dataSet.data(train = false)
     iter.map(_.label).min should be(1.0f)
@@ -72,8 +72,8 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val resource = getClass().getClassLoader().getResource("mnist")
 
     val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
-      Paths.get(processPath(resource.getPath()) + File.separator, "t10k-images.idx3-ubyte"),
-      Paths.get(processPath(resource.getPath()) + File.separator, "t10k-labels.idx1-ubyte")
+      processPath(resource.getPath()) + File.separator + "t10k-images.idx3-ubyte",
+      processPath(resource.getPath()) + File.separator + "t10k-labels.idx1-ubyte"
     ), sc)
 
     dataSet.size() should be(10000)
