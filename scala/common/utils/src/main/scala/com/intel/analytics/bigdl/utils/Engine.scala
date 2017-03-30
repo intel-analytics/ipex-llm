@@ -122,8 +122,8 @@ object Engine {
     "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
 
   private val ENV_VAR_ERROR =
-    "Please use bigdl.sh to init the environment. See " +
-      "https://github.com/intel-analytics/BigDL/wiki/Getting-Started#before-running" +
+    "Do you run 'source bigdl.sh' before the program? Please use bigdl.sh to init the environment" +
+      ". See https://github.com/intel-analytics/BigDL/wiki/Getting-Started#before-running" +
       "-a-bigdl-program. And init SparkConf by refering " +
       "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine. " +
       "For test purpose, set bigdl.disableCheckSysEnv to true"
