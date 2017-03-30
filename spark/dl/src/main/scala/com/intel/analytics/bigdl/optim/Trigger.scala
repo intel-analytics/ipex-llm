@@ -18,11 +18,22 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.utils.Table
 
+/**
+ * A trigger specifies a timespot or several timespots during training,
+ * and a corresponding action will be taken when the timespot(s)
+ * is reached.
+ */
 trait Trigger {
   def apply(state: Table): Boolean
 }
 
 object Trigger {
+
+  /**
+   * A trigger that triggers an action when each epoch finishs.
+   * Could be used as trigger in setValidation and setCheckpoint
+   * in Optimizer, and also in TrainSummary.setSummaryTrigger.
+   */
   def everyEpoch: Trigger = {
     new Trigger() {
       private var lastEpoch = -1
@@ -42,7 +53,13 @@ object Trigger {
       }
     }
   }
-
+  /**
+   * A trigger that triggers an action every "n" iterations.
+   * Could be used as trigger in setValidation and setCheckpoint
+   * in Optimizer, and also in TrainSummary.setSummaryTrigger.
+   *
+   * @param interval - trigger interval "n"
+   */
   def severalIteration(interval: Int): Trigger = {
     new Trigger() {
       override def apply(state: Table): Boolean = {
@@ -52,6 +69,11 @@ object Trigger {
     }
   }
 
+  /**
+   * A trigger that triggers an action when training reaches
+   * the number of epochs specified by "max".
+   * Usually used in Optimizer.setEndWhen.
+   */
   def maxEpoch(max: Int): Trigger = {
     new Trigger() {
       override def apply(state: Table): Boolean = {
@@ -60,6 +82,11 @@ object Trigger {
     }
   }
 
+  /**
+   * A trigger that triggers an action when training reaches
+   * the number of iterations specified by "max".
+   * Usually used in Optimizer.setEndWhen.
+   */
   def maxIteration(max: Int): Trigger = {
     new Trigger() {
       override def apply(state: Table): Boolean = {

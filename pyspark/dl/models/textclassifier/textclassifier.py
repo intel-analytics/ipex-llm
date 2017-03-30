@@ -129,8 +129,7 @@ def train(sc,
     train_rdd, val_rdd = sample_rdd.randomSplit(
         [training_split, 1-training_split])
 
-    state = {"batchSize": batch_size,
-             "learningRate": 0.01,
+    state = {"learningRate": 0.01,
              "learningRateDecay": 0.0002}
 
     optimizer = Optimizer(
