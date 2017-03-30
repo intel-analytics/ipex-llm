@@ -1,5 +1,22 @@
 #!/bin/bash
 
+#
+# Licensed to Intel Corporation under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# Intel Corporation licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 BIGDL_VERSION=0.1.0-SNAPSHOT
 
 SPARK1_DIR=spark-1.6.3-bin-hadoop2.6
@@ -161,21 +178,23 @@ if [ "$MODEL" == "lenet" ] || [ "$MODEL" == "vgg" ]; then
 	if [ "$CLASS" == "train" ]; then
 		$BIGDL_SH -- ./$SPARK_DIR/bin/spark-submit \
 			--master $SPARK_URL \
+            --total-executor-cores $(($CORES * $NODES)) \
+            --executor-cores $CORES \
 			--driver-cores $CORES \
 			--driver-memory $MEMORY \
-			--executor-cores $CORES  \
 			--executor-memory $MEMORY \
 			--num-executors $NODES \
-			--class com.intel.analytics.bigdl.models.$MODEL.Train $BIGDL_JAR -f $DATA_DIR/ --core $CORES --node $NODES --env spark -b $BATCH_SIZE --maxEpoch $MAX_EPOCH --overWrite --checkpoint $MODEL_DIR
+			--class com.intel.analytics.bigdl.models.$MODEL.Train $BIGDL_JAR -f $DATA_DIR/ -b $BATCH_SIZE --maxEpoch $MAX_EPOCH --overWrite --checkpoint $MODEL_DIR
 	else
 		$BIGDL_SH -- ./$SPARK_DIR/bin/spark-submit \
 			--master $SPARK_URL \
+            --total-executor-cores $(($CORES * $NODES)) \
+            --executor-cores $CORES \
 			--driver-cores $CORES \
 			--driver-memory $MEMORY \
-			--executor-cores $CORES  \
 			--executor-memory $MEMORY \
 			--num-executors $NODES \
-			--class com.intel.analytics.bigdl.models.$MODEL.Test $BIGDL_JAR -f $DATA_DIR/ --model $TRAINED_MODEL --nodeNumber $NODES --core $CORES --env spark -b $BATCH_SIZE
+			--class com.intel.analytics.bigdl.models.$MODEL.Test $BIGDL_JAR -f $DATA_DIR/ --model $TRAINED_MODEL -b $BATCH_SIZE
 	fi
 elif [ "$MODEL" == "inception-v1" ]; then
 #echo $SPARK_URL
@@ -183,33 +202,36 @@ elif [ "$MODEL" == "inception-v1" ]; then
 	if [ "$CLASS" == "train" ]; then
 		$BIGDL_SH -- ./$SPARK_DIR/bin/spark-submit \
 			--master $SPARK_URL \
+            --total-executor-cores $(($CORES * $NODES))  \
+            --executor-cores $CORES  \
 			--driver-cores $CORES \
 			--driver-memory $MEMORY \
-			--executor-cores $CORES  \
 			--executor-memory $MEMORY \
 			--num-executors $NODES \
 			--driver-class-path $BIGDL_JAR \
-			--class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 $BIGDL_JAR --core $CORES --nodeNumber $NODES --env spark --batchSize $BATCH_SIZE --maxEpoch $MAX_EPOCH --overWrite --learningRate $LEARNING_RATE -f $HDFS_DATA_DIR --checkpoint $MODEL_DIR
+			--class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 $BIGDL_JAR --batchSize $BATCH_SIZE --maxEpoch $MAX_EPOCH --overWrite --learningRate $LEARNING_RATE -f $HDFS_DATA_DIR --checkpoint $MODEL_DIR
 	else
 		$BIGDL_SH -- ./$SPARK_DIR/bin/spark-submit \
 			--master $SPARK_URL \
 			--driver-cores $CORES \
 			--driver-memory $MEMORY \
+            --total-executor-cores $(($CORES * $NODES))  \
 			--executor-cores $CORES  \
 			--executor-memory $MEMORY \
 			--num-executors $NODES \
 			--driver-class-path $BIGDL_JAR \
-			--class com.intel.analytics.bigdl.models.inception.Test $BIGDL_JAR --core $CORES --nodeNumber $NODES --env spark --batchSize $BATCH_SIZE -f $HDFS_DATA_DIR/val
+			--class com.intel.analytics.bigdl.models.inception.Test $BIGDL_JAR --batchSize $BATCH_SIZE -f $HDFS_DATA_DIR/val
 	fi
 elif [ "$MODEL" == "perf" ]; then
 	$BIGDL_SH -- ./$SPARK_DIR/bin/spark-submit \
 		--master $SPARK_URL \
 		--driver-cores $CORES \
 		--driver-memory $MEMORY \
+        --total-executor-cores $(($CORES * $NODES))  \
 		--executor-cores $CORES  \
 		--executor-memory $MEMORY \
 		--num-executors $NODES \
-		--class com.intel.analytics.bigdl.models.utils.DistriOptimizerPerf $BIGDL_JAR -m inception_v1 --nodeNumber $NODES --corePerNode $CORES --maxEpoch $MAX_EPOCH
+		--class com.intel.analytics.bigdl.models.utils.DistriOptimizerPerf $BIGDL_JAR -m inception_v1 --maxEpoch $MAX_EPOCH
 fi
 
 

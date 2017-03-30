@@ -51,6 +51,7 @@ BASEDIR=$(dirname "$0")
 DIST_DIR=$BASEDIR/dist
 BIN_DIR=$DIST_DIR/bin
 LIB_DIR=$DIST_DIR/lib
+CONF_DIR=$DIST_DIR/conf
 VERSION=0.1.0-SNAPSHOT
 
 if [ ! -d "$DIST_DIR" ]
@@ -63,12 +64,14 @@ fi
 
 mkdir $BIN_DIR
 mkdir $LIB_DIR
+mkdir $CONF_DIR
 
 cp $BASEDIR/scripts/bigdl.sh $BIN_DIR/
 cp $BASEDIR/scripts/classes.lst $BIN_DIR/
 cp $BASEDIR/scripts/img_class.lst $BIN_DIR/
+cp $BASEDIR/spark/dl/src/main/resources/spark-bigdl.conf $CONF_DIR/
 
-cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies.jar $LIB_DIR/
-cp $BASEDIR/dl/target/bigdl-$VERSION-jar-with-dependencies-and-spark.jar $LIB_DIR/
-cp $BASEDIR/dl/target/bigdl-$VERSION-python-api.zip $LIB_DIR/
+cp $BASEDIR/spark/dl/target/bigdl-$VERSION-jar-with-dependencies.jar $LIB_DIR/
+cp $BASEDIR/spark/dl/target/bigdl-$VERSION-jar-with-dependencies-and-spark.jar $LIB_DIR/
+cp $BASEDIR/target/bigdl-$VERSION-python-api.zip $LIB_DIR/
 

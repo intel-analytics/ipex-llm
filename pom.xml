@@ -177,8 +177,7 @@
     </properties>
 
     <modules>
-        <module>dl</module>
-        <module>spark-version</module>
+        <module>spark</module>
     </modules>
 
     <distributionManagement>
@@ -427,7 +426,27 @@
                     </compilerPlugins>
                 </configuration>
             </plugin>
-	    <plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>python</id>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <finalName>bigdl-${project.version}</finalName>
+                            <descriptors>
+                                <descriptor>pyspark/assembly/python-zip.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+	        <plugin>
 	        <groupId>org.sonatype.plugins</groupId>
 	        <artifactId>nexus-staging-maven-plugin</artifactId>
 	        <version>1.6.7</version>
@@ -540,7 +559,7 @@
         <profile>
             <id>full-build</id>
             <modules>
-                <module>native</module>
+                <module>core</module>
             </modules>
         </profile>
         <profile>
