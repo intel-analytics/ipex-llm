@@ -2166,10 +2166,12 @@ class Reshape(Model):
 
     >>> reshape = Reshape([1, 28, 28])
     creating: createReshape
+    >>> reshape = Reshape([1, 28, 28], False)
+    creating: createReshape
     '''
 
-    def __init__(self, size, bigdl_type="float"):
-        super(Reshape, self).__init__(None, bigdl_type, size)
+    def __init__(self, size, batch_mode=None, bigdl_type="float"):
+        super(Reshape, self).__init__(None, bigdl_type, size, batch_mode)
 
 
 class BiRecurrent(Model):
