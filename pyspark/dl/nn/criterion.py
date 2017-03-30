@@ -81,6 +81,17 @@ class ClassNLLCriterion(Criterion):
 class MSECriterion(Criterion):
 
     '''
+    Creates a criterion that measures the mean squared error between n elements
+    in the input x and output y:
+    loss(x, y) = 1/n \sum |x_i - y_i|^2
+
+    If x and y are d-dimensional Tensors with a total of n elements,
+    the sum operation still operates over all the elements, and divides by n.
+    The two Tensors must have the same number of elements (but their sizes might be different).
+    The division by n can be avoided if one sets the internal variable sizeAverage to false.
+    By default, the losses are averaged over observations for each minibatch. However,
+     if the field sizeAverage is set to false, the losses are instead summed.
+
     >>> mSECriterion = MSECriterion()
     creating: createMSECriterion
     '''
@@ -161,6 +172,18 @@ class DistKLDivCriterion(Criterion):
 class HingeEmbeddingCriterion(Criterion):
 
     '''
+    Creates a criterion that measures the loss given an
+    input x which is a 1-dimensional vector and a label y (1 or -1).
+    This is usually used for measuring whether two inputs are similar
+    or dissimilar,
+    e.g. using the L1 pairwise distance, and is typically used for
+    learning nonlinear embeddings or semi-supervised learning.
+
+    If x and y are n-dimensional Tensors, the sum operation still operates
+    over all the elements, and divides by n (this can be avoided if one sets
+    the internal variable sizeAverage to false). The margin has a default
+    value of 1, or can be set in the constructor.
+
     >>> hingeEmbeddingCriterion = HingeEmbeddingCriterion(1e-5, True)
     creating: createHingeEmbeddingCriterion
     '''

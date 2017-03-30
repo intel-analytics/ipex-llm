@@ -185,6 +185,12 @@ class Linear(Model):
 class ReLU(Model):
 
     '''
+    Applies the rectified linear unit (ReLU) function element-wise to the input Tensor,
+     thus outputting a Tensor of the same dimension.
+
+    ReLU is defined as: f(x) = max(0, x)
+    Can optionally do its operation in-place without using extra state memory
+
     >>> relu = ReLU()
     creating: createReLU
     '''
@@ -218,6 +224,10 @@ class Echo(Model):
 class LogSoftMax(Model):
 
     '''
+    Applies the LogSoftMax function to an n-dimensional input Tensor.
+    LogSoftmax is defined as: f_i(x) = log(1 / a exp(x_i))
+    where a = sum_j[exp(x_j)].
+
     >>> logSoftMax = LogSoftMax()
     creating: createLogSoftMax
     '''
@@ -414,6 +424,19 @@ class TimeDistributed(Model):
 class Concat(Model):
 
     '''
+    Concat concatenates the output of one layer of "parallel"
+    modules along the provided {@code dimension}: they take the
+    same inputs, and their output is concatenated.
+                    +-----------+
+               +---->  module1  -----+
+               |    |           |    |
+    input -----+---->  module2  -----+----> output
+               |    |           |    |
+               +---->  module3  -----+
+                    +-----------+
+
+    :param dimension: dimension
+
     >>> concat = Concat(2)
     creating: createConcat
     '''
@@ -512,6 +535,15 @@ class SpatialCrossMapLRN(Model):
 class Dropout(Model):
 
     '''
+    Dropout masks(set to zero) parts of input using a bernoulli distribution.
+    Each input element has a probability initP of being dropped. If scale is
+    set, the outputs are scaled by a factor of 1/(1-initP) during training.
+    During evaluating, output is the same as input.
+
+    :param initP: probability to be dropped
+    :param inplace: inplace model
+    :param scale: if scale by a factor of 1/(1-initP)
+
     >>> dropout = Dropout(0.4)
     creating: createDropout
     '''
@@ -630,6 +662,12 @@ class Bilinear(Model):
 class Bottle(Model):
 
     '''
+    Bottle allows varying dimensionality input to be forwarded through any module
+    that accepts input of nInputDim dimensions, and generates output of nOutputDim dimensions.
+    :param module: transform module
+    :param n_input_dim: nInputDim dimensions of module
+    :param n_output_dim1: output of nOutputDim dimensions
+
     >>> bottle = Bottle(Linear(100,10), 1, 1)
     creating: createLinear
     creating: createBottle
@@ -732,6 +770,8 @@ class CMul(Model):
 class CMulTable(Model):
 
     '''
+    Takes a table of Tensors and outputs the multiplication of all of them.
+
     >>> cMulTable = CMulTable()
     creating: createCMulTable
     '''
@@ -1065,6 +1105,9 @@ class LeakyReLU(Model):
 class Log(Model):
 
     '''
+    Applies the log function element-wise to the input Tensor,
+     thus outputting a Tensor of the same dimension.
+
     >>> log = Log()
     creating: createLog
     '''
@@ -1089,6 +1132,8 @@ class LogSigmoid(Model):
 class LookupTable(Model):
 
     '''
+    a convolution of width 1, commonly used for word embeddings
+
     >>> lookupTable = LookupTable(1, 1, 1e-5, 1e-5, 1e-5, True)
     creating: createLookupTable
     '''
@@ -1148,6 +1193,10 @@ class MV(Model):
 class MapTable(Model):
 
     '''
+    This class is a container for a single module which will be applied
+    to all input elements. The member module is cloned as necessary to
+    process all input elements.
+
     >>> mapTable = MapTable(Linear(100,10))
     creating: createLinear
     creating: createMapTable
@@ -1421,6 +1470,12 @@ class ParallelTable(Model):
 class Power(Model):
 
     '''
+    Apply an element-wise power operation with scale and shift.
+    f(x) = (shift + scale * x)^power^
+    :param power: the exponent.
+    :param scale: Default is 1.
+    :param shift: Default is 0.
+
     >>> power = Power(1e-5)
     creating: createPower
     '''
@@ -1560,6 +1615,11 @@ class Sigmoid(Model):
 class SoftMax(Model):
 
     '''
+    Applies the SoftMax function to an n-dimensional input Tensor, rescaling them so that the
+    elements of the n-dimensional output Tensor lie in the range (0, 1) and sum to 1.
+    Softmax is defined as: f_i(x) = exp(x_i - shift) / sum_j exp(x_j - shift)
+    where shift = max_i(x_i).
+
     >>> softMax = SoftMax()
     creating: createSoftMax
     '''
@@ -1572,6 +1632,11 @@ class SoftMax(Model):
 class SoftMin(Model):
 
     '''
+    Applies the SoftMin function to an n-dimensional input Tensor, rescaling them so that the
+    elements of the n-dimensional output Tensor lie in the range (0,1) and sum to 1.
+    Softmin is defined as: f_i(x) = exp(-x_i - shift) / sum_j exp(-x_j - shift)
+    where shift = max_i(-x_i).
+
     >>> softMin = SoftMin()
     creating: createSoftMin
     '''
@@ -1629,6 +1694,29 @@ class SoftSign(Model):
 class SpatialDilatedConvolution(Model):
 
     '''
+    Apply a 2D dilated convolution over an input image.
+
+    The input tensor is expected to be a 3D or 4D(with batch) tensor.
+
+    If input is a 3D tensor nInputPlane x height x width,
+    owidth  = floor(width + 2 * padW - dilationW * (kW-1) - 1) / dW + 1
+    oheight = floor(height + 2 * padH - dilationH * (kH-1) - 1) / dH + 1
+
+    Reference Paper: Yu F, Koltun V. Multi-scale context aggregation by dilated convolutions[J].
+    arXiv preprint arXiv:1511.07122, 2015.
+
+    :param n_input_plane: The number of expected input planes in the image given into forward().
+    :param n_output_plane: The number of output planes the convolution layer will produce.
+    :param kw: The kernel width of the convolution.
+    :param kh: The kernel height of the convolution.
+    :param dw: The step of the convolution in the width dimension. Default is 1.
+    :param dh: The step of the convolution in the height dimension. Default is 1.
+    :param pad_w: The additional zeros added per width to the input planes. Default is 0.
+    :param pad_h: The additional zeros added per height to the input planes. Default is 0.
+    :param dilation_w: The number of pixels to skip. Default is 1.
+    :param dilation_h: The number of pixels to skip. Default is 1.
+    :param init_method: Init method, Default, Xavier.
+
     >>> spatialDilatedConvolution = SpatialDilatedConvolution(1, 1, 1, 1)
     creating: createSpatialDilatedConvolution
     '''
@@ -1767,6 +1855,13 @@ class SpatialShareConvolution(Model):
 class SpatialZeroPadding(Model):
 
     '''
+    Each feature map of a given input is padded with specified number of zeros.
+    If padding values are negative, then input is cropped.
+    :param padLeft: pad left position
+    :param padRight: pad right position
+    :param padTop: pad top position
+    :param padBottom: pad bottom position
+
     >>> spatialZeroPadding = SpatialZeroPadding(1, 1, 1, 1)
     creating: createSpatialZeroPadding
     '''
@@ -1787,6 +1882,20 @@ class SpatialZeroPadding(Model):
 class SplitTable(Model):
 
     '''
+    Creates a module that takes a Tensor as input and
+    outputs several tables, splitting the Tensor along
+    the specified dimension `dimension`.
+
+    The input to this layer is expected to be a tensor, or a batch of tensors;
+    when using mini-batch, a batch of sample tensors will be passed to the layer and
+    the user need to specify the number of dimensions of each sample tensor in a
+    batch using `nInputDims`.
+
+    :param dimension: to be split along this dimension
+    :param n_input_dims: specify the number of dimensions that this module will receive
+                      If it is more than the dimension of input tensors, the first dimension
+                      would be considered as batch size
+
     >>> splitTable = SplitTable(1, 1)
     creating: createSplitTable
     '''
