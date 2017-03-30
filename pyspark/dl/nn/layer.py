@@ -384,9 +384,11 @@ class Select(Model):
     def __init__(self, dim, index, bigdl_type="float"):
         super(Select, self).__init__(None, bigdl_type, dim, index)
 
-
 class Recurrent(Model):
     '''
+    Recurrent module is a container of rnn cells
+    Different types of rnn cells can be added using add() function
+
     >>> recurrent = Recurrent()
     creating: createRecurrent
     '''
@@ -394,6 +396,10 @@ class Recurrent(Model):
     def __init__(self, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type)
 
+    '''
+    Add a recurrent kernel such as RnnCell, LSTM, GRU, etc.
+    to be a recurrent module
+    '''
     def add(self, model):
         self.value.add(model.value)
         return self
@@ -592,6 +598,21 @@ class SpatialBatchNormalization(Model):
 class SpatialCrossMapLRN(Model):
 
     '''
+    Applies Spatial Local Response Normalization between different feature maps.
+    The operation implemented is:
+                                 x_f
+    y_f =  -------------------------------------------------
+            (k+(alpha/size)* sum_{l=l1 to l2} (x_l^2^))^beta^
+
+    where x_f is the input at spatial locations h,w (not shown for simplicity) and feature map f,
+    l1 corresponds to max(0,f-ceil(size/2)) and l2 to min(F, f-ceil(size/2) + size).
+    Here, F is the number of feature maps.
+    :param size:  the number of channels to sum over (for cross channel LRN) or the side length of
+                 the square region to sum over (for within channel LRN)
+    :param alpha:  the scaling parameter
+    :param beta:   the exponent
+    :param k: a constant
+
     >>> spatialCrossMapLRN = SpatialCrossMapLRN()
     creating: createSpatialCrossMapLRN
     '''
