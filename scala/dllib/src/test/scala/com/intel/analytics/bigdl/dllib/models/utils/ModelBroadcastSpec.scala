@@ -25,11 +25,27 @@ class ModelBroadcastSpec extends FlatSpec with Matchers {
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
 
-  val sc = new SparkContext(new SparkConf().setMaster("local[1]").setAppName("ModelBroadcast"))
-  val model = LeNet5(10)
+  "model broadcast" should "work properly" in {
+    val sc = new SparkContext(new SparkConf().setMaster("local[1]").setAppName("ModelBroadcast"))
 
-  val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
-  modelBroadCast.value().toString should be(model.toString)
-  modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
-  sc.stop()
+    val model = LeNet5(10)
+
+    val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
+    modelBroadCast.value().toString should be(model.toString)
+    modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
+    sc.stop()
+  }
+
+  "model broadcast with getParameters" should "work properly" in {
+    val sc = new SparkContext(new SparkConf().setMaster("local[1]").setAppName("ModelBroadcast"))
+
+    val model = LeNet5(10)
+    model.getParameters()
+
+    val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
+    modelBroadCast.value().toString should be(model.toString)
+    modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
+    sc.stop()
+  }
+
 }
