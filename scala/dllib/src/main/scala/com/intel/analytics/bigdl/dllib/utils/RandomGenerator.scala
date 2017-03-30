@@ -46,6 +46,10 @@ object RandomGenerator {
   }
 }
 
+/**
+ * A non-global random generator that carries its own state
+ * It can be used to generate random numbers for shuffling the data
+ */
 class RandomGenerator() {
   private val MERSENNE_STATE_N = 624
   private val MERSENNE_STATE_M = 397

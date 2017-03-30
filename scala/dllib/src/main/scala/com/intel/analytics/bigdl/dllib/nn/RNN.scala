@@ -24,6 +24,21 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * Implementation of vanilla recurrent neural network cell
+ * i2h: weight matrix of input to hidden units
+ * h2h: weight matrix of hidden units to themselves through time
+ * The updating is defined as:
+ * h_t = f(i2h * x_t + h2h * h_{t-1})
+ *
+ * @param inputSize input size
+ * @param hiddenSize hidden layer size
+ * @param activation activation function f for non-linearity
+ * @param initMethod initialization method for rnn parameters
+ * @param ev$1
+ * @param ev
+ * @tparam T
+ */
 class RnnCell[T : ClassTag] (
   inputSize: Int = 4,
   hiddenSize: Int = 3,
