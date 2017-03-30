@@ -1360,11 +1360,14 @@ class MixtureTable(Model):
 
     >>> mixtureTable = MixtureTable()
     creating: createMixtureTable
+    >>> mixtureTable = MixtureTable(10)
+    creating: createMixtureTable
     '''
 
     def __init__(self,
+                 dim=INTMAX,
                  bigdl_type="float"):
-        super(MixtureTable, self).__init__(None, bigdl_type)
+        super(MixtureTable, self).__init__(None, bigdl_type, dim)
 
 
 class Mul(Model):
