@@ -35,8 +35,8 @@ import scala.reflect.ClassTag
  * For convolution layers, use nn.SpatialBatchNormalization.
  *
  * The operation implemented is:
- *     y =     ( x - mean(x) )
- *          -------------------- * gamma + beta
+ *             ( x - mean(x) )
+ *     y =  -------------------- * gamma + beta
  *             standard-deviation(x)
  * where gamma and beta are learnable parameters.The learning of gamma and beta is optional.
  * @param nOutput output feature map number
