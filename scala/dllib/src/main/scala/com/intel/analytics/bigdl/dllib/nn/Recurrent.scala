@@ -25,6 +25,14 @@ import com.intel.analytics.bigdl.utils.T
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
+/**
+ * [[Recurrent]] module is a container of rnn cells
+ * Different types of rnn cells can be added using add() function
+ *
+ * @param ev$1
+ * @param ev
+ * @tparam T Numeric type. Only support float/double now
+ */
 class Recurrent[T : ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
