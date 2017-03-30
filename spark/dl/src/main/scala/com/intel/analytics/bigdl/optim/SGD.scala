@@ -170,6 +170,15 @@ object SGD {
       config("clr") = -config.get[Double]("learningRate").getOrElse(1e-3)
     }
   }
+
+  /**
+   * A learning rate decay policy, where the effective learning rate
+   * follows a polynomial decay, to be zero by the max_iteration.
+   * Calculation: base_lr (1 - iter/maxIteration) ^ (power)
+   *
+   * @param power coeffient of decay, refer to calculation formula
+   * @param maxIteration max iteration when lr becomes zero
+   */
   case class Poly(power : Double, maxIteration : Int) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
@@ -184,6 +193,13 @@ object SGD {
       config("clr") = clr
     }
   }
+  /**
+   * A learning rate decay policy, where the effective learning rate
+   * is calculated as base_lr * gamma ^ (floor(iter / stepSize))
+   *
+   * @param stepSize the inteval for lr decay
+   * @param gamma coefficient of decay, refer to calculation formula
+   */
 
   case class Step(stepSize : Int, gamma : Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
