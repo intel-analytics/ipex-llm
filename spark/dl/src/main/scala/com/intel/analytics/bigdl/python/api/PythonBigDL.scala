@@ -579,9 +579,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       numInputDims)
   }
 
-  def createMixtureTable()
+  def createMixtureTable(dim: Int = Int.MaxValue)
   : MixtureTable[T] = {
-    MixtureTable[T]()
+    MixtureTable[T](dim)
   }
 
   def createMul()
