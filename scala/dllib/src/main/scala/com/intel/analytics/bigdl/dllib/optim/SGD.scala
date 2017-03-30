@@ -147,7 +147,16 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
 }
 
 object SGD {
+
+  /**
+   * Learning rate schedule for SGD
+   */
   trait LearningRateSchedule {
+    /**
+     * update learning rate by config table and state table
+     * @param config init config.
+     * @param state current state.
+     */
     def updateHyperParameter(config : Table, state : Table) : Unit
   }
 
@@ -275,5 +284,12 @@ object SGD {
     }
   }
 
+  /**
+   * A structure to specify hyper parameters by start epoch and end epoch.
+   * Usually work with [[EpochSchedule]].
+   * @param startEpoch start epoch
+   * @param endEpoch end epoch
+   * @param config config table contains hyper parameters
+   */
   case class Regime(startEpoch: Int, endEpoch: Int, config: Table)
 }
