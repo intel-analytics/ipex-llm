@@ -26,7 +26,7 @@ object BGRImgRdmCropper {
 }
 
 /**
- * Random crop a specified area from the Image. The result is also a image
+ * Random crop a specified area from the Image. The result is also an image
  * @param cropHeight crop area height
  * @param cropWidth crop area width
  * @param padding padding of the image area to be cropped
