@@ -17,6 +17,8 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -38,12 +40,22 @@ import scala.reflect.ClassTag
  *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
  *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
  *           (https://arxiv.org/pdf/1512.05287.pdf)
+ * @param wRegularizer: instance of [WeightRegularizer](../regularizers.md)
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param uRegularizer: instance of [WeightRegularizer](../regularizers.md)
+            (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+ * @param bRegularizer: instance of [WeightRegularizer](../regularizers.md),
+            applied to the bias.
  */
 @SerialVersionUID(- 8176191554025511686L)
 class LSTM[T : ClassTag] (
   val inputSize: Int,
   val hiddenSize: Int,
-  val p: Double = 0)
+  val p: Double = 0,
+  val wRegularizer: Regularizer = null,
+  val uRegularizer: Regularizer = null,
+  val bRegularizer: Regularizer = null
+)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](hiddensShape = Array(hiddenSize, hiddenSize)) {
   var gates: Sequential[T] = _
@@ -183,8 +195,12 @@ object LSTM {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
     hiddenSize: Int,
-    p: Double = 0)
+    p: Double = 0,
+    wRegularizer: Regularizer = null,
+    uRegularizer: Regularizer = null,
+    bRegularizer: Regularizer = null
+  )
     (implicit ev: TensorNumeric[T]): LSTM[T] = {
-    new LSTM[T](inputSize, hiddenSize, p)
+    new LSTM[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
   }
 }

@@ -389,5 +389,92 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    batchSize: Option[Int] = None): Array[(ValidationResult, ValidationMethod[T])] = {
     Evaluator(this).test(dataset, vMethods, batchSize)
   }
+
+  /**
+   * Accumulates the gradient of the l1 regularization of `parameter`
+   * to `gradParameter`
+   *
+   * @param alpha l1 regularization rate
+   * @param parameter the parameter that is regularized
+   * @param gradParameter the gradient of the parameter
+   */
+  def accL1Regularization(
+    alpha: Double,
+    parameter: Tensor[T],
+    gradParameter: Tensor[T]
+  ): Unit = {
+    if (alpha != 0) {
+      gradParameter.add(ev.fromType(alpha), parameter.sign())
+    }
+  }
+
+  /**
+   * Accumulates the gradient of the l2 regularization of `parameter`
+   * to `gradParameter`
+   *
+   * @param alpha l2 regularization rate
+   * @param parameter the parameter that is regularized
+   * @param gradParameter the gradient of the parameter
+   */
+  def accL2Regularization(
+    alpha: Double,
+    parameter: Tensor[T],
+    gradParameter: Tensor[T]
+  ): Unit = {
+    gradParameter.add(ev.fromType(alpha), parameter)
+  }
+
+  /**
+   * Accumulates the gradient of the l1, l2 regularization of `parameter`
+   * to `gradParameter`
+   *
+   * @param l1Alpha l1 regularization rate
+   * @param l2Alpha l2 regularization rate
+   * @param parameter the parameter that is regularized
+   * @param gradParameter the gradient of the parameter
+   */
+  def accL1L2Regularization(
+    l1Alpha: Double,
+    l2Alpha: Double,
+    parameter: Tensor[T],
+    gradParameter: Tensor[T]
+  ): Unit = {
+    accL1Regularization(l1Alpha, parameter, gradParameter)
+    accL2Regularization(l2Alpha, parameter, gradParameter)
+  }
+
+  /**
+   * Accumulates the gradient of the l1, l2 regularization of `parameter`
+   * to `gradParameter`
+   *
+   * @param regularizer
+   * @param parameter the parameter that is regularized
+   * @param gradParameter the gradient of the parameter
+   */
+  def accRegularization(
+    regularizer: Regularizer,
+    parameter: Tensor[T],
+    gradParameter: Tensor[T]
+  ): Unit = {
+    regularizer match {
+      case l1l2: L1L2Regularizer => accL1L2Regularization(
+        l1l2.l1,
+        l1l2.l2,
+        parameter,
+        gradParameter
+      )
+      case l1: L1Regularizer => accL1Regularization(
+        l1.l1,
+        parameter,
+        gradParameter
+      )
+      case l2: L2Regularizer => accL2Regularization(
+        l2.l2,
+        parameter,
+        gradParameter
+      )
+      case _ =>
+    }
+  }
 }
 

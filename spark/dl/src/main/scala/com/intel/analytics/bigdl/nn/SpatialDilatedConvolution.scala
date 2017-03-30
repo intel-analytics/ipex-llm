@@ -61,7 +61,11 @@ class SpatialDilatedConvolution[T: ClassTag](
   val padH: Int = 0,
   val dilationW: Int = 1,
   val dilationH: Int = 1,
-  private var initMethod: InitializationMethod = Default
+  private var initMethod: InitializationMethod = Default,
+  val weightL1Rate: Double = 0,
+  val weightL2Rate: Double = 0,
+  val biasL1Rate: Double = 0,
+  val biasL2Rate: Double = 0
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
@@ -462,6 +466,12 @@ class SpatialDilatedConvolution[T: ClassTag](
       gradOutput.resize(nOutputPlane, outputHeight, outputWidth)
       input.resize(nInputPlane, inputHeight, inputWidth)
     }
+
+
+    accL1L2Regularization(weightL1Rate, weightL2Rate, weight, gradWeight)
+    if (null != bias) {
+      accL1L2Regularization(biasL1Rate, biasL2Rate, bias, gradBias)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -552,9 +562,14 @@ object SpatialDilatedConvolution {
       padH: Int = 0,
       dilationW: Int = 1,
       dilationH: Int = 1,
-      initMethod: InitializationMethod = Default
+      initMethod: InitializationMethod = Default,
+      weightL1Rate: Double = 0,
+      weightL2Rate: Double = 0,
+      biasL1Rate: Double = 0,
+      biasL2Rate: Double = 0
   )(implicit ev: TensorNumeric[T]) : SpatialDilatedConvolution[T] = {
     new SpatialDilatedConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH, dilationW, dilationH, initMethod)
+      padW, padH, dilationW, dilationH, initMethod, weightL1Rate, weightL2Rate,
+      biasL1Rate, biasL2Rate)
   }
 }

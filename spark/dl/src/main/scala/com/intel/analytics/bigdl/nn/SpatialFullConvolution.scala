@@ -75,7 +75,11 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   var adjH: Int = 0,
   val nGroup: Int = 1,
   val noBias: Boolean = false,
-  private var initMethod: InitializationMethod = Default
+  private var initMethod: InitializationMethod = Default,
+  val weightL1Rate: Double = 0,
+  val weightL2Rate: Double = 0,
+  val biasL1Rate: Double = 0,
+  val biasL2Rate: Double = 0
   )(implicit ev: TensorNumeric[T]) extends AbstractModule[A, Tensor[T], T]{
 
   require(adjW <= dW - 1 && adjH <= dH - 1,
@@ -665,6 +669,10 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       inputTensor.resize(nInputPlane, inputHeight, inputWidth)
     }
 
+    accL1L2Regularization(weightL1Rate, weightL2Rate, weight, gradWeight)
+    if (null != bias) {
+      accL1L2Regularization(biasL1Rate, biasL2Rate, bias, gradBias)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -782,9 +790,14 @@ object SpatialFullConvolution {
       adjH: Int = 0,
       nGroup: Int = 1,
       noBias: Boolean = false,
-      initMethod: InitializationMethod = Default
+      initMethod: InitializationMethod = Default,
+      weightL1Rate: Double = 0,
+      weightL2Rate: Double = 0,
+      biasL1Rate: Double = 0,
+      biasL2Rate: Double = 0
   )(implicit ev: TensorNumeric[T]) : SpatialFullConvolution[A, T] = {
     new SpatialFullConvolution[A, T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH, adjW, adjH, nGroup, noBias, initMethod)
+      padW, padH, adjW, adjH, nGroup, noBias, initMethod, weightL1Rate, weightL2Rate,
+      biasL1Rate, biasL2Rate)
   }
 }

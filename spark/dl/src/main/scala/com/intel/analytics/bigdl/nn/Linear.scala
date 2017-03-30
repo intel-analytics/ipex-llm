@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 import scala.reflect.ClassTag
 import RandomGenerator._
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.optim.Regularizer
 
 /**
  * The [[Linear]] module applies a linear transformation to the input data,
@@ -44,7 +45,9 @@ class Linear[T: ClassTag](
   inputSize: Int,
   outputSize: Int,
   private var initMethod: InitializationMethod = Default,
-  withBias: Boolean = true
+  withBias: Boolean = true,
+  wRegularizer: Regularizer = null,
+  bRegularizer: Regularizer = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
   val bias: Tensor[T] = if (withBias) Tensor[T](outputSize) else null
@@ -129,11 +132,18 @@ class Linear[T: ClassTag](
     val value = ev.fromType[Double](scale)
     if (input.dim() == 1) {
       gradWeight.addr(value, gradOutput, input)
-      if (withBias) gradBias.add(value, gradOutput)
+      if (withBias) {
+        gradBias.add(value, gradOutput)
+      }
     }
     else if (input.dim() == 2) {
       gradWeight.addmm(value, gradOutput.t, input)
       if (withBias) gradBias.addmv(value, gradOutput.t, addBuffer)
+    }
+
+    accRegularization(wRegularizer, weight, gradWeight)
+    if (withBias) {
+      accRegularization(bRegularizer, bias, gradBias)
     }
   }
 
@@ -211,8 +221,11 @@ object Linear {
       inputSize: Int,
       outputSize: Int,
       initMethod: InitializationMethod = Default,
-      withBias: Boolean = true
+      withBias: Boolean = true,
+      wRegularizer: Regularizer = null,
+      bRegularizer: Regularizer = null
   )(implicit ev: TensorNumeric[T]) : Linear[T] = {
-    new Linear[T](inputSize, outputSize, initMethod, withBias)
+    new Linear[T](inputSize, outputSize, initMethod,
+      withBias, wRegularizer, bRegularizer)
   }
 }

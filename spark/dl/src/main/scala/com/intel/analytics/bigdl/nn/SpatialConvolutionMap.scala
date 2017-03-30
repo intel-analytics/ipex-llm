@@ -37,8 +37,11 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val dW: Int = 1, // The step of the convolution in the width dimension.
   val dH: Int = 1, // The step of the convolution in the height dimension
   val padW: Int = 0, // The additional zeros added per width to the input planes.
-  val padH: Int = 0 // The additional zeros added per height to the input planes.
-
+  val padH: Int = 0, // The additional zeros added per height to the input planes.
+  val weightL1Rate: Double = 0,
+  val weightL2Rate: Double = 0,
+  val biasL1Rate: Double = 0,
+  val biasL2Rate: Double = 0
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val nInputPlane = ev.toType[Int](connTable.select(2, 1).max())
   val nOutputPlane = ev.toType[Int](connTable.select(2, 2).max())
@@ -264,6 +267,11 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
     if (forceBatch) {
       gradOutput.squeeze(1)
     }
+
+    accL1L2Regularization(weightL1Rate, weightL2Rate, weight, gradWeight)
+    if (null != bias) {
+      accL1L2Regularization(biasL1Rate, biasL2Rate, bias, gradBias)
+    }
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
@@ -289,14 +297,20 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
 object SpatialConvolutionMap {
 
   def apply[@specialized(Float, Double) T: ClassTag](
-      connTable: Tensor[T],
-      kW: Int,
-      kH: Int,
-      dW: Int = 1,
-      dH: Int = 1,
-      padW: Int = 0,
-      padH: Int = 0)(implicit ev: TensorNumeric[T]) : SpatialConvolutionMap[T] = {
-    new SpatialConvolutionMap[T](connTable, kW, kH, dW, dH, padW, padH)
+    connTable: Tensor[T],
+    kW: Int,
+    kH: Int,
+    dW: Int = 1,
+    dH: Int = 1,
+    padW: Int = 0,
+    padH: Int = 0,
+    weightL1Rate: Double = 0,
+    weightL2Rate: Double = 0,
+    biasL1Rate: Double = 0,
+    biasL2Rate: Double = 0
+  )(implicit ev: TensorNumeric[T]) : SpatialConvolutionMap[T] = {
+    new SpatialConvolutionMap[T](connTable, kW, kH, dW, dH, padW, padH, weightL1Rate, weightL2Rate,
+      biasL1Rate, biasL2Rate)
   }
 
   def full[@specialized(Float, Double) T: ClassTag](nin: Int, nout: Int)(
