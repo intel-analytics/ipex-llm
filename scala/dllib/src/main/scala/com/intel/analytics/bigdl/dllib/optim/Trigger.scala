@@ -73,6 +73,8 @@ object Trigger {
    * A trigger that triggers an action when training reaches
    * the number of epochs specified by "max".
    * Usually used in Optimizer.setEndWhen.
+   *
+   * @param max the epoch when the action takes place
    */
   def maxEpoch(max: Int): Trigger = {
     new Trigger() {
@@ -86,6 +88,9 @@ object Trigger {
    * A trigger that triggers an action when training reaches
    * the number of iterations specified by "max".
    * Usually used in Optimizer.setEndWhen.
+   *
+   * @param max the iteration when the action takes place
+   *
    */
   def maxIteration(max: Int): Trigger = {
     new Trigger() {
