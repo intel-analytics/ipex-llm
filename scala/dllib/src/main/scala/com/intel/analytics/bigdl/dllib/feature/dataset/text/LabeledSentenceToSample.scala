@@ -39,6 +39,22 @@ object LabeledSentenceToSample {
       fixLabelLength)
 }
 
+/**
+ * Transform labeled sentences to one-hot format samples
+ * e.g. sentence._data: [0, 2, 3]
+ *      sentence._label: [2, 3, 1]
+ *      vocabLength: 4
+ *      => input: [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+ *         target: [3, 4, 2]
+ * The input is an iterator of LabeledSentence class
+ * The output is an iterator of Sample class
+ * @param vocabLength
+ * @param fixDataLength
+ * @param fixLabelLength
+ * @param ev$1
+ * @param ev
+ * @tparam T
+ */
 class LabeledSentenceToSample[T: ClassTag](vocabLength: Int,
                               fixDataLength: Option[Int],
                               fixLabelLength: Option[Int])

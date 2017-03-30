@@ -22,6 +22,8 @@ import scala.reflect.ClassTag
 
 /**
  * Same as ReLU except that the rectifying function f(x) saturates at x = 6
+ * ReLU6 is defined as:
+ * f(x) = min(max(0, x), 6)
  *
  * @param inplace either true = in-place or false = keeping separate state
  */

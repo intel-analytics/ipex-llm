@@ -25,6 +25,19 @@ import scala.concurrent.Future
 import scala.math.exp
 import scala.reflect.ClassTag
 
+/**
+ * The [[LogSoftMax]] module applies a LogSoftMax transformation to the input data
+ * which is defined as:
+ * f_i(x) = log(1 / a exp(x_i))
+ * where a = sum_j[exp(x_j)]
+ *
+ * The input given in `forward(input)` must be either
+ * a vector (1D tensor) or matrix (2D tensor).
+ *
+ * @param ev$1
+ * @param ev
+ * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ */
 @SerialVersionUID(- 2954501946670913825L)
 class LogSoftMax[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {

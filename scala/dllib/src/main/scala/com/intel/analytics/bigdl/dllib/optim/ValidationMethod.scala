@@ -177,6 +177,11 @@ class Top5Accuracy[T] extends ValidationMethod[T] {
   override def format(): String = "Top5Accuracy"
 }
 
+/**
+ * Return loss result as a subclass of [[ValidationResult]] module
+ * @param loss loss calculated by forward function
+ * @param count recording the times of calculating loss
+ */
 class LossResult(private var loss: Float, private var count: Int)
   extends ValidationResult {
 
@@ -219,6 +224,14 @@ class LossResult(private var loss: Float, private var count: Int)
   }
 }
 
+/**
+ * Calculate loss of output with respect to target
+ * The default criterion is [[ClassNLLCriterion]]
+ * @param criterion
+ * @param ev$1
+ * @param ev
+ * @tparam T
+ */
 class Loss[@specialized(Float, Double)T: ClassTag](
  var criterion: Criterion[T] = null)
 (implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
