@@ -35,6 +35,14 @@ import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect.ClassTag
 
+/**
+ * [[com.intel.analytics.bigdl.dataset.Sample]] for python.
+ * @param features features
+ * @param label labels
+ * @param featuresShape feature size
+ * @param labelShape label size
+ * @param bigdlType bigdl numeric type
+ */
 case class Sample(features: JList[Any],
                   label: JList[Any],
                   featuresShape: JList[Int],
@@ -43,6 +51,12 @@ case class Sample(features: JList[Any],
 
 case class JTensor(storage: JList[Any], shape: JList[Int], bigdlType: String)
 
+/**
+ * [[ValidationResult]] for python
+ * @param result result
+ * @param totalNum total number
+ * @param method method name
+ */
 case class TestResult(val result: Float, totalNum: Int, val method: String)
 
 
