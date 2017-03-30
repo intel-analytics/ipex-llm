@@ -20,6 +20,17 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Applies the rectified linear unit (ReLU) function element-wise to the input Tensor
+ * Thus the output is a Tensor of the same dimension
+ * ReLU function is defined as:
+ * f(x) = max(0, x)
+ *
+ * @param ip inplace mode
+ * @param ev$1
+ * @param ev
+ * @tparam T
+ */
 @SerialVersionUID(1208478077576570643L)
 class ReLU[T: ClassTag](ip: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends Threshold[T](0, 0, ip) {
