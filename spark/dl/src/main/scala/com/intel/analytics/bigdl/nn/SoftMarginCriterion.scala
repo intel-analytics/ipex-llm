@@ -100,3 +100,10 @@ class SoftMarginCriterion[@specialized(Float, Double) T: ClassTag](var sizeAvera
     state.map(getHashcode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
+
+object SoftMarginCriterion {
+  def apply[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean = true)
+      (implicit ev: TensorNumeric[T]): SoftMarginCriterion[T] = {
+    new SoftMarginCriterion(sizeAverage)
+  }
+}

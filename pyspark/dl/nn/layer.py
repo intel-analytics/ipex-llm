@@ -412,11 +412,11 @@ class GRU(Model):
         super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size)
 
 
-class RNNCell(Model):
+class RnnCell(Model):
     '''
-    >>> reshape = RNNCell(4, 3, Tanh())
+    >>> reshape = RnnCell(4, 3, Tanh())
     creating: createTanh
-    creating: createRNNCell
+    creating: createRnnCell
     '''
 
     def __init__(self,
@@ -424,7 +424,7 @@ class RNNCell(Model):
                  hidden_size,
                  activation,
                  bigdl_type="float"):
-        super(RNNCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation)
+        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation)
 
 
 class TimeDistributed(Model):
