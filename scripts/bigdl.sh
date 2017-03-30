@@ -60,7 +60,17 @@ parse() {
             ;;
             --)
             shift
-            CMD=$*
+            for token in "$@"; do
+                case "$token" in
+                    *\ * )
+                    # add quto when there's space in the token
+                    CMD="$CMD '$token'"
+                    ;;
+                    *)
+                    CMD="$CMD $token"
+                    ;;
+                esac
+            done
             shift $#    # escape from the while loop
             ;;
             *)
@@ -72,7 +82,7 @@ parse() {
     done
 }
 
-parse $*
+parse "$@"
 
 if [ $EXIT_CODE -ne 0 ]; then
     return $EXIT_CODE
