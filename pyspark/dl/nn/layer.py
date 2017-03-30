@@ -1372,7 +1372,7 @@ class Power(Model):
 
     '''
     Apply an element-wise power operation with scale and shift.
-    f(x) = (shift + scale    x)^power^
+    f(x) = (shift + scale * x)^power^
     :param power: the exponent.
     :param scale: Default is 1.
     :param shift: Default is 0.
