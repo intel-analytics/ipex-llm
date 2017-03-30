@@ -213,8 +213,8 @@ class MixtureTable[T: ClassTag](var dim: Int = Int.MaxValue)
 }
 
 object MixtureTable {
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[@specialized(Float, Double) T: ClassTag](dim: Int = Int.MaxValue)
       (implicit ev: TensorNumeric[T]) : MixtureTable[T] = {
-    new MixtureTable[T]()
+    new MixtureTable[T](dim)
   }
 }
