@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
-import java.lang.Integer
+import java.lang.{Integer, Boolean => JBoolean}
 import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect.ClassTag
@@ -264,8 +264,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       PythonBigDL.getInitMethod(initMethod))
   }
 
-  def createReshape(size: JList[Int]): Reshape[T] = {
-    Reshape(size.asScala.toArray)
+  def createReshape(size: JList[Int], batchMode: JBoolean = null): Reshape[T] = {
+    val mappedBatchMode = batchMode match {
+      case JBoolean.TRUE => Some(true)
+      case JBoolean.FALSE => Some(false)
+      case _ => None
+    }
+    Reshape(size.asScala.toArray, mappedBatchMode)
   }
 
   def createConcat(dimension: Int): Concat[T] = {
