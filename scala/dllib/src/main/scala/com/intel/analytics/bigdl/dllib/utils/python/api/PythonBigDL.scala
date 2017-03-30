@@ -169,7 +169,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     TimeDistributed[T](layer)
   }
 
-  def createRNNCell(inputSize: Int,
+  def createRnnCell(inputSize: Int,
                     hiddenSize: Int,
                     activation: TensorModule[T]): RnnCell[T] = {
     RnnCell[T](inputSize, hiddenSize, activation)
@@ -294,7 +294,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Dropout[T](initP, inplace, scale)
   }
 
-  def createView(sizes: JList[Int], num_input_dims: Int): View[T] = {
+  def createView(sizes: JList[Int], num_input_dims: Int = 0): View[T] = {
     View[T](sizes.asScala.toArray).setNumInputDims(num_input_dims)
   }
 
@@ -966,6 +966,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   : SpatialSubtractiveNormalization[T] = {
     SpatialSubtractiveNormalization[T](nInputPlane,
       if (kernel == null) null else toTensor(kernel))
+  }
+
+  def createSoftMarginCriterion(sizeAverage: Boolean = true)
+  : SoftMarginCriterion[T] = {
+    SoftMarginCriterion[T](sizeAverage)
   }
 
   //   Optimizer
