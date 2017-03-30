@@ -22,6 +22,16 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.reflect.ClassTag
 
+/**
+ * The mean squared error criterion
+ * e.g. input: a, target: b, total elements: n
+ * loss(a, b) = 1/n \sum |a_i - b_i|^2
+ * sizeAverage is true by default to divide the sum of squared error by n
+ *
+ * @param ev$1
+ * @param ev
+ * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ */
 @SerialVersionUID(- 7078521754128606735L)
 class MSECriterion[@specialized(Float, Double) T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {

@@ -21,6 +21,9 @@ import org.apache.spark.{Accumulable, Accumulator, SparkContext}
 
 import scala.collection.mutable.{ArrayBuffer, Map}
 
+/**
+ * Set metrics of local models on each executor
+ */
 class Metrics extends Serializable {
   private val localMetricsMap: Map[String, LocalMetricsEntry] = Map()
   private val aggregateDistributeMetricsMap: Map[String, AggregateDistributeMetricsEntry] = Map()

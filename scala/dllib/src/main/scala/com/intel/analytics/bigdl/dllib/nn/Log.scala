@@ -22,7 +22,12 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-
+/**
+ * The [[Log]] module applies a log transformation to the input data
+ * @param ev$1
+ * @param ev
+ * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ */
 @SerialVersionUID(- 5175095570714684226L)
 class Log[T: ClassTag] (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
