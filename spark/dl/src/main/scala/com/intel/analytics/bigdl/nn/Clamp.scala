@@ -19,6 +19,13 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * A kind of hard tanh activition function with integer min and max
+ * @param min min value
+ * @param max max value
+ * @param ev numeric operator
+ * @tparam T numeric type
+ */
 @SerialVersionUID(- 3787689437971361185L)
 class Clamp[T: ClassTag](min: Int, max: Int)(
   implicit ev: TensorNumeric[T]) extends HardTanh[T](min, max) {

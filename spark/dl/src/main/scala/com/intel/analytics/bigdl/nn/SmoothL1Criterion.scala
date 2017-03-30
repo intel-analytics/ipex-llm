@@ -22,6 +22,21 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
+/**
+ * Creates a criterion that can be thought of as a smooth version of the AbsCriterion.
+ * It uses a squared term if the absolute element-wise error falls below 1.
+ * It is less sensitive to outliers than the MSECriterion and in some
+ * cases prevents exploding gradients (e.g. see "Fast R-CNN" paper by Ross Girshick).
+ *
+ *                       | 0.5 * (x_i - y_i)^2^, if |x_i - y_i| < 1
+ * loss(x, y) = 1/n \sum |
+ *                       | |x_i - y_i| - 0.5,   otherwise
+ *
+ * If x and y are d-dimensional Tensors with a total of n elements,
+ * the sum operation still operates over all the elements, and divides by n.
+ * The division by n can be avoided if one sets the internal variable sizeAverage to false
+ * @param sizeAverage whether to average the loss
+ */
 @SerialVersionUID(3385326223989333522L)
 class SmoothL1Criterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean = true)
                                     (implicit ev: TensorNumeric[T])

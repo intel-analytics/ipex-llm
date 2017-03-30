@@ -50,6 +50,15 @@ object AllReduceParameter {
   }
 }
 
+/**
+ * Represent a parameter stored on block manager. In distributed optimization, we put parameter
+ * on block manager of spark. Each worker sync parameter through block manager. Block manager
+ * here serve as a parameter server.
+ * @param id distinguish from other parameters
+ * @param partitionNum how many partitions will use this parameter
+ * @param size size of the parameter(1D vector)
+ * @tparam T
+ */
 class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
   size: Int) extends Serializable {
   import AllReduceParameter._
@@ -230,7 +239,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int,
   }
 }
 
-class FutureResult[T](private val futures: Seq[Future[T]]) {
+private[bigdl] class FutureResult[T](private val futures: Seq[Future[T]]) {
   def waitResult(): Seq[T] = {
     futures.map(_.get())
   }

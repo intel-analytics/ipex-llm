@@ -24,6 +24,22 @@ import com.intel.analytics.bigdl.utils.Engine
 import scala.concurrent.Future
 import scala.reflect._
 
+/**
+ * Applies Spatial Local Response Normalization between different feature maps.
+ * The operation implemented is:
+ *                              x_f
+ * y_f =  -------------------------------------------------
+ *         (k+(alpha/size)* sum_{l=l1 to l2} (x_l^2^))^beta^
+ *
+ * where x_f is the input at spatial locations h,w (not shown for simplicity) and feature map f,
+ * l1 corresponds to max(0,f-ceil(size/2)) and l2 to min(F, f-ceil(size/2) + size).
+ * Here, F is the number of feature maps.
+ * @param size  the number of channels to sum over (for cross channel LRN) or the side length of
+ *              the square region to sum over (for within channel LRN)
+ * @param alpha  the scaling parameter
+ * @param beta   the exponent
+ * @param k
+ */
 @SerialVersionUID(3641570491004969703L)
 class SpatialCrossMapLRN[@specialized(Float, Double) T: ClassTag]
 (val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75, val k: Double = 1.0)(

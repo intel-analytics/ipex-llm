@@ -185,6 +185,12 @@ class Linear(Model):
 class ReLU(Model):
 
     '''
+    Applies the rectified linear unit (ReLU) function element-wise to the input Tensor,
+     thus outputting a Tensor of the same dimension.
+
+    ReLU is defined as: f(x) = max(0, x)
+    Can optionally do its operation in-place without using extra state memory
+
     >>> relu = ReLU()
     creating: createReLU
     '''
@@ -196,6 +202,9 @@ class ReLU(Model):
 class Tanh(Model):
 
     '''
+    Applies the Tanh function element-wise to the input Tensor, thus outputting a Tensor of the same
+    dimension. Tanh is defined as f(x) = (exp(x)-exp(-x))/(exp(x)+exp(-x)).
+
     >>> tanh = Tanh()
     creating: createTanh
     '''
@@ -218,6 +227,10 @@ class Echo(Model):
 class LogSoftMax(Model):
 
     '''
+    Applies the LogSoftMax function to an n-dimensional input Tensor.
+    LogSoftmax is defined as: f_i(x) = log(1 / a exp(x_i))
+    where a = sum_j[exp(x_j)].
+
     >>> logSoftMax = LogSoftMax()
     creating: createLogSoftMax
     '''
@@ -229,6 +242,9 @@ class LogSoftMax(Model):
 class Sequential(Model):
 
     '''
+    Sequential provides a means to plug layers together
+    in a feed-forward fully connected manner.
+
     >>> echo = Echo()
     creating: createEcho
     >>> s = Sequential()
@@ -250,6 +266,22 @@ class Sequential(Model):
 class SpatialConvolution(Model):
 
     '''
+    Applies a 2D convolution over an input image composed of several input planes.
+    The input tensor in forward(input) is expected to be
+    a 3D tensor (nInputPlane x height x width).
+
+    :param n_input_plane The number of expected input planes in the image given into forward()
+    :param n_output_plane The number of output planes the convolution layer will produce.
+    :param kernel_w The kernel width of the convolution
+    :param kernel_h The kernel height of the convolution
+    :param stride_w The step of the convolution in the width dimension.
+    :param stride_h The step of the convolution in the height dimension
+    :param pad_w The additional zeros added per width to the input planes.
+    :param pad_h The additional zeros added per height to the input planes.
+    :param n_group Kernel group number
+    :param propagate_back Propagate gradient back
+    :param init_method Initialization method to initialize bias and weight
+
     >>> spatialConvolution = SpatialConvolution(6, 12, 5, 5)
     creating: createSpatialConvolution
     '''
@@ -265,7 +297,7 @@ class SpatialConvolution(Model):
                  pad_h=0,
                  n_group=1,
                  propagate_back=True,
-                 init_method="Default",
+                 init_method="default",
                  bigdl_type="float"):
         super(SpatialConvolution, self).__init__(None, bigdl_type,
                                                  n_input_plane,
@@ -284,6 +316,20 @@ class SpatialConvolution(Model):
 class SpatialMaxPooling(Model):
 
     '''
+    Applies 2D max-pooling operation in kWxkH regions by step size dWxdH steps.
+    The number of output features is equal to the number of input planes.
+    If the input image is a 3D tensor nInputPlane x height x width,
+    the output image size will be nOutputPlane x oheight x owidth where
+    owidth  = op((width  + 2*padW - kW) / dW + 1)
+    oheight = op((height + 2*padH - kH) / dH + 1)
+    op is a rounding operator. By default, it is floor.
+    It can be changed by calling :ceil() or :floor() methods.
+    :param kW              kernel width
+    :param kH              kernel height
+    :param dW              step size in width
+    :param dH              step size in height
+    :param padW            padding in width
+    :param padH            padding in height
     >>> spatialMaxPooling = SpatialMaxPooling(2, 2, 2, 2)
     creating: createSpatialMaxPooling
     '''
@@ -307,7 +353,13 @@ class SpatialMaxPooling(Model):
 
 
 class Select(Model):
+
     '''
+    A Simple layer selecting an index of the input tensor in the given dimension
+
+    :param dimension the dimension to select
+    :param index the index of the dimension to be selected
+
     >>> select = Select(1, 1)
     creating: createSelect
     '''
@@ -389,6 +441,19 @@ class TimeDistributed(Model):
 class Concat(Model):
 
     '''
+    Concat concatenates the output of one layer of "parallel"
+    modules along the provided {@code dimension}: they take the
+    same inputs, and their output is concatenated.
+                    +-----------+
+               +---->  module1  -----+
+               |    |           |    |
+    input -----+---->  module2  -----+----> output
+               |    |           |    |
+               +---->  module3  -----+
+                    +-----------+
+
+    :param dimension: dimension
+
     >>> concat = Concat(2)
     creating: createConcat
     '''
@@ -403,6 +468,20 @@ class Concat(Model):
 class SpatialAveragePooling(Model):
 
     '''
+    Applies 2D average-pooling operation in kWxkH regions by step size dWxdH steps.
+    The number of output features is equal to the number of input planes.
+
+    :param kW kernel width
+    :param kH kernel height
+    :param dW step width
+    :param dH step height
+    :param padW padding width
+    :param padH padding height
+    :param ceilMode whether the output size is to be ceiled or floored
+    :param countIncludePad whether to include padding when dividing the
+                           number of elements in pooling region
+    :param divide whether to do the averaging
+
     >>> spatialAveragePooling = SpatialAveragePooling(7,7)
     creating: createSpatialAveragePooling
     '''
@@ -473,6 +552,15 @@ class SpatialCrossMapLRN(Model):
 class Dropout(Model):
 
     '''
+    Dropout masks(set to zero) parts of input using a bernoulli distribution.
+    Each input element has a probability initP of being dropped. If scale is
+    set, the outputs are scaled by a factor of 1/(1-initP) during training.
+    During evaluating, output is the same as input.
+
+    :param initP: probability to be dropped
+    :param inplace: inplace model
+    :param scale: if scale by a factor of 1/(1-initP)
+
     >>> dropout = Dropout(0.4)
     creating: createDropout
     '''
@@ -491,6 +579,13 @@ class Dropout(Model):
 class View(Model):
 
     '''
+    This module creates a new view of the input tensor using the sizes passed to the constructor.
+    The method setNumInputDims() allows to specify the expected number of dimensions of the
+    inputs of the modules. This makes it possible to use minibatch inputs when using a size -1
+    for one of the dimensions.
+
+    :param size: sizes use for creates a new view
+
     >>> view = View([1024,2])
     creating: createView
     '''
@@ -520,7 +615,7 @@ class Add(Model):
 
     '''
     adds a bias term to input data ;
-    :param inputSize size of input data
+    :param input_size size of input data
     >>> add = Add(1)
     creating: createAdd
     '''
@@ -547,14 +642,31 @@ class AddConstant(Model):
                                           constant_scalar,
                                           inplace)
 
-
 class BatchNormalization(Model):
 
     '''
+    This layer implements Batch Normalization as described in the paper:
+             "Batch Normalization: Accelerating Deep Network Training by Reducing Internal
+             Covariate Shift"
+    by Sergey Ioffe, Christian Szegedy https://arxiv.org/abs/1502.03167
+
+    This implementation is useful for inputs NOT coming from convolution layers. For convolution
+    layers, use nn.SpatialBatchNormalization.
+
+    The operation implemented is:
+                ( x - mean(x) )
+         y = -------------------- * gamma + beta
+             standard-deviation(x)
+    where gamma and beta are learnable parameters.The learning of gamma and beta is optional.
+
+    :param n_output: output feature map number
+    :param eps: avoid divide zero
+    :param momentum: momentum for weight update
+    :param affine: affine operation on output or not
+
     >>> batchNormalization = BatchNormalization(1, 1e-5, 1e-5, True)
     creating: createBatchNormalization
     '''
-
     def __init__(self,
                  n_output,
                  eps=1e-5,
@@ -591,6 +703,12 @@ class Bilinear(Model):
 class Bottle(Model):
 
     '''
+    Bottle allows varying dimensionality input to be forwarded through any module
+    that accepts input of nInputDim dimensions, and generates output of nOutputDim dimensions.
+    :param module: transform module
+    :param n_input_dim: nInputDim dimensions of module
+    :param n_output_dim1: output of nOutputDim dimensions
+
     >>> bottle = Bottle(Linear(100,10), 1, 1)
     creating: createLinear
     creating: createBottle
@@ -610,6 +728,15 @@ class Bottle(Model):
 class CAdd(Model):
 
     '''
+    This layer has a bias tensor with given size. The bias will be added element wise to the input
+    tensor. If the element number of the bias tensor match the input tensor, a simply element wise
+    will be done. Or the bias will be expanded to the same size of the input. The expand means
+    repeat on unmatched singleton dimension(if some unmatched dimension isn't singleton dimension,
+    it will report an error). If the input is a batch, a singleton dimension will be add to the
+    first dimension before the expand.
+
+    :param size: the size of the bias
+
     >>> cAdd = CAdd([1,2])
     creating: createCAdd
     '''
@@ -624,6 +751,11 @@ class CAdd(Model):
 class CAddTable(Model):
 
     '''
+    Merge the input tensors in the input table by element wise adding them together. The input
+    table is actually an array of tensor with same size.
+
+    :param inplace: reuse the input memory
+
     >>> cAddTable = CAddTable(True)
     creating: createCAddTable
     '''
@@ -638,6 +770,8 @@ class CAddTable(Model):
 class CDivTable(Model):
 
     '''
+    Takes a table with two Tensor and returns the component-wise division between them.
+
     >>> cDivTable = CDivTable()
     creating: createCDivTable
     '''
@@ -675,6 +809,10 @@ class CMinTable(Model):
 class CMul(Model):
 
     '''
+    Applies a component-wise multiplication to the incoming data
+
+    :param size size of the data
+
     >>> cMul = CMul([1,2])
     creating: createCMul
     '''
@@ -689,6 +827,8 @@ class CMul(Model):
 class CMulTable(Model):
 
     '''
+    Takes a table of Tensors and outputs the multiplication of all of them.
+
     >>> cMulTable = CMulTable()
     creating: createCMulTable
     '''
@@ -713,6 +853,14 @@ class CSubTable(Model):
 class Clamp(Model):
 
     '''
+    Clamps all elements into the range [min_value, max_value].
+    Output is identical to input in the range,
+    otherwise elements less than min_value (or greater than max_value)
+    are saturated to min_value (or max_value).
+
+    :param min
+    :param max
+
     >>> clamp = Clamp(1, 3)
     creating: createClamp
     '''
@@ -729,6 +877,8 @@ class Clamp(Model):
 class Contiguous(Model):
 
     '''
+    used to make input, grad_output both contiguous
+
     >>> contiguous = Contiguous()
     creating: createContiguous
     '''
@@ -741,6 +891,15 @@ class Contiguous(Model):
 class Cosine(Model):
 
     '''
+    Cosine calculates the cosine similarity of the input to k mean centers. The input given in
+    forward(input) must be either a vector (1D tensor) or matrix (2D tensor). If the input is a
+    vector, it must have the size of inputSize. If it is a matrix, then each row is assumed to be
+    an input sample of given batch (the number of rows means the batch size and the number of
+    columns should be equal to the inputSize).
+
+    :param input_size: the size of each input sample
+    :param output_size: the size of the module output of each sample
+
     >>> cosine = Cosine(2,3)
     creating: createCosine
     '''
@@ -757,6 +916,8 @@ class Cosine(Model):
 class CosineDistance(Model):
 
     '''
+    Outputs the cosine distance between inputs
+
     >>> cosineDistance = CosineDistance()
     creating: createCosineDistance
     '''
@@ -769,6 +930,9 @@ class CosineDistance(Model):
 class DotProduct(Model):
 
     '''
+    This is a simple table layer which takes a table of two tensors as input
+    and calculate the dot product between them as outputs
+
     >>> dotProduct = DotProduct()
     creating: createDotProduct
     '''
@@ -797,9 +961,16 @@ class ELU(Model):
 class Euclidean(Model):
 
     '''
+    Outputs the Euclidean distance of the input to outputSize centers
+    :param inputSize inputSize
+    :param outputSize outputSize
+    :param T Numeric type. Only support float/double now
+
     >>> euclidean = Euclidean(1, 1, True)
     creating: createEuclidean
     '''
+
+
 
     def __init__(self,
                  input_size,
@@ -815,6 +986,7 @@ class Euclidean(Model):
 class Exp(Model):
 
     '''
+    Applies element-wise exp to input tensor.
     >>> exp = Exp()
     creating: createExp
     '''
@@ -956,6 +1128,15 @@ class L1Cost(Model):
 class L1Penalty(Model):
 
     '''
+    adds an L1 penalty to an input (for sparsity).
+    L1Penalty is an inline module that in its forward propagation copies the input Tensor
+    directly to the output, and computes an L1 loss of the latent state (input) and stores
+    it in the module's loss field. During backward propagation: gradInput = gradOutput + gradLoss.
+
+    :param l1weight
+    :param sizeAverage
+    :param provideOutput
+
     >>> l1Penalty = L1Penalty(1, True, True)
     creating: createL1Penalty
     '''
@@ -974,6 +1155,12 @@ class L1Penalty(Model):
 class LeakyReLU(Model):
 
     '''
+    It is a transfer module that applies LeakyReLU, which parameter negval sets the slope of the
+    negative part: LeakyReLU is defined as: f(x) = max(0, x) + negval * min(0, x)
+
+    :param negval: sets the slope of the negative partl
+    :param inplace: if it is true, doing the operation in-place without using extra state memory
+
     >>> leakyReLU = LeakyReLU(1e-5, True)
     creating: createLeakyReLU
     '''
@@ -990,6 +1177,9 @@ class LeakyReLU(Model):
 class Log(Model):
 
     '''
+    Applies the log function element-wise to the input Tensor,
+     thus outputting a Tensor of the same dimension.
+
     >>> log = Log()
     creating: createLog
     '''
@@ -1014,6 +1204,8 @@ class LogSigmoid(Model):
 class LookupTable(Model):
 
     '''
+    a convolution of width 1, commonly used for word embeddings
+
     >>> lookupTable = LookupTable(1, 1, 1e-5, 1e-5, 1e-5, True)
     creating: createLookupTable
     '''
@@ -1038,10 +1230,14 @@ class LookupTable(Model):
 class MM(Model):
 
     '''
+    Module to perform matrix multiplication on two mini-batch inputs, producing a mini-batch.
+
+    :param trans_a: specifying whether or not transpose the first input matrix
+    :param trans_b: specifying whether or not transpose the second input matrix
+
     >>> mM = MM(True, True)
     creating: createMM
     '''
-
     def __init__(self,
                  trans_a=False,
                  trans_b=False,
@@ -1054,6 +1250,11 @@ class MM(Model):
 class MV(Model):
 
     '''
+    It is a module to perform matrix vector multiplication on two mini-batch inputs,
+    producing a mini-batch.
+
+    :param trans whether make matrix transpose before multiplication
+
     >>> mV = MV(True)
     creating: createMV
     '''
@@ -1068,6 +1269,10 @@ class MV(Model):
 class MapTable(Model):
 
     '''
+    This class is a container for a single module which will be applied
+    to all input elements. The member module is cloned as necessary to
+    process all input elements.
+
     >>> mapTable = MapTable(Linear(100,10))
     creating: createLinear
     creating: createMapTable
@@ -1079,10 +1284,11 @@ class MapTable(Model):
         super(MapTable, self).__init__(None, bigdl_type,
                                        module)
 
-
 class MaskedSelect(Model):
 
     '''
+    Performs a torch.MaskedSelect on a Tensor. The mask is supplied as a tabular argument with
+    the input on the forward and backward passes.
     >>> maskedSelect = MaskedSelect()
     creating: createMaskedSelect
     '''
@@ -1111,6 +1317,18 @@ class Max(Model):
 class Mean(Model):
 
     '''
+    It is a simple layer which applies a mean operation over the given dimension. When nInputDims
+    is provided, the input will be considered as batches. Then the mean operation will be applied
+    in (dimension + 1). The input to this layer is expected to be a tensor, or a batch of
+    tensors; when using mini-batch, a batch of sample tensors will be passed to the layer and the
+    user need to specify the number of dimensions of each sample tensor in the batch using
+    nInputDims.
+
+    :param dimension: the dimension to be applied mean operation
+    :param n_input_dims: specify the number of dimensions that this module will receive
+        If it is more than the dimension of input tensors, the first dimension would be considered
+        as batch size
+
     >>> mean = Mean(1, 1)
     creating: createMean
     '''
@@ -1127,6 +1345,11 @@ class Mean(Model):
 class Min(Model):
 
     '''
+    Applies a min operation over dimension `dim`.
+
+    :param dim min along this dimension
+    :param num_input_dims Optional. If in a batch model, set to the input_dim.
+
     >>> min = Min(1)
     creating: createMin
     '''
@@ -1143,6 +1366,12 @@ class Min(Model):
 class MixtureTable(Model):
 
     '''
+    Creates a module that takes a table {gater, experts} as input and outputs the mixture of experts
+    (a Tensor or table of Tensors) using a gater Tensor. When dim is provided, it specifies the
+    dimension of the experts Tensor that will be interpolated (or mixed). Otherwise, the experts
+    should take the form of a table of Tensors. This Module works for experts of dimension 1D or
+    more, and for a 1D or 2D gater, i.e. for single examples or mini-batches.
+
     >>> mixtureTable = MixtureTable()
     creating: createMixtureTable
     '''
@@ -1227,6 +1456,10 @@ class NarrowTable(Model):
 class Normalize(Model):
 
     '''
+    Normalizes the input Tensor to have unit L_p norm. The smoothing parameter eps prevents
+    division by zero when the input contains all zero elements (default = 1e-10).
+    p can be the max value of double
+
     >>> normalize = Normalize(1e-5, 1e-5)
     creating: createNormalize
     '''
@@ -1257,6 +1490,21 @@ class PReLU(Model):
 class Padding(Model):
 
     '''
+    This module adds pad units of padding to dimension dim of the input. If pad is negative,
+    padding is added to the left, otherwise, it is added to the right of the dimension.
+
+    The input to this layer is expected to be a tensor, or a batch of tensors;
+    when using mini-batch, a batch of sample tensors will be passed to the layer and
+    the user need to specify the number of dimensions of each sample tensor in the
+    batch using n_input_dim.
+
+    :param dim the dimension to be applied padding operation
+    :param pad num of the pad units
+    :param n_input_dim specify the number of dimensions that this module will receive
+                     If it is more than the dimension of input tensors, the first dimension
+                     would be considered as batch size
+    :param value padding value
+
     >>> padding = Padding(1, 1, 1, 1e-5, 1)
     creating: createPadding
     '''
@@ -1302,6 +1550,9 @@ class PairwiseDistance(Model):
 class ParallelTable(Model):
 
     '''
+    It is a container module that applies the i-th member module to the i-th
+    input, and outputs an output in the form of Table
+
     >>> parallelTable = ParallelTable()
     creating: createParallelTable
     '''
@@ -1314,6 +1565,12 @@ class ParallelTable(Model):
 class Power(Model):
 
     '''
+    Apply an element-wise power operation with scale and shift.
+    f(x) = (shift + scale * x)^power^
+    :param power: the exponent.
+    :param scale: Default is 1.
+    :param shift: Default is 0.
+
     >>> power = Power(1e-5)
     creating: createPower
     '''
@@ -1332,6 +1589,31 @@ class Power(Model):
 class RReLU(Model):
 
     '''
+    Applies the randomized leaky rectified linear unit (RReLU) element-wise to the input Tensor,
+    thus outputting a Tensor of the same dimension. Informally the RReLU is also known as
+    'insanity' layer. RReLU is defined as:
+        f(x) = max(0,x) + a * min(0, x) where a ~ U(l, u).
+
+    In training mode negative inputs are multiplied by a factor a drawn from a uniform random
+    distribution U(l, u).
+
+    In evaluation mode a RReLU behaves like a LeakyReLU with a constant mean factor
+        a = (l + u) / 2.
+
+    By default, l = 1/8 and u = 1/3. If l == u a RReLU effectively becomes a LeakyReLU.
+
+    Regardless of operating in in-place mode a RReLU will internally allocate an input-sized
+    noise tensor to store random factors for negative inputs.
+
+    The backward() operation assumes that forward() has been called before.
+
+    For reference see [Empirical Evaluation of Rectified Activations in Convolutional Network](
+    http://arxiv.org/abs/1505.00853).
+
+    :param lower: lower boundary of uniform random distribution
+    :param upper: upper boundary of uniform random distribution
+    :param inplace: optionally do its operation in-place without using extra state memory
+
     >>> rReLU = RReLU(1e-5, 1e5, True)
     creating: createRReLU
     '''
@@ -1350,6 +1632,10 @@ class RReLU(Model):
 class ReLU6(Model):
 
     '''
+    Same as ReLU except that the rectifying function f(x) saturates at x = 6
+
+    :param inplace either True = in-place or False = keeping separate state
+
     >>> reLU6 = ReLU6(True)
     creating: createReLU6
     '''
@@ -1364,10 +1650,16 @@ class ReLU6(Model):
 class Replicate(Model):
 
     '''
+    Replicate repeats input `nFeatures` times along its `dim` dimension.
+    Notice: No memory copy, it set the stride along the `dim`-th dimension to zero.
+
+    :param n_features: replicate times.
+    :param dim: dimension to be replicated.
+    :param n_dim: specify the number of non-batch dimensions.
+
     >>> replicate = Replicate(2)
     creating: createReplicate
     '''
-
     def __init__(self,
                  n_features,
                  dim=1,
@@ -1400,6 +1692,13 @@ class RoiPooling(Model):
 class Scale(Model):
 
     '''
+    Scale is the combination of CMul and CAdd
+    Computes the elementwise product of input and weight, with the shape of the weight "expand" to
+    match the shape of the input.
+    Similarly, perform a expand cdd bias and perform an elementwise add
+
+    :param size size of weight and bias
+
     >>> scale = Scale([1,2])
     creating: createScale
     '''
@@ -1428,6 +1727,8 @@ class SelectTable(Model):
 class Sigmoid(Model):
 
     '''
+    Applies the Sigmoid function element-wise to the input Tensor,
+    thus outputting a Tensor of the same dimension.
     >>> sigmoid = Sigmoid()
     creating: createSigmoid
     '''
@@ -1440,6 +1741,11 @@ class Sigmoid(Model):
 class SoftMax(Model):
 
     '''
+    Applies the SoftMax function to an n-dimensional input Tensor, rescaling them so that the
+    elements of the n-dimensional output Tensor lie in the range (0, 1) and sum to 1.
+    Softmax is defined as: f_i(x) = exp(x_i - shift) / sum_j exp(x_j - shift)
+    where shift = max_i(x_i).
+
     >>> softMax = SoftMax()
     creating: createSoftMax
     '''
@@ -1452,6 +1758,11 @@ class SoftMax(Model):
 class SoftMin(Model):
 
     '''
+    Applies the SoftMin function to an n-dimensional input Tensor, rescaling them so that the
+    elements of the n-dimensional output Tensor lie in the range (0,1) and sum to 1.
+    Softmin is defined as: f_i(x) = exp(-x_i - shift) / sum_j exp(-x_j - shift)
+    where shift = max_i(-x_i).
+
     >>> softMin = SoftMin()
     creating: createSoftMin
     '''
@@ -1464,6 +1775,11 @@ class SoftMin(Model):
 class SoftPlus(Model):
 
     '''
+    Apply the SoftPlus function to an n-dimensional input tensor.
+    SoftPlus function: f_i(x) = 1/beta * log(1 + exp(beta * x_i))
+
+    :param beta Controls sharpness of transfer function
+
     >>> softPlus = SoftPlus(1e-5)
     creating: createSoftPlus
     '''
@@ -1504,6 +1820,29 @@ class SoftSign(Model):
 class SpatialDilatedConvolution(Model):
 
     '''
+    Apply a 2D dilated convolution over an input image.
+
+    The input tensor is expected to be a 3D or 4D(with batch) tensor.
+
+    If input is a 3D tensor nInputPlane x height x width,
+    owidth  = floor(width + 2 * padW - dilationW * (kW-1) - 1) / dW + 1
+    oheight = floor(height + 2 * padH - dilationH * (kH-1) - 1) / dH + 1
+
+    Reference Paper: Yu F, Koltun V. Multi-scale context aggregation by dilated convolutions[J].
+    arXiv preprint arXiv:1511.07122, 2015.
+
+    :param n_input_plane: The number of expected input planes in the image given into forward().
+    :param n_output_plane: The number of output planes the convolution layer will produce.
+    :param kw: The kernel width of the convolution.
+    :param kh: The kernel height of the convolution.
+    :param dw: The step of the convolution in the width dimension. Default is 1.
+    :param dh: The step of the convolution in the height dimension. Default is 1.
+    :param pad_w: The additional zeros added per width to the input planes. Default is 0.
+    :param pad_h: The additional zeros added per height to the input planes. Default is 0.
+    :param dilation_w: The number of pixels to skip. Default is 1.
+    :param dilation_h: The number of pixels to skip. Default is 1.
+    :param init_method: Init method, Default, Xavier.
+
     >>> spatialDilatedConvolution = SpatialDilatedConvolution(1, 1, 1, 1)
     creating: createSpatialDilatedConvolution
     '''
@@ -1642,6 +1981,13 @@ class SpatialShareConvolution(Model):
 class SpatialZeroPadding(Model):
 
     '''
+    Each feature map of a given input is padded with specified number of zeros.
+    If padding values are negative, then input is cropped.
+    :param padLeft: pad left position
+    :param padRight: pad right position
+    :param padTop: pad top position
+    :param padBottom: pad bottom position
+
     >>> spatialZeroPadding = SpatialZeroPadding(1, 1, 1, 1)
     creating: createSpatialZeroPadding
     '''
@@ -1662,6 +2008,20 @@ class SpatialZeroPadding(Model):
 class SplitTable(Model):
 
     '''
+    Creates a module that takes a Tensor as input and
+    outputs several tables, splitting the Tensor along
+    the specified dimension `dimension`.
+
+    The input to this layer is expected to be a tensor, or a batch of tensors;
+    when using mini-batch, a batch of sample tensors will be passed to the layer and
+    the user need to specify the number of dimensions of each sample tensor in a
+    batch using `nInputDims`.
+
+    :param dimension: to be split along this dimension
+    :param n_input_dims: specify the number of dimensions that this module will receive
+                      If it is more than the dimension of input tensors, the first dimension
+                      would be considered as batch size
+
     >>> splitTable = SplitTable(1, 1)
     creating: createSplitTable
     '''
@@ -1749,6 +2109,13 @@ class TanhShrink(Model):
 class Threshold(Model):
 
     '''
+    Threshold input Tensor.
+    If values in the Tensor smaller than th, then replace it with v
+
+    :param th the threshold to compare with
+    :param v the value to replace with
+    :param ip inplace mode
+
     >>> threshold = Threshold(1e-5, 1e-5, True)
     creating: createThreshold
     '''
@@ -1767,6 +2134,13 @@ class Threshold(Model):
 class Unsqueeze(Model):
 
     '''
+    Create an Unsqueeze layer.  Insert singleton dim (i.e., dimension 1) at position pos.
+    For an input with dim = input.dim(),
+    there are dim + 1 possible positions to insert the singleton dimension.
+
+    :param pos The position will be insert singleton.
+    :param num_input_dims Optional. If in a batch model, set to the inputDim
+
     >>> unsqueeze = Unsqueeze(1, 1)
     creating: createUnsqueeze
     '''
@@ -1782,6 +2156,11 @@ class Unsqueeze(Model):
 
 class Reshape(Model):
     '''
+    The forward(input) reshape the input tensor into a size(0) * size(1) * ... tensor, taking the
+    elements row-wise.
+
+    :param size: the reshape size
+
     >>> reshape = Reshape([1, 28, 28])
     creating: createReshape
     '''
@@ -1792,6 +2171,8 @@ class Reshape(Model):
 
 class BiRecurrent(Model):
     '''
+    Create a Bidirectional recurrent layer
+
     >>> biRecurrent = BiRecurrent()
     creating: createBiRecurrent
     '''
@@ -1803,6 +2184,12 @@ class BiRecurrent(Model):
 
 class ConcatTable(Model):
     '''
+    ConcateTable is a container module like Concate. Applies an input
+    to each member module, input can be a tensor or a table.
+
+    ConcateTable usually works with CAddTable and CMulTable to
+    implement element wise add/multiply on outputs of two modules.
+
     >>> concatTable = ConcatTable()
     creating: createConcatTable
     '''
@@ -1814,6 +2201,10 @@ class ConcatTable(Model):
 
 class CriterionTable(Model):
     '''
+    Creates a module that wraps a Criterion so that it can accept a table of inputs.
+
+    :param criterion Criterion module
+
     >>> from nn.criterion import MSECriterion
     >>> criterionTable = CriterionTable(MSECriterion())
     creating: createMSECriterion
@@ -1829,6 +2220,9 @@ class CriterionTable(Model):
 
 class Identity(Model):
     '''
+    Identity just return the input to output.
+    It's useful in same parallel container to get an origin input.
+
     >>> identity = Identity()
     creating: createIdentity
     '''
@@ -1840,6 +2234,11 @@ class Identity(Model):
 
 class Reverse(Model):
     '''
+    Reverse the input w.r.t given dimension.
+    The input can be a Tensor or Table.
+
+    :param dim
+
     >>> reverse = Reverse()
     creating: createReverse
     '''
@@ -1853,6 +2252,10 @@ class Reverse(Model):
 
 class Transpose(Model):
     '''
+    Transpose input along specified dimensions
+
+    :param permutations dimension pairs that need to swap
+
     >>> transpose = Transpose([(1,2)])
     creating: createTranspose
     '''
@@ -1866,6 +2269,13 @@ class Transpose(Model):
 
 class SpatialContrastiveNormalization(Model):
     '''
+    Subtractive + divisive contrast normalization.
+
+    :param n_input_plane
+    :param kernel
+    :param threshold
+    :param thresval
+
     >>> kernel = np.ones([9,9]).astype("float32")
     >>> spatialContrastiveNormalization = SpatialContrastiveNormalization(1, kernel)
     creating: createSpatialContrastiveNormalization
@@ -1888,6 +2298,10 @@ class SpatialContrastiveNormalization(Model):
 
 class SpatialConvolutionMap(Model):
     '''
+    This class is a generalization of SpatialConvolution.
+    It uses a generic connection table between input and output features.
+    The SpatialConvolution is equivalent to using a full connection table.
+
     >>> ct = np.ones([9,9]).astype("float32")
     >>> spatialConvolutionMap = SpatialConvolutionMap(ct, 9, 9)
     creating: createSpatialConvolutionMap
@@ -1914,6 +2328,26 @@ class SpatialConvolutionMap(Model):
 
 class SpatialDivisiveNormalization(Model):
     '''
+    Applies a spatial division operation on a series of 2D inputs using kernel for
+    computing the weighted average in a neighborhood. The neighborhood is defined for
+    a local spatial region that is the size as kernel and across all features. For
+    an input image, since there is only one feature, the region is only spatial. For
+    an RGB image, the weighted average is taken over RGB channels and a spatial region.
+
+    If the kernel is 1D, then it will be used for constructing and separable 2D kernel.
+    The operations will be much more efficient in this case.
+
+    The kernel is generally chosen as a gaussian when it is believed that the correlation
+    of two pixel locations decrease with increasing distance. On the feature dimension,
+    a uniform average is used since the weighting across features is not known.
+
+
+    :param nInputPlane number of input plane, default is 1.
+    :param kernel kernel tensor, default is a 9 x 9 tensor.
+    :param threshold threshold
+    :param thresval threshhold value to replace with
+                     if data is smaller than theshold
+
     >>> kernel = np.ones([9,9]).astype("float32")
     >>> spatialDivisiveNormalization = SpatialDivisiveNormalization(2,kernel)
     creating: createSpatialDivisiveNormalization
@@ -1936,6 +2370,22 @@ class SpatialDivisiveNormalization(Model):
 
 class SpatialSubtractiveNormalization(Model):
     '''
+    Applies a spatial subtraction operation on a series of 2D inputs using kernel for
+    computing the weighted average in a neighborhood. The neighborhood is defined for
+    a local spatial region that is the size as kernel and across all features. For a
+    an input image, since there is only one feature, the region is only spatial. For
+    an RGB image, the weighted average is taken over RGB channels and a spatial region.
+
+    If the kernel is 1D, then it will be used for constructing and separable 2D kernel.
+    The operations will be much more efficient in this case.
+
+    The kernel is generally chosen as a gaussian when it is believed that the correlation
+    of two pixel locations decrease with increasing distance. On the feature dimension,
+    a uniform average is used since the weighting across features is not known.
+
+    :param n_input_plane number of input plane, default is 1.
+    :param kernel kernel tensor, default is a 9 x 9 tensor.
+
     >>> kernel = np.ones([9,9]).astype("float32")
     >>> spatialSubtractiveNormalization = SpatialSubtractiveNormalization(2,kernel)
     creating: createSpatialSubtractiveNormalization

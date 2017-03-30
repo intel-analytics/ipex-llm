@@ -30,9 +30,15 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
 import scala.collection.mutable
 
-
+/**
+ * torch object type
+ * @param typeId type id
+ */
 sealed abstract class TorchObject(val typeId: Int)
 
+/**
+ * define some torch object types
+ */
 object TorchObject {
 
   case object TYPE_NIL extends TorchObject(0)
@@ -513,7 +519,6 @@ object TorchFile {
     for (i <- 1 to source.modules.length) {
       modules(i) = source.modules(i - 1)
     }
-    table("size") = source.getSize()
     table("dimension") = source.dimension
     table("modules") = modules
     writeObject(table, rawData, path, TYPE_TABLE)

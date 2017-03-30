@@ -23,7 +23,7 @@ import scala.reflect.ClassTag
  * ClassSimplexCriterion implements a criterion for classification.
  * It learns an embedding per class, where each class' embedding is a
  * point on an (N-1)-dimensional simplex, where N is the number of classes.
- * @param nClasses
+ * @param nClasses the number of classes.
  */
 
 @SerialVersionUID(- 8696382776046599502L)

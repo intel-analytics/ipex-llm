@@ -104,6 +104,16 @@ object LocalOptimizerPerf {
   }
 }
 
+/**
+ * Local Optimizer Performance Parameters
+ *
+ * @param batchSize batch size
+ * @param coreNumber core number
+ * @param iteration how many iterations to run
+ * @param dataType data type (double / float)
+ * @param module module name
+ * @param inputData input data type (constant / random)
+ */
 case class LocalOptimizerPerfParam(
   batchSize: Int = 128,
   coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2),

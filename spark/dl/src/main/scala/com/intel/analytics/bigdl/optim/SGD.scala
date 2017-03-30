@@ -22,11 +22,33 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * A plain implementation of SGD
+ * @tparam T data type
+ */
 class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T])
   extends OptimMethod[T] {
 
   import SGD._
 
+  /**
+   *
+   * @param feval a function that takes a single input (X), the point of a evaluation,
+   * and returns f(X) and df/dX
+   * @param x the initial point
+   * @param config a table with configuration parameters for the optimizer
+   * learningRate: learning rate
+   * learningRateDecay: learning rate decay
+   * weightDecay: weight decay
+   * weightDecays: 1D tensor of individual weight decays
+   * momentum: momentum
+   * dampening: dampening for momentum
+   * nesterov: enables Nesterov momentum
+   * learningRates: 1D tensor of individual learning rates
+   * @param state a table describing the state of the optimizer; after each call the state
+   * is modified
+   * @return the new x 1D tensor and the function list, evaluated before the update
+   */
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]), x: Tensor[T],
     config: Table, state: Table = null): (Tensor[T], Array[T]) = {
 
@@ -129,6 +151,14 @@ object SGD {
     def updateHyperParameter(config : Table, state : Table) : Unit
   }
 
+  /**
+   * [[EpochSchedule]] is a learning rate schedule which configure the learning
+   * rate according to some pre-defined [[Regime]]. If the running epoch is within
+   * the interval of a regime `r` [r.startEpoch, r.endEpoch], then the learning
+   * rate will take the "learningRate" in r.config.
+   *
+   * @param regimes an array of pre-defined [[Regime]].
+   */
   case class EpochSchedule(regimes : Array[Regime]) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val epoch = state[Int]("epoch")
@@ -140,6 +170,15 @@ object SGD {
       config("clr") = -config.get[Double]("learningRate").getOrElse(1e-3)
     }
   }
+
+  /**
+   * A learning rate decay policy, where the effective learning rate
+   * follows a polynomial decay, to be zero by the max_iteration.
+   * Calculation: base_lr (1 - iter/maxIteration) ^ (power)
+   *
+   * @param power coeffient of decay, refer to calculation formula
+   * @param maxIteration max iteration when lr becomes zero
+   */
   case class Poly(power : Double, maxIteration : Int) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
@@ -154,6 +193,13 @@ object SGD {
       config("clr") = clr
     }
   }
+  /**
+   * A learning rate decay policy, where the effective learning rate
+   * is calculated as base_lr * gamma ^ (floor(iter / stepSize))
+   *
+   * @param stepSize the inteval for lr decay
+   * @param gamma coefficient of decay, refer to calculation formula
+   */
 
   case class Step(stepSize : Int, gamma : Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
@@ -170,6 +216,14 @@ object SGD {
     }
   }
 
+  /**
+   * It is an epoch decay learning rate schedule
+   * The learning rate decays through a function argument on number of run epochs
+   *
+   * l_{n + 1} = l_{n} * 0.1 `^` decayType(epoch)
+   *
+   * @param decayType is a function with number of run epochs as the argument
+   */
   case class EpochDecay(decayType: (Int) => Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-1)
@@ -181,6 +235,13 @@ object SGD {
     }
   }
 
+  /**
+   * [[EpochStep]] is a learning rate schedule, which rescale the learning rate by `gamma`
+   * for each `stepSize` epochs.
+   *
+   * @param stepSize For how many epochs to update the learning rate once
+   * @param gamma the rescale factor
+   */
   case class EpochStep(stepSize : Int, gamma : Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
@@ -195,6 +256,15 @@ object SGD {
     }
   }
 
+  /**
+   * It is the default learning rate schedule.
+   * For each iteration, the learning rate would
+   * update with the following formula:
+   *
+   * l_{n + 1} = l / (1 + n * learning_rate_decay)
+   *
+   * where `l` is the initial learning rate
+   */
   case class Default() extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)

@@ -24,6 +24,20 @@ import com.intel.analytics.bigdl.utils.Engine
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
+/**
+ * Concat concatenates the output of one layer of "parallel"
+ * modules along the provided {@code dimension}: they take the
+ * same inputs, and their output is concatenated.
+ *                 +-----------+
+ *            +---->  module1  -----+
+ *            |    |           |    |
+ * input -----+---->  module2  -----+----> output
+ *            |    |           |    |
+ *            +---->  module3  -----+
+ *                 +-----------+
+ *
+ * @param dimension dimension
+ */
 @SerialVersionUID(- 5218461876031660707L)
 class Concat[T: ClassTag](val dimension: Int)(
   implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
@@ -34,10 +48,6 @@ class Concat[T: ClassTag](val dimension: Int)(
   private var gradouts: Array[Tensor[T]] = null
 
   protected var forwardTimeOverhead = 0L
-
-  def getSize(): Array[Int] = {
-    return size
-  }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     val outs = new Array[Tensor[T]](this.modules.length)

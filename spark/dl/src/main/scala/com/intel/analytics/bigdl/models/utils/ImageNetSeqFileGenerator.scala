@@ -23,6 +23,20 @@ import scopt.OptionParser
 
 object ImageNetSeqFileGenerator {
 
+  /**
+   * Configuration class for ImageNet sequence file
+   * generator
+   *
+   * @param folder the ImageNet data location
+   * @param output generated seq files location
+   * @param parallel number of parallel
+   * @param blockSize block size
+   * @param train whether generate train data
+   * @param validate whether generate validate data
+   * @param scaleSize scale size
+   * @param isResize resize to (scaleSize, scaleSize) instead of uniform scale
+   * @param hasName whether add name to seq file
+   */
   case class ImageNetSeqFileGeneratorParams(
     folder: String = ".",
     output: String = ".",

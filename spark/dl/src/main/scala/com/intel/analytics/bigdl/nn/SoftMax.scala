@@ -24,6 +24,12 @@ import com.intel.analytics.bigdl.utils.Engine
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
+/**
+ * Applies the SoftMax function to an n-dimensional input Tensor, rescaling them so that the
+ * elements of the n-dimensional output Tensor lie in the range (0, 1) and sum to 1.
+ * Softmax is defined as: f_i(x) = exp(x_i - shift) / sum_j exp(x_j - shift)
+ * where shift = max_i(x_i).
+ */
 @SerialVersionUID(- 7842335603491194236L)
 class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
