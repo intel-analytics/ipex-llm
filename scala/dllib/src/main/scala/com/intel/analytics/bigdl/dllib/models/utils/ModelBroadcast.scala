@@ -71,6 +71,12 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
         val wb = parameters._1(i)
         weightsBias(i) = Tensor[T](Storage(wb.storage().array()),
           wb.storageOffset(), wb.size(), wb.stride())
+      }
+      i += 1
+    }
+    while (i < parameters._1.length) {
+      if (parameters._1(i) != null) {
+        val wb = parameters._1(i)
         wb.set()
         parameters._2(i).set()
       }
