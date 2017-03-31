@@ -35,9 +35,6 @@ import scala.reflect.ClassTag
  * @param hiddenSize hidden layer size
  * @param activation activation function f for non-linearity
  * @param initMethod initialization method for rnn parameters
- * @param ev$1
- * @param ev
- * @tparam T
  */
 class RnnCell[T : ClassTag] (
   inputSize: Int = 4,

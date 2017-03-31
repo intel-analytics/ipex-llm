@@ -67,10 +67,6 @@ object PythonBigDL {
 
 /**
  * Implementation of Python API for BigDL
- *
- * @param ev$1
- * @param ev
- * @tparam T
  */
 class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
 
