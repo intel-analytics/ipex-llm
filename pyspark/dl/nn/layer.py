@@ -512,6 +512,20 @@ class SpatialAveragePooling(Model):
 class SpatialBatchNormalization(Model):
 
     '''
+    This file implements Batch Normalization as described in the paper:
+    "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift"
+    by Sergey Ioffe, Christian Szegedy
+    This implementation is useful for inputs coming from convolution layers.
+    For non-convolutional layers, see [[BatchNormalization]]
+    The operation implemented is:
+
+          ( x - mean(x) )
+    y = -------------------- * gamma + beta
+       standard-deviation(x)
+
+    where gamma and beta are learnable parameters.
+    The learning of gamma and beta is optional.
+
     >>> spatialBatchNormalization = SpatialBatchNormalization(1)
     creating: createSpatialBatchNormalization
     '''
@@ -602,6 +616,8 @@ class View(Model):
 class Abs(Model):
 
     '''
+    an element-wise abs operation
+
     >>> abs = Abs()
     creating: createAbs
     '''
@@ -841,6 +857,8 @@ class CMulTable(Model):
 class CSubTable(Model):
 
     '''
+    Takes a table with two Tensor and returns the component-wise subtraction between them.
+
     >>> cSubTable = CSubTable()
     creating: createCSubTable
     '''
@@ -945,6 +963,10 @@ class DotProduct(Model):
 class ELU(Model):
 
     '''
+    D-A Clevert, Thomas Unterthiner, Sepp Hochreiter
+    Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
+    [http://arxiv.org/pdf/1511.07289.pdf]
+
     >>> eLU = ELU(1e-5, True)
     creating: createELU
     '''
@@ -1025,6 +1047,15 @@ class GradientReversal(Model):
 class HardShrink(Model):
 
     '''
+    This is a transfer layer which applies the hard shrinkage function
+    element-wise to the input Tensor. The parameter lambda is set to 0.5
+    by default
+            x, if x >  lambda
+    f(x) =  x, if x < -lambda
+            0, otherwise
+
+   :param the_lambda: a threshold value whose default value is 0.5
+
     >>> hardShrink = HardShrink(1e-5)
     creating: createHardShrink
     '''
@@ -1116,6 +1147,7 @@ class JoinTable(Model):
 class L1Cost(Model):
 
     '''
+    compute L1 norm for input, and sign of input
     >>> l1Cost = L1Cost()
     creating: createL1Cost
     '''
@@ -1192,6 +1224,9 @@ class Log(Model):
 class LogSigmoid(Model):
 
     '''
+    This class is a transform layer corresponding to the sigmoid function:
+    f(x) = Log(1 / (1 + e ^^ (-x)))
+
     >>> logSigmoid = LogSigmoid()
     creating: createLogSigmoid
     '''
@@ -1301,6 +1336,11 @@ class MaskedSelect(Model):
 class Max(Model):
 
     '''
+    Applies a max operation over dimension `dim`
+
+   :param dim max along this dimension
+   :param num_input_dims Optional. If in a batch model, set to the inputDims.
+
     >>> max = Max(1)
     creating: createMax
     '''
@@ -1479,6 +1519,17 @@ class Normalize(Model):
 class PReLU(Model):
 
     '''
+    Applies parametric ReLU, which parameter varies the slope of the negative part.
+
+    PReLU: f(x) = max(0, x) + a * min(0, x)
+
+    nOutputPlane's default value is 0, that means using PReLU in shared version and has
+    only one parameters.
+
+    Notice: Please don't use weight decay on this.
+
+    :param n_output_plane input map number. Default is 0.
+
     >>> pReLU = PReLU(1)
     creating: createPReLU
     '''
@@ -1716,6 +1767,14 @@ class Scale(Model):
 class SelectTable(Model):
 
     '''
+    Creates a module that takes a table as input and outputs the element at index `index`
+    (positive or negative). This can be either a table or a Tensor.
+    The gradients of the non-index elements are zeroed Tensors of the same size.
+    This is true regardless of the depth of the encapsulated Tensor as the function used
+    internally to do so is recursive.
+
+    :param dimension the dimension to be selected
+
     >>> selectTable = SelectTable(1)
     creating: createSelectTable
     '''
@@ -2041,6 +2100,8 @@ class SplitTable(Model):
 class Sqrt(Model):
 
     '''
+    Apply an element-wise sqrt operation.
+
     >>> sqrt = Sqrt()
     creating: createSqrt
     '''
@@ -2100,6 +2161,10 @@ class Sum(Model):
 class TanhShrink(Model):
 
     '''
+    A simple layer for each element of the input tensor, do the following operation
+    during the forward process:
+    [f(x) = tanh(x) - 1]
+
     >>> tanhShrink = TanhShrink()
     creating: createTanhShrink
     '''
