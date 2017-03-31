@@ -119,7 +119,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   }
 
   override def reset(): Unit = {
-    initMethod.init(weight, Option(bias))
+    initMethod.init(weight, Option(bias), "input_first")
     zeroGradParameters()
   }
 
