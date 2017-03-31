@@ -40,8 +40,8 @@ trait Initializer {
         val receptiveFieldSize = shape(2) * shape(3)
         (shape(0) * receptiveFieldSize, shape(1) * receptiveFieldSize)
       case 5 =>
-        val receptiveFieldSize = shape(0) * shape(2) * shape(3)
-        (shape(0) * receptiveFieldSize, shape(1) * receptiveFieldSize)
+        val receptiveFieldSize = shape(0) * shape(3) * shape(4)
+        (shape(1) * receptiveFieldSize, shape(2) * receptiveFieldSize)
       case _ =>
         val sqrtElem = Math.sqrt(shape.product).toInt
         (sqrtElem, sqrtElem)
