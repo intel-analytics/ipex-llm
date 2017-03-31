@@ -15,6 +15,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-BASE="$(cd "`dirname $0`"; pwd)"
 
-$BASE/run-diff && $BASE/lint-python && $BASE/run-tests
+DL_PYTHON_HOME="$(cd "`dirname $0`"/../..; pwd)"
+
+BIGDL_HOME="$(cd "`dirname $0`"/../../..; pwd)"
+
+cd $BIGDL_HOME
+exec $DL_PYTHON_HOME/test/dev/diff.py
