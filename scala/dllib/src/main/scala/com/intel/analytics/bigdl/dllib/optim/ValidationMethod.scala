@@ -178,7 +178,8 @@ class Top5Accuracy[T] extends ValidationMethod[T] {
 }
 
 /**
- * Return loss result as a subclass of [[ValidationResult]] module
+ * Use loss as a validation result
+ *
  * @param loss loss calculated by forward function
  * @param count recording the times of calculating loss
  */
@@ -225,12 +226,10 @@ class LossResult(private var loss: Float, private var count: Int)
 }
 
 /**
- * Calculate loss of output with respect to target
+ * This evaluation method is calculate loss of output with respect to target
+ *
+ * @param criterion criterion method for evaluation
  * The default criterion is [[ClassNLLCriterion]]
- * @param criterion
- * @param ev$1
- * @param ev
- * @tparam T
  */
 class Loss[@specialized(Float, Double)T: ClassTag](
  var criterion: Criterion[T] = null)
