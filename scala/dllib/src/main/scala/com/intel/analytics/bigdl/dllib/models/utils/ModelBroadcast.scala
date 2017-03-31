@@ -76,8 +76,10 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
     }
     i = 0
     while (i < parameters._1.length) {
-      if (parameters._2(i) != null) {
+      if (parameters._1(i) != null) {
         parameters._1(i).set()
+      }
+      if (parameters._2(i) != null) {
         parameters._2(i).set()
       }
       i += 1
