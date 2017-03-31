@@ -32,8 +32,7 @@ object LocalValidator {
  * as an argument of its `test` method
  *
  * @param model the model to be validated
- * @param dataSet the data set used to validate a model
- * @tparam T numeric type, which can be [[Float]] or [[Double]]
+ * @param dataSet the dataset used to validate a model
  */
 class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[MiniBatch[T]])
   extends Validator[T, MiniBatch[T]](model, dataSet) {
