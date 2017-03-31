@@ -172,6 +172,20 @@ class Model(JavaValue):
 class Linear(Model):
 
     '''
+    The [[Linear]] module applies a linear transformation to the input data,
+    i.e. `y = Wx + b`. The input given in `forward(input)` must be either
+    a vector (1D tensor) or matrix (2D tensor). If the input is a vector, it must
+    have the size of `inputSize`. If it is a matrix, then each row is assumed to be
+    an input sample of given batch (the number of rows means the batch size and
+    the number of columns should be equal to the `inputSize`).
+
+    :param input_size the size the each input sample
+    :param output_size the size of the module output of each sample
+    :param init_method two initialized methods are supported here, which are [[Default]]
+                      and [[Xavier]], where [[Xavier]] set bias to zero here. For more
+                      detailed information about `initMethod`, please refer to
+                      [[InitializationMethod]]
+
     >>> linear = Linear(100, 10, "Xavier")
     creating: createLinear
     '''
@@ -216,6 +230,9 @@ class Tanh(Model):
 class Echo(Model):
 
     '''
+    This module is for debug purpose, which can print activation and gradient in your model
+    topology
+
     >>> echo = Echo()
     creating: createEcho
     '''
@@ -630,6 +647,11 @@ class Add(Model):
 class AddConstant(Model):
 
     '''
+    adding a constant
+
+    :param constant_scalar constant value
+    :param inplace Can optionally do its operation in-place without using extra state memory
+
     >>> addConstant = AddConstant(1e-5, True)
     creating: createAddConstant
     '''
@@ -683,6 +705,15 @@ class BatchNormalization(Model):
 class Bilinear(Model):
 
     '''
+    a bilinear transformation with sparse inputs,
+    The input tensor given in forward(input) is a table containing both inputs x_1 and x_2,
+    which are tensors of size N x inputDimension1 and N x inputDimension2, respectively.
+
+    :param input_size1 input dimension of x_1
+    :param input_size2 input dimension of x_2
+    :param output_size output dimension
+    :param bias_res whether use bias
+
     >>> bilinear = Bilinear(1, 1, 1, True)
     creating: createBilinear
     '''
@@ -999,6 +1030,10 @@ class Exp(Model):
 class FlattenTable(Model):
 
     '''
+    This is a table layer which takes an arbitrarily deep table of Tensors
+    (potentially nested) as input and a table of Tensors without any nested
+    table will be produced
+
     >>> flattenTable = FlattenTable()
     creating: createFlattenTable
     '''
@@ -1011,6 +1046,15 @@ class FlattenTable(Model):
 class GradientReversal(Model):
 
     '''
+    It is a simple module preserves the input, but takes the
+    gradient from the subsequent layer, multiplies it by -lambda
+    and passes it to the preceding layer. This can be used to maximise
+    an objective function whilst using gradient descent, as described in
+     ["Domain-Adversarial Training of Neural Networks"
+     (http://arxiv.org/abs/1505.07818)]
+
+    :param lambda hyper-parameter lambda can be set dynamically during training
+
     >>> gradientReversal = GradientReversal(1e-5)
     creating: createGradientReversal
     '''
@@ -1039,6 +1083,14 @@ class HardShrink(Model):
 class HardTanh(Model):
 
     '''
+    Applies HardTanh to each element of input, HardTanh is defined:
+             |  maxValue, if x > maxValue
+      f(x) = |  minValue, if x < minValue
+             |  x, otherwise
+    :param min_value minValue in f(x), default is -1.
+    :param max_value maxValue in f(x), default is 1.
+    :param inplace whether enable inplace model.
+
     >>> hardTanh = HardTanh(1e-5, 1e5, True)
     creating: createHardTanh
     '''
@@ -1057,6 +1109,10 @@ class HardTanh(Model):
 class Index(Model):
 
     '''
+    Applies the Tensor index operation along the given dimension.
+
+    :param dimension the dimension to be indexed
+
     >>> index = Index(1)
     creating: createIndex
     '''
@@ -1071,6 +1127,21 @@ class Index(Model):
 class InferReshape(Model):
 
     '''
+    Reshape with the support of infered size,
+    Positive numbers are used directly, setting the corresponding dimension of the output tensor.
+    In addition, two special values are accepted:
+    0 means "copy the respective dimension of the input".
+    i.e., if the input has 2 as its 1st dimension,
+    the output will have 2 as its 1st dimension as well
+    -1 stands for "infer this from the other dimensions"
+    this dimension is calculated to keep the overall element count the same as in the input.
+    At most one -1 can be used in a reshape operation.
+    For example, (4, 5, 6, 7) -> InferReshape (4, 0, 3, -1) -> (4, 5, 3, 14)
+    with 1st and 3rd dim same as given size, with 2nd dim same as input, and the infered dim is 14
+
+    :param size      the target tensor size
+    :param batch_mode whether in batch mode
+
     >>> inferReshape = InferReshape([4, 0, 3, -1], False)
     creating: createInferReshape
     '''
@@ -1387,6 +1458,8 @@ class MixtureTable(Model):
 class Mul(Model):
 
     '''
+    Multiply a single scalar factor to the incoming data
+
     >>> mul = Mul()
     creating: createMul
     '''
@@ -1399,6 +1472,12 @@ class Mul(Model):
 class MulConstant(Model):
 
     '''
+    Multiplies input Tensor by a (non-learnable) scalar constant.
+    This module is sometimes useful for debugging purposes.
+
+    :param scalar scalar constant
+    :param inplace Can optionally do its operation in-place without using extra state memory
+
     >>> mulConstant = MulConstant(2.5)
     creating: createMulConstant
     '''
@@ -1797,6 +1876,15 @@ class SoftPlus(Model):
 class SoftShrink(Model):
 
     '''
+    Apply the soft shrinkage function element-wise to the input Tensor
+
+    SoftShrinkage operator:
+           | x - lambda, if x >  lambda
+    f(x) = | x + lambda, if x < -lambda
+           | 0, otherwise
+
+    :param the_lambda lambda, default is 0.5
+
     >>> softShrink = SoftShrink(1e-5)
     creating: createSoftShrink
     '''
@@ -2066,6 +2154,12 @@ class Square(Model):
 class Squeeze(Model):
 
     '''
+    Delete singleton all dimensions or a specific dim.
+
+    :param dim Optional. The dimension to be delete. Default: delete all dimensions.
+    :param num_input_dims Optional. If in a batch model, set to the inputDims.
+
+
     >>> squeeze = Squeeze(1)
     creating: createSqueeze
     '''
@@ -2082,6 +2176,20 @@ class Squeeze(Model):
 class Sum(Model):
 
     '''
+    It is a simple layer which applies a sum operation over the given dimension.
+    When nInputDims is provided, the input will be considered as a batches.
+    Then the sum operation will be applied in (dimension + 1)
+    The input to this layer is expected to be a tensor, or a batch of tensors;
+    when using mini-batch, a batch of sample tensors will be passed to the layer and
+    the user need to specify the number of dimensions of each sample tensor in the
+    batch using `nInputDims`.
+
+    :param dimension the dimension to be applied sum operation
+    :param n_input_dims specify the number of dimensions that this module will receive
+                      If it is more than the dimension of input tensors, the first dimension
+                      would be considered as batch size
+    :param size_average default is false, if it is true, it will return the mean instead
+
     >>> sum = Sum(1, 1, True)
     creating: createSum
     '''
