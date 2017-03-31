@@ -28,8 +28,9 @@ import scala.reflect.ClassTag
 /**
  * This class is intended to support inputs with 3 or more dimensions.
  * Apply Any Provided Criterion to every temporal slice of an input.
- * @param critrn
- * @param sizeAverage
+ *
+ * @param critrn embedded criterion
+ * @param sizeAverage whether to divide the sequence length
  */
 
 class TimeDistributedCriterion[T : ClassTag](

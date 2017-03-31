@@ -384,6 +384,12 @@ class SoftmaxWithCriterion(Criterion):
 
 class TimeDistributedCriterion(Criterion):
     '''
+    This class is intended to support inputs with 3 or more dimensions.
+    Apply Any Provided Criterion to every temporal slice of an input.
+
+    :param criterion: embedded criterion
+    :param size_average: whether to divide the sequence length
+
     >>> td = TimeDistributedCriterion(ClassNLLCriterion())
     creating: createClassNLLCriterion
     creating: createTimeDistributedCriterion
