@@ -26,6 +26,13 @@ import scala.reflect.ClassTag
 
 /**
  * Gated Recurrent Units architecture.
+ * The first input in sequence uses zero value for cell and hidden state
+ *
+ * Ref.
+ * 1. http://www.wildml.com/2015/10/
+ * recurrent-neural-network-tutorial-part-4-implementing-a-grulstm-rnn-with-python-and-theano/
+ *
+ * 2. https://github.com/Element-Research/rnn/blob/master/GRU.lua
  *
  * @param inputSize the size of each input vector
  * @param outputSize Hidden unit size in GRU
