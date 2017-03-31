@@ -48,12 +48,10 @@ object LabeledSentenceToSample {
  *         target: [3, 4, 2]
  * The input is an iterator of LabeledSentence class
  * The output is an iterator of Sample class
- * @param vocabLength
- * @param fixDataLength
- * @param fixLabelLength
- * @param ev$1
- * @param ev
- * @tparam T
+ *
+ * @param vocabLength length of dictionary
+ * @param fixDataLength optional parameter for fixed length of input data
+ * @param fixLabelLength optional parameter for fixed length of labels
  */
 class LabeledSentenceToSample[T: ClassTag](vocabLength: Int,
                               fixDataLength: Option[Int],
