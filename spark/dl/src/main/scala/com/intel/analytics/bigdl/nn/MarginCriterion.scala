@@ -26,6 +26,7 @@ import scala.reflect.ClassTag
  * between input x (a Tensor of dimension 1) and output y.
  *
  * @param margin if unspecified, is by default 1.
+ * @param sizeAverage whether to average the loss
  */
 
 @SerialVersionUID( - 5028892499250398130L)

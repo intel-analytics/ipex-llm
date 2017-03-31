@@ -138,6 +138,11 @@ class ClassSimplexCriterion(Criterion):
 class CosineEmbeddingCriterion(Criterion):
 
     '''
+    Creates a criterion that measures the loss given an input x = {x1, x2},
+    a table of two Tensors, and a Tensor label y with values 1 or -1.
+
+    :param margin a number from -1 to 1, 0 to 0.5 is suggested
+
     >>> cosineEmbeddingCriterion = CosineEmbeddingCriterion(1e-5, True)
     creating: createCosineEmbeddingCriterion
     '''
@@ -219,6 +224,12 @@ class L1HingeEmbeddingCriterion(Criterion):
 class MarginCriterion(Criterion):
 
     '''
+    Creates a criterion that optimizes a two-class classification hinge loss (margin-based loss)
+    between input x (a Tensor of dimension 1) and output y.
+
+    :param margin if unspecified, is by default 1.
+    :param size_average: size average in a mini-batch
+
     >>> marginCriterion = MarginCriterion(1e-5, True)
     creating: createMarginCriterion
     '''
@@ -305,6 +316,19 @@ class ParallelCriterion(Criterion):
 class SmoothL1Criterion(Criterion):
 
     '''
+    Creates a criterion that can be thought of as a smooth version of the AbsCriterion.
+    It uses a squared term if the absolute element-wise error falls below 1.
+    It is less sensitive to outliers than the MSECriterion and in some
+    cases prevents exploding gradients (e.g. see "Fast R-CNN" paper by Ross Girshick).
+                          | 0.5 * (x_i - y_i)^2^, if |x_i - y_i| < 1
+    loss(x, y) = 1/n \sum |
+                          | |x_i - y_i| - 0.5,   otherwise
+    If x and y are d-dimensional Tensors with a total of n elements,
+    the sum operation still operates over all the elements, and divides by n.
+    The division by n can be avoided if one sets the internal variable sizeAverage to false
+
+    :param size_average whether to average the loss
+
     >>> smoothL1Criterion = SmoothL1Criterion(True)
     creating: createSmoothL1Criterion
     '''
