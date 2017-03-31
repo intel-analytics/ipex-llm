@@ -53,16 +53,26 @@ object ParameterManager2 {
   }
 
   def createParameterManager[T: ClassTag](executorId: Int, executorNum: Int, partitionNum: Int,
-    size: Int, isDriver: Boolean): ParameterManager2 = {
+    size: Int, port: Int = -1): ParameterManager2 = {
     val id = nextId.getAndIncrement()
     val conf = SparkEnv.get.conf
-    val master = ParameterManagerMaster.createEnv(conf, isDriver)
+    val master = ParameterManagerMaster.createEnv(conf, port)
     val p = new ParameterManager2(id, executorId, executorNum, partitionNum, size, master)
     pm.put(executorId, p)
     p
   }
 }
 
+/**
+  * Represent a parameter stored on block manager. In distributed optimization, we put parameter
+  * on block manager of spark. Each worker sync parameter through block manager. Block manager
+  * here serve as a parameter server.
+  * @param id distinguish from other parameters
+  * @param executorId executor id which hosted the parameter
+  * @param partitionNum how many partitions will use this parameter
+  * @param size size of the parameter(1D vector)
+  * @param master master used to communicate betwwen driver and executor
+  */
 class ParameterManager2(val id: Int, val executorId: Int,
   executorNum: Int, partitionNum: Int, size: Int, master: ParameterManagerMaster) {
   import ParameterManager2._
@@ -84,6 +94,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
   val taskSize = size / executorNum
   val extraSize = size % executorNum
 
+  /** Set initialize parameter */
   def init[T: ClassTag](parameter: Tensor[T], state: Table)
     (implicit ev: TensorNumeric[T]): Unit = {
     val _classTag = classTag[T]
@@ -110,6 +121,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
     BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
 
+  /** Aggregate gradients hosted in one executor */
   def aggregateLocalGradient[T: ClassTag]() : Tensor[T] = {
     val blockIds = master.getBlockId(executorId)
     val gradientBuffer = new Array[Tensor[T]](blockIds.size)
@@ -136,6 +148,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
     gradientBuffer(0)
   }
 
+  /** Split aggregated gradient into executor number and put them in blockmanager */
   def putGradients[T: ClassTag](parameter: Tensor[T]): Unit = {
     val _classTag = classTag[T]
     var pid = 0
@@ -150,6 +163,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
     }
   }
 
+  /** Fetch partital gradients from local or remote nodes, aggregate them */
   def aggregrateGradientParition[T: ClassTag](params: Array[CompressedTensor[T]]): Unit = {
     val bm = SparkEnv.get.blockManager
     val sgThreads = (0 until executorNum).map(pid => {
@@ -189,6 +203,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
     params.head.deCompress(gradientExecutor)
   }
 
+  /** Fetch partial weights from remote nodes and concat them as a complete weight */
   def syncWeights[T: ClassTag](localParameter: Tensor[T]): Unit = {
     val bm = SparkEnv.get.blockManager
     val tasks = (0 until executorNum).map(pid => {
@@ -217,6 +232,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
     syncPool.invokeAll(tasks.asJava)
   }
 
+  /** Put the partial weight in the blockmanager */
   def sendWeightExecutor[T: ClassTag]() : Unit = {
     val weightExecutorId = getWeightExecutorId()
     val weightExecutor = getLocalParameter(weightExecutorId)
@@ -226,6 +242,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
       SerializerInstance.serialize(weightExecutor).bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
 
+  /** Get a block from local blockmanager */
   def getLocalParameter[T: ClassTag](blockId: BlockId): Tensor[T] = {
     BlockManagerWrapper.getLocal(blockId).map(_.data.next()) match {
       case Some(x) =>
@@ -246,6 +263,7 @@ class ParameterManager2(val id: Int, val executorId: Int,
     }
   }
 
+  /** Put a gradient in local blockmanager */
   def sendGradientPartition[T: ClassTag](gradient: Tensor[T], pid: Int): Unit = {
     val gradientsId = getGradientPartitionId(pid)
 

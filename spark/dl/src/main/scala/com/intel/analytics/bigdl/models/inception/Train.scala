@@ -35,6 +35,7 @@ object TrainInceptionV1 {
         .set("spark.task.maxFailures", "1")
       val sc = new SparkContext(conf)
       Engine.init
+
       val trainSet = ImageNet2012(
         param.folder + "/train",
         sc,

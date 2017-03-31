@@ -423,8 +423,9 @@ object DistriOptimizer2 {
       executorIdMap(driver) = nodeNumber
     }
 
-    ParameterManager2.createParameterManager(executorIdMap(driver), nodeNumber,
-      partitionNum, parameterSize, true)
+    val pm = ParameterManager2.createParameterManager(executorIdMap(driver), nodeNumber,
+      partitionNum, parameterSize)
+    val actualPort = pm.master.driverEndpoint.address.port
 
     val broadcast = sc.broadcast((model, criterion, state))
     val models = dataset.originRDD().mapPartitions(_ => {
@@ -448,7 +449,7 @@ object DistriOptimizer2 {
         var parameter = ParameterManager2.get(executorId)
         if (parameter == null) {
           parameter = ParameterManager2.createParameterManager(executorIdMap(executorId),
-            nodeNumber, partitionNum, parameterSize, false)
+            nodeNumber, partitionNum, parameterSize, actualPort)
         }
         if (!parameter.initFinished) {
           parameter.init(weights, broadcastState)
@@ -589,6 +590,7 @@ class DistriOptimizer2[T: ClassTag](
     val actualNodeNumber = dataset.originRDD().mapPartitions { iter =>
       Iterator(SparkEnv.get.executorId)
     }.collect().distinct.size
+
     Engine.setNodeNumber(Some(actualNodeNumber))
     dataset.originRDD().sparkContext.getConf.setExecutorEnv("DL_NODE_NUMBER",
       actualNodeNumber.toString)

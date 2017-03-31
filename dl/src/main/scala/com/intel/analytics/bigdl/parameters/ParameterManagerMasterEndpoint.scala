@@ -30,11 +30,15 @@ case class GetExecutorBlockList(executorId: Int)
 case class UpdateExecutorBlockList(executorId: Int, blockId: BlockId)
 case class ClearExecutorBlockList(executorId: Int)
 
+/**
+  * ParameterManagerMasterEndpoint is an [[ThreadSafeRpcEndpoint]] on the driver node to track statuses
+  * of all executor' blocks.
+  */
 class ParameterManagerMasterEndpoint(
   override val rpcEnv: RpcEnv,
   conf: SparkConf)
   extends ThreadSafeRpcEndpoint {
-
+  
   private val blocks = new HashMap[Int, mutable.HashSet[BlockId]]
 
   override def receiveAndReply(context: RpcCallContext): PartialFunction[Any, Unit] = {
@@ -48,12 +52,14 @@ class ParameterManagerMasterEndpoint(
       context.reply(clearExecutorBlockList(executorId))
   }
 
+  /** Get block lists with a given executorId */
   private def getExecutorBlockList(executorId: Int): Seq[BlockId] = {
     if (blocks.containsKey(executorId)) {
       blocks.get(executorId).toSeq
     } else Seq.empty
   }
 
+  /** Update block lists with a given executorId */
   private def updateExecutorBlockList(executorId: Int, blockId: BlockId): Unit = {
     if (blocks.containsKey(executorId)) blocks.get(executorId).add(blockId)
     else {
@@ -63,6 +69,7 @@ class ParameterManagerMasterEndpoint(
     }
   }
 
+  /** Clear block lists with a given executorId */
   private def clearExecutorBlockList(executorId: Int) = {
     if (blocks.containsKey(executorId)) blocks.get(executorId).clear()
   }
@@ -86,16 +93,13 @@ class ParameterManagerMaster(
 }
 
 object ParameterManagerMaster {
-  def createEnv(conf: SparkConf, isDriver: Boolean): ParameterManagerMaster = {
+  def createEnv(conf: SparkConf, driverPort: Int): ParameterManagerMaster = {
     val bindAddress = Utils.localHostName()
+    val isDriver = if (driverPort == -1) true else false
     val port = conf.getInt("BigDL.port", 7777)
     val systemName = if (isDriver) "BigDLDriver" else "BigDLExecutor"
     val rpcEnv = RpcEnvWrapper.create(systemName, bindAddress, port, conf,
       new SecurityManager(conf), clientMode = !isDriver)
-
-    if (isDriver) {
-      conf.set("BigDL.driver.port", rpcEnv.address.port.toString)
-    }
 
     def registerOrLookupEndpoint(name: String, isDriver: Boolean, endpointCreator: => RpcEndpoint):
     RpcEndpointRef = {
@@ -103,7 +107,6 @@ object ParameterManagerMaster {
         RpcEnvWrapper.setupEndpoint(rpcEnv, name, endpointCreator)
       } else {
         val driverHost = SparkEnv.get.blockManager.master.driverEndpoint.address.host
-        val driverPort = conf.getInt("BigDL.driver.port", 7777)
         RpcEnvWrapper.setupEndpointRef(rpcEnv, systemName, RpcAddress(driverHost, driverPort), name)
       }
     }
