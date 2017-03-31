@@ -52,7 +52,7 @@ Notice that the first entry of tag tupple means that this python can install the
 
  - *The first conditon is caused by low pip version.*
 
-Check your pip version: `$ pip -V`. It should be higher than 9. Otherwise, upgrade it. If you install it by `$ sudo apt install python-pip`, after `$sudo apt update` `$ sudo apt install python-pip --upgrade`, you may get this response `python-pip is already the newest version`. Check the pip version, if it is not the latest yet, run `$ pip install pip --upgrade`. If it reports `Not uninstalling pip at /usr/lib/python2.7/dist-packages, owned by OS`, then you have to remove your pip intsalled by `$ sudo apt install python-pip`. It is because that `apt` and `pip` are different package management tool, and `apt` will by default installs staff into `'/usr/'` while `pip` will by default installs staff into `/usr/local`. 
+Check your pip version: `$ pip -V`. It should be higher than 9. Otherwise, upgrade it. If you install it by `$ sudo apt install python-pip`, after `$sudo apt update` `$ sudo apt install python-pip --upgrade`, you may get this response `python-pip is already the newest version`. Check the pip version, if it is not the latest yet, run `$ pip install pip --upgrade` or `$ pip install pip==9.0.1`. If it reports `Not uninstalling pip at /usr/lib/python2.7/dist-packages, owned by OS`, then you have to remove your pip intsalled by `$ sudo apt install python-pip`. It is because that `apt` and `pip` are different package management tool, and `apt` will by default installs staff into `'/usr/'` while `pip` will by default installs staff into `/usr/local`. 
 **[Solution]** To remove `pip` installed by `apt` and install latest `pip`, do 
 ```
 sudo apt remove pip

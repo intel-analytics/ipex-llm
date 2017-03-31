@@ -476,6 +476,28 @@ class MultiMarginCriterion(Criterion):
                                                    size_average)
 
 
+class SoftMarginCriterion(Criterion):
+    """
+    Creates a criterion that optimizes a two-class classification logistic loss
+    between input x (a Tensor of dimension 1) and output y (which is a tensor
+    containing either 1s or -1s).
+
+           loss(x, y) = sum_i (log(1 + exp(-y[i]*x[i]))) / x:nElement()
+
+    :param sizeaverage The normalization by the number of elements in the input
+                       can be disabled by setting
+
+    >>> softMarginCriterion = SoftMarginCriterion(False)
+    creating: createSoftMarginCriterion
+    >>> softMarginCriterion = SoftMarginCriterion()
+    creating: createSoftMarginCriterion
+    """
+
+    def __init__(self,
+                 size_average=True,
+                 bigdl_type="float"):
+        super(SoftMarginCriterion, self).__init__(None, bigdl_type, size_average)
+
 def _test():
     import doctest
     from pyspark import SparkContext

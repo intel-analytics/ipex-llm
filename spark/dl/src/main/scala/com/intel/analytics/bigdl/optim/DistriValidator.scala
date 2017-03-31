@@ -26,11 +26,22 @@ object DistriValidator {
   val logger = Logger.getLogger(this.getClass)
 }
 
+/**
+ * Validate model on a distributed cluster.
+ *
+ * @param model model to be validated
+ * @param dataSet validation dataset
+ */
 class DistriValidator[T] private[optim](
   model: Module[T],
   dataSet: DistributedDataSet[MiniBatch[T]]
 ) extends Validator[T, MiniBatch[T]](model, dataSet) {
 
+  /**
+   * Applies vMethods to the model and validation dataset.
+   * @param vMethods
+   * @return
+   */
   override def test(vMethods: Array[ValidationMethod[T]])
   : Array[(ValidationResult, ValidationMethod[T])] = {
 
