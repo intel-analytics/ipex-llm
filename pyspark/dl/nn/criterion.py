@@ -246,6 +246,15 @@ class MarginCriterion(Criterion):
 class MarginRankingCriterion(Criterion):
 
     '''
+    Creates a criterion that measures the loss given an input x = {x1, x2},
+    a table of two Tensors of size 1 (they contain only scalars), and a label y (1 or -1).
+    In batch mode, x is a table of two Tensors of size batchsize, and y is a Tensor of size
+    batchsize containing 1 or -1 for each corresponding pair of elements in the input Tensor.
+    If y == 1 then it assumed the first input should be ranked higher (have a larger value) than
+    the second input, and vice-versa for y == -1.
+
+    :param margin
+
     >>> marginRankingCriterion = MarginRankingCriterion(1e-5, True)
     creating: createMarginRankingCriterion
     '''
@@ -343,6 +352,17 @@ class SmoothL1Criterion(Criterion):
 class SmoothL1CriterionWithWeights(Criterion):
 
     '''
+    a smooth version of the AbsCriterion
+    It uses a squared term if the absolute element-wise error falls below 1.
+    It is less sensitive to outliers than the MSECriterion and in some cases
+    prevents exploding gradients (e.g. see "Fast R-CNN" paper by Ross Girshick).
+
+   d = (x - y) * w_in
+   loss(x, y, w_in, w_out)
+              | 0.5 * (sigma * d_i)^2 * w_out          if |d_i| < 1 / sigma / sigma
+   = 1/n \sum |
+              | (|d_i| - 0.5 / sigma / sigma) * w_out   otherwise
+
     >>> smoothL1CriterionWithWeights = SmoothL1CriterionWithWeights(1e-5, 1)
     creating: createSmoothL1CriterionWithWeights
     '''
