@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseTensorConv, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -38,10 +39,8 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val dH: Int = 1, // The step of the convolution in the height dimension
   val padW: Int = 0, // The additional zeros added per width to the input planes.
   val padH: Int = 0, // The additional zeros added per height to the input planes.
-  val weightL1Rate: Double = 0,
-  val weightL2Rate: Double = 0,
-  val biasL1Rate: Double = 0,
-  val biasL2Rate: Double = 0
+  val wRegularizer: Regularizer = null,
+  val bRegularizer: Regularizer = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val nInputPlane = ev.toType[Int](connTable.select(2, 1).max())
   val nOutputPlane = ev.toType[Int](connTable.select(2, 2).max())
@@ -268,10 +267,8 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
       gradOutput.squeeze(1)
     }
 
-    accL1L2Regularization(weightL1Rate, weightL2Rate, weight, gradWeight)
-    if (null != bias) {
-      accL1L2Regularization(biasL1Rate, biasL2Rate, bias, gradBias)
-    }
+    accRegularization(wRegularizer, weight, gradWeight)
+    accRegularization(bRegularizer, bias, gradBias)
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
@@ -304,13 +301,11 @@ object SpatialConvolutionMap {
     dH: Int = 1,
     padW: Int = 0,
     padH: Int = 0,
-    weightL1Rate: Double = 0,
-    weightL2Rate: Double = 0,
-    biasL1Rate: Double = 0,
-    biasL2Rate: Double = 0
+    wRegularizer: Regularizer = null,
+    bRegularizer: Regularizer = null
   )(implicit ev: TensorNumeric[T]) : SpatialConvolutionMap[T] = {
-    new SpatialConvolutionMap[T](connTable, kW, kH, dW, dH, padW, padH, weightL1Rate, weightL2Rate,
-      biasL1Rate, biasL2Rate)
+    new SpatialConvolutionMap[T](connTable, kW, kH, dW, dH, padW, padH,
+      wRegularizer, bRegularizer)
   }
 
   def full[@specialized(Float, Double) T: ClassTag](nin: Int, nout: Int)(

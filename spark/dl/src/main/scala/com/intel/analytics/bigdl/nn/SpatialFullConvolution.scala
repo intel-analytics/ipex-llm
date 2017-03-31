@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -76,10 +77,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   val nGroup: Int = 1,
   val noBias: Boolean = false,
   private var initMethod: InitializationMethod = Default,
-  val weightL1Rate: Double = 0,
-  val weightL2Rate: Double = 0,
-  val biasL1Rate: Double = 0,
-  val biasL2Rate: Double = 0
+  val wRegularizer: Regularizer = null,
+  val bRegularizer: Regularizer = null
   )(implicit ev: TensorNumeric[T]) extends AbstractModule[A, Tensor[T], T]{
 
   require(adjW <= dW - 1 && adjH <= dH - 1,
@@ -669,10 +668,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       inputTensor.resize(nInputPlane, inputHeight, inputWidth)
     }
 
-    accL1L2Regularization(weightL1Rate, weightL2Rate, weight, gradWeight)
-    if (null != bias) {
-      accL1L2Regularization(biasL1Rate, biasL2Rate, bias, gradBias)
-    }
+    accRegularization(wRegularizer, weight, gradWeight)
+    accRegularization(bRegularizer, bias, gradBias)
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -791,13 +788,11 @@ object SpatialFullConvolution {
       nGroup: Int = 1,
       noBias: Boolean = false,
       initMethod: InitializationMethod = Default,
-      weightL1Rate: Double = 0,
-      weightL2Rate: Double = 0,
-      biasL1Rate: Double = 0,
-      biasL2Rate: Double = 0
+      wRegularizer: Regularizer = null,
+      bRegularizer: Regularizer = null
   )(implicit ev: TensorNumeric[T]) : SpatialFullConvolution[A, T] = {
     new SpatialFullConvolution[A, T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH, adjW, adjH, nGroup, noBias, initMethod, weightL1Rate, weightL2Rate,
-      biasL1Rate, biasL2Rate)
+      padW, padH, adjW, adjH, nGroup, noBias, initMethod,
+      wRegularizer, bRegularizer)
   }
 }

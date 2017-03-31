@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils._
@@ -45,10 +46,8 @@ class SpatialConvolution[T: ClassTag](
   val nGroup: Int = 1, // Kernel group number
   val propagateBack: Boolean = true, // propagate gradient back
   private var initMethod: InitializationMethod = Default,
-  val weightL1Rate: Double = 0,
-  val weightL2Rate: Double = 0,
-  val biasL1Rate: Double = 0,
-  val biasL2Rate: Double = 0
+  val wRegularizer: Regularizer = null,
+  val bRegularizer: Regularizer = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
@@ -330,10 +329,8 @@ class SpatialConvolution[T: ClassTag](
       gradBias.addmv(ev.fromType(1.0), ev.fromType(1.0), gradientBiasMT.t, onesBatch)
     }
 
-    accL1L2Regularization(weightL1Rate, weightL2Rate, weight, gradWeight)
-    if (null != bias) {
-      accL1L2Regularization(biasL1Rate, biasL2Rate, bias, gradBias)
-    }
+    accRegularization(wRegularizer, weight, gradWeight)
+    accRegularization(bRegularizer, bias, gradBias)
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -587,13 +584,11 @@ object SpatialConvolution {
       nGroup: Int = 1,
       propagateBack: Boolean = true,
       initMethod: InitializationMethod = Default,
-      weightL1Rate: Double = 0,
-      weightL2Rate: Double = 0,
-      biasL1Rate: Double = 0,
-      biasL2Rate: Double = 0
+      wRegularizer: Regularizer = null,
+      bRegularizer: Regularizer = null
   )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
-      strideW, strideH, padW, padH, nGroup, propagateBack, initMethod, weightL1Rate, weightL2Rate,
-      biasL1Rate, biasL2Rate)
+      strideW, strideH, padW, padH, nGroup, propagateBack, initMethod,
+      wRegularizer, bRegularizer)
   }
 }

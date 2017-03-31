@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{DenseTensorBLAS, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -62,10 +63,8 @@ class SpatialDilatedConvolution[T: ClassTag](
   val dilationW: Int = 1,
   val dilationH: Int = 1,
   private var initMethod: InitializationMethod = Default,
-  val weightL1Rate: Double = 0,
-  val weightL2Rate: Double = 0,
-  val biasL1Rate: Double = 0,
-  val biasL2Rate: Double = 0
+  val wRegularizer: Regularizer = null,
+  val bRegularizer: Regularizer = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
@@ -467,11 +466,8 @@ class SpatialDilatedConvolution[T: ClassTag](
       input.resize(nInputPlane, inputHeight, inputWidth)
     }
 
-
-    accL1L2Regularization(weightL1Rate, weightL2Rate, weight, gradWeight)
-    if (null != bias) {
-      accL1L2Regularization(biasL1Rate, biasL2Rate, bias, gradBias)
-    }
+    accRegularization(wRegularizer, weight, gradWeight)
+    accRegularization(bRegularizer, bias, gradBias)
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -563,13 +559,11 @@ object SpatialDilatedConvolution {
       dilationW: Int = 1,
       dilationH: Int = 1,
       initMethod: InitializationMethod = Default,
-      weightL1Rate: Double = 0,
-      weightL2Rate: Double = 0,
-      biasL1Rate: Double = 0,
-      biasL2Rate: Double = 0
+      wRegularizer: Regularizer = null,
+      bRegularizer: Regularizer = null
   )(implicit ev: TensorNumeric[T]) : SpatialDilatedConvolution[T] = {
     new SpatialDilatedConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH, dilationW, dilationH, initMethod, weightL1Rate, weightL2Rate,
-      biasL1Rate, biasL2Rate)
+      padW, padH, dilationW, dilationH, initMethod,
+      wRegularizer, bRegularizer)
   }
 }

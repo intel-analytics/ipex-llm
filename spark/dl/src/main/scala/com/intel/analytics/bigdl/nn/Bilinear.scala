@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -40,10 +41,8 @@ class Bilinear[T: ClassTag](
   val inputSize2: Int,
   val outputSize: Int,
   val biasRes: Boolean = true,
-  weightL1Rate: Double = 0,
-  weightL2Rate: Double = 0,
-  biasL1Rate: Double = 0,
-  biasL2Rate: Double = 0
+  wRegularizer: Regularizer = null,
+  bRegularizer: Regularizer = null
  )(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   require((inputSize1 > 0) && (inputSize2 > 0) && (outputSize > 0),
@@ -171,10 +170,8 @@ class Bilinear[T: ClassTag](
     }
     if(null != bias) gradBias.add(ev.fromType(scale), gradOutput.sum(1))
 
-    accL1L2Regularization(weightL1Rate, weightL2Rate, weight, gradWeight)
-    if (null != bias) {
-      accL1L2Regularization(biasL1Rate, biasL2Rate, bias, gradBias)
-    }
+    accRegularization(wRegularizer, weight, gradWeight)
+    accRegularization(bRegularizer, bias, gradBias)
   }
 
   override def zeroGradParameters(): Unit = {
@@ -240,7 +237,11 @@ object Bilinear {
     inputSize1: Int,
     inputSize2: Int,
     outputSize: Int,
-    biasRes: Boolean = true)(implicit ev: TensorNumeric[T]) : Bilinear[T] = {
-    new Bilinear[T](inputSize1, inputSize2, outputSize, biasRes)
+    biasRes: Boolean = true,
+    wRegularizer: Regularizer = null,
+    bRegularizer: Regularizer = null
+  )(implicit ev: TensorNumeric[T]) : Bilinear[T] = {
+    new Bilinear[T](inputSize1, inputSize2, outputSize, biasRes,
+      wRegularizer, bRegularizer)
   }
 }

@@ -40,11 +40,11 @@ import scala.reflect.ClassTag
  *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
  *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
  *           (https://arxiv.org/pdf/1512.05287.pdf)
- * @param wRegularizer: instance of [WeightRegularizer](../regularizers.md)
+ * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
- * @param uRegularizer: instance of [WeightRegularizer](../regularizers.md)
+ * @param uRegularizer: instance [[Regularizer]]
             (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
- * @param bRegularizer: instance of [WeightRegularizer](../regularizers.md),
+ * @param bRegularizer: instance of [[Regularizer]](../regularizers.md),
             applied to the bias.
  */
 @SerialVersionUID(- 8176191554025511686L)
@@ -77,10 +77,14 @@ class LSTM[T : ClassTag] (
           .add(Dropout(p))
           .add(Dropout(p)))
         .add(ParallelTable()
-          .add(Linear(inputSize, hiddenSize))
-          .add(Linear(inputSize, hiddenSize))
-          .add(Linear(inputSize, hiddenSize))
-          .add(Linear(inputSize, hiddenSize)))
+          .add(Linear(inputSize, hiddenSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+          .add(Linear(inputSize, hiddenSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+          .add(Linear(inputSize, hiddenSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+          .add(Linear(inputSize, hiddenSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
         .add(JoinTable(1, 1))
 
       h2g = Sequential()
@@ -90,14 +94,20 @@ class LSTM[T : ClassTag] (
           .add(Dropout(p))
           .add(Dropout(p)))
         .add(ParallelTable()
-          .add(Linear(hiddenSize, hiddenSize, withBias = false))
-          .add(Linear(hiddenSize, hiddenSize, withBias = false))
-          .add(Linear(hiddenSize, hiddenSize, withBias = false))
-          .add(Linear(hiddenSize, hiddenSize, withBias = false)))
+          .add(Linear(hiddenSize, hiddenSize,
+            withBias = false, wRegularizer = uRegularizer))
+          .add(Linear(hiddenSize, hiddenSize,
+            withBias = false, wRegularizer = uRegularizer))
+          .add(Linear(hiddenSize, hiddenSize,
+            withBias = false, wRegularizer = uRegularizer))
+          .add(Linear(hiddenSize, hiddenSize,
+            withBias = false, wRegularizer = uRegularizer)))
         .add(JoinTable(1, 1))
     } else {
-      i2g = Linear(inputSize, 4 * hiddenSize)
-      h2g = Linear(hiddenSize, 4 * hiddenSize, withBias = false)
+      i2g = Linear(inputSize, 4 * hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+      h2g = Linear(hiddenSize, 4 * hiddenSize,
+        withBias = false, wRegularizer = uRegularizer)
     }
 
     gates

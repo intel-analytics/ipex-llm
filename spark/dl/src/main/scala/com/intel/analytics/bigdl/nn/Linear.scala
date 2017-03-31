@@ -142,9 +142,7 @@ class Linear[T: ClassTag](
     }
 
     accRegularization(wRegularizer, weight, gradWeight)
-    if (withBias) {
-      accRegularization(bRegularizer, bias, gradBias)
-    }
+    accRegularization(bRegularizer, bias, gradBias)
   }
 
   override def updateParameters(learningRate: T): Unit = {

@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import breeze.numerics.{abs, pow}
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -40,8 +41,11 @@ import scala.reflect.ClassTag
 @SerialVersionUID( - 4832171200145114633L)
 class LookupTable[T: ClassTag]
 (val nIndex: Int, val nOutput: Int, val paddingValue: Double = 0,
- val maxNorm: Double = Double.MaxValue,
- val normType: Double = 2.0, shouldScaleGradByFreq: Boolean = false)
+  val maxNorm: Double = Double.MaxValue,
+  val normType: Double = 2.0,
+  shouldScaleGradByFreq: Boolean = false,
+  wRegularizer: Regularizer = null
+)
 (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val weight = Tensor[T](nIndex, nOutput)
@@ -221,6 +225,8 @@ class LookupTable[T: ClassTag]
       }
       i += 1
     }
+
+    accRegularization(wRegularizer, weight, gradWeight)
   }
 
   override def toString(): String = {
@@ -275,9 +281,12 @@ object LookupTable {
   def apply[@specialized(Float, Double)T: ClassTag](
     nIndex: Int, nOutput: Int,
     paddingValue: Double = 0, maxNorm: Double = Double.MaxValue,
-    normType: Double = 2.0, shouldScaleGradByFreq: Boolean = false)
+    normType: Double = 2.0, shouldScaleGradByFreq: Boolean = false,
+    wRegularizer: Regularizer = null
+  )
    (implicit ev: TensorNumeric[T]): LookupTable[T] =
-    new LookupTable[T](nIndex, nOutput, paddingValue, maxNorm, normType, shouldScaleGradByFreq)
+    new LookupTable[T](nIndex, nOutput, paddingValue,
+      maxNorm, normType, shouldScaleGradByFreq, wRegularizer)
 }
 
 

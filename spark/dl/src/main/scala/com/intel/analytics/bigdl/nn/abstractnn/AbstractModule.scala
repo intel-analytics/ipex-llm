@@ -456,6 +456,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     parameter: Tensor[T],
     gradParameter: Tensor[T]
   ): Unit = {
+    if (null == parameter) {
+      return
+    }
+
     regularizer match {
       case l1l2: L1L2Regularizer => accL1L2Regularization(
         l1l2.l1,
