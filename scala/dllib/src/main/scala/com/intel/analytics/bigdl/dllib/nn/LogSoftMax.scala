@@ -33,10 +33,6 @@ import scala.reflect.ClassTag
  *
  * The input given in `forward(input)` must be either
  * a vector (1D tensor) or matrix (2D tensor).
- *
- * @param ev$1
- * @param ev
- * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 @SerialVersionUID(- 2954501946670913825L)
 class LogSoftMax[T: ClassTag](

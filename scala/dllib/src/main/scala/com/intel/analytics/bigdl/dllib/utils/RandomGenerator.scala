@@ -47,10 +47,13 @@ object RandomGenerator {
 }
 
 /**
- * A non-global random generator that carries its own state
- * It can be used to generate random numbers for shuffling the data
+ * A mersenne twister based fake random number generator.
+ * Please refer https://en.wikipedia.org/wiki/Mersenne_Twister.
+ * Note that it has its own state so it is not thread safe.
+ * So you should use RandomGenerator.RNG to get a thread local instance to use.
+ * That's thread-safe.
  */
-class RandomGenerator() {
+class RandomGenerator private[bigdl]() {
   private val MERSENNE_STATE_N = 624
   private val MERSENNE_STATE_M = 397
   private val MARTRX_A = 0x9908b0dfL
@@ -71,7 +74,7 @@ class RandomGenerator() {
 
   setSeed(randomSeed())
 
-  def this(seed: Long) = {
+  private[bigdl] def this(seed: Long) = {
     this()
     setSeed(seed)
   }
