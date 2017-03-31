@@ -84,7 +84,7 @@ abstract class Optimizer[T: ClassTag, D](
 
   // TODO: Remove below code to DistriOptimizer after disableCheckSingleton is not supported
   protected var checkSingleton = System.getProperty("bigdl.check.singleton",
-    true.toString).toBoolean
+    false.toString).toBoolean
 
   /**
    * Set a validate evaluation
