@@ -62,7 +62,7 @@ case object RandomUniform extends Initializer {
   def init[T](weight: Tensor[T], bias: Option[Tensor[T]], fmt: String = "output_first")
           (implicit ev: TensorNumeric[T]): Unit = {
     val shape = weight.size()
-    val (fanIn, _) = getFans(shape, fmt)
+    val (_, fanIn) = getFans(shape, fmt)
     val stdv = 1.0 / math.sqrt(fanIn)
     weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
     bias.foreach(_.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv))))
@@ -93,7 +93,7 @@ case object Xavier extends Initializer {
   def init[T](weight: Tensor[T], bias: Option[Tensor[T]], fmt: String = "output_first")
           (implicit ev: TensorNumeric[T]): Unit = {
     val shape = weight.size()
-    val (fanIn, fanOut) = getFans(shape)
+    val (fanOut, fanIn) = getFans(shape)
     val stdv = math.sqrt(6.0 / (fanIn + fanOut))
     weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
     bias.foreach(_.fill(ev.fromType(0)))
