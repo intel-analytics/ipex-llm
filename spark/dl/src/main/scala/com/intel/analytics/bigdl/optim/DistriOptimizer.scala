@@ -484,10 +484,14 @@ object DistriOptimizer {
       val (broadcastModel, broadcastCriterion, broadcastState, broadcastMethod) = broadcast.value
       if (!Engine.checkSingleton()) {
         if (checkSingleton) {
-          require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
-            "Please disable singleton check or repartition data")
+          require(Engine.checkSingleton(), "Partitions of the training data are not evenly" +
+            "distributed across the executors in the Spark cluster; are there sufficient training" +
+            "data to be distributed? Set property \"bigdl.check.singleton\" to false to skip " +
+            "this check")
         } else {
-          logger.warn("Detect multi-task run on one Executor/Container.")
+          logger.warn("Partitions of the training data are not evenly" +
+            "distributed across the executors in the Spark cluster; are there sufficient training" +
+            "data to be distributed?")
         }
       }
       Engine.setNodeAndCore(nExecutor, executorCores)
