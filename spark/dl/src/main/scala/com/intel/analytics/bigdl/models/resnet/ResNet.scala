@@ -42,7 +42,7 @@ object Convolution {
      padH: Int = 0,
      nGroup: Int = 1,
      propagateBack: Boolean = true,
-     initMethod: InitializationMethod = Default,
+     initMethod: Initializer = RandomUniform,
      optnet: Boolean = true)
      (implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     if (optnet) {

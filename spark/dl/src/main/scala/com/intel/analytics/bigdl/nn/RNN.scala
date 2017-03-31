@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
@@ -28,13 +27,13 @@ class RnnCell[T : ClassTag] (
   inputSize: Int = 4,
   hiddenSize: Int = 3,
   activation: TensorModule[T],
-  private var initMethod: InitializationMethod = Default)
+  private var initMethod: Initializer = Xavier)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](Array(hiddenSize)) {
 
   val parallelTable = ParallelTable[T]()
-  val i2h = Linear[T](inputSize, hiddenSize)
-  val h2h = Linear[T](hiddenSize, hiddenSize)
+  val i2h = Linear[T](inputSize, hiddenSize, Xavier)
+  val h2h = Linear[T](hiddenSize, hiddenSize, Xavier)
   parallelTable.add(i2h)
   parallelTable.add(h2h)
   val cAddTable = CAddTable[T]()
@@ -47,25 +46,13 @@ class RnnCell[T : ClassTag] (
       .add(Identity[T]())
       .add(Identity[T]()))
 
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
+  def setInitMethod(initMethod: Initializer): this.type = {
     this.initMethod = initMethod
     this
   }
 
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        parallelTable.modules.foreach( m => {
-          val inputSize = m.asInstanceOf[Linear[T]].weight.size(1).toFloat
-          val outputSize = m.asInstanceOf[Linear[T]].weight.size(2).toFloat
-          val stdv = 6.0 / (inputSize + outputSize)
-          m.asInstanceOf[Linear[T]].weight.apply1( _ =>
-            ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-          m.asInstanceOf[Linear[T]].bias.apply1( _ => ev.fromType[Double](0.0))
-        })
-      case _ =>
-        throw new IllegalArgumentException(s"Unsupported initMethod type ${initMethod}")
-    }
+    parallelTable.modules.foreach(m => m.asInstanceOf[Linear[T]].reset())
     zeroGradParameters()
   }
 

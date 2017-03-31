@@ -35,7 +35,7 @@ class SpatialShareConvolution[T: ClassTag](
   padH: Int = 0, // The additional zeros added per height to the input planes.
   nGroup: Int = 1, // Kernel group number
   propagateBack: Boolean = true, // propagate gradient back
-  private var initMethod: InitializationMethod = Default)
+  private var initMethod: Initializer = RandomUniform)
   (implicit ev: TensorNumeric[T]) extends SpatialConvolution[T](
   nInputPlane, nOutputPlane, kernelW, kernelH, strideW, strideH,
   padW, padH, nGroup, propagateBack, initMethod) {
@@ -391,7 +391,7 @@ object SpatialShareConvolution {
     padH: Int = 0,
     nGroup: Int = 1,
     propagateBack: Boolean = true,
-    initMethod: InitializationMethod = Default)
+    initMethod: Initializer = RandomUniform)
     (implicit ev: TensorNumeric[T]): SpatialShareConvolution[T] = {
     new SpatialShareConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
       strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)

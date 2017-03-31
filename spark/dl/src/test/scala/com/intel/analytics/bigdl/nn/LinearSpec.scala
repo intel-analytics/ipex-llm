@@ -180,17 +180,4 @@ class LinearSpec extends FlatSpec with Matchers {
     checker.checkLayer[Double](linear, input) should be(true)
   }
 
-  "Linear module using CustomInitializer" should "initialized to correct weight and bias" in {
-    val linear = new Linear[Double](5, 2)
-    linear.reset()
-    val weight = linear.weight.clone()
-    val bias = linear.bias.clone()
-    val init = CustomInitializer(weight, bias)
-
-    val newLinear = new Linear[Double](5, 2, init)
-    newLinear.reset()
-
-    newLinear.weight should be (linear.weight)
-    newLinear.bias should be (linear.bias)
-  }
 }

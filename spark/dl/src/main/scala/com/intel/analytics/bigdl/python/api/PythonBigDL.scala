@@ -55,12 +55,13 @@ object PythonBigDL {
 
   def ofDouble(): PythonBigDL[Double] = doubleInstance
 
-  def getInitMethod(initMethod: String): InitializationMethod = {
+  def getInitMethod(initMethod: String): Initializer = {
     initMethod.toLowerCase() match {
       case "xavier" => Xavier
-      case "default" => Default
+      case "randomUniform" => RandomUniform
+      case "default" => RandomUniform
       case "bilinearfiller" => BilinearFiller
-      case m: String => throw new IllegalArgumentException(s"Not supported init method: ${m}")
+      case m: String => throw new IllegalArgumentException(s"Not supported init method: $m")
     }
   }
 }
