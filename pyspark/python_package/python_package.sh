@@ -14,11 +14,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# This template is to show how to submit python job with dependencies on spark yarn clusters.
+
+#
+# This script is to create python dependency libraries and submit python jobs to spark yarn cluster which need to import these modules. 
+# 
+# After running this script, you will get vent.zip. Use this zip file to submit spark job on yarn clusters. Please refer to pythn_submit_yarn_cluster.sh.template to submit python job.
+# 
+
+pip install virtualenv
+
+#create package
+VENV="venv"
+virtualenv $VENV
+virtualenv --relocatable $VENV
+. $VENV/bin/activate
+pip install -U -r requirements.txt
+zip -q -r $VENV.zip $VENV
 
 
-PYSPARK_PYTHON=./ENV/venv/bin/python spark-submit \
---conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./ENV/venv/bin/python \
---master yarn-cluster \
---archives venv.zip#ENV \
-test.py
+
