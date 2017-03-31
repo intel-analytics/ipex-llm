@@ -34,10 +34,6 @@ object Lighting {
  * Krizhevsky et al. proposed fancy PCA when training the famous Alex-Net in 2012
  * Fancy PCA alters the intensities of the RGB channels in training images
  * For each training image, add the corresponding quantity to each RGB image pixel
- *
- * alphastd: the standard deviation of alpha
- * eigval: eigenvalues of the 3x3 covariance matrix of RGB pixel values
- * eigvec: eigenvectors of the 3x3 covariance matrix of RGB pixel values
  */
 class Lighting extends Transformer[LabeledBGRImage, LabeledBGRImage] {
   val alphastd = 0.1f
