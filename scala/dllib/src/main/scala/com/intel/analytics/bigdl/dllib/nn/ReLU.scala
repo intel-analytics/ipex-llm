@@ -27,9 +27,6 @@ import scala.reflect.ClassTag
  * f(x) = max(0, x)
  *
  * @param ip inplace mode
- * @param ev$1
- * @param ev
- * @tparam T
  */
 @SerialVersionUID(1208478077576570643L)
 class ReLU[T: ClassTag](ip: Boolean = false)(
