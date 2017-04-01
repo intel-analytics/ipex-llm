@@ -74,6 +74,20 @@ class Sequential[T: ClassTag]
     currentModule.accGradParameters(input, currentGradOutput, scale)
   }
 
+  override def backward(input: Activity, nextError: Activity): Activity = {
+    var i = modules.length - 1
+    var error = nextError.asInstanceOf[Activity]
+    while (i > 0) {
+      val input = modules(i - 1).output
+      error = modules(i).backward(input, error)
+      i -= 1
+    }
+    error = modules(0).backward(input, error)
+
+    this.gradInput = error
+    gradInput
+  }
+
   override def equals(obj: Any): Boolean = {
     if (!super.equals(obj)) {
       return false
