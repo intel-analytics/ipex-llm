@@ -26,7 +26,7 @@ For Caffe Inception model and Alexnet model, the command to transform the sequen
 
 ```bash
 dist/bin/bigdl.sh --
-java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
+java -cp dist/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
          com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator   \
     -f <imagenet_folder> -o <output_folder> -p <cores_number> -r -v
 ```
@@ -35,7 +35,7 @@ For Torch Resnet model, the command to transform the sequence file is (validatio
 
 ```bash
 dist/bin/bigdl.sh --
-java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
+java -cp dist/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
          com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator   \
      -f imagenet_folder -o output_folder -p cores_number -v
 ```
@@ -69,8 +69,8 @@ For example, following the steps below will load BVLC GoogLeNet.
   │   ├── classes.lst
   │   └── img_class.lst
   └── lib
-      ├── bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar
-      └── bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar
+      ├── bigdl-VERSION-jar-with-dependencies-and-spark.jar
+      └── bigdl-VERSION-jar-with-dependencies.jar
 
   2 directories, 5 files
   [last: s][~/loadmodel]$ tree data/
@@ -91,7 +91,7 @@ For example, following the steps below will load BVLC GoogLeNet.
   output_folder=seq
   cores_number=28
   dist/bin/bigdl.sh --                                                       \
-  java -cp dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar \
+  java -cp dist/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
            com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator   \
        -f ${imagenet_folder} -o ${output_folder} -p ${cores_number} -r -v
   hdfs dfs -put seq/val/ /
@@ -130,9 +130,9 @@ For example, following the steps below will load BVLC GoogLeNet.
   spark-submit --driver-memory 20g --master $master --executor-memory 100g                 \
                --executor-cores 28                                                         \
                --total-executor-cores 112                                                  \
-               --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+               --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
                --class com.intel.analytics.bigdl.example.loadmodel.ModelValidator          \
-                       dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar             \
+                       dist/lib/bigdl-VERSION-jar-with-dependencies.jar             \
               -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt   \
               --modelPath $pathToModel -b $batchSize
 ```
@@ -150,9 +150,9 @@ For example, following the steps below will load BVLC GoogLeNet.
                --deploy-mode client                                                        \
                --executor-cores 28                                                         \
                --num-executors 4                                                  \
-               --driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+               --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
                --class com.intel.analytics.bigdl.example.loadmodel.ModelValidator          \
-                       dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar             \
+                       dist/lib/bigdl-VERSION-jar-with-dependencies.jar             \
               -t $modelType -f $folder -m $modelName --caffeDefPath $pathToCaffePrototxt   \
               --modelPath $pathToModel -b $batchSize
 ```

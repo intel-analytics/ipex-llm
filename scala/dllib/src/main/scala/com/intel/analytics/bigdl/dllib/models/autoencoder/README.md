@@ -24,7 +24,7 @@ Spark local mode, example command:
 ```{r, engine='sh'}
 ./dist/bin/bigdl.sh -- spark-submit --master local[physical_core_number]\
   --class com.intel.analytics.bigdl.models.autoencoder.Train \
-  ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+  ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
   -b batch_size -f $DATA_FOLDER
 ```
 Spark standalone mode, example command:
@@ -33,7 +33,7 @@ Spark standalone mode, example command:
   --executor-cores cores_per_executor \
   --total-executor-cores total_cores_for_the_job \
   --class com.intel.analytics.bigdl.models.autoencoder.Train \
-  ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+  ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
   -b batch_size -f $DATA_FOLDER
 ```
 Spark yarn mode, example command:
@@ -42,7 +42,7 @@ Spark yarn mode, example command:
   --executor-cores cores_per_executor \
   --num-executors executors_number \
   --class com.intel.analytics.bigdl.models.autoencoder.Train \
-  ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+  ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
   -b batch_size -f $DATA_FOLDER
 ```
 where `$DATA_FOLDER` is the directory containing the MNIST training data, whose default value is "./ ".
