@@ -85,8 +85,10 @@ class Recurrent[T : ClassTag]()
     }
     var t = cells.length
     if (t < times) {
+      val cloneCell = cells.head.cloneModule()
+      cloneCell.parameters()._1.foreach(x => null)
       while (t < times) {
-        cells += cells.head.cloneModule()
+        cells += cloneCell.cloneModule()
           .asInstanceOf[Cell[T]]
         t += 1
       }
