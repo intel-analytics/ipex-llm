@@ -15,7 +15,7 @@ Example command for running in Spark cluster mode
 ./dist/bin/bigdl.sh -- \
 spark-submit --master local[physical_core_number] \
 --class com.intel.analytics.bigdl.models.vgg.Train \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-folder \
 -b batch_size \
 --checkpoint ~/model
@@ -29,7 +29,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
 --class com.intel.analytics.bigdl.models.vgg.Train \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-folder \
 -b batchsize \
 --checkpoint ./model
@@ -42,9 +42,9 @@ spark-submit \
 --deploy-mode client \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
---driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.vgg.Train \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-folder \
 -b batch_size \
 --checkpoint ./model
@@ -63,7 +63,7 @@ Example command for running in Spark local mode
 ./dist/bin/bigdl.sh -- \
 spark-submit --master local[physical_core_number] \
 --class com.intel.analytics.bigdl.models.vgg.Test \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f cifar \
 --model model_file \
 -b batch_size
@@ -77,7 +77,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
 --class com.intel.analytics.bigdl.models.vgg.Test \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f cifar-folder \
 --model model_file \
 -b batch_size
@@ -91,7 +91,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
 --class com.intel.analytics.bigdl.models.vgg.Test \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f cifar-folder \
 --model ./model/model.iteration_number \
 -b batch_size
