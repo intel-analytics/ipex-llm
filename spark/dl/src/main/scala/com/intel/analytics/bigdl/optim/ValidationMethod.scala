@@ -25,6 +25,11 @@ import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
 
+/**
+ * A method defined to evaluate the model.
+ * This trait can be extended by user-defined method. Such
+ * as Top1Accuracy
+ */
 trait ValidationMethod[T] extends Serializable {
   def apply(output: Activity, target: Activity): ValidationResult
 
@@ -35,6 +40,11 @@ trait ValidationMethod[T] extends Serializable {
   override def clone(): ValidationMethod[T] = SerializationUtils.clone(this)
 }
 
+/**
+ * A result that calculate the numeric value of a validation method.
+ * User-defined valuation results must override the + operation and result() method.
+ * It is executed over the samples in each batch.
+ */
 trait ValidationResult extends Serializable {
 
   def result(): (Float, Int) // (Result, TotalNum)
