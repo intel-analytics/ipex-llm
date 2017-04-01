@@ -23,9 +23,9 @@ Local mode, example command
 ./dist/bin/bigdl.sh -- \
 spark-submit \
 --master local[physical_core_number] \
---driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.lenet.Train \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size \
 --checkpoint ./model
@@ -37,9 +37,9 @@ spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
---driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.lenet.Train \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size \
 --checkpoint ./model
@@ -52,9 +52,9 @@ spark-submit \
 --deploy-mode client \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
---driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.lenet.Train \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size \
 --checkpoint ./model
@@ -78,7 +78,7 @@ Spark local mode, example command
 spark-submit \
 --master local[physical_core_number] \
 --class com.intel.analytics.bigdl.models.lenet.Test \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 --model ./model/model.iteration \
 -b batch_size
@@ -91,7 +91,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
 --class com.intel.analytics.bigdl.models.lenet.Test \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 --model ./model/model.iteration_number \
 -b batch_size
@@ -105,7 +105,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
 --class com.intel.analytics.bigdl.models.lenet.Test \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 --model ./model/model.iteration_number \
 -b batch_size
