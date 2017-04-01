@@ -20,7 +20,7 @@
 DL_PYTHON_HOME="$(cd "`dirname $0`"/../..; pwd)"
 
 BIGDL_HOME="$(cd "`dirname $0`"/../../..; pwd)"
-BIGDL_VERSION=0.1.0-SNAPSHOT
+BIGDL_VERSION=0.2.0-SNAPSHOT
 
 echo "BIGDL_HOME: $BIGDL_HOME"
 echo "SPARK_HOME": $SPARK_HOME
