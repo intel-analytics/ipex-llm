@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  * rate allows a reduction of confidence in the step size.
  */
 class LBFGS[@specialized(Float, Double) T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends OptimMethod[T] with IterateByItself {
+  implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
   private var verbose: Boolean = false
 
   /**
