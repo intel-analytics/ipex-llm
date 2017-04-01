@@ -20,10 +20,19 @@ import com.intel.analytics.bigdl.dataset.Transformer
 
 import scala.collection.Iterator
 
+/**
+ * Image crop method, e.g. random, center
+ */
 sealed trait CropperMethod
 
+/**
+ * crop the random position of image
+ */
 case object CropRandom extends CropperMethod
 
+/**
+ * crop the center of image
+ */
 case object CropCenter extends CropperMethod
 
 object BGRImgCropper {
