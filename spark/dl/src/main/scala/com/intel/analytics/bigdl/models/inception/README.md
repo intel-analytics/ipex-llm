@@ -35,7 +35,7 @@ This command will transform the images into hadoop sequence files, which are
 more suitable for a distributed training.
 
 ```bash
-java -cp bigdl_folder/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_folder -o output_folder -p cores_number
+java -cp bigdl_folder/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_folder -o output_folder -p cores_number
 ```
 
 It will generate the hadoop sequence files in the output folder.
@@ -48,9 +48,9 @@ spark-submit \
 --master spark://xxx.xxx.xxx.xxx:xxxx \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
---driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --batchSize batch_size \
 --learningRate learningRate \
 -f hdfs://.../imagenet \
@@ -64,9 +64,9 @@ spark-submit \
 --deploy-mode client \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
---driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --batchSize batch_size \
 --learningRate learningRate \
 --weightDecay weightDecay \
@@ -96,9 +96,9 @@ spark-submit \
 --master spark://xxx.xxx.xxx.xxx:xxxx \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
---driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.inception.Test \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --batchSize batch_size \
 -f hdfs://.../imagenet/val \
 --model model.file
@@ -111,9 +111,9 @@ spark-submit \
 --deploy-mode client \
 --executor-cores cores_per_executor \
 --num-executors executors_number \
---driver-class-path dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+--driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.inception.Test \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --batchSize batch_size \
 -f hdfs://.../imagenet/val \
 --model model.file
