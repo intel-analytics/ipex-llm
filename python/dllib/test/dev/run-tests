@@ -20,6 +20,7 @@
 DL_PYTHON_HOME="$(cd "`dirname $0`"/../..; pwd)"
 
 BIGDL_HOME="$(cd "`dirname $0`"/../../..; pwd)"
+BIGDL_VERSION=0.1.0-SNAPSHOT
 
 echo "BIGDL_HOME: $BIGDL_HOME"
 echo "SPARK_HOME": $SPARK_HOME
@@ -31,7 +32,7 @@ PYSPARK_ZIP=`find $SPARK_HOME/python/lib  -type f -iname '*.zip' | tr "\n" ":"`
 
 export PYTHONPATH=$PYSPARK_ZIP:$DL_PYTHON_HOME:$DL_PYTHON_HOME/dl:$DL_PYTHON_HOME/test/dev:$BIGDL_HOME/spark/dl/src/main/resources/spark-bigdl.conf
 
-export SPARK_CLASSPATH=$BIGDL_HOME/spark/dl/target/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar
+export SPARK_CLASSPATH=$BIGDL_HOME/spark/dl/target/bigdl-$BIGDL_VERSION-jar-with-dependencies.jar
 
 cd "`dirname $0`"
 exec $BIGDL_HOME/scripts/bigdl.sh -- python -u ./run-tests.py "$@"
