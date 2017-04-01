@@ -381,7 +381,7 @@ object Engine {
       val core = coreString.toInt
       val nodeNum = dynamicAllocationExecutor.getOrElse {
         val total = maxString.toInt
-        require(total > core && total % core == 0, s"Engine.init: total core " +
+        require(total >= core && total % core == 0, s"Engine.init: total core " +
           s"number($total) can't be divided " +
           s"by single core number($core) provided to spark-submit")
         total / core
@@ -415,7 +415,7 @@ object Engine {
         require(maxString != null, "Engine.init: Can't find total core number" +
           ". Do you submit with --total-executor-cores")
         val total = maxString.toInt
-        require(total > core && total % core == 0, s"Engine.init: total core " +
+        require(total >= core && total % core == 0, s"Engine.init: total core " +
           s"number($total) can't be divided " +
           s"by single core number($core) provided to spark-submit")
         total / core

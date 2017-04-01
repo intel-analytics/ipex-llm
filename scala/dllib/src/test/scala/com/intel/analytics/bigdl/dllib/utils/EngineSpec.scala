@@ -67,6 +67,16 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
+  "Engine" should "be inited correct under spark standalone environment with single executor" in {
+    TestUtils.sparkStandaloneEnv(totalCore = 4, core = 4) {
+      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
+      sc = new SparkContext(conf)
+      Engine.init
+      Engine.nodeNumber should be(1)
+      Engine.coreNumber should be(4)
+    }
+  }
+
   "Engine" should "be inited correct under spark yarn environment" in {
     TestUtils.sparkYarnEnv(executors = 6, core = 4) {
       val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
@@ -77,12 +87,32 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
+  "Engine" should "be inited correct under spark yarn environment with single executor" in {
+    TestUtils.sparkYarnEnv(executors = 1, core = 4) {
+      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
+      sc = new SparkContext(conf)
+      Engine.init
+      Engine.nodeNumber should be(1)
+      Engine.coreNumber should be(4)
+    }
+  }
+
   "Engine" should "be inited correct under spark mesos environment" in {
     TestUtils.sparkMesosEnv(totalCore = 24, core = 4) {
       val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
       sc = new SparkContext(conf)
       Engine.init
       Engine.nodeNumber should be(6)
+      Engine.coreNumber should be(4)
+    }
+  }
+
+  "Engine" should "be inited correct under spark mesos environment with single executor" in {
+    TestUtils.sparkMesosEnv(totalCore = 4, core = 4) {
+      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
+      sc = new SparkContext(conf)
+      Engine.init
+      Engine.nodeNumber should be(1)
       Engine.coreNumber should be(4)
     }
   }
