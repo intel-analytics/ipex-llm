@@ -18,14 +18,19 @@ package com.intel.analytics.bigdl.visualization
 
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
 import Summary._
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import org.tensorflow.framework
 
-@com.intel.analytics.bigdl.tags.Parallel
-class SummarySpec extends FlatSpec with Matchers {
+@com.intel.analytics.bigdl.tags.Serial
+class SummarySpec extends FlatSpec with Matchers with BeforeAndAfter {
+
+  before {
+    Engine.localMode = false
+    Engine.init(1, 4, true)
+  }
 
   "write scalar summary" should "work properly" in {
     val logdir = com.google.common.io.Files.createTempDir()
