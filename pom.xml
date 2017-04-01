@@ -569,6 +569,12 @@
             </properties>
         </profile>
         <profile>
+            <id>rh5</id>
+            <properties>
+                <mkl-java-os-version>mkl-java-rh5</mkl-java-os-version>
+            </properties>
+        </profile>
+        <profile>
             <id>src</id>
             <build>
                 <plugins>
