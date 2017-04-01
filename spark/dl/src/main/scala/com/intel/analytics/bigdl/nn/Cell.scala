@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -35,8 +36,10 @@ import scala.reflect.ClassTag
  *                     (because each time step a LSTM return two hiddens `h` and `c` in order,
  *                     which have the same size.)
  */
-abstract class Cell[T : ClassTag](val hiddensShape: Array[Int])
-  (implicit ev: TensorNumeric[T])
+abstract class Cell[T : ClassTag](
+  val hiddensShape: Array[Int],
+  val regularizers: Array[Regularizer[T]] = null
+)(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
 
   /**
@@ -124,5 +127,13 @@ abstract class Cell[T : ClassTag](val hiddensShape: Array[Int])
 
   override def getParametersTable(): Table = {
     cell.getParametersTable()
+
+  def regluarized(
+    isRegularized: Boolean
+  ): Unit = {
+    if (null != regularizers) {
+      regularizers.foreach(x =>
+        if (null != x) x.isRegualrized = isRegularized)
+    }
   }
 }

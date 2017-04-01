@@ -46,8 +46,8 @@ class Linear[T: ClassTag](
   outputSize: Int,
   private var initMethod: InitializationMethod = Default,
   withBias: Boolean = true,
-  wRegularizer: Regularizer = null,
-  bRegularizer: Regularizer = null
+  wRegularizer: Regularizer[T] = null,
+  bRegularizer: Regularizer[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
   val bias: Tensor[T] = if (withBias) Tensor[T](outputSize) else null
@@ -141,8 +141,12 @@ class Linear[T: ClassTag](
       if (withBias) gradBias.addmv(value, gradOutput.t, addBuffer)
     }
 
-    accRegularization(wRegularizer, weight, gradWeight)
-    accRegularization(bRegularizer, bias, gradBias)
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight)
+    }
+    if (null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -220,8 +224,8 @@ object Linear {
       outputSize: Int,
       initMethod: InitializationMethod = Default,
       withBias: Boolean = true,
-      wRegularizer: Regularizer = null,
-      bRegularizer: Regularizer = null
+      wRegularizer: Regularizer[T] = null,
+      bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]) : Linear[T] = {
     new Linear[T](inputSize, outputSize, initMethod,
       withBias, wRegularizer, bRegularizer)

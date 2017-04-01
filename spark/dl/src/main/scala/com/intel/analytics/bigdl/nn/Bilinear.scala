@@ -41,8 +41,8 @@ class Bilinear[T: ClassTag](
   val inputSize2: Int,
   val outputSize: Int,
   val biasRes: Boolean = true,
-  wRegularizer: Regularizer = null,
-  bRegularizer: Regularizer = null
+  wRegularizer: Regularizer[T] = null,
+  bRegularizer: Regularizer[T] = null
  )(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   require((inputSize1 > 0) && (inputSize2 > 0) && (outputSize > 0),
@@ -170,8 +170,8 @@ class Bilinear[T: ClassTag](
     }
     if(null != bias) gradBias.add(ev.fromType(scale), gradOutput.sum(1))
 
-    accRegularization(wRegularizer, weight, gradWeight)
-    accRegularization(bRegularizer, bias, gradBias)
+    wRegularizer.accRegularization(weight, gradWeight)
+    bRegularizer.accRegularization(bias, gradBias)
   }
 
   override def zeroGradParameters(): Unit = {
@@ -238,8 +238,8 @@ object Bilinear {
     inputSize2: Int,
     outputSize: Int,
     biasRes: Boolean = true,
-    wRegularizer: Regularizer = null,
-    bRegularizer: Regularizer = null
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]) : Bilinear[T] = {
     new Bilinear[T](inputSize1, inputSize2, outputSize, biasRes,
       wRegularizer, bRegularizer)

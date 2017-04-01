@@ -52,12 +52,15 @@ class LSTM[T : ClassTag] (
   val inputSize: Int,
   val hiddenSize: Int,
   val p: Double = 0,
-  val wRegularizer: Regularizer = null,
-  val uRegularizer: Regularizer = null,
-  val bRegularizer: Regularizer = null
+  val wRegularizer: Regularizer[T] = null,
+  val uRegularizer: Regularizer[T] = null,
+  val bRegularizer: Regularizer[T] = null
 )
   (implicit ev: TensorNumeric[T])
-  extends Cell[T](hiddensShape = Array(hiddenSize, hiddenSize)) {
+  extends Cell[T](
+    hiddensShape = Array(hiddenSize, hiddenSize),
+    regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
+  ) {
   var gates: Sequential[T] = _
   var cellLayer: Sequential[T] = _
   override var cell: AbstractModule[Activity, Activity, T] = buildLSTM()
@@ -206,9 +209,9 @@ object LSTM {
     inputSize: Int,
     hiddenSize: Int,
     p: Double = 0,
-    wRegularizer: Regularizer = null,
-    uRegularizer: Regularizer = null,
-    bRegularizer: Regularizer = null
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null
   )
     (implicit ev: TensorNumeric[T]): LSTM[T] = {
     new LSTM[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)

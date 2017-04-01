@@ -44,7 +44,7 @@ class LookupTable[T: ClassTag]
   val maxNorm: Double = Double.MaxValue,
   val normType: Double = 2.0,
   shouldScaleGradByFreq: Boolean = false,
-  wRegularizer: Regularizer = null
+  wRegularizer: Regularizer[T] = null
 )
 (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
@@ -226,7 +226,7 @@ class LookupTable[T: ClassTag]
       i += 1
     }
 
-    accRegularization(wRegularizer, weight, gradWeight)
+    wRegularizer.accRegularization(weight, gradWeight)
   }
 
   override def toString(): String = {
@@ -282,7 +282,7 @@ object LookupTable {
     nIndex: Int, nOutput: Int,
     paddingValue: Double = 0, maxNorm: Double = Double.MaxValue,
     normType: Double = 2.0, shouldScaleGradByFreq: Boolean = false,
-    wRegularizer: Regularizer = null
+    wRegularizer: Regularizer[T] = null
   )
    (implicit ev: TensorNumeric[T]): LookupTable[T] =
     new LookupTable[T](nIndex, nOutput, paddingValue,

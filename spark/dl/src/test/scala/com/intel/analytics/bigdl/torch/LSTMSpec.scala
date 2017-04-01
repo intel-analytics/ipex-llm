@@ -47,8 +47,8 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LSTM L2 regularizer" should "works correctly" in {
-
-    val hiddenSize = 5
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val hiddenSize = 4
     val inputSize = 6
     val outputSize = 5
     val seqLength = 5
@@ -71,14 +71,14 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val model1 = Sequential[Double]()
       .add(rec1
         .add(LSTM[Double](inputSize, hiddenSize)))
-//      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize)))
 
     val model2 = Sequential[Double]()
       .add(rec2
         .add(LSTM[Double](inputSize, hiddenSize, uRegularizer = L2Regularizer(0.1),
           wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1))))
-//      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize,
-//        wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1))))
+      .add(TimeDistributed[Double](Linear[Double](hiddenSize, outputSize,
+        wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1))))
 
     val criterion = TimeDistributedCriterion[Double](
       CrossEntropyCriterion[Double](), false)
@@ -114,13 +114,13 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     var loss1: Array[Double] = null
-    for (i <- 1 to 1) {
+    for (i <- 1 to 100) {
       loss1 = sgd.optimize(feval1, weights1, state1)._2
       println(s"${i}-th loss = ${loss1(0)}")
     }
 
     var loss2: Array[Double] = null
-    for (i <- 1 to 100) {
+    for (i <- 1 to 1) {
       loss2 = sgd.optimize(feval2, weights2, state2)._2
       println(s"${i}-th loss = ${loss2(0)}")
     }

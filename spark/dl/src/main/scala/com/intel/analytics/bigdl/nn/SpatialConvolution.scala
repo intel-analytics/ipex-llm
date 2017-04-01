@@ -46,8 +46,8 @@ class SpatialConvolution[T: ClassTag](
   val nGroup: Int = 1, // Kernel group number
   val propagateBack: Boolean = true, // propagate gradient back
   private var initMethod: InitializationMethod = Default,
-  val wRegularizer: Regularizer = null,
-  val bRegularizer: Regularizer = null
+  val wRegularizer: Regularizer[T] = null,
+  val bRegularizer: Regularizer[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
@@ -329,8 +329,8 @@ class SpatialConvolution[T: ClassTag](
       gradBias.addmv(ev.fromType(1.0), ev.fromType(1.0), gradientBiasMT.t, onesBatch)
     }
 
-    accRegularization(wRegularizer, weight, gradWeight)
-    accRegularization(bRegularizer, bias, gradBias)
+    wRegularizer.accRegularization(weight, gradWeight)
+    bRegularizer.accRegularization(bias, gradBias)
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -584,8 +584,8 @@ object SpatialConvolution {
       nGroup: Int = 1,
       propagateBack: Boolean = true,
       initMethod: InitializationMethod = Default,
-      wRegularizer: Regularizer = null,
-      bRegularizer: Regularizer = null
+      wRegularizer: Regularizer[T] = null,
+      bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
       strideW, strideH, padW, padH, nGroup, propagateBack, initMethod,

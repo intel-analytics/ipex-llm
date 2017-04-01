@@ -63,8 +63,8 @@ class SpatialDilatedConvolution[T: ClassTag](
   val dilationW: Int = 1,
   val dilationH: Int = 1,
   private var initMethod: InitializationMethod = Default,
-  val wRegularizer: Regularizer = null,
-  val bRegularizer: Regularizer = null
+  val wRegularizer: Regularizer[T] = null,
+  val bRegularizer: Regularizer[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
@@ -466,8 +466,8 @@ class SpatialDilatedConvolution[T: ClassTag](
       input.resize(nInputPlane, inputHeight, inputWidth)
     }
 
-    accRegularization(wRegularizer, weight, gradWeight)
-    accRegularization(bRegularizer, bias, gradBias)
+    wRegularizer.accRegularization(weight, gradWeight)
+    bRegularizer.accRegularization(bias, gradBias)
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -559,8 +559,8 @@ object SpatialDilatedConvolution {
       dilationW: Int = 1,
       dilationH: Int = 1,
       initMethod: InitializationMethod = Default,
-      wRegularizer: Regularizer = null,
-      bRegularizer: Regularizer = null
+      wRegularizer: Regularizer[T] = null,
+      bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]) : SpatialDilatedConvolution[T] = {
     new SpatialDilatedConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH, dilationW, dilationH, initMethod,
