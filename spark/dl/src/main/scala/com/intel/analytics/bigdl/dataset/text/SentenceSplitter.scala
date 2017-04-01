@@ -24,6 +24,12 @@ import opennlp.tools.sentdetect.{SentenceDetector, SentenceDetectorME, SentenceM
 
 import scala.collection.Iterator
 
+/**
+ * Input a sequence of string, cut it into sentences.
+ * The sentenceDetector is an API from OpenNLP.
+ * If sentFile is None, the default sentence delimiter is period.
+ * @param sentFile A trained model by OpenNLP
+ */
 class SentenceSplitter(sentFile: Option[String] = None)
   extends Transformer[String, Array[String]] {
 
