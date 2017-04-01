@@ -33,10 +33,13 @@ import scala.reflect.ClassTag
 trait ValidationMethod[T] extends Serializable {
   def apply(output: Activity, target: Activity): ValidationResult
 
+  // return the name of this method
   protected def format(): String
 
+  // return the name of this method
   override def toString(): String = format()
 
+  // deep clone the object
   override def clone(): ValidationMethod[T] = SerializationUtils.clone(this)
 }
 
@@ -47,15 +50,16 @@ trait ValidationMethod[T] extends Serializable {
  */
 trait ValidationResult extends Serializable {
 
+  // return the calculation results over all the samples in the batch
   def result(): (Float, Int) // (Result, TotalNum)
 
   // scalastyle:off methodName
   def +(other: ValidationResult): ValidationResult
 
-  // scalastyle:on methodName
-
+  // return the name of this trait
   protected def format(): String
 
+  // return the name of this trait
   override def toString(): String = format()
 }
 
