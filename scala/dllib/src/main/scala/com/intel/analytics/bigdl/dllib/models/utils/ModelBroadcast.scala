@@ -25,7 +25,8 @@ import org.apache.spark.broadcast.Broadcast
 import scala.reflect.ClassTag
 
 /**
- * ModelBroadcast is used to broadcast model.
+ * ModelBroadcast is used to broadcast model when doing model inference.
+ * Note: do not use it in model training since the broadcast models share weights and biases
  * It shortens the broadcast time, which is especially useful when the model size is large
  * @tparam T data type
  */
