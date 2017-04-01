@@ -87,6 +87,7 @@ class Recurrent[T : ClassTag]()
     if (t < times) {
       val cloneCell = cells.head.cloneModule()
       cloneCell.parameters()._1.foreach(x => null)
+      cloneCell.parameters()._2.foreach(x => null)
       while (t < times) {
         cells += cloneCell.cloneModule()
           .asInstanceOf[Cell[T]]
