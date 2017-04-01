@@ -16,8 +16,7 @@
 
 package com.intel.analytics.bigdl.visualization.tensorboard
 
-import java.util.concurrent.Executors
-
+import com.intel.analytics.bigdl.utils.Engine
 import org.tensorflow
 import org.tensorflow.util.Event
 
@@ -26,15 +25,12 @@ import org.tensorflow.util.Event
  * @param logDirecotry
  * @param flushMillis
  */
-class FileWriter(val logDirecotry : String, flushMillis: Int = 10000) {
+class FileWriter(val logDirecotry : String, flushMillis: Int = 1000) {
   private val logDir = new java.io.File(logDirecotry)
   require(!logDir.exists() || logDir.isDirectory, s"FileWriter: can not create $logDir")
   if (!logDir.exists()) logDir.mkdirs()
   private val eventWriter = new EventWriter(logDirecotry, flushMillis)
-  val writerDemon = Executors.defaultThreadFactory().newThread(eventWriter)
-  writerDemon.setDaemon(true)
-  private val pool = Executors.newFixedThreadPool(1)
-  pool.submit(writerDemon)
+  Engine.default.invoke(() => eventWriter.run())
 
   /**
    * Adds a Summary protocol buffer to the event file.
@@ -67,6 +63,5 @@ class FileWriter(val logDirecotry : String, flushMillis: Int = 10000) {
    */
   def close(): Unit = {
     eventWriter.close()
-    pool.shutdown()
   }
 }
