@@ -64,7 +64,3 @@ trait OptimMethod[@specialized(Float, Double) T] extends Serializable {
    */
   def getHyperParameter(config: Table): String = ""
 }
-
-trait IterateByItself
-
-trait FullBatchOptimMethod
