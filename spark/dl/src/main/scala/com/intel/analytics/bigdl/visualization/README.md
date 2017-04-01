@@ -3,14 +3,14 @@
 
 ---
 
-> This wheel distribution is lauched by this group:https://github.com/dmlc/tensorboard
+> This wheel distribution is provided by https://github.com/dmlc/tensorboard
 
->You can find the wheel repository at https://pypi.python.org/pypi/tensorboard
+> You can find the wheel repository at https://pypi.python.org/pypi/tensorboard
 
 
-Simply, with one pip command you can install it in Ununtu. But it is very likely that you will run into problems while installing. If you meet any error, please check the instructions below.
+Simply, with one pip command you can install it in Ununtu. If you meet any error, please check the known issues below.
 
-If you install it with Mac OS, similar in ubuntu, it is easy to install with pip. Notice that the wheels for mac do not require CPython to support wide unicode. If you meet any error, read the instructions below carefully. You may find your own solutions from these information.
+If you install it with Mac OS, similar in ubuntu, it is easy to install with pip.
 
 ## Requirement
 
