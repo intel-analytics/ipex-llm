@@ -282,10 +282,11 @@ class TrainSummary(JavaValue, ):
            "Throughput", "Parameters". "Parameters" is an umbrella tag that 
            includes weight, bias, gradWeight, gradBias, and some running status
            (eg. runningMean and runningVar in BatchNormalization). If you 
-           didn't set any triggers, we will by default record LearningRate, 
-           Loss and Throughput in each iteration, while *NOT* recording 
-           Parameters, as recording parameters may introduce substantial 
-           overhead when the model is very big.
+           didn't set any triggers, we will by default record Loss and Throughput
+           in each iteration, while *NOT* recording LearningRate and Parameters,
+           as recording parameters may introduce substantial overhead when the
+           model is very big, LearningRate is not a public attribute for all
+           OptimMethod.
         :param trigger: trigger
         """
         return callBigDlFunc(self.bigdl_type, "summarySetTrigger", self.value,
