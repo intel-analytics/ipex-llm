@@ -612,7 +612,7 @@ object DistriOptimizer {
     if(validationSummary.isDefined) {
       results.foreach { r =>
         val result = r._1.result
-        validationSummary.get.addScalar(r._2.toString(), result._1 / result._2,
+        validationSummary.get.addScalar(r._2.toString(), result._1,
           state[Int]("neval") - 1
         )
       }
