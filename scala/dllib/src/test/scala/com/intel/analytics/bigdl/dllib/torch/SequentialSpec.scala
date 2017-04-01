@@ -79,7 +79,8 @@ class SequentialSpec extends FlatSpec with BeforeAndAfter with Matchers {
     var gradInput = Tensor[Double]()
     while (i < 10) {
       output = module.forward(input).toTensor[Double]
-      gradInput = module.backward(input, gradOutput).toTensor[Double]
+      gradInput = module.updateGradInput(input, gradOutput).toTensor[Double]
+      module.accGradParameters(input, gradOutput)
       i += 1
     }
     val end = System.nanoTime()
