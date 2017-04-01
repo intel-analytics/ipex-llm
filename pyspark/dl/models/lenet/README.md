@@ -28,8 +28,8 @@ We would train a LeNet model in spark local mode with the following commands and
 
     SPARK_HOME=...
     MASTER=local[*]
-    PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-0.1.0-SNAPSHOT-python-api.zip
-    BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar
+    PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
+    BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
     PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
     ${SPARK_HOME}/bin/spark-submit \
         --master ${MASTER} \
@@ -43,7 +43,7 @@ We would train a LeNet model in spark local mode with the following commands and
         --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
         --jars ${BigDL_JAR_PATH} \
         --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
-        --conf spark.executor.extraClassPath=bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+        --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
         ${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py \
         --action train
  ```

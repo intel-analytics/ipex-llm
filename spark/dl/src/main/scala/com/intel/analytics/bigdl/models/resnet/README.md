@@ -28,7 +28,7 @@ You can build one by refer to the
 dist/bin/bigdl.sh -- \
 spark-submit --master local[physical_core_number] \
 --class com.intel.analytics.bigdl.models.resnet.Train \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-10/ \
 --batchSize 448 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 \
 --learningRate 0.1
@@ -40,7 +40,7 @@ spark-submit --master spark://xxx.xxx.xxx.xxx:xxxx \
 --driver-memory 5g --executor-memory 5g \
 --total-executor-cores 32 --executor-cores 8 \
 --class com.intel.analytics.bigdl.models.resnet.Train \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-10/ \
 --batchSize 448 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 \
 --learningRate 0.1
@@ -52,7 +52,7 @@ spark-submit --master yarn \
 --driver-memory 5g --executor-memory 5g \
 --num-executors 4 --executor-cores 8 \
 --class com.intel.analytics.bigdl.models.resnet.Train \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-10/ \
 --batchSize 448 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 \
 --learningRate 0.1

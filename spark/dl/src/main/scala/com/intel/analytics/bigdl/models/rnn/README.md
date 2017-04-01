@@ -42,7 +42,7 @@ Example command:
 ```bash
 ./dist/bin/bigdl.sh -- \
 spark-submit --class com.intel.analytics.bigdl.models.rnn.Train \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --core core_number_per_node \
 --node node_number \
 --env spark \
@@ -71,7 +71,7 @@ Example command:
 ```bash
 ./dist/bin/bigdl.sh -- \
 spark-submit --class com.intel.analytics.bigdl.models.rnn.Test \
-dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --core core_number_per_node \
 --node node_number \
 --env spark \
