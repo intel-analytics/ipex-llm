@@ -407,7 +407,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * 1 2 3
    * 4 5 6
    * tensor.narrow(1, 1, 1) is [1 2 3]
-   * tensor.narrow(2, 2, 3) is
+   * tensor.narrow(2, 2, 2) is
    * 2 3
    * 5 6
    *
@@ -459,6 +459,13 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @return current tensor
    */
   def squeeze(dim: Int): Tensor[T]
+
+  /**
+   * Create a new tensor that removes all singleton dimensions of the tensor
+   *
+   * @return create a new tensor
+   */
+  def squeezeNewTensor(): Tensor[T]
 
   /**
    * Return a new tensor with specified sizes. The input tensor must be contiguous, and the
@@ -608,6 +615,9 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
     throw new IllegalArgumentException("Tensor cannot be cast to Table")
 }
 
+/**
+ * Numeric type of tensor.
+ */
 sealed trait TensorDataType
 
 object DoubleType extends TensorDataType

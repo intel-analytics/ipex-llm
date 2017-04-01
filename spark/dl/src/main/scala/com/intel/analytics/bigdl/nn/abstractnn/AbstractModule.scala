@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.abstractnn
 
-import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -29,6 +29,12 @@ import com.intel.analytics.bigdl.dataset.Sample
 
 import scala.reflect.ClassTag
 
+/**
+ * [[TensorModule]] is an abstract sub-class of [[AbstractModule]], whose
+ * input and output type both are [[Tensor]].
+ *
+ * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ */
 abstract class TensorModule[T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T]
 

@@ -24,6 +24,16 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
+/**
+ * Dropout masks(set to zero) parts of input using a bernoulli distribution.
+ * Each input element has a probability initP of being dropped. If scale is
+ * set, the outputs are scaled by a factor of 1/(1-initP) during training.
+ * During evaluating, output is the same as input.
+ *
+ * @param initP probability to be dropped
+ * @param inplace inplace model
+ * @param scale if scale by a factor of 1/(1-initP)
+ */
 @SerialVersionUID(- 4636332259181125718L)
 class Dropout[T: ClassTag](
   val initP: Double = 0.5, val inplace: Boolean = false, var scale: Boolean = true)(
@@ -34,6 +44,10 @@ class Dropout[T: ClassTag](
   @transient
   protected var results: Array[Future[Unit]] = null
 
+  /**
+   * Get current probability to be dropped.
+   * @return p
+   */
   def getP(): T = {
     return ev.fromType[Double](p)
   }
@@ -161,6 +175,11 @@ class Dropout[T: ClassTag](
     this
   }
 
+  /**
+   * Set current probability to be dropped.
+   * @param p new probability
+   * @return
+   */
   def setP(p: Double): this.type = {
     this.p = p
     this

@@ -24,6 +24,18 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+/**
+ * This layer has a weight tensor with given size. The weight will be multiplied element wise to
+ * the input tensor. If the element number of the weight tensor match the input tensor, a simply
+ * element wise multiply will be done. Or the bias will be expanded to the same size of the input.
+ * The expand means repeat on unmatched singleton dimension(if some unmatched dimension isn't
+ * singleton dimension, it will report an error). If the input is a batch, a singleton dimension
+ * will be add to the first dimension before the expand.
+ *
+ * @param size the size of the bias
+ * @param ev numeric operator
+ * @tparam T numeric type
+ */
 @SerialVersionUID(8888147326550637025L)
 class CMul[@specialized(Float, Double) T: ClassTag](
   val size: Array[Int])(

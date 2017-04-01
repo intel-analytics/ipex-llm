@@ -21,6 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger
 import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
 
+/**
+ * define engine type trait
+ */
 sealed trait EngineType
 
 case object MklBlas extends EngineType
@@ -119,8 +122,8 @@ object Engine {
     "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
 
   private val ENV_VAR_ERROR =
-    "Please use bigdl.sh to init the environment. See " +
-      "https://github.com/intel-analytics/BigDL/wiki/Getting-Started#before-running" +
+    "Do you run 'source bigdl.sh' before the program? Please use bigdl.sh to init the environment" +
+      ". See https://github.com/intel-analytics/BigDL/wiki/Getting-Started#before-running" +
       "-a-bigdl-program. And init SparkConf by refering " +
       "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine. " +
       "For test purpose, set bigdl.disableCheckSysEnv to true"
@@ -378,7 +381,7 @@ object Engine {
       val core = coreString.toInt
       val nodeNum = dynamicAllocationExecutor.getOrElse {
         val total = maxString.toInt
-        require(total > core && total % core == 0, s"Engine.init: total core " +
+        require(total >= core && total % core == 0, s"Engine.init: total core " +
           s"number($total) can't be divided " +
           s"by single core number($core) provided to spark-submit")
         total / core
@@ -412,7 +415,7 @@ object Engine {
         require(maxString != null, "Engine.init: Can't find total core number" +
           ". Do you submit with --total-executor-cores")
         val total = maxString.toInt
-        require(total > core && total % core == 0, s"Engine.init: total core " +
+        require(total >= core && total % core == 0, s"Engine.init: total core " +
           s"number($total) can't be divided " +
           s"by single core number($core) provided to spark-submit")
         total / core

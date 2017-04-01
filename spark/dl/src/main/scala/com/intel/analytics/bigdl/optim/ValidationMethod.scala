@@ -16,19 +16,23 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.Criterion
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
 
 trait ValidationMethod[T] extends Serializable {
-  def apply(output: Activity, target: Activity, criterion: Criterion[T] = null): ValidationResult
+  def apply(output: Activity, target: Activity): ValidationResult
 
   protected def format(): String
 
   override def toString(): String = format()
+
+  override def clone(): ValidationMethod[T] = SerializationUtils.clone(this)
 }
 
 trait ValidationResult extends Serializable {
@@ -45,6 +49,11 @@ trait ValidationResult extends Serializable {
   override def toString(): String = format()
 }
 
+/**
+ * Represent an accuracy result. Accuracy means a ratio of correct number and total number.
+ * @param correct correct number
+ * @param count total count number
+ */
 class AccuracyResult(private var correct: Int, private var count: Int)
   extends ValidationResult {
 
@@ -87,8 +96,11 @@ class AccuracyResult(private var correct: Int, private var count: Int)
   }
 }
 
+/**
+ * Caculate the percentage that output's max probability index equals target
+ */
 class Top1Accuracy[T] extends ValidationMethod[T] {
-  override def apply(output: Activity, target: Activity, criterion: Criterion[T] = null):
+  override def apply(output: Activity, target: Activity):
   ValidationResult = {
     var correct = 0
     var count = 0
@@ -122,11 +134,14 @@ class Top1Accuracy[T] extends ValidationMethod[T] {
   override def format(): String = "Top1Accuracy"
 }
 
+/**
+ * Caculate the percentage that target in output's top5 probability indexes
+ */
 class Top5Accuracy[T] extends ValidationMethod[T] {
-  override def apply(output: Activity, target: Activity, criterion: Criterion[T] = null):
+  override def apply(output: Activity, target: Activity):
   AccuracyResult = {
     val _output = output.asInstanceOf[Tensor[T]]
-    val _target = target.asInstanceOf[Tensor[T]]
+    val _target = target.asInstanceOf[Tensor[T]].squeezeNewTensor()
     var correct = 0
     var count = 0
     if (_output.dim() == 2) {
@@ -162,10 +177,16 @@ class Top5Accuracy[T] extends ValidationMethod[T] {
   override def format(): String = "Top5Accuracy"
 }
 
+/**
+ * Use loss as a validation result
+ *
+ * @param loss loss calculated by forward function
+ * @param count recording the times of calculating loss
+ */
 class LossResult(private var loss: Float, private var count: Int)
   extends ValidationResult {
 
-  override def result(): (Float, Int) = (loss.toFloat, count)
+  override def result(): (Float, Int) = (loss.toFloat / count, count)
 
   // scalastyle:off methodName
   override def +(other: ValidationResult): ValidationResult = {
@@ -204,9 +225,17 @@ class LossResult(private var loss: Float, private var count: Int)
   }
 }
 
-class Loss[@specialized(Float, Double)T: ClassTag]()
+/**
+ * This evaluation method is calculate loss of output with respect to target
+ *
+ * @param criterion criterion method for evaluation
+ * The default criterion is [[ClassNLLCriterion]]
+ */
+class Loss[@specialized(Float, Double)T: ClassTag](
+ var criterion: Criterion[T] = null)
 (implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
-  override def apply(output: Activity, target: Activity, criterion: Criterion[T]): LossResult = {
+  if (criterion == null) criterion = ClassNLLCriterion[T]()
+  override def apply(output: Activity, target: Activity): LossResult = {
     val _output = output.asInstanceOf[Tensor[T]]
     val _target = target.asInstanceOf[Tensor[T]]
     val loss = ev.toType[Float](criterion.forward(_output, _target))

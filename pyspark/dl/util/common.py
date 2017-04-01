@@ -44,7 +44,15 @@ class JavaValue(object):
 
 
 class TestResult():
+    """
+    A testing result used to benchmark the model quality.
+    """
     def __init__(self, result, total_num, method):
+        """
+        :param result: the validation result. i.e: top1 accuracy percentage.
+        :param total_num: the total processed records.
+        :param method: the validation method. i.e: Top1Accuracy
+        """
         self.result = result
         self.total_num = total_num
         self.method = method
@@ -59,6 +67,8 @@ class TestResult():
 
 class JTensor(object):
     """
+    A wrapper to easy our work when need to pass or return Tensor to/from Scala.
+
     >>> import numpy as np
     >>> from util.common import JTensor
     >>> np.random.seed(123)
@@ -70,7 +80,7 @@ class JTensor(object):
         self.bigdl_type = bigdl_type
 
     @classmethod
-    def from_ndarray(cls, a_ndarray):
+    def from_ndarray(cls, a_ndarray, bigdl_type="float"):
         """
         Convert a ndarray to Tensor which would be used in Java side.
         >>> import numpy as np
@@ -87,7 +97,8 @@ class JTensor(object):
         >>> (array_from_tensor == data).all()
         True
         """
-        return cls(*JTensor.flatten_ndarray(a_ndarray)) if a_ndarray is not None else None  # noqa
+        return cls(*JTensor.flatten_ndarray(a_ndarray),
+                   bigdl_type= bigdl_type) if a_ndarray is not None else None  # noqa
 
     def to_ndarray(self):
         def get_dtype():

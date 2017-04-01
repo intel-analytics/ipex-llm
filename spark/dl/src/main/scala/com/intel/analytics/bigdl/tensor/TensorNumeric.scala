@@ -21,10 +21,19 @@ import java.util
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
+/**
+ * class of math operation
+ */
 class TensorNumericMath
 
+/**
+ * Math operation for tensor
+ */
 object TensorNumericMath {
 
+  /**
+   * define tensor math operation
+   */
   trait TensorNumeric[@specialized(Float, Double) T] extends Serializable {
     def one: T = fromType[Int](1)
 
@@ -124,6 +133,9 @@ object TensorNumericMath {
     def getType(): TensorDataType
   }
 
+  /**
+   * Numerical operation for type T
+   */
   class TensorNumericOps[@specialized(Float, Double) T](lhs: T)(implicit ev: TensorNumeric[T]) {
     // scalastyle:off methodName
     def +(rhs: T): T = ev.plus(lhs, rhs)

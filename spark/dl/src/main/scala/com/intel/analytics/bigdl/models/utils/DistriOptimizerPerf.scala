@@ -127,6 +127,15 @@ object DistriOptimizerPerf {
   }
 }
 
+/**
+ * The parameters of a distributed optimizer
+ *
+ * @param batchSize batch size
+ * @param maxEpoch how many epochs to run
+ * @param dataType data type (double / float)
+ * @param module module name
+ * @param inputData inputData input data type (constant / random)
+ */
 case class DistriOptimizerPerfParam(
   batchSize: Int = 128,
   maxEpoch: Int = 5,

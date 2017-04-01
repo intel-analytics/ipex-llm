@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -14,13 +16,9 @@
 # limitations under the License.
 #
 
+DL_PYTHON_HOME="$(cd "`dirname $0`"/../..; pwd)"
 
-from util.common import Sample
+BIGDL_HOME="$(cd "`dirname $0`"/../../..; pwd)"
 
-
-def normalizer(mean, std):
-    """
-    Normalize features by standard deviation
-    """
-    return lambda sample: Sample.from_ndarray((sample.features - mean) / std,
-                                              sample.label, sample.bigdl_type)
+cd $BIGDL_HOME
+exec $DL_PYTHON_HOME/test/dev/diff.py

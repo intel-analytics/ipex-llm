@@ -23,6 +23,11 @@ import com.intel.analytics.bigdl.tensor._
 
 import scala.reflect.ClassTag
 
+/**
+ * Applies the Tanh function element-wise to the input Tensor,
+ * thus outputting a Tensor of the same dimension.
+ * Tanh is defined as f(x) = (exp(x)-exp(-x))/(exp(x)+exp(-x)).
+ */
 @SerialVersionUID(9062199894710333035L)
 class Tanh[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {

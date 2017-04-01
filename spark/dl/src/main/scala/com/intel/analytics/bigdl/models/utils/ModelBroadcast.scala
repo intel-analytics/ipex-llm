@@ -25,7 +25,8 @@ import org.apache.spark.broadcast.Broadcast
 import scala.reflect.ClassTag
 
 /**
- * ModelBroadcast is used to broadcast model.
+ * ModelBroadcast is used to broadcast model when doing model inference.
+ * Note: do not use it in model training since the broadcast models share weights and biases
  * It shortens the broadcast time, which is especially useful when the model size is large
  * @tparam T data type
  */
@@ -71,7 +72,15 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
         val wb = parameters._1(i)
         weightsBias(i) = Tensor[T](Storage(wb.storage().array()),
           wb.storageOffset(), wb.size(), wb.stride())
-        wb.set()
+      }
+      i += 1
+    }
+    i = 0
+    while (i < parameters._1.length) {
+      if (parameters._1(i) != null) {
+        parameters._1(i).set()
+      }
+      if (parameters._2(i) != null) {
         parameters._2(i).set()
       }
       i += 1

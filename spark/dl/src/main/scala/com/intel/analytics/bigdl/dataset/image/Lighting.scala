@@ -28,6 +28,13 @@ object Lighting {
   }
 }
 
+/**
+ * Lighting noise for data augmentation
+ *
+ * Krizhevsky et al. proposed fancy PCA when training the famous Alex-Net in 2012
+ * Fancy PCA alters the intensities of the RGB channels in training images
+ * For each training image, add the corresponding quantity to each RGB image pixel
+ */
 class Lighting extends Transformer[LabeledBGRImage, LabeledBGRImage] {
   val alphastd = 0.1f
   val eigval = Tensor[Float](Storage(Array(0.2175f, 0.0188f, 0.0045f)), 1, Array(3))

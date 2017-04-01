@@ -61,9 +61,30 @@ object DistriOptimizer {
     localCriterions: Array[Criterion[T]],
     localStates: Array[Table],
     gradient: Tensor[T],
-    var moduleTimeList: Array[Long] = null
+    var moduleTimeList: Array[Long] = null,
+    localMethods: Array[Option[Array[ValidationMethod[T]]]]
   )
 
+  /**
+   * Train the model.
+   *
+   * @param dataset train dataset
+   * @param coresPerNode cores per node
+   * @param state state table
+   * @param endWhen trigger to stop training
+   * @param metrics metrics
+   * @param models cached models
+   * @param optimMethod optimization method
+   * @param parameters [[AllReduceParameter]]
+   * @param validationTrigger validation trigger
+   * @param validationDataSet validation dataset
+   * @param validationMethods validation methods
+   * @param cacheTrigger cache trigger
+   * @param cachePath cache path
+   * @param trainSummary train summary
+   * @param validationSummary validation summary
+   * @param isOverWrite  if overwrite the checkpoint
+   */
   private[optim] def optimize[T: ClassTag](
     dataset: DistributedDataSet[MiniBatch[T]],
     coresPerNode: Int,
@@ -230,7 +251,7 @@ object DistriOptimizer {
             cached.localModels(i).training()
             cached.localModels(i).zeroGradParameters()
           }))
-          Iterator(finishedThreads.size)
+          Iterator.single(finishedThreads.size)
         }).reduce(_ + _)
 
       dropModelNumBatch += (driverSubModelNum - finishedModelNum)
@@ -343,6 +364,17 @@ object DistriOptimizer {
     }
   }
 
+  /**
+   * Create checkpoint.
+   *
+   * @param cacheTrigger cache trigger
+   * @param cachePath cache path
+   * @param isOverWrite whether over write
+   * @param wallClockTime wall clock time
+   * @param models cached models
+   * @param state state table
+   * @param parameters all reduce parameters
+   */
   private def checkpoint[T: ClassTag](
     cacheTrigger: Option[Trigger],
     cachePath: Option[String],
@@ -367,6 +399,14 @@ object DistriOptimizer {
     }
   }
 
+  /**
+   * Save train summaries.
+   *
+   * @param trainSummary train logger
+   * @param models cached models
+   * @param driverState driver state
+   * @param parameters [[AllReduceParameter]]
+   */
   private def saveSummary[T: ClassTag](
         trainSummary: TrainSummary,
         models: RDD[Cache[T]],
@@ -399,6 +439,21 @@ object DistriOptimizer {
       }
   }
 
+  /**
+   * Init engine and cache models, weights, gradients, criterions, state tables
+   * and validation methods on worker nodes.
+   *
+   * @param model train model
+   * @param dataset train dataset
+   * @param criterion loss function
+   * @param state state table
+   * @param nodeNumber node number
+   * @param coresPerNode cores per node
+   * @param checkSingleton if checkSingleton
+   * @param parameters all reduce parameter instance
+   * @param validationMethods validation methods
+   * @return cached models
+   */
   private def initThreadModels[T: ClassTag](
     model: Module[T],
     dataset: DistributedDataSet[MiniBatch[T]],
@@ -407,10 +462,11 @@ object DistriOptimizer {
     nodeNumber: Int,
     coresPerNode: Int,
     checkSingleton: Boolean,
-    parameters: AllReduceParameter[T]
+    parameters: AllReduceParameter[T],
+    validationMethods: Option[Array[ValidationMethod[T]]]
     )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
-    val broadcast = sc.broadcast((model, criterion, state))
+    val broadcast = sc.broadcast((model, criterion, state, validationMethods))
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException
@@ -425,13 +481,17 @@ object DistriOptimizer {
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
     val models = dataset.originRDD().mapPartitions(_ => {
-      val (broadcastModel, broadcastCriterion, broadcastState) = broadcast.value
+      val (broadcastModel, broadcastCriterion, broadcastState, broadcastMethod) = broadcast.value
       if (!Engine.checkSingleton()) {
         if (checkSingleton) {
-          require(Engine.checkSingleton(), "Detect multi-task run on one Executor/Container. " +
-            "Please disable singleton check or repartition data")
+          require(Engine.checkSingleton(), "Partitions of the training data are not evenly" +
+            "distributed across the executors in the Spark cluster; are there sufficient training" +
+            "data to be distributed? Set property \"bigdl.check.singleton\" to false to skip " +
+            "this check")
         } else {
-          logger.warn("Detect multi-task run on one Executor/Container.")
+          logger.warn("Partitions of the training data are not evenly" +
+            "distributed across the executors in the Spark cluster; are there sufficient training" +
+            "data to be distributed?")
         }
       }
       Engine.setNodeAndCore(nExecutor, executorCores)
@@ -439,8 +499,10 @@ object DistriOptimizer {
         val localModel = broadcastModel.cloneModule()
         val localCriterion = broadcastCriterion.cloneCriterion()
         val localState = broadcastState.clone()
+        val localMethod =
+          if (broadcastMethod.isDefined) Some(broadcastMethod.get.map(_.clone())) else None
         val (weights, grads) = localModel.getParameters()
-        (localModel, weights, grads, localCriterion, localState)
+        (localModel, weights, grads, localCriterion, localState, localMethod)
       }.toArray
 
       val weights = cached.head._2
@@ -453,14 +515,15 @@ object DistriOptimizer {
       logger.info("model thread pool size is " + Engine.model.getPoolSize)
       parameters.init(weights)
 
-      Iterator(Cache(
+      Iterator.single(Cache(
         cached.map(_._1), // models
         cached.map(_._2), // weights
         cached.map(_._3), // gradients
         cached.map(_._4), // criterions
         cached.map(_._5), // states
         cached.head._2.clone(), // a tensor buffer
-        new Array[Long](_subModelNumber * computeThresholdbatchSize)
+        new Array[Long](_subModelNumber * computeThresholdbatchSize),
+        cached.map(_._6)
       ))
     }).persist()
     models.setName("Thread Model RDD")
@@ -471,6 +534,18 @@ object DistriOptimizer {
   }
 
 
+  /**
+   * Validate current model and save the result.
+   *
+   * @param validationTrigger validation trigger
+   * @param validationDataSet validation dataset
+   * @param validationMethods validation methods
+   * @param coresPerNode cores per node
+   * @param models cached models
+   * @param wallClockTime wall clock time
+   * @param state state table
+   * @param validationSummary validation logger.
+   */
   private def validate[T](
     validationTrigger: Option[Trigger],
     validationDataSet: Option[DataSet[MiniBatch[T]]],
@@ -497,7 +572,7 @@ object DistriOptimizer {
     }
     val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {
       val cached = modelIter.next()
-      val criterion = cached.localCriterions
+      val vMethodsArr = cached.localMethods
       val workingModels = cached.localModels
 
       workingModels.foreach(_.evaluate())
@@ -514,8 +589,9 @@ object DistriOptimizer {
               val input = batch.data.narrow(1, offset + 1, length)
               val target = batch.labels.narrow(1, offset + 1, length)
               val output = workingModels(b).forward(input)
-              vMethods.map(validation => {
-                validation(output, target, criterion(b))
+              val validatMethods = vMethodsArr(b).get
+              validatMethods.map(validation => {
+                validation(output, target)
               })
             }
           )
@@ -536,13 +612,20 @@ object DistriOptimizer {
     if(validationSummary.isDefined) {
       results.foreach { r =>
         val result = r._1.result
-        validationSummary.get.addScalar(r._2.toString(), result._1 / result._2,
+        validationSummary.get.addScalar(r._2.toString(), result._1,
           state[Int]("neval") - 1
         )
       }
     }
   }
 
+  /**
+   * Fetch current model to driver.
+   *
+   * @param models cached models
+   * @param parameters [[AllReduceParameter]]
+   * @return current model
+   */
   private def getModel[T: ClassTag](
       models: RDD[Cache[T]],
       parameters: AllReduceParameter[T]): Module[T] = {
@@ -576,6 +659,13 @@ object DistriOptimizer {
   }
 }
 
+/**
+ * The optimizer run on a distributed cluster.
+ *
+ * @param model train model
+ * @param dataset train dataset
+ * @param criterion loss function
+ */
 class DistriOptimizer[T: ClassTag] (
   model: Module[T],
   dataset: DistributedDataSet[MiniBatch[T]],
@@ -615,8 +705,8 @@ class DistriOptimizer[T: ClassTag] (
     val size = model.getParameters()._1.nElement()
     val parameters = AllReduceParameter.newParameter(partitionNum, size)
 
-    models = DistriOptimizer.initThreadModels(
-      model, dataset, criterion, state, nodeNumber, coresPerNode, checkSingleton, parameters)
+    models = DistriOptimizer.initThreadModels(model, dataset, criterion, state,
+      nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods)
 
     if (checkpointPath.isDefined) {
       val file = checkpointPath.get + "/" +
@@ -681,7 +771,7 @@ class DistriOptimizer[T: ClassTag] (
             }
             optimMethod.clearHistory(state)
             models = DistriOptimizer.initThreadModels(newModel, dataset, criterion, state,
-              nodeNumber, coresPerNode, checkSingleton, parameters)
+              nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods)
           } else {
             retryNum = Int.MaxValue
             DistriOptimizer.logger.info("Failed to recover since no model snapshot" +
