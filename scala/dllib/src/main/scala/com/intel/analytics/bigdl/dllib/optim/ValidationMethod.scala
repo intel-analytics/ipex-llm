@@ -186,7 +186,7 @@ class Top5Accuracy[T] extends ValidationMethod[T] {
 class LossResult(private var loss: Float, private var count: Int)
   extends ValidationResult {
 
-  override def result(): (Float, Int) = (loss.toFloat, count)
+  override def result(): (Float, Int) = (loss.toFloat / count, count)
 
   // scalastyle:off methodName
   override def +(other: ValidationResult): ValidationResult = {
