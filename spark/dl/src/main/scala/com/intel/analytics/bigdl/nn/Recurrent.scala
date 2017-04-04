@@ -220,6 +220,11 @@ class Recurrent[T : ClassTag]()
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
       _input(inputDim) = input.select(timeDim, i)
+      if (i == 1) {
+        cells(i - 1).regluarized(true)
+      } else {
+        cells(i - 1).regluarized(false)
+      }
       cells(i - 1).updateGradInput(_input, currentGradOutput)
       gradInput.select(timeDim, i).copy(cells(i - 1).gradInput.toTable(inputDim))
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)

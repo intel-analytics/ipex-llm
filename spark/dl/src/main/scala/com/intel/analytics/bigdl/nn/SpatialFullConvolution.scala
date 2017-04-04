@@ -668,8 +668,12 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       inputTensor.resize(nInputPlane, inputHeight, inputWidth)
     }
 
-    wRegularizer.accRegularization(weight, gradWeight)
-    bRegularizer.accRegularization(bias, gradBias)
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight)
+    }
+    if (null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {

@@ -50,7 +50,10 @@ class LSTMPeephole[T : ClassTag] (
   val bRegularizer: Regularizer[T] = null
 )
   (implicit ev: TensorNumeric[T])
-  extends Cell[T](hiddensShape = Array(hiddenSize, hiddenSize)) {
+  extends Cell[T](
+    hiddensShape = Array(hiddenSize, hiddenSize),
+    regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
+  ) {
   var inputGate: Sequential[T] = _
   var forgetGate: Sequential[T] = _
   var outputGate: Sequential[T] = _
@@ -63,10 +66,12 @@ class LSTMPeephole[T : ClassTag] (
 
     val i2g = Sequential()
       .add(Dropout(p))
-      .add(Linear(inputSize, hiddenSize))
+      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer))
     val h2g = Sequential()
       .add(Dropout(p))
-      .add(Linear(hiddenSize, hiddenSize, withBias = false))
+      .add(Linear(hiddenSize, hiddenSize,
+        withBias = false, wRegularizer = uRegularizer))
 
     gate
       .add(ParallelTable()
@@ -98,10 +103,12 @@ class LSTMPeephole[T : ClassTag] (
 
     val i2h = Sequential()
       .add(Dropout(p))
-      .add(Linear(inputSize, hiddenSize))
+      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer))
     val h2h = Sequential()
       .add(Dropout(p))
-      .add(Linear(hiddenSize, hiddenSize, withBias = false))
+      .add(Linear(hiddenSize, hiddenSize, withBias = false,
+        wRegularizer = uRegularizer))
 
     hidden
       .add(ParallelTable()

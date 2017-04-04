@@ -52,7 +52,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
     val criterion = new MSECriterion[Double]
 
     val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
-    val labels = Tensor[Double](4).rand()
+    val labels = Tensor[Double](16).rand()
 
     val model1 = Sequential()
       .add(SpatialFullConvolution[Tensor[Double], Double](nInputPlane, nOutputPlane,

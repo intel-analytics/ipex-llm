@@ -127,7 +127,14 @@ abstract class Cell[T : ClassTag](
 
   override def getParametersTable(): Table = {
     cell.getParametersTable()
+  }
 
+  /**
+   * Use this method to set the whether the recurrent cell
+   * is regularized
+   *
+   * @param isRegularized whether to be regularized or not
+   */
   def regluarized(
     isRegularized: Boolean
   ): Unit = {

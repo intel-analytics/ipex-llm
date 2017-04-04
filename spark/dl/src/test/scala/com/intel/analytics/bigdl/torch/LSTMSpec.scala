@@ -120,7 +120,7 @@ class LSTMSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     var loss2: Array[Double] = null
-    for (i <- 1 to 1) {
+    for (i <- 1 to 100) {
       loss2 = sgd.optimize(feval2, weights2, state2)._2
       println(s"${i}-th loss = ${loss2(0)}")
     }

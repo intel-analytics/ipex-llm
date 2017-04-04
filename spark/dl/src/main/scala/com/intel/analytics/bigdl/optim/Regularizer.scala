@@ -27,6 +27,19 @@ trait Regularizer[T]
     parameter: Tensor[T],
     gradParameter: Tensor[T]
   ): Unit
+
+  def preCheck(
+    parameter: Tensor[T],
+    gradParameter: Tensor[T]
+  ): Boolean = {
+    if (null == parameter
+      || null == gradParameter
+      || !isRegualrized) {
+      false
+    } else {
+      true
+    }
+  }
 }
 
 @SerialVersionUID(- 5617491971070914067L)
@@ -39,7 +52,7 @@ class L1L2Regularizer[T](
     parameter: Tensor[T],
     gradParameter: Tensor[T]
   ): Unit = {
-    if (!isRegualrized) return
+    if (!preCheck(parameter, gradParameter)) return
     accL1L2Regularization(l1, l2, parameter, gradParameter)
   }
 
@@ -75,9 +88,7 @@ class L1L2Regularizer[T](
     parameter: Tensor[T],
     gradParameter: Tensor[T]
   ): Unit = {
-    if (alpha != 0) {
-      gradParameter.add(ev.fromType(alpha), parameter.sign())
-    }
+    if (alpha != 0) gradParameter.add(ev.fromType(alpha), parameter.sign())
   }
 
   /**
@@ -93,33 +104,25 @@ class L1L2Regularizer[T](
     parameter: Tensor[T],
     gradParameter: Tensor[T]
   ): Unit = {
-    gradParameter.add(ev.fromType(alpha), parameter)
+    if (alpha != 0) gradParameter.add(ev.fromType(alpha), parameter)
   }
 }
 
+object L1L2Regularizer {
+  def apply[T](
+    l1: Double,
+    l2: Double
+  )(implicit ev: TensorNumeric[T]): L1L2Regularizer[T] = new L1L2Regularizer(l1, l2)
+}
+
 @SerialVersionUID(1950693435414946281L)
-class L1Regularizer[T](
+case class L1Regularizer[T](
   l1: Double
 ) (implicit ev: TensorNumeric[T])
-  extends L1L2Regularizer[T](l1, 0) {
-  override def accRegularization(
-    parameter: Tensor[T],
-    gradParameter: Tensor[T]
-  ): Unit = {
-    if (!isRegualrized) return
-    accL1Regularization(l1, parameter, gradParameter)
-  }
-}
+  extends L1L2Regularizer[T](l1, 0)
 
 @SerialVersionUID(- 6597840589687540202L)
 case class L2Regularizer[T](
   l2: Double
 ) (implicit ev: TensorNumeric[T])
-  extends L1L2Regularizer[T](0, l2) {
-  override def accRegularization(
-    parameter: Tensor[T],
-    gradParameter: Tensor[T]
-  ): Unit = {
-    accL2Regularization(l2, parameter, gradParameter)
-  }
-}
+  extends L1L2Regularizer[T](0, l2)

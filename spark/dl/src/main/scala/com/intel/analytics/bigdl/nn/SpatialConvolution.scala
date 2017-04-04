@@ -329,8 +329,12 @@ class SpatialConvolution[T: ClassTag](
       gradBias.addmv(ev.fromType(1.0), ev.fromType(1.0), gradientBiasMT.t, onesBatch)
     }
 
-    wRegularizer.accRegularization(weight, gradWeight)
-    bRegularizer.accRegularization(bias, gradBias)
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight)
+    }
+    if (null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {
