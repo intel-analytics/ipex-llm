@@ -1164,8 +1164,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                 batchSize: Int,
                 valMethods: JList[String])
   : JList[TestResult] = {
-    val validator = Validator(model, batching(valRDD, batchSize))
-    val resultArray = validator.test(toValidationMethod(valMethods))
+    val resultArray = model.evaluate(valRDD.rdd.map(toSample(_)),
+      toValidationMethod(valMethods), Some(batchSize))
     val testResultArray = resultArray.map { result =>
       TestResult(result._1.result()._1, result._1.result()._2,
         validationMethodToStr(result._2))

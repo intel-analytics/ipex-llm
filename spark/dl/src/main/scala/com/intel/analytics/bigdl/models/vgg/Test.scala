@@ -17,7 +17,8 @@
 package com.intel.analytics.bigdl.models.vgg
 
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{BGRImgNormalizer, BGRImgToBatch, BytesToBGRImg}
+import com.intel.analytics.bigdl.dataset.image._
+import com.intel.analytics.bigdl.models.lenet.Utils._
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{Top1Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
@@ -39,13 +40,14 @@ object Test {
       val sc = new SparkContext(conf)
       Engine.init
 
-      val validationSet = DataSet.array(Utils.loadTest(param.folder), sc) ->
-        BytesToBGRImg() -> BGRImgNormalizer(testMean, testStd) ->
-        BGRImgToBatch(param.batchSize)
+      val partitionNum = Engine.nodeNumber() * Engine.coreNumber()
+      val rddData = sc.parallelize(Utils.loadTest(param.folder), partitionNum)
+      val transformer = BytesToBGRImg() -> BGRImgNormalizer(testMean, testStd) -> BGRImgToSample()
+      val evaluationSet = transformer(rddData)
 
       val model = Module.load[Float](param.model)
-      val validator = Validator(model, validationSet)
-      val result = validator.test(Array(new Top1Accuracy[Float]))
+      val result = model.evaluate(evaluationSet,
+        Array(new Top1Accuracy[Float]), Some(param.batchSize))
       result.foreach(r => println(s"${r._2} is ${r._1}"))
     }
   }
