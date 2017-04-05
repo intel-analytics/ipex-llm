@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
-import com.intel.analytics.bigdl.optim.Predictor
+import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 
@@ -374,6 +374,20 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     } else {
       None
     }
+  }
+
+  /**
+   * use ValidationMethod to evaluate module
+   * @param dataset dataset for test
+   * @param vMethods validation methods
+   * @param batchSize total batchsize of all partitions,
+   *                  optional param and default 4 * partitionNum of dataset
+   * @return
+   */
+  def evaluate(dataset: RDD[Sample[T]],
+   vMethods: Array[ValidationMethod[T]],
+   batchSize: Option[Int] = None): Array[(ValidationResult, ValidationMethod[T])] = {
+    Evaluator(this).test(dataset, vMethods, batchSize)
   }
 }
 

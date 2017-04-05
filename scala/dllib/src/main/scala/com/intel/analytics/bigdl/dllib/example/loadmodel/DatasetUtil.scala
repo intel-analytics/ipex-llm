@@ -20,10 +20,11 @@ import java.nio.file.{Paths, Path}
 
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.dataset.image.{BGRImgCropper, BGRImgNormalizer, BGRImgPixelNormalizer, _}
+import com.intel.analytics.bigdl.dataset.image.{BGRImgCropper, BGRImgNormalizer, BGRImgPixelNormalizer, BytesToBGRImg, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.File
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 
 object AlexNetPreprocessor {
@@ -38,6 +39,17 @@ object AlexNetPreprocessor {
       BGRImgPixelNormalizer(means) -> BGRImgCropper(imageSize, imageSize, CropCenter) ->
       BGRImgToBatch(batchSize, toRGB = false)
   }
+
+  def rdd(path: String, batchSize: Int, meanFile: String, sc: SparkContext)
+  : RDD[Sample[Float]] = {
+    val means = File.load[Tensor[Float]](meanFile)
+    val dataSet = DataSet.SeqFileFolder.filesToRdd(path, sc, 1000)
+      // do not normalize the pixel values to [0, 1]
+    val transfomer = BytesToBGRImg(normalize = 1f) ->
+      BGRImgPixelNormalizer(means) -> BGRImgCropper(imageSize, imageSize, CropCenter) ->
+      BGRImgToSample(toRGB = false)
+    transfomer(dataSet)
+  }
 }
 
 object InceptionPreprocessor {
@@ -51,6 +63,15 @@ object InceptionPreprocessor {
       BGRImgNormalizer(123, 117, 104, 1, 1, 1) ->
       BGRImgToBatch(batchSize, toRGB = false)
   }
+
+  def rdd(path: String, batchSize: Int, sc: SparkContext)
+  : RDD[Sample[Float]] = {
+    val dataSet = DataSet.SeqFileFolder.filesToRdd(path, sc, classNum = 1000)
+    val transfomer = BytesToBGRImg(normalize = 1f) ->
+      BGRImgCropper(imageSize, imageSize, CropCenter) ->
+      BGRImgNormalizer(123, 117, 104, 1, 1, 1) -> BGRImgToSample(toRGB = false)
+    transfomer(dataSet)
+  }
 }
 
 object ResNetPreprocessor {
@@ -63,5 +84,14 @@ object ResNetPreprocessor {
       BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize, CropCenter) ->
       BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) ->
       BGRImgToBatch(batchSize)
+  }
+
+  def rdd(path: String, batchSize: Int, sc: SparkContext)
+  : RDD[Sample[Float]] = {
+    val dataSet = DataSet.SeqFileFolder.filesToRdd(path, sc, classNum = 1000)
+    val transfomer = BytesToBGRImg() ->
+      BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize, CropCenter) ->
+      BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) -> BGRImgToSample()
+    transfomer(dataSet)
   }
 }

@@ -486,6 +486,23 @@ object DataSet {
       rdd[ByteRecord](rawData)
     }
 
+    /**
+     * Extract hadoop sequence files from an HDFS path as RDD
+     * @param url sequence files folder path
+     * @param sc spark context
+     * @param classNum class number of data
+     * @param partitionNum partition number, default: Engine.nodeNumber() * Engine.coreNumber()
+     * @return
+     */
+    private[bigdl] def filesToRdd(url: String, sc: SparkContext,
+      classNum: Int, partitionNum: Option[Int] = None): RDD[ByteRecord] = {
+      val num = partitionNum.getOrElse(Engine.nodeNumber() * Engine.coreNumber())
+      val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text], num).map(image => {
+        ByteRecord(image._2.copyBytes(), readLabel(image._1).toFloat)
+      }).filter(_.label <= classNum)
+      rawData.coalesce(num, true)
+    }
+
     private[bigdl] def findFiles(path: Path): Array[LocalSeqFilePath] = {
       val directoryStream = Files.newDirectoryStream(path)
       import scala.collection.JavaConverters._
