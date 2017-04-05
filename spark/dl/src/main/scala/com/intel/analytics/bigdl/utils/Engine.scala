@@ -148,6 +148,9 @@ object Engine {
   // Thread pool for layer use
   @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(1)
 
+  // Thread pool for parameterManager use
+  @volatile private var _pmPool: ThreadPool = null
+
   private def getCoreNumberFromEnv : Int = {
     val env = System.getenv("DL_CORE_NUMBER")
     if (env == null) {
@@ -244,6 +247,14 @@ object Engine {
     _default
   }
 
+  private[bigdl] def pmPool: ThreadPool = {
+    if (_pmPool == null) {
+      throw new IllegalStateException(s"Engine.init: Thread engine is not " +
+        s"initialized. $NOT_INIT_ERROR")
+    }
+    _pmPool
+  }
+
   private def initThreadPool(core : Int) : Unit = {
     val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
       (core * 50).toString).toInt
@@ -260,6 +271,12 @@ object Engine {
     if(_model == null || _model.getPoolSize != modelPoolSize) {
       _model = new ThreadPool(modelPoolSize)
       _model.setMKLThread(1)
+    }
+
+    val pmPoolSize: Int = System.getProperty("bigdl.utils.Engine.pmPoolSize",
+      (core * 50).toString).toInt
+    if(_pmPool == null || _pmPool.getPoolSize != pmPoolSize) {
+      _pmPool = new ThreadPool(pmPoolSize)
     }
   }
 

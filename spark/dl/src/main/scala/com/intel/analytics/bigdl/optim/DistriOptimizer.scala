@@ -329,9 +329,9 @@ object DistriOptimizer {
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}. ${optimMethod.getHyperParameter(state)}")
-        logger.info(s"job1 driver: ${(job2start-start)/1e9} " +
+        logger.debug(s"job1 driver: ${(job2start-start)/1e9} " +
           s"job2 driver: ${(job2end-job2start)/1e9} job3 driver: ${(job3end-job3start)/1e9}")
-        logger.info("\n" + metrics.summary())
+        logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
 
@@ -518,10 +518,6 @@ object DistriOptimizer {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException
     }
-
-    require(dataset.originRDD().partitions.length == nodeNumber,
-      s"Passed in rdd partition number ${dataset.originRDD().partitions.length}" +
-        s" is not equal to configured node number ${nodeNumber}")
 
     val partitionNum = dataset.originRDD().partitions.length
     val computeThresholdbatchSize = state.get[Int]("computeThresholdbatchSize").get
@@ -716,8 +712,10 @@ object DistriOptimizer {
       val cached = iter.next()
       val executorId = SparkEnv.get.executorId
       val parameter = ParameterManager2.get(executorId)
-      Iterator.single((Map(parameter.executorId -> parameter.getLocalParameter[T](parameter.getWeightExecutorId())),
-        Map(parameter.executorId -> parameter.getLocalParameter[T](parameter.getGradientExecutorId()))
+      Iterator.single((Map(parameter.executorId ->
+        parameter.getLocalParameter[T](parameter.getWeightExecutorId())),
+        Map(parameter.executorId ->
+          parameter.getLocalParameter[T](parameter.getGradientExecutorId()))))
     }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
 
     val parameterArray = trainedModel.parameters()
