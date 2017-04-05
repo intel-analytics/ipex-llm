@@ -923,4 +923,77 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     batch2.data should be (batch2Data)
     batch2.labels should be (batch2Label)
   }
+
+  "BRGImgToSample" should "be correct" in {
+    RNG.setSeed(100)
+    var data = new Array[Float](3 * 32 * 32)
+    data = for (d <- data) yield RNG.uniform(1.0, 2.0).toFloat
+    val image1 = new LabeledBGRImage(data, 32, 32, 1.0f)
+    data = for (d <- data) yield RNG.uniform(1.1, 2.1).toFloat
+    val image2 = new LabeledBGRImage(data, 32, 32, 2.0f)
+    data = for (d <- data) yield RNG.uniform(1.2, 2.2).toFloat
+    val image3 = new LabeledBGRImage(data, 32, 32, 3.0f)
+
+    val image = Array(image1, image2, image3)
+    val toSample = BGRImgToSample() -> SampleToBatch(1)
+    val miniBatch1 = toSample(image.toIterator)
+    val miniBatch2 = BGRImgToBatch(1).apply(image.toIterator)
+
+    var t1 = miniBatch1.next()
+    var t2 = miniBatch2.next()
+    t1.data should be (t2.data)
+    t1.labels.squeeze() should be (t2.labels)
+    t1.data.size() should be (Array(1, 3, 32, 32))
+    t1.labels.valueAt(1) should be (image1.label())
+
+    t1 = miniBatch1.next()
+    t2 = miniBatch2.next()
+    t1.data should be (t2.data)
+    t1.labels.squeeze() should be (t2.labels)
+
+    t1 = miniBatch1.next()
+    t2 = miniBatch2.next()
+    t1.data should be (t2.data)
+    t1.labels.squeeze() should be (t2.labels)
+
+    miniBatch1.hasNext should be (false)
+    miniBatch2.hasNext should be (false)
+  }
+
+  "GreyImgToSample" should "be correct" in {
+    RNG.setSeed(100)
+    var data = new Array[Float](32 * 32)
+    data = for (d <- data) yield RNG.uniform(1.0, 2.0).toFloat
+    val image1 = new LabeledGreyImage(data, 32, 32, 1.0f)
+    data = for (d <- data) yield RNG.uniform(1.1, 2.1).toFloat
+    val image2 = new LabeledGreyImage(data, 32, 32, 2.0f)
+    data = for (d <- data) yield RNG.uniform(1.2, 2.2).toFloat
+    val image3 = new LabeledGreyImage(data, 32, 32, 3.0f)
+
+    val image = Array(image1, image2, image3)
+    val toSample = GreyImgToSample() -> SampleToBatch(1)
+    val miniBatch1 = toSample(image.toIterator)
+    val miniBatch2 = GreyImgToBatch(1).apply(image.toIterator)
+
+    var t1 = miniBatch1.next()
+    var t2 = miniBatch2.next()
+    t1.data should be (t2.data)
+    t1.labels.squeeze() should be (t2.labels)
+    t1.data.size() should be (Array(1, 32, 32))
+    t1.labels.valueAt(1) should be (image1.label())
+    t1.data.storage().array() should be (image1.content)
+
+    t1 = miniBatch1.next()
+    t2 = miniBatch2.next()
+    t1.data should be (t2.data)
+    t1.labels.squeeze() should be (t2.labels)
+
+    t1 = miniBatch1.next()
+    t2 = miniBatch2.next()
+    t1.data should be (t2.data)
+    t1.labels.squeeze() should be (t2.labels)
+
+    miniBatch1.hasNext should be (false)
+    miniBatch2.hasNext should be (false)
+  }
 }
