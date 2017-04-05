@@ -57,7 +57,7 @@ sed_i() {
 
 export -f sed_i
 
-BASEDIR=$(dirname $0)/../dl
+BASEDIR=$(dirname $0)/../spark/dl
 find "$BASEDIR" -name 'pom.xml' -not -path '*target*' -print \
   -exec bash -c "sed_i 's/\(artifactId.*\)bigdl'$FROM_VERSION'\([^-parent]\)/\1bigdl'$TO_VERSION'\2/g' {}" \;
 
