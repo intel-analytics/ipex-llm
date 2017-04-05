@@ -18,11 +18,9 @@ import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.{Criterion, DataSet, Module}
 import com.intel.analytics.bigdl.optim.Optimizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame}
 import org.apache.spark.ml.param.Param
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{StructField, StructType}
-import org.apache.spark.sql.types.UserDefinedType
 
 import scala.reflect.ClassTag
 
@@ -30,26 +28,10 @@ import scala.reflect.ClassTag
  * A wrapper of Optimizer to support fit() in ML Pipelines as an Estimator
  */
 
-class DLEstimator[M <: org.apache.spark.ml.Model[M], T : ClassTag, D : ClassTag]
+class DLEstimator[T : ClassTag, D : ClassTag]
   (module : Module[T], criterion : Criterion[T], batchSize : Array[Int])
-  (override val uid: String = "DLEstimator")
-  extends MLEstimator[M]{
-
-  final val tensorNumericPara: Param[TensorNumeric[T]] =
-    new Param[TensorNumeric[T]](this, "tensorNumeric", "tensor numeric")
-
-  final val dataSetPara: Param[DataSet[D]] =
-    new Param[DataSet[D]](this, "dataSet", "data set")
-
-  def setTensorNumric(ev: TensorNumeric[T]) : this.type = set(tensorNumericPara, ev)
-
-  def getTensorNumric() : TensorNumeric[T] =
-    this.extractParamMap().getOrElse(tensorNumericPara, null)
-
-  def setDataSet(dataset : DataSet[D]) : this.type = set(dataSetPara, dataset)
-
-  def getDataSet() : DataSet[D] =
-    this.extractParamMap().getOrElse(dataSetPara, null)
+  (override val uid: String = "DLEstimator")(implicit ev: TensorNumeric[T])
+  extends MLEstimator{
 
   def validateParameters(): Unit = {
 
@@ -59,24 +41,17 @@ class DLEstimator[M <: org.apache.spark.ml.Model[M], T : ClassTag, D : ClassTag]
     require(null != criterion,
       "DLEstimator: criterion must not be null")
 
-    require(null != getDataSet(),
-      "DLEstimator: dataset for estimator must not be null")
-
-    require(null != getTensorNumric(),
-      "DLEstimator: TensorNumric for estimator must not be null")
-
   }
 
 
-  override def process(dataFrame: DataFrame): M = {
+  override def process(dataFrame: DataFrame): MlTransformer = {
+
+    this.validateParameters()
 
     val rdd : RDD[D] = dataFrame.rdd.map( row => row.get(0).asInstanceOf[D])
 
     val dataset = DataSet.rdd(rdd)
 
-    this.validateParameters()
-
-    implicit val tensorNumric : TensorNumeric[T] = getTensorNumric()
 
     val optimizer = Optimizer(module, dataset, criterion)
 
@@ -90,9 +65,7 @@ class DLEstimator[M <: org.apache.spark.ml.Model[M], T : ClassTag, D : ClassTag]
 
     classifier.batchShape -> batchSize
 
-    val model = new DLModel(classifier)("DLEstimator")
-
-    model.asInstanceOf[M]
+    classifier
   }
 
 }

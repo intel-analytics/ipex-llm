@@ -22,19 +22,28 @@ import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, Sequential}
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.mkl.MKL
-import org.apache.spark.ml.{DLEstimator, Model}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import org.apache.spark.SparkContext
+import org.apache.spark.ml.{DLEstimator, DLModel, MlTransformer, Model}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{DataFrame, SQLContext}
 
 @com.intel.analytics.bigdl.tags.Parallel
-class OptimizerWrapperSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val model = new Sequential[Float]()
   before {
     Engine.setNodeAndCore(1, 4)
+    Engine.init
   }
   "A wrapper" should "executor optimizer" in {
+    val conf = Engine.createSparkConf().setAppName("Test Optimizer Wrapper").setMaster("local")
+    val sc = new SparkContext(conf)
     val ds = new DistributedDataSet[Float] {
       override def originRDD(): RDD[_] = null
-      override def data(train: Boolean): RDD[Float] = null
+      override def data(train: Boolean): RDD[Float] = {
+        val rdd : RDD[Float] = sc.parallelize(Array.empty[Float])
+        rdd
+      }
       override def size(): Long = 0
       override def shuffle(): Unit = {}
     }
@@ -42,12 +51,19 @@ class OptimizerWrapperSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = Linear[Float](4, 3)
     val criterion = ClassNLLCriterion[Float]()
 
-    val estimator = new DLEstimator(model, criterion, Array(0))
+    val estimator = new DLEstimator(model, criterion, Array(0))("DLEstimator")
 
+   // estimator.setTensorNumric(NumericFloat)
 
-    val res = estimator.fit(null);
+    val rdd : RDD[Float] = ds.data(true)
 
-    res.isInstanceOf[Model[Float]] should be(true)
+    val sQLContext : SQLContext = new SQLContext(sc)
+
+    var df : DataFrame = sQLContext.createDataFrame(rdd, Float.getClass)
+
+    val res = estimator.fit(df);
+
+    res.isInstanceOf[MlTransformer] should be(true)
 
   }
   after {

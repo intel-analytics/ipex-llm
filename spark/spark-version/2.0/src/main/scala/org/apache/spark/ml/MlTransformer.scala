@@ -23,7 +23,7 @@ import org.apache.spark.sql.{DataFrame, Dataset}
  * Extends MlTransformer and override process to gain compatibility with
  * both spark 1.5 and spark 2.0.
  */
-abstract class MlTransformer extends Transformer{
+abstract class MlTransformer extends Model[MlTransformer]{
 
   def process(dataset: DataFrame): DataFrame
 

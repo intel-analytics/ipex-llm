@@ -23,11 +23,11 @@ import org.apache.spark.sql.types.StructType
  * both spark 1.5 and spark 2.0.
  */
 
-abstract class MLEstimator[M <: org.apache.spark.ml.Model[M]] extends Estimator[M]{
-  def process(dataset: DataFrame): M
-  override def fit(dataset : org.apache.spark.sql.DataFrame) : M = {
+abstract class MLEstimator extends Estimator[MlTransformer]{
+  def process(dataset: DataFrame): MlTransformer
+  override def fit(dataset : org.apache.spark.sql.DataFrame) : MlTransformer = {
     process(dataset)
   }
   override def transformSchema(schema: StructType): StructType = schema
-  override def copy(extra: ParamMap): Estimator[M] = defaultCopy(extra)
+  override def copy(extra: ParamMap): MLEstimator = defaultCopy(extra)
 }
