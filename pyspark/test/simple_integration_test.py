@@ -122,5 +122,22 @@ class TestWorkFlow(unittest.TestCase):
         for i in range(0, total_length):
             self.assertTrue(np.allclose(p[i], ground_label[i], atol=1e-6, rtol=0))
 
+    def test_rng(self):
+        rng = RNG()
+        rng.set_seed(100)
+        result = rng.uniform(0.1, 0.2, [2, 3])
+        ground_label = np.array([[0.15434049, 0.16711557, 0.12783694],
+                                 [0.14120464, 0.14245176, 0.15263824]])
+        self.assertTrue(result.shape == [2, 3])
+        data = result.to_ndarray()
+        for i in range(0, 2):
+            self.assertTrue(np.allclose(data[i], ground_label[i], atol=1e-6, rtol=0))
+
+        rng.set_seed(100)
+        result2 = rng.uniform(0.1, 0.2, [2, 3])
+        data2 = result2.to_ndarray()
+        for i in range(0, 2):
+            self.assertTrue(np.allclose(data[i], data2[i]))
+
 if __name__ == "__main__":
     unittest.main(failfast=True)
