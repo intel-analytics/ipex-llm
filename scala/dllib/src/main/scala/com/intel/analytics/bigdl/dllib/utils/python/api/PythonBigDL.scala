@@ -1329,6 +1329,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def initEngine(): Unit = {
     Engine.init
   }
+
+  def uniform(a: Double, b: Double, size: JList[Int]): JTensor = {
+    val result = Tensor[T]().resize(size.asScala.toArray)
+    result.apply1(i => ev.fromType(RandomGenerator.RNG.uniform(a, b)))
+    toJTensor(result)
+  }
 }
 
 
