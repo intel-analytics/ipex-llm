@@ -5,7 +5,6 @@ Library         RequestsLibrary
 Library         String
 Library         OperatingSystem
 
-
 *** Keywords ***
 Operate Vertical
    [Documentation]               Post operation to configuring service. Operation allowed: deploy, stop, suspend, resume, clear, reset
@@ -32,12 +31,13 @@ Status Equal
    Should Be Equal As Strings       ${status}                                  ${realStatus}
 
 BigDL Integration Test
-   [Arguments]        ${verticalId}       ${suite}                                                         ${argLine}
-   Operate Vertical   ${verticalId}       start                                                            running
-   ${result}=         Run                 mvn test -Dsuites=${suite} -DargLine=${argLine}
-   Log To Console     ${result}           
-   Should Contain     ${result}           BUILD SUCCESS
-   [Teardown]         Operate Vertical    ${verticalId}                                                    stop          deployed/stopped
+   [Arguments]        ${verticalId}                                                      ${suite}         ${argLine}
+   Operate Vertical   ${verticalId}                                                      start            running
+   Run                mvn test -Dsuites=${suite} -DargLine=${argLine} -P integration-test > temp.log 2>&1
+   ${stdout}=         Get File                                                           temp.log
+   Log To Console     ${stdout}
+   Should Contain     ${stdout}                                                          BUILD SUCCESS
+   [Teardown]         Operate Vertical                                                   ${verticalId}    stop          deployed/stopped
    
 BigDL Example Test
    [Arguments]        ${verticalId}       ${suite}                                                         ${argLine}

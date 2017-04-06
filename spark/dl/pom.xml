@@ -301,5 +301,11 @@
                 <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
             </properties>
         </profile>
+        <profile>
+            <id>integration-test</id>
+            <properties>
+                <tagsToExclude>com.intel.analytics.bigdl.tags.Serial,com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
+            </properties>
+        </profile>
     </profiles>
 </project>
