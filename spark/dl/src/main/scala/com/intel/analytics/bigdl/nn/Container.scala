@@ -107,15 +107,17 @@ abstract class Container[A <: Activity : ClassTag,
     (weights.toArray, gradWeights.toArray)
   }
 
-  override def trainables(): Array[Boolean] = {
-    val states = new ArrayBuffer[Boolean]()
+  override def trainableParameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    val weights = new ArrayBuffer[Tensor[T]]()
+    val gradWeights = new ArrayBuffer[Tensor[T]]()
     modules.foreach(m => {
-      val ts = m.trainables()
-      if (ts != null) {
-        states ++= ts
+      val params = m.trainableParameters()
+      if (params != null) {
+        params._1.foreach(weights += _)
+        params._2.foreach(gradWeights += _)
       }
     })
-    states.toArray
+    (weights.toArray, gradWeights.toArray)
   }
 
   override def getParametersTable(): Table = {

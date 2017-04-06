@@ -142,10 +142,6 @@ class GRU[T : ClassTag] (
     cell
   }
 
-  override def trainables(): Array[Boolean] = {
-    GRU.trainables()
-  }
-
   override def canEqual(other: Any): Boolean = other.isInstanceOf[GRU[T]]
 
   override def equals(other: Any): Boolean = other match {

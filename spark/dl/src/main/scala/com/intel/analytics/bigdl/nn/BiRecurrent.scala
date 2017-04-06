@@ -80,10 +80,6 @@ class BiRecurrent[T : ClassTag] (
    */
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = birnn.parameters()
 
-  override def trainables(): Array[Boolean] = {
-    birnn.trainables()
-  }
-
   override def updateParameters(learningRate: T): Unit = birnn.updateParameters(learningRate)
 
   /**

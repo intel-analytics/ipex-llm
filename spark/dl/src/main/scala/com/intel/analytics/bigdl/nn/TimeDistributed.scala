@@ -156,10 +156,6 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
    */
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = layer.parameters()
 
-  override def trainables(): Array[Boolean] = {
-    layer.trainables()
-  }
-
   /**
    * This method compact all parameters and gradients of the model into two tensors. So it's easier
    * to use optim method

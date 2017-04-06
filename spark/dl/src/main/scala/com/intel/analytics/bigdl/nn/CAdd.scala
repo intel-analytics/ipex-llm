@@ -142,10 +142,6 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
     (Array(this.bias), Array(this.gradBias))
   }
 
-  override def trainables(): Array[Boolean] = {
-    Array(trainable)
-  }
-
   override def getParametersTable(): Table = {
     T(getName() -> T("bias" -> bias, "gradBias" -> gradBias))
   }

@@ -246,36 +246,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @return
    */
   def getParameters(filterTrainable: Boolean = false): (Tensor[T], Tensor[T]) = {
-    // get all parameters
-    if (!filterTrainable) {
-      val (weightParameters, gradParameters) = this.parameters()
-      (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
+    val (weightParameters, gradParameters) = if (!filterTrainable) {
+      this.parameters()
     } else {
-      // get only trainable parameters
-      getTrainableParameters()
+      this.trainableParameters()
     }
-  }
-
-  private def getTrainableParameters(): (Tensor[T], Tensor[T]) = {
-    val (weightParameters, gradParameters) = this.parameters()
-    val trainableStates = this.trainables()
-    // all is trainable
-    if (trainableStates.forall(_ == true)) {
-      (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
-    } else {
-      require(weightParameters.length == trainableStates.length)
-      val trainableWeights = new ArrayBuffer[Tensor[T]]()
-      val trainableGrads = new ArrayBuffer[Tensor[T]]()
-      var i = 0
-      while (i < weightParameters.length) {
-        if (trainableStates(i)) {
-          trainableWeights += weightParameters(i)
-          trainableGrads += gradParameters(i)
-        }
-        i += 1
-      }
-      (Module.flatten[T](trainableWeights.toArray), Module.flatten[T](trainableGrads.toArray))
-    }
+    (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
   }
 
   /**
@@ -287,14 +263,16 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = null
 
   /**
-   * This function returns the array of trainable states. each element corresponds to
-   * the element of weights parameters
-   * If module only has weight or only has bias, then the trainalbles.length == 1
-   * If module contains both weight and bias, then the trainalbles.length == 2, and they should
-   * be both true or false
-   * @return trainables
+   * This function returns the array of trainable parameters.
+   * @return trainable parameters
    */
-  def trainables(): Array[Boolean] = null
+  def trainableParameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    if (trainable) {
+      parameters()
+    } else {
+      null
+    }
+  }
 
   /**
    * This function returns a table contains ModuleName, the parameter names and parameter value

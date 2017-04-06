@@ -68,10 +68,6 @@ class Mul[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
     (Array(this.weight), Array(this.gradWeight))
   }
 
-  override def trainables(): Array[Boolean] = {
-    Array(trainable)
-  }
-
   override def getParametersTable(): Table = {
     T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
   }
