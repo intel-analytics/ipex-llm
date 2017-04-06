@@ -501,7 +501,7 @@ object DistriOptimizer {
         val localState = broadcastState.clone()
         val localMethod =
           if (broadcastMethod.isDefined) Some(broadcastMethod.get.map(_.clone())) else None
-        val (weights, grads) = localModel.getParameters()
+        val (weights, grads) = localModel.getParameters(true)
         (localModel, weights, grads, localCriterion, localState, localMethod)
       }.toArray
 
@@ -642,7 +642,7 @@ object DistriOptimizer {
     (0 until parameterArray._2.length).foreach(i =>
       parameterArray._2(i).resizeAs(parameterArray._1(i))
     )
-    val (parameter, gradientParameter) = trainedModel.getParameters()
+    val (parameter, gradientParameter) = trainedModel.getParameters(true)
     val parameterLength = parameter.nElement()
     val taskSize = parameterLength / partitionNum
     require(taskSize != 0, "parameter length should not less than partition number")
@@ -702,7 +702,7 @@ class DistriOptimizer[T: ClassTag] (
     val coresPerNode = Engine.coreNumber()
 
     val partitionNum = dataset.originRDD().partitions.length
-    val size = model.getParameters()._1.nElement()
+    val size = model.getParameters(true)._1.nElement()
     val parameters = AllReduceParameter.newParameter(partitionNum, size)
 
     models = DistriOptimizer.initThreadModels(model, dataset, criterion, state,

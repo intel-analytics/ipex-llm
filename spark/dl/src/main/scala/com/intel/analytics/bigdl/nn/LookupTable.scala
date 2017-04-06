@@ -224,6 +224,10 @@ class LookupTable[T: ClassTag]
     (Array(this.weight), Array(this.gradWeight))
   }
 
+  override def trainables(): Array[Boolean] = {
+    Array(trainable)
+  }
+
   override def getParametersTable(): Table = {
     T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
   }

@@ -96,6 +96,10 @@ class Add[T: ClassTag](val inputSize: Int
     (Array(this.bias), Array(this.gradBias))
   }
 
+  override def trainables(): Array[Boolean] = {
+    Array(true)
+  }
+
   override def getParametersTable(): Table = {
     T(getName() -> T("bias" -> bias, "gradBias" -> gradBias))
   }

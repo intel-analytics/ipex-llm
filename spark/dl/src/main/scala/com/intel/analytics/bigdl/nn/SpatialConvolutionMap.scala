@@ -270,6 +270,10 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
   }
 
+  override def trainables(): Array[Boolean] = {
+    Array(trainable, trainable)
+  }
+
   override def getParametersTable(): Table = {
     T(getName() -> T("weight" -> weight, "bias" -> bias,
       "gradWeight" -> gradWeight, "gradBias" -> gradBias))

@@ -140,10 +140,12 @@ class Concat[T: ClassTag](val dimension: Int)(
     var i = 0
     while (i < this.modules.length) {
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
-      this.modules(i).accGradParameters(
-        input.asInstanceOf[Activity],
-        gradOutput.narrow(dimension, offset, currentOutput.size(dimension))
-          .asInstanceOf[Activity], scale)
+      if (this.modules(i).isTrainable()) {
+        this.modules(i).accGradParameters(
+          input.asInstanceOf[Activity],
+          gradOutput.narrow(dimension, offset, currentOutput.size(dimension))
+            .asInstanceOf[Activity], scale)
+      }
 
       i += 1
       offset += currentOutput.size(dimension)

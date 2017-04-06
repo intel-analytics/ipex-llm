@@ -51,7 +51,9 @@ class ParallelTable[T: ClassTag]
     scale: Double = 1.0): Unit = {
     var i = 0
     while (i < input.length()) {
-      modules(i).accGradParameters(input(i + 1), gradOutput(i + 1), scale)
+      if (modules(i).isTrainable()) {
+        modules(i).accGradParameters(input(i + 1), gradOutput(i + 1), scale)
+      }
       i += 1
     }
   }

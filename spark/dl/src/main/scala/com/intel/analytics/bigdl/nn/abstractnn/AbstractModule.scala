@@ -27,6 +27,7 @@ import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim.Predictor
 import com.intel.analytics.bigdl.dataset.Sample
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -130,6 +131,26 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     }
   }
 
+  protected var trainable = true
+
+  /**
+   * set trainable
+   * if trainable is true, train this module
+   * else not train this module
+   */
+  def setTrainable(trainable: Boolean): this.type = {
+    this.trainable = trainable
+    this
+  }
+
+  /**
+   * whether this module trainable
+   * @return trainable
+   */
+  def isTrainable(): Boolean = {
+    trainable
+  }
+
   protected var forwardTime = 0L
 
   protected var backwardTime = 0L
@@ -171,7 +192,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def backward(input: A, gradOutput: B): A = {
     val before = System.nanoTime()
     updateGradInput(input, gradOutput)
-    accGradParameters(input, gradOutput)
+    if (trainable) {
+      accGradParameters(input, gradOutput)
+    }
     backwardTime += System.nanoTime() - before
 
     gradInput
@@ -219,12 +242,40 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   /**
    * This method compact all parameters and gradients of the model into two tensors. So it's easier
    * to use optim method
-   *
+   * @param filterTrainable whether to filter trainable parameters
    * @return
    */
-  def getParameters(): (Tensor[T], Tensor[T]) = {
+  def getParameters(filterTrainable: Boolean = false): (Tensor[T], Tensor[T]) = {
+    // get all parameters
+    if (!filterTrainable) {
+      val (weightParameters, gradParameters) = this.parameters()
+      (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
+    } else {
+      // get only trainable parameters
+      getTrainableParameters()
+    }
+  }
+
+  private def getTrainableParameters(): (Tensor[T], Tensor[T]) = {
     val (weightParameters, gradParameters) = this.parameters()
-    (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
+    val trainableStates = this.trainables()
+    // all is trainable
+    if (trainableStates.forall(_ == true)) {
+      (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
+    } else {
+      require(weightParameters.length == trainableStates.length)
+      val trainableWeights = new ArrayBuffer[Tensor[T]]()
+      val trainableGrads = new ArrayBuffer[Tensor[T]]()
+      var i = 0
+      while (i < weightParameters.length) {
+        if (trainableStates(i)) {
+          trainableWeights += weightParameters(i)
+          trainableGrads += gradParameters(i)
+        }
+        i += 1
+      }
+      (Module.flatten[T](trainableWeights.toArray), Module.flatten[T](trainableGrads.toArray))
+    }
   }
 
   /**
@@ -234,6 +285,16 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @return (Array of weights, Array of grad)
    */
   def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = null
+
+  /**
+   * This function returns the array of trainable states. each element corresponds to
+   * the element of weights parameters
+   * If module only has weight or only has bias, then the trainalbles.length == 1
+   * If module contains both weight and bias, then the trainalbles.length == 2, and they should
+   * be both true or false
+   * @return trainables
+   */
+  def trainables(): Array[Boolean] = null
 
   /**
    * This function returns a table contains ModuleName, the parameter names and parameter value

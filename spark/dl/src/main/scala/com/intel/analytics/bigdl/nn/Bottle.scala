@@ -95,12 +95,14 @@ class Bottle[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T], scale: Double): Unit = {
-    if (input.dim() > nInputDim) {
-      val input_ = input.view(inShape.storage().array().map(_.toInt))
-      val gradOutput_ = gradOutput.view(outShape.storage().array().map(_.toInt))
-      modules(0).accGradParameters(input_, gradOutput_, scale)
-    } else {
-      modules(0).accGradParameters(input, gradOutput, scale)
+    if (modules(0).isTrainable()) {
+      if (input.dim() > nInputDim) {
+        val input_ = input.view(inShape.storage().array().map(_.toInt))
+        val gradOutput_ = gradOutput.view(outShape.storage().array().map(_.toInt))
+        modules(0).accGradParameters(input_, gradOutput_, scale)
+      } else {
+        modules(0).accGradParameters(input, gradOutput, scale)
+      }
     }
   }
 

@@ -90,6 +90,8 @@ class SpatialConvolution[T: ClassTag](
   @transient
   protected var results: Array[Future[Unit]] = null
 
+  setTrainable(propagateBack)
+
   override def reset(): Unit = {
     initMethod match {
       case Default =>
@@ -339,6 +341,10 @@ class SpatialConvolution[T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+  }
+
+  override def trainables(): Array[Boolean] = {
+    Array(trainable, trainable)
   }
 
   override def getParametersTable(): Table = {

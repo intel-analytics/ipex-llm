@@ -107,6 +107,17 @@ abstract class Container[A <: Activity : ClassTag,
     (weights.toArray, gradWeights.toArray)
   }
 
+  override def trainables(): Array[Boolean] = {
+    val states = new ArrayBuffer[Boolean]()
+    modules.foreach(m => {
+      val ts = m.trainables()
+      if (ts != null) {
+        states ++= ts
+      }
+    })
+    states.toArray
+  }
+
   override def getParametersTable(): Table = {
     val pt = T()
     modules.foreach(m => {

@@ -161,6 +161,14 @@ class Linear[T: ClassTag](
     }
   }
 
+  override def trainables(): Array[Boolean] = {
+    if (null == bias) {
+      Array(trainable)
+    } else {
+      Array(trainable, trainable)
+    }
+  }
+
   override def getParametersTable(): Table = {
     if (null == bias) {
       T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))

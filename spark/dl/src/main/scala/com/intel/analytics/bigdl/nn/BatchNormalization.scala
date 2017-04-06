@@ -658,6 +658,14 @@ class BatchNormalization[@specialized(Float, Double) T: ClassTag](
     }
   }
 
+  override def trainables(): Array[Boolean] = {
+    if (affine) {
+      Array(trainable, trainable)
+    } else {
+      null
+    }
+  }
+
   override def getParametersTable(): Table = {
     if (affine) {
       T(getName() -> T("weight" -> weight, "bias" -> bias,
