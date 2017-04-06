@@ -227,8 +227,8 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
     val input = Tensor[Double](Array(1, seqLength, inputSize))
     val labels = Tensor[Double](Array(1, seqLength))
     for (i <- 1 to seqLength) {
-      val rdmLabel = Math.ceil(math.random * outputSize).toInt
-      val rdmInput = Math.ceil(math.random * inputSize).toInt
+      val rdmLabel = Math.ceil(RNG.uniform(0, 1) * outputSize).toInt
+      val rdmInput = Math.ceil(RNG.uniform(0, 1) * inputSize).toInt
       input.setValue(1, i, rdmInput, 1.0)
       labels.setValue(1, i, rdmLabel)
     }
