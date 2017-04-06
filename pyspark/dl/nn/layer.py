@@ -438,12 +438,12 @@ class LSTMPeephole(Model):
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in the LSTM
 
-    >>> lstm = LSTMPeephole(4, 3)
+    >>> lstm = LSTMPeephole(4, 3, 0.5)
     creating: createLSTMPeephole
     '''
 
-    def __init__(self, input_size, hidden_size, bigdl_type="float"):
-        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
+        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
 class GRU(Model):
@@ -458,11 +458,11 @@ class GRU(Model):
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in GRU
 
-    >>> gru = GRU(4, 3)
+    >>> gru = GRU(4, 3, 0.5)
     creating: createGRU
     '''
 
-    def __init__(self,  input_size, hidden_size, p=0.0, bigdl_type="float"):
+    def __init__(self,  input_size, hidden_size, p=0.0, bigdl_type="double"):
         super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
