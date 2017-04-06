@@ -24,9 +24,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 @com.intel.analytics.bigdl.tags.Integration
 class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
-    val hdfsHost = System.getProperty("hdfsHost")
-    val hdfsPort = System.getProperty("hdfsPort")
-    val hdfs = s"hdfs://$hdfsHost:$hdfsPort"
+    val hdfs = System.getProperty("hdfsMaster")
 
   "save and load model from hdfs" should "be correct" in {
     val model = LeNet5(10)
