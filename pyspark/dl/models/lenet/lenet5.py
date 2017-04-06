@@ -100,7 +100,7 @@ if __name__ == "__main__":
         test_data = get_minst(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
         # TODO: Pass model path through external parameter
-        model = Model.from_path("/tmp/lenet5/lenet-model.470")
+        model = Model.load("/tmp/lenet5/lenet-model.470")
         results = model.test(test_data, 32, ["Top1Accuracy"])
         for result in results:
             print result
