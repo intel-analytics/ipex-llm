@@ -62,7 +62,8 @@ details can be found at: [LeNet5](https://github.com/intel-analytics/BigDL/tree/
     export PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
     export PYSPARK_DRIVER_PYTHON=jupyter
     export PYSPARK_DRIVER_PYTHON_OPTS="notebook --notebook-dir=./  --ip=* --no-browser"
-
+    
+    source ${BigDL_HOME}/dist/bin/bigdl.sh
 
     ${SPARK_HOME}/bin/pyspark \
         --master ${MASTER} \
