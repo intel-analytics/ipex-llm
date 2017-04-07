@@ -67,10 +67,10 @@ Please build the source code with your specific version of spark referring the
 
    ```shell
    BASE_DIR=${PWD} # where is the data
-   MASTER=loca[*] # the master url
+   MASTER=local[*] # the master url
    ./dist/bin/bigdl.sh -- spark-submit --master $MASTER --driver-memory 20g \
        --class com.intel.analytics.bigdl.example.modeludf.DataframePredictor \
-         ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+         ./dist/lib/bigdl-$VERSION-jar-with-dependencies.jar \
        --batchSize 32 \
        --baseDir $BASE_DIR \
        --partitionNum 4 \
@@ -97,12 +97,12 @@ Please build the source code with your specific version of spark referring the
 
    ```shell
    BASE_DIR=${PWD} # where is the data
-   MASTER=loca[*] # the master url
+   MASTER=xxx.xxx.xxx.xxx:xxxx # the master url
    ./dist/bin/bigdl.sh -- spark-submit --master $MASTER --driver-memory 20g \
        --executor-cores 8 \
        --total-executor-cores 32 \
        --class com.intel.analytics.bigdl.example.modeludf.DataframePredictor \
-         ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+         ./dist/lib/bigdl-$VERSION-jar-with-dependencies.jar \
        --batchSize 32 \
        --baseDir $BASE_DIR \
        --partitionNum 4 \
@@ -116,10 +116,10 @@ Please build the source code with your specific version of spark referring the
      
    ```shell
    BASE_DIR=${PWD} # where is the data
-   MASTER=loca[*] # the master url
+   MASTER=local[*] # the master url
    ./bigdl.sh -- spark-submit --master $MASTER --driver-memory 5g \
               --class com.intel.analytics.bigdl.example.modeludf.DataframePredictor \
-                bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+                bigdl-$VERSION-jar-with-dependencies.jar \
               --baseDir $BASE_DIR \
               --modelPath  $BASE_DIR/model/text/model.1 \
               --dataDir $BASE_DIR/test
@@ -317,10 +317,10 @@ Please build the source code with your specific version of spark referring the
 
    ```shell
    BASE_DIR=${PWD} # where is the data
-   MASTER=loca[*]  # the master url
+   MASTER=local[*]  # the master url
    ./dist/bin/bigdl.sh -- spark-submit --master $MASTER --driver-memory 20g \
        --class com.intel.analytics.bigdl.example.modeludf.StructuredStreamPredictor \
-         ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+         ./dist/lib/bigdl-$VERSION-jar-with-dependencies.jar \
        --batchSize 32 \
        --baseDir $BASE_DIR \
        --partitionNum 4 \
@@ -347,12 +347,12 @@ Please build the source code with your specific version of spark referring the
 
    ```shell
    BASE_DIR=${PWD} # where is the data
-   MASTER=loca[*]  # the master url
+   MASTER=xxx.xxx.xxx.xxx:xxxx  # the master url
    ./dist/bin/bigdl.sh -- spark-submit --master $MASTER --driver-memory 20g \
        --executor-cores 8 \
        --total-executor-cores 32 \
        --class com.intel.analytics.bigdl.example.modeludf.StructuredStreamPredictor \
-         ./dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+         ./dist/lib/bigdl-$VERSION-jar-with-dependencies.jar \
        --batchSize 32 \
        --baseDir $BASE_DIR \
        --partitionNum 4 \
@@ -369,7 +369,7 @@ Please build the source code with your specific version of spark referring the
    MASTER=loca[*] # the master url, please modify it accordingly
    ./bigdl.sh -- spark-submit --master MASTER --driver-memory 5g \
               --class com.intel.analytics.bigdl.example.modeludf.StructuredStreamPredictor \
-                dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+                dist/lib/bigdl-$VERSION-jar-with-dependencies.jar \
               --baseDir $BASE_DIR \
               --modelPath  $BASE_DIR/model/text/model.1 \
               --dataDir $BASE_DIR/data/text/parquet
@@ -388,10 +388,10 @@ Please build the source code with your specific version of spark referring the
     Example: 
     ```
     BASE_DIR=${PWD} # where is the data
-    MASTER=loca[*]  # the master url
+    MASTER=local[*]  # the master url
     spark-submit --master $MASTER \
         --class com.intel.analytics.bigdl.example.modeludf.FileStreamingProducer \
-        dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+        dist/lib/bigdl-$VERSION-jar-with-dependencies.jar \
         -s $BASE_DIR/test \
         -d $BASE_DIR/data/text/parquet \
         -b 4 \
