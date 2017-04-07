@@ -14,16 +14,18 @@ This Python binding has been tested with Python 2.7 and Spark 1.6.0 / Spark 2.0.
     * With Spark1.6: ```  $BIGDL_HOME/make-dist.sh ``` 
     * With Spark2.0: ``` $BIGDL_HOME/make-dist.sh -P spark_2.0 ```
 
-2. Install python dependensies(if you're running cluster mode, you need to install them on each worker node):
+2. Install python dependensies(if you're running cluster mode, you need to install them on client and each worker node):
   * Installing Numpy: 
     ```sudo apt-get install python-numpy```
 
   * Installing Python setuptools: 
     ```sudo apt-get install -y python-setuptools python-pip```
     
-  * Install Jupyter (only if you need to use BigDL within Jupyter notebook. Install jupyter on client node):
+  * Install Jupyter on client node (only if you need to use BigDL within Jupyter notebook):
     ```sudo pip install jupyter```
-    
+   
+  * Install other python dependency libs if you need to use them in your python application
+  
 ## Run a Lenet example on standalone cluster
     
  ```bash
