@@ -61,7 +61,7 @@ class SpatialDilatedConvolution[T: ClassTag](
   val padH: Int = 0,
   val dilationW: Int = 1,
   val dilationH: Int = 1,
-  private var initMethod: Initializer = RandomUniform
+  private var initMethod: InitializationMethod = RandomUniform
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
@@ -81,8 +81,9 @@ class SpatialDilatedConvolution[T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
-  def setInitMethod(initMethod: Initializer): this.type = {
+  def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
+    reset()
     this
   }
 
@@ -539,7 +540,7 @@ object SpatialDilatedConvolution {
       padH: Int = 0,
       dilationW: Int = 1,
       dilationH: Int = 1,
-      initMethod: Initializer = RandomUniform
+      initMethod: InitializationMethod = RandomUniform
   )(implicit ev: TensorNumeric[T]) : SpatialDilatedConvolution[T] = {
     new SpatialDilatedConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH, dilationW, dilationH, initMethod)

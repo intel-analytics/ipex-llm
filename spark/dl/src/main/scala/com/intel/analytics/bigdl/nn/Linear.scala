@@ -34,13 +34,13 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
  * @param inputSize the size the each input sample
  * @param outputSize the size of the module output of each sample
  * @param initMethod the method to initialize weight and bias, please refer to
- *                   [[Initializer]]
+ *                   [[InitializationMethod]]
  */
 @SerialVersionUID( 359656776803598943L)
 class Linear[T: ClassTag](
   inputSize: Int,
   outputSize: Int,
-  private var initMethod: Initializer = RandomUniform,
+  private var initMethod: InitializationMethod = RandomUniform,
   withBias: Boolean = true
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
@@ -51,8 +51,9 @@ class Linear[T: ClassTag](
   val gradBias: Tensor[T] = if (withBias) Tensor[T](outputSize) else null
   reset()
 
-  def setInitMethod(initMethod: Initializer): this.type = {
+  def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
+    reset()
     this
   }
 
@@ -194,7 +195,7 @@ object Linear {
   def apply[@specialized(Float, Double) T: ClassTag](
       inputSize: Int,
       outputSize: Int,
-      initMethod: Initializer = RandomUniform,
+      initMethod: InitializationMethod = RandomUniform,
       withBias: Boolean = true
   )(implicit ev: TensorNumeric[T]) : Linear[T] = {
     new Linear[T](inputSize, outputSize, initMethod, withBias)

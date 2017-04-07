@@ -38,7 +38,7 @@ class SpatialConvolution[T: ClassTag](
   val padH: Int = 0, // The additional zeros added per height to the input planes.
   val nGroup: Int = 1, // Kernel group number
   val propagateBack: Boolean = true, // propagate gradient back
-  private var initMethod: Initializer = RandomUniform
+  private var initMethod: InitializationMethod = RandomUniform
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
@@ -76,8 +76,9 @@ class SpatialConvolution[T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
-  def setInitMethod(initMethod: Initializer): this.type = {
+  def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
+    reset()
     this
   }
 
@@ -559,7 +560,7 @@ object SpatialConvolution {
       padH: Int = 0,
       nGroup: Int = 1,
       propagateBack: Boolean = true,
-      initMethod: Initializer = RandomUniform
+      initMethod: InitializationMethod = RandomUniform
   )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
       strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)

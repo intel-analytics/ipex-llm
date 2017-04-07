@@ -27,7 +27,7 @@ class RnnCell[T : ClassTag] (
   inputSize: Int = 4,
   hiddenSize: Int = 3,
   activation: TensorModule[T],
-  private var initMethod: Initializer = Xavier)
+  private var initMethod: InitializationMethod = Xavier)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](Array(hiddenSize)) {
 
@@ -46,8 +46,9 @@ class RnnCell[T : ClassTag] (
       .add(Identity[T]())
       .add(Identity[T]()))
 
-  def setInitMethod(initMethod: Initializer): this.type = {
+  def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
+    reset()
     this
   }
 

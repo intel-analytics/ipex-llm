@@ -75,7 +75,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   var adjH: Int = 0,
   val nGroup: Int = 1,
   val noBias: Boolean = false,
-  private var initMethod: Initializer = RandomUniform
+  private var initMethod: InitializationMethod = RandomUniform
   )(implicit ev: TensorNumeric[T]) extends AbstractModule[A, Tensor[T], T]{
 
   require(adjW <= dW - 1 && adjH <= dH - 1,
@@ -113,13 +113,14 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
-  def setInitMethod(initMethod: Initializer): this.type = {
+  def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
+    reset()
     this
   }
 
   override def reset(): Unit = {
-    initMethod.init(weight, Option(bias), "input_first")
+    initMethod.init(weight, Option(bias), InputFirst)
     zeroGradParameters()
   }
 
@@ -751,7 +752,7 @@ object SpatialFullConvolution {
       adjH: Int = 0,
       nGroup: Int = 1,
       noBias: Boolean = false,
-      initMethod: Initializer = RandomUniform
+      initMethod: InitializationMethod = RandomUniform
   )(implicit ev: TensorNumeric[T]) : SpatialFullConvolution[A, T] = {
     new SpatialFullConvolution[A, T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
       padW, padH, adjW, adjH, nGroup, noBias, initMethod)

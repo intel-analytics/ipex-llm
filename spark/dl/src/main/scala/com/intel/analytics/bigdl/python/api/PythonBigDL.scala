@@ -55,7 +55,7 @@ object PythonBigDL {
 
   def ofDouble(): PythonBigDL[Double] = doubleInstance
 
-  def getInitMethod(initMethod: String): Initializer = {
+  def getInitMethod(initMethod: String): InitializationMethod = {
     initMethod.toLowerCase() match {
       case "xavier" => Xavier
       case "randomUniform" => RandomUniform

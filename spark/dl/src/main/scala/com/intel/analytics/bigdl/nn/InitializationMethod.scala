@@ -20,19 +20,34 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
+sealed trait DataFormat
+
+case object OutputFirst extends DataFormat
+
+case object InputFirst extends DataFormat
+
 /**
  * Initialization method to initialize bias and weight.
  * The init method will be called in Module.reset()
  */
 
-trait Initializer {
+trait InitializationMethod {
 
   type Shape = Array[Int]
 
-  def init[T](weight: Tensor[T], bias: Option[Tensor[T]], fmt: String = "output_first")
+  /**
+    * Initialize the given weight and bias.
+    *
+    * @param weight    the weight to initialize
+    * @param bias      the bias to initialize, do nothing if bias is None
+    * @param dataFormat       the data format of weight indicating the dimension order of
+    *                  the weight. "output_first" means output is in the lower dimension
+    *                  "input_first" means input is in the lower dimension.
+    */
+  def init[T](weight: Tensor[T], bias: Option[Tensor[T]], dataFormat: DataFormat = OutputFirst)
           (implicit ev: TensorNumeric[T]): Unit
 
-  protected def getFans(shape: Shape, dataFormat: String = "output_first"): (Int, Int) = {
+  protected def getFans(shape: Shape, dataFormat: DataFormat = OutputFirst): (Int, Int) = {
     val dims = shape.length
     val (first, second) = dims match {
       case 2 => (shape(0), shape(1))
@@ -46,26 +61,38 @@ trait Initializer {
         val sqrtElem = Math.sqrt(shape.product).toInt
         (sqrtElem, sqrtElem)
     }
-    val (fanIn, fanOut) = if (dataFormat == "input_first") {
-      (first, second)
-    } else if (dataFormat == "output_first") {
-      (second, first)
-    } else {
-      throw new IllegalArgumentException(s"Invalid inputFormat: $dataFormat")
+    val (fanIn, fanOut) = dataFormat match {
+      case InputFirst => (first, second)
+      case OutputFirst => (second, first)
+      case _ =>
+        throw new IllegalArgumentException(s"Invalid inputFormat: $dataFormat")
     }
     (Math.max(1, fanIn), Math.max(1, fanOut))
   }
+
+  protected def initWithUniform[T](tensor: Tensor[T], stdv: Double)
+                                  (implicit ev: TensorNumeric[T]): Unit = {
+    tensor.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+  }
 }
 
-case object RandomUniform extends Initializer {
 
-  def init[T](weight: Tensor[T], bias: Option[Tensor[T]], fmt: String = "output_first")
+/**
+ * Initializer that generates tensors with a uniform distribution.
+ *
+ * It draws samples form a uniform distribution within [-limit, limit]
+ * where "limit" is "1/sqrt(fan_in)"
+ *
+ */
+case object RandomUniform extends InitializationMethod {
+
+  def init[T](weight: Tensor[T], bias: Option[Tensor[T]], dataFormat: DataFormat = OutputFirst)
           (implicit ev: TensorNumeric[T]): Unit = {
     val shape = weight.size()
-    val (fanIn, _) = getFans(shape, fmt)
+    val (fanIn, _) = getFans(shape, dataFormat)
     val stdv = 1.0 / math.sqrt(fanIn)
-    weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-    bias.foreach(_.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv))))
+    initWithUniform(weight, stdv)
+    bias.foreach(initWithUniform(_, stdv))
   }
 
 }
@@ -89,26 +116,33 @@ case object RandomUniform extends Initializer {
  *  [Understanding the difficulty of training deep feedforward neural networks]
  *  (http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf)
  */
-case object Xavier extends Initializer {
-  def init[T](weight: Tensor[T], bias: Option[Tensor[T]], fmt: String = "output_first")
+case object Xavier extends InitializationMethod {
+  def init[T](weight: Tensor[T], bias: Option[Tensor[T]], dataFormat: DataFormat = OutputFirst)
           (implicit ev: TensorNumeric[T]): Unit = {
     val shape = weight.size()
     val (fanIn, fanOut) = getFans(shape)
     val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-    weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-    bias.foreach(_.fill(ev.fromType(0)))
+    initWithUniform(weight, stdv)
+    bias.foreach(_.fill(ev.zero))
   }
 
 }
-case object BilinearFiller extends Initializer {
-  def init[T](weight: Tensor[T], bias: Option[Tensor[T]], fmt: String = "output_first")
+
+/**
+ * Initialize the weight with coefficients for bilinear interpolation.
+ *
+ * A common use case is with the DeconvolutionLayer acting as upsampling.
+ *
+ */
+case object BilinearFiller extends InitializationMethod {
+  def init[T](weight: Tensor[T], bias: Option[Tensor[T]], dataFormat: DataFormat = OutputFirst)
              (implicit ev: TensorNumeric[T]): Unit = {
     val shape = weight.size()
-    require(shape.length == 5, s"SpatialFullConvolution: weight must be 5 dim, " +
+    require(shape.length == 5, s"weight must be 5 dim, " +
       s"but got ${shape.length}")
     val kH = shape(3)
     val kW = shape(4)
-    require(kH == kW, s"SpatialFullConvolution: Kernel $kH * $kW must be square")
+    require(kH == kW, s"Kernel $kH * $kW must be square")
     val f = Math.ceil(kW / 2.0).toInt
     val c = (2 * f - 1 - f % 2) / (2.0f * f)
     val weightArray = weight.storage().array()
