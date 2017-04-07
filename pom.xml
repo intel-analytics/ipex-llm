@@ -573,6 +573,22 @@
             </properties>
         </profile>
         <profile>
+            <id>cloudera</id>
+            <properties>
+                <spark-version.project>2.0</spark-version.project>
+                <spark.version>2.0.0.cloudera2</spark.version>
+                <scala.major.version>2.11</scala.major.version>
+                <scala.version>2.11.8</scala.version>
+                <scala.macros.version>2.1.0</scala.macros.version>
+            </properties>
+            <repositories>
+                <repository>
+                    <id>cloudera</id>
+                    <url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+                </repository>
+            </repositories>
+        </profile>
+        <profile>
             <id>all-in-one</id>
             <properties>
                 <spark-scope>compile</spark-scope>
