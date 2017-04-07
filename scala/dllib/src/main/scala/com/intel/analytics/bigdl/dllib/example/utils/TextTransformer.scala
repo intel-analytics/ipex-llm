@@ -18,19 +18,19 @@ package com.intel.analytics.bigdl.example.utils
 
 object SimpleTokenizer {
   /**
-    * Simple tokenizer to split text into separated tokens.
-    * @param text text to be split.
-    * @param lower convert to lower case or not.
-    * @return An array of separated tokens.
-    */
+   * Simple tokenizer to split text into separated tokens.
+   * @param text text to be split.
+   * @param lower convert to lower case or not.
+   * @return An array of separated tokens.
+   */
   def toTokens(text: String, lower: Boolean = true): Array[String] = {
     text.replaceAll("[^a-zA-Z]", " ").toLowerCase().split("\\s+").filter(_.size > 2)
   }
 
   /**
-    * Transform sample text into tokens and ignore those unknown tokens.
-    * @param word2Meta Indicate the included words.
-    */
+   * Transform sample text into tokens and ignore those unknown tokens.
+   * @param word2Meta Indicate the included words.
+   */
   def toTokens(text: String, word2Meta: Map[String, WordMeta]): Array[Float] = {
     SimpleTokenizer.toTokens(text).map { word: String =>
       if (word2Meta.contains(word)) {
@@ -42,11 +42,11 @@ object SimpleTokenizer {
   }
 
   /**
-    * Shape the token sequence to the specified length.
-    * The sequence would be either padded or truncated.
-    * @param sequenceLen the desired seq length
-    * @param trunc truncated from pre or post.
-    */
+   * Shape the token sequence to the specified length.
+   * The sequence would be either padded or truncated.
+   * @param sequenceLen the desired seq length
+   * @param trunc truncated from pre or post.
+   */
   def shaping(tokens: Array[Float], sequenceLen: Int, trunc: String = "pre")
   : Array[Float] = {
     val paddedTokens = if (tokens.length > sequenceLen) {
@@ -62,10 +62,10 @@ object SimpleTokenizer {
   }
 
   /**
-    * Transform word to pre-trained vector.
-    * @param embeddingSize size of the pre-trained vector
-    * @param word2Vec pre-trained word2Vec
-    */
+   * Transform word to pre-trained vector.
+   * @param embeddingSize size of the pre-trained vector
+   * @param word2Vec pre-trained word2Vec
+   */
   def vectorization(tokens: Array[Float], embeddingSize: Int, word2Vec: Map[Float, Array[Float]])
   : Array[Array[Float]] = {
     tokens.map { word =>
@@ -80,7 +80,7 @@ object SimpleTokenizer {
 }
 
 /**
-  * @param count frequency of the word.
-  * @param index index of the word which ranked by the frequency from high to low.
-  */
+ * @param count frequency of the word.
+ * @param index index of the word which ranked by the frequency from high to low.
+ */
 case class WordMeta(count: Int, index: Int)
