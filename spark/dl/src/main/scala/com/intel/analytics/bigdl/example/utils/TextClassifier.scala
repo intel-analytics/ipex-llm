@@ -49,9 +49,9 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
   var classNum = -1
 
   /**
-    * Load the pre-trained word2Vec
-    * @return A map from word to vector
-    */
+   * Load the pre-trained word2Vec
+   * @return A map from word to vector
+   */
   def buildWord2Vec(word2Meta: Map[String, WordMeta]): Map[Float, Array[Float]] = {
     log.info("Indexing word vectors.")
     val preWord2Vec = MMap[Float, Array[Float]]()
@@ -69,9 +69,9 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
   }
 
   /**
-    * Load the pre-trained word2Vec
-    * @return A map from word to vector
-    */
+   * Load the pre-trained word2Vec
+   * @return A map from word to vector
+   */
   def buildWord2VecWithIndex(word2Meta: Map[String, Int]): Map[Float, Array[Float]] = {
     log.info("Indexing word vectors.")
     val preWord2Vec = MMap[Float, Array[Float]]()
@@ -90,9 +90,9 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
 
 
   /**
-    * Load the training data from the given baseDir
-    * @return An array of sample
-    */
+   * Load the training data from the given baseDir
+   * @return An array of sample
+   */
   private def loadRawData(): ArrayBuffer[(String, Float)] = {
     val texts = ArrayBuffer[String]()
     val labels = ArrayBuffer[Float]()
@@ -119,9 +119,9 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
   }
 
   /**
-    * Go through the whole data set to gather some meta info for the tokens.
-    * Tokens would be discarded if the frequency ranking is less then maxWordsNum
-    */
+   * Go through the whole data set to gather some meta info for the tokens.
+   * Tokens would be discarded if the frequency ranking is less then maxWordsNum
+   */
   def analyzeTexts(dataRdd: RDD[(String, Float)])
   : (Map[String, WordMeta], Map[Float, Array[Float]]) = {
     // Remove the top 10 words roughly, you might want to fine tuning this.
@@ -137,8 +137,8 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
   }
 
   /**
-    * Create train and val RDDs from input
-    */
+   * Create train and val RDDs from input
+   */
   def getData(sc: SparkContext): (Array[RDD[(Array[Array[Float]], Float)]],
     Map[String, WordMeta],
     Map[Float, Array[Float]]) = {
@@ -165,9 +165,9 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
 
   // TODO: Replace SpatialConv and SpatialMaxPolling with 1D implementation
   /**
-    * Return a text classification model with the specific num of
-    * class
-    */
+   * Return a text classification model with the specific num of
+   * class
+   */
   def buildModel(classNum: Int): Sequential[Float] = {
     val model = Sequential[Float]()
 
@@ -197,8 +197,8 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
 
 
   /**
-    * Start to train the text classification model
-    */
+   * Start to train the text classification model
+   */
   def train(): Unit = {
     val conf = Engine.createSparkConf()
       .setAppName("Text classification")
@@ -246,8 +246,8 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
   }
 
   /**
-    * Train the text classification model with train and val RDDs
-    */
+   * Train the text classification model with train and val RDDs
+   */
   def trainFromData(sc: SparkContext, rdds: Array[RDD[(Array[Array[Float]], Float)]])
   : Module[Float] = {
 
