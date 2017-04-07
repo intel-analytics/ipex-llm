@@ -37,11 +37,11 @@ import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 
 /**
-  * This example use a (pre-trained GloVe embedding) to convert word to vector,
-  * and uses it to train a text classification model on the 20 Newsgroup dataset
-  * with 20 different categories. This model can achieve around 90% accuracy after
-  * 2 epochs training.
-  */
+ * This example use a (pre-trained GloVe embedding) to convert word to vector,
+ * and uses it to train a text classification model on the 20 Newsgroup dataset
+ * with 20 different categories. This model can achieve around 90% accuracy after
+ * 2 epochs training.
+ */
 class TextClassifier(param: AbstractTextClassificationParams) extends Serializable{
   val log: Logger = LoggerFactory.getLogger(this.getClass)
   val gloveDir = s"${param.baseDir}/glove.6B/"
@@ -297,13 +297,13 @@ abstract class AbstractTextClassificationParams extends Serializable {
 
 
 /**
-  * @param baseDir The root directory which containing the training and embedding data
-  * @param maxSequenceLength number of the tokens
-  * @param maxWordsNum maximum word to be included
-  * @param trainingSplit percentage of the training data
-  * @param batchSize size of the mini-batch
-  * @param embeddingDim size of the embedding vector
-  */
+ * @param baseDir The root directory which containing the training and embedding data
+ * @param maxSequenceLength number of the tokens
+ * @param maxWordsNum maximum word to be included
+ * @param trainingSplit percentage of the training data
+ * @param batchSize size of the mini-batch
+ * @param embeddingDim size of the embedding vector
+ */
 case class TextClassificationParams(override val baseDir: String = "./",
                                     override val maxSequenceLength: Int = 1000,
                                     override val maxWordsNum: Int = 20000,
