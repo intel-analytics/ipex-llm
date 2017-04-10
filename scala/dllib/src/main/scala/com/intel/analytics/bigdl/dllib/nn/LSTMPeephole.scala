@@ -32,6 +32,12 @@ import scala.reflect.ClassTag
  *
  * @param inputSize the size of each input vector
  * @param hiddenSize Hidden unit size in the LSTM
+ * @param  p is used for [[Dropout]] probability. For more details about
+ *           RNN dropouts, please refer to
+ *           [RnnDrop: A Novel Dropout for RNNs in ASR]
+ *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+ *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+ *           (https://arxiv.org/pdf/1512.05287.pdf)
  */
 @SerialVersionUID(- 7566757838561436619L)
 class LSTMPeephole[T : ClassTag] (
