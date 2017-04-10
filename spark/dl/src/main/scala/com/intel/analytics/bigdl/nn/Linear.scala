@@ -39,6 +39,10 @@ import com.intel.analytics.bigdl.optim.Regularizer
  *                   and [[Xavier]], where [[Xavier]] set bias to zero here. For more
  *                   detailed information about `initMethod`, please refer to
  *                   [[InitializationMethod]]
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
  */
 @SerialVersionUID( 359656776803598943L)
 class Linear[T: ClassTag](

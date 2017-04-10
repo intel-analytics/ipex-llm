@@ -43,6 +43,12 @@ import scala.reflect.ClassTag
  *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
  *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
  *           (https://arxiv.org/pdf/1512.05287.pdf)
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param uRegularizer: instance [[Regularizer]]
+            (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+            applied to the bias.
  */
 @SerialVersionUID(6717988395573528459L)
 class GRU[T : ClassTag] (

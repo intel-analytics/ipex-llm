@@ -17,10 +17,10 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
@@ -35,18 +35,30 @@ import scala.reflect.ClassTag
  * @param hiddenSize hidden layer size
  * @param activation activation function f for non-linearity
  * @param initMethod initialization method for rnn parameters
+ *                   * @param inputSize the size of each input vector
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param uRegularizer: instance [[Regularizer]]
+            (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]](../regularizers.md),
+            applied to the bias.
  */
 class RnnCell[T : ClassTag] (
   inputSize: Int = 4,
   hiddenSize: Int = 3,
   activation: TensorModule[T],
+  wRegularizer: Regularizer[T] = null,
+  uRegularizer: Regularizer[T] = null,
+  bRegularizer: Regularizer[T] = null,
   private var initMethod: InitializationMethod = Default)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](Array(hiddenSize)) {
 
   val parallelTable = ParallelTable[T]()
-  val i2h = Linear[T](inputSize, hiddenSize)
-  val h2h = Linear[T](hiddenSize, hiddenSize)
+  val i2h = Linear[T](inputSize, hiddenSize,
+    wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+  val h2h = Linear[T](hiddenSize, hiddenSize, withBias = false,
+    wRegularizer = uRegularizer)
   parallelTable.add(i2h)
   parallelTable.add(h2h)
   val cAddTable = CAddTable[T]()

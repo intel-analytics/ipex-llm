@@ -35,6 +35,10 @@ import scala.reflect.ClassTag
  *                     For LSTM, it should be Array(hiddenSize, hiddenSize)
  *                     (because each time step a LSTM return two hiddens `h` and `c` in order,
  *                     which have the same size.)
+ *
+ *@param regularizers If the subclass has regularizers, it need to put the regularizers into
+ *                     an array and pass the array into the [[Cell]] constructor as an argument. See
+ *                     [[LSTM]] as a concrete example.
  */
 abstract class Cell[T : ClassTag](
   val hiddensShape: Array[Int],

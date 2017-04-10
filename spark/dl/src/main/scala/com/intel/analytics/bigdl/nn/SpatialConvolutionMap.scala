@@ -24,12 +24,16 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
-/*
+/**
  * This class is a generalization of SpatialConvolution.
  * It uses a generic connection table between input and output features.
  * The SpatialConvolution is equivalent to using a full connection table.
+ *
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
  */
-
 @SerialVersionUID(5288662921102331388L)
 class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val connTable: Tensor[T],
@@ -267,8 +271,12 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
       gradOutput.squeeze(1)
     }
 
-    wRegularizer.accRegularization(weight, gradWeight)
-    bRegularizer.accRegularization(bias, gradBias)
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight)
+    }
+    if (null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias)
+    }
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {

@@ -31,6 +31,11 @@ import scala.reflect.ClassTag
  * Applies a 2D convolution over an input image composed of several input planes.
  * The input tensor in forward(input) is expected to be
  * a 3D tensor (nInputPlane x height x width).
+ *
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
  */
 
 @SerialVersionUID(- 8446523046224797382L)

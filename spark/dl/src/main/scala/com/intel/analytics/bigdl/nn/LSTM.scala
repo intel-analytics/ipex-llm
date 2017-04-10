@@ -44,7 +44,7 @@ import scala.reflect.ClassTag
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param uRegularizer: instance [[Regularizer]]
             (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
- * @param bRegularizer: instance of [[Regularizer]](../regularizers.md),
+ * @param bRegularizer: instance of [[Regularizer]]
             applied to the bias.
  */
 @SerialVersionUID(- 8176191554025511686L)

@@ -37,6 +37,8 @@ import scala.reflect.ClassTag
  * @param normType norm regularization number, default 2
  * @param shouldScaleGradByFreq
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  */
 @SerialVersionUID( - 4832171200145114633L)
 class LookupTable[T: ClassTag]
@@ -226,7 +228,9 @@ class LookupTable[T: ClassTag]
       i += 1
     }
 
-    wRegularizer.accRegularization(weight, gradWeight)
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight)
+    }
   }
 
   override def toString(): String = {

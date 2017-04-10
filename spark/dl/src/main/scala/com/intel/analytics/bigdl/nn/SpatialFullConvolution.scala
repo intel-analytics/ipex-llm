@@ -60,6 +60,10 @@ import scala.reflect.ClassTag
  * @param nGroup Kernel group number.
  * @param noBias If bias is needed.
  * @param initMethod Init method, Default, Xavier, Bilinear.
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
  */
 
 @SerialVersionUID(- 3110412775551642284L)

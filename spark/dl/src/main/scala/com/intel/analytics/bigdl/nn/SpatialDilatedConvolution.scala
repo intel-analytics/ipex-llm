@@ -48,6 +48,10 @@ import scala.reflect.ClassTag
  * @param dilationW The number of pixels to skip. Default is 1.
  * @param dilationH The number of pixels to skip. Default is 1.
  * @param initMethod Init method, Default, Xavier.
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
  */
 
 @SerialVersionUID(- 933818099759912492L)
@@ -466,8 +470,12 @@ class SpatialDilatedConvolution[T: ClassTag](
       input.resize(nInputPlane, inputHeight, inputWidth)
     }
 
-    wRegularizer.accRegularization(weight, gradWeight)
-    bRegularizer.accRegularization(bias, gradBias)
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight)
+    }
+    if (null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {
