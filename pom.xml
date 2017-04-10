@@ -404,6 +404,14 @@
                         <goals>
                             <goal>doc-jar</goal>
                         </goals>
+                        <configuration>
+                            <args>
+                                <!-- Do not change the arg orders. It is a weird way to pass in
+                                this arg. Maybe it is a bug of the plugin. -->
+                                <arg>-skip-packages</arg>
+                                <arg>caffe:org.tensorflow:netty:org.apache.spark.sparkExtension:org.apache.spark.rdd:org.apache.spark.storage:org.apache.spark.bigdl</arg>
+                            </args>
+                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
