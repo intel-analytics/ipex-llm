@@ -183,6 +183,58 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     result.content should be(padAndCropData)
   }
 
+  "BGR Image ColorJitter" should "blend image correctly" in {
+
+    RandomGenerator.RNG.setSeed(1000)
+    val image1 = new LabeledBGRImage((1 to 27).map(_.toFloat).toArray, 3, 3, 0)
+    val image2 = new LabeledBGRImage((2 to 28).map(_.toFloat).toArray, 3, 3, 0)
+    val image3 = new LabeledBGRImage((3 to 29).map(_.toFloat).toArray, 3, 3, 0)
+
+    val expected = image1.content.clone()
+    def grayScale(dst: Array[Float], img: Array[Float]): Array[Float] = {
+      var i = 0
+      while (i < img.length) {
+        dst(i) = img(i)*0.299f + img(i + 1)*0.587f + img(i + 2)*0.114f
+        dst(i + 1) = dst(i)
+        dst(i + 2) = dst(i)
+        i += 3
+      }
+      dst
+    }
+    def blend(img1: Array[Float], img2: Array[Float], alpha: Float): Array[Float] = {
+      var i = 0
+      while (i < img1.length) {
+        img1(i) = img1(i) * alpha + (1 - alpha) * img2(i)
+        i += 1
+      }
+      img1
+    }
+
+    val gs = new Array[Float](expected.length)
+    val alpha = 0.6920055f // 1.0f + RNG.uniform(-0.4f, 0.4f).toFloat
+    blend(expected, gs, alpha)
+
+    println(s"test alpha = ${alpha}")
+//    java.util.Arrays.fill(gs, 0, gs.length, 0.0f)
+//    grayScale(gs, expected)
+//    val mean1 = gs.sum / gs.length
+//    java.util.Arrays.fill(gs, 0, gs.length, mean1)
+//    blend(expected, gs, alpha)
+//
+//    java.util.Arrays.fill(gs, 0, gs.length, 0.0f)
+//
+//    java.util.Arrays.fill(gs, 0, gs.length, 0.0f)
+//    grayScale(gs, expected)
+//    blend(expected, gs, alpha)
+
+    val dataSet = new LocalArrayDataSet[LabeledBGRImage](Array(image1, image2, image3))
+    val colorJitter = ColorJitter()
+    val iter = dataSet.transform(colorJitter).toLocal().data(false)
+    val test = iter.next()
+
+    test.content.zip(expected).foreach{case (a, b) => a should be (b)}
+  }
+
   "RGB Image Normalizer" should "normalize image correctly" in {
     val image1 = new LabeledBGRImage((1 to 27).map(_.toFloat).toArray, 3, 3, 0)
     val image2 = new LabeledBGRImage((2 to 28).map(_.toFloat).toArray, 3, 3, 0)
