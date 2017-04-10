@@ -17,56 +17,55 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, Sequential}
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.{DLEstimator, DLModel, MlTransformer, Model}
+import org.apache.spark.ml.{DLEstimator, DLEstimatorData, MlTransformer}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, SQLContext}
 
-@com.intel.analytics.bigdl.tags.Parallel
 class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val model = new Sequential[Float]()
+  var sc : SparkContext = _
   before {
-    Engine.setNodeAndCore(1, 4)
+    Engine.setNodeAndCore(1, 1)
     Engine.init
+    val conf = Engine.createSparkConf().setAppName("Test Optimizer Wrapper").setMaster("local")
+    sc = new SparkContext(conf)
   }
   "A wrapper" should "executor optimizer" in {
-    val conf = Engine.createSparkConf().setAppName("Test Optimizer Wrapper").setMaster("local")
-    val sc = new SparkContext(conf)
-    val ds = new DistributedDataSet[Float] {
-      override def originRDD(): RDD[_] = null
-      override def data(train: Boolean): RDD[Float] = {
-        val rdd : RDD[Float] = sc.parallelize(Array.empty[Float])
-        rdd
-      }
-      override def size(): Long = 0
-      override def shuffle(): Unit = {}
-    }
+
+      val featureData = Array[Float](10)
+      val featureSize = Array[Int](2, 5)
+      val featureStride = Array[Int](5, 1)
+
+      val labelData = Array[Float](1)
+      val labelSize = Array[Int](1)
+      val labelStride = Array[Int](1)
+
+      val estimatorData = DLEstimatorData(featureData, featureSize, featureStride,
+        labelData, labelSize, labelStride)
+
 
     val model = Linear[Float](4, 3)
     val criterion = ClassNLLCriterion[Float]()
 
-    val estimator = new DLEstimator(model, criterion, Array(0))("DLEstimator")
-
-   // estimator.setTensorNumric(NumericFloat)
-
-    val rdd : RDD[Float] = ds.data(true)
+    val rdd : RDD[DLEstimatorData[Float]] = sc.parallelize(Array(estimatorData))
 
     val sQLContext : SQLContext = new SQLContext(sc)
 
-    var df : DataFrame = sQLContext.createDataFrame(rdd, Float.getClass)
+    var df : DataFrame = sQLContext.createDataFrame(rdd)
+
+    val estimator = new DLEstimator[Float](model, criterion, Array[Int](0), 1)("DLEstimator")
 
     val res = estimator.fit(df);
 
     res.isInstanceOf[MlTransformer] should be(true)
 
   }
-  after {
-    println("After")
+  after{
+    sc.stop()
   }
 }

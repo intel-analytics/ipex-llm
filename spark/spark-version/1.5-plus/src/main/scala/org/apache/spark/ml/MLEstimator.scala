@@ -22,7 +22,6 @@ import org.apache.spark.sql.types.StructType
  * Extends MLEstimator and override process to gain compatibility with
  * both spark 1.5 and spark 2.0.
  */
-
 abstract class MLEstimator extends Estimator[MlTransformer]{
   def process(dataset: DataFrame): MlTransformer
   override def fit(dataset : org.apache.spark.sql.DataFrame) : MlTransformer = {
