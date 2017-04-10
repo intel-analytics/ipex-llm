@@ -190,8 +190,12 @@ class Concat[T: ClassTag](val dimension: Int)(
     while (i < this.modules.length) {
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
       val currentGradInput = this.modules(i)
-        .backward(input.asInstanceOf[Activity], gradouts(i).asInstanceOf[Activity])
+        .updateGradInput(input.asInstanceOf[Activity], gradouts(i).asInstanceOf[Activity])
         .asInstanceOf[Tensor[T]]
+      if (trainable) {
+        this.modules(i).accGradParameters(input.asInstanceOf[Activity],
+          gradouts(i).asInstanceOf[Activity])
+      }
 
       before = System.nanoTime()
       if (currentGradInput != null) {
