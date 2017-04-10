@@ -163,7 +163,7 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
    * @return
    */
   override def getParameters(filterTrainable: Boolean = false)
-  : (Tensor[T], Tensor[T]) = layer.getParameters()
+  : (Tensor[T], Tensor[T]) = layer.getParameters(filterTrainable)
 
   /**
    * Copy the useful running status from src to this.

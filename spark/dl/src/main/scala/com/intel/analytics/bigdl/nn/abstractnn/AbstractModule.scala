@@ -135,8 +135,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 
   /**
    * set trainable
-   * if trainable is true, train this module
-   * else not train this module
+   * if trainable is true, updateGradInput, accGradParameters, and update parameters
+   * if trainable is false, only updateGradInput, but not accGradParameters or update parameters
    */
   def setTrainable(trainable: Boolean): this.type = {
     this.trainable = trainable
