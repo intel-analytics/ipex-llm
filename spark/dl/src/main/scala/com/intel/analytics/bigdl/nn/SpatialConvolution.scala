@@ -90,8 +90,6 @@ class SpatialConvolution[T: ClassTag](
   @transient
   protected var results: Array[Future[Unit]] = null
 
-  setTrainable(propagateBack)
-
   override def reset(): Unit = {
     initMethod match {
       case Default =>
