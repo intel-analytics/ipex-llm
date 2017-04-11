@@ -47,19 +47,22 @@ class LookupTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
       "local i = 0\n" +
       "while i < 10 do\n" +
       "output = module:forward(input:int())\n" +
+      "module._count:zero()\n" +
       "_gradInput = module:backward(input:int(), output)\n" +
       "i = i + 1\n" +
       "end\n" +
       "gradInput = _gradInput:double()\n" +
       "weight = module.weight\n" +
-      "gradweight = module.gradWeight\n"
+      "gradweight = module.gradWeight\n" +
+      "count = module._count:double()\n"
 
     val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
-      Array("output", "gradInput", "weight", "gradweight"))
+      Array("output", "gradInput", "weight", "gradweight", "count"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
     val luaweight = torchResult("weight").asInstanceOf[Tensor[Double]]
     val luagradWeight = torchResult("gradweight").asInstanceOf[Tensor[Double]]
+    val luaCount = torchResult("count").asInstanceOf[Tensor[Int]]
 
     val start = System.nanoTime()
     var output : Tensor[Double] = null
