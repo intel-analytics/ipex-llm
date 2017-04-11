@@ -24,7 +24,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 
-@com.intel.analytics.bigdl.tags.Parallel
+@com.intel.analytics.bigdl.tags.Serial
 class RecurrentSpec extends FlatSpec with Matchers {
 
   "A Recurrent Language Model Module " should "converge" in {
@@ -176,7 +176,6 @@ class RecurrentSpec extends FlatSpec with Matchers {
   }
 
   "Recurrent dropout" should "work correclty" in {
-    Engine.init(1, 1, true)
     val hiddenSize = 4
     val inputSize = 5
     val outputSize = 5
@@ -207,10 +206,10 @@ class RecurrentSpec extends FlatSpec with Matchers {
       Tensor[Double](Array(1, hiddenSize))
       ))
 
+    val output = model.forward(input)
     val noises = dropouts.map(d => d.asInstanceOf[Dropout[Double]].noise.clone())
     noises(0) should not be noises(1)
 
-    val output = model.forward(input)
     for (i <- dropouts.indices) {
       cells.foreach(c => {
         val noise = c.cell.asInstanceOf[Container[_, _, Double]]
@@ -221,17 +220,19 @@ class RecurrentSpec extends FlatSpec with Matchers {
       })
     }
 
-    model.backward(input, output)
+
     model.forward(input)
 
+    var flag = true
     for (i <- dropouts.indices) {
       cells.foreach(c => {
-        val noise = c.cell.asInstanceOf[Container[_, _, Double]]
-          .findModules("Dropout")(i)
-          .asInstanceOf[Dropout[Double]]
-          .noise
-        noise should not be noises(i)
+        val newNoises = c.cell.asInstanceOf[Container[_, _, Double]]
+          .findModules("Dropout")
+        val noise = newNoises(i).asInstanceOf[Dropout[Double]].noise
+        flag = flag && (noise == noises(i))
       })
     }
+
+    flag should be (false)
   }
 }

@@ -31,7 +31,6 @@ class DropoutSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "Dropout module with continuous input" should "converge to correct weight and bias" in {
-    Engine.init(1, 1, true)
     val module = new Dropout[Double](0.7, false, true)
     val input = Tensor[Double](100, 100)
     val seed = 100
