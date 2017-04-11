@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.{Linear, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
@@ -51,6 +52,60 @@ class SequentialSpec extends FlatSpec with BeforeAndAfter with Matchers {
       "gradOutput" -> gradOutput), Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    luaOutput1.map(output, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6);
+      v1
+    })
+    luaOutput2.map(gradInput, (v1, v2) => {
+      assert(abs(v1 - v2) < 1e-6);
+      v1
+    })
+
+    println("Test case : Sequential, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A Sequential Container" should "update weight correctly" in {
+    RNG.setSeed(10)
+    val module = new Sequential[Double]()
+    module.add(new Linear(10, 25))
+    module.add(new Linear(25, 10))
+
+    val input = Tensor[Double](10).randn()
+    val gradOutput = Tensor[Double](10).randn()
+
+    val start = System.nanoTime()
+    val (weight, grad) = module.getParameters()
+    var i = 0
+    var output = Tensor[Double]()
+    var gradInput = Tensor[Double]()
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code =
+      "torch.manualSeed(10)\n" +
+      "local i = 0\n" +
+        "while i < 10 do\n" +
+        "output = module:forward(input)\n" +
+        "module:zeroGradParameters()\n" +
+        "gradInput = module:backward(input,gradOutput)\n" +
+        "module:updateParameters(0.1)\n" +
+        "i = i + 1\n" +
+        "end"
+
+    val (luaTime, torchResult) = TH.run(code, Map("module" -> module, "input" -> input,
+      "gradOutput" -> gradOutput), Array("output", "gradInput"))
+    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    while (i < 10) {
+      output = module.forward(input).toTensor[Double]
+      module.zeroGradParameters()
+      gradInput = module.updateGradInput(input, gradOutput).toTensor[Double]
+      module.accGradParameters(input, gradOutput)
+      module.updateParameters(0.1)
+      i += 1
+    }
 
     luaOutput1.map(output, (v1, v2) => {
       assert(abs(v1 - v2) < 1e-6);
