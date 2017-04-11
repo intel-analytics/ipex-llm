@@ -26,6 +26,7 @@ import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim.Predictor
 import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 
 import scala.reflect.ClassTag
 
@@ -344,6 +345,35 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   def predictClass(dataset: RDD[Sample[T]]): RDD[Int] = {
     Predictor(this).predictClass(dataset)
+  }
+
+  /**
+   * Some other modules point to current module
+   * @param nodes upstream module nodes
+   * @return node containing current module
+   */
+  def apply(nodes : ModuleNode[T]*): ModuleNode[T] = {
+    require(this.isInstanceOf[AbstractModule[_, Tensor[T], T]],
+      "AbstractModule: Only module with tensor output can be added into a graph node")
+    val curNode = new ModuleNode[T](this.asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
+    nodes.foreach(node => {
+      node -> curNode
+    })
+    curNode
+  }
+
+  /**
+   * Find a module with given name. If there is no module with given name, it will return None. If
+   * there are multiple modules with the given name, an exception will be thrown.
+   * @param name
+   * @return
+   */
+  def apply(name : String): Option[AbstractModule[Activity, Activity, T]] = {
+    if (this.getName() == name) {
+      Some(this)
+    } else {
+      None
+    }
   }
 }
 
