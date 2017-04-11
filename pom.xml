@@ -452,6 +452,20 @@
                             <goal>single</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>make-dist</id>
+                        <inherited>false</inherited>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>bigdl-${project.version}</finalName>
+                            <descriptors>
+                                <descriptor>dist.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
