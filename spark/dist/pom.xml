@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>spark_bigdl</artifactId>
+        <groupId>com.intel.analytics.bigdl</groupId>
+        <version>0.2.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>dist-spark-${spark.version}-scala-${scala.version}-${os-flag}</artifactId>
+    <packaging>jar</packaging>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>python</id>
+                        <inherited>false</inherited>
+                        <configuration>
+                            <finalName>bigdl-${project.version}</finalName>
+                            <descriptors>
+                                <descriptor>assembly/python-zip.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>make-dist</id>
+                        <inherited>false</inherited>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>bigdl-${project.version}-spark-${spark.version}-scala-${scala.version}-${os-flag}</finalName>
+                            <descriptors>
+                                <descriptor>assembly/dist.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
