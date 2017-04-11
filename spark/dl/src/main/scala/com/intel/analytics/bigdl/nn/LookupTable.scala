@@ -25,9 +25,18 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect.ClassTag
 
 /**
- * a convolution of width 1, commonly used for word embeddings;
+ * This layer is a particular case of a convolution, where the width of the convolution would be 1.
+ * Input should be a 1D or 2D tensor filled with indices. Indices are corresponding to the position
+ * in weight. For each index element of input, it outputs the selected index part of weight.
+ * This layer is often used in word embedding.
+ * @param nIndex Indices of input row
+ * @param nOutput the last dimension size of output
+ * @param paddingValue padding value, default 0
+ * @param maxNorm max norm, defalt Double.MaxValue
+ * @param normType norm regularization number, default 2
+ * @param shouldScaleGradByFreq
+ * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
-
 @SerialVersionUID( - 4832171200145114633L)
 class LookupTable[T: ClassTag]
 (val nIndex: Int, val nOutput: Int, val paddingValue: Double = 0,
@@ -117,6 +126,7 @@ class LookupTable[T: ClassTag]
     }
     norm = pow(norm, 1.0 / normType)
 
+    // Keep the norm of weight smaller than maxNorm
     if (norm > maxNorm) {
       val new_norm = maxNorm / (norm + 1e-7)
       j = 0
@@ -177,10 +187,11 @@ class LookupTable[T: ClassTag]
       inputBuffer.view(inputBuffer.nElement())
     }
     val _gradOutput = gradOutput.contiguous()
-    val count_data : Array[T] = null
+    var count_data : Array[T] = null
     if (shouldScaleGradByFreq) {
       countBuffer.resize(gradWeight.size(1))
       resetCount(countBuffer, inputBuffer)
+      count_data = countBuffer.storage().array()
     }
 
     val input_data = inputBuffer.storage().array()
