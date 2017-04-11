@@ -171,4 +171,25 @@ abstract class Container[A <: Activity : ClassTag,
     val state = Seq(super.hashCode(), modules)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
+
+  override def apply(name : String): Option[AbstractModule[Activity, Activity, T]] = {
+    if (this.getName() == name) {
+      Some(this)
+    } else {
+      val find = this.modules.map(m => {
+        val get = m(name)
+        if (get.isDefined) {
+          get
+        } else {
+          None
+        }
+      }).filter(_.isDefined)
+      require(find.length <= 1, "find multiple modules with same name")
+      if (find.length == 1) {
+        find(0)
+      } else {
+        None
+      }
+    }
+  }
 }
