@@ -20,11 +20,26 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
+/**
+ * DataFormat describe the dimension of weights
+ */
 sealed trait DataFormat
 
+/**
+ * OutputFirst indicating that output is in the lower dimension
+ * of the weight. Take 2 dimensional weight for example, the first
+ * dimension is the output, and the second dimension is the input.
+ */
 case object OutputFirst extends DataFormat
 
+/**
+ * InputFirst indicating that input is in the lower dimension
+ * of the weight. Take 2 dimensional weight for example, the first
+ * dimension is the input, and the second dimension is the output.
+ */
 case object InputFirst extends DataFormat
+
+
 
 /**
  * Initialization method to initialize bias and weight.
@@ -47,6 +62,21 @@ trait InitializationMethod {
   def init[T](weight: Tensor[T], bias: Option[Tensor[T]], dataFormat: DataFormat = OutputFirst)
           (implicit ev: TensorNumeric[T]): Unit
 
+  /**
+    * Get the fanIn and fanOut from shape.
+    *
+    * This method takes the following assumptions on shape.
+    *  1. If shape has 2 dimensions, these two dimensions are the input and output.
+    *  2. If shape has 4 dimensions (convolutional weight), the first two dimensions
+    *     are input and output. The 3th and 4th dimensions are the kernel width and kernel height.
+    *  3. If shape has 5 dimensions (convolutional weight), the first dimension is
+    *  group size, the 2nd and 3th dimensions are input and output, and the last two dimensions
+    *  are kernel width and kernel height.
+    *
+    * @param shape the shape of which to get the fans
+    * @param dataFormat the dimension order of the shape
+    * @return the (fanIn, fanOut) tuple
+    */
   protected def getFans(shape: Shape, dataFormat: DataFormat = OutputFirst): (Int, Int) = {
     val dims = shape.length
     val (first, second) = dims match {
