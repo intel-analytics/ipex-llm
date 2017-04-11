@@ -2702,6 +2702,29 @@ class SpatialDivisiveNormalization(Model):
                                                            threshold,
                                                            thresval)
 
+class Graph(Model):
+    '''
+    A graph container. Each node can have multiple inputs. The output of the node should be a
+    tensor. The output tensor can be connected to multiple nodes. So the module in each node can
+    have a tensor or table input, and should have a tensor output.
+    
+    The graph container can have multiple inputs and multiple outputs. If there's one input, 
+    the input data fed to the graph module should be a tensor. If there're multiple inputs, 
+    the input data fed to the graph module should be a table, which is actually an sequence of 
+    tensor. The order of the input tensors should be same with the order of the input nodes. 
+    This is also applied to the gradient from the module in the back propagation.
+    
+    If there's one output, the module output is a tensor. If there're multiple outputs, the module
+    output is a table, which is actually an sequence of tensor. The order of the output tensors is
+    same with the order of the output modules. This is also applied to the gradient passed to the
+    module in the back propagation.
+    
+    All inputs should be able to connect to outputs through some paths in the graph.
+    It is allowed that some successors of the inputs node are not connect to outputs.
+    If so, these nodes will be excluded in the computation.
+    '''
+    def __init__(self):
+        raise Exception('Graph model is not supported in python yet')
 
 class SpatialSubtractiveNormalization(Model):
     '''
