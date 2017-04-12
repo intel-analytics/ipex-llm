@@ -86,13 +86,13 @@ if __name__ == "__main__":
             state=state,
             end_trigger=MaxEpoch(20),
             batch_size=int(options.batchSize))
-        optimizer.setvalidation(
+        optimizer.set_validation(
             batch_size=32,
             val_rdd=test_data,
             trigger=EveryEpoch(),
             val_method=["Top1Accuracy"]
         )
-        optimizer.setcheckpoint(EveryEpoch(), "/tmp/lenet5/")
+        optimizer.set_checkpoint(EveryEpoch(), "/tmp/lenet5/")
         trained_model = optimizer.optimize()
         parameters = trained_model.parameters()
     elif options.action == "test":

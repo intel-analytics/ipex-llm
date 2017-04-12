@@ -175,7 +175,7 @@ class Optimizer(JavaValue):
                            training_rdd, criterion, optim_method,
                            state, end_trigger, batch_size)
 
-    def setvalidation(self, batch_size, val_rdd, trigger, val_method=["Top1Accuracy"]):
+    def set_validation(self, batch_size, val_rdd, trigger, val_method=["Top1Accuracy"]):
         """
         Configure validation settings. 
 
@@ -188,7 +188,7 @@ class Optimizer(JavaValue):
         callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
                       trigger, val_rdd, val_method)
 
-    def setmodel(self, model):
+    def set_model(self, model):
         """
         Set model. 
 
@@ -196,7 +196,7 @@ class Optimizer(JavaValue):
         """
         self.value.setModel(model.value)
 
-    def setcheckpoint(self, checkpoint_trigger,
+    def set_checkpoint(self, checkpoint_trigger,
                       checkpoint_path, isOverWrite=True):
         """
         Configure checkpoint settings. 
@@ -246,6 +246,14 @@ class Optimizer(JavaValue):
         callBigDlFunc(self.bigdl_type, "setValSummary", self.value,
                       summary)
         return self
+
+    def prepare_input(self):
+        """
+        Load input. Notebook user can call this method to seprate load data and
+        create optimizer time 
+        """
+        print("Loading input ...")
+        self.value.prepareInput()
 
 
 class TrainSummary(JavaValue, ):

@@ -39,11 +39,10 @@ import scala.reflect.ClassTag
  */
 // TODO: remove D to be MiniBatch[T]
 abstract class Optimizer[T: ClassTag, D](
-    protected val model: Module[T],
+  protected var model: Module[T],
   protected val dataset: DataSet[D],
-    protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
+  protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
 {
-  protected var _model: Module[T] = model
   protected var state: Table = T()
   protected var optimMethod: OptimMethod[T] = new SGD[T]()
   protected var endWhen: Trigger = Trigger.maxIteration(100)
@@ -175,10 +174,10 @@ abstract class Optimizer[T: ClassTag, D](
   /**
    * Set a model to the optimizer
    *
-   * @param model new model
+   * @param newModel new model
    */
-  def setModel(model: Module[T]): this.type = {
-    this._model = model
+  def setModel(newModel: Module[T]): this.type = {
+    model = newModel
     this
   }
 
@@ -232,6 +231,8 @@ abstract class Optimizer[T: ClassTag, D](
     this.warmupIterationNum = warmupIteration
     this
   }
+
+  def prepareInput(): Unit = {}
 }
 
 object Optimizer {
@@ -280,7 +281,7 @@ object Optimizer {
       batchSize: Int
       )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
-      model = model,
+      _model = model,
       dataset = (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
@@ -295,7 +296,7 @@ object Optimizer {
     dataset match {
       case d: DistributedDataSet[_] =>
         new DistriOptimizer[T](
-          model = model,
+          _model = model,
           dataset = d.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
           criterion = criterion
         ).asInstanceOf[Optimizer[T, D]]
