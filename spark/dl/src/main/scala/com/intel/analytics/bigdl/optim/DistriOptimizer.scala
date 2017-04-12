@@ -662,24 +662,20 @@ object DistriOptimizer {
 /**
  * The optimizer run on a distributed cluster.
  *
- * @param model train model
+ * @param _model train model
  * @param dataset train dataset
  * @param criterion loss function
  */
 class DistriOptimizer[T: ClassTag] (
-  model: Module[T],
+  _model: Module[T],
   dataset: DistributedDataSet[MiniBatch[T]],
   criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
-    model, dataset, criterion) {
+    _model, dataset, criterion) {
   val metrics = new Metrics
 
   private var models: RDD[DistriOptimizer.Cache[T]] = null
-
-  import DistriOptimizer._
-  logger.info("Loading and caching data ...")
-  dataset.originRDD().cache().count()
 
   /**
    * Clean some internal states, so this or other optimizers can run optimize again
@@ -695,6 +691,14 @@ class DistriOptimizer[T: ClassTag] (
     }).count()
   }
 
+  override def prepareInput(): Unit = {
+    import DistriOptimizer._
+    if (!dataset.isCached) {
+      logger.info("caching training rdd ...")
+      dataset.cache()
+    }
+  }
+
   override def optimize(): Module[T] = {
     optimMethod.clearHistory(state)
     state("dropPercentage") = dropPercentage
@@ -706,10 +710,12 @@ class DistriOptimizer[T: ClassTag] (
     val coresPerNode = Engine.coreNumber()
 
     val partitionNum = dataset.originRDD().partitions.length
-    val size = _model.getParameters()._1.nElement()
+    val size = model.getParameters()._1.nElement()
     val parameters = AllReduceParameter.newParameter(partitionNum, size)
 
-    models = DistriOptimizer.initThreadModels(_model, dataset, criterion, state,
+    prepareInput()
+
+    models = DistriOptimizer.initThreadModels(model, dataset, criterion, state,
       nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods)
 
     if (checkpointPath.isDefined) {
@@ -770,7 +776,7 @@ class DistriOptimizer[T: ClassTag] (
               state = T.load(stateFile)
               DistriOptimizer.logger.info("Recover from last snapshot")
             } else {
-              newModel = _model
+              newModel = model
               DistriOptimizer.logger.info("Recover from origin model")
             }
             optimMethod.clearHistory(state)
@@ -786,12 +792,12 @@ class DistriOptimizer[T: ClassTag] (
 
     val trainedModel = DistriOptimizer.getModel(models, parameters)
 
-    nn.Utils.copyModule(trainedModel, _model)
+    nn.Utils.copyModule(trainedModel, model)
 
     // Reset some internal states, so this or other optimizers can run optimize again
     clearState()
 
-    _model
+    model
   }
 
   private def getLatestFile(path: String, fileName: String): String = {

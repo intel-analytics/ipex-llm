@@ -141,7 +141,7 @@ def train(sc,
         optim_method="Adagrad",
         state=state)
 
-    optimizer.setvalidation(
+    optimizer.set_validation(
         batch_size=batch_size,
         val_rdd=val_rdd,
         trigger=EveryEpoch(),
