@@ -46,7 +46,7 @@ class SGDSpec extends FlatSpec with Matchers {
   "A SGD optimMethod with 1 parameter using L1 regularization" should
     "generate correct result" in {
     val state = T("learningRate" -> 0.1,
-      "l1WeightDecay" -> 0.01)
+      "l1Regularizer" -> 0.01)
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
       val r = x.clone()

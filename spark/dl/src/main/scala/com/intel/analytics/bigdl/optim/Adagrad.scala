@@ -40,6 +40,8 @@ class Adagrad[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeri
    * @param config    a table with configuration parameters for the optimizer
    *                  config("learningRate") : learning rate
    *                  config("learningRateDecay") : learning rate decay
+   *                  config("weightDecay") : weight decay rate
+   *                  config("l1Regularizer") : l1 regluarization rate
    * @param state     a table describing the state of the optimizer; after each call the state
    *                  is modified
    *                  state("paramVariance") : vector of temporal variances of parameters
@@ -55,19 +57,22 @@ class Adagrad[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeri
     val lrd = _config.get[Double]("learningRateDecay").getOrElse(0.0)
     val nevals = _state.get[Int]("evalCounter").getOrElse(0)
     val wd = config.get[Double]("weightDecay").getOrElse(0.0)
-    val l1wd = config.get[Double]("l1WeightDecay").getOrElse(0.0)
-    val l2wd = config.get[Double]("l2WeightDecay").getOrElse(wd)
-    val weightsSignBuffer = _state.get[Tensor[T]]("weightSigns").getOrElse(Tensor(parameter.size()))
-    _state.update("weightSigns", weightsSignBuffer)
+    val l1wd = config.get[Double]("l1Regularizer").getOrElse(0.0)
+
 
     val (fx, dfdx) = feval(parameter)
 
-    val l1Regularizer = weightsSignBuffer.copy(parameter).sign()
-    val l2Regularizer = parameter
+    if (wd != 0) {
+      dfdx.add(ev.fromType[Double](wd), parameter)
+    }
 
-    if (l1wd != 0 || l2wd != 0) {
-      dfdx.add(ev.fromType[Double](l2wd), l2Regularizer)
-        .add(ev.fromType[Double](l1wd), l1Regularizer)
+    if (l1wd != 0) {
+      val weightsSignBuffer = _state.get[Tensor[T]]("weightSigns").getOrElse{
+        val buffer = Tensor(parameter.size())
+        _state.update("weightSigns", buffer)
+        buffer
+      }
+      dfdx.add(ev.fromType[Double](l1wd), weightsSignBuffer.copy(parameter).sign())
     }
 
     val clr = lr / (1 + nevals * lrd)
