@@ -1251,7 +1251,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                       endTrigger: Trigger,
                       batchSize: Int): Optimizer[T, MiniBatch[T]] = {
     val optimizer = new DistriOptimizer(
-      model = model,
+      _model = model,
       dataset = batching(trainingRdd, batchSize),
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
