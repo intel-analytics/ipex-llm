@@ -36,18 +36,24 @@ import scala.reflect.ClassTag
  *
  * @param inputSize the size of each input vector
  * @param outputSize Hidden unit size in GRU
+ * @param  p is used for [[Dropout]] probability. For more details about
+ *           RNN dropouts, please refer to
+ *           [RnnDrop: A Novel Dropout for RNNs in ASR]
+ *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+ *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+ *           (https://arxiv.org/pdf/1512.05287.pdf)
  */
 @SerialVersionUID(6717988395573528459L)
 class GRU[T : ClassTag] (
   val inputSize: Int,
-  val outputSize: Int)
+  val outputSize: Int,
+  val p: Double = 0)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](hiddensShape = Array(outputSize)) {
-  val p: Double = 0 // Dropout threshold
   var i2g: AbstractModule[_, _, T] = _
   var h2g: AbstractModule[_, _, T] = _
   var gates: AbstractModule[_, _, T] = _
-  var GRU: AbstractModule[_, _, T] = buildGRU()
+  override var cell: AbstractModule[Activity, Activity, T] = buildGRU()
 
   def buildGates(): AbstractModule[Activity, Activity, T] = {
     if (p != 0) {
@@ -132,34 +138,8 @@ class GRU[T : ClassTag] (
         .add(Identity[T]())
         .add(Identity[T]()))
 
-    GRU = gru
-    GRU
-  }
-
-  override def updateOutput(input: Table): Table = {
-    output = GRU.updateOutput(input).toTable
-    output
-  }
-
-  override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    gradInput = GRU.updateGradInput(input, gradOutput).toTable
-    gradInput
-  }
-
-  override def accGradParameters(input: Table, gradOutput: Table, scale: Double): Unit = {
-    GRU.accGradParameters(input, gradOutput, scale)
-  }
-
-  override def updateParameters(learningRate: T): Unit = {
-    GRU.updateParameters(learningRate)
-  }
-
-  override def zeroGradParameters(): Unit = {
-    GRU.zeroGradParameters()
-  }
-
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    GRU.parameters()
+    cell = gru
+    cell
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[GRU[T]]
@@ -183,8 +163,9 @@ class GRU[T : ClassTag] (
 object GRU {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
-    outputSize: Int = 3)
+    outputSize: Int = 3,
+    p: Double = 0)
     (implicit ev: TensorNumeric[T]): GRU[T] = {
-    new GRU[T](inputSize, outputSize)
+    new GRU[T](inputSize, outputSize, p)
   }
 }

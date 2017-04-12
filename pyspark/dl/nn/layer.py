@@ -417,13 +417,19 @@ class LSTM(Model):
 
     :param inputSize: the size of each input vector
     :param hiddenSize: Hidden unit size in the LSTM
+    :param  p: is used for [[Dropout]] probability. For more details about
+            RNN dropouts, please refer to
+            [RnnDrop: A Novel Dropout for RNNs in ASR]
+            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+            (https://arxiv.org/pdf/1512.05287.pdf)
 
-    >>> lstm = LSTM(4, 3)
+    >>> lstm = LSTM(4, 3, 0.5)
     creating: createLSTM
     '''
 
-    def __init__(self, input_size, hidden_size, bigdl_type="float"):
-        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
+        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
 class LSTMPeephole(Model):
@@ -437,13 +443,19 @@ class LSTMPeephole(Model):
 
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in the LSTM
+    :param  p: is used for [[Dropout]] probability. For more details about
+            RNN dropouts, please refer to
+            [RnnDrop: A Novel Dropout for RNNs in ASR]
+            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+            (https://arxiv.org/pdf/1512.05287.pdf)
 
-    >>> lstm = LSTMPeephole(4, 3)
+    >>> lstm = LSTMPeephole(4, 3, 0.5)
     creating: createLSTMPeephole
     '''
 
-    def __init__(self, input_size, hidden_size, bigdl_type="float"):
-        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
+        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
 class GRU(Model):
@@ -457,13 +469,19 @@ class GRU(Model):
 
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in GRU
+    :param  p: is used for [[Dropout]] probability. For more details about
+            RNN dropouts, please refer to
+            [RnnDrop: A Novel Dropout for RNNs in ASR]
+            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+            (https://arxiv.org/pdf/1512.05287.pdf)
 
-    >>> gru = GRU(4, 3)
+    >>> gru = GRU(4, 3, 0.5)
     creating: createGRU
     '''
 
-    def __init__(self,  input_size, hidden_size, bigdl_type="float"):
-        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self,  input_size, hidden_size, p=0.0, bigdl_type="float"):
+        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
 class RnnCell(Model):
