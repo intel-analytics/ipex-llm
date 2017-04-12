@@ -44,6 +44,7 @@ abstract class Optimizer[T: ClassTag, D](
   protected val dataset: DataSet[D],
     protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
 {
+  protected var _model: Module[T] = model
   protected var state: Table = T()
   protected var optimMethod: OptimMethod[T] = new SGD[T]()
   protected var endWhen: Trigger = Trigger.maxIteration(100)
@@ -169,6 +170,16 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def overWriteCheckpoint() : this.type = {
     isOverWrite = true
+    this
+  }
+
+  /**
+   * Set a model to the optimizer
+   *
+   * @param model new model
+   */
+  def setModel(model: Module[T]): this.type = {
+    this._model = model
     this
   }
 
