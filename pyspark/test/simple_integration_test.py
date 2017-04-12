@@ -55,6 +55,11 @@ class TestWorkFlow(unittest.TestCase):
         trainingData = self.sc.parallelize(range(0, data_len)).map(
             lambda i: gen_rand_sample())
 
+        model_test = Sequential()
+        l1_test = Linear(3, 1, "Xavier").set_name("linear1_test")
+        self.assertEqual("linear1_test", l1_test.name())
+        model_test.add(l1_test)
+
         model = Sequential()
         l1 = Linear(FEATURES_DIM, 1, "Xavier").set_name("linear1")
         self.assertEqual("linear1", l1.name())
@@ -64,7 +69,7 @@ class TestWorkFlow(unittest.TestCase):
                  "learningRateDecay": 0.0002,
                  "learingRateSchedule": Poly(0.5, int((data_len/batch_size)*epoch_num))}  # noqa
         optimizer = Optimizer(
-            model=model,
+            model=model_test,
             training_rdd=trainingData,
             criterion=MSECriterion(),
             optim_method="sgd",
@@ -77,6 +82,10 @@ class TestWorkFlow(unittest.TestCase):
             trigger=EveryEpoch(),
             val_method=["Top1Accuracy"]
         )
+
+        optimizer.optimize()
+
+        optimizer.setmodel(model=model)
         tmp_dir = tempfile.mkdtemp()
         optimizer.setcheckpoint(SeveralIteration(1), tmp_dir)
         train_summary = TrainSummary(log_dir=tmp_dir,
@@ -88,12 +97,12 @@ class TestWorkFlow(unittest.TestCase):
         optimizer.set_val_summary(val_summary)
 
         trained_model = optimizer.optimize()
-
         lr_result = train_summary.read_scalar("LearningRate")
         top1_result = val_summary.read_scalar("Top1Accuracy")
 
         # TODO: add result validation
         parameters = trained_model.parameters()
+
         self.assertIsNotNone(parameters["linear1"])
         print("parameters %s" % parameters["linear1"])
         predict_result = trained_model.predict(trainingData)
