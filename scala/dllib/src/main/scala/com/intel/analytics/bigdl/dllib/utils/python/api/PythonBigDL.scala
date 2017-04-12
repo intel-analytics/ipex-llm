@@ -978,6 +978,35 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padH)
   }
 
+  def createVolumetricConvolution(nInputPlane: Int,
+                                  nOutputPlane: Int,
+                                  kT: Int,
+                                  kW: Int,
+                                  kH: Int,
+                                  dT: Int = 1,
+                                  dW: Int = 1,
+                                  dH: Int = 1,
+                                  padT: Int = 0,
+                                  padW: Int = 0,
+                                  padH: Int = 0,
+                                  withBias: Boolean = true,
+                                  initMethod: String = "default")
+  : VolumetricConvolution[T] = {
+    VolumetricConvolution[T](nInputPlane,
+      nOutputPlane,
+      kT,
+      kW,
+      kH,
+      dT,
+      dW,
+      dH,
+      padT,
+      padW,
+      padH,
+      withBias,
+      PythonBigDL.getInitMethod(initMethod))
+  }
+
   def createSpatialDivisiveNormalization(nInputPlane: Int = 1,
                                          kernel: JTensor = null,
                                          threshold: Double = 1e-4,
