@@ -59,6 +59,7 @@ class TestWorkFlow(unittest.TestCase):
         l1_test = Linear(3, 1, "Xavier").set_name("linear1_test")
         self.assertEqual("linear1_test", l1_test.name())
         model_test.add(l1_test)
+        model_test.add(Sigmoid())
 
         model = Sequential()
         l1 = Linear(FEATURES_DIM, 1, "Xavier").set_name("linear1")
@@ -76,7 +77,7 @@ class TestWorkFlow(unittest.TestCase):
             state=state,
             end_trigger=MaxEpoch(epoch_num),
             batch_size=batch_size)
-        optimizer.setvalidation(
+        optimizer.set_validation(
             batch_size=batch_size,
             val_rdd=trainingData,
             trigger=EveryEpoch(),
@@ -85,9 +86,9 @@ class TestWorkFlow(unittest.TestCase):
 
         optimizer.optimize()
 
-        optimizer.setmodel(model=model)
+        optimizer.set_model(model=model)
         tmp_dir = tempfile.mkdtemp()
-        optimizer.setcheckpoint(SeveralIteration(1), tmp_dir)
+        optimizer.set_checkpoint(SeveralIteration(1), tmp_dir)
         train_summary = TrainSummary(log_dir=tmp_dir,
                                      app_name="run1")
         train_summary.set_summary_trigger("LearningRate", SeveralIteration(1))
