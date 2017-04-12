@@ -183,6 +183,16 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
           (data, tran) => tran.next()(data))
 
       override def originRDD(): RDD[_] = preDataSet.originRDD()
+
+      override def cache(): Unit = {
+        cachedTransformer.count()
+        isCached = true
+      }
+
+      override def unpersist(): Unit = {
+        cachedTransformer.unpersist()
+        isCached = false
+      }
     }
   }
 
@@ -192,6 +202,31 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
    * @return
    */
   def originRDD(): RDD[_]
+
+  /**
+   * Trigger the computation of this dataset and cache it in memory.
+   */
+  def cache(): Unit = {
+    if (originRDD() != null) {
+      originRDD().count()
+    }
+    isCached = true
+  }
+
+  /**
+   * Unpersist rdd.
+   */
+  def unpersist(): Unit = {
+    if (originRDD() != null) {
+      originRDD().unpersist()
+      isCached = false
+    }
+  }
+
+  /**
+   * Check if rdd is cached.
+   */
+  var isCached = false
 }
 
 /**
@@ -264,6 +299,18 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
   }
 
   override def originRDD(): RDD[_] = buffer
+
+  override def cache(): Unit = {
+    buffer.count()
+    indexes.count()
+    isCached = true
+  }
+
+  override def unpersist(): Unit = {
+    buffer.unpersist()
+    indexes.unpersist()
+    isCached = false
+  }
 }
 
 /**
