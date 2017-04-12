@@ -169,6 +169,25 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     result2(Array(1)) should be(1.0 +- 5e-2)
   }
 
+  "Train with MSE and SGD" should "be trained with good result after reset model" in {
+    var mm = cre
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
+    optimizer.optimize()
+
+    mm = mse
+    mm.getParameters()._1.fill(0.125)
+    optimizer.setModel(mm)
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
+  }
+
   it should "be same compare to ref optimizer" in {
     RandomGenerator.RNG.setSeed(10)
     val optimizer = new DistriOptimizer(
