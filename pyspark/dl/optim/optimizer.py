@@ -188,6 +188,14 @@ class Optimizer(JavaValue):
         callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
                       trigger, val_rdd, val_method)
 
+    def setmodel(self, model):
+        """
+        Set model. 
+
+        :param model: new model
+        """
+        self.value.setModel(model.value)
+
     def setcheckpoint(self, checkpoint_trigger,
                       checkpoint_path, isOverWrite=True):
         """

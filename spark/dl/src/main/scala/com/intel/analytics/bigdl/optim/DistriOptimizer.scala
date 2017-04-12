@@ -677,6 +677,10 @@ class DistriOptimizer[T: ClassTag] (
 
   private var models: RDD[DistriOptimizer.Cache[T]] = null
 
+  import DistriOptimizer._
+  logger.info("Loading and caching data ...")
+  dataset.originRDD().cache().count()
+
   /**
    * Clean some internal states, so this or other optimizers can run optimize again
    *
@@ -702,10 +706,10 @@ class DistriOptimizer[T: ClassTag] (
     val coresPerNode = Engine.coreNumber()
 
     val partitionNum = dataset.originRDD().partitions.length
-    val size = model.getParameters()._1.nElement()
+    val size = _model.getParameters()._1.nElement()
     val parameters = AllReduceParameter.newParameter(partitionNum, size)
 
-    models = DistriOptimizer.initThreadModels(model, dataset, criterion, state,
+    models = DistriOptimizer.initThreadModels(_model, dataset, criterion, state,
       nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods)
 
     if (checkpointPath.isDefined) {
@@ -766,7 +770,7 @@ class DistriOptimizer[T: ClassTag] (
               state = T.load(stateFile)
               DistriOptimizer.logger.info("Recover from last snapshot")
             } else {
-              newModel = model
+              newModel = _model
               DistriOptimizer.logger.info("Recover from origin model")
             }
             optimMethod.clearHistory(state)
@@ -782,12 +786,12 @@ class DistriOptimizer[T: ClassTag] (
 
     val trainedModel = DistriOptimizer.getModel(models, parameters)
 
-    nn.Utils.copyModule(trainedModel, model)
+    nn.Utils.copyModule(trainedModel, _model)
 
     // Reset some internal states, so this or other optimizers can run optimize again
     clearState()
 
-    model
+    _model
   }
 
   private def getLatestFile(path: String, fileName: String): String = {

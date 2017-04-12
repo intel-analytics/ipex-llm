@@ -172,7 +172,6 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
       preDataSet.originRDD().mapPartitions(_ => Iterator
         .single(broadcast.value.cloneTransformer())
       ).setName("Cached Transformer").persist()
-    cachedTransformer.count()
 
     new DistributedDataSet[C] {
       override def size(): Long = preDataSet.size()
