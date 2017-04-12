@@ -2231,6 +2231,60 @@ class SpatialShareConvolution(Model):
                                                       init_method)
 
 
+class VolumetricConvolution(Model):
+
+    '''
+    Applies a 3D convolution over an input image composed of several input planes. The input tensor
+    in forward(input) is expected to be a 4D tensor (nInputPlane x time x height x width).
+    :param n_input_plane The number of expected input planes in the image given into forward()
+    :param n_output_plane The number of output planes the convolution layer will produce.
+    :param k_t The kernel size of the convolution in time
+    :param k_w The kernel width of the convolution
+    :param k_h The kernel height of the convolution
+    :param d_t The step of the convolution in the time dimension. Default is 1
+    :param d_w The step of the convolution in the width dimension. Default is 1
+    :param d_h The step of the convolution in the height dimension. Default is 1
+    :param pad_t Additional zeros added to the input plane data on both sides of time axis.
+    Default is 0. (kT-1)/2 is often used here.
+    :param pad_w The additional zeros added per width to the input planes.
+    :param pad_h The additional zeros added per height to the input planes.
+    :param with_bias whether with bias
+    :param init_method Init method, Default, Xavier, Bilinear.
+
+    >>> volumetricConvolution = VolumetricConvolution(6, 12, 5, 5, 5, 1, 1, 1)
+    creating: createVolumetricConvolution
+    '''
+
+    def __init__(self,
+                 n_input_plane,
+                 n_output_plane,
+                 k_t,
+                 k_w,
+                 k_h,
+                 d_t=1,
+                 d_w=1,
+                 d_h=1,
+                 pad_t=0,
+                 pad_w=0,
+                 pad_h=0,
+                 with_bias=True,
+                 init_method="default",
+                 bigdl_type="float"):
+        super(VolumetricConvolution, self).__init__(None, bigdl_type,
+                                                    n_input_plane,
+                                                    n_output_plane,
+                                                    k_t,
+                                                    k_w,
+                                                    k_h,
+                                                    d_t,
+                                                    d_w,
+                                                    d_h,
+                                                    pad_t,
+                                                    pad_w,
+                                                    pad_h,
+                                                    with_bias,
+                                                    init_method)
+
 class SpatialZeroPadding(Model):
 
     '''
