@@ -65,13 +65,16 @@ class Sequential[T: ClassTag]
     var currentGradOutput = gradOutput
     while (i > 0) {
       val previousModule = modules(i - 1)
-      currentModule.accGradParameters(previousModule.output, currentGradOutput, scale)
+      if (currentModule.isTrainable()) {
+        currentModule.accGradParameters(previousModule.output, currentGradOutput, scale)
+      }
       currentGradOutput = currentModule.gradInput
       currentModule = previousModule
       i -= 1
     }
-
-    currentModule.accGradParameters(input, currentGradOutput, scale)
+    if (currentModule.isTrainable()) {
+      currentModule.accGradParameters(input, currentGradOutput, scale)
+    }
   }
 
   override def backward(input: Activity, nextError: Activity): Activity = {
