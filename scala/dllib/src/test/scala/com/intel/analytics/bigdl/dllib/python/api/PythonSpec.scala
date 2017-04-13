@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.python.api
 
 import java.util
-import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
+import java.util.{List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
@@ -127,12 +127,13 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       valRdd = data.toJavaRDD(),
       vMethods = util.Arrays.asList("Top1Accuracy", "Loss"))
 
-    val trainSummary = TrainSummary(sc.appName, "lenet")
+    val logdir = com.google.common.io.Files.createTempDir()
+    val trainSummary = TrainSummary(logdir.getPath, "lenet")
       .setSummaryTrigger("LearningRate", Trigger.severalIteration(1))
       .setSummaryTrigger("Loss", Trigger.severalIteration(1))
       .setSummaryTrigger("Throughput", Trigger.severalIteration(1))
       .setSummaryTrigger("Parameters", Trigger.severalIteration(20))
-    val validationSummary = ValidationSummary(sc.appName, "lenet")
+    val validationSummary = ValidationSummary(logdir.getPath, "lenet")
 
     pp.setTrainSummary(optimizer, trainSummary)
     pp.setValSummary(optimizer, validationSummary)
