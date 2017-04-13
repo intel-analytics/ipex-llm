@@ -719,7 +719,7 @@ class DistriOptimizer[T: ClassTag] (
           val t3 = System.nanoTime()
           v.cache()
           val t4 = System.nanoTime()
-          DistriOptimizer.logger.info(s"Prepare and cache training data... Done. " +
+          DistriOptimizer.logger.info(s"Prepare and cache validation data... Done. " +
             s"Takes ${(t4 - t3)/1e9}s")
         case _ =>
       }
