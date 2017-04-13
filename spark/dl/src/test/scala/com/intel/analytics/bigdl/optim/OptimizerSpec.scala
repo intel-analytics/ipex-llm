@@ -188,6 +188,7 @@ class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       override def data(train: Boolean): RDD[Float] = null
       override def size(): Long = 0
       override def shuffle(): Unit = {}
+      override def cache(): Unit = {}
     }
 
     val model = Linear[Float](4, 3)

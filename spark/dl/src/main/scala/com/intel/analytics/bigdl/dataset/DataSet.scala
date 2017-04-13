@@ -172,12 +172,13 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
       preDataSet.originRDD().mapPartitions(_ => Iterator
         .single(broadcast.value.cloneTransformer())
       ).setName("Cached Transformer").persist()
-    cachedTransformer.count()
 
     new DistributedDataSet[C] {
       override def size(): Long = preDataSet.size()
 
       override def shuffle(): Unit = preDataSet.shuffle()
+
+      override def cache(): Unit = cachedTransformer.count()
 
       override def data(train: Boolean): RDD[C] =
         preDataSet.data(train).zipPartitions(cachedTransformer)(
@@ -186,6 +187,11 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
       override def originRDD(): RDD[_] = preDataSet.originRDD()
     }
   }
+
+  /**
+    * Trigger the computation of this dataset and cache it in memory.
+    */
+  def cache(): Unit
 
   /**
    * Get the 'origin' RDD of the dataset.
@@ -254,6 +260,11 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
   }
 
   override def size(): Long = count
+
+  override def cache(): Unit = {
+    buffer.count()
+    indexes.count()
+  }
 
   override def shuffle(): Unit = {
     if (!isInOrder) {

@@ -118,6 +118,7 @@ object DistriOptimizer {
     logger.info(s"config $state")
     logger.info(s"Shuffle data")
     dataset.shuffle()
+    dataset.cache()
     val shuffleEnd = System.nanoTime()
     logger.info(s"Shuffle data complete. Takes ${(shuffleEnd - shuffleBefore) / 1e9}s")
 
@@ -704,6 +705,25 @@ class DistriOptimizer[T: ClassTag] (
     val partitionNum = dataset.originRDD().partitions.length
     val size = model.getParameters()._1.nElement()
     val parameters = AllReduceParameter.newParameter(partitionNum, size)
+
+    DistriOptimizer.logger.info("Prepare and cache training data...")
+    val t1 = System.nanoTime()
+    dataset.cache()
+    val t2 = System.nanoTime()
+    DistriOptimizer.logger.info(s"Prepare and cache training data... Done. Takes ${(t2 - t1)/1e9}s")
+
+    if (validationDataSet.isDefined) {
+      validationDataSet.get match {
+        case v: DistributedDataSet[MiniBatch[T]] =>
+          DistriOptimizer.logger.info("Prepare and cache validation data...")
+          val t3 = System.nanoTime()
+          v.cache()
+          val t4 = System.nanoTime()
+          DistriOptimizer.logger.info(s"Prepare and cache training data... Done. " +
+            s"Takes ${(t4 - t3)/1e9}s")
+        case _ =>
+      }
+    }
 
     models = DistriOptimizer.initThreadModels(model, dataset, criterion, state,
       nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods)

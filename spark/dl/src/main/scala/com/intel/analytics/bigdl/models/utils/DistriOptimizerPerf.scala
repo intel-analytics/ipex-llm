@@ -114,6 +114,7 @@ object DistriOptimizerPerf {
     val dummyDataSet = new DistributedDataSet[MiniBatch[Float]] {
       override def size(): Long = 10000
       override def shuffle(): Unit = {}
+      override def cache(): Unit = rdd.cache().count()
       override def originRDD(): RDD[_] = rdd
       override def data(train: Boolean): RDD[MiniBatch[Float]] = rdd
     }
