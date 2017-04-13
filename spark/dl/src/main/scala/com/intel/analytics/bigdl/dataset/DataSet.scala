@@ -189,8 +189,8 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
   }
 
   /**
-    * Trigger the computation of this dataset and cache it in memory.
-    */
+   * Trigger the computation of this dataset and cache it in memory.
+   */
   def cache(): Unit
 
   /**
