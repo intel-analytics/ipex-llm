@@ -142,6 +142,7 @@
                     <systemProperties>
                         <bigdl.disableCheckSysEnv>true</bigdl.disableCheckSysEnv>
                     </systemProperties>
+                    <argLine>-Xmx6g</argLine>
                 </configuration>
                 <executions>
                     <execution>
