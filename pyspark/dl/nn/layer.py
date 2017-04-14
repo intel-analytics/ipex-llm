@@ -800,6 +800,27 @@ class BatchNormalization(Model):
                                                  affine)
 
 
+class BifurcateSplitTable(Model):
+    '''
+    Creates a module that takes a Tensor as input and
+    outputs two tables, splitting the Tensor along
+    the specified dimension `dimension`.
+
+    The input to this layer is expected to be a tensor, or a batch of tensors;
+
+    :param dimension to be split along this dimension
+    :param T Numeric type. Only support float/double now
+
+    >>> bifurcateSplitTable = BifurcateSplitTable(1)
+    creating: createBifurcateSplitTable
+    '''
+
+    def __init__(self,
+                 dimension,
+                 bigdl_type="float"):
+        super(BifurcateSplitTable, self).__init__(None, bigdl_type,
+                                       dimension)
+
 class Bilinear(Model):
 
     '''
