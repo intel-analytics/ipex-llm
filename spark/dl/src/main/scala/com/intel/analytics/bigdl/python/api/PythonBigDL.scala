@@ -837,6 +837,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padBottom)
   }
 
+  def createBifurcateSplitTable(dimension: Int)
+  : BifurcateSplitTable[T] = {
+    BifurcateSplitTable[T](dimension)
+  }
+
   def createSplitTable(dimension: Int,
                        nInputDims: Int = -1)
   : SplitTable[T] = {
