@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 package org.apache.spark.ml
-import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.example.imageclassification.MlUtils._
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.optim.Optimizer
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import org.apache.spark.ml.param.{Param, ParamMap, Params}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -33,14 +37,14 @@ import scala.reflect.ClassTag
  */
 
 class DLEstimator[T : ClassTag]
-  (module : Module[T], criterion : Criterion[T], batchShape : Array[Int], batchSize: Int)
+  (module : Module[T], criterion : Criterion[T], batchShape : Array[Int])
   (override val uid: String = "DLEstimator")(implicit ev: TensorNumeric[T])
   extends MLEstimator{
 
   private def validateParameters(): Unit = {
 
     require(null != module,
-      "DLEstimator: module for estimator must not be null")
+      "DLEstimator: module must not be null")
 
     require(null != criterion,
       "DLEstimator: criterion must not be null")
@@ -52,56 +56,62 @@ class DLEstimator[T : ClassTag]
 
     this.validateParameters()
 
-    val rdd : RDD[Sample[T]] = toSample(dataFrame)
+    val rdd : RDD[MiniBatch[T]] = toMinibatch(dataFrame)
 
-    val optimizer = Optimizer(module, rdd, criterion, batchSize)
+    val dataset = DataSet.rdd(rdd)
+
+    val optimizer = Optimizer(module, dataset, criterion)
 
     val estimatedModule = optimizer.optimize()
 
-    val classifier = new DLClassifier[T]()
+    var classifier = new DLClassifier[T]()
       .setInputCol("features")
       .setOutputCol("predict")
 
-    classifier.modelTrain -> estimatedModule
+    val paramsTrans = ParamMap(
+      classifier.modelTrain -> estimatedModule,
+      classifier.batchShape -> batchShape)
 
-    classifier.batchShape -> batchShape
+    classifier = classifier.copy(paramsTrans)
 
     classifier
   }
 
-  private def toSample(df : DataFrame) : RDD[Sample[T]] = {
+  private def toMinibatch(df : DataFrame) : RDD[MiniBatch[T]] = {
 
-    val dfRows : RDD[Row] = df.rdd
+    val sampleDF = df.select("minibatch")
 
-    val sampleRDD : RDD[Sample[T]] = dfRows.map(row => {
+    val dfRows : RDD[Row] = sampleDF.rdd
 
-      val featureData = row.get(0).asInstanceOf[Seq[T]].toArray
-      val featureSize = row.get(1).asInstanceOf[Seq[Int]].toArray
-      val featureStride = row.get(2).asInstanceOf[Seq[Int]].toArray
+    val minibatchRDD : RDD[MiniBatch[T]] = dfRows.map(row => {
+      val columnData = row.get(0).asInstanceOf[GenericRowWithSchema]
+
+      val featureData = columnData.get(0).asInstanceOf[mutable.WrappedArray[T]].toArray
+      val featureSize = columnData.get(1).asInstanceOf[mutable.WrappedArray[Int]].toArray
 
       val featureStorage = Storage(featureData)
 
-      val labelData = row.get(3).asInstanceOf[Seq[T]].toArray
-      val labelSize = row.get(4).asInstanceOf[Seq[Int]].toArray
-      val labelStride = row.get(5).asInstanceOf[Seq[Int]].toArray
+      val labelData = columnData.get(2).asInstanceOf[mutable.WrappedArray[T]].toArray
+      val labelSize = columnData.get(3).asInstanceOf[mutable.WrappedArray[Int]].toArray
 
       val labelStorage = Storage(labelData)
 
-      val featureTensor = Tensor(featureStorage, 1, featureSize, featureStride)
+      val featureTensor = Tensor(featureStorage, 1, featureSize)
 
-      val labelTensor = Tensor(labelStorage, 1, labelSize, labelStride)
+      val labelTensor = Tensor(labelStorage, 1, labelSize)
 
-      val sample : Sample[T] = Sample(featureTensor, labelTensor)
-
-      sample
+      val miniBatch : MiniBatch[T] = MiniBatch(featureTensor, labelTensor)
+      miniBatch
 
     })
-    sampleRDD
+    minibatchRDD
   }
 }
-case class DLEstimatorData[T](featureData : Array[T], featureSize : Array[Int],
-                            featureStride : Array[Int], labelData : Array[T],
-                            labelSize : Array[Int], labelStrude : Array[Int])
+
+case class DLEstimatorData[T](data : DLEstimatorMinibatchData[T])
+
+case class DLEstimatorMinibatchData[T](featureData : Array[T], featureSize : Array[Int],
+                            labelData : Array[T], labelSize : Array[Int])
 
 
 

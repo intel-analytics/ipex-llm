@@ -16,55 +16,94 @@
 
 package com.intel.analytics.bigdl.optim
 
+import java.nio.file.{Files, Paths}
+
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.{DataSet, _}
+import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, Sequential}
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.{Engine, File, T}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.{DLEstimator, DLEstimatorData, MlTransformer}
+import org.apache.spark.ml._
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 
 class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val model = new Sequential[Float]()
   var sc : SparkContext = _
   before {
     Engine.setNodeAndCore(1, 1)
-    Engine.init
     val conf = Engine.createSparkConf().setAppName("Test Optimizer Wrapper").setMaster("local")
     sc = new SparkContext(conf)
+    Engine.init
   }
   "A wrapper" should "executor optimizer" in {
 
-      val featureData = Array[Float](10)
-      val featureSize = Array[Int](2, 5)
-      val featureStride = Array[Int](5, 1)
+      val featureData1 = Array[Float](10)
+      val featureSize1 = Array[Int](10)
 
-      val labelData = Array[Float](1)
-      val labelSize = Array[Int](1)
-      val labelStride = Array[Int](1)
+      val labelData1 = Array[Float](1)
+      val labelSize1 = Array[Int](1)
 
-      val estimatorData = DLEstimatorData(featureData, featureSize, featureStride,
-        labelData, labelSize, labelStride)
+      val featureData2 = Array[Float](10)
+      val featureSize2 = Array[Int](10)
+
+      val labelData2 = Array[Float](1)
+      val labelSize2 = Array[Int](1)
+
+      val s1 = Storage(featureData1)
+      val s2 = Storage(featureData2)
+
+      val s3 = Storage(labelData1)
+      val s4 = Storage(labelData2)
+
+      val ft1 = Tensor(s1, 1, featureSize1)
+      val lb1 = Tensor(s3, 1, labelSize1)
+
+      val ft2 = Tensor(s2, 1, featureSize2)
+      val lb2 = Tensor(s4, 1, labelSize2)
+
+      val sample1 = Sample(ft1, lb1)
+
+      val sample2 = Sample(ft2, lb2)
+
+     val rddsample = sc.parallelize(Seq(sample1, sample2))
+
+     val rddBatch : RDD[MiniBatch[Float]] = (DataSet.rdd(rddsample) -> SampleToBatch(2))
+       .asInstanceOf[DistributedDataSet[MiniBatch[Float]]].data(false)
+
+     val batch = rddBatch.take(1)(0)
+
+     val feature = batch.data
 
 
-    val model = Linear[Float](4, 3)
+    val label = batch.labels
+
+      val estimatorData = DLEstimatorData(DLEstimatorMinibatchData(feature.storage().array(),
+        feature.size(), label.storage().array(), label.size()))
+
+
+    val model = Linear[Float](10, 1)
     val criterion = ClassNLLCriterion[Float]()
 
     val rdd : RDD[DLEstimatorData[Float]] = sc.parallelize(Array(estimatorData))
 
     val sQLContext : SQLContext = new SQLContext(sc)
 
-    var df : DataFrame = sQLContext.createDataFrame(rdd)
+    var df : DataFrame = sQLContext.createDataFrame(rdd).toDF("minibatch")
 
-    val estimator = new DLEstimator[Float](model, criterion, Array[Int](0), 1)("DLEstimator")
+    val estimator = new DLEstimator[Float](model, criterion, Array[Int](0))("DLEstimator")
 
-    val res = estimator.fit(df);
+    val res = estimator.fit(df)
 
     res.isInstanceOf[MlTransformer] should be(true)
 
   }
+
   after{
     sc.stop()
   }
