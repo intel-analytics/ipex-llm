@@ -82,11 +82,11 @@ def build_model(class_num):
         model.add(Reshape([128]))
     elif model_type.lower() == "lstm":
         model.add(Recurrent()
-                  .add(LSTM(embedding_dim, 128)))
+                  .add(LSTM(embedding_dim, 128, p)))
         model.add(Select(2, -1))
     elif model_type.lower() == "gru":
         model.add(Recurrent()
-                  .add(GRU(embedding_dim, 128)))
+                  .add(GRU(embedding_dim, 128, p)))
         model.add(Select(2, -1))
     else:
         raise ValueError('model can only be cnn, lstm, or gru')
@@ -156,12 +156,14 @@ if __name__ == "__main__":
     parser.add_option("-e", "--embedding_dim", dest="embedding_dim", default="50")  # noqa
     parser.add_option("-m", "--max_epoch", dest="max_epoch", default="15")
     parser.add_option("--model", dest="model_type", default="cnn")
+    parser.add_option("-p", "--p", dest="p", default="0.0")
 
     (options, args) = parser.parse_args(sys.argv)
     if options.action == "train":
         batch_size = int(options.batchSize)
         embedding_dim = int(options.embedding_dim)
         max_epoch = int(options.max_epoch)
+        p = float(options.p)
         model_type = options.model_type
         sequence_len = 50
         max_words = 1000

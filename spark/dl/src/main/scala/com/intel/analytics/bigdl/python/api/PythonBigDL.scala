@@ -197,19 +197,25 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     TimeDistributedCriterion[T](critrn, sizeAverage)
   }
 
-  def createGRU(inputSize: Int,
-                outputSize: Int): GRU[T] = {
-    GRU[T](inputSize, outputSize)
+  def createGRU(
+    inputSize: Int,
+    outputSize: Int,
+    p: Double = 0): GRU[T] = {
+    GRU[T](inputSize, outputSize, p)
   }
 
-  def createLSTM(inputSize: Int,
-                 hiddenSize: Int): LSTM[T] = {
-    LSTM[T](inputSize, hiddenSize)
+  def createLSTM(
+    inputSize: Int,
+    hiddenSize: Int,
+    p: Double = 0): LSTM[T] = {
+    LSTM[T](inputSize, hiddenSize, p)
   }
 
-  def createLSTMPeephole(inputSize: Int,
-    hiddenSize: Int): LSTMPeephole[T] = {
-    LSTMPeephole[T](inputSize, hiddenSize)
+  def createLSTMPeephole(
+    inputSize: Int,
+    hiddenSize: Int,
+    p: Double = 0): LSTMPeephole[T] = {
+    LSTMPeephole[T](inputSize, hiddenSize, p)
   }
 
   def createRecurrent(): Recurrent[T] = {
@@ -970,6 +976,35 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       dH,
       padW,
       padH)
+  }
+
+  def createVolumetricConvolution(nInputPlane: Int,
+                                  nOutputPlane: Int,
+                                  kT: Int,
+                                  kW: Int,
+                                  kH: Int,
+                                  dT: Int = 1,
+                                  dW: Int = 1,
+                                  dH: Int = 1,
+                                  padT: Int = 0,
+                                  padW: Int = 0,
+                                  padH: Int = 0,
+                                  withBias: Boolean = true,
+                                  initMethod: String = "default")
+  : VolumetricConvolution[T] = {
+    VolumetricConvolution[T](nInputPlane,
+      nOutputPlane,
+      kT,
+      kW,
+      kH,
+      dT,
+      dW,
+      dH,
+      padT,
+      padW,
+      padH,
+      withBias,
+      PythonBigDL.getInitMethod(initMethod))
   }
 
   def createSpatialDivisiveNormalization(nInputPlane: Int = 1,

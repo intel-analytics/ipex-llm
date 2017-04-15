@@ -417,13 +417,19 @@ class LSTM(Model):
 
     :param inputSize: the size of each input vector
     :param hiddenSize: Hidden unit size in the LSTM
+    :param  p: is used for [[Dropout]] probability. For more details about
+            RNN dropouts, please refer to
+            [RnnDrop: A Novel Dropout for RNNs in ASR]
+            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+            (https://arxiv.org/pdf/1512.05287.pdf)
 
-    >>> lstm = LSTM(4, 3)
+    >>> lstm = LSTM(4, 3, 0.5)
     creating: createLSTM
     '''
 
-    def __init__(self, input_size, hidden_size, bigdl_type="float"):
-        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
+        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
 class LSTMPeephole(Model):
@@ -437,13 +443,19 @@ class LSTMPeephole(Model):
 
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in the LSTM
+    :param  p: is used for [[Dropout]] probability. For more details about
+            RNN dropouts, please refer to
+            [RnnDrop: A Novel Dropout for RNNs in ASR]
+            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+            (https://arxiv.org/pdf/1512.05287.pdf)
 
-    >>> lstm = LSTMPeephole(4, 3)
+    >>> lstm = LSTMPeephole(4, 3, 0.5)
     creating: createLSTMPeephole
     '''
 
-    def __init__(self, input_size, hidden_size, bigdl_type="float"):
-        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
+        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
 class GRU(Model):
@@ -457,13 +469,19 @@ class GRU(Model):
 
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in GRU
+    :param  p: is used for [[Dropout]] probability. For more details about
+            RNN dropouts, please refer to
+            [RnnDrop: A Novel Dropout for RNNs in ASR]
+            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+            (https://arxiv.org/pdf/1512.05287.pdf)
 
-    >>> gru = GRU(4, 3)
+    >>> gru = GRU(4, 3, 0.5)
     creating: createGRU
     '''
 
-    def __init__(self,  input_size, hidden_size, bigdl_type="float"):
-        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self,  input_size, hidden_size, p=0.0, bigdl_type="float"):
+        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
 class RnnCell(Model):
@@ -2212,6 +2230,60 @@ class SpatialShareConvolution(Model):
                                                       propagate_back,
                                                       init_method)
 
+
+class VolumetricConvolution(Model):
+
+    '''
+    Applies a 3D convolution over an input image composed of several input planes. The input tensor
+    in forward(input) is expected to be a 4D tensor (nInputPlane x time x height x width).
+    :param n_input_plane The number of expected input planes in the image given into forward()
+    :param n_output_plane The number of output planes the convolution layer will produce.
+    :param k_t The kernel size of the convolution in time
+    :param k_w The kernel width of the convolution
+    :param k_h The kernel height of the convolution
+    :param d_t The step of the convolution in the time dimension. Default is 1
+    :param d_w The step of the convolution in the width dimension. Default is 1
+    :param d_h The step of the convolution in the height dimension. Default is 1
+    :param pad_t Additional zeros added to the input plane data on both sides of time axis.
+    Default is 0. (kT-1)/2 is often used here.
+    :param pad_w The additional zeros added per width to the input planes.
+    :param pad_h The additional zeros added per height to the input planes.
+    :param with_bias whether with bias
+    :param init_method Init method, Default, Xavier, Bilinear.
+
+    >>> volumetricConvolution = VolumetricConvolution(6, 12, 5, 5, 5, 1, 1, 1)
+    creating: createVolumetricConvolution
+    '''
+
+    def __init__(self,
+                 n_input_plane,
+                 n_output_plane,
+                 k_t,
+                 k_w,
+                 k_h,
+                 d_t=1,
+                 d_w=1,
+                 d_h=1,
+                 pad_t=0,
+                 pad_w=0,
+                 pad_h=0,
+                 with_bias=True,
+                 init_method="default",
+                 bigdl_type="float"):
+        super(VolumetricConvolution, self).__init__(None, bigdl_type,
+                                                    n_input_plane,
+                                                    n_output_plane,
+                                                    k_t,
+                                                    k_w,
+                                                    k_h,
+                                                    d_t,
+                                                    d_w,
+                                                    d_h,
+                                                    pad_t,
+                                                    pad_w,
+                                                    pad_h,
+                                                    with_bias,
+                                                    init_method)
 
 class SpatialZeroPadding(Model):
 
