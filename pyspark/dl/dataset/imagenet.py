@@ -24,22 +24,24 @@ from os import listdir
 from os.path import join
 from pyspark import SparkContext
 from scipy import misc
+import struct
+import cv2
 
 
 from util.common import _py2java
 from util.common import _java2py
 from util.common import Sample
+from util.common import callJavaFunc
 
 
-def read_label(data):
-    dataArr = data.split("\n")
-    if len(dataArr) == 1:
-        return dataArr[0]
-    else:
-        return dataArr[1]
-
-
-def read_local(folder, sc, normalize=255.0):
+def read_local(sc, folder, normalize=255.0):
+    '''
+    Read images from local directory
+    :param sc: spark context
+    :param folder: local directory
+    :param normalize: normalization value
+    :return: RDD of sample
+    '''
     # read directory, create map
     dirs = listdir(folder)
     dirs.sort()
@@ -50,7 +52,8 @@ def read_local(folder, sc, normalize=255.0):
             images.append((join(join(folder, d), f), dirs.index(d)+1))
     # create rdd
     images = sc.parallelize(images)
-    samples = images.map(lambda (path, label): (misc.imread(path), np.array([label]))) \
+    # samples = images.map(lambda (path, label): (misc.imread(path), np.array([label]))) \
+    samples = images.map(lambda (path, label): (cv2.imread(path, 1), np.array([label]))) \
         .map(lambda (img, label):
              (resize_image(256, 256), label)) \
         .map(lambda (features, label):
@@ -61,31 +64,40 @@ def read_local(folder, sc, normalize=255.0):
 
 
 def resize_image(img, resize_width, resize_height):
-    return misc.imresize(img, (resize_width, resize_height))
+    # return misc.imresize(img, (resize_width, resize_height))
+    return cv2.resize(img,(resize_width, resize_height), interpolation = cv2.INTER_AREA)
 
 
-def read_data_sets(sc, folder, file_type, node_num, core_num, data_type="train", normalize=255.0):
-    Text = "org.apache.hadoop.io.Text"
-    path = join(folder, data_type)
-
-    if file_type == "seq":
-        raw = sc.sequenceFile(path, Text, Text, minSplits=node_num * core_num)
-        for data in raw.collect():
-            print data
-        # data = raw.map(lambda image: (_java2py(_py2java(sc, image[0]).copyBytes),
-        #                               float(read_label(image[1]))))
-    else:
-        return read_local(path, sc, normalize)
+def read_seq_file(sc, path):
+    '''
+    Read images from sequence file
+    :param sc: spark context
+    :param path: location of sequence file
+    :return: RDD of sample
+    '''
+    raw = sc.sequenceFile(path, "org.apache.hadoop.io.Text", "org.apache.hadoop.io.BytesWritable")
+    def parse(data):
+        label = data[0]
+        img = data[1]
+        length = len(img)-8
+        metrics = struct.unpack('>ii', img[0:8])
+        width = metrics[0]
+        height = metrics[1]
+        features = np.array(img[8:], dtype="int8")
+        sample = Sample(features, [int(label)], features_shape=(width, height, length/width/height), label_shape=[1])
+        return sample
+    return raw.map(parse)
 
 
 def load_mean_file(mean_file):
     '''
-
+    Read mean file which contains means for every pixel
     :param mean_file:
     :return:
     '''
-    means = np.fromfile(mean_file, dtype=float)
-    return [float(i) for i in means.ravel()][10:]
+    # means = np.fromfile(mean_file)
+    mean_array = np.load(mean_file).transpose(1,2,0)
+    return mean_array / 255.0
 
 
 if __name__ == "__main__":

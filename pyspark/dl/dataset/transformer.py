@@ -17,6 +17,8 @@
 
 from util.common import Sample
 import random
+import numpy as np
+
 
 
 def normalizer(mean, std):
@@ -26,89 +28,58 @@ def normalizer(mean, std):
     return lambda sample: Sample.from_ndarray((sample.features - mean) / std,
                                               sample.label, sample.bigdl_type)
 
-def bgr_pixel_normalizer(mean):
-    return lambda record: Sample([feature - m for feature, m in zip(record.features, mean)],
-                                 record.label, record.features_shape,
-                                 record.label_shape, record.bigdl_type)
+
+def pixel_normalizer(mean):
+    return lambda sample: Sample.from_ndarray((sample.features - mean),
+                                              sample.label, sample.bigdl_type)
 
 
-def bgr_crop(crop_width, crop_height, crop_method='random'):
-    def func(record):
-        h = record.features_shape[0]
-        w = record.features_shape[1]
+def crop(crop_width, crop_height, crop_method='random'):
+    def func(sample):
+        img = sample.features.astype(dtype='uint8')
+        h = sample.features.shape[0]
+        w = sample.features.shape[1]
         if crop_method == 'random':
             x1 = random.randint(0, w - crop_width)
             y1 = random.randint(0, h - crop_height)
         elif crop_method == 'center':
             x1 = (w - crop_width)/2
             y1 = (h - crop_height)/2
-        target = []
-        start = (x1 + y1 * w) * 3
-        for i in xrange(crop_width * crop_height):
-            target.append(record.features[start + ((i / crop_width) * w +
-                                                   (i % crop_height)) * 3])
-            target.append(record.features[start + ((i / crop_width) * w +
-                                                   (i % crop_height)) * 3 + 1])
-            target.append(record.features[start + ((i / crop_width) * w +
-                                                   (i % crop_height)) * 3 + 2])
-        return Sample(target,
-                      record.label,
-                      [crop_height, crop_width, record.features_shape[2]],
-                      record.label_shape, record.bigdl_type)
+        cropped = img[y1:y1+crop_height, x1:x1+crop_width]
+        return Sample.from_ndarray(cropped, sample.label, sample.bigdl_type)
     return func
 
 
-def bgr_normalizer(mean, std):
-    def func(record):
-        result = []
-        for i in range(record.features_shape(0) * record.features_shape(1)):
-            result.append((record.features[i * 3 + 0] - mean[0]) / std[0])
-            result.append((record.features[i * 3 + 1] - mean[1]) / std[1])
-            result.append((record.features[i * 3 + 2] - mean[0]) / std[2])
-        return Sample(result,
-                      record.label,
-                      record.features_shape,
-                      record.label_shape,
-                      record.bigdl_type)
+def channel_normalizer(mean_b, mean_g, mean_r, std_b, std_g, std_r):
+    def func(sample):
+        mean = np.array([mean_b, mean_g, mean_r])
+        std = np.array([std_b, std_g, std_r])
+        mean_sub = sample.features[:,:] - mean
+        result = mean_sub[:,:] / std
+        # dtype = Sample.get_dtype(sample.bigdl_type)
+        # shape = sample.features.shape
+        # target = np.empty(shape, dtype=dtype)
+        # for i in xrange(shape(0)):
+        #     for j in xrange(shape(1)):
+        #         target[i, j] = (sample.features[i, j] - mean) / std
+        return Sample.from_ndarray(result, sample.label, sample.bigdl_type)
     return func
 
 
-# def flip(record, threshold):
-#     img = np.array(record.features).reshape(record.features_shape)
-#     if random.random() > threshold:
-#         np.fliplr(img)
-#     return Sample([float(i) for i in img.ravel()], record.label, list(img.shape),
-#                   record.label_shape, record.bigdl_type)
-
-
-# def scale(record, resize_width, resize_height):
-#     img = np.array(record.features).reshape(record.features_shape)
-#     misc.imresize(img, (resize_width, resize_height))
-#     return Sample([float(i) for i in img.ravel()], record.label, list(img.shape),
-#                   record.label_shape, record.bigdl_type)
-
-
-def bgr_flip(threshold):
-    def f(record):
+def flip(threshold):
+    def func(sample):
         if random.random() > threshold:
-            data = record.features
-            height = record.features_shape[0]
-            width = record.features_shape[1]
-            for y in xrange(height):
-                for x in xrange(width / 2):
-                    swap = data[(y * width + x) * 3]
-                    data[(y * width + x) * 3] = data[(y * width + width - x - 1) * 3]
-                    data[(y * width + width - x - 1) * 3] = swap
-
-                    swap = data[(y * width + x) * 3 + 1]
-                    data[(y * width + x) * 3 + 1] = data[(y * width + width - x - 1) * 3 + 1]
-                    data[(y * width + width - x - 1) * 3 + 1] = swap
-
-                    swap = data[(y * width + x) * 3 + 2]
-                    data[(y * width + x) * 3 + 2] = data[(y * width + width - x - 1) * 3 + 2]
-                    data[(y * width + width - x - 1) * 3 + 2] = swap
-            return Sample(data, record.label, record.features_shape,
-                          record.label_shape, record.bigdl_type)
+            return Sample.from_ndarray(np.flip(sample.features, 1), sample.label, sample.bigdl_type)
         else:
-            return record
-    return f
+            return sample
+    return func
+
+
+def transpose(to_rgb=True):
+    def func(sample):
+        if to_rgb:
+            result = sample.features.transpose(2,0,1)[(2,1,0),:,:]
+        else:
+            result = sample.features.transpose(2,0,1)
+        return Sample.from_ndarray(result, sample.label,sample.bigdl_type)
+    return func

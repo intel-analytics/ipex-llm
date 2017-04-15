@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset.image.{LabeledBGRImage, _}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
-import org.apache.hadoop.io.Text
+import org.apache.hadoop.io.{Text, BytesWritable}
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -433,7 +433,7 @@ object DataSet {
     def files(url: String, sc: SparkContext, classNum: Int): DistributedDataSet[ByteRecord] = {
       val nodeNumber = Engine.nodeNumber()
       val coreNumber = Engine.coreNumber()
-      val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text],
+      val rawData = sc.sequenceFile(url, classOf[Text], classOf[BytesWritable],
         nodeNumber * coreNumber).map(image => {
         ByteRecord(image._2.copyBytes(), readLabel(image._1).toFloat)
       }).filter(_.label <= classNum)

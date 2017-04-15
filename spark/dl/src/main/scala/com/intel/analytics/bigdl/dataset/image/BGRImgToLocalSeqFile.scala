@@ -22,7 +22,7 @@ import java.nio.file.Path
 import com.intel.analytics.bigdl.dataset.Transformer
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{Path => hadoopPath}
-import org.apache.hadoop.io.{SequenceFile, Text}
+import org.apache.hadoop.io.{SequenceFile, Text, BytesWritable}
 
 import scala.collection.Iterator
 
@@ -52,7 +52,7 @@ class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path, hasName: Boolean 
         val path = new hadoopPath(fileName)
         val writer = SequenceFile.createWriter(conf, SequenceFile.Writer.file(path),
           SequenceFile.Writer.keyClass(classOf[Text]),
-          SequenceFile.Writer.valueClass(classOf[Text]))
+          SequenceFile.Writer.valueClass(classOf[BytesWritable]))
         var i = 0
         while (i < blockSize && prev.hasNext) {
           val (image, imageName) = prev.next()
@@ -66,7 +66,7 @@ class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path, hasName: Boolean 
           preBuffer.clear
           val imageKey = if (hasName) s"${imageName}\n${image.label().toInt}"
             else s"${image.label().toInt}"
-          writer.append(new Text(imageKey), new Text(data))
+          writer.append(new Text(imageKey), new BytesWritable(data))
           i += 1
         }
         writer.close()
