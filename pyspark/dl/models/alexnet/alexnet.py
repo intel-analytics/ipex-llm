@@ -57,8 +57,11 @@ def build_model(class_num):
 
 
 def get_alex_data(folder, file_type="image", data_type="train"):
-    return imagenet.read_data_sets(sc, folder, file_type, int(options.nodeNum),
-                                   int(options.coreNum), data_type, 1.0)
+    path = os.path.join(folder, data_type)
+    if "seq" == file_type:
+        return imagenet.read_seq_file(sc, path)
+    elif "image" == file_type:
+        return imagenet.read_local(sc, path, 255.0)
 
 
 if __name__ == "__main__":
@@ -73,15 +76,21 @@ if __name__ == "__main__":
     parser.add_option("-m", "--meanFile", dest="meanFile", default="imagenet_mean.binaryproto")
 
     (options, args) = parser.parse_args(sys.argv)
-    sc = SparkContext(appName="lenet5", conf=create_spark_conf())
+    sc = SparkContext(appName="alexnet", conf=create_spark_conf())
     init_engine()
     image_size = 227
     means = imagenet.load_mean_file(options.meanFile)
     if options.action == "train":
-        train_data = get_alex_data(options.folder, "image", "train").map(
-            bgr_pixel_normalizer(means)).map(crop(image_size, image_size, "random"))
-        test_data = get_alex_data(options.folder, "image", "val").map(
-            bgr_pixel_normalizer(means)).map(crop(image_size, image_size, "center"))
+        # train_data = get_alex_data(options.folder, "image", "train").map(
+        #     pixel_normalizer(means)).map(crop(image_size, image_size, "random"))
+        train_data = get_alex_data(options.folder, "seq", "train").map(
+            pixel_normalizer(means)).map(
+            crop(image_size, image_size, "random")).map(
+            transpose(False))
+        test_data = get_alex_data(options.folder, "seq", "val").map(
+            pixel_normalizer(means)).map(
+            crop(image_size, image_size, "center")).map(
+            transpose(False))
         state = {
             "learningRate": 0.01,
             "weightDecay": 0.0005,

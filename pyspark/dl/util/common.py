@@ -184,6 +184,13 @@ class Sample(object):
         self.bigdl_type = bigdl_type
 
     @classmethod
+    def get_dtype(bigdl_type):
+        if "float" == bigdl_type:
+            return "float32"
+        else:
+            return "float64"
+
+    @classmethod
     def from_ndarray(cls, features, label, bigdl_type="float"):
         return cls(
             features=[float(i) for i in features.ravel()],
