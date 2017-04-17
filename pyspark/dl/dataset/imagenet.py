@@ -16,46 +16,46 @@
 #
 # Part of the code originally from Tensorflow
 
-
-import gzip
-
 import numpy as np
 from os import listdir
-from os.path import join
-from pyspark import SparkContext
-from scipy import misc
+from os.path import join, basename
 import struct
 import cv2
-
-
-from util.common import _py2java
-from util.common import _java2py
 from util.common import Sample
-from util.common import callJavaFunc
 
 
-def read_local(sc, folder, normalize=255.0):
-    '''
+def read_local_path(folder, has_label=True):
+    # read directory, create map
+    dirs = listdir(folder)
+    # create image path and label list
+    image_paths = []
+    if has_label:
+        dirs.sort()
+        for d in dirs:
+            for f in listdir(join(folder, d)):
+                image_paths.append((join(join(folder, d), f), dirs.index(d) + 1))
+    else:
+        for f in dirs:
+            image_paths.append((join(folder, f), -1))
+    return image_paths
+
+
+def read_local(sc, folder, normalize=255.0, has_label=True):
+    """
     Read images from local directory
     :param sc: spark context
     :param folder: local directory
     :param normalize: normalization value
+    :param has_label: whether the image folder contains label
     :return: RDD of sample
-    '''
-    # read directory, create map
-    dirs = listdir(folder)
-    dirs.sort()
-    # create image list
-    images = []
-    for d in dirs:
-        for f in listdir(join(folder, d)):
-            images.append((join(join(folder, d), f), dirs.index(d)+1))
+    """
+    # read directory, create image paths list
+    image_paths = read_local_path(folder, has_label)
     # create rdd
-    images = sc.parallelize(images)
-    # samples = images.map(lambda (path, label): (misc.imread(path), np.array([label]))) \
-    samples = images.map(lambda (path, label): (cv2.imread(path, 1), np.array([label]))) \
+    image_paths_rdd = sc.parallelize(image_paths)
+    samples = image_paths_rdd.map(lambda (path, label): (cv2.imread(path, 1), np.array(label))) \
         .map(lambda (img, label):
-             (resize_image(256, 256), label)) \
+             (resize_image(img, 256, 256), label)) \
         .map(lambda (features, label):
              (((features & 0xff) / normalize), label)) \
         .map(lambda (features, label):
@@ -63,42 +63,72 @@ def read_local(sc, folder, normalize=255.0):
     return samples
 
 
+def read_local_with_name(sc, folder, normalize=255.0, has_label=True):
+    """
+    Read images from local directory
+    :param sc: spark context
+    :param folder: local directory
+    :param normalize: normalization value
+    :param has_label: whether the image folder contains label
+    :return: RDD of sample
+    """
+    # read directory, create image paths list
+    image_paths = read_local_path(folder, has_label)
+    # create rdd
+    image_paths_rdd = sc.parallelize(image_paths)
+    samples = image_paths_rdd.map(lambda (path, label): (cv2.imread(path, 1), np.array(label), basename(path))) \
+        .map(lambda (img, label, name):
+             (resize_image(img, 256, 256), label, name)) \
+        .map(lambda (features, label, name):
+             (((features & 0xff) / normalize), label, name)) \
+        .map(lambda (features, label, name):
+            (Sample.from_ndarray(features, label), name))
+    return samples
+
+
 def resize_image(img, resize_width, resize_height):
-    # return misc.imresize(img, (resize_width, resize_height))
     return cv2.resize(img,(resize_width, resize_height), interpolation = cv2.INTER_AREA)
 
 
-def read_seq_file(sc, path):
-    '''
+def read_seq_file(sc, path, normalize=255.0, has_name=False):
+    """
     Read images from sequence file
     :param sc: spark context
     :param path: location of sequence file
-    :return: RDD of sample
-    '''
+    :param normalize: normalize index for the image
+    :param has_name: whether the sequence file includes image name
+    :return: RDD of sample image
+    """
     raw = sc.sequenceFile(path, "org.apache.hadoop.io.Text", "org.apache.hadoop.io.BytesWritable")
+
     def parse(data):
-        label = data[0]
         img = data[1]
         length = len(img)-8
         metrics = struct.unpack('>ii', img[0:8])
         width = metrics[0]
         height = metrics[1]
         features = np.array(img[8:], dtype="int8")
-        sample = Sample(features, [int(label)], features_shape=(width, height, length/width/height), label_shape=[1])
-        return sample
+        normalized_features = (features & 0xff) / normalize
+        if has_name:
+            key = data[0].split('\n')
+            name = key[0]
+            label = key[1]
+            sample = Sample(normalized_features, [int(label)], features_shape=(height, width, length / width / height),
+                            label_shape=[1])
+            return sample, name
+        else:
+            label = data[0]
+            sample = Sample(normalized_features, [int(label)], features_shape=(height, width, length / width / height),
+                            label_shape=[1])
+            return sample
     return raw.map(parse)
 
 
 def load_mean_file(mean_file):
-    '''
+    """
     Read mean file which contains means for every pixel
     :param mean_file:
     :return:
-    '''
-    # means = np.fromfile(mean_file)
+    """
     mean_array = np.load(mean_file).transpose(1,2,0)
     return mean_array / 255.0
-
-
-if __name__ == "__main__":
-    read_data_sets("/tmp/mnist/")

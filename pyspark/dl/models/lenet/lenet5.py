@@ -65,6 +65,7 @@ if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-a", "--action", dest="action", default="train")
     parser.add_option("-b", "--batchSize", dest="batchSize", default="128")
+    parser.add_option("--model", dest="model", default="")
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -99,8 +100,7 @@ if __name__ == "__main__":
         # Load a pre-trained model and then validate it through top1 accuracy.
         test_data = get_minst(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
-        # TODO: Pass model path through external parameter
-        model = Model.from_path("/tmp/lenet5/lenet-model.470")
+        model = Model.load(options.model)
         results = model.test(test_data, 32, ["Top1Accuracy"])
         for result in results:
             print result
