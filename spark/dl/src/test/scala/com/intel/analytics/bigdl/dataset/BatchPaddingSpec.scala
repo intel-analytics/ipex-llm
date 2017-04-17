@@ -76,13 +76,13 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val tensorTarget2 = Tensor[Float](Storage(
       Array(3.0f, 1.0f, 2.0f, 3.0f, 1.0f, 2.0f, 3.0f, 1.0f, 2.0f)), 1, Array(3, 3))
 
-    var batch = iter.next()
+    var batch = iter.next().toTensorMiniBatch[Float]()
     var label = batch.labels
     var data = batch.data
     label should be (tensorTarget1)
     batch.data should be (tensorInput1)
 
-    batch = iter.next()
+    batch = iter.next().toTensorMiniBatch[Float]()
     label = batch.labels
     data = batch.data
     label should be (tensorTarget2)
@@ -137,13 +137,13 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
         3.0f, 1.0f, 4.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f,
         3.0f, 1.0f, 4.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f)), 1, Array(3, 10))
 
-    var batch = iter.next()
+    var batch = iter.next().toTensorMiniBatch[Float]()
     var label = batch.labels
     var data = batch.data
     label should be (tensorTarget1)
     batch.data should be (tensorInput1)
 
-    batch = iter.next()
+    batch = iter.next().toTensorMiniBatch[Float]()
     label = batch.labels
     data = batch.data
     label should be (tensorTarget2)
@@ -170,8 +170,8 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val data2 = trainSet2.toLocal().data(train = false)
 
     while (data1.hasNext && data2.hasNext) {
-      val batch1 = data1.next()
-      val batch2 = data2.next()
+      val batch1 = data1.next().toTensorMiniBatch[Float]()
+      val batch2 = data2.next().toTensorMiniBatch[Float]()
       batch1.data should be (batch2.data)
       batch1.labels should be (batch2.labels)
     }
@@ -212,8 +212,8 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val data2 = trainSet2.toLocal().data(train = false)
 
     while (data1.hasNext && data2.hasNext) {
-      val batch1 = data1.next()
-      val batch2 = data2.next()
+      val batch1 = data1.next().toTensorMiniBatch[Float]()
+      val batch2 = data2.next().toTensorMiniBatch[Float]()
       batch1.data should be (batch2.data)
       batch1.labels should be (batch2.labels)
     }

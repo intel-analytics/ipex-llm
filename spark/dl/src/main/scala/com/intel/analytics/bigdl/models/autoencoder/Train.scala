@@ -20,7 +20,7 @@ import java.nio.file.Paths
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.image._
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Transformer}
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, TensorMiniBatch, Transformer}
 import com.intel.analytics.bigdl.nn.{MSECriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
@@ -34,7 +34,8 @@ object toAutoencoderBatch {
 
 class toAutoencoderBatch[T] extends Transformer[MiniBatch[T], MiniBatch[T]] {
   override def apply(prev: Iterator[MiniBatch[T]]): Iterator[MiniBatch[T]] = {
-    prev.map(batch => {
+    prev.map(b => {
+      val batch = b.toTensorMiniBatch[T]
       MiniBatch(batch.data, batch.data)
     })
   }

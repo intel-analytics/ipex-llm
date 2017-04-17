@@ -54,9 +54,9 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[M
     val vMethodsArr = (1 to subModelNumber).map(i => vMethods.map(_.clone())).toArray
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     dataIter.map(batch => {
-      require(batch.data.size(1) == batch.labels.size(1))
-      val stackSize = batch.data.size(1) / subModelNumber
-      val extraSize = batch.data.size(1) % subModelNumber
+      batch.selfCheck()
+      val stackSize = batch.size() / subModelNumber
+      val extraSize = batch.size() % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
       val start = System.nanoTime()
       val result = Engine.default.invokeAndWait(
@@ -64,8 +64,7 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[M
           () => {
             val offset = b * stackSize + math.min(b, extraSize)
             val length = stackSize + (if (b < extraSize) 1 else 0)
-            val input = batch.data.narrow(1, offset + 1, length)
-            val target = batch.labels.narrow(1, offset + 1, length)
+            val (input, target) = batch.toActivity(offset, length)
             val output = workingModels(b).forward(input)
             val validatMethods = vMethodsArr(b)
             validatMethods.map(validation => {
@@ -78,9 +77,9 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[M
           l + r
         }
       })
-      count += batch.data.size(1)
+      count += batch.size()
       logger.info(s"[Validation] $count/${dataSet.size()} Throughput is ${
-        batch.data.size(1) / ((System.nanoTime() - start) / 1e9)
+        batch.size() / ((System.nanoTime() - start) / 1e9)
       } record / sec")
       result
     }).reduce((left, right) => {
