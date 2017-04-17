@@ -90,3 +90,10 @@ test_load_caffe = Module(
         "test.load_caffe_test"
     ]
 )
+
+test_imagenet = Module(
+    name="imagenet_transformer_test",
+    python_test_goals=[
+        "test.imagenet_transformer_test"
+    ]
+)

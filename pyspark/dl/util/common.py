@@ -172,32 +172,44 @@ class JTensor(object):
 
 
 class Sample(object):
-    def __init__(self, features, label, features_shape, label_shape,
-                 bigdl_type="float"):
+    def __init__(self, features, label, bigdl_type="float", features_shape=None, label_shape=None):
         def get_dtype():
             if "float" == bigdl_type:
                 return "float32"
             else:
                 return "float64"
-        self.features = np.array(features, dtype=get_dtype()).reshape(features_shape)  # noqa
-        self.label = np.array(label, dtype=get_dtype()).reshape(label_shape)
+        if features_shape is None:
+            self.features = features.astype(get_dtype())
+        else:
+            self.features = np.array(features, dtype=get_dtype()).reshape(features_shape)  # noqa
+
+        if label_shape is None:
+            self.label = label.astype(get_dtype())
+        else:
+            self.label = np.array(label, dtype=get_dtype()).reshape(label_shape)
         self.bigdl_type = bigdl_type
 
-    @classmethod
-    def get_dtype(bigdl_type):
-        if "float" == bigdl_type:
-            return "float32"
-        else:
-            return "float64"
+    # def __init__(self, features, label, features_shape=None, label_shape=None, bigdl_type="float"):
+    #     def get_dtype():
+    #         if "float" == bigdl_type:
+    #             return "float32"
+    #         else:
+    #             return "float64"
+    #
+    #     self.features = np.array(features, dtype=get_dtype()).reshape(features_shape)  # noqa
+    #     self.label = np.array(label, dtype=get_dtype()).reshape(label_shape)
+    #     self.bigdl_type = bigdl_type
 
     @classmethod
     def from_ndarray(cls, features, label, bigdl_type="float"):
         return cls(
             features=[float(i) for i in features.ravel()],
             label=[float(i) for i in label.ravel()],
+            bigdl_type=bigdl_type,
             features_shape=list(features.shape),
-            label_shape=list(label.shape) if label.shape else [label.size],
-            bigdl_type=bigdl_type)
+            label_shape=list(label.shape) if label.shape else [label.size]
+        )
+
 
     def __reduce__(self):
         (features_storage, features_shape) = JTensor.flatten_ndarray(self.features)
