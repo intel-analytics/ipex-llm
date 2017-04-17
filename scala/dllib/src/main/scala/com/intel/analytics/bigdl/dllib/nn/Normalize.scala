@@ -24,11 +24,16 @@ import scala.reflect.ClassTag
 /**
  * Normalizes the input Tensor to have unit L_p norm. The smoothing parameter eps prevents
  * division by zero when the input contains all zero elements (default = 1e-10).
- * p can be Double.MaxValue
+ * The input can be 1d, 2d or 4d
+ * If the input is 4d, it should follow the format (n, c, h, w) where n is the batch number,
+ * c is the channel number, h is the height and w is the width
+ * @param p L_p norm
+ * @param eps smoothing parameter
+ * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 @SerialVersionUID(1504221556573977764L)
-class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10)
-  (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10
+  )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   require(p > 0, s"Normalize: $p-norm not supported, norm number must be bigger than zero")
 
   // buffer
@@ -41,11 +46,15 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10)
   var inputBuffer = Tensor[T]()
 
   val cross = Tensor[T]()
+  val crossBuffer = Tensor[T]()
   val indices = Tensor[T]()
 
+  var cmul: CMul[T] = null
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() <= 2, s"Normalize: only 1d layer supported, " +
-      s"but got input dim ${input.dim()}")
+    require(input.dim() <= 2 || input.dim() == 4, s"Normalize: only 1d , 2d" +
+      s"or 4d layer supported, " +
+      s"but got input dim ${ input.dim() }")
     inputBuffer = if (input.dim() == 1) input.view(1, input.nElement()) else input
     output.resizeAs(inputBuffer)
 
@@ -62,24 +71,30 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10)
       normp.sum(buffer, 2).add(ev.fromType(eps))
       norm.resizeAs(normp).pow(normp, ev.fromType(1.0 / p))
     }
-    output.cdiv(inputBuffer, norm.view(norm.nElement(), 1).expandAs(inputBuffer))
+    if (norm.dim() <= 2) {
+      output.cdiv(inputBuffer, norm.view(norm.nElement(), 1).expandAs(inputBuffer))
+    } else if (norm.dim() == 4) {
+      output.cdiv(inputBuffer, norm.view(norm.size()).expandAs(inputBuffer))
+    }
 
     output = output.view(input.size())
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.dim() <= 2, s"Normalize: only 1d layer supported, " +
-      s"but got input dim ${input.dim()}")
-    require(gradOutput.dim() <= 2, s"Normalize: only 1d layer supported, " +
-      s"but got gradOutput dim ${gradOutput.dim()}")
+    require(input.dim() <= 2 || input.dim() == 4, s"Normalize: only 1d, 2d," +
+      s"or 4d layer supported, " +
+      s"but got input dim ${ input.dim() }")
+    require(gradOutput.dim() <= 2 || gradOutput.dim() == 4,
+      s"Normalize: only 1d or 4d layer supported, " +
+        s"but got gradOutput dim ${ gradOutput.dim() }")
 
     inputBuffer = if (input.dim() == 1) input.view(1, input.nElement()) else input
     val n = inputBuffer.size(1)
     val d = inputBuffer.size(2)
 
     // compute diagonal term with gradOutput
-    gradInput.resize(n, d)
+    gradInput.resizeAs(inputBuffer)
     if (p == Double.MaxValue) {
       gradInput.cmul(norm.view(n, 1, 1).expand(Array(n, d, 1)), gradOutput)
       buffer.resizeAs(inputBuffer).zero()
@@ -88,7 +103,12 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10)
       cross.cdiv(norm)
       buffer.scatter(2, indices, cross)
     } else {
-      gradInput.cmul(normp.view(n, 1).expand(Array(n, d)), gradOutput)
+      if (input.dim() <= 2) {
+        gradInput.cmul(normp.view(n, 1).expand(Array(n, d)), gradOutput)
+      } else {
+        gradInput.cmul(normp.view(n, 1, inputBuffer.size(3), inputBuffer.size(4))
+          .expandAs(inputBuffer), gradOutput)
+      }
 
       if (p%2 != 0) {
         if (p < 2) {
@@ -106,7 +126,8 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10)
     buffer2.resizeAs(inputBuffer).cmul(inputBuffer, gradOutput)
     cross.resize(n, 1).sum(buffer2, 2)
 
-    buffer.cmul(cross.clone().expandAs(buffer))
+    crossBuffer.resizeAs(cross).copy(cross)
+    buffer.cmul(crossBuffer.expandAs(buffer))
 
     gradInput.add(ev.fromType(-1), buffer)
 
@@ -134,6 +155,7 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10)
     buffer2.set()
     inputBuffer.set()
     cross.set()
+    crossBuffer.set()
     indices.set()
     this
   }
