@@ -179,38 +179,28 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
   private def buildCaffeTypedGraph(layers : Seq[LayerParameter]) : DirectedGraph[LayerParameter] = {
       val dummySource = new Node[LayerParameter](null)
-      val inDegrees = new mutable.HashMap[Node[LayerParameter], Int]()
       val layersMap = new mutable.HashMap[String, Node[LayerParameter]]()
       val top2LayerMap = new mutable.HashMap[String, String]()
-      val dependenciesMap = new mutable.HashMap[String, mutable.HashSet[String]]()
       layers.foreach(layer => {
         val name = layer.getName
         val node = new Node[LayerParameter](layer)
-        inDegrees(node) = 0
         layersMap(name) = node
-        dependenciesMap(name) = new mutable.HashSet[String]()
-      })
-      layers.foreach(layer => {
-        val name = layer.getName
-        val node = layersMap.getOrElse(name, null)
+
         val dependencies = layer.getBottomList.asScala
         dependencies.foreach(dependency => {
-          val dependentNode = layersMap.get(top2LayerMap(dependency))
+          val dependentNode = layersMap(top2LayerMap(dependency))
           dependentNode -> node
-          if(!dependenciesMap.get(name).contains(dependency)) {
-            dependenciesMap.getOrElse(name, new mutable.HashSet[String]()).add(dependency)
-            inDegrees(node) = inDegrees.getOrElse(node, 0) + 1
-          }
         })
+
         val outputs = layer.getTopList.asScala
         outputs.foreach(output => {
           top2LayerMap(output) = name
         })
+
       })
-      inDegrees.keySet.foreach(node => {
-        if (inDegrees(node) == 0) {
-          dummySource -> node
-        }
+      val zeroInDegreeNodes = layersMap.values.filter( p => {p.prevNodes.size == 0})
+       zeroInDegreeNodes.foreach(zeroInDegreeNode => {
+        dummySource -> zeroInDegreeNode
       })
       return  new DirectedGraph(dummySource)
   }
