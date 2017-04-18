@@ -96,7 +96,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
       val tensorBuffer = new Array[(Activity, Activity)](parallelism)
       while (b < parallelism) {
-        val offset = b * stackSize + math.min(b, extraSize)
+        val offset = b * stackSize + math.min(b, extraSize) + 1
         val length = stackSize + (if (b < extraSize) 1 else 0)
         tensorBuffer(b) = batch.toActivity(offset, length)
         b += 1
@@ -213,7 +213,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
       val result = Engine.default.invokeAndWait(
         (0 until parallelism).map(b =>
           () => {
-            val offset = b * stackSize + math.min(b, extraSize)
+            val offset = b * stackSize + math.min(b, extraSize) + 1
             val length = stackSize + (if (b < extraSize) 1 else 0)
             val (input, target) = batch.toActivity(offset, length)
             val output = workingModels(b).forward(input)

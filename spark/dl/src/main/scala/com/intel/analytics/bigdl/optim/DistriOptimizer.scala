@@ -582,7 +582,7 @@ object DistriOptimizer {
         Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
-              val offset = b * stackSize + math.min(b, extraSize)
+              val offset = b * stackSize + math.min(b, extraSize) + 1
               val length = stackSize + (if (b < extraSize) 1 else 0)
               val (input, target) = batch.toActivity(offset, length)
               val output = workingModels(b).forward(input)

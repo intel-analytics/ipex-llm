@@ -84,7 +84,9 @@ trait MiniBatch[T] {
    * @tparam T numeric type
    * @return (input, target)
    */
-  def toActivity[T](): (Activity, Activity)
+  def toActivity[T](): (Activity, Activity) = {
+    toActivity(1, size())
+  }
 }
 
 class TensorMiniBatch[T](
@@ -101,12 +103,7 @@ class TensorMiniBatch[T](
   }
 
   override def toActivity[T](offset: Int, length: Int): (Activity, Activity) = {
-    (data.narrow(1, offset, length),
-        labels.narrow(1, offset, length))
-  }
-
-  override def toActivity[T](): (Activity, Activity) = {
-    (data, labels)
+    (data.narrow(1, offset, length), labels.narrow(1, offset, length))
   }
 }
 
@@ -162,27 +159,6 @@ class ArrayTensorMiniBatch[T](
       (newData, newLabel)
     }
   }
-
-  override def toActivity[T](): (Activity, Activity) = {
-    if (data.length == 1 && labels.length == 1) {
-      (data(0), labels(0))
-    } else if (data.length > 1 && labels.length == 1) {
-      val newData = T()
-      data.foreach(v => newData.insert(v))
-      (newData, labels(0))
-    } else if (data.length == 1 && labels.length > 1) {
-      val newLabel = T()
-      labels.foreach(v => newLabel.insert(v))
-      (data(0), newLabel)
-    } else {
-      val newData = T()
-      val newLabel = T()
-      data.foreach(v => newData.insert(v))
-      labels.foreach(v => newLabel.insert(v))
-      (newData, newLabel)
-    }
-  }
-
 }
 
 object MiniBatch {
