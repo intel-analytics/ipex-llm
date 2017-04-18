@@ -25,12 +25,12 @@ import scala.reflect.ClassTag
 
 /**
  * a bilinear transformation with sparse inputs,
-  * The input tensor given in forward(input) is a table containing both inputs x_1 and x_2,
-  * which are tensors of size N x inputDimension1 and N x inputDimension2, respectively.
+ * The input tensor given in forward(input) is a table containing both inputs x_1 and x_2,
+ * which are tensors of size N x inputDimension1 and N x inputDimension2, respectively.
  *
- * @param inputSize1
- * @param inputSize2
- * @param outputSize
+ * @param inputSize1 dimension of input x_1
+ * @param inputSize2 dimension of input x_2
+ * @param outputSize output dimension
  * @param biasRes  The layer can be trained without biases by setting bias = false. otherwise true
  */
 

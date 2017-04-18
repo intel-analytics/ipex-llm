@@ -25,27 +25,41 @@ import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
 
+/**
+ * A method defined to evaluate the model.
+ * This trait can be extended by user-defined method. Such
+ * as Top1Accuracy
+ */
 trait ValidationMethod[T] extends Serializable {
   def apply(output: Activity, target: Activity): ValidationResult
 
+  // return the name of this method
   protected def format(): String
 
+  // return the name of this method
   override def toString(): String = format()
 
+  // deep clone the object
   override def clone(): ValidationMethod[T] = SerializationUtils.clone(this)
 }
 
+/**
+ * A result that calculate the numeric value of a validation method.
+ * User-defined valuation results must override the + operation and result() method.
+ * It is executed over the samples in each batch.
+ */
 trait ValidationResult extends Serializable {
 
+  // return the calculation results over all the samples in the batch
   def result(): (Float, Int) // (Result, TotalNum)
 
   // scalastyle:off methodName
   def +(other: ValidationResult): ValidationResult
 
-  // scalastyle:on methodName
-
+  // return the name of this trait
   protected def format(): String
 
+  // return the name of this trait
   override def toString(): String = format()
 }
 
@@ -177,10 +191,16 @@ class Top5Accuracy[T] extends ValidationMethod[T] {
   override def format(): String = "Top5Accuracy"
 }
 
+/**
+ * Use loss as a validation result
+ *
+ * @param loss loss calculated by forward function
+ * @param count recording the times of calculating loss
+ */
 class LossResult(private var loss: Float, private var count: Int)
   extends ValidationResult {
 
-  override def result(): (Float, Int) = (loss.toFloat, count)
+  override def result(): (Float, Int) = (loss.toFloat / count, count)
 
   // scalastyle:off methodName
   override def +(other: ValidationResult): ValidationResult = {
@@ -219,6 +239,12 @@ class LossResult(private var loss: Float, private var count: Int)
   }
 }
 
+/**
+ * This evaluation method is calculate loss of output with respect to target
+ *
+ * @param criterion criterion method for evaluation
+ * The default criterion is [[ClassNLLCriterion]]
+ */
 class Loss[@specialized(Float, Double)T: ClassTag](
  var criterion: Criterion[T] = null)
 (implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {

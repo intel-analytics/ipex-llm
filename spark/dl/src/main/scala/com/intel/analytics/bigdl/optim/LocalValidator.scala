@@ -26,6 +26,14 @@ object LocalValidator {
   val logger = Logger.getLogger(getClass)
 }
 
+/**
+ * Validate a model on a single machine
+ * Use given dataset with certain validation methods such as [[Top1Accuracy]]
+ * as an argument of its `test` method
+ *
+ * @param model the model to be validated
+ * @param dataSet the dataset used to validate a model
+ */
 class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[MiniBatch[T]])
   extends Validator[T, MiniBatch[T]](model, dataSet) {
 

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.optim.Trigger
-import com.intel.analytics.bigdl.utils.{Engine}
+import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -32,6 +32,8 @@ import org.apache.spark.bigdl.api.python.BigDLSerDe
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+
+import scala.util.Random
 
 
 class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -85,7 +87,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val data = sc.parallelize(0 to 100).map {i =>
       Sample(
-        Range(0, 100).toList.map(_.toDouble).asJava.asInstanceOf[JList[Any]],
+        Range(0, 100).toList.map(_ => Random.nextDouble()).asJava.asInstanceOf[JList[Any]],
         util.Arrays.asList(i % 2 + 1.0d),
         featuresShape,
         labelShape,
@@ -138,6 +140,24 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val trainedModel = optimizer.optimize()
 
     val lrResult = pp.summaryReadScalar(trainSummary, "LearningRate")
+
+    // add modelPredictRDD unit test
+    val preRDD = pp.modelPredictRDD(trainedModel, data.toJavaRDD)
+    val preResult = preRDD.collect()
+
+    val localData = data.collect()
+    pp.toTensor(preResult.get(0)) should be
+    (trainedModel.forward(pp.toSample(localData(0)).feature()))
+
+    pp.toTensor(preResult.get(25)) should be
+    (trainedModel.forward(pp.toSample(localData(25)).feature()))
+
+    pp.toTensor(preResult.get(55)) should be
+    (trainedModel.forward(pp.toSample(localData(55)).feature()))
+
+    pp.toTensor(preResult.get(75)) should be
+    (trainedModel.forward(pp.toSample(localData(75)).feature()))
+
 
     val resultRDD = pp.predict(trainedModel, data.map(pp.toSample(_)))
     val result = resultRDD.take(5)

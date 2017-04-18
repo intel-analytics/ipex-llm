@@ -100,18 +100,12 @@ object File {
    * Load file from HDFS
    *
    * @param fileName
-   * @param localFilePath
    */
-  def loadFromHdfs[T](fileName: String, localFilePath: String = null): T = {
-    val src: Path = new Path(fileName)
-    val fs = src.getFileSystem(new Configuration())
-    val in = fs.open(src)
-    val byteArrayOut = new ByteArrayOutputStream()
-    IOUtils.copyBytes(in, byteArrayOut, 1024, true)
-    val objFile = new ObjectInputStream(new ByteArrayInputStream(byteArrayOut.toByteArray))
+  def loadFromHdfs[T](fileName: String): T = {
+    val byteArrayOut = readHdfsByte(fileName)
+    val objFile = new ObjectInputStream(new ByteArrayInputStream(byteArrayOut))
     objFile.readObject().asInstanceOf[T]
   }
-
 
   /**
    * Load a scala object from a local/hdfs path.
@@ -126,5 +120,19 @@ object File {
       objFile.readObject().asInstanceOf[T]
     }
     res.asInstanceOf[T]
+  }
+
+  /**
+   * load binary file from HDFS
+   * @param fileName
+   * @return
+   */
+  def readHdfsByte(fileName: String): Array[Byte] = {
+    val src: Path = new Path(fileName)
+    val fs = src.getFileSystem(new Configuration())
+    val in = fs.open(src)
+    val byteArrayOut = new ByteArrayOutputStream()
+    IOUtils.copyBytes(in, byteArrayOut, 1024, true)
+    byteArrayOut.toByteArray
   }
 }

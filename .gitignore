@@ -26,3 +26,4 @@ project/plugins/project/
 nohup.out
 model*.[0-9]*
 state*.[0-9]*
+spark/dl/dependency-reduced-pom.xml

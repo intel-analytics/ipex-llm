@@ -172,6 +172,20 @@ class Model(JavaValue):
 class Linear(Model):
 
     '''
+    The [[Linear]] module applies a linear transformation to the input data,
+    i.e. `y = Wx + b`. The input given in `forward(input)` must be either
+    a vector (1D tensor) or matrix (2D tensor). If the input is a vector, it must
+    have the size of `inputSize`. If it is a matrix, then each row is assumed to be
+    an input sample of given batch (the number of rows means the batch size and
+    the number of columns should be equal to the `inputSize`).
+
+    :param input_size the size the each input sample
+    :param output_size the size of the module output of each sample
+    :param init_method two initialized methods are supported here, which are [[Default]]
+                      and [[Xavier]], where [[Xavier]] set bias to zero here. For more
+                      detailed information about `initMethod`, please refer to
+                      [[InitializationMethod]]
+
     >>> linear = Linear(100, 10, "Xavier")
     creating: createLinear
     '''
@@ -216,6 +230,9 @@ class Tanh(Model):
 class Echo(Model):
 
     '''
+    This module is for debug purpose, which can print activation and gradient in your model
+    topology
+
     >>> echo = Echo()
     creating: createEcho
     '''
@@ -367,9 +384,11 @@ class Select(Model):
     def __init__(self, dim, index, bigdl_type="float"):
         super(Select, self).__init__(None, bigdl_type, dim, index)
 
-
 class Recurrent(Model):
     '''
+    Recurrent module is a container of rnn cells
+    Different types of rnn cells can be added using add() function
+
     >>> recurrent = Recurrent()
     creating: createRecurrent
     '''
@@ -377,6 +396,10 @@ class Recurrent(Model):
     def __init__(self, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type)
 
+    '''
+    Add a recurrent kernel such as RnnCell, LSTM, GRU, etc.
+    to be a recurrent module
+    '''
     def add(self, model):
         self.value.add(model.value)
         return self
@@ -384,39 +407,94 @@ class Recurrent(Model):
 
 class LSTM(Model):
     '''
-    >>> lstm = LSTM(4, 3)
+    Long Short Term Memory architecture.
+    Ref.
+    A.: http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
+    B. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
+    C. http://arxiv.org/pdf/1503.04069v1.pdf
+    D. https://github.com/wojzaremba/lstm
+    E. https://github.com/Element-Research/rnn/blob/master/FastLSTM.lua
+
+    :param inputSize: the size of each input vector
+    :param hiddenSize: Hidden unit size in the LSTM
+    :param  p: is used for [[Dropout]] probability. For more details about
+            RNN dropouts, please refer to
+            [RnnDrop: A Novel Dropout for RNNs in ASR]
+            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+            (https://arxiv.org/pdf/1512.05287.pdf)
+
+    >>> lstm = LSTM(4, 3, 0.5)
     creating: createLSTM
     '''
 
-    def __init__(self, input_size, hidden_size, bigdl_type="float"):
-        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
+        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
 class LSTMPeephole(Model):
     '''
-    >>> lstm = LSTMPeephole(4, 3)
+    Long Short Term Memory architecture with peephole.
+    Ref. A.: http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
+    B. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
+    C. http://arxiv.org/pdf/1503.04069v1.pdf
+    D. https://github.com/wojzaremba/lstm
+    E. https://github.com/Element-Research/rnn/blob/master/LSTM.lua
+
+    :param input_size: the size of each input vector
+    :param hidden_size: Hidden unit size in the LSTM
+    :param  p: is used for [[Dropout]] probability. For more details about
+            RNN dropouts, please refer to
+            [RnnDrop: A Novel Dropout for RNNs in ASR]
+            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+            (https://arxiv.org/pdf/1512.05287.pdf)
+
+    >>> lstm = LSTMPeephole(4, 3, 0.5)
     creating: createLSTMPeephole
     '''
 
-    def __init__(self, input_size, hidden_size, bigdl_type="float"):
-        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
+        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
 class GRU(Model):
     '''
-    >>> gru = GRU(4, 3)
+    Gated Recurrent Units architecture.
+    The first input in sequence uses zero value for cell and hidden state
+
+    Ref.
+    http://www.wildml.com/2015/10/recurrent-neural-network-tutorial-part-4-implementing-a-grulstm-rnn-with-python-and-theano/
+    https://github.com/Element-Research/rnn/blob/master/GRU.lua
+
+    :param input_size: the size of each input vector
+    :param hidden_size: Hidden unit size in GRU
+    :param  p: is used for [[Dropout]] probability. For more details about
+            RNN dropouts, please refer to
+            [RnnDrop: A Novel Dropout for RNNs in ASR]
+            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+            (https://arxiv.org/pdf/1512.05287.pdf)
+
+    >>> gru = GRU(4, 3, 0.5)
     creating: createGRU
     '''
 
-    def __init__(self,  input_size, hidden_size, bigdl_type="float"):
-        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self,  input_size, hidden_size, p=0.0, bigdl_type="float"):
+        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
-class RNNCell(Model):
+class RnnCell(Model):
     '''
-    >>> reshape = RNNCell(4, 3, Tanh())
+    It is a simple RNN. User can pass an activation function to the RNN.
+
+    :param input_size: the size of each input vector
+    :param hidden_size: Hidden unit size in simple RNN
+    :param activation: activation function
+
+    >>> reshape = RnnCell(4, 3, Tanh())
     creating: createTanh
-    creating: createRNNCell
+    creating: createRnnCell
     '''
 
     def __init__(self,
@@ -424,11 +502,17 @@ class RNNCell(Model):
                  hidden_size,
                  activation,
                  bigdl_type="float"):
-        super(RNNCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation)
+        super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation)
 
 
 class TimeDistributed(Model):
     '''
+    This layer is intended to apply contained layer to each temporal time slice
+    of input tensor.
+
+    For instance, The TimeDistributed Layer can feed each time slice of input tensor
+    to the Linear layer.
+
     >>> td = TimeDistributed(Linear(2, 3))
     creating: createLinear
     creating: createTimeDistributed
@@ -512,6 +596,20 @@ class SpatialAveragePooling(Model):
 class SpatialBatchNormalization(Model):
 
     '''
+    This file implements Batch Normalization as described in the paper:
+    "Batch Normalization: Accelerating Deep Network Training by Reducing Internal Covariate Shift"
+    by Sergey Ioffe, Christian Szegedy
+    This implementation is useful for inputs coming from convolution layers.
+    For non-convolutional layers, see [[BatchNormalization]]
+    The operation implemented is:
+
+          ( x - mean(x) )
+    y = -------------------- * gamma + beta
+       standard-deviation(x)
+
+    where gamma and beta are learnable parameters.
+    The learning of gamma and beta is optional.
+
     >>> spatialBatchNormalization = SpatialBatchNormalization(1)
     creating: createSpatialBatchNormalization
     '''
@@ -532,6 +630,21 @@ class SpatialBatchNormalization(Model):
 class SpatialCrossMapLRN(Model):
 
     '''
+    Applies Spatial Local Response Normalization between different feature maps.
+    The operation implemented is:
+                                 x_f
+    y_f =  -------------------------------------------------
+            (k+(alpha/size)* sum_{l=l1 to l2} (x_l^2^))^beta^
+
+    where x_f is the input at spatial locations h,w (not shown for simplicity) and feature map f,
+    l1 corresponds to max(0,f-ceil(size/2)) and l2 to min(F, f-ceil(size/2) + size).
+    Here, F is the number of feature maps.
+    :param size:  the number of channels to sum over (for cross channel LRN) or the side length of
+                 the square region to sum over (for within channel LRN)
+    :param alpha:  the scaling parameter
+    :param beta:   the exponent
+    :param k: a constant
+
     >>> spatialCrossMapLRN = SpatialCrossMapLRN()
     creating: createSpatialCrossMapLRN
     '''
@@ -602,6 +715,8 @@ class View(Model):
 class Abs(Model):
 
     '''
+    an element-wise abs operation
+
     >>> abs = Abs()
     creating: createAbs
     '''
@@ -630,6 +745,11 @@ class Add(Model):
 class AddConstant(Model):
 
     '''
+    adding a constant
+
+    :param constant_scalar constant value
+    :param inplace Can optionally do its operation in-place without using extra state memory
+
     >>> addConstant = AddConstant(1e-5, True)
     creating: createAddConstant
     '''
@@ -683,6 +803,15 @@ class BatchNormalization(Model):
 class Bilinear(Model):
 
     '''
+    a bilinear transformation with sparse inputs,
+    The input tensor given in forward(input) is a table containing both inputs x_1 and x_2,
+    which are tensors of size N x inputDimension1 and N x inputDimension2, respectively.
+
+    :param input_size1 input dimension of x_1
+    :param input_size2 input dimension of x_2
+    :param output_size output dimension
+    :param bias_res whether use bias
+
     >>> bilinear = Bilinear(1, 1, 1, True)
     creating: createBilinear
     '''
@@ -784,6 +913,8 @@ class CDivTable(Model):
 class CMaxTable(Model):
 
     '''
+    Takes a table of Tensors and outputs the max of all of them.
+
     >>> cMaxTable = CMaxTable()
     creating: createCMaxTable
     '''
@@ -841,6 +972,8 @@ class CMulTable(Model):
 class CSubTable(Model):
 
     '''
+    Takes a table with two Tensor and returns the component-wise subtraction between them.
+
     >>> cSubTable = CSubTable()
     creating: createCSubTable
     '''
@@ -945,6 +1078,10 @@ class DotProduct(Model):
 class ELU(Model):
 
     '''
+    D-A Clevert, Thomas Unterthiner, Sepp Hochreiter
+    Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
+    [http://arxiv.org/pdf/1511.07289.pdf]
+
     >>> eLU = ELU(1e-5, True)
     creating: createELU
     '''
@@ -999,6 +1136,10 @@ class Exp(Model):
 class FlattenTable(Model):
 
     '''
+    This is a table layer which takes an arbitrarily deep table of Tensors
+    (potentially nested) as input and a table of Tensors without any nested
+    table will be produced
+
     >>> flattenTable = FlattenTable()
     creating: createFlattenTable
     '''
@@ -1011,6 +1152,15 @@ class FlattenTable(Model):
 class GradientReversal(Model):
 
     '''
+    It is a simple module preserves the input, but takes the
+    gradient from the subsequent layer, multiplies it by -lambda
+    and passes it to the preceding layer. This can be used to maximise
+    an objective function whilst using gradient descent, as described in
+     ["Domain-Adversarial Training of Neural Networks"
+     (http://arxiv.org/abs/1505.07818)]
+
+    :param lambda hyper-parameter lambda can be set dynamically during training
+
     >>> gradientReversal = GradientReversal(1e-5)
     creating: createGradientReversal
     '''
@@ -1025,6 +1175,15 @@ class GradientReversal(Model):
 class HardShrink(Model):
 
     '''
+    This is a transfer layer which applies the hard shrinkage function
+    element-wise to the input Tensor. The parameter lambda is set to 0.5
+    by default
+            x, if x >  lambda
+    f(x) =  x, if x < -lambda
+            0, otherwise
+
+   :param the_lambda: a threshold value whose default value is 0.5
+
     >>> hardShrink = HardShrink(1e-5)
     creating: createHardShrink
     '''
@@ -1039,6 +1198,14 @@ class HardShrink(Model):
 class HardTanh(Model):
 
     '''
+    Applies HardTanh to each element of input, HardTanh is defined:
+             |  maxValue, if x > maxValue
+      f(x) = |  minValue, if x < minValue
+             |  x, otherwise
+    :param min_value minValue in f(x), default is -1.
+    :param max_value maxValue in f(x), default is 1.
+    :param inplace whether enable inplace model.
+
     >>> hardTanh = HardTanh(1e-5, 1e5, True)
     creating: createHardTanh
     '''
@@ -1057,6 +1224,10 @@ class HardTanh(Model):
 class Index(Model):
 
     '''
+    Applies the Tensor index operation along the given dimension.
+
+    :param dimension the dimension to be indexed
+
     >>> index = Index(1)
     creating: createIndex
     '''
@@ -1071,6 +1242,21 @@ class Index(Model):
 class InferReshape(Model):
 
     '''
+    Reshape with the support of infered size,
+    Positive numbers are used directly, setting the corresponding dimension of the output tensor.
+    In addition, two special values are accepted:
+    0 means "copy the respective dimension of the input".
+    i.e., if the input has 2 as its 1st dimension,
+    the output will have 2 as its 1st dimension as well
+    -1 stands for "infer this from the other dimensions"
+    this dimension is calculated to keep the overall element count the same as in the input.
+    At most one -1 can be used in a reshape operation.
+    For example, (4, 5, 6, 7) -> InferReshape (4, 0, 3, -1) -> (4, 5, 3, 14)
+    with 1st and 3rd dim same as given size, with 2nd dim same as input, and the infered dim is 14
+
+    :param size      the target tensor size
+    :param batch_mode whether in batch mode
+
     >>> inferReshape = InferReshape([4, 0, 3, -1], False)
     creating: createInferReshape
     '''
@@ -1116,6 +1302,7 @@ class JoinTable(Model):
 class L1Cost(Model):
 
     '''
+    compute L1 norm for input, and sign of input
     >>> l1Cost = L1Cost()
     creating: createL1Cost
     '''
@@ -1192,6 +1379,9 @@ class Log(Model):
 class LogSigmoid(Model):
 
     '''
+    This class is a transform layer corresponding to the sigmoid function:
+    f(x) = Log(1 / (1 + e ^^ (-x)))
+
     >>> logSigmoid = LogSigmoid()
     creating: createLogSigmoid
     '''
@@ -1301,6 +1491,11 @@ class MaskedSelect(Model):
 class Max(Model):
 
     '''
+    Applies a max operation over dimension `dim`
+
+   :param dim max along this dimension
+   :param num_input_dims Optional. If in a batch model, set to the inputDims.
+
     >>> max = Max(1)
     creating: createMax
     '''
@@ -1374,16 +1569,21 @@ class MixtureTable(Model):
 
     >>> mixtureTable = MixtureTable()
     creating: createMixtureTable
+    >>> mixtureTable = MixtureTable(10)
+    creating: createMixtureTable
     '''
 
     def __init__(self,
+                 dim=INTMAX,
                  bigdl_type="float"):
-        super(MixtureTable, self).__init__(None, bigdl_type)
+        super(MixtureTable, self).__init__(None, bigdl_type, dim)
 
 
 class Mul(Model):
 
     '''
+    Multiply a single scalar factor to the incoming data
+
     >>> mul = Mul()
     creating: createMul
     '''
@@ -1396,6 +1596,12 @@ class Mul(Model):
 class MulConstant(Model):
 
     '''
+    Multiplies input Tensor by a (non-learnable) scalar constant.
+    This module is sometimes useful for debugging purposes.
+
+    :param scalar scalar constant
+    :param inplace Can optionally do its operation in-place without using extra state memory
+
     >>> mulConstant = MulConstant(2.5)
     creating: createMulConstant
     '''
@@ -1476,6 +1682,17 @@ class Normalize(Model):
 class PReLU(Model):
 
     '''
+    Applies parametric ReLU, which parameter varies the slope of the negative part.
+
+    PReLU: f(x) = max(0, x) + a * min(0, x)
+
+    nOutputPlane's default value is 0, that means using PReLU in shared version and has
+    only one parameters.
+
+    Notice: Please don't use weight decay on this.
+
+    :param n_output_plane input map number. Default is 0.
+
     >>> pReLU = PReLU(1)
     creating: createPReLU
     '''
@@ -1674,6 +1891,21 @@ class Replicate(Model):
 class RoiPooling(Model):
 
     '''
+    Region of interest pooling
+    The RoIPooling uses max pooling to convert the features inside any valid region of interest
+    into a small feature map with a fixed spatial extent of pooledH * pooledW (e.g., 7 * 7)
+    an RoI is a rectangular window into a conv feature map.
+    Each RoI is defined by a four-tuple (x1, y1, x2, y2) that specifies its
+    top-left corner (x1, y1) and its bottom-right corner (x2, y2).
+    RoI max pooling works by dividing the h * w RoI window into an pooledH * pooledW grid of
+    sub-windows of approximate size h/H * w/W and then max-pooling the values in each sub-window
+    into the corresponding output grid cell.
+    Pooling is applied independently to each feature map channel
+
+    :param pooled_w:      spatial extent in width
+    :param pooled_h:      spatial extent in height
+    :param spatial_scale spatial scale
+
     >>> roiPooling = RoiPooling(1, 1, 1e-5)
     creating: createRoiPooling
     '''
@@ -1713,6 +1945,14 @@ class Scale(Model):
 class SelectTable(Model):
 
     '''
+    Creates a module that takes a table as input and outputs the element at index `index`
+    (positive or negative). This can be either a table or a Tensor.
+    The gradients of the non-index elements are zeroed Tensors of the same size.
+    This is true regardless of the depth of the encapsulated Tensor as the function used
+    internally to do so is recursive.
+
+    :param dimension the dimension to be selected
+
     >>> selectTable = SelectTable(1)
     creating: createSelectTable
     '''
@@ -1794,6 +2034,15 @@ class SoftPlus(Model):
 class SoftShrink(Model):
 
     '''
+    Apply the soft shrinkage function element-wise to the input Tensor
+
+    SoftShrinkage operator:
+           | x - lambda, if x >  lambda
+    f(x) = | x + lambda, if x < -lambda
+           | 0, otherwise
+
+    :param the_lambda lambda, default is 0.5
+
     >>> softShrink = SoftShrink(1e-5)
     creating: createSoftShrink
     '''
@@ -1808,6 +2057,10 @@ class SoftShrink(Model):
 class SoftSign(Model):
 
     '''
+    Apply SoftSign function to an n-dimensional input Tensor.
+
+    SoftSign function: f_i(x) = x_i / (1+|x_i|)
+
     >>> softSign = SoftSign()
     creating: createSoftSign
     '''
@@ -1978,6 +2231,60 @@ class SpatialShareConvolution(Model):
                                                       init_method)
 
 
+class VolumetricConvolution(Model):
+
+    '''
+    Applies a 3D convolution over an input image composed of several input planes. The input tensor
+    in forward(input) is expected to be a 4D tensor (nInputPlane x time x height x width).
+    :param n_input_plane The number of expected input planes in the image given into forward()
+    :param n_output_plane The number of output planes the convolution layer will produce.
+    :param k_t The kernel size of the convolution in time
+    :param k_w The kernel width of the convolution
+    :param k_h The kernel height of the convolution
+    :param d_t The step of the convolution in the time dimension. Default is 1
+    :param d_w The step of the convolution in the width dimension. Default is 1
+    :param d_h The step of the convolution in the height dimension. Default is 1
+    :param pad_t Additional zeros added to the input plane data on both sides of time axis.
+    Default is 0. (kT-1)/2 is often used here.
+    :param pad_w The additional zeros added per width to the input planes.
+    :param pad_h The additional zeros added per height to the input planes.
+    :param with_bias whether with bias
+    :param init_method Init method, Default, Xavier, Bilinear.
+
+    >>> volumetricConvolution = VolumetricConvolution(6, 12, 5, 5, 5, 1, 1, 1)
+    creating: createVolumetricConvolution
+    '''
+
+    def __init__(self,
+                 n_input_plane,
+                 n_output_plane,
+                 k_t,
+                 k_w,
+                 k_h,
+                 d_t=1,
+                 d_w=1,
+                 d_h=1,
+                 pad_t=0,
+                 pad_w=0,
+                 pad_h=0,
+                 with_bias=True,
+                 init_method="default",
+                 bigdl_type="float"):
+        super(VolumetricConvolution, self).__init__(None, bigdl_type,
+                                                    n_input_plane,
+                                                    n_output_plane,
+                                                    k_t,
+                                                    k_w,
+                                                    k_h,
+                                                    d_t,
+                                                    d_w,
+                                                    d_h,
+                                                    pad_t,
+                                                    pad_w,
+                                                    pad_h,
+                                                    with_bias,
+                                                    init_method)
+
 class SpatialZeroPadding(Model):
 
     '''
@@ -2038,6 +2345,8 @@ class SplitTable(Model):
 class Sqrt(Model):
 
     '''
+    Apply an element-wise sqrt operation.
+
     >>> sqrt = Sqrt()
     creating: createSqrt
     '''
@@ -2063,6 +2372,12 @@ class Square(Model):
 class Squeeze(Model):
 
     '''
+    Delete singleton all dimensions or a specific dim.
+
+    :param dim Optional. The dimension to be delete. Default: delete all dimensions.
+    :param num_input_dims Optional. If in a batch model, set to the inputDims.
+
+
     >>> squeeze = Squeeze(1)
     creating: createSqueeze
     '''
@@ -2079,6 +2394,20 @@ class Squeeze(Model):
 class Sum(Model):
 
     '''
+    It is a simple layer which applies a sum operation over the given dimension.
+    When nInputDims is provided, the input will be considered as a batches.
+    Then the sum operation will be applied in (dimension + 1)
+    The input to this layer is expected to be a tensor, or a batch of tensors;
+    when using mini-batch, a batch of sample tensors will be passed to the layer and
+    the user need to specify the number of dimensions of each sample tensor in the
+    batch using `nInputDims`.
+
+    :param dimension the dimension to be applied sum operation
+    :param n_input_dims specify the number of dimensions that this module will receive
+                      If it is more than the dimension of input tensors, the first dimension
+                      would be considered as batch size
+    :param size_average default is false, if it is true, it will return the mean instead
+
     >>> sum = Sum(1, 1, True)
     creating: createSum
     '''
@@ -2097,6 +2426,10 @@ class Sum(Model):
 class TanhShrink(Model):
 
     '''
+    A simple layer for each element of the input tensor, do the following operation
+    during the forward process:
+    [f(x) = tanh(x) - 1]
+
     >>> tanhShrink = TanhShrink()
     creating: createTanhShrink
     '''
@@ -2163,10 +2496,12 @@ class Reshape(Model):
 
     >>> reshape = Reshape([1, 28, 28])
     creating: createReshape
+    >>> reshape = Reshape([1, 28, 28], False)
+    creating: createReshape
     '''
 
-    def __init__(self, size, bigdl_type="float"):
-        super(Reshape, self).__init__(None, bigdl_type, size)
+    def __init__(self, size, batch_mode=None, bigdl_type="float"):
+        super(Reshape, self).__init__(None, bigdl_type, size, batch_mode)
 
 
 class BiRecurrent(Model):
@@ -2367,6 +2702,29 @@ class SpatialDivisiveNormalization(Model):
                                                            threshold,
                                                            thresval)
 
+class Graph(Model):
+    '''
+    A graph container. Each node can have multiple inputs. The output of the node should be a
+    tensor. The output tensor can be connected to multiple nodes. So the module in each node can
+    have a tensor or table input, and should have a tensor output.
+    
+    The graph container can have multiple inputs and multiple outputs. If there's one input, 
+    the input data fed to the graph module should be a tensor. If there're multiple inputs, 
+    the input data fed to the graph module should be a table, which is actually an sequence of 
+    tensor. The order of the input tensors should be same with the order of the input nodes. 
+    This is also applied to the gradient from the module in the back propagation.
+    
+    If there's one output, the module output is a tensor. If there're multiple outputs, the module
+    output is a table, which is actually an sequence of tensor. The order of the output tensors is
+    same with the order of the output modules. This is also applied to the gradient passed to the
+    module in the back propagation.
+    
+    All inputs should be able to connect to outputs through some paths in the graph.
+    It is allowed that some successors of the inputs node are not connect to outputs.
+    If so, these nodes will be excluded in the computation.
+    '''
+    def __init__(self):
+        raise Exception('Graph model is not supported in python yet')
 
 class SpatialSubtractiveNormalization(Model):
     '''

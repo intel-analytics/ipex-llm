@@ -19,10 +19,12 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.scalatest.{FlatSpec, Matchers}
 
-@com.intel.analytics.bigdl.tags.Parallel
+import scala.collection.mutable.ArrayBuffer
+
+@com.intel.analytics.bigdl.tags.Serial
 class RecurrentSpec extends FlatSpec with Matchers {
 
   "A Recurrent Language Model Module " should "converge" in {
@@ -171,5 +173,66 @@ class RecurrentSpec extends FlatSpec with Matchers {
     println("gradient check for weights")
     val gradCheck = new GradientCheckerRNN(1e-2, 1)
     val checkFlag = gradCheck.checkLayer(model, input, labels)
+  }
+
+  "Recurrent dropout" should "work correclty" in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val bpttTruncate = 3
+    val seqLength = 5
+    val seed = 1
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](Array(1, seqLength, inputSize))
+    for (i <- 1 to seqLength) {
+      val rdmInput = 3
+      input.setValue(1, i, rdmInput, 1.0)
+    }
+
+    println(input)
+    val gru = GRU[Double](inputSize, hiddenSize, 0.2)
+    val model = Recurrent[Double](hiddenSize).add(gru)
+
+    val field = model.getClass.getDeclaredField("cells")
+    field.setAccessible(true)
+    val cells = field.get(model).asInstanceOf[ArrayBuffer[Cell[Double]]]
+
+    val dropouts = gru.cell.asInstanceOf[Container[_, _, Double]].findModules("Dropout")
+    dropouts.size should be (6)
+
+    val gruOutput = gru.forward(T(
+      Tensor[Double](Array(1, inputSize)),
+      Tensor[Double](Array(1, hiddenSize))
+      ))
+
+    val output = model.forward(input)
+    val noises = dropouts.map(d => d.asInstanceOf[Dropout[Double]].noise.clone())
+    noises(0) should not be noises(1)
+
+    for (i <- dropouts.indices) {
+      cells.foreach(c => {
+        val noise = c.cell.asInstanceOf[Container[_, _, Double]]
+          .findModules("Dropout")(i)
+          .asInstanceOf[Dropout[Double]]
+          .noise
+        noise should be(noises(i))
+      })
+    }
+
+
+    model.forward(input)
+
+    var flag = true
+    for (i <- dropouts.indices) {
+      cells.foreach(c => {
+        val newNoises = c.cell.asInstanceOf[Container[_, _, Double]]
+          .findModules("Dropout")
+        val noise = newNoises(i).asInstanceOf[Dropout[Double]].noise
+        flag = flag && (noise == noises(i))
+      })
+    }
+
+    flag should be (false)
   }
 }

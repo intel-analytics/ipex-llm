@@ -28,7 +28,7 @@ import org.tensorflow.util.Event
  * @param logDir
  * @param flushMillis
  */
-private[bigdl] class EventWriter(logDir: String, flushMillis: Int = 10000) extends Runnable {
+private[bigdl] class EventWriter(logDir: String, flushMillis: Int = 1000) extends Runnable {
   private val eventQueue = new LinkedBlockingDeque[Event]()
   private val outputFile = new File(logDir +
     s"/bigdl.tfevents.${(System.currentTimeMillis() / 1e3).toInt}" +

@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.bigdl.integration
 
+import java.nio.file.{Files, Paths}
+
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.utils.File
@@ -24,9 +26,16 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 @com.intel.analytics.bigdl.tags.Integration
 class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
-    val hdfsHost = System.getProperty("hdfsHost")
-    val hdfsPort = System.getProperty("hdfsPort")
-    val hdfs = s"hdfs://$hdfsHost:$hdfsPort"
+    val hdfs = System.getProperty("hdfsMaster")
+    val mnistFolder = System.getProperty("mnist")
+
+  private def processPath(path: String): String = {
+    if (path.contains(":")) {
+      path.substring(1)
+    } else {
+      path
+    }
+  }
 
   "save and load model from hdfs" should "be correct" in {
     val model = LeNet5(10)
@@ -40,5 +49,16 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
     hdfsModel should be (model)
     hdfsModel should be (localModel)
+  }
+
+  "load minist from hdfs" should "be correct" in {
+    val folder = mnistFolder + "/t10k-images-idx3-ubyte"
+    val resource = getClass().getClassLoader().getResource("mnist")
+
+    val hdfsData = File.readHdfsByte(folder)
+    val localData = Files.readAllBytes(
+      Paths.get(processPath(resource.getPath()), "/t10k-images.idx3-ubyte"))
+
+    hdfsData should be (localData)
   }
 }

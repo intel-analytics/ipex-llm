@@ -30,11 +30,19 @@ import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
-import java.lang.Integer
+import java.lang.{Integer, Boolean => JBoolean}
 import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect.ClassTag
 
+/**
+ * [[com.intel.analytics.bigdl.dataset.Sample]] for python.
+ * @param features features
+ * @param label labels
+ * @param featuresShape feature size
+ * @param labelShape label size
+ * @param bigdlType bigdl numeric type
+ */
 case class Sample(features: JList[Any],
                   label: JList[Any],
                   featuresShape: JList[Int],
@@ -43,6 +51,12 @@ case class Sample(features: JList[Any],
 
 case class JTensor(storage: JList[Any], shape: JList[Int], bigdlType: String)
 
+/**
+ * [[ValidationResult]] for python
+ * @param result result
+ * @param totalNum total number
+ * @param method method name
+ */
 case class TestResult(val result: Float, totalNum: Int, val method: String)
 
 
@@ -65,6 +79,9 @@ object PythonBigDL {
   }
 }
 
+/**
+ * Implementation of Python API for BigDL
+ */
 class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
 
   private val typeName = {
@@ -169,7 +186,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     TimeDistributed[T](layer)
   }
 
-  def createRNNCell(inputSize: Int,
+  def createRnnCell(inputSize: Int,
                     hiddenSize: Int,
                     activation: TensorModule[T]): RnnCell[T] = {
     RnnCell[T](inputSize, hiddenSize, activation)
@@ -180,19 +197,25 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     TimeDistributedCriterion[T](critrn, sizeAverage)
   }
 
-  def createGRU(inputSize: Int,
-                outputSize: Int): GRU[T] = {
-    GRU[T](inputSize, outputSize)
+  def createGRU(
+    inputSize: Int,
+    outputSize: Int,
+    p: Double = 0): GRU[T] = {
+    GRU[T](inputSize, outputSize, p)
   }
 
-  def createLSTM(inputSize: Int,
-                 hiddenSize: Int): LSTM[T] = {
-    LSTM[T](inputSize, hiddenSize)
+  def createLSTM(
+    inputSize: Int,
+    hiddenSize: Int,
+    p: Double = 0): LSTM[T] = {
+    LSTM[T](inputSize, hiddenSize, p)
   }
 
-  def createLSTMPeephole(inputSize: Int,
-    hiddenSize: Int): LSTMPeephole[T] = {
-    LSTMPeephole[T](inputSize, hiddenSize)
+  def createLSTMPeephole(
+    inputSize: Int,
+    hiddenSize: Int,
+    p: Double = 0): LSTMPeephole[T] = {
+    LSTMPeephole[T](inputSize, hiddenSize, p)
   }
 
   def createRecurrent(): Recurrent[T] = {
@@ -250,8 +273,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       PythonBigDL.getInitMethod(initMethod))
   }
 
-  def createReshape(size: JList[Int]): Reshape[T] = {
-    Reshape(size.asScala.toArray)
+  def createReshape(size: JList[Int], batchMode: JBoolean = null): Reshape[T] = {
+    val mappedBatchMode = batchMode match {
+      case JBoolean.TRUE => Some(true)
+      case JBoolean.FALSE => Some(false)
+      case _ => None
+    }
+    Reshape(size.asScala.toArray, mappedBatchMode)
   }
 
   def createConcat(dimension: Int): Concat[T] = {
@@ -294,7 +322,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Dropout[T](initP, inplace, scale)
   }
 
-  def createView(sizes: JList[Int], num_input_dims: Int): View[T] = {
+  def createView(sizes: JList[Int], num_input_dims: Int = 0): View[T] = {
     View[T](sizes.asScala.toArray).setNumInputDims(num_input_dims)
   }
 
@@ -565,9 +593,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       numInputDims)
   }
 
-  def createMixtureTable()
+  def createMixtureTable(dim: Int = Int.MaxValue)
   : MixtureTable[T] = {
-    MixtureTable[T]()
+    MixtureTable[T](dim)
   }
 
   def createMul()
@@ -950,6 +978,35 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padH)
   }
 
+  def createVolumetricConvolution(nInputPlane: Int,
+                                  nOutputPlane: Int,
+                                  kT: Int,
+                                  kW: Int,
+                                  kH: Int,
+                                  dT: Int = 1,
+                                  dW: Int = 1,
+                                  dH: Int = 1,
+                                  padT: Int = 0,
+                                  padW: Int = 0,
+                                  padH: Int = 0,
+                                  withBias: Boolean = true,
+                                  initMethod: String = "default")
+  : VolumetricConvolution[T] = {
+    VolumetricConvolution[T](nInputPlane,
+      nOutputPlane,
+      kT,
+      kW,
+      kH,
+      dT,
+      dW,
+      dH,
+      padT,
+      padW,
+      padH,
+      withBias,
+      PythonBigDL.getInitMethod(initMethod))
+  }
+
   def createSpatialDivisiveNormalization(nInputPlane: Int = 1,
                                          kernel: JTensor = null,
                                          threshold: Double = 1e-4,
@@ -966,6 +1023,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   : SpatialSubtractiveNormalization[T] = {
     SpatialSubtractiveNormalization[T](nInputPlane,
       if (kernel == null) null else toTensor(kernel))
+  }
+
+  def createSoftMarginCriterion(sizeAverage: Boolean = true)
+  : SoftMarginCriterion[T] = {
+    SoftMarginCriterion[T](sizeAverage)
   }
 
   //   Optimizer
