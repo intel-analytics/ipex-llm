@@ -44,6 +44,8 @@ class DiceCoefficientCriterion[@specialized(Float, Double) T: ClassTag]
   @transient
   private val buffer2: Tensor[T] = Tensor[T]()
   @transient
+  private val buffer3: Tensor[T] = Tensor[T]()
+  @transient
   private val w1: Tensor[T] = Tensor[T]()
   @transient
   private val w2: Tensor[T] = Tensor[T]()
@@ -99,14 +101,15 @@ class DiceCoefficientCriterion[@specialized(Float, Double) T: ClassTag]
      */
     buffer2.resizeAs(w2)
     buffer2.cmul(w2, w2)
-    buffer1.cdiv(w1, buffer2)
+    buffer3.resizeAs(w1)
+    buffer3.cdiv(w1, buffer2)
 
     _outputs.resizeAs(w2).fill(ev.fromType(1))
     buffer2.cdiv(_outputs, w2)
 
     gradInput.resizeAs(_input)
     gradInput.addcmul(ev.fromType(-2), buffer2.expandAs(_input), _target)
-    gradInput.add(buffer1.expandAs(_input))
+    gradInput.add(buffer3.expandAs(_input))
 
     if (sizeAverage) {
       gradInput.div(ev.fromType(_target.size(1)))
