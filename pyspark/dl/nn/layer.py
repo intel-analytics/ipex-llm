@@ -1059,6 +1059,27 @@ class CosineDistance(Model):
                  bigdl_type="float"):
         super(CosineDistance, self).__init__(None, bigdl_type)
 
+class DiceCoefficientCriterion(Model):
+
+    '''
+    The Dice-Coefficient criterion
+    input: Tensor, target: Tensor
+
+    return:      2 * (input intersection target)
+            1 - ----------------------------------
+                    input union target
+
+    >>> diceCoefficientCriterion = DiceCoefficientCriterion(size_average = True, epsilon = 1.0)
+    creating: createDiceCoefficientCriterion
+    '''
+
+    def __init__(self,
+                 size_average,
+                 epsilon,
+                 bigdl_type="float"):
+        super(DiceCoefficientCriterion, self).__init__(None, bigdl_type,
+                                                       size_average,
+                                                       epsilon)
 
 class DotProduct(Model):
 

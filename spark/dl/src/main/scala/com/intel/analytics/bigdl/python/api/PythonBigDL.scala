@@ -439,6 +439,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     CosineDistance[T]()
   }
 
+  def createDiceCoefficientCriterion(sizeAverage: Boolean = true,
+                                     epsilon: Float = 1.0f)
+  : DiceCoefficientCriterion[T] = {
+    DiceCoefficientCriterion[T](sizeAverage, epsilon)
+  }
+
   def createDotProduct()
   : DotProduct[T] = {
     DotProduct[T]()
