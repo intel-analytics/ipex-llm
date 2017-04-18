@@ -16,8 +16,9 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.io.{FileInputStream, InputStreamReader}
+import java.io.{File, FileInputStream, InputStreamReader}
 
+import scala.collection.JavaConverters._
 import caffe.Caffe
 import caffe.Caffe.{LayerParameter, NetParameter, V1LayerParameter}
 import com.google.protobuf.{CodedInputStream, TextFormat}
@@ -26,6 +27,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.log4j.Logger
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -149,6 +151,70 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     }
     loadParameters(name, params)
   }
+
+  def createCaffeModel(): Module[T] = {
+    val model: Module[T] = null
+    if (prototxtPath == null) throw new Exception("Net definition path cannot be empty")
+    val defFile = new File(prototxtPath)
+    val defReader = new InputStreamReader(new FileInputStream(defFile), "ASCII")
+    val builder = NetParameter.newBuilder
+    TextFormat.merge(defReader, builder)
+    val name = builder.getName
+    val layers = builder.getLayerList.asScala
+    val directedGraph = buildCaffeTypedGraph(layers)
+    model
+  }
+  // TODO : to be removed
+  def createCaffeGraph(): DirectedGraph[LayerParameter] = {
+    if (prototxtPath == null) throw new Exception("Net definition path cannot be empty")
+    val defFile = new File(prototxtPath)
+    val defReader = new InputStreamReader(new FileInputStream(defFile), "ASCII")
+    val builder = NetParameter.newBuilder
+    TextFormat.merge(defReader, builder)
+    val name = builder.getName
+    val layers = builder.getLayerList.asScala
+    val directedGraph = buildCaffeTypedGraph(layers)
+    directedGraph
+  }
+
+  private def buildCaffeTypedGraph(layers : Seq[LayerParameter]) : DirectedGraph[LayerParameter] = {
+      val dummySource = new Node[LayerParameter](null)
+      val inDegrees = new mutable.HashMap[Node[LayerParameter], Int]()
+      val layersMap = new mutable.HashMap[String, Node[LayerParameter]]()
+      val top2LayerMap = new mutable.HashMap[String, String]()
+      val dependenciesMap = new mutable.HashMap[String, mutable.HashSet[String]]()
+      layers.foreach(layer => {
+        val name = layer.getName
+        val node = new Node[LayerParameter](layer)
+        inDegrees(node) = 0
+        layersMap(name) = node
+        dependenciesMap(name) = new mutable.HashSet[String]()
+      })
+      layers.foreach(layer => {
+        val name = layer.getName
+        val node = layersMap.getOrElse(name, null)
+        val dependencies = layer.getBottomList.asScala
+        dependencies.foreach(dependency => {
+          val dependentNode = layersMap.get(top2LayerMap(dependency))
+          dependentNode -> node
+          if(!dependenciesMap.get(name).contains(dependency)) {
+            dependenciesMap.getOrElse(name, new mutable.HashSet[String]()).add(dependency)
+            inDegrees(node) = inDegrees.getOrElse(node, 0) + 1
+          }
+        })
+        val outputs = layer.getTopList.asScala
+        outputs.foreach(output => {
+          top2LayerMap(output) = name
+        })
+      })
+      inDegrees.keySet.foreach(node => {
+        if (inDegrees(node) == 0) {
+          dummySource -> node
+        }
+      })
+      return  new DirectedGraph(dummySource)
+  }
+
 }
 
 object CaffeLoader {
@@ -158,5 +224,11 @@ object CaffeLoader {
     (implicit ev: TensorNumeric[T]): Module[T] = {
     val caffeLoader = new CaffeLoader[T](defPath, modelPath, matchAll)
     caffeLoader.copyParameters(model)
+  }
+
+  def loadDynamic[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)
+                       (implicit ev: TensorNumeric[T]): Module[T] = {
+    val caffeLoader = new CaffeLoader[T](defPath, modelPath, matchAll)
+    caffeLoader.createCaffeModel()
   }
 }
