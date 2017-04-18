@@ -898,9 +898,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       sizeAverage)
   }
 
-  def createBiRecurrent()
+  def createBiRecurrent(merge: AbstractModule[Table, Tensor[T], T] = null)
   : BiRecurrent[T] = {
-    BiRecurrent[T]()
+    BiRecurrent[T](merge)
   }
 
   def createConcatTable()
