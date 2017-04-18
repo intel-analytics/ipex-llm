@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-@com.intel.analytics.bigdl.tags.Parallel
+@com.intel.analytics.bigdl.tags.Serial
 class DiceCoefficientCriterionSpec extends FlatSpec with Matchers {
 
   "A DiceCoefficientCriterionSpec" should "generate correct output and gradInput vector input" in {
@@ -83,5 +83,16 @@ class DiceCoefficientCriterionSpec extends FlatSpec with Matchers {
       a should be (b +- 1e-5f)
       a
     })
+  }
+
+  "A DiceCoefficientCriterionSpec" should "generate pass gradient check" in {
+    val input = Tensor[Float](Array(3, 3, 3)).rand
+    val target = Tensor[Float](Array(3, 3, 3)).rand
+
+    val criterion = DiceCoefficientCriterion[Float](epsilon = 0.1f)
+
+    println("gradient check for input")
+    val gradCheckerInput = new GradientChecker(1e-2, 1)
+    val checkFlagInput = gradCheckerInput.checkCriterion[Float](criterion, input, target)
   }
 }
