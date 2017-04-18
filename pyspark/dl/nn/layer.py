@@ -2492,13 +2492,19 @@ class BiRecurrent(Container):
     '''
     Create a Bidirectional recurrent layer
 
+    :param merge: merge layer
+
+    >>> biRecurrent = BiRecurrent(CAddTable())
+    creating: createCAddTable
+    creating: createBiRecurrent
     >>> biRecurrent = BiRecurrent()
     creating: createBiRecurrent
     '''
 
     def __init__(self,
+                 merge=None,
                  bigdl_type="float"):
-        super(BiRecurrent, self).__init__(None, bigdl_type)
+        super(BiRecurrent, self).__init__(None, bigdl_type, merge)
 
 
 class ConcatTable(Container):
