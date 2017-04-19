@@ -76,7 +76,8 @@ class LocalOptimizer[T: ClassTag] private[optim](
   override def optimize(): Module[T] = {
     var wallClockTime = 0L
     var count = 0
-    optimMethod.clearHistory(state)
+    optimMethod.clearHistory()
+    optimMethod.loadFromTable(state)
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     dataset.shuffle()
@@ -140,7 +141,9 @@ class LocalOptimizer[T: ClassTag] private[optim](
       val loss = lossSum / parallelism
       grad.div(ev.fromType(parallelism))
 
-      optimMethod.optimize(_ => (ev.fromType(loss), grad), weight, state)
+      optimMethod.state.update("epoch", state.get("epoch"))
+      optimMethod.state.update("neval", state.get("neval"))
+      optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
       val end = System.nanoTime()
       wallClockTime += end - start
       count += batch.data.size(1)
@@ -151,7 +154,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
         s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
         s"train time ${(end - dataFetchTime) / 1e9}s. " +
         s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} record / second. " +
-        optimMethod.getHyperParameter(state)
+        optimMethod.getHyperParameter()
         )
       state("neval") = state[Int]("neval") + 1
 

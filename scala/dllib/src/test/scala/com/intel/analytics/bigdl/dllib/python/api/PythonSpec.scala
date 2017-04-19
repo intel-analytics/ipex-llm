@@ -171,15 +171,13 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.add(LogSoftMax[Double]())
     val batchSize = 32
     val pp = PythonBigDL.ofDouble()
-    val state = Map("learingRateSchedule" ->
-      SGD.Poly(0.5, math.ceil(1281167.toDouble / batchSize).toInt))
-      .asJava.asInstanceOf[JMap[Any, Any]]
+    val optimMethod = new SGD[Double]()
+    optimMethod.learningRateSchedule = SGD.Poly(0.5, math.ceil(1281167.toDouble / batchSize).toInt)
     val optimizer = pp.createOptimizer(
       model,
       data.toJavaRDD(),
       ClassNLLCriterion[Double](),
-      "SGD",
-      state,
+      optimMethod,
       Trigger.maxEpoch(2),
       32)
     pp.setValidation(optimizer = optimizer,

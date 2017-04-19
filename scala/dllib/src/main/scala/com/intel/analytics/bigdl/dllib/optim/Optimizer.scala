@@ -275,6 +275,23 @@ object Optimizer {
     }
   }
 
+  /**
+   * Save OptimMethod to a directory as a checkpoint
+   * @param optimMethod the method to be saved
+   * @param checkpointPath the directory to save at
+   * @param overWrite if save name method exists in the directory,
+   *                  is overwrite or not.
+   * @param postfix the postfix of a method name
+   * @tparam T
+   */
+  private[bigdl] def saveOptimMethod[T: ClassTag]
+  (optimMethod: OptimMethod[T], checkpointPath : Option[String], overWrite : Boolean,
+   postfix: String = ""): Unit = {
+    if (checkpointPath.isDefined) {
+      optimMethod.save(s"${checkpointPath.get}/optimMethod$postfix", overWrite)
+    }
+  }
+
   def apply[T: ClassTag](
       model: Module[T],
       sampleRDD: RDD[Sample[T]],
