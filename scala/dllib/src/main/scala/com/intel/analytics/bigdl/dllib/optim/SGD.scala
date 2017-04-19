@@ -16,17 +16,35 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl.optim.SGD.{Default, LearningRateSchedule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
 /**
  * A plain implementation of SGD
- * @tparam T data type
+ * @param learningRate learning rate
+ * @param learningRateDecay learning rate decay
+ * @param weightDecay weight decay
+ * @param momentum momentum
+ * @param dampening dampening for momentum
+ * @param nesterov enables Nesterov momentum
+ * @param learningRates 1D tensor of individual learning rates
+ * @param weightDecays 1D tensor of individual weight decays
+ * @tparam T
  */
-class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T])
+class SGD[@specialized(Float, Double) T: ClassTag](
+  var learningRate: Double = 1e-3,
+  var learningRateDecay: Double = 0.0,
+  var weightDecay: Double = 0.0,
+  var momentum: Double = 0.0,
+  var dampening: Double = Double.MaxValue,
+  var nesterov: Boolean = false,
+  var learningRateSchedule: LearningRateSchedule = Default(),
+  var learningRates: Tensor[T] = null,
+  var weightDecays: Tensor[T] = null)(implicit ev: TensorNumeric[T])
   extends OptimMethod[T] {
 
   import SGD._
@@ -36,32 +54,20 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
    * @param feval a function that takes a single input (X), the point of a evaluation,
    * and returns f(X) and df/dX
    * @param x the initial point
-   * @param config a table with configuration parameters for the optimizer
-   * learningRate: learning rate
-   * learningRateDecay: learning rate decay
-   * weightDecay: weight decay
-   * weightDecays: 1D tensor of individual weight decays
-   * momentum: momentum
-   * dampening: dampening for momentum
-   * nesterov: enables Nesterov momentum
-   * learningRates: 1D tensor of individual learning rates
-   * @param state a table describing the state of the optimizer; after each call the state
-   * is modified
    * @return the new x 1D tensor and the function list, evaluated before the update
    */
-  override def optimize(feval: (Tensor[T]) => (T, Tensor[T]), x: Tensor[T],
-    config: Table, state: Table = null): (Tensor[T], Array[T]) = {
+  override def optimize(feval: (Tensor[T]) => (T, Tensor[T]), x: Tensor[T])
+  : (Tensor[T], Array[T]) = {
 
-    val _state = if (state == null) config else state
-    val lrSchedule = config.get[LearningRateSchedule]("learningRateSchedule").getOrElse(Default())
-    lrSchedule.updateHyperParameter(config, _state)
-
-    val wd = config.get[Double]("weightDecay").getOrElse(0.0)
-    val mom = config.get[Double]("momentum").getOrElse(0.0)
-    val damp = config.get[Double]("dampening").getOrElse(mom)
-    val nesterov = config.get[Boolean]("nesterov").getOrElse(false)
-    val lrs = config.get[Tensor[T]]("learningRates").getOrElse(null)
-    val wds = config.get[Tensor[T]]("weightDecays").getOrElse(null)
+    this.updateHyperParameter()
+    if (this.dampening == Double.MaxValue) this.dampening = this.momentum
+    val wd = this.weightDecay
+    val mom = this.momentum
+    val damp = this.dampening
+    val nesterov = this.nesterov
+    val lrs = this.learningRates
+    val wds = this.weightDecays
+    val clr = ev.fromType(this.learningRateSchedule.currentRate)
 
     require(!nesterov || (mom > 0 && damp == 0),
       "Nesterov momentum requires a momentum and zero dampening")
@@ -71,9 +77,9 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     if (wd != 0) {
       dfdx.add(ev.fromType[Double](wd), x)
     } else if (wds != null) {
-      val decayParameters = _state.get[Tensor[T]]("decayParameters").getOrElse({
+      val decayParameters = state.get[Tensor[T]]("decayParameters").getOrElse({
         val DP = Tensor[T]().resizeAs(dfdx)
-        _state("decayParameters") = DP
+        state("decayParameters") = DP
         DP
       })
       decayParameters.copy(wds).cmul(x)
@@ -81,10 +87,10 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     }
 
     if (mom != 0) {
-      val stateDFDX = _state.get[Tensor[T]]("dfdx") match {
+      val stateDFDX = state.get[Tensor[T]]("dfdx") match {
         case None =>
           val DFDX = Tensor[T]().resizeAs(dfdx).copy(dfdx)
-          _state("dfdx") = DFDX
+          state("dfdx") = DFDX
           DFDX
         case s: Some[Tensor[T]] => s.get.mul(ev.fromType[Double](mom)).
           add(ev.fromType[Double](1 - damp), dfdx)
@@ -96,12 +102,10 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
         dfdx = stateDFDX
       }
     }
-
-    val clr = ev.fromType(config[Double]("clr"))
     if (lrs != null) {
-      val deltaParameters = _state.get[Tensor[T]]("deltaParameters").getOrElse({
+      val deltaParameters = state.get[Tensor[T]]("deltaParameters").getOrElse({
         val deltaP = Tensor[T]().resizeAs(dfdx)
-        _state("deltaParameters") = deltaP
+        state("deltaParameters") = deltaP
         deltaP
       })
       deltaParameters.copy(lrs).cmul(dfdx)
@@ -110,14 +114,53 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
       x.add(clr, dfdx)
     }
 
-
     (x, Array(fx))
   }
 
-  override def clearHistory(state: Table): Table = {
+
+  override def loadFromTable(config: Table): this.type = {
+    this.learningRate = config.get[Double]("learningRate").getOrElse(this.learningRate)
+    this.learningRateDecay = config.get[Double]("learningRateDecay")
+      .getOrElse(this.learningRateDecay)
+    this.weightDecay = config.get[Double]("weightDecay").getOrElse(this.weightDecay)
+    this.momentum = config.get[Double]("momentum").getOrElse(this.momentum)
+    this.dampening = config.get[Double]("dampening").getOrElse(this.dampening)
+    this.nesterov = config.get[Boolean]("nesterov").getOrElse(this.nesterov)
+    this.learningRateSchedule = config.get[LearningRateSchedule]("learningRateSchedule")
+      .getOrElse(this.learningRateSchedule)
+    this.learningRates = config.get[Tensor[T]]("learningRates").getOrElse(this.learningRates)
+    this.weightDecays = config.get[Tensor[T]]("weightDecays").getOrElse(this.weightDecays)
+    this
+  }
+
+  override def clearHistory(): Unit = {
     state.delete("decayParameters")
     state.delete("dfdx")
     state.delete("deltaParameters")
+  }
+
+  /**
+   * return an string of current hyperParameter.
+   */
+  override def getHyperParameter(): String = {
+    val clr = -this.learningRateSchedule.currentRate
+    val wd = this.weightDecay
+    val mom = this.momentum
+    val damp = this.dampening
+    val nesterov = this.nesterov
+    val lrs = this.learningRates
+    val wds = this.weightDecays
+    s"Current learning rate is $clr. " +
+      {if (wd != 0) s"Current weight decay is $wd. " else ""} +
+      {if (mom != 0) s"Current momentum is $mom. " else ""} +
+      {if (damp != 0) s"Current dampening is $damp. " else ""} +
+      {if (nesterov) s"Current nesterov is true. " else ""} +
+      {if (null != lrs) s"Current learningRates is a Tensor. " else ""} +
+      {if (null != wds) s"Current weightDecays is a Tensor. " else ""}
+  }
+
+  override def updateHyperParameter(): Unit = {
+    this.learningRateSchedule.updateHyperParameter(this)
   }
 
   /**
@@ -144,20 +187,26 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     val lrSchedule = config.get[LearningRateSchedule]("learningRateSchedule").getOrElse(Default())
     lrSchedule.updateHyperParameter(config, state)
   }
+
+  override def getLearningRate(): Double = this.learningRateSchedule.currentRate
 }
 
 object SGD {
 
   /**
-   * Learning rate schedule for SGD
+   * Hyper parameter schedule for SGD
    */
   trait LearningRateSchedule {
     /**
      * update learning rate by config table and state table
-     * @param config init config.
-     * @param state current state.
+     * @param optimMethod init optiMethod.
      */
+    def updateHyperParameter[T](optimMethod : SGD[T]) : Unit
+
+    @deprecated("Please input SGD instead of Table", "0.2.0")
     def updateHyperParameter(config : Table, state : Table) : Unit
+
+    var currentRate : Double = 0.0
   }
 
   /**
@@ -177,6 +226,43 @@ object SGD {
         }
       }
       config("clr") = -config.get[Double]("learningRate").getOrElse(1e-3)
+    }
+
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val epoch = optimMethod.state[Int]("epoch")
+      for (r <- regimes) {
+        if (epoch >= r.startEpoch && epoch <= r.endEpoch) {
+          val config = r.config
+          val keys = config.keySet.toArray.map(_.toString)
+          var i = 0
+          while (i < keys.length) {
+            keys(i) match {
+              case "learningRate" =>
+                optimMethod.learningRate = config.get[Double](keys(i)).get
+              case "learningRateDecay" =>
+                optimMethod.learningRateDecay = config.get[Double](keys(i)).get
+              case "weightDecay" =>
+                optimMethod.weightDecay = config.get[Double](keys(i)).get
+              case "momentum" =>
+                optimMethod.momentum = config.get[Double](keys(i)).get
+              case "dampening" =>
+                optimMethod.dampening = config.get[Double](keys(i)).get
+              case "nesterov" =>
+                optimMethod.nesterov = config.get[Boolean](keys(i)).get
+              case "leaningRateSchedule" =>
+                optimMethod.learningRateSchedule = config.get[LearningRateSchedule](keys(i)).get
+              case "learningRates" =>
+                optimMethod.learningRates = config.get[Tensor[T]](keys(i)).get
+              case "weightDecays" =>
+                optimMethod.weightDecays = config.get[Tensor[T]](keys(i)).get
+              case _ => throw new IllegalArgumentException(
+                s"EpochSchedule: ${keys(i)} is not a member of SGD")
+            }
+            i += 1
+          }
+        }
+      }
+      currentRate = -optimMethod.learningRate
     }
   }
 
@@ -201,6 +287,19 @@ object SGD {
       state("evalCounter") = nevals + 1
       config("clr") = clr
     }
+
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      val clr = if (nevals > maxIteration) {
+        0.0
+      } else {
+        -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
+      }
+      println(s"iteration is : ${nevals}. current learning rate is $clr")
+      optimMethod.state("evalCounter") = nevals + 1
+      currentRate = clr
+    }
   }
   /**
    * A learning rate decay policy, where the effective learning rate
@@ -223,6 +322,19 @@ object SGD {
       state("evalCounter") = nevals + 1
       config("clr") = clr
     }
+
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      var clr = -lr
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      var i = 0
+      while(i < nevals / stepSize) {
+        clr *= gamma
+        i += 1
+      }
+      optimMethod.state("evalCounter") = nevals + 1
+      currentRate = clr
+    }
   }
 
   /**
@@ -243,6 +355,19 @@ object SGD {
       state("evalCounter") = nevals + 1
       config("clr") = clr
     }
+
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      var clr = -lr
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      var currentStep = 0
+      while (currentStep < stepSizes.length && nevals >= stepSizes(currentStep)) {
+        clr *= gamma
+        currentStep += 1
+      }
+      optimMethod.state("evalCounter") = nevals + 1
+      currentRate = clr
+    }
   }
 
   /**
@@ -261,6 +386,15 @@ object SGD {
       val decay = decayType(epoch)
       clr = clr * math.pow(0.1, decay)
       config("clr") = clr
+    }
+
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      var clr = -lr
+      val epoch = optimMethod.state[Int]("epoch")
+      val decay = decayType(epoch)
+      clr = clr * math.pow(0.1, decay)
+      currentRate = clr
     }
   }
 
@@ -283,6 +417,18 @@ object SGD {
       }
       config("clr") = clr
     }
+
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      var clr = -lr
+      val epoch = optimMethod.state[Int]("epoch")
+      var i = 0
+      while(i < epoch / stepSize) {
+        clr *= gamma
+        i += 1
+      }
+      currentRate = clr
+    }
   }
 
   /**
@@ -301,6 +447,14 @@ object SGD {
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
       config("clr") = -lr / (1 + nevals * lrd)
       state("evalCounter") = nevals + 1
+    }
+
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      val lrd = optimMethod.learningRateDecay
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      currentRate = -lr / (1 + nevals * lrd)
+      optimMethod.state("evalCounter") = nevals + 1
     }
   }
 

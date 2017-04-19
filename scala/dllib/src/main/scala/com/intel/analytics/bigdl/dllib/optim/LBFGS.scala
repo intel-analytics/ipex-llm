@@ -34,10 +34,28 @@ import scala.reflect.ClassTag
  * This is also useful for large-scale stochastic problems, where
  * opfunc is a noisy approximation of f(x). In that case, the learning
  * rate allows a reduction of confidence in the step size.
+ * @param maxIter Maximum number of iterations allowed
+ * @param maxEval Maximum number of function evaluations
+ * @param tolFun Termination tolerance on the first-order optimality
+ * @param tolX Termination tol on progress in terms of func/param changes
+ * @param nCorrection
+ * @param learningRate
+ * @param verbose
+ * @param lineSearch A line search function
+ * @param lineSearchOptions If no line search provided,
+ *               then a fixed step size is used
  */
 class LBFGS[@specialized(Float, Double) T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
-  private var verbose: Boolean = false
+    var maxIter: Int = 20,
+    var maxEval: Double = Double.MaxValue,
+    var tolFun: Double = 1e-5,
+    var tolX: Double = 1e-9,
+    var nCorrection: Int = 100,
+    var learningRate: Double = 1.0,
+    var verbose: Boolean = false,
+    var lineSearch: Option[LineSearch[T]] = None,
+    var lineSearchOptions: Option[Table] = None
+  )(implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
 
   /**
    * Optimize the model parameter
@@ -45,34 +63,22 @@ class LBFGS[@specialized(Float, Double) T: ClassTag](
    * @param opfunc a function that takes a single input (X), the point of a evaluation,
    *               and returns f(X) and df/dX
    * @param x      the initial point
-   * @param config a table with configuration parameters for the optimizer
-   *               config("maxIter") : Maximum number of iterations allowed
-   *               config("maxEval") : Maximum number of function evaluations
-   *               config("tolFun") : Termination tolerance on the first-order optimality
-   *               config("tolX") : Termination tol on progress in terms of func/param changes
-   *               config("lineSearch") : A line search function
-   *               config("learningRate") : If no line search provided,
-   *               then a fixed step size is used
-   * @param state  a table describing the state of the optimizer; after each call
-   *               the state is modified
    * @return the new x vector and the evaluate value list, evaluated before the update
    *         x : the new `x` vector, at the optimal point
    *         f : a table of all function values:
    *         `f[1]` is the value of the function before any optimization and
    *         `f[#f]` is the final fully optimized value, at `x*`
    */
-  override def optimize(opfunc: (Tensor[T]) => (T, Tensor[T]), x: Tensor[T],
-    config: Table, state: Table): (Tensor[T], Array[T]) = {
-    val _config = if (config == null) T() else config
-    val _state = if (state == null) _config else state
-
-    val maxIter = _config.get[Int]("maxIter").getOrElse(20)
-    val maxEval = _config.get[Double]("maxEval").getOrElse(maxIter * 1.25)
-    val tolFun = _config.get[Double]("tolFun").getOrElse(1e-5)
-    val tolX = _config.get[Double]("tolX").getOrElse(1e-9)
-    val nCorrection = _config.get[Int]("nCorrection").getOrElse(100)
-    val learningRate = _config.get[Double]("learningRate").getOrElse(1.0)
-    verbose = _config.get[Boolean]("verbose").getOrElse(false)
+  override def optimize(opfunc: (Tensor[T]) => (T, Tensor[T]), x: Tensor[T]
+                       ): (Tensor[T], Array[T]) = {
+    if (this.maxEval == Double.MaxValue) this.maxEval = 1.25 * this.maxIter
+    val _state = state
+    val maxIter = this.maxIter
+    val maxEval = this.maxEval
+    val tolFun = this.tolFun
+    val tolX = this.tolX
+    val nCorrection = this.nCorrection
+    val learningRate = this.learningRate
 
     var funcEval = _state.get[Int]("funcEval").getOrElse(0)
     var nIter = _state.get[Int]("nIter").getOrElse(0)
@@ -196,9 +202,9 @@ class LBFGS[@specialized(Float, Double) T: ClassTag](
 
         // optional line search: user function
         var lsFuncEval = 0
-        if (_config.get[LineSearch[T]]("lineSearch").isDefined) {
-          val lineSearch = _config.get[LineSearch[T]]("lineSearch").get
-          val lineSearchOpts = _config.get[Table]("lineSearchOptions").get
+        if (this.lineSearch.isDefined) {
+          val lineSearch = this.lineSearch.get
+          val lineSearchOpts = this.lineSearchOptions.get
           val result = lineSearch(opfunc, x, ev.fromType[Double](t), d, f, g, gtd, lineSearchOpts)
           f = result._1
           g = result._2
@@ -271,7 +277,21 @@ class LBFGS[@specialized(Float, Double) T: ClassTag](
     }
   }
 
-  override def clearHistory(state: Table): Table = {
+  override def loadFromTable(config: Table): this.type = {
+    this.maxIter = config.get[Int]("maxIter").getOrElse(this.maxIter)
+    this.maxEval = config.get[Double]("maxEval").getOrElse(this.maxEval)
+    this.tolFun = config.get[Double]("tolFun").getOrElse(this.tolFun)
+    this.tolX = config.get[Double]("tolX").getOrElse(this.tolX)
+    this.nCorrection = config.get[Int]("nCorrection").getOrElse(this.nCorrection)
+    this.learningRate = config.get[Double]("learningRate").getOrElse(this.learningRate)
+    this.verbose = config.get[Boolean]("verbose").getOrElse(this.verbose)
+    this.lineSearch = config.get[Option[LineSearch[T]]]("lineSearch").getOrElse(this.lineSearch)
+    this.lineSearchOptions = config.get[Option[Table]]("lineSearchOptions")
+      .getOrElse(this.lineSearchOptions)
+    this
+  }
+
+  override def clearHistory(): Unit = {
     state.delete("dir_bufs")
     state.delete("d")
     state.delete("t")
@@ -283,4 +303,6 @@ class LBFGS[@specialized(Float, Double) T: ClassTag](
     state.delete("ro")
     state.delete("al")
   }
+
+  override def getLearningRate(): Double = this.learningRate
 }
