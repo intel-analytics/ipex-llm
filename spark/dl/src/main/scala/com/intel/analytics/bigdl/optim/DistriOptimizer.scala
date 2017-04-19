@@ -62,7 +62,8 @@ object DistriOptimizer {
     localStates: Array[Table],
     gradient: Tensor[T],
     var moduleTimeList: Array[Long] = null,
-    localMethods: Array[Option[Array[ValidationMethod[T]]]]
+    localMethods: Array[Option[Array[ValidationMethod[T]]]],
+    optimMethod: OptimMethod[T]
   )
 
   /**
@@ -107,8 +108,8 @@ object DistriOptimizer {
     val partitionNum = dataset.originRDD().partitions.length
     var wallClockTime = 0L
     var lastEpochTime = 0L
-    val driverState = T("epoch" -> state.get[Int]("epoch").getOrElse(1),
-      "neval" -> state.get[Int]("neval").getOrElse(1))
+    val driverState = T("epoch" -> optimMethod.state.get[Int]("epoch").getOrElse(1),
+      "neval" -> optimMethod.state.get[Int]("neval").getOrElse(1))
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException()
@@ -261,10 +262,10 @@ object DistriOptimizer {
           val modelCache = modelIter.next()
           parameters.aggregrateGradientPartition()
           parameters.gradientPartition.div(ev.fromType(finishedModelNum))
-          modelCache.localStates.head("neval") = driverState[Int]("neval")
-          modelCache.localStates.head("epoch") = driverState[Int]("epoch")
-          optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
-            parameters.weightPartition, modelCache.localStates.head, modelCache.localStates.head)
+          modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
+          modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
+          modelCache.optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
+            parameters.weightPartition)
 
           parameters.sendWeightPartition()
           Iterator.empty
@@ -273,13 +274,15 @@ object DistriOptimizer {
         accumulateCount += recordsNum.value
         val end = System.nanoTime()
         wallClockTime += end - start
-        optimMethod.updateHyperParameter(state, driverState)
+        optimMethod.state.update("epoch", driverState[Int]("epoch"))
+        optimMethod.state.update("neval", driverState[Int]("neval"))
+        optimMethod.updateHyperParameter()
         driverState("Loss") = lossSum.value.toFloat / finishedModelNum
         driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
-        if (state.contains("clr")) driverState("LearningRate") = -state[Double]("clr").toFloat
+        driverState("LearningRate") = -optimMethod.getLearningRate().toFloat
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
-            driverState("Loss")}. ${optimMethod.getHyperParameter(state)}")
+            driverState("Loss")}. ${optimMethod.getHyperParameter()}")
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
@@ -354,7 +357,8 @@ object DistriOptimizer {
           wallClockTime,
           models,
           driverState,
-          parameters
+          parameters,
+          optimMethod
         )
 
       } else {
@@ -382,7 +386,8 @@ object DistriOptimizer {
     wallClockTime: Long,
     models: RDD[Cache[T]],
     state: Table,
-    parameters: AllReduceParameter[T])
+    parameters: AllReduceParameter[T],
+    optimMethod: OptimMethod[T])
   : Unit = {
     if (cacheTrigger.isDefined) {
       val trigger = cacheTrigger.get
@@ -390,11 +395,10 @@ object DistriOptimizer {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
         saveModel(getModel(models, parameters), cachePath, isOverWrite,
           s".${state[Int]("neval")}")
-        val localState = models.map(_.localStates.head).first()
-        localState("neval") = state[Int]("neval")
-        localState("epoch") = state[Int]("epoch")
-        saveState(localState, cachePath, isOverWrite, s"" +
-          s".${state[Int]("neval")}")
+        optimMethod.state.update("epoch", state[Int]("epoch"))
+        optimMethod.state.update("neval", state[Int]("neval"))
+        saveOptimMethod(optimMethod, cachePath, isOverWrite, s".${state[Int]("neval")}")
+
       }
     }
   }
@@ -463,10 +467,11 @@ object DistriOptimizer {
     coresPerNode: Int,
     checkSingleton: Boolean,
     parameters: AllReduceParameter[T],
-    validationMethods: Option[Array[ValidationMethod[T]]]
+    validationMethods: Option[Array[ValidationMethod[T]]],
+    optimMethod: OptimMethod[T]
     )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
-    val broadcast = sc.broadcast((model, criterion, state, validationMethods))
+    val broadcast = sc.broadcast((model, criterion, state, validationMethods, optimMethod))
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException
@@ -481,7 +486,8 @@ object DistriOptimizer {
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
     val models = dataset.originRDD().mapPartitions(_ => {
-      val (broadcastModel, broadcastCriterion, broadcastState, broadcastMethod) = broadcast.value
+      val (broadcastModel, broadcastCriterion, broadcastState, broadcastMethod,
+      broadcastOptim) = broadcast.value
       if (!Engine.checkSingleton()) {
         if (checkSingleton) {
           require(Engine.checkSingleton(), "Partitions of the training data are not evenly" +
@@ -523,7 +529,8 @@ object DistriOptimizer {
         cached.map(_._5), // states
         cached.head._2.clone(), // a tensor buffer
         new Array[Long](_subModelNumber * computeThresholdbatchSize),
-        cached.map(_._6)
+        cached.map(_._6),
+        broadcastOptim.clone()
       ))
     }).persist()
     models.setName("Thread Model RDD")
@@ -700,7 +707,8 @@ class DistriOptimizer[T: ClassTag] (
   }
 
   override def optimize(): Module[T] = {
-    optimMethod.clearHistory(state)
+    optimMethod.clearHistory()
+    optimMethod.loadFromTable(state)
     state("dropPercentage") = dropPercentage
     state("warmupIterationNum") = warmupIterationNum
     state("computeThresholdbatchSize") = computeThresholdbatchSize
@@ -716,7 +724,7 @@ class DistriOptimizer[T: ClassTag] (
     prepareInput()
 
     models = DistriOptimizer.initThreadModels(model, dataset, criterion, state,
-      nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods)
+      nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
 
     if (checkpointPath.isDefined) {
       val file = checkpointPath.get + "/" +
@@ -770,23 +778,23 @@ class DistriOptimizer[T: ClassTag] (
             }
             DistriOptimizer.logger.info(s"Retrying $retryNum times")
             lastFailureTimestamp = System.nanoTime()
-            val stateFile = getLatestFile(checkpointPath.get, "state")
+            val methodFile = getLatestFile(checkpointPath.get, "optimMethod")
             val modelFile = getLatestFile(checkpointPath.get, "model")
             clearState()
             models.unpersist()
 
             var newModel: Module[T] = null
-            if (stateFile != null && modelFile != null) {
+            if (methodFile != null && modelFile != null) {
               newModel = Module.load[T](modelFile)
-              state = T.load(stateFile)
+              optimMethod = OptimMethod.load[T](methodFile)
               DistriOptimizer.logger.info("Recover from last snapshot")
             } else {
               newModel = model
               DistriOptimizer.logger.info("Recover from origin model")
             }
-            optimMethod.clearHistory(state)
+            optimMethod.clearHistory()
             models = DistriOptimizer.initThreadModels(newModel, dataset, criterion, state,
-              nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods)
+              nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
           } else {
             retryNum = Int.MaxValue
             DistriOptimizer.logger.info("Failed to recover since no model snapshot" +

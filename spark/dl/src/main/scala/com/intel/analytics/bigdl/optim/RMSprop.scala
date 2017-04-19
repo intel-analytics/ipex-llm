@@ -22,7 +22,20 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
-class RMSprop[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T])
+/**
+ * An implementation of RMSprop
+ * @param learningRate learning rate
+ * @param learningRateDecay learning rate decay
+ * @param decayRate decayRate, also called rho
+ * @param Epsilon for numerical stability
+ * @tparam T
+ */
+class RMSprop[@specialized(Float, Double) T: ClassTag](
+    var learningRate: Double = 1e-2,
+    var learningRateDecay: Double = 0.0,
+    var decayRate: Double = 0.99,
+    var Epsilon: Double = 1e-8
+  )(implicit ev: TensorNumeric[T])
   extends OptimMethod[T] {
 
   /**
@@ -31,35 +44,23 @@ class RMSprop[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeri
    * @param feval     a function that takes a single input (X), the point of a evaluation, and
    *                  returns f(X) and df/dX
    * @param parameter the initial point
-   * @param config    a table with configuration parameters for the optimizer
-   *                  config("learningRate") : learning rate
-   *                  config("learningRateDecay") : learning rate decay
-   *                  config("decayRate"): decayRate, also called rho
-   * @param state     a table describing the state of the optimizer; after each call the state
-   *                  is modified
-   *                  state("sumSquare"): leaky sum of squares of parameter gradients
-   *                  state("rms"): and the root mean square
    * @return the new x vector and the function list, evaluated before the update
    */
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]),
-               parameter: Tensor[T], config: Table, state: Table): (Tensor[T], Array[T]) = {
-
-    val _config = if (config == null) T() else config
-    val _state = if (state == null) _config else state
-
-    val lr = _config.getOrElse[Double]("learningRate", 1e-2)
-    val lrd = _config.getOrElse[Double]("learningRateDecay", 0.0)
-    val dr = _config.getOrElse[Double]("decayRate", 0.99)
-    val eps = _config.getOrElse[Double]("Epsilon", 1e-8)
-    val nevals = _state.getOrElse[Int]("evalCounter", 0)
+               parameter: Tensor[T]): (Tensor[T], Array[T]) = {
+    val lr = this.learningRate
+    val lrd = this.learningRateDecay
+    val dr = this.decayRate
+    val eps = this.Epsilon
+    val nevals = state.getOrElse[Int]("evalCounter", 0)
 
     val (fx, dfdx) = feval(parameter)
 
     val clr = lr / (1 + nevals * lrd)
 
     val (_sumofsquare, _rms) =
-      if (_state.get[Tensor[T]]("sumSquare").isDefined) {
-        (_state.get[Tensor[T]]("sumSquare").get, _state.get[Tensor[T]]("rms").get)
+      if (state.get[Tensor[T]]("sumSquare").isDefined) {
+        (state.get[Tensor[T]]("sumSquare").get, state.get[Tensor[T]]("rms").get)
       } else {
         (Tensor[T]().resizeAs(dfdx).zero(), Tensor[T]().resizeAs(dfdx).zero())
       }
@@ -67,15 +68,27 @@ class RMSprop[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeri
     _sumofsquare.mul(ev.fromType[Double](dr)).addcmul(ev.fromType[Double](1-dr), dfdx, dfdx)
     _rms.resizeAs(_sumofsquare).copy(_sumofsquare).sqrt().add(ev.fromType[Double](eps))
     parameter.addcdiv(ev.fromType[Double](-clr), dfdx, _rms)
-    _state("evalCounter") = nevals + 1
-    _state("sumSquare") = _sumofsquare
-    _state("rms") = _rms
+    state("evalCounter") = nevals + 1
+    state("sumSquare") = _sumofsquare
+    state("rms") = _rms
 
     (parameter, Array(fx))
   }
 
-  override def clearHistory(state: Table): Table = {
+
+  override def loadFromTable(config: Table): this.type = {
+    this.learningRate = config.get[Double]("learningRate").getOrElse(this.learningRate)
+    this.learningRateDecay = config.get[Double]("learningRateDecay")
+      .getOrElse(this.learningRateDecay)
+    this.decayRate = config.get[Double]("decayRate").getOrElse(this.decayRate)
+    this.Epsilon = config.get[Double]("Epsilon").getOrElse(this.Epsilon)
+    this
+  }
+
+  override def clearHistory(): Unit = {
     state.delete("sumSquare")
     state.delete("rms")
   }
+
+  override def getLearningRate(): Double = this.learningRate
 }
