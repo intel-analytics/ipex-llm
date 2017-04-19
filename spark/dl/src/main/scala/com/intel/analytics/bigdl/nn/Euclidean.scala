@@ -40,9 +40,9 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
   // buffer
   var inputBuffer = Tensor[T]()
   var weightBuffer = Tensor[T]()
-  var repeatBuffer = Tensor[T]()
-  var divBuffer = Tensor[T]()
-  var sumBuffer = Tensor[T]()
+  val repeatBuffer = Tensor[T]()
+  val divBuffer = Tensor[T]()
+  val sumBuffer = Tensor[T]()
 
   reset()
 
