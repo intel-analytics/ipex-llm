@@ -20,14 +20,16 @@ import java.io.{File, FileInputStream, InputStreamReader}
 
 import scala.collection.JavaConverters._
 import caffe.Caffe
-import caffe.Caffe.{LayerParameter, NetParameter, V1LayerParameter}
+import caffe.Caffe._
 import com.google.protobuf.{CodedInputStream, TextFormat}
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.{ReLU, SpatialConvolution, SpatialCrossMapLRN}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.log4j.Logger
 
 import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -155,47 +157,171 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   def createCaffeModel(): Module[T] = {
     val model = null
     loadCaffe(prototxtPath, modelPath)
-    val name = netparam.getName
-    val layers = netparam.getLayerList.asScala
-    val directedGraph = buildCaffeTypedGraph(layers)
+    val caffeTypedLayers = getCaffeTypedList
+    convert(caffeTypedLayers)
     model
   }
-  // TODO : to be removed
-  def createCaffeGraph(): DirectedGraph[LayerParameter] = {
-    loadCaffe(prototxtPath, modelPath)
-    val name = netparam.getName
-    val layers = netparam.getLayerList.asScala
-    val directedGraph = buildCaffeTypedGraph(layers)
-    directedGraph
+
+  private def convert(caffeTypedLayers : ArrayBuffer[Node[String]]) : ArrayBuffer[Module[T]] = {
+    val layers = new ArrayBuffer[Module[T]]()
+    caffeTypedLayers.foreach(layer => {
+      val converted : Module[T] = convertCaffeLayer(layer)
+      if (converted != null) layers.append(converted)
+    })
+    return layers
   }
 
-  private def buildCaffeTypedGraph(layers : Seq[LayerParameter]) : DirectedGraph[LayerParameter] = {
-      val dummySource = new Node[LayerParameter](null)
-      val layersMap = new mutable.HashMap[String, Node[LayerParameter]]()
-      val top2LayerMap = new mutable.HashMap[String, String]()
-      layers.foreach(layer => {
-        val name = layer.getName
-        val node = new Node[LayerParameter](layer)
-        layersMap(name) = node
+  private def convertCaffeLayer(node : Node[String]): Module[T] = {
+    val layerName = node.element
+    val layerType = getLayerType(layerName).get
+    layerType match {
+      case "Convolution" => fromCaffeConvolution(layerName)
+      case "ReLU" => fromCaffeReLU(layerName)
+      case "LRN" => fromCaffeLRN(layerName)
+      case "Input" =>
+      case _ =>
+    }
 
-        val dependencies = layer.getBottomList.asScala
-        dependencies.foreach(dependency => {
-          val dependentNode = layersMap(top2LayerMap(dependency))
-          dependentNode -> node
-        })
-
-        val outputs = layer.getTopList.asScala
-        outputs.foreach(output => {
-          top2LayerMap(output) = name
-        })
-
-      })
-      val zeroInDegreeNodes = layersMap.values.filter( p => {p.prevNodes.size == 0})
-       zeroInDegreeNodes.foreach(zeroInDegreeNode => {
-        dummySource -> zeroInDegreeNode
-      })
-      return  new DirectedGraph(dummySource)
+    null
   }
+
+  private def fromCaffeLRN(layerName : String) : Module[T] = {
+    val param = getLRNParam(layerName).get
+    val localSize = param.getLocalSize
+    val alpha = param.getAlpha
+    val belta = param.getBeta
+    val k = param.getK
+    SpatialCrossMapLRN(localSize, alpha, belta, k)
+  }
+
+  private def fromCaffeReLU(layerName : String) : Module[T] = {
+    ReLU(true).setName(layerName)
+  }
+
+  private def fromCaffeConvolution(layerName : String) : Module[T] = {
+    print(layerName + ": ")
+    val param = getConvolutionParam(layerName).get
+    val weightBlob = getBlob(layerName, 0).get
+    val group = if (param.getGroup == 0)  1 else param.getGroup
+    val nInputPlane = weightBlob.getChannels * group
+    val nOutPlane = weightBlob.getNum
+    var kw = param.getKernelW
+    var kh = param.getKernelH
+    var dw = param.getStrideW
+    var dh = param.getStrideH
+    if (kw ==0 || kh == 0) {
+      kw = param.getKernelSize(0)
+      kh = kw
+    }
+    if (dw == 0 || dh == 0) {
+      if (param.getStrideList.size() != 0) {
+        dw = param.getStride(0)
+        dh = dw
+      } else {
+        // use default values if not found
+        dw = 1
+        dh = 1
+      }
+
+    }
+    var pw = param.getPadW
+    var ph = param.getPadH
+    if (pw == 0 || ph == 0) {
+      if (param.getPadList.size() != 0) {
+        pw = param.getPad(0)
+        ph = pw
+      }
+    }
+    print(" " + nInputPlane)
+    print(" " + nOutPlane)
+    print(" " + kw)
+    print(" " + kh)
+    print(" " + dw)
+    print(" " + dh)
+    print(" " + pw)
+    print(" " + ph)
+    print(" " + group)
+    println()
+    SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group).setName(layerName)
+  }
+
+  private def getLRNParam(name: String): Option[LRNParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getLrnParam)
+    } else if (name2LayerV1.contains(name)) {
+      Some(name2LayerV1(name).getLrnParam)
+    } else {
+      None
+    }
+  }
+
+  private def getConvolutionParam(name: String): Option[ConvolutionParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getConvolutionParam)
+    } else if (name2LayerV1.contains(name)) {
+      Some(name2LayerV1(name).getConvolutionParam)
+    } else {
+      None
+    }
+  }
+
+  private def getLayerType(name: String): Option[String] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getType)
+    } else if (name2LayerV1.contains(name)) {
+      Some(name2LayerV1(name).getType.toString)
+    } else {
+      None
+    }
+  }
+
+  private def getCaffeTypedList() : ArrayBuffer[Node[String]] = {
+    val list = ArrayBuffer[Node[String]]()
+    val layersMap = new mutable.HashMap[String, Node[String]]()
+    val top2LayerMap = new mutable.HashMap[String, String]()
+    netparam.getLayersList.asScala.foreach(layer => {
+      val name = layer.getName
+      val node = new Node(name)
+      list.append(node)
+      layersMap(name) = node
+      val dependencies = layer.getBottomList.asScala
+      dependencies.foreach(dependency => {
+        val dependentNode = layersMap(top2LayerMap(dependency))
+        dependentNode -> node
+      })
+      val outputs = layer.getTopList.asScala
+      outputs.foreach(output => {
+        top2LayerMap(output) = name
+      })
+    })
+    return list
+  }
+/*
+  private def buildCaffeTypedGraph() : DirectedGraph[String] = {
+    val dummySource = new Node[String](null)
+    val layersMap = new mutable.HashMap[String, Node[String]]()
+    val top2LayerMap = new mutable.HashMap[String, String]()
+    netparam.getLayersList.asScala.foreach(layer => {
+      val name = layer.getName
+      val node = new Node(name)
+      layersMap(name) = node
+      val dependencies = layer.getBottomList.asScala
+      dependencies.foreach(dependency => {
+        val dependentNode = layersMap(top2LayerMap(dependency))
+        dependentNode -> node
+      })
+      val outputs = layer.getTopList.asScala
+      outputs.foreach(output => {
+        top2LayerMap(output) = name
+      })
+    })
+    val zeroInDegreeNodes = layersMap.values.filter(node => {node.prevNodes.size == 0})
+    zeroInDegreeNodes.foreach(node => {
+      dummySource -> node
+    })
+    return new DirectedGraph(dummySource)
+  }
+  */
 
 }
 
