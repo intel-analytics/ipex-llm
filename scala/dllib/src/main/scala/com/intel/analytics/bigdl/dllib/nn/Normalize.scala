@@ -32,16 +32,16 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10)
   require(p > 0, s"Normalize: $p-norm not supported, norm number must be bigger than zero")
 
   // buffer
-  var norm = Tensor[T]()
-  var normp = Tensor[T]()
+  val norm = Tensor[T]()
+  val normp = Tensor[T]()
 
-  var buffer = Tensor[T]()
-  var buffer2 = Tensor[T]()
+  val buffer = Tensor[T]()
+  val buffer2 = Tensor[T]()
 
   var inputBuffer = Tensor[T]()
 
-  var cross = Tensor[T]()
-  var indices = Tensor[T]()
+  val cross = Tensor[T]()
+  val indices = Tensor[T]()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() <= 2, s"Normalize: only 1d layer supported, " +
