@@ -66,15 +66,14 @@ class TestWorkFlow(unittest.TestCase):
         self.assertEqual("linear1", l1.name())
         model.add(l1)
 
-        state = {"learningRate": 0.01,
-                 "learningRateDecay": 0.0002,
-                 "learingRateSchedule": Poly(0.5, int((data_len/batch_size)*epoch_num))}  # noqa
+        optim_method = SGD(learningrate=0.01, learningrate_decay=0.0002, weightdecay=0.0,
+                           momentum=0.0, dampening=0.0, nesterov=False,
+                           leaningrate_schedule=Poly(0.5, int((data_len/batch_size)*epoch_num)))
         optimizer = Optimizer(
             model=model_test,
             training_rdd=trainingData,
             criterion=MSECriterion(),
-            optim_method="sgd",
-            state=state,
+            optim_method=optim_method,
             end_trigger=MaxEpoch(epoch_num),
             batch_size=batch_size)
         optimizer.set_validation(

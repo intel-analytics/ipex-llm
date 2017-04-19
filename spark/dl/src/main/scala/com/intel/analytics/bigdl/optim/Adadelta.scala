@@ -22,7 +22,16 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
-class Adadelta[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T])
+/**
+ * Adadelta implementation for SGD: http://arxiv.org/abs/1212.5701
+ * @param decayRate decayRate, also called interpolation parameter rho
+ * @param Epsilon for numerical stability
+ * @tparam T
+ */
+class Adadelta[@specialized(Float, Double) T: ClassTag](
+   var decayRate: Double = 0.9,
+   var Epsilon: Double = 1e-10
+ )(implicit ev: TensorNumeric[T])
   extends OptimMethod[T] {
 
   /**
@@ -31,33 +40,23 @@ class Adadelta[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumer
    * @param feval     a function that takes a single input (X), the point of a evaluation, and
    *                  returns f(X) and df/dX
    * @param parameter the initial point
-   * @param config    a table with hyper-parameters for the optimizer
-   *                  config("learningRate") : learning rate
-   *                  config("learningRateDecay") : learning rate decay
-   *                  config("decayRate"): decayRate, also called interpolation parameter rho
-   *                  config("Epsilon"): for numerical stability
-   * @param state     a table describing the state of the optimizer; after each call the state
-   *                  is modified
    *                  state("paramVariance") : vector of temporal variances of parameters
    *                  state("accDelta"): vector of accumulated delta of gradients
    * @return the new x vector and the function list {fx}, evaluated before the update
    */
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]),
-               parameter: Tensor[T], config: Table, state: Table): (Tensor[T], Array[T]) = {
+               parameter: Tensor[T]): (Tensor[T], Array[T]) = {
 
-    val _config = if (config == null) T() else config
-    val _state = if (state == null) _config else state
-
-    val nevals = _state.getOrElse[Int]("evalCounter", 0)
-    val dr = _config.getOrElse[Double]("decayRate", 0.9)
-    val eps = _config.getOrElse[Double]("Epsilon", 1e-10)
+    val nevals = state.getOrElse[Int]("evalCounter", 0)
+    val dr = this.decayRate
+    val eps = this.Epsilon
 
     val (fx, dfdx) = feval(parameter)
 
     val (_paramVariance, _paramStd, _delta, _accDelta) =
-      if (_state.get[Tensor[T]]("paramVariance").isDefined) {
-        (_state.get[Tensor[T]]("paramVariance").get, _state.get[Tensor[T]]("paramStd").get,
-          _state.get[Tensor[T]]("delta").get, _state.get[Tensor[T]]("accDelta").get)
+      if (state.get[Tensor[T]]("paramVariance").isDefined) {
+        (state.get[Tensor[T]]("paramVariance").get, state.get[Tensor[T]]("paramStd").get,
+          state.get[Tensor[T]]("delta").get, state.get[Tensor[T]]("accDelta").get)
       } else {
         (Tensor[T]().resizeAs(dfdx).zero(), Tensor[T]().resizeAs(dfdx).zero(),
           Tensor[T]().resizeAs(dfdx).zero(), Tensor[T]().resizeAs(dfdx).zero())
@@ -69,19 +68,27 @@ class Adadelta[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumer
       .cdiv(_paramStd).cmul(dfdx)
     parameter.add(ev.fromType[Double](-1), _delta)
     _accDelta.mul(ev.fromType[Double](dr)).addcmul(ev.fromType[Double](1-dr), _delta, _delta)
-    _state("evalCounter") = nevals + 1
-    _state("paramVariance") = _paramVariance
-    _state("paramStd") = _paramStd
-    _state("delta") = _delta
-    _state("accDelta") = _accDelta
+    state("evalCounter") = nevals + 1
+    state("paramVariance") = _paramVariance
+    state("paramStd") = _paramStd
+    state("delta") = _delta
+    state("accDelta") = _accDelta
 
     (parameter, Array(fx))
   }
 
-  override def clearHistory(state: Table): Table = {
+  override def loadFromTable(config: Table): this.type = {
+    this.decayRate = config.get[Double]("decayRate").getOrElse(this.decayRate)
+    this.Epsilon = config.get[Double]("Epsilon").getOrElse(this.Epsilon)
+    this
+  }
+
+  override def clearHistory(): Unit = {
     state.delete("paramVariance")
     state.delete("paramStd")
     state.delete("delta")
     state.delete("accDelta")
   }
+
+  override def getLearningRate(): Double = 0.0
 }

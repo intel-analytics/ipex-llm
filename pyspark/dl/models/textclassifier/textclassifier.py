@@ -132,17 +132,13 @@ def train(sc,
     train_rdd, val_rdd = sample_rdd.randomSplit(
         [training_split, 1-training_split])
 
-    state = {"learningRate": 0.01,
-             "learningRateDecay": 0.0002}
-
     optimizer = Optimizer(
         model=build_model(news20.CLASS_NUM),
         training_rdd=train_rdd,
         criterion=ClassNLLCriterion(),
         end_trigger=MaxEpoch(max_epoch),
         batch_size=batch_size,
-        optim_method="Adagrad",
-        state=state)
+        optim_method=Adagrad(learningrate=0.01, learningrate_decay=0.0002))
 
     optimizer.set_validation(
         batch_size=batch_size,

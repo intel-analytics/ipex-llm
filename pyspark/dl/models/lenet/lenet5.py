@@ -76,14 +76,11 @@ if __name__ == "__main__":
             normalizer(mnist.TRAIN_MEAN, mnist.TRAIN_STD))
         test_data = get_minst(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
-        state = {"learningRate": 0.01,
-                 "learningRateDecay": 0.0002}
         optimizer = Optimizer(
             model=build_model(10),
             training_rdd=train_data,
             criterion=ClassNLLCriterion(),
-            optim_method="SGD",
-            state=state,
+            optim_method=SGD(learningrate=0.01, learningrate_decay=0.0002),
             end_trigger=MaxEpoch(20),
             batch_size=options.batchSize)
         optimizer.set_validation(
