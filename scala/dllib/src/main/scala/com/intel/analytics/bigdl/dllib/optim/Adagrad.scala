@@ -25,11 +25,16 @@ import scala.reflect.ClassTag
 /**
  * An implementation of Adagrad. See the original paper:
  * http://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf
- * @param ev numeric operator
- * @tparam T numeric type
+ * @param learningRate learning rate
+ * @param learningRateDecay learning rate decay
+ * @param weightDecay weight decay
+ * @tparam T
  */
-class Adagrad[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T])
-  extends OptimMethod[T] {
+class Adagrad[@specialized(Float, Double) T: ClassTag](
+    var learningRate: Double = 1e-3,
+    var learningRateDecay: Double = 0.0,
+    var weightDecay: Double = 0.0
+  )(implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
 
   /**
    * Adagrad implementation for Adagrad
@@ -37,24 +42,15 @@ class Adagrad[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeri
    * @param feval     a function that takes a single input (X), the point of a evaluation, and
    *                  returns f(X) and df/dX
    * @param parameter the initial point
-   * @param config    a table with configuration parameters for the optimizer
-   *                  config("learningRate") : learning rate
-   *                  config("learningRateDecay") : learning rate decay
-   * @param state     a table describing the state of the optimizer; after each call the state
-   *                  is modified
-   *                  state("paramVariance") : vector of temporal variances of parameters
    * @return the new x vector and the function list, evaluated before the update
    */
-  override def optimize(feval: (Tensor[T]) => (T, Tensor[T]),
-    parameter: Tensor[T], config: Table, state: Table): (Tensor[T], Array[T]) = {
+  override def optimize(feval: (Tensor[T]) => (T, Tensor[T]), parameter: Tensor[T]
+                       ): (Tensor[T], Array[T]) = {
 
-    val _config = if (config == null) T() else config
-    val _state = if (state == null) _config else state
-
-    val lr = _config.get[Double]("learningRate").getOrElse(1e-3)
-    val lrd = _config.get[Double]("learningRateDecay").getOrElse(0.0)
-    val nevals = _state.get[Int]("evalCounter").getOrElse(0)
-    val wd = config.get[Double]("weightDecay").getOrElse(0.0)
+    val lr = this.learningRate
+    val lrd = this.learningRateDecay
+    val nevals = state.get[Int]("evalCounter").getOrElse(0)
+    val wd = this.weightDecay
 
     val (fx, dfdx) = feval(parameter)
 
@@ -65,8 +61,8 @@ class Adagrad[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeri
     val clr = lr / (1 + nevals * lrd)
 
     val (_paramVariance, _paramStd) =
-      if (_state.get[Tensor[T]]("paramVariance").isDefined) {
-        (_state.get[Tensor[T]]("paramVariance").get, _state.get[Tensor[T]]("paramStd").get)
+      if (state.get[Tensor[T]]("paramVariance").isDefined) {
+        (state.get[Tensor[T]]("paramVariance").get, state.get[Tensor[T]]("paramStd").get)
       } else {
         (Tensor[T]().resizeAs(dfdx).zero(), Tensor[T]().resizeAs(dfdx))
       }
@@ -75,15 +71,25 @@ class Adagrad[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeri
     _paramStd.resizeAs(_paramVariance).copy(_paramVariance).sqrt()
     parameter.addcdiv(ev.fromType[Double](-clr), dfdx, _paramStd.add(ev.fromType[Double](1e-10)))
 
-    _state("evalCounter") = nevals + 1
-    _state("paramVariance") = _paramVariance
-    _state("paramStd") = _paramStd
+    state("evalCounter") = nevals + 1
+    state("paramVariance") = _paramVariance // vector of temporal variances of parameters
+    state("paramStd") = _paramStd
 
     (parameter, Array(fx))
   }
 
-  override def clearHistory(state: Table): Table = {
+  override def loadFromTable(config: Table): this.type = {
+    this.learningRate = config.get[Double]("learningRate").getOrElse(this.learningRate)
+    this.learningRateDecay = config.get[Double]("learningRateDecay")
+      .getOrElse(this.learningRateDecay)
+    this.weightDecay = config.get[Double]("weightDecay").getOrElse(this.weightDecay)
+    this
+  }
+
+  override def clearHistory(): Unit = {
     state.delete("paramVariance")
     state.delete("paramStd")
   }
+
+  override def getLearningRate(): Double = this.learningRate
 }
