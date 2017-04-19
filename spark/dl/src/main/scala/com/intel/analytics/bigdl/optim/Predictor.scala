@@ -59,9 +59,7 @@ class Predictor[T: ClassTag] private[optim](
       val localTransformer = otherBroad.value.cloneTransformer()
       val miniBatch = localTransformer(partition)
       miniBatch.flatMap( batch => {
-        batch.selfCheck()
-        val (input, target) = batch.toActivity()
-        val output = localModel.forward(input).toTensor[T]
+        val output = localModel.forward(batch.getInput).toTensor[T]
         output.split(1)
       })
     }

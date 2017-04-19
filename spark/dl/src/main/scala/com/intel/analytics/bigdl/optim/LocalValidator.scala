@@ -54,7 +54,6 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[M
     val vMethodsArr = (1 to subModelNumber).map(i => vMethods.map(_.clone())).toArray
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     dataIter.map(batch => {
-      batch.selfCheck()
       val stackSize = batch.size() / subModelNumber
       val extraSize = batch.size() % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
@@ -64,7 +63,9 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[M
           () => {
             val offset = b * stackSize + math.min(b, extraSize) + 1
             val length = stackSize + (if (b < extraSize) 1 else 0)
-            val (input, target) = batch.toActivity(offset, length)
+            val currentMiniBatch = batch.slice(offset, length)
+            val input = currentMiniBatch.getInput()
+            val target = currentMiniBatch.getTarget()
             val output = workingModels(b).forward(input)
             val validatMethods = vMethodsArr(b)
             validatMethods.map(validation => {

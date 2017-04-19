@@ -105,7 +105,7 @@ object DistriOptimizerPerf {
 
     val sc = new SparkContext(conf)
     Engine.init
-    val broadcast = sc.broadcast(MiniBatch[Float](Array(input), Array(labels)))
+    val broadcast = sc.broadcast(MiniBatch[Float](input, labels))
     val rdd = sc.parallelize((1 to Engine.nodeNumber()), Engine.nodeNumber())
       .mapPartitions(iter => {
         Iterator.single((broadcast.value))

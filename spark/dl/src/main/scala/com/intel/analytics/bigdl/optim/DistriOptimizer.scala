@@ -157,11 +157,23 @@ object DistriOptimizer {
           val cached = modelIter.next()
           val syWStart = System.nanoTime()
           val weightsResult = parameters.getWeights(cached.modelWeights.head)
-          val tensorBuffer = new Array[(Activity, Activity)](_subModelNumber)
+          val tensorBuffer = new Array[MiniBatch[T]](_subModelNumber)
+          val batch = data.next()
+          val stackSize = batch.size() / _subModelNumber
           tasks += Engine.default.invoke(() => {
-            val batch = data.next()
-            batch.performanceCheck(_subModelNumber)
-            batch.copyTo(tensorBuffer)
+            var b = 0
+            require((batch.size() >= _subModelNumber) &&
+              (batch.size() % _subModelNumber == 0), "total batch size: " +
+              s"${batch.size()} should be divided by total core number: ${_subModelNumber}")
+            if (batch.size() < _subModelNumber * 2) {
+              logger.warn("Warning: for better training speed, " +
+                "total batch size is recommended to be at least two times of core number" +
+                s"${_subModelNumber}, please tune your batch size accordingly")
+            }
+            while (b < _subModelNumber) {
+              tensorBuffer(b) = batch.slice(b * stackSize + 1, stackSize)
+              b += 1
+            }
           })
           Engine.default.sync(tasks)
           weightsResult.waitResult()
@@ -182,7 +194,8 @@ object DistriOptimizer {
               val localModel = cached.localModels(i)
               localModel.training()
               val localCriterion = cached.localCriterions(i)
-              val (input, target) = tensorBuffer(i)
+              val input = tensorBuffer(i).getInput()
+              val target = tensorBuffer(i).getTarget()
               val output = localModel.forward(input)
               lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
               val errors = localCriterion.backward(output, target)
@@ -196,12 +209,7 @@ object DistriOptimizer {
           driverMetrics.add("computing time for each node", computingTime)
 
           val finishedThreads = trainingThreads.filter(!_.isCancelled).map(_.get())
-          // TODO: compute with MiniBatch's size.
-          if (tensorBuffer.head._2.isInstanceOf[Table]) {
-            recordsNum += finishedThreads.size * tensorBuffer.head._2.toTable[Tensor[T]](1).size(1)
-          } else {
-            recordsNum += finishedThreads.size * tensorBuffer.head._2.toTensor[T].size(1)
-          }
+          recordsNum += finishedThreads.size * stackSize
           var i = 0
           while (i < finishedThreads.size) {
             lossSum += lossArray(finishedThreads(i))
@@ -575,7 +583,6 @@ object DistriOptimizer {
 
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
-        batch.selfCheck()
         val stackSize = batch.size() / _subModelNumber
         val extraSize = batch.size() % _subModelNumber
         val parallelism = if (stackSize == 0) extraSize else _subModelNumber
@@ -584,7 +591,9 @@ object DistriOptimizer {
             () => {
               val offset = b * stackSize + math.min(b, extraSize) + 1
               val length = stackSize + (if (b < extraSize) 1 else 0)
-              val (input, target) = batch.toActivity(offset, length)
+              val miniBatch = batch.slice(offset, length)
+              val input = miniBatch.getInput()
+              val target = miniBatch.getTarget()
               val output = workingModels(b).forward(input)
               val validatMethods = vMethodsArr(b).get
               validatMethods.map(validation => {

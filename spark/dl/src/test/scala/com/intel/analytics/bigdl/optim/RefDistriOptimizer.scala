@@ -74,7 +74,8 @@ object RefDistriOptimizer {
         val fp16W = new FP16CompressedTensor[T](localW)
         fp16W.deCompress(localW)
         val batch = iter.next()
-        val (input, target) = batch.toActivity()
+        val input = batch.getInput
+        val target = batch.getTarget
         val output = model.forward(input).asInstanceOf[Tensor[T]]
         val loss = criterion.forward(output, target)
         model.backward(input, criterion.backward(output, target))

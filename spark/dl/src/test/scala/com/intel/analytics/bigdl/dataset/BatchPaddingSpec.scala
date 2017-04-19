@@ -76,17 +76,13 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val tensorTarget2 = Tensor[Float](Storage(
       Array(3.0f, 1.0f, 2.0f, 3.0f, 1.0f, 2.0f, 3.0f, 1.0f, 2.0f)), 1, Array(3, 3))
 
-    var batch = iter.next().toTensorMiniBatch[Float]()
-    var label = batch.labels
-    var data = batch.data
-    label should be (tensorTarget1)
-    batch.data should be (tensorInput1)
+    var batch = iter.next()
+    batch.getTarget should be (tensorTarget1)
+    batch.getInput should be (tensorInput1)
 
-    batch = iter.next().toTensorMiniBatch[Float]()
-    label = batch.labels
-    data = batch.data
-    label should be (tensorTarget2)
-    batch.data should be (tensorInput2)
+    batch = iter.next()
+    batch.getTarget should be (tensorTarget2)
+    batch.getInput should be (tensorInput2)
   }
 
   "SampleToBatchPadding " should "be good when padding to same length for all batch" in {
@@ -137,17 +133,17 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
         3.0f, 1.0f, 4.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f,
         3.0f, 1.0f, 4.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f, 80.0f)), 1, Array(3, 10))
 
-    var batch = iter.next().toTensorMiniBatch[Float]()
-    var label = batch.labels
-    var data = batch.data
+    var batch = iter.next()
+    var label = batch.getTarget
+    var data = batch.getInput
     label should be (tensorTarget1)
-    batch.data should be (tensorInput1)
+    data should be (tensorInput1)
 
-    batch = iter.next().toTensorMiniBatch[Float]()
-    label = batch.labels
-    data = batch.data
+    batch = iter.next()
+    label = batch.getTarget
+    data = batch.getInput
     label should be (tensorTarget2)
-    batch.data should be (tensorInput2)
+    data should be (tensorInput2)
   }
 
   "SampleToBatchPadding " should "be same to SampleToBatch when no padding" in {
@@ -170,10 +166,10 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val data2 = trainSet2.toLocal().data(train = false)
 
     while (data1.hasNext && data2.hasNext) {
-      val batch1 = data1.next().toTensorMiniBatch[Float]()
-      val batch2 = data2.next().toTensorMiniBatch[Float]()
-      batch1.data should be (batch2.data)
-      batch1.labels should be (batch2.labels)
+      val batch1 = data1.next()
+      val batch2 = data2.next()
+      batch1.getInput should be (batch2.getInput)
+      batch1.getTarget should be (batch2.getTarget)
     }
     data1.hasNext should be (false)
     data2.hasNext should be (false)
@@ -212,10 +208,10 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val data2 = trainSet2.toLocal().data(train = false)
 
     while (data1.hasNext && data2.hasNext) {
-      val batch1 = data1.next().toTensorMiniBatch[Float]()
-      val batch2 = data2.next().toTensorMiniBatch[Float]()
-      batch1.data should be (batch2.data)
-      batch1.labels should be (batch2.labels)
+      val batch1 = data1.next()
+      val batch2 = data2.next()
+      batch1.getInput should be (batch2.getInput)
+      batch1.getTarget should be (batch2.getTarget)
     }
     data1.hasNext should be (false)
     data2.hasNext should be (false)

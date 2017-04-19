@@ -41,7 +41,8 @@ class RefLocalOptimizer[T: ClassTag](
     state("neval") = state.get[Int]("neval").getOrElse(1)
     while (!endWhen(state)) {
       val batch = data.next()
-      val (input, target) = batch.toActivity()
+      val input = batch.getInput
+      val target = batch.getTarget
       model.training()
       model.zeroGradParameters()
       val output = model.forward(input).asInstanceOf[Tensor[T]]

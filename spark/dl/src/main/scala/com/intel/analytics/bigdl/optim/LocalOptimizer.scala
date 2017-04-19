@@ -90,15 +90,14 @@ class LocalOptimizer[T: ClassTag] private[optim](
       // Fetch data and prepare tensors
       val batch = iter.next()
       var b = 0
-      batch.selfCheck()
       val stackSize = batch.size() / subModelNumber
       val extraSize = batch.size() % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
-      val tensorBuffer = new Array[(Activity, Activity)](parallelism)
+      val tensorBuffer = new Array[MiniBatch[T]](parallelism)
       while (b < parallelism) {
         val offset = b * stackSize + math.min(b, extraSize) + 1
         val length = stackSize + (if (b < extraSize) 1 else 0)
-        tensorBuffer(b) = batch.toActivity(offset, length)
+        tensorBuffer(b) = batch.slice(offset, length)
         b += 1
       }
       val dataFetchTime = System.nanoTime()
@@ -110,7 +109,8 @@ class LocalOptimizer[T: ClassTag] private[optim](
             localModel.zeroGradParameters()
             localModel.training()
             val localCriterion = workingCriterion(i)
-            val (input, target) = tensorBuffer(i)
+            val input = tensorBuffer(i).getInput()
+            val target = tensorBuffer(i).getTarget()
             val output = localModel.forward(input)
             val _loss = ev.toType[Double](localCriterion.forward(output, target))
             val errors = localCriterion.backward(output, target)
@@ -205,7 +205,6 @@ class LocalOptimizer[T: ClassTag] private[optim](
 
     var count = 0
     dataIter.map(batch => {
-      batch.selfCheck()
       val stackSize = batch.size() / subModelNumber
       val extraSize = batch.size() % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
@@ -215,7 +214,9 @@ class LocalOptimizer[T: ClassTag] private[optim](
           () => {
             val offset = b * stackSize + math.min(b, extraSize) + 1
             val length = stackSize + (if (b < extraSize) 1 else 0)
-            val (input, target) = batch.toActivity(offset, length)
+            val currentMiniBatch = batch.slice(offset, length)
+            val input = currentMiniBatch.getInput()
+            val target = currentMiniBatch.getTarget()
             val output = workingModels(b).forward(input)
             val validatMethods = vMethodsArr(b)
             validatMethods.map(validation => {
