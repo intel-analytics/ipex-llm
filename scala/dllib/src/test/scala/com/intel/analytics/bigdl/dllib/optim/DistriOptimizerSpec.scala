@@ -320,10 +320,11 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     .setEndWhen(Trigger.maxEpoch(1))
     .optimize()
 
-    val state = T.load(optimizer.getCheckpointPath().get + "/state.33")
+    val optimMethod =
+      OptimMethod.load[Double](optimizer.getCheckpointPath().get + "/optimMethod.33")
 
-    state[Int]("epoch") should be (2)
-    state[Int]("neval") should be (33)
+    optimMethod.state.get[Int]("epoch").get should be (2)
+    optimMethod.state.get[Int]("neval").get should be (33)
   }
 
   "TrainSummary with MSE and LBFGS" should "work correctly" in {

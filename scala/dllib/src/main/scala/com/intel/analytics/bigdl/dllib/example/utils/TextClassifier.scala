@@ -235,10 +235,9 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
       criterion = new ClassNLLCriterion[Float](),
       batchSize = param.batchSize
     )
-    val state = T("learningRate" -> 0.01, "learningRateDecay" -> 0.0002)
+
     optimizer
-      .setState(state)
-      .setOptimMethod(new Adagrad())
+      .setOptimMethod(new Adagrad(learningRate = 0.01, learningRateDecay = 0.0002))
       .setValidation(Trigger.everyEpoch, valRDD, Array(new Top1Accuracy[Float]), param.batchSize)
       .setEndWhen(Trigger.maxEpoch(20))
       .optimize()
@@ -274,10 +273,8 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
       batchSize = param.batchSize
     )
 
-    val state = T("learningRate" -> 0.01, "learningRateDecay" -> 0.0002)
     optimizer
-      .setState(state)
-      .setOptimMethod(new Adagrad())
+      .setOptimMethod(new Adagrad(learningRate = 0.01, learningRateDecay = 0.0002))
       .setValidation(Trigger.everyEpoch, valRDD, Array(new Top1Accuracy[Float]), param.batchSize)
       .setEndWhen(Trigger.maxEpoch(1))
       .optimize()
