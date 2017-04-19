@@ -153,26 +153,18 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   def createCaffeModel(): Module[T] = {
-    val model: Module[T] = null
-    if (prototxtPath == null) throw new Exception("Net definition path cannot be empty")
-    val defFile = new File(prototxtPath)
-    val defReader = new InputStreamReader(new FileInputStream(defFile), "ASCII")
-    val builder = NetParameter.newBuilder
-    TextFormat.merge(defReader, builder)
-    val name = builder.getName
-    val layers = builder.getLayerList.asScala
+    val model = null
+    loadCaffe(prototxtPath, modelPath)
+    val name = netparam.getName
+    val layers = netparam.getLayerList.asScala
     val directedGraph = buildCaffeTypedGraph(layers)
     model
   }
   // TODO : to be removed
   def createCaffeGraph(): DirectedGraph[LayerParameter] = {
-    if (prototxtPath == null) throw new Exception("Net definition path cannot be empty")
-    val defFile = new File(prototxtPath)
-    val defReader = new InputStreamReader(new FileInputStream(defFile), "ASCII")
-    val builder = NetParameter.newBuilder
-    TextFormat.merge(defReader, builder)
-    val name = builder.getName
-    val layers = builder.getLayerList.asScala
+    loadCaffe(prototxtPath, modelPath)
+    val name = netparam.getName
+    val layers = netparam.getLayerList.asScala
     val directedGraph = buildCaffeTypedGraph(layers)
     directedGraph
   }
