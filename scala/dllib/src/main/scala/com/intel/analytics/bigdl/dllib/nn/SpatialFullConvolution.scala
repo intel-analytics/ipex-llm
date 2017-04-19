@@ -94,8 +94,8 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   protected val onesBias = Tensor[T]()
   protected val onesBatch = Tensor[T]()
   protected var weightMM: Tensor[T] = null
-  protected var gradientBiasMT: Tensor[T] = Tensor[T]()
-  protected var gradWeightMMInBatch: Tensor[T] = Tensor[T]()
+  protected val gradientBiasMT: Tensor[T] = Tensor[T]()
+  protected val gradWeightMMInBatch: Tensor[T] = Tensor[T]()
 
   protected val _1x1 = if (kH == 1 && kW == 1 && dW == 1 && dH == 1
     && padH == 0 && padW == 0) {
