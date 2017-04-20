@@ -142,7 +142,7 @@
                     <systemProperties>
                         <bigdl.disableCheckSysEnv>true</bigdl.disableCheckSysEnv>
                     </systemProperties>
-                    <argLine>-Xmx6g</argLine>
+                    <argLine>-Xmx6g -XX:MaxPermSize=1g</argLine>
                 </configuration>
                 <executions>
                     <execution>
