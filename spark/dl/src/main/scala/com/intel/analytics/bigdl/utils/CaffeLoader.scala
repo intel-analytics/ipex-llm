@@ -20,10 +20,12 @@ import java.io.{File, FileInputStream, InputStreamReader}
 
 import scala.collection.JavaConverters._
 import caffe.Caffe
+import caffe.Caffe.PoolingParameter.PoolMethod
 import caffe.Caffe._
 import com.google.protobuf.{CodedInputStream, TextFormat}
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.{ReLU, SpatialConvolution, SpatialCrossMapLRN}
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.log4j.Logger
@@ -154,52 +156,159 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     loadParameters(name, params)
   }
 
+  /**
+   * Load caffe model from prototxt file and binary pre-trained model and converted
+   * to BigDL graph module
+   * Pre-defined module structure is not needed, it will be created dynamically
+   */
   def createCaffeModel(): Module[T] = {
-    val model = null
     loadCaffe(prototxtPath, modelPath)
     val caffeTypedLayers = getCaffeTypedList
-    convert(caffeTypedLayers)
-    model
+    val layers = convert(caffeTypedLayers)
+    val inputs = layers.filter(layer => layer.prevNodes.size == 0).toArray
+    val outputs = layers.filter(layer => layer.nextNodes.size == 0).toArray
+    val module = Graph(inputs, outputs)
+    copyParameters(module)
+    module
   }
 
-  private def convert(caffeTypedLayers : ArrayBuffer[Node[String]]) : ArrayBuffer[Module[T]] = {
-    val layers = new ArrayBuffer[Module[T]]()
+  private def convert(caffeTypedLayers : ArrayBuffer[Node[String]]):
+        ArrayBuffer[ModuleNode[T]] = {
+    val layers = new ArrayBuffer[ModuleNode[T]]()
+    val layersMap = new mutable.HashMap[String, ModuleNode[T]]()
     caffeTypedLayers.foreach(layer => {
-      val converted : Module[T] = convertCaffeLayer(layer)
-      if (converted != null) layers.append(converted)
+      var converted : ModuleNode[T] = convertCaffeLayer(layer)
+      val layerName = layer.element
+      if (converted != null) {
+        val dependencies = layer.prevNodes
+        dependencies.foreach(dependency => {
+          val dependencyKey = dependency.element
+          if (layersMap.contains(dependency.element)) layersMap(dependency.element) -> converted
+        })
+        while (converted.nextNodes.size != 0) {
+          layers.append(converted)
+          converted = converted.nextNodes(0)
+        }
+        layers.append(converted)
+        layersMap(layerName) = converted
+      }
     })
     return layers
   }
 
-  private def convertCaffeLayer(node : Node[String]): Module[T] = {
+  private def convertCaffeLayer(node : Node[String]): ModuleNode[T] = {
     val layerName = node.element
     val layerType = getLayerType(layerName).get
-    layerType match {
+    val module = layerType match {
       case "Convolution" => fromCaffeConvolution(layerName)
       case "ReLU" => fromCaffeReLU(layerName)
       case "LRN" => fromCaffeLRN(layerName)
-      case "Input" =>
-      case _ =>
+      case "Pooling" => fromCaffePooling(layerName)
+      case "InnerProduct" => fromCaffeInnerProduct(layerName)
+      case "Dropout" => fromCaffeDropout(layerName)
+      case "SOFTMAX_LOSS" => fromCaffeSoftmax(layerName)
+      case "TanH" => fromCaffeTanh(layerName)
+      case "SigMoid" => fromCaffeSigmoid(layerName)
+      case "AbsVal" => fromCaffeAbsVal(layerName)
+      case "BatchNorm" => fromCaffeBatchNormalization(layerName)
+      case "Input" => null
+      case _ => throw new Exception(s"$layerType is not supported in BigDL fow now")
     }
-
-    null
+    module
   }
 
-  private def fromCaffeLRN(layerName : String) : Module[T] = {
+  private def fromCaffeBatchNormalization(layerName : String) : ModuleNode[T] = {
+    val param = getBatchNormParam(layerName).get
+    val eps = param.getEps
+    BatchNormalization[T](3, eps).apply()
+  }
+  private def fromCaffeAbsVal(layerName : String) : ModuleNode[T] = {
+    new Abs[T]().setName(layerName).apply()
+  }
+  private def fromCaffeSigmoid(layerName : String) : ModuleNode[T] = {
+    new Sigmoid[T]().setName(layerName).apply()
+  }
+
+  private def fromCaffeTanh(layerName : String) : ModuleNode[T] = {
+    new Tanh[T]().setName(layerName).apply()
+  }
+
+  private def fromCaffeSoftmax(layerName : String) : ModuleNode[T] = {
+    new LogSoftMax().setName(layerName).apply()
+  }
+  private def fromCaffeDropout(layerName : String) : ModuleNode[T] = {
+    val param = getDropoutParam(layerName).get
+    val initP = param.getDropoutRatio
+    new Dropout[T](initP).setName(layerName).apply()
+  }
+  private def fromCaffeInnerProduct(layerName : String) : ModuleNode[T] = {
+    val param = getInnerProductParam(layerName).get
+    val weightBlob = getBlob(layerName, 0).get
+    var nInputPlane = 0
+    if (weightBlob.hasShape) {
+      nInputPlane = weightBlob.getShape.getDim(1).toInt
+    }
+    else {
+      nInputPlane = weightBlob.getWidth
+    }
+    val nOutputPlane = param.getNumOutput
+    val linear = Linear[T](nInputPlane, nOutputPlane).setName(layerName)
+    val node = linear.apply()
+    if(nInputPlane != nOutputPlane) {
+      // Construct a view layer in between
+      val view = View[T](nInputPlane).apply()
+      view -> node
+      view
+    } else {
+      node
+    }
+  }
+
+  private def fromCaffePooling(layerName : String): ModuleNode[T] = {
+    val param = getPoolingParam(layerName).get
+    var kw = param.getKernelW
+    var kh = param.getKernelH
+    var dw = param.getStrideW
+    var dh = param.getStrideH
+    var pw = param.getPadW
+    var ph = param.getPadH
+    if (kw ==0 || kh == 0) {
+      kw = param.getKernelSize
+      kh = kw
+    }
+    if (dw == 0 || dh == 0) {
+        dw = param.getStride
+        dh = dw
+    }
+    if (pw == 0 || ph == 0) {
+        pw = param.getPad
+        ph = pw
+    }
+    val poolingType = param.getPool
+    val pooling = poolingType match {
+      case PoolMethod.MAX => SpatialMaxPooling[T](kw, kh, dw, dh, pw, ph).
+        setName(layerName).apply()
+      case PoolMethod.AVE => SpatialAveragePooling[T](kw, kh, dw, dh, pw, ph).
+        setName(layerName).apply()
+      case _ => null
+    }
+    pooling
+  }
+
+  private def fromCaffeLRN(layerName : String) : ModuleNode[T] = {
     val param = getLRNParam(layerName).get
     val localSize = param.getLocalSize
     val alpha = param.getAlpha
     val belta = param.getBeta
     val k = param.getK
-    SpatialCrossMapLRN(localSize, alpha, belta, k)
+    new SpatialCrossMapLRN[T](localSize, alpha, belta, k).setName(layerName).apply()
   }
 
-  private def fromCaffeReLU(layerName : String) : Module[T] = {
-    ReLU(true).setName(layerName)
+  private def fromCaffeReLU(layerName : String) : ModuleNode[T] = {
+    new ReLU(true).setName(layerName).apply()
   }
 
-  private def fromCaffeConvolution(layerName : String) : Module[T] = {
-    print(layerName + ": ")
+  private def fromCaffeConvolution(layerName : String) : ModuleNode[T] = {
     val param = getConvolutionParam(layerName).get
     val weightBlob = getBlob(layerName, 0).get
     val group = if (param.getGroup == 0)  1 else param.getGroup
@@ -232,17 +341,46 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         ph = pw
       }
     }
-    print(" " + nInputPlane)
-    print(" " + nOutPlane)
-    print(" " + kw)
-    print(" " + kh)
-    print(" " + dw)
-    print(" " + dh)
-    print(" " + pw)
-    print(" " + ph)
-    print(" " + group)
-    println()
-    SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group).setName(layerName)
+    new SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
+      .setName(layerName).apply()
+  }
+
+  private def getBatchNormParam(name: String): Option[BatchNormParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getBatchNormParam)
+    } else {
+      None
+    }
+  }
+
+  private def getDropoutParam(name: String): Option[DropoutParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getDropoutParam)
+    } else if (name2LayerV1.contains(name)) {
+      Some(name2LayerV1(name).getDropoutParam)
+    } else {
+      None
+    }
+  }
+
+  private def getInnerProductParam(name: String): Option[InnerProductParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getInnerProductParam)
+    } else if (name2LayerV1.contains(name)) {
+      Some(name2LayerV1(name).getInnerProductParam)
+    } else {
+      None
+    }
+  }
+
+  private def getPoolingParam(name: String): Option[PoolingParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getPoolingParam)
+    } else if (name2LayerV1.contains(name)) {
+      Some(name2LayerV1(name).getPoolingParam)
+    } else {
+      None
+    }
   }
 
   private def getLRNParam(name: String): Option[LRNParameter] = {
@@ -296,33 +434,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     })
     return list
   }
-/*
-  private def buildCaffeTypedGraph() : DirectedGraph[String] = {
-    val dummySource = new Node[String](null)
-    val layersMap = new mutable.HashMap[String, Node[String]]()
-    val top2LayerMap = new mutable.HashMap[String, String]()
-    netparam.getLayersList.asScala.foreach(layer => {
-      val name = layer.getName
-      val node = new Node(name)
-      layersMap(name) = node
-      val dependencies = layer.getBottomList.asScala
-      dependencies.foreach(dependency => {
-        val dependentNode = layersMap(top2LayerMap(dependency))
-        dependentNode -> node
-      })
-      val outputs = layer.getTopList.asScala
-      outputs.foreach(output => {
-        top2LayerMap(output) = name
-      })
-    })
-    val zeroInDegreeNodes = layersMap.values.filter(node => {node.prevNodes.size == 0})
-    zeroInDegreeNodes.foreach(node => {
-      dummySource -> node
-    })
-    return new DirectedGraph(dummySource)
-  }
-  */
-
 }
 
 object CaffeLoader {
