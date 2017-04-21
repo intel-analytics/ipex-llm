@@ -16,6 +16,8 @@
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <scoverage.scalacPluginVersion>1.1.1</scoverage.scalacPluginVersion>
         <scoverage.aggregate>true</scoverage.aggregate>
+        <runSpecsInParallel>false</runSpecsInParallel>
+        <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
     </properties>
 
     <dependencies>
@@ -329,30 +331,6 @@
             <properties>
                 <runSpecsInParallel>false</runSpecsInParallel>
                 <tagsToExclude>com.intel.analytics.bigdl.tags.Parallel,com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>net.alchim31.maven</groupId>
-                        <artifactId>scala-maven-plugin</artifactId>
-                        <version>3.2.0</version>
-                        <configuration>
-                            <excludes>
-                                <exclude>com/intel/analytics/bigdl/example/udfpredictor/*Stream*.scala</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>serial-all</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <runSpecsInParallel>false</runSpecsInParallel>
-                <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
             </properties>
             <build>
                 <plugins>
