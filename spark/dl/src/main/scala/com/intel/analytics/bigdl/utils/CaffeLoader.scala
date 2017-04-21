@@ -211,10 +211,70 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       case "SigMoid" => fromCaffeSigmoid(layerName)
       case "AbsVal" => fromCaffeAbsVal(layerName)
       case "BatchNorm" => fromCaffeBatchNormalization(layerName)
+      case "Concat" => fromCaffeConcat(layerName)
+      case "ELU" => fromCaffeELU(layerName)
+      case "Flatten" => fromCaffeFlatten(layerName)
+      case "Log" => fromCaffeLog(layerName)
+      case "Power" => fromCaffePower(layerName)
+      case "PReLU" => fromCaffePreLU(layerName)
+      case "Recurrent" => fromCaffeRecurrent(layerName)
+      case "RNN" => fromCaffeRecurrent(layerName)
+      case "Reshape" => fromCaffeReshape(layerName)
+      case "Scale" => fromCaffeScale(layerName)
       case "Input" => null
       case _ => throw new Exception(s"$layerType is not supported in BigDL fow now")
     }
     module
+  }
+
+  private def fromCaffeScale(layerName : String) : ModuleNode[T] = {
+    val param = getReshapParam(layerName).get
+    val shapeSize = param.getShape.getDimList.toArray.asInstanceOf[Array[Int]]
+    Reshape[T](shapeSize).setName(layerName).apply()
+  }
+
+  private def fromCaffeReshape(layerName : String) : ModuleNode[T] = {
+    val param = getReshapParam(layerName).get
+    val shapeSize = param.getShape.getDimList.toArray.asInstanceOf[Array[Int]]
+    Reshape[T](shapeSize).setName(layerName).apply()
+  }
+
+  private def fromCaffeRecurrent(layerName : String) : ModuleNode[T] = {
+    Recurrent[T]().setName(layerName).apply()
+  }
+
+  private def fromCaffePreLU(layerName : String) : ModuleNode[T] = {
+    PReLU[T]().setName(layerName).apply()
+  }
+
+  private def fromCaffePower(layerName : String) : ModuleNode[T] = {
+    val param = getPowerParam(layerName).get
+    val power = param.getPower
+    var scale = 1.0
+    var shift = 0.0
+    if (param.hasScale) scale = param.getScale
+    if (param.hasShift) shift = param.getShift
+    Power[T](power, scale, shift).apply()
+  }
+
+  private def fromCaffeLog(layerName : String) : ModuleNode[T] = {
+    Log[T]().setName(layerName).apply()
+  }
+
+  private def fromCaffeFlatten(layerName : String) : ModuleNode[T] = {
+    FlattenTable[T].setName(layerName).apply()
+  }
+  private def fromCaffeELU(layerName : String) : ModuleNode[T] = {
+    val param = getELUParam(layerName).get
+    var alpha = 1.0
+    if (param.hasAlpha) alpha = param.getAlpha
+    ELU[T](alpha).apply()
+  }
+
+  private def fromCaffeConcat(layerName : String) : ModuleNode[T] = {
+    val param = getContactParam(layerName)
+    val dim = param.get.getConcatDim
+    Concat[T](dim).setName(layerName).apply()
   }
 
   private def fromCaffeBatchNormalization(layerName : String) : ModuleNode[T] = {
@@ -343,6 +403,42 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     }
     new SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
       .setName(layerName).apply()
+  }
+
+  private def getReshapParam(name: String): Option[ReshapeParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getReshapeParam)
+    } else {
+      None
+    }
+  }
+
+  private def getPowerParam(name: String): Option[PowerParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getPowerParam)
+    } else if (name2LayerV1.contains(name)) {
+      Some(name2LayerV1(name).getPowerParam)
+    } else {
+      None
+    }
+  }
+
+  private def getELUParam(name: String): Option[ELUParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getEluParam)
+    } else {
+      None
+    }
+  }
+
+  private def getContactParam(name: String): Option[ConcatParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getConcatParam)
+    } else if (name2LayerV1.contains(name)) {
+      Some(name2LayerV1(name).getConcatParam)
+    } else {
+      None
+    }
   }
 
   private def getBatchNormParam(name: String): Option[BatchNormParameter] = {
