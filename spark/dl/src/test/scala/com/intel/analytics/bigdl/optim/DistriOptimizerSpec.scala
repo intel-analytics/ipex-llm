@@ -125,6 +125,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       override def size(): Long = 256 * nodeNumber
 
       override def shuffle(): Unit = {}
+
+      override def cache(): Unit = rdd.cache().count()
     }
 
     plusOne = 0.0
@@ -274,6 +276,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       override def size(): Long = 256 * nodeNumber
 
       override def shuffle(): Unit = {}
+
+      override def cache(): Unit = rdd.cache().count()
     }
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setState(T("learningRate" -> 20.0))
