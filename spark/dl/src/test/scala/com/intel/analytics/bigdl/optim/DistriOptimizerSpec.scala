@@ -408,6 +408,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
     result2(Array(1)) should be(1.0 +- 5e-2)
+
+    ExceptionTest.resetCount()
   }
 
   "Train with MSE and SGD" should "be trained with good result with failures in big interval" in {
@@ -430,5 +432,27 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
     result2(Array(1)) should be(1.0 +- 5e-2)
+
+    ExceptionTest.resetCount()
+  }
+
+  "Train with MSE and SGD" should "throw exception after retry times exceed settings" in {
+    val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
+    val failCountNumberList = Array(800, 850, 900)
+    System.setProperty("bigdl.failure.retryTimes", "3")
+    val mm = mserf(failCountNumberList)
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(5))
+      .setCheckpoint(filePath, Trigger.everyEpoch)
+
+    intercept[Exception] {
+      optimizer.optimize()
+    }
+
+    ExceptionTest.resetCount()
   }
 }
