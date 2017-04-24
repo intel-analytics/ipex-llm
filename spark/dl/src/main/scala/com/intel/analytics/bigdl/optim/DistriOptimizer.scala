@@ -61,6 +61,7 @@ object DistriOptimizer {
     localCriterions: Array[Criterion[T]],
     localStates: Array[Table],
     gradient: Tensor[T],
+    elasticDifference: Tensor[T],
     var moduleTimeList: Array[Long] = null,
     localMethods: Array[Option[Array[ValidationMethod[T]]]]
   )
@@ -143,6 +144,9 @@ object DistriOptimizer {
       metrics.set("computing time for each node", mutable.ArrayBuffer[Double](), sc)
       metrics.set("computing time average", 0.0, sc, partitionNum)
       metrics.set("aggregate gradient time", 0.0, sc, partitionNum)
+      if (optimMethod.isInstanceOf[EAMSGD[T]]) {
+        metrics.set("computing elastic difference time", 0.0, sc, partitionNum)
+      }
       metrics.set("get weights average", 0.0, sc, partitionNum)
       metrics.set("get weights for each node", mutable.ArrayBuffer[Double](), sc)
 
@@ -154,7 +158,12 @@ object DistriOptimizer {
         (data, modelIter) => {
           val cached = modelIter.next()
           val syWStart = System.nanoTime()
-          val weightsResult = parameters.getWeights(cached.modelWeights.head)
+          val localParamsBuffer = if (optimMethod.isInstanceOf[EAMSGD[T]]) {
+            cached.elasticDifference
+          } else {
+            cached.modelWeights.head
+          }
+          val weightsResult = parameters.getWeights(localParamsBuffer)
           val tensorBuffer = new Array[(Tensor[T], Tensor[T])](_subModelNumber)
           tasks += Engine.default.invoke(() => {
             val batch = data.next()
@@ -244,9 +253,31 @@ object DistriOptimizer {
               }
             }))
             driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
+
+            // averaging local multi-model gradients and computing elastic difference for EAMSGD
+            if (optimMethod.isInstanceOf[EAMSGD[T]]) {
+              time = System.nanoTime()
+              Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
+                val offset = tid * taskSize + math.min(tid, extraTask)
+                val length = taskSize + (if (tid < extraTask) 1 else 0)
+
+                cached.gradient.narrow(1, offset + 1, length).div(ev.fromType(finishedThreads.size))
+
+                // elastic difference = alpha * (xi - x*)
+                cached.elasticDifference.narrow(1, offset + 1, length)
+                  .mul(ev.fromType(-1))
+                  .add(cached.modelWeights.head.narrow(1, offset + 1, length))
+                  .mul(ev.fromType(cached.localStates.head.getOrElse[Double]("movingRate", 0.0)))
+              }))
+              driverMetrics.add("computing elastic difference time", System.nanoTime() - time)
+            }
           }
 
-          parameters.putGradients(cached.gradient)
+          if (optimMethod.isInstanceOf[EAMSGD[T]]) {
+            parameters.putGradients(cached.elasticDifference)
+          } else {
+            parameters.putGradients(cached.gradient)
+          }
           tasks ++= Engine.default.invoke((0 until _subModelNumber).map(i => () => {
             cached.localModels(i).training()
             cached.localModels(i).zeroGradParameters()
@@ -260,11 +291,22 @@ object DistriOptimizer {
         models.mapPartitions(modelIter => {
           val modelCache = modelIter.next()
           parameters.aggregrateGradientPartition()
-          parameters.gradientPartition.div(ev.fromType(finishedModelNum))
           modelCache.localStates.head("neval") = driverState[Int]("neval")
           modelCache.localStates.head("epoch") = driverState[Int]("epoch")
-          optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
-            parameters.weightPartition, modelCache.localStates.head, modelCache.localStates.head)
+
+          if (optimMethod.isInstanceOf[EAMSGD[T]]) {
+            val lr = modelCache.localStates.head.getOrElse[Double]("learningRate", 1e-3)
+            // x* = x* + sigma[alpha * (x - x*)]
+            parameters.weightPartition.add(parameters.gradientPartition)
+            // local update: x = x - lr*gradient - alpha*elasticDifference
+            modelCache.modelWeights.head
+              .add(ev.fromType(-lr), modelCache.gradient)
+              .add(ev.fromType(-1), modelCache.elasticDifference)
+          } else {
+            parameters.gradientPartition.div(ev.fromType(finishedModelNum))
+            optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
+              parameters.weightPartition, modelCache.localStates.head, modelCache.localStates.head)
+          }
 
           parameters.sendWeightPartition()
           Iterator.empty
@@ -522,6 +564,7 @@ object DistriOptimizer {
         cached.map(_._4), // criterions
         cached.map(_._5), // states
         cached.head._2.clone(), // a tensor buffer
+        cached.head._2.clone(), // a tensor buffer for elastic difference
         new Array[Long](_subModelNumber * computeThresholdbatchSize),
         cached.map(_._6)
       ))
