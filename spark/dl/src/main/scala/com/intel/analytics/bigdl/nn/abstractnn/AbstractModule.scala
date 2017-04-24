@@ -353,7 +353,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @return node containing current module
    */
   def apply(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    require(this.isInstanceOf[AbstractModule[_, Tensor[T], T]],
+    require(this.isInstanceOf[AbstractModule[_, _, _]],
       "AbstractModule: Only module with tensor output can be added into a graph node")
     val curNode = new ModuleNode[T](this.asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
     nodes.foreach(node => {

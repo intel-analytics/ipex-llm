@@ -54,10 +54,6 @@ parse() {
             export DL_CORE_NUMBER="$2"
             shift 2
             ;;
-            -l|--local)
-            export BIGDL_LOCAL_MODE="1"
-            shift 1
-            ;;
             --)
             shift
             for token in "$@"; do

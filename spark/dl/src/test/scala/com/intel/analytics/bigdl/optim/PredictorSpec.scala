@@ -16,30 +16,14 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl.SparkContextSpec
 import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
-  var sc: SparkContext = null
-  val nodeNumber = 1
-  val coreNumber = 1
-
-  before {
-    Engine.init(nodeNumber, coreNumber, true)
-    val conf = new SparkConf().setMaster("local[1]").setAppName("predictor")
-    sc = new SparkContext(conf)
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
+class PredictorSpec extends SparkContextSpec {
 
   "model.predict" should "be correct" in {
     RNG.setSeed(100)

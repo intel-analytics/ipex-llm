@@ -16,8 +16,6 @@
 
 package com.intel.analytics.bigdl.models.lenet
 
-import java.nio.file.Paths
-
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
@@ -26,7 +24,7 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 object Train {
   LoggerFilter.redirectSparkInfoLogs()
@@ -36,11 +34,12 @@ object Train {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      val conf = Engine.createSparkConf()
+      val conf = Engine.createSparkConf(new SparkConf()
+        .setIfMissing("spark.master", "local[*]")
         .setAppName("Train Lenet on MNIST")
-        .set("spark.task.maxFailures", "1")
-      val sc = new SparkContext(conf)
-      Engine.init
+        .set("spark.task.maxFailures", "1"))
+      val sc = SparkContext.getOrCreate(conf)
+      Engine.init(conf)
 
       val trainData = param.folder + "/train-images-idx3-ubyte"
       val trainLabel = param.folder + "/train-labels-idx1-ubyte"

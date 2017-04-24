@@ -16,41 +16,14 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{DataSet, Sample, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, Sample}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.nn.CrossEntropyCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl._
 
-class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter{
-
-  var sc: SparkContext = null
-  val nodeNumber = 1
-  val coreNumber = 1
-
-  before {
-    Engine.init(nodeNumber, coreNumber, true)
-    val conf = new SparkConf().setMaster("local[1]").setAppName("evaluator")
-    sc = new SparkContext(conf)
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
-
-  private def processPath(path: String): String = {
-    if (path.contains(":")) {
-      path.substring(1)
-    } else {
-      path
-    }
-  }
+class EvaluatorSpec extends SparkContextSpec {
 
   "Evaluator" should "be correct" in {
     RNG.setSeed(100)

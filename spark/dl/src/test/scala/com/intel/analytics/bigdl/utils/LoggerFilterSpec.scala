@@ -16,28 +16,21 @@
 
 package com.intel.analytics.bigdl.utils
 
+import com.intel.analytics.bigdl.SparkContextSpec
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.optim.{Optimizer, SGD, Trigger}
 import com.intel.analytics.bigdl.nn.{Linear, MSECriterion, Sequential}
 import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample, SampleToBatch}
 
-import scala.io.Source
 import java.io.StringWriter
 import java.nio.file.{Files, Paths}
-import org.apache.spark.SparkContext
 import org.apache.log4j.{Level, Logger, PatternLayout, WriterAppender}
 
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-
 @com.intel.analytics.bigdl.tags.Serial
-class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class LoggerFilterSpec extends SparkContextSpec {
 
-  var sc: SparkContext = null
-
-  after {
-    if (sc != null) { sc.stop() }
-  }
+  override def getExtraConf: Map[String, String] = Map("spark.task.maxFailures" -> "1")
 
   def writerAndAppender: (WriterAppender, StringWriter) = {
     // add an appender to optmClz because it's very hard to get the stdout of Log4j.
@@ -69,13 +62,6 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val model = Sequential()
       .add(layer)
     model.reset()
-
-    sc = new SparkContext(
-      Engine.init(1, 1, true).get
-        .setAppName(s"LoggerFilter test")
-        .set("spark.task.maxFailures", "1")
-        .setMaster("local[1]")
-    )
 
     val maxEpoch = 1
     val recordSize = 100
@@ -135,13 +121,6 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     LoggerFilter.redirectSparkInfoLogs()
     Logger.getLogger(optimClz).setLevel(Level.INFO)
 
-    sc = new SparkContext(
-      Engine.init(1, 1, true).get
-        .setAppName(s"LoggerFilter test")
-        .set("spark.task.maxFailures", "1")
-        .setMaster("local[1]")
-    )
-
     val data = sc.parallelize(List("bigdl", "spark", "deep", "learning"))
     val y = data.map(x => (x, x.length))
 
@@ -163,13 +142,6 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     Logger.getLogger("org").setLevel(Level.INFO)
     LoggerFilter.redirectSparkInfoLogs()
     Logger.getLogger(optimClz).setLevel(Level.INFO)
-
-    sc = new SparkContext(
-      Engine.init(1, 1, true).get
-        .setAppName(s"LoggerFilter test")
-        .set("spark.task.maxFailures", "1")
-        .setMaster("local[1]")
-    )
 
     val data = sc.parallelize(List("bigdl", "spark", "deep", "learning"))
     val y = data.map(x => (x, x.length))
@@ -201,13 +173,6 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     logger.info("HELLO")
 
-    sc = new SparkContext(
-      Engine.init(1, 1, true).get
-        .setAppName(s"LoggerFilter test")
-        .set("spark.task.maxFailures", "1")
-        .setMaster("local[1]")
-    )
-
     val data = sc.parallelize(List("bigdl", "spark", "deep", "learning"))
     val y = data.map(x => (x, x.length))
 
@@ -236,13 +201,6 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     Logger.getLogger("org").setLevel(Level.INFO)
     LoggerFilter.redirectSparkInfoLogs()
     Logger.getLogger(optimClz).setLevel(Level.INFO)
-
-    sc = new SparkContext(
-      Engine.init(1, 1, true).get
-        .setAppName(s"LoggerFilter test")
-        .set("spark.task.maxFailures", "1")
-        .setMaster("local[1]")
-    )
 
     val data = sc.parallelize(List("bigdl", "spark", "deep", "learning"))
     val y = data.map(x => (x, x.length))

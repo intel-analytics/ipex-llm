@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 object TrainInceptionV1 {
   LoggerFilter.redirectSparkInfoLogs()
@@ -31,10 +31,12 @@ object TrainInceptionV1 {
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
       val imageSize = 224
-      val conf = Engine.createSparkConf().setAppName("BigDL Inception v1 Train Example")
-        .set("spark.task.maxFailures", "1")
-      val sc = new SparkContext(conf)
-      Engine.init
+      val conf = Engine.createSparkConf(new SparkConf()
+        .setMaster("local[*]")
+        .setAppName("BigDL Inception v1 Train Example")
+        .set("spark.task.maxFailures", "1"))
+      val sc = SparkContext.getOrCreate(conf)
+      Engine.init(conf)
 
       val trainSet = ImageNet2012(
         param.folder + "/train",

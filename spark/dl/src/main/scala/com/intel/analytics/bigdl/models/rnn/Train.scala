@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.rnn
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.SampleToBatch
 import com.intel.analytics.bigdl.dataset.text.LabeledSentenceToSample
 import com.intel.analytics.bigdl.dataset.text._
 import com.intel.analytics.bigdl.dataset.text.utils.SentenceToken
@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 object Train {
   Logger.getLogger("org").setLevel(Level.ERROR)
@@ -38,12 +38,12 @@ object Train {
   val logger = Logger.getLogger(getClass)
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-
-      val conf = Engine.createSparkConf()
-        .setAppName("Train rnn on text")
-        .set("spark.task.maxFailures", "1")
-      val sc = new SparkContext(conf)
-      Engine.init
+      val conf = Engine.createSparkConf(new SparkConf()
+        .setIfMissing("spark.master", "local[*]")
+        .setAppName("Train RNN on text")
+        .set("spark.task.maxFailures", "1"))
+      val sc = SparkContext.getOrCreate(conf)
+      Engine.init(conf)
 
       val tokens = SequencePreprocess(
         param.dataFolder + "/train.txt",

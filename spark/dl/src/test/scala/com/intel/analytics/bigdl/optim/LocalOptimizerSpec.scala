@@ -112,17 +112,12 @@ object LocalOptimizerSpecModel {
 }
 
 @com.intel.analytics.bigdl.tags.Serial
-class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
+class LocalOptimizerSpec extends SparkContextSpec {
+
   import LocalOptimizerSpecModel._
   import DummyDataSet._
 
-  val nodeNumber = 1
-  val coreNumber = 4
-
-  before {
-    Engine.localMode = true
-    Engine.init(nodeNumber, coreNumber, false)
-  }
+  override def getCoreNumber: Int = 4
 
   "Train model with CrossEntropy and SGD" should "be good" in {
     RandomGenerator.RNG.setSeed(1000)

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 object Train {
   LoggerFilter.redirectSparkInfoLogs()
@@ -33,9 +33,11 @@ object Train {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      val conf = Engine.createSparkConf().setAppName("Train Vgg on Cifar10")
-      val sc = new SparkContext(conf)
-      Engine.init
+      val conf = Engine.createSparkConf(new SparkConf()
+        .setIfMissing("spark.master", "local[*]")
+        .setAppName("Train Vgg on Cifar10"))
+      val sc = SparkContext.getOrCreate(conf)
+      Engine.init(conf)
 
       val trainDataSet = DataSet.array(Utils.loadTrain(param.folder), sc) ->
         BytesToBGRImg() -> BGRImgNormalizer(trainMean, trainStd) ->

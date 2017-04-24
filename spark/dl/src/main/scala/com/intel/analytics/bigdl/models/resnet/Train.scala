@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
 object Train {
@@ -36,9 +36,11 @@ object Train {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      val conf = Engine.createSparkConf().setAppName("Train ResNet on Cifar10")
-      val sc = new SparkContext(conf)
-      Engine.init
+      val conf = Engine.createSparkConf(new SparkConf()
+        .setMaster("local[*]")
+        .setAppName("Train ResNet on Cifar10"))
+      val sc = SparkContext.getOrCreate(conf)
+      Engine.init(conf)
 
       val batchSize = param.batchSize
       val (imageSize, lrSchedule, maxEpoch, dataSet) =

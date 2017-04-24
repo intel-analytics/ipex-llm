@@ -27,9 +27,7 @@ import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, ExceptionTes
 import com.intel.analytics.bigdl.visualization.TrainSummary
 
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 object DistriOptimizerSpec {
   val input1: Tensor[Double] = Tensor[Double](Storage[Double](Array(0.0, 1.0, 0.0, 1.0)))
@@ -37,11 +35,8 @@ object DistriOptimizerSpec {
   val input2: Tensor[Double] = Tensor[Double](Storage[Double](Array(1.0, 0.0, 1.0, 0.0)))
   val output2 = 1.0
   var plusOne = 0.0
-  val nodeNumber = 4
-  val coreNumber = 4
-  Engine.init(nodeNumber, coreNumber, true)
 
-  val batchSize = 2 * coreNumber
+  val batchSize = 2 * 4
 
   val prepareData: Int => (MiniBatch[Double]) = index => {
     val input = Tensor[Double]().resize(batchSize, 4)
@@ -100,7 +95,7 @@ object DistriOptimizerSpecModel {
 }
 
 @com.intel.analytics.bigdl.tags.Serial
-class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class DistriOptimizerSpec extends SparkContextSpec {
 
   import DistriOptimizerSpec._
   import DistriOptimizerSpecModel._
@@ -108,14 +103,16 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
 
-  var sc: SparkContext = null
+  private var dataSet: DistributedDataSet[MiniBatch[Double]] = _
 
-  var dataSet: DistributedDataSet[MiniBatch[Double]] = null
+  override def getCoreNumber: Int = 4
 
+  override def getNodeNumber: Int = 4
+  
   before {
-    sc = new SparkContext("local[1]", "RDDOptimizerSpec")
-
-    val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber).map(prepareData)
+    val sparkContext = sc
+    val nodeNumber = Engine.nodeNumber()
+    val rdd = sparkContext.parallelize(1 to (256 * nodeNumber), nodeNumber).map(prepareData)
 
     dataSet = new DistributedDataSet[MiniBatch[Double]] {
       override def originRDD(): RDD[_] = rdd
@@ -130,12 +127,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     plusOne = 0.0
     System.setProperty("bigdl.check.singleton", false.toString)
     Engine.model.setPoolSize(1)
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
   }
 
   "Train with MSE and LBFGS" should "be good" in {
@@ -281,10 +272,12 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "Train with one partition one executor" should "won't throw mult-task exception" in {
     System.setProperty("bigdl.check.singleton", true.toString)
     RandomGenerator.RNG.setSeed(10)
+    val sparkContext = sc
+    val nodeNumber = Engine.nodeNumber()
     Engine.setNodeNumber(1)
     val mm = bn
     mm.getParameters()._1.fill(0.125)
-    val rdd = sc.parallelize(1 to (256 * nodeNumber), 1).map(prepareData)
+    val rdd = sparkContext.parallelize(1 to (256 * nodeNumber), 1).map(prepareData)
     val dataSet = new DistributedDataSet[MiniBatch[Double]] {
       override def originRDD(): RDD[_] = rdd
 

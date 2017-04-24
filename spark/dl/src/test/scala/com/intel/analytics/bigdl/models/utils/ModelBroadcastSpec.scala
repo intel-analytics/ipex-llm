@@ -15,20 +15,14 @@
  */
 package com.intel.analytics.bigdl.models.utils
 
+import com.intel.analytics.bigdl.SparkContextSpec
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
-
-  var sc: SparkContext = null
+class ModelBroadcastSpec extends SparkContextSpec {
 
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
-  before {
-    sc = new SparkContext(new SparkConf().setMaster("local[1]").setAppName("ModelBroadcast"))
-  }
 
   "model broadcast" should "work properly" in {
     val model = LeNet5(10)
@@ -47,10 +41,5 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }
 
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
 
 }

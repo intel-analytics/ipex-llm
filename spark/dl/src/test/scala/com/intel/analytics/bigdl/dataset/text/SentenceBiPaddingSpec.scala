@@ -18,29 +18,15 @@ package com.intel.analytics.bigdl.dataset.text
 
 import java.io.PrintWriter
 
+import com.intel.analytics.bigdl.SparkContextSpec
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.text.utils.SentenceToken
-import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.io.Source
 
 @com.intel.analytics.bigdl.tags.Serial
-class SentenceBiPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
-  var sc: SparkContext = null
-
-  before {
-    val nodeNumber = 1
-    val coreNumber = 1
-    Engine.init(nodeNumber, coreNumber, true)
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
+class SentenceBiPaddingSpec extends SparkContextSpec {
 
   "SentenceBiPaddingSpec" should "pads articles correctly on Spark" in {
     val tmpFile = java.io.File
@@ -56,7 +42,6 @@ class SentenceBiPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
       write(sentences.mkString("\n")); close
     }
 
-    sc = new SparkContext("local[1]", "DocumentTokenizer")
     val sents = DataSet.rdd(sc.textFile(tmpFile)
       .filter(!_.isEmpty)).transform(SentenceSplitter())
       .toDistributed().data(train = false).flatMap(item => item.iterator).collect()
@@ -76,7 +61,6 @@ class SentenceBiPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
       startToken should be (SentenceToken.start)
       endToken should be (SentenceToken.end)
     })
-    sc.stop()
   }
 
   "SentenceBiPaddingSpec" should "pads articles correctly on local" in {

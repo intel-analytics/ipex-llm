@@ -16,37 +16,26 @@
 
 package com.intel.analytics.bigdl.utils
 
+import com.intel.analytics.bigdl.SparkContextSpec
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.ml.DLClassifier
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.mllib.regression.LabeledPoint
 import org.apache.spark.sql.{Row, SQLContext}
-import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class DLClassifierSpec extends FlatSpec with Matchers{
-
-  private def processPath(path: String): String = {
-    if (path.contains(":")) {
-      path.substring(1)
-    } else {
-      path
-    }
-  }
+class DLClassifierSpec extends SparkContextSpec {
 
   "DLClassifier" should "get good result" in {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
-    val conf = new SparkConf().setMaster("local[1]").setAppName("DLClassifier")
-    val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     val batchSize = 10
     val model = LeNet5(10)
@@ -86,7 +75,6 @@ class DLClassifierSpec extends FlatSpec with Matchers{
       tensorBuffer.clear()
       m += 1
     }
-    sc.stop()
   }
 }
 
