@@ -37,7 +37,9 @@ abstract class Validator[T, D](
 ) {
   def test(vMethods: Array[ValidationMethod[T]]): Array[(ValidationResult, ValidationMethod[T])]
 }
-@deprecated
+@deprecated(
+  "Validator(model, dataset) is deprecated. Please use model.evaluate instead",
+  "0.2.0")
 object Validator {
   private val logger = Logger.getLogger(getClass)
 
