@@ -226,6 +226,30 @@ object SGD {
   }
 
   /**
+   * similar to step but it allows non uniform steps defined by stepSizes
+   * @param stepSizes the series of step sizes used for lr decay
+   * @param gamma coefficient of decay
+   */
+  case class MultiStep(stepSizes : Array[Int], gamma : Double) extends LearningRateSchedule {
+    var currentStep = 0
+    override def updateHyperParameter(config: Table, state: Table): Unit = {
+      val lr = config.get[Double]("learningRate").getOrElse(1e-3)
+      var clr = -lr
+      val nevals = state.get[Int]("evalCounter").getOrElse(0)
+      if (currentStep < stepSizes.length && nevals >= stepSizes(currentStep)) {
+        currentStep += 1
+      }
+      var i = 0
+      while(i < currentStep) {
+        clr *= gamma
+        i += 1
+      }
+      state("evalCounter") = nevals + 1
+      config("clr") = clr
+    }
+  }
+
+  /**
    * It is an epoch decay learning rate schedule
    * The learning rate decays through a function argument on number of run epochs
    *

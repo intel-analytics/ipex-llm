@@ -141,6 +141,20 @@ class Step(JavaValue):
             JavaValue.__init__(self, None, bigdl_type, step_size, gamma)
 
 
+class MultiStep(JavaValue):
+    """
+    similar to step but it allows non uniform steps defined by stepSizes
+
+    :param step_size the series of step sizes used for lr decay
+    :param gamma coefficient of decay
+
+    >>> step = MultiStep([2, 5], 0.3)
+    creating: createMultiStep
+    """
+    def __init__(self, step_sizes, gamma, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, step_sizes, gamma)
+
+
 class Optimizer(JavaValue):
     """
     An optimizer is in general to minimize any function with respect 
