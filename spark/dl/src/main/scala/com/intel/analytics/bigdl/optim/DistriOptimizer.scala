@@ -741,6 +741,8 @@ class DistriOptimizer[T: ClassTag] (
         )
         retryNum = Int.MaxValue
       } catch {
+        case e: IllegalArgumentException =>
+          throw e
         case t: Throwable =>
           DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           if (checkpointPath.isDefined) {
@@ -750,6 +752,9 @@ class DistriOptimizer[T: ClassTag] (
              */
             if (System.nanoTime() - lastFailureTimestamp < maxRetry * retryTimeInterval * 1e9) {
               retryNum += 1
+              if (retryNum == maxRetry) {
+                throw t
+              }
             } else {
               retryNum = 1
             }
