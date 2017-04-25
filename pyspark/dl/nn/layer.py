@@ -2543,6 +2543,14 @@ class BiRecurrent(Model):
                  bigdl_type="float"):
         super(BiRecurrent, self).__init__(None, bigdl_type, merge)
 
+    '''
+    Add a recurrent kernel such as RnnCell, LSTM, GRU, etc.
+    to be a recurrent module
+    '''
+    def add(self, model):
+        self.value.add(model.value)
+        return self
+
 
 class ConcatTable(Model):
     '''
