@@ -198,33 +198,44 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
   private def convertCaffeLayer(node : Node[String]): ModuleNode[T] = {
     val layerName = node.element
-    val layerType = getLayerType(layerName).get
+    val layerType = getLayerType(layerName).get.toUpperCase
     val module = layerType match {
-      case "Convolution" => fromCaffeConvolution(layerName)
-      case "ReLU" => fromCaffeReLU(layerName)
+      case "CONVOLUTION" => fromCaffeConvolution(layerName)
+      case "RELU" => fromCaffeReLU(layerName)
       case "LRN" => fromCaffeLRN(layerName)
-      case "Pooling" => fromCaffePooling(layerName)
-      case "InnerProduct" => fromCaffeInnerProduct(layerName)
-      case "Dropout" => fromCaffeDropout(layerName)
+      case "POOLING" => fromCaffePooling(layerName)
+      case "INNERPRODUCT" => fromCaffeInnerProduct(layerName)
+      case "INNER_PRODUCT" => fromCaffeInnerProduct(layerName)
+      case "DROPOUT" => fromCaffeDropout(layerName)
       case "SOFTMAX_LOSS" => fromCaffeSoftmax(layerName)
-      case "TanH" => fromCaffeTanh(layerName)
-      case "SigMoid" => fromCaffeSigmoid(layerName)
-      case "AbsVal" => fromCaffeAbsVal(layerName)
-      case "BatchNorm" => fromCaffeBatchNormalization(layerName)
-      case "Concat" => fromCaffeConcat(layerName)
+      case "TANH" => fromCaffeTanh(layerName)
+      case "SIGMOID" => fromCaffeSigmoid(layerName)
+      case "ABSVAL" => fromCaffeAbsVal(layerName)
+      case "BATCHNORM" => fromCaffeBatchNormalization(layerName)
+      case "CONCAT" => fromCaffeConcat(layerName)
       case "ELU" => fromCaffeELU(layerName)
-      case "Flatten" => fromCaffeFlatten(layerName)
-      case "Log" => fromCaffeLog(layerName)
-      case "Power" => fromCaffePower(layerName)
-      case "PReLU" => fromCaffePreLU(layerName)
-      case "Recurrent" => fromCaffeRecurrent(layerName)
+      case "FLATTEN" => fromCaffeFlatten(layerName)
+      case "LOG" => fromCaffeLog(layerName)
+      case "POWER" => fromCaffePower(layerName)
+      case "PRELU" => fromCaffePreLU(layerName)
+      case "RECURRENT" => fromCaffeRecurrent(layerName)
       case "RNN" => fromCaffeRecurrent(layerName)
-      case "Reshape" => fromCaffeReshape(layerName)
-      case "Scale" => fromCaffeScale(layerName)
-      case "Input" => null
+      case "RESHAPE" => fromCaffeReshape(layerName)
+      case "SCALE" => fromCaffeScale(layerName)
+      case "THRESHOLD" => fromCAffeThreshold(layerName)
+      case "INPUT" => null
       case _ => throw new Exception(s"$layerType is not supported in BigDL fow now")
     }
     module
+  }
+
+  private def fromCAffeThreshold(layerName : String) : ModuleNode[T] = {
+    val param = getThresholdParam(layerName).get
+    var threshold = 1e-6
+    if (param.hasThreshold) {
+      threshold = param.getThreshold
+    }
+    Threshold[T](threshold).setName(layerName).apply()
   }
 
   private def fromCaffeScale(layerName : String) : ModuleNode[T] = {
@@ -403,6 +414,16 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     }
     new SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
       .setName(layerName).apply()
+  }
+
+  private def getThresholdParam(name: String): Option[ThresholdParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getThresholdParam)
+    } else if (name2LayerV1.contains(name)) {
+      Some(name2LayerV1(name).getThresholdParam)
+    } else {
+      None
+    }
   }
 
   private def getReshapParam(name: String): Option[ReshapeParameter] = {
