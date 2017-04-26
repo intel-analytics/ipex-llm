@@ -168,6 +168,21 @@ class Model(JavaValue):
         jmodel = callBigDlFunc(bigdl_type, "loadCaffe", model, defPath, modelPath, match_all)
         return Model.of(jmodel)
 
+class Container(Model):
+    '''
+     [[Container]] is a sub-class of Model that declares methods defined in all containers. 
+     A container usually contain some other modules which can be added through the "add" method
+    '''
+
+    def __init__(self, jvalue, bigdl_type, *args):
+        super(Container, self).__init__(jvalue, bigdl_type, *args)
+
+    def add(self, model):
+        self.value.add(model.value)
+        return self
+
+
+
 
 class Linear(Model):
 
@@ -256,7 +271,7 @@ class LogSoftMax(Model):
         super(LogSoftMax, self).__init__(None, bigdl_type)
 
 
-class Sequential(Model):
+class Sequential(Container):
 
     '''
     Sequential provides a means to plug layers together
@@ -274,10 +289,6 @@ class Sequential(Model):
 
     def __init__(self, bigdl_type="float"):
         super(Sequential, self).__init__(None, bigdl_type)
-
-    def add(self, model):
-        self.value.add(model.value)
-        return self
 
 
 class SpatialConvolution(Model):
@@ -384,7 +395,7 @@ class Select(Model):
     def __init__(self, dim, index, bigdl_type="float"):
         super(Select, self).__init__(None, bigdl_type, dim, index)
 
-class Recurrent(Model):
+class Recurrent(Container):
     '''
     Recurrent module is a container of rnn cells
     Different types of rnn cells can be added using add() function
@@ -395,14 +406,6 @@ class Recurrent(Model):
 
     def __init__(self, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type)
-
-    '''
-    Add a recurrent kernel such as RnnCell, LSTM, GRU, etc.
-    to be a recurrent module
-    '''
-    def add(self, model):
-        self.value.add(model.value)
-        return self
 
 
 class LSTM(Model):
@@ -522,7 +525,7 @@ class TimeDistributed(Model):
         super(TimeDistributed, self).__init__(None, bigdl_type, model)
 
 
-class Concat(Model):
+class Concat(Container):
 
     '''
     Concat concatenates the output of one layer of "parallel"
@@ -829,7 +832,7 @@ class Bilinear(Model):
                                        bias_res)
 
 
-class Bottle(Model):
+class Bottle(Container):
 
     '''
     Bottle allows varying dimensionality input to be forwarded through any module
@@ -1477,7 +1480,7 @@ class MV(Model):
                                  trans)
 
 
-class MapTable(Model):
+class MapTable(Container):
 
     '''
     This class is a container for a single module which will be applied
@@ -1785,7 +1788,7 @@ class PairwiseDistance(Model):
                                                norm)
 
 
-class ParallelTable(Model):
+class ParallelTable(Container):
 
     '''
     It is a container module that applies the i-th member module to the i-th
@@ -1963,7 +1966,7 @@ class Scale(Model):
                                     size)
 
 
-class SelectTable(Model):
+class SelectTable(Container):
 
     '''
     Creates a module that takes a table as input and outputs the element at index `index`
@@ -2525,7 +2528,7 @@ class Reshape(Model):
         super(Reshape, self).__init__(None, bigdl_type, size, batch_mode)
 
 
-class BiRecurrent(Model):
+class BiRecurrent(Container):
     '''
     Create a Bidirectional recurrent layer
 
@@ -2543,16 +2546,8 @@ class BiRecurrent(Model):
                  bigdl_type="float"):
         super(BiRecurrent, self).__init__(None, bigdl_type, merge)
 
-    '''
-    Add a recurrent kernel such as RnnCell, LSTM, GRU, etc.
-    to be a recurrent module
-    '''
-    def add(self, model):
-        self.value.add(model.value)
-        return self
 
-
-class ConcatTable(Model):
+class ConcatTable(Container):
     '''
     ConcateTable is a container module like Concate. Applies an input
     to each member module, input can be a tensor or a table.
