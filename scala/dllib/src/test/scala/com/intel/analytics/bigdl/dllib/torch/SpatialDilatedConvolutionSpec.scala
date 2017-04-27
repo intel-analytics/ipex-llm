@@ -21,21 +21,14 @@ import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class SpatialDilatedConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
+class SpatialDilatedConvolutionSpec extends TorchSpec {
   "SpatialDilatedConvolution L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
-
+    torchCheck()
     val nInputPlane = 1
     val nOutputPlane = 1
     val kW = 2
@@ -118,6 +111,7 @@ class SpatialDilatedConvolutionSpec extends FlatSpec with BeforeAndAfter with Ma
   }
 
   "A SpatialDilatedConvolution" should "generate correct output" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -158,6 +152,7 @@ class SpatialDilatedConvolutionSpec extends FlatSpec with BeforeAndAfter with Ma
   }
 
   "A SpatialDilatedConvolution" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -219,6 +214,7 @@ class SpatialDilatedConvolutionSpec extends FlatSpec with BeforeAndAfter with Ma
   }
 
   "A SpatialDilatedConvolution" should "generate correct output and grad with 3D input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
