@@ -127,12 +127,10 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "readConf" should "be right" in {
     val conf = Engine.readConf
     val target = Map(
-      "spark.executorEnv.DL_ENGINE_TYPE" -> "mklblas",
       "spark.executorEnv.MKL_DISABLE_FAST_MM" -> "1",
       "spark.executorEnv.KMP_BLOCKTIME" -> "0",
       "spark.executorEnv.OMP_WAIT_POLICY" -> "passive",
       "spark.executorEnv.OMP_NUM_THREADS" -> "1",
-      "spark.yarn.appMasterEnv.DL_ENGINE_TYPE" -> "mklblas",
       "spark.yarn.appMasterEnv.MKL_DISABLE_FAST_MM" -> "1",
       "spark.yarn.appMasterEnv.KMP_BLOCKTIME" -> "0",
       "spark.yarn.appMasterEnv.OMP_WAIT_POLICY" -> "passive",

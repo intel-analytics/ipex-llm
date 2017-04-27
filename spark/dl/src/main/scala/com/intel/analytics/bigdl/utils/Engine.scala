@@ -17,7 +17,9 @@
 package com.intel.analytics.bigdl.utils
 
 import java.io.InputStream
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
+
 import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -124,16 +126,13 @@ object Engine {
       "For test purpose, set bigdl.disableCheckSysEnv to true"
 
   /**
-   * Notice: Please use property DL_ENGINE_TYPE to set engineType.
-   * Default engine is MklBlas
+   * Notice: Please use property bigdl.engineType to set engineType.
+   * Default engine is mklblas
    */
   private var engineType: EngineType = {
-    val dlEngineType = System.getenv("DL_ENGINE_TYPE")
-
-    if (dlEngineType == null || dlEngineType.toLowerCase == "mklblas") {
-      MklBlas
-    } else {
-      throw new Error(s"Unknown DL_ENGINE_TYPE. $ENV_VAR_ERROR")
+    System.getProperty("bigdl.engineType", "mklblas").toLowerCase(Locale.ROOT) match {
+      case "mklblas" => MklBlas
+      case engineType => throw new IllegalArgumentException(s"Unknown engine type $engineType")
     }
   }
 
@@ -146,12 +145,16 @@ object Engine {
   private def getCoreNumberFromEnv : Int = {
     val env = System.getenv("DL_CORE_NUMBER")
     if (env == null) {
-      // We assume the HT is enabled
-      // Todo: check the Hyper threading
-      Runtime.getRuntime().availableProcessors() / 2
+      getNumMachineCores
     } else {
       env.toInt
     }
+  }
+
+  private def getNumMachineCores: Int = {
+    // We assume the HT is enabled
+    // Todo: check the Hyper threading
+    Runtime.getRuntime().availableProcessors() / 2
   }
 
   /**
@@ -356,7 +359,7 @@ object Engine {
       val patternLocalStar = "local\\[\\*\\]".r
       master match {
         case patternLocalN(n) => Some(1, n.toInt)
-        case patternLocalStar(_*) => Some(1, getCoreNumberFromEnv)
+        case patternLocalStar(_*) => Some(1, getNumMachineCores)
         case _ => throw new IllegalArgumentException(s"Can't parser master $master")
       }
     } else if (master.toLowerCase.startsWith("spark")) {
