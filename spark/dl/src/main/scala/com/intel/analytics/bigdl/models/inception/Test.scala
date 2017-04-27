@@ -19,11 +19,11 @@ package com.intel.analytics.bigdl.models.inception
 import com.intel.analytics.bigdl.dataset.{ByteRecord, DataSet}
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy, Validator}
+import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.hadoop.io.Text
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 object Test {
   Logger.getLogger("org").setLevel(Level.ERROR)
@@ -38,9 +38,11 @@ object Test {
   def main(args: Array[String]) {
     testParser.parse(args, new TestParams()).foreach { param =>
       val batchSize = param.batchSize.getOrElse(128)
-      val conf = Engine.createSparkConf().setAppName("Test Inception on ImageNet")
-      val sc = new SparkContext(conf)
-      Engine.init
+      val conf = Engine.createSparkConf(new SparkConf()
+        .setMaster("local[*]")
+        .setAppName("Test Inception on ImageNet"))
+      val sc = SparkContext.getOrCreate(conf)
+      Engine.init(conf)
 
       // We set partition number to be node*core, actually you can also assign other partitionNum
       val partitionNum = Engine.nodeNumber() * Engine.coreNumber()

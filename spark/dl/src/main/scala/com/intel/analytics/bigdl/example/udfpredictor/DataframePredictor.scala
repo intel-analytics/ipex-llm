@@ -34,8 +34,8 @@ object DataframePredictor {
       val conf = Engine.createSparkConf()
       conf.setAppName("Text classification")
         .set("spark.task.maxFailures", "1")
-      val sc = new SparkContext(conf)
-      Engine.init
+      val sc = SparkContext.getOrCreate(conf)
+      Engine.init(conf)
 
       // Create spark session
       val spark = new SQLContext(sc)

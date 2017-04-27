@@ -24,10 +24,9 @@ import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, _}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
+import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.example.utils.SimpleTokenizer._
 import org.apache.spark.SparkContext
-import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.rdd.RDD
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -203,8 +202,8 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
     val conf = Engine.createSparkConf()
       .setAppName("Text classification")
       .set("spark.task.maxFailures", "1")
-    val sc = new SparkContext(conf)
-    Engine.init
+    val sc = SparkContext.getOrCreate(conf)
+    Engine.init(conf)
     val sequenceLen = param.maxSequenceLength
     val embeddingDim = param.embeddingDim
     val trainingSplit = param.trainingSplit

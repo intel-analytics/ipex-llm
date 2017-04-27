@@ -20,47 +20,23 @@ import java.io.File
 import java.nio.file.Paths
 import java.util.concurrent.{Callable, Executors}
 
+import com.intel.analytics.bigdl.SparkContextSpec
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, TestUtils}
 import org.apache.hadoop.io.Text
-import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
-  var sc: SparkContext = null
-  val nodeNumber = 1
-  val coreNumber = 1
-
-  before {
-    Engine.init(nodeNumber, coreNumber, true)
-    val conf = new SparkConf().setMaster("local[1]").setAppName("DataSetSpec")
-    sc = new SparkContext(conf)
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
-
-  private def processPath(path: String): String = {
-    if (path.contains(":")) {
-      path.substring(1)
-    } else {
-      path
-    }
-  }
+class DataSetSpec extends SparkContextSpec {
 
   "mnist data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("mnist")
 
     val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
-      processPath(resource.getPath()) + File.separator + "t10k-images.idx3-ubyte",
-      processPath(resource.getPath()) + File.separator + "t10k-labels.idx1-ubyte")
+      TestUtils.processPath(resource.getPath()) + File.separator + "t10k-images.idx3-ubyte",
+      TestUtils.processPath(resource.getPath()) + File.separator + "t10k-labels.idx1-ubyte")
     )
     dataSet.size() should be(10000)
     var iter = dataSet.data(train = false)
@@ -73,8 +49,8 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val resource = getClass().getClassLoader().getResource("mnist")
 
     val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
-      processPath(resource.getPath()) + File.separator + "t10k-images.idx3-ubyte",
-      processPath(resource.getPath()) + File.separator + "t10k-labels.idx1-ubyte"
+      TestUtils.processPath(resource.getPath()) + File.separator + "t10k-images.idx3-ubyte",
+      TestUtils.processPath(resource.getPath()) + File.separator + "t10k-labels.idx1-ubyte"
     ), sc)
 
     dataSet.size() should be(10000)
@@ -86,10 +62,10 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "cifar data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("cifar")
-    val dataSet = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
+    val dataSet = DataSet.ImageFolder.images(Paths.get(TestUtils.processPath(resource.getPath())),
       BGRImage.NO_SCALE)
     dataSet.size() should be(7)
-    val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
+    val labelMap = LocalImageFiles.readLabels(Paths.get(TestUtils.processPath(resource.getPath())))
     labelMap("airplane") should be(1)
     labelMap("deer") should be(2)
 
@@ -121,10 +97,10 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "cifar rdd data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("cifar")
-    val dataSet = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
+    val dataSet = DataSet.ImageFolder.images(Paths.get(TestUtils.processPath(resource.getPath())),
       sc, BGRImage.NO_SCALE)
     dataSet.size() should be(7)
-    val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
+    val labelMap = LocalImageFiles.readLabels(Paths.get(TestUtils.processPath(resource.getPath())))
     labelMap("airplane") should be(1)
     labelMap("deer") should be(2)
 
@@ -157,10 +133,10 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "imagenet data source" should "load image correct" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
-    val dataSet = DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
+    val dataSet = DataSet.ImageFolder.paths(Paths.get(TestUtils.processPath(resource.getPath())))
     dataSet.size() should be(11)
 
-    val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
+    val labelMap = LocalImageFiles.readLabels(Paths.get(TestUtils.processPath(resource.getPath())))
     labelMap("n02110063") should be(1)
     labelMap("n04370456") should be(2)
     labelMap("n15075141") should be(3)
@@ -198,11 +174,11 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     require(tmpFile.mkdir())
 
     // Convert the test imagenet files to seq files
-    val files = (DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
+    val files = (DataSet.ImageFolder.paths(Paths.get(TestUtils.processPath(resource.getPath())))
       -> LocalImgReaderWithName(BGRImage.NO_SCALE)
       -> BGRImgToLocalSeqFile(2, Paths.get(tmpFile.getAbsolutePath(), "imagenet"))
       ).toLocal().data(train = false).map(s => {
-      println(s);
+      println(s)
       s
     }).toArray
 
@@ -235,8 +211,8 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "ImageNet data source" should "load image correct with parallel process" in {
     val resource = getClass().getClassLoader().getResource("imagenet")
-    val labelMap = LocalImageFiles.readLabels(Paths.get(processPath(resource.getPath())))
-    val dataSet = DataSet.ImageFolder.images(Paths.get(processPath(resource.getPath())),
+    val labelMap = LocalImageFiles.readLabels(Paths.get(TestUtils.processPath(resource.getPath())))
+    val dataSet = DataSet.ImageFolder.images(Paths.get(TestUtils.processPath(resource.getPath())),
       BGRImage.NO_SCALE)
 
     val iter = dataSet.toLocal().data(train = false)
@@ -257,18 +233,15 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
         }
       })
     })
-    val count = tasks.map(_.get()).reduce(_ + _)
+    val count = tasks.map(_.get()).sum
     count should be (28)
     syncPool.shutdown()
   }
 
   "image preprocess" should "be same with torch result" in {
-    val originMode = Engine.localMode
-    Engine.localMode = true
-    Engine.init(nodeNumber, coreNumber, false)
     val resourceImageNet = getClass().getClassLoader().getResource("imagenet")
     def test(imgFolder: String, imgFileName: String, tensorFile: String): Unit = {
-      val img1Path = Paths.get(processPath(resourceImageNet.getPath()), imgFolder, imgFileName)
+      val img1Path = Paths.get(TestUtils.processPath(resourceImageNet.getPath()), imgFolder, imgFileName)
       val iter = (DataSet.array(Array(LocalLabeledImagePath(1.0f, img1Path)))
         -> LocalImgReader()
         -> BGRImgCropper(224, 224)
@@ -279,7 +252,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val image1 = iter.next().data
 
       val resourceTorch = getClass().getClassLoader().getResource("torch")
-      val tensor1Path = Paths.get(processPath(resourceTorch.getPath()), tensorFile)
+      val tensor1Path = Paths.get(TestUtils.processPath(resourceTorch.getPath()), tensorFile)
       val tensor1 = com.intel.analytics.bigdl.utils.File.loadTorch[Tensor[Float]](
         tensor1Path.toString).addSingletonDimension()
       image1.size() should be(tensor1.size())
@@ -296,7 +269,6 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     test("n15075141", "n15075141_38508.JPEG", "n15075141_38508.t7")
     RandomGenerator.RNG.setSeed(100)
     test("n99999999", "n03000134_4970.JPEG", "n03000134_4970.t7")
-    Engine.localMode = false
   }
 
   "RDD from DataSet" should "give different position every time" in {
@@ -391,7 +363,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     require(tmpFile.mkdir())
 
     // Convert the test imagenet files to seq files
-    val files = (DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
+    val files = (DataSet.ImageFolder.paths(Paths.get(TestUtils.processPath(resource.getPath())))
       -> LocalImgReaderWithName(BGRImage.NO_SCALE)
       -> BGRImgToLocalSeqFile(100, Paths.get(tmpFile.getAbsolutePath(), "imagenet"))
       ).toLocal().data(train = false).map(s => {

@@ -16,14 +16,12 @@
 
 package com.intel.analytics.bigdl.models.vgg
 
-import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image._
-import com.intel.analytics.bigdl.models.lenet.Utils._
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{Top1Accuracy, Validator}
+import com.intel.analytics.bigdl.optim.Top1Accuracy
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 object Test {
   Logger.getLogger("org").setLevel(Level.ERROR)
@@ -35,10 +33,11 @@ object Test {
 
   def main(args: Array[String]) {
     testParser.parse(args, new TestParams()).foreach { param =>
-      val conf = Engine.createSparkConf().setAppName("Test Vgg on Cifar10")
-        .set("spark.akka.frameSize", 64.toString)
-      val sc = new SparkContext(conf)
-      Engine.init
+      val conf = Engine.createSparkConf(new SparkConf()
+        .setIfMissing("spark.master", "local[*]")
+        .setAppName("Test Vgg on Cifar10"))
+      val sc = SparkContext.getOrCreate(conf)
+      Engine.init(conf)
 
       val partitionNum = Engine.nodeNumber() * Engine.coreNumber()
       val rddData = sc.parallelize(Utils.loadTest(param.folder), partitionNum)

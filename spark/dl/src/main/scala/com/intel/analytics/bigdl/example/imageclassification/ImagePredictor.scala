@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.example.imageclassification.MlUtils._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.{DLClassifier => SparkDLClassifier}
 import org.apache.spark.sql.SQLContext
@@ -36,10 +36,11 @@ object ImagePredictor {
 
   def main(args: Array[String]): Unit = {
     predictParser.parse(args, new PredictParams()).map(param => {
-      val conf = Engine.createSparkConf()
-      conf.setAppName("Predict with trained model")
-      val sc = new SparkContext(conf)
-      Engine.init
+      val conf = Engine.createSparkConf(new SparkConf()
+        .setIfMissing("spark.master", "local[*]")
+        .setAppName("Predict with trained model"))
+      val sc = SparkContext.getOrCreate(conf)
+      Engine.init(conf)
       val sqlContext = new SQLContext(sc)
 
       val partitionNum = Engine.nodeNumber() * Engine.coreNumber()

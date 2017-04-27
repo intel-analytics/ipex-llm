@@ -41,7 +41,7 @@ object  StructuredStreamPredictor {
         .builder
         .config(sparkConf)
         .getOrCreate()
-      Engine.init
+      Engine.init(sparkConf)
       val sc = spark.sparkContext
 
       var word2Meta = None: Option[Map[String, WordMeta]]

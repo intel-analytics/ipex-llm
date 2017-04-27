@@ -23,9 +23,8 @@ import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
-import java.io.{File, FileFilter, FilenameFilter}
+import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
-import java.util.Calendar
 
 import org.apache.commons.lang.exception.ExceptionUtils
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
@@ -720,7 +719,7 @@ class DistriOptimizer[T: ClassTag] (
 
     if (checkpointPath.isDefined) {
       val file = checkpointPath.get + "/" +
-        new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime())
+        new SimpleDateFormat("yyyyMMdd_HHmmss").format(System.currentTimeMillis())
       new File(file).mkdir()
       checkpointPath = Some(file)
     }

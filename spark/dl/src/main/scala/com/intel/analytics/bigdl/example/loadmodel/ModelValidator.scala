@@ -16,11 +16,9 @@
 
 package com.intel.analytics.bigdl.example.loadmodel
 
-import java.nio.file.Paths
-
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy, Validator}
+import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy}
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
@@ -100,8 +98,8 @@ object ModelValidator {
     testLocalParser.parse(args, TestLocalParams()).foreach(param => {
       val conf = Engine.createSparkConf()
       conf.setAppName("BigDL Image Classifier Example")
-      val sc = new SparkContext(conf)
-      Engine.init
+      val sc = SparkContext.getOrCreate(conf)
+      Engine.init(conf)
 
       val valPath = param.folder
 

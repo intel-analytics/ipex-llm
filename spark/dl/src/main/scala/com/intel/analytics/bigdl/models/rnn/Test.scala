@@ -17,16 +17,13 @@
 package com.intel.analytics.bigdl.models.rnn
 
 
-import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.SampleToBatch
 import com.intel.analytics.bigdl.dataset.text.{Dictionary, LabeledSentence, LabeledSentenceToSample}
-import com.intel.analytics.bigdl.nn.{Concat, Identity, LogSoftMax, Module}
+import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
-
-import scala.util.Random
+import org.apache.spark.{SparkConf, SparkContext}
 
 object Test {
   Logger.getLogger("org").setLevel(Level.ERROR)
@@ -41,11 +38,12 @@ object Test {
     testParser.parse(args, new TestParams()).foreach { param =>
 
       val vocab = Dictionary(param.folder)
-      val conf = Engine.createSparkConf()
-        .setAppName("Test rnn on text")
-        .set("spark.task.maxFailures", "1")
-      val sc = new SparkContext(conf)
-      Engine.init
+      val conf = Engine.createSparkConf(new SparkConf()
+        .setIfMissing("spark.master", "local[*]")
+        .setAppName("Test RNN on text")
+        .set("spark.task.maxFailures", "1"))
+      val sc = SparkContext.getOrCreate(conf)
+      Engine.init(conf)
 
       val model = Module.load[Float](param.modelSnapshot.get)
 

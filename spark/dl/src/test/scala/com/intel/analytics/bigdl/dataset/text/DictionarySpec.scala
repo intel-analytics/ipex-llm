@@ -18,29 +18,12 @@ package com.intel.analytics.bigdl.dataset.text
 
 import java.io.PrintWriter
 
+import com.intel.analytics.bigdl.SparkContextSpec
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.utils.Engine
-import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.io.Source
 
-class DictionarySpec extends FlatSpec with Matchers with BeforeAndAfter {
-  var sc: SparkContext = null
-
-  before {
-    val nodeNumber = 1
-    val coreNumber = 1
-    Engine.init(nodeNumber, coreNumber, true)
-    val conf = new SparkConf().setMaster("local[1]").setAppName("DictionarySpec")
-    sc = new SparkContext(conf)
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
+class DictionarySpec extends SparkContextSpec {
 
   "DictionarySpec" should "creates dictionary correctly on Spark" in {
     val tmpFile = java.io.File

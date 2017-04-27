@@ -16,19 +16,11 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl.SparkContextSpec
 import com.intel.analytics.bigdl.utils.Engine
-import org.apache.spark.{SparkConf, SparkContext, SparkException}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
-class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
-  var sc: SparkContext = null
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
+class MetricsSpec extends SparkContextSpec {
 
   "Set locale metrics" should "be able to add a new value" in {
     val metric = new Metrics
@@ -49,8 +41,6 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "throw exception if it's a duplicated name in a distributed metric" in {
     val metric = new Metrics
-    val conf = new SparkConf().setMaster("local[1]").setAppName("MetricsSpec")
-    sc = new SparkContext(conf)
     metric.set("test", 10.0, sc, 5)
     intercept[IllegalArgumentException] {
       metric.set("test", 10, 5)
@@ -59,8 +49,6 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Set distribute metrics" should "be able to add a new value" in {
     val metric = new Metrics
-    val conf = new SparkConf().setMaster("local[1]").setAppName("MetricsSpec")
-    sc = new SparkContext(conf)
     metric.set("test", 1.0, sc, 5)
     val result = metric.get("test")
     result._1 should be(1.0)
@@ -69,8 +57,6 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "update the value if it's existed" in {
     val metric = new Metrics
-    val conf = new SparkConf().setMaster("local[1]").setAppName("MetricsSpec")
-    sc = new SparkContext(conf)
     metric.set("test", 1.0, sc, 5)
     metric.set("test", 2.0, sc, 7)
     val result = metric.get("test")
@@ -80,8 +66,6 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "throw exception if it's a duplicated name in a local metric" in {
     val metric = new Metrics
-    val conf = new SparkConf().setMaster("local[1]").setAppName("MetricsSpec")
-    sc = new SparkContext(conf)
     metric.set("test", 10, 5)
     intercept[IllegalArgumentException] {
       metric.set("test", 10.0, sc, 5)
@@ -117,43 +101,4 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  it should "work on distributed metric" in {
-    val metric = new Metrics
-    val conf = new SparkConf().setMaster("local[5]").setAppName("MetricsSpec")
-    sc = new SparkContext(conf)
-    metric.set("test", 1.0, sc, 5)
-    sc.parallelize((1 to 5)).map(i => metric.add("test", i)).count
-    val result = metric.get("test")
-    result._1 should be(16.0)
-    result._2 should be(5)
-  }
-
-  it should "throw exception when the distributed metric isn't exsited" in {
-    val metric = new Metrics
-    val conf = new SparkConf().setMaster("local[5]").setAppName("MetricsSpec")
-    sc = new SparkContext(conf)
-    intercept[SparkException] {
-      sc.parallelize((1 to 5)).map(i => metric.add("test", i)).count
-    }
-  }
-
-  "summary" should "work" in {
-    val metric = new Metrics
-    val conf = new SparkConf().setMaster("local[5]").setAppName("MetricsSpec")
-    sc = new SparkContext(conf)
-    metric.set("test1", 1.0, sc, 5)
-    metric.set("test2", 5.0, sc, 2)
-    metric.summary() should be("========== Metrics Summary ==========\n" +
-      "test2 : 2.5E-9 s\ntest1 : 2.0E-10 s\n=====================================")
-  }
-
-  it should "work when change the unit and scale" in {
-    val metric = new Metrics
-    val conf = new SparkConf().setMaster("local[5]").setAppName("MetricsSpec")
-    sc = new SparkContext(conf)
-    metric.set("test1", 1.0, sc, 5)
-    metric.set("test2", 5.0, sc, 2)
-    metric.summary("ms", 1e6) should be("========== Metrics Summary ==========\n" +
-      "test2 : 2.5E-6 ms\ntest1 : 2.0000000000000002E-7 ms\n=====================================")
-  }
 }

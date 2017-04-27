@@ -16,15 +16,12 @@
 
 package com.intel.analytics.bigdl.models.lenet
 
-import java.nio.file.Paths
-
-import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToSample}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.Top1Accuracy
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 object Test {
   Logger.getLogger("org").setLevel(Level.ERROR)
@@ -36,11 +33,13 @@ object Test {
 
   def main(args: Array[String]): Unit = {
     testParser.parse(args, new TestParams()).foreach { param =>
-      val conf = Engine.createSparkConf().setAppName("Test Lenet on MNIST")
-        .set("spark.akka.frameSize", 64.toString)
-        .set("spark.task.maxFailures", "1")
-      val sc = new SparkContext(conf)
-      Engine.init
+      val conf = Engine.createSparkConf(new SparkConf()
+        .setMaster("local[*]")
+        .setAppName("Test Lenet on MNIST")
+        .set("spark.akka.frameSize", "64")
+        .set("spark.task.maxFailures", "1"))
+      val sc = SparkContext.getOrCreate(conf)
+      Engine.init(conf)
 
       val validationData = param.folder + "/t10k-images-idx3-ubyte"
       val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"

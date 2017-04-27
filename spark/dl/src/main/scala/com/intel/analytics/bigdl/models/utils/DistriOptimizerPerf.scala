@@ -103,8 +103,8 @@ object DistriOptimizerPerf {
     val criterion = ClassNLLCriterion[Float]()
     val labels = Tensor(param.batchSize).fill(1)
 
-    val sc = new SparkContext(conf)
-    Engine.init
+    val sc = SparkContext.getOrCreate(conf)
+    Engine.init(conf)
     val broadcast = sc.broadcast(MiniBatch(input, labels))
     val rdd = sc.parallelize((1 to Engine.nodeNumber()), Engine.nodeNumber())
       .mapPartitions(iter => {

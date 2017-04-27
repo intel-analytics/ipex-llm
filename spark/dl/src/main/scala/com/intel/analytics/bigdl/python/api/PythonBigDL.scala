@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Table, _}
 import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
+import org.apache.spark.SparkConf
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
 import java.lang.{Integer, Boolean => JBoolean}
@@ -1340,7 +1341,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
 
   def initEngine(): Unit = {
-    Engine.init
+    Engine.init(Engine.createSparkConf())
   }
 
   def uniform(a: Double, b: Double, size: JList[Int]): JTensor = {

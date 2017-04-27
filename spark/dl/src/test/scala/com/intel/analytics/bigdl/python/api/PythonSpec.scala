@@ -23,37 +23,18 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.optim.Trigger
-import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.bigdl.api.python.BigDLSerDe
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
 
+class PythonSpec extends SparkContextSpec {
 
-class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
-
-  var sc: SparkContext = null
-
-  before {
-    sc = new SparkContext(
-      Engine.init(1, 4, true).get
-        .setAppName("Text classification")
-        .set("spark.akka.frameSize", 64.toString)
-        .setMaster("local[2]"))
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
-
+  override def getCoreNumber: Int = 2
 
   "to jtensor" should "be test" in {
     val pythonBigDL = PythonBigDL.ofFloat()

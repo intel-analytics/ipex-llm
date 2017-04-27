@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 
 object toAutoencoderBatch {
   def apply(): toAutoencoderBatch[Float] = new toAutoencoderBatch[Float]()
@@ -50,10 +50,11 @@ object Train {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-      val conf = Engine.createSparkConf().setAppName("Train Autoencoder on MNIST")
-
-      val sc = new SparkContext(conf)
-      Engine.init
+      val conf = Engine.createSparkConf(new SparkConf()
+        .setMaster("local[*]")
+        .setAppName("Train Autoencoder on MNIST"))
+      val sc = SparkContext.getOrCreate(conf)
+      Engine.init(conf)
 
       val trainData = Paths.get(param.folder, "/train-images-idx3-ubyte")
       val trainLabel = Paths.get(param.folder, "/train-labels-idx1-ubyte")

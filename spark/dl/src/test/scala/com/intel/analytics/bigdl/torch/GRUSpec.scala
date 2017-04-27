@@ -23,15 +23,14 @@ import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
-class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
-  System.setProperty("bigdl.disableCheckSysEnv", "true")
-  Engine.init(1, 1, true)
+class GRUSpec extends FlatSpec with BeforeAndAfter with Matchers {
+
   before {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")

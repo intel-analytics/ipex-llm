@@ -16,24 +16,13 @@
 
 package com.intel.analytics.bigdl.utils
 
-import org.apache.spark.{SparkConf, SparkContext}
+import com.intel.analytics.bigdl.SparkContextSpec
 import org.apache.spark.rdd.ZippedPartitionsWithLocalityRDD
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
-class ZippedPartitionsWithLocalityRDDSpec extends FlatSpec with Matchers with BeforeAndAfter {
-  var sc: SparkContext = null
-  before {
-    val conf = new SparkConf().setMaster("local[4]")
-      .setAppName("ZippedPartitionsWithLocalityRDDSpec")
-    sc = new SparkContext(conf)
-  }
+class ZippedPartitionsWithLocalityRDDSpec extends SparkContextSpec {
 
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
+  override def getCoreNumber: Int = 4
 
   "two uncached rdd zip partition" should "not throw exception" in {
     val rdd1 = sc.parallelize((1 to 100), 4)
