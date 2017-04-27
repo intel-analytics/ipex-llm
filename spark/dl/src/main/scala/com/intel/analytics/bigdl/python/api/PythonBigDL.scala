@@ -1046,6 +1046,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SGD.Step(stepSize, gamma)
   }
 
+  def createMultiStep(stepSizes: JList[Int], gamma: Double): SGD.MultiStep = {
+    SGD.MultiStep(stepSizes.asScala.toArray, gamma)
+  }
+
   def createClassNLLCriterion(weights: JTensor = null,
                               sizeAverage: Boolean = true)
   : ClassNLLCriterion[T] = {
