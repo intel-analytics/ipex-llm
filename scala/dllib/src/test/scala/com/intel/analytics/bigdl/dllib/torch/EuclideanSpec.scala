@@ -18,19 +18,13 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.Euclidean
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class EuclideanSpec extends FlatSpec with BeforeAndAfter with Matchers{
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A Euclidean " should "generate correct output and grad with input one dimension" in {
+class EuclideanSpec extends TorchSpec {
+    "A Euclidean " should "generate correct output and grad with input one dimension" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -73,6 +67,7 @@ class EuclideanSpec extends FlatSpec with BeforeAndAfter with Matchers{
   }
 
   "A Euclidean " should "generate correct output and grad with input two dimensions" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

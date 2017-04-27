@@ -18,17 +18,11 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.Select
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
-class SelectSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "Select(3, 5)" should "generate correct output and grad" in {
+class SelectSpec extends TorchSpec {
+    "Select(3, 5)" should "generate correct output and grad" in {
+    torchCheck()
     def randn(): Double = RandomGenerator.RNG.uniform(-10, 10)
     val layer = new Select[Double](3, 5)
     val input = Tensor[Double](5, 5, 5)

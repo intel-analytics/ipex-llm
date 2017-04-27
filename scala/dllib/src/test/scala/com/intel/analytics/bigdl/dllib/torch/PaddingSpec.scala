@@ -22,14 +22,11 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class PaddingSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
+class PaddingSpec extends TorchSpec {
+
 
   "A Padding Module " should "generate correct output and grad with nInputDim != input.dim()" in {
+    torchCheck()
     val dim = 1
     val pad = -1
     val nInputDim = 4
@@ -64,6 +61,7 @@ class PaddingSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A Padding Module " should "generate correct output and grad with nInputDim == input.dim()" in {
+    torchCheck()
     val dim = 1
     val pad = 1
     val nInputDim = 3
@@ -98,6 +96,7 @@ class PaddingSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A Padding Module " should "generate correct output and grad with index == 1" in {
+    torchCheck()
     val dim = 1
     val pad = -1
     val nInputDim = 4

@@ -22,20 +22,17 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.torch.TH
+import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class AlexNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class AlexNetSpec extends TorchSpec {
   "AlexNet float" should "generate correct output" in {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
+    torchCheck()
 
     Random.setSeed(1)
     val input = Tensor[Double](8, 3, 224, 224).apply1(e => Random.nextDouble())
@@ -191,9 +188,7 @@ gradInput = model.gradInput
   }
 
   "AlexNet Float save to torch" should "generate correct output" in {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
+    torchCheck()
 
     Random.setSeed(1)
     val input = Tensor[Float](8, 3, 224, 224).apply1(e => Random.nextFloat())

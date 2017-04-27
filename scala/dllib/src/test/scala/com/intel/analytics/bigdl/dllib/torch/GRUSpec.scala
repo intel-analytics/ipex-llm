@@ -24,15 +24,14 @@ import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{Engine, T}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
-class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
+class GRUSpec  extends TorchSpec {
   System.setProperty("bigdl.disableCheckSysEnv", "true")
   Engine.init(1, 1, true)
-  before {
+  override def torchCheck(): Unit = {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -133,6 +132,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A GRU " should "has same loss as torch rnn" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 5
@@ -300,6 +300,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
 
   "A GRU " should "converge" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 5
@@ -363,6 +364,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
 
   "A GRU " should "has same loss as torch rnn in batch mode" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 5
@@ -520,6 +522,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
 
   "A GRU " should "converge in batch mode" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 5
@@ -584,6 +587,7 @@ class GRUSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A GRU " should "perform correct gradient check" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 5

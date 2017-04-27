@@ -18,17 +18,11 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.HingeEmbeddingCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
-class HingeEmbeddingCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers{
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A HingeEmbeddingCriterion" should "generate correct output and grad" in {
+class HingeEmbeddingCriterionSpec extends TorchSpec {
+    "A HingeEmbeddingCriterion" should "generate correct output and grad" in {
+    torchCheck()
     val module = new HingeEmbeddingCriterion[Double](0.6)
 
     val input = Tensor[Double](10).apply1(x => RandomGenerator.RNG.uniform(0, 2))
