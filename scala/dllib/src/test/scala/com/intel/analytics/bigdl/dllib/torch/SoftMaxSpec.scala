@@ -18,19 +18,13 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.SoftMax
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class SoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A SoftMax 1D input" should "generate correct output and grad" in {
+class SoftMaxSpec extends TorchSpec {
+    "A SoftMax 1D input" should "generate correct output and grad" in {
+    torchCheck()
     val layer = new SoftMax[Double]()
     val input = Tensor[Double](10)
     input.apply1(_ => Random.nextDouble())
@@ -59,6 +53,7 @@ class SoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A SoftMax 2D input" should "generate correct output and grad" in {
+    torchCheck()
     val layer = new SoftMax[Double]()
     val input = Tensor[Double](3, 5)
     input.apply1(_ => Random.nextDouble())
@@ -87,6 +82,7 @@ class SoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A SoftMax 3D input" should "generate correct output and grad" in {
+    torchCheck()
     val layer = new SoftMax[Double]()
     val input = Tensor[Double](4, 6, 6)
     input.apply1(_ => Random.nextDouble())
@@ -115,6 +111,7 @@ class SoftMaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A SoftMax 4D input" should "generate correct output and grad" in {
+    torchCheck()
     val layer = new SoftMax[Double]()
     val input = Tensor[Double](3, 5, 6, 6)
     input.apply1(_ => Random.nextDouble())

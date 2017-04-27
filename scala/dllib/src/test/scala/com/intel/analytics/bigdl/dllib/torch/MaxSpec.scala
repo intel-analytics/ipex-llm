@@ -18,19 +18,13 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.Max
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class MaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A Max(2)" should "generate correct output and grad" in {
+class MaxSpec extends TorchSpec {
+    "A Max(2)" should "generate correct output and grad" in {
+    torchCheck()
     val layer = new Max[Double](2)
     val input = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](2, 4).apply1(_ => Random.nextDouble())
@@ -57,6 +51,7 @@ class MaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A Max()" should "generate correct output and grad" in {
+    torchCheck()
     val layer = new Max[Double]()
     val input = Tensor[Double](1, 2, 3, 4).apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble())
@@ -83,6 +78,7 @@ class MaxSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A Max(2, 3)" should "generate correct output and grad" in {
+    torchCheck()
     val layer = new Max[Double](2, 3)
     val input = Tensor[Double](3, 5, 3, 4).apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](3, 5, 4).apply1(_ => Random.nextDouble())

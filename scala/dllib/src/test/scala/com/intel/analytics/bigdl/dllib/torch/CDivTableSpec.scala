@@ -19,20 +19,14 @@ import com.intel.analytics.bigdl.nn.CDivTable
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class CDivTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A CDivTable Module" should "generate correct output and grad" in {
+class CDivTableSpec extends TorchSpec {
+    "A CDivTable Module" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val module = new CDivTable[Double]()
