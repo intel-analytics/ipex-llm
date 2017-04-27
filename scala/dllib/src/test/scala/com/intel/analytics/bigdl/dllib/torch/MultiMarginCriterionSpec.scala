@@ -17,19 +17,13 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.MultiMarginCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class MultiMarginCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A MultiMarginCriterion " should "generate correct output and grad with " +
+class MultiMarginCriterionSpec extends TorchSpec {
+    "A MultiMarginCriterion " should "generate correct output and grad with " +
     "one dimension and weights not null" in {
+    torchCheck()
     val input = Tensor[Double](3).apply1(e => Random.nextDouble())
     val target = Tensor[Double](1)
     target(Array(1)) = 2
@@ -60,6 +54,7 @@ class MultiMarginCriterionSpec extends FlatSpec with BeforeAndAfter with Matcher
 
   "A MultiMarginCriterion " should "generate correct output and grad with " +
     "two dimensions and weights not null" in {
+    torchCheck()
     val input = Tensor[Double](3, 2).apply1(e => Random.nextDouble())
     val target = Tensor[Double](3)
     target(Array(1)) = 1
@@ -92,6 +87,7 @@ class MultiMarginCriterionSpec extends FlatSpec with BeforeAndAfter with Matcher
   }
 
   "A MultiMarginCriterion " should "generate correct output and grad with weights null" in {
+    torchCheck()
     val input = Tensor[Double](3, 2).apply1(e => Random.nextDouble())
     val target = Tensor[Double](3)
     target(Array(1)) = 2

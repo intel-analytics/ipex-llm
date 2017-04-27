@@ -23,14 +23,9 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers, fixture}
 
 import scala.math._
 @com.intel.analytics.bigdl.tags.Serial
-class RReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A RReLU Module " should "generate correct output and grad not inplace when train = true" in {
+class RReLUSpec extends TorchSpec {
+    "A RReLU Module " should "generate correct output and grad not inplace when train = true" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -77,6 +72,7 @@ class RReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A RReLU Module " should "generate correct output and grad inplace when train = true" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -124,6 +120,7 @@ class RReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
 
   "A RReLU Module " should "generate correct output and grad not inplace when train = false" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -172,6 +169,7 @@ class RReLUSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A RReLU Module " should "generate correct output and grad inplace when train = false" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

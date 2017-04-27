@@ -19,20 +19,14 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.nn.CMulTable
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class CMulTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A CMulTable Module" should "generate correct output and grad" in {
+class CMulTableSpec extends TorchSpec {
+    "A CMulTable Module" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val module = new CMulTable[Double]()

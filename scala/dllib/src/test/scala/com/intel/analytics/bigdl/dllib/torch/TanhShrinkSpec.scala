@@ -18,17 +18,11 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.TanhShrink
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
-class TanhShrinkSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A TanhShrink()" should "generate correct output and grad" in {
+class TanhShrinkSpec extends TorchSpec {
+    "A TanhShrink()" should "generate correct output and grad" in {
+    torchCheck()
     def randomn(): Double = RandomGenerator.RNG.uniform(2, 10)
     val layer = new TanhShrink[Double]()
     val input = Tensor[Double](2, 2, 2)

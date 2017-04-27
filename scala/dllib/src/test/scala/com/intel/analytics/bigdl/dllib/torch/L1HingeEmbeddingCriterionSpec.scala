@@ -19,20 +19,14 @@ import com.intel.analytics.bigdl.nn.L1HingeEmbeddingCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class L1HingeEmbeddingCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers{
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A L1HingeEmbeddingCriterion" should "generate correct output and grad with y == 1 " in {
+class L1HingeEmbeddingCriterionSpec extends TorchSpec {
+    "A L1HingeEmbeddingCriterion" should "generate correct output and grad with y == 1 " in {
+    torchCheck()
     val seed = 2
     RNG.setSeed(seed)
     val module = new L1HingeEmbeddingCriterion[Double](0.6)
@@ -69,6 +63,7 @@ class L1HingeEmbeddingCriterionSpec extends FlatSpec with BeforeAndAfter with Ma
   }
 
   "A L1HingeEmbeddingCriterion" should "generate correct output and grad with y == -1 " in {
+    torchCheck()
     val seed = 2
     RNG.setSeed(seed)
     val module = new L1HingeEmbeddingCriterion[Double](0.6)

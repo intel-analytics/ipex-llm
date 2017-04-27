@@ -31,11 +31,9 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Serial
-class BiRecurrentSpec  extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
+class BiRecurrentSpec  extends TorchSpec {
+  override def torchCheck(): Unit = {
+    super.torchCheck()
     val tmpFile = java.io.File.createTempFile("checkRNN", ".lua")
     val writer = new PrintWriter(tmpFile)
     writer.write("exist = (pcall(require, 'rnn'))\n print(exist)")
@@ -49,6 +47,7 @@ class BiRecurrentSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A BiRecurrent " should "has same loss as torch rnn" in {
+    torchCheck()
 
     val hiddenSize = 4
     val linearHidden = 8
