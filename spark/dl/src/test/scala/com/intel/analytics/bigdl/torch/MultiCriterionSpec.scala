@@ -18,19 +18,13 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class MultiCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers{
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A MultiCriterion Module " should "generate correct output and grad with Tensor input" in {
+class MultiCriterionSpec extends TorchSpec {
+    "A MultiCriterion Module " should "generate correct output and grad with Tensor input" in {
+    torchCheck()
     val module = new MultiCriterion[Double]()
     val nll = new ClassNLLCriterion[Double]()
     val nll2 = new MSECriterion[Double]()
@@ -71,6 +65,7 @@ class MultiCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers{
   }
 
   "A MultiCriterion Module " should "generate correct output and grad with Table input" in {
+    torchCheck()
     // todo: need to check table input
   }
 }

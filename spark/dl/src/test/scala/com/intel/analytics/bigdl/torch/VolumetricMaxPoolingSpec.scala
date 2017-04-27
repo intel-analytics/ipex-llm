@@ -20,19 +20,14 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{GradientChecker, VolumetricMaxPooling}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class VolumetricMaxPoolingSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
+class VolumetricMaxPoolingSpec extends TorchSpec {
 
   "VolumetricMaxPooling Forward dim 4 Double" should "work properly" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val from = RNG.uniform(2, 4).toInt
@@ -74,6 +69,7 @@ class VolumetricMaxPoolingSpec extends FlatSpec with BeforeAndAfter with Matcher
   }
 
   "VolumetricMaxPooling Forward dim 5 Double" should "work properly" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val from = RNG.uniform(2, 4).toInt
@@ -115,6 +111,7 @@ class VolumetricMaxPoolingSpec extends FlatSpec with BeforeAndAfter with Matcher
   }
 
   "forward backward double batch" should "work properly" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -163,6 +160,7 @@ class VolumetricMaxPoolingSpec extends FlatSpec with BeforeAndAfter with Matcher
   }
 
   "gradient check double batch" should "work properly" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -195,6 +193,7 @@ class VolumetricMaxPoolingSpec extends FlatSpec with BeforeAndAfter with Matcher
   }
 
   "forward backward double batch ceil" should "work properly" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -243,6 +242,7 @@ class VolumetricMaxPoolingSpec extends FlatSpec with BeforeAndAfter with Matcher
   }
 
   "VolumetricMaxPooling Forward dim 4 Float" should "work properly" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val from = RNG.uniform(2, 4).toInt
@@ -285,6 +285,7 @@ class VolumetricMaxPoolingSpec extends FlatSpec with BeforeAndAfter with Matcher
   }
 
   "VolumetricMaxPooling Forward dim 5 Float" should "work properly" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val from = RNG.uniform(2, 4).toInt
@@ -328,6 +329,7 @@ class VolumetricMaxPoolingSpec extends FlatSpec with BeforeAndAfter with Matcher
 
 
   "forward backward Float batch" should "work properly" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -378,6 +380,7 @@ class VolumetricMaxPoolingSpec extends FlatSpec with BeforeAndAfter with Matcher
   }
 
   "forward backward Float batch ceil" should "work properly" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

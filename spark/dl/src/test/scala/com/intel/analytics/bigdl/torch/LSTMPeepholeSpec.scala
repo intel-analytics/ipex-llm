@@ -23,13 +23,12 @@ import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.sys.process._
 
 @com.intel.analytics.bigdl.tags.Parallel
-class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
+class LSTMPeepholeSpec  extends TorchSpec {
+  override def torchCheck(): Unit = {
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
@@ -46,6 +45,7 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LSTMPeepwhole " should "has same loss as torch rnn" in {
+    torchCheck()
 
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 4
@@ -218,6 +218,7 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
 
   "A LSTMPeepwhole " should "converge" in {
+    torchCheck()
 
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 4
@@ -281,6 +282,7 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
 
   "A LSTMPeepwhole " should "has same loss as torch rnn in batch mode" in {
+    torchCheck()
 
     import com.intel.analytics.bigdl.numeric.NumericFloat
     val hiddenSize = 4
@@ -451,6 +453,7 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
 
 
   "A LSTMPeepwhole " should "converge in batch mode" in {
+    torchCheck()
 
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 4
@@ -516,6 +519,7 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A LSTMPeepwhole " should "perform correct gradient check" in {
+    torchCheck()
 
     val hiddenSize = 4
     val inputSize = 5
