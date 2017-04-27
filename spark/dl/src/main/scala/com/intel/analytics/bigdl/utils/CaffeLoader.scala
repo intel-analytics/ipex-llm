@@ -167,6 +167,9 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     val layers = convert(caffeTypedLayers)
     val inputs = layers.filter(layer => layer.prevNodes.size == 0).toArray
     val outputs = layers.filter(layer => layer.nextNodes.size == 0).toArray
+    inputs.foreach(i => {
+      println("input is " + i.element.getName() + " " + i.prevNodes.size)
+    })
     val module = Graph(inputs, outputs)
     copyParameters(module)
     module
@@ -177,8 +180,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     val layers = new ArrayBuffer[ModuleNode[T]]()
     val layersMap = new mutable.HashMap[String, ModuleNode[T]]()
     caffeTypedLayers.foreach(layer => {
-      var converted : ModuleNode[T] = convertCaffeLayer(layer)
       val layerName = layer.element
+      var converted : ModuleNode[T] = convertCaffeLayer(layer)
       if (converted != null) {
         val dependencies = layer.prevNodes
         dependencies.foreach(dependency => {
@@ -415,12 +418,30 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     new SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
       .setName(layerName).apply()
   }
-
+/*
+  private def getSPLITParam(name: String): Option[S] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getThresholdParam)
+    } else if (name2LayerV1.contains(name)) {
+      Some(name2LayerV1(name).getThresholdParam)
+    } else {
+      None
+    }
+  }
+*/
   private def getThresholdParam(name: String): Option[ThresholdParameter] = {
     if (name2LayerV2.contains(name)) {
       Some(name2LayerV2(name).getThresholdParam)
     } else if (name2LayerV1.contains(name)) {
       Some(name2LayerV1(name).getThresholdParam)
+    } else {
+      None
+    }
+  }
+
+  private def getScaleParam(name: String): Option[ScaleParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getScaleParam)
     } else {
       None
     }
