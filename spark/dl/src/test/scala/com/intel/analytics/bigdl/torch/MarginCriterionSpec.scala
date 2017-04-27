@@ -17,19 +17,13 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.MarginCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class MarginCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A MarginCriterion " should "generate correct output and grad" in {
+class MarginCriterionSpec extends TorchSpec {
+    "A MarginCriterion " should "generate correct output and grad" in {
+    torchCheck()
     val mse = new MarginCriterion[Double]
     val input = Tensor[Double](2, 2, 2).apply1(e => Random.nextDouble())
     val target = Tensor[Double](2, 2, 2).apply1(e => Random.nextDouble())

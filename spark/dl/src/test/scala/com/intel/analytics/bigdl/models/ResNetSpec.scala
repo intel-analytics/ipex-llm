@@ -21,24 +21,21 @@ import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.torch.TH
+import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.{Engine, T}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.immutable
 import scala.math._
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class ResNetSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class ResNetSpec extends TorchSpec {
 
   "ResNet Float" should "generate correct output" in {
     // System.setProperty("java.io.tmpdir", "/disk2/test");
     Engine.setCoreNumber(4)
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
+    torchCheck()
 
     for (i <- 1 to 1) {
       println(s"unitTest-${i}")

@@ -17,20 +17,13 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.MultiLabelMarginCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class MultiLabelMarginCriterionSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
+class MultiLabelMarginCriterionSpec extends TorchSpec {
   "A MultiLabelMarginCriterion " should "generate correct output and grad whith one dimension" in {
-
+    torchCheck()
     val layer = new MultiLabelMarginCriterion[Double]()
     val input = Tensor[Double](4).apply1(e => Random.nextDouble())
     val target = Tensor[Double](4)
@@ -54,8 +47,8 @@ class MultiLabelMarginCriterionSpec extends FlatSpec with BeforeAndAfter with Ma
     val luaOutput = torchResult("output").asInstanceOf[Double]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    output should be (luaOutput)
-    gradInput should be (luaGradInput)
+    output should be(luaOutput)
+    gradInput should be(luaGradInput)
 
     println("Test case : MultiLabelMarginCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
@@ -63,6 +56,7 @@ class MultiLabelMarginCriterionSpec extends FlatSpec with BeforeAndAfter with Ma
   }
 
   "A MultiLabelMarginCriterion " should "generate correct output and grad with two dimensions" in {
+    torchCheck()
 
     val layer = new MultiLabelMarginCriterion[Double]()
     val input = Tensor[Double](2, 4).apply1(e => Random.nextDouble())

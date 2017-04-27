@@ -18,20 +18,14 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.NarrowTable
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.HashMap
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class NarrowTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A NarrowTable Module " should "generate correct output and grad" in {
+class NarrowTableSpec extends TorchSpec {
+    "A NarrowTable Module " should "generate correct output and grad" in {
+    torchCheck()
     val module = new NarrowTable[Double](1, 2)
 
     val input = T()
@@ -77,6 +71,7 @@ class NarrowTableSpec extends FlatSpec with BeforeAndAfter with Matchers{
   }
 
   "A NarrowTable Module with negative length" should "generate correct output and grad" in {
+    torchCheck()
     val module = new NarrowTable[Double](2, -2)
 
     val input = T()

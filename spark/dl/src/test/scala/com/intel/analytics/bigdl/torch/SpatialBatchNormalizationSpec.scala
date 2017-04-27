@@ -20,20 +20,14 @@ import breeze.numerics.abs
 import com.intel.analytics.bigdl.nn.{GradientChecker, SpatialBatchNormalization}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 import com.intel.analytics.bigdl._
 
 @com.intel.analytics.bigdl.tags.Serial
-class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAndAfter {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A SpatialBatchNormalization" should "generate correct output and gradInput" in {
+class SpatialBatchNormalizationSpec extends TorchSpec {
+    "A SpatialBatchNormalization" should "generate correct output and gradInput" in {
+    torchCheck()
 
     val seed = 100
     RNG.setSeed(seed)
@@ -120,6 +114,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
   }
 
   "A SpatialBatchNormalization evaluating" should "generate correct output" in {
+    torchCheck()
 
     val seed = 100
     RNG.setSeed(seed)
@@ -203,6 +198,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
 
   "SpatialBatchNormalization module in batch mode" should "be good in gradient check " +
     "for input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val sbn = new SpatialBatchNormalization[Double](3, 1e-3)
@@ -214,6 +210,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers with BeforeAn
 
   "SpatialBatchNormalization module in batch mode" should "be good in gradient check " +
     "for weight" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val sbn = new SpatialBatchNormalization[Double](3, 1e-3)
