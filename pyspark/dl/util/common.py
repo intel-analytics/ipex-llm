@@ -201,6 +201,8 @@ def get_bigdl_conf():
     bigdl_python_wrapper = "python-api.zip"
 
     def load_conf(conf_str):
+        if isinstance(conf_str, bytes):
+            conf_str = conf_str.decode()
         return dict(line.split() for line in conf_str.split("\n") if
                     "#" not in line and line.strip())
 
@@ -299,7 +301,7 @@ def _py2java(sc, obj):
                                       sc._gateway._gateway_client)
     elif isinstance(obj, dict):
         result = {}
-        for (key, value) in obj.iteritems():
+        for (key, value) in obj.items():
             result[key] = _py2java(sc, value) if isinstance(value, JavaValue) else value  # noqa
         obj = result
 

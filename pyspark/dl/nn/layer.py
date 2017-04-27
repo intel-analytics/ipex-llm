@@ -103,10 +103,10 @@ class Model(JavaValue):
             return {
                 param_name: np.array(values[0],
                                      dtype=self.get_dtype()).reshape(
-                    values[1]) for param_name, values in params.iteritems()}
+                    values[1]) for param_name, values in params.items()}
 
         return {layer_name: to_ndarray(params) for layer_name, params in
-                name_to_params.iteritems()}
+                name_to_params.items()}
 
     def predict(self, data_rdd):
         """
