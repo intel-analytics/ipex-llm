@@ -35,10 +35,13 @@ def text_to_words(review_text):
 
 
 def analyze_texts(data_rdd):
+    def index(w_c_i):
+        ((w, c), i) = w_c_i
+        return (w, (i + 1, c))
     return data_rdd.flatMap(lambda text_label: text_to_words(text_label[0])) \
         .map(lambda word: (word, 1)).reduceByKey(lambda a, b: a + b) \
         .sortBy(lambda w_c: - w_c[1]).zipWithIndex() \
-        .map(lambda w_c__i: (w_c__i[0][0], (w_c__i[1] + 1, w_c__i[0][1]))).collect()
+        .map(lambda w_c_i: index(w_c_i)).collect()
 
 
 # pad([1, 2, 3, 4, 5], 0, 6)
