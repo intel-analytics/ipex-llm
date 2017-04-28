@@ -2306,6 +2306,50 @@ class VolumetricConvolution(Model):
                                                     with_bias,
                                                     init_method)
 
+
+class VolumetricMaxPooling(Model):
+
+    '''
+    Applies 3D max-pooling operation in kTxkWxkH regions by step size dTxdWxdH steps.
+    The number of output features is equal to the number of input planes / dT.
+    The input can optionally be padded with zeros. Padding should be smaller than
+    half of kernel size. That is, padT < kT/2, padW < kW/2 and padH < kH/2
+    :param k_t The kernel size
+    :param k_w The kernel width
+    :param k_h The kernel height
+    :param d_t The step in the time dimension
+    :param d_w The step in the width dimension
+    :param d_h The step in the height dimension
+    :param pad_t The padding in the time dimension
+    :param pad_w The padding in the width dimension
+    :param pad_h The padding in the height dimension
+
+    >>> volumetricMaxPooling = VolumetricMaxPooling(5, 5, 5, 1, 1, 1)
+    creating: createVolumetricMaxPooling
+    '''
+
+    def __init__(self,
+                 k_t,
+                 k_w,
+                 k_h,
+                 d_t,
+                 d_w,
+                 d_h,
+                 pad_t=0,
+                 pad_w=0,
+                 pad_h=0):
+        super(VolumetricMaxPooling, self).__init__(None, bigdl_type,
+                                                    k_t,
+                                                    k_w,
+                                                    k_h,
+                                                    d_t,
+                                                    d_w,
+                                                    d_h,
+                                                    pad_t,
+                                                    pad_w,
+                                                    pad_h)
+
+
 class SpatialZeroPadding(Model):
 
     '''
