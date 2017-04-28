@@ -149,35 +149,38 @@ class VolumetricMaxPooling[T: ClassTag](
       // batch mode
       val nBatch = input.size(1)
 
-      val istride = nslices * itime * iwidth * iheight
-      val ostride = nslices * otime * owidth * oheight
-
       output.resize(nBatch, nslices, otime, oheight, owidth)
       indices.resize(nBatch, nslices, otime, oheight, owidth)
 
       var p = 0
       if (classTag[T] == classTag[Double]) {
         while (p < nBatch) {
+          val curInput = input(p + 1)
+          val curOutput = output(p + 1)
+          val curIndices = indices(p + 1)
           volumetricMaxPoolingForwardDouble(
-            input.asInstanceOf[Tensor[Double]].storage().array(),
-            input.storageOffset() - 1 + p * istride,
-            output.asInstanceOf[Tensor[Double]].storage().array(),
-            output.storageOffset() - 1 + p * ostride,
-            indices.storage().array(),
-            indices.storageOffset() - 1 + p * ostride,
+            curInput.asInstanceOf[Tensor[Double]].storage().array(),
+            curInput.storageOffset() - 1,
+            curOutput.asInstanceOf[Tensor[Double]].storage().array(),
+            curOutput.storageOffset() - 1,
+            curIndices.storage().array(),
+            curIndices.storageOffset() - 1,
             nslices, itime, iwidth, iheight, otime, owidth, oheight,
             kT, kW, kH, dT, dW, dH, padT, padW, padH)
           p += 1
         }
       } else if (classTag[T] == classTag[Float]) {
         while (p < nBatch) {
+          val curInput = input(p + 1)
+          val curOutput = output(p + 1)
+          val curIndices = indices(p + 1)
           volumetricMaxPoolingForwardFloat(
-            input.asInstanceOf[Tensor[Float]].storage().array(),
-            input.storageOffset() - 1 + p * istride,
-            output.asInstanceOf[Tensor[Float]].storage().array(),
-            output.storageOffset() - 1 + p * ostride,
-            indices.storage().array(),
-            indices.storageOffset() - 1 + p * ostride,
+            curInput.asInstanceOf[Tensor[Float]].storage().array(),
+            curInput.storageOffset() - 1,
+            curOutput.asInstanceOf[Tensor[Float]].storage().array(),
+            curOutput.storageOffset() - 1,
+            curIndices.storage().array(),
+            curIndices.storageOffset() - 1,
             nslices, itime, iwidth, iheight, otime, owidth, oheight,
             kT, kW, kH, dT, dW, dH, padT, padW, padH)
           p += 1
@@ -212,7 +215,7 @@ class VolumetricMaxPooling[T: ClassTag](
     val owidth = gradOutput.size(dimw)
 
     gradInput.resizeAs(input).zero()
-    require(gradOutput.isContiguous())
+    require(gradOutput.isContiguous(), "gradOutput is not contiguous")
 
     if (input.dim() == 4) {
       // non-batch mode
@@ -237,9 +240,6 @@ class VolumetricMaxPooling[T: ClassTag](
     else {
       // batch mode
       val nBatch = input.size(1)
-
-      val istride = nslices * itime * iwidth * iheight
-      val ostride = nslices * otime * owidth * oheight
       var p = 0
 
       if (classTag[T] == classTag[Double]) {
@@ -255,18 +255,19 @@ class VolumetricMaxPooling[T: ClassTag](
             curIndices.storage().array(), curIndices.storageOffset() - 1,
             nslices, itime, iwidth, iheight, otime, owidth, oheight,
             dT, dW, dH, padT, padW, padH)
-
-          require(curIndices.storageOffset() - 1 == indices.storageOffset() - 1 + p * ostride)
           p += 1
         }
       } else if (classTag[T] == classTag[Float]) {
         while (p < nBatch) {
+          val curGradInput = gradInput(p + 1)
+          val curGradOutput = gradOutput(p + 1)
+          val curIndices = indices(p + 1)
           volumetricMaxPoolingBackwardFloat(
-            gradInput.asInstanceOf[Tensor[Float]].storage().array(),
-            gradInput.storageOffset() - 1 + p * istride,
-            gradOutput.asInstanceOf[Tensor[Float]].storage().array(),
-            gradOutput.storageOffset() - 1 + p * ostride,
-            indices.storage().array(), indices.storageOffset() - 1 + p * ostride,
+            curGradInput.asInstanceOf[Tensor[Float]].storage().array(),
+            curGradInput.storageOffset() - 1,
+            curGradOutput.asInstanceOf[Tensor[Float]].storage().array(),
+            curGradOutput.storageOffset() - 1,
+            curIndices.storage().array(), curIndices.storageOffset() - 1,
             nslices, itime, iwidth, iheight, otime, owidth, oheight,
             dT, dW, dH, padT, padW, padH)
           p += 1
@@ -322,9 +323,8 @@ class VolumetricMaxPooling[T: ClassTag](
                 var x = 0
                 while (x < kernelW) {
                   if ((tstart + z < iTime) && (hstart + y < iHeight) && (wstart + x < iWidth)) {
-                    val tcntr = z * iWidth * iHeight + y * iWidth + x + inputStart
                     // k, z, y, x input indexers
-                    val value = input(tcntr)
+                    val value = input(z * iWidth * iHeight + y * iWidth + x + inputStart)
                     if (value > maxval) {
                       maxval = value
                       // Store indices w.r.t the kernel dimension
@@ -369,7 +369,6 @@ class VolumetricMaxPooling[T: ClassTag](
         while (i < oHeight) {
           var j = 0
           while (j < oWidth) {
-            // k, i, j output indexers
             var tstart = ti * dT - padT
             var hstart = i * dH - padH
             var wstart = j * dW - padW
@@ -394,7 +393,8 @@ class VolumetricMaxPooling[T: ClassTag](
               while (y < kernelH) {
                 var x = 0
                 while (x < kernelW) {
-                  if (tstart + z < iTime && hstart + y < iHeight && wstart + x < iWidth) {
+                  if ((tstart + z < iTime) && (hstart + y < iHeight) && (wstart + x < iWidth)) {
+                    // k, z, y, x input indexers
                     val value = input(z * iWidth * iHeight + y * iWidth + x + inputStart)
                     if (value > maxval) {
                       maxval = value
