@@ -78,6 +78,44 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       "backward output should be the same")
   }
 
+
+  "model forward and backward with multiple inputs" should "be test" in {
+    val pythonBigDL = PythonBigDL.ofFloat()
+
+    val input = T(
+      Tensor[Float](10).randn(),
+      Tensor[Float](10).randn())
+
+    val gradOutput = T(
+      Tensor[Float](3).randn(),
+      Tensor[Float](3).randn())
+
+    val linear1 = new Linear[Float](10, 3)
+    val linear2 = new Linear[Float](10, 3)
+    val expectedOutput = T(
+      linear1.updateOutput(input(1)),
+      linear2.updateOutput(input(2)))
+
+    val module = new ParallelTable[Float]()
+    module.add(linear1)
+    module.add(linear2)
+
+    val mapOutput = pythonBigDL.modelForward(module, pythonBigDL.activityToJTensors(input))
+    val mapOutputActivity = pythonBigDL.jTensorsToActivity(mapOutput)
+    mapOutputActivity.toTable should equal (expectedOutput)
+
+    val expectedGradInput = T(
+      linear1.updateGradInput(input(1), gradOutput(1)),
+      linear2.updateGradInput(input(2), gradOutput(2)))
+    val mapGradInput = pythonBigDL.modelBackward(module,
+      pythonBigDL.activityToJTensors(input),
+      pythonBigDL.activityToJTensors(gradOutput))
+    val mapGradInputActivity = pythonBigDL.jTensorsToActivity(mapGradInput)
+
+    mapGradInputActivity.toTable should equal (expectedGradInput)
+
+  }
+
   "to jtensor" should "be test" in {
     val pythonBigDL = PythonBigDL.ofFloat()
     val tensor: Tensor[Float] = Tensor.ones[Float](10)

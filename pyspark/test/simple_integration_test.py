@@ -139,6 +139,27 @@ class TestWorkFlow(unittest.TestCase):
         grad_output = mse.backward(output, rng.uniform(0.0, 1.0, [5]))
         l_grad_output = linear.backward(input, grad_output)
 
+    def test_forward_multiple(self):
+        from nn.layer import Linear
+        rng = RNG()
+        rng.set_seed(100)
+
+        input = [rng.uniform(0.0, 0.1, [2]),
+                 rng.uniform(0.0, 0.1, [2]) + 0.2]
+
+        grad_output = [rng.uniform(0.0, 0.1, [3]),
+                       rng.uniform(0.0, 0.1, [3]) + 0.2]
+
+        linear1 = Linear(2, 3)
+        linear2 = Linear(2, 3)
+
+        module = ParallelTable()
+        module.add(linear1)
+        module.add(linear2)
+        module.forward(input)
+        module.backward(input, grad_output)
+
+
     def test_predict(self):
         np.random.seed(100)
         total_length = 6
