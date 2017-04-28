@@ -2337,7 +2337,8 @@ class VolumetricMaxPooling(Model):
                  d_h,
                  pad_t=0,
                  pad_w=0,
-                 pad_h=0):
+                 pad_h=0,
+                 bigdl_type="float"):
         super(VolumetricMaxPooling, self).__init__(None, bigdl_type,
                                                     k_t,
                                                     k_w,
