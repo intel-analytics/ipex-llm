@@ -1,5 +1,5 @@
 import tarfile
-import base
+from . import base
 import os
 import sys
 
@@ -70,10 +70,10 @@ def get_glove_w2v(source_dir="/tmp/news20/", dim=100):
     :return: A dict mapping from word to vector
     """
     w2v_dir = download_glove_w2v(source_dir)
-    with open(os.path.join(w2v_dir, "glove.6B.%sd.txt" % dim)) as w2v_f:
+    with open(os.path.join(w2v_dir, "glove.6B.%sd.txt" % dim), 'rb') as w2v_f:
         pre_w2v = {}
         for line in w2v_f.readlines():
-            items = line.split(" ")
+            items = line.split(b" ")
             pre_w2v[items[0]] = [float(i) for i in items[1:]]
         return pre_w2v
 
