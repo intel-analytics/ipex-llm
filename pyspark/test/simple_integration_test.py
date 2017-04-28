@@ -159,7 +159,6 @@ class TestWorkFlow(unittest.TestCase):
         module.forward(input)
         module.backward(input, grad_output)
 
-
     def test_predict(self):
         np.random.seed(100)
         total_length = 6
