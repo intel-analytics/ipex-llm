@@ -279,13 +279,62 @@ class VolumetricMaxPooling[T: ClassTag](
     gradInput
   }
 
+  override def equals(obj: Any): Boolean = {
+
+    if (!super.equals(obj)) {
+      return false
+    }
+
+    if (!obj.isInstanceOf[VolumetricMaxPooling[T]]) {
+      return false
+    }
+    val other = obj.asInstanceOf[VolumetricMaxPooling[T]]
+    if (this.eq(other)) {
+      return true
+    }
+
+    kT == other.kT &&
+      kW == other.kW &&
+      kH == other.kH &&
+      dT == other.dT &&
+      dW == other.dW &&
+      dH == other.dH &&
+      padT == other.padT &&
+      padW == other.padW &&
+      padH == other.padH &&
+      ceilMode == other.ceilMode &&
+      indices == other.indices
+  }
+
+  override def hashCode(): Int = {
+    val seed = 37
+    var hash = super.hashCode()
+    hash = hash * seed + kT.hashCode()
+    hash = hash * seed + kW.hashCode()
+    hash = hash * seed + kH.hashCode()
+    hash = hash * seed + dT.hashCode()
+    hash = hash * seed + dW.hashCode()
+    hash = hash * seed + dH.hashCode()
+    hash = hash * seed + padT.hashCode()
+    hash = hash * seed + padW.hashCode()
+    hash = hash * seed + padH.hashCode()
+    hash = hash * seed + ceilMode.hashCode()
+    hash = hash * seed + indices.hashCode()
+
+    hash
+  }
+
+  override def toString(): String = {
+    s"nn.VolumetricMaxPooling($kT, $kW, $kH, $dT, $dW, $dH, $padT, $padW, $padH)"
+  }
+
   override def clearState(): this.type = {
     super.clearState()
     indices.set()
     this
   }
 
-  def volumetricMaxPoolingForwardDouble(input: Array[Double], inputOffset: Int,
+  private def volumetricMaxPoolingForwardDouble(input: Array[Double], inputOffset: Int,
     output: Array[Double], outputOffset: Int,
     indices: Array[Float], indicesOffset: Int,
     nSlices: Int, iTime: Int, iWidth: Int, iHeight: Int, oTime: Int, oWidth: Int, oHeight: Int,
@@ -356,7 +405,7 @@ class VolumetricMaxPooling[T: ClassTag](
     }
   }
 
-  def volumetricMaxPoolingForwardFloat(input: Array[Float], inputOffset: Int,
+  private def volumetricMaxPoolingForwardFloat(input: Array[Float], inputOffset: Int,
     output: Array[Float], outputOffset: Int,
     indices: Array[Float], indicesOffset: Int,
     nSlices: Int, iTime: Int, iWidth: Int, iHeight: Int, oTime: Int, oWidth: Int, oHeight: Int,
@@ -428,7 +477,7 @@ class VolumetricMaxPooling[T: ClassTag](
   }
 
 
-  def volumetricMaxPoolingBackwardDouble(gradInput: Array[Double], gradInputOffset: Int,
+  private def volumetricMaxPoolingBackwardDouble(gradInput: Array[Double], gradInputOffset: Int,
     gradOutput: Array[Double], gradOutputOffset: Int,
     indices: Array[Float], indicesOffset: Int,
     nslices: Int, itime: Int, iwidth: Int, iheight: Int,
@@ -461,7 +510,7 @@ class VolumetricMaxPooling[T: ClassTag](
     }
   }
 
-  def volumetricMaxPoolingBackwardFloat(gradInput: Array[Float], gradInputOffset: Int,
+  private def volumetricMaxPoolingBackwardFloat(gradInput: Array[Float], gradInputOffset: Int,
     gradOutput: Array[Float], gradOutputOffset: Int,
     indices: Array[Float], indicesOffset: Int,
     nslices: Int, itime: Int, iwidth: Int, iheight: Int,
