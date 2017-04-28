@@ -93,7 +93,8 @@ LOGGER = logging.getLogger()
 def run_individual_python_test(test_name, python_exec):
     env = dict(os.environ)
     env.update({
-        'DL_CORE_NUMBER': '4'
+        'DL_CORE_NUMBER': '4',
+        'PYSPARK_PYTHON': python_exec
     })
     LOGGER.debug("Starting test(%s): %s", python_exec, test_name)
     start_time = time.time()
@@ -135,8 +136,7 @@ def run_individual_python_test(test_name, python_exec):
 
 def get_default_python_executables():
     # TODO: add more version. only support python 2.7 for now
-    python_execs = []
-    python_execs.insert(0, "python")
+    python_execs = ["python2.7"]
     return python_execs
 
 
