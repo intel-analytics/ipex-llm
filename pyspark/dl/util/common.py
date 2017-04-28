@@ -176,7 +176,7 @@ class RNG():
         callBigDlFunc(self.bigdl_type, "setModelSeed", seed)
 
     def uniform(self, a, b, size):
-        return callBigDlFunc(self.bigdl_type, "uniform", a, b, size)
+        return callBigDlFunc(self.bigdl_type, "uniform", a, b, size).to_ndarray() # noqa
 
 
 _picklable_classes = [

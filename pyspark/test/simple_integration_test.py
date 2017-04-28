@@ -117,6 +117,48 @@ class TestWorkFlow(unittest.TestCase):
         for test_result in test_results:
             print(test_result)
 
+    def test_forward_backward(self):
+        from nn.layer import Linear
+        rng = RNG()
+        rng.set_seed(100)
+
+        linear = Linear(4, 5)
+        input = rng.uniform(0.0, 1.0, [4])
+        output = linear.forward(input)
+        self.assertTrue(np.allclose(output,
+                                    np.array([0.41366524,
+                                              0.009532653,
+                                              -0.677581,
+                                              0.07945433,
+                                              -0.5742568]),
+                                    atol=1e-6, rtol=0))
+        mse = MSECriterion()
+        target = rng.uniform(0.0, 1.0, [5])
+        loss = mse.forward(output, target)
+        print("loss: " + str(loss))
+        grad_output = mse.backward(output, rng.uniform(0.0, 1.0, [5]))
+        l_grad_output = linear.backward(input, grad_output)
+
+    def test_forward_multiple(self):
+        from nn.layer import Linear
+        rng = RNG()
+        rng.set_seed(100)
+
+        input = [rng.uniform(0.0, 0.1, [2]),
+                 rng.uniform(0.0, 0.1, [2]) + 0.2]
+
+        grad_output = [rng.uniform(0.0, 0.1, [3]),
+                       rng.uniform(0.0, 0.1, [3]) + 0.2]
+
+        linear1 = Linear(2, 3)
+        linear2 = Linear(2, 3)
+
+        module = ParallelTable()
+        module.add(linear1)
+        module.add(linear2)
+        module.forward(input)
+        module.backward(input, grad_output)
+
     def test_predict(self):
         np.random.seed(100)
         total_length = 6
@@ -138,14 +180,14 @@ class TestWorkFlow(unittest.TestCase):
         result = rng.uniform(0.1, 0.2, [2, 3])
         ground_label = np.array([[0.15434049, 0.16711557, 0.12783694],
                                  [0.14120464, 0.14245176, 0.15263824]])
-        self.assertTrue(result.shape == [2, 3])
-        data = result.to_ndarray()
+        self.assertTrue(result.shape == (2, 3))
+        data = result
         for i in range(0, 2):
             self.assertTrue(np.allclose(data[i], ground_label[i], atol=1e-6, rtol=0))
 
         rng.set_seed(100)
         result2 = rng.uniform(0.1, 0.2, [2, 3])
-        data2 = result2.to_ndarray()
+        data2 = result2
         for i in range(0, 2):
             self.assertTrue(np.allclose(data[i], data2[i]))
 
