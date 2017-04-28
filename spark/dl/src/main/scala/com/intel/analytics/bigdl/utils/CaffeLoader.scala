@@ -163,22 +163,9 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
    */
   def createCaffeModel(): Module[T] = {
     loadCaffe(prototxtPath, modelPath)
-   // val caffeTypedLayers = getCaffeTypedList
-   // val layers = convert(caffeTypedLayers)
     val layers = createLayers()
-    /*
-    layers.foreach(layer => {
-      println(layer.element.getName())
-      layer.prevNodes.foreach(d => {
-        println("\t" + d.element.getName())
-      })
-    })
-    */
     val inputs = layers.filter(layer => layer.prevNodes.size == 0).toArray
     val outputs = layers.filter(layer => layer.nextNodes.size == 0).toArray
-    inputs.foreach(i => {
-      println("input is " + i.element.getName() + " " + i.prevNodes.size)
-    })
     val module = Graph(inputs, outputs)
     copyParameters(module)
     module
@@ -197,14 +184,12 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         // eliminate split layer in graph module, cache dependency only
         require(dependencies.size == 1, s"split dependency should only be one!")
         val topList = layer.getTopList.asScala
-       // println(s"$name => $dependencies(0)")
         topList.foreach(top => {
           if (top2LayerMap.contains(dependencies(0))) {
             splitLayerMap(top) = layersMap(top2LayerMap(dependencies(0)))
           }
         })
       }
-
       var node = convertCaffeLayer(new Node(name))
       if (node != null) {
         dependencies.foreach(dependency => {
@@ -221,30 +206,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         outputs.foreach(output => {
           top2LayerMap(output) = name
         })
-      }
-    })
-    return layers
-  }
-
-  private def convert(caffeTypedLayers : ArrayBuffer[Node[String]]):
-        ArrayBuffer[ModuleNode[T]] = {
-    val layers = new ArrayBuffer[ModuleNode[T]]()
-    val layersMap = new mutable.HashMap[String, ModuleNode[T]]()
-    caffeTypedLayers.foreach(layer => {
-      val layerName = layer.element
-      var converted : ModuleNode[T] = convertCaffeLayer(layer)
-      if (converted != null) {
-        val dependencies = layer.prevNodes
-        dependencies.foreach(dependency => {
-          val dependencyKey = dependency.element
-          if (layersMap.contains(dependency.element)) layersMap(dependency.element) -> converted
-        })
-        while (converted.nextNodes.size != 0) {
-          layers.append(converted)
-          converted = converted.nextNodes(0)
-        }
-        layers.append(converted)
-        layersMap(layerName) = converted
       }
     })
     return layers
@@ -294,6 +255,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def fromCaffeScale(layerName : String) : ModuleNode[T] = {
+    val scaleParam = getScaleParam(layerName).get
+    scaleParam.getAxis
     val param = getReshapParam(layerName).get
     val shapeSize = param.getShape.getDimList.toArray.asInstanceOf[Array[Int]]
     Reshape[T](shapeSize).setName(layerName).apply()
@@ -330,6 +293,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   private def fromCaffeFlatten(layerName : String) : ModuleNode[T] = {
     FlattenTable[T].setName(layerName).apply()
   }
+
   private def fromCaffeELU(layerName : String) : ModuleNode[T] = {
     val param = getELUParam(layerName).get
     var alpha = 1.0
@@ -338,9 +302,9 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def fromCaffeConcat(layerName : String) : ModuleNode[T] = {
-    val param = getContactParam(layerName)
-    val dim = param.get.getConcatDim
-    Concat[T](dim).setName(layerName).apply()
+    val param = getConcatParam(layerName)
+    val dim = param.get.getAxis
+    JoinTable[T](dim + 1, 0).setName(layerName).apply()
   }
 
   private def fromCaffeBatchNormalization(layerName : String) : ModuleNode[T] = {
@@ -348,9 +312,11 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     val eps = param.getEps
     BatchNormalization[T](3, eps).apply()
   }
+
   private def fromCaffeAbsVal(layerName : String) : ModuleNode[T] = {
     new Abs[T]().setName(layerName).apply()
   }
+
   private def fromCaffeSigmoid(layerName : String) : ModuleNode[T] = {
     new Sigmoid[T]().setName(layerName).apply()
   }
@@ -362,11 +328,13 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   private def fromCaffeSoftmax(layerName : String) : ModuleNode[T] = {
     new LogSoftMax().setName(layerName).apply()
   }
+
   private def fromCaffeDropout(layerName : String) : ModuleNode[T] = {
     val param = getDropoutParam(layerName).get
     val initP = param.getDropoutRatio
     new Dropout[T](initP).setName(layerName).apply()
   }
+
   private def fromCaffeInnerProduct(layerName : String) : ModuleNode[T] = {
     val param = getInnerProductParam(layerName).get
     val weightBlob = getBlob(layerName, 0).get
@@ -411,10 +379,11 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         ph = pw
     }
     val poolingType = param.getPool
+    // caffe use ceil model
     val pooling = poolingType match {
-      case PoolMethod.MAX => SpatialMaxPooling[T](kw, kh, dw, dh, pw, ph).
+      case PoolMethod.MAX => SpatialMaxPooling[T](kw, kh, dw, dh, pw, ph).ceil().
         setName(layerName).apply()
-      case PoolMethod.AVE => SpatialAveragePooling[T](kw, kh, dw, dh, pw, ph).
+      case PoolMethod.AVE => SpatialAveragePooling[T](kw, kh, dw, dh, pw, ph).ceil().
         setName(layerName).apply()
       case _ => null
     }
@@ -470,17 +439,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     new SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
       .setName(layerName).apply()
   }
-/*
-  private def getSPLITParam(name: String): Option[S] = {
-    if (name2LayerV2.contains(name)) {
-      Some(name2LayerV2(name).getThresholdParam)
-    } else if (name2LayerV1.contains(name)) {
-      Some(name2LayerV1(name).getThresholdParam)
-    } else {
-      None
-    }
-  }
-*/
+
   private def getThresholdParam(name: String): Option[ThresholdParameter] = {
     if (name2LayerV2.contains(name)) {
       Some(name2LayerV2(name).getThresholdParam)
@@ -525,7 +484,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     }
   }
 
-  private def getContactParam(name: String): Option[ConcatParameter] = {
+  private def getConcatParam(name: String): Option[ConcatParameter] = {
     if (name2LayerV2.contains(name)) {
       Some(name2LayerV2(name).getConcatParam)
     } else if (name2LayerV1.contains(name)) {
@@ -601,53 +560,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     } else {
       None
     }
-  }
-/*
-  private def eliminateSplits(layers : ArrayBuffer[Node[String]]) : ArrayBuffer[Node[String]] = {
-    val list = ArrayBuffer[Node[String]]()
-    layers.foreach(layer => {
-      val layerName = layer.element
-      if (layerName.toUpperCase.equals("SPLIT")) {
-        if (layer.nextNodes.size == 0) {
-          println(s"$layerName doesn't have output thus ignored")
-        } else {
-          require(layer.prevNodes.size == 1, "split layer should only have one prenode")
-          require(layer.nextNodes.size == 1, "split layer should only have one nextnode")
-          val top = layer.prevNodes(0)
-          val bottom = layer.nextNodes(0)
-          top.nextNodes.asInstanceOf[ArrayBuffer[Node[String]]].remo
-          bottom.prevNodes.asInstanceOf[ArrayBuffer[Node[String]]].clear()
-          layer.prevNodes.asInstanceOf[ArrayBuffer[Node[String]]].clear()
-          layer.nextNodes.asInstanceOf[ArrayBuffer[Node[String]]].clear()
-          top -> (bottom)
-        }
-      } else {
-        list.append(layer)
-      }
-    })
-    list
-  }
-*/
-  private def getCaffeTypedList() : ArrayBuffer[Node[String]] = {
-    val list = ArrayBuffer[Node[String]]()
-    val layersMap = new mutable.HashMap[String, Node[String]]()
-    val top2LayerMap = new mutable.HashMap[String, String]()
-    netparam.getLayersList.asScala.foreach(layer => {
-      val name = layer.getName
-      val node = new Node(name)
-      list.append(node)
-      layersMap(name) = node
-      val dependencies = layer.getBottomList.asScala
-      dependencies.foreach(dependency => {
-        val dependentNode = layersMap(top2LayerMap(dependency))
-        dependentNode -> node
-      })
-      val outputs = layer.getTopList.asScala
-      outputs.foreach(output => {
-        top2LayerMap(output) = name
-      })
-    })
-    return list
   }
 }
 

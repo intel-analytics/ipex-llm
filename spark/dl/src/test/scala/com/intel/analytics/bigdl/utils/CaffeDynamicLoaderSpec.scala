@@ -28,7 +28,6 @@ import scala.util.Random
 
 class CaffeDynamicLoaderSpec extends FlatSpec with Matchers {
 
-
   val resource = getClass().getClassLoader().getResource("caffe")
 
   val alexNetProtoTxt = Paths.get(resource.getPath(), "alexnet_deploy.prototxt").toString
@@ -36,45 +35,6 @@ class CaffeDynamicLoaderSpec extends FlatSpec with Matchers {
 
   val googleNetProtoTxt = Paths.get(resource.getPath(), "googlenet_deploy.prototxt").toString
   val googleNetModelPath = Paths.get(resource.getPath(), "bvlc_googlenet.caffemodel").toString
-  "Load caffe model dynamically" should "match the static module result" in {
-    RandomGenerator.RNG.setSeed(1000)
-    val staticLoadedModule = CaffeLoader.load[Float](Inception_v1_NoAuxClassifier(1000),
-      googleNetProtoTxt, googleNetModelPath)
-    val input1 = Tensor[Float](10, 3, 224, 224).apply1(e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val staticResult = staticLoadedModule.forward(input1)
-    RandomGenerator.RNG.setSeed(1000)
-    val dynamicLoadedModule = CaffeLoader.loadDynamic(googleNetProtoTxt, googleNetModelPath)
-    val dynamicResult = dynamicLoadedModule.forward(input2)
-
-    val staticModuleDim = staticResult.toTensor.dim()
-    val dynamicModuleDim = dynamicResult.toTensor.dim()
-
-    assert(staticModuleDim == dynamicModuleDim)
-
-    val staticModuleSize = staticResult.toTensor.size()
-    val dynamicModuleSize = dynamicResult.toTensor.size()
-
-    assert(staticModuleSize.length == dynamicModuleSize.length)
-
-    for (i <- 1 to staticModuleSize.length) {
-      assert(staticModuleSize(i - 1) == dynamicModuleSize(i - 1))
-    }
-
-    val staticNelements = staticResult.toTensor.nElement()
-    val dynamicNelements = dynamicResult.toTensor.nElement()
-
-    assert(staticNelements == dynamicNelements)
-
-    val staticResultData = staticResult.toTensor.storage().toArray
-    val dynamicResultData = dynamicResult.toTensor.storage().toArray
-
-    for (i <- 1 to staticNelements) {
-      assert(staticResultData(i - 1) == dynamicResultData(i - 1))
-    }
-  }
-  /*
 
   "Load caffe model dynamically" should "match the static module result" in {
     RandomGenerator.RNG.setSeed(1000)
@@ -164,5 +124,11 @@ class CaffeDynamicLoaderSpec extends FlatSpec with Matchers {
 
     staticOutput should be (dynamicOutput)
   }
-*/
+
+  "Load caffe inception model" should "work properly" in {
+    val input = Tensor[Float](10, 3, 224, 224).apply1(e => Random.nextFloat())
+    val dynamicLoadedModule = CaffeLoader.loadDynamic(googleNetProtoTxt, googleNetModelPath)
+    val dynamicResult = dynamicLoadedModule.forward(input).asInstanceOf[Table]
+    dynamicResult.length() should be (3)
+  }
 }
