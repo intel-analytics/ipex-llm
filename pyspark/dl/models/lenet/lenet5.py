@@ -55,8 +55,8 @@ def get_minst(sc, data_type="train", location="/tmp/mnist"):
     images = sc.parallelize(images)
     labels = sc.parallelize(labels)
     # Target start from 1 in BigDL
-    record = images.zip(labels).map(lambda args:
-                                    Sample.from_ndarray(args[0], args[1] + 1))
+    record = images.zip(labels).map(lambda features_label:
+                                    Sample.from_ndarray(features_label[0], features_label[1] + 1))
     return record
 
 

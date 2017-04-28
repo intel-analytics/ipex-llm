@@ -35,10 +35,10 @@ def text_to_words(review_text):
 
 
 def analyze_texts(data_rdd):
-    return data_rdd.flatMap(lambda args: text_to_words(args[0])) \
+    return data_rdd.flatMap(lambda text_label: text_to_words(text_label[0])) \
         .map(lambda word: (word, 1)).reduceByKey(lambda a, b: a + b) \
-        .sortBy(lambda args: - args[1]).zipWithIndex() \
-        .map(lambda args: (args[0][0], (args[1] + 1, args[0][1]))).collect()
+        .sortBy(lambda w_c: - w_c[1]).zipWithIndex() \
+        .map(lambda w_c__i: (w_c__i[0][0], (w_c__i[1] + 1, w_c__i[0][1]))).collect()
 
 
 # pad([1, 2, 3, 4, 5], 0, 6)
@@ -114,17 +114,17 @@ def train(sc,
     filtered_w2v = {w: v for w, v in w2v.items() if w in word_to_ic}
     bfiltered_w2v = sc.broadcast(filtered_w2v)
 
-    tokens_rdd = data_rdd.map(lambda args:
-                              ([w for w in text_to_words(args[0]) if
-                                w in bword_to_ic.value], args[1]))
+    tokens_rdd = data_rdd.map(lambda text_label:
+                              ([w for w in text_to_words(text_label[0]) if
+                                w in bword_to_ic.value], text_label[1]))
     padded_tokens_rdd = tokens_rdd.map(
-        lambda args: (pad(args[0], "##", sequence_len), args[1]))
-    vector_rdd = padded_tokens_rdd.map(lambda args:
+        lambda tokens_label: (pad(tokens_label[0], "##", sequence_len), tokens_label[1]))
+    vector_rdd = padded_tokens_rdd.map(lambda tokens_label:
                                        ([to_vec(w, bfiltered_w2v.value,
                                                 embedding_dim) for w in
-                                         args[0]], args[1]))
+                                         tokens_label[0]], tokens_label[1]))
     sample_rdd = vector_rdd.map(
-        lambda args: to_sample(args[0], args[1], embedding_dim))
+        lambda vectors_label: to_sample(vectors_label[0], vectors_label[1], embedding_dim))
 
     train_rdd, val_rdd = sample_rdd.randomSplit(
         [training_split, 1-training_split])

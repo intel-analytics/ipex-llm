@@ -201,8 +201,6 @@ def get_bigdl_conf():
     bigdl_python_wrapper = "python-api.zip"
 
     def load_conf(conf_str):
-        if isinstance(conf_str, bytes):
-            conf_str = conf_str.decode()
         return dict(line.split() for line in conf_str.split("\n") if
                     "#" not in line and line.strip())
 
@@ -213,7 +211,7 @@ def get_bigdl_conf():
         if bigdl_python_wrapper in p:
             import zipfile
             with zipfile.ZipFile(p, 'r') as zip_conf:
-                return load_conf(zip_conf.read(bigdl_conf_file))
+                return load_conf(str(zip_conf.read(bigdl_conf_file)))
     raise Exception("Cannot find spark-bigdl.conf.Pls add it to PYTHONPATH.")
 
 

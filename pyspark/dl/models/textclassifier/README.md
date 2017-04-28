@@ -40,7 +40,6 @@ bigdl.sh would setup the essential environment for you and it would accept a spa
             --driver-cores 4  \
             --driver-memory 10g  \
             --total-executor-cores 4  \
-            --num-executors 4 \
             --executor-cores 4  \
             --executor-memory 20g \
             --conf spark.akka.frameSize=64 \
