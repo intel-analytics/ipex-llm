@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.optim.Trigger
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -34,6 +34,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
+import scala.collection.JavaConverters._
 
 
 class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -54,6 +55,28 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
+  "model forward and backward with sigle tensor input" should "be test" in {
+    val linear = Linear[Float](4, 5)
+    val input: Tensor[Float] = Tensor[Float](4).apply1(_ => Random.nextFloat())
+    val target: Tensor[Float] = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val pythonBigDL = PythonBigDL.ofFloat()
+    val mse = new MSECriterion[Float]
+    val joutput = pythonBigDL.modelForward(linear,
+      List(pythonBigDL.toJTensor(input)).asJava
+    ).iterator().next()
+    val expectedOutput = linear.forward(input)
+    require(pythonBigDL.toTensor(joutput) == expectedOutput, "forward output should be the same")
+
+    // test backward for linear
+    val mseGradOutput = mse.backward(pythonBigDL.toTensor(joutput), target).toTensor[Float]
+    val expectedLinearGradOutput = linear.backward(input, mseGradOutput)
+    val jLinearGradOutput = pythonBigDL.modelBackward(linear,
+      List(pythonBigDL.toJTensor(input)).asJava,
+      List(pythonBigDL.toJTensor(mseGradOutput)).asJava
+    ).iterator().next()
+    require(pythonBigDL.toTensor(jLinearGradOutput) == expectedLinearGradOutput,
+      "backward output should be the same")
+  }
 
   "to jtensor" should "be test" in {
     val pythonBigDL = PythonBigDL.ofFloat()
