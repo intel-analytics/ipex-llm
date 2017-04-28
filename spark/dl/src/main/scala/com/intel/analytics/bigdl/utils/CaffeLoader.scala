@@ -163,8 +163,17 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
    */
   def createCaffeModel(): Module[T] = {
     loadCaffe(prototxtPath, modelPath)
-    val caffeTypedLayers = getCaffeTypedList
-    val layers = convert(caffeTypedLayers)
+   // val caffeTypedLayers = getCaffeTypedList
+   // val layers = convert(caffeTypedLayers)
+    val layers = createLayers()
+    /*
+    layers.foreach(layer => {
+      println(layer.element.getName())
+      layer.prevNodes.foreach(d => {
+        println("\t" + d.element.getName())
+      })
+    })
+    */
     val inputs = layers.filter(layer => layer.prevNodes.size == 0).toArray
     val outputs = layers.filter(layer => layer.nextNodes.size == 0).toArray
     inputs.foreach(i => {
@@ -173,6 +182,48 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     val module = Graph(inputs, outputs)
     copyParameters(module)
     module
+  }
+
+  private def createLayers() : ArrayBuffer[ModuleNode[T]] = {
+    val layers = ArrayBuffer[ModuleNode[T]]()
+    val layersMap = new mutable.HashMap[String, ModuleNode[T]]()
+    val top2LayerMap = new mutable.HashMap[String, String]()
+    val splitLayerMap = new mutable.HashMap[String, ModuleNode[T]]()
+    netparam.getLayersList.asScala.foreach(layer => {
+      val name = layer.getName
+      val layerType = getLayerType(name).get.toUpperCase
+      val dependencies = layer.getBottomList.asScala
+      if ("SPLIT".equals(layerType)) {
+        // eliminate split layer in graph module, cache dependency only
+        require(dependencies.size == 1, s"split dependency should only be one!")
+        val topList = layer.getTopList.asScala
+       // println(s"$name => $dependencies(0)")
+        topList.foreach(top => {
+          if (top2LayerMap.contains(dependencies(0))) {
+            splitLayerMap(top) = layersMap(top2LayerMap(dependencies(0)))
+          }
+        })
+      }
+
+      var node = convertCaffeLayer(new Node(name))
+      if (node != null) {
+        dependencies.foreach(dependency => {
+          if (splitLayerMap.contains(dependency)) splitLayerMap(dependency) -> node
+          else if (top2LayerMap.contains(dependency)) layersMap(top2LayerMap(dependency)) -> node
+        })
+        while (node.nextNodes.size != 0) {
+          layers.append(node)
+          node = node.nextNodes(0)
+        }
+        layers.append(node)
+        layersMap(name) = node
+        val outputs = layer.getTopList.asScala
+        outputs.foreach(output => {
+          top2LayerMap(output) = name
+        })
+      }
+    })
+    return layers
   }
 
   private def convert(caffeTypedLayers : ArrayBuffer[Node[String]]):
@@ -225,14 +276,15 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       case "RNN" => fromCaffeRecurrent(layerName)
       case "RESHAPE" => fromCaffeReshape(layerName)
       case "SCALE" => fromCaffeScale(layerName)
-      case "THRESHOLD" => fromCAffeThreshold(layerName)
+      case "THRESHOLD" => fromCaffeThreshold(layerName)
+      case "SPLIT" => null
       case "INPUT" => null
       case _ => throw new Exception(s"$layerType is not supported in BigDL fow now")
     }
     module
   }
 
-  private def fromCAffeThreshold(layerName : String) : ModuleNode[T] = {
+  private def fromCaffeThreshold(layerName : String) : ModuleNode[T] = {
     val param = getThresholdParam(layerName).get
     var threshold = 1e-6
     if (param.hasThreshold) {
@@ -550,7 +602,32 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       None
     }
   }
-
+/*
+  private def eliminateSplits(layers : ArrayBuffer[Node[String]]) : ArrayBuffer[Node[String]] = {
+    val list = ArrayBuffer[Node[String]]()
+    layers.foreach(layer => {
+      val layerName = layer.element
+      if (layerName.toUpperCase.equals("SPLIT")) {
+        if (layer.nextNodes.size == 0) {
+          println(s"$layerName doesn't have output thus ignored")
+        } else {
+          require(layer.prevNodes.size == 1, "split layer should only have one prenode")
+          require(layer.nextNodes.size == 1, "split layer should only have one nextnode")
+          val top = layer.prevNodes(0)
+          val bottom = layer.nextNodes(0)
+          top.nextNodes.asInstanceOf[ArrayBuffer[Node[String]]].remo
+          bottom.prevNodes.asInstanceOf[ArrayBuffer[Node[String]]].clear()
+          layer.prevNodes.asInstanceOf[ArrayBuffer[Node[String]]].clear()
+          layer.nextNodes.asInstanceOf[ArrayBuffer[Node[String]]].clear()
+          top -> (bottom)
+        }
+      } else {
+        list.append(layer)
+      }
+    })
+    list
+  }
+*/
   private def getCaffeTypedList() : ArrayBuffer[Node[String]] = {
     val list = ArrayBuffer[Node[String]]()
     val layersMap = new mutable.HashMap[String, Node[String]]()
