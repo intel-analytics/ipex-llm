@@ -1034,6 +1034,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       PythonBigDL.getInitMethod(initMethod))
   }
 
+  def createVolumetricMaxPooling(kT: Int,
+    kW: Int,
+    kH: Int,
+    dT: Int,
+    dW: Int,
+    dH: Int,
+    padT: Int = 0,
+    padW: Int = 0,
+    padH: Int = 0): VolumetricMaxPooling[T] = {
+    VolumetricMaxPooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH)
+  }
+
   def createSpatialDivisiveNormalization(nInputPlane: Int = 1,
                                          kernel: JTensor = null,
                                          threshold: Double = 1e-4,
