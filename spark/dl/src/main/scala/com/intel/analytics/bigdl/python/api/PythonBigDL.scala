@@ -35,6 +35,11 @@ import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect.ClassTag
 
+import org.apache.spark.ml.DLClassifier
+import org.apache.spark.ml.param.ParamMap
+
+import org.apache.spark.sql.DataFrame
+
 /**
  * [[com.intel.analytics.bigdl.dataset.Sample]] for python.
  * @param features features
@@ -1328,6 +1333,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def initEngine(): Unit = {
     Engine.init
+  }
+
+  def createDLClassifier(): DLClassifier[T] = {
+    new DLClassifier[T]()
+  }
+
+  def transform(classifier: DLClassifier[T], dataFrame: DataFrame, paramMap: JMap[Any, Any]):
+  DataFrame = {
+    val params = paramMap.asScala
+    val paramsTrans = ParamMap(
+      classifier.modelTrain -> params("model_train").asInstanceOf[Module[T]],
+      classifier.batchShape -> params("batch_shape").asInstanceOf[JList[Int]].asScala.toArray)
+    classifier.transform(dataFrame, paramsTrans)
   }
 }
 
