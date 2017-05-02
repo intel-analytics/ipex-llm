@@ -19,12 +19,18 @@ package com.intel.analytics.bigdl.utils
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
-import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
+
+/**
+ * AlexNet and GoogleNet pre-trained models are large in size, please copy both prototxt
+ * and binary model files to you local caffe directory under classpath for testing
+ * For AlexNet please check https://github.com/BVLC/caffe/tree/master/models/bvlc_alexnet
+ * For GoogleNet please check https://github.com/BVLC/caffe/tree/master/models/bvlc_googlenet
+*/
 
 class CaffeDynamicLoaderSpec extends FlatSpec with Matchers {
 
