@@ -109,10 +109,10 @@ object ModelValidator {
         case CaffeModel =>
           param.modelName match {
             case "alexnet" =>
-              (Module.loadCaffe[Float](param.caffeDefPath.get, param.modelPath),
+              (Module.loadCaffeDynamic[Float](param.caffeDefPath.get, param.modelPath),
                 AlexNetPreprocessor(valPath, param.batchSize, param.meanFile.get, sc))
             case "inception" =>
-              (Module.loadCaffe[Float](param.caffeDefPath.get, param.modelPath),
+              (Module.loadCaffeDynamic[Float](param.caffeDefPath.get, param.modelPath),
                 InceptionPreprocessor(valPath, param.batchSize, sc))
 
           }
