@@ -128,6 +128,7 @@ class SpatialConvolution[T: ClassTag](
 
   var fInput = Tensor[T]()
   var fGradInput = Tensor[T]()
+
   protected val ones = Tensor[T]()
   protected val onesBatch = Tensor[T]()
   protected val onesBias = if (withBias) Tensor[T]() else null

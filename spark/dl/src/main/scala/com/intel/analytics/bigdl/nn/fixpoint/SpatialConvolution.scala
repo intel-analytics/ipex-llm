@@ -17,8 +17,8 @@
 package com.intel.analytics.bigdl.nn.fixpoint
 
 import com.intel.analytics.bigdl.fixpoint.FixPoint
-import com.intel.analytics.bigdl.nn.{Default, ErrorInfo, InitializationMethod, Xavier}
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.{Default, ErrorInfo, InitializationMethod, Xavier,
+                                     SpatialConvolution => NNSpatialConvolution}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils._
@@ -26,42 +26,42 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
 
-@SerialVersionUID(- 8446523046224797382L)
+@SerialVersionUID(- 8008252944905538960L)
 class SpatialConvolution[T: ClassTag](
-  val nInputPlane: Int, // The number of expected input planes in the image given into forward()
-  val nOutputPlane: Int, // The number of output planes the convolution layer will produce.
-  val kernelW: Int, // The kernel width of the convolution
-  val kernelH: Int, // The kernel height of the convolution
-  val strideW: Int = 1, // The step of the convolution in the width dimension.
-  val strideH: Int = 1, // The step of the convolution in the height dimension
-  val padW: Int = 0, // The additional zeros added per width to the input planes.
-  val padH: Int = 0, // The additional zeros added per height to the input planes.
-  val nGroup: Int = 1, // Kernel group number
-  val propagateBack: Boolean = false, // propagate gradient back
+  nInputPlane: Int, // The number of expected input planes in the image given into forward()
+  nOutputPlane: Int, // The number of output planes the convolution layer will produce.
+  kernelW: Int, // The kernel width of the convolution
+  kernelH: Int, // The kernel height of the convolution
+  strideW: Int = 1, // The step of the convolution in the width dimension.
+  strideH: Int = 1, // The step of the convolution in the height dimension
+  padW: Int = 0, // The additional zeros added per width to the input planes.
+  padH: Int = 0, // The additional zeros added per height to the input planes.
+  nGroup: Int = 1, // Kernel group number
+  propagateBack: Boolean = false, // propagate gradient back
   private var initMethod: InitializationMethod = Default
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+)(implicit ev: TensorNumeric[T]) extends NNSpatialConvolution[T](
+  nInputPlane,
+  nOutputPlane,
+  kernelW,
+  kernelH,
+  strideW,
+  strideH,
+  padW,
+  padH,
+  nGroup,
+  propagateBack,
+  initMethod
+) {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
-  val weight: Tensor[T] = Tensor[T](nGroup, nOutputPlane / nGroup,
-    nInputPlane / nGroup, kernelH, kernelW)
-  val bias: Tensor[T] = Tensor[T](nOutputPlane)
-
-  val gradWeight: Tensor[T] = Tensor[T](nGroup, nOutputPlane / nGroup, nInputPlane / nGroup,
-    kernelH, kernelW)
-  val gradBias: Tensor[T] = Tensor[T](nOutputPlane)
-
   reset()
-
-  // for compatiable
-  var fInput = Tensor[T]()
-  var fGradInput = Tensor[T]()
 
   var _init = false
   var desc = 0L
 
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
+  override def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
     this
   }
