@@ -38,6 +38,11 @@ object Module {
     CaffeLoader.load[T](model, defPath, modelPath, matchAll)
   }
 
+  def loadCaffe[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)(
+    implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    CaffeLoader.loadDynamic[T](defPath, modelPath, matchAll)
+  }
+
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
     val compactedTensor = isCompact(parameters)
