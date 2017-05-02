@@ -20,6 +20,7 @@ import java.io.{File, FileInputStream, InputStreamReader}
 
 import scala.collection.JavaConverters._
 import caffe.Caffe
+import caffe.Caffe.EltwiseParameter.EltwiseOp
 import caffe.Caffe.PoolingParameter.PoolMethod
 import caffe.Caffe._
 import com.google.protobuf.{CodedInputStream, TextFormat}
@@ -189,23 +190,24 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
             splitLayerMap(top) = layersMap(top2LayerMap(dependencies(0)))
           }
         })
-      }
-      var node = convertCaffeLayer(new Node(name))
-      if (node != null) {
-        dependencies.foreach(dependency => {
-          if (splitLayerMap.contains(dependency)) splitLayerMap(dependency) -> node
-          else if (top2LayerMap.contains(dependency)) layersMap(top2LayerMap(dependency)) -> node
-        })
-        while (node.nextNodes.size != 0) {
+      } else {
+        var node = convertCaffeLayer(new Node(name))
+        if (node != null) {
+          dependencies.foreach(dependency => {
+            if (splitLayerMap.contains(dependency)) splitLayerMap(dependency) -> node
+            else if (top2LayerMap.contains(dependency)) layersMap(top2LayerMap(dependency)) -> node
+          })
+          while (node.nextNodes.size != 0) {
+            layers.append(node)
+            node = node.nextNodes(0)
+          }
           layers.append(node)
-          node = node.nextNodes(0)
+          layersMap(name) = node
+          val outputs = layer.getTopList.asScala
+          outputs.foreach(output => {
+            top2LayerMap(output) = name
+          })
         }
-        layers.append(node)
-        layersMap(name) = node
-        val outputs = layer.getTopList.asScala
-        outputs.foreach(output => {
-          top2LayerMap(output) = name
-        })
       }
     })
     return layers
@@ -238,11 +240,49 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       case "RESHAPE" => fromCaffeReshape(layerName)
       case "SCALE" => fromCaffeScale(layerName)
       case "THRESHOLD" => fromCaffeThreshold(layerName)
-      case "SPLIT" => null
+      case "Exp" => fromCaffeExp(layerName)
+      case "Slice" => fromCaffeSlice(layerName)
+      case "Tile" => fromCaffeTile(layerName)
+      case "Eltwise" => fromCaffeEltwise(layerName)
       case "INPUT" => null
       case _ => throw new Exception(s"$layerType is not supported in BigDL fow now")
     }
     module
+  }
+
+  private def fromCaffeEltwise(layerName : String) : ModuleNode[T] = {
+    val param = getEltWiseParam(layerName).get
+    val opsType = param.getOperation
+    val coeff2 = param.getCoeff(1)
+    val ops = opsType match {
+      case EltwiseOp.PROD => CMaxTable[T]().setName(layerName).apply()
+      case EltwiseOp.MAX => CMaxTable[T]().setName(layerName).apply()
+      case EltwiseOp.SUM =>
+        if (coeff2 < 0) {
+          CAddTable[T]().setName(layerName).apply()
+        } else {
+          CSubTable[T]().setName(layerName).apply()
+        }
+      case _ => null
+    }
+    ops
+  }
+
+  private def fromCaffeTile(layerName : String) : ModuleNode[T] = {
+    val param = getTileParam(layerName).get
+    val axis = param.getAxis
+    val tiles = param.getTiles
+    Replicate[T](tiles, axis).setName(layerName).apply()
+  }
+
+  private def fromCaffeSlice(layerName : String) : ModuleNode[T] = {
+    val param = getSliceParam(layerName)
+    val axis = param.get.getAxis
+    SplitTable[T](axis).setName(layerName).apply()
+  }
+
+  private def fromCaffeExp(layerName : String) : ModuleNode[T] = {
+    Exp[T]().setName(layerName).apply()
   }
 
   private def fromCaffeThreshold(layerName : String) : ModuleNode[T] = {
@@ -256,7 +296,26 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
   private def fromCaffeScale(layerName : String) : ModuleNode[T] = {
     val scaleParam = getScaleParam(layerName).get
-    scaleParam.getAxis
+    // second blob as weight for scale
+    val weightBlob = getBlob(layerName, 1)
+    if (weightBlob.isDefined) {
+      val blob = weightBlob.get
+      val size = blob.getShape.getDimList.toArray.asInstanceOf[Array[Int]]
+      Scale[T](size).setName(layerName).apply()
+    } else {
+      val inputBlob = getBlob(layerName, 0).get
+      val shape = inputBlob.getShape
+      val axis = scaleParam.getAxis
+      var numOfAxis = scaleParam.getNumAxes
+      if (numOfAxis == -1) {
+        numOfAxis = shape.getDimList.size() - 1
+      } else {
+        numOfAxis = numOfAxis + axis
+      }
+      val size = shape.getDimList.subList(axis, numOfAxis).asInstanceOf[Array[Int]]
+      Scale[T](size).setName(layerName).apply()
+    }
+
     val param = getReshapParam(layerName).get
     val shapeSize = param.getShape.getDimList.toArray.asInstanceOf[Array[Int]]
     Reshape[T](shapeSize).setName(layerName).apply()
@@ -438,6 +497,34 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     }
     new SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
       .setName(layerName).apply()
+  }
+
+  private def getEltWiseParam(name: String): Option[EltwiseParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getEltwiseParam)
+    } else if (name2LayerV1.contains(name)) {
+      Some(name2LayerV1(name).getEltwiseParam)
+    } else {
+      None
+    }
+  }
+
+  private def getTileParam(name: String): Option[TileParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getTileParam)
+    } else {
+      None
+    }
+  }
+
+  private def getSliceParam(name: String): Option[SliceParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getSliceParam)
+    } else if (name2LayerV1.contains(name)) {
+      Some(name2LayerV1(name).getSliceParam)
+    } else {
+      None
+    }
   }
 
   private def getThresholdParam(name: String): Option[ThresholdParameter] = {
