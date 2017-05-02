@@ -132,6 +132,8 @@
         <lifecycle-mapping.version>1.0.0</lifecycle-mapping.version>
         <maven-checkstyle-plugin.version>2.15</maven-checkstyle-plugin.version>
         <checkstyle.version>6.6</checkstyle.version>
+        <os-flag>linux64</os-flag>
+
 
         <!-- Plugin versions and config -->
         <maven-surefire-plugin.version>2.17</maven-surefire-plugin.version>
@@ -435,26 +437,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>python</id>
-                        <inherited>false</inherited>
-                        <configuration>
-                            <finalName>bigdl-${project.version}</finalName>
-                            <descriptors>
-                                <descriptor>pyspark/assembly/python-zip.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
             <groupId>org.sonatype.plugins</groupId>
             <artifactId>nexus-staging-maven-plugin</artifactId>
             <version>1.6.7</version>
@@ -604,6 +586,7 @@
             <id>mac</id>
             <properties>
                 <mkl-java-os-version>mkl-java-mac</mkl-java-os-version>
+                <os-flag>mac</os-flag>
             </properties>
         </profile>
         <profile>

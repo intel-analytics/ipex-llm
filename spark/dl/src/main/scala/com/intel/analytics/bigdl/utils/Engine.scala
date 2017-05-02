@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.utils
 
 import java.io.InputStream
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicBoolean
 import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -30,12 +30,14 @@ case object MklBlas extends EngineType
 
 
 object Engine {
-  @deprecated
+  @deprecated(
+    "See https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine",
+    "0.1.0")
   def init(nExecutor: Int,
            executorCores: Int,
            onSpark: Boolean): Option[SparkConf] = {
     logger.warn("Engine.init(nExecutor, executorCores, onSpark) is deprecated. " +
-      "Please refer " +
+      "Please refer to " +
       "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine")
     setNodeAndCore(nExecutor, executorCores)
     val res = if (onSpark) {
@@ -53,15 +55,15 @@ object Engine {
   }
 
   /**
-   * BigDL need some spark conf values to be set correctly to have a better performance.
+   * BigDL need some Spark conf values to be set correctly to have better performance.
    *
-   * This method will create a spark conf, or use the existing one if you provide.
+   * This method will create a SparkConf, or use the existing one if you provide one.
    * Populate it with correct values.
    *
-   * We recommand you use this method instead of setting spark conf values directly. This can
-   * make the spark conf values changes transparent to you. However, if you use spark-shell or
-   * Jupiter notebook, as the spark context is created before your code, you have to
-   * set them directly(through command line options or properties-file)
+   * We recommend you use this method instead of setting spark conf values directly. This can
+   * make the Spark conf values changes transparent to you. However, if you use spark-shell or
+   * Jupyter notebook, as the Spark context is created before your code, you have to
+   * set them directly (through command line options or properties file)
    *
    * @return
    */
@@ -75,9 +77,9 @@ object Engine {
   }
 
   /**
-   * This method should be call before any BigDL procedure and after spark context created.
+   * This method should be call before any BigDL procedure and after the Spark context is created.
    *
-   * BigDL need some spark conf values to be set correctly to have a better performance. There's
+   * BigDL needs some Spark conf values to be set correctly to have a better performance. There's
    * also multi-thread engines so executor number and core number per executor need to be known
    * to set the parameter of these engines correctly.
    *
@@ -102,15 +104,8 @@ object Engine {
   }
 
   private val logger = Logger.getLogger(getClass)
-  private val singletonCounter: AtomicInteger = new AtomicInteger(0)
-  private[bigdl] var localMode: Boolean = {
-    val env = System.getenv("BIGDL_LOCAL_MODE")
-    if(env == null) {
-      false
-    } else {
-      true
-    }
-  }
+  private val singletonCounter = new AtomicBoolean()
+  private[bigdl] var localMode = System.getenv("BIGDL_LOCAL_MODE") != null
   private var physicalCoreNumber = -1
   private var nodeNum: Int = -1
 
@@ -160,21 +155,15 @@ object Engine {
   }
 
   /**
-   * Check if current execution is a singleton on the JVM
-   *
-   * @return
+   * @return true if current execution is a singleton on the JVM
    */
-  private[bigdl] def checkSingleton(): Boolean = {
-    val count = singletonCounter.incrementAndGet()
-    (count == 1)
-  }
+  private[bigdl] def checkSingleton(): Boolean = singletonCounter.compareAndSet(false, true)
 
   /**
    * Reset the singleton flag
    */
-  private[bigdl] def resetSingletonFlag(): Unit = {
-    singletonCounter.set(0)
-  }
+  private[bigdl] def resetSingletonFlag(): Unit = singletonCounter.set(false)
+
   /**
    * Return number of cores, the engine.init must be called before use this method or an exception
    * will be thrown
@@ -367,7 +356,7 @@ object Engine {
       val patternLocalStar = "local\\[\\*\\]".r
       master match {
         case patternLocalN(n) => Some(1, n.toInt)
-        case patternLocalStar => Some(1, getCoreNumberFromEnv)
+        case patternLocalStar(_*) => Some(1, getCoreNumberFromEnv)
         case _ => throw new IllegalArgumentException(s"Can't parser master $master")
       }
     } else if (master.toLowerCase.startsWith("spark")) {

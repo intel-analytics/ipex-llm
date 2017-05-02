@@ -182,4 +182,8 @@ class ExceptionTest[T: ClassTag](failCountNumberLists: Array[Int], sleep: Boolea
 
 object ExceptionTest {
   var count = new AtomicInteger(0)
+
+  def resetCount(): Unit = {
+    count.set(0)
+  }
 }
