@@ -319,6 +319,12 @@
                     <groupId>com.intel.analytics.bigdl.fixpoint</groupId>
                     <artifactId>fixpoint-java</artifactId>
                     <version>${project.version}</version>
+                    <exclusions>
+                        <exclusion>
+                            <groupId>com.intel.analytics.bigdl.fixpoint</groupId>
+                            <artifactId>fixpoint-native</artifactId>
+                        </exclusion>
+                    </exclusions>
                 </dependency>
             </dependencies>
             <build>
