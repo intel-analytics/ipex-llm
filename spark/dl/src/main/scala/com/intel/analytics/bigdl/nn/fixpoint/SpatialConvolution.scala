@@ -54,6 +54,10 @@ class SpatialConvolution[T: ClassTag](
 
   reset()
 
+  // for compatiable
+  var fInput = Tensor[T]()
+  var fGradInput = Tensor[T]()
+
   var _init = false
   var desc = 0L
 
