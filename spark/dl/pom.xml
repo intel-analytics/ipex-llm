@@ -312,5 +312,15 @@
                 <tagsToExclude>com.intel.analytics.bigdl.tags.Serial,com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
             </properties>
         </profile>
+        <profile>
+            <id>with-fixpoint</id>
+            <dependencies>
+                <dependency>
+                    <groupId>com.intel.analytics.bigdl.fixpoint</groupId>
+                    <artifactId>fixpoint-java</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
+            </dependencies>
+        </profile>
     </profiles>
 </project>
