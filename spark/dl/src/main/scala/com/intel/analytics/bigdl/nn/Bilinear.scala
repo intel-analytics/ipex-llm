@@ -33,6 +33,10 @@ import scala.reflect.ClassTag
  * @param inputSize2 dimension of input x_2
  * @param outputSize output dimension
  * @param biasRes  The layer can be trained without biases by setting bias = false. otherwise true
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
  */
 
 @SerialVersionUID(- 4838965135083645415L)
@@ -170,8 +174,12 @@ class Bilinear[T: ClassTag](
     }
     if(null != bias) gradBias.add(ev.fromType(scale), gradOutput.sum(1))
 
-    wRegularizer.accRegularization(weight, gradWeight)
-    bRegularizer.accRegularization(bias, gradBias)
+    if (wRegularizer != null) {
+      wRegularizer.accRegularization(weight, gradWeight)
+    }
+    if (bRegularizer != null) {
+      bRegularizer.accRegularization(bias, gradBias)
+    }
   }
 
   override def zeroGradParameters(): Unit = {

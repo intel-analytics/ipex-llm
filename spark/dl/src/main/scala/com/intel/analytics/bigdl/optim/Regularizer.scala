@@ -119,6 +119,12 @@ class L1L2Regularizer[T: ClassTag](
   ): Unit = {
     if (alpha != 0) gradParameter.add(ev.fromType(alpha),
       l1SignBuffer.resizeAs(parameter).copy(parameter).sign())
+
+    if (alpha != 0) {
+      gradParameter.map(parameter, (g, p) => {
+        ev.plus(g, if (ev.isGreater(p, ev.zero)) ev.one else ev.negative(ev.one))
+      })
+    }
   }
 
   private val l1SignBuffer = Tensor()

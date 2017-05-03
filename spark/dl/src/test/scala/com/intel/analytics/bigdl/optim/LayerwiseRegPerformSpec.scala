@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
-class LayerwiseRegularizationSpec extends FlatSpec with Matchers {
+class LayerwiseRegPerformSpec extends FlatSpec with Matchers {
   "perform No L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
 
