@@ -133,6 +133,10 @@ abstract class Cell[T : ClassTag](
     cell.getParametersTable()
   }
 
+  override def reset(): Unit = {
+    cell.reset()
+  }
+
   /**
    * Use this method to set the whether the recurrent cell
    * is regularized

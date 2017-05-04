@@ -34,8 +34,6 @@ import scala.reflect.ClassTag
  * @param inputSize input size
  * @param hiddenSize hidden layer size
  * @param activation activation function f for non-linearity
- * @param initMethod initialization method for rnn parameters
- *                   * @param inputSize the size of each input vector
  * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param uRegularizer: instance [[Regularizer]]
@@ -49,15 +47,14 @@ class RnnCell[T : ClassTag] (
   activation: TensorModule[T],
   wRegularizer: Regularizer[T] = null,
   uRegularizer: Regularizer[T] = null,
-  bRegularizer: Regularizer[T] = null,
-  private var initMethod: InitializationMethod = Default)
+  bRegularizer: Regularizer[T] = null)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](Array(hiddenSize)) {
 
   val parallelTable = ParallelTable[T]()
   val i2h = Linear[T](inputSize, hiddenSize,
     wRegularizer = wRegularizer, bRegularizer = bRegularizer)
-  val h2h = Linear[T](hiddenSize, hiddenSize, withBias = false,
+  val h2h = Linear[T](hiddenSize, hiddenSize,
     wRegularizer = uRegularizer)
   parallelTable.add(i2h)
   parallelTable.add(h2h)
@@ -71,28 +68,6 @@ class RnnCell[T : ClassTag] (
     .add(ConcatTable()
       .add(Identity[T]())
       .add(Identity[T]()))
-
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
-    this.initMethod = initMethod
-    this
-  }
-
-  override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        parallelTable.modules.foreach( m => {
-          val inputSize = m.asInstanceOf[Linear[T]].weight.size(1).toFloat
-          val outputSize = m.asInstanceOf[Linear[T]].weight.size(2).toFloat
-          val stdv = 6.0 / (inputSize + outputSize)
-          m.asInstanceOf[Linear[T]].weight.apply1( _ =>
-            ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-          m.asInstanceOf[Linear[T]].bias.apply1( _ => ev.fromType[Double](0.0))
-        })
-      case _ =>
-        throw new IllegalArgumentException(s"Unsupported initMethod type ${initMethod}")
-    }
-    zeroGradParameters()
-  }
 
   override def toString(): String = {
     val str = "nn.RnnCell"
