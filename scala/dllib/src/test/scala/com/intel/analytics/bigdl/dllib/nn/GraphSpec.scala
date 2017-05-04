@@ -316,6 +316,25 @@ class GraphSpec extends FlatSpec with Matchers {
     fc2.element.parameters()._2(1) should be(Tensor(T(3.0f, 4.0f)))
   }
 
+  "Graph forward/backward" should "be successful when there's output from internal node" in {
+    val input1 = Input()
+    val input2 = Input()
+    val add = CAddTable().apply(input1, input2)
+    val add2 = AddConstant(2.0f).apply(add)
+    val relu = ReLU().apply(add2)
+    val graph = Graph[Float](Array(input1, input2), Array(add, relu))
+
+    val input = T(Tensor(T(1.0f, 2.0f)), Tensor(T(-2.0f, -1.0f)))
+    val output = graph.forward(input)
+    val gradient = graph.backward(input, T(Tensor(T(1.0f, 2.0f)), Tensor(T(-2.0f, -1.0f))))
+    val output1 = output.toTable[Tensor[Float]](1)
+    val output2 = output.toTable[Tensor[Float]](2)
+
+    output1 should be(Tensor[Float](T(-1.0f, 1.0f)))
+    output2 should be(Tensor[Float](T(1.0f, 3.0f)))
+    gradient should be(T(Tensor(T(-1.0f, 1.0f)), Tensor(T(-1.0f, 1.0f))))
+  }
+
   "lenet" should "be same with sequential model" in {
     RandomGenerator.RNG.setSeed(1000)
     val seqModel = Sequential().add(Reshape(Array(1, 28, 28)))
