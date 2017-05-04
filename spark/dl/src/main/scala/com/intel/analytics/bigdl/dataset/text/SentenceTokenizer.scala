@@ -17,12 +17,14 @@
 package com.intel.analytics.bigdl.dataset.text
 
 import java.io.FileInputStream
-import java.net.URL
+import java.net.{URI, URL}
 
 import com.intel.analytics.bigdl.dataset.Transformer
 
 import scala.collection.Iterator
 import opennlp.tools.tokenize.{SimpleTokenizer, Tokenizer, TokenizerME, TokenizerModel}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 
 /**
  * Transformer that tokenizes a Document (article)
@@ -30,7 +32,7 @@ import opennlp.tools.tokenize.{SimpleTokenizer, Tokenizer, TokenizerME, Tokenize
  *
  */
 
-class SentenceTokenizer(tokenFile: Option[String] = None)
+class SentenceTokenizer(tokenFile: Option[String] = None, host: Option[String] = None)
   extends Transformer[String, Array[String]] {
 
   var modelIn: FileInputStream = _
@@ -38,8 +40,8 @@ class SentenceTokenizer(tokenFile: Option[String] = None)
 
   var tokenizer: Tokenizer = _
 
-  def this(tokenFile: URL) {
-    this(Some(tokenFile.getPath))
+  def this(tokenFile: URL, host: Option[String]) {
+    this(Some(tokenFile.getPath), host)
   }
 
   def close(): Unit = {
@@ -54,8 +56,9 @@ class SentenceTokenizer(tokenFile: Option[String] = None)
         if (!tokenFile.isDefined) {
           tokenizer = SimpleTokenizer.INSTANCE
         } else {
-          modelIn = new FileInputStream(tokenFile.getOrElse(""))
-          model = new TokenizerModel(modelIn)
+          val fs = FileSystem.get(new URI(host.get), new Configuration())
+          val is = fs.open(new Path(tokenFile.get))
+          model = new TokenizerModel(is)
           tokenizer = new TokenizerME(model)
         }
       }
@@ -65,8 +68,8 @@ class SentenceTokenizer(tokenFile: Option[String] = None)
 }
 
 object SentenceTokenizer {
-  def apply(tokenFile: Option[String] = None):
-    SentenceTokenizer = new SentenceTokenizer(tokenFile)
-  def apply(tokenFile: URL):
-    SentenceTokenizer = new SentenceTokenizer(tokenFile)
+  def apply(tokenFile: Option[String] = None, host: Option[String] = None):
+    SentenceTokenizer = new SentenceTokenizer(tokenFile, host)
+  def apply(tokenFile: URL, host: Option[String]):
+    SentenceTokenizer = new SentenceTokenizer(tokenFile, host)
 }

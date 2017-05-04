@@ -49,7 +49,8 @@ object Train {
         param.dataFolder + "/train.txt",
         sc = sc,
         param.sentFile,
-        param.tokenFile)
+        param.tokenFile,
+        param.host)
 
       val dictionary = Dictionary(tokens.toDistributed().data(false), param.vocabSize)
       dictionary.save(param.saveFolder)
@@ -60,7 +61,8 @@ object Train {
         param.dataFolder + "/val.txt",
         sc = sc,
         param.sentFile,
-        param.tokenFile
+        param.tokenFile,
+        param.host
       )
       val maxValLength = valtokens.toDistributed().data(false).map(x => x.length).max
 

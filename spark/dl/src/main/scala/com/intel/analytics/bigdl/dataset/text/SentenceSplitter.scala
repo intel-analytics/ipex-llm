@@ -17,10 +17,12 @@
 package com.intel.analytics.bigdl.dataset.text
 
 import java.io.FileInputStream
-import java.net.URL
+import java.net.{URI, URL}
 
 import com.intel.analytics.bigdl.dataset.Transformer
 import opennlp.tools.sentdetect.{SentenceDetector, SentenceDetectorME, SentenceModel}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 
 import scala.collection.Iterator
 
@@ -30,19 +32,19 @@ import scala.collection.Iterator
  * If sentFile is None, the default sentence delimiter is period.
  * @param sentFile A trained model by OpenNLP
  */
-class SentenceSplitter(sentFile: Option[String] = None)
+class SentenceSplitter(sentFile: Option[String] = None, host: Option[String] = None)
   extends Transformer[String, Array[String]] {
 
   var modelIn: FileInputStream = _
   var model: SentenceModel = _
   var sentenceDetector: SentenceDetector = _
 
-  def this(sentFileURL: URL) {
-    this(Some(sentFileURL.getPath))
+  def this(sentFileURL: URL, host: Option[String]) {
+    this(Some(sentFileURL.getPath), host)
   }
 
-  def this(sentFile: String) {
-    this(Some(sentFile))
+  def this(sentFile: String, host: Option[String]) {
+    this(Some(sentFile), host)
   }
 
   def close(): Unit = {
@@ -57,8 +59,9 @@ class SentenceSplitter(sentFile: Option[String] = None)
         x.split('.')
       } else {
         if (sentenceDetector == null) {
-          modelIn = new FileInputStream(sentFile.getOrElse(""))
-          model = new SentenceModel(modelIn)
+          val fs = FileSystem.get(new URI(host.get), new Configuration())
+          val is = fs.open(new Path(sentFile.get))
+          model = new SentenceModel(is)
           sentenceDetector = new SentenceDetectorME(model)
         }
         sentenceDetector.sentDetect(x)
@@ -67,10 +70,10 @@ class SentenceSplitter(sentFile: Option[String] = None)
 }
 
 object SentenceSplitter {
-  def apply(sentFile: Option[String] = None):
-    SentenceSplitter = new SentenceSplitter(sentFile)
-  def apply(sentFileURL: URL):
-    SentenceSplitter = new SentenceSplitter((sentFileURL))
-  def apply(sentFile: String):
-  SentenceSplitter = new SentenceSplitter((sentFile))
+  def apply(sentFile: Option[String] = None, host: Option[String] = None):
+    SentenceSplitter = new SentenceSplitter(sentFile, host)
+  def apply(sentFileURL: URL, host: Option[String]):
+    SentenceSplitter = new SentenceSplitter(sentFileURL, host)
+  def apply(sentFile: String, host: Option[String]):
+  SentenceSplitter = new SentenceSplitter(sentFile, host)
 }
