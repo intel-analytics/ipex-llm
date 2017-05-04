@@ -144,7 +144,11 @@ abstract class Cell[T : ClassTag](
   ): Unit = {
     if (null != regularizers) {
       regularizers.foreach(x =>
-        if (null != x) x.isRegualrized = isRegularized)
+        if (null != x) {
+          if (isRegularized) x.enable()
+          else x.disable()
+        }
+      )
     }
   }
 }

@@ -29,7 +29,17 @@ import scala.reflect.ClassTag
  */
 trait Regularizer[T]
   extends Serializable {
-  var isRegualrized: Boolean = true
+  private var isRegualrized: Boolean = true
+
+  /**
+   * Enable the regularization feature
+   */
+  def enable(): Unit = isRegualrized = true
+
+  /**
+   * Disable the regularization feature
+   */
+  def disable(): Unit = isRegualrized = false
 
   /**
    * The method need to be override by the concrete regularizer class
@@ -117,17 +127,22 @@ class L1L2Regularizer[T: ClassTag](
     parameter: Tensor[T],
     gradParameter: Tensor[T]
   ): Unit = {
-    if (alpha != 0) gradParameter.add(ev.fromType(alpha),
-      l1SignBuffer.resizeAs(parameter).copy(parameter).sign())
+    if (alpha == 0) return
 
-    if (alpha != 0) {
-      gradParameter.map(parameter, (g, p) => {
-        ev.plus(g, if (ev.isGreater(p, ev.zero)) ev.one else ev.negative(ev.one))
-      })
+    val paraStorage = parameter.storage().array()
+    val gradStorage = gradParameter.storage().array()
+    val minusOne = ev.negative(ev.one)
+    val _alpha = ev.fromType[Double](alpha)
+    var i = 0
+    while (i < paraStorage.length) {
+      val g = gradStorage(i)
+      val p = paraStorage(i)
+      val sign = if (ev.isGreater(p, ev.zero)) ev.one else minusOne
+      gradStorage(i) = ev.plus(g, ev.times(_alpha, sign))
+      i += 1
     }
   }
 
-  private val l1SignBuffer = Tensor()
 
   /**
    * Accumulates the gradient of the l2 regularization of `parameter`
