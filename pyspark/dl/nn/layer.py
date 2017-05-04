@@ -1385,7 +1385,7 @@ class LookupTable(Model):
     def __init__(self,
                  n_index,
                  n_output,
-                 padding_value=0,
+                 padding_value=0.0,
                  max_norm=DOUBLEMAX,
                  norm_type=2.0,
                  should_scale_grad_by_freq=False,
