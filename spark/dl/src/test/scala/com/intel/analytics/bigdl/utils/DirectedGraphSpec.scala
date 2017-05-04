@@ -196,6 +196,24 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
     set should contain(nodeD)
   }
 
+  "DFS" should "be correct for node has multiple outputs" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    val nodeC = new Node("C")
+    val nodeD = new Node("D")
+    nodeB -> nodeD
+    nodeA -> nodeC -> nodeD
+    nodeB -> nodeC
+
+    val graph = nodeD.graph(true)
+    val set = graph.DFS.toArray
+    set.size should be(4)
+    set should contain(nodeA)
+    set should contain(nodeB)
+    set should contain(nodeC)
+    set should contain(nodeD)
+  }
+
   "DFS" should "be correct in reverse graph" in {
     val nodeA = new Node("A")
     val nodeB = new Node("B")
@@ -223,6 +241,25 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
 
     val graph = nodeA.graph()
     val set = graph.BFS.toSet
+    set.size should be(4)
+    set should contain(nodeA)
+    set should contain(nodeB)
+    set should contain(nodeC)
+    set should contain(nodeD)
+  }
+
+  "BFS" should "be correct for node has multiple inputs" in {
+    val nodeA = new Node("A")
+    val nodeB = new Node("B")
+    val nodeC = new Node("C")
+    val nodeD = new Node("D")
+    nodeA -> nodeB
+    nodeA -> nodeC
+    nodeA -> nodeD
+    nodeB -> nodeD
+
+    val graph = nodeA.graph()
+    val set = graph.BFS.toArray
     set.size should be(4)
     set should contain(nodeA)
     set should contain(nodeB)
