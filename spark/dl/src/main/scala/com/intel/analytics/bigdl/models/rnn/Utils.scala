@@ -50,7 +50,6 @@ object Utils {
                           nEpochs: Int = 30,
                           sentFile: Option[String] = None,
                           tokenFile: Option[String] = None,
-                          host: Option[String] = None,
                           overWriteCheckpoint: Boolean = false)
 
   val trainParser = new OptionParser[TrainParams]("BigDL SimpleRNN Train Example") {
@@ -120,10 +119,6 @@ object Utils {
       .text("token dictionary to split sentence into tokens")
       .action((x, c) => c.copy(tokenFile = Some(x)))
 
-    opt[String]("host")
-      .text("hdfs host:port")
-      .action((x, c) => c.copy(host = Some(x)))
-
     opt[Unit]("overWrite")
       .text("overwrite checkpoint files")
       .action( (_, c) => c.copy(overWriteCheckpoint = true) )
@@ -175,19 +170,17 @@ object SequencePreprocess {
     fileName: String,
     sc: SparkContext,
     sentBin: Option[String],
-    tokenBin: Option[String],
-    host: Option[String])
-  : DataSet[Array[String]] = {
+    tokenBin: Option[String])
+  : RDD[Array[String]] = {
 
-    val sentenceSplitter = SentenceSplitter(sentBin, host)
-    val sentenceTokenizer = SentenceTokenizer(tokenBin, host)
+    val sentenceSplitter = SentenceSplitter(sentBin)
+    val sentenceTokenizer = SentenceTokenizer(tokenBin)
     val lines = load(fileName)
     val tokens = DataSet.array(lines, sc)
       .transform(sentenceSplitter).toDistributed().data(false)
-      .collect().flatten
-    DataSet.array(tokens, sc)
-      .transform(SentenceBiPadding())
-      .transform(sentenceTokenizer)
+      .flatMap(x => x).mapPartitions(x => SentenceBiPadding().apply(x))
+      .mapPartitions(x => sentenceTokenizer.apply(x))
+    tokens
   }
 
   private[bigdl] def load(fileName: String): Array[String] = {

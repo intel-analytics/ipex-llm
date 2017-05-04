@@ -49,22 +49,19 @@ object Train {
         param.dataFolder + "/train.txt",
         sc = sc,
         param.sentFile,
-        param.tokenFile,
-        param.host)
+        param.tokenFile)
 
-      val dictionary = Dictionary(tokens.toDistributed().data(false), param.vocabSize)
+      val dictionary = Dictionary(tokens, param.vocabSize)
       dictionary.save(param.saveFolder)
 
-      val maxTrainLength = tokens.toDistributed().data(false).map(x => x.length).max
+      val maxTrainLength = tokens.map(x => x.length).max
 
       val valtokens = SequencePreprocess(
         param.dataFolder + "/val.txt",
         sc = sc,
         param.sentFile,
-        param.tokenFile,
-        param.host
-      )
-      val maxValLength = valtokens.toDistributed().data(false).map(x => x.length).max
+        param.tokenFile)
+      val maxValLength = valtokens.map(x => x.length).max
 
       logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
 
@@ -75,7 +72,7 @@ object Train {
       padFeature.setValue(endIdx + 1, 1.0f)
       val padLabel = startIdx
 
-      val trainSet = tokens
+      val trainSet = DataSet.rdd(tokens)
         .transform(TextToLabeledSentence[Float](dictionary))
         .transform(LabeledSentenceToSample[Float](totalVocabLength))
         .transform(SampleToBatch[Float](batchSize = param.batchSize,
@@ -83,7 +80,7 @@ object Train {
           labelPadding = Some(padLabel),
           fixedLength = Some(maxTrainLength)))
 
-      val validationSet = valtokens
+      val validationSet = DataSet.rdd(valtokens)
         .transform(TextToLabeledSentence[Float](dictionary))
         .transform(LabeledSentenceToSample[Float](totalVocabLength))
         .transform(SampleToBatch[Float](batchSize = param.batchSize,

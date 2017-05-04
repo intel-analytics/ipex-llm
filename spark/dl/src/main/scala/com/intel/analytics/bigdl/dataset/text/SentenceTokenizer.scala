@@ -32,7 +32,7 @@ import org.apache.hadoop.fs.{FileSystem, Path}
  *
  */
 
-class SentenceTokenizer(tokenFile: Option[String] = None, host: Option[String] = None)
+class SentenceTokenizer(tokenFile: Option[String] = None)
   extends Transformer[String, Array[String]] {
 
   var modelIn: FileInputStream = _
@@ -40,8 +40,8 @@ class SentenceTokenizer(tokenFile: Option[String] = None, host: Option[String] =
 
   var tokenizer: Tokenizer = _
 
-  def this(tokenFile: URL, host: Option[String]) {
-    this(Some(tokenFile.getPath), host)
+  def this(tokenFile: URL) {
+    this(Some(tokenFile.getPath))
   }
 
   def close(): Unit = {
@@ -56,9 +56,10 @@ class SentenceTokenizer(tokenFile: Option[String] = None, host: Option[String] =
         if (!tokenFile.isDefined) {
           tokenizer = SimpleTokenizer.INSTANCE
         } else {
-          val fs = FileSystem.get(new URI(host.get), new Configuration())
-          val is = fs.open(new Path(tokenFile.get))
-          model = new TokenizerModel(is)
+          val src: Path = new Path(tokenFile.get)
+          val fs = src.getFileSystem(new Configuration())
+          val in = fs.open(src)
+          model = new TokenizerModel(in)
           tokenizer = new TokenizerME(model)
         }
       }
@@ -68,8 +69,8 @@ class SentenceTokenizer(tokenFile: Option[String] = None, host: Option[String] =
 }
 
 object SentenceTokenizer {
-  def apply(tokenFile: Option[String] = None, host: Option[String] = None):
-    SentenceTokenizer = new SentenceTokenizer(tokenFile, host)
-  def apply(tokenFile: URL, host: Option[String]):
-    SentenceTokenizer = new SentenceTokenizer(tokenFile, host)
+  def apply(tokenFile: Option[String] = None):
+    SentenceTokenizer = new SentenceTokenizer(tokenFile)
+  def apply(tokenFile: URL):
+    SentenceTokenizer = new SentenceTokenizer(tokenFile)
 }

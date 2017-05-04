@@ -96,7 +96,7 @@ spark-submit \
 --class com.intel.analytics.bigdl.models.rnn.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f /path/inputdata/ -s /path/saveDict --checkpoint /path/model/ --batchSize 12 \
---sent /tokenizer/en-sent.bin --token /tokenizer/en-token.bin --host hdfs://127.0.0.1:9001
+--sent hdfs://127.0.0.1:9001/tokenizer/en-sent.bin --token hdfs://127.0.0.1:9001/tokenizer/en-token.bin
 ```
 
 The <code>Dictionary.scala</code> accepts an array of string indicating for tokenized sentences or a file directory storing all the vocabulary.
