@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.models.lenet.Utils._
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.utils.LoggerFilter
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.ml.{DLEstimator, DLEstimatorData, DLEstimatorMinibatchData}
+import org.apache.spark.ml.{DLEstimator, DLEstimatorData, DLEstimatorMinibatchData, Pipeline}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, _}
 import com.intel.analytics.bigdl.example.imageclassification.MlUtils.{testMean => _, testStd => _, _}
@@ -47,8 +47,8 @@ object OptimizerWrapper {
     def main(args: Array[String]): Unit = {
       trainParser.parse(args, new TrainParams()).map(param => {
         val conf = Engine.createSparkConf()
-          .setAppName("Train Lenet on MNIST")
-          .set("spark.task.maxFailures", "1").setMaster("local")
+          .setAppName("MLPipeline Example")
+          .set("spark.task.maxFailures", "1")
         val sc = new SparkContext(conf)
         val sqLContext = new SQLContext(sc)
         Engine.init
@@ -58,20 +58,7 @@ object OptimizerWrapper {
         val validationData = Paths.get(param.folder, "/t10k-images-idx3-ubyte")
         val validationLabel = Paths.get(param.folder, "/t10k-labels-idx1-ubyte")
 
-        val model = if (param.modelSnapshot.isDefined) {
-          Module.load[Float](param.modelSnapshot.get)
-        } else {
-          LeNet5(classNum = 10)
-        }
-
-        val state = if (param.stateSnapshot.isDefined) {
-          T.load(param.stateSnapshot.get)
-        } else {
-          T(
-            "learningRate" -> param.learningRate,
-            "learningRateDecay" -> param.learningRateDecay
-          )
-        }
+        val model = LeNet5(classNum = 10)
 
         val trainSet = DataSet.array(load(trainData, trainLabel), sc) ->
           BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
@@ -97,7 +84,11 @@ object OptimizerWrapper {
         val estimator = new DLEstimator[Float](model, criterion,
           Array[Int](128, 28, 28))("DLEstimator")
 
-        val transformer = estimator.fit(df)
+        val pipeline = new Pipeline()
+
+        pipeline.setStages(Array(estimator))
+
+        val transformer = pipeline.fit(df)
 
         val rdd: RDD[DenseVectorData] = validationSet.
           asInstanceOf[DistributedDataSet[MiniBatch[Float]]].data(false).flatMap(batch => {
@@ -120,7 +111,6 @@ object OptimizerWrapper {
           .foreach { case Row(data: DenseVector, predict: Int) =>
             println(data + "=>" + predict)
           }
-
       })
     }
 }

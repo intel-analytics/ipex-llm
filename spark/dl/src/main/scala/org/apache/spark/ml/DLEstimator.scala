@@ -35,7 +35,6 @@ import scala.reflect.ClassTag
  * @param criterion criterion to be used
  * @param batchShape batch shape to be used
  */
-
 class DLEstimator[T : ClassTag]
   (module : Module[T], criterion : Criterion[T], batchShape : Array[Int])
   (override val uid: String = "DLEstimator")(implicit ev: TensorNumeric[T])
@@ -50,7 +49,6 @@ class DLEstimator[T : ClassTag]
       "DLEstimator: criterion must not be null")
 
   }
-
 
   override def process(dataFrame: DataFrame): MlTransformer = {
 
