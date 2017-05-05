@@ -157,7 +157,7 @@ class LayerwiseRegPerformSpec extends FlatSpec with Matchers {
 
     RNG.setSeed(seed)
     val state2 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
-      ,"momentum" -> 0.002)
+      "momentum" -> 0.002)
 
     val inputN = 28
     val outputN = 10
