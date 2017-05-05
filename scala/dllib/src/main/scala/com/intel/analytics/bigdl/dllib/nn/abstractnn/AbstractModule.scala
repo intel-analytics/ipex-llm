@@ -348,11 +348,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   /**
-    * Set weight and bias for the module
-    * @param newWeights
-    * @return
-    */
-  def setWeights(newWeights: Array[Tensor[T]]): this.type = {
+   * Set weight and bias for the module
+   * @param newWeights array of weights and bias
+   * @return
+   */
+  def setWeightsBias(newWeights: Array[Tensor[T]]): this.type = {
     require(parameters() != null, "this layer does not have weight/bias")
     require(parameters()._1.length == newWeights.length,
       "the number of input weight/bias is not consistant with number of weight/bias of this layer")
@@ -364,10 +364,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   }
 
   /**
-    * Get weight and bias for the module
-    * @return array of weights and bias
-    */
-  def getWeights(): Array[Tensor[T]] = {
+   * Get weight and bias for the module
+   * @return array of weights and bias
+   *
+   */
+  def getWeightsBias(): Array[Tensor[T]] = {
     if (parameters() != null) {
       parameters()._1
     } else {
