@@ -64,7 +64,7 @@ class SpatialConvolution[T: ClassTag](
   protected val onesBatch = Tensor[T]()
   protected val onesBias = Tensor[T]()
   protected var weightMM: Tensor[T] = null
-  protected var gradientBiasMT: Tensor[T] = Tensor[T]()
+  protected val gradientBiasMT: Tensor[T] = Tensor[T]()
   protected var gradWeightMM: Tensor[T] = null
   @transient
   protected var gradWeightMMInBatch: Tensor[T] = null

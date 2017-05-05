@@ -13,36 +13,7 @@
     <groupId>com.intel.analytics.bigdl</groupId>
     <packaging>pom</packaging>
 
-    <profiles>
-        <profile>
-            <id>1.5-plus</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <module>1.5-plus</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>1.6</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <modules>
-                <module>1.5-plus</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>spark_2.0</id>
-            <modules>
-                <module>2.0</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>spark_2.1</id>
-            <modules>
-                <module>2.0</module>
-            </modules>
-        </profile>
-    </profiles>
+    <modules>
+        <module>${spark-version.project}</module>
+    </modules>
 </project>

@@ -111,18 +111,18 @@ object ModelValidator {
             case "alexnet" =>
               (Module.loadCaffe[Float](AlexNet(1000),
                 param.caffeDefPath.get, param.modelPath),
-                AlexNetPreprocessor(valPath, param.batchSize, param.meanFile.get, sc))
+                AlexNetPreprocessor.rdd(valPath, param.batchSize, param.meanFile.get, sc))
             case "inception" =>
               (Module.loadCaffe[Float](Inception_v1_NoAuxClassifier(1000),
                 param.caffeDefPath.get, param.modelPath),
-                InceptionPreprocessor(valPath, param.batchSize, sc))
+                InceptionPreprocessor.rdd(valPath, param.batchSize, sc))
           }
 
         case TorchModel =>
           param.modelName match {
             case "resnet" =>
               (Module.loadTorch[Float](param.modelPath),
-                ResNetPreprocessor(valPath, param.batchSize, sc))
+                ResNetPreprocessor.rdd(valPath, param.batchSize, sc))
           }
 
         case _ => throw new IllegalArgumentException(s"${ param.modelType } is not" +
@@ -130,9 +130,11 @@ object ModelValidator {
       }
       println(model)
 
-      val validator = Validator(model, validateDataSet)
-      val evaluator = Array(new Top1Accuracy[Float](), new Top5Accuracy[Float]())
-      val result = validator.test(evaluator)
+      val result = model.evaluate(
+        validateDataSet,
+        Array(new Top1Accuracy[Float](), new Top5Accuracy[Float]()),
+        Some(param.batchSize))
+
       result.foreach(r => {
         logger.info(s"${ r._2 } is ${ r._1 }")
       })

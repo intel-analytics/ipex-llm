@@ -20,6 +20,8 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.commons.lang3.SerializationUtils
 import java.util
 
+import org.apache.spark.rdd.RDD
+
 import scala.collection.Iterator
 import scala.reflect.ClassTag
 
@@ -50,6 +52,20 @@ trait Transformer[A, B] extends Serializable {
 
   def cloneTransformer(): Transformer[A, B] = {
     SerializationUtils.clone(this)
+  }
+
+  /**
+   * Apply this transformer to rdd
+   * @param dataset
+   */
+  def apply(dataset: RDD[A])(implicit evidence: ClassTag[B]): RDD[B] = {
+    val broadcast = dataset.sparkContext.broadcast(this)
+    val cachedTransformer = dataset.mapPartitions(_ => Iterator
+      .single(broadcast.value.cloneTransformer())
+    ).setName("Transformer")
+
+    dataset.zipPartitions(cachedTransformer)(
+      (data, tran) => tran.next()(data))
   }
 }
 
