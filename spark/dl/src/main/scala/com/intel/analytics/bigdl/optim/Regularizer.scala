@@ -127,22 +127,11 @@ class L1L2Regularizer[T: ClassTag](
     parameter: Tensor[T],
     gradParameter: Tensor[T]
   ): Unit = {
-    if (alpha == 0) return
-
-    val paraStorage = parameter.storage().array()
-    val gradStorage = gradParameter.storage().array()
-    val minusOne = ev.negative(ev.one)
-    val _alpha = ev.fromType[Double](alpha)
-    var i = 0
-    while (i < paraStorage.length) {
-      val g = gradStorage(i)
-      val p = paraStorage(i)
-      val sign = if (ev.isGreater(p, ev.zero)) ev.one else minusOne
-      gradStorage(i) = ev.plus(g, ev.times(_alpha, sign))
-      i += 1
-    }
+    if (alpha != 0) gradParameter.add(ev.fromType(alpha),
+      l1SignBuffer.resizeAs(parameter).copy(parameter).sign())
   }
 
+  @transient private val l1SignBuffer = Tensor()
 
   /**
    * Accumulates the gradient of the l2 regularization of `parameter`

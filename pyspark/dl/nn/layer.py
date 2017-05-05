@@ -867,7 +867,7 @@ class Bilinear(Model):
     :param output_size output dimension
     :param bias_res whether use bias
 
-    >>> bilinear = Bilinear(1, 1, 1, True).reset(n
+    >>> bilinear = Bilinear(1, 1, 1, True)
     creating: createBilinear
     '''
 

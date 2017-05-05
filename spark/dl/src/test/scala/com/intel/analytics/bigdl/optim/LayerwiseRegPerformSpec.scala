@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -24,7 +25,9 @@ import org.scalatest.{FlatSpec, Matchers}
 class LayerwiseRegPerformSpec extends FlatSpec with Matchers {
   "perform No L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
+    val seed = 100
 
+    RNG.setSeed(seed)
     val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
       "momentum" -> 0.002)
 
@@ -86,7 +89,9 @@ class LayerwiseRegPerformSpec extends FlatSpec with Matchers {
 
   "perform Global L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
+    val seed = 100
 
+    RNG.setSeed(seed)
     val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
       "weightDecay" -> 0.1, "momentum" -> 0.002)
 
@@ -148,7 +153,9 @@ class LayerwiseRegPerformSpec extends FlatSpec with Matchers {
 
   "perform layerwise L2 regularizer" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
+    val seed = 100
 
+    RNG.setSeed(seed)
     val state2 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
       "weightDecay" -> 0.0, "momentum" -> 0.002)
 
@@ -219,7 +226,9 @@ class LayerwiseRegPerformSpec extends FlatSpec with Matchers {
 
     val state3 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
       "weightDecay" -> 0.0, "momentum" -> 0.002)
+    val seed = 100
 
+    RNG.setSeed(seed)
     val inputN = 28
     val outputN = 10
     val batchSize = 5
