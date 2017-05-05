@@ -136,7 +136,7 @@ def run_individual_python_test(test_name, python_exec):
 
 def get_default_python_executables():
     # TODO: add more version. only support python 2.7 for now
-    python_execs = ["python2.7"]
+    python_execs = ["python2.7", "python3.5"]
     return python_execs
 
 
