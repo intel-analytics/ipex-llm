@@ -110,7 +110,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     // check the first line and the last line of BigDL
     {
-      val pattern = ".*INFO.*DistriOptimizer.*Cache thread models..."
+      val pattern = ".*INFO.*DistriOptimizer.*caching training rdd ..."
       val firstLine = allString.split('\n')(0)
       require(firstLine.matches(pattern), s"output can't matchs the specific output")
     }

@@ -23,8 +23,11 @@ import java.util.concurrent.{Callable, Executors}
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import org.apache.hadoop.io.Text
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -56,9 +59,9 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val resource = getClass().getClassLoader().getResource("mnist")
 
     val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
-      Paths.get(processPath(resource.getPath()) + File.separator, "t10k-images.idx3-ubyte"),
-      Paths.get(processPath(resource.getPath()) + File.separator, "t10k-labels.idx1-ubyte")
-    ))
+      processPath(resource.getPath()) + File.separator + "t10k-images.idx3-ubyte",
+      processPath(resource.getPath()) + File.separator + "t10k-labels.idx1-ubyte")
+    )
     dataSet.size() should be(10000)
     var iter = dataSet.data(train = false)
     iter.map(_.label).min should be(1.0f)
@@ -70,8 +73,8 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val resource = getClass().getClassLoader().getResource("mnist")
 
     val dataSet = DataSet.array(com.intel.analytics.bigdl.models.lenet.Utils.load(
-      Paths.get(processPath(resource.getPath()) + File.separator, "t10k-images.idx3-ubyte"),
-      Paths.get(processPath(resource.getPath()) + File.separator, "t10k-labels.idx1-ubyte")
+      processPath(resource.getPath()) + File.separator + "t10k-images.idx3-ubyte",
+      processPath(resource.getPath()) + File.separator + "t10k-labels.idx1-ubyte"
     ), sc)
 
     dataSet.size() should be(10000)
@@ -304,15 +307,118 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     })).data(train = true)
     trainRDD.mapPartitions(iter => {
       Iterator.single(iter.next())
-    }).collect()(0) should be(22)
+    }).collect()(0) should be(55)
 
     trainRDD.mapPartitions(iter => {
       Iterator.single(iter.next())
-    }).collect()(0) should be(41)
+    }).collect()(0) should be(68)
 
     trainRDD.mapPartitions(iter => {
       Iterator.single(iter.next())
-    }).collect()(0) should be(62)
+    }).collect()(0) should be(28)
 
+  }
+
+  "RDD DataSet" should "be good for sorted buffer with two partition" in {
+    val count = 100
+    val data = new Array[Sample[Float]](count)
+    var i = 1
+    while (i <= count) {
+      val input = Tensor[Float](3, 28, 28).apply1(e => Random.nextFloat())
+      val target = Tensor[Float](1).fill(i.toFloat)
+      data(i-1) = Sample(input, target)
+      i += 1
+    }
+
+    val partitionNum = 2
+    val batchSize = 5
+    val groupSize = 5
+    val dataSet1 = new CachedDistriDataSet[Sample[Float]](
+      sc.parallelize(data, partitionNum)
+        .coalesce(partitionNum, true)
+        .mapPartitions(iter => {
+          val tmp = iter.toArray
+          Iterator.single(tmp)
+        }).setName("cached dataset")
+        .cache(),
+      true,
+      groupSize
+    )
+
+    val dataSet = dataSet1.transform(SampleToBatch(batchSize))
+    val rdd = dataSet.toDistributed().data(train = true)
+    rdd.partitions.size should be (partitionNum)
+    val rddData = rdd.mapPartitions(iter => {
+      Iterator.single(iter.next().labels)
+    })
+
+    i = 0
+    while (i < 100) {
+      val label = rddData.collect()(0).storage().array()
+      label.reduce((l, f) => if (l < f) f else 10000) should not be (10000)
+      i += 1
+    }
+  }
+
+  "RDD test DataSet" should "be same to the original data with one partition" in {
+    val count = 100
+    val data = new Array[Sample[Float]](count)
+    var i = 1
+    while (i <= count) {
+      val input = Tensor[Float](3, 28, 28).apply1(e => Random.nextFloat())
+      val target = Tensor[Float](1).fill(i.toFloat)
+      data(i-1) = Sample(input, target)
+      i += 1
+    }
+    val partitionNum = 1
+    val dataRDD = sc.parallelize(data, partitionNum).coalesce(partitionNum, true)
+    val dataSet = DataSet.sortRDD(dataRDD, true, 10)
+    val rdd = dataSet.toDistributed().data(train = false)
+    val localData = rdd.collect()
+
+    i = 0
+    while (i < localData.length) {
+      localData(i).label() should be (data(i).label)
+      localData(i).feature() should be (data(i).feature())
+      i += 1
+    }
+  }
+
+  "transformRDD" should "be correct" in {
+    val resource = getClass().getClassLoader().getResource("imagenet")
+    val tmpFile = java.io.File.createTempFile("UnitTest", System.nanoTime().toString)
+    require(tmpFile.delete())
+    require(tmpFile.mkdir())
+
+    // Convert the test imagenet files to seq files
+    val files = (DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
+      -> LocalImgReaderWithName(BGRImage.NO_SCALE)
+      -> BGRImgToLocalSeqFile(100, Paths.get(tmpFile.getAbsolutePath(), "imagenet"))
+      ).toLocal().data(train = false).map(s => {
+      println(s);
+      s
+    }).toArray
+
+    val partitionNum = Engine.nodeNumber() * Engine.coreNumber()
+    val rddData = sc.sequenceFile(tmpFile.getAbsolutePath(), classOf[Text],
+      classOf[Text], partitionNum).map(image => {
+        ByteRecord(image._2.copyBytes(), DataSet.SeqFileFolder.readLabel(image._1).toFloat)
+      })
+    val transformer = BytesToBGRImg()
+    val imageIter = transformer(rddData)
+
+    val result = imageIter.map(_.clone()).collect().sortBy(_.label())
+    result.length should be(11)
+    var img = result(0)
+    img.label() should be(1f)
+    img.content((100 + 100 * 213) * 3 + 2) should be(17 / 255f)
+    img.content((100 + 100 * 213) * 3 + 1) should be(27 / 255f)
+    img.content((100 + 100 * 213) * 3) should be(26 / 255f)
+
+    img = result(8)
+    img.label() should be(4f)
+    img.content((100 + 100 * 213) * 3 + 2) should be(35 / 255f)
+    img.content((100 + 100 * 213) * 3 + 1) should be(30 / 255f)
+    img.content((100 + 100 * 213) * 3) should be(36 / 255f)
   }
 }

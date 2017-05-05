@@ -50,7 +50,7 @@ class SmoothL1Criterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Bo
     }
     buffer.resizeAs(input).copy(input)
     buffer.add(ev.fromType(-1), target).abs()
-    var data = buffer.storage().array()
+    val data = buffer.storage().array()
     for (i <- 0 until data.length) {
       if (ev.isGreater(ev.fromType(1), data(i))) {
         data(i) = ev.times(ev.fromType[Double](0.5), ev.times(data(i), data(i)))
@@ -63,7 +63,8 @@ class SmoothL1Criterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Bo
     if (sizeAverage) {
       sum = ev.divide(sum, ev.fromType(input.nElement()))
     }
-    sum
+    output = sum
+    output
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
@@ -74,7 +75,7 @@ class SmoothL1Criterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Bo
     }
     gradInput.resizeAs(input).copy(input)
     gradInput.add(ev.fromType(-1), target)
-    var data = gradInput.storage().array()
+    val data = gradInput.storage().array()
     for (i <- 0 until data.length) {
       if (ev.isGreater(ev.fromType(-1), data(i))) {
         data(i) = ev.negative(norm)

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.example.textclassification
+package com.intel.analytics.bigdl.example.utils
 
 object SimpleTokenizer {
   /**

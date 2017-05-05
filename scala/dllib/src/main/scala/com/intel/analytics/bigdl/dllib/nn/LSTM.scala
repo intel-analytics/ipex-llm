@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -32,17 +32,23 @@ import scala.reflect.ClassTag
  *
  * @param inputSize the size of each input vector
  * @param hiddenSize Hidden unit size in the LSTM
+ * @param  p is used for [[Dropout]] probability. For more details about
+ *           RNN dropouts, please refer to
+ *           [RnnDrop: A Novel Dropout for RNNs in ASR]
+ *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+ *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+ *           (https://arxiv.org/pdf/1512.05287.pdf)
  */
 @SerialVersionUID(- 8176191554025511686L)
 class LSTM[T : ClassTag] (
   val inputSize: Int,
-  val hiddenSize: Int)
+  val hiddenSize: Int,
+  val p: Double = 0)
   (implicit ev: TensorNumeric[T])
   extends Cell[T](hiddensShape = Array(hiddenSize, hiddenSize)) {
-  val p: Double = 0 // Dropout threshold
   var gates: Sequential[T] = _
   var cellLayer: Sequential[T] = _
-  var lstm: Sequential[T] = buildLSTM()
+  override var cell: AbstractModule[Activity, Activity, T] = buildLSTM()
 
   def buildGates(): Sequential[T] = {
     val gates = Sequential()
@@ -143,35 +149,8 @@ class LSTM[T : ClassTag] (
         .add(Identity()))
 
     output = T(Tensor(), T())
-    this.lstm = lstm
+    this.cell = lstm
     lstm
-  }
-
-
-  override def updateOutput(input: Table): Table = {
-    output = lstm.updateOutput(input).toTable
-    output
-  }
-
-  override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    gradInput = lstm.updateGradInput(input, gradOutput).toTable
-    gradInput
-  }
-
-  override def accGradParameters(input: Table, gradOutput: Table, scale: Double): Unit = {
-    lstm.accGradParameters(input, gradOutput, scale)
-  }
-
-  override def updateParameters(learningRate: T): Unit = {
-    lstm.updateParameters(learningRate)
-  }
-
-  override def zeroGradParameters(): Unit = {
-    lstm.zeroGradParameters()
-  }
-
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    lstm.parameters()
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[LSTM[T]]
@@ -193,7 +172,7 @@ class LSTM[T : ClassTag] (
 
   override def reset(): Unit = {
     super.reset()
-    lstm.reset()
+    cell.reset()
   }
 
 
@@ -203,8 +182,9 @@ class LSTM[T : ClassTag] (
 object LSTM {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
-    hiddenSize: Int)
+    hiddenSize: Int,
+    p: Double = 0)
     (implicit ev: TensorNumeric[T]): LSTM[T] = {
-    new LSTM[T](inputSize, hiddenSize)
+    new LSTM[T](inputSize, hiddenSize, p)
   }
 }

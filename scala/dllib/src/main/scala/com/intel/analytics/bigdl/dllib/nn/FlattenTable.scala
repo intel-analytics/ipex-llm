@@ -30,45 +30,19 @@ import scala.reflect.ClassTag
 @SerialVersionUID(7620301574431959449L)
 class FlattenTable[T: ClassTag] (implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
-  @transient private var inputMap: Table = null
-
-  private def createInputMap(): Unit = {
-    if (inputMap == null) {
-      inputMap = T()
-    }
-  }
 
   override def updateOutput(input: Table): Table = {
-    createInputMap()
-    inputMap = input.clone
     output = input.flatten()
     output
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    createInputMap()
-    gradInput = gradOutput.inverseFlatten(inputMap)
+    gradInput = gradOutput.inverseFlatten(input)
     gradInput
   }
 
   override def toString: String = {
     s"nn.Flatten"
-  }
-
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[FlattenTable[T]]
-
-  override def equals(other: Any): Boolean = other match {
-    case that: FlattenTable[T] =>
-      super.equals(that) &&
-        (that canEqual this) &&
-        inputMap == that.inputMap
-    case _ => false
-  }
-
-  override def hashCode(): Int = {
-    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
-    val state = Seq(super.hashCode(), inputMap)
-    state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
 
