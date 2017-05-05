@@ -83,4 +83,37 @@ class NormalizeSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     println("Test case : Normalize, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
+
+  "A Normalize Module multiple time" should "generate correct" +
+    " output and grad with input two dimensions" in {
+    val input = Tensor[Double](2, 9).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double](2, 9).apply1(e => Random.nextDouble())
+
+    val code = "module = nn.Normalize(math.huge)\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)"
+
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
+
+    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    val module = Normalize[Double](Double.MaxValue)
+    val start = System.nanoTime()
+    var output = module.forward(input)
+    var gradInput = module.backward(input, gradOutput)
+    output = module.forward(input)
+    gradInput = module.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    output should be(luaOutput1)
+    gradInput should be(luaOutput2)
+
+    println("Test case : Normalize, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
 }

@@ -22,37 +22,40 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 /**
- * Delete singleton all dimensions or a specific dim.
+ * Delete all singleton dimensions or a specific singleton dimension.
  *
- * @param dim Optional. The dimension to be delete. Default: delete all dimensions.
- * @param numInputDims Optional. If in a batch model, set to the inputDims.
+ * @param dims Optional. If this dimension is singleton dimension, it will be deleted.
+ *            The first index starts from 1. Default: delete all dimensions.
+ * @param batchMode Optional. If the input is batch. Default is false.
  */
 
 @SerialVersionUID(7998127436291978408L)
-class Squeeze[@specialized(Float, Double) T: ClassTag](
-  var dim : Int = Int.MinValue,
-  var numInputDims: Int = Int.MinValue
+class Squeeze[T: ClassTag](
+  val dims : Array[Int] = null, val batchMode: Boolean = false
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
 
-  def setNumInputDims(numInputDims: Int): Unit = {
-    this.numInputDims = numInputDims
+  if (batchMode && dims != null) {
+    var i = 0
+    while(i < dims.length) {
+      dims(i) += 1
+      i += 1
+    }
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    var addOne = false
-    if (numInputDims != Int.MinValue && input.dim() == numInputDims + 1) {
-      if (dim != Int.MinValue) {
-        dim += 1
-      } else if (input.size(1) == 1) {
-        addOne = true // in case of miniBatch of size 1
-      }
-    }
     output.set(input)
-    if (dim != Int.MinValue) output.squeeze(dim) else output.squeeze()
-    if (addOne) {
-      val s = output.size()
-      s(1) = 1
-      output.set(output.view(s))
+    if (dims != null) {
+      var i = 0
+      while(i < dims.length) {
+        output.squeeze(dims(i))
+        i += 1
+      }
+    } else {
+      output.squeeze()
+    }
+
+    if (batchMode && dims == null && input.size(1) == 1) {
+      output.addSingletonDimension()
     }
     output
   }
@@ -64,8 +67,8 @@ class Squeeze[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Squeeze(${if (dim != Int.MinValue) dim + ", " else ""}" +
-      s"${if (numInputDims != Int.MinValue) numInputDims else ""})"
+    s"nn.Squeeze(${if (dims != null) dims.mkString(",") + ", " else ""}" +
+      s"${if (batchMode) "batch" else ""})"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Squeeze[T]]
@@ -74,21 +77,27 @@ class Squeeze[@specialized(Float, Double) T: ClassTag](
     case that: Squeeze[T] =>
       super.equals(that) &&
         (that canEqual this) &&
-        dim == that.dim &&
-        numInputDims == that.numInputDims
+        (dims.zip(that.dims).map(a => a._1 == a._2).reduce(_ && _)) &&
+        batchMode == that.batchMode
     case _ => false
   }
 
   override def hashCode(): Int = {
-    val state = Seq(super.hashCode(), dim, numInputDims)
+    val state = Seq(super.hashCode(), dims, batchMode)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }
 
 object Squeeze {
-  def apply[@specialized(Float, Double) T: ClassTag](
-      dim : Int = Int.MinValue,
-      numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T]) : Squeeze[T] = {
-    new Squeeze[T](dim, numInputDims)
+  def apply[T: ClassTag](dim : Int = Int.MinValue,
+    numInputDims: Int = Int.MinValue)(implicit ev: TensorNumeric[T])
+  : Squeeze[T] = {
+    new Squeeze[T](Array(dim), numInputDims != Int.MinValue)
+  }
+
+  def apply[T: ClassTag](
+    dims : Array[Int], batchMode: Boolean)(implicit ev: TensorNumeric[T])
+  : Squeeze[T] = {
+    new Squeeze[T](dims, batchMode)
   }
 }

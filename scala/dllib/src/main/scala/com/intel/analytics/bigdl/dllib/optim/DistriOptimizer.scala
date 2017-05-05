@@ -662,17 +662,17 @@ object DistriOptimizer {
 /**
  * The optimizer run on a distributed cluster.
  *
- * @param model train model
+ * @param _model train model
  * @param dataset train dataset
  * @param criterion loss function
  */
 class DistriOptimizer[T: ClassTag] (
-  model: Module[T],
+  _model: Module[T],
   dataset: DistributedDataSet[MiniBatch[T]],
   criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
-    model, dataset, criterion) {
+    _model, dataset, criterion) {
   val metrics = new Metrics
 
   private var models: RDD[DistriOptimizer.Cache[T]] = null
@@ -691,6 +691,14 @@ class DistriOptimizer[T: ClassTag] (
     }).count()
   }
 
+  override def prepareInput(): Unit = {
+    import DistriOptimizer._
+    if (!dataset.isCached) {
+      logger.info("caching training rdd ...")
+      dataset.cache()
+    }
+  }
+
   override def optimize(): Module[T] = {
     optimMethod.clearHistory(state)
     state("dropPercentage") = dropPercentage
@@ -704,6 +712,8 @@ class DistriOptimizer[T: ClassTag] (
     val partitionNum = dataset.originRDD().partitions.length
     val size = model.getParameters()._1.nElement()
     val parameters = AllReduceParameter.newParameter(partitionNum, size)
+
+    prepareInput()
 
     models = DistriOptimizer.initThreadModels(model, dataset, criterion, state,
       nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods)
@@ -741,6 +751,8 @@ class DistriOptimizer[T: ClassTag] (
         )
         retryNum = Int.MaxValue
       } catch {
+        case e: IllegalArgumentException =>
+          throw e
         case t: Throwable =>
           DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           if (checkpointPath.isDefined) {
@@ -750,6 +762,9 @@ class DistriOptimizer[T: ClassTag] (
              */
             if (System.nanoTime() - lastFailureTimestamp < maxRetry * retryTimeInterval * 1e9) {
               retryNum += 1
+              if (retryNum == maxRetry) {
+                throw t
+              }
             } else {
               retryNum = 1
             }

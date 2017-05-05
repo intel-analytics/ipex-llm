@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -30,16 +30,24 @@ import scala.reflect.ClassTag
  * set, the outputs are scaled by a factor of 1/(1-initP) during training.
  * During evaluating, output is the same as input.
  *
- * @param initP probability to be dropped
- * @param inplace inplace model
- * @param scale if scale by a factor of 1/(1-initP)
+ * It has been proven an effective approach for regularization and preventing
+ * co-adaptation of feature detectors. For more details, plese see
+ * [Improving neural networks by preventing co-adaptation of feature detectors]
+ * (https://arxiv.org/abs/1207.0580)
+ *
+ * @param initP the probability p
+ * @param inplace whether to make `input` and `output` share the same storage
+ * @param scale whether to scale the output by a factor of `1 / (1 - p)`
  */
 @SerialVersionUID(- 4636332259181125718L)
 class Dropout[T: ClassTag](
-  val initP: Double = 0.5, val inplace: Boolean = false, var scale: Boolean = true)(
+  val initP: Double = 0.5,
+  val inplace: Boolean = false,
+  var scale: Boolean = true)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   private var p = initP
-  val noise = Tensor[T]()
+  var noise = Tensor[T]()
+  var isResampling = true
 
   @transient
   protected var results: Array[Future[Unit]] = null
@@ -65,50 +73,58 @@ class Dropout[T: ClassTag](
     if (train) {
       noise.resizeAs(input)
       if (input.isContiguous()) {
-        val noiseData = noise.storage().array()
-        var taskSize = noise.nElement() / Engine.model.getPoolSize
-        var extraTask = noise.nElement() % Engine.model.getPoolSize
-        var allocated = 0
-        val offset = this.output.storageOffset() - 1
-        val data = this.output.storage.array()
-        var i = 0
-        while (allocated < noise.nElement()) {
-          val start = allocated
-          allocated += taskSize
-          if (extraTask > 0) {
-            allocated += 1
-            extraTask -= 1
-          }
-          val end = allocated
-          results(i) = Engine.model.invoke(() => {
-            var k = start
-            while (k < end) {
-              noiseData(k) = if (RNG.bernoulli(1 - p)) {
-                if (scale) {
-                  data(offset + k) = ev.divide(data(offset + k), ev.fromType[Double](1 - p))
-                  ev.fromType[Double](1.0 / (1 - p))
-                } else {
-                  ev.fromType[Int](1)
-                }
-              } else {
-                data(offset + k) = ev.fromType[Int](0)
-                ev.fromType[Int](0)
-              }
-
-              k += 1
+        if (isResampling) {
+          val noiseData = noise.storage().array()
+          var taskSize = noise.nElement() / Engine.model.getPoolSize
+          var extraTask = noise.nElement() % Engine.model.getPoolSize
+          var allocated = 0
+          val offset = this.output.storageOffset() - 1
+          val data = this.output.storage.array()
+          var i = 0
+          while (allocated < noise.nElement()) {
+            val start = allocated
+            allocated += taskSize
+            if (extraTask > 0) {
+              allocated += 1
+              extraTask -= 1
             }
-          })
-          i += 1
-        }
+            val end = allocated
+            results(i) = Engine.model.invoke(() => {
+              var k = start
+              while (k < end) {
+                noiseData(k) = if (RNG.bernoulli(1 - p)) {
+                  if (scale) {
+                    data(offset + k) = ev.divide(data(offset + k), ev.fromType[Double](1 - p))
+                    ev.fromType[Double](1.0 / (1 - p))
+                  } else {
+                    ev.fromType[Int](1)
+                  }
+                } else {
+                  data(offset + k) = ev.fromType[Int](0)
+                  ev.fromType[Int](0)
+                }
 
-        Engine.model.sync(results)
+                k += 1
+              }
+            })
+            i += 1
+
+          }
+
+          Engine.model.sync(results)
+        } else {
+          this.output.cmul(noise)
+        }
         this.output
       } else {
-        noise.bernoulli(1 - p)
+        if (isResampling) {
+          noise.bernoulli(1 - p)
 
-        if (scale) {
-          noise.div(ev.fromType[Double](1 - p))
+          if (scale) {
+            noise.div(ev.fromType[Double](1 - p))
+          }
         }
+
         this.output.cmul(noise)
       }
     } else if (!scale) {
@@ -192,9 +208,9 @@ class Dropout[T: ClassTag](
 
 object Dropout {
   def apply[@specialized(Float, Double) T: ClassTag](
-      initP: Double = 0.5,
-      inplace: Boolean = false,
-      scale: Boolean = true)(implicit ev: TensorNumeric[T]) : Dropout[T] = {
+    initP: Double = 0.5,
+    inplace: Boolean = false,
+    scale: Boolean = true)(implicit ev: TensorNumeric[T]) : Dropout[T] = {
     new Dropout[T](initP, inplace, scale)
   }
 }
