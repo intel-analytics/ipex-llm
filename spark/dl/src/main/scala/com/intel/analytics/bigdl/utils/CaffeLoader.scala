@@ -27,7 +27,8 @@ import com.google.protobuf.{CodedInputStream, TextFormat}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.log4j.Logger
 
@@ -52,6 +53,14 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   private var name2LayerV1: Map[String, V1LayerParameter] = _
   private var name2LayerV2: Map[String, LayerParameter] = _
 
+  private var customizedLayer : Map[String, AbstractModule[Activity, Activity, T]] = _
+
+  private var criterions = ParallelCriterion[T]()
+
+  def setCustomizedLayer(map : Map[String, AbstractModule[Activity, Activity, T]]) : this.type = {
+    customizedLayer = map
+    this
+  }
   private def loadCaffe(prototxtPath: String, modelPath: String): Unit = {
     if (name2LayerV2 == null) {
       netparam = loadBinary(prototxtPath, modelPath)
@@ -191,7 +200,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
           }
         })
       } else {
-        var node = convertCaffeLayer(new Node(name))
+        var node = convertCaffeLayer(name)
         if (node != null) {
           dependencies.foreach(dependency => {
             if (splitLayerMap.contains(dependency)) splitLayerMap(dependency) -> node
@@ -213,8 +222,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     return layers
   }
 
-  private def convertCaffeLayer(node : Node[String]): ModuleNode[T] = {
-    val layerName = node.element
+  private def convertCaffeLayer(layerName : String): ModuleNode[T] = {
     val layerType = getLayerType(layerName).get.toUpperCase
     val module = layerType match {
       case "CONVOLUTION" => fromCaffeConvolution(layerName)
@@ -224,9 +232,11 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       case "INNERPRODUCT" => fromCaffeInnerProduct(layerName)
       case "INNER_PRODUCT" => fromCaffeInnerProduct(layerName)
       case "DROPOUT" => fromCaffeDropout(layerName)
-      case "SOFTMAX_LOSS" => fromCaffeSoftmax(layerName)
+      case "SOFTMAX_LOSS" => fromCaffeSoftmaxLoss(layerName, layerType)
+      case "SOFTMAX" => fromCaffeSoftmax(layerName)
       case "TANH" => fromCaffeTanh(layerName)
       case "SIGMOID" => fromCaffeSigmoid(layerName)
+      case "SigmoidCrossEntropyLoss" => fromCaffeSigmoid(layerName, layerType)
       case "ABSVAL" => fromCaffeAbsVal(layerName)
       case "BATCHNORM" => fromCaffeBatchNormalization(layerName)
       case "CONCAT" => fromCaffeConcat(layerName)
@@ -239,15 +249,70 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       case "RNN" => fromCaffeRecurrent(layerName)
       case "RESHAPE" => fromCaffeReshape(layerName)
       case "SCALE" => fromCaffeScale(layerName)
+      case "Bias" => fromCaffeBias(layerName)
       case "THRESHOLD" => fromCaffeThreshold(layerName)
       case "Exp" => fromCaffeExp(layerName)
       case "Slice" => fromCaffeSlice(layerName)
       case "Tile" => fromCaffeTile(layerName)
       case "Eltwise" => fromCaffeEltwise(layerName)
+      case "EuclideanLoss" => fromCaffeLoss(layerName, layerType)
+      case "HingeLoss" => fromCaffeLoss(layerName, layerType)
+      case "MultinomialLogisticLoss" => fromCaffeLoss(layerName, layerType)
+      case "ContrastiveLoss" => fromCaffeLoss(layerName, layerType)
       case "INPUT" => null
-      case _ => throw new Exception(s"$layerType is not supported in BigDL fow now")
+      case _ => fitCustomizedLayer(layerType, layerName)
     }
     module
+  }
+
+  private def fromCaffeLoss(layerName : String, layerType : String) : ModuleNode[T] = {
+    addCriterion(layerName, layerType)
+    null
+  }
+
+/*
+ * Add criterion according to layer type from train protocol
+ * if only test/model define prototxt file provided, there won't be criterion detected
+ */
+  private def addCriterion(layerName : String, layerType : String) : Unit = {
+    val criterion = layerType match {
+      case "SoftmaxWithLoss" => ClassNLLCriterion[T]()
+      case "EuclideanLoss" => MSECriterion[T]()
+      case "HingeLoss" => HingeEmbeddingCriterion[T]()
+      case "SigmoidCrossEntropyLoss" => CrossEntropyCriterion[T]()
+      case "SoftmaxWithLoss" => ClassNLLCriterion[T]()
+      case "InfogainLoss" => createInfoGainCriterion(layerName)
+      case "ContrastiveLoss" => CosineEmbeddingCriterion[T]()
+    }
+    criterions.add(criterion)
+  }
+
+  private def createInfoGainCriterion(layerName : String) : ClassNLLCriterion[T] = {
+    val param = getInforgainParam(layerName).get
+    val weightBlob = getBlob(layerName, 2)
+    if (weightBlob.isDefined) {
+      val size = weightBlob.get.getShape.getDimList.toArray.asInstanceOf[Array[Int]]
+      val weightData = weightBlob.get.getDataList
+      var weightArr = new Array[T](weightData.size)
+      var i = 0
+      while (i < weightData.size) {
+        weightArr(i) = ev.fromType[Float](weightData.get(i))
+        i += 1
+      }
+      val weightTensor = Tensor(weightArr, size)
+      ClassNLLCriterion[T](weightTensor)
+    } else {
+      ClassNLLCriterion[T]()
+    }
+  }
+  /**
+   * Support customized layer mapping implemented by user for specific type
+   */
+  private def fitCustomizedLayer(layerType : String, layerName : String) : ModuleNode[T] = {
+    if (customizedLayer !=null && customizedLayer.contains(layerType)) {
+      return customizedLayer(layerType).setName(layerName).apply()
+    }
+    throw new Exception(s"$layerType is not supported in BigDL fow now")
   }
 
   private def fromCaffeEltwise(layerName : String) : ModuleNode[T] = {
@@ -294,8 +359,16 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     Threshold[T](threshold).setName(layerName).apply()
   }
 
+  private def fromCaffeBias(layerName : String) : ModuleNode[T] = {
+    val param = getBiasParam(layerName)
+    // input blob
+    val weightBlob = getBlob(layerName, 0)
+    val size = weightBlob.get.getShape.getDimList.toArray().asInstanceOf[Array[Int]].product
+    Add[T](size).setName(layerName).apply()
+  }
+
   private def fromCaffeScale(layerName : String) : ModuleNode[T] = {
-    val scaleParam = getScaleParam(layerName).get
+    val param = getScaleParam(layerName).get
     // second blob as weight for scale
     val weightBlob = getBlob(layerName, 1)
     if (weightBlob.isDefined) {
@@ -305,8 +378,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     } else {
       val inputBlob = getBlob(layerName, 0).get
       val shape = inputBlob.getShape
-      val axis = scaleParam.getAxis
-      var numOfAxis = scaleParam.getNumAxes
+      val axis = param.getAxis
+      var numOfAxis = param.getNumAxes
       if (numOfAxis == -1) {
         numOfAxis = shape.getDimList.size() - 1
       } else {
@@ -315,10 +388,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       val size = shape.getDimList.subList(axis, numOfAxis).asInstanceOf[Array[Int]]
       Scale[T](size).setName(layerName).apply()
     }
-
-    val param = getReshapParam(layerName).get
-    val shapeSize = param.getShape.getDimList.toArray.asInstanceOf[Array[Int]]
-    Reshape[T](shapeSize).setName(layerName).apply()
   }
 
   private def fromCaffeReshape(layerName : String) : ModuleNode[T] = {
@@ -380,8 +449,18 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     new Sigmoid[T]().setName(layerName).apply()
   }
 
+  private def fromCaffeSigmoid(layerName : String, layerType : String) : ModuleNode[T] = {
+    addCriterion(layerType)
+    new Sigmoid[T]().setName(layerName).apply()
+  }
+
   private def fromCaffeTanh(layerName : String) : ModuleNode[T] = {
     new Tanh[T]().setName(layerName).apply()
+  }
+
+  private def fromCaffeSoftmaxLoss(layerName : String, layerType : String) : ModuleNode[T] = {
+    addCriterion(layerType)
+    new LogSoftMax().setName(layerName).apply()
   }
 
   private def fromCaffeSoftmax(layerName : String) : ModuleNode[T] = {
@@ -499,6 +578,16 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       .setName(layerName).apply()
   }
 
+  private def getInforgainParam(name: String): Option[InfogainLossParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getInfogainLossParam)
+    } else if (name2LayerV1.contains(name)) {
+      Some(name2LayerV1(name).getInfogainLossParam)
+    } else {
+      None
+    }
+  }
+
   private def getEltWiseParam(name: String): Option[EltwiseParameter] = {
     if (name2LayerV2.contains(name)) {
       Some(name2LayerV2(name).getEltwiseParam)
@@ -532,6 +621,14 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       Some(name2LayerV2(name).getThresholdParam)
     } else if (name2LayerV1.contains(name)) {
       Some(name2LayerV1(name).getThresholdParam)
+    } else {
+      None
+    }
+  }
+
+  private def getBiasParam(name: String): Option[BiasParameter] = {
+    if (name2LayerV2.contains(name)) {
+      Some(name2LayerV2(name).getBiasParam)
     } else {
       None
     }
