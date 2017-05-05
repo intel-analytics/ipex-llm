@@ -74,15 +74,15 @@ object Test {
         test.inputHeight, test.inputWidth)).rand()
 
       val nnCosts = perfOne(nn, input)
-      val fpCosts = perfOne(fp, input)
+//      val fpCosts = perfOne(fp, input)
 
-      println(s"$nnCosts, $fpCosts")
+//      println(s"$nnCosts, $fpCosts")
 
       fp.release()
     }
   }
   def main(args: Array[String]): Unit = {
-    perfAll(testCases)
+//    perfAll(testCases)
     FixPoint.printHello()
   }
 }

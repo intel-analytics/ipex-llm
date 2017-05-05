@@ -81,6 +81,9 @@ class SpatialConvolution[T: ClassTag](
       case _ => throw new IllegalArgumentException()
     }
     zeroGradParameters()
+    if (desc != 0) {
+      release()
+    }
   }
 
   private def init(): Unit = {
@@ -102,8 +105,6 @@ class SpatialConvolution[T: ClassTag](
     require(input.isContiguous())
 
     if (!_init) {
-//      println(s"TestCase(${input.size().mkString(", ")}, $nGroup, $nOutputPlane," +
-//        s"$kernelH, $kernelW, $strideH, $strideW, $padH, $padW)")
       init()
       _init = true
     }
@@ -221,7 +222,9 @@ class SpatialConvolution[T: ClassTag](
   }
 
   def release(): Unit = {
-    FixPoint.FixConvOpFree(desc)
-    desc = 0L
+    if (desc != 0) {
+      FixPoint.FixConvOpFree(desc)
+      desc = 0L
+    }
   }
 }
