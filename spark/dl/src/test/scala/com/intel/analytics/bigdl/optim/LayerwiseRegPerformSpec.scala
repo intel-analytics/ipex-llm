@@ -36,8 +36,8 @@ class LayerwiseRegPerformSpec extends FlatSpec with Matchers {
     val batchSize = 5
     val criterion = new MSECriterion[Double]
 
-    val input = Tensor[Double](batchSize, inputN, inputN).rand()
-    val labels = Tensor[Double](batchSize, outputN).rand()
+    val input = Tensor[Double](batchSize, inputN, inputN).rand().mul(100)
+    val labels = Tensor[Double](batchSize, outputN).rand().mul(10)
 
     val model1 = Sequential()
       .add(Reshape(Array(1, 28, 28)))
@@ -100,8 +100,8 @@ class LayerwiseRegPerformSpec extends FlatSpec with Matchers {
     val batchSize = 5
     val criterion = new MSECriterion[Double]
 
-    val input = Tensor[Double](batchSize, inputN, inputN).rand()
-    val labels = Tensor[Double](batchSize, outputN).rand()
+    val input = Tensor[Double](batchSize, inputN, inputN).rand().mul(100)
+    val labels = Tensor[Double](batchSize, outputN).rand().mul(10)
 
     val model1 = Sequential()
       .add(Reshape(Array(1, 28, 28)))
@@ -157,15 +157,15 @@ class LayerwiseRegPerformSpec extends FlatSpec with Matchers {
 
     RNG.setSeed(seed)
     val state2 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
-      "weightDecay" -> 0.0, "momentum" -> 0.002)
+      ,"momentum" -> 0.002)
 
     val inputN = 28
     val outputN = 10
     val batchSize = 5
     val criterion = new MSECriterion[Double]
 
-    val input = Tensor[Double](batchSize, inputN, inputN).rand()
-    val labels = Tensor[Double](batchSize, outputN).rand()
+    val input = Tensor[Double](batchSize, inputN, inputN).rand().mul(100)
+    val labels = Tensor[Double](batchSize, outputN).rand().mul(10)
 
     val model2 = Sequential()
       .add(Reshape(Array(1, 28, 28)))
@@ -234,8 +234,8 @@ class LayerwiseRegPerformSpec extends FlatSpec with Matchers {
     val batchSize = 5
     val criterion = new MSECriterion[Double]
 
-    val input = Tensor[Double](batchSize, inputN, inputN).rand()
-    val labels = Tensor[Double](batchSize, outputN).rand()
+    val input = Tensor[Double](batchSize, inputN, inputN).rand().mul(100)
+    val labels = Tensor[Double](batchSize, outputN).rand().mul(10)
 
     val model3 = Sequential()
       .add(Reshape(Array(1, 28, 28)))
