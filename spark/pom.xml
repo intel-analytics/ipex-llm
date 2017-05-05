@@ -16,5 +16,6 @@
     <modules>
         <module>dl</module>
         <module>spark-version</module>
+        <module>dist</module>
     </modules>
 </project>

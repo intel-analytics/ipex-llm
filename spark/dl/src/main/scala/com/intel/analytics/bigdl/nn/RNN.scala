@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -51,7 +51,8 @@ class RnnCell[T : ClassTag] (
   parallelTable.add(h2h)
   val cAddTable = CAddTable[T]()
 
-  val rnn = Sequential[T]()
+  override var cell: AbstractModule[Activity, Activity, T] =
+    Sequential[T]()
     .add(parallelTable)
     .add(cAddTable)
     .add(activation)
@@ -81,37 +82,6 @@ class RnnCell[T : ClassTag] (
     zeroGradParameters()
   }
 
-  override def updateOutput(input: Table): Table = {
-    output = rnn.updateOutput(input).toTable
-    output
-  }
-
-  override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    gradInput = rnn.updateGradInput(input, gradOutput).toTable
-    gradInput
-  }
-
-  override def accGradParameters(input: Table, gradOutput: Table,
-                                 scale: Double = 1.0): Unit = {
-    rnn.accGradParameters(input, gradOutput, scale)
-  }
-
-  override def updateParameters(learningRate: T): Unit = {
-    rnn.updateParameters(learningRate)
-  }
-
-  override def zeroGradParameters(): Unit = {
-    rnn.zeroGradParameters()
-  }
-
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    rnn.parameters()
-  }
-
-  override def getParametersTable(): Table = {
-    rnn.getParametersTable()
-  }
-
   override def toString(): String = {
     val str = "nn.RnnCell"
     str
@@ -128,7 +98,7 @@ class RnnCell[T : ClassTag] (
    */
   override def clearState(): RnnCell.this.type = {
     super.clearState()
-    rnn.clearState()
+    cell.clearState()
     this
   }
 
@@ -142,12 +112,12 @@ class RnnCell[T : ClassTag] (
         i2h == that.i2h &&
         h2h == that.h2h &&
         cAddTable == that.cAddTable &&
-        rnn == that.rnn
+        cell == that.cell
     case _ => false
   }
 
   override def hashCode(): Int = {
-    val state = Seq(super.hashCode(), parallelTable, i2h, h2h, cAddTable, rnn)
+    val state = Seq(super.hashCode(), parallelTable, i2h, h2h, cAddTable, cell)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

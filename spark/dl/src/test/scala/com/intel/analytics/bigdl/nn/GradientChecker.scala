@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.commons.lang.StringUtils
@@ -102,6 +103,62 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
     result
   }
 
+
+  def checkCriterion[T: ClassTag](
+      criterion: TensorCriterion[T],
+      input: Tensor[T],
+      target: Tensor[T],
+      epsilon: Double = 0.001)
+      (implicit ev: TensorNumeric[T]): Boolean = {
+
+    val loss = criterion.forward(input, target)
+    val gradOutput = criterion.backward(input, target)
+    val computedGrad = gradOutput
+    computedGrad.resize(Array(computedGrad.nElement()))
+
+    val perturbation = Tensor[T]()
+    perturbation.set(input)
+    perturbation.resize(input.nElement())
+    var result = true
+    var j = 1
+    var i = 1
+
+    val length = if (checkModel) {
+      modelCheckType match {
+        case FullCheck() => input.nElement()
+        case PartCheck(n) => n
+      }
+    } else input.nElement()
+
+    var scalaTime: Long = 0
+    while (j <= length) {
+      i = Random.nextInt(input.nElement()) + 1
+      val curValue = perturbation.valueAt(i)
+      perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) + stepSize))
+      val positiveLoss = criterion.forward(input, target)
+      // val positiveLoss = lossAndGradient(layer.forward(input).toTensor[T])._1
+      perturbation.setValue(i, ev.fromType(ev.toType[Double](curValue) - stepSize))
+      val start = System.nanoTime()
+      val negativeLoss = criterion.forward(input, target)
+      // val negativeLoss = lossAndGradient(layer.forward(input).toTensor[T])._1
+      scalaTime = System.nanoTime() - start
+      val estimatedGradient =
+        0.5 * ev.toType[Double](ev.divide(
+          ev.minus(positiveLoss, negativeLoss), ev.fromType[Double](stepSize)))
+
+      val errDiff = math.abs(estimatedGradient - ev.toType[Double](computedGrad.valueAt(i)))
+      if (errDiff > epsilon) {
+        println("input: greater " + i + ": " + errDiff + " " +
+          estimatedGradient + " " + computedGrad.valueAt(i))
+      }
+      result = result & (errDiff < epsilon)
+      perturbation.setValue(i, curValue)
+
+      j += 1
+    }
+    println("forward time: " + scalaTime / 1e9 + " s")
+    result
+  }
 
   def checkWeight[T: ClassTag](
     layer: Module[T],

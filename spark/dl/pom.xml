@@ -16,6 +16,8 @@
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <scoverage.scalacPluginVersion>1.1.1</scoverage.scalacPluginVersion>
         <scoverage.aggregate>true</scoverage.aggregate>
+        <runSpecsInParallel>false</runSpecsInParallel>
+        <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
     </properties>
 
     <dependencies>
@@ -37,14 +39,7 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
-            <version>2.7.1</version>
             <scope>${spark-scope}</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -142,6 +137,7 @@
                     <systemProperties>
                         <bigdl.disableCheckSysEnv>true</bigdl.disableCheckSysEnv>
                     </systemProperties>
+                    <argLine>-Xmx6g -XX:MaxPermSize=1g</argLine>
                 </configuration>
                 <executions>
                     <execution>
@@ -158,6 +154,20 @@
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <artifactSet>
+                        <includes>
+                            <include>com.google.protobuf</include>
+                        </includes>
+                    </artifactSet>
+                    <filters>
+                        <filter>
+                            <artifact>com.google.protobuf</artifact>
+                            <excludes>
+                                <exclude>META-INF/maven/com.google.protobuf/protobuf-java/*</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
                     <relocations>
                         <relocation>
                             <pattern>com.google.protobuf</pattern>
@@ -259,8 +269,34 @@
             </plugin>
         </plugins>
     </reporting>
-    
+
     <profiles>
+        <profile>
+            <id>1.5-plus</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/intel/analytics/bigdl/example/udfpredictor/*Stream*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>spark_2.0</id>
+        </profile>
+        <profile>
+            <id>spark_2.1</id>
+        </profile>
         <profile>
             <id>parallel-tests</id>
             <properties>
@@ -268,6 +304,20 @@
                 <tagsToInclude>com.intel.analytics.bigdl.tags.Parallel</tagsToInclude>
                 <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/intel/analytics/bigdl/example/udfpredictor/*Stream*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>serial-tests</id>
@@ -275,22 +325,40 @@
                 <runSpecsInParallel>false</runSpecsInParallel>
                 <tagsToExclude>com.intel.analytics.bigdl.tags.Parallel,com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
             </properties>
-        </profile>
-        <profile>
-            <id>serial-all</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <runSpecsInParallel>false</runSpecsInParallel>
-                <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
-            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/intel/analytics/bigdl/example/udfpredictor/*Stream*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
         <profile>
             <id>integration-test</id>
             <properties>
                 <tagsToExclude>com.intel.analytics.bigdl.tags.Serial,com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
             </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>net.alchim31.maven</groupId>
+                        <artifactId>scala-maven-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                            <excludes>
+                                <exclude>com/intel/analytics/bigdl/example/udfpredictor/*Stream*.scala</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
         </profile>
     </profiles>
 </project>

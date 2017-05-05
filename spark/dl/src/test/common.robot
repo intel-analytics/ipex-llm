@@ -5,12 +5,13 @@ Library         RequestsLibrary
 Library         String
 Library         OperatingSystem
 
+
 *** Keywords ***
 Operate Vertical
    [Documentation]               Post operation to configuring service. Operation allowed: deploy, stop, suspend, resume, clear, reset
    [Arguments]                   ${verticalId}       ${operation}                          ${expectStatus}
    Create Session                host                http://${ardaHost}:10021
-   Log To Console                Operate vertical    ${verticalId} with ${operation} ...
+   Log To Console                Operate vertical ${verticalId} with ${operation} ...
    ${resp}=                      Post Request        host                                  /vertical/${verticalId}/operation   data=${operation}
    ${statusCode}=                Convert To String   ${resp.status_code}
    Should Start With             ${statusCode}       20
@@ -31,20 +32,17 @@ Status Equal
    Should Be Equal As Strings       ${status}                                  ${realStatus}
 
 BigDL Integration Test
-   [Arguments]        ${verticalId}                                                      ${suite}         ${argLine}
-   Operate Vertical   ${verticalId}                                                      start            running
-   Run                mvn test -Dsuites=${suite} -DargLine=${argLine} -P integration-test > temp.log 2>&1
-   ${stdout}=         Get File                                                           temp.log
-   Log To Console     ${stdout}
-   Should Contain     ${stdout}                                                          BUILD SUCCESS
-   [Teardown]         Operate Vertical                                                   ${verticalId}    stop          deployed/stopped
-   
-BigDL Example Test
-   [Arguments]        ${verticalId}       ${suite}                                                         ${argLine}
-   Operate Vertical   ${verticalId}       start                                                            running
-   ${result}=         Run                 ${program}
-   Log To Console     ${result}           
-   Should Contain     ${result}           success
+   [Arguments]         ${run_keyword}      ${verticals}
+   @{verticalList}= 	 Split String 	     ${verticals}       separator=,
+   :FOR                ${vertical}         IN                 @{verticalList}  
+   \                   Operate Vertical    ${vertical}        start              running
+   \                   Run KeyWord         ${run_keyword}
+   [Teardown]          Stop Verticals      @{verticalList}      
+
+Stop Verticals
+   [Arguments]         @{verticalList}
+   :FOR                ${vertical}         IN                @{verticalList}
+   \                   Operate Vertical    ${vertical}       stop               deployed/stopped
 
 Check DataSource
    Create Session   webhdfs               http://${public_hdfs_host}:50070
@@ -56,8 +54,16 @@ Check DataSource
    Should Contain   ${resp.content}       DIRECTORY
 
 Prepare DataSource And Verticals
-   Data Source 
    Check DataSource
-   :FOR                ${vertical}           IN             @{verticals}
-   \                   Status Equal          ${vertical}    deployed/stopped
-tatus Equal ${public_hdfs_vid} running
+   Check Verticals
+
+Check Verticals
+   :FOR                   ${vertical}           IN             @{verticals}
+   \                      Status Equal          ${vertical}    deployed/stopped
+   Status Equal           ${public_hdfs_vid}    running
+
+Run Shell
+   [Arguments]       ${program}
+   ${rc}             ${output}=     Run and Return RC and Output    ${program}
+   Log To Console                   ${output}
+   Should Be Equal As Integers      ${rc}          0

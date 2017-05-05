@@ -141,6 +141,20 @@ class Step(JavaValue):
             JavaValue.__init__(self, None, bigdl_type, step_size, gamma)
 
 
+class MultiStep(JavaValue):
+    """
+    similar to step but it allows non uniform steps defined by stepSizes
+
+    :param step_size the series of step sizes used for lr decay
+    :param gamma coefficient of decay
+
+    >>> step = MultiStep([2, 5], 0.3)
+    creating: createMultiStep
+    """
+    def __init__(self, step_sizes, gamma, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, step_sizes, gamma)
+
+
 class Optimizer(JavaValue):
     """
     An optimizer is in general to minimize any function with respect 
@@ -175,7 +189,7 @@ class Optimizer(JavaValue):
                            training_rdd, criterion, optim_method,
                            state, end_trigger, batch_size)
 
-    def setvalidation(self, batch_size, val_rdd, trigger, val_method=["Top1Accuracy"]):
+    def set_validation(self, batch_size, val_rdd, trigger, val_method=["Top1Accuracy"]):
         """
         Configure validation settings. 
 
@@ -188,7 +202,15 @@ class Optimizer(JavaValue):
         callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
                       trigger, val_rdd, val_method)
 
-    def setcheckpoint(self, checkpoint_trigger,
+    def set_model(self, model):
+        """
+        Set model. 
+
+        :param model: new model
+        """
+        self.value.setModel(model.value)
+
+    def set_checkpoint(self, checkpoint_trigger,
                       checkpoint_path, isOverWrite=True):
         """
         Configure checkpoint settings. 
@@ -238,6 +260,14 @@ class Optimizer(JavaValue):
         callBigDlFunc(self.bigdl_type, "setValSummary", self.value,
                       summary)
         return self
+
+    def prepare_input(self):
+        """
+        Load input. Notebook user can call this method to seprate load data and
+        create optimizer time 
+        """
+        print("Loading input ...")
+        self.value.prepareInput()
 
 
 class TrainSummary(JavaValue, ):

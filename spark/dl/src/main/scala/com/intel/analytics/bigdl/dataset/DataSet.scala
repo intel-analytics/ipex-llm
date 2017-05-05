@@ -122,6 +122,7 @@ trait LocalDataSet[T] extends AbstractDataSet[T, Iterator[T]] {
 
 /**
  * Wrap an array as a DataSet.
+ * @param buffer
  * @tparam T
  */
 class LocalArrayDataSet[T] private[dataset](buffer: Array[T]) extends LocalDataSet[T] {
@@ -171,7 +172,6 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
       preDataSet.originRDD().mapPartitions(_ => Iterator
         .single(broadcast.value.cloneTransformer())
       ).setName("Cached Transformer").persist()
-    cachedTransformer.count()
 
     new DistributedDataSet[C] {
       override def size(): Long = preDataSet.size()
@@ -183,6 +183,16 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
           (data, tran) => tran.next()(data))
 
       override def originRDD(): RDD[_] = preDataSet.originRDD()
+
+      override def cache(): Unit = {
+        cachedTransformer.count()
+        isCached = true
+      }
+
+      override def unpersist(): Unit = {
+        cachedTransformer.unpersist()
+        isCached = false
+      }
     }
   }
 
@@ -192,14 +202,43 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
    * @return
    */
   def originRDD(): RDD[_]
+
+  /**
+   * Trigger the computation of this dataset and cache it in memory.
+   */
+  def cache(): Unit = {
+    if (originRDD() != null) {
+      originRDD().count()
+    }
+    isCached = true
+  }
+
+  /**
+   * Unpersist rdd.
+   */
+  def unpersist(): Unit = {
+    if (originRDD() != null) {
+      originRDD().unpersist()
+      isCached = false
+    }
+  }
+
+  /**
+   * Check if rdd is cached.
+   */
+  var isCached = false
 }
 
 /**
  * Wrap a RDD as a DataSet.
  * @param buffer
+ * @param isInOrder whether need keeping original data order, default false
+ * @param groupSize offset range, from 0 until buffer.length - groupSize + 1,
+ *                  only use when need keep original order
  * @tparam T
  */
-class CachedDistriDataSet[T: ClassTag] private[dataset] (buffer: RDD[Array[T]])
+class CachedDistriDataSet[T: ClassTag] private[dataset]
+(buffer: RDD[Array[T]], isInOrder: Boolean = false, groupSize: Int = 1)
   extends DistributedDataSet[T] {
 
   protected lazy val count: Long = buffer.mapPartitions(iter => {
@@ -210,16 +249,18 @@ class CachedDistriDataSet[T: ClassTag] private[dataset] (buffer: RDD[Array[T]])
   }).reduce(_ + _)
 
   protected var indexes: RDD[Array[Int]] = buffer.mapPartitions(iter => {
-    Iterator.single(RandomGenerator.shuffle((0 until iter.next().length).toArray))
-  }).setName("shuffled index").cache()
+    Iterator.single((0 until iter.next().length).toArray)
+  }).setName("original index").cache()
 
   override def data(train: Boolean): RDD[T] = {
     val _train = train
+    val _groupSize = if (isInOrder) Utils.getBatchSize(groupSize) else 1
     buffer.zipPartitions(indexes)((dataIter, indexIter) => {
       val indexes = indexIter.next()
+      val indexOffset = math.max(1, indexes.length - (_groupSize - 1))
       val localData = dataIter.next()
       val offset = if (_train) {
-        RandomGenerator.RNG.uniform(0, localData.length).toInt
+        RandomGenerator.RNG.uniform(0, indexOffset).toInt
       } else {
         0
       }
@@ -249,13 +290,27 @@ class CachedDistriDataSet[T: ClassTag] private[dataset] (buffer: RDD[Array[T]])
   override def size(): Long = count
 
   override def shuffle(): Unit = {
-    indexes.unpersist()
-    indexes = buffer.mapPartitions(iter => {
-      Iterator.single(RandomGenerator.shuffle((0 until iter.next().length).toArray))
-    }).setName("shuffled index").cache()
+    if (!isInOrder) {
+      indexes.unpersist()
+      indexes = buffer.mapPartitions(iter => {
+        Iterator.single(RandomGenerator.shuffle((0 until iter.next().length).toArray))
+      }).setName("shuffled index").cache()
+    }
   }
 
   override def originRDD(): RDD[_] = buffer
+
+  override def cache(): Unit = {
+    buffer.count()
+    indexes.count()
+    isCached = true
+  }
+
+  override def unpersist(): Unit = {
+    buffer.unpersist()
+    indexes.unpersist()
+    isCached = false
+  }
 }
 
 /**
@@ -307,6 +362,42 @@ object DataSet {
         }).setName("cached dataset")
         .cache()
     )
+  }
+
+  /**
+   * Wrap a RDD as a DataSet.
+   * @param data
+   * @tparam T
+   * @return
+   */
+  private[bigdl] def sortRDD[T: ClassTag](data: RDD[T], isInOrder: Boolean = false,
+                                          groupSize: Int = 1): DistributedDataSet[T] = {
+    val nodeNumber = Engine.nodeNumber()
+    new CachedDistriDataSet[T](
+      data.coalesce(nodeNumber, true)
+        .mapPartitions(iter => {
+          Iterator.single(sortData(iter.toArray, isInOrder))
+        }).setName("cached dataset")
+        .cache(),
+      isInOrder,
+      groupSize
+    )
+  }
+
+  /**
+   * sort data from small to big, only support Sample data type.
+   * @param data original data
+   * @param isInOrder whether to sort data by ascending order
+   * @return
+   */
+  def sortData[T: ClassTag](data: Array[T], isInOrder: Boolean): Array[T] = {
+    if (isInOrder) {
+      require(classTag[T] == classTag[Sample[_]],
+        "DataSet.sortData: Only support sort for sample input")
+      data.sortBy(a => a.asInstanceOf[Sample[_]].feature().nElement())
+    } else {
+      data
+    }
   }
 
   /**
@@ -441,6 +532,23 @@ object DataSet {
       rdd[ByteRecord](rawData)
     }
 
+    /**
+     * Extract hadoop sequence files from an HDFS path as RDD
+     * @param url sequence files folder path
+     * @param sc spark context
+     * @param classNum class number of data
+     * @param partitionNum partition number, default: Engine.nodeNumber() * Engine.coreNumber()
+     * @return
+     */
+    private[bigdl] def filesToRdd(url: String, sc: SparkContext,
+      classNum: Int, partitionNum: Option[Int] = None): RDD[ByteRecord] = {
+      val num = partitionNum.getOrElse(Engine.nodeNumber() * Engine.coreNumber())
+      val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text], num).map(image => {
+        ByteRecord(image._2.copyBytes(), readLabel(image._1).toFloat)
+      }).filter(_.label <= classNum)
+      rawData.coalesce(num, true)
+    }
+
     private[bigdl] def findFiles(path: Path): Array[LocalSeqFilePath] = {
       val directoryStream = Files.newDirectoryStream(path)
       import scala.collection.JavaConverters._
@@ -450,6 +558,7 @@ object DataSet {
   }
 
 }
+
 
 
 

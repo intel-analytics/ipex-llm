@@ -82,6 +82,58 @@ class Model(JavaValue):
             return "float32"
         else:
             return "float64"
+    @staticmethod
+    def check_input(input):
+        if type(input) is list:
+            if len(input) == 0:
+                raise Exception('Error when checking: empty input')
+            if not hasattr(input[0], 'shape'):
+                raise Exception(
+                    'Error when checking: expecting list of ndarray')
+            return [JTensor.from_ndarray(i) for i in input]
+        else:
+            if not hasattr(input, 'shape'):
+                raise Exception(
+                    'Error when checking: expecting list of ndarray')
+            return [JTensor.from_ndarray(input)]
+
+    @staticmethod
+    def convert_output(output):
+        if type(output) is JTensor:
+            return output.to_ndarray()
+        else:
+            return [x.to_ndarray() for x in output]
+
+    def forward(self, input):
+        """
+        NB: It's for debug only, please use optimizer.optimize() in production.
+        Takes an input object, and computes the corresponding output of the module
+        :param input: ndarray or list of ndarray
+        :return: ndarray or list of ndarray
+        """
+        output = callBigDlFunc(self.bigdl_type,
+                               "modelForward",
+                               self.value,
+                               self.check_input(input))
+        return self.convert_output(output)
+
+    def backward(self, input, grad_output):
+        """
+        NB: It's for debug only, please use optimizer.optimize() in production.
+        Performs a back-propagation step through the module, with respect to the given input. In
+        general this method makes the assumption forward(input) has been called before, with the same
+        input. This is necessary for optimization reasons. If you do not respect this rule, backward()
+        will compute incorrect gradients.
+        :param input: ndarray or list of ndarray
+        :param grad_output: ndarray or list of ndarray
+        :return: ndarray or list of ndarray
+        """
+        output = callBigDlFunc(self.bigdl_type,
+                               "modelBackward",
+                               self.value,
+                               self.check_input(input),
+                               self.check_input(grad_output))
+        return self.convert_output(output)
 
     def reset(self):
         """
@@ -103,10 +155,10 @@ class Model(JavaValue):
             return {
                 param_name: np.array(values[0],
                                      dtype=self.get_dtype()).reshape(
-                    values[1]) for param_name, values in params.iteritems()}
+                    values[1]) for param_name, values in params.items()}
 
         return {layer_name: to_ndarray(params) for layer_name, params in
-                name_to_params.iteritems()}
+                name_to_params.items()}
 
     def predict(self, data_rdd):
         """
@@ -219,6 +271,21 @@ class Model(JavaValue):
         jmodel = callBigDlFunc(bigdl_type, "loadCaffe", model, defPath, modelPath, match_all)
         return Model.of(jmodel)
 
+class Container(Model):
+    '''
+     [[Container]] is a sub-class of Model that declares methods defined in all containers. 
+     A container usually contain some other modules which can be added through the "add" method
+    '''
+
+    def __init__(self, jvalue, bigdl_type, *args):
+        super(Container, self).__init__(jvalue, bigdl_type, *args)
+
+    def add(self, model):
+        self.value.add(model.value)
+        return self
+
+
+
 
 class Linear(Model):
 
@@ -307,7 +374,7 @@ class LogSoftMax(Model):
         super(LogSoftMax, self).__init__(None, bigdl_type)
 
 
-class Sequential(Model):
+class Sequential(Container):
 
     '''
     Sequential provides a means to plug layers together
@@ -325,10 +392,6 @@ class Sequential(Model):
 
     def __init__(self, bigdl_type="float"):
         super(Sequential, self).__init__(None, bigdl_type)
-
-    def add(self, model):
-        self.value.add(model.value)
-        return self
 
 
 class SpatialConvolution(Model):
@@ -435,7 +498,7 @@ class Select(Model):
     def __init__(self, dim, index, bigdl_type="float"):
         super(Select, self).__init__(None, bigdl_type, dim, index)
 
-class Recurrent(Model):
+class Recurrent(Container):
     '''
     Recurrent module is a container of rnn cells
     Different types of rnn cells can be added using add() function
@@ -446,14 +509,6 @@ class Recurrent(Model):
 
     def __init__(self, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type)
-
-    '''
-    Add a recurrent kernel such as RnnCell, LSTM, GRU, etc.
-    to be a recurrent module
-    '''
-    def add(self, model):
-        self.value.add(model.value)
-        return self
 
 
 class LSTM(Model):
@@ -468,13 +523,19 @@ class LSTM(Model):
 
     :param inputSize: the size of each input vector
     :param hiddenSize: Hidden unit size in the LSTM
+    :param  p: is used for [[Dropout]] probability. For more details about
+            RNN dropouts, please refer to
+            [RnnDrop: A Novel Dropout for RNNs in ASR]
+            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+            (https://arxiv.org/pdf/1512.05287.pdf)
 
-    >>> lstm = LSTM(4, 3)
+    >>> lstm = LSTM(4, 3, 0.5)
     creating: createLSTM
     '''
 
-    def __init__(self, input_size, hidden_size, bigdl_type="float"):
-        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
+        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
 class LSTMPeephole(Model):
@@ -488,13 +549,19 @@ class LSTMPeephole(Model):
 
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in the LSTM
+    :param  p: is used for [[Dropout]] probability. For more details about
+            RNN dropouts, please refer to
+            [RnnDrop: A Novel Dropout for RNNs in ASR]
+            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+            (https://arxiv.org/pdf/1512.05287.pdf)
 
-    >>> lstm = LSTMPeephole(4, 3)
+    >>> lstm = LSTMPeephole(4, 3, 0.5)
     creating: createLSTMPeephole
     '''
 
-    def __init__(self, input_size, hidden_size, bigdl_type="float"):
-        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self, input_size, hidden_size, p=0.0, bigdl_type="float"):
+        super(LSTMPeephole, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
 class GRU(Model):
@@ -508,13 +575,19 @@ class GRU(Model):
 
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in GRU
+    :param  p: is used for [[Dropout]] probability. For more details about
+            RNN dropouts, please refer to
+            [RnnDrop: A Novel Dropout for RNNs in ASR]
+            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+            (https://arxiv.org/pdf/1512.05287.pdf)
 
-    >>> gru = GRU(4, 3)
+    >>> gru = GRU(4, 3, 0.5)
     creating: createGRU
     '''
 
-    def __init__(self,  input_size, hidden_size, bigdl_type="float"):
-        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size)
+    def __init__(self,  input_size, hidden_size, p=0.0, bigdl_type="float"):
+        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size, p)
 
 
 class RnnCell(Model):
@@ -555,7 +628,7 @@ class TimeDistributed(Model):
         super(TimeDistributed, self).__init__(None, bigdl_type, model)
 
 
-class Concat(Model):
+class Concat(Container):
 
     '''
     Concat concatenates the output of one layer of "parallel"
@@ -862,7 +935,7 @@ class Bilinear(Model):
                                        bias_res)
 
 
-class Bottle(Model):
+class Bottle(Container):
 
     '''
     Bottle allows varying dimensionality input to be forwarded through any module
@@ -1092,6 +1165,27 @@ class CosineDistance(Model):
                  bigdl_type="float"):
         super(CosineDistance, self).__init__(None, bigdl_type)
 
+class DiceCoefficientCriterion(Model):
+
+    '''
+    The Dice-Coefficient criterion
+    input: Tensor, target: Tensor
+
+    return:      2 * (input intersection target)
+            1 - ----------------------------------
+                    input union target
+
+    >>> diceCoefficientCriterion = DiceCoefficientCriterion(size_average = True, epsilon = 1.0)
+    creating: createDiceCoefficientCriterion
+    '''
+
+    def __init__(self,
+                 size_average,
+                 epsilon,
+                 bigdl_type="float"):
+        super(DiceCoefficientCriterion, self).__init__(None, bigdl_type,
+                                                       size_average,
+                                                       epsilon)
 
 class DotProduct(Model):
 
@@ -1436,7 +1530,7 @@ class LookupTable(Model):
     def __init__(self,
                  n_index,
                  n_output,
-                 padding_value=0,
+                 padding_value=0.0,
                  max_norm=DOUBLEMAX,
                  norm_type=2.0,
                  should_scale_grad_by_freq=False,
@@ -1489,7 +1583,7 @@ class MV(Model):
                                  trans)
 
 
-class MapTable(Model):
+class MapTable(Container):
 
     '''
     This class is a container for a single module which will be applied
@@ -1797,7 +1891,7 @@ class PairwiseDistance(Model):
                                                norm)
 
 
-class ParallelTable(Model):
+class ParallelTable(Container):
 
     '''
     It is a container module that applies the i-th member module to the i-th
@@ -1975,7 +2069,7 @@ class Scale(Model):
                                     size)
 
 
-class SelectTable(Model):
+class SelectTable(Container):
 
     '''
     Creates a module that takes a table as input and outputs the element at index `index`
@@ -2264,6 +2358,105 @@ class SpatialShareConvolution(Model):
                                                       init_method)
 
 
+class VolumetricConvolution(Model):
+
+    '''
+    Applies a 3D convolution over an input image composed of several input planes. The input tensor
+    in forward(input) is expected to be a 4D tensor (nInputPlane x time x height x width).
+    :param n_input_plane The number of expected input planes in the image given into forward()
+    :param n_output_plane The number of output planes the convolution layer will produce.
+    :param k_t The kernel size of the convolution in time
+    :param k_w The kernel width of the convolution
+    :param k_h The kernel height of the convolution
+    :param d_t The step of the convolution in the time dimension. Default is 1
+    :param d_w The step of the convolution in the width dimension. Default is 1
+    :param d_h The step of the convolution in the height dimension. Default is 1
+    :param pad_t Additional zeros added to the input plane data on both sides of time axis.
+    Default is 0. (kT-1)/2 is often used here.
+    :param pad_w The additional zeros added per width to the input planes.
+    :param pad_h The additional zeros added per height to the input planes.
+    :param with_bias whether with bias
+    :param init_method Init method, Default, Xavier, Bilinear.
+
+    >>> volumetricConvolution = VolumetricConvolution(6, 12, 5, 5, 5, 1, 1, 1)
+    creating: createVolumetricConvolution
+    '''
+
+    def __init__(self,
+                 n_input_plane,
+                 n_output_plane,
+                 k_t,
+                 k_w,
+                 k_h,
+                 d_t=1,
+                 d_w=1,
+                 d_h=1,
+                 pad_t=0,
+                 pad_w=0,
+                 pad_h=0,
+                 with_bias=True,
+                 init_method="default",
+                 bigdl_type="float"):
+        super(VolumetricConvolution, self).__init__(None, bigdl_type,
+                                                    n_input_plane,
+                                                    n_output_plane,
+                                                    k_t,
+                                                    k_w,
+                                                    k_h,
+                                                    d_t,
+                                                    d_w,
+                                                    d_h,
+                                                    pad_t,
+                                                    pad_w,
+                                                    pad_h,
+                                                    with_bias,
+                                                    init_method)
+
+
+class VolumetricMaxPooling(Model):
+
+    '''
+    Applies 3D max-pooling operation in kTxkWxkH regions by step size dTxdWxdH steps.
+    The number of output features is equal to the number of input planes / dT.
+    The input can optionally be padded with zeros. Padding should be smaller than
+    half of kernel size. That is, padT < kT/2, padW < kW/2 and padH < kH/2
+    :param k_t The kernel size
+    :param k_w The kernel width
+    :param k_h The kernel height
+    :param d_t The step in the time dimension
+    :param d_w The step in the width dimension
+    :param d_h The step in the height dimension
+    :param pad_t The padding in the time dimension
+    :param pad_w The padding in the width dimension
+    :param pad_h The padding in the height dimension
+
+    >>> volumetricMaxPooling = VolumetricMaxPooling(5, 5, 5, 1, 1, 1)
+    creating: createVolumetricMaxPooling
+    '''
+
+    def __init__(self,
+                 k_t,
+                 k_w,
+                 k_h,
+                 d_t,
+                 d_w,
+                 d_h,
+                 pad_t=0,
+                 pad_w=0,
+                 pad_h=0,
+                 bigdl_type="float"):
+        super(VolumetricMaxPooling, self).__init__(None, bigdl_type,
+                                                    k_t,
+                                                    k_w,
+                                                    k_h,
+                                                    d_t,
+                                                    d_w,
+                                                    d_h,
+                                                    pad_t,
+                                                    pad_w,
+                                                    pad_h)
+
+
 class SpatialZeroPadding(Model):
 
     '''
@@ -2483,20 +2676,26 @@ class Reshape(Model):
         super(Reshape, self).__init__(None, bigdl_type, size, batch_mode)
 
 
-class BiRecurrent(Model):
+class BiRecurrent(Container):
     '''
     Create a Bidirectional recurrent layer
 
+    :param merge: merge layer
+
+    >>> biRecurrent = BiRecurrent(CAddTable())
+    creating: createCAddTable
+    creating: createBiRecurrent
     >>> biRecurrent = BiRecurrent()
     creating: createBiRecurrent
     '''
 
     def __init__(self,
+                 merge=None,
                  bigdl_type="float"):
-        super(BiRecurrent, self).__init__(None, bigdl_type)
+        super(BiRecurrent, self).__init__(None, bigdl_type, merge)
 
 
-class ConcatTable(Model):
+class ConcatTable(Container):
     '''
     ConcateTable is a container module like Concate. Applies an input
     to each member module, input can be a tensor or a table.
@@ -2681,6 +2880,29 @@ class SpatialDivisiveNormalization(Model):
                                                            threshold,
                                                            thresval)
 
+class Graph(Model):
+    '''
+    A graph container. Each node can have multiple inputs. The output of the node should be a
+    tensor. The output tensor can be connected to multiple nodes. So the module in each node can
+    have a tensor or table input, and should have a tensor output.
+    
+    The graph container can have multiple inputs and multiple outputs. If there's one input, 
+    the input data fed to the graph module should be a tensor. If there're multiple inputs, 
+    the input data fed to the graph module should be a table, which is actually an sequence of 
+    tensor. The order of the input tensors should be same with the order of the input nodes. 
+    This is also applied to the gradient from the module in the back propagation.
+    
+    If there's one output, the module output is a tensor. If there're multiple outputs, the module
+    output is a table, which is actually an sequence of tensor. The order of the output tensors is
+    same with the order of the output modules. This is also applied to the gradient passed to the
+    module in the back propagation.
+    
+    All inputs should be able to connect to outputs through some paths in the graph.
+    It is allowed that some successors of the inputs node are not connect to outputs.
+    If so, these nodes will be excluded in the computation.
+    '''
+    def __init__(self):
+        raise Exception('Graph model is not supported in python yet')
 
 class SpatialSubtractiveNormalization(Model):
     '''

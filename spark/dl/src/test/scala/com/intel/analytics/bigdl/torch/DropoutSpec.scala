@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.Dropout
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -29,8 +30,37 @@ class DropoutSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
   }
 
-  // Todo: Test when input is contiguous
-  "Dropout module" should "converge to correct weight and bias" in {
+  "Dropout module with continuous input" should "converge to correct weight and bias" in {
+    val module = new Dropout[Double](0.7, false, true)
+    val input = Tensor[Double](100, 100)
+    val seed = 100
+
+    input.rand()
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      "module = nn.Dropout(0.7)\n" +
+      "output1 = module:forward(input)\n" +
+      "output2 = module:backward(input, input:clone():fill(1))"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input), Array("output1", "output2"))
+    val luaOutput1 = torchResult("output1").asInstanceOf[Tensor[Double]]
+    val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
+
+    val start = System.nanoTime()
+    RNG.setSeed(seed)
+    val output1 = module.forward(input)
+    val output2 = module.backward(input, input.clone().fill(1))
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+
+    luaOutput1 should be(output1)
+    luaOutput2 should be(output2)
+
+    println("Test case : Dropout, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "Dropout module with discontinuous input" should "converge to correct weight and bias" in {
     val module = new Dropout[Double](0.7, false, true)
     val input = Tensor[Double](100, 100).t
     val seed = 100
