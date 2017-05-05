@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -37,6 +38,8 @@ private[bigdl] class CellUnit[T : ClassTag] (hidSize: Int)
 
   override def accGradParameters(input: Table, gradOutput: Table,
                                  scale: Double = 1.0): Unit = {}
+
+  override var cell: AbstractModule[Activity, Activity, T] = _
 }
 
 @com.intel.analytics.bigdl.tags.Parallel

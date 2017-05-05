@@ -19,9 +19,9 @@ package com.intel.analytics.bigdl.models.lenet
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.DataSet
-import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
+import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToSample}
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.optim.{Top1Accuracy, Validator}
+import com.intel.analytics.bigdl.optim.Top1Accuracy
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -42,16 +42,19 @@ object Test {
       val sc = new SparkContext(conf)
       Engine.init
 
-      val validationData = Paths.get(param.folder, "/t10k-images-idx3-ubyte")
-      val validationLabel = Paths.get(param.folder, "/t10k-labels-idx1-ubyte")
+      val validationData = param.folder + "/t10k-images-idx3-ubyte"
+      val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
 
-      val validationSet = DataSet.array(load(validationData, validationLabel), sc) ->
-        BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) ->
-        GreyImgToBatch(param.batchSize)
+      val partitionNum = Engine.nodeNumber() * Engine.coreNumber()
+      val rddData = sc.parallelize(load(validationData, validationLabel), partitionNum)
+      val transformer =
+        BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToSample()
+      val evaluationSet = transformer(rddData)
 
       val model = Module.load[Float](param.model)
-      val validator = Validator(model, validationSet)
-      val result = validator.test(Array(new Top1Accuracy[Float]))
+      val result = model.evaluate(evaluationSet,
+        Array(new Top1Accuracy[Float]), Some(param.batchSize))
+
       result.foreach(r => println(s"${r._2} is ${r._1}"))
     }
   }

@@ -124,6 +124,61 @@ class SGDSpec extends FlatSpec with Matchers {
     }
   }
 
+  "multistep learning rate decay with uniform step" should "work similarly with step" in {
+    val config = T("learningRate" -> 0.1,
+      "learningRateSchedule" -> MultiStep(Array(5, 10), 0.1))
+    val optimMethod = new SGD[Double]
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+    }
+    val x = Tensor[Double](Storage(Array(10.0, 10.0)))
+    val state = T()
+    for(i <- 1 to 5) {
+      optimMethod.optimize(feval, x, config, state)
+      config[Double]("clr") should be(-0.1 +- 1e-9)
+    }
+
+    for(i <- 1 to 5) {
+      optimMethod.optimize(feval, x, config, state)
+      config[Double]("clr") should be(-0.01 +- 1e-9)
+    }
+
+    for(i <- 1 to 5) {
+      optimMethod.optimize(feval, x, config, state)
+      config[Double]("clr") should be(-0.001 +- 1e-9)
+    }
+  }
+
+  "multistep learning rate decay" should "generate correct learning rates" in {
+    val config = T("learningRate" -> 0.1,
+      "learningRateSchedule" -> MultiStep(Array(10, 15), 0.1))
+    val optimMethod = new SGD[Double]
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+    }
+    val x = Tensor[Double](Storage(Array(10.0, 10.0)))
+    val state = T()
+    for(i <- 1 to 5) {
+      optimMethod.optimize(feval, x, config, state)
+      config[Double]("clr") should be(-0.1 +- 1e-9)
+    }
+
+    for(i <- 1 to 5) {
+      optimMethod.optimize(feval, x, config, state)
+      config[Double]("clr") should be(-0.1 +- 1e-9)
+    }
+
+    for(i <- 1 to 5) {
+      optimMethod.optimize(feval, x, config, state)
+      config[Double]("clr") should be(-0.01 +- 1e-9)
+    }
+
+    for(i <- 1 to 5) {
+      optimMethod.optimize(feval, x, config, state)
+      config[Double]("clr") should be(-0.001 +- 1e-9)
+    }
+  }
+
   "ploy learning rate decay" should "generate correct learning rates" in {
     val config = T("learningRate" -> 0.1, "learningRateSchedule" -> Poly(3, 100))
     val optimMethod = new SGD[Double]

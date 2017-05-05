@@ -16,9 +16,12 @@
 
 package com.intel.analytics.bigdl.models.inception
 
+import com.intel.analytics.bigdl.dataset.{ByteRecord, DataSet}
+import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.optim.{Top1Accuracy, Top5Accuracy, Validator}
 import com.intel.analytics.bigdl.utils.Engine
+import org.apache.hadoop.io.Text
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
@@ -38,20 +41,23 @@ object Test {
       val conf = Engine.createSparkConf().setAppName("Test Inception on ImageNet")
       val sc = new SparkContext(conf)
       Engine.init
-      val valSet = ImageNet2012Val(
-        param.folder,
-        sc,
-        imageSize,
-        batchSize,
-        Engine.nodeNumber(),
-        Engine.coreNumber(),
-        1000,
-        50000
-      )
+
+      // We set partition number to be node*core, actually you can also assign other partitionNum
+      val partitionNum = Engine.nodeNumber() * Engine.coreNumber()
+      val rawData = sc.sequenceFile(param.folder, classOf[Text], classOf[Text], partitionNum)
+        .map(image => {
+          ByteRecord(image._2.copyBytes(), DataSet.SeqFileFolder.readLabel(image._1).toFloat)
+        }).coalesce(partitionNum, true)
+
+      val rddData = DataSet.SeqFileFolder.filesToRdd(param.folder, sc, 1000)
+      val transformer = BytesToBGRImg() -> BGRImgCropper(imageSize, imageSize, CropCenter) ->
+        HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) -> BGRImgToSample()
+      val evaluationSet = transformer(rddData)
 
       val model = Module.load[Float](param.model)
-      val validator = Validator(model, valSet)
-      val result = validator.test(Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
+      val result = model.evaluate(evaluationSet,
+        Array(new Top1Accuracy[Float], new Top5Accuracy[Float]), param.batchSize)
+
       result.foreach(r => println(s"${r._2} is ${r._1}"))
     }
   }

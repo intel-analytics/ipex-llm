@@ -20,6 +20,7 @@ import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, _}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
@@ -39,9 +40,9 @@ import scala.reflect.ClassTag
  */
 // TODO: remove D to be MiniBatch[T]
 abstract class Optimizer[T: ClassTag, D](
-    protected val model: Module[T],
+  protected var model: Module[T],
   protected val dataset: DataSet[D],
-    protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
+  protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
 {
   protected var state: Table = T()
   protected var optimMethod: OptimMethod[T] = new SGD[T]()
@@ -172,6 +173,16 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   /**
+   * Set a model to the optimizer
+   *
+   * @param newModel new model
+   */
+  def setModel(newModel: Module[T]): this.type = {
+    model = newModel
+    this
+  }
+
+  /**
    * Set a state(learning rate, epochs...) to the optimizer
    *
    * @param state the state to be saved
@@ -221,6 +232,8 @@ abstract class Optimizer[T: ClassTag, D](
     this.warmupIterationNum = warmupIteration
     this
   }
+
+  def prepareInput(): Unit = {}
 }
 
 object Optimizer {
@@ -269,8 +282,27 @@ object Optimizer {
       batchSize: Int
       )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
-      model = model,
+      _model = model,
       dataset = (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+  }
+
+  def apply[T: ClassTag](
+    model: Module[T],
+    sampleRDD: RDD[Sample[T]],
+    criterion: Criterion[T],
+    batchSize: Int,
+    isInOrder: Boolean,
+    featurePadding : Option[Tensor[T]] = None,
+    labelPadding : Option[T] = None,
+    fixedLength: Option[Int] = None
+  )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    new DistriOptimizer[T](
+      _model = model,
+      dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
+        SampleToBatch(batchSize, featurePadding, labelPadding, fixedLength))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
@@ -284,7 +316,7 @@ object Optimizer {
     dataset match {
       case d: DistributedDataSet[_] =>
         new DistriOptimizer[T](
-          model = model,
+          _model = model,
           dataset = d.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
           criterion = criterion
         ).asInstanceOf[Optimizer[T, D]]
