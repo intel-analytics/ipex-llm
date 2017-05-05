@@ -1405,11 +1405,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def setWeights(model: AbstractModule[Activity, Activity, T], weights: JList[JTensor]): Unit = {
     val weightTensor = weights.asScala.toArray.map(toTensor(_))
-    model.setWeights(weightTensor)
+    model.setWeightsBias(weightTensor)
   }
 
   def getWeights(model: AbstractModule[Activity, Activity, T]): JList[JTensor] = {
-    val weights = model.getWeights()
+    val weights = model.getWeightsBias()
     if (weights != null) {
       weights.map(toJTensor(_)).toList.asJava
     } else {
