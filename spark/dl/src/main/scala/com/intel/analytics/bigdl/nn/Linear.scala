@@ -57,8 +57,8 @@ class Linear[T: ClassTag](
   val bias: Tensor[T] = if (withBias) Tensor[T](outputSize) else null
   val addBuffer: Tensor[T] = Tensor[T]()
 
-  val gradWeight: Tensor[T] = Tensor[T](outputSize, inputSize)
-  val gradBias: Tensor[T] = if (withBias) Tensor[T](outputSize) else null
+  val gradWeight: Tensor[T] = Tensor[T]()
+  val gradBias: Tensor[T] = if (withBias) Tensor[T]() else null
   reset()
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {
@@ -115,6 +115,7 @@ class Linear[T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
       "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
+
     val nElement = gradInput.nElement()
     gradInput.resizeAs(input)
     if (nElement != gradInput.nElement()) {
@@ -133,6 +134,12 @@ class Linear[T: ClassTag](
     scale: Double = 1.0): Unit = {
     require(input.dim() == 1 || input.dim() == 2,
       "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
+
+    gradWeight.resize(outputSize, inputSize)
+    if (withBias) {
+      gradBias.resize(outputSize)
+    }
+
     val value = ev.fromType[Double](scale)
     if (input.dim() == 1) {
       gradWeight.addr(value, gradOutput, input)
@@ -159,8 +166,12 @@ class Linear[T: ClassTag](
   }
 
   override def zeroGradParameters(): Unit = {
+    gradWeight.resize(outputSize, inputSize)
     gradWeight.zero()
-    if (withBias) gradBias.zero()
+    if (withBias) {
+      gradBias.resize(outputSize)
+      gradBias.zero()
+    }
   }
 
   override def clearState() : this.type = {
