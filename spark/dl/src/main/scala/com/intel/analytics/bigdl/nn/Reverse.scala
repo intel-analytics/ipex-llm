@@ -59,9 +59,9 @@ class Reverse[T: ClassTag](dim: Int = 1, isInplace: Boolean = true)
   }
 
   /**
-   * reverse the src Tensor and write it to target w.r.t given dim.
+   * reverse the src Tensor given dim in-place.
    * E.g. src: (1,2,3; 4,5,6) and dim = 1
-   *      target: (4,5,6; 1,2,3)
+   *      => src: (4,5,6; 1,2,3)
    * @param src
    * @param dim
    * @return
