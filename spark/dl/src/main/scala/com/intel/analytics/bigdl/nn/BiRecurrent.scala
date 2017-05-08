@@ -47,7 +47,7 @@ class BiRecurrent[T : ClassTag] (
           .add(Reverse[T](timeDim))
           .add(revLayer)
           .add(Reverse[T](timeDim))))
-    if (merge == null) birnn.add(CAddTable[T]())
+    if (merge == null) birnn.add(CAddTable[T](true))
     else birnn.add(merge)
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]):
