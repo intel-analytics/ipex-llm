@@ -44,7 +44,7 @@ class SpatialConvolution[T: ClassTag](
   val padH: Int = 0, // The additional zeros added per height to the input planes.
   val nGroup: Int = 1, // Kernel group number
   val propagateBack: Boolean = true, // propagate gradient back
-  private var initMethod: InitializationMethod = Default
+  private var initMethod: InitializationMethod = RandomUniform
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
@@ -84,6 +84,7 @@ class SpatialConvolution[T: ClassTag](
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
+    reset()
     this
   }
 
@@ -91,19 +92,7 @@ class SpatialConvolution[T: ClassTag](
   protected var results: Array[Future[Unit]] = null
 
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        val stdv = 1.0 / math.sqrt(kernelW * kernelH * nInputPlane)
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-      case Xavier =>
-        val fanIn = nInputPlane * kernelH * kernelW
-        val fanOut = nOutputPlane * kernelH * kernelW
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-        bias.fill(ev.fromType(0))
-      case _ => throw new IllegalArgumentException()
-    }
+    initMethod.init(weight, Option(bias))
     zeroGradParameters()
   }
 
@@ -257,7 +246,7 @@ class SpatialConvolution[T: ClassTag](
       Engine.model.sync(results)
     }
 
-    return gradInput
+    gradInput
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
@@ -577,7 +566,7 @@ object SpatialConvolution {
       padH: Int = 0,
       nGroup: Int = 1,
       propagateBack: Boolean = true,
-      initMethod: InitializationMethod = Default
+      initMethod: InitializationMethod = RandomUniform
   )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
       strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)

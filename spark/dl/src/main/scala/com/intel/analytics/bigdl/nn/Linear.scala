@@ -18,10 +18,9 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
-import RandomGenerator._
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 
 /**
@@ -34,16 +33,14 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
  *
  * @param inputSize the size the each input sample
  * @param outputSize the size of the module output of each sample
- * @param initMethod two initialized methods are supported here, which are [[Default]]
- *                   and [[Xavier]], where [[Xavier]] set bias to zero here. For more
- *                   detailed information about `initMethod`, please refer to
+ * @param initMethod the method to initialize weight and bias, please refer to
  *                   [[InitializationMethod]]
  */
 @SerialVersionUID( 359656776803598943L)
 class Linear[T: ClassTag](
   inputSize: Int,
   outputSize: Int,
-  private var initMethod: InitializationMethod = Default,
+  private var initMethod: InitializationMethod = RandomUniform,
   withBias: Boolean = true
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
@@ -56,24 +53,12 @@ class Linear[T: ClassTag](
 
   def setInitMethod(initMethod: InitializationMethod): this.type = {
     this.initMethod = initMethod
+    reset()
     this
   }
 
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        val stdv = 1.0 / math.sqrt(weight.size(2))
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        if (withBias) bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-      case Xavier =>
-        val fanIn = weight.size(2)
-        val fanOut = weight.size(1)
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-        if (withBias) bias.fill(ev.fromType(0))
-      case _ =>
-        throw new IllegalArgumentException(s"Unsupported initMethod type ${initMethod}")
-    }
+    initMethod.init(weight, Option(bias))
     zeroGradParameters()
   }
 
@@ -210,7 +195,7 @@ object Linear {
   def apply[@specialized(Float, Double) T: ClassTag](
       inputSize: Int,
       outputSize: Int,
-      initMethod: InitializationMethod = Default,
+      initMethod: InitializationMethod = RandomUniform,
       withBias: Boolean = true
   )(implicit ev: TensorNumeric[T]) : Linear[T] = {
     new Linear[T](inputSize, outputSize, initMethod, withBias)
