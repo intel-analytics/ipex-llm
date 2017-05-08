@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -42,14 +43,27 @@ import scala.reflect.ClassTag
  *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
  *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
  *           (https://arxiv.org/pdf/1512.05287.pdf)
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param uRegularizer: instance [[Regularizer]]
+            (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+            applied to the bias.
  */
 @SerialVersionUID(6717988395573528459L)
 class GRU[T : ClassTag] (
   val inputSize: Int,
   val outputSize: Int,
-  val p: Double = 0)
+  val p: Double = 0,
+  val wRegularizer: Regularizer[T] = null,
+  val uRegularizer: Regularizer[T] = null,
+  val bRegularizer: Regularizer[T] = null
+)
   (implicit ev: TensorNumeric[T])
-  extends Cell[T](hiddensShape = Array(outputSize)) {
+  extends Cell[T](
+    hiddensShape = Array(outputSize),
+    regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
+  ) {
   var i2g: AbstractModule[_, _, T] = _
   var h2g: AbstractModule[_, _, T] = _
   var gates: AbstractModule[_, _, T] = _
@@ -62,8 +76,10 @@ class GRU[T : ClassTag] (
           .add(Dropout(p))
           .add(Dropout(p)))
         .add(ParallelTable()
-          .add(Linear(inputSize, outputSize))
-          .add(Linear(inputSize, outputSize)))
+          .add(Linear(inputSize, outputSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+          .add(Linear(inputSize, outputSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
         .add(JoinTable(1, 1))
 
       h2g = Sequential()
@@ -71,12 +87,16 @@ class GRU[T : ClassTag] (
           .add(Dropout(p))
           .add(Dropout(p)))
         .add(ParallelTable()
-          .add(Linear(outputSize, outputSize, withBias = false))
-          .add(Linear(outputSize, outputSize, withBias = false)))
+          .add(Linear(outputSize, outputSize, withBias = false,
+            wRegularizer = uRegularizer))
+          .add(Linear(outputSize, outputSize, withBias = false,
+            wRegularizer = uRegularizer)))
         .add(JoinTable(1, 1))
     } else {
-      i2g = Linear(inputSize, 2 * outputSize)
-      h2g = Linear(outputSize, 2 * outputSize, withBias = false)
+      i2g = Linear(inputSize, 2 * outputSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+      h2g = Linear(outputSize, 2 * outputSize, withBias = false,
+        wRegularizer = uRegularizer)
     }
 
     gates = Sequential()
@@ -111,10 +131,12 @@ class GRU[T : ClassTag] (
       .add(ParallelTable()
         .add(Sequential()
           .add(Dropout(p))
-          .add(Linear(inputSize, outputSize)))
+          .add(Linear(inputSize, outputSize, wRegularizer = wRegularizer,
+            bRegularizer = bRegularizer)))
         .add(Sequential()
           .add(Dropout(p))
-          .add(Linear(outputSize, outputSize, withBias = false))))
+          .add(Linear(outputSize, outputSize, withBias = false,
+            wRegularizer = uRegularizer))))
       .add(CAddTable())
       .add(Tanh())
 
@@ -164,8 +186,12 @@ object GRU {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
     outputSize: Int = 3,
-    p: Double = 0)
+    p: Double = 0,
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null
+  )
     (implicit ev: TensorNumeric[T]): GRU[T] = {
-    new GRU[T](inputSize, outputSize, p)
+    new GRU[T](inputSize, outputSize, p, wRegularizer, uRegularizer, bRegularizer)
   }
 }
