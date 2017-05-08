@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -34,9 +35,15 @@ import scala.reflect.ClassTag
  *                     For LSTM, it should be Array(hiddenSize, hiddenSize)
  *                     (because each time step a LSTM return two hiddens `h` and `c` in order,
  *                     which have the same size.)
+ *
+ *@param regularizers If the subclass has regularizers, it need to put the regularizers into
+ *                     an array and pass the array into the [[Cell]] constructor as an argument. See
+ *                     [[LSTM]] as a concrete example.
  */
-abstract class Cell[T : ClassTag](val hiddensShape: Array[Int])
-  (implicit ev: TensorNumeric[T])
+abstract class Cell[T : ClassTag](
+  val hiddensShape: Array[Int],
+  val regularizers: Array[Regularizer[T]] = null
+)(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
 
   /**
@@ -124,5 +131,28 @@ abstract class Cell[T : ClassTag](val hiddensShape: Array[Int])
 
   override def getParametersTable(): Table = {
     cell.getParametersTable()
+  }
+
+  override def reset(): Unit = {
+    cell.reset()
+  }
+
+  /**
+   * Use this method to set the whether the recurrent cell
+   * is regularized
+   *
+   * @param isRegularized whether to be regularized or not
+   */
+  def regluarized(
+    isRegularized: Boolean
+  ): Unit = {
+    if (null != regularizers) {
+      regularizers.foreach(x =>
+        if (null != x) {
+          if (isRegularized) x.enable()
+          else x.disable()
+        }
+      )
+    }
   }
 }
