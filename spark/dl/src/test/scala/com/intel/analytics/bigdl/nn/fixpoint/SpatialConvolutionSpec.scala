@@ -25,7 +25,8 @@ import com.intel.analytics.bigdl.nn.fixpoint.{SpatialConvolution => FPSpatialCon
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionSpec extends FlatSpec with Matchers {
-/*  "A SpatialConvolution layer" should "generate correct output" in {
+  /*
+  "A SpatialConvolution layer" should "generate correct output" in {
     val nInputPlane = 1
     val nOutputPlane = 1
     val kW = 2
@@ -63,7 +64,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     output(Array(1, 1, 2)) should be(63)
     output(Array(1, 2, 1)) should be(91)
     output(Array(1, 2, 2)) should be(105)
-  }*/
+  }
+  */
 
   val testCases = List(
     // TestCase(1, 1, 3, 3, 1, 1, 2, 2, 1, 1, 0, 0)

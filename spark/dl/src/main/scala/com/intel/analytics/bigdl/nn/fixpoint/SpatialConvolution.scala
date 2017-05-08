@@ -58,7 +58,9 @@ class SpatialConvolution[T: ClassTag](
 
   reset()
 
+  @transient
   var _init = false
+  @transient
   var desc = 0L
 
   override def setInitMethod(initMethod: InitializationMethod): this.type = {
