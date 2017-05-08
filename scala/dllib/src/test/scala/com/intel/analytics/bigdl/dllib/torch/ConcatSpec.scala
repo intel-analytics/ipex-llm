@@ -77,7 +77,9 @@ class ConcatSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     val start = System.nanoTime()
     val output = module.forward(input)
-    val gradInput = module.backward(input, gradOutput)
+//    val gradInput = module.backward(input, gradOutput)
+    val gradInput = module.updateGradInput(input, gradOutput)
+    module.accGradParameters(input, gradOutput)
     val end = System.nanoTime()
     val scalaTime = end - start
 
