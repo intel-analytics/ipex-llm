@@ -71,12 +71,12 @@ object Test {
         test.padHeight, test.padWidth, test.group)
 
       val input = Tensor[Float]().resize(Array(test.batchSize, test.inputChannel,
-        test.inputHeight, test.inputWidth)).rand()
+        test.inputHeight, test.inputWidth)).randn()
 
       val nnCosts = perfOne(nn, input)
-//      val fpCosts = perfOne(fp, input)
+      val fpCosts = perfOne(fp, input)
 
-//      println(s"$nnCosts, $fpCosts")
+      println(s"$nnCosts, $fpCosts")
 
       fp.release()
     }
