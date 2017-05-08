@@ -17,18 +17,23 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseTensorConv, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
-/*
+/**
  * This class is a generalization of SpatialConvolution.
  * It uses a generic connection table between input and output features.
  * The SpatialConvolution is equivalent to using a full connection table.
+ *
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
  */
-
 @SerialVersionUID(5288662921102331388L)
 class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val connTable: Tensor[T],
@@ -37,8 +42,9 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
   val dW: Int = 1, // The step of the convolution in the width dimension.
   val dH: Int = 1, // The step of the convolution in the height dimension
   val padW: Int = 0, // The additional zeros added per width to the input planes.
-  val padH: Int = 0 // The additional zeros added per height to the input planes.
-
+  val padH: Int = 0, // The additional zeros added per height to the input planes.
+  val wRegularizer: Regularizer[T] = null,
+  val bRegularizer: Regularizer[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val nInputPlane = ev.toType[Int](connTable.select(2, 1).max())
   val nOutputPlane = ev.toType[Int](connTable.select(2, 2).max())
@@ -264,6 +270,13 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
     if (forceBatch) {
       gradOutput.squeeze(1)
     }
+
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight)
+    }
+    if (null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias)
+    }
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
@@ -289,14 +302,18 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
 object SpatialConvolutionMap {
 
   def apply[@specialized(Float, Double) T: ClassTag](
-      connTable: Tensor[T],
-      kW: Int,
-      kH: Int,
-      dW: Int = 1,
-      dH: Int = 1,
-      padW: Int = 0,
-      padH: Int = 0)(implicit ev: TensorNumeric[T]) : SpatialConvolutionMap[T] = {
-    new SpatialConvolutionMap[T](connTable, kW, kH, dW, dH, padW, padH)
+    connTable: Tensor[T],
+    kW: Int,
+    kH: Int,
+    dW: Int = 1,
+    dH: Int = 1,
+    padW: Int = 0,
+    padH: Int = 0,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null
+  )(implicit ev: TensorNumeric[T]) : SpatialConvolutionMap[T] = {
+    new SpatialConvolutionMap[T](connTable, kW, kH, dW, dH, padW, padH,
+      wRegularizer, bRegularizer)
   }
 
   def full[@specialized(Float, Double) T: ClassTag](nin: Int, nout: Int)(

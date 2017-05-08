@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -38,15 +39,27 @@ import scala.reflect.ClassTag
  *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
  *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
  *           (https://arxiv.org/pdf/1512.05287.pdf)
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param uRegularizer: instance [[Regularizer]]
+            (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+            applied to the bias.
  */
 @SerialVersionUID(- 7566757838561436619L)
 class LSTMPeephole[T : ClassTag] (
   val inputSize: Int,
   val hiddenSize: Int,
-  val p: Double = 0.0
+  val p: Double = 0.0,
+  val wRegularizer: Regularizer[T] = null,
+  val uRegularizer: Regularizer[T] = null,
+  val bRegularizer: Regularizer[T] = null
 )
   (implicit ev: TensorNumeric[T])
-  extends Cell[T](hiddensShape = Array(hiddenSize, hiddenSize)) {
+  extends Cell[T](
+    hiddensShape = Array(hiddenSize, hiddenSize),
+    regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
+  ) {
   var inputGate: Sequential[T] = _
   var forgetGate: Sequential[T] = _
   var outputGate: Sequential[T] = _
@@ -59,10 +72,12 @@ class LSTMPeephole[T : ClassTag] (
 
     val i2g = Sequential()
       .add(Dropout(p))
-      .add(Linear(inputSize, hiddenSize))
+      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer))
     val h2g = Sequential()
       .add(Dropout(p))
-      .add(Linear(hiddenSize, hiddenSize, withBias = false))
+      .add(Linear(hiddenSize, hiddenSize,
+        withBias = false, wRegularizer = uRegularizer))
 
     gate
       .add(ParallelTable()
@@ -94,10 +109,12 @@ class LSTMPeephole[T : ClassTag] (
 
     val i2h = Sequential()
       .add(Dropout(p))
-      .add(Linear(inputSize, hiddenSize))
+      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer))
     val h2h = Sequential()
       .add(Dropout(p))
-      .add(Linear(hiddenSize, hiddenSize, withBias = false))
+      .add(Linear(hiddenSize, hiddenSize, withBias = false,
+        wRegularizer = uRegularizer))
 
     hidden
       .add(ParallelTable()
@@ -193,10 +210,13 @@ object LSTMPeephole {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
     hiddenSize: Int = 3,
-    p: Double = 0.0
+    p: Double = 0.0,
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null
   )
     (implicit ev: TensorNumeric[T]): LSTMPeephole[T] = {
-    new LSTMPeephole[T](inputSize, hiddenSize, p)
+    new LSTMPeephole[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
   }
 }
 
