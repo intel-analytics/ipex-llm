@@ -47,6 +47,7 @@ abstract class TensorModule[T: ClassTag]
  * @tparam B Output data type
  * @tparam T Numeric type. Only support float/double now
  */
+@SerialVersionUID(-895285145408477749L)
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 @specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
