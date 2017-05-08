@@ -35,10 +35,6 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
   var nDimension: Int)(implicit ev: TensorNumeric[T])
   extends Tensor[T] {
 
-  // pre-load MKL library. If we do not do it here,
-  // libjmkl.so will be loaded when one of the methods of in MKL is called.
-  MKL.isMKLLoaded
-
   override def storage(): Storage[T] = _storage
 
   override def storageOffset(): Int = _storageOffset + 1
