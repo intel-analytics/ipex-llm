@@ -186,6 +186,57 @@ class Model(JavaValue):
                              self.value,
                              val_rdd, batch_size, val_methods)
 
+    def set_weights(self, weights):
+        """
+        Set weights for this layer
+        :param weights: a list of numpy arrays which represent weight and bias
+        :return:
+        >>> linear = Linear(3,2)
+        creating: createLinear
+        >>> linear.set_weights([np.array([[1,2,3],[4,5,6]]), np.array([7,8])])
+        >>> weights = linear.get_weights()
+        >>> weights[0].shape == (2,3)
+        True
+        >>> weights[0][0]
+        array([ 1.,  2.,  3.], dtype=float32)
+        >>> weights[1]
+        array([ 7.,  8.], dtype=float32)
+        >>> relu = ReLU()
+        creating: createReLU
+        >>> from py4j.protocol import Py4JJavaError
+        >>> try:
+        ...     relu.set_weights([np.array([[1,2,3],[4,5,6]]), np.array([7,8])])
+        ... except Py4JJavaError as err:
+        ...     print(err.java_exception)
+        ...
+        java.lang.IllegalArgumentException: requirement failed: this layer does not have weight/bias
+        >>> relu.get_weights()
+        The layer does not have weight/bias
+        >>> add = Add(2)
+        creating: createAdd
+        >>> try:
+        ...     add.set_weights([np.array([7,8]), np.array([1,2])])
+        ... except Py4JJavaError as err:
+        ...     print(err.java_exception)
+        ...
+        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is not consistant with number of weight/bias of this layer
+        """
+        tensors = [JTensor.from_ndarray(param, self.bigdl_type) for param in weights]
+        callBigDlFunc(self.bigdl_type, "setWeights", self.value, tensors)
+
+    def get_weights(self):
+        """
+        Get weights for this layer
+        :return: list of numpy arrays which represent weight and bias
+        """
+        tensorWeights = callBigDlFunc(self.bigdl_type,
+                              "getWeights", self.value)
+        if tensorWeights is not None:
+            return [tensor.to_ndarray() for tensor in tensorWeights]
+        else:
+            print("The layer does not have weight/bias")
+            return None
+
     @staticmethod
     def load(path, bigdl_type="float"):
         """

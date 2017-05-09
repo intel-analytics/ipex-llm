@@ -1402,6 +1402,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Engine.init
   }
 
+
+  def setWeights(model: AbstractModule[Activity, Activity, T], weights: JList[JTensor]): Unit = {
+    val weightTensor = weights.asScala.toArray.map(toTensor(_))
+    model.setWeightsBias(weightTensor)
+  }
+
+  def getWeights(model: AbstractModule[Activity, Activity, T]): JList[JTensor] = {
+    val weights = model.getWeightsBias()
+    if (weights != null) {
+      weights.map(toJTensor(_)).toList.asJava
+    } else {
+      null
+    }
+  }
+
   def uniform(a: Double, b: Double, size: JList[Int]): JTensor = {
     val result = Tensor[T]().resize(size.asScala.toArray)
     result.apply1(i => ev.fromType(RandomGenerator.RNG.uniform(a, b)))
