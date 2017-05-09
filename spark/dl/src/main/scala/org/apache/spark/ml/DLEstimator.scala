@@ -14,102 +14,99 @@
  * limitations under the License.
  */
 package org.apache.spark.ml
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample}
-import com.intel.analytics.bigdl.example.imageclassification.MlUtils._
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.optim.Optimizer
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import org.apache.spark.ml.param.shared.HasInputCols
 import org.apache.spark.ml.param.{Param, ParamMap, Params}
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.{DataFrame}
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.catalyst.expressions.GenericRowWithSchema
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
  * A wrapper of Optimizer to support fit() in ML Pipelines as an Estimator
- *
- * @param module model to be optimized
- * @param criterion criterion to be used
- * @param batchShape batch shape to be used
  */
-class DLEstimator[T : ClassTag]
-  (module : Module[T], criterion : Criterion[T], batchShape : Array[Int])
-  (override val uid: String = "DLEstimator")(implicit ev: TensorNumeric[T])
-  extends MLEstimator{
+class DLEstimator[@specialized(Float, Double) T: ClassTag]
+(override val uid: String = "DLEstimator")(implicit ev: TensorNumeric[T])
+  extends MLEstimator with HasInputCols with DLDataParams[T]{
 
-  private def validateParameters(): Unit = {
+  def setInputCols(inputColName: Array[String]): this.type = set(inputCols, inputColName)
 
-    require(null != module,
-      "DLEstimator: module must not be null")
-
-    require(null != criterion,
+  def validateParameters(): Unit = {
+    val params = this.extractParamMap()
+    require(null != params.getOrElse(modelTrain, null),
+      "DLEstimator: model for optimization must not be null")
+    require(null != params.getOrElse(batchShape, null),
+      "DLEstimator: batchShape for optimization must not be null")
+    require(null != params.getOrElse(inputCols, null),
+      "DLEstimator: inputCols must not be null")
+    require(null != params.getOrElse(criterion, null),
       "DLEstimator: criterion must not be null")
-
   }
 
   override def process(dataFrame: DataFrame): MlTransformer = {
 
-    this.validateParameters()
+    validateParameters()
 
-    val rdd : RDD[MiniBatch[T]] = toMinibatch(dataFrame)
+    val batches = toMiniBatch(dataFrame)
 
-    val dataset = DataSet.rdd(rdd)
+    val dataset = DataSet.rdd(batches)
 
-    val optimizer = Optimizer(module, dataset, criterion)
+    val optimizer = Optimizer($(modelTrain), dataset, $(criterion))
 
-    val estimatedModule = optimizer.optimize()
+    var optimizedModule = $(modelTrain)
+
+    optimizedModule = optimizer.optimize()
 
     var classifier = new DLClassifier[T]()
       .setInputCol("features")
       .setOutputCol("predict")
 
     val paramsTrans = ParamMap(
-      classifier.modelTrain -> estimatedModule,
-      classifier.batchShape -> batchShape)
+      classifier.modelTrain -> optimizedModule,
+      classifier.batchShape -> ${batchShape})
 
     classifier = classifier.copy(paramsTrans)
 
     classifier
   }
 
-  private def toMinibatch(df : DataFrame) : RDD[MiniBatch[T]] = {
-
-    val sampleDF = df.select("minibatch")
-
-    val dfRows : RDD[Row] = sampleDF.rdd
-
-    val minibatchRDD : RDD[MiniBatch[T]] = dfRows.map(row => {
-      val columnData = row.get(0).asInstanceOf[GenericRowWithSchema]
-
-      val featureData = columnData.get(0).asInstanceOf[mutable.WrappedArray[T]].toArray
-      val featureSize = columnData.get(1).asInstanceOf[mutable.WrappedArray[Int]].toArray
-
-      val featureStorage = Storage(featureData)
-
-      val labelData = columnData.get(2).asInstanceOf[mutable.WrappedArray[T]].toArray
-      val labelSize = columnData.get(3).asInstanceOf[mutable.WrappedArray[Int]].toArray
-
-      val labelStorage = Storage(labelData)
-
-      val featureTensor = Tensor(featureStorage, 1, featureSize)
-
-      val labelTensor = Tensor(labelStorage, 1, labelSize)
-
-      val miniBatch : MiniBatch[T] = MiniBatch(featureTensor, labelTensor)
-      miniBatch
-
+  private def toMiniBatch(dataFrame: DataFrame) : RDD[MiniBatch[T]] = {
+    val inputs = $(inputCols)
+    require(inputs.length == 4, "Input columns size " +
+      s" ${inputs.length} != 4 ,which stands for feature data,feature size," +
+      s" label data and lable size respectively")
+    val data = dataFrame.select(inputs.map(input => dataFrame(input)) : _*).rdd
+    val batchs = data.map(row => {
+      val featureData = row.getAs[mutable.WrappedArray[T]](0).toArray
+      val featureSize = row.getAs[mutable.WrappedArray[Int]](1).toArray
+      val labelData = row.getAs[mutable.WrappedArray[T]](2).toArray
+      val labelSize = row.getAs[mutable.WrappedArray[Int]](3).toArray
+      MiniBatch[T](Tensor(featureData, featureSize), Tensor(labelData, labelSize))
     })
-    minibatchRDD
+    batchs
+  }
+
+  override def copy(extra: ParamMap): DLEstimator[T] = {
+    copyValues(new DLEstimator(uid), extra)
   }
 }
 
-case class DLEstimatorData[T](data : DLEstimatorMinibatchData[T])
+trait DLDataParams[@specialized(Float, Double) T] extends Params {
 
-case class DLEstimatorMinibatchData[T](featureData : Array[T], featureSize : Array[Int],
-                            labelData : Array[T], labelSize : Array[Int])
+  final val modelTrain = new Param[Module[T]](this, "module factory", "network model")
+
+  final val criterion = new Param[Criterion[T]](this, "criterion factory", "criterion for optimize")
+
+  final val batchShape = new Param[Array[Int]](this, "batch size", "batch size for input")
+
+  final def getModel: Module[T] = $(modelTrain)
+
+}
 
 
 
