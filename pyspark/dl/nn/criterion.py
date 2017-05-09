@@ -83,8 +83,9 @@ class MSECriterion(Criterion):
     '''
     Creates a criterion that measures the mean squared error between n elements
     in the input x and output y:
+    ```
     loss(x, y) = 1/n \sum |x_i - y_i|^2
-
+    ```
     If x and y are d-dimensional Tensors with a total of n elements,
     the sum operation still operates over all the elements, and divides by n.
     The two Tensors must have the same number of elements (but their sizes might be different).
@@ -329,9 +330,11 @@ class SmoothL1Criterion(Criterion):
     It uses a squared term if the absolute element-wise error falls below 1.
     It is less sensitive to outliers than the MSECriterion and in some
     cases prevents exploding gradients (e.g. see "Fast R-CNN" paper by Ross Girshick).
+    ```
                           | 0.5 * (x_i - y_i)^2^, if |x_i - y_i| < 1
     loss(x, y) = 1/n \sum |
                           | |x_i - y_i| - 0.5,   otherwise
+    ```
     If x and y are d-dimensional Tensors with a total of n elements,
     the sum operation still operates over all the elements, and divides by n.
     The division by n can be avoided if one sets the internal variable sizeAverage to false
@@ -356,13 +359,13 @@ class SmoothL1CriterionWithWeights(Criterion):
     It uses a squared term if the absolute element-wise error falls below 1.
     It is less sensitive to outliers than the MSECriterion and in some cases
     prevents exploding gradients (e.g. see "Fast R-CNN" paper by Ross Girshick).
-
+```
    d = (x - y) * w_in
    loss(x, y, w_in, w_out)
               | 0.5 * (sigma * d_i)^2 * w_out          if |d_i| < 1 / sigma / sigma
    = 1/n \sum |
               | (|d_i| - 0.5 / sigma / sigma) * w_out   otherwise
-
+```
     >>> smoothL1CriterionWithWeights = SmoothL1CriterionWithWeights(1e-5, 1)
     creating: createSmoothL1CriterionWithWeights
     '''
@@ -473,7 +476,9 @@ class MultiLabelSoftMarginCriterion(Criterion):
     '''
     A MultiLabel multiclass criterion based on sigmoid:
     the loss is:
+```
      l(x,y) = - sum_i y[i] * log(p[i]) + (1 - y[i]) * log (1 - p[i])
+```
     where p[i] = exp(x[i]) / (1 + exp(x[i]))
     and with weights:
      l(x,y) = - sum_i weights[i] (y[i] * log(p[i]) + (1 - y[i]) * log (1 - p[i]))
@@ -531,9 +536,9 @@ class SoftMarginCriterion(Criterion):
     Creates a criterion that optimizes a two-class classification logistic loss
     between input x (a Tensor of dimension 1) and output y (which is a tensor
     containing either 1s or -1s).
-
+```
            loss(x, y) = sum_i (log(1 + exp(-y[i]*x[i]))) / x:nElement()
-
+```
     :param sizeaverage The normalization by the number of elements in the input
                        can be disabled by setting
 
