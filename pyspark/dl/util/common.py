@@ -198,7 +198,7 @@ def get_bigdl_conf():
         if bigdl_python_wrapper in p:
             import zipfile
             with zipfile.ZipFile(p, 'r') as zip_conf:
-                return load_conf(zip_conf.read(bigdl_conf_file))
+                return load_conf(str(zip_conf.read(bigdl_conf_file)))
     raise Exception("Cannot find spark-bigdl.conf.Pls add it to PYTHONPATH.")
 
 
@@ -286,7 +286,7 @@ def _py2java(sc, obj):
                                       sc._gateway._gateway_client)
     elif isinstance(obj, dict):
         result = {}
-        for (key, value) in obj.iteritems():
+        for (key, value) in obj.items():
             result[key] = _py2java(sc, value) if isinstance(value, JavaValue) else value  # noqa
         obj = result
 
