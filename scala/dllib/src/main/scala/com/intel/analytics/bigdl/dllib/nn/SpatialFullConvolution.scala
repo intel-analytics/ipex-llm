@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -59,6 +60,10 @@ import scala.reflect.ClassTag
  * @param nGroup Kernel group number.
  * @param noBias If bias is needed.
  * @param initMethod Init method, Default, Xavier, Bilinear.
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
  */
 
 @SerialVersionUID(- 3110412775551642284L)
@@ -75,7 +80,9 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   var adjH: Int = 0,
   val nGroup: Int = 1,
   val noBias: Boolean = false,
-  private var initMethod: InitializationMethod = Default
+  private var initMethod: InitializationMethod = Default,
+  val wRegularizer: Regularizer[T] = null,
+  val bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]) extends AbstractModule[A, Tensor[T], T]{
 
   require(adjW <= dW - 1 && adjH <= dH - 1,
@@ -665,6 +672,12 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
       inputTensor.resize(nInputPlane, inputHeight, inputWidth)
     }
 
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight)
+    }
+    if (null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -782,9 +795,12 @@ object SpatialFullConvolution {
       adjH: Int = 0,
       nGroup: Int = 1,
       noBias: Boolean = false,
-      initMethod: InitializationMethod = Default
+      initMethod: InitializationMethod = Default,
+      wRegularizer: Regularizer[T] = null,
+      bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]) : SpatialFullConvolution[A, T] = {
     new SpatialFullConvolution[A, T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH, adjW, adjH, nGroup, noBias, initMethod)
+      padW, padH, adjW, adjH, nGroup, noBias, initMethod,
+      wRegularizer, bRegularizer)
   }
 }
