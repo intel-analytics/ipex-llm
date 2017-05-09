@@ -24,7 +24,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.IOUtils
 
 object File {
-  private[bigdl]  val hdfsPrefix: String = "hdfs:"
+  private[bigdl] val hdfsPrefix: String = "hdfs:"
 
   /**
    * Load torch object from a torch binary file
@@ -66,8 +66,11 @@ object File {
       if (Files.exists(Paths.get(fileName)) && !isOverwrite) {
         throw new RuntimeException("file exists!")
       }
-      val objFile = new ObjectOutputStream(new FileOutputStream(fileName))
+      val os = new FileOutputStream(fileName)
+      val objFile = new ObjectOutputStream(os)
       objFile.writeObject(obj)
+      objFile.close()
+      os.close()
     }
   }
 
@@ -93,7 +96,12 @@ object File {
     val byteArrayOut = new ByteArrayOutputStream()
     val objFile = new ObjectOutputStream(byteArrayOut)
     objFile.writeObject(obj)
-    IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
+    val byteArrayIn = new ByteArrayInputStream(byteArrayOut.toByteArray)
+    IOUtils.copyBytes(byteArrayIn, out, 1024, true)
+    objFile.close()
+    byteArrayIn.close()
+    byteArrayOut.close()
+    out.close()
   }
 
   /**
@@ -103,8 +111,12 @@ object File {
    */
   def loadFromHdfs[T](fileName: String): T = {
     val byteArrayOut = readHdfsByte(fileName)
-    val objFile = new ObjectInputStream(new ByteArrayInputStream(byteArrayOut))
-    objFile.readObject().asInstanceOf[T]
+    val is = new ByteArrayInputStream(byteArrayOut)
+    val objFile = new ObjectInputStream(is)
+    val result = objFile.readObject().asInstanceOf[T]
+    objFile.close()
+    is.close()
+    result
   }
 
   /**
@@ -116,8 +128,12 @@ object File {
     val res = if (fileName.startsWith(File.hdfsPrefix)) {
       loadFromHdfs[T](fileName)
     } else {
-      val objFile = new ObjectInputStream(new FileInputStream(fileName))
-      objFile.readObject().asInstanceOf[T]
+      val is = new FileInputStream(fileName)
+      val objFile = new ObjectInputStream(is)
+      val result = objFile.readObject().asInstanceOf[T]
+      objFile.close()
+      is.close()
+      result
     }
     res.asInstanceOf[T]
   }
@@ -133,6 +149,8 @@ object File {
     val in = fs.open(src)
     val byteArrayOut = new ByteArrayOutputStream()
     IOUtils.copyBytes(in, byteArrayOut, 1024, true)
+    byteArrayOut.close()
+    in.close()
     byteArrayOut.toByteArray
   }
 }
