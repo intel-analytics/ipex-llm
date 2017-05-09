@@ -272,7 +272,7 @@
 
     <profiles>
         <profile>
-            <id>1.5-plus</id>
+            <id>spark_1.6</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
