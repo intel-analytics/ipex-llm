@@ -22,9 +22,145 @@ import com.intel.analytics.bigdl._
 
 import scala.math._
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.optim.{L1Regularizer, L2Regularizer, SGD}
+import com.intel.analytics.bigdl.utils.T
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends FlatSpec with Matchers {
+  "Linear L2 regularizer" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+
+    val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.1, "momentum" -> 0.002)
+    val state2 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.0, "momentum" -> 0.002)
+
+    val inputN = 5
+    val outputN = 2
+    val batchSize = 5
+    val criterion = new MSECriterion[Double]
+
+    val input = Tensor[Double](batchSize, inputN).rand()
+    val labels = Tensor[Double](batchSize, outputN).rand()
+
+    val model1 = Sequential()
+      .add(Linear(inputN, outputN))
+      .add(Sigmoid())
+    val (weights1, grad1) = model1.getParameters()
+
+    val model2 = Sequential()
+      .add(Linear(inputN, outputN,
+        wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1)))
+      .add(Sigmoid())
+    val (weights2, grad2) = model2.getParameters()
+    weights2.copy(weights1.clone())
+    grad2.copy(grad1.clone())
+
+
+    val sgd = new SGD[Double]
+
+    def feval1(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model1.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model1.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model1.backward(input, gradInput)
+      (_loss, grad1)
+    }
+
+    def feval2(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model2.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model2.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model2.backward(input, gradInput)
+      (_loss, grad2)
+    }
+
+    var loss1: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss1 = sgd.optimize(feval1, weights1, state1)._2
+      println(s"${i}-th loss = ${loss1(0)}")
+    }
+
+    var loss2: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss2 = sgd.optimize(feval2, weights2, state2)._2
+      println(s"${i}-th loss = ${loss2(0)}")
+    }
+
+
+    weights1 should be(weights2)
+    loss1 should be(loss2)
+  }
+
+  "Linear without bias L2 regularizer" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+
+    val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.1, "momentum" -> 0.002)
+    val state2 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.0, "momentum" -> 0.002)
+
+    val inputN = 5
+    val outputN = 2
+    val batchSize = 5
+    val criterion = new MSECriterion[Double]
+
+    val input = Tensor[Double](batchSize, inputN).rand()
+    val labels = Tensor[Double](batchSize, outputN).rand()
+
+    val model1 = Sequential()
+      .add(Linear(inputN, outputN, withBias = false))
+      .add(Sigmoid())
+    val (weights1, grad1) = model1.getParameters()
+
+    val model2 = Sequential()
+      .add(Linear(inputN, outputN, withBias = false,
+        wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1)))
+      .add(Sigmoid())
+    val (weights2, grad2) = model2.getParameters()
+    weights2.copy(weights1.clone())
+    grad2.copy(grad1.clone())
+
+
+    val sgd = new SGD[Double]
+
+    def feval1(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model1.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model1.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model1.backward(input, gradInput)
+      (_loss, grad1)
+    }
+
+    def feval2(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model2.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model2.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model2.backward(input, gradInput)
+      (_loss, grad2)
+    }
+
+    var loss1: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss1 = sgd.optimize(feval1, weights1, state1)._2
+      println(s"${i}-th loss = ${loss1(0)}")
+    }
+
+    var loss2: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss2 = sgd.optimize(feval2, weights2, state2)._2
+      println(s"${i}-th loss = ${loss2(0)}")
+    }
+
+
+    weights1 should be(weights2)
+    loss1 should be(loss2)
+  }
+
   "Linear module" should "converge to correct weight and bias" in {
     val inputN = 5
     val outputN = 2

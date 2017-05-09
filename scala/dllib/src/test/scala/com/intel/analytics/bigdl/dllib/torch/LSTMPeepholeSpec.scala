@@ -380,6 +380,7 @@ class LSTMPeepholeSpec  extends FlatSpec with BeforeAndAfter with Matchers {
          |gradOutput=criterion.gradInput
          |gradInput = model.gradInput
     """.stripMargin
+    scala.Seq
 
     val (luaTime, torchResult) = TH.run(code,
       Map("input" -> input.transpose(1, 2), "weights" -> weights,

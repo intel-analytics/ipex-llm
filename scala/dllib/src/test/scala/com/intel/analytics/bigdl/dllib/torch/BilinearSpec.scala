@@ -15,10 +15,11 @@
  */
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.Bilinear
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
@@ -29,6 +30,75 @@ class BilinearSpec extends FlatSpec with BeforeAndAfter with Matchers{
     if (!TH.hasTorch()) {
       cancel("Torch is not installed")
     }
+  }
+
+  "BiLinear L2 regularizer" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+
+    val state1 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.1, "momentum" -> 0.002)
+    val state2 = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
+      "weightDecay" -> 0.0, "momentum" -> 0.002)
+
+    val inputN = 5
+    val outputN = 2
+    val batchSize = 5
+    val criterion = new MSECriterion[Double]
+
+    val input1 = Tensor[Double](batchSize, inputN).rand()
+    val input2 = Tensor[Double](batchSize, inputN).rand()
+    val input = T(input1, input2)
+    val labels = Tensor[Double](batchSize, outputN).rand()
+
+    val model1 = Sequential()
+      .add(Bilinear(inputN, inputN, outputN))
+      .add(Sigmoid())
+    val (weights1, grad1) = model1.getParameters()
+
+    val model2 = Sequential()
+      .add(Bilinear(inputN, inputN, outputN,
+        wRegularizer = L2Regularizer(0.1), bRegularizer = L2Regularizer(0.1)))
+      .add(Sigmoid())
+    val (weights2, grad2) = model2.getParameters()
+    weights2.copy(weights1.clone())
+    grad2.copy(grad1.clone())
+
+
+    val sgd = new SGD[Double]
+
+    def feval1(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model1.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model1.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model1.backward(input, gradInput)
+      (_loss, grad1)
+    }
+
+    def feval2(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val output = model2.forward(input).toTensor[Double]
+      val _loss = criterion.forward(output, labels)
+      model2.zeroGradParameters()
+      val gradInput = criterion.backward(output, labels)
+      model2.backward(input, gradInput)
+      (_loss, grad2)
+    }
+
+    var loss1: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss1 = sgd.optimize(feval1, weights1, state1)._2
+      println(s"${i}-th loss = ${loss1(0)}")
+    }
+
+    var loss2: Array[Double] = null
+    for (i <- 1 to 100) {
+      loss2 = sgd.optimize(feval2, weights2, state2)._2
+      println(s"${i}-th loss = ${loss2(0)}")
+    }
+
+
+    weights1 should be(weights2)
+    loss1 should be(loss2)
   }
 
   "A Bilinear " should "generate correct output and grad" in {
