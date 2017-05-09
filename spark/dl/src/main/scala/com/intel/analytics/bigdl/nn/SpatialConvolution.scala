@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils._
@@ -30,6 +31,11 @@ import scala.reflect.ClassTag
  * Applies a 2D convolution over an input image composed of several input planes.
  * The input tensor in forward(input) is expected to be
  * a 3D tensor (nInputPlane x height x width).
+ *
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
  */
 
 @SerialVersionUID(- 8446523046224797382L)
@@ -44,7 +50,9 @@ class SpatialConvolution[T: ClassTag](
   val padH: Int = 0, // The additional zeros added per height to the input planes.
   val nGroup: Int = 1, // Kernel group number
   val propagateBack: Boolean = true, // propagate gradient back
-  private var initMethod: InitializationMethod = Default
+  private var initMethod: InitializationMethod = Default,
+  val wRegularizer: Regularizer[T] = null,
+  val bRegularizer: Regularizer[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
@@ -325,6 +333,13 @@ class SpatialConvolution[T: ClassTag](
       grad.addmv(ev.fromType(1.0), ev.fromType(1.0), gradView, onesBatch)
       gradBias.addmv(ev.fromType(1.0), ev.fromType(1.0), gradientBiasMT.t, onesBatch)
     }
+
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight)
+    }
+    if (null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -577,9 +592,12 @@ object SpatialConvolution {
       padH: Int = 0,
       nGroup: Int = 1,
       propagateBack: Boolean = true,
-      initMethod: InitializationMethod = Default
+      initMethod: InitializationMethod = Default,
+      wRegularizer: Regularizer[T] = null,
+      bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
-      strideW, strideH, padW, padH, nGroup, propagateBack, initMethod)
+      strideW, strideH, padW, padH, nGroup, propagateBack, initMethod,
+      wRegularizer, bRegularizer)
   }
 }
