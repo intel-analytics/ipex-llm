@@ -255,18 +255,18 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       case "Slice" => fromCaffeSlice(layerName)
       case "Tile" => fromCaffeTile(layerName)
       case "Eltwise" => fromCaffeEltwise(layerName)
-      case "EuclideanLoss" => fromCaffeLoss(layerName, layerType)
-      case "HingeLoss" => fromCaffeLoss(layerName, layerType)
-      case "MultinomialLogisticLoss" => fromCaffeLoss(layerName, layerType)
-      case "ContrastiveLoss" => fromCaffeLoss(layerName, layerType)
+      case "EuclideanLoss" => fromCaffeLoss(layerType, layerName)
+      case "HingeLoss" => fromCaffeLoss(layerType, layerName)
+      case "MultinomialLogisticLoss" => fromCaffeLoss(layerType, layerName)
+      case "ContrastiveLoss" => fromCaffeLoss(layerType, layerName)
       case "INPUT" => null
       case _ => fitCustomizedLayer(layerType, layerName)
     }
     module
   }
 
-  private def fromCaffeLoss(layerName : String, layerType : String) : ModuleNode[T] = {
-    addCriterion(layerName, layerType)
+  private def fromCaffeLoss(layerType : String, layerName : String) : ModuleNode[T] = {
+    addCriterion(layerType, layerName)
     null
   }
 
@@ -274,7 +274,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
  * Add criterion according to layer type from train protocol
  * if only test/model define prototxt file provided, there won't be criterion detected
  */
-  private def addCriterion(layerName : String, layerType : String) : Unit = {
+  private def addCriterion(layerType : String, layerName: String = null) : Unit = {
     val criterion = layerType match {
       case "SoftmaxWithLoss" => ClassNLLCriterion[T]()
       case "EuclideanLoss" => MSECriterion[T]()
@@ -564,7 +564,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         dw = 1
         dh = 1
       }
-
     }
     var pw = param.getPadW
     var ph = param.getPadH
