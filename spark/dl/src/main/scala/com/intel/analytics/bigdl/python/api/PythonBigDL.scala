@@ -62,13 +62,10 @@ case class TestResult(val result: Float, totalNum: Int, val method: String)
 
 
 object PythonBigDL {
-  val floatInstance = new PythonBigDL[Float]()
 
-  val doubleInstance = new PythonBigDL[Double]()
+  def ofFloat(): PythonBigDL[Float] = new PythonBigDL[Float]()
 
-  def ofFloat(): PythonBigDL[Float] = floatInstance
-
-  def ofDouble(): PythonBigDL[Double] = doubleInstance
+  def ofDouble(): PythonBigDL[Double] = new PythonBigDL[Double]()
 
   def getInitMethod(initMethod: String): InitializationMethod = {
     initMethod.toLowerCase() match {
