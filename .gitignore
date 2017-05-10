@@ -2,7 +2,7 @@
 *.pyc
 *.class
 target/
-dist/
+/dist/
 
 # SBT, Maven specific
 .cache
