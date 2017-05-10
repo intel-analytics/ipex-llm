@@ -25,50 +25,8 @@ import com.intel.analytics.bigdl.nn.fixpoint.{SpatialConvolution => FPSpatialCon
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionSpec extends FlatSpec with Matchers {
-  /*
-  "A SpatialConvolution layer" should "generate correct output" in {
-    val nInputPlane = 1
-    val nOutputPlane = 1
-    val kW = 2
-    val kH = 2
-    val dW = 1
-    val dH = 1
-    val padW = 0
-    val padH = 0
-    val layer = new SpatialConvolution[Float](nInputPlane, nOutputPlane,
-      kW, kH, dW, dH, padW, padH)
-
-    val inputData = Array(
-      1.0f, 2f, 3f,
-      4f, 5f, 6f,
-      7f, 8f, 9f
-    )
-
-    val kernelData = Array(
-      2.0f, 3f,
-      4f, 5f
-    )
-
-    val biasData = Array(0.0f)
-
-    layer.weight.copy(Tensor(Storage(kernelData), 1, Array(nOutputPlane,
-      nInputPlane, kH, kW)))
-    layer.bias.copy(Tensor(Storage(biasData), 1, Array(nOutputPlane)))
-    val input = Tensor(Storage(inputData), 1, Array(1, 3, 3))
-    val output = layer.updateOutput(input)
-    println(output)
-
-    layer.release()
-
-    output(Array(1, 1, 1)) should be(49)
-    output(Array(1, 1, 2)) should be(63)
-    output(Array(1, 2, 1)) should be(91)
-    output(Array(1, 2, 2)) should be(105)
-  }
-  */
-
   val testCases = List(
-    // TestCase(1, 1, 3, 3, 1, 1, 2, 2, 1, 1, 0, 0)
+    TestCase(1, 1, 3, 3, 1, 1, 2, 2, 1, 1, 0, 0),
     TestCase(2, 1024, 19, 19, 1, 1024, 1, 1, 1, 1, 0, 0),
     TestCase(2, 1024, 19, 19, 1, 126, 3, 3, 1, 1, 1, 1),
     TestCase(2, 1024, 19, 19, 1, 24, 3, 3, 1, 1, 1, 1),
@@ -98,7 +56,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       nn.reset()
       fp.reset()
       fp.weight.copy(nn.weight)
-      fp.bias.copy(fp.bias)
+      fp.bias.copy(nn.bias)
 
       val input = Tensor[Float]().resize(Array(test.batchSize, test.inputChannel,
         test.inputHeight, test.inputWidth)).rand()
@@ -111,26 +69,33 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       println(nn)
       println(fp)
 
-      Tools.compare2Tensors(nnOutput, fpOutput) should be (true)
+      Tools.compare2Tensors(nnOutput, fpOutput) should be (0)
     }
   }
 }
 
 object Tools {
-  def compare2Tensors(a1: Tensor[Float], a2: Tensor[Float]): Boolean = {
+  val magicValue = 0.1f
+
+  def compare2Tensors(a1: Tensor[Float], a2: Tensor[Float]): Int = {
     var ret = true
 
     if (a1.nElement() != a2.nElement()) {
       ret = false
     }
 
+    var count = 0
+
     for (i <- 0 until a1.nElement()) {
-      if (a1.storage().array()(i) != a2.storage().array()(i)) {
-        ret = false
+      val a1t = a1.storage().array()(i)
+      val a2t = a2.storage().array()(i)
+      if (math.abs(a1t - a2t) > magicValue) {
+        count += 1
       }
     }
 
-    return ret
+//    println(s"total = ${a1.nElement()} count = $count")
+    count
   }
 }
 
