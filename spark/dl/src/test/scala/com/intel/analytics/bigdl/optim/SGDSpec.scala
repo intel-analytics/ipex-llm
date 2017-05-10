@@ -33,14 +33,34 @@ class SGDSpec extends FlatSpec with Matchers {
       val r = x.clone()
       r.apply1(2 * _)
       val v = x(Array(1))
-      return (v * v, r)
+      (v * v, r)
     }
     val x = Tensor[Double](1)
     x.fill(10)
-    for (i <- 1 to 10) {
+    for (_ <- 1 to 10) {
       optimMethod.optimize(feval, x, state, state)
     }
     x(Array(1)) should be(1.0591906190415 +- 1e-6)
+  }
+
+  "A SGD optimMethod with 1 parameter using L1 regularization" should
+    "generate correct result" in {
+    val state = T("learningRate" -> 0.1,
+      "l1Regularizer" -> 0.01)
+    val optimMethod = new SGD[Double]
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      val r = x.clone()
+      r.apply1(2 * _)
+      val v = x(Array(1))
+      (v * v, r)
+    }
+
+    val x = Tensor[Double](1)
+    x.fill(10)
+    for (_ <- 1 to 10) {
+      optimMethod.optimize(feval, x, state, state)
+    }
+    x(Array(1)) should be(1.069278694912 +- 1e-6)
   }
 
   "sgd" should "perform well on rosenbrock function" in {
@@ -52,7 +72,7 @@ class SGDSpec extends FlatSpec with Matchers {
     for (i <- 1 to 10001) {
       val result = optm.optimize(TestUtils.rosenBrock, x, config)
       if ((i - 1) % 1000 == 0) {
-        fx += (result._2(0))
+        fx += result._2(0)
       }
     }
 
@@ -72,7 +92,7 @@ class SGDSpec extends FlatSpec with Matchers {
       Default())
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
-      return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+      (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
     }
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
     val state = T()
@@ -88,7 +108,7 @@ class SGDSpec extends FlatSpec with Matchers {
     val config = T("learningRate" -> 0.1, "learningRateDecay" -> 0.1)
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
-      return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+      (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
     }
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
     val state = T()
@@ -104,21 +124,21 @@ class SGDSpec extends FlatSpec with Matchers {
     val config = T("learningRate" -> 0.1, "learningRateSchedule" -> Step(5, 0.1))
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
-      return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+      (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
     }
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
     val state = T()
-    for(i <- 1 to 5) {
+    for(_ <- 1 to 5) {
       optimMethod.optimize(feval, x, config, state)
       config[Double]("clr") should be(-0.1 +- 1e-9)
     }
 
-    for(i <- 1 to 5) {
+    for(_ <- 1 to 5) {
       optimMethod.optimize(feval, x, config, state)
       config[Double]("clr") should be(-0.01 +- 1e-9)
     }
 
-    for(i <- 1 to 5) {
+    for(_ <- 1 to 5) {
       optimMethod.optimize(feval, x, config, state)
       config[Double]("clr") should be(-0.001 +- 1e-9)
     }
@@ -183,7 +203,7 @@ class SGDSpec extends FlatSpec with Matchers {
     val config = T("learningRate" -> 0.1, "learningRateSchedule" -> Poly(3, 100))
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
-      return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+      (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
     }
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
     val state = T()
@@ -205,7 +225,7 @@ class SGDSpec extends FlatSpec with Matchers {
     val config = T("learningRate" -> 0.1, "learningRateSchedule" -> EpochSchedule(regimes))
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
-      return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+      (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
     }
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
     val state = T("epoch" -> 0)

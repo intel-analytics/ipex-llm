@@ -40,6 +40,7 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
    * learningRate: learning rate
    * learningRateDecay: learning rate decay
    * weightDecay: weight decay
+   * l1Regularizer: l1 regularization rate
    * weightDecays: 1D tensor of individual weight decays
    * momentum: momentum
    * dampening: dampening for momentum
@@ -57,27 +58,54 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     lrSchedule.updateHyperParameter(config, _state)
 
     val wd = config.get[Double]("weightDecay").getOrElse(0.0)
+    val l1 = config.get[Double]("l1Regularizer").getOrElse(0.0)
     val mom = config.get[Double]("momentum").getOrElse(0.0)
     val damp = config.get[Double]("dampening").getOrElse(mom)
     val nesterov = config.get[Boolean]("nesterov").getOrElse(false)
-    val lrs = config.get[Tensor[T]]("learningRates").getOrElse(null)
-    val wds = config.get[Tensor[T]]("weightDecays").getOrElse(null)
+    val lrs = config.get[Tensor[T]]("learningRates")
+    val wds = config.get[Tensor[T]]("weightDecays")
+    val l1s = config.get[Tensor[T]]("l1Regularizers")
+
 
     require(!nesterov || (mom > 0 && damp == 0),
       "Nesterov momentum requires a momentum and zero dampening")
 
     var (fx, dfdx) = feval(x)
 
-    if (wd != 0) {
-      dfdx.add(ev.fromType[Double](wd), x)
-    } else if (wds != null) {
+
+    if (l1 != 0 || wd != 0) {
+      if (wd != 0) {
+        dfdx.add(ev.fromType[Double](wd), x)
+      }
+      if (l1 != 0) {
+        val weightsSignBuffer = _state.get[Tensor[T]]("weightSigns").getOrElse({
+          val buffer = Tensor[T](x.size())
+          _state("weightSigns") = buffer
+          buffer
+        })
+        dfdx.add(ev.fromType[Double](l1), weightsSignBuffer.copy(x).sign())
+      }
+    } else if (wds.isDefined || l1s.isDefined) {
       val decayParameters = _state.get[Tensor[T]]("decayParameters").getOrElse({
-        val DP = Tensor[T]().resizeAs(dfdx)
+        val DP = Tensor[T]().resizeAs(x)
         _state("decayParameters") = DP
         DP
       })
-      decayParameters.copy(wds).cmul(x)
-      dfdx.add(decayParameters)
+
+      if (wds.isDefined) {
+        decayParameters.copy(wds.get).cmul(x)
+        dfdx.add(decayParameters)
+      }
+
+      if (l1s.isDefined) {
+        val weightsSignBuffer = _state.get[Tensor[T]]("weightSigns").getOrElse({
+          val buffer = Tensor[T](x.size())
+          _state("weightSigns") = buffer
+          buffer
+        })
+        decayParameters.copy(wds.get).cmul(weightsSignBuffer.copy(x).sign())
+        dfdx.add(decayParameters)
+      }
     }
 
     if (mom != 0) {
@@ -98,13 +126,13 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     }
 
     val clr = ev.fromType(config[Double]("clr"))
-    if (lrs != null) {
+    if (lrs.isDefined) {
       val deltaParameters = _state.get[Tensor[T]]("deltaParameters").getOrElse({
         val deltaP = Tensor[T]().resizeAs(dfdx)
         _state("deltaParameters") = deltaP
         deltaP
       })
-      deltaParameters.copy(lrs).cmul(dfdx)
+      deltaParameters.copy(lrs.get).cmul(dfdx)
       x.add(clr, deltaParameters)
     } else {
       x.add(clr, dfdx)
@@ -118,6 +146,7 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
     state.delete("decayParameters")
     state.delete("dfdx")
     state.delete("deltaParameters")
+    state.delete("weightSigns")
   }
 
   /**
@@ -126,18 +155,22 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
   override def getHyperParameter(config: Table): String = {
     val clr = -config[Double]("clr")
     val wd = config.get[Double]("weightDecay").getOrElse(0.0)
+    val l1 = config.get[Double]("l1Regularizer").getOrElse(0.0)
     val mom = config.get[Double]("momentum").getOrElse(0.0)
     val damp = config.get[Double]("dampening").getOrElse(mom)
     val nesterov = config.get[Boolean]("nesterov").getOrElse(false)
-    val lrs = config.get[Tensor[T]]("learningRates").getOrElse(null)
-    val wds = config.get[Tensor[T]]("weightDecays").getOrElse(null)
+    val lrs = config.get[Tensor[T]]("learningRates").orNull
+    val wds = config.get[Tensor[T]]("weightDecays").orNull
+    val l1s = config.get[Tensor[T]]("l1Regularizers").orNull
     s"Current learning rate is $clr. " +
       {if (wd != 0) s"Current weight decay is $wd. " else ""} +
+      {if (l1 != 0) s"Current l1 regularization rate is $l1. " else ""} +
       {if (mom != 0) s"Current momentum is $mom. " else ""} +
       {if (damp != 0) s"Current dampening is $damp. " else ""} +
       {if (nesterov) s"Current nesterov is true. " else ""} +
       {if (null != lrs) s"Current learningRates is a Tensor. " else ""} +
-      {if (null != wds) s"Current weightDecays is a Tensor. " else ""}
+      {if (null != wds) s"Current weightDecays is a Tensor. " else ""} +
+      {if (null != l1s) s"Current l1 regularization rates is a Tensor. " else ""}
   }
 
   override def updateHyperParameter(config: Table, state: Table): Unit = {
@@ -157,6 +190,7 @@ object SGD {
      * @param config init config.
      * @param state current state.
      */
+
     def updateHyperParameter(config : Table, state : Table) : Unit
   }
 
@@ -197,7 +231,7 @@ object SGD {
       } else {
         -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
       }
-      println(s"iteration is : ${nevals}. current learning rate is $clr")
+      println(s"iteration is : $nevals. current learning rate is $clr")
       state("evalCounter") = nevals + 1
       config("clr") = clr
     }

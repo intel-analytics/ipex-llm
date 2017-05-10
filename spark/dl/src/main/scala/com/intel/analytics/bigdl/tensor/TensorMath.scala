@@ -642,8 +642,8 @@ trait TensorMath[T] {
   def norm(value: Int): T
 
   /**
-   * returns a new Tensor with the sign (+/- 1 or 0) of the elements of x.
-   * @return
+   * Modify this Tensor in place with the sign (+/- 1 or 0) of the elements of x.
+   * @return this
    */
   def sign(): Tensor[T]
 
