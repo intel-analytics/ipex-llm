@@ -24,7 +24,7 @@ def Inception_Layer_v1(input_size, config, name_prefix=""):
         SpatialConvolution(input_size,
                            config[1][1],
                            1, 1, 1, 1, init_method="Xavier")
-        .set_name(name_prefix + "1x1"))
+            .set_name(name_prefix + "1x1"))
     conv1.add(ReLU(True).set_name(name_prefix + "relu_1x1"))
     concat.add(conv1)
     conv3 = Sequential()
@@ -68,12 +68,12 @@ def Inception_v1_NoAuxClassifier(class_num):
     model.add(SpatialMaxPooling(3, 3, 2, 2, to_ceil=True).set_name("pool1/3x3_s2"))
     model.add(SpatialCrossMapLRN(5, 0.0001, 0.75).set_name("pool1/norm1"))
     model.add(SpatialConvolution(64, 64, 1, 1, 1, 1, init_method="Xavier")
-          .set_name("conv2/3x3_reduce"))
+              .set_name("conv2/3x3_reduce"))
     model.add(ReLU(True).set_name("conv2/relu_3x3_reduce"))
     model.add(SpatialConvolution(64, 192, 3, 3, 1, 1, 1, 1, init_method="Xavier")
-          .set_name("conv2/3x3"))
+              .set_name("conv2/3x3"))
     model.add(ReLU(True).set_name("conv2/relu_3x3"))
-    model.add(SpatialCrossMapLRN(5, 0.0001, 0.75). set_name("conv2/norm2"))
+    model.add(SpatialCrossMapLRN(5, 0.0001, 0.75).set_name("conv2/norm2"))
     model.add(SpatialMaxPooling(3, 3, 2, 2, to_ceil=True).set_name("pool2/3x3_s2"))
     model.add(Inception_Layer_v1(192, scala_T([scala_T([64]), scala_T(
         [96, 128]), scala_T([16, 32]), scala_T([32])]), "inception_3a/"))
@@ -112,7 +112,7 @@ def Inception_v1(class_num):
     feature1.add(ReLU(True).set_name("conv1/relu_7x7"))
     feature1.add(
         SpatialMaxPooling(3, 3, 2, 2, to_ceil=True)
-        .set_name("pool1/3x3_s2"))
+            .set_name("pool1/3x3_s2"))
     feature1.add(SpatialCrossMapLRN(5, 0.0001, 0.75)
                  .set_name("pool1/norm1"))
     feature1.add(SpatialConvolution(64, 64, 1, 1, 1, 1, init_method="Xavier")
@@ -123,21 +123,21 @@ def Inception_v1(class_num):
                                     init_method="Xavier")
                  .set_name("conv2/3x3"))
     feature1.add(ReLU(True).set_name("conv2/relu_3x3"))
-    feature1.add(SpatialCrossMapLRN(5, 0.0001, 0.75). set_name("conv2/norm2"))
+    feature1.add(SpatialCrossMapLRN(5, 0.0001, 0.75).set_name("conv2/norm2"))
     feature1.add(
         SpatialMaxPooling(3, 3, 2, 2, to_ceil=True).set_name("pool2/3x3_s2"))
     feature1.add(Inception_Layer_v1(192,
                                     scala_T([scala_T([64]), scala_T([96, 128]),
-                                            scala_T([16, 32]), scala_T([32])]),
+                                             scala_T([16, 32]), scala_T([32])]),
                                     "inception_3a/"))
     feature1.add(Inception_Layer_v1(256, scala_T([
         scala_T([128]), scala_T([128, 192]), scala_T([32, 96]), scala_T([64])]),
-        "inception_3b/"))
+                                    "inception_3b/"))
     feature1.add(
         SpatialMaxPooling(3, 3, 2, 2, to_ceil=True).set_name("pool3/3x3_s2"))
     feature1.add(Inception_Layer_v1(480, scala_T([
         scala_T([192]), scala_T([96, 208]), scala_T([16, 48]), scala_T([64])]),
-        "inception_4a/"))
+                                    "inception_4a/"))
 
     output1 = Sequential()
     output1.add(SpatialAveragePooling(
@@ -155,15 +155,15 @@ def Inception_v1(class_num):
     feature2 = Sequential()
     feature2.add(Inception_Layer_v1(512,
                                     scala_T([scala_T([160]), scala_T([112, 224]),
-                                            scala_T([24, 64]), scala_T([64])]),
+                                             scala_T([24, 64]), scala_T([64])]),
                                     "inception_4b/"))
     feature2.add(Inception_Layer_v1(512,
                                     scala_T([scala_T([128]), scala_T([128, 256]),
-                                            scala_T([24, 64]), scala_T([64])]),
+                                             scala_T([24, 64]), scala_T([64])]),
                                     "inception_4c/"))
     feature2.add(Inception_Layer_v1(512,
                                     scala_T([scala_T([112]), scala_T([144, 288]),
-                                            scala_T([32, 64]), scala_T([64])]),
+                                             scala_T([32, 64]), scala_T([64])]),
                                     "inception_4d/"))
 
     output2 = Sequential()
@@ -181,16 +181,16 @@ def Inception_v1(class_num):
     output3 = Sequential()
     output3.add(Inception_Layer_v1(528,
                                    scala_T([scala_T([256]), scala_T([160, 320]),
-                                           scala_T([32, 128]), scala_T([128])]),
+                                            scala_T([32, 128]), scala_T([128])]),
                                    "inception_4e/"))
     output3.add(SpatialMaxPooling(3, 3, 2, 2, to_ceil=True).set_name("pool4/3x3_s2"))
     output3.add(Inception_Layer_v1(832,
                                    scala_T([scala_T([256]), scala_T([160, 320]),
-                                           scala_T([32, 128]), scala_T([128])]),
+                                            scala_T([32, 128]), scala_T([128])]),
                                    "inception_5a/"))
     output3.add(Inception_Layer_v1(832,
                                    scala_T([scala_T([384]), scala_T([192, 384]),
-                                           scala_T([48, 128]), scala_T([128])]),
+                                            scala_T([48, 128]), scala_T([128])]),
                                    "inception_5b/"))
     output3.add(SpatialAveragePooling(7, 7, 1, 1).set_name("pool5/7x7_s1"))
     output3.add(Dropout(0.4).set_name("pool5/drop_7x7_s1"))
@@ -231,7 +231,7 @@ def get_inception_data(folder, file_type="image", data_type="train", normalize=2
 def config_option_parser():
     parser = OptionParser()
     parser.add_option("-a", "--action", dest="action", default="train")
-    parser.add_option("-f","--folder", type=str, dest="folder", default="",
+    parser.add_option("-f", "--folder", type=str, dest="folder", default="",
                       help="url of hdfs folder store the hadoop sequence files")
     parser.add_option("--model", type=str, dest="model", default="", help="model snapshot location")
     parser.add_option("--state", type=str, dest="state", default="", help="state snapshot location")
@@ -248,6 +248,7 @@ def config_option_parser():
                       help="checkpoint interval of iterations")
 
     return parser
+
 
 if __name__ == "__main__":
     # parse options
@@ -269,16 +270,23 @@ if __name__ == "__main__":
 
     if options.action == "train":
         # create dataset
+        train_transformer = Transformer([Crop(image_size, image_size),
+                                         Flip(0.5),
+                                         ChannelNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+                                         TransposeToTensor(False)
+                                         ])
         train_data = get_inception_data(options.folder, "seq", "train").map(
-            crop(image_size, image_size, "random")).map(
-            flip(0.5)).map(
-            channel_normalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)).map(
-            transpose(False))
+            lambda features_label: (train_transformer(features_label[0]), features_label[1])).map(
+            lambda features_label: Sample.from_ndarray(features_label[0], features_label[1] + 1))
+
+        val_transformer = Transformer([Crop(image_size, image_size, "center"),
+                                       Flip(0.5),
+                                       ChannelNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+                                       TransposeToTensor(False)
+                                       ])
         val_data = get_inception_data(options.folder, "seq", "val").map(
-            crop(image_size, image_size, "center")).map(
-            flip(0.5)).map(
-            channel_normalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)).map(
-            transpose(False))
+            lambda features_label: (val_transformer(features_label[0]), features_label[1])).map(
+            lambda features_label: Sample.from_ndarray(features_label[0], features_label[1] + 1))
 
         # TODO: Check stateSnapshot opt
 
@@ -303,34 +311,36 @@ if __name__ == "__main__":
 
         # Optimizer
         optimizer = Optimizer(
-                model=inception_model,
-                training_rdd=train_data,
-                optim_method="SGD",
-                criterion=ClassNLLCriterion(),
-                end_trigger=end_trigger,
-                batch_size=options.batchSize,
-                state=state
-            )
-        
-        if options.checkpoint:
-            optimizer.setcheckpoint(checkpoint_trigger, options.checkpoint, options.overwrite)
+            model=inception_model,
+            training_rdd=train_data,
+            optim_method="SGD",
+            criterion=ClassNLLCriterion(),
+            end_trigger=end_trigger,
+            batch_size=options.batchSize,
+            state=state
+        )
 
-        optimizer.setvalidation(trigger=test_trigger,
-                                val_rdd=val_data,
-                                batch_size=options.batchSize,
-                                val_method=["Top1Accuracy", "Top5Accuracy"])
+        if options.checkpoint:
+            optimizer.set_checkpoint(checkpoint_trigger, options.checkpoint, options.overwrite)
+
+        optimizer.set_validation(trigger=test_trigger,
+                                 val_rdd=val_data,
+                                 batch_size=options.batchSize,
+                                 val_method=["Top1Accuracy", "Top5Accuracy"])
 
         trained_model = optimizer.optimize()
 
     elif options.action == "test":
         # Load a pre-trained model and then validate it through top1 accuracy.
+        test_transformer = Transformer([Crop(image_size, image_size, "center"),
+                                        Flip(0.5),
+                                        ChannelNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+                                        TransposeToTensor(False)
+                                        ])
         test_data = get_inception_data(options.folder, "seq", "val").map(
-            crop(image_size, image_size, "center")).map(
-            flip(0.5)).map(
-            channel_normalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)).map(
-            transpose(False))
+            lambda features_label: (test_transformer(features_label[0]), features_label[1])).map(
+            lambda features_label: Sample.from_ndarray(features_label[0], features_label[1] + 1))
         model = Model.load(options.model)
         results = model.test(test_data, options.batchSize, ["Top1Accuracy", "Top5Accuracy"])
         for result in results:
             print result
-

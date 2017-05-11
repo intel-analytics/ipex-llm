@@ -39,14 +39,14 @@ class TestImagenetTransformer(unittest.TestCase):
         image_rdd = read_local(self.sc, image_folder)
         self.assertEqual(image_rdd.count(), 3)
         for sample in image_rdd.collect():
-            features = sample.features
+            features = sample[0]
             self.assertEqual(features.shape, (256, 256, 3))
             self.assertGreaterEqual(features[1, 1, 0], 0.0)
             self.assertLessEqual(features[1, 1, 0], 1.0)
             self.assertEqual(features.dtype, "float32")
-            label = sample.label
-            self.assertTrue(np.allclose(label[0], 1.0, atol=1e-6, rtol=0))
-            self.assertEqual(label.shape, (1,))
+            label = sample[1]
+            self.assertTrue(np.allclose(label, 1.0, atol=1e-6, rtol=0))
+            self.assertEqual(label.size, 1)
 
     def test_read_seq(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "resources")
@@ -55,84 +55,100 @@ class TestImagenetTransformer(unittest.TestCase):
         image_rdd = read_seq_file(self.sc, "file://" + image_folder)
         self.assertEqual(image_rdd.count(), 3)
         for sample in image_rdd.collect():
-            features = sample.features
+            features = sample[0]
             self.assertEqual(features.shape, (256, 256, 3))
             self.assertGreaterEqual(features[1, 1, 0], 0.0)
             self.assertLessEqual(features[1, 1, 0], 1.0)
             self.assertEqual(features.dtype, "float32")
-            label = sample.label
-            self.assertTrue(np.allclose(label[0], 1.0, atol=1e-6, rtol=0))
-            self.assertEqual(label.shape, (1,))
+            label = sample[1]
+            self.assertTrue(np.allclose(label, 1.0, atol=1e-6, rtol=0))
+            self.assertEqual(label.size, 1)
 
     def test_transformer(self):
         resource_path = os.path.join(os.path.split(__file__)[0], "resources")
         image_folder = os.path.join(resource_path, "imagenet/test")
-        image_rdd = read_local(self.sc, image_folder)
-        self.assertEqual(image_rdd.count(), 1)
-        sample_org = []
-        for sample in image_rdd.collect():
-            sample_org.append(sample)
+        features_rdd = read_local(self.sc, image_folder).map(
+            lambda features_label: features_label[0])
+        self.assertEqual(features_rdd.count(), 1)
+        features_org = []
+        for features in features_rdd.collect():
+            features_org.append(features)
 
         # test pixel mean file
         mean_file = os.path.join(os.path.join(resource_path, "imagenet"), "ilsvrc_2012_mean.npy")
         mean = load_mean_file(mean_file)
         pixel_normailized_list = []
-        pixel_normalized = image_rdd.map(pixel_normalizer(mean))
-        for sample in pixel_normalized.collect():
-            pixel_normailized_list.append(sample)
-        self.assertTrue(np.allclose(pixel_normailized_list[0].features + mean,
-                                    sample_org[0].features,
+        pixel_normalized = features_rdd.map(PixelNormalizer(mean))
+        for features in pixel_normalized.collect():
+            pixel_normailized_list.append(features)
+        self.assertTrue(np.allclose(pixel_normailized_list[0] + mean,
+                                    features_org[0],
                                     atol=1e-6, rtol=0))
 
         # test channel normalizer
         channel_normailized_list = []
-        channel_normalized = image_rdd.map(channel_normalizer(0.1, 0.2, 0.3, 0.1, 0.1, 0.1))
+        channel_normalized = features_rdd.map(ChannelNormalizer(0.1, 0.2, 0.3, 0.1, 0.1, 0.1))
         for sample in channel_normalized.collect():
             channel_normailized_list.append(sample)
         self.assertTrue(
-            np.allclose(channel_normailized_list[0].features[:, :, 0] * 0.1 + 0.3,
-                        sample_org[0].features[:, :, 0],
+            np.allclose(channel_normailized_list[0][:, :, 0] * 0.1 + 0.3,
+                        features_org[0][:, :, 0],
                         atol=1e-6, rtol=0))
         self.assertTrue(
-            np.allclose(channel_normailized_list[0].features[:, :, 1] * 0.1 + 0.2,
-                        sample_org[0].features[:, :, 1],
+            np.allclose(channel_normailized_list[0][:, :, 1] * 0.1 + 0.2,
+                        features_org[0][:, :, 1],
                         atol=1e-6, rtol=0))
         self.assertTrue(
-            np.allclose(channel_normailized_list[0].features[:, :, 2] * 0.1 + 0.1,
-                        sample_org[0].features[:, :, 2],
+            np.allclose(channel_normailized_list[0][:, :, 2] * 0.1 + 0.1,
+                        features_org[0][:, :, 2],
                         atol=1e-6, rtol=0))
 
         # test crop
         cropped1_list = []
-        cropped1 = image_rdd.map(crop(227, 227, "random"))
+        cropped1 = features_rdd.map(Crop(227, 227, "random"))
         for sample in cropped1.collect():
             cropped1_list.append(sample)
-        self.assertEqual(cropped1_list[0].features.shape, (227, 227, 3))
+        self.assertEqual(cropped1_list[0].shape, (227, 227, 3))
         cropped2_list = []
-        cropped2 = image_rdd.map(crop(224, 224, "center"))
+        cropped2 = features_rdd.map(Crop(224, 224, "center"))
         for sample in cropped2.collect():
             cropped2_list.append(sample)
-        self.assertEqual(cropped2_list[0].features.shape, (224, 224, 3))
-        self.assertTrue(np.allclose(cropped2_list[0].features[0, 0, :],
-                                    sample_org[0].features[(256-224)/2, (256-224)/2, :],
+        self.assertEqual(cropped2_list[0].shape, (224, 224, 3))
+        self.assertTrue(np.allclose(cropped2_list[0][0, 0, :],
+                                    features_org[0][(256-224)/2, (256-224)/2, :],
                                     atol=1e-6, rtol=0))
 
         # test flip
         filpped1_list = []
-        flipped1 = image_rdd.map(flip(0))
+        flipped1 = features_rdd.map(Flip(0))
         for sample in flipped1.collect():
             filpped1_list.append(sample)
-        self.assertTrue(np.allclose(filpped1_list[0].features[0, 1, :],
-                                    sample_org[0].features[0, 254, :],
+        self.assertTrue(np.allclose(filpped1_list[0][0, 1, :],
+                                    features_org[0][0, 254, :],
                                     atol=1e-6, rtol=0))
 
         filpped2_list = []
-        flipped2 = image_rdd.map(flip(1))
+        flipped2 = features_rdd.map(Flip(1))
         for sample in flipped2.collect():
             filpped2_list.append(sample)
-        self.assertTrue(np.allclose(filpped2_list[0].features,
-                                    sample_org[0].features,
+        self.assertTrue(np.allclose(filpped2_list[0],
+                                    features_org[0],
                                     atol=1e-6, rtol=0))
+
+        # test transpose
+        transposed1_list = []
+        transposed1 = features_rdd.map(TransposeToTensor())
+        for sample in transposed1.collect():
+            transposed1_list.append(sample)
+        self.assertEqual(transposed1_list[0].shape, (3, 256, 256))
+        self.assertTrue(np.allclose(transposed1_list[0][0, :, :],
+                                    features_org[0][:, :, 2],
+                                    atol=1e-6, rtol=0))
+        transposed2_list = []
+        transposed2 = features_rdd.map(TransposeToTensor(False))
+        for sample in transposed2.collect():
+            transposed2_list.append(sample)
+        self.assertEqual(transposed2_list[0].shape, (3, 256, 256))
 
 if __name__ == "__main__":
     unittest.main(failfast=True)

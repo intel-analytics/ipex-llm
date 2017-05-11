@@ -55,8 +55,10 @@ def get_minst(sc, data_type="train", location="/tmp/mnist"):
     images = sc.parallelize(images)
     labels = sc.parallelize(labels)
     # Target start from 1 in BigDL
-    record = images.zip(labels).map(lambda features_label:
-                                    Sample.from_ndarray(features_label[0], features_label[1] + 1))
+
+    # record = images.zip(labels).map(lambda features_label:
+    #                                 Sample.from_ndarray(features_label[0], features_label[1] + 1))
+    record = images.zip(labels)
     return record
 
 
@@ -72,10 +74,18 @@ if __name__ == "__main__":
     init_engine()
 
     if options.action == "train":
+        transformer = Transformer([Normalizer(mnist.TRAIN_MEAN, mnist.TRAIN_STD)])
         train_data = get_minst(sc, "train").map(
-            normalizer(mnist.TRAIN_MEAN, mnist.TRAIN_STD))
+            lambda features_label: (transformer(features_label[0]), features_label[1])).map(
+            lambda features_label: Sample.from_ndarray(features_label[0], features_label[1] + 1))
+
         test_data = get_minst(sc, "test").map(
-            normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
+            lambda features_label: (transformer(features_label[0]), features_label[1])).map(
+            lambda features_label: Sample.from_ndarray(features_label[0], features_label[1] + 1))
+
+        state = {"learningRate": 0.01,
+                 "learningRateDecay": 0.0002}
+
         optimizer = Optimizer(
             model=build_model(10),
             training_rdd=train_data,
@@ -94,8 +104,10 @@ if __name__ == "__main__":
         parameters = trained_model.parameters()
     elif options.action == "test":
         # Load a pre-trained model and then validate it through top1 accuracy.
+        transformer = Transformer([Normalizer(mnist.TRAIN_MEAN, mnist.TRAIN_STD)])
         test_data = get_minst(sc, "test").map(
-            normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
+            lambda features_label: (transformer(features_label[0]), features_label[1])).map(
+            lambda features_label: Sample.from_ndarray(features_label[0], features_label[1] + 1))
         model = Model.load(options.modelPath)
         results = model.test(test_data, options.batchSize, ["Top1Accuracy"])
         for result in results:

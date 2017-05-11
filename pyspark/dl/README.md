@@ -23,7 +23,10 @@ This Python binding has been tested with Python 2.7 and Spark 1.6.0 / Spark 2.0.
     
   * Install Jupyter on client node (only if you need to use BigDL within Jupyter notebook):
     ```sudo pip install jupyter```
-   
+    
+  * Install scipy if you need to use imagenet dataset in your python application
+    ```sudo pip install scipy```
+    
   * Install other python dependency libs if you need to use them in your python application
   
 ## Run a Lenet example on standalone cluster
