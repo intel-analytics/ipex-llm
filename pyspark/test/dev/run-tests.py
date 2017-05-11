@@ -135,7 +135,7 @@ def run_individual_python_test(test_name, python_exec):
 
 
 def get_default_python_executables():
-    python_execs = ["python2", "python3"]
+    python_execs = ["python2.7", "python3.5"]
     return python_execs
 
 
