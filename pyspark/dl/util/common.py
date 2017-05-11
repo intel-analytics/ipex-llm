@@ -25,11 +25,48 @@ from pyspark.sql import DataFrame, SQLContext
 from pyspark.mllib.common import callJavaFunc
 from pyspark import SparkConf
 import numpy as np
+import threading
 
 if sys.version >= '3':
     long = int
     unicode = str
 
+class SingletonMixin(object):
+    _lock = threading.RLock()
+    _instance = None
+
+    @classmethod
+    def instance(cls,
+                 bigdl_type="float"):
+        if not cls._instance:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = cls(bigdl_type)
+        return cls._instance
+
+class JavaCreator(SingletonMixin):
+    __creator_class="com.intel.analytics.bigdl.python.api.PythonBigDL"
+
+    @classmethod
+    def get_creator_class(cls):
+        with JavaCreator._lock:
+            return JavaCreator.__creator_class
+
+    @classmethod
+    def set_creator_class(cls, cclass):
+        with JavaCreator._lock:
+            JavaCreator.__creator_class = cclass
+            JavaCreator._instance = None
+
+    def __init__(self, bigdl_type):
+        sc = SparkContext.getOrCreate()
+        jclass = getattr(sc._jvm, JavaCreator.get_creator_class())
+        if bigdl_type == "float":
+            self.value = getattr(jclass, "ofFloat")()
+        elif bigdl_type == "double":
+            self.value = getattr(jclass, "ofDouble")()
+        else:
+            raise Exception("Not supported bigdl_type: %s" % bigdl_type)
 
 class JavaValue(object):
     def jvm_class_constructor(self):
@@ -211,17 +248,9 @@ def create_spark_conf():
 
 def callBigDlFunc(bigdl_type, name, *args):
     """ Call API in PythonBigDL """
+    jinstance = JavaCreator.instance(bigdl_type=bigdl_type).value
     sc = SparkContext.getOrCreate()
-    if bigdl_type == "float":
-        api = getattr(
-            sc._jvm.com.intel.analytics.bigdl.python.api.PythonBigDL.ofFloat(),
-            name)
-    elif bigdl_type == "double":
-        api = getattr(
-            sc._jvm.com.intel.analytics.bigdl.python.api.PythonBigDL.ofDouble(),
-            name)
-    else:
-        raise Exception("Not supported bigdl_type: %s" % bigdl_type)
+    api = getattr(jinstance, name)
     return callJavaFunc(sc, api, *args)
 
 
