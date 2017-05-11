@@ -936,4 +936,47 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     y should be (Tensor(Storage(Array(2f + 2, 2f + 4, 2f + 6, 2f + 8)), 1, Array(2, 2)))
   }
 
+  "addmv on 1 element vector" should "return right result" in {
+    val mat = Tensor[Float](84, 1).fill(2.0f)
+    val vec = Tensor[Float](1).fill(3.0f)
+
+    val r = Tensor[Float](84).fill(9.0f)
+
+    DenseTensorMath.addmv[Float](r, 1.0f, r, 1.0f, mat, vec)
+
+    r should be (Tensor[Float](84).fill(15f))
+  }
+
+  "addmv on 1 element vector" should "return right result 1" in {
+    val mat = Tensor[Float](84, 1).fill(2.0f)
+    val vec = Tensor[Float](2).apply(2).fill(3.0f)
+
+    val r = Tensor[Float](84).fill(9.0f)
+
+    DenseTensorMath.addmv[Float](r, 1.0f, r, 1.0f, mat, vec)
+
+    r should be (Tensor[Float](84).fill(15f))
+  }
+
+  "addmv on 1 element vector" should "return right result 2" in {
+    val mat = Tensor[Float](84, 2).narrow(2, 1, 1).fill(2.0f)
+    val vec = Tensor[Float](2).apply(1).fill(3.0f)
+
+    val r = Tensor[Float](84).fill(9.0f)
+
+    DenseTensorMath.addmv[Float](r, 1.0f, r, 1.0f, mat, vec)
+
+    r should be (Tensor[Float](84).fill(15f))
+  }
+
+  "addmv on 1 element vector" should "return right result 3" in {
+    val mat = Tensor[Float](1, 3).fill(2.0f).t
+    val vec = Tensor[Float](1).fill(3.0f)
+
+    val r = Tensor[Float](3).fill(9.0f)
+
+    DenseTensorMath.addmv[Float](r, 0.5f, r, 2.0f, mat, vec)
+
+    r should be (Tensor[Float](3).fill(16.5f))
+  }
 }
