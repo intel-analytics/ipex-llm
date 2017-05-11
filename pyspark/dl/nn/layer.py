@@ -102,7 +102,7 @@ class Model(JavaValue):
         if type(output) is JTensor:
             return output.to_ndarray()
         else:
-            return map(lambda x: x.to_ndarray(), output)
+            return [x.to_ndarray() for x in output]
 
     def forward(self, input):
         """
