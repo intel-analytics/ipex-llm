@@ -82,6 +82,58 @@ class Model(JavaValue):
             return "float32"
         else:
             return "float64"
+    @staticmethod
+    def check_input(input):
+        if type(input) is list:
+            if len(input) == 0:
+                raise Exception('Error when checking: empty input')
+            if not hasattr(input[0], 'shape'):
+                raise Exception(
+                    'Error when checking: expecting list of ndarray')
+            return [JTensor.from_ndarray(i) for i in input]
+        else:
+            if not hasattr(input, 'shape'):
+                raise Exception(
+                    'Error when checking: expecting list of ndarray')
+            return [JTensor.from_ndarray(input)]
+
+    @staticmethod
+    def convert_output(output):
+        if type(output) is JTensor:
+            return output.to_ndarray()
+        else:
+            return [x.to_ndarray() for x in output]
+
+    def forward(self, input):
+        """
+        NB: It's for debug only, please use optimizer.optimize() in production.
+        Takes an input object, and computes the corresponding output of the module
+        :param input: ndarray or list of ndarray
+        :return: ndarray or list of ndarray
+        """
+        output = callBigDlFunc(self.bigdl_type,
+                               "modelForward",
+                               self.value,
+                               self.check_input(input))
+        return self.convert_output(output)
+
+    def backward(self, input, grad_output):
+        """
+        NB: It's for debug only, please use optimizer.optimize() in production.
+        Performs a back-propagation step through the module, with respect to the given input. In
+        general this method makes the assumption forward(input) has been called before, with the same
+        input. This is necessary for optimization reasons. If you do not respect this rule, backward()
+        will compute incorrect gradients.
+        :param input: ndarray or list of ndarray
+        :param grad_output: ndarray or list of ndarray
+        :return: ndarray or list of ndarray
+        """
+        output = callBigDlFunc(self.bigdl_type,
+                               "modelBackward",
+                               self.value,
+                               self.check_input(input),
+                               self.check_input(grad_output))
+        return self.convert_output(output)
 
     def reset(self):
         """
