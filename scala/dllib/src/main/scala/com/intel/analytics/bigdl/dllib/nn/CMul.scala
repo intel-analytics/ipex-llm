@@ -79,12 +79,13 @@ class CMul[@specialized(Float, Double) T: ClassTag](
   private def mulOneDimWeight(dim: Int, expand: Tensor[T], output: Tensor[T]): Unit = {
     val (innerNum, outerNum) = Utils.getInnerOuterNum(dim, output)
     val weightData = expand.storage().array()
+    val weightOffset = expand.storageOffset() - 1
     var outer = 0
     var offset = output.storageOffset() - 1
     while (outer < outerNum) {
       var k = 0
       while (k < expand.nElement()) {
-        ev.scal(innerNum, weightData(k), output.storage().array(), offset, 1)
+        ev.scal(innerNum, weightData(k + weightOffset), output.storage().array(), offset, 1)
         offset += innerNum
         k += 1
       }
