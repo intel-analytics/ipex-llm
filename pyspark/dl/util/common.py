@@ -202,6 +202,19 @@ class Sample(object):
     def __str__(self):
         return "features: %s, label: %s," % (self.features, self.label)
 
+class RNG():
+    """
+    generate tensor data with seed
+    """
+    def __init__(self, bigdl_type="float"):
+        self.bigdl_type = bigdl_type
+
+    def set_seed(self, seed):
+        callBigDlFunc(self.bigdl_type, "setModelSeed", seed)
+
+    def uniform(self, a, b, size):
+        return callBigDlFunc(self.bigdl_type, "uniform", a, b, size)
+
 
 _picklable_classes = [
     'LinkedList',
