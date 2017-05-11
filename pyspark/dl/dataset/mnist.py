@@ -20,7 +20,7 @@ import gzip
 
 import numpy
 
-import base
+from . import base
 
 SOURCE_URL = 'http://yann.lecun.com/exdb/mnist/'
 
