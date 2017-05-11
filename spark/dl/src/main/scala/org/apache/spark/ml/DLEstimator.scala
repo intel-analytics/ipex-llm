@@ -17,11 +17,11 @@ package org.apache.spark.ml
 import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch}
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.optim.Optimizer
-import com.intel.analytics.bigdl.tensor.{Tensor}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import org.apache.spark.ml.param.shared.HasInputCols
+import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasInputCols, HasLabelCol}
 import org.apache.spark.ml.param.{Param, ParamMap, Params}
-import org.apache.spark.sql.{DataFrame}
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable
@@ -29,22 +29,34 @@ import scala.reflect.ClassTag
 
 /**
  * A wrapper of Optimizer to support fit() in ML Pipelines as an Estimator
+ * feature column name and label column name should be provided in training Dataframe
+ * Model to be trained, Feature size, label size, batch shape size must also be provided
+ * For details usage, please refer to example :
+ * [[com.intel.analytics.bigdl.example.MLPipeline.DLEstimatorLeNet]]
  */
 class DLEstimator[@specialized(Float, Double) T: ClassTag]
 (override val uid: String = "DLEstimator")(implicit ev: TensorNumeric[T])
-  extends MLEstimator with HasInputCols with DLDataParams[T]{
+  extends MLEstimator with HasFeaturesCol with HasLabelCol with DLDataParams[T] {
 
-  def setInputCols(inputColName: Array[String]): this.type = set(inputCols, inputColName)
+  def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
+
+  def setLabelCol(labelColName : String) : this.type = set(labelCol, labelColName)
 
   def validateParameters(): Unit = {
     val params = this.extractParamMap()
-    require(null != params.getOrElse(modelTrain, null),
+    require(isDefined(modelTrain),
       "DLEstimator: model for optimization must not be null")
-    require(null != params.getOrElse(batchShape, null),
+    require(isDefined(batchShape),
       "DLEstimator: batchShape for optimization must not be null")
-    require(null != params.getOrElse(inputCols, null),
-      "DLEstimator: inputCols must not be null")
-    require(null != params.getOrElse(criterion, null),
+    require(isDefined(featuresCol),
+      "DLEstimator: features data must not be null")
+    require(isDefined(featureSize),
+      "DLEstimator: features size col must not be null")
+    require(isDefined(labelCol),
+      "DLEstimator: label data must not be null")
+    require(isDefined(labelSize),
+      "DLEstimator: label size must not be null")
+    require(isDefined(criterion),
       "DLEstimator: criterion must not be null")
   }
 
@@ -76,17 +88,12 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag]
   }
 
   private def toMiniBatch(dataFrame: DataFrame) : RDD[MiniBatch[T]] = {
-    val inputs = $(inputCols)
-    require(inputs.length == 4, "Input columns size " +
-      s" ${inputs.length} != 4 ,which stands for feature data,feature size," +
-      s" label data and lable size respectively")
-    val data = dataFrame.select(inputs.map(input => dataFrame(input)) : _*).rdd
+
+    val data = dataFrame.rdd
     val batchs = data.map(row => {
-      val featureData = row.getAs[mutable.WrappedArray[T]](0).toArray
-      val featureSize = row.getAs[mutable.WrappedArray[Int]](1).toArray
-      val labelData = row.getAs[mutable.WrappedArray[T]](2).toArray
-      val labelSize = row.getAs[mutable.WrappedArray[Int]](3).toArray
-      MiniBatch[T](Tensor(featureData, featureSize), Tensor(labelData, labelSize))
+      val featureData = row.getAs[mutable.WrappedArray[T]]($(featuresCol)).toArray
+      val labelData = row.getAs[mutable.WrappedArray[T]]($(labelCol)).toArray
+      MiniBatch[T](Tensor(featureData, $(featureSize)), Tensor(labelData, $(labelSize)))
     })
     batchs
   }
@@ -96,15 +103,27 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag]
   }
 }
 
-trait DLDataParams[@specialized(Float, Double) T] extends Params {
+private[ml] trait DLDataParams[@specialized(Float, Double) T] extends Params {
 
   final val modelTrain = new Param[Module[T]](this, "module factory", "network model")
 
   final val criterion = new Param[Criterion[T]](this, "criterion factory", "criterion for optimize")
 
+  final val featureSize = new Param[Array[Int]](this, "feature size", "feature input size")
+
+  final val labelSize = new Param[Array[Int]](this, "label size", "label input size")
+
   final val batchShape = new Param[Array[Int]](this, "batch size", "batch size for input")
 
   final def getModel: Module[T] = $(modelTrain)
+
+  final def getCriterion : Criterion[T] = $(criterion)
+
+  final def getFeatureSize : Array[Int] = $(featureSize)
+
+  final def getLabelSize : Array[Int] = $(labelSize)
+
+  final def getBatchShape : Array[Int] = $(batchShape)
 
 }
 

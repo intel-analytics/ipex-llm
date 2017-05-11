@@ -48,9 +48,9 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "An Estimator" should "works properly" in {
 
-    val inputs = Array[String]("Feature data", "Feature size", "Label data", "Label size")
+    val inputs = Array[String]("Feature data", "Label data")
 
-    var estimator = new DLEstimator[Float]().setInputCols(inputs)
+    var estimator = new DLEstimator[Float]().setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
 
     val featureData = Tensor(2, 10)
     val labelData = Tensor(2, 1)
@@ -59,8 +59,7 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val miniBatch = sc.parallelize(Seq(
       MinibatchData[Float](featureData.storage().array(),
-        featureData.size(),
-        labelData.storage().array(), labelData.size())
+        labelData.storage().array())
     ))
 
 
@@ -72,6 +71,8 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val paramsTrans = ParamMap(
       estimator.modelTrain -> model,
       estimator.criterion -> criterion,
+      estimator.featureSize -> Array(2, 10),
+      estimator.labelSize -> Array(2, 1),
       estimator.batchShape -> Array(2, 10))
 
     estimator = estimator.copy(paramsTrans)
@@ -86,8 +87,8 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "An Estimator" should "throws exception without correct inputs" in {
 
-    val inputs = Array[String]("Feature data", "Feature size", "Label data", "Label size")
-    var estimator = new DLEstimator[Float]().setInputCols(inputs)
+    val inputs = Array[String]("Feature data", "Label data")
+    var estimator = new DLEstimator[Float]().setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
 
     val featureData = Tensor(2, 10)
     val labelData = Tensor(2, 1)
@@ -95,8 +96,7 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val miniBatch = sc.parallelize(Seq(
       MinibatchData[Float](featureData.storage().array(),
-        featureData.size(),
-        labelData.storage().array(), labelData.size())
+        labelData.storage().array())
     ))
 
     var df : DataFrame = sQLContext.createDataFrame(miniBatch).toDF(inputs : _*)
@@ -114,9 +114,9 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val tensorBuffer = new ArrayBuffer[ClassifierDenseVector]()
 
     val batchSize = 10
-    val inputs = Array[String]("Feature data", "Feature size", "Label data", "Label size")
+    val inputs = Array[String]("Feature data", "Label data")
 
-    var estimator = new DLEstimator[Float]().setInputCols(inputs)
+    var estimator = new DLEstimator[Float]().setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
 
     val model = LeNet5(5)
 
@@ -141,14 +141,14 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val paramsTrans = ParamMap(
         estimator.modelTrain -> model,
         estimator.criterion -> criterion,
+        estimator.featureSize -> Array(10, 28, 28),
+        estimator.labelSize -> Array(10),
         estimator.batchShape -> batchShape)
 
       estimator = estimator.copy(paramsTrans)
 
       val miniBatch = sc.parallelize(Seq(
-        MinibatchData(optimizerInput.storage().array(),
-          optimizerInput.size(),
-          optimizerTargetArr, Array(10))
+        MinibatchData(optimizerInput.storage().array(), optimizerTargetArr)
       ))
 
       val df = sQLContext.createDataFrame(miniBatch).toDF(inputs : _*)
@@ -224,5 +224,4 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
 private case class ClassifierDenseVector( val features : DenseVector)
 
-private case class MinibatchData[T](featureData : Array[T], featureSize : Array[Int],
-                            labelData : Array[T], labelSize : Array[Int])
+private case class MinibatchData[T](featureData : Array[T], labelData : Array[T])
