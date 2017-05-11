@@ -16,12 +16,13 @@
 
 package com.intel.analytics.bigdl.nn.fixpoint
 
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
-
 import com.intel.analytics.bigdl.nn.{SpatialConvolution => NNSpatialConvolution}
 import com.intel.analytics.bigdl.nn.fixpoint.{SpatialConvolution => FPSpatialConvolution}
+
+import java.io.{File, PrintWriter}
+import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionSpec extends FlatSpec with Matchers {
@@ -55,19 +56,29 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 
       nn.reset()
       fp.reset()
+
+      nn.bias.fill(0f)
+      for (i <- 0 until nn.weight.nElement()) {
+        nn.weight.storage().array()(i) = i % 32
+      }
+
       fp.weight.copy(nn.weight)
       fp.bias.copy(nn.bias)
 
       val input = Tensor[Float]().resize(Array(test.batchSize, test.inputChannel,
         test.inputHeight, test.inputWidth)).rand()
 
+      for (i <- 0 until input.nElement()) {
+        input.storage().array()(i) = i % 32
+      }
+
       val nnOutput = nn.updateOutput(input)
       val fpOutput = fp.updateOutput(input)
 
       fp.release()
 
-      println(nn)
-      println(fp)
+      val file = s"/tmp/output/${fp.toString().filterNot((x: Char) => x.isWhitespace)}"
+      Tools.writeTensor2File(fpOutput, file)
 
       Tools.compare2Tensors(nnOutput, fpOutput) should be (0)
     }
@@ -75,7 +86,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
 }
 
 object Tools {
-  val magicValue = 0.1f
+  val magicValue = 1f
 
   def compare2Tensors(a1: Tensor[Float], a2: Tensor[Float]): Int = {
     var ret = true
@@ -94,8 +105,19 @@ object Tools {
       }
     }
 
-//    println(s"total = ${a1.nElement()} count = $count")
+    println(s"total = ${a1.nElement()} count = $count")
     count
+  }
+
+  def writeTensor2File(tensor: Tensor[Float], file: String): Unit = {
+    val printWriter = new PrintWriter(new File(file))
+    try {
+      for (i <- 0 until tensor.nElement()) {
+        printWriter.write(tensor.storage().array()(i).toString + "\n")
+      }
+    } finally {
+      printWriter.close()
+    }
   }
 }
 
