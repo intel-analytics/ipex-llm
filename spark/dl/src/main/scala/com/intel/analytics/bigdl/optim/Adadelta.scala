@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl.optim.DistriOptimizer.Cache
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -43,7 +44,7 @@ class Adadelta[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumer
    * @return the new x vector and the function list {fx}, evaluated before the update
    */
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]),
-               parameter: Tensor[T], config: Table, state: Table): (Tensor[T], Array[T]) = {
+    parameter: Tensor[T], config: Table, state: Table, lc: Cache[T] ): (Tensor[T], Array[T]) = {
 
     val _config = if (config == null) T() else config
     val _state = if (state == null) _config else state

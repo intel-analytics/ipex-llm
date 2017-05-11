@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl.optim.DistriOptimizer.Cache
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Table
@@ -50,7 +51,7 @@ class SGD[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T]
    * @return the new x 1D tensor and the function list, evaluated before the update
    */
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]), x: Tensor[T],
-    config: Table, state: Table = null): (Tensor[T], Array[T]) = {
+    config: Table, state: Table = null, lc: Cache[T]): (Tensor[T], Array[T]) = {
 
     val _state = if (state == null) config else state
     val lrSchedule = config.get[LearningRateSchedule]("learningRateSchedule").getOrElse(Default())

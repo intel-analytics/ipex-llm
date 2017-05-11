@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl.optim.DistriOptimizer.Cache
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Table
 
@@ -32,10 +33,11 @@ trait OptimMethod[@specialized(Float, Double) T] extends Serializable {
    * @param config    a table with configuration parameters for the optimizer
    * @param state     a table describing the state of the optimizer; after each call the state
    *                  is modified
+   * @param localCache  executor's local cache for EASGD's optimization
    * @return the new x vector and the function list, evaluated before the update
    */
   def optimize(feval: (Tensor[T]) => (T, Tensor[T]), parameter: Tensor[T], config: Table,
-    state: Table = null): (Tensor[T], Array[T])
+    state: Table = null, localCache: Cache[T] = null): (Tensor[T], Array[T])
 
   /**
    * Clear the history information in the state
