@@ -40,7 +40,8 @@ object Module {
 
   def loadCaffeDynamic[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
-    CaffeLoader.loadDynamic[T](defPath, modelPath, matchAll)
+    val (module, criterion) = CaffeLoader.loadDynamic[T](defPath, modelPath, matchAll)
+    module
   }
 
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(
