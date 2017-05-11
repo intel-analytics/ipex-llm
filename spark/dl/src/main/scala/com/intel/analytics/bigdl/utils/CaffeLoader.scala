@@ -27,7 +27,7 @@ import com.google.protobuf.{CodedInputStream, TextFormat}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.log4j.Logger
@@ -171,14 +171,14 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
    * to BigDL graph module
    * Pre-defined module structure is not needed, it will be created dynamically
    */
-  def createCaffeModel(): Module[T] = {
+  def createCaffeModel(): (Module[T], ParallelCriterion[T]) = {
     loadCaffe(prototxtPath, modelPath)
     val layers = createLayers()
     val inputs = layers.filter(layer => layer.prevNodes.size == 0).toArray
     val outputs = layers.filter(layer => layer.nextNodes.size == 0).toArray
     val module = Graph(inputs, outputs)
     copyParameters(module)
-    module
+    (module, criterions)
   }
 
   private def createLayers() : ArrayBuffer[ModuleNode[T]] = {
@@ -262,6 +262,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       case "INPUT" => null
       case _ => fitCustomizedLayer(layerType, layerName)
     }
+    println(module)
     module
   }
 
@@ -276,7 +277,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
  */
   private def addCriterion(layerType : String, layerName: String = null) : Unit = {
     val criterion = layerType match {
-      case "SoftmaxWithLoss" => ClassNLLCriterion[T]()
+      case "SOFTMAX_LOSS" => ClassNLLCriterion[T]()
       case "EuclideanLoss" => MSECriterion[T]()
       case "HingeLoss" => HingeEmbeddingCriterion[T]()
       case "SigmoidCrossEntropyLoss" => CrossEntropyCriterion[T]()
@@ -756,7 +757,7 @@ object CaffeLoader {
   }
 
   def loadDynamic[T: ClassTag](defPath: String, modelPath: String, matchAll: Boolean = true)
-                       (implicit ev: TensorNumeric[T]): Module[T] = {
+                       (implicit ev: TensorNumeric[T]): (Module[T], ParallelCriterion[T]) = {
     val caffeLoader = new CaffeLoader[T](defPath, modelPath, matchAll)
     caffeLoader.createCaffeModel()
   }
