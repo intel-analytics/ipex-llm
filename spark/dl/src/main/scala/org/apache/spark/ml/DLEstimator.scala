@@ -35,19 +35,17 @@ import scala.reflect.ClassTag
  * For details usage, please refer to example :
  * [[com.intel.analytics.bigdl.example.MLPipeline.DLEstimatorLeNet]]
  */
-class DLEstimator[@specialized(Float, Double) T: ClassTag]
-(override val uid: String = "DLEstimator")(implicit ev: TensorNumeric[T])
-  extends MLEstimator with HasFeaturesCol with HasLabelCol with DLDataParams[T] {
+class DLPipeLineEstimator[@specialized(Float, Double) T: ClassTag]
+(val modelTrain : Module[T], val criterion : Criterion[T], val batchShape : Array[Int],
+ override val uid: String = "DLEstimator")
+(implicit ev: TensorNumeric[T])
+  extends DLEstimator with HasFeaturesCol with HasLabelCol with DLDataParams[T] {
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
   def setLabelCol(labelColName : String) : this.type = set(labelCol, labelColName)
 
   private def validateInput(schema : StructType): Unit = {
-    require(isDefined(modelTrain),
-      "DLEstimator: model for optimization must not be null")
-    require(isDefined(batchShape),
-      "DLEstimator: batchShape for optimization must not be null")
     require(isDefined(featuresCol),
       "DLEstimator: features data must not be null")
     require(isDefined(featureSize),
@@ -56,11 +54,8 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag]
       "DLEstimator: label data must not be null")
     require(isDefined(labelSize),
       "DLEstimator: label size must not be null")
-    require(isDefined(criterion),
-      "DLEstimator: criterion must not be null")
     val featureIndex = schema.fieldIndex($(featuresCol))
     val featureField = schema.fields(featureIndex)
-    println("data type is " + featureField.dataType)
     require(featureField.dataType.isInstanceOf[ArrayType], "Feature data should be of array type")
     val labelIndex = schema.fieldIndex($(labelCol))
     val labelField = schema.fields(labelIndex)
@@ -75,9 +70,9 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag]
 
     val dataset = DataSet.rdd(batches)
 
-    val optimizer = Optimizer($(modelTrain), dataset, $(criterion))
+    val optimizer = Optimizer(modelTrain, dataset, criterion)
 
-    var optimizedModule = $(modelTrain)
+    var optimizedModule = modelTrain
 
     optimizedModule = optimizer.optimize()
 
@@ -87,7 +82,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag]
 
     val paramsTrans = ParamMap(
       classifier.modelTrain -> optimizedModule,
-      classifier.batchShape -> ${batchShape})
+      classifier.batchShape -> batchShape)
 
     classifier = classifier.copy(paramsTrans)
 
@@ -105,32 +100,20 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag]
     batchs
   }
 
-  override def copy(extra: ParamMap): DLEstimator[T] = {
-    copyValues(new DLEstimator(uid), extra)
+  override def copy(extra: ParamMap): DLPipeLineEstimator[T] = {
+    copyValues(new DLPipeLineEstimator(modelTrain, criterion, batchShape), extra)
   }
 }
 
 private[ml] trait DLDataParams[@specialized(Float, Double) T] extends Params {
 
-  final val modelTrain = new Param[Module[T]](this, "module factory", "network model")
-
-  final val criterion = new Param[Criterion[T]](this, "criterion factory", "criterion for optimize")
-
   final val featureSize = new Param[Array[Int]](this, "feature size", "feature input size")
 
   final val labelSize = new Param[Array[Int]](this, "label size", "label input size")
 
-  final val batchShape = new Param[Array[Int]](this, "batch size", "batch size for input")
-
-  final def getModel: Module[T] = $(modelTrain)
-
-  final def getCriterion : Criterion[T] = $(criterion)
-
   final def getFeatureSize : Array[Int] = $(featureSize)
 
   final def getLabelSize : Array[Int] = $(labelSize)
-
-  final def getBatchShape : Array[Int] = $(batchShape)
 
 }
 

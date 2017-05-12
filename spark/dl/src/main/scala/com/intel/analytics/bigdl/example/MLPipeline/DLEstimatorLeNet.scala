@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.models.lenet.Utils._
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.utils.LoggerFilter
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.ml.{DLEstimator, Pipeline}
+import org.apache.spark.ml.{DLEstimator, DLPipeLineEstimator, Pipeline}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, _}
 import com.intel.analytics.bigdl.example.imageclassification.MlUtils.{testMean => _, testStd => _, _}
@@ -85,14 +85,14 @@ object DLEstimatorLeNet {
 
       val criterion = ClassNLLCriterion[Float]()
 
-      var estimator = new DLEstimator[Float]().setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
+      var batchShape = Array[Int](128, 28, 28)
+
+      var estimator = new DLPipeLineEstimator[Float](model, criterion, batchShape).
+        setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
 
       val paramsTrans = ParamMap(
-        estimator.modelTrain -> model,
-        estimator.criterion -> criterion,
         estimator.featureSize -> Array(10, 28, 28),
-        estimator.labelSize -> Array(10, 10),
-        estimator.batchShape -> Array[Int](128, 28, 28))
+        estimator.labelSize -> Array(10, 10) )
 
       estimator = estimator.copy(paramsTrans)
 
