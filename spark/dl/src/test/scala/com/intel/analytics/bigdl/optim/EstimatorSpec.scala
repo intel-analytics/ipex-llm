@@ -77,11 +77,11 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     estimator = estimator.copy(paramsTrans)
 
-    var df : DataFrame = sQLContext.createDataFrame(miniBatch).toDF(inputs : _*)
+    var trainingDF : DataFrame = sQLContext.createDataFrame(miniBatch).toDF(inputs : _*)
 
-    val res = estimator.fit(df)
+    val res = estimator.fit(trainingDF)
 
-    res.isInstanceOf[MlTransformer] should be(true)
+    res.isInstanceOf[DLTransformer] should be(true)
 
   }
 

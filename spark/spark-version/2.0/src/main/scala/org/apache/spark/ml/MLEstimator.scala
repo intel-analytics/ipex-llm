@@ -23,9 +23,9 @@ import org.apache.spark.sql.Dataset
  * Extends MLEstimator and override process to gain compatibility with
  * both spark 1.5 and spark 2.0.
   */
-abstract class MLEstimator extends Estimator[MlTransformer]{
-  def process(dataset: DataFrame): MlTransformer
-  override def fit(dataset: Dataset[_]): MlTransformer = {
+abstract class MLEstimator extends Estimator[DLTransformer]{
+  protected def process(dataset: DataFrame): DLTransformer
+  override def fit(dataset: Dataset[_]): DLTransformer = {
     process(dataset.toDF())
   }
   override def transformSchema(schema: StructType): StructType = schema

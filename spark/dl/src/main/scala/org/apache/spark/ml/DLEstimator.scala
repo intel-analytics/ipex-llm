@@ -67,7 +67,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag]
     require(labelField.dataType.isInstanceOf[ArrayType], "Label data should be of array type")
   }
 
-  override protected def process(dataFrame: DataFrame): MlTransformer = {
+  override protected def process(dataFrame: DataFrame): DLTransformer = {
 
     validateInput(dataFrame.schema)
 
