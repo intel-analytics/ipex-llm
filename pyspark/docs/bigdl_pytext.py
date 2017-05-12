@@ -26,7 +26,6 @@ def _process_docstring(app, what, name, obj, options, lines):
         # regualr line
         else:
             lines[i]=line.lstrip()
-            #lines[i] = '|' + line
 
 def setup(app):
     app.connect("autodoc-process-docstring", _process_docstring)
