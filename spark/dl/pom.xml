@@ -18,6 +18,7 @@
         <scoverage.aggregate>true</scoverage.aggregate>
         <runSpecsInParallel>false</runSpecsInParallel>
         <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
+        <filesToExclude>com/intel/analytics/bigdl/example/udfpredictor/*Stream*.scala</filesToExclude>
     </properties>
 
     <dependencies>
@@ -250,6 +251,17 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <excludes>
+                        <exclude>${filesToExclude}</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -272,30 +284,16 @@
 
     <profiles>
         <profile>
-            <id>spark_1.6</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>net.alchim31.maven</groupId>
-                        <artifactId>scala-maven-plugin</artifactId>
-                        <version>3.2.0</version>
-                        <configuration>
-                            <excludes>
-                                <exclude>com/intel/analytics/bigdl/example/udfpredictor/*Stream*.scala</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
             <id>spark_2.0</id>
+            <properties>
+                <filesToExclude>""</filesToExclude> <!-- we do not want exclude anything here -->
+            </properties>
         </profile>
         <profile>
             <id>spark_2.1</id>
+            <properties>
+                <filesToExclude>""</filesToExclude> <!-- we do not want exclude anything here -->
+            </properties>
         </profile>
         <profile>
             <id>parallel-tests</id>
