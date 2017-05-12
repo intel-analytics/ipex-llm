@@ -63,7 +63,8 @@ def get_minst(sc, data_type="train", location="/tmp/mnist"):
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-a", "--action", dest="action", default="train")
-    parser.add_option("-b", "--batchSize", dest="batchSize", default="128")
+    parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="128")
+    parser.add_option("-m", "--modelPath", dest="modelPath", default="")
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -84,9 +85,9 @@ if __name__ == "__main__":
             optim_method="SGD",
             state=state,
             end_trigger=MaxEpoch(20),
-            batch_size=int(options.batchSize))
+            batch_size=options.batchSize)
         optimizer.set_validation(
-            batch_size=32,
+            batch_size=options.batchSize,
             val_rdd=test_data,
             trigger=EveryEpoch(),
             val_method=["Top1Accuracy"]
@@ -98,8 +99,7 @@ if __name__ == "__main__":
         # Load a pre-trained model and then validate it through top1 accuracy.
         test_data = get_minst(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
-        # TODO: Pass model path through external parameter
-        model = Model.from_path("/tmp/lenet5/lenet-model.470")
-        results = model.test(test_data, 32, ["Top1Accuracy"])
+        model = Model.load(options.modelPath)
+        results = model.test(test_data, options.batchSize, ["Top1Accuracy"])
         for result in results:
             print(result)
