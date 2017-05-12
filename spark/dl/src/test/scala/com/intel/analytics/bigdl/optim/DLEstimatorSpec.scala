@@ -34,7 +34,7 @@ import org.apache.spark.sql.{DataFrame, SQLContext}
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
-class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
+class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val model = new Sequential[Float]()
   var sc : SparkContext = _
   var sQLContext : SQLContext = _
@@ -50,7 +50,12 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val inputs = Array[String]("Feature data", "Label data")
 
-    var estimator = new DLEstimator[Float]().setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
+    val model = Linear[Float](10, 1)
+
+    val criterion = ClassNLLCriterion[Float]()
+
+    var estimator = new DLEstimator[Float](model, criterion, Array(2, 10))
+      .setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
 
     val featureData = Tensor(2, 10)
     val labelData = Tensor(2, 1)
@@ -62,18 +67,9 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
         labelData.storage().array())
     ))
 
-
-    val model = Linear[Float](10, 1)
-
-
-    val criterion = ClassNLLCriterion[Float]()
-
     val paramsTrans = ParamMap(
-      estimator.modelTrain -> model,
-      estimator.criterion -> criterion,
       estimator.featureSize -> Array(2, 10),
-      estimator.labelSize -> Array(2, 1),
-      estimator.batchShape -> Array(2, 10))
+      estimator.labelSize -> Array(2, 1))
 
     estimator = estimator.copy(paramsTrans)
 
@@ -88,7 +84,13 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An Estimator" should "throws exception without correct inputs" in {
 
     val inputs = Array[String]("Feature data", "Label data")
-    var estimator = new DLEstimator[Float]().setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
+
+    val model = Linear[Float](10, 1)
+
+    val criterion = ClassNLLCriterion[Float]()
+
+    var estimator = new DLEstimator[Float](model, criterion, Array(2, 10)).
+      setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
 
     val featureData = Tensor(2, 10)
     val labelData = Tensor(2, 1)
@@ -116,11 +118,14 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val batchSize = 10
     val inputs = Array[String]("Feature data", "Label data")
 
-    var estimator = new DLEstimator[Float]().setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
-
     val model = LeNet5(5)
 
     val batchShape = Array(10, 28, 28)
+
+    val criterion = ClassNLLCriterion[Float]()
+
+    var estimator = new DLEstimator[Float](model, criterion, batchShape).
+      setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
 
     var m = 0
 
@@ -136,14 +141,9 @@ class EstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
       val optimizerTargetArr = optimizerTarget.max(2)._2.squeeze().storage().array()
 
-      val criterion = ClassNLLCriterion[Float]()
-
       val paramsTrans = ParamMap(
-        estimator.modelTrain -> model,
-        estimator.criterion -> criterion,
         estimator.featureSize -> Array(10, 28, 28),
-        estimator.labelSize -> Array(10),
-        estimator.batchShape -> batchShape)
+        estimator.labelSize -> Array(10))
 
       estimator = estimator.copy(paramsTrans)
 

@@ -35,11 +35,11 @@ import scala.reflect.ClassTag
  * For details usage, please refer to example :
  * [[com.intel.analytics.bigdl.example.MLPipeline.DLEstimatorLeNet]]
  */
-class DLPipeLineEstimator[@specialized(Float, Double) T: ClassTag]
+class DLEstimator[@specialized(Float, Double) T: ClassTag]
 (val modelTrain : Module[T], val criterion : Criterion[T], val batchShape : Array[Int],
  override val uid: String = "DLEstimator")
 (implicit ev: TensorNumeric[T])
-  extends DLEstimator with HasFeaturesCol with HasLabelCol with DLDataParams[T] {
+  extends DLEstimatorBase with HasFeaturesCol with HasLabelCol with DLDataParams[T] {
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
@@ -100,8 +100,8 @@ class DLPipeLineEstimator[@specialized(Float, Double) T: ClassTag]
     batchs
   }
 
-  override def copy(extra: ParamMap): DLPipeLineEstimator[T] = {
-    copyValues(new DLPipeLineEstimator(modelTrain, criterion, batchShape), extra)
+  override def copy(extra: ParamMap): DLEstimator[T] = {
+    copyValues(new DLEstimator(modelTrain, criterion, batchShape), extra)
   }
 }
 
