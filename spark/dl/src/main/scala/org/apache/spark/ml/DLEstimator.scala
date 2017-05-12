@@ -34,6 +34,10 @@ import scala.reflect.ClassTag
  * Model to be trained, Feature size, label size, batch shap must also be provided
  * For details usage, please refer to example :
  * [[com.intel.analytics.bigdl.example.MLPipeline.DLEstimatorLeNet]]
+ *
+ * @param modelTrain module to be optimized
+ * @param criterion  criterion method
+ * @param batchShape batch shape for DLClassifier transformation input
  */
 class DLEstimator[@specialized(Float, Double) T: ClassTag]
 (val modelTrain : Module[T], val criterion : Criterion[T], val batchShape : Array[Int],
