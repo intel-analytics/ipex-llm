@@ -38,6 +38,7 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val model = new Sequential[Float]()
   var sc : SparkContext = _
   var sQLContext : SQLContext = _
+
   before {
     Engine.setNodeAndCore(1, 1)
     val conf = Engine.createSparkConf().setAppName("Test Optimizer Wrapper").setMaster("local[4]")
@@ -58,7 +59,7 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
 
     val featureData = Tensor(2, 10)
-    val labelData = Tensor(2, 1)
+    val labelData = Tensor(2, 1).fill(1.0f)
 
     val batch = MiniBatch(featureData, labelData)
 
