@@ -115,10 +115,9 @@ object DLEstimatorLeNet {
         }
       var validationDF : DataFrame = sqLContext.createDataFrame(rdd).toDF("features")
       val transformed = transformer.transform(validationDF)
-      transformed.select("features", "predict")
-        .collect()
+      transformed.select("features", "predict").collect()
         .foreach { case Row(data: DenseVector, predict: Int) =>
-          println(data + "=>" + predict)
+            println(data + "=>" + predict)
         }
     })
 

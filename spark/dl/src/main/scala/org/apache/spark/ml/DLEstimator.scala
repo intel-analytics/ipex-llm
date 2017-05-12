@@ -23,6 +23,7 @@ import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasInputCols, HasLabelC
 import org.apache.spark.ml.param.{Param, ParamMap, Params}
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.types.{ArrayType, StructType}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -30,7 +31,7 @@ import scala.reflect.ClassTag
 /**
  * A wrapper of Optimizer to support fit() in ML Pipelines as an Estimator
  * feature column name and label column name should be provided in training Dataframe
- * Model to be trained, Feature size, label size, batch shape size must also be provided
+ * Model to be trained, Feature size, label size, batch shap must also be provided
  * For details usage, please refer to example :
  * [[com.intel.analytics.bigdl.example.MLPipeline.DLEstimatorLeNet]]
  */
@@ -42,8 +43,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag]
 
   def setLabelCol(labelColName : String) : this.type = set(labelCol, labelColName)
 
-  def validateParameters(): Unit = {
-    val params = this.extractParamMap()
+  private def validateInput(schema : StructType): Unit = {
     require(isDefined(modelTrain),
       "DLEstimator: model for optimization must not be null")
     require(isDefined(batchShape),
@@ -58,11 +58,18 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag]
       "DLEstimator: label size must not be null")
     require(isDefined(criterion),
       "DLEstimator: criterion must not be null")
+    val featureIndex = schema.fieldIndex($(featuresCol))
+    val featureField = schema.fields(featureIndex)
+    println("data type is " + featureField.dataType)
+    require(featureField.dataType.isInstanceOf[ArrayType], "Feature data should be of array type")
+    val labelIndex = schema.fieldIndex($(labelCol))
+    val labelField = schema.fields(labelIndex)
+    require(labelField.dataType.isInstanceOf[ArrayType], "Label data should be of array type")
   }
 
-  override def process(dataFrame: DataFrame): MlTransformer = {
+  override protected def process(dataFrame: DataFrame): MlTransformer = {
 
-    validateParameters()
+    validateInput(dataFrame.schema)
 
     val batches = toMiniBatch(dataFrame)
 
