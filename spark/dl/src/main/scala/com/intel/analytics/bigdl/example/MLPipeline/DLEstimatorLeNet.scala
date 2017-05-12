@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.example.optimizerWrapper
+package com.intel.analytics.bigdl.example.MLPipeline
 
 import java.nio.file.Paths
 
@@ -43,12 +43,12 @@ import scala.collection.mutable.ArrayBuffer
  * An example to show how to use DLEstimator fit to be compatible with ML Pipeline
  * refer to README.md on how to run this example
  */
-object OptimizerWrapper {
+object DLEstimatorLeNet {
 
   LoggerFilter.redirectSparkInfoLogs()
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
   def main(args: Array[String]): Unit = {
-    val inputs = Array[String]("Feature data", "Feature size", "Label data", "Label size")
+    val inputs = Array[String]("Feature data", "Label data")
     trainParser.parse(args, new TrainParams()).map(param => {
       val conf = Engine.createSparkConf()
         .setAppName("MLPipeline Example")
@@ -77,45 +77,44 @@ object OptimizerWrapper {
           val feature = batch.data
           val label = batch.labels
           val estimatorData = MinibatchData[Float](feature.storage().array(),
-            feature.size(), label.storage().array(), label.size())
+            label.storage().array())
            estimatorData
         })
 
-      var df : DataFrame = sqLContext.createDataFrame(dataFrameRDD).toDF(inputs : _*)
+      var trainingDF : DataFrame = sqLContext.createDataFrame(dataFrameRDD).toDF(inputs : _*)
 
       val criterion = ClassNLLCriterion[Float]()
 
-      var estimator = new DLEstimator[Float]().setInputCols(inputs)
+      var estimator = new DLEstimator[Float]().setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
 
       val paramsTrans = ParamMap(
         estimator.modelTrain -> model,
         estimator.criterion -> criterion,
+        estimator.featureSize -> Array(10, 28, 28),
+        estimator.labelSize -> Array(10, 10),
         estimator.batchShape -> Array[Int](128, 28, 28))
 
       estimator = estimator.copy(paramsTrans)
 
-      val pipeline = new Pipeline()
-
-      pipeline.setStages(Array(estimator))
-
-      val transformer = pipeline.fit(df)
+      val transformer = estimator.fit(trainingDF)
 
       val rdd: RDD[DenseVectorData] = validationSet.
-        asInstanceOf[DistributedDataSet[MiniBatch[Float]]].data(false).flatMap(batch => {
-        val buffer = new ArrayBuffer[DenseVectorData]()
-        val feature = batch.data.storage().toArray
-        var i = 0
-        while (i < 128) {
-          val next = new DenseVector(feature.
-            slice(i * 28 * 28, (i + 1) * 28 * 28).map(_.toDouble))
-          val data = DenseVectorData(next)
-          buffer.append(data)
-          i += 1
+        asInstanceOf[DistributedDataSet[MiniBatch[Float]]].data(false).flatMap{batch => {
+          val buffer = new ArrayBuffer[DenseVectorData]()
+          val feature = batch.data.storage().toArray
+          var i = 0
+          while (i < 128) {
+            val next = new DenseVector(feature.
+             slice(i * 28 * 28, (i + 1) * 28 * 28).map(_.toDouble))
+            val data = DenseVectorData(next)
+            buffer.append(data)
+            i += 1
+          }
+          buffer.iterator
+          }
         }
-        buffer.iterator
-        })
-      var transDF : DataFrame = sqLContext.createDataFrame(rdd).toDF("features")
-      val transformed = transformer.transform(transDF)
+      var validationDF : DataFrame = sqLContext.createDataFrame(rdd).toDF("features")
+      val transformed = transformer.transform(validationDF)
       transformed.select("features", "predict")
         .collect()
         .foreach { case Row(data: DenseVector, predict: Int) =>
@@ -127,5 +126,4 @@ object OptimizerWrapper {
 }
 
 private case class DenseVectorData(denseVector : DenseVector)
-private case class MinibatchData[T](featureData : Array[T], featureSize : Array[Int],
-                                    labelData : Array[T], labelSize : Array[Int])
+private case class MinibatchData[T](featureData : Array[T], labelData : Array[T])
