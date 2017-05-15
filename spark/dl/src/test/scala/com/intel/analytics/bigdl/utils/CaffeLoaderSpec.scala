@@ -19,10 +19,13 @@ package com.intel.analytics.bigdl.utils
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.models.resnet.Convolution
-import com.intel.analytics.bigdl.nn.{Linear, Sequential}
+import com.intel.analytics.bigdl.nn.{Linear, Sequential, View}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class CaffeLoaderSpec extends FlatSpec with Matchers {
 
@@ -176,6 +179,32 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
         assert(Math.abs(a - b) < 1e-6)
         a
       })
+  }
+
+  "Dynamic loaded module" should "have the same result as static one" in {
+    val module = Sequential()
+      .add(Convolution(3, 4, 2, 2).setName("conv"))
+      .add(Convolution(4, 3, 2, 2).setName("conv2"))
+      .add(View(27)).setName("view")
+      .add(Linear(27, 2, withBias = false).setName("ip"))
+
+    val staticInput = Tensor[Double](1, 3, 5, 5).apply1( e => Random.nextDouble())
+
+    val dynamicInput = Tensor[Double]()
+
+    dynamicInput.resizeAs(staticInput).copy(staticInput)
+
+    RandomGenerator.RNG.setSeed(1000)
+    val staticModel = CaffeLoader.load[Double](module, prototxt, modelPath)
+
+    val staticOutPut = staticModel.forward(staticInput)
+
+    RandomGenerator.RNG.setSeed(1000)
+    val dynamicLoadedModule = CaffeLoader.loadDynamic(prototxt, modelPath)._1
+
+    val dynamicOutput = dynamicLoadedModule.forward(dynamicInput)
+
+    staticOutPut should be (dynamicOutput)
   }
 
 }

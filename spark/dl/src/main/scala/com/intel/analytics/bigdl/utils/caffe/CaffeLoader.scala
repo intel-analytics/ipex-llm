@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.intel.analytics.bigdl.utils.caffe
 
 import java.io.{File, FileInputStream, InputStreamReader}
@@ -73,6 +72,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       netparam.getLayersList.asScala.foreach(layer => name2LayerV1 += (layer.getName -> layer))
       // V2LayerParameter
       netparam.getLayerList.asScala.foreach(layer => name2LayerV2 += (layer.getName -> layer))
+
     }
   }
 
@@ -177,8 +177,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     loadCaffe(prototxtPath, modelPath)
     val layers = createLayers()
     val inputs = layers.filter(layer => layer.prevNodes.size == 0).toArray
-    println("inputs are")
-    inputs.foreach(e => {e.element.getName})
     val outputs = layers.filter(layer => layer.nextNodes.size == 0).toArray
     val module = Graph(inputs, outputs)
     copyParameters(module)
@@ -194,7 +192,9 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     if (netparam.getLayersList.size > 0 ) {
       netparam.getLayersList.asScala.foreach(layer => allLayers.append(layer))
     } else {
-      netparam.getLayerList.asScala.foreach(layer => allLayers.append(layer))
+      // filter is to filter out layers from prototxt, this happens in V2 layer
+      netparam.getLayerList.asScala.filter(layer => layer.getBlobsCount > 0)
+      .foreach(layer => allLayers.append(layer))
     }
     allLayers.foreach(layer => {
       var name : String = s""

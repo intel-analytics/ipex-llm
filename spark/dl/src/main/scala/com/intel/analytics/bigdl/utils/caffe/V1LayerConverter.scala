@@ -66,11 +66,12 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
 
   override protected def fromCaffeInnerProduct(layer : GeneratedMessage) : ModuleNode[T] = {
     val param = getInnerProductParam(layer).get
+    val withBias = param.getBiasTerm
     val layerName = getLayerName(layer)
     val weightBlob = getBlob(layer.asInstanceOf[V1LayerParameter], 0).get
     var nInputPlane = weightBlob.getWidth
     val nOutputPlane = param.getNumOutput
-    val linear = Linear[T](nInputPlane, nOutputPlane).setName(layerName)
+    val linear = Linear[T](nInputPlane, nOutputPlane, withBias = withBias).setName(layerName)
     val node = linear.apply()
     if(nInputPlane != nOutputPlane) {
       // Construct a view layer in between
@@ -119,8 +120,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
   override protected def getLayerType(layer : GeneratedMessage) : String = {
     layer.asInstanceOf[V1LayerParameter].getType.toString
   }
-
-
+  
   protected def getConvolutionParam(layer : GeneratedMessage): Option[ConvolutionParameter] = {
     Some(layer.asInstanceOf[V1LayerParameter].getConvolutionParam)
   }

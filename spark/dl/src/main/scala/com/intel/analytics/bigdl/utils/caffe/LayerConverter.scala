@@ -70,6 +70,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
 
   override protected def fromCaffeInnerProduct(layer : GeneratedMessage) : ModuleNode[T] = {
     val param = getInnerProductParam(layer).get
+    val withBias = param.getBiasTerm
     val layerName = getLayerName(layer)
     val weightBlob = getBlob(layer.asInstanceOf[LayerParameter], 0).get
     var nInputPlane = 0
@@ -80,7 +81,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
       nInputPlane = weightBlob.getWidth
     }
     val nOutputPlane = param.getNumOutput
-    val linear = Linear[T](nInputPlane, nOutputPlane).setName(layerName)
+    val linear = Linear[T](nInputPlane, nOutputPlane, withBias = withBias).setName(layerName)
     val node = linear.apply()
     if(nInputPlane != nOutputPlane) {
       // Construct a view layer in between
