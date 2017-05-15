@@ -34,6 +34,14 @@ class TestWorkFlow(unittest.TestCase):
     def tearDown(self):
         self.sc.stop()
 
+    def test_load_zip_conf(self):
+        from util.common import get_bigdl_conf
+        import sys
+        sys.path = [path for path in sys.path if "spark-bigdl.conf" not in path]
+        sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "resources/conf/python-api.zip"))  # noqa
+        result = get_bigdl_conf()
+        self.assertTrue(result.get("spark.executorEnv.OMP_WAIT_POLICY"), "passive")
+
     def test_set_seed(self):
         l1 = Linear(10, 20, "Xavier").set_name("linear1").set_seed(1234).reset()  # noqa
         l2 = Linear(10, 20, "Xavier").set_name("linear2").set_seed(1234).reset()  # noqa
