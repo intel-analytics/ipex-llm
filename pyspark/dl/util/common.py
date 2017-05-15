@@ -238,17 +238,20 @@ def get_bigdl_conf():
     bigdl_python_wrapper = "python-api.zip"
 
     def load_conf(conf_str):
-        return dict(line.split() for line in conf_str.split(b"\n") if
-                    b"#" not in line and line.strip())
+        return dict(line.split() for line in conf_str.split("\n") if
+                    "#" not in line and line.strip())
 
     for p in sys.path:
         if bigdl_conf_file in p:
-            with open(p, "rb") as conf_file:
+            with open(p) if sys.version_info < (3,) else open(p, encoding='latin-1') as conf_file: # noqa
                 return load_conf(conf_file.read())
         if bigdl_python_wrapper in p:
             import zipfile
             with zipfile.ZipFile(p, 'r') as zip_conf:
-                return load_conf(str(zip_conf.read(bigdl_conf_file)))
+                content = zip_conf.read(bigdl_conf_file)
+                if sys.version_info >= (3,):
+                    content = str(content, 'latin-1')
+                return load_conf(content)
     raise Exception("Cannot find spark-bigdl.conf.Pls add it to PYTHONPATH.")
 
 
