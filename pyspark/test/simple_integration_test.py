@@ -38,7 +38,7 @@ class TestWorkFlow(unittest.TestCase):
         from util.common import get_bigdl_conf
         import sys
         sys.path = [path for path in sys.path if "spark-bigdl.conf" not in path]
-        sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "resources/conf/python-api.zip"))
+        sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "resources/conf/python-api.zip"))  # noqa
         result = get_bigdl_conf()
         self.assertTrue(result.get("spark.executorEnv.OMP_WAIT_POLICY"), "passive")
 
