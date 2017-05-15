@@ -17,6 +17,7 @@
 import tarfile
 from dataset import base
 import os
+import sys
 
 NEWS20_URL = 'http://qwone.com/~jason/20Newsgroups/20news-19997.tar.gz'  # noqa
 GLOVE_URL = 'http://nlp.stanford.edu/data/glove.6B.zip'  # noqa
@@ -65,7 +66,10 @@ def get_news20(source_dir="/tmp/news20/"):
             for fname in sorted(os.listdir(path)):
                 if fname.isdigit():
                     fpath = os.path.join(path, fname)
-                    f = open(fpath, 'rb')
+                    if sys.version_info < (3,):
+                        f = open(fpath)
+                    else:
+                        f = open(fpath, encoding='latin-1')
                     content = f.read()
                     texts.append((content, label_id))
                     f.close()
@@ -83,12 +87,16 @@ def get_glove_w2v(source_dir="/tmp/news20/", dim=100):
     """
     w2v_dir = download_glove_w2v(source_dir)
     w2v_path = os.path.join(w2v_dir, "glove.6B.%sd.txt" % dim)
-    with open(w2v_path, 'rb') as w2v_f:
-        pre_w2v = {}
-        for line in w2v_f.readlines():
-            items = line.split(b" ")
-            pre_w2v[items[0]] = [float(i) for i in items[1:]]
-        return pre_w2v
+    if sys.version_info < (3,):
+        w2v_f = open(w2v_path)
+    else:
+        w2v_f = open(w2v_path, encoding='latin-1')
+    pre_w2v = {}
+    for line in w2v_f.readlines():
+        items = line.split(" ")
+        pre_w2v[items[0]] = [float(i) for i in items[1:]]
+    w2v_f.close()
+    return pre_w2v
 
 
 if __name__ == "__main__":
