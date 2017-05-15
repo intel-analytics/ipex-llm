@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils
+package com.intel.analytics.bigdl.utils.caffe
 
 import java.io.{File, FileInputStream, InputStreamReader}
 
@@ -23,13 +23,14 @@ import caffe.Caffe
 import caffe.Caffe.EltwiseParameter.EltwiseOp
 import caffe.Caffe.PoolingParameter.PoolMethod
 import caffe.Caffe._
-import com.google.protobuf.{CodedInputStream, TextFormat}
+import com.google.protobuf.{CodedInputStream, GeneratedMessage, TextFormat}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
 import org.apache.log4j.Logger
 
 import scala.collection.mutable
@@ -53,13 +54,14 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   private var name2LayerV1: Map[String, V1LayerParameter] = _
   private var name2LayerV2: Map[String, LayerParameter] = _
 
-  private var customizedLayer : Map[String, AbstractModule[Activity, Activity, T]] = _
+  private val layerConverter = new LayerConverter[T]()
+  private val v1layerConverter = new V1LayerConverter[T]()
 
   private var criterions = ParallelCriterion[T]()
 
-  def setCustomizedLayer(map : Map[String, AbstractModule[Activity, Activity, T]]) : this.type = {
-    customizedLayer = map
-    this
+  def setCustomizedLayer(map : Map[String, AbstractModule[Activity, Activity, T]]) : Unit = {
+    layerConverter.setCustomizedLayer(map)
+    v1layerConverter.setCustomizedLayer(map)
   }
   private def loadCaffe(prototxtPath: String, modelPath: String): Unit = {
     if (name2LayerV2 == null) {
@@ -175,6 +177,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     loadCaffe(prototxtPath, modelPath)
     val layers = createLayers()
     val inputs = layers.filter(layer => layer.prevNodes.size == 0).toArray
+    println("inputs are")
+    inputs.foreach(e => {e.element.getName})
     val outputs = layers.filter(layer => layer.nextNodes.size == 0).toArray
     val module = Graph(inputs, outputs)
     copyParameters(module)
@@ -186,43 +190,98 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     val layersMap = new mutable.HashMap[String, ModuleNode[T]]()
     val top2LayerMap = new mutable.HashMap[String, String]()
     val splitLayerMap = new mutable.HashMap[String, ModuleNode[T]]()
-    netparam.getLayersList.asScala.foreach(layer => {
-      val name = layer.getName
+    val allLayers = ArrayBuffer[GeneratedMessage]()
+    if (netparam.getLayersList.size > 0 ) {
+      netparam.getLayersList.asScala.foreach(layer => allLayers.append(layer))
+    } else {
+      netparam.getLayerList.asScala.foreach(layer => allLayers.append(layer))
+    }
+    allLayers.foreach(layer => {
+      var name : String = s""
+      var topList = new ArrayBuffer[String]()
+      val bottomList = new ArrayBuffer[String]()
+      if (layer.isInstanceOf[LayerParameter]) {
+        val layerParameter = layer.asInstanceOf[LayerParameter]
+        name = layerParameter.getName
+        layerParameter.getTopList.asScala.foreach(top => topList.append(top))
+        layerParameter.getBottomList.asScala.foreach(bottom => bottomList.append(bottom))
+      } else {
+        val layerParameter = layer.asInstanceOf[V1LayerParameter]
+        name = layerParameter.getName
+        layerParameter.getTopList.asScala.foreach(top => topList.append(top))
+        layerParameter.getBottomList.asScala.foreach(bottom => bottomList.append(bottom))
+      }
       val layerType = getLayerType(name).get.toUpperCase
-      val dependencies = layer.getBottomList.asScala
       if ("SPLIT".equals(layerType)) {
         // eliminate split layer in graph module, cache dependency only
-        require(dependencies.size == 1, s"split dependency should only be one!")
-        val topList = layer.getTopList.asScala
+        require(bottomList.size == 1, s"split dependency should only be one!")
         topList.foreach(top => {
-          if (top2LayerMap.contains(dependencies(0))) {
-            splitLayerMap(top) = layersMap(top2LayerMap(dependencies(0)))
+          if (top2LayerMap.contains(bottomList(0))) {
+            splitLayerMap(top) = layersMap(top2LayerMap(bottomList(0)))
           }
         })
       } else {
-        var node = convertCaffeLayer(name)
-        if (node != null) {
-          dependencies.foreach(dependency => {
-            if (splitLayerMap.contains(dependency)) splitLayerMap(dependency) -> node
-            else if (top2LayerMap.contains(dependency)) layersMap(top2LayerMap(dependency)) -> node
-          })
-          while (node.nextNodes.size != 0) {
+        val isCriterionLayerOnly : Boolean = tryAddCriterion(name, layerType)
+        if (!isCriterionLayerOnly) {
+          var node = convertCaffeLayer(layer)
+          if (node != null) {
+            bottomList.foreach(dependency => {
+              if (splitLayerMap.contains(dependency)) splitLayerMap(dependency) -> node
+              else if (top2LayerMap.contains(dependency)) {
+                layersMap(top2LayerMap(dependency)) -> node
+              }
+            })
+            while (node.nextNodes.size != 0) {
+              layers.append(node)
+              node = node.nextNodes(0)
+            }
             layers.append(node)
-            node = node.nextNodes(0)
+            layersMap(name) = node
+            topList.foreach(output => {
+              top2LayerMap(output) = name
+            })
           }
-          layers.append(node)
-          layersMap(name) = node
-          val outputs = layer.getTopList.asScala
-          outputs.foreach(output => {
-            top2LayerMap(output) = name
-          })
         }
       }
     })
     return layers
   }
 
-  private def convertCaffeLayer(layerName : String): ModuleNode[T] = {
+  private def convertCaffeLayer(layer : GeneratedMessage): ModuleNode[T] = {
+    val node = if (layer.isInstanceOf[LayerParameter]) {
+      layerConverter.convertLayer(layer)
+    }
+    else {
+      v1layerConverter.convertLayer(layer)
+    }
+    node
+  }
+
+  /*
+ * Add criterion according to layer type from train protocol
+ * if only test/model define prototxt file provided, there won't be criterion detected
+ */
+  private def tryAddCriterion(layerType : String, layerName: String = null) : Boolean = {
+    layerType match {
+      case "SOFTMAX_LOSS" => criterions.add(ClassNLLCriterion[T]())
+        false
+      case "SoftmaxWithLoss" => criterions.add(ClassNLLCriterion[T]())
+        false
+      case "EuclideanLoss" => criterions.add(MSECriterion[T]())
+        true
+      case "HingeLoss" => criterions.add(HingeEmbeddingCriterion[T]())
+        true
+      case "SigmoidCrossEntropyLoss" => criterions.add(CrossEntropyCriterion[T]())
+        false
+      case "InfogainLoss" => criterions.add(createInfoGainCriterion(layerName))
+        true
+      case "ContrastiveLoss" => criterions.add(CosineEmbeddingCriterion[T]())
+        true
+      case _ => false
+    }
+  }
+/*
+  private def convertCaffeLayer2(layerName : String): ModuleNode[T] = {
     val layerType = getLayerType(layerName).get.toUpperCase
     val module = layerType match {
       case "CONVOLUTION" => fromCaffeConvolution(layerName)
@@ -255,38 +314,13 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       case "Slice" => fromCaffeSlice(layerName)
       case "Tile" => fromCaffeTile(layerName)
       case "Eltwise" => fromCaffeEltwise(layerName)
-      case "EuclideanLoss" => fromCaffeLoss(layerType, layerName)
-      case "HingeLoss" => fromCaffeLoss(layerType, layerName)
-      case "MultinomialLogisticLoss" => fromCaffeLoss(layerType, layerName)
-      case "ContrastiveLoss" => fromCaffeLoss(layerType, layerName)
       case "INPUT" => null
       case _ => fitCustomizedLayer(layerType, layerName)
     }
     println(module)
     module
   }
-
-  private def fromCaffeLoss(layerType : String, layerName : String) : ModuleNode[T] = {
-    addCriterion(layerType, layerName)
-    null
-  }
-
-/*
- * Add criterion according to layer type from train protocol
- * if only test/model define prototxt file provided, there won't be criterion detected
- */
-  private def addCriterion(layerType : String, layerName: String = null) : Unit = {
-    val criterion = layerType match {
-      case "SOFTMAX_LOSS" => ClassNLLCriterion[T]()
-      case "EuclideanLoss" => MSECriterion[T]()
-      case "HingeLoss" => HingeEmbeddingCriterion[T]()
-      case "SigmoidCrossEntropyLoss" => CrossEntropyCriterion[T]()
-      case "SoftmaxWithLoss" => ClassNLLCriterion[T]()
-      case "InfogainLoss" => createInfoGainCriterion(layerName)
-      case "ContrastiveLoss" => CosineEmbeddingCriterion[T]()
-    }
-    criterions.add(criterion)
-  }
+*/
 
   private def createInfoGainCriterion(layerName : String) : ClassNLLCriterion[T] = {
     val param = getInforgainParam(layerName).get
@@ -309,12 +343,14 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   /**
    * Support customized layer mapping implemented by user for specific type
    */
+  /*
   private def fitCustomizedLayer(layerType : String, layerName : String) : ModuleNode[T] = {
     if (customizedLayer !=null && customizedLayer.contains(layerType)) {
       return customizedLayer(layerType).setName(layerName).apply()
     }
     throw new Exception(s"$layerType is not supported in BigDL fow now")
   }
+*/
 
   private def fromCaffeEltwise(layerName : String) : ModuleNode[T] = {
     val param = getEltWiseParam(layerName).get
@@ -451,7 +487,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def fromCaffeSigmoid(layerName : String, layerType : String) : ModuleNode[T] = {
-    addCriterion(layerType)
+    // addCriterion(layerType)
     new Sigmoid[T]().setName(layerName).apply()
   }
 
@@ -460,7 +496,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def fromCaffeSoftmaxLoss(layerName : String, layerType : String) : ModuleNode[T] = {
-    addCriterion(layerType)
+    // addCriterion(layerType)
     new LogSoftMax().setName(layerName).apply()
   }
 

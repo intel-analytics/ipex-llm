@@ -21,6 +21,7 @@ import java.nio.file.Paths
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -51,7 +52,7 @@ class CaffeDynamicLoaderSpec extends FlatSpec with Matchers {
     input2.resizeAs(input1).copy(input1)
     val staticResult = staticLoadedModule.forward(input1)
     RandomGenerator.RNG.setSeed(1000)
-    val dynamicLoadedModule = CaffeLoader.loadDynamic(alexNetProtoTxt, alexNetModelPath)
+    val dynamicLoadedModule = CaffeLoader.loadDynamic(alexNetProtoTxt, alexNetModelPath)._1
     val dynamicResult = dynamicLoadedModule.forward(input2)
 
     val staticModuleDim = staticResult.toTensor.dim()
@@ -95,7 +96,7 @@ class CaffeDynamicLoaderSpec extends FlatSpec with Matchers {
     }
     var staticEnd = System.nanoTime()
     val staticAvgWithouLoading = (staticEnd - staticStart)/(1e6 * 20)
-    var dynamicLoadedModule = CaffeLoader.loadDynamic[Float](alexNetProtoTxt, alexNetModelPath)
+    var dynamicLoadedModule = CaffeLoader.loadDynamic[Float](alexNetProtoTxt, alexNetModelPath)._1
     var dynamicStart = System.nanoTime()
     var dynamicOutput = Tensor[Float]()
     for (i <- 1 to 20) {
@@ -116,7 +117,7 @@ class CaffeDynamicLoaderSpec extends FlatSpec with Matchers {
     dynamicStart = System.nanoTime()
     for (i <- 1 to 20) {
       RandomGenerator.RNG.setSeed(1000)
-      dynamicLoadedModule = CaffeLoader.loadDynamic[Float](alexNetProtoTxt, alexNetModelPath)
+      dynamicLoadedModule = CaffeLoader.loadDynamic(alexNetProtoTxt, alexNetModelPath)._1
       dynamicOutput = dynamicLoadedModule.forward(input2).toTensor
     }
     dynamicEnd = System.nanoTime()
@@ -133,7 +134,7 @@ class CaffeDynamicLoaderSpec extends FlatSpec with Matchers {
 
   "Load caffe inception model" should "work properly" in {
     val input = Tensor[Float](10, 3, 224, 224).apply1(e => Random.nextFloat())
-    val dynamicLoadedModule = CaffeLoader.loadDynamic(googleNetProtoTxt, googleNetModelPath)
+    val dynamicLoadedModule = CaffeLoader.loadDynamic(googleNetProtoTxt, googleNetModelPath)._1
     val dynamicResult = dynamicLoadedModule.forward(input).asInstanceOf[Table]
     dynamicResult.length() should be (3)
   }
