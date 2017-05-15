@@ -35,14 +35,12 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 8953866090802444183L)
 class HardTanh[T: ClassTag](
-  val minValue: Double = -1,
-  val maxValue: Double = 1,
-  val inplace: Boolean = false
-)(implicit ev: TensorNumeric[T])
+                             val minValue: Double = -1,
+                             val maxValue: Double = 1,
+                             val inplace: Boolean = false
+                           )(implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
   require(maxValue > minValue, "maxValue must be larger than minValue")
-  @transient
-  private var tasks: Array[Future[Unit]] = null
 
   val min = ev.fromType[Double](minValue)
   val max = ev.fromType[Double](maxValue)
@@ -87,39 +85,27 @@ class HardTanh[T: ClassTag](
       val outputData = output.storage().array()
       val outputOffset = input.storageOffset() - 1
 
-      if (tasks == null || tasks.length != inputData.length) {
-        tasks = new Array[Future[Unit]](inputData.length)
-      }
-
       var i = 0
       if (inplace) {
         while (i < input.nElement()) {
-          val _i = i
-          tasks(_i) = Engine.model.invoke(() => {
-            if (ev.isGreater(min, inputData(_i + inputOffset))) {
-              inputData.update(_i + inputOffset, min)
-            } else if (ev.isGreater(inputData(_i + inputOffset), max)) {
-              inputData.update(_i + inputOffset, max)
-            }
-          })
+          if (ev.isGreater(min, inputData(i + inputOffset))) {
+            inputData.update(i + inputOffset, min)
+          } else if (ev.isGreater(inputData(i + inputOffset), max)) {
+            inputData.update(i + inputOffset, max)
+          }
           i += 1
         }
-        Engine.model.sync(tasks)
       } else {
         while (i < input.nElement()) {
-          val _i = i
-          tasks(_i) = Engine.model.invoke(() => {
-            if (ev.isGreater(min, inputData(_i + inputOffset))) {
-              outputData.update(_i + outputOffset, min)
-            } else if (ev.isGreaterEq(max, inputData(_i + inputOffset))) {
-              outputData.update(_i + outputOffset, inputData(_i + inputOffset))
-            } else {
-              outputData.update(_i + outputOffset, max)
-            }
-          })
+          if (ev.isGreater(min, inputData(i + inputOffset))) {
+            outputData.update(i + outputOffset, min)
+          } else if (ev.isGreaterEq(max, inputData(i + inputOffset))) {
+            outputData.update(i + outputOffset, inputData(i + inputOffset))
+          } else {
+            outputData.update(i + outputOffset, max)
+          }
           i += 1
         }
-        Engine.model.sync(tasks)
       }
     }
 
@@ -151,7 +137,7 @@ class HardTanh[T: ClassTag](
       } else {
         val func = new TensorFunc6[T] {
           override def apply(data1: Array[T], offset1: Int, data2: Array[T],
-            offset2: Int, data3: Array[T], offset3: Int): Unit = {
+                             offset2: Int, data3: Array[T], offset3: Int): Unit = {
             if (ev.isGreaterEq(min, data3(offset3)) || ev.isGreaterEq(data3(offset3), max)) {
               data1(offset1) = ev.fromType[Double](0)
             } else {
@@ -169,37 +155,25 @@ class HardTanh[T: ClassTag](
       val gradInputData = gradInput.storage().array()
       val gradInputOffset = gradInput.storageOffset() - 1
 
-      if (tasks == null || tasks.length != inputData.length) {
-        tasks = new Array[Future[Unit]](inputData.length)
-      }
-
       var i = 0
       if (inplace) {
         while (i < input.nElement()) {
-          val _i = i
-          tasks(_i) = Engine.model.invoke(() => {
-            if (ev.isGreaterEq(min, inputData(_i + inputOffset))
-              || ev.isGreaterEq(inputData(_i + inputOffset), max)) {
-              gradInputData.update(_i + gradInputOffset, ev.fromType[Double](0))
-            }
-          })
+          if (ev.isGreaterEq(min, inputData(i + inputOffset))
+            || ev.isGreaterEq(inputData(i + inputOffset), max)) {
+            gradInputData.update(i + gradInputOffset, ev.fromType[Double](0))
+          }
           i += 1
         }
-        Engine.model.sync(tasks)
       } else {
         while (i < input.nElement()) {
-          val _i = i
-          tasks(_i) = Engine.model.invoke(() => {
-            if (ev.isGreaterEq(min, inputData(_i + inputOffset))
-              || ev.isGreaterEq(inputData(_i + inputOffset), max)) {
-              gradInputData.update(_i + gradInputOffset, ev.fromType[Double](0))
-            } else {
-              gradInputData.update(_i + gradInputOffset, gradOutputData(_i + gradOutputOffset))
-            }
-          })
+          if (ev.isGreaterEq(min, inputData(i + inputOffset))
+            || ev.isGreaterEq(inputData(i + inputOffset), max)) {
+            gradInputData.update(i + gradInputOffset, ev.fromType[Double](0))
+          } else {
+            gradInputData.update(i + gradInputOffset, gradOutputData(i + gradOutputOffset))
+          }
           i += 1
         }
-        Engine.model.sync(tasks)
       }
     }
 
@@ -213,9 +187,9 @@ class HardTanh[T: ClassTag](
 
 object HardTanh {
   def apply[@specialized(Float, Double) T: ClassTag](
-      minValue: Double = -1,
-      maxValue: Double = 1,
-      inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : HardTanh[T] = {
+    minValue: Double = -1,
+    maxValue: Double = 1,
+    inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : HardTanh[T] = {
     new HardTanh[T](minValue, maxValue, inplace)
   }
 }
