@@ -238,12 +238,12 @@ def get_bigdl_conf():
     bigdl_python_wrapper = "python-api.zip"
 
     def load_conf(conf_str):
-        return dict(line.split() for line in conf_str.split("\n") if
-                    "#" not in line and line.strip())
+        return dict(line.split() for line in conf_str.split(b"\n") if
+                    b"#" not in line and line.strip())
 
     for p in sys.path:
         if bigdl_conf_file in p:
-            with open(p) as conf_file:
+            with open(p, "rb") as conf_file:
                 return load_conf(conf_file.read())
         if bigdl_python_wrapper in p:
             import zipfile
