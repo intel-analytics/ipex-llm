@@ -1,5 +1,21 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 import tarfile
-from . import base
+from dataset import base
 import os
 import sys
 
@@ -70,12 +86,17 @@ def get_glove_w2v(source_dir="/tmp/news20/", dim=100):
     :return: A dict mapping from word to vector
     """
     w2v_dir = download_glove_w2v(source_dir)
-    with open(os.path.join(w2v_dir, "glove.6B.%sd.txt" % dim), 'rb') as w2v_f:
-        pre_w2v = {}
-        for line in w2v_f.readlines():
-            items = line.split(b" ")
-            pre_w2v[items[0]] = [float(i) for i in items[1:]]
-        return pre_w2v
+    w2v_path = os.path.join(w2v_dir, "glove.6B.%sd.txt" % dim)
+    if sys.version_info < (3,):
+        w2v_f = open(w2v_path)
+    else:
+        w2v_f = open(w2v_path, encoding='latin-1')
+    pre_w2v = {}
+    for line in w2v_f.readlines():
+        items = line.split(" ")
+        pre_w2v[items[0]] = [float(i) for i in items[1:]]
+    w2v_f.close()
+    return pre_w2v
 
 
 if __name__ == "__main__":
