@@ -114,7 +114,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   before {
     sc = new SparkContext("local[1]", "RDDOptimizerSpec")
-
     val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber).map(prepareData)
 
     dataSet = new DistributedDataSet[MiniBatch[Double]] {
@@ -170,7 +169,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Train with MSE and SGD" should "be trained with good result after reset model" in {
-    var mm = cre
+    var mm = bn
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setState(T("learningRate" -> 20.0))
       .setEndWhen(Trigger.maxEpoch(5))
@@ -447,12 +446,16 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setState(T("learningRate" -> 20.0))
       .setEndWhen(Trigger.maxEpoch(5))
-      .setCheckpoint(filePath, Trigger.everyEpoch)
 
     intercept[Exception] {
       optimizer.optimize()
     }
+    ExceptionTest.resetCount()
 
+    optimizer.setCheckpoint(filePath, Trigger.everyEpoch)
+    intercept[Exception] {
+      optimizer.optimize()
+    }
     ExceptionTest.resetCount()
   }
 }
