@@ -1,5 +1,5 @@
 import tarfile
-from . import base
+from dataset import base
 import os
 import sys
 
@@ -50,10 +50,7 @@ def get_news20(source_dir="/tmp/news20/"):
             for fname in sorted(os.listdir(path)):
                 if fname.isdigit():
                     fpath = os.path.join(path, fname)
-                    if sys.version_info < (3,):
-                        f = open(fpath)
-                    else:
-                        f = open(fpath, encoding='latin-1')
+                    f = open(fpath, 'rb')
                     content = f.read()
                     texts.append((content, label_id))
                     f.close()
@@ -70,7 +67,8 @@ def get_glove_w2v(source_dir="/tmp/news20/", dim=100):
     :return: A dict mapping from word to vector
     """
     w2v_dir = download_glove_w2v(source_dir)
-    with open(os.path.join(w2v_dir, "glove.6B.%sd.txt" % dim), 'rb') as w2v_f:
+    w2v_path = os.path.join(w2v_dir, "glove.6B.%sd.txt" % dim)
+    with open(w2v_path, 'rb') as w2v_f:
         pre_w2v = {}
         for line in w2v_f.readlines():
             items = line.split(b" ")
