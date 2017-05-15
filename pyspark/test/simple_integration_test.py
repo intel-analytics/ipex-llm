@@ -64,7 +64,7 @@ class TestWorkFlow(unittest.TestCase):
             lambda i: gen_rand_sample())
 
         model_test = Sequential()
-        l1_test = Linear(3, 1, "Xavier").set_name("linear1_test")
+        l1_test = Linear(FEATURES_DIM, 1, "Xavier").set_name("linear1_test")
         self.assertEqual("linear1_test", l1_test.name())
         model_test.add(l1_test)
         model_test.add(Sigmoid())
