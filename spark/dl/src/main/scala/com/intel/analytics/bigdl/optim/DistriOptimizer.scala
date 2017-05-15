@@ -788,8 +788,6 @@ class DistriOptimizer[T: ClassTag] (
             models = DistriOptimizer.initThreadModels(newModel, dataset, criterion, state,
               nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods)
           } else {
-            DistriOptimizer.logger.info("Failed to recover since no model snapshot" +
-              "checkpoint path is not set")
             throw t
           }
       }
