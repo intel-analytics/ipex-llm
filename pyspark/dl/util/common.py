@@ -59,7 +59,7 @@ class JavaCreator(SingletonMixin):
             JavaCreator._instance = None
 
     def __init__(self, bigdl_type):
-        sc = SparkContext.getOrCreate()
+        sc = get_spark_context()
         jclass = getattr(sc._jvm, JavaCreator.get_creator_class())
         if bigdl_type == "float":
             self.value = getattr(jclass, "ofFloat")()
@@ -261,6 +261,12 @@ def create_spark_conf():
     sparkConf.setAll(bigdl_conf.items())
     return sparkConf
 
+def get_spark_context():
+    """Compatible with Spark1.5.1"""
+    sc = SparkContext._active_spark_context
+    if sc is None:
+        raise Exception("Please create SparkContext first.")
+    return sc
 
 def callBigDlFunc(bigdl_type, name, *args):
     """ Call API in PythonBigDL """
