@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dataset
 
 import java.nio.file.Paths
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet.SeqFileFolder
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.dataset.text.{LabeledSentence, LabeledSentenceToSample}
@@ -588,16 +589,16 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sample3 = Sample[Float](tensorInput3, tensorTarget3)
 
     val batch1 = iter.next()
-    batch1.feature() should be (tensorInput1)
-    batch1.label() should be (tensorTarget1)
+    batch1.asInstanceOf[TensorSample[Float]].feature should be (tensorInput1)
+    batch1.asInstanceOf[TensorSample[Float]].label should be (tensorTarget1)
 
     val batch2 = iter.next()
-    batch2.feature() should be (tensorInput2)
-    batch2.label() should be (tensorTarget2)
+    batch2.asInstanceOf[TensorSample[Float]].feature should be (tensorInput2)
+    batch2.asInstanceOf[TensorSample[Float]].label should be (tensorTarget2)
 
     val batch3 = iter.next()
-    batch3.feature() should be (tensorInput3)
-    batch3.label() should be (tensorTarget3)
+    batch3.asInstanceOf[TensorSample[Float]].feature should be (tensorInput3)
+    batch3.asInstanceOf[TensorSample[Float]].label should be (tensorTarget3)
   }
   "LabeledSentence toSample" should "transform correctly for single label Double" in {
     val input1 = Array(1.0, 2.0, 3.0)
@@ -636,16 +637,16 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sample3 = Sample[Double](tensorInput3, tensorTarget3)
 
     val batch1 = iter.next()
-    batch1.feature() should be (tensorInput1)
-    batch1.label() should be (tensorTarget1)
+    batch1.asInstanceOf[TensorSample[Float]].feature should be (tensorInput1)
+    batch1.asInstanceOf[TensorSample[Float]].label should be (tensorTarget1)
 
     val batch2 = iter.next()
-    batch2.feature() should be (tensorInput2)
-    batch2.label() should be (tensorTarget2)
+    batch2.asInstanceOf[TensorSample[Float]].feature should be (tensorInput2)
+    batch2.asInstanceOf[TensorSample[Float]].label should be (tensorTarget2)
 
     val batch3 = iter.next()
-    batch3.feature() should be (tensorInput3)
-    batch3.label() should be (tensorTarget3)
+    batch3.asInstanceOf[TensorSample[Float]].feature should be (tensorInput3)
+    batch3.asInstanceOf[TensorSample[Float]].label should be (tensorTarget3)
   }
   "LabeledSentence toSample" should "transform correctly for padding sentences single label" in {
     val input1 = Array(1.0f, 2.0f, 3.0f)
@@ -684,16 +685,16 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sample3 = Sample[Float](tensorInput3, tensorTarget3)
 
     val batch1 = iter.next()
-    batch1.feature() should be (tensorInput1)
-    batch1.label() should be (tensorTarget1)
+    batch1.asInstanceOf[TensorSample[Float]].feature should be (tensorInput1)
+    batch1.asInstanceOf[TensorSample[Float]].label should be (tensorTarget1)
 
     val batch2 = iter.next()
-    batch2.feature() should be (tensorInput2)
-    batch2.label() should be (tensorTarget2)
+    batch2.asInstanceOf[TensorSample[Float]].feature should be (tensorInput2)
+    batch2.asInstanceOf[TensorSample[Float]].label should be (tensorTarget2)
 
     val batch3 = iter.next()
-    batch3.feature() should be (tensorInput3)
-    batch3.label() should be (tensorTarget3)
+    batch3.asInstanceOf[TensorSample[Float]].feature should be (tensorInput3)
+    batch3.asInstanceOf[TensorSample[Float]].label should be (tensorTarget3)
   }
   "LabeledSentence toSample" should "transform correctly for language model label" in {
     val input1 = Array(0.0f, 2.0f, 3.0f)
@@ -732,16 +733,16 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sample3 = Sample[Float](tensorInput3, tensorTarget3)
 
     val batch1 = iter.next()
-    batch1.feature() should be (tensorInput1)
-    batch1.label() should be (tensorTarget1)
+    batch1.asInstanceOf[TensorSample[Float]].feature should be (tensorInput1)
+    batch1.asInstanceOf[TensorSample[Float]].label should be (tensorTarget1)
 
     val batch2 = iter.next()
-    batch2.feature() should be (tensorInput2)
-    batch2.label() should be (tensorTarget2)
+    batch2.asInstanceOf[TensorSample[Float]].feature should be (tensorInput2)
+    batch2.asInstanceOf[TensorSample[Float]].label should be (tensorTarget2)
 
     val batch3 = iter.next()
-    batch3.feature() should be (tensorInput3)
-    batch3.label() should be (tensorTarget3)
+    batch3.asInstanceOf[TensorSample[Float]].feature should be (tensorInput3)
+    batch3.asInstanceOf[TensorSample[Float]].label should be (tensorTarget3)
   }
   "LabeledSentence toSample" should "transform correctly" +
     " for language model label padding sentences" in {
@@ -781,16 +782,16 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sample3 = Sample[Float](tensorInput3, tensorTarget3)
 
     val batch1 = iter.next()
-    batch1.feature() should be (tensorInput1)
-    batch1.label() should be (tensorTarget1)
+    batch1.asInstanceOf[TensorSample[Float]].feature should be (tensorInput1)
+    batch1.asInstanceOf[TensorSample[Float]].label should be (tensorTarget1)
 
     val batch2 = iter.next()
-    batch2.feature() should be (tensorInput2)
-    batch2.label() should be (tensorTarget2)
+    batch2.asInstanceOf[TensorSample[Float]].feature should be (tensorInput2)
+    batch2.asInstanceOf[TensorSample[Float]].label should be (tensorTarget2)
 
     val batch3 = iter.next()
-    batch3.feature() should be (tensorInput3)
-    batch3.label() should be (tensorTarget3)
+    batch3.asInstanceOf[TensorSample[Float]].feature should be (tensorInput3)
+    batch3.asInstanceOf[TensorSample[Float]].label should be (tensorTarget3)
   }
   "SampleToBatchSpec" should "be good with TensorBatch1 Double" in {
     Engine.setNodeAndCore(1, 1)
@@ -941,20 +942,20 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     var t1 = miniBatch1.next()
     var t2 = miniBatch2.next()
-    t1.data should be (t2.data)
-    t1.labels.squeeze() should be (t2.labels)
-    t1.data.size() should be (Array(1, 3, 32, 32))
-    t1.labels.valueAt(1) should be (image1.label())
+    t1.getInput() should be (t2.getInput())
+    t1.getTarget().asInstanceOf[Tensor[Float]].squeeze() should be (t2.getTarget())
+    t1.getInput().asInstanceOf[Tensor[Float]].size() should be (Array(1, 3, 32, 32))
+    t1.getTarget().asInstanceOf[Tensor[Float]].valueAt(1) should be (image1.label())
 
     t1 = miniBatch1.next()
     t2 = miniBatch2.next()
-    t1.data should be (t2.data)
-    t1.labels.squeeze() should be (t2.labels)
+    t1.getInput should be (t2.getInput)
+    t1.getTarget.asInstanceOf[Tensor[Float]].squeeze() should be (t2.getTarget)
 
     t1 = miniBatch1.next()
     t2 = miniBatch2.next()
-    t1.data should be (t2.data)
-    t1.labels.squeeze() should be (t2.labels)
+    t1.getInput should be (t2.getInput)
+    t1.getTarget.asInstanceOf[Tensor[Float]].squeeze() should be (t2.getTarget)
 
     miniBatch1.hasNext should be (false)
     miniBatch2.hasNext should be (false)
@@ -977,21 +978,21 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     var t1 = miniBatch1.next()
     var t2 = miniBatch2.next()
-    t1.data should be (t2.data)
-    t1.labels.squeeze() should be (t2.labels)
-    t1.data.size() should be (Array(1, 32, 32))
-    t1.labels.valueAt(1) should be (image1.label())
-    t1.data.storage().array() should be (image1.content)
+    t1.getInput should be (t2.getInput)
+    t1.getTarget.asInstanceOf[Tensor[Float]].squeeze() should be (t2.getTarget)
+    t1.getInput.asInstanceOf[Tensor[Float]].size() should be (Array(1, 32, 32))
+    t1.getTarget.asInstanceOf[Tensor[Float]].valueAt(1) should be (image1.label())
+    t1.getInput.asInstanceOf[Tensor[Float]].storage().array() should be (image1.content)
 
     t1 = miniBatch1.next()
     t2 = miniBatch2.next()
-    t1.data should be (t2.data)
-    t1.labels.squeeze() should be (t2.labels)
+    t1.getInput should be (t2.getInput)
+    t1.getTarget.asInstanceOf[Tensor[Float]].squeeze() should be (t2.getTarget)
 
     t1 = miniBatch1.next()
     t2 = miniBatch2.next()
-    t1.data should be (t2.data)
-    t1.labels.squeeze() should be (t2.labels)
+    t1.getInput should be (t2.getInput)
+    t1.getTarget.asInstanceOf[Tensor[Float]].squeeze() should be (t2.getTarget)
 
     miniBatch1.hasNext should be (false)
     miniBatch2.hasNext should be (false)

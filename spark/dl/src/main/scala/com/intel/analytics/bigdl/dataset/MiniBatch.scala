@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.apache.log4j.Logger
 
 /**
  * A interface for MiniBatch.
@@ -52,6 +51,20 @@ trait MiniBatch[T] {
    * @return target Activity
    */
   def getTarget(): Activity
+
+  @deprecated("Old interface", "0.2.0")
+  def data(): Tensor[T] = {
+    require(this.isInstanceOf[TensorMiniBatch[T]], "Deprecated method," +
+      " Only support TensorMiniBatch.")
+    this.asInstanceOf[TensorMiniBatch[T]].input
+  }
+
+  @deprecated("Old interface", "0.2.0")
+  def labels(): Tensor[T] = {
+    require(this.isInstanceOf[TensorMiniBatch[T]], "Deprecated method," +
+      " Only support TensorMiniBatch.")
+    this.asInstanceOf[TensorMiniBatch[T]].input
+  }
 }
 
 /**
@@ -85,8 +98,6 @@ class TensorMiniBatch[T](
 }
 
 object MiniBatch {
-  val logger = Logger.getLogger(getClass)
-
   def apply[T](input: Tensor[T], target: Tensor[T]): MiniBatch[T] = {
     new TensorMiniBatch[T](input, target)
   }

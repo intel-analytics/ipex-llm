@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.rnn
 
 
-import com.intel.analytics.bigdl.dataset._
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch, SampleToBatch}
 import com.intel.analytics.bigdl.dataset.text.{Dictionary, LabeledSentence, LabeledSentenceToSample}
 import com.intel.analytics.bigdl.nn.{Concat, Identity, LogSoftMax, Module}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -69,7 +69,7 @@ object Test {
 
       val flow = rdd.mapPartitions(iter => {
         iter.map(batch => {
-          var curInput = batch.getInput().toTensor[Float]
+          var curInput = batch.data
           // Iteratively output predicted words
           for (i <- 1 to param.numOfWords.getOrElse(0)) {
             val input = curInput.max(featDim)._2

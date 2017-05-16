@@ -27,7 +27,6 @@ import java.io.{File, FileFilter, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import org.apache.commons.lang.exception.ExceptionUtils
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.Logger

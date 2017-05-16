@@ -203,6 +203,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
 
     workingModels.foreach(_.evaluate())
 
+    val miniBatchBuffer = new Array[MiniBatch[T]](subModelNumber)
     var count = 0
     dataIter.map(batch => {
       val stackSize = batch.size() / subModelNumber

@@ -20,7 +20,7 @@ import java.util
 
 import com.intel.analytics.bigdl.dataset.text._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Engine
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -46,9 +46,9 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val input3 = Tensor[Float](2, dictionaryLength).apply1(e => Random.nextFloat())
     val target3 = Tensor(Storage(Array(3.0f, 1.0f, 2.0f)), 1, Array(3))
 
-    val sample1 = new Sample[Float](input1, target1)
-    val sample2 = new Sample[Float](input2, target2)
-    val sample3 = new Sample[Float](input3, target3)
+    val sample1 = Sample[Float](input1, target1)
+    val sample2 = Sample[Float](input2, target2)
+    val sample3 = Sample[Float](input3, target3)
 
     val featurePadding = Tensor[Float](dictionaryLength).fill(100.0f)
 
@@ -96,9 +96,9 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val input3 = Tensor[Float](2, dictionaryLength).apply1(e => Random.nextFloat())
     val target3 = Tensor(Storage(Array(3.0f, 1.0f, 4.0f)), 1, Array(3))
 
-    val sample1 = new Sample[Float](input1, target1)
-    val sample2 = new Sample[Float](input2, target2)
-    val sample3 = new Sample[Float](input3, target3)
+    val sample1 = Sample[Float](input1, target1)
+    val sample2 = Sample[Float](input2, target2)
+    val sample3 = Sample[Float](input3, target3)
 
     val featurePadding = Tensor[Float](dictionaryLength).fill(100.0f)
 
@@ -154,7 +154,7 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     while (i < totalCount) {
       val input = Tensor[Float](3, 224, 224).apply1(e => Random.nextFloat())
       val label = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
-      trainData(i) = new Sample[Float](input, label)
+      trainData(i) = Sample[Float](input, label)
       i += 1
     }
     val trainSet1 = DataSet.array(trainData)
@@ -230,6 +230,25 @@ class SampleToBatchNoPadding[T: ClassTag]
 (implicit ev: TensorNumeric[T])
   extends Transformer[Sample[T], MiniBatch[T]] {
 
+  private def copyArray(
+                         src: Array[T],
+                         srcPos: Int,
+                         dest: Array[T],
+                         destPos: Int,
+                         length: Int): Unit = {
+    ev.getType() match {
+      case DoubleType => Array.copy(src
+        .asInstanceOf[Array[Double]],
+        srcPos, dest
+          .asInstanceOf[Array[Double]], destPos, length)
+      case FloatType => System.arraycopy(src
+        .asInstanceOf[Array[Float]],
+        srcPos, dest
+          .asInstanceOf[Array[Float]], destPos, length)
+      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+    }
+  }
+
   override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
     new Iterator[MiniBatch[T]] {
       private var featureTensor: Tensor[T] = Tensor[T]()
@@ -247,21 +266,25 @@ class SampleToBatchNoPadding[T: ClassTag]
         if (prev.hasNext) {
           var i = 0
           while (i < batchSize && prev.hasNext) {
-            val sample = prev.next()
-            if(!sample.feature().isContiguous() || !sample.label().isContiguous()) {
+            val s = prev.next()
+            require(s.isInstanceOf[TensorSample[T]])
+            val sample = s.asInstanceOf[TensorSample[T]]
+            if(!sample.feature.isContiguous() || !sample.label.isContiguous()) {
               throw new IllegalArgumentException(
                 "Only support contiguous tensor, pls use tensor.contiguous() before batching")
             }
             if (featureData == null) {
-              oneFeatureLength = sample.feature().nElement()
-              oneLabelLength = sample.label().nElement()
-              featureSize = Array(1) ++ sample.feature().size
-              labelSize = Array(1) ++ sample.label().size
+              oneFeatureLength = sample.feature.nElement()
+              oneLabelLength = sample.label.nElement()
+              featureSize = Array(1) ++ sample.feature.size
+              labelSize = Array(1) ++ sample.label.size
               featureData = new Array[T](batchSize * oneFeatureLength)
               labelData = new Array[T](batchSize * oneLabelLength)
             }
-            sample.copyFromLabel(labelData, i*oneLabelLength, oneLabelLength)
-            sample.copyFromFeature(featureData, i*oneFeatureLength, oneFeatureLength)
+            copyArray(sample.feature.storage().array(), sample.feature.storageOffset() - 1,
+              featureData, i * oneFeatureLength, sample.feature.nElement())
+            copyArray(sample.label.storage().array(), sample.label.storageOffset() - 1,
+              labelData, i * oneLabelLength, sample.label.nElement())
             i += 1
           }
           featureSize(0) = i
