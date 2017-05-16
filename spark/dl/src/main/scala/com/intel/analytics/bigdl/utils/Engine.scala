@@ -90,15 +90,12 @@ object Engine {
    */
   def init: Unit = this.synchronized {
     if (localMode) {
-      require(getSparkMaster == null, "Detect BIGDL_LOCAL_MODE and spark.master are both set." +
-        " They're conflict. Please reset BIGDL_LOCAL_MODE if you're use Spark or remove " +
-        "spark.master if you're run without spark")
       logger.info("Detect BIGDL_LOCAL_MODE is set. Run workload without spark")
       // The physical core number should have been initialized by env variable in bigdl.sh
-      setNodeAndCore(1, getCoreNumberFromEnv)
+      setNodeAndCore(1, getNumMachineCores)
     } else {
       logger.info("Auto detect executor number and executor cores number")
-      val (nExecutor, executorCores) = sparkExecutorAndCore(forceCheck = true).get
+      val (nExecutor, executorCores) = sparkExecutorAndCore().get
       logger.info(s"Executor number is $nExecutor and executor cores number is $executorCores")
       setNodeAndCore(nExecutor, executorCores)
       checkSparkContext
@@ -141,15 +138,6 @@ object Engine {
 
   // Thread pool for layer use
   @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(1)
-
-  private def getCoreNumberFromEnv : Int = {
-    val env = System.getenv("DL_CORE_NUMBER")
-    if (env == null) {
-      getNumMachineCores
-    } else {
-      env.toInt
-    }
-  }
 
   private def getNumMachineCores: Int = {
     // We assume the HT is enabled
@@ -315,18 +303,10 @@ object Engine {
     localMode = false
   }
 
-  private def dynamicAllocationExecutor : Option[Int] = {
-    if (System.getProperty("spark.dynamicAllocation.enabled") == "true") {
-      val maxExecutors = if (System.getProperty("spark.dynamicAllocation.maxExecutors") != null) {
-        System.getProperty("spark.dynamicAllocation.maxExecutors").toInt
-      } else {
-        1
-      }
-      val minExecutors = if (System.getProperty("spark.dynamicAllocation.minExecutors") != null) {
-        System.getProperty("spark.dynamicAllocation.minExecutors").toInt
-      } else {
-        1
-      }
+  private def dynamicAllocationExecutor(conf: SparkConf): Option[Int] = {
+    if (conf.get("spark.dynamicAllocation.enabled", null) == "true") {
+      val maxExecutors = conf.get("spark.dynamicAllocation.maxExecutors", "1").toInt
+      val minExecutors = conf.get("spark.dynamicAllocation.minExecutors", "1").toInt
       require(maxExecutors == minExecutors, "Engine.init: " +
         "spark.dynamicAllocation.maxExecutors and " +
         "spark.dynamicAllocation.minExecutors must be identical " +
@@ -337,23 +317,14 @@ object Engine {
     }
   }
 
-  private def getSparkMaster : String = {
-    System.getProperty("spark.master")
-  }
-
   /**
    * Extract spark executor number and executor cores from environment.
-    * @param forceCheck throw exception if user doesn't set properties correctly
    * @return (nExecutor, executorCore)
    */
-  private[utils] def sparkExecutorAndCore(forceCheck : Boolean) : Option[(Int, Int)] = {
-    val master = getSparkMaster
-    if (master == null) {
-      require(forceCheck == false, "Engine.init: Can't find spark.master, " +
-        "do you start your application with spark-submit?")
-      return None
-    }
-    if(master.toLowerCase.startsWith("local")) {
+  private[utils] def sparkExecutorAndCore(): Option[(Int, Int)] = {
+    val conf = SparkContext.getOrCreate().getConf
+    val master = conf.get("spark.master", null)
+    if (master.toLowerCase.startsWith("local")) {
       // Spark local mode
       val patternLocalN = "local\\[(\\d+)\\]".r
       val patternLocalStar = "local\\[\\*\\]".r
@@ -364,14 +335,14 @@ object Engine {
       }
     } else if (master.toLowerCase.startsWith("spark")) {
       // Spark standalone mode
-      val coreString = System.getProperty("spark.executor.cores")
-      val maxString = System.getProperty("spark.cores.max")
+      val coreString = conf.get("spark.executor.cores", null)
+      val maxString = conf.get("spark.cores.max", null)
       require(coreString != null, "Engine.init: Can't find executor core number" +
         ", do you submit with --executor-cores option")
       require(maxString != null, "Engine.init: Can't find total core number" +
         ". Do you submit with --total-executor-cores")
       val core = coreString.toInt
-      val nodeNum = dynamicAllocationExecutor.getOrElse {
+      val nodeNum = dynamicAllocationExecutor(conf).getOrElse {
         val total = maxString.toInt
         require(total >= core && total % core == 0, s"Engine.init: total core " +
           s"number($total) can't be divided " +
@@ -381,13 +352,13 @@ object Engine {
       Some(nodeNum, core)
     } else if (master.toLowerCase.startsWith("yarn")) {
       // yarn mode
-      val coreString = System.getProperty("spark.executor.cores")
+      val coreString = conf.get("spark.executor.cores", null)
       require(coreString != null, "Engine.init: Can't find executor core number" +
         ", do you submit with " +
         "--executor-cores option")
       val core = coreString.toInt
-      val node = dynamicAllocationExecutor.getOrElse {
-        val numExecutorString = System.getProperty("spark.executor.instances")
+      val node = dynamicAllocationExecutor(conf).getOrElse {
+        val numExecutorString = conf.get("spark.executor.instances", null)
         require(numExecutorString != null, "Engine.init: Can't find executor number" +
           ", do you submit with " +
           "--num-executors option")
@@ -396,14 +367,14 @@ object Engine {
       Some(node, core)
     } else if (master.toLowerCase.startsWith("mesos")) {
       // mesos mode
-      require(System.getProperty("spark.mesos.coarse") != "false", "Engine.init: " +
+      require(conf.get("spark.mesos.coarse", null) != "false", "Engine.init: " +
         "Don't support mesos fine-grained mode")
-      val coreString = System.getProperty("spark.executor.cores")
+      val coreString = conf.get("spark.executor.cores", null)
       require(coreString != null, "Engine.init: Can't find executor core number" +
         ", do you submit with --executor-cores option")
       val core = coreString.toInt
-      val nodeNum = dynamicAllocationExecutor.getOrElse {
-        val maxString = System.getProperty("spark.cores.max")
+      val nodeNum = dynamicAllocationExecutor(conf).getOrElse {
+        val maxString = conf.get("spark.cores.max", null)
         require(maxString != null, "Engine.init: Can't find total core number" +
           ". Do you submit with --total-executor-cores")
         val total = maxString.toInt

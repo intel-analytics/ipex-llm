@@ -93,7 +93,6 @@ LOGGER = logging.getLogger()
 def run_individual_python_test(test_name, python_exec):
     env = dict(os.environ)
     env.update({
-        'DL_CORE_NUMBER': '4',
         'PYSPARK_PYTHON': python_exec
     })
     LOGGER.debug("Starting test(%s): %s", python_exec, test_name)
