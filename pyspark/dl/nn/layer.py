@@ -20,6 +20,7 @@ from util.common import callBigDlFunc
 from util.common import JavaValue
 from util.common import JTensor
 from util.common import callJavaFunc
+from util.common import get_spark_context
 from pyspark import SparkContext
 import numpy as np
 
@@ -59,14 +60,14 @@ class Model(JavaValue):
         Give this model a name. There would be a generated name
         consist of class name and UUID if user doesn't set it.
         """
-        callJavaFunc(SparkContext.getOrCreate(), self.value.setName, name)
+        callJavaFunc(get_spark_context(), self.value.setName, name)
         return self
 
     def name(self):
         """
         Name of this layer
         """
-        return callJavaFunc(SparkContext.getOrCreate(), self.value.getName)
+        return callJavaFunc(get_spark_context(), self.value.getName)
 
     def set_seed(self, seed=123):
         """
@@ -139,7 +140,7 @@ class Model(JavaValue):
         """
         Initialize the model weights.
         """
-        callJavaFunc(SparkContext.getOrCreate(), self.value.reset)
+        callJavaFunc(get_spark_context(), self.value.reset)
         return self
 
     def parameters(self):
