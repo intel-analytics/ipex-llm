@@ -126,13 +126,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def toPySample(sample: JSample[T]): Sample = {
-    val featureList = sample.feature.contiguous().storage().toArray[T].toList.asJava
-    val labelList = sample.label.contiguous().storage().toArray[T].toList.asJava
+    val featureList = sample.feature().contiguous().storage().toArray[T].toList.asJava
+    val labelList = sample.label().contiguous().storage().toArray[T].toList.asJava
     val cls = implicitly[ClassTag[T]].runtimeClass
     Sample(featureList.asInstanceOf[JList[Any]],
       labelList.asInstanceOf[JList[Any]],
-      sample.feature.size().toList.asJava,
-      sample.label.size().toList.asJava,
+      sample.feature().size().toList.asJava,
+      sample.label().size().toList.asJava,
       cls.getSimpleName)
   }
 
@@ -153,7 +153,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     toJTensor(tensor)
   }
 
-  def toSample(record: Sample): com.intel.analytics.bigdl.dataset.Sample[T] = {
+  def toSample(record: Sample): JSample[T] = {
     require(record.bigdlType == this.typeName,
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
     val sample = this.typeName match {
@@ -1289,19 +1289,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }.asJava
   }
 
-  def predict(
-      model: AbstractModule[Activity, Activity, T],
-      dataRdd: RDD[com.intel.analytics.bigdl.dataset.Sample[T]]
-      ): RDD[com.intel.analytics.bigdl.dataset.Sample[T]] = {
+  def predict(model: AbstractModule[Activity, Activity, T],
+              dataRdd: RDD[JSample[T]]): RDD[JSample[T]] = {
     val modelBroadCast = dataRdd.sparkContext.broadcast(model.evaluate())
     dataRdd.mapPartitions { partition =>
       val localModel = modelBroadCast.value.cloneModule()
       partition.map { sample =>
-        sample match {
-          case s: JSample[T] =>
-            val output = localModel.forward(s.feature).toTensor[T]
-            JSample(s.feature, output)
-        }
+        val output = localModel.forward(sample.feature()).toTensor[T]
+        JSample(sample.feature(), output)
       }
     }
   }
