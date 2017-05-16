@@ -71,5 +71,6 @@ for name in python_layers:
     if name not in scala_layers:
         print name,
 
-if len(scala_layers - python_layers) > 0:
+# check the difference between two sets
+if not len(scala_layers ^ python_layers) == 0:
     raise Exception("There are difference between python and scala")
