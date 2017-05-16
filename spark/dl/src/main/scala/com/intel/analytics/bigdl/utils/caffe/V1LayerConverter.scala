@@ -21,8 +21,11 @@ import com.google.protobuf.GeneratedMessage
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.{BatchNormalization, Linear, SpatialConvolution, View}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.sun.corba.se.impl.orbutil.graph.Node
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 
@@ -109,7 +112,12 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
   }
 
   // No implementation in V1
-  protected def fromCaffeTile(layer : GeneratedMessage) : ModuleNode[T] = {
+  override protected def fromCaffeTile(layer : GeneratedMessage) : ModuleNode[T] = {
+    null
+  }
+
+  override protected def toCaffeConvolution(module : Node[AbstractModule[Activity, Tensor[T], T]],
+                                   bottoms : ArrayBuffer[String]): GeneratedMessage = {
     null
   }
 
@@ -120,7 +128,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
   override protected def getLayerType(layer : GeneratedMessage) : String = {
     layer.asInstanceOf[V1LayerParameter].getType.toString
   }
-  
+
   protected def getConvolutionParam(layer : GeneratedMessage): Option[ConvolutionParameter] = {
     Some(layer.asInstanceOf[V1LayerParameter].getConvolutionParam)
   }

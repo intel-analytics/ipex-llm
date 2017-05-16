@@ -15,15 +15,18 @@
  */
 package com.intel.analytics.bigdl.utils.caffe
 
-import caffe.Caffe.LayerParameter
+import scala.collection.JavaConverters._
+import caffe.Caffe.{LayerParameter, V1LayerParameter}
 import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
-import com.intel.analytics.bigdl.utils.caffe.CaffePersister.LayerNode
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import caffe.Caffe
+import com.google.protobuf.GeneratedMessage
+import org.apache.log4j.Logger
 /**
  * An utility to convert BigDL model into caffe format
  *
@@ -31,20 +34,63 @@ import scala.reflect.ClassTag
  * @param modelPath  path to store model weights and bias
  * @param module BigDL module to be converted
  */
-class CaffePersister[T: ClassTag](prototxtPath: String,
-      modelPath: String,
-      val module : Graph[T])(implicit ev: TensorNumeric[T]) {
-  val layers : ArrayBuffer[LayerNode] = new ArrayBuffer[LayerNode]()
+class CaffePersister[T: ClassTag](val prototxtPath: String,
+      val modelPath: String, val module : Graph[T],
+      useV2 : Boolean = true)(implicit ev: TensorNumeric[T]) {
+
+  val logger = Logger.getLogger(getClass)
+
+  val v1Converter = new V1LayerConverter[T]()
+  val v2Converter = new LayerConverter[T]()
+  var v1Layers : ArrayBuffer[Node[V1LayerParameter]] = new ArrayBuffer[Node[V1LayerParameter]]()
+  var v2Layers : ArrayBuffer[Node[LayerParameter]] = new ArrayBuffer[Node[LayerParameter]]()
   def saveAsCaffe() : Unit = {
-
+    convertToCaffe()
   }
-
+// create caffe layers graph based on BigDL execution plan
   private def convertToCaffe() : Unit = {
-
-  }
-
-  private def copyParameters() : Unit = {
-
+    val top2Layers = new mutable.HashMap[String, String]()
+    val layers = new mutable.HashMap[String, GeneratedMessage]()
+    val executions = module.getExecutions
+    executions.foreach(execution => {
+      val preModules = execution.prevNodes
+      var bottomList = ArrayBuffer[String]()
+      preModules.foreach(pre => {
+        val name = pre.element.getName
+        // val preTopList = layer2top(name)
+        val preLayer = layers(name)
+        val bottoms = if (useV2) preLayer.asInstanceOf[LayerParameter].getBottomList.asScala
+          else preLayer.asInstanceOf[V1LayerParameter].getBottomList.asScala
+        bottoms.foreach(bottom => bottomList.append(bottom))
+      })
+      bottomList = bottomList.filter(bottom => {
+        val nextModule = top2Layers(bottom)
+        nextModule.equals(execution.element.getName)
+      })
+      val nextModules = execution.nextNodes
+     // val layer = execution.element
+      if (useV2) {
+        val caffeLayer = v2Converter.toCaffe(execution, bottomList).asInstanceOf[LayerParameter]
+        val caffeNode = new Node(caffeLayer)
+        val topList = caffeLayer.getTopList.asScala
+        val i = 0
+        while (i < nextModules.size) {
+          top2Layers(topList(i)) = nextModules(i).element.getName()
+        }
+        v2Layers.append(caffeNode)
+        layers(caffeLayer.getName) = caffeLayer
+      } else {
+        val caffeLayer = v1Converter.toCaffe(execution, bottomList).asInstanceOf[V1LayerParameter]
+        val caffeNode = new Node(caffeLayer)
+        val topList = caffeLayer.getTopList.asScala
+        val i = 0
+        while (i < nextModules.size) {
+          top2Layers(topList(i)) = nextModules(i).element.getName()
+        }
+        v1Layers.append(caffeNode)
+        layers(caffeLayer.getName) = caffeLayer
+      }
+    })
   }
 
   private def save() : Unit = {
@@ -54,5 +100,10 @@ class CaffePersister[T: ClassTag](prototxtPath: String,
 }
 
 object CaffePersister{
-  type LayerNode = Node[LayerParameter]
+  def persist[T: ClassTag](prototxtPath: String,
+               modelPath: String, module : Graph[T],
+  useV2 : Boolean = true)(implicit ev: TensorNumeric[T]) : Unit = {
+    val caffePersist = new CaffePersister[T](prototxtPath, modelPath, module, useV2)
+    caffePersist.saveAsCaffe()
+  }
 }

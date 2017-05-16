@@ -83,6 +83,7 @@ class Graph[T: ClassTag](inputs : Seq[ModuleNode[T]],
       } else {
         seqToTable(node.prevNodes.map(_.element.output))
       }
+      println("Executing layer : " + node.element)
       node.element.updateOutput(inputsBP(i))
       i += 1
     }
@@ -255,6 +256,10 @@ class Graph[T: ClassTag](inputs : Seq[ModuleNode[T]],
       j += 1
     })
     t
+  }
+
+  def getExecutions : Array[Node[AbstractModule[Activity, Tensor[T], T]]] = {
+    return executions
   }
 }
 

@@ -15,14 +15,19 @@
  */
 package com.intel.analytics.bigdl.utils.caffe
 
+import java.util
+
 import caffe.Caffe
 import caffe.Caffe._
 import com.google.protobuf.GeneratedMessage
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Node
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 
@@ -149,6 +154,44 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     val axis = param.getAxis
     val tiles = param.getTiles
     Replicate[T](tiles, axis).setName(getLayerName(layer)).apply()
+  }
+  override protected def toCaffeConvolution(module : Node[AbstractModule[Activity, Tensor[T], T]],
+                                   bottoms : ArrayBuffer[String]): GeneratedMessage = {
+    val layerParameter = LayerParameter.newBuilder()
+    // set bottom list
+    var i = 0
+    bottoms.foreach(bottom => {
+      layerParameter.setBottom(i, bottom)
+      i += 1
+    })
+    copyParam(module.element, layerParameter)
+    layerParameter.build()
+  }
+
+  private def copyParam(module : AbstractModule[Activity, Tensor[T], T],
+                        builder : LayerParameter.Builder): Unit = {
+    val name = module.getName
+    val params = module.getParametersTable()
+    require(params.contains("weight"), s"$name should contain weight")
+    val weight = params[Tensor[T]]("weight")
+    val weightData = weight.storage().array()
+    var i = 0
+    val weightBlobBuilder = BlobProto.newBuilder()
+    while (i < weightData.length) {
+      weightBlobBuilder.setData(i, ev.toType(weightData(i)))
+      i += 1
+    }
+    builder.setBlobs(0, weightBlobBuilder.build())
+
+    val bias = params[Tensor[T]]("bias")
+    val biasData = bias.storage().array()
+    i = 0
+    val biasBlobBuilder = BlobProto.newBuilder()
+    while (i < biasData.length) {
+      biasBlobBuilder.setData(i, ev.toType(biasData(i)))
+      i += 1
+    }
+    builder.setBlobs(1, biasBlobBuilder.build())
   }
 
   override protected def getLayerName(layer : GeneratedMessage) : String = {

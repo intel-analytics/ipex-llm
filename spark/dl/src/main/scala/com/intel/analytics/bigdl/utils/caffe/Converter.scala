@@ -22,8 +22,11 @@ import com.google.protobuf.GeneratedMessage
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Node
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
@@ -44,7 +47,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     throw new Exception(s"$layerType is not supported in BigDL fow now")
   }
 
-  def convertLayer(layer : GeneratedMessage) : ModuleNode[T] = {
+  def convertLayerFromCaffe(layer : GeneratedMessage) : ModuleNode[T] = {
     val layerName = getLayerName(layer)
     val layerType = getLayerType(layer).toUpperCase
     val module = layerType match {
@@ -239,6 +242,17 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     ops
   }
 
+  def toCaffe(module : Node[AbstractModule[Activity, Tensor[T], T]], bottoms : ArrayBuffer[String])
+    : GeneratedMessage = {
+    module match {
+      case convolution : SpatialConvolution[T] => toCaffeConvolution(module, bottoms)
+    }
+    null
+  }
+
+  protected def toCaffeConvolution(module : Node[AbstractModule[Activity, Tensor[T], T]],
+                                 bottoms : ArrayBuffer[String]): GeneratedMessage
+
   protected def fromCaffeBatchNormalization(layer : GeneratedMessage) : ModuleNode[T]
 
   protected def fromCaffeConvolution(layer : GeneratedMessage) : ModuleNode[T]
@@ -278,4 +292,9 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
   protected def getSliceParam(layer : GeneratedMessage): Option[SliceParameter]
 
   protected def getEltWiseParam(layer : GeneratedMessage): Option[EltwiseParameter]
+}
+
+trait Convert2Caffe[@specialized(Float, Double) T] {
+  self =>
+  def apply(module : AbstractModule[Activity, Tensor[T], T], layer : GeneratedMessage) : Unit
 }
