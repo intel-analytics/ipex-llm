@@ -24,11 +24,13 @@ def _process_docstring(filepath, lines):
     param_re = re.compile(r'^\s*:?@?\s*(?:param\s+|return:?).*$')
     blank_re = re.compile(r'\s*$')
     prmpt_re = re.compile(r'\s*>>>.*$')
+    liter_re = re.compile(r'\s*```\s*$')
 
     quote_flag = False
     param_flag = False
     blank_flag = False
     prmpt_flag = False
+    liter_flag = False
 
     param_rules = [(re.compile(x), y) for x,y in [
             ('^\s*.{0,2}(?<!:)(?:param\s+|return:?).*$', 'A colon is required to be attached just before \'param\', and no blank gap is allowed. For example, \':param\', not \': param\' or \'@param\'. For \'return\', a colon is also required, like \':return\'.' ),
@@ -42,12 +44,25 @@ def _process_docstring(filepath, lines):
             blank_flag = False
             param_flag = False
             prmpt_flag = False
+            liter_flag = False
         elif quote_flag and quote_re.match(line):
             quote_flag = False
             param_flag = False
             blank_flag = False
             prmpt_flag = False
+            liter_flag = False
         elif quote_flag:
+            if not liter_flag and liter_re.match(line):
+                liter_flag = True
+                continue
+            elif liter_flag and liter_re.match(line):
+                blank_flag = True
+                liter_flag = False
+                continue
+
+            if liter_flag:
+                continue
+
             for param_rule in param_rules:
                 rule_re, err_mes = param_rule
                 if rule_re.match(line):
