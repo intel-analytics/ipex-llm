@@ -231,11 +231,11 @@ class SampleToBatchNoPadding[T: ClassTag]
   extends Transformer[Sample[T], MiniBatch[T]] {
 
   private def copyArray(
-                         src: Array[T],
-                         srcPos: Int,
-                         dest: Array[T],
-                         destPos: Int,
-                         length: Int): Unit = {
+        src: Array[T],
+        srcPos: Int,
+        dest: Array[T],
+        destPos: Int,
+        length: Int): Unit = {
     ev.getType() match {
       case DoubleType => Array.copy(src
         .asInstanceOf[Array[Double]],
@@ -266,25 +266,23 @@ class SampleToBatchNoPadding[T: ClassTag]
         if (prev.hasNext) {
           var i = 0
           while (i < batchSize && prev.hasNext) {
-            val s = prev.next()
-            require(s.isInstanceOf[TensorSample[T]])
-            val sample = s.asInstanceOf[TensorSample[T]]
+            val sample = prev.next()
             if(!sample.feature.isContiguous() || !sample.label.isContiguous()) {
               throw new IllegalArgumentException(
                 "Only support contiguous tensor, pls use tensor.contiguous() before batching")
             }
             if (featureData == null) {
-              oneFeatureLength = sample.feature.nElement()
-              oneLabelLength = sample.label.nElement()
-              featureSize = Array(1) ++ sample.feature.size
-              labelSize = Array(1) ++ sample.label.size
+              oneFeatureLength = sample.feature().nElement()
+              oneLabelLength = sample.label().nElement()
+              featureSize = Array(1) ++ sample.feature().size
+              labelSize = Array(1) ++ sample.label().size
               featureData = new Array[T](batchSize * oneFeatureLength)
               labelData = new Array[T](batchSize * oneLabelLength)
             }
-            copyArray(sample.feature.storage().array(), sample.feature.storageOffset() - 1,
-              featureData, i * oneFeatureLength, sample.feature.nElement())
-            copyArray(sample.label.storage().array(), sample.label.storageOffset() - 1,
-              labelData, i * oneLabelLength, sample.label.nElement())
+            copyArray(sample.feature().storage().array(), sample.feature().storageOffset() - 1,
+              featureData, i * oneFeatureLength, sample.feature().nElement())
+            copyArray(sample.label().storage().array(), sample.label().storageOffset() - 1,
+              labelData, i * oneLabelLength, sample.label().nElement())
             i += 1
           }
           featureSize(0) = i

@@ -93,11 +93,11 @@ class LocalOptimizer[T: ClassTag] private[optim](
       val stackSize = batch.size() / subModelNumber
       val extraSize = batch.size() % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
-      val tensorBuffer = new Array[MiniBatch[T]](parallelism)
+      val miniBatchBuffer = new Array[MiniBatch[T]](parallelism)
       while (b < parallelism) {
         val offset = b * stackSize + math.min(b, extraSize) + 1
         val length = stackSize + (if (b < extraSize) 1 else 0)
-        tensorBuffer(b) = batch.slice(offset, length)
+        miniBatchBuffer(b) = batch.slice(offset, length)
         b += 1
       }
       val dataFetchTime = System.nanoTime()
@@ -109,8 +109,8 @@ class LocalOptimizer[T: ClassTag] private[optim](
             localModel.zeroGradParameters()
             localModel.training()
             val localCriterion = workingCriterion(i)
-            val input = tensorBuffer(i).getInput()
-            val target = tensorBuffer(i).getTarget()
+            val input = miniBatchBuffer(i).getInput()
+            val target = miniBatchBuffer(i).getTarget()
             val output = localModel.forward(input)
             val _loss = ev.toType[Double](localCriterion.forward(output, target))
             val errors = localCriterion.backward(output, target)
@@ -203,7 +203,6 @@ class LocalOptimizer[T: ClassTag] private[optim](
 
     workingModels.foreach(_.evaluate())
 
-    val miniBatchBuffer = new Array[MiniBatch[T]](subModelNumber)
     var count = 0
     dataIter.map(batch => {
       val stackSize = batch.size() / subModelNumber

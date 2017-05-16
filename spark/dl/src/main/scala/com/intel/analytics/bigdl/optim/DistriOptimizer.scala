@@ -156,7 +156,7 @@ object DistriOptimizer {
           val cached = modelIter.next()
           val syWStart = System.nanoTime()
           val weightsResult = parameters.getWeights(cached.modelWeights.head)
-          val tensorBuffer = new Array[MiniBatch[T]](_subModelNumber)
+          val miniBatchBuffer = new Array[MiniBatch[T]](_subModelNumber)
           val batch = data.next()
           val stackSize = batch.size() / _subModelNumber
           tasks += Engine.default.invoke(() => {
@@ -170,7 +170,7 @@ object DistriOptimizer {
                 s"${_subModelNumber}, please tune your batch size accordingly")
             }
             while (b < _subModelNumber) {
-              tensorBuffer(b) = batch.slice(b * stackSize + 1, stackSize)
+              miniBatchBuffer(b) = batch.slice(b * stackSize + 1, stackSize)
               b += 1
             }
           })
@@ -193,8 +193,8 @@ object DistriOptimizer {
               val localModel = cached.localModels(i)
               localModel.training()
               val localCriterion = cached.localCriterions(i)
-              val input = tensorBuffer(i).getInput()
-              val target = tensorBuffer(i).getTarget()
+              val input = miniBatchBuffer(i).getInput()
+              val target = miniBatchBuffer(i).getTarget()
               val output = localModel.forward(input)
               lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
               val errors = localCriterion.backward(output, target)

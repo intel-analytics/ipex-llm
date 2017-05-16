@@ -209,19 +209,19 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val localData = data.collect()
     pp.toTensor(preResult.get(0)) should be
     (trainedModel.forward(pp.toSample(localData(0))
-      .asInstanceOf[TensorSample[Float]].feature))
+      .asInstanceOf[TensorSample[Float]].featureTensor))
 
     pp.toTensor(preResult.get(25)) should be
     (trainedModel.forward(pp.toSample(localData(25))
-      .asInstanceOf[TensorSample[Float]].feature))
+      .asInstanceOf[TensorSample[Float]].featureTensor))
 
     pp.toTensor(preResult.get(55)) should be
     (trainedModel.forward(pp.toSample(localData(55))
-      .asInstanceOf[TensorSample[Float]].feature))
+      .asInstanceOf[TensorSample[Float]].featureTensor))
 
     pp.toTensor(preResult.get(75)) should be
     (trainedModel.forward(pp.toSample(localData(75))
-      .asInstanceOf[TensorSample[Float]].feature))
+      .asInstanceOf[TensorSample[Float]].featureTensor))
 
 
     val resultRDD = pp.predict(trainedModel, data.map(pp.toSample(_)))

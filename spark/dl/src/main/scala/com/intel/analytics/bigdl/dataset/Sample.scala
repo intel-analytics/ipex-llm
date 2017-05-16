@@ -80,8 +80,9 @@ abstract class Sample[T: ClassTag] extends Serializable {
  * @tparam T numeric type
  */
 class TensorSample[T: ClassTag](
-    val featureTensor: Tensor[T],
-    val labelTensor: Tensor[T]) extends Sample[T] {
+      val featureTensor: Tensor[T],
+      val labelTensor: Tensor[T]) extends Sample[T] {
+
   /**
    * The length of first dimension
    * @return The length of first dimension

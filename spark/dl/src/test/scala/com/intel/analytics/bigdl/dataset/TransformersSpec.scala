@@ -589,16 +589,16 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sample3 = Sample[Float](tensorInput3, tensorTarget3)
 
     val batch1 = iter.next()
-    batch1.asInstanceOf[TensorSample[Float]].feature should be (tensorInput1)
-    batch1.asInstanceOf[TensorSample[Float]].label should be (tensorTarget1)
+    batch1.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput1)
+    batch1.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget1)
 
     val batch2 = iter.next()
-    batch2.asInstanceOf[TensorSample[Float]].feature should be (tensorInput2)
-    batch2.asInstanceOf[TensorSample[Float]].label should be (tensorTarget2)
+    batch2.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput2)
+    batch2.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget2)
 
     val batch3 = iter.next()
-    batch3.asInstanceOf[TensorSample[Float]].feature should be (tensorInput3)
-    batch3.asInstanceOf[TensorSample[Float]].label should be (tensorTarget3)
+    batch3.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput3)
+    batch3.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget3)
   }
   "LabeledSentence toSample" should "transform correctly for single label Double" in {
     val input1 = Array(1.0, 2.0, 3.0)
@@ -637,16 +637,16 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sample3 = Sample[Double](tensorInput3, tensorTarget3)
 
     val batch1 = iter.next()
-    batch1.asInstanceOf[TensorSample[Float]].feature should be (tensorInput1)
-    batch1.asInstanceOf[TensorSample[Float]].label should be (tensorTarget1)
+    batch1.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput1)
+    batch1.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget1)
 
     val batch2 = iter.next()
-    batch2.asInstanceOf[TensorSample[Float]].feature should be (tensorInput2)
-    batch2.asInstanceOf[TensorSample[Float]].label should be (tensorTarget2)
+    batch2.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput2)
+    batch2.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget2)
 
     val batch3 = iter.next()
-    batch3.asInstanceOf[TensorSample[Float]].feature should be (tensorInput3)
-    batch3.asInstanceOf[TensorSample[Float]].label should be (tensorTarget3)
+    batch3.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput3)
+    batch3.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget3)
   }
   "LabeledSentence toSample" should "transform correctly for padding sentences single label" in {
     val input1 = Array(1.0f, 2.0f, 3.0f)
@@ -685,16 +685,16 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sample3 = Sample[Float](tensorInput3, tensorTarget3)
 
     val batch1 = iter.next()
-    batch1.asInstanceOf[TensorSample[Float]].feature should be (tensorInput1)
-    batch1.asInstanceOf[TensorSample[Float]].label should be (tensorTarget1)
+    batch1.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput1)
+    batch1.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget1)
 
     val batch2 = iter.next()
-    batch2.asInstanceOf[TensorSample[Float]].feature should be (tensorInput2)
-    batch2.asInstanceOf[TensorSample[Float]].label should be (tensorTarget2)
+    batch2.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput2)
+    batch2.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget2)
 
     val batch3 = iter.next()
-    batch3.asInstanceOf[TensorSample[Float]].feature should be (tensorInput3)
-    batch3.asInstanceOf[TensorSample[Float]].label should be (tensorTarget3)
+    batch3.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput3)
+    batch3.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget3)
   }
   "LabeledSentence toSample" should "transform correctly for language model label" in {
     val input1 = Array(0.0f, 2.0f, 3.0f)
@@ -733,16 +733,16 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sample3 = Sample[Float](tensorInput3, tensorTarget3)
 
     val batch1 = iter.next()
-    batch1.asInstanceOf[TensorSample[Float]].feature should be (tensorInput1)
-    batch1.asInstanceOf[TensorSample[Float]].label should be (tensorTarget1)
+    batch1.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput1)
+    batch1.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget1)
 
     val batch2 = iter.next()
-    batch2.asInstanceOf[TensorSample[Float]].feature should be (tensorInput2)
-    batch2.asInstanceOf[TensorSample[Float]].label should be (tensorTarget2)
+    batch2.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput2)
+    batch2.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget2)
 
     val batch3 = iter.next()
-    batch3.asInstanceOf[TensorSample[Float]].feature should be (tensorInput3)
-    batch3.asInstanceOf[TensorSample[Float]].label should be (tensorTarget3)
+    batch3.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput3)
+    batch3.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget3)
   }
   "LabeledSentence toSample" should "transform correctly" +
     " for language model label padding sentences" in {
@@ -782,16 +782,16 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sample3 = Sample[Float](tensorInput3, tensorTarget3)
 
     val batch1 = iter.next()
-    batch1.asInstanceOf[TensorSample[Float]].feature should be (tensorInput1)
-    batch1.asInstanceOf[TensorSample[Float]].label should be (tensorTarget1)
+    batch1.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput1)
+    batch1.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget1)
 
     val batch2 = iter.next()
-    batch2.asInstanceOf[TensorSample[Float]].feature should be (tensorInput2)
-    batch2.asInstanceOf[TensorSample[Float]].label should be (tensorTarget2)
+    batch2.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput2)
+    batch2.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget2)
 
     val batch3 = iter.next()
-    batch3.asInstanceOf[TensorSample[Float]].feature should be (tensorInput3)
-    batch3.asInstanceOf[TensorSample[Float]].label should be (tensorTarget3)
+    batch3.asInstanceOf[TensorSample[Float]].featureTensor should be (tensorInput3)
+    batch3.asInstanceOf[TensorSample[Float]].labelTensor should be (tensorTarget3)
   }
   "SampleToBatchSpec" should "be good with TensorBatch1 Double" in {
     Engine.setNodeAndCore(1, 1)

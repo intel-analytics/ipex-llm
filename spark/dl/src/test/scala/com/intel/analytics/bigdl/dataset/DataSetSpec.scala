@@ -378,7 +378,6 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     i = 0
     while (i < localData.length) {
-      println(i)
       localData(i) should be (data(i))
       i += 1
     }
