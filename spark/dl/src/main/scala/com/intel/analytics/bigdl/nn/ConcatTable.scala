@@ -151,6 +151,52 @@ class ConcatTable[T : ClassTag]
     gradInput
   }
 
+  override def backward(input: Activity, gradOutput: Table): Activity = {
+    val isInputTable = input.isInstanceOf[Table]
+    val wasGradInputTable = gradInput.isInstanceOf[Table]
+
+    if (isInputTable) {
+      var i = 0
+      while (i < modules.length) {
+        val currentGradInput = modules(i).backward(input,
+          gradOutput.toTable(i + 1))
+        require(currentGradInput.isInstanceOf[Table],
+          "currentGradInput is not a table!")
+        if (i == 0) {
+          if (!wasGradInputTable ||
+            gradInput.toTable.length() != currentGradInput.toTable.length()) {
+            // We need deep copy here.
+            gradInput = cloneTable(currentGradInput)
+          } else {
+            copyTable(gradInput, currentGradInput)
+          }
+        } else {
+          addTable(gradInput, currentGradInput)
+        }
+        i += 1
+      }
+
+    } else {
+      var i = 0
+      while (i < modules.length) {
+        val currentGradInput = modules(i).backward(input,
+          gradOutput.toTable(i + 1)).toTensor[T]
+        if (i == 0) {
+          if (wasGradInputTable) {
+            gradInput = currentGradInput.clone()
+          } else {
+            gradInput.toTensor[T].resizeAs(
+              currentGradInput).copy(currentGradInput)
+          }
+        } else {
+          gradInput.toTensor[T].add(currentGradInput)
+        }
+        i += 1
+      }
+    }
+    gradInput
+  }
+
   override def accGradParameters(input: Activity, gradOutput: Table,
     scale: Double = 1.0): Unit = {
     var i = 0
