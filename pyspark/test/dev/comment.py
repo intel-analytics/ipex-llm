@@ -34,7 +34,7 @@ def _process_docstring(filepath, lines):
 
     param_rules = [(re.compile(x), y) for x,y in [
             ('^\s*.{0,2}(?<!:)(?:param\s+|return:?).*$', 'A colon is required to be attached just before \'param\', and no blank gap is allowed. For example, \':param\', not \': param\' or \'@param\'. For \'return\', a colon is also required, like \':return\'.' ),
-            ('^\s*:(?:param\s+\S+(?<!:)|return)\s+?.*$', 'A colon is required to be attached just after \':param xx\', and no blank gap is allowed. For example, \':param xx:\', not \':param xx :\' or \':param xx\'. For \'return\', a colon is also required, lik \':return:\'.')]]
+            ('^\s*:(?:param\s+\S+(?<!:)|return)\s+?.*$', 'A colon is required to be attached just after \':param xx\', and no blank gap is allowed. For example, \':param xx:\', not \':param xx :\' or \':param xx\'. For \'return\', a colon is also required, like \':return:\'.')]]
 
     for i in range(len(lines)):
         line = lines[i][:-1]
