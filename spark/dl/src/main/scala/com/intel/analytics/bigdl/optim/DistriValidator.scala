@@ -62,17 +62,17 @@ class DistriValidator[T] private[optim](
         .map(_ => localModel.cloneModule().evaluate()).toArray
       val vMethodsArr = (1 to _subModelNumber).map(i => localMethod.map(_.clone())).toArray
       dataIter.map(batch => {
-        require(batch.data.size(1) == batch.labels.size(1))
-        val stackSize = batch.data.size(1) / _subModelNumber
-        val extraSize = batch.data.size(1) % _subModelNumber
+        val stackSize = batch.size() / _subModelNumber
+        val extraSize = batch.size() % _subModelNumber
         val parallelism = if (stackSize == 0) extraSize else _subModelNumber
         Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
-              val offset = b * stackSize + math.min(b, extraSize)
+              val offset = b * stackSize + math.min(b, extraSize) + 1
               val length = stackSize + (if (b < extraSize) 1 else 0)
-              val input = batch.data.narrow(1, offset + 1, length)
-              val target = batch.labels.narrow(1, offset + 1, length)
+              val currentMiniBatch = batch.slice(offset, length)
+              val input = currentMiniBatch.getInput()
+              val target = currentMiniBatch.getTarget()
               val output = workingModels(b).forward(input)
               val validatMethods = vMethodsArr(b)
               validatMethods.map(validation => {

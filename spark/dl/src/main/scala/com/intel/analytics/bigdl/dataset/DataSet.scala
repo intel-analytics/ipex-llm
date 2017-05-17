@@ -394,7 +394,7 @@ object DataSet {
     if (isInOrder) {
       require(classTag[T] == classTag[Sample[_]],
         "DataSet.sortData: Only support sort for sample input")
-      data.sortBy(a => a.asInstanceOf[Sample[_]].feature().nElement())
+      data.sortBy(a => a.asInstanceOf[Sample[_]].featureLength())
     } else {
       data
     }

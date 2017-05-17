@@ -156,24 +156,21 @@ object DistriOptimizer {
           val cached = modelIter.next()
           val syWStart = System.nanoTime()
           val weightsResult = parameters.getWeights(cached.modelWeights.head)
-          val tensorBuffer = new Array[(Tensor[T], Tensor[T])](_subModelNumber)
+          val miniBatchBuffer = new Array[MiniBatch[T]](_subModelNumber)
+          val batch = data.next()
+          val stackSize = batch.size() / _subModelNumber
           tasks += Engine.default.invoke(() => {
-            val batch = data.next()
             var b = 0
-            require(batch.data.size(1) == batch.labels.size(1),
-              "data and label batch size not match")
-            require((batch.data.size(1) >= _subModelNumber) &&
-              (batch.data.size(1) % _subModelNumber == 0), "total batch size: " +
-              s"${batch.data.size(1)} should be divided by total core number: ${_subModelNumber}")
-            if (batch.data.size(1) < _subModelNumber * 2) {
+            require((batch.size() >= _subModelNumber) &&
+              (batch.size() % _subModelNumber == 0), "total batch size: " +
+              s"${batch.size()} should be divided by total core number: ${_subModelNumber}")
+            if (batch.size() < _subModelNumber * 2) {
               logger.warn("Warning: for better training speed, " +
                 "total batch size is recommended to be at least two times of core number" +
-                  s"${_subModelNumber}, please tune your batch size accordingly")
+                s"${_subModelNumber}, please tune your batch size accordingly")
             }
-            val stackSize = batch.data.size(1) / _subModelNumber
             while (b < _subModelNumber) {
-              tensorBuffer(b) = (batch.data.narrow(1, b * stackSize + 1, stackSize),
-                batch.labels.narrow(1, b * stackSize + 1, stackSize))
+              miniBatchBuffer(b) = batch.slice(b * stackSize + 1, stackSize)
               b += 1
             }
           })
@@ -196,7 +193,8 @@ object DistriOptimizer {
               val localModel = cached.localModels(i)
               localModel.training()
               val localCriterion = cached.localCriterions(i)
-              val (input, target) = tensorBuffer(i)
+              val input = miniBatchBuffer(i).getInput()
+              val target = miniBatchBuffer(i).getTarget()
               val output = localModel.forward(input)
               lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
               val errors = localCriterion.backward(output, target)
@@ -210,7 +208,7 @@ object DistriOptimizer {
           driverMetrics.add("computing time for each node", computingTime)
 
           val finishedThreads = trainingThreads.filter(!_.isCancelled).map(_.get())
-          recordsNum += finishedThreads.size * tensorBuffer.head._2.size(1)
+          recordsNum += finishedThreads.size * stackSize
           var i = 0
           while (i < finishedThreads.size) {
             lossSum += lossArray(finishedThreads(i))
@@ -584,17 +582,17 @@ object DistriOptimizer {
 
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
-        require(batch.data.size(1) == batch.labels.size(1))
-        val stackSize = batch.data.size(1) / _subModelNumber
-        val extraSize = batch.data.size(1) % _subModelNumber
+        val stackSize = batch.size() / _subModelNumber
+        val extraSize = batch.size() % _subModelNumber
         val parallelism = if (stackSize == 0) extraSize else _subModelNumber
         Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
-              val offset = b * stackSize + math.min(b, extraSize)
+              val offset = b * stackSize + math.min(b, extraSize) + 1
               val length = stackSize + (if (b < extraSize) 1 else 0)
-              val input = batch.data.narrow(1, offset + 1, length)
-              val target = batch.labels.narrow(1, offset + 1, length)
+              val miniBatch = batch.slice(offset, length)
+              val input = miniBatch.getInput()
+              val target = miniBatch.getTarget()
               val output = workingModels(b).forward(input)
               val validatMethods = vMethodsArr(b).get
               validatMethods.map(validation => {

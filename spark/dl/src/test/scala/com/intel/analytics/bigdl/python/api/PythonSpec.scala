@@ -20,6 +20,7 @@ import java.util
 import java.util.{List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.TensorSample
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.optim.Trigger
@@ -207,16 +208,20 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val localData = data.collect()
     pp.toTensor(preResult.get(0)) should be
-    (trainedModel.forward(pp.toSample(localData(0)).feature()))
+    (trainedModel.forward(pp.toSample(localData(0))
+      .asInstanceOf[TensorSample[Float]].featureTensor))
 
     pp.toTensor(preResult.get(25)) should be
-    (trainedModel.forward(pp.toSample(localData(25)).feature()))
+    (trainedModel.forward(pp.toSample(localData(25))
+      .asInstanceOf[TensorSample[Float]].featureTensor))
 
     pp.toTensor(preResult.get(55)) should be
-    (trainedModel.forward(pp.toSample(localData(55)).feature()))
+    (trainedModel.forward(pp.toSample(localData(55))
+      .asInstanceOf[TensorSample[Float]].featureTensor))
 
     pp.toTensor(preResult.get(75)) should be
-    (trainedModel.forward(pp.toSample(localData(75)).feature()))
+    (trainedModel.forward(pp.toSample(localData(75))
+      .asInstanceOf[TensorSample[Float]].featureTensor))
 
 
     val resultRDD = pp.predict(trainedModel, data.map(pp.toSample(_)))
