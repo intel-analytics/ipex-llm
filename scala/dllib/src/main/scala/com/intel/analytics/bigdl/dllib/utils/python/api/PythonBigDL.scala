@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Table, _}
 import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
@@ -158,17 +158,25 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
     val sample = this.typeName match {
       case "float" =>
-        JSample[Float]().set(
-          record.features.asInstanceOf[JList[Double]].asScala.map(_.toFloat).toArray[Float],
-          (record.label.asInstanceOf[JList[Double]]).asScala.map(_.toFloat).toArray[Float],
-          record.featuresShape.asScala.toArray[Int],
+        val feature = Tensor[Float](Storage[Float](
+          record.features.asInstanceOf[JList[Double]].asScala.map(_.toFloat).toArray[Float]),
+          1,
+          record.featuresShape.asScala.toArray[Int])
+        val label = Tensor[Float](
+          Storage(record.label.asInstanceOf[JList[Double]].asScala.map(_.toFloat).toArray[Float]),
+          1,
           record.labelShape.asScala.toArray[Int])
+        JSample[Float](feature, label)
       case "double" =>
-        JSample[Double]().set(
-          record.features.asInstanceOf[JList[Double]].asScala.toArray[Double],
-          (record.label.asInstanceOf[JList[Double]]).asScala.toArray[Double],
-          record.featuresShape.asScala.toArray[Int],
+        val feature = Tensor[Double](Storage[Double](
+          record.features.asInstanceOf[JList[Double]].asScala.toArray[Double]),
+          1,
+          record.featuresShape.asScala.toArray[Int])
+        val label = Tensor[Double](
+          Storage(record.label.asInstanceOf[JList[Double]].asScala.toArray[Double]),
+          1,
           record.labelShape.asScala.toArray[Int])
+        JSample[Double](feature, label)
       case t: String =>
         throw new IllegalArgumentException(s"Not supported type: ${t}")
     }

@@ -16,8 +16,9 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.{MiniBatch, LocalDataSet}
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -89,16 +90,14 @@ class LocalOptimizer[T: ClassTag] private[optim](
       // Fetch data and prepare tensors
       val batch = iter.next()
       var b = 0
-      require(batch.data.size(1) == batch.labels.size(1))
-      val stackSize = batch.data.size(1) / subModelNumber
-      val extraSize = batch.data.size(1) % subModelNumber
+      val stackSize = batch.size() / subModelNumber
+      val extraSize = batch.size() % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
-      val tensorBuffer = new Array[(Tensor[T], Tensor[T])](parallelism)
+      val miniBatchBuffer = new Array[MiniBatch[T]](parallelism)
       while (b < parallelism) {
-        val offset = b * stackSize + math.min(b, extraSize)
+        val offset = b * stackSize + math.min(b, extraSize) + 1
         val length = stackSize + (if (b < extraSize) 1 else 0)
-        tensorBuffer(b) = (batch.data.narrow(1, offset + 1, length),
-          batch.labels.narrow(1, offset + 1, length))
+        miniBatchBuffer(b) = batch.slice(offset, length)
         b += 1
       }
       val dataFetchTime = System.nanoTime()
@@ -110,7 +109,8 @@ class LocalOptimizer[T: ClassTag] private[optim](
             localModel.zeroGradParameters()
             localModel.training()
             val localCriterion = workingCriterion(i)
-            val (input, target) = tensorBuffer(i)
+            val input = miniBatchBuffer(i).getInput()
+            val target = miniBatchBuffer(i).getTarget()
             val output = localModel.forward(input)
             val _loss = ev.toType[Double](localCriterion.forward(output, target))
             val errors = localCriterion.backward(output, target)
@@ -146,14 +146,14 @@ class LocalOptimizer[T: ClassTag] private[optim](
       optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
       val end = System.nanoTime()
       wallClockTime += end - start
-      count += batch.data.size(1)
+      count += batch.size()
       val head =
         header(state[Int]("epoch"), count, dataset.size(), state[Int]("neval"), wallClockTime)
       logger.info(s"$head " +
         s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
         s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
         s"train time ${(end - dataFetchTime) / 1e9}s. " +
-        s"Throughput is ${batch.data.size(1).toDouble / (end - start) * 1e9} record / second. " +
+        s"Throughput is ${batch.size().toDouble / (end - start) * 1e9} record / second. " +
         optimMethod.getHyperParameter()
         )
       state("neval") = state[Int]("neval") + 1
@@ -205,18 +205,18 @@ class LocalOptimizer[T: ClassTag] private[optim](
 
     var count = 0
     dataIter.map(batch => {
-      require(batch.data.size(1) == batch.labels.size(1))
-      val stackSize = batch.data.size(1) / subModelNumber
-      val extraSize = batch.data.size(1) % subModelNumber
+      val stackSize = batch.size() / subModelNumber
+      val extraSize = batch.size() % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
       val start = System.nanoTime()
       val result = Engine.default.invokeAndWait(
         (0 until parallelism).map(b =>
           () => {
-            val offset = b * stackSize + math.min(b, extraSize)
+            val offset = b * stackSize + math.min(b, extraSize) + 1
             val length = stackSize + (if (b < extraSize) 1 else 0)
-            val input = batch.data.narrow(1, offset + 1, length)
-            val target = batch.labels.narrow(1, offset + 1, length)
+            val currentMiniBatch = batch.slice(offset, length)
+            val input = currentMiniBatch.getInput()
+            val target = currentMiniBatch.getTarget()
             val output = workingModels(b).forward(input)
             val validatMethods = vMethodsArr(b)
             validatMethods.map(validation => {
@@ -229,9 +229,9 @@ class LocalOptimizer[T: ClassTag] private[optim](
           l + r
         }
       })
-      count += batch.data.size(1)
+      count += batch.size()
       logger.info(s"[Validation] $count/${validationDataSet.get.size()} Throughput is ${
-        batch.data.size(1) / ((System.nanoTime() - start) / 1e9)
+        batch.size() / ((System.nanoTime() - start) / 1e9)
       } record / sec")
       result
     }).reduce((left, right) => {
