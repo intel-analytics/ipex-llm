@@ -25,7 +25,6 @@ object SparkEnvHelper extends MockitoSugar {
 
   val scMock = mock[SparkContext]
   when(scMock.getConf).thenReturn(Engine.createSparkConf().setAppName("EngineSpecTest"))
-  SparkContext.setActiveContext(scMock, false)
 
   /**
    * Set envs for spark local mode
@@ -33,6 +32,7 @@ object SparkEnvHelper extends MockitoSugar {
   def sparkLocalEnv[T](
                         core: Int = 4
                       )(body: => T): Unit = {
+    SparkContext.setActiveContext(scMock, false)
     when(scMock.master).thenReturn(s"local[$core]")
     System.setProperty("SPARK_SUBMIT", "true")
     body
@@ -48,6 +48,7 @@ object SparkEnvHelper extends MockitoSugar {
                              core : Int
                            )(body : => T): Unit = {
     System.setProperty("SPARK_SUBMIT", "true")
+    SparkContext.setActiveContext(scMock, false)
     when(scMock.master).thenReturn(s"spark://host:7077")
     System.setProperty("spark.cores.max", totalCore.toString)
     System.setProperty("spark.executor.cores", core.toString)
@@ -66,7 +67,7 @@ object SparkEnvHelper extends MockitoSugar {
                        core : Int
                      )(body : => T): Unit = {
     System.setProperty("SPARK_SUBMIT", "true")
-    System.setProperty("spark.master", s"yarn")
+    SparkContext.setActiveContext(scMock, false)
     when(scMock.master).thenReturn("yarn")
     System.setProperty("spark.executor.instances", executors.toString)
     System.setProperty("spark.executor.cores", core.toString)
@@ -85,6 +86,7 @@ object SparkEnvHelper extends MockitoSugar {
                         core : Int
                       )(body : => T): Unit = {
     System.setProperty("SPARK_SUBMIT", "true")
+    SparkContext.setActiveContext(scMock, false)
     when(scMock.master).thenReturn("mesos")
     System.setProperty("spark.cores.max", totalCore.toString)
     System.setProperty("spark.executor.cores", core.toString)
