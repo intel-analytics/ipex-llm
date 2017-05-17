@@ -276,7 +276,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
         -> BGRImgNormalizer((0.4, 0.5, 0.6), (0.1, 0.2, 0.3))
         -> BGRImgToBatch(1)
         ).toLocal().data(train = false)
-      val image1 = iter.next().data
+      val image1 = iter.next().getInput.toTensor[Float]
 
       val resourceTorch = getClass().getClassLoader().getResource("torch")
       val tensor1Path = Paths.get(processPath(resourceTorch.getPath()), tensorFile)
@@ -349,7 +349,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val rdd = dataSet.toDistributed().data(train = true)
     rdd.partitions.size should be (partitionNum)
     val rddData = rdd.mapPartitions(iter => {
-      Iterator.single(iter.next().labels)
+      Iterator.single(iter.next().getTarget.toTensor[Float])
     })
 
     i = 0
@@ -378,8 +378,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     i = 0
     while (i < localData.length) {
-      localData(i).label() should be (data(i).label)
-      localData(i).feature() should be (data(i).feature())
+      localData(i) should be (data(i))
       i += 1
     }
   }
