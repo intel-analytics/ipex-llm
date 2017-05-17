@@ -103,7 +103,7 @@ object Engine {
 
   private val logger = Logger.getLogger(getClass)
   private val singletonCounter = new AtomicBoolean()
-  private[bigdl] var localMode = System.getenv("BIGDL_LOCAL_MODE") != null
+  var localMode = System.getenv("BIGDL_LOCAL_MODE") != null
   private var physicalCoreNumber = -1
   private var nodeNum: Int = -1
 
@@ -168,7 +168,7 @@ object Engine {
    *
    * @return
    */
-  private[bigdl] def coreNumber(): Int = {
+  def coreNumber(): Int = {
     require(physicalCoreNumber != -1, s"Engine.init: Core number is " +
       s"not initialized. $NOT_INIT_ERROR")
     physicalCoreNumber
@@ -191,7 +191,7 @@ object Engine {
    *
    * @return
    */
-  private[bigdl] def nodeNumber(): Int = {
+  def nodeNumber(): Int = {
     require(nodeNum != -1, s"Engine.init: Node number is not initialized. $NOT_INIT_ERROR")
     nodeNum
   }
@@ -254,7 +254,7 @@ object Engine {
    * Read conf values from config file
    * @return
    */
-  private[utils] def readConf : Seq[(String, String)] = {
+  def readConf : Seq[(String, String)] = {
     val stream : InputStream = getClass.getResourceAsStream("/spark-bigdl.conf")
     val lines = scala.io.Source.fromInputStream(stream)
       .getLines.filter(_.startsWith("spark")).toArray
@@ -304,7 +304,7 @@ object Engine {
   /**
    * Reset engine envs. Test purpose
    */
-  private[bigdl] def reset : Unit = {
+  def reset : Unit = {
     nodeNum = 1
     physicalCoreNumber = 1
     localMode = false
