@@ -33,6 +33,7 @@ import org.apache.log4j.Logger
  * @param prototxtPath  path to store model definition file
  * @param modelPath  path to store model weights and bias
  * @param module BigDL module to be converted
+ * @param useV2  convert to V2 layer or not
  */
 class CaffePersister[T: ClassTag](val prototxtPath: String,
       val modelPath: String, val module : Graph[T],
@@ -57,7 +58,6 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
       var bottomList = ArrayBuffer[String]()
       preModules.foreach(pre => {
         val name = pre.element.getName
-        // val preTopList = layer2top(name)
         val preLayer = layers(name)
         val bottoms = if (useV2) preLayer.asInstanceOf[LayerParameter].getBottomList.asScala
           else preLayer.asInstanceOf[V1LayerParameter].getBottomList.asScala
@@ -68,7 +68,6 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
         nextModule.equals(execution.element.getName)
       })
       val nextModules = execution.nextNodes
-     // val layer = execution.element
       if (useV2) {
         val caffeLayer = v2Converter.toCaffe(execution, bottomList).asInstanceOf[LayerParameter]
         val caffeNode = new Node(caffeLayer)

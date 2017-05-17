@@ -41,10 +41,10 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
  */
 @SerialVersionUID( 359656776803598943L)
 class Linear[T: ClassTag](
-  inputSize: Int,
-  outputSize: Int,
+  val inputSize: Int,
+  val outputSize: Int,
   private var initMethod: InitializationMethod = Default,
-  withBias: Boolean = true
+  val withBias: Boolean = true
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val weight: Tensor[T] = Tensor[T](outputSize, inputSize)
   val bias: Tensor[T] = if (withBias) Tensor[T](outputSize) else null

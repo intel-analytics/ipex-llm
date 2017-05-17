@@ -18,14 +18,13 @@ package com.intel.analytics.bigdl.utils.caffe
 import java.util
 
 import caffe.Caffe
-import caffe.Caffe._
+import caffe.Caffe.{PoolingParameter, _}
 import com.google.protobuf.GeneratedMessage
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Node
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -149,30 +148,257 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     Add[T](size).setName(getLayerName(layer)).apply()
   }
 
-  protected def fromCaffeTile(layer : GeneratedMessage) : ModuleNode[T] = {
+  override protected def fromCaffeTile(layer : GeneratedMessage) : ModuleNode[T] = {
     val param = layer.asInstanceOf[LayerParameter].getTileParam
     val axis = param.getAxis
     val tiles = param.getTiles
     Replicate[T](tiles, axis).setName(getLayerName(layer)).apply()
   }
-  override protected def toCaffeConvolution(module : Node[AbstractModule[Activity, Tensor[T], T]],
-                                   bottoms : ArrayBuffer[String]): GeneratedMessage = {
+
+  override protected def toCaffeConvolution(moduleNode : ModuleNode[T],
+    bottoms : ArrayBuffer[String]): GeneratedMessage = {
     val layerParameter = LayerParameter.newBuilder()
+
+    val layerName = moduleNode.element.getName
+
+    layerParameter.setName(layerName)
+
+    layerParameter.setType("Convolution")
+
+    // set bottom list and top list
+    setConnections(layerParameter, bottoms, moduleNode.nextNodes)
+
+    // copy weight and bias
+    var (weightBuilder, biasBuilder) = copyParam(moduleNode.element, layerParameter)
+
+    // get convolution param map
+    val layerParams = toCaffeConvolutionParam(moduleNode.element)
+
+    val convolutionParam = ConvolutionParameter.newBuilder()
+
+    val ngroup = layerParams("ngroup")
+    val nInputPlane = layerParams("nInputPlane")
+    val nOutputPlane = layerParams("nOutputPlane")
+    convolutionParam.setGroup(ngroup)
+    convolutionParam.setNumOutput(nOutputPlane)
+    convolutionParam.setKernelW(layerParams("kernelW"))
+    convolutionParam.setKernelH(layerParams("kernelH"))
+    convolutionParam.setStrideW(layerParams("strideW"))
+    convolutionParam.setStrideH(layerParams("strideH"))
+    convolutionParam.setPadW(layerParams("padW"))
+    convolutionParam.setPadH(layerParams("padH"))
+    weightBuilder.setChannels(nInputPlane / ngroup)
+    weightBuilder.setNum(nOutputPlane)
+
+    layerParameter.setBlobs(0, weightBuilder.build)
+    layerParameter.setBlobs(1, biasBuilder.build)
+    layerParameter.setConvolutionParam(convolutionParam.build)
+
+    // build concolution layer
+    layerParameter.build()
+
+  }
+
+  override protected def toCaffeRelu(moduleNode : ModuleNode[T],
+                            bottoms : ArrayBuffer[String]): GeneratedMessage = {
+
+    val layerParameter = LayerParameter.newBuilder()
+
+    val layerName = moduleNode.element.getName
+
+    layerParameter.setName(layerName)
+
+    layerParameter.setType("ReLU")
+
+    // set bottom list and top list
+    setConnections(layerParameter, bottoms, moduleNode.nextNodes)
+
+    // copy weight and bias
+    var (weightBuilder, biasBuilder) = copyParam(moduleNode.element, layerParameter)
+    layerParameter.setBlobs(0, weightBuilder.build)
+    layerParameter.setBlobs(1, biasBuilder.build)
+
+    // build concolution layer
+    layerParameter.build()
+  }
+
+  override protected def toCaffeLRN(moduleNode : ModuleNode[T],
+                                    bottoms : ArrayBuffer[String]): GeneratedMessage = {
+    val layerParameter = LayerParameter.newBuilder()
+
+    val layerName = moduleNode.element.getName
+
+    layerParameter.setName(layerName)
+
+    layerParameter.setType("LRN")
+
+    // set bottom list and top list
+    setConnections(layerParameter, bottoms, moduleNode.nextNodes)
+
+    // copy weight and bias
+    val (weightBuilder, biasBuilder) = copyParam(moduleNode.element, layerParameter)
+
+    val (localSize, alpha, belta, k) = toCaffeLRNParam(moduleNode.element)
+
+    val lrnParameter = LRNParameter.newBuilder()
+
+    lrnParameter.setLocalSize(localSize)
+    lrnParameter.setAlpha(alpha.toFloat)
+    lrnParameter.setBeta(belta.toFloat)
+    lrnParameter.setK(k.toFloat)
+
+    layerParameter.setBlobs(0, weightBuilder.build)
+    layerParameter.setBlobs(1, biasBuilder.build)
+
+    layerParameter.setLrnParam(lrnParameter.build)
+
+    layerParameter.build
+  }
+
+  override protected def toCaffeMaxPooling(moduleNode : ModuleNode[T],
+                                           bottoms : ArrayBuffer[String]): GeneratedMessage = {
+    toCaffePooling(moduleNode, bottoms, true)
+  }
+
+  override protected def toCaffeAvePooling(moduleNode : ModuleNode[T],
+                                           bottoms : ArrayBuffer[String]): GeneratedMessage = {
+    toCaffePooling(moduleNode, bottoms, false)
+  }
+
+  private def toCaffePooling(moduleNode : ModuleNode[T],
+    bottoms : ArrayBuffer[String], max : Boolean): GeneratedMessage = {
+    val layerParameter = LayerParameter.newBuilder()
+
+    val layerName = moduleNode.element.getName
+
+    layerParameter.setName(layerName)
+
+    layerParameter.setType("Pooling")
+
+    // set bottom list and top list
+    setConnections(layerParameter, bottoms, moduleNode.nextNodes)
+
+    // copy weight and bias
+    val (weightBuilder, biasBuilder) = copyParam(moduleNode.element, layerParameter)
+
+    val poolingParameter = if (max) toCaffeMaxPoolingParam(moduleNode.element)
+      else toCaffeAvgPoolingParam(moduleNode.element)
+
+    layerParameter.setBlobs(0, weightBuilder.build)
+    layerParameter.setBlobs(1, biasBuilder.build)
+
+    layerParameter.setPoolingParam(poolingParameter)
+
+    layerParameter.build
+  }
+
+  override protected def toCaffeInnerProduct(moduleNode : ModuleNode[T],
+    bottoms : ArrayBuffer[String]): GeneratedMessage = {
+    val layerParameter = LayerParameter.newBuilder()
+
+    val layerName = moduleNode.element.getName
+
+    layerParameter.setName(layerName)
+
+    layerParameter.setType("InnerProduct")
+
+    // set bottom list and top list
+    setConnections(layerParameter, bottoms, moduleNode.nextNodes)
+
+    // copy weight and bias
+    val (weightBuilder, biasBuilder) = copyParam(moduleNode.element, layerParameter)
+
+    val (inputSize, outputSize, withBias) = toCaffeInnerProductParam(moduleNode.element)
+
+    weightBuilder.setWidth(inputSize)
+
+    val innerProductParameter = InnerProductParameter.newBuilder
+
+    innerProductParameter.setNumOutput(outputSize)
+
+    innerProductParameter.setBiasTerm(withBias)
+
+    layerParameter.setBlobs(0, weightBuilder.build)
+    layerParameter.setBlobs(1, biasBuilder.build)
+
+    layerParameter.setInnerProductParam(innerProductParameter.build)
+
+    layerParameter.build
+  }
+
+  override protected def toCaffeDropOut(moduleNode : ModuleNode[T],
+    bottoms : ArrayBuffer[String]): GeneratedMessage = {
+
+    val layerParameter = toCaffeWithWeightAndBiasOnly(moduleNode, bottoms).setType("Dropout")
+
+    val dropOutRatio = toCaffeDropOutParam(moduleNode.element)
+
+    val dropoutParameter = DropoutParameter.newBuilder
+
+    dropoutParameter.setDropoutRatio(dropOutRatio.toFloat)
+
+    layerParameter.setDropoutParam(dropoutParameter.build)
+
+    layerParameter.build
+  }
+
+  override protected def toCaffeLogSoftMax(moduleNode : ModuleNode[T],
+    bottoms : ArrayBuffer[String]): GeneratedMessage = {
+
+    toCaffeWithWeightAndBiasOnly(moduleNode, bottoms).setType("Softmax").build
+  }
+
+  override protected def toCaffeTanh(moduleNode : ModuleNode[T],
+                                     bottoms : ArrayBuffer[String]): GeneratedMessage = {
+
+    toCaffeWithWeightAndBiasOnly(moduleNode, bottoms).setType("TANH").build
+  }
+
+  private def toCaffeWithWeightAndBiasOnly(moduleNode : ModuleNode[T],
+    bottoms : ArrayBuffer[String]): LayerParameter.Builder = {
+
+    val layerParameterBuilder = LayerParameter.newBuilder()
+
+    val layerName = moduleNode.element.getName
+
+    layerParameterBuilder.setName(layerName)
+
+    // set bottom list and top list
+    setConnections(layerParameterBuilder, bottoms, moduleNode.nextNodes)
+
+    // copy weight and bias
+    val (weightBuilder, biasBuilder) = copyParam(moduleNode.element, layerParameterBuilder)
+
+    layerParameterBuilder.setBlobs(0, weightBuilder.build)
+    layerParameterBuilder.setBlobs(1, biasBuilder.build)
+
+    layerParameterBuilder
+  }
+
+  private def setConnections(layerParameter : LayerParameter.Builder,
+    bottoms : ArrayBuffer[String], nextNodes: Seq[ModuleNode[T]]) : Unit = {
+
+    val layerName = layerParameter.getName
+
     // set bottom list
     var i = 0
     bottoms.foreach(bottom => {
       layerParameter.setBottom(i, bottom)
       i += 1
     })
-    copyParam(module.element, layerParameter)
-    layerParameter.build()
+
+    // set top list
+    i = 0
+    while (i < nextNodes.size) {
+      layerParameter.setTop(i, s"$layerName$i")
+      i += 1
+    }
   }
 
   private def copyParam(module : AbstractModule[Activity, Tensor[T], T],
-                        builder : LayerParameter.Builder): Unit = {
+    builder : LayerParameter.Builder) : (BlobProto.Builder, BlobProto.Builder) = {
     val name = module.getName
     val params = module.getParametersTable()
-    require(params.contains("weight"), s"$name should contain weight")
     val weight = params[Tensor[T]]("weight")
     val weightData = weight.storage().array()
     var i = 0
@@ -181,8 +407,6 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
       weightBlobBuilder.setData(i, ev.toType(weightData(i)))
       i += 1
     }
-    builder.setBlobs(0, weightBlobBuilder.build())
-
     val bias = params[Tensor[T]]("bias")
     val biasData = bias.storage().array()
     i = 0
@@ -191,7 +415,9 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
       biasBlobBuilder.setData(i, ev.toType(biasData(i)))
       i += 1
     }
-    builder.setBlobs(1, biasBlobBuilder.build())
+
+    (weightBlobBuilder, biasBlobBuilder)
+
   }
 
   override protected def getLayerName(layer : GeneratedMessage) : String = {

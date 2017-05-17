@@ -83,7 +83,6 @@ class Graph[T: ClassTag](inputs : Seq[ModuleNode[T]],
       } else {
         seqToTable(node.prevNodes.map(_.element.output))
       }
-      println("Executing layer : " + node.element)
       node.element.updateOutput(inputsBP(i))
       i += 1
     }
