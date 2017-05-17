@@ -18,8 +18,6 @@ package com.intel.analytics.bigdl.dataset
 
 import java.nio.file.Path
 
-import com.intel.analytics.bigdl.tensor.Tensor
-
 /**
  * Represent an image
  */
@@ -63,14 +61,6 @@ trait Label[T] {
   def setLabel(label: T): this.type
   def label(): T
 }
-
-/**
- * A batch of data feed into the model. The first size is batchsize
- * @param data
- * @param labels
- * @tparam T
- */
-case class MiniBatch[T](data: Tensor[T], labels: Tensor[T])
 
 /**
  * A byte array and a label. It can contain anything.
