@@ -173,7 +173,7 @@
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <spark-version.project>1.5-plus</spark-version.project>
         <spark.version>1.5.1</spark.version>
-        <spark-scope>compile</spark-scope>
+        <spark-scope>provided</spark-scope>
 
         <mkl-java-os-version>mkl-java</mkl-java-os-version>
     </properties>
