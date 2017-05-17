@@ -37,7 +37,7 @@ object SparkEnvHelper extends MockitoSugar {
     System.setProperty("SPARK_SUBMIT", "true")
     body
     System.clearProperty("SPARK_SUBMIT")
-    System.clearProperty("spark.master")
+    SparkContext.clearActiveContext()
   }
 
   /**
@@ -53,9 +53,9 @@ object SparkEnvHelper extends MockitoSugar {
     System.setProperty("spark.executor.cores", core.toString)
     body
     System.clearProperty("SPARK_SUBMIT")
-    System.clearProperty("spark.master")
     System.clearProperty("spark.cores.max")
     System.clearProperty("spark.executor.cores")
+    SparkContext.clearActiveContext()
   }
 
   /**
@@ -72,9 +72,9 @@ object SparkEnvHelper extends MockitoSugar {
     System.setProperty("spark.executor.cores", core.toString)
     body
     System.clearProperty("SPARK_SUBMIT")
-    System.clearProperty("spark.master")
     System.clearProperty("spark.executor.instances")
     System.clearProperty("spark.executor.cores")
+    SparkContext.clearActiveContext()
   }
 
   /**
@@ -90,8 +90,8 @@ object SparkEnvHelper extends MockitoSugar {
     System.setProperty("spark.executor.cores", core.toString)
     body
     System.clearProperty("SPARK_SUBMIT")
-    System.clearProperty("spark.master")
     System.clearProperty("spark.cores.max")
     System.clearProperty("spark.executor.cores")
+    SparkContext.clearActiveContext()
   }
 }
