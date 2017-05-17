@@ -51,7 +51,7 @@
         <dependency>
             <groupId>com.intel.analytics.bigdl.native</groupId>
             <artifactId>${mkl-java-os-version}</artifactId>
-            <version>${project.version}</version>
+            <version>0.1.0</version>
             <exclusions>
                 <!-- We already copy the dynamic lib files of this project to mkl-java, so we
                 need not the dependency, which will break assembly step.
