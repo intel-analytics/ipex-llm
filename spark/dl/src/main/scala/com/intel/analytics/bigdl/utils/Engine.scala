@@ -322,7 +322,15 @@ object Engine {
    * @return (nExecutor, executorCore)
    */
   private[utils] def sparkExecutorAndCore(): Option[(Int, Int)] = {
-    val conf = SparkContext.getOrCreate().getConf
+    parseExecutorAndCore(SparkContext.getOrCreate().getConf)
+  }
+
+  /**
+   * Extract spark executor number and executor cores from given conf.
+   * Exposed for testing.
+   * @return (nExecutor, executorCore)
+   */
+  private[utils] def parseExecutorAndCore(conf: SparkConf): Option[(Int, Int)] = {
     val master = conf.get("spark.master", null)
     if (master.toLowerCase.startsWith("local")) {
       // Spark local mode

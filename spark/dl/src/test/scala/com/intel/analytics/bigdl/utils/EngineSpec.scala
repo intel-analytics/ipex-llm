@@ -56,74 +56,49 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     Engine.coreNumber should be(4)
   }
 
-  it should "be inited correct under spark standalone environment" in {
-    cancel("Can't test standalone master right now")
+  it should "parse nodes, executors correctly for Spark standalone" in {
     val conf = Engine.createSparkConf().setAppName("EngineSpecTest").
       setMaster("spark://localhost:1234").
       set("spark.cores.max", "24").set("spark.executor.cores", "4")
-    sc = SparkContext.getOrCreate(conf)
-    Engine.init
-    Engine.nodeNumber should be(6)
-    Engine.coreNumber should be(4)
+    Engine.parseExecutorAndCore(conf) should be(Some(6, 4))
   }
 
-  it should "be inited correct under spark standalone environment with single executor" in {
-    cancel("Can't test standalone master right now")
+  it should "parse nodes, executors correctly for Spark standalone with single executor" in {
     val conf = Engine.createSparkConf().setAppName("EngineSpecTest").
       setMaster("spark://localhost:1234").
       set("spark.cores.max", "4").set("spark.executor.cores", "4")
-    sc = SparkContext.getOrCreate(conf)
-    Engine.init
-    Engine.nodeNumber should be(1)
-    Engine.coreNumber should be(4)
+    Engine.parseExecutorAndCore(conf) should be(Some(1, 4))
   }
 
-  it should "be inited correct under spark YARN environment" in {
-    cancel("Can't test YARN master right now")
+  it should "parse nodes, executors correctly for Spark YARN" in {
     val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("yarn").
       set("spark.executor.instances", "6").set("spark.executor.cores", "4")
-    sc = SparkContext.getOrCreate(conf)
-    Engine.init
-    Engine.nodeNumber should be(6)
-    Engine.coreNumber should be(4)
+    Engine.parseExecutorAndCore(conf) should be(Some(6, 4))
   }
 
-  it should "be inited correct under spark YARN environment with single executor" in {
-    cancel("Can't test YARN master right now")
+  it should "parse nodes, executors correctly for Spark YARN with single executor" in {
     val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("yarn").
       set("spark.executor.instances", "1").set("spark.executor.cores", "4")
-    sc = SparkContext.getOrCreate(conf)
-    Engine.init
-    Engine.nodeNumber should be(1)
-    Engine.coreNumber should be(4)
+    Engine.parseExecutorAndCore(conf) should be(Some(1, 4))
   }
 
-  it should "be inited correct under spark Mesos environment" in {
-    cancel("Can't test Mesos master right now")
+  it should "parse nodes, executors correctly for Spark Mesos" in {
     val conf = Engine.createSparkConf().setAppName("EngineSpecTest").
       setMaster("mesos://localhost:1234").
       set("spark.cores.max", "24").set("spark.executor.cores", "4")
-    sc = SparkContext.getOrCreate(conf)
-    Engine.init
-    Engine.nodeNumber should be(6)
-    Engine.coreNumber should be(4)
+    Engine.parseExecutorAndCore(conf) should be(Some(6, 4))
   }
 
-  it should "be inited correct under spark Mesos environment with single executor" in {
-    cancel("Can't test Mesos master right now")
+  it should "parse nodes, executors correctly for Spark Mesos with single executor" in {
     val conf = Engine.createSparkConf().setAppName("EngineSpecTest").
       setMaster("mesos://localhost:1234").
       set("spark.cores.max", "4").set("spark.executor.cores", "4")
-    sc = SparkContext.getOrCreate(conf)
-    Engine.init
-    Engine.nodeNumber should be(1)
-    Engine.coreNumber should be(4)
+    Engine.parseExecutorAndCore(conf) should be(Some(1, 4))
   }
 
   "sparkExecutorAndCore" should "parse local[*]" in {
     val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[*]")
-    sc = SparkContext.getOrCreate(conf)
-    val (nExecutor, _) = Engine.sparkExecutorAndCore().get
+    val (nExecutor, _) = Engine.parseExecutorAndCore(conf).get
     nExecutor should be(1)
   }
 
