@@ -31,7 +31,7 @@ Status Equal
    Log To Console                   Expected=${status}, Actual=${realStatus}
    Should Be Equal As Strings       ${status}                                  ${realStatus}
 
-BigDL Integration Test
+BigDL Test
    [Arguments]         ${run_keyword}      ${verticals}
    @{verticalList}= 	 Split String 	     ${verticals}       separator=,
    :FOR                ${vertical}         IN                 @{verticalList}  
