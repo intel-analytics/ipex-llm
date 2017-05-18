@@ -15,18 +15,17 @@
 #
 
 
-from util.common import callBigDlFunc
-from util.common import JavaValue
-from util.common import callJavaFunc
-from pyspark import SparkContext
-import numpy as np
 import os
-from distutils.dir_util import mkpath
-from util.common import JTensor
-from nn.layer import DOUBLEMAX
-
-
 import sys
+from distutils.dir_util import mkpath
+
+from nn.layer import DOUBLEMAX
+from util.common import JTensor
+from util.common import JavaValue
+from util.common import callBigDlFunc
+from util.common import callJavaFunc
+from util.common import get_spark_context
+
 if sys.version >= '3':
     long = int
     unicode = str
@@ -403,7 +402,7 @@ class Optimizer(JavaValue):
         """
         Do an optimization. 
         """
-        jmodel = callJavaFunc(SparkContext.getOrCreate(), self.value.optimize)
+        jmodel = callJavaFunc(get_spark_context(), self.value.optimize)
         from nn.layer import Model
         return Model.of(jmodel)
 
