@@ -40,10 +40,6 @@ class Echo[T: ClassTag] (implicit ev: TensorNumeric[T])
     println(s"${getName()} : Gradient size is ${gradOutput.size().mkString("x")}")
     this.gradInput
   }
-
-  override def toString(): String = {
-    s"nn.Echo"
-  }
 }
 
 object Echo {

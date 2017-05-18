@@ -125,11 +125,13 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   def getName() : String = {
     if (this.name == null) {
-      s"${this.getClass.getName}@${namePostfix}"
+      s"${this.getClass.getSimpleName}@${namePostfix}"
     } else {
       this.name
     }
   }
+
+  override def toString(): String = getName()
 
   protected var forwardTime = 0L
 

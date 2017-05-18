@@ -171,7 +171,7 @@ class SpatialDivisiveNormalization[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"SpatialDivisiveNormalization($nInputPlane, kernelTensor, $threshold, $thresval)"
+    s"${getName}($nInputPlane, kernelTensor, $threshold, $thresval)"
   }
 
   override def canEqual(other: Any): Boolean = {
