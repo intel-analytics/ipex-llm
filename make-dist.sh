@@ -30,11 +30,16 @@ else
     exit 1
 fi
 
+export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m"
+
 if [[ "$_java" ]]; then
     version=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
     if [[ "$version" < "1.7" ]]; then
         echo Require a java version not lower than 1.7
         exit 1
+    fi
+    if [[ "$version" < "1.8" ]]; then
+        export MAVEN_OPTS="$MAVEN_OPTS -XX:MaxPermSize=1G"
     fi
 fi
 
