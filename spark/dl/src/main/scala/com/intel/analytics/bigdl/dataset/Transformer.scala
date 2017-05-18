@@ -296,3 +296,199 @@ class SampleToBatch[T: ClassTag]
     }
   }
 }
+
+class SampleToMiniBatch[T: ClassTag](
+    totalBatch : Int,
+    partitionNum: Option[Int] = None,
+    func: (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T])
+    (implicit ev: TensorNumeric[T]) extends Transformer[Sample[T], MiniBatch[T]] {
+
+  private val batchPerPartition = Utils.getBatchSize(totalBatch, partitionNum)
+  private var inputBuffer: Array[Tensor[T]] = null
+  private var targetBuffer: Array[Tensor[T]] = null
+
+  override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
+    val batchSizePerPartition = batchPerPartition
+    new Iterator[MiniBatch[T]] {
+      private val batchSize = batchSizePerPartition
+
+      private val sampleData = new Array[Sample[T]](batchSize)
+      override def hasNext: Boolean = prev.hasNext
+
+      override def next(): MiniBatch[T] = {
+        if (prev.hasNext) {
+          var i = 0
+          while (i < batchSize && prev.hasNext) {
+            val sample = prev.next()
+            if (null == sampleData(i)) {
+              sampleData(i) = sample.clone()
+            } else {
+              sampleData(i).copy(sample)
+            }
+            i += 1
+          }
+          if (null == inputBuffer) {
+            inputBuffer = Array.tabulate(sampleData(0).numFeature())(_ => Tensor[T]())
+          }
+          if (null == targetBuffer && sampleData(0).numLabel() > 0) {
+            targetBuffer = Array.tabulate(sampleData(0).numLabel())(_ => Tensor[T]())
+          }
+          func(sampleData, inputBuffer, targetBuffer)
+        } else {
+          null
+        }
+      }
+    }
+  }
+}
+
+object SampleToMiniBatch {
+  def apply[T: ClassTag](
+      batchSize : Int,
+      partitionNum: Option[Int] = None,
+      func: (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T])
+      (implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
+    new SampleToMiniBatch[T](batchSize, partitionNum, func)
+  }
+
+  def toMiniBatch[T: ClassTag](
+        samples: Array[Sample[T]],
+        buf1: Array[Tensor[T]],
+        buf2: Array[Tensor[T]],
+        featurePadding : Option[Tensor[T]] = None,
+        labelPadding : Option[T] = None,
+        fixedLength: Option[Int] = None
+                              )(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+    samples(0) match {
+      case s: TensorSample[T] =>
+        tensorSampleToMiniBatch(samples.map(_.asInstanceOf[TensorSample[T]]), buf1, buf2,
+          featurePadding, labelPadding, fixedLength)
+    }
+  }
+
+  def tensorSampleToMiniBatch[T: ClassTag](
+        samples: Array[TensorSample[T]],
+        buf1: Array[Tensor[T]],
+        buf2: Array[Tensor[T]],
+        featurePadding : Option[Tensor[T]] = None,
+        labelPadding : Option[T] = None,
+        fixedLength: Option[Int] = None)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+    val input = buf1(0)
+    val target = buf2(0)
+
+    var featureIndex = 0
+    var labelIndex = 0
+
+    // If padding, find the biggest feature/label index.
+    // If no padding, check the feature size and label size in all samples.
+    var i = 1
+    while (i < samples.length) {
+      if (featurePadding.isDefined &&
+        samples(i).featureLength() > samples(featureIndex).featureLength()) {
+        featureIndex = i
+      } else {
+        require(samples(i).featureLength() == samples(featureIndex).featureLength(),
+        "Sample's feature should have the same size.")
+      }
+      if (labelPadding.isDefined &&
+        samples(i).labelLength() > samples(labelIndex).labelLength()) {
+        labelIndex = i
+      } else {
+        require(samples(i).labelLength() == samples(featureIndex).labelLength(),
+          "Sample's label should have the same size.")
+      }
+      i += 1
+    }
+
+    val inputSize = Array(samples.length) ++ samples(featureIndex).feature.size()
+    val targetSize = Array(samples.length) ++ samples(labelIndex).label.size()
+    if (fixedLength.isDefined) {
+      require(fixedLength.get >= inputSize(2), "FixedLength is smaller than feature length")
+      inputSize(1) = fixedLength.get
+    }
+
+    // Resize the input and target to right size.
+    input.resize(inputSize)
+    target.resize(targetSize)
+
+    if (featurePadding.isDefined) {
+      // padding feature
+      require(featurePadding.get.dim() == input.dim() - 2, "featurePadding should have the " +
+        s"same dimension with the feature in sample. Excepted: ${input.dim() - 1}, " +
+        s"but got ${featurePadding.get.dim()}")
+      require(featurePadding.get.isContiguous(), "featurePadding should be contiguous")
+      var i = 1
+      while (i <= samples.length) {
+        val inputI = input(i)
+        copy(samples(i - 1).feature, inputI)
+        var j = samples(i - 1).feature.size(1) + 1
+        while (j <= inputI.size(1)) {
+          inputI(j).copy(featurePadding.get)
+          j += 1
+        }
+        i += 1
+      }
+    } else {
+      // copy feature
+      var i = 1
+      while (i <= samples.length) {
+        input(i).copy(samples(i - 1).feature)
+        i += 1
+      }
+    }
+
+    if (labelPadding.isDefined) {
+      // padding label
+      target.fill(labelPadding.get)
+      var i = 1
+      while (i <= samples.length) {
+        copy(samples(i - 1).label, target(i))
+        i += 1
+      }
+    } else {
+      var i = 1
+      while (i <= samples.length) {
+        target(i).copy(samples(i - 1).label)
+        i += 1
+      }
+    }
+
+
+    MiniBatch(input, target)
+  }
+
+  def copy[T: ClassTag](
+        src: Tensor[T],
+        dest: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
+    copy(src.storage.array(),
+      src.storageOffset() - 1,
+      dest.storage().array(),
+      dest.storageOffset() - 1,
+      src.nElement())
+  }
+
+  private def copy[T: ClassTag](
+        src: AnyRef,
+        srcPos: Int,
+        dest: AnyRef,
+        destPos: Int,
+        length: Int)(implicit ev: TensorNumeric[T]): Unit = {
+    ev.getType() match {
+      case DoubleType => Array.copy(src
+        .asInstanceOf[Array[Double]],
+        srcPos, dest
+          .asInstanceOf[Array[Double]], destPos, length)
+      case FloatType => System.arraycopy(src
+        .asInstanceOf[Array[Float]],
+        srcPos, dest
+          .asInstanceOf[Array[Float]], destPos, length)
+      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+    }
+  }
+
+//  def main(args: Array[String]): Unit = {
+//    val a = (a: Array[Sample[Float]], b: Array[Tensor[Float]], c: Array[Tensor[Float]]) =>
+//      toMiniBatch(a, b, c)
+//    SampleToMiniBatch(batchSize = 1, func = a)
+//  }
+}
