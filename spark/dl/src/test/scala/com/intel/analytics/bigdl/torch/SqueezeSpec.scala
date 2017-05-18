@@ -77,7 +77,7 @@ class SqueezeSpec extends TorchSpec {
     println("Test case : Squeeze, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
-  "A Squeeze(2, 2)" should "generate correct output and grad" in {
+  "A Squeeze(2, 3)" should "generate correct output and grad" in {
     torchCheck()
     val layer = Squeeze[Double](2, 3)
     val input = Tensor[Double](1, 1, 2, 2).apply1(_ => Random.nextDouble())
@@ -102,5 +102,18 @@ class SqueezeSpec extends TorchSpec {
     gradInput should be (luaGradInput)
 
     println("Test case : Squeeze, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A Squeeze(Array(2, 3), true)" should "generate correct output and grad" in {
+    torchCheck()
+    val layer = Squeeze[Double](Array(2, 3), true)
+    val input = Tensor[Double](2, 2, 1, 1).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
+
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, gradOutput)
+
+    output.size() should be (Array(2, 2))
+    gradInput.size() should be (Array(2, 2, 1, 1))
   }
 }
