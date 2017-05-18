@@ -301,7 +301,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     val batchSize = input.size(1)
 
     // Resize output
-    gradInput.resize(batchSize, nInputPlane, inputHeight, inputWidth);
+    gradInput.resize(batchSize, nInputPlane, inputHeight, inputWidth).zero()
 
     // Resize temporary columns
     val gradColumns = fInput
