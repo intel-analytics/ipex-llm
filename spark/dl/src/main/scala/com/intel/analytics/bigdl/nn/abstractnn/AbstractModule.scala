@@ -24,8 +24,9 @@ import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
-import com.intel.analytics.bigdl.optim.Predictor
+import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 
 import scala.reflect.ClassTag
 
@@ -344,6 +345,78 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   def predictClass(dataset: RDD[Sample[T]]): RDD[Int] = {
     Predictor(this).predictClass(dataset)
+  }
+
+  /**
+   * Set weight and bias for the module
+   * @param newWeights array of weights and bias
+   * @return
+   */
+  def setWeightsBias(newWeights: Array[Tensor[T]]): this.type = {
+    require(parameters() != null, "this layer does not have weight/bias")
+    require(parameters()._1.length == newWeights.length,
+      "the number of input weight/bias is not consistant with number of weight/bias of this layer")
+    val weights = parameters()._1
+    for(i <- newWeights.indices) {
+      weights(i).copy(newWeights(i))
+    }
+    this
+  }
+
+  /**
+   * Get weight and bias for the module
+   * @return array of weights and bias
+   *
+   */
+  def getWeightsBias(): Array[Tensor[T]] = {
+    if (parameters() != null) {
+      parameters()._1
+    } else {
+      null
+    }
+  }
+
+  /**
+   * Some other modules point to current module
+   * @param nodes upstream module nodes
+   * @return node containing current module
+   */
+  def apply(nodes : ModuleNode[T]*): ModuleNode[T] = {
+    require(this.isInstanceOf[AbstractModule[_, Tensor[T], T]],
+      "AbstractModule: Only module with tensor output can be added into a graph node")
+    val curNode = new ModuleNode[T](this.asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
+    nodes.foreach(node => {
+      node -> curNode
+    })
+    curNode
+  }
+
+  /**
+   * Find a module with given name. If there is no module with given name, it will return None. If
+   * there are multiple modules with the given name, an exception will be thrown.
+   * @param name
+   * @return
+   */
+  def apply(name : String): Option[AbstractModule[Activity, Activity, T]] = {
+    if (this.getName() == name) {
+      Some(this)
+    } else {
+      None
+    }
+  }
+
+  /**
+   * use ValidationMethod to evaluate module
+   * @param dataset dataset for test
+   * @param vMethods validation methods
+   * @param batchSize total batchsize of all partitions,
+   *                  optional param and default 4 * partitionNum of dataset
+   * @return
+   */
+  def evaluate(dataset: RDD[Sample[T]],
+   vMethods: Array[ValidationMethod[T]],
+   batchSize: Option[Int] = None): Array[(ValidationResult, ValidationMethod[T])] = {
+    Evaluator(this).test(dataset, vMethods, batchSize)
   }
 }
 

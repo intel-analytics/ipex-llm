@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
 import scala.collection.Iterator
 import java.util
 
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType}
+import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -39,14 +39,29 @@ object LabeledSentenceToSample {
       fixLabelLength)
 }
 
+/**
+ * Transform labeled sentences to one-hot format samples
+ * e.g. sentence._data: [0, 2, 3]
+ *      sentence._label: [2, 3, 1]
+ *      vocabLength: 4
+ *      => input: [[1, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
+ *         target: [3, 4, 2]
+ * The input is an iterator of LabeledSentence class
+ * The output is an iterator of Sample class
+ *
+ * @param vocabLength length of dictionary
+ * @param fixDataLength optional parameter for fixed length of input data
+ * @param fixLabelLength optional parameter for fixed length of labels
+ */
 class LabeledSentenceToSample[T: ClassTag](vocabLength: Int,
                               fixDataLength: Option[Int],
                               fixLabelLength: Option[Int])
   (implicit ev: TensorNumeric[T])
   extends Transformer[LabeledSentence[T], Sample[T]] {
-  private val buffer = Sample[T]()
-  private var featureBuffer: Array[T] = null
-  private var labelBuffer: Array[T] = null
+
+  private val feature: Tensor[T] = Tensor()
+  private val label: Tensor[T] = Tensor()
+  private val buffer = Sample[T](feature, label)
 
   override def apply(prev: Iterator[LabeledSentence[T]]): Iterator[Sample[T]] = {
     prev.map(sentence => {
@@ -54,24 +69,14 @@ class LabeledSentenceToSample[T: ClassTag](vocabLength: Int,
       val dataLength = fixDataLength.getOrElse(sentence.dataLength())
       val labelLength = fixLabelLength.getOrElse(sentence.labelLength())
 
-      if (featureBuffer == null || featureBuffer.length < dataLength * vocabLength) {
-        featureBuffer = new Array[T](dataLength * vocabLength)
-      }
-      if (labelBuffer == null || labelBuffer.length < labelLength) {
-        labelBuffer = new Array[T](labelLength)
-      }
+      // initialize featureBuffer
+      feature.resize(dataLength, vocabLength)
+      feature.zero()
+      label.resize(labelLength)
+      label.zero()
 
-      // initialize featureBuffer to 0.0
-
-      ev.getType() match {
-        case DoubleType =>
-          util.Arrays.fill(featureBuffer.asInstanceOf[Array[Double]], 0, featureBuffer.length, 0.0)
-          util.Arrays.fill(labelBuffer.asInstanceOf[Array[Double]], 0, labelBuffer.length, 0.0)
-        case FloatType =>
-          util.Arrays.fill(featureBuffer.asInstanceOf[Array[Float]], 0, featureBuffer.length, 0.0f)
-          util.Arrays.fill(labelBuffer.asInstanceOf[Array[Float]], 0, labelBuffer.length, 0.0f)
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
-      }
+      val featureBuffer = feature.storage().array()
+      val labelBuffer = label.storage().array()
 
       /* One-Hot format for feature
        * Expected transformed format should be:
@@ -111,8 +116,7 @@ class LabeledSentenceToSample[T: ClassTag](vocabLength: Int,
         i += 1
       }
 
-      buffer.set(featureBuffer, labelBuffer,
-        Array(dataLength, vocabLength), Array(labelLength))
+      buffer
     })
   }
 }

@@ -17,8 +17,8 @@ or [20 Newsgroup dataset](http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/w
 ```{r, engine='sh'}
 $ [/tmp/news20]$ tree . -L 1
   .
-  ├── 20_newsgroup
-  └── glove.6B
+  ├── 20news-19997.tar.gz
+  └── glove.6B.zip
 ```
 
 then running the flowing script would automatically download the data during the first run.
@@ -26,11 +26,12 @@ then running the flowing script would automatically download the data during the
 bigdl.sh would setup the essential environment for you and it would accept a spark-submit command as an input parameter.
 
 ```{r, engine='sh'}
+        PYTHONHASHSEED=...
         BigDL_HOME=...
         SPARK_HOME=...
         MASTER=...
-        PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-0.1.0-SNAPSHOT-python-api.zip
-        BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar
+        PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
+        BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
         PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
         source ${BigDL_HOME}/dist/bin/bigdl.sh
 
@@ -45,7 +46,8 @@ bigdl.sh would setup the essential environment for you and it would accept a spa
             --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/dl/models/textclassifier/textclassifier.py  \
             --jars ${BigDL_JAR_PATH} \
             --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
-            --conf spark.executor.extraClassPath=bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+            --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
+            --conf spark.executorEnv.PYTHONHASHSEED=${PYTHONHASHSEED} \
             ${BigDL_HOME}/pyspark/dl/models/textclassifier/textclassifier.py \
              --max_epoch 3
              --model cnn

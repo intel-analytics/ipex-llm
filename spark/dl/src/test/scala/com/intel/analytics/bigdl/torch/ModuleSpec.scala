@@ -18,19 +18,13 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.{Linear, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
 
 @com.intel.analytics.bigdl.tags.Serial
-class ModuleSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "getParameter" should "behave correctly" in {
+class ModuleSpec extends TorchSpec {
+    "getParameter" should "behave correctly" in {
+    torchCheck()
     val module = new Sequential[Double]
     val subModule1 = new Linear[Double](2, 3)
     val subModule2 = new Linear[Double](4, 5)

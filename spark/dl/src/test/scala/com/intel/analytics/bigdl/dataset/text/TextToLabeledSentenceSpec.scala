@@ -18,12 +18,11 @@ package com.intel.analytics.bigdl.dataset.text
 
 import java.io.PrintWriter
 
-import com.intel.analytics.bigdl.dataset.{DataSet, LocalArrayDataSet}
+import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 
 @com.intel.analytics.bigdl.tags.Serial

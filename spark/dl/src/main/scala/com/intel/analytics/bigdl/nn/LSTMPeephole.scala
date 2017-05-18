@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -31,30 +33,51 @@ import scala.reflect.ClassTag
  *
  * @param inputSize the size of each input vector
  * @param hiddenSize Hidden unit size in the LSTM
+ * @param  p is used for [[Dropout]] probability. For more details about
+ *           RNN dropouts, please refer to
+ *           [RnnDrop: A Novel Dropout for RNNs in ASR]
+ *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+ *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+ *           (https://arxiv.org/pdf/1512.05287.pdf)
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param uRegularizer: instance [[Regularizer]]
+            (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+            applied to the bias.
  */
 @SerialVersionUID(- 7566757838561436619L)
 class LSTMPeephole[T : ClassTag] (
   val inputSize: Int,
-  val hiddenSize: Int)
+  val hiddenSize: Int,
+  val p: Double = 0.0,
+  val wRegularizer: Regularizer[T] = null,
+  val uRegularizer: Regularizer[T] = null,
+  val bRegularizer: Regularizer[T] = null
+)
   (implicit ev: TensorNumeric[T])
-  extends Cell[T](hiddensShape = Array(hiddenSize, hiddenSize)) {
-  val p: Double = 0 // Dropout threshold
+  extends Cell[T](
+    hiddensShape = Array(hiddenSize, hiddenSize),
+    regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
+  ) {
   var inputGate: Sequential[T] = _
   var forgetGate: Sequential[T] = _
   var outputGate: Sequential[T] = _
   var hiddenLayer: Sequential[T] = _
   var cellLayer: Sequential[T] = _
-  var lstm: Sequential[T] = buildLSTM()
+  override var cell: AbstractModule[Activity, Activity, T] = buildLSTM()
 
   def buildGate(): Sequential[T] = {
     val gate = Sequential()
 
     val i2g = Sequential()
       .add(Dropout(p))
-      .add(Linear(inputSize, hiddenSize))
+      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer))
     val h2g = Sequential()
       .add(Dropout(p))
-      .add(Linear(hiddenSize, hiddenSize, withBias = false))
+      .add(Linear(hiddenSize, hiddenSize,
+        withBias = false, wRegularizer = uRegularizer))
 
     gate
       .add(ParallelTable()
@@ -86,10 +109,12 @@ class LSTMPeephole[T : ClassTag] (
 
     val i2h = Sequential()
       .add(Dropout(p))
-      .add(Linear(inputSize, hiddenSize))
+      .add(Linear(inputSize, hiddenSize, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer))
     val h2h = Sequential()
       .add(Dropout(p))
-      .add(Linear(hiddenSize, hiddenSize, withBias = false))
+      .add(Linear(hiddenSize, hiddenSize, withBias = false,
+        wRegularizer = uRegularizer))
 
     hidden
       .add(ParallelTable()
@@ -152,34 +177,8 @@ class LSTMPeephole[T : ClassTag] (
         .add(SelectTable(1))
         .add(Identity()))
 
-    lstm = LSTM
+    cell = LSTM
     LSTM
-  }
-
-  override def updateOutput(input: Table): Table = {
-    output = lstm.updateOutput(input).toTable
-    output
-  }
-
-  override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    gradInput = lstm.updateGradInput(input, gradOutput).toTable
-    gradInput
-  }
-
-  override def accGradParameters(input: Table, gradOutput: Table, scale: Double): Unit = {
-    lstm.accGradParameters(input, gradOutput, scale)
-  }
-
-  override def updateParameters(learningRate: T): Unit = {
-    lstm.updateParameters(learningRate)
-  }
-
-  override def zeroGradParameters(): Unit = {
-    lstm.zeroGradParameters()
-  }
-
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    lstm.parameters()
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[LSTMPeephole[T]]
@@ -201,7 +200,7 @@ class LSTMPeephole[T : ClassTag] (
 
   override def reset(): Unit = {
     super.reset()
-    lstm.reset()
+    cell.reset()
   }
 
   override def toString: String = s"LSTMPeephole($inputSize, $hiddenSize, $p)"
@@ -210,9 +209,14 @@ class LSTMPeephole[T : ClassTag] (
 object LSTMPeephole {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int = 4,
-    hiddenSize: Int = 3)
+    hiddenSize: Int = 3,
+    p: Double = 0.0,
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null
+  )
     (implicit ev: TensorNumeric[T]): LSTMPeephole[T] = {
-    new LSTMPeephole[T](inputSize, hiddenSize)
+    new LSTMPeephole[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
   }
 }
 

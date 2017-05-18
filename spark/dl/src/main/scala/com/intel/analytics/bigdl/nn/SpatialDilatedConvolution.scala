@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{DenseTensorBLAS, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -47,6 +48,10 @@ import scala.reflect.ClassTag
  * @param dilationW The number of pixels to skip. Default is 1.
  * @param dilationH The number of pixels to skip. Default is 1.
  * @param initMethod Init method, Default, Xavier.
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+ *                    applied to the bias.
  */
 
 @SerialVersionUID(- 933818099759912492L)
@@ -61,7 +66,9 @@ class SpatialDilatedConvolution[T: ClassTag](
   val padH: Int = 0,
   val dilationW: Int = 1,
   val dilationH: Int = 1,
-  private var initMethod: InitializationMethod = Default
+  private var initMethod: InitializationMethod = Default,
+  val wRegularizer: Regularizer[T] = null,
+  val bRegularizer: Regularizer[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
@@ -462,6 +469,13 @@ class SpatialDilatedConvolution[T: ClassTag](
       gradOutput.resize(nOutputPlane, outputHeight, outputWidth)
       input.resize(nInputPlane, inputHeight, inputWidth)
     }
+
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight)
+    }
+    if (null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias)
+    }
   }
 
   override def updateParameters(learningRate: T): Unit = {
@@ -552,9 +566,12 @@ object SpatialDilatedConvolution {
       padH: Int = 0,
       dilationW: Int = 1,
       dilationH: Int = 1,
-      initMethod: InitializationMethod = Default
+      initMethod: InitializationMethod = Default,
+      wRegularizer: Regularizer[T] = null,
+      bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]) : SpatialDilatedConvolution[T] = {
     new SpatialDilatedConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH, dilationW, dilationH, initMethod)
+      padW, padH, dilationW, dilationH, initMethod,
+      wRegularizer, bRegularizer)
   }
 }

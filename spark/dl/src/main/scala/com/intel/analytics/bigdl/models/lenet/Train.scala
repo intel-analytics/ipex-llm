@@ -16,15 +16,13 @@
 
 package com.intel.analytics.bigdl.models.lenet
 
-import java.nio.file.Paths
-
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
@@ -42,10 +40,10 @@ object Train {
       val sc = new SparkContext(conf)
       Engine.init
 
-      val trainData = Paths.get(param.folder, "/train-images-idx3-ubyte")
-      val trainLabel = Paths.get(param.folder, "/train-labels-idx1-ubyte")
-      val validationData = Paths.get(param.folder, "/t10k-images-idx3-ubyte")
-      val validationLabel = Paths.get(param.folder, "/t10k-labels-idx1-ubyte")
+      val trainData = param.folder + "/train-images-idx3-ubyte"
+      val trainLabel = param.folder + "/train-labels-idx1-ubyte"
+      val validationData = param.folder + "/t10k-images-idx3-ubyte"
+      val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
@@ -53,13 +51,11 @@ object Train {
         LeNet5(classNum = 10)
       }
 
-      val state = if (param.stateSnapshot.isDefined) {
-        T.load(param.stateSnapshot.get)
+      val optimMethod = if (param.stateSnapshot.isDefined) {
+        OptimMethod.load[Float](param.stateSnapshot.get)
       } else {
-        T(
-          "learningRate" -> param.learningRate,
-          "learningRateDecay" -> param.learningRateDecay
-        )
+        new SGD[Float](learningRate = param.learningRate,
+          learningRateDecay = param.learningRateDecay)
       }
 
       val trainSet = DataSet.array(load(trainData, trainLabel), sc) ->
@@ -86,9 +82,11 @@ object Train {
           trigger = Trigger.everyEpoch,
           dataset = validationSet,
           vMethods = Array(new Top1Accuracy, new Top5Accuracy[Float], new Loss[Float]))
-        .setState(state)
+        .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
+
+      sc.stop()
     })
   }
 }

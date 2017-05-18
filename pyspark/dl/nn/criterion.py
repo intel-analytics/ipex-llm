@@ -20,6 +20,7 @@ import sys
 from util.common import JavaValue
 from util.common import callBigDlFunc
 from util.common import JTensor
+from nn.layer import Model
 import numpy as np
 
 if sys.version >= '3':
@@ -36,6 +37,37 @@ class Criterion(JavaValue):
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, JavaValue.jvm_class_constructor(self), *args)
         self.bigdl_type = bigdl_type
+
+    def forward(self, input, target):
+        """
+        NB: It's for debug only, please use optimizer.optimize() in production.
+        Takes an input object, and computes the corresponding loss of the criterion,
+        compared with `target`
+        :param input: ndarray or list of ndarray
+        :param target: ndarray or list of ndarray
+        :return: value of loss
+        """
+        output = callBigDlFunc(self.bigdl_type,
+                               "criterionForward",
+                               self.value,
+                               Model.check_input(input),
+                               Model.check_input(target))
+        return output
+
+    def backward(self, input, target):
+        """
+        NB: It's for debug only, please use optimizer.optimize() in production.
+        Performs a back-propagation step through the criterion, with respect to the given input.
+        :param input: ndarray or list of ndarray
+        :param target: ndarray or list of ndarray
+        :return: ndarray
+        """
+        output = callBigDlFunc(self.bigdl_type,
+                               "criterionBackward",
+                               self.value,
+                               Model.check_input(input),
+                               Model.check_input(target))
+        return Model.convert_output(output)
 
     @classmethod
     def of(cls, jcriterion, bigdl_type="float"):
@@ -138,6 +170,11 @@ class ClassSimplexCriterion(Criterion):
 class CosineEmbeddingCriterion(Criterion):
 
     '''
+    Creates a criterion that measures the loss given an input x = {x1, x2},
+    a table of two Tensors, and a Tensor label y with values 1 or -1.
+
+    :param margin a number from -1 to 1, 0 to 0.5 is suggested
+
     >>> cosineEmbeddingCriterion = CosineEmbeddingCriterion(1e-5, True)
     creating: createCosineEmbeddingCriterion
     '''
@@ -219,6 +256,12 @@ class L1HingeEmbeddingCriterion(Criterion):
 class MarginCriterion(Criterion):
 
     '''
+    Creates a criterion that optimizes a two-class classification hinge loss (margin-based loss)
+    between input x (a Tensor of dimension 1) and output y.
+
+    :param margin if unspecified, is by default 1.
+    :param size_average: size average in a mini-batch
+
     >>> marginCriterion = MarginCriterion(1e-5, True)
     creating: createMarginCriterion
     '''
@@ -235,6 +278,15 @@ class MarginCriterion(Criterion):
 class MarginRankingCriterion(Criterion):
 
     '''
+    Creates a criterion that measures the loss given an input x = {x1, x2},
+    a table of two Tensors of size 1 (they contain only scalars), and a label y (1 or -1).
+    In batch mode, x is a table of two Tensors of size batchsize, and y is a Tensor of size
+    batchsize containing 1 or -1 for each corresponding pair of elements in the input Tensor.
+    If y == 1 then it assumed the first input should be ranked higher (have a larger value) than
+    the second input, and vice-versa for y == -1.
+
+    :param margin
+
     >>> marginRankingCriterion = MarginRankingCriterion(1e-5, True)
     creating: createMarginRankingCriterion
     '''
@@ -305,6 +357,19 @@ class ParallelCriterion(Criterion):
 class SmoothL1Criterion(Criterion):
 
     '''
+    Creates a criterion that can be thought of as a smooth version of the AbsCriterion.
+    It uses a squared term if the absolute element-wise error falls below 1.
+    It is less sensitive to outliers than the MSECriterion and in some
+    cases prevents exploding gradients (e.g. see "Fast R-CNN" paper by Ross Girshick).
+                          | 0.5 * (x_i - y_i)^2^, if |x_i - y_i| < 1
+    loss(x, y) = 1/n \sum |
+                          | |x_i - y_i| - 0.5,   otherwise
+    If x and y are d-dimensional Tensors with a total of n elements,
+    the sum operation still operates over all the elements, and divides by n.
+    The division by n can be avoided if one sets the internal variable sizeAverage to false
+
+    :param size_average whether to average the loss
+
     >>> smoothL1Criterion = SmoothL1Criterion(True)
     creating: createSmoothL1Criterion
     '''
@@ -319,6 +384,17 @@ class SmoothL1Criterion(Criterion):
 class SmoothL1CriterionWithWeights(Criterion):
 
     '''
+    a smooth version of the AbsCriterion
+    It uses a squared term if the absolute element-wise error falls below 1.
+    It is less sensitive to outliers than the MSECriterion and in some cases
+    prevents exploding gradients (e.g. see "Fast R-CNN" paper by Ross Girshick).
+
+   d = (x - y) * w_in
+   loss(x, y, w_in, w_out)
+              | 0.5 * (sigma * d_i)^2 * w_out          if |d_i| < 1 / sigma / sigma
+   = 1/n \sum |
+              | (|d_i| - 0.5 / sigma / sigma) * w_out   otherwise
+
     >>> smoothL1CriterionWithWeights = SmoothL1CriterionWithWeights(1e-5, 1)
     creating: createSmoothL1CriterionWithWeights
     '''
@@ -360,6 +436,12 @@ class SoftmaxWithCriterion(Criterion):
 
 class TimeDistributedCriterion(Criterion):
     '''
+    This class is intended to support inputs with 3 or more dimensions.
+    Apply Any Provided Criterion to every temporal slice of an input.
+
+    :param criterion: embedded criterion
+    :param size_average: whether to divide the sequence length
+
     >>> td = TimeDistributedCriterion(ClassNLLCriterion())
     creating: createClassNLLCriterion
     creating: createTimeDistributedCriterion
@@ -475,6 +557,28 @@ class MultiMarginCriterion(Criterion):
                                                    margin,
                                                    size_average)
 
+
+class SoftMarginCriterion(Criterion):
+    """
+    Creates a criterion that optimizes a two-class classification logistic loss
+    between input x (a Tensor of dimension 1) and output y (which is a tensor
+    containing either 1s or -1s).
+
+           loss(x, y) = sum_i (log(1 + exp(-y[i]*x[i]))) / x:nElement()
+
+    :param sizeaverage The normalization by the number of elements in the input
+                       can be disabled by setting
+
+    >>> softMarginCriterion = SoftMarginCriterion(False)
+    creating: createSoftMarginCriterion
+    >>> softMarginCriterion = SoftMarginCriterion()
+    creating: createSoftMarginCriterion
+    """
+
+    def __init__(self,
+                 size_average=True,
+                 bigdl_type="float"):
+        super(SoftMarginCriterion, self).__init__(None, bigdl_type, size_average)
 
 def _test():
     import doctest

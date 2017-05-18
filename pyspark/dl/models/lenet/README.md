@@ -28,22 +28,22 @@ We would train a LeNet model in spark local mode with the following commands and
 
     SPARK_HOME=...
     MASTER=local[*]
-    PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-0.1.0-SNAPSHOT-python-api.zip
-    BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar
+    PYTHON_API_ZIP_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
+    BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
     PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
     ${SPARK_HOME}/bin/spark-submit \
         --master ${MASTER} \
         --driver-cores 2  \
-       --driver-memory 2g  \
-       --total-executor-cores 2  \
-       --executor-cores 2  \
-       --executor-memory 4g \
-       --conf spark.akka.frameSize=64 \
+        --driver-memory 2g  \
+        --total-executor-cores 2  \
+        --executor-cores 2  \
+        --executor-memory 4g \
+        --conf spark.akka.frameSize=64 \
         --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py  \
         --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
         --jars ${BigDL_JAR_PATH} \
         --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
-        --conf spark.executor.extraClassPath=bigdl-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+        --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
         ${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py \
         --action train
  ```

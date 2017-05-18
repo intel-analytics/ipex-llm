@@ -129,11 +129,24 @@ object DLClassifier{
   }
 }
 
+/**
+ * parameters passed to DLClassifier
+ * @tparam T data type
+ */
 trait DataParams[@specialized(Float, Double) T] extends Params {
   final val modelTrain = new Param[Module[T]](this, "module factory", "network model")
   final val batchShape = new Param[Array[Int]](this, "batch size", "batch size for input")
 
+  /**
+   * get the model
+   * @return modelTrain
+   */
   final def getModel: Module[T] = $(modelTrain)
+
+  /**
+   * get the batch shape
+   * @return batchShape
+   */
   final def getBatchSize: Array[Int] = $(batchShape)
 }
 

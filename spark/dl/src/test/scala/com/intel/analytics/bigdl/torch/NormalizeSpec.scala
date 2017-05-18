@@ -17,19 +17,13 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.Normalize
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class NormalizeSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A Normalize Module" should "generate correct output and grad with input one dimension" in {
+class NormalizeSpec extends TorchSpec {
+    "A Normalize Module" should "generate correct output and grad with input one dimension" in {
+    torchCheck()
     val p = 1.5
     val input = Tensor[Double](9).apply1(e => Random.nextDouble())
     val gradOutput = Tensor[Double](9).apply1(e => Random.nextDouble())
@@ -58,6 +52,7 @@ class NormalizeSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A Normalize Module" should "generate correct output and grad with input two dimensions" in {
+    torchCheck()
     val input = Tensor[Double](2, 9).apply1(e => Random.nextDouble())
     val gradOutput = Tensor[Double](2, 9).apply1(e => Random.nextDouble())
 
@@ -75,6 +70,40 @@ class NormalizeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val start = System.nanoTime()
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    output should be(luaOutput1)
+    gradInput should be(luaOutput2)
+
+    println("Test case : Normalize, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A Normalize Module multiple time" should "generate correct" +
+    " output and grad with input two dimensions" in {
+    torchCheck()
+    val input = Tensor[Double](2, 9).apply1(e => Random.nextDouble())
+    val gradOutput = Tensor[Double](2, 9).apply1(e => Random.nextDouble())
+
+    val code = "module = nn.Normalize(math.huge)\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)\n" +
+      "output = module:forward(input)\n" +
+      "gradInput = module:backward(input,gradOutput)"
+
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "gradOutput" -> gradOutput),
+      Array("output", "gradInput"))
+
+    val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
+    val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    val module = Normalize[Double](Double.MaxValue)
+    val start = System.nanoTime()
+    var output = module.forward(input)
+    var gradInput = module.backward(input, gradOutput)
+    output = module.forward(input)
+    gradInput = module.backward(input, gradOutput)
     val end = System.nanoTime()
     val scalaTime = end - start
 

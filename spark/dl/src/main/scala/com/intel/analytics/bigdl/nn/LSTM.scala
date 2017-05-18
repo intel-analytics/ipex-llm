@@ -16,7 +16,9 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -32,17 +34,36 @@ import scala.reflect.ClassTag
  *
  * @param inputSize the size of each input vector
  * @param hiddenSize Hidden unit size in the LSTM
+ * @param  p is used for [[Dropout]] probability. For more details about
+ *           RNN dropouts, please refer to
+ *           [RnnDrop: A Novel Dropout for RNNs in ASR]
+ *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
+ *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
+ *           (https://arxiv.org/pdf/1512.05287.pdf)
+ * @param wRegularizer: instance of [[Regularizer]]
+ *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param uRegularizer: instance [[Regularizer]]
+            (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+ * @param bRegularizer: instance of [[Regularizer]]
+            applied to the bias.
  */
 @SerialVersionUID(- 8176191554025511686L)
 class LSTM[T : ClassTag] (
   val inputSize: Int,
-  val hiddenSize: Int)
+  val hiddenSize: Int,
+  val p: Double = 0,
+  val wRegularizer: Regularizer[T] = null,
+  val uRegularizer: Regularizer[T] = null,
+  val bRegularizer: Regularizer[T] = null
+)
   (implicit ev: TensorNumeric[T])
-  extends Cell[T](hiddensShape = Array(hiddenSize, hiddenSize)) {
-  val p: Double = 0 // Dropout threshold
+  extends Cell[T](
+    hiddensShape = Array(hiddenSize, hiddenSize),
+    regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
+  ) {
   var gates: Sequential[T] = _
   var cellLayer: Sequential[T] = _
-  var lstm: Sequential[T] = buildLSTM()
+  override var cell: AbstractModule[Activity, Activity, T] = buildLSTM()
 
   def buildGates(): Sequential[T] = {
     val gates = Sequential()
@@ -59,10 +80,14 @@ class LSTM[T : ClassTag] (
           .add(Dropout(p))
           .add(Dropout(p)))
         .add(ParallelTable()
-          .add(Linear(inputSize, hiddenSize))
-          .add(Linear(inputSize, hiddenSize))
-          .add(Linear(inputSize, hiddenSize))
-          .add(Linear(inputSize, hiddenSize)))
+          .add(Linear(inputSize, hiddenSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+          .add(Linear(inputSize, hiddenSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+          .add(Linear(inputSize, hiddenSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+          .add(Linear(inputSize, hiddenSize,
+            wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
         .add(JoinTable(1, 1))
 
       h2g = Sequential()
@@ -72,14 +97,20 @@ class LSTM[T : ClassTag] (
           .add(Dropout(p))
           .add(Dropout(p)))
         .add(ParallelTable()
-          .add(Linear(hiddenSize, hiddenSize, withBias = false))
-          .add(Linear(hiddenSize, hiddenSize, withBias = false))
-          .add(Linear(hiddenSize, hiddenSize, withBias = false))
-          .add(Linear(hiddenSize, hiddenSize, withBias = false)))
+          .add(Linear(hiddenSize, hiddenSize,
+            withBias = false, wRegularizer = uRegularizer))
+          .add(Linear(hiddenSize, hiddenSize,
+            withBias = false, wRegularizer = uRegularizer))
+          .add(Linear(hiddenSize, hiddenSize,
+            withBias = false, wRegularizer = uRegularizer))
+          .add(Linear(hiddenSize, hiddenSize,
+            withBias = false, wRegularizer = uRegularizer)))
         .add(JoinTable(1, 1))
     } else {
-      i2g = Linear(inputSize, 4 * hiddenSize)
-      h2g = Linear(hiddenSize, 4 * hiddenSize, withBias = false)
+      i2g = Linear(inputSize, 4 * hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer)
+      h2g = Linear(hiddenSize, 4 * hiddenSize,
+        withBias = false, wRegularizer = uRegularizer)
     }
 
     gates
@@ -143,35 +174,8 @@ class LSTM[T : ClassTag] (
         .add(Identity()))
 
     output = T(Tensor(), T())
-    this.lstm = lstm
+    this.cell = lstm
     lstm
-  }
-
-
-  override def updateOutput(input: Table): Table = {
-    output = lstm.updateOutput(input).toTable
-    output
-  }
-
-  override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    gradInput = lstm.updateGradInput(input, gradOutput).toTable
-    gradInput
-  }
-
-  override def accGradParameters(input: Table, gradOutput: Table, scale: Double): Unit = {
-    lstm.accGradParameters(input, gradOutput, scale)
-  }
-
-  override def updateParameters(learningRate: T): Unit = {
-    lstm.updateParameters(learningRate)
-  }
-
-  override def zeroGradParameters(): Unit = {
-    lstm.zeroGradParameters()
-  }
-
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    lstm.parameters()
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[LSTM[T]]
@@ -193,7 +197,7 @@ class LSTM[T : ClassTag] (
 
   override def reset(): Unit = {
     super.reset()
-    lstm.reset()
+    cell.reset()
   }
 
 
@@ -203,8 +207,13 @@ class LSTM[T : ClassTag] (
 object LSTM {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputSize: Int,
-    hiddenSize: Int)
+    hiddenSize: Int,
+    p: Double = 0,
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null
+  )
     (implicit ev: TensorNumeric[T]): LSTM[T] = {
-    new LSTM[T](inputSize, hiddenSize)
+    new LSTM[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
   }
 }

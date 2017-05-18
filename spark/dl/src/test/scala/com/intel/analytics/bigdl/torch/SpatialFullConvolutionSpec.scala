@@ -20,19 +20,13 @@ import com.intel.analytics.bigdl.nn.{Sequential, SpatialFullConvolution}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A SpatialFullConvolution" should "generate correct output" in {
+class SpatialFullConvolutionSpec extends TorchSpec {
+    "A SpatialFullConvolution" should "generate correct output" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -74,6 +68,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution on rectangle input" should "generate correct output" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -114,6 +109,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -175,6 +171,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution" should "generate correct output and grad with 3D input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -236,6 +233,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution noBias" should "generate correct output and grad with 3D input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -294,6 +292,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution" should "generate correct output and grad with table input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -360,6 +359,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution OneToOne" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -415,6 +415,7 @@ class SpatialFullConvolutionSpec extends FlatSpec with BeforeAndAfter with Match
   }
 
   "A SpatialFullConvolution with different input" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

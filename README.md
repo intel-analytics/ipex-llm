@@ -1,4 +1,4 @@
-# BigDL: Distributed Deep learning on Apache Spark
+# BigDL: Distributed Deep Learning on Apache Spark
 
 ## What is BigDL?
 BigDL is a distributed deep learning library for Apache Spark; with BigDL, users can write their deep learning applications as standard Spark programs, which can directly run on top of existing Spark or Hadoop clusters.
@@ -19,10 +19,10 @@ You may want to write your deep learning programs using BigDL if:
 ## How to use BigDL?
 * To learn how to install and build BigDL (on both Linux and macOS), you can check out the [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
 * To learn how to run BigDL programs (as either a local Java program or a Spark program), you can check out the [Getting Started Page](https://github.com/intel-analytics/BigDL/wiki/Getting-Started)
+* To learn the details of Python support in BigDL, you can check out the [Python Support Page](https://github.com/intel-analytics/BigDL/wiki/Python-Support)
 * To try BigDL out on EC2, you can check out the [Running on EC2 Page](https://github.com/intel-analytics/BigDL/wiki/Running-on-EC2)
 * To learn how to create practical neural networks using BigDL in a couple of minutes, you can check out the [Tutorials Page](https://github.com/intel-analytics/BigDL/wiki/Tutorials)
 * For more details, you can check out the [Documents Page](https://github.com/intel-analytics/BigDL/wiki/Documents) (including Tutorials, Examples, Programming Guide, etc.)
-* [Experimental Python Binding](https://github.com/intel-analytics/BigDL/blob/master/pyspark/dl/README.md)
 
 ## Support
 * You can join the [BigDL Google Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or subscribe to the [Mail List](mailto:bigdl-user-group+subscribe@googlegroups.com)) for more questions and discussions on BigDL

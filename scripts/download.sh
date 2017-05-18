@@ -2,6 +2,8 @@
 HDFS_HOST=$1                                                                                               
 set -e
 
+BIGDL_VERSION=0.2.0-SNAPSHOT
+
 if [ -d "images" ]
 then
     rm -r images
@@ -20,14 +22,14 @@ do
     fi
 done
 cp -r images/train/ images/val
-mvn dependency:get -Dclassifier=jar-with-dependencies-and-spark -DrepoUrl=https://oss.sonatype.org/content/groups/public/ -DartifactId=bigdl -DgroupId=com.intel.analytics.bigdl -Dversion=0.1.0-SNAPSHOT
+mvn dependency:get -Dclassifier=jar-with-dependencies-and-spark -DrepoUrl=https://oss.sonatype.org/content/groups/public/ -DartifactId=bigdl -DgroupId=com.intel.analytics.bigdl -Dversion=$BIGDL_VERSION
 if [ -d "seq" ]
 then
     rm -r seq
 fi
 mkdir seq
 export CORE_NUMBER=`cat /proc/cpuinfo | grep processor | wc -l`
-java -cp ~/.m2/repository/com/intel/analytics/bigdl/bigdl/0.1.0-SNAPSHOT/bigdl-0.1.0-SNAPSHOT-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f ./images -o ./seq -p $CORE_NUMBER
+java -cp ~/.m2/repository/com/intel/analytics/bigdl/bigdl/$BIGDL_VERSION/bigdl-$BIGDL_VERSION-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f ./images -o ./seq -p $CORE_NUMBER
 rm seq/train/.*.crc
 rm seq/val/.*.crc
 

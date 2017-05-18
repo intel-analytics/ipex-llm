@@ -18,6 +18,10 @@ package com.intel.analytics.bigdl.dataset.text.utils
 
 sealed trait AbstractToken
 
+/**
+ * Start end End tokens added to a sentence.
+ * Usually used in a Language Modelling.
+ */
 object SentenceToken extends AbstractToken {
   val start = "SENTENCESTART"
   val end = "SENTENCEEND"

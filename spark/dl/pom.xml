@@ -5,7 +5,7 @@
     <parent>
         <artifactId>spark_bigdl</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.2.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -16,6 +16,9 @@
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <scoverage.scalacPluginVersion>1.1.1</scoverage.scalacPluginVersion>
         <scoverage.aggregate>true</scoverage.aggregate>
+        <runSpecsInParallel>false</runSpecsInParallel>
+        <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
+        <filesToExclude>com/intel/analytics/bigdl/example/udfpredictor/*Stream*.scala</filesToExclude>
     </properties>
 
     <dependencies>
@@ -37,14 +40,7 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
-            <version>2.7.1</version>
             <scope>${spark-scope}</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -55,7 +51,7 @@
         <dependency>
             <groupId>com.intel.analytics.bigdl.native</groupId>
             <artifactId>${mkl-java-os-version}</artifactId>
-            <version>${project.version}</version>
+            <version>0.1.0</version>
             <exclusions>
                 <!-- We already copy the dynamic lib files of this project to mkl-java, so we
                 need not the dependency, which will break assembly step.
@@ -142,12 +138,49 @@
                     <systemProperties>
                         <bigdl.disableCheckSysEnv>true</bigdl.disableCheckSysEnv>
                     </systemProperties>
+                    <argLine>-Xmx6g -XX:MaxPermSize=1g</argLine>
                 </configuration>
                 <executions>
                     <execution>
                         <id>test</id>
                         <goals>
                             <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <artifactSet>
+                        <includes>
+                            <include>com.google.protobuf</include>
+                        </includes>
+                    </artifactSet>
+                    <filters>
+                        <filter>
+                            <artifact>com.google.protobuf</artifact>
+                            <excludes>
+                                <exclude>META-INF/maven/com.google.protobuf/protobuf-java/*</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                    <relocations>
+                        <relocation>
+                            <pattern>com.google.protobuf</pattern>
+                            <shadedPattern>com.intel.analytics.bigdl.shaded.protobuf</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -196,21 +229,6 @@
             </plugin>
 
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.0.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>jar-no-fork</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
                 <groupId>org.scalastyle</groupId>
                 <artifactId>scalastyle-maven-plugin</artifactId>
                 <version>0.8.0</version>
@@ -233,6 +251,17 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>net.alchim31.maven</groupId>
+                <artifactId>scala-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <excludes>
+                        <exclude>${filesToExclude}</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -252,8 +281,20 @@
             </plugin>
         </plugins>
     </reporting>
-    
+
     <profiles>
+        <profile>
+            <id>spark_2.0</id>
+            <properties>
+                <filesToExclude>""</filesToExclude> <!-- we do not want exclude anything here -->
+            </properties>
+        </profile>
+        <profile>
+            <id>spark_2.1</id>
+            <properties>
+                <filesToExclude>""</filesToExclude> <!-- we do not want exclude anything here -->
+            </properties>
+        </profile>
         <profile>
             <id>parallel-tests</id>
             <properties>
@@ -270,13 +311,9 @@
             </properties>
         </profile>
         <profile>
-            <id>serial-all</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
+            <id>integration-test</id>
             <properties>
-                <runSpecsInParallel>false</runSpecsInParallel>
-                <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
+                <tagsToExclude>com.intel.analytics.bigdl.tags.Serial,com.intel.analytics.bigdl.tags.Parallel</tagsToExclude>
             </properties>
         </profile>
     </profiles>

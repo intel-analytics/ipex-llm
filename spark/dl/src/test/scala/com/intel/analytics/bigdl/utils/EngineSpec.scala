@@ -67,6 +67,16 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
+  "Engine" should "be inited correct under spark standalone environment with single executor" in {
+    TestUtils.sparkStandaloneEnv(totalCore = 4, core = 4) {
+      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
+      sc = new SparkContext(conf)
+      Engine.init
+      Engine.nodeNumber should be(1)
+      Engine.coreNumber should be(4)
+    }
+  }
+
   "Engine" should "be inited correct under spark yarn environment" in {
     TestUtils.sparkYarnEnv(executors = 6, core = 4) {
       val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
@@ -77,12 +87,32 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
+  "Engine" should "be inited correct under spark yarn environment with single executor" in {
+    TestUtils.sparkYarnEnv(executors = 1, core = 4) {
+      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
+      sc = new SparkContext(conf)
+      Engine.init
+      Engine.nodeNumber should be(1)
+      Engine.coreNumber should be(4)
+    }
+  }
+
   "Engine" should "be inited correct under spark mesos environment" in {
     TestUtils.sparkMesosEnv(totalCore = 24, core = 4) {
       val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
       sc = new SparkContext(conf)
       Engine.init
       Engine.nodeNumber should be(6)
+      Engine.coreNumber should be(4)
+    }
+  }
+
+  "Engine" should "be inited correct under spark mesos environment with single executor" in {
+    TestUtils.sparkMesosEnv(totalCore = 4, core = 4) {
+      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
+      sc = new SparkContext(conf)
+      Engine.init
+      Engine.nodeNumber should be(1)
       Engine.coreNumber should be(4)
     }
   }
@@ -102,6 +132,11 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
       "spark.executorEnv.KMP_BLOCKTIME" -> "0",
       "spark.executorEnv.OMP_WAIT_POLICY" -> "passive",
       "spark.executorEnv.OMP_NUM_THREADS" -> "1",
+      "spark.yarn.appMasterEnv.DL_ENGINE_TYPE" -> "mklblas",
+      "spark.yarn.appMasterEnv.MKL_DISABLE_FAST_MM" -> "1",
+      "spark.yarn.appMasterEnv.KMP_BLOCKTIME" -> "0",
+      "spark.yarn.appMasterEnv.OMP_WAIT_POLICY" -> "passive",
+      "spark.yarn.appMasterEnv.OMP_NUM_THREADS" -> "1",
       "spark.shuffle.reduceLocality.enabled" -> "false",
       "spark.shuffle.blockTransferService" -> "nio",
       "spark.scheduler.minRegisteredResourcesRatio" -> "1.0"

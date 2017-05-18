@@ -19,19 +19,13 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.{Sequential, SpatialDivisiveNormalization}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class SpatialDivisiveNormalizationSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A SpatialDivisiveNormalization 3D input" should "generate correct output and grad" in {
+class SpatialDivisiveNormalizationSpec extends TorchSpec {
+    "A SpatialDivisiveNormalization 3D input" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -69,6 +63,7 @@ class SpatialDivisiveNormalizationSpec extends FlatSpec with BeforeAndAfter with
   }
 
   "A SpatialDivisiveNormalization" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -106,6 +101,7 @@ class SpatialDivisiveNormalizationSpec extends FlatSpec with BeforeAndAfter with
   }
 
   "A SpatialDivisiveNormalization(4)" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -143,6 +139,7 @@ class SpatialDivisiveNormalizationSpec extends FlatSpec with BeforeAndAfter with
   }
 
   "SpatialDivisiveNormalization(4, kernel)" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

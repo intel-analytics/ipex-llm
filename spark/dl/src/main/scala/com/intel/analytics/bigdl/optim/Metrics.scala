@@ -21,6 +21,13 @@ import org.apache.spark.{Accumulable, Accumulator, SparkContext}
 
 import scala.collection.mutable.{ArrayBuffer, Map}
 
+/**
+ * Performance metrics for the training process.
+ * Beyond collect local metrics(e.g. throughput) in driver node,
+ * it can also be used to collect distributed metrics
+ * (e.g. time of some steps among the workers).
+ * The is useful for performance analysis.
+ */
 class Metrics extends Serializable {
   private val localMetricsMap: Map[String, LocalMetricsEntry] = Map()
   private val aggregateDistributeMetricsMap: Map[String, AggregateDistributeMetricsEntry] = Map()

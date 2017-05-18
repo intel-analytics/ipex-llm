@@ -18,18 +18,39 @@ package com.intel.analytics.bigdl.models.utils
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class ModelBroadcastSpec extends FlatSpec with Matchers {
+class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
+
+  var sc: SparkContext = null
 
   Logger.getLogger("org").setLevel(Level.WARN)
   Logger.getLogger("akka").setLevel(Level.WARN)
+  before {
+    sc = new SparkContext(new SparkConf().setMaster("local[1]").setAppName("ModelBroadcast"))
+  }
 
-  val sc = new SparkContext(new SparkConf().setMaster("local[1]").setAppName("ModelBroadcast"))
-  val model = LeNet5(10)
+  "model broadcast" should "work properly" in {
+    val model = LeNet5(10)
 
-  val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
-  modelBroadCast.value().toString should be(model.toString)
-  modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
-  sc.stop()
+    val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
+    modelBroadCast.value().toString should be(model.toString)
+    modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
+  }
+
+  "model broadcast with getParameters" should "work properly" in {
+    val model = LeNet5(10)
+    model.getParameters()
+
+    val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
+    modelBroadCast.value().toString should be(model.toString)
+    modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
+  }
+
+  after {
+    if (sc != null) {
+      sc.stop()
+    }
+  }
+
 }

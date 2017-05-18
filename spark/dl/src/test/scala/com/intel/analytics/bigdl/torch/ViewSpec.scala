@@ -20,20 +20,14 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{GradientChecker, View}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class ViewSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A View Container" should "generate correct output and grad" in {
+class ViewSpec extends TorchSpec {
+    "A View Container" should "generate correct output and grad" in {
+    torchCheck()
     val module = new View[Double](2, 8)
 
     val input = Tensor[Double](4, 4).randn()
@@ -66,6 +60,7 @@ class ViewSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "View module" should "be good in gradient check for input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val layer = new View[Double](2, 8)

@@ -45,7 +45,7 @@ class MixtureTable[T: ClassTag](var dim: Int = Int.MaxValue)
   // buffer
   private var expertView2 = Tensor[T]()
   private var gaterView = Tensor[T]()
-  private var expert = Tensor[T]()
+  private val expert = Tensor[T]()
   private var expertView = Tensor[T]()
 
   override def updateOutput(input: Table): Tensor[T] = {
@@ -213,8 +213,8 @@ class MixtureTable[T: ClassTag](var dim: Int = Int.MaxValue)
 }
 
 object MixtureTable {
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[@specialized(Float, Double) T: ClassTag](dim: Int = Int.MaxValue)
       (implicit ev: TensorNumeric[T]) : MixtureTable[T] = {
-    new MixtureTable[T]()
+    new MixtureTable[T](dim)
   }
 }
