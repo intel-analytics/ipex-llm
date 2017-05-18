@@ -27,6 +27,8 @@
           be substituted according to the default properties instead of the ones determined by the
           profiles that were active during publishing. By ensuring that maven-shade runs for all
           subprojects, we eliminate this problem because the substitutions are baked into the final POM.
+
+          Here we 'borrow' the spark dummy project. So we needn't to publish one to maven central.
         -->
         <dependency>
             <groupId>org.spark-project.spark</groupId>
