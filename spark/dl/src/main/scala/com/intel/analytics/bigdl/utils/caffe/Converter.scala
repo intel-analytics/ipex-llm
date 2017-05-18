@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.utils.caffe
 
 import caffe.Caffe.EltwiseParameter.EltwiseOp
-import caffe.Caffe._
+import caffe.Caffe.{BlobProto, _}
 import caffe.Caffe.PoolingParameter.PoolMethod
 import com.google.protobuf.GeneratedMessage
 import com.intel.analytics.bigdl.nn.Graph._
@@ -294,6 +294,27 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       case dropout : Dropout[T] => toCaffeDropOut(moduleNode, bottoms)
       case logSoftMax : LogSoftMax[T] => toCaffeLogSoftMax(moduleNode, bottoms)
       case tanh : Tanh[T] => toCaffeTanh(moduleNode, bottoms)
+      case sigmoid : Sigmoid[T] => toCaffeSigmoid(moduleNode, bottoms)
+      case abs : Abs[T] => toCaffeAbs(moduleNode, bottoms)
+      case bartchNorm : BatchNormalization[T] => toCaffeBatchNormalization(moduleNode, bottoms)
+      case joinTable : JoinTable[T] => toCaffeConcat(moduleNode, bottoms)
+      case elu : ELU[T] => toCaffeElu(moduleNode, bottoms)
+      case flatternTable : FlattenTable[T] => toCaffeFlattern(moduleNode, bottoms)
+      case log : Log[T] => toCaffeLog(moduleNode, bottoms)
+      case power : Power[T] => toCaffePower(moduleNode, bottoms)
+      case prelu : PReLU[T] => toCaffePReLu(moduleNode, bottoms)
+      case recurrent : Recurrent[T] => toCaffeRecurrent(moduleNode, bottoms)
+      case reshape : Reshape[T] => toCaffeReshape(moduleNode, bottoms)
+      case scale : Scale[T] => toCaffeScale(moduleNode, bottoms)
+      case add : Add[T] => toCaffeBias(moduleNode, bottoms)
+      case threshold : Threshold[T] => toCaffeThreshold(moduleNode, bottoms)
+      case exp : Exp[T] => toCaffeExp(moduleNode, bottoms)
+      case splitTable : SplitTable[T] => toCaffeSlice(moduleNode, bottoms)
+      case replicate : Replicate[T] => toCaffeTile(moduleNode, bottoms)
+      case cmax : CMaxTable[T] => toCaffeEltWiseMax(moduleNode, bottoms)
+      case cadd : CAdd[T] => toCaffeEltWiseAdd(moduleNode, bottoms)
+      case csub : CSubTable[T] => toCaffeEltWiseSub(moduleNode, bottoms)
+      case _ => throw  new UnsupportedOperationException(s"${moduleNode.element} is not supported")
     }
     model
   }
@@ -323,6 +344,66 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
                                bottoms : ArrayBuffer[String]): GeneratedMessage
 
   protected def toCaffeTanh(moduleNode : ModuleNode[T],
+                                  bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeSigmoid(moduleNode : ModuleNode[T],
+                            bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeAbs(moduleNode : ModuleNode[T],
+                               bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeBatchNormalization(moduleNode : ModuleNode[T],
+                           bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeConcat(moduleNode : ModuleNode[T],
+                                          bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeElu(moduleNode : ModuleNode[T],
+                              bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeFlattern(moduleNode : ModuleNode[T],
+                           bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeLog(moduleNode : ModuleNode[T],
+                                bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffePower(moduleNode : ModuleNode[T],
+                           bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffePReLu(moduleNode : ModuleNode[T],
+                             bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeRecurrent(moduleNode : ModuleNode[T],
+                             bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeReshape(moduleNode : ModuleNode[T],
+                                 bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeScale(moduleNode : ModuleNode[T],
+                               bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeBias(moduleNode : ModuleNode[T],
+                             bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeThreshold(moduleNode : ModuleNode[T],
+                            bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeExp(moduleNode : ModuleNode[T],
+                                 bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeSlice(moduleNode : ModuleNode[T],
+                           bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeTile(moduleNode : ModuleNode[T],
+                             bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeEltWiseMax(moduleNode : ModuleNode[T],
+                            bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeEltWiseAdd(moduleNode : ModuleNode[T],
+                                  bottoms : ArrayBuffer[String]): GeneratedMessage
+
+  protected def toCaffeEltWiseSub(moduleNode : ModuleNode[T],
                                   bottoms : ArrayBuffer[String]): GeneratedMessage
 
   protected def toCaffeConvolutionParam(module : AbstractModule[Activity, Tensor[T], T])
@@ -394,4 +475,87 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val layer = classOf[Dropout[T]].cast(module)
     layer.initP
   }
+
+  protected def toCaffeBatchNormParam(module : AbstractModule[Activity, Tensor[T], T]) : Double = {
+    val layer = classOf[BatchNormalization[T]].cast(module)
+    layer.eps
+  }
+
+  protected def toCaffeConcatParam(module : AbstractModule[Activity, Tensor[T], T]) : Int = {
+    val layer = classOf[JoinTable[T]].cast(module)
+    layer.dimension
+  }
+
+  protected def toCaffeEluParam(module : AbstractModule[Activity, Tensor[T], T]) : ELUParameter = {
+    val eLUParameter = ELUParameter.newBuilder()
+    val layer = classOf[ELU[T]].cast(module)
+    eLUParameter.setAlpha(layer.alpha.toFloat)
+    eLUParameter.build()
+  }
+
+  protected def toCaffePowerParam(module : AbstractModule[Activity, Tensor[T], T])
+    : PowerParameter = {
+    val powerParameter = PowerParameter.newBuilder
+    val layer = classOf[Power[T]].cast(module)
+    powerParameter.setPower(layer.power.toFloat)
+    powerParameter.setScale(layer.scale.toFloat)
+    powerParameter.setShift(layer.shift.toFloat)
+    powerParameter.build
+  }
+
+  protected def toCaffeReshapeParam(module : AbstractModule[Activity, Tensor[T], T])
+    : ReshapeParameter = {
+    val reshapeParameter = ReshapeParameter.newBuilder()
+    val layer = classOf[Reshape[T]].cast(module)
+    val size = layer.batchSize
+    val shapeBlob = BlobShape.newBuilder
+    var i = 0
+    while (i < size.length) {
+      shapeBlob.setDim(0, size(i))
+      i += 1
+    }
+    reshapeParameter.setShape(shapeBlob.build)
+    reshapeParameter.build
+  }
+
+  protected def toCaffeScalaParam(module : AbstractModule[Activity, Tensor[T], T]) : BlobShape = {
+    val layer = classOf[Scale[T]].cast(module)
+    val size = layer.size
+    val shapeBlob = BlobShape.newBuilder
+    var i = 0
+    while (i < size.length) {
+      shapeBlob.setDim(i, size(i))
+    }
+    shapeBlob.build
+  }
+
+  protected def toCaffeThresholdParam(module : AbstractModule[Activity, Tensor[T], T])
+    : ThresholdParameter = {
+    val layer = classOf[Threshold[T]].cast(module)
+    val threshold = layer.threshold
+    val thresholdParameter = ThresholdParameter.newBuilder
+    thresholdParameter.setThreshold(threshold.toFloat)
+    thresholdParameter.build
+  }
+
+  protected def toCaffeSliceParam(module : AbstractModule[Activity, Tensor[T], T])
+    : SliceParameter = {
+    val layer = classOf[SplitTable[T]].cast(module)
+    val axis = layer.dimension
+    val sliceParameter = SliceParameter.newBuilder
+    sliceParameter.setAxis(axis)
+    sliceParameter.build
+  }
+
+  protected def toCaffeTileParam(module : AbstractModule[Activity, Tensor[T], T])
+    : TileParameter = {
+    val layer = classOf[Replicate[T]].cast(module)
+    val tile = layer.nFeatures
+    val axis = layer.dim
+    val tileParameter = TileParameter.newBuilder
+    tileParameter.setTiles(tile)
+    tileParameter.setAxis(axis)
+    tileParameter.build
+  }
+
 }

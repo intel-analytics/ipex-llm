@@ -45,10 +45,16 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
   val v2Converter = new LayerConverter[T]()
   var v1Layers : ArrayBuffer[Node[V1LayerParameter]] = new ArrayBuffer[Node[V1LayerParameter]]()
   var v2Layers : ArrayBuffer[Node[LayerParameter]] = new ArrayBuffer[Node[LayerParameter]]()
+
+  private var netparam: Caffe.NetParameter = _
+
   def saveAsCaffe() : Unit = {
     convertToCaffe()
   }
-// create caffe layers graph based on BigDL execution plan
+  private def createNet() : Unit = {
+    netparam.toString
+  }
+  // create caffe layers graph based on BigDL execution plan
   private def convertToCaffe() : Unit = {
     val top2Layers = new mutable.HashMap[String, String]()
     val layers = new mutable.HashMap[String, GeneratedMessage]()
