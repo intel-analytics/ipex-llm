@@ -39,10 +39,6 @@ class ReLU6[T: ClassTag](inplace: Boolean = false)
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     super.updateGradInput(input, gradOutput)
   }
-
-  override def toString(): String = {
-    s"nn.ReLU6"
-  }
 }
 
 object ReLU6 {

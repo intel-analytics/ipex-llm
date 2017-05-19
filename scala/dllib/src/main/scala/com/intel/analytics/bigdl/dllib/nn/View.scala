@@ -124,7 +124,7 @@ class View[T: ClassTag](sizes: Array[Int])(
   }
 
   override def toString(): String = {
-    s"nn.View(${sizes.mkString("x")})"
+    s"${getPrintName}(${sizes.mkString("x")})"
   }
 }
 

@@ -189,11 +189,6 @@ class TimeDistributed[T : ClassTag] (layer: TensorModule[T])
     this
   }
 
-  override def toString(): String = {
-    val str = "nn.TimeDistributed"
-    str
-  }
-
   override def canEqual(other: Any): Boolean = other.isInstanceOf[TimeDistributed[T]]
 
   override def equals(other: Any): Boolean = other match {

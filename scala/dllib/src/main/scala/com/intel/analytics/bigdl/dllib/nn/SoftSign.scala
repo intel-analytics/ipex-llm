@@ -54,10 +54,6 @@ class SoftSign[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModul
     gradInput.resizeAs(input).copy(gradOutput).cdiv(tempGrad)
     gradInput
   }
-
-  override def toString(): String = {
-    s"nn.SoftSign"
-  }
 }
 
 object SoftSign {
