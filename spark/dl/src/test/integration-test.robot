@@ -12,9 +12,9 @@ Test template    BigDL Test
 1                    Spark2.0 Test Suite                   ${spark_200_3_vid}
 2                    Spark2.1 Test Suite                   ${spark_210_3_vid}
 3                    Hdfs Test Suite                       ${hdfs_264_3_vid}
-4                    Yarn Test Suite                       ${hdfs_264_3_vid}
-5                    TensorFlow Spark2.1 Test Suite        ${spark_tf_210_3_vid}
-6                    TensorFlow Spark1.6 Test Suite        ${spark_tf_163_3_vid}
+4                    TensorFlow Spark2.1 Test Suite        ${spark_tf_210_3_vid}
+5                    TensorFlow Spark1.6 Test Suite        ${spark_tf_163_3_vid}
+6                    Yarn Test Suite                       ${hdfs_264_3_vid}
 
 # predefined service masters:
 # hdfs_264_3_master
@@ -37,7 +37,7 @@ Build SparkJar
    Log To Console    start to build jar
    Run               ${build} -P ${spark_version}
    Remove File       ${jar_path}
-   Move File         spark/dl/target/bigdl-0.2.0-SNAPSHOT-jar-with-dependencies.jar    ${jar_path}
+   Move File         spark/dl/target/bigdl-${version}-jar-with-dependencies.jar    ${jar_path}
    Log To Console    build jar finished
 
 Spark2.0 Test Suite
@@ -65,7 +65,7 @@ Yarn Test Suite
    Set Environment Variable         PYSPARK_DRIVER_PYTHON    /var/jenkins_home/venv/bin/python
    Set Environment Variable         PYSPARK_PYTHON           ./venv.zip/venv/bin/python      
    Run Shell                        ${submit} --master yarn --deploy-mode client --executor-memory 2g --driver-memory 2g --executor-cores 10 --num-executors 2 --properties-file ${curdir}/dist/conf/spark-bigdl.conf --jars ${jar_path} --py-files ${curdir}/dist/lib/bigdl-0.2.0-SNAPSHOT-python-api.zip --archives /var/jenkins_home/venv.zip --conf spark.driver.extraClassPath=${jar_path} --conf spark.executor.extraClassPath=bigdl-0.2.0-SNAPSHOT-jar-with-dependencies.jar ${curdir}/pyspark/dl/models/lenet/lenet5.py -b 200
-   Remove Environment Variable      http_proxy                https_proxy
+   Remove Environment Variable      http_proxy                https_proxy              PYSPARK_DRIVER_PYTHON            PYSPARK_PYTHON
 
 
 TensorFlow Spark2.1 Test Suite
