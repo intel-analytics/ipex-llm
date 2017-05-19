@@ -41,10 +41,16 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   before {
     Engine.setNodeAndCore(1, 1)
-    val conf = Engine.createSparkConf().setAppName("Test Optimizer Wrapper").setMaster("local[4]")
+    val conf = Engine.createSparkConf().setAppName("Test Optimizer Wrapper").setMaster("local[1]")
     sc = new SparkContext(conf)
     sQLContext = new SQLContext(sc)
     Engine.init
+  }
+
+  after{
+    if (sc != null) {
+      sc.stop()
+    }
   }
 
   "An Estimator" should "works properly" in {
@@ -218,9 +224,6 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     transPredicts should be (classifierPredicts)
   }
 
-  after{
-    sc.stop()
-  }
 }
 
 private case class ClassifierDenseVector( val features : DenseVector)
