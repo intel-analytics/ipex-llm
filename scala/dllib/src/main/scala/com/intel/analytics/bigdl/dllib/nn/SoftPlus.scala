@@ -79,10 +79,6 @@ class SoftPlus[T: ClassTag](
 
     gradInput
   }
-
-  override def toString(): String = {
-    s"nn.SoftPlus"
-  }
 }
 
 object SoftPlus {

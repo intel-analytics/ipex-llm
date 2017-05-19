@@ -32,17 +32,13 @@ class Echo[T: ClassTag] (implicit ev: TensorNumeric[T])
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     this.output = input
-    println(s"${getName()} : Activation size is ${input.size().mkString("x")}")
+    println(s"${getPrintName} : Activation size is ${input.size().mkString("x")}")
     this.output
   }
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     this.gradInput = gradOutput
-    println(s"${getName()} : Gradient size is ${gradOutput.size().mkString("x")}")
+    println(s"${getPrintName} : Gradient size is ${gradOutput.size().mkString("x")}")
     this.gradInput
-  }
-
-  override def toString(): String = {
-    s"nn.Echo"
   }
 }
 

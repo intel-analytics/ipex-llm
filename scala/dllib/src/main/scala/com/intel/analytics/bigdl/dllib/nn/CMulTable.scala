@@ -54,10 +54,6 @@ class CMulTable[T: ClassTag]()(
     gradInput
   }
 
-  override def toString() : String = {
-    "nn.CMulTable"
-  }
-
   override def canEqual(other: Any): Boolean = other.isInstanceOf[CMulTable[T]]
 
   override def equals(other: Any): Boolean = other match {

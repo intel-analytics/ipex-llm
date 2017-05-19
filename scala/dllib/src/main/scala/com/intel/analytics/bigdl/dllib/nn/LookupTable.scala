@@ -234,7 +234,7 @@ class LookupTable[T: ClassTag]
   }
 
   override def toString(): String = {
-    s"nn.LookupTable($nIndex, $nOutput, $paddingValue, $maxNorm, $normType)"
+    s"${getPrintName}($nIndex, $nOutput, $paddingValue, $maxNorm, $normType)"
   }
 
   override def zeroGradParameters(): Unit = {

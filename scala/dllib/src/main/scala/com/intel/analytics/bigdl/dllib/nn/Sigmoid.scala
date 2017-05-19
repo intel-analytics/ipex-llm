@@ -44,10 +44,6 @@ class Sigmoid[@specialized(Float, Double) T: ClassTag](
     gradInput.map(output, (g, z) => ev.times(ev.times(g, ev.minus(ev.fromType[Int](1), z)), z))
     gradInput
   }
-
-  override def toString(): String = {
-    s"nn.Sigmoid"
-  }
 }
 
 object Sigmoid {

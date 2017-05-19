@@ -105,7 +105,7 @@ class Bottle[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Bottle ($module, $nInputDim, $nOutputDim1)"
+    s"${getPrintName}($module, $nInputDim, $nOutputDim1)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Bottle[T]]

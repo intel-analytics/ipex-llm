@@ -117,7 +117,7 @@ class BiRecurrent[T : ClassTag] (
     this
   }
 
-  override def toString(): String = s"BiRecurrent($timeDim, $birnn)"
+  override def toString(): String = s"${getPrintName}($timeDim, $birnn)"
 
   override def equals(other: Any): Boolean = other match {
     case that: BiRecurrent[T] =>
