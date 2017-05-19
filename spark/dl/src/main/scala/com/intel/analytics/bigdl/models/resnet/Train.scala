@@ -37,6 +37,8 @@ object Train {
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
       val conf = Engine.createSparkConf().setAppName("Train ResNet on Cifar10")
+        // Will throw exception without this config when has only one executor
+        .set("spark.rpc.message.maxSize", "200")
       val sc = new SparkContext(conf)
       Engine.init
 
