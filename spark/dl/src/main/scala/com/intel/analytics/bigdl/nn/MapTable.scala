@@ -81,7 +81,9 @@ class MapTable[T: ClassTag](
     extend(input.length())
     var i = 0
     while (i < input.length()) {
+      if (modules(i).isTrainable()) {
         modules(i).accGradParameters(input(i + 1), gradOutput(i + 1), scale)
+      }
       i += 1
     }
   }

@@ -31,6 +31,8 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import scala.util.Random
+
 object DistriOptimizerSpec {
   val input1: Tensor[Double] = Tensor[Double](Storage[Double](Array(0.0, 1.0, 0.0, 1.0)))
   val output1 = 0.0
@@ -459,5 +461,58 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       optimizer.optimize()
     }
     ExceptionTest.resetCount()
+  }
+
+  "Train with trainable parameters" should "work properly" in {
+    import com.intel.analytics.bigdl.numeric.NumericFloat
+
+    val filePath = java.io.File.createTempFile("OptimizerSpec", "model").getAbsolutePath
+    Files.delete(Paths.get(filePath))
+    Files.createDirectory(Paths.get(filePath))
+
+    def input(): Tensor[Float] = Tensor[Float](4, 3, 6, 6).apply1(e => Random.nextFloat())
+    def labels(): Tensor[Float] = Tensor[Float](4).apply1(e => Random.nextInt(10) + 1)
+
+    val rdd = sc.parallelize(1 to (coreNumber * nodeNumber), nodeNumber)
+      .map(i => MiniBatch[Float](input(), labels()))
+
+    val dataSet = new DistributedDataSet[MiniBatch[Float]] {
+      override def originRDD(): RDD[_] = rdd
+
+      override def data(train: Boolean): RDD[MiniBatch[Float]] = rdd
+
+      override def size(): Long = coreNumber * nodeNumber
+
+      override def shuffle(): Unit = {}
+    }
+
+    val trainableModel = Sequential()
+      .add(SpatialConvolution[Float](3, 4, 2, 2).setName("conv").setTrainable(false))
+      .add(SpatialConvolution(4, 3, 2, 2).setName("conv2"))
+      .add(Reshape(Array(48)))
+      .add(Linear(48, 10, withBias = false).setName("ip"))
+
+    trainableModel.reset()
+
+    val l1Weights = trainableModel.parameters()._1(0).clone()
+    val l1Bias = trainableModel.parameters()._1(1).clone()
+
+    val l2Weights = trainableModel.parameters()._1(2).clone()
+    val l2Bias = trainableModel.parameters()._1(3).clone()
+
+    val state = T("learningRate" -> 1e-2, "momentum" -> 0.9, "weightDecay" -> 5e-4,
+      "dampening" -> 0.0)
+    val optimizer = new DistriOptimizer[Float](trainableModel, dataSet,
+      new ClassNLLCriterion[Float]())
+      .setState(state)
+      .setEndWhen(Trigger.maxEpoch(2))
+      .setOptimMethod(new SGD[Float]())
+    val model = optimizer.optimize()
+
+    model.parameters()._1(0) should be(l1Weights)
+    model.parameters()._1(1) should be(l1Bias)
+
+    model.parameters()._1(2) should not be (l2Weights)
+    model.parameters()._1(3) should not be (l2Bias)
   }
 }

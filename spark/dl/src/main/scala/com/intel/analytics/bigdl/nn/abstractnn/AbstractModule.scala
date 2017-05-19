@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -131,6 +132,26 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     }
   }
 
+  protected var trainable = true
+
+  /**
+   * set trainable
+   * if trainable is true, updateGradInput, accGradParameters, and update parameters
+   * if trainable is false, only updateGradInput, but not accGradParameters or update parameters
+   */
+  def setTrainable(trainable: Boolean): this.type = {
+    this.trainable = trainable
+    this
+  }
+
+  /**
+   * whether this module trainable
+   * @return trainable
+   */
+  def isTrainable(): Boolean = {
+    trainable
+  }
+
   protected var forwardTime = 0L
 
   protected var backwardTime = 0L
@@ -172,7 +193,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   def backward(input: A, gradOutput: B): A = {
     val before = System.nanoTime()
     updateGradInput(input, gradOutput)
-    accGradParameters(input, gradOutput)
+    if (trainable) {
+      accGradParameters(input, gradOutput)
+    }
     backwardTime += System.nanoTime() - before
 
     gradInput
@@ -220,11 +243,15 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
   /**
    * This method compact all parameters and gradients of the model into two tensors. So it's easier
    * to use optim method
-   *
+   * @param filterTrainable whether to filter trainable parameters
    * @return
    */
-  def getParameters(): (Tensor[T], Tensor[T]) = {
-    val (weightParameters, gradParameters) = this.parameters()
+  def getParameters(filterTrainable: Boolean = false): (Tensor[T], Tensor[T]) = {
+    val (weightParameters, gradParameters) = if (!filterTrainable) {
+      this.parameters()
+    } else {
+      this.trainableParameters()
+    }
     (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
   }
 
@@ -235,6 +262,18 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    * @return (Array of weights, Array of grad)
    */
   def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = null
+
+  /**
+   * This function returns the array of trainable parameters.
+   * @return trainable parameters
+   */
+  def trainableParameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    if (trainable) {
+      parameters()
+    } else {
+      null
+    }
+  }
 
   /**
    * This function returns a table contains ModuleName, the parameter names and parameter value

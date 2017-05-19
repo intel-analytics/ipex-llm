@@ -55,7 +55,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
     case _ => throw new IllegalArgumentException
   }
 
-  private val (weight, grad) = model.getParameters()
+  private val (weight, grad) = model.getParameters(true)
   private val gradLength = grad.nElement()
   private val syncGradTaskSize = gradLength / subModelNumber
   private val syncGradExtraTask = gradLength % subModelNumber
@@ -67,7 +67,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
     model.cloneModule()
   }).toArray
 
-  private val workingModelWAndG = workingModels.map(_.getParameters())
+  private val workingModelWAndG = workingModels.map(_.getParameters(true))
 
   workingModelWAndG.foreach(_._1.storage().set(weight.storage()))
 

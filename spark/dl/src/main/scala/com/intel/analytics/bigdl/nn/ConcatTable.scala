@@ -155,7 +155,9 @@ class ConcatTable[T : ClassTag]
     scale: Double = 1.0): Unit = {
     var i = 0
     while (i < modules.length) {
-      modules(i).accGradParameters(input, gradOutput.toTable(i + 1), scale)
+      if (modules(i).isTrainable()) {
+        modules(i).accGradParameters(input, gradOutput.toTable(i + 1), scale)
+      }
       i += 1
     }
   }
