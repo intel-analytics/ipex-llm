@@ -57,10 +57,10 @@ object DLEstimatorLeNet {
       val sqLContext = new SQLContext(sc)
       Engine.init
 
-      val trainData = Paths.get(param.folder, "/train-images-idx3-ubyte")
-      val trainLabel = Paths.get(param.folder, "/train-labels-idx1-ubyte")
-      val validationData = Paths.get(param.folder, "/t10k-images-idx3-ubyte")
-      val validationLabel = Paths.get(param.folder, "/t10k-labels-idx1-ubyte")
+      val trainData = param.folder + "/train-images-idx3-ubyte"
+      val trainLabel = param.folder + "/train-labels-idx1-ubyte"
+      val validationData = param.folder + "/t10k-images-idx3-ubyte"
+      val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
 
       val model = LeNet5(classNum = 10)
 
