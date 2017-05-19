@@ -252,11 +252,6 @@ class Recurrent[T : ClassTag]()
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Recurrent[T]]
 
-  override def toString(): String = {
-    val str = "nn.Recurrent"
-    str
-  }
-
   override def equals(other: Any): Boolean = other match {
     case that: Recurrent[T] =>
       super.equals(that) &&

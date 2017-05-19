@@ -133,7 +133,7 @@ class Sequential[T: ClassTag]
   override def toString(): String = {
     val tab = "  "
 
-    s"nn.Sequential {${line + tab}[input -> ${
+    s"${getPrintName}{${line + tab}[input -> ${
       modules.zipWithIndex.map {
         case (m: AbstractModule[Activity, Activity, T], i: Int) => "(" + (i + 1) + ")"
       }.

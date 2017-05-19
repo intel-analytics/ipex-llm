@@ -212,7 +212,7 @@ class Bilinear[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Bilinear($inputSize1, $inputSize2, $outputSize, $biasRes)"
+    s"${getPrintName}($inputSize1, $inputSize2, $outputSize, $biasRes)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Bilinear[T]]

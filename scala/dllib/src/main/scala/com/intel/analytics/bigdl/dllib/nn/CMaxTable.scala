@@ -78,10 +78,6 @@ class CMaxTable[T: ClassTag](implicit ev: TensorNumeric[T])
     gradInput
   }
 
-  override def toString() : String = {
-    "nn.CMaxTable"
-  }
-
   override def canEqual(other: Any): Boolean = other.isInstanceOf[CMaxTable[T]]
 
   override def equals(other: Any): Boolean = other match {

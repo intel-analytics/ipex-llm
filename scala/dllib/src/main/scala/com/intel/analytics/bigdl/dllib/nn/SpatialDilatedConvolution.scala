@@ -549,7 +549,7 @@ class SpatialDilatedConvolution[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.SpatialDilatedConvolution($nInputPlane -> $nOutputPlane, " +
+    s"${getPrintName}($nInputPlane -> $nOutputPlane, " +
       s"$kW x $kH, $dW, $dH, $padW, $padH, $dilationH, $dilationW)"
   }
 }

@@ -776,7 +776,7 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.SpatialFullConvolution($nInputPlane -> $nOutputPlane, " +
+    s"${getPrintName}($nInputPlane -> $nOutputPlane, " +
       s"$kW x $kH, $dW, $dH, $padW, $padH, $adjW, $adjH)"
   }
 }

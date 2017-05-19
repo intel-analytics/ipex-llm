@@ -305,7 +305,7 @@ class Concat[T: ClassTag](val dimension: Int)(
     val last = "   ... -> "
     val ext = "  |    "
     val extlast = "       "
-    s"nn.Concat {$line${tab}input$line${
+    s"${getPrintName}{$line${tab}input$line${
       modules.zipWithIndex
         .map { case (model: AbstractModule[Activity, Activity, T], index: Int)
         => s"$tab$next(${index + 1}): ${

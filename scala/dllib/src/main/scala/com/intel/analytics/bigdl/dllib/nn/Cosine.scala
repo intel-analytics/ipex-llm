@@ -187,7 +187,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   }
 
   override def toString(): String = {
-    s"nn.Cosine($inputSize, $outputSize)"
+    s"${getPrintName}($inputSize, $outputSize)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Contiguous[T]]

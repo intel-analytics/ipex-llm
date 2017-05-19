@@ -218,7 +218,7 @@ class Linear[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Linear($inputSize -> $outputSize)"
+    s"${getPrintName}($inputSize -> $outputSize)"
   }
 }
 

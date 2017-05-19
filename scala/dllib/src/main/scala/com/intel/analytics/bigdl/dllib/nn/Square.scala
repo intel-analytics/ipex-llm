@@ -25,10 +25,6 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(5169592189338322411L)
 class Square[T: ClassTag](implicit ev: TensorNumeric[T]) extends Power[T](2, 1, 0) {
-
-  override def toString(): String = {
-    s"nn.Square"
-  }
 }
 
 object Square {
