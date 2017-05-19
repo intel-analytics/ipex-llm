@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
  *
  * @tparam T Numeric type
  */
-trait MiniBatch[T] {
+trait MiniBatch[T] extends Serializable{
   /**
    * Get the number of samples in this MiniBatch
    * @return size How many samples in this MiniBatch

@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
@@ -71,6 +71,19 @@ abstract class Sample[T: ClassTag] extends Serializable {
     require(this.isInstanceOf[TensorSample[T]], "Deprecated method, Only support TensorSample.")
     this.asInstanceOf[TensorSample[T]].labelTensor
   }
+
+  @deprecated("Old interface", "0.2.0")
+  def set(
+        featureData: Array[T],
+        labelData: Array[T],
+        featureSize: Array[Int],
+        labelSize: Array[Int]): Sample[T] = {
+    require(this.isInstanceOf[TensorSample[T]], "Deprecated method, Only support TensorSample.")
+    val sample = this.asInstanceOf[TensorSample[T]]
+    sample.featureTensor.set(Storage[T](featureData), 1, featureSize)
+    sample.labelTensor.set(Storage[T](labelData), 1, labelSize)
+    sample
+  }
 }
 
 /**
@@ -120,9 +133,15 @@ class TensorSample[T: ClassTag](
 }
 
 object Sample {
-  def apply[@specialized(Float, Double) T: ClassTag]
-  (featureTensor: Tensor[T], labelTensor: Tensor[T])
-  (implicit ev: TensorNumeric[T]) : Sample[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+        featureTensor: Tensor[T],
+        labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
     new TensorSample[T](featureTensor, labelTensor)
+  }
+
+  @deprecated("Old interface", "0.2.0")
+  def apply[@specialized(Float, Double) T: ClassTag]()(
+        implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new TensorSample[T](Tensor[T](), Tensor[T]())
   }
 }
