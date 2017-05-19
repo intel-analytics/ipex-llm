@@ -45,6 +45,15 @@ class Model(JavaValue):
             bigdl_type, JavaValue.jvm_class_constructor(self), *args)
         self.bigdl_type = bigdl_type
 
+    def __str__(self):
+        """
+        >>> conv2 = SpatialConvolution(6, 12, 5, 5).set_name("conv2")
+        creating: createSpatialConvolution
+        >>> print(conv2)
+        SpatialConvolution[conv2](6 -> 12, 5 x 5, 1, 1, 0, 0)
+        """
+        return self.value.toString()
+
     @classmethod
     def of(cls, jmodel, bigdl_type="float"):
         """
@@ -160,6 +169,7 @@ class Model(JavaValue):
 
         return {layer_name: to_ndarray(params) for layer_name, params in
                 name_to_params.items()}
+
 
     def predict(self, data_rdd):
         """

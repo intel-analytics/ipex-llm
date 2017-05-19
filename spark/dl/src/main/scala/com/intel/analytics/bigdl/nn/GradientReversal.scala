@@ -51,10 +51,6 @@ class GradientReversal[T: ClassTag](var lambda: Double = 1) (implicit ev: Tensor
       .copy(gradOutput)
       .mul(ev.negative(ev.fromType[Double](lambda)))
   }
-
-  override def toString(): String = {
-    s"nn.GradientReversal"
-  }
 }
 
 

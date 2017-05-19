@@ -65,10 +65,6 @@ class CAddTable[T: ClassTag](val inplace: Boolean = false)(
     }
     gradInput
   }
-
-  override def toString() : String = {
-    "nn.CAddTable"
-  }
 }
 
 

@@ -38,6 +38,9 @@ class Criterion(JavaValue):
             bigdl_type, JavaValue.jvm_class_constructor(self), *args)
         self.bigdl_type = bigdl_type
 
+    def __str__(self):
+        return self.value.toString()
+
     def forward(self, input, target):
         """
         NB: It's for debug only, please use optimizer.optimize() in production.

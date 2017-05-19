@@ -276,7 +276,7 @@ class SpatialMaxPooling[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.SpatialMaxPooling($kW, $kH, $dW, $dH, $padW, $padH)"
+    s"${getPrintName}($kW, $kH, $dW, $dH, $padW, $padH)"
   }
 
   override def clearState(): this.type = {

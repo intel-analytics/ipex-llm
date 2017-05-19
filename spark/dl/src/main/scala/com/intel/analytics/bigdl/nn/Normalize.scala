@@ -144,7 +144,7 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10
   }
 
   override def toString(): String = {
-    s"nn.Normalize($p, $eps)"
+    s"${getPrintName}($p, $eps)"
   }
 
   override def clearState() : this.type = {

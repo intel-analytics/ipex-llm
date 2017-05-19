@@ -68,6 +68,7 @@ class JavaCreator(SingletonMixin):
         else:
             raise Exception("Not supported bigdl_type: %s" % bigdl_type)
 
+
 class JavaValue(object):
     def jvm_class_constructor(self):
         name = "create" + self.__class__.__name__
@@ -78,6 +79,9 @@ class JavaValue(object):
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, self.jvm_class_constructor(), *args)
         self.bigdl_type = bigdl_type
+
+    def __str__(self):
+        return self.value.toString()
 
 
 class TestResult():

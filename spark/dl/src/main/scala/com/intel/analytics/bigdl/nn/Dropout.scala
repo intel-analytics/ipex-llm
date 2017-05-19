@@ -202,7 +202,7 @@ class Dropout[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Dropout($p)"
+    s"${getPrintName}($p)"
   }
 }
 
