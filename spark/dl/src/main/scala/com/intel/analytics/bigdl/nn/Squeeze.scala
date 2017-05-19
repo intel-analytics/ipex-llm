@@ -98,6 +98,6 @@ object Squeeze {
   def apply[T: ClassTag](
     dims : Array[Int], batchMode: Boolean)(implicit ev: TensorNumeric[T])
   : Squeeze[T] = {
-    new Squeeze[T](dims, batchMode)
+    new Squeeze[T](dims.sortWith(_>_), batchMode)
   }
 }
