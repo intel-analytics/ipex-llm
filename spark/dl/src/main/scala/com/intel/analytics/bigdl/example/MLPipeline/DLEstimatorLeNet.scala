@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.models.lenet.Utils._
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.utils.LoggerFilter
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.ml.{DLEstimator, Pipeline}
+import org.apache.spark.ml.{DLClassifier, DLEstimator, Pipeline}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, _}
 import com.intel.analytics.bigdl.example.imageclassification.MlUtils.{testMean => _, testStd => _, _}
@@ -96,7 +96,10 @@ object DLEstimatorLeNet {
 
       estimator = estimator.copy(paramsTrans)
 
-      val transformer = estimator.fit(trainingDF)
+      val transformer = estimator.fit(trainingDF).asInstanceOf[DLClassifier[Float]]
+
+      transformer.setInputCol("features")
+        .setOutputCol("predict")
 
       val rdd: RDD[DenseVectorData] = validationSet.
         asInstanceOf[DistributedDataSet[MiniBatch[Float]]].data(false).flatMap{batch => {

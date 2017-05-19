@@ -81,8 +81,6 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag]
     optimizedModule = optimizer.optimize()
 
     var classifier = new DLClassifier[T]()
-      .setInputCol("features")
-      .setOutputCol("predict")
 
     val paramsTrans = ParamMap(
       classifier.modelTrain -> optimizedModule,

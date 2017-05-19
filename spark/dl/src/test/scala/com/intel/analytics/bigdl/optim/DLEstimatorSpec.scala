@@ -174,6 +174,9 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       m += 1
     }
 
+    transformer.setInputCol("features")
+      .setOutputCol("predict")
+
     val optimizedModel = transformer.getModel
 
     val transInput = Tensor[Float](10, 28, 28).apply1(e => Random.nextFloat())
