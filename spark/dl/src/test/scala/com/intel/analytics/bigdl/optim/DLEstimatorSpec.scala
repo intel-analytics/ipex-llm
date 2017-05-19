@@ -41,9 +41,6 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   before {
     Engine.setNodeAndCore(1, 1)
-    val conf = Engine.createSparkConf().setAppName("Test DLEstimator").setMaster("local[1]")
-    sc = new SparkContext(conf)
-    sQLContext = new SQLContext(sc)
     Engine.init
   }
 
@@ -54,6 +51,10 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "An Estimator" should "works properly" in {
+
+    val conf = Engine.createSparkConf().setAppName("Test DLEstimator").setMaster("local[1]")
+    sc = new SparkContext(conf)
+    sQLContext = new SQLContext(sc)
 
     val inputs = Array[String]("Feature data", "Label data")
 
@@ -90,6 +91,10 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "An Estimator" should "throws exception without correct inputs" in {
 
+    val conf = Engine.createSparkConf().setAppName("Test DLEstimator").setMaster("local[1]")
+    sc = new SparkContext(conf)
+    sQLContext = new SQLContext(sc)
+
     val inputs = Array[String]("Feature data", "Label data")
 
     val model = Linear[Float](10, 1)
@@ -116,6 +121,10 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "An Estimator" should "has same transformate result as Classifier" in {
+
+    val conf = Engine.createSparkConf().setAppName("Test DLEstimator").setMaster("local[1]")
+    sc = new SparkContext(conf)
+    sQLContext = new SQLContext(sc)
 
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
