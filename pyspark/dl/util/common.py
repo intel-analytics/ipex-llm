@@ -59,7 +59,7 @@ class JavaCreator(SingletonMixin):
             JavaCreator._instance = None
 
     def __init__(self, bigdl_type):
-        sc = SparkContext.getOrCreate()
+        sc = get_spark_context()
         jclass = getattr(sc._jvm, JavaCreator.get_creator_class())
         if bigdl_type == "float":
             self.value = getattr(jclass, "ofFloat")()
@@ -259,10 +259,26 @@ def create_spark_conf():
     return sparkConf
 
 
+def get_spark_context():
+    if "getOrCreate" in SparkContext.__dict__:
+        return SparkContext.getOrCreate()
+    else:
+        with SparkContext._lock: # Compatible with Spark1.5.1
+            if SparkContext._active_spark_context is None:
+                SparkContext(SparkConf())
+            return SparkContext._active_spark_context
+
+
+def get_spark_sql_context(sc):
+    if "getOrCreate" in SQLContext.__dict__:
+        return SQLContext.getOrCreate()
+    else:
+        return SQLContext(sc)  # Compatible with Spark1.5.1
+
 def callBigDlFunc(bigdl_type, name, *args):
     """ Call API in PythonBigDL """
     jinstance = JavaCreator.instance(bigdl_type=bigdl_type).value
-    sc = SparkContext.getOrCreate()
+    sc = get_spark_context()
     api = getattr(jinstance, name)
     return callJavaFunc(sc, api, *args)
 
@@ -280,7 +296,7 @@ def _java2py(sc, r, encoding="bytes"):
             return RDD(jrdd, sc)
 
         if clsName == 'DataFrame':
-            return DataFrame(r, SQLContext.getOrCreate(sc))
+            return DataFrame(r, get_spark_sql_context(sc))
 
         if clsName in _picklable_classes:
             r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
