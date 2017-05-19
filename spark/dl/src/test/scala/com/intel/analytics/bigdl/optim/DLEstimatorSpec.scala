@@ -36,12 +36,12 @@ import scala.util.Random
 
 class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val model = new Sequential[Float]()
-  var sc : SparkContext = _
-  var sQLContext : SQLContext = _
+  var sc : SparkContext = null
+  var sQLContext : SQLContext = null
 
   before {
     Engine.setNodeAndCore(1, 1)
-    val conf = Engine.createSparkConf().setAppName("Test Optimizer Wrapper").setMaster("local[1]")
+    val conf = Engine.createSparkConf().setAppName("Test DLEstimator").setMaster("local[1]")
     sc = new SparkContext(conf)
     sQLContext = new SQLContext(sc)
     Engine.init
