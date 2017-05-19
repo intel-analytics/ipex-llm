@@ -131,7 +131,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
     }
   }
 
-  def getPrintName(): String = {
+  protected def getPrintName(): String = {
     val postfix = if (name == null) {
       namePostfix
     } else {
@@ -141,7 +141,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 
   }
 
-  override def toString(): String =getPrintName
+  override def toString(): String = getPrintName
 
   protected var forwardTime = 0L
 
