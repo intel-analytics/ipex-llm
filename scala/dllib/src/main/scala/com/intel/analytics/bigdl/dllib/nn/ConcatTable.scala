@@ -168,7 +168,7 @@ class ConcatTable[T : ClassTag]
     val ext = "  |    "
     val extlast = "       "
     val last = "   ... -> "
-    var str = "nn.ConcatTable"
+    var str = s"${getPrintName}"
     str = str + " {" + line + tab + "input"
     var i = 1
     while (i <= modules.length) {

@@ -69,11 +69,6 @@ class RnnCell[T : ClassTag] (
       .add(Identity[T]())
       .add(Identity[T]()))
 
-  override def toString(): String = {
-    val str = "nn.RnnCell"
-    str
-  }
-
   /**
    * Clear cached activities to save storage space or network bandwidth. Note that we use
    * Tensor.set to keep some information like tensor share

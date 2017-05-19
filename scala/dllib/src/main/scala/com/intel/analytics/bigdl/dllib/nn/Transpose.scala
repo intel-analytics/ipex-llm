@@ -55,7 +55,7 @@ class Transpose[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Transpose(${
+    s"${getPrintName}(${
       permutations.map {
         case (from: Int, to: Int) => s"$from -> $to"
       }.mkString(", ")

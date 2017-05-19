@@ -396,7 +396,7 @@ class Threshold[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Threshold($th, $v)"
+    s"${getPrintName}($th, $v)"
   }
 }
 

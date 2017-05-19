@@ -422,7 +422,7 @@ class SpatialConvolution[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.SpatialConvolution($nInputPlane -> $nOutputPlane, $kernelW x" +
+    s"${getPrintName}($nInputPlane -> $nOutputPlane, $kernelW x" +
       s" $kernelH, $strideW, $strideH, $padW, $padH)"
   }
 

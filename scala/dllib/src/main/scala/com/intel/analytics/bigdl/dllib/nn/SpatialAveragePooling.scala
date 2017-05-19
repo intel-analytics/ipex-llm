@@ -468,7 +468,7 @@ class SpatialAveragePooling[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.SpatialAveragePooling($kW, $kH, $dW, $dH, $padW, $padH)"
+    s"${getPrintName}($kW, $kH, $dW, $dH, $padW, $padH)"
   }
 }
 

@@ -78,10 +78,6 @@ class AbsCriterion[@specialized(Float, Double) T: ClassTag](val sizeAverage: Boo
     val state = Seq(super.hashCode(), sizeAverage)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
-
-  override def toString(): String = {
-    s"nn.AbsCriterion"
-  }
 }
 
 object AbsCriterion {
