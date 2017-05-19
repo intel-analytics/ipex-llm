@@ -46,4 +46,20 @@ class SampleSpec extends FlatSpec with Matchers {
     sample.featureTensor should be (otherSample.featureTensor)
     sample.labelTensor should be (otherSample.labelTensor)
   }
+
+  "SampleSpec with Float Tensor input and Tensor label" should "set well" in {
+    val input1 = new LabeledBGRImage(32, 32)
+    val label1 = new LabeledBGRImage(32, 32)
+    val tensorInput1 = Tensor[Float](Storage[Float](input1.content), 1, Array(3, 32, 32))
+    val tensorLabel1 = Tensor[Float](Storage[Float](label1.content), 1, Array(3, 32, 32))
+    tensorInput1.rand()
+    tensorLabel1.rand()
+    val sample = Sample[Float]()
+    sample.set(tensorInput1.storage().array(),
+        tensorLabel1.storage().array(),
+        tensorInput1.size,
+        tensorLabel1.size)
+    sample.feature() should be (tensorInput1)
+    sample.label() should be (tensorLabel1)
+  }
 }
