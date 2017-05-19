@@ -49,7 +49,7 @@ class Model(JavaValue):
         >>> conv2 = SpatialConvolution(6, 12, 5, 5).set_name("conv2")
         creating: createSpatialConvolution
         >>> print(conv2)
-        conv2(6 -> 12, 5 x 5, 1, 1, 0, 0)
+        SpatialConvolution[conv2](6 -> 12, 5 x 5, 1, 1, 0, 0)
         """
         return self.value.toString()
 

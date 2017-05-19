@@ -68,7 +68,7 @@ class Unsqueeze[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"${getName}($pos${if (numInputDims != Int.MinValue) ", " + numInputDims else ""})"
+    s"${getPrintName}($pos${if (numInputDims != Int.MinValue) ", " + numInputDims else ""})"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Unsqueeze[T]]

@@ -136,7 +136,7 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
   }
 
   override def toString(): String = {
-    s"${getName}($inputSize, $outputSize)"
+    s"${getPrintName}($inputSize, $outputSize)"
   }
 
   override def zeroGradParameters(): Unit = {

@@ -325,7 +325,7 @@ class VolumetricMaxPooling[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"${getName}($kT, $kW, $kH, $dT, $dW, $dH, $padT, $padW, $padH)"
+    s"${getPrintName}($kT, $kW, $kH, $dT, $dW, $dH, $padT, $padW, $padH)"
   }
 
   override def clearState(): this.type = {

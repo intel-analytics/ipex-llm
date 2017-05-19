@@ -119,7 +119,7 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"${getName}(${size.mkString("x")})"
+    s"${getPrintName}(${size.mkString("x")})"
   }
 }
 

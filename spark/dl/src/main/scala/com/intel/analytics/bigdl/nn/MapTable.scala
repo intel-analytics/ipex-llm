@@ -104,7 +104,7 @@ class MapTable[T: ClassTag](
     val tab = "  "
     val extlast = "       "
     val line = "\n"
-    var str = s"${getName}"
+    var str = s"${getPrintName}"
     if (module != null) {
       str += s"{$line$tab$module$line}"
     } else {

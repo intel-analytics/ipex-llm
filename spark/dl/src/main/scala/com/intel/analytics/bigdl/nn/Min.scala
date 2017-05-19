@@ -77,7 +77,7 @@ class Min[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"${getName}($dim${if (numInputDims != Int.MinValue) ", " + numInputDims else ""})"
+    s"${getPrintName}($dim${if (numInputDims != Int.MinValue) ", " + numInputDims else ""})"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Min[T]]

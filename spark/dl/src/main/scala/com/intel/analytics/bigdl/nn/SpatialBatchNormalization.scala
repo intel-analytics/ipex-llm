@@ -43,7 +43,7 @@ class SpatialBatchNormalization[T: ClassTag](
   override val nDim = 4
 
   override def toString(): String = {
-    s"${getName}[${ev.getType()}]($nOutput, $eps, $momentum, $affine)"
+    s"${getPrintName}[${ev.getType()}]($nOutput, $eps, $momentum, $affine)"
   }
 }
 

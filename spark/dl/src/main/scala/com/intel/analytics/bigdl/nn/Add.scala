@@ -101,7 +101,7 @@ class Add[T: ClassTag](val inputSize: Int
   }
 
   override def toString(): String = {
-    s"${getName}($inputSize)"
+    s"${getPrintName}($inputSize)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Add[T]]

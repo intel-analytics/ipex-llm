@@ -76,7 +76,7 @@ class L1Penalty[T: ClassTag]
   }
 
   override def toString(): String = {
-    s"${getName}($l1weight, $sizeAverage, $provideOutput)"
+    s"${getPrintName}($l1weight, $sizeAverage, $provideOutput)"
   }
 }
 

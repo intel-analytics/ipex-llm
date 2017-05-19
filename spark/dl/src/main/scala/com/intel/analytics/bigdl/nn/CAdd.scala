@@ -176,7 +176,7 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"${getName}(${java.util.Arrays.toString(size)})"
+    s"${getPrintName}(${java.util.Arrays.toString(size)})"
   }
 }
 

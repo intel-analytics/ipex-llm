@@ -143,7 +143,7 @@ class InferReshape[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"${getName}(${
+    s"${getPrintName}(${
       size.mkString("x")
     })"
   }

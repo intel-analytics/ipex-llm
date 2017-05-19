@@ -170,7 +170,7 @@ class SpatialZeroPadding[@specialized(Float, Double) T: ClassTag](
   }
 
   override def toString(): String = {
-    s"${getName}(l=$padLeft, r=$padRight, t=$padTop, b=$padBottom)"
+    s"${getPrintName}(l=$padLeft, r=$padRight, t=$padTop, b=$padBottom)"
   }
 }
 

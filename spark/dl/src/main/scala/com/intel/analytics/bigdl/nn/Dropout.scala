@@ -202,7 +202,7 @@ class Dropout[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"${getName}($p)"
+    s"${getPrintName}($p)"
   }
 }
 

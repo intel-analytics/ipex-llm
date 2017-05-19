@@ -67,7 +67,7 @@ class Squeeze[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"${getName}(${if (dims != null) dims.mkString(",") + ", " else ""}" +
+    s"${getPrintName}(${if (dims != null) dims.mkString(",") + ", " else ""}" +
       s"${if (batchMode) "batch" else ""})"
   }
 
