@@ -11,8 +11,8 @@ This Python binding has been tested with Python 2.7 and Spark 1.6.0 / Spark 2.0.
 ## Installing on Ubuntu
 1. Build BigDL
 [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
-    * With Spark1.6: ```  $BIGDL_HOME/make-dist.sh ``` 
-    * With Spark2.0: ``` $BIGDL_HOME/make-dist.sh -P spark_2.0 ```
+    * With Spark 1.6: ```  $BIGDL_HOME/make-dist.sh ``` 
+    * With Spark 2.0 or later: ``` $BIGDL_HOME/make-dist.sh -P spark_2.x ```
 
 2. Install python dependensies(if you're running cluster mode, you need to install them on client and each worker node):
   * Installing Numpy: 

@@ -525,8 +525,12 @@
     </reporting>
 
     <profiles>
+        <!-- no-op profile for backwards-compatibility with build scripts, for now -->
         <profile>
-            <id>spark_2.0</id>
+            <id>spark_1.6</id>
+        </profile>
+        <profile>
+            <id>spark_2.x</id>
             <properties>
                 <spark-version.project>2.0</spark-version.project>
                 <spark.version>2.0.0</spark.version>
@@ -543,7 +547,7 @@
                 <scala.macros.version>2.1.0</scala.macros.version>
             </properties>
         </profile>
-        <!-- put this profile after spark_2.0 profile -->
+        <!-- put this profile after spark_2.x profile -->
         <profile>
             <id>scala_2.10</id>
             <properties>

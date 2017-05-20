@@ -41,13 +41,13 @@ Build SparkJar
    Log To Console    build jar finished
 
 Spark2.0 Test Suite
-   Build SparkJar                   spark_2.0 
+   Build SparkJar                   spark_2.x 
    Set Environment Variable         SPARK_HOME     /opt/work/spark-2.0.0-bin-hadoop2.7  
    ${submit}=                       Catenate       SEPARATOR=/    /opt/work/spark-2.0.0-bin-hadoop2.7/bin    spark-submit
    Run Shell                        ${submit} --master ${spark_200_3_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 84 --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source} -b 336 -e 3
 
 Spark2.1 Test Suite
-   Build SparkJar                   spark_2.1
+   Build SparkJar                   spark_2.x
    Set Environment Variable         SPARK_HOME     /opt/work/spark-2.1.0-bin-hadoop2.7
    ${submit}=                       Catenate       SEPARATOR=/    /opt/work/spark-2.1.0-bin-hadoop2.7/bin    spark-submit
    Run Shell                        ${submit} --master ${spark_210_3_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 84 --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source} -b 336 -e 3
@@ -56,7 +56,7 @@ Hdfs Test Suite
    Run Shell      mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.HdfsSpec -DhdfsMaster=${hdfs_264_3_master} -Dmnist=${mnist_data_source} -P integration-test -DforkMode=never
 
 Yarn Test Suite
-   Build SparkJar                   spark_2.0 
+   Build SparkJar                   spark_2.x 
    Set Environment Variable         SPARK_HOME               /opt/work/spark-2.0.0-bin-hadoop2.7  
    Set Environment Variable         http_proxy               http://child-prc.intel.com:913
    Set Environment Variable         https_proxy              https://child-prc.intel.com:913
@@ -69,7 +69,7 @@ Yarn Test Suite
 
 
 TensorFlow Spark2.1 Test Suite
-   Build SparkJar                   spark_2.1
+   Build SparkJar                   spark_2.x
    Set Environment Variable         SPARK_HOME     /opt/work/spark-2.1.0-bin-hadoop2.7
    ${submit}=                       Catenate       SEPARATOR=/    /opt/work/spark-2.1.0-bin-hadoop2.7/bin    spark-submit
    Run Shell                        ${submit} --master ${spark_tf_210_3_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 56 --py-files ${curdir}/dist/lib/bigdl-0.2.0-SNAPSHOT-python-api.zip --jars ${jar_path} --properties-file ${curdir}/dist/conf/spark-bigdl.conf ${curdir}/pyspark/dl/models/lenet/lenet5.py -b 224

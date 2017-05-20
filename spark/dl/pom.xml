@@ -248,13 +248,7 @@
 
     <profiles>
         <profile>
-            <id>spark_2.0</id>
-            <properties>
-                <filesToExclude>""</filesToExclude> <!-- we do not want exclude anything here -->
-            </properties>
-        </profile>
-        <profile>
-            <id>spark_2.1</id>
+            <id>spark_2.x</id>
             <properties>
                 <filesToExclude>""</filesToExclude> <!-- we do not want exclude anything here -->
             </properties>
