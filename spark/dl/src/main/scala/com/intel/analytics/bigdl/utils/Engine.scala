@@ -88,18 +88,16 @@ object Engine {
    */
   def init: Unit = this.synchronized {
     if (localMode) {
-      require(getSparkMaster == null, "Detect BIGDL_LOCAL_MODE and spark.master are both set." +
-        " They're conflict. Please reset BIGDL_LOCAL_MODE if you're use Spark or remove " +
-        "spark.master if you're run without spark")
       logger.info("Detect BIGDL_LOCAL_MODE is set. Run workload without spark")
       // The physical core number should have been initialized by env variable in bigdl.sh
       setNodeAndCore(1, getCoreNumberFromEnv)
     } else {
       logger.info("Auto detect executor number and executor cores number")
-      val (nExecutor, executorCores) = sparkExecutorAndCore(forceCheck = true).get
+      val sc = getAndCheckSparkContext
+      val (nExecutor, executorCores) = sparkExecutorAndCore(forceCheck = true, sc.master).get
       logger.info(s"Executor number is $nExecutor and executor cores number is $executorCores")
       setNodeAndCore(nExecutor, executorCores)
-      checkSparkContext
+
     }
   }
 
@@ -266,7 +264,7 @@ object Engine {
   /**
    * Check the spark conf of spark context if there's an exsiting one
    */
-  private def checkSparkContext : Unit = {
+  private def getAndCheckSparkContext : SparkContext = {
     val tmpContext = SparkContext.getOrCreate(new SparkConf()
       .set("bigdl.temp.context", "true").setAppName("tmp context for Engine check"))
     // If there's already a spark context, it should not include the property
@@ -288,8 +286,8 @@ object Engine {
           s"but it is ${v.get}. " + SPARK_CONF_ERROR
       )
     }
-
     readConf.foreach(c => verify(c._1, c._2))
+    tmpContext
   }
 
   /**
@@ -334,17 +332,14 @@ object Engine {
     }
   }
 
-  private def getSparkMaster : String = {
-    System.getProperty("spark.master")
-  }
-
   /**
    * Extract spark executor number and executor cores from environment.
-    * @param forceCheck throw exception if user doesn't set properties correctly
+   * @param forceCheck throw exception if user doesn't set properties correctly
+   * @param master master of Spark cluster.
    * @return (nExecutor, executorCore)
    */
-  private[utils] def sparkExecutorAndCore(forceCheck : Boolean) : Option[(Int, Int)] = {
-    val master = getSparkMaster
+  private[utils] def sparkExecutorAndCore(forceCheck : Boolean,
+    master: String) : Option[(Int, Int)] = {
     if (master == null) {
       require(forceCheck == false, "Engine.init: Can't find spark.master, " +
         "do you start your application with spark-submit?")

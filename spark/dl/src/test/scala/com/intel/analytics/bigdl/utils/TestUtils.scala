@@ -21,77 +21,13 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import org.apache.spark.SparkContext
+import org.mockito.Mockito._
+import org.scalatest.mock.MockitoSugar
 
 import scala.reflect.ClassTag
 
-object TestUtils {
-  /**
-   * Set envs for spark local mode
-   */
-  def sparkLocalEnv[T](
-    core : Int = 4
-  )(body : => T): Unit = {
-    System.setProperty("SPARK_SUBMIT", "true")
-    System.setProperty("spark.master", s"local[$core]")
-    body
-    System.clearProperty("SPARK_SUBMIT")
-    System.clearProperty("spark.master")
-  }
-
-  /**
-   * Set envs for spark standalone mode
-   */
-  def sparkStandaloneEnv[T](
-    totalCore : Int,
-    core : Int
-  )(body : => T): Unit = {
-    System.setProperty("SPARK_SUBMIT", "true")
-    System.setProperty("spark.master", s"spark://host:7077")
-    System.setProperty("spark.cores.max", totalCore.toString)
-    System.setProperty("spark.executor.cores", core.toString)
-    body
-    System.clearProperty("SPARK_SUBMIT")
-    System.clearProperty("spark.master")
-    System.clearProperty("spark.cores.max")
-    System.clearProperty("spark.executor.cores")
-  }
-
-  /**
-   * Set envs for spark yarn mode
-   */
-  def sparkYarnEnv[T](
-    executors : Int,
-    core : Int
-  )(body : => T): Unit = {
-    System.setProperty("SPARK_SUBMIT", "true")
-    System.setProperty("spark.master", s"yarn")
-    System.setProperty("spark.executor.instances", executors.toString)
-    System.setProperty("spark.executor.cores", core.toString)
-    body
-    System.clearProperty("SPARK_SUBMIT")
-    System.clearProperty("spark.master")
-    System.clearProperty("spark.executor.instances")
-    System.clearProperty("spark.executor.cores")
-  }
-
-  /**
-   * Set envs for mesos yarn mode
-   */
-  def sparkMesosEnv[T](
-    totalCore : Int,
-    core : Int
-  )(body : => T): Unit = {
-    System.setProperty("SPARK_SUBMIT", "true")
-    System.setProperty("spark.master", s"mesos")
-    System.setProperty("spark.cores.max", totalCore.toString)
-    System.setProperty("spark.executor.cores", core.toString)
-    body
-    System.clearProperty("SPARK_SUBMIT")
-    System.clearProperty("spark.master")
-    System.clearProperty("spark.cores.max")
-    System.clearProperty("spark.executor.cores")
-  }
-
+object TestUtils extends MockitoSugar {
   /**
    * Process different paths format under windows and linux
    *
