@@ -154,6 +154,12 @@ class Node[T](val element: T) {
     node
   }
 
+  def delete(node: Node[T]): Node[T] = {
+    if (node.prevs.contains(this)) node.prevs.-=(this)
+    if (this.nexts.contains(node)) this.nexts.-=(node)
+    node
+  }
+
   /**
    * Use current node as source to build a direct graph
    * @param reverse
@@ -165,6 +171,6 @@ class Node[T](val element: T) {
 
   override def toString: String = s"(${element.toString})"
 
-  private val nexts = new ArrayBuffer[Node[T]]()
-  private val prevs = new ArrayBuffer[Node[T]]()
+  private var nexts = new ArrayBuffer[Node[T]]()
+  private var prevs = new ArrayBuffer[Node[T]]()
 }

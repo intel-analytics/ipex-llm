@@ -179,6 +179,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     val inputs = layers.filter(layer => layer.prevNodes.size == 0).toArray
     val outputs = layers.filter(layer => layer.nextNodes.size == 0).toArray
     val module = Graph(inputs, outputs)
+    module.setName(netparam.getName)
     copyParameters(module)
     (module, criterions)
   }

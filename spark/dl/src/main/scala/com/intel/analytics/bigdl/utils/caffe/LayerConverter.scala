@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -190,8 +191,8 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     weightBuilder.setChannels(nInputPlane / ngroup)
     weightBuilder.setNum(nOutputPlane)
 
-    layerParameter.setBlobs(0, weightBuilder.build)
-    layerParameter.setBlobs(1, biasBuilder.build)
+    layerParameter.addBlobs(weightBuilder.build)
+    layerParameter.addBlobs(biasBuilder.build)
     layerParameter.setConvolutionParam(convolutionParam.build)
 
     // build concolution layer
@@ -215,8 +216,8 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
 
     // copy weight and bias
     var (weightBuilder, biasBuilder) = copyParam(moduleNode.element, layerParameter)
-    layerParameter.setBlobs(0, weightBuilder.build)
-    layerParameter.setBlobs(1, biasBuilder.build)
+    layerParameter.addBlobs(weightBuilder.build)
+    layerParameter.addBlobs(biasBuilder.build)
 
     // build concolution layer
     layerParameter.build()
@@ -318,8 +319,8 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
 
     innerProductParameter.setBiasTerm(withBias)
 
-    layerParameter.setBlobs(0, weightBuilder.build)
-    layerParameter.setBlobs(1, biasBuilder.build)
+    layerParameter.addBlobs(weightBuilder.build)
+    layerParameter.addBlobs(biasBuilder.build)
 
     layerParameter.setInnerProductParam(innerProductParameter.build)
 
@@ -543,14 +544,16 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     // set bottom list
     var i = 0
     bottoms.foreach(bottom => {
-      layerParameter.setBottom(i, bottom)
+      // layerParameter.setBottom(i, bottom)
+      layerParameter.addBottom(bottom)
       i += 1
     })
 
     // set top list
     i = 0
     while (i < nextNodes.size) {
-      layerParameter.setTop(i, s"$layerName$i")
+      // layerParameter.setTop(i, s"$layerName$i")
+      layerParameter.addTop(s"$layerName$i")
       i += 1
     }
   }
@@ -558,22 +561,25 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
   private def copyParam(module : AbstractModule[Activity, Tensor[T], T],
     builder : LayerParameter.Builder) : (BlobProto.Builder, BlobProto.Builder) = {
     val name = module.getName
-    val params = module.getParametersTable()
+    val params = module.getParametersTable.get(name).get.asInstanceOf[Table]
     val weight = params[Tensor[T]]("weight")
     val weightData = weight.storage().array()
     var i = 0
     val weightBlobBuilder = BlobProto.newBuilder()
     while (i < weightData.length) {
-      weightBlobBuilder.setData(i, ev.toType[Float](weightData(i)))
+      weightBlobBuilder.addData(ev.toType[Float](weightData(i)))
       i += 1
     }
-    val bias = params[Tensor[T]]("bias")
-    val biasData = bias.storage().array()
-    i = 0
+    // bias may be optional
     val biasBlobBuilder = BlobProto.newBuilder()
-    while (i < biasData.length) {
-      biasBlobBuilder.setData(i, ev.toType[Float](biasData(i)))
-      i += 1
+    if (params.contains("bias")) {
+      val bias = params[Tensor[T]]("bias")
+      val biasData = bias.storage().array()
+      i = 0
+      while (i < biasData.length) {
+        biasBlobBuilder.addData(ev.toType[Float](biasData(i)))
+        i += 1
+      }
     }
 
     (weightBlobBuilder, biasBlobBuilder)
