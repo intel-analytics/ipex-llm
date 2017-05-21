@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
  * DLClassifier is compatible with both spark 1.5-plus and 2.0 by extending MLTransform.
  */
 class DLClassifier[@specialized(Float, Double) T: ClassTag]
-  (override val uid: String = "DLClassifier")(implicit ev: TensorNumeric[T]) extends MlTransformer
+  (override val uid: String = "DLClassifier")(implicit ev: TensorNumeric[T]) extends DLTransformer
   with HasInputCol with HasOutputCol with DataParams[T] {
 
   /**
