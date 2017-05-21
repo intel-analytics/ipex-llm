@@ -29,6 +29,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, _}
 import com.intel.analytics.bigdl.example.imageclassification.MlUtils.{testMean => _, testStd => _, _}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import org.apache.spark.SparkContext
@@ -73,9 +74,9 @@ object DLEstimatorLeNet {
         param.batchSize)
 
       val dataFrameRDD : RDD[MinibatchData[Float]] = trainSet.
-        asInstanceOf[DistributedDataSet[MiniBatch[Float]]].data(false).map(batch => {
-          val feature = batch.data
-          val label = batch.labels
+        asInstanceOf[DistributedDataSet[TensorMiniBatch[Float]]].data(false).map(batch => {
+          val feature = batch.getInput.asInstanceOf[Tensor[Float]]
+          val label = batch.getTarget.asInstanceOf[Tensor[Float]]
           val estimatorData = MinibatchData[Float](feature.storage().array(),
             label.storage().array())
            estimatorData
@@ -92,7 +93,7 @@ object DLEstimatorLeNet {
 
       val paramsTrans = ParamMap(
         estimator.featureSize -> Array(10, 28, 28),
-        estimator.labelSize -> Array(10, 10) )
+        estimator.labelSize -> Array(10) )
 
       estimator = estimator.copy(paramsTrans)
 
