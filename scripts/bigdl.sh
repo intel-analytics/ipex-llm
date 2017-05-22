@@ -49,9 +49,9 @@ parse() {
     while [ $# -gt 0 ]; do
         key="$1"
         case $key in
-            -c|--core)		
-            export DL_CORE_NUMBER="$2"		
-            shift 2		
+            -c|--core)
+            export DL_CORE_NUMBER="$2"
+            shift 2
             ;;
             -l|--local)
             export BIGDL_LOCAL_MODE="1"
