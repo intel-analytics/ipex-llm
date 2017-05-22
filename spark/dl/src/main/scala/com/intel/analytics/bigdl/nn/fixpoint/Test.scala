@@ -24,7 +24,7 @@ case class TestCase(
   batchSize: Int, inputChannel: Int, inputHeight: Int, inputWidth: Int,
   group: Int, outputChannel: Int,
   kernelHeight: Int, kernelWidth: Int, strideHeight: Int, strideWidth: Int,
-  padHeight: Int, padWidth: Int)
+  padHeight: Int, padWidth: Int, name: String = "")
 
 object Test {
 
