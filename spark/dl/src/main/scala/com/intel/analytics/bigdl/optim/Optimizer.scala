@@ -300,7 +300,7 @@ object Optimizer {
       )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
-      dataset = (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
+      dataset = (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
@@ -319,7 +319,24 @@ object Optimizer {
     new DistriOptimizer[T](
       _model = model,
       dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
-        SampleToBatch(batchSize, featurePadding, labelPadding, fixedLength))
+        SampleToMiniBatch(batchSize, featurePadding, labelPadding, fixedLength))
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+  }
+
+  def apply[T: ClassTag](
+        model: Module[T],
+        sampleRDD: RDD[Sample[T]],
+        criterion: Criterion[T],
+        batchSize: Int,
+        isInOrder: Boolean,
+        toMiniBatch: (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T]
+  )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+    new DistriOptimizer[T](
+      _model = model,
+      dataset = (DataSet.sortRDD(sampleRDD, isInOrder, batchSize) ->
+        SampleToMiniBatch(batchSize, toMiniBatch))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]

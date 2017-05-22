@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import org.apache.commons.lang3.SerializationUtils
 import java.util
 
+import com.intel.analytics.bigdl.utils.T
 import org.apache.spark.rdd.RDD
 
 import scala.collection.Iterator
@@ -104,6 +105,7 @@ class Identity[A] extends Transformer[A, A] {
  * optionally padding all the features (or labels) in the mini-batch to the same length
  */
 object SampleToBatch {
+  @deprecated("Use SampleToMiniBatch instead", "0.2.0")
   def apply[T: ClassTag]
   (batchSize : Int,
    featurePadding : Option[Tensor[T]] = None,
@@ -127,6 +129,7 @@ object SampleToBatch {
  * @param partitionNum partition number of dataset, default means partitionNum
  *                     equals Engine.nodeNumber()
  */
+@deprecated("Use SampleToMiniBatch instead", "0.2.0")
 class SampleToBatch[T: ClassTag]
 (totalBatch : Int,
  featurePadding : Option[Tensor[T]] = None,
@@ -298,12 +301,12 @@ class SampleToBatch[T: ClassTag]
 }
 
 class SampleToMiniBatch[T: ClassTag](
-    totalBatch : Int,
+    totalBatch: Int,
     partitionNum: Option[Int] = None,
-    func: (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T])
+    toMiniBatch: (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T])
     (implicit ev: TensorNumeric[T]) extends Transformer[Sample[T], MiniBatch[T]] {
 
-  private val batchPerPartition = Utils.getBatchSize(totalBatch, partitionNum)
+  private val batchPerPartition = Utils.getBatchSize(totalBatch)
   private var inputBuffer: Array[Tensor[T]] = null
   private var targetBuffer: Array[Tensor[T]] = null
 
@@ -333,7 +336,7 @@ class SampleToMiniBatch[T: ClassTag](
           if (null == targetBuffer && sampleData(0).numLabel() > 0) {
             targetBuffer = Array.tabulate(sampleData(0).numLabel())(_ => Tensor[T]())
           }
-          func(sampleData, inputBuffer, targetBuffer)
+          toMiniBatch(sampleData, inputBuffer, targetBuffer)
         } else {
           null
         }
@@ -344,26 +347,87 @@ class SampleToMiniBatch[T: ClassTag](
 
 object SampleToMiniBatch {
   def apply[T: ClassTag](
-      batchSize : Int,
-      partitionNum: Option[Int] = None,
-      func: (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T])
-      (implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
-    new SampleToMiniBatch[T](batchSize, partitionNum, func)
+        batchSize : Int,
+        toMiniBatch : (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T]
+  )(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
+    new SampleToMiniBatch[T](batchSize, None, toMiniBatch)
   }
 
-  def toMiniBatch[T: ClassTag](
-        samples: Array[Sample[T]],
-        buf1: Array[Tensor[T]],
-        buf2: Array[Tensor[T]],
+  def apply[T: ClassTag](
+      batchSize : Int,
+      toMiniBatch : (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T],
+      partitionNum: Option[Int]
+  )(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
+    new SampleToMiniBatch[T](batchSize, partitionNum, toMiniBatch)
+  }
+
+  def apply[T: ClassTag](
+        totalBatch : Int,
         featurePadding : Option[Tensor[T]] = None,
         labelPadding : Option[T] = None,
-        fixedLength: Option[Int] = None
-                              )(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+        fixedLength: Option[Int] = None,
+        partitionNum: Option[Int] = None)(implicit ev: TensorNumeric[T]): SampleToMiniBatch[T] = {
+    val toMiniBatch = (samples: Array[Sample[T]], b1: Array[Tensor[T]], b2: Array[Tensor[T]]) =>
+      SampleToMiniBatch.samplesToMiniBatch[T](samples, b1, b2,
+        featurePadding, labelPadding, fixedLength)
+    SampleToMiniBatch(totalBatch, toMiniBatch, partitionNum)
+  }
+
+  def samplesToMiniBatch[T: ClassTag](
+        samples: Array[Sample[T]],
+        buf1: Array[Tensor[T]],
+        buf2: Array[Tensor[T]] = null,
+        featurePadding : Option[Tensor[T]] = None,
+        labelPadding : Option[T] = None,
+        fixedLength: Option[Int] = None)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+    val featureIndex = if (featurePadding.isDefined) findLongestFeature(samples) else 0
+    val labelIndex = if (labelPadding.isDefined) findLongestLabel(samples) else 0
     samples(0) match {
       case s: TensorSample[T] =>
         tensorSampleToMiniBatch(samples.map(_.asInstanceOf[TensorSample[T]]), buf1, buf2,
-          featurePadding, labelPadding, fixedLength)
+          featurePadding, featureIndex, labelPadding, labelIndex, fixedLength)
+      case s: TensorTSample[T] =>
+        tensorTSampleToMiniBatch(samples.map(_.asInstanceOf[TensorTSample[T]]), buf1, buf2,
+          featurePadding, featureIndex, fixedLength)
+      case s: ArrayTensorSample[T] =>
+        arrayTensorSampleToMiniBatch(samples.map(_.asInstanceOf[ArrayTensorSample[T]]), buf1, buf2,
+          featurePadding, featureIndex, labelPadding, labelIndex, fixedLength)
+      case s: UnlabeledTensorSample[T] =>
+        unlabeledTensorSampleToMiniBatch(samples.map(_.asInstanceOf[UnlabeledTensorSample[T]]),
+          buf1, featurePadding, featureIndex, fixedLength)
+      case s: UnlabeledArrayTensorSample[T] =>
+        unlabeledArrayTensorSampleToMiniBatch(samples.map(
+          _.asInstanceOf[UnlabeledArrayTensorSample[T]]), buf1, featurePadding,
+          featureIndex, fixedLength)
+      case _ => throw new IllegalArgumentException(s"toMiniBatch: " +
+        s"Unsupported Sample type")
     }
+  }
+
+  private def findLongestFeature[T: ClassTag](
+        samples: Array[Sample[T]])(implicit ev: TensorNumeric[T]): Int = {
+    var featureIndex = 0
+    var i = 1
+    while (i < samples.length) {
+      if (samples(i).featureLength() > samples(featureIndex).featureLength()) {
+        featureIndex = i
+      }
+      i += 1
+    }
+    featureIndex
+  }
+
+  private def findLongestLabel[T: ClassTag](
+        samples: Array[Sample[T]])(implicit ev: TensorNumeric[T]): Int = {
+    var labelIndex = 0
+    var i = 1
+    while (i < samples.length) {
+      if (samples(i).labelLength() > samples(labelIndex).labelLength()) {
+        labelIndex = i
+      }
+      i += 1
+    }
+    labelIndex
   }
 
   def tensorSampleToMiniBatch[T: ClassTag](
@@ -371,37 +435,16 @@ object SampleToMiniBatch {
         buf1: Array[Tensor[T]],
         buf2: Array[Tensor[T]],
         featurePadding : Option[Tensor[T]] = None,
+        featureIndex: Int = 0,
         labelPadding : Option[T] = None,
+        labelIndex: Int = 0,
         fixedLength: Option[Int] = None)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
     val input = buf1(0)
     val target = buf2(0)
 
-    var featureIndex = 0
-    var labelIndex = 0
-
-    // If padding, find the biggest feature/label index.
-    // If no padding, check the feature size and label size in all samples.
-    var i = 1
-    while (i < samples.length) {
-      if (featurePadding.isDefined &&
-        samples(i).featureLength() > samples(featureIndex).featureLength()) {
-        featureIndex = i
-      } else {
-        require(samples(i).featureLength() == samples(featureIndex).featureLength(),
-        "Sample's feature should have the same size.")
-      }
-      if (labelPadding.isDefined &&
-        samples(i).labelLength() > samples(labelIndex).labelLength()) {
-        labelIndex = i
-      } else {
-        require(samples(i).labelLength() == samples(featureIndex).labelLength(),
-          "Sample's label should have the same size.")
-      }
-      i += 1
-    }
-
-    val inputSize = Array(samples.length) ++ samples(featureIndex).feature.size()
-    val targetSize = Array(samples.length) ++ samples(labelIndex).label.size()
+    // Compute the input's Size and target's Size
+    val inputSize = Array(samples.length) ++ samples(featureIndex).featureTensor.size()
+    val targetSize = Array(samples.length) ++ samples(labelIndex).labelTensor.size()
     if (fixedLength.isDefined) {
       require(fixedLength.get >= inputSize(2), "FixedLength is smaller than feature length")
       inputSize(1) = fixedLength.get
@@ -412,59 +455,301 @@ object SampleToMiniBatch {
     target.resize(targetSize)
 
     if (featurePadding.isDefined) {
-      // padding feature
+      // check if featurePadding is right.
       require(featurePadding.get.dim() == input.dim() - 2, "featurePadding should have the " +
-        s"same dimension with the feature in sample. Excepted: ${input.dim() - 1}, " +
+        s"same dimension with the feature in sample. Excepted: ${input.dim() - 2}, " +
         s"but got ${featurePadding.get.dim()}")
       require(featurePadding.get.isContiguous(), "featurePadding should be contiguous")
-      var i = 1
-      while (i <= samples.length) {
-        val inputI = input(i)
-        copy(samples(i - 1).feature, inputI)
-        var j = samples(i - 1).feature.size(1) + 1
-        while (j <= inputI.size(1)) {
-          inputI(j).copy(featurePadding.get)
-          j += 1
-        }
-        i += 1
-      }
-    } else {
-      // copy feature
-      var i = 1
-      while (i <= samples.length) {
-        input(i).copy(samples(i - 1).feature)
-        i += 1
-      }
     }
 
     if (labelPadding.isDefined) {
-      // padding label
+      // fill target with labelPadding first.
       target.fill(labelPadding.get)
-      var i = 1
-      while (i <= samples.length) {
-        copy(samples(i - 1).label, target(i))
-        i += 1
-      }
-    } else {
-      var i = 1
-      while (i <= samples.length) {
-        target(i).copy(samples(i - 1).label)
-        i += 1
-      }
     }
 
+    // Copy sample data to miniBatch
+    var i = 1
+    while (i <= samples.length) {
+      if (featurePadding.isDefined) {
+        // copy data with padding
+        copyWithPadding(samples(i - 1).featureTensor, input(i), featurePadding.get)
+      } else {
+        // copy data without padding.
+        input(i).copy(samples(i - 1).featureTensor)
+      }
+
+      if (labelPadding.isDefined) {
+        // copy data only, as target has been filled by labelPadding.
+        copy(samples(i - 1).labelTensor, target(i))
+      } else {
+        // copy data without padding.
+        target(i).copy(samples(i - 1).labelTensor)
+      }
+
+      i += 1
+    }
 
     MiniBatch(input, target)
   }
 
-  def copy[T: ClassTag](
+  def tensorTSampleToMiniBatch[T: ClassTag](
+        samples: Array[TensorTSample[T]],
+        buf1: Array[Tensor[T]],
+        buf2: Array[Tensor[T]],
+        featurePadding : Option[Tensor[T]] = None,
+        featureIndex: Int = 0,
+        fixedLength: Option[Int] = None)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+    val input = buf1(0)
+    val target = buf2(0)
+
+    // Compute the input's Size and target's Size
+    val inputSize = Array(samples.length) ++ samples(featureIndex).featureTensor.size()
+    val targetSize = Array(samples.length)
+    if (fixedLength.isDefined) {
+      require(fixedLength.get >= inputSize(2), "FixedLength is smaller than feature length")
+      inputSize(1) = fixedLength.get
+    }
+
+    // Resize the input and target to right size.
+    input.resize(inputSize)
+    target.resize(targetSize)
+
+    if (featurePadding.isDefined) {
+      // check if featurePadding is right.
+      require(featurePadding.get.dim() == input.dim() - 2, "featurePadding should have the " +
+        s"same dimension with the feature in sample. Excepted: ${input.dim() - 2}, " +
+        s"but got ${featurePadding.get.dim()}")
+      require(featurePadding.get.isContiguous(), "featurePadding should be contiguous")
+    }
+
+    // Copy sample data to miniBatch
+    var i = 1
+    while (i <= samples.length) {
+      if (featurePadding.isDefined) {
+        copyWithPadding(samples(i - 1).featureTensor, input(i), featurePadding.get)
+      } else {
+        // copy data without padding.
+        input(i).copy(samples(i - 1).featureTensor)
+      }
+
+      target.setValue(i, samples(i - 1).labelValue)
+
+      i += 1
+    }
+
+    MiniBatch(input, target)
+  }
+
+  def arrayTensorSampleToMiniBatch[T: ClassTag](
+        samples: Array[ArrayTensorSample[T]],
+        buf1: Array[Tensor[T]],
+        buf2: Array[Tensor[T]],
+        featurePadding : Option[Tensor[T]] = None,
+        featureIndex: Int = 0,
+        labelPadding : Option[T] = None,
+        labelIndex: Int = 0,
+        fixedLength: Option[Int] = None)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+    val inputs = buf1
+    val target = buf2(0)
+
+    // Compute the input's Size and target's Size
+    val input1Size = Array(samples.length) ++ samples(featureIndex).features(0).size()
+    val targetSize = Array(samples.length) ++ samples(labelIndex).labels.size()
+    if (fixedLength.isDefined) {
+      require(fixedLength.get >= input1Size(2), "FixedLength is smaller than feature length")
+      input1Size(1) = fixedLength.get
+    }
+
+    // Resize the input and target to right size.
+    inputs(0).resize(input1Size)
+    var i = 1
+    while (i < samples(featureIndex).features.length) {
+      inputs(i).resize(Array(samples.length) ++ samples(featureIndex).features(i).size())
+      i += 1
+    }
+    target.resize(targetSize)
+
+    if (featurePadding.isDefined) {
+      // check if featurePadding is right.
+      require(featurePadding.get.dim() == inputs(0).dim() - 2, "featurePadding should have the " +
+        s"same dimension with the feature in sample. Excepted: ${inputs(0).dim() - 2}, " +
+        s"but got ${featurePadding.get.dim()}")
+      require(featurePadding.get.isContiguous(), "featurePadding should be contiguous")
+    }
+
+    if (labelPadding.isDefined) {
+      // fill target with labelPadding first.
+      target.fill(labelPadding.get)
+    }
+
+    // Copy sample data to miniBatch
+    var s = 1
+    while (s <= samples.length) {
+      if (featurePadding.isDefined) {
+        // copy data
+        copyWithPadding(samples(s - 1).features(0), inputs(0)(s), featurePadding.get)
+      } else {
+        // copy data without padding.
+        inputs(0)(s).copy(samples(s - 1).features(0))
+      }
+
+      i = 1
+      while (i < samples(s - 1).features.length) {
+        inputs(i)(s).copy(samples(s - 1).features(i))
+        i += 1
+      }
+
+      if (labelPadding.isDefined) {
+        // copy data only, as target has been filled by labelPadding.
+        copy(samples(s - 1).labels, target(s))
+      } else {
+        // copy data without padding.
+        target(s).copy(samples(s - 1).labels)
+      }
+
+      s += 1
+    }
+
+    // inputs Array[Tensor] to table
+    val input = T()
+    i = 1
+    while(i <= inputs.length) {
+      input(i) = inputs(i - 1)
+      i += 1
+    }
+
+    MiniBatch(input, target)
+  }
+
+  def unlabeledArrayTensorSampleToMiniBatch[T: ClassTag](
+        samples: Array[UnlabeledArrayTensorSample[T]],
+        buf1: Array[Tensor[T]],
+        featurePadding : Option[Tensor[T]] = None,
+        featureIndex: Int = 0,
+        fixedLength: Option[Int] = None)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+
+    val inputs = buf1
+
+    // Compute the input's Size
+    val input1Size = Array(samples.length) ++ samples(featureIndex).features(0).size()
+    if (fixedLength.isDefined) {
+      require(fixedLength.get >= input1Size(2), "FixedLength is smaller than feature length")
+      input1Size(1) = fixedLength.get
+    }
+
+    // Resize the input to right size.
+    inputs(0).resize(input1Size)
+    var i = 1
+    while (i < samples(featureIndex).features.length) {
+      inputs(i).resize(Array(samples.length) ++ samples(featureIndex).features(i).size())
+      i += 1
+    }
+
+    if (featurePadding.isDefined) {
+      // check if featurePadding is right.
+      require(featurePadding.get.dim() == inputs(0).dim() - 2, "featurePadding should have the " +
+        s"same dimension with the feature in sample. Excepted: ${inputs(0).dim() - 2}, " +
+        s"but got ${featurePadding.get.dim()}")
+      require(featurePadding.get.isContiguous(), "featurePadding should be contiguous")
+    }
+
+    // Copy sample data to miniBatch
+    var s = 1
+    while (s <= samples.length) {
+      if (featurePadding.isDefined) {
+        copyWithPadding(samples(s - 1).features(0), inputs(0)(s), featurePadding.get)
+      } else {
+        // copy data without padding.
+        inputs(0)(s).copy(samples(s - 1).features(0))
+      }
+
+      i = 1
+      while (i < samples(s - 1).features.length) {
+        inputs(i)(s).copy(samples(s - 1).features(i))
+        i += 1
+      }
+
+      s += 1
+    }
+
+    // inputs Array[Tensor] to table
+    val input = T()
+    i = 1
+    while(i <= inputs.length) {
+      input(i) = inputs(i - 1)
+      i += 1
+    }
+
+    MiniBatch(input)
+  }
+
+  def unlabeledTensorSampleToMiniBatch[T: ClassTag](
+        samples: Array[UnlabeledTensorSample[T]],
+        buf1: Array[Tensor[T]],
+        featurePadding : Option[Tensor[T]] = None,
+        featureIndex: Int = 0,
+        fixedLength: Option[Int] = None)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+    val input = buf1(0)
+
+    // Compute the input's Size
+    val inputSize = Array(samples.length) ++ samples(featureIndex).featureTensor.size()
+    if (fixedLength.isDefined) {
+      require(fixedLength.get >= inputSize(2), "FixedLength is smaller than feature length")
+      inputSize(1) = fixedLength.get
+    }
+
+    // Resize the input to right size.
+    input.resize(inputSize)
+
+    if (featurePadding.isDefined) {
+      // check if featurePadding is right.
+      require(featurePadding.get.dim() == input.dim() - 2, "featurePadding should have the " +
+        s"same dimension with the feature in sample. Excepted: ${input.dim() - 2}, " +
+        s"but got ${featurePadding.get.dim()}")
+      require(featurePadding.get.isContiguous(), "featurePadding should be contiguous")
+    }
+
+    // Copy sample data to miniBatch
+    var i = 1
+    while (i <= samples.length) {
+      if (featurePadding.isDefined) {
+        copyWithPadding(samples(i - 1).featureTensor, input(i), featurePadding.get)
+      } else {
+        // copy data without padding.
+        input(i).copy(samples(i - 1).featureTensor)
+      }
+
+      i += 1
+    }
+
+    MiniBatch(input)
+  }
+
+  private def copy[T: ClassTag](
         src: Tensor[T],
         dest: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
+    require(src.isContiguous() && dest.isContiguous(), "src and dest should be contiguous")
     copy(src.storage.array(),
       src.storageOffset() - 1,
       dest.storage().array(),
       dest.storageOffset() - 1,
       src.nElement())
+  }
+
+  private def copyWithPadding[T: ClassTag](
+        src: Tensor[T],
+        dest: Tensor[T],
+        paddingTensor: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
+    copy(src.storage.array(),
+      src.storageOffset() - 1,
+      dest.storage().array(),
+      dest.storageOffset() - 1,
+      src.nElement())
+    var j = src.size(1) + 1
+    while (j <= dest.size(1)) {
+      dest(j).copy(paddingTensor)
+      j += 1
+    }
   }
 
   private def copy[T: ClassTag](
@@ -485,10 +770,4 @@ object SampleToMiniBatch {
       case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
   }
-
-//  def main(args: Array[String]): Unit = {
-//    val a = (a: Array[Sample[Float]], b: Array[Tensor[Float]], c: Array[Tensor[Float]]) =>
-//      toMiniBatch(a, b, c)
-//    SampleToMiniBatch(batchSize = 1, func = a)
-//  }
 }

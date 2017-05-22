@@ -190,7 +190,7 @@ class ArrayTensorSample[T: ClassTag](
   }
 
   override def labelLength(): Int = {
-    labels(0).size(1)
+    labels.size(1)
   }
 
   override def copy(other: Sample[T]): this.type = {
@@ -209,6 +209,66 @@ class ArrayTensorSample[T: ClassTag](
   def numFeature(): Int = features.length
 
   def numLabel(): Int = 1
+}
+
+class UnlabeledTensorSample[T: ClassTag](
+      val featureTensor: Tensor[T]) extends Sample[T]{
+  override def featureLength(): Int = {
+    featureTensor.size(1)
+  }
+
+  override def labelLength(): Int = 0
+
+  override def copy(other: Sample[T]): this.type = {
+    require(other.isInstanceOf[UnlabeledTensorSample[T]], "Sample.copy: sample type not match.")
+    val s = other.asInstanceOf[UnlabeledTensorSample[T]]
+    featureTensor.resizeAs(s.featureTensor).copy(s.featureTensor)
+    this
+  }
+
+  def numFeature(): Int = 1
+
+  def numLabel(): Int = 0
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[UnlabeledTensorSample[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: TensorTSample[T] =>
+      (that canEqual this) &&
+        featureTensor == that.featureTensor
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(featureTensor)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
+}
+
+class UnlabeledArrayTensorSample[T: ClassTag](
+      val features: Array[Tensor[T]]) extends Sample[T] {
+  override def featureLength(): Int = {
+    features(0).size(1)
+  }
+
+  override def labelLength(): Int = 0
+
+  override def copy(other: Sample[T]): this.type = {
+    require(other.isInstanceOf[UnlabeledArrayTensorSample[T]],
+      "Sample.copy: sample type not match.")
+    val s = other.asInstanceOf[UnlabeledArrayTensorSample[T]]
+    require(s.features.length == features.length, "Sample.copy: sample type not match.")
+    var i = 0
+    while (i < features.length) {
+      features(i).resizeAs(s.features(i)).copy(s.features(i))
+      i += 1
+    }
+    this
+  }
+
+  def numFeature(): Int = features.length
+
+  def numLabel(): Int = 0
 }
 
 object Sample {
@@ -234,5 +294,15 @@ object Sample {
         featureTensors: Array[Tensor[T]],
         labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
     new ArrayTensorSample[T](featureTensors, labelTensor)
+  }
+
+  def apply[T: ClassTag](
+        featureTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new UnlabeledTensorSample[T](featureTensor)
+  }
+
+  def apply[T: ClassTag](
+        featureTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    new UnlabeledArrayTensorSample[T](featureTensors)
   }
 }
