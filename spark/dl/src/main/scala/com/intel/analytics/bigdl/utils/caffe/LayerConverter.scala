@@ -192,7 +192,9 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     weightBuilder.setNum(nOutputPlane)
 
     layerParameter.addBlobs(weightBuilder.build)
-    layerParameter.addBlobs(biasBuilder.build)
+    if (biasBuilder != null) {
+      layerParameter.addBlobs(biasBuilder.build)
+    }
     layerParameter.setConvolutionParam(convolutionParam.build)
 
     // build concolution layer
@@ -320,7 +322,10 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     innerProductParameter.setBiasTerm(withBias)
 
     layerParameter.addBlobs(weightBuilder.build)
-    layerParameter.addBlobs(biasBuilder.build)
+
+    if (biasBuilder != null) {
+      layerParameter.addBlobs(biasBuilder.build)
+    }
 
     layerParameter.setInnerProductParam(innerProductParameter.build)
 
@@ -571,8 +576,9 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
       i += 1
     }
     // bias may be optional
-    val biasBlobBuilder = BlobProto.newBuilder()
+    var biasBlobBuilder : BlobProto.Builder = null
     if (params.contains("bias")) {
+      biasBlobBuilder = BlobProto.newBuilder()
       val bias = params[Tensor[T]]("bias")
       val biasData = bias.storage().array()
       i = 0

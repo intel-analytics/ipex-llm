@@ -19,7 +19,7 @@ import java.io.{FileInputStream, FileOutputStream, InputStreamReader, OutputStre
 
 import scala.collection.JavaConverters._
 import caffe.Caffe.{LayerParameter, NetParameter, V1LayerParameter}
-import com.intel.analytics.bigdl.nn.{Graph, View}
+import com.intel.analytics.bigdl.nn.{Container, Graph, Sequential, View}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
 
@@ -28,6 +28,9 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import caffe.Caffe
 import com.google.protobuf.{GeneratedMessage, TextFormat}
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.log4j.Logger
 /**
  * An utility to convert BigDL model into caffe format
@@ -38,7 +41,7 @@ import org.apache.log4j.Logger
  * @param useV2  convert to V2 layer or not
  */
 class CaffePersister[T: ClassTag](val prototxtPath: String,
-      val modelPath: String, val module : Graph[T],
+      val modelPath: String, val module : Container[Activity, Activity, T],
       useV2 : Boolean = true)(implicit ev: TensorNumeric[T]) {
 
   val logger = Logger.getLogger(getClass)
@@ -54,14 +57,37 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
     convertToCaffe()
     save()
   }
-  private def createNet() : Unit = {
-    netparam.toString
+
+  // Convert module container to unified Graph
+  private def toGraph() : Graph[T] = {
+    if (module.isInstanceOf[Graph[T]]) {
+      logger.info("model is graph")
+      return module.asInstanceOf[Graph[T]]
+    } else if (module.isInstanceOf[Sequential[T]]) {
+      logger.info("model is sequential")
+      val modules = module.asInstanceOf[Sequential[T]].modules
+      val allNodes = new ArrayBuffer[ModuleNode[T]]()
+      val dummyNode = new ModuleNode[T](null)
+      allNodes.append(dummyNode)
+      var curr = dummyNode
+      modules.foreach(node => {
+        val nnode = new ModuleNode[T](node.asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
+        allNodes.append(nnode)
+        curr -> nnode
+        curr = nnode
+      })
+      val input = allNodes.filter(_.element != null).filter(_.prevNodes.size == 0).toArray
+      val output = allNodes.filter(_.element != null).filter(_.prevNodes.size == 0).toArray
+      return Graph(input, output)
+    }
+    throw  new UnsupportedOperationException(s"container $module is not supported!")
   }
   // create caffe layers graph based on BigDL execution plan
   private def convertToCaffe() : Unit = {
+    val graph = toGraph()
     val top2Layers = new mutable.HashMap[String, String]()
     val layers = new mutable.HashMap[String, GeneratedMessage]()
-    val executions = module.getExecutions
+    val executions = graph.getExecutions
     netparam.setName(module.getName)
     executions.foreach(execution => {
       val preModules = execution.prevNodes
@@ -71,19 +97,43 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
         require(preModules.size == 1, "view pre-node size should be 1")
         val preNode = preModules(0)
         val nextNodes = execution.nextNodes
+        val nextNodesName = nextNodes.map(_.element.getName())
         nextNodes.foreach(nextNode => {
           preNode -> nextNode
           execution.delete(nextNode)
         })
         preNode.delete(execution)
+
+        // set top connection
+        if (useV2) {
+          var preNodeTopList = layers(preNode.element.getName).
+            asInstanceOf[LayerParameter].getTopList.asScala
+          preNodeTopList = preNodeTopList.filter(top => {top2Layers(top) == module.getName()})
+          var topName = preNodeTopList(0)
+          var i = 0
+          while (i < nextNodesName.size) {
+            top2Layers(s"$topName") = nextNodesName(i)
+            i += 1
+          }
+        } else {
+          var preNodeTopList = layers(preNode.element.getName).
+            asInstanceOf[V1LayerParameter].getTopList.asScala
+          preNodeTopList = preNodeTopList.filter(top => {top2Layers(top) == module.getName()})
+          var topName = preNodeTopList(0)
+          var i = 0
+          while (i < nextNodesName.size) {
+            top2Layers(s"topName_$i") = nextNodesName(i)
+            i += 1
+          }
+        }
       } else {
         var bottomList = ArrayBuffer[String]()
         preModules.foreach(pre => {
           val name = pre.element.getName
           val preLayer = layers(name)
-          val bottoms = if (useV2) preLayer.asInstanceOf[LayerParameter].getBottomList.asScala
-            else preLayer.asInstanceOf[V1LayerParameter].getBottomList.asScala
-          bottoms.foreach(bottom => bottomList.append(bottom))
+          val preTops = if (useV2) preLayer.asInstanceOf[LayerParameter].getTopList.asScala
+            else preLayer.asInstanceOf[V1LayerParameter].getTopList.asScala
+          preTops.foreach(top => bottomList.append(top))
         })
         bottomList = bottomList.filter(bottom => {
           val nextModule = top2Layers(bottom)
@@ -166,7 +216,7 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
 
 object CaffePersister{
   def persist[T: ClassTag](prototxtPath: String,
-               modelPath: String, module : Graph[T],
+               modelPath: String, module : Container[Activity, Activity, T],
   useV2 : Boolean = true)(implicit ev: TensorNumeric[T]) : Unit = {
     val caffePersist = new CaffePersister[T](prototxtPath, modelPath, module, useV2)
     caffePersist.saveAsCaffe()

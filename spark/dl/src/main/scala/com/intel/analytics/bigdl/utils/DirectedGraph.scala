@@ -154,10 +154,15 @@ class Node[T](val element: T) {
     node
   }
 
+  /**
+    * Remove linkage with another node
+    * @param node another node
+    * @return current node
+    */
   def delete(node: Node[T]): Node[T] = {
     if (node.prevs.contains(this)) node.prevs.-=(this)
     if (this.nexts.contains(node)) this.nexts.-=(node)
-    node
+    this
   }
 
   /**
@@ -171,6 +176,6 @@ class Node[T](val element: T) {
 
   override def toString: String = s"(${element.toString})"
 
-  private var nexts = new ArrayBuffer[Node[T]]()
-  private var prevs = new ArrayBuffer[Node[T]]()
+  private val nexts = new ArrayBuffer[Node[T]]()
+  private val prevs = new ArrayBuffer[Node[T]]()
 }

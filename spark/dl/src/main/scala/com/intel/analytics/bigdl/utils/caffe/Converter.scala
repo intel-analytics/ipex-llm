@@ -411,7 +411,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     : mutable.HashMap[String, Int] = {
     var map = new mutable.HashMap[String, Int]()
     val layer = classOf[SpatialConvolution[T]].cast(module)
-    val nInputPlane = layer.nGroup
+    val nInputPlane = layer.nInputPlane
     val nOutputPlane = layer.nOutputPlane
     val kernelW = layer.kernelW
     val kernelH = layer.kernelH

@@ -19,7 +19,8 @@ package com.intel.analytics.bigdl.utils
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.models.resnet.Convolution
-import com.intel.analytics.bigdl.nn.{Linear, Sequential, View}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, Sequential, View}
+import com.intel.analytics.bigdl.optim.Optimizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
