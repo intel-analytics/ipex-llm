@@ -20,6 +20,7 @@ from util.common import callBigDlFunc
 from util.common import JavaValue
 from util.common import JTensor
 from util.common import callJavaFunc
+from util.common import get_spark_context
 from pyspark import SparkContext
 import numpy as np
 
@@ -44,6 +45,15 @@ class Model(JavaValue):
             bigdl_type, JavaValue.jvm_class_constructor(self), *args)
         self.bigdl_type = bigdl_type
 
+    def __str__(self):
+        """
+        >>> conv2 = SpatialConvolution(6, 12, 5, 5).set_name("conv2")
+        creating: createSpatialConvolution
+        >>> print(conv2)
+        SpatialConvolution[conv2](6 -> 12, 5 x 5, 1, 1, 0, 0)
+        """
+        return self.value.toString()
+
     @classmethod
     def of(cls, jmodel, bigdl_type="float"):
         """
@@ -59,14 +69,14 @@ class Model(JavaValue):
         Give this model a name. There would be a generated name
         consist of class name and UUID if user doesn't set it.
         """
-        callJavaFunc(SparkContext.getOrCreate(), self.value.setName, name)
+        callJavaFunc(get_spark_context(), self.value.setName, name)
         return self
 
     def name(self):
         """
         Name of this layer
         """
-        return callJavaFunc(SparkContext.getOrCreate(), self.value.getName)
+        return callJavaFunc(get_spark_context(), self.value.getName)
 
     def set_seed(self, seed=123):
         """
@@ -139,7 +149,7 @@ class Model(JavaValue):
         """
         Initialize the model weights.
         """
-        callJavaFunc(SparkContext.getOrCreate(), self.value.reset)
+        callJavaFunc(get_spark_context(), self.value.reset)
         return self
 
     def parameters(self):
@@ -159,6 +169,7 @@ class Model(JavaValue):
 
         return {layer_name: to_ndarray(params) for layer_name, params in
                 name_to_params.items()}
+
 
     def predict(self, data_rdd):
         """
@@ -185,6 +196,57 @@ class Model(JavaValue):
                              "modelTest",
                              self.value,
                              val_rdd, batch_size, val_methods)
+
+    def set_weights(self, weights):
+        """
+        Set weights for this layer
+        :param weights: a list of numpy arrays which represent weight and bias
+        :return:
+        >>> linear = Linear(3,2)
+        creating: createLinear
+        >>> linear.set_weights([np.array([[1,2,3],[4,5,6]]), np.array([7,8])])
+        >>> weights = linear.get_weights()
+        >>> weights[0].shape == (2,3)
+        True
+        >>> weights[0][0]
+        array([ 1.,  2.,  3.], dtype=float32)
+        >>> weights[1]
+        array([ 7.,  8.], dtype=float32)
+        >>> relu = ReLU()
+        creating: createReLU
+        >>> from py4j.protocol import Py4JJavaError
+        >>> try:
+        ...     relu.set_weights([np.array([[1,2,3],[4,5,6]]), np.array([7,8])])
+        ... except Py4JJavaError as err:
+        ...     print(err.java_exception)
+        ...
+        java.lang.IllegalArgumentException: requirement failed: this layer does not have weight/bias
+        >>> relu.get_weights()
+        The layer does not have weight/bias
+        >>> add = Add(2)
+        creating: createAdd
+        >>> try:
+        ...     add.set_weights([np.array([7,8]), np.array([1,2])])
+        ... except Py4JJavaError as err:
+        ...     print(err.java_exception)
+        ...
+        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is not consistant with number of weight/bias of this layer
+        """
+        tensors = [JTensor.from_ndarray(param, self.bigdl_type) for param in weights]
+        callBigDlFunc(self.bigdl_type, "setWeights", self.value, tensors)
+
+    def get_weights(self):
+        """
+        Get weights for this layer
+        :return: list of numpy arrays which represent weight and bias
+        """
+        tensorWeights = callBigDlFunc(self.bigdl_type,
+                              "getWeights", self.value)
+        if tensorWeights is not None:
+            return [tensor.to_ndarray() for tensor in tensorWeights]
+        else:
+            print("The layer does not have weight/bias")
+            return None
 
     @staticmethod
     def load(path, bigdl_type="float"):
@@ -1479,7 +1541,7 @@ class LookupTable(Model):
     def __init__(self,
                  n_index,
                  n_output,
-                 padding_value=0,
+                 padding_value=0.0,
                  max_norm=DOUBLEMAX,
                  norm_type=2.0,
                  should_scale_grad_by_freq=False,

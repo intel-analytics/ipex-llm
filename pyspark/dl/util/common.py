@@ -25,10 +25,48 @@ from pyspark.sql import DataFrame, SQLContext
 from pyspark.mllib.common import callJavaFunc
 from pyspark import SparkConf
 import numpy as np
+import threading
 
 if sys.version >= '3':
     long = int
     unicode = str
+
+class SingletonMixin(object):
+    _lock = threading.RLock()
+    _instance = None
+
+    @classmethod
+    def instance(cls,
+                 bigdl_type="float"):
+        if not cls._instance:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = cls(bigdl_type)
+        return cls._instance
+
+class JavaCreator(SingletonMixin):
+    __creator_class="com.intel.analytics.bigdl.python.api.PythonBigDL"
+
+    @classmethod
+    def get_creator_class(cls):
+        with JavaCreator._lock:
+            return JavaCreator.__creator_class
+
+    @classmethod
+    def set_creator_class(cls, cclass):
+        with JavaCreator._lock:
+            JavaCreator.__creator_class = cclass
+            JavaCreator._instance = None
+
+    def __init__(self, bigdl_type):
+        sc = get_spark_context()
+        jclass = getattr(sc._jvm, JavaCreator.get_creator_class())
+        if bigdl_type == "float":
+            self.value = getattr(jclass, "ofFloat")()
+        elif bigdl_type == "double":
+            self.value = getattr(jclass, "ofDouble")()
+        else:
+            raise Exception("Not supported bigdl_type: %s" % bigdl_type)
 
 
 class JavaValue(object):
@@ -41,6 +79,9 @@ class JavaValue(object):
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, self.jvm_class_constructor(), *args)
         self.bigdl_type = bigdl_type
+
+    def __str__(self):
+        return self.value.toString()
 
 
 class TestResult():
@@ -206,12 +247,15 @@ def get_bigdl_conf():
 
     for p in sys.path:
         if bigdl_conf_file in p:
-            with open(p) as conf_file:
+            with open(p) if sys.version_info < (3,) else open(p, encoding='latin-1') as conf_file: # noqa
                 return load_conf(conf_file.read())
         if bigdl_python_wrapper in p:
             import zipfile
             with zipfile.ZipFile(p, 'r') as zip_conf:
-                return load_conf(str(zip_conf.read(bigdl_conf_file)))
+                content = zip_conf.read(bigdl_conf_file)
+                if sys.version_info >= (3,):
+                    content = str(content, 'latin-1')
+                return load_conf(content)
     raise Exception("Cannot find spark-bigdl.conf.Pls add it to PYTHONPATH.")
 
 
@@ -222,19 +266,27 @@ def create_spark_conf():
     return sparkConf
 
 
+def get_spark_context():
+    if "getOrCreate" in SparkContext.__dict__:
+        return SparkContext.getOrCreate()
+    else:
+        with SparkContext._lock: # Compatible with Spark1.5.1
+            if SparkContext._active_spark_context is None:
+                SparkContext(SparkConf())
+            return SparkContext._active_spark_context
+
+
+def get_spark_sql_context(sc):
+    if "getOrCreate" in SQLContext.__dict__:
+        return SQLContext.getOrCreate()
+    else:
+        return SQLContext(sc)  # Compatible with Spark1.5.1
+
 def callBigDlFunc(bigdl_type, name, *args):
     """ Call API in PythonBigDL """
-    sc = SparkContext.getOrCreate()
-    if bigdl_type == "float":
-        api = getattr(
-            sc._jvm.com.intel.analytics.bigdl.python.api.PythonBigDL.ofFloat(),
-            name)
-    elif bigdl_type == "double":
-        api = getattr(
-            sc._jvm.com.intel.analytics.bigdl.python.api.PythonBigDL.ofDouble(),
-            name)
-    else:
-        raise Exception("Not supported bigdl_type: %s" % bigdl_type)
+    jinstance = JavaCreator.instance(bigdl_type=bigdl_type).value
+    sc = get_spark_context()
+    api = getattr(jinstance, name)
     return callJavaFunc(sc, api, *args)
 
 
@@ -251,7 +303,7 @@ def _java2py(sc, r, encoding="bytes"):
             return RDD(jrdd, sc)
 
         if clsName == 'DataFrame':
-            return DataFrame(r, SQLContext.getOrCreate(sc))
+            return DataFrame(r, get_spark_sql_context(sc))
 
         if clsName in _picklable_classes:
             r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)

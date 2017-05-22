@@ -67,6 +67,20 @@ class SGDSpec extends FlatSpec with Matchers {
     x(Array(2)) should be(1.0 +- 0.1)
   }
 
+  "default learning rate decay without table" should "generate correct learning rates" in {
+    val optimMethod = new SGD[Double](0.1, 0.1)
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+    }
+    val x = Tensor[Double](Storage(Array(10.0, 10.0)))
+    optimMethod.optimize(feval, x)
+    optimMethod.learningRateSchedule.currentRate should be(-0.1 / (1 + 0 * 0.1))
+    optimMethod.optimize(feval, x)
+    optimMethod.learningRateSchedule.currentRate should be(-0.1 / (1 + 1 * 0.1))
+    optimMethod.optimize(feval, x)
+    optimMethod.learningRateSchedule.currentRate should be(-0.1 / (1 + 2 * 0.1))
+  }
+
   "default learning rate decay" should "generate correct learning rates" in {
     val config = T("learningRate" -> 0.1, "learningRateDecay" -> 0.1, "learningRateSchedule" ->
       Default())
@@ -98,6 +112,29 @@ class SGDSpec extends FlatSpec with Matchers {
     config[Double]("clr") should be(-0.1 / (1 + 1 * 0.1))
     optimMethod.optimize(feval, x, config, state)
     config[Double]("clr") should be(-0.1 / (1 + 2 * 0.1))
+  }
+
+  "step learning rate decay without table" should "generate correct learning rates" in {
+    val optimMethod = new SGD[Double](0.1)
+    optimMethod.learningRateSchedule = Step(5, 0.1)
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+    }
+    val x = Tensor[Double](Storage(Array(10.0, 10.0)))
+    for(i <- 1 to 5) {
+      optimMethod.optimize(feval, x)
+      optimMethod.learningRateSchedule.currentRate should be(-0.1 +- 1e-9)
+    }
+
+    for(i <- 1 to 5) {
+      optimMethod.optimize(feval, x)
+      optimMethod.learningRateSchedule.currentRate should be(-0.01 +- 1e-9)
+    }
+
+    for(i <- 1 to 5) {
+      optimMethod.optimize(feval, x)
+      optimMethod.learningRateSchedule.currentRate should be(-0.001 +- 1e-9)
+    }
   }
 
   "step learning rate decay" should "generate correct learning rates" in {
@@ -195,38 +232,72 @@ class SGDSpec extends FlatSpec with Matchers {
     config[Double]("clr") should be(-0.1 * (1 - 2.0 / 100) * (1 - 2.0 / 100) * (1 - 2.0 / 100))
   }
 
-  "epoch decay" should "generate correct learning rates" in {
+  "ploy learning rate decay without table" should "generate correct learning rates" in {
+    val optimMethod = new SGD[Double](0.1)
+    optimMethod.learningRateSchedule = Poly(3, 100)
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+    }
+    val x = Tensor[Double](Storage(Array(10.0, 10.0)))
+    optimMethod.optimize(feval, x)
+    optimMethod.learningRateSchedule.currentRate should be(-0.1)
+    optimMethod.optimize(feval, x)
+    optimMethod.learningRateSchedule.currentRate should
+      be(-0.1 * (1 - 1.0 / 100) * (1 - 1.0 / 100) * (1 - 1.0 / 100))
+    optimMethod.optimize(feval, x)
+    optimMethod.learningRateSchedule.currentRate should
+      be(-0.1 * (1 - 2.0 / 100) * (1 - 2.0 / 100) * (1 - 2.0 / 100))
+  }
+
+  "epoch decay without table" should "generate correct learning rates" in {
     val regimes: Array[Regime] = Array(
       Regime(1, 3, T("learningRate" -> 1e-2, "weightDecay" -> 2e-4)),
       Regime(4, 7, T("learningRate" -> 5e-3, "weightDecay" -> 2e-4)),
       Regime(8, 10, T("learningRate" -> 1e-3, "weightDecay" -> 0.0))
     )
 
-    val config = T("learningRate" -> 0.1, "learningRateSchedule" -> EpochSchedule(regimes))
-    val optimMethod = new SGD[Double]
+    val state = T("epoch" -> 0)
+    val optimMethod = new SGD[Double](0.1)
+    optimMethod.learningRateSchedule = EpochSchedule(regimes)
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
       return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
+    }
+    val x = Tensor[Double](Storage(Array(10.0, 10.0)))
+    for(e <- 1 to 10) {
+      state("epoch") = e
+      optimMethod.state = state
+      optimMethod.optimize(feval, x)
+      if(e <= 3) {
+        optimMethod.learningRateSchedule.currentRate should be(-1e-2)
+        optimMethod.weightDecay should be(2e-4)
+      } else if (e <= 7) {
+        optimMethod.learningRateSchedule.currentRate should be(-5e-3)
+        optimMethod.weightDecay should be(2e-4)
+      } else if (e <= 10) {
+        optimMethod.learningRateSchedule.currentRate should be(-1e-3)
+        optimMethod.weightDecay should be(0.0)
+      }
+    }
+  }
+
+  "epoch step wihout table" should "generate correct learning rates" in {
+
+    val optimMethod = new SGD[Double](0.1)
+    optimMethod.learningRateSchedule = EpochStep(1, 0.5)
+    def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
+      (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
     }
     val x = Tensor[Double](Storage(Array(10.0, 10.0)))
     val state = T("epoch" -> 0)
     for(e <- 1 to 10) {
       state("epoch") = e
-      optimMethod.optimize(feval, x, config, state)
-      if(e <= 3) {
-        config[Double]("clr") should be(-1e-2)
-        config[Double]("weightDecay") should be(2e-4)
-      } else if (e <= 7) {
-        config[Double]("clr") should be(-5e-3)
-        config[Double]("weightDecay") should be(2e-4)
-      } else if (e <= 10) {
-        config[Double]("clr") should be(-1e-3)
-        config[Double]("weightDecay") should be(0.0)
-      }
+      optimMethod.state = state
+      optimMethod.optimize(feval, x)
+      optimMethod.learningRateSchedule.currentRate should be(-0.1 * Math.pow(0.5, e))
     }
   }
 
   "epoch step" should "generate correct learning rates" in {
-
     val config = T("learningRate" -> 0.1, "learningRateSchedule" -> EpochStep(1, 0.5))
     val optimMethod = new SGD[Double]
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {

@@ -200,6 +200,11 @@ class Recurrent[T : ClassTag]()
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else hidden
       _input(inputDim) = input.select(timeDim, i)
+      if (i == 1) {
+        cells(i - 1).regluarized(true)
+      } else {
+        cells(i - 1).regluarized(false)
+      }
       cells(i - 1).accGradParameters(_input, currentGradOutput, scale)
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
@@ -246,11 +251,6 @@ class Recurrent[T : ClassTag]()
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Recurrent[T]]
-
-  override def toString(): String = {
-    val str = "nn.Recurrent"
-    str
-  }
 
   override def equals(other: Any): Boolean = other match {
     case that: Recurrent[T] =>

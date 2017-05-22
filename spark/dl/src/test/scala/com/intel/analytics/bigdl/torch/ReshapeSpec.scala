@@ -18,19 +18,13 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.Reshape
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
 
 @com.intel.analytics.bigdl.tags.Serial
-class ReshapeSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A Reshape Module " should "generate correct output and grad" in {
+class ReshapeSpec extends TorchSpec {
+    "A Reshape Module " should "generate correct output and grad" in {
+    torchCheck()
     val module = new Reshape[Double](Array(3, 2))
 
     val input = Tensor[Double](4, 1, 6)

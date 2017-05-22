@@ -23,8 +23,20 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.math._
 import scala.reflect.ClassTag
 
-class Adamax[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric[T])
-  extends OptimMethod[T] {
+/**
+ * An implementation of Adamax http://arxiv.org/pdf/1412.6980.pdf
+ * @param learningRate learning rate
+ * @param beta1 first moment coefficient
+ * @param beta2 second moment coefficient
+ * @param Epsilon for numerical stability
+ * @tparam T
+ */
+class Adamax[@specialized(Float, Double) T: ClassTag](
+   var learningRate: Double = 0.002,
+   var beta1: Double = 0.9,
+   var beta2: Double = 0.999,
+   var Epsilon: Double = 1e-38
+ )(implicit ev: TensorNumeric[T]) extends OptimMethod[T] {
 
   /**
    * An implementation of Adamax http://arxiv.org/pdf/1412.6980.pdf
@@ -32,36 +44,23 @@ class Adamax[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric
    * @param feval     a function that takes a single input (X), the point of a evaluation, and
    *                  returns f(X) and df/dX
    * @param parameter the initial point
-   * @param config    a table with hyper-parameters for the optimizer
-   *                  config("learningRate") : learning rate
-   *                  config("beta1") : first moment coefficient
-   *                  config("beta2") : second moment coefficient
-   *                  config("Epsilon"): for numerical stability
-   * @param state     a table describing the state of the optimizer; after each call the state
-   *                  is modified
-   *                  state("m") :
-   *                  state("u"):
-   *                  state("denom"): A tmp tensor to hold the sqrt(v) + epsilon
    * @return the new x vector and the function list {fx}, evaluated before the update
    */
   override def optimize(feval: (Tensor[T]) => (T, Tensor[T]),
-               parameter: Tensor[T], config: Table, state: Table): (Tensor[T], Array[T]) = {
+               parameter: Tensor[T]): (Tensor[T], Array[T]) = {
 
-    val _config = if (config == null) T() else config
-    val _state = if (state == null) _config else state
-
-    val lr = _config.getOrElse[Double]("learningRate", 0.002)
-    val beta1 = _config.getOrElse[Double]("beta1", 0.9)      // Exponential decay rates 1
-    val beta2 = _config.getOrElse[Double]("beta2", 0.999)    // Exponential decay rates 2
-    val eps = _config.getOrElse[Double]("Epsilon", 1e-38)
+    val lr = this.learningRate
+    val beta1 = this.beta1      // Exponential decay rates 1
+    val beta2 = this.beta2    // Exponential decay rates 2
+    val eps = this.Epsilon
 
     val (fx, dfdx) = feval(parameter)
 
-    var timestep = _state.getOrElse[Int]("evalCounter", 0)
+    var timestep = state.getOrElse[Int]("evalCounter", 0)
 
     val (_m, _u, _left, _right) =
-      if (_state.get[Tensor[T]]("m").isDefined) {
-        (_state.get[Tensor[T]]("m").get, _state.get[Tensor[T]]("u").get,
+      if (state.get[Tensor[T]]("m").isDefined) {
+        (state.get[Tensor[T]]("m").get, state.get[Tensor[T]]("u").get,
           Tensor[T]().resizeAs(dfdx).zero(), Tensor[T]().resizeAs(dfdx).zero())
       } else {
         (Tensor[T]().resizeAs(dfdx).zero(), Tensor[T]().resizeAs(dfdx).zero(),
@@ -78,15 +77,25 @@ class Adamax[@specialized(Float, Double) T: ClassTag](implicit ev: TensorNumeric
     val stepSize = lr / biasCorrection1
     parameter.addcdiv(ev.fromType[Double](-stepSize), _m, _u)
 
-    _state("evalCounter") = timestep
-    _state("m") = _m
-    _state("u") = _u
+    state("evalCounter") = timestep
+    state("m") = _m
+    state("u") = _u
 
     (parameter, Array(fx))
   }
 
-  override def clearHistory(state: Table): Table = {
+  override def loadFromTable(config: Table): this.type = {
+    this.learningRate = config.get[Double]("learningRate").getOrElse(this.learningRate)
+    this.beta1 = config.get[Double]("beta1").getOrElse(this.beta1)
+    this.beta2 = config.get[Double]("beta2").getOrElse(this.beta2)
+    this.Epsilon = config.get[Double]("Epsilon").getOrElse(this.Epsilon)
+    this
+  }
+
+  override def clearHistory(): Unit = {
     state.delete("m")
     state.delete("u")
   }
+
+  override def getLearningRate(): Double = this.learningRate
 }

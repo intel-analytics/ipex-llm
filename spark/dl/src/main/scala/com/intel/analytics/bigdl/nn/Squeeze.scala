@@ -67,7 +67,7 @@ class Squeeze[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.Squeeze(${if (dims != null) dims.mkString(",") + ", " else ""}" +
+    s"${getPrintName}(${if (dims != null) dims.mkString(",") + ", " else ""}" +
       s"${if (batchMode) "batch" else ""})"
   }
 
@@ -98,6 +98,6 @@ object Squeeze {
   def apply[T: ClassTag](
     dims : Array[Int], batchMode: Boolean)(implicit ev: TensorNumeric[T])
   : Squeeze[T] = {
-    new Squeeze[T](dims, batchMode)
+    new Squeeze[T](dims.sortWith(_>_), batchMode)
   }
 }

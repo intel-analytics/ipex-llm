@@ -18,4 +18,62 @@
         <module>spark-version</module>
         <module>dist</module>
     </modules>
+
+    <dependencies>
+        <!--
+          This is a dummy dependency that is used to trigger the maven-shade plugin so that BigDL's
+          published POMs are flattened and do not contain variables. Without this dependency, some
+          subprojects' published POMs would contain variables like ${spark.version} that will
+          be substituted according to the default properties instead of the ones determined by the
+          profiles that were active during publishing. By ensuring that maven-shade runs for all
+          subprojects, we eliminate this problem because the substitutions are baked into the final POM.
+
+          Here we 'borrow' the spark dummy project. So we needn't to publish one to maven central.
+        -->
+        <dependency>
+            <groupId>org.spark-project.spark</groupId>
+            <artifactId>unused</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <artifactSet>
+                        <includes>
+                            <include>org.spark-project.spark:unused</include>
+                            <include>com.google.protobuf</include>
+                        </includes>
+                    </artifactSet>
+                    <filters>
+                        <filter>
+                            <artifact>com.google.protobuf</artifact>
+                            <excludes>
+                                <exclude>META-INF/maven/com.google.protobuf/protobuf-java/*</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                    <relocations>
+                        <relocation>
+                            <pattern>com.google.protobuf</pattern>
+                            <shadedPattern>com.intel.analytics.bigdl.shaded.protobuf</shadedPattern>
+                        </relocation>
+                    </relocations>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

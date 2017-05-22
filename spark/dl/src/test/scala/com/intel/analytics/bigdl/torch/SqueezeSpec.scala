@@ -18,19 +18,13 @@ package com.intel.analytics.bigdl.torch
 
 import com.intel.analytics.bigdl.nn.Squeeze
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class SqueezeSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A Squeeze(2)" should "generate correct output and grad" in {
+class SqueezeSpec extends TorchSpec {
+    "A Squeeze(2)" should "generate correct output and grad" in {
+    torchCheck()
     val layer = Squeeze[Double](2)
     val input = Tensor[Double](2, 1, 2).apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
@@ -57,6 +51,7 @@ class SqueezeSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A Squeeze()" should "generate correct output and grad" in {
+    torchCheck()
     val layer = new Squeeze[Double]()
     val input = Tensor[Double](1, 1, 2, 2).apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
@@ -82,7 +77,8 @@ class SqueezeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     println("Test case : Squeeze, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
   }
 
-  "A Squeeze(2, 2)" should "generate correct output and grad" in {
+  "A Squeeze(2, 3)" should "generate correct output and grad" in {
+    torchCheck()
     val layer = Squeeze[Double](2, 3)
     val input = Tensor[Double](1, 1, 2, 2).apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
@@ -106,5 +102,18 @@ class SqueezeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     gradInput should be (luaGradInput)
 
     println("Test case : Squeeze, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A Squeeze(Array(2, 3), true)" should "generate correct output and grad" in {
+    torchCheck()
+    val layer = Squeeze[Double](Array(2, 3), true)
+    val input = Tensor[Double](2, 2, 1, 1).apply1(_ => Random.nextDouble())
+    val gradOutput = Tensor[Double](2, 2).apply1(_ => Random.nextDouble())
+
+    val output = layer.forward(input)
+    val gradInput = layer.backward(input, gradOutput)
+
+    output.size() should be (Array(2, 2))
+    gradInput.size() should be (Array(2, 2, 1, 1))
   }
 }

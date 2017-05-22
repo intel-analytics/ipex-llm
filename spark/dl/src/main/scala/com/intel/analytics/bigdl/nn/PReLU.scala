@@ -287,7 +287,7 @@ class PReLU[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.PReLU($nOutputPlane)"
+    s"${getPrintName}($nOutputPlane)"
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[PReLU[T]]

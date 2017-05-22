@@ -20,6 +20,7 @@ import java.util
 import java.util.{List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.TensorSample
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.optim.Trigger
@@ -171,15 +172,13 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.add(LogSoftMax[Double]())
     val batchSize = 32
     val pp = PythonBigDL.ofDouble()
-    val state = Map("learingRateSchedule" ->
-      SGD.Poly(0.5, math.ceil(1281167.toDouble / batchSize).toInt))
-      .asJava.asInstanceOf[JMap[Any, Any]]
+    val optimMethod = new SGD[Double]()
+    optimMethod.learningRateSchedule = SGD.Poly(0.5, math.ceil(1281167.toDouble / batchSize).toInt)
     val optimizer = pp.createOptimizer(
       model,
       data.toJavaRDD(),
       ClassNLLCriterion[Double](),
-      "SGD",
-      state,
+      optimMethod,
       Trigger.maxEpoch(2),
       32)
     pp.setValidation(optimizer = optimizer,
@@ -209,16 +208,20 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val localData = data.collect()
     pp.toTensor(preResult.get(0)) should be
-    (trainedModel.forward(pp.toSample(localData(0)).feature()))
+    (trainedModel.forward(pp.toSample(localData(0))
+      .asInstanceOf[TensorSample[Float]].featureTensor))
 
     pp.toTensor(preResult.get(25)) should be
-    (trainedModel.forward(pp.toSample(localData(25)).feature()))
+    (trainedModel.forward(pp.toSample(localData(25))
+      .asInstanceOf[TensorSample[Float]].featureTensor))
 
     pp.toTensor(preResult.get(55)) should be
-    (trainedModel.forward(pp.toSample(localData(55)).feature()))
+    (trainedModel.forward(pp.toSample(localData(55))
+      .asInstanceOf[TensorSample[Float]].featureTensor))
 
     pp.toTensor(preResult.get(75)) should be
-    (trainedModel.forward(pp.toSample(localData(75)).feature()))
+    (trainedModel.forward(pp.toSample(localData(75))
+      .asInstanceOf[TensorSample[Float]].featureTensor))
 
 
     val resultRDD = pp.predict(trainedModel, data.map(pp.toSample(_)))

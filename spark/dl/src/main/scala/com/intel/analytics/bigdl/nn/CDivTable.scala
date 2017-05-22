@@ -52,10 +52,6 @@ class CDivTable[T: ClassTag](implicit ev: TensorNumeric[T])
     gradInput
   }
 
-  override def toString() : String = {
-    "nn.CDivTable"
-  }
-
   override def canEqual(other: Any): Boolean = other.isInstanceOf[CDivTable[T]]
 
   override def equals(other: Any): Boolean = other match {

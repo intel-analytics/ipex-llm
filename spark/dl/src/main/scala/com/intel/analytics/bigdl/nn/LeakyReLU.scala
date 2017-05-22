@@ -95,10 +95,6 @@ class LeakyReLU[T: ClassTag](
     }
     gradInput
   }
-
-  override def toString(): String = {
-    s"nn.LeakyReLU"
-  }
 }
 
 object LeakyReLU {

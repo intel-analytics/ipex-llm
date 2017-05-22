@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.tensor
 import java.io.Serializable
 
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
+import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{File, Table}
@@ -625,6 +626,11 @@ object DoubleType extends TensorDataType
 object FloatType extends TensorDataType
 
 object Tensor {
+
+  // pre-load MKL library. If we do not do it here,
+  // libjmkl.so will be loaded when one of the methods of in MKL is called.
+  MKL.isMKLLoaded
+
   /**
    * Returns an empty tensor.
    *

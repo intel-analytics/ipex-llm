@@ -18,20 +18,14 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.MM
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable
 
 @com.intel.analytics.bigdl.tags.Serial
-class MMSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  def randn(): Double = RandomGenerator.RNG.uniform(-10, 10)
+class MMSpec extends TorchSpec {
+    def randn(): Double = RandomGenerator.RNG.uniform(-10, 10)
   "A MM" should "generate correct output with no transform and no batch" in {
+    torchCheck()
     val input1 = Tensor[Double](5, 3).apply1(x => randn())
     val input2 = Tensor[Double](3, 5).apply1(x => randn())
     val input = T(input1, input2)
@@ -64,6 +58,7 @@ class MMSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A MM" should "generate correct output with transform and no batch" in {
+    torchCheck()
     val input1 = Tensor[Double](3, 5).apply1(x => randn())
     val input2 = Tensor[Double](5, 3).apply1(x => randn())
     val input = T(input1, input2)
@@ -97,6 +92,7 @@ class MMSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A MM" should "generate correct output with no transform and batch" in {
+    torchCheck()
     val input1 = Tensor[Double](4, 5, 3).apply1(x => randn())
     val input2 = Tensor[Double](4, 3, 5).apply1(x => randn())
     val input = T(input1, input2)
@@ -130,6 +126,7 @@ class MMSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
 
   "A MM" should "generate correct output with transform and batch" in {
+    torchCheck()
     val input1 = Tensor[Double](4, 3, 5).apply1(x => randn())
     val input2 = Tensor[Double](4, 5, 3).apply1(x => randn())
     val input = T(input1, input2)

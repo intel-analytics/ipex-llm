@@ -20,20 +20,17 @@ import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.torch.TH
+import com.intel.analytics.bigdl.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.math._
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class InceptionSpec extends FlatSpec with BeforeAndAfter with Matchers {
+class InceptionSpec extends TorchSpec {
   "Inception+bn" should "generate correct output" in {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
+    torchCheck()
 
     Random.setSeed(3)
     val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
@@ -214,9 +211,7 @@ class InceptionSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "Inception" should "generate correct output" in {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
+    torchCheck()
 
     Random.setSeed(3)
     val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
@@ -417,9 +412,7 @@ class InceptionSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "load torch's Inception+bn" should "generate correct output" in {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
+    torchCheck()
 
     Random.setSeed(3)
     val input = Tensor[Double](4, 3, 224, 224).apply1(e => Random.nextDouble())
@@ -603,9 +596,7 @@ class InceptionSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "load torch's Inception+bn float version" should "generate correct output" in {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
+    torchCheck()
 
     Random.setSeed(3)
     val input = Tensor[Float](4, 3, 224, 224).apply1(e => Random.nextFloat())

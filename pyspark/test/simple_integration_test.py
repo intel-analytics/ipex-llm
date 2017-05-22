@@ -34,6 +34,14 @@ class TestWorkFlow(unittest.TestCase):
     def tearDown(self):
         self.sc.stop()
 
+    def test_load_zip_conf(self):
+        from util.common import get_bigdl_conf
+        import sys
+        sys.path = [path for path in sys.path if "spark-bigdl.conf" not in path]
+        sys.path.insert(0, os.path.join(os.path.split(__file__)[0], "resources/conf/python-api.zip"))  # noqa
+        result = get_bigdl_conf()
+        self.assertTrue(result.get("spark.executorEnv.OMP_WAIT_POLICY"), "passive")
+
     def test_set_seed(self):
         l1 = Linear(10, 20, "Xavier").set_name("linear1").set_seed(1234).reset()  # noqa
         l2 = Linear(10, 20, "Xavier").set_name("linear2").set_seed(1234).reset()  # noqa
@@ -56,7 +64,7 @@ class TestWorkFlow(unittest.TestCase):
             lambda i: gen_rand_sample())
 
         model_test = Sequential()
-        l1_test = Linear(3, 1, "Xavier").set_name("linear1_test")
+        l1_test = Linear(FEATURES_DIM, 1, "Xavier").set_name("linear1_test")
         self.assertEqual("linear1_test", l1_test.name())
         model_test.add(l1_test)
         model_test.add(Sigmoid())
@@ -66,15 +74,14 @@ class TestWorkFlow(unittest.TestCase):
         self.assertEqual("linear1", l1.name())
         model.add(l1)
 
-        state = {"learningRate": 0.01,
-                 "learningRateDecay": 0.0002,
-                 "learingRateSchedule": Poly(0.5, int((data_len/batch_size)*epoch_num))}  # noqa
+        optim_method = SGD(learningrate=0.01, learningrate_decay=0.0002, weightdecay=0.0,
+                           momentum=0.0, dampening=0.0, nesterov=False,
+                           leaningrate_schedule=Poly(0.5, int((data_len/batch_size)*epoch_num)))
         optimizer = Optimizer(
             model=model_test,
             training_rdd=trainingData,
             criterion=MSECriterion(),
-            optim_method="sgd",
-            state=state,
+            optim_method=optim_method,
             end_trigger=MaxEpoch(epoch_num),
             batch_size=batch_size)
         optimizer.set_validation(

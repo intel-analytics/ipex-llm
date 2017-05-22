@@ -170,7 +170,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Train with MSE and SGD" should "be trained with good result after reset model" in {
-    var mm = cre
+    var mm = bn
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setState(T("learningRate" -> 20.0))
       .setEndWhen(Trigger.maxEpoch(5))
@@ -320,10 +320,11 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     .setEndWhen(Trigger.maxEpoch(1))
     .optimize()
 
-    val state = T.load(optimizer.getCheckpointPath().get + "/state.33")
+    val optimMethod =
+      OptimMethod.load[Double](optimizer.getCheckpointPath().get + "/optimMethod.33")
 
-    state[Int]("epoch") should be (2)
-    state[Int]("neval") should be (33)
+    optimMethod.state.get[Int]("epoch").get should be (2)
+    optimMethod.state.get[Int]("neval").get should be (33)
   }
 
   "TrainSummary with MSE and LBFGS" should "work correctly" in {
@@ -447,12 +448,16 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setState(T("learningRate" -> 20.0))
       .setEndWhen(Trigger.maxEpoch(5))
-      .setCheckpoint(filePath, Trigger.everyEpoch)
 
     intercept[Exception] {
       optimizer.optimize()
     }
+    ExceptionTest.resetCount()
 
+    optimizer.setCheckpoint(filePath, Trigger.everyEpoch)
+    intercept[Exception] {
+      optimizer.optimize()
+    }
     ExceptionTest.resetCount()
   }
 }
