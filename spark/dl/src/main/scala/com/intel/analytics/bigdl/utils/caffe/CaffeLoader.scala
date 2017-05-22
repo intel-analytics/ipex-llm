@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.utils.caffe
 
-import java.io.{File, FileInputStream, InputStreamReader}
+import java.io._
 
 import scala.collection.JavaConverters._
 import caffe.Caffe
@@ -47,6 +47,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   matchAll: Boolean = true
 )(implicit ev: TensorNumeric[T]) {
 
+  val hdfsPrefix: String = "hdfs:"
+
   val logger = Logger.getLogger(getClass)
 
   private var netparam: Caffe.NetParameter = _
@@ -77,13 +79,25 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def loadBinary(prototxtPath: String, modelPath: String): Caffe.NetParameter = {
-    val f = new java.io.File(prototxtPath)
-    require(f.exists(), prototxtPath + " does not exists")
-    val reader = new InputStreamReader(new FileInputStream(f), "ASCII")
+    var reader : InputStreamReader = null
+    if (prototxtPath.startsWith(hdfsPrefix)) {
+      val byteArrayOut = com.intel.analytics.bigdl.utils.File.readHdfsByte(prototxtPath)
+      reader = new InputStreamReader(new ByteArrayInputStream(byteArrayOut))
+    } else {
+      val f = new java.io.File(prototxtPath)
+      require(f.exists(), prototxtPath + " does not exists")
+      reader = new InputStreamReader(new FileInputStream(f), "ASCII")
+    }
     val builder = NetParameter.newBuilder
     TextFormat.merge(reader, builder)
     logger.info(s"start loading caffe model from $modelPath")
-    val cis = CodedInputStream.newInstance(new FileInputStream(modelPath))
+    var cis : CodedInputStream = null
+    if (modelPath.startsWith(hdfsPrefix)) {
+      val byteArrayOut = com.intel.analytics.bigdl.utils.File.readHdfsByte(modelPath)
+      cis = CodedInputStream.newInstance(new ByteArrayInputStream(byteArrayOut))
+    } else {
+      cis = CodedInputStream.newInstance(new FileInputStream(modelPath))
+    }
     cis.setSizeLimit(Integer.MAX_VALUE)
     builder.mergeFrom(cis)
     logger.info("load caffe model done")
