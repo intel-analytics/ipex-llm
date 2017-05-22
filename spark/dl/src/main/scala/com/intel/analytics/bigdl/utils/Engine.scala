@@ -92,7 +92,7 @@ object Engine {
     if (localMode) {
       logger.info("Detect BIGDL_LOCAL_MODE is set. Run workload without spark")
       // The physical core number should have been initialized by env variable in bigdl.sh
-      setNodeAndCore(1, getNumMachineCores)
+      setNodeAndCore(1, getCoreNumberFromEnv)
     } else {
       logger.info("Auto detect executor number and executor cores number")
       val (nExecutor, executorCores) = sparkExecutorAndCore().get
@@ -138,6 +138,10 @@ object Engine {
 
   // Thread pool for layer use
   @volatile private var _model: ThreadPool = new ThreadPool(1).setMKLThread(1)
+
+  private def getCoreNumberFromEnv : Int = {
+    Option(System.getenv("DL_CORE_NUMBER")).map(_.toInt).getOrElse(getNumMachineCores)
+  }
 
   private def getNumMachineCores: Int = {
     // We assume the HT is enabled
