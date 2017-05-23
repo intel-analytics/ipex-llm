@@ -347,7 +347,13 @@ class SampleToMiniBatch[T: ClassTag](
           if (null == targetBuffer && sampleData(0).numLabel() > 0) {
             targetBuffer = Array.tabulate(sampleData(0).numLabel())(_ => Tensor[T]())
           }
-          toMiniBatch(sampleData, inputBuffer, targetBuffer)
+
+          if (i == batchSize) {
+            toMiniBatch(sampleData, inputBuffer, targetBuffer)
+          } else {
+            // Deal with number Sample is smaller than batchSize.
+            toMiniBatch(sampleData.slice(0, i), inputBuffer, targetBuffer)
+          }
         } else {
           null
         }
