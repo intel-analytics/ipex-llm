@@ -55,7 +55,7 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val trainData =
       Array[Sample[Float]](sample1, sample2, sample3, sample3, sample3, sample3)
     val trainSet = DataSet.array(trainData)
-      .transform(SampleToBatch[Float](batchSize, Some(featurePadding), Some(10.0f)))
+      .transform(SampleToMiniBatch[Float](batchSize, Some(featurePadding), Some(10.0f)))
 
     val iter = trainSet.toLocal().data(train = false)
 
@@ -105,7 +105,7 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val trainData =
       Array[Sample[Float]](sample1, sample2, sample3, sample3, sample3, sample3)
     val trainSet = DataSet.array(trainData).transform(
-      SampleToBatch[Float](batchSize, Some(featurePadding), Some(80.0f), Some(10)))
+      SampleToMiniBatch[Float](batchSize, Some(featurePadding), Some(80.0f), Some(10)))
 
     val iter = trainSet.toLocal().data(train = false)
 
@@ -146,7 +146,7 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     data should be (tensorInput2)
   }
 
-  "SampleToBatchPadding " should "be same to SampleToBatch when no padding" in {
+  "SampleToBatchPadding " should "be same to SampleToMiniBatch when no padding" in {
     val batchSize = 3
     val totalCount = 100
     val trainData = new Array[Sample[Float]](totalCount)
@@ -158,7 +158,7 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
       i += 1
     }
     val trainSet1 = DataSet.array(trainData)
-      .transform(SampleToBatch[Float](batchSize))
+      .transform(SampleToMiniBatch[Float](batchSize))
     val trainSet2 = DataSet.array(trainData)
       .transform(SampleToBatchNoPadding(batchSize))
 
@@ -175,7 +175,7 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     data2.hasNext should be (false)
   }
 
-  "SampleToBatchPadding " should "be same to LabeledSentenceToSample and SampleToBatch " +
+  "SampleToBatchPadding " should "be same to LabeledSentenceToSample and SampleToMiniBatch " +
     "when padding" in {
     val batchSize = 3
     val totalCount = 9
@@ -196,8 +196,8 @@ class BatchPaddingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     featurePadding(4000) = 1
     val trainSet1 = DataSet.array(trainData)
       .transform(LabeledSentenceToSample(dictionaryLength))
-      .transform(SampleToBatch[Float]
-        (batchSize, Some(featurePadding), Some(3999), Some(trainMaxLength)))
+      .transform(SampleToMiniBatch(batchSize, Some(featurePadding),
+        Some(3999), Some(trainMaxLength)))
 
     val trainSet2 = DataSet.array(trainData)
       .transform(LabeledSentenceToSample(dictionaryLength,

@@ -1068,7 +1068,7 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val image3 = new LabeledBGRImage(data, 32, 32, 3.0f)
 
     val image = Array(image1, image2, image3)
-    val toSample = BGRImgToSample() -> SampleToBatch(1)
+    val toSample = BGRImgToSample() -> SampleToMiniBatch(1)
     val miniBatch1 = toSample(image.toIterator)
     val miniBatch2 = BGRImgToBatch(1).apply(image.toIterator)
 
@@ -1104,7 +1104,7 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val image3 = new LabeledGreyImage(data, 32, 32, 3.0f)
 
     val image = Array(image1, image2, image3)
-    val toSample = GreyImgToSample() -> SampleToBatch(1)
+    val toSample = GreyImgToSample() -> SampleToMiniBatch(1)
     val miniBatch1 = toSample(image.toIterator)
     val miniBatch2 = GreyImgToBatch(1).apply(image.toIterator)
 
