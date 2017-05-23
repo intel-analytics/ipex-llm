@@ -345,7 +345,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
       groupSize
     )
 
-    val dataSet = dataSet1.transform(SampleToBatch(batchSize))
+    val dataSet = dataSet1.transform(SampleToMiniBatch(batchSize))
     val rdd = dataSet.toDistributed().data(train = true)
     rdd.partitions.size should be (partitionNum)
     val rddData = rdd.mapPartitions(iter => {

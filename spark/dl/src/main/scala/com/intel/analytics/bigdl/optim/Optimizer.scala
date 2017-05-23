@@ -118,7 +118,7 @@ abstract class Optimizer[T: ClassTag, D](
   : this.type = {
     this.validationTrigger = Some(trigger)
     val dataSet =
-      (DataSet.rdd(sampleRDD) -> SampleToBatch(batchSize))
+      (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
     this.validationDataSet = Some(dataSet)
     this.validationMethods = Some(vMethods)

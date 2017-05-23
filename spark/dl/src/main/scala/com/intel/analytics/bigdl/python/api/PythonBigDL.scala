@@ -170,7 +170,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   private def batching(rdd: RDD[Sample], batchSize: Int)
   : DistributedDataSet[MiniBatch[T]] = {
     val recordRDD = rdd.map(toSample(_))
-    (DataSet.rdd(recordRDD) -> new SampleToBatch[T](batchSize))
+    (DataSet.rdd(recordRDD) -> SampleToMiniBatch[T](batchSize))
       .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
   }
 
