@@ -167,10 +167,10 @@ class SampleSpec extends FlatSpec with Matchers {
       -1f, -2f, -3f
     )), 1, Array(3, 4, 3))
     val exceptedTarget = Tensor[Float](Storage(Array[Float](
-      1, -1, -1,
-      2, 2, -1,
-      3, 3, 3
-    )), 1, Array(3, 3))
+      1, -1, -1, -1,
+      2, 2, -1, -1,
+      3, 3, 3, -1
+    )), 1, Array(3, 4))
 
     result.getInput() should be (exceptedInput)
     result.getTarget() should be (exceptedTarget)
@@ -378,10 +378,10 @@ class SampleSpec extends FlatSpec with Matchers {
     exceptedInput[Tensor[Float]](2)(2).fill(2)
     exceptedInput[Tensor[Float]](2)(3).fill(3)
     val exceptedTarget = Tensor[Float](Storage(Array[Float](
-      1, -1, -1,
-      2, 2, -1,
-      3, 3, 3
-    )), 1, Array(3, 3))
+      1, -1, -1, -1,
+      2, 2, -1, -1,
+      3, 3, 3, -1
+    )), 1, Array(3, 4))
 
     result.getInput() should be (exceptedInput)
     result.getTarget() should be (exceptedTarget)
