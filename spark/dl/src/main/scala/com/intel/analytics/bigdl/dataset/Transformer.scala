@@ -303,15 +303,13 @@ class SampleToBatch[T: ClassTag]
 /**
  * Convert a sequence of [[Sample]] to a sequence of [[MiniBatch]] through function toMiniBatch.
  *
- * toMiniBatch is an function convert an Array[Sample] to a MiniBatch[T], defined as
- * (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T]). The two array[Tensor]
- * are input buffers and label buffers, their lengths equal to the Sample's featureLength and
- * labelLength.
- *
  * @param totalBatch total batch size
  * @param partitionNum partition number of dataset, default means partitionNum
  *                     equals Engine.nodeNumber()
- * @param toMiniBatch
+ * @param toMiniBatch toMiniBatch is an function convert an Array[Sample] to a MiniBatch[T], defined
+ *                    as (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T]).
+ *                    The two array[Tensor] are input buffers and target buffers, their lengths
+ *                    equal to the Sample's numFeature and numLabel.
  */
 class SampleToMiniBatch[T: ClassTag](
     totalBatch: Int,
@@ -393,7 +391,7 @@ object SampleToMiniBatch {
   /**
    * Apply an SampleToMiniBatch transformer.
    *
-   * @param totalBatch total batch size
+   * @param batchSize total batch size
    * @param featurePadding feature padding value on the first feature tensor
    *                       (by default None, meaning no feature padding)
    * @param labelPadding label padding value (by default None, meaning no label padding)
@@ -406,7 +404,7 @@ object SampleToMiniBatch {
    * @return
    */
   def apply[T: ClassTag](
-        totalBatch : Int,
+        batchSize : Int,
         featurePadding : Option[Tensor[T]] = None,
         labelPadding : Option[T] = None,
         fixedLength: Option[Int] = None,
@@ -414,11 +412,11 @@ object SampleToMiniBatch {
     val toMiniBatch = (samples: Array[Sample[T]], b1: Array[Tensor[T]], b2: Array[Tensor[T]]) =>
       SampleToMiniBatch.samplesToMiniBatch[T](samples, b1, b2,
         featurePadding, labelPadding, fixedLength)
-    SampleToMiniBatch(totalBatch, toMiniBatch, partitionNum)
+    SampleToMiniBatch(batchSize, toMiniBatch, partitionNum)
   }
 
   /**
-   * Convert a Array[Sample] to MiniBatch. This is the default toMiniBatch
+   * Convert a Array[Sample] to MiniBatch. This is the default toMiniBatch in SampleToMiniBatch.
    *
    * For example, we have 3 sample tensors, and convert them to a MiniBatch.
    * Sample1's feature is a 2*3 tensor {1, 2, 3,
@@ -447,7 +445,7 @@ object SampleToMiniBatch {
    *  16, 17, 18
    *  0, 0, 0}
    *
-   *  Notice: If the sample has multi feature tensor, this function only pad the first one.
+   *  Notice: If the sample has multi feature tensors, this function only pad the first one.
    *
    * @param samples inputs, a array of Sample
    * @param buf1 input buffer, cache the data for input in MiniBatch.
