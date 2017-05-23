@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, SampleToBatch, Utils, DataSet => _}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, SampleToMiniBatch, Utils, DataSet => _}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -51,7 +51,7 @@ class Predictor[T: ClassTag] private[optim](
   def predict(dataSet: RDD[Sample[T]]): RDD[Activity] = {
     val modelBroad = ModelBroadcast[T].broadcast(dataSet.sparkContext, model.evaluate())
     val partitionNum = dataSet.partitions.length
-    val otherBroad = dataSet.sparkContext.broadcast(SampleToBatch(
+    val otherBroad = dataSet.sparkContext.broadcast(SampleToMiniBatch(
       batchSize = batchPerPartition * partitionNum, None, None, None,
       partitionNum = Some(partitionNum)))
     dataSet.mapPartitions { partition =>

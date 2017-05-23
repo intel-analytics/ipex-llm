@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.optim.{Optimizer, SGD, Trigger}
 import com.intel.analytics.bigdl.nn.{Linear, MSECriterion, Sequential}
-import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample, SampleToBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, MiniBatch, Sample, SampleToMiniBatch}
 
 import scala.io.Source
 import java.io.StringWriter
@@ -88,7 +88,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
       Sample[Double](featureTensor, labelTensor)
     }
 
-    val trainSet = DataSet.rdd(data).transform(SampleToBatch(recordSize/2))
+    val trainSet = DataSet.rdd(data).transform(SampleToMiniBatch(recordSize/2))
 
     val state =
       T(
