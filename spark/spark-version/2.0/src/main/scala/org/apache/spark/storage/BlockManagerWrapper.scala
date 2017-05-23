@@ -32,7 +32,7 @@ object BlockManagerWrapper {
     require(bytes != null, "Bytes is null")
     val blockManager = SparkEnv.get.blockManager
     blockManager.removeBlock(blockId)
-    doPutBytes(blockId, new ChunkedByteBuffer(bytes), level)
+    putBytesFn(blockId, new ChunkedByteBuffer(bytes), level)
   }
 
   def getLocal(blockId: BlockId): Option[BlockResult] = {
@@ -61,7 +61,7 @@ object BlockManagerWrapper {
     }
   }
 
-  private val putBytesMethod = {
+  private val putBytesFn: (BlockId, ChunkedByteBuffer, StorageLevel) => Unit = {
     val bmClass = classOf[BlockManager]
     // Spark 2.0.0 - 2.1.0, and 2.2.0+ (as of this writing), declare the method:
     // def putBytes[T: ClassTag](
@@ -69,38 +69,34 @@ object BlockManagerWrapper {
     //   bytes: ChunkedByteBuffer,
     //   level: StorageLevel,
     //   tellMaster: Boolean = true): Boolean
-    try {
-      bmClass.getMethod("putBytes",
-        classOf[BlockId], classOf[ChunkedByteBuffer], classOf[StorageLevel],
-        classOf[Boolean], classOf[ClassTag[_]])
-    } catch {
-      case _: NoSuchMethodException =>
-        // But Spark 2.1.1 and distros like Cloudera 2.0.0 / 2.1.0 had an extra boolean
-        // param:
-        //   def putBytes[T: ClassTag](
-        //     blockId: BlockId,
-        //     bytes: ChunkedByteBuffer,
-        //     level: StorageLevel,
-        //     tellMaster: Boolean = true,
-        //     encrypt: Boolean = false): Boolean
+    val putBytesMethod =
+      try {
         bmClass.getMethod("putBytes",
           classOf[BlockId], classOf[ChunkedByteBuffer], classOf[StorageLevel],
-          classOf[Boolean], classOf[Boolean], classOf[ClassTag[_]])
-    }
-  }
-  private val putBytesArgCount = putBytesMethod.getParameterTypes.length
-
-  private def doPutBytes(
-      blockId: BlockId,
-      bytes: ChunkedByteBuffer,
-      level: StorageLevel): Unit = {
-    putBytesArgCount match {
+          classOf[Boolean], classOf[ClassTag[_]])
+      } catch {
+        case _: NoSuchMethodException =>
+          // But Spark 2.1.1 and distros like Cloudera 2.0.0 / 2.1.0 had an extra boolean
+          // param:
+          //   def putBytes[T: ClassTag](
+          //     blockId: BlockId,
+          //     bytes: ChunkedByteBuffer,
+          //     level: StorageLevel,
+          //     tellMaster: Boolean = true,
+          //     encrypt: Boolean = false): Boolean
+          bmClass.getMethod("putBytes",
+            classOf[BlockId], classOf[ChunkedByteBuffer], classOf[StorageLevel],
+            classOf[Boolean], classOf[Boolean], classOf[ClassTag[_]])
+      }
+    putBytesMethod.getParameterTypes.length match {
       case 5 =>
-        putBytesMethod.invoke(SparkEnv.get.blockManager,
-          blockId, bytes, level, JBoolean.TRUE, null)
+        (blockId: BlockId, bytes: ChunkedByteBuffer, level: StorageLevel) =>
+          putBytesMethod.invoke(SparkEnv.get.blockManager,
+            blockId, bytes, level, JBoolean.TRUE, null)
       case 6 =>
-        putBytesMethod.invoke(SparkEnv.get.blockManager,
-          blockId, bytes, level, JBoolean.TRUE, JBoolean.FALSE, null)
+        (blockId: BlockId, bytes: ChunkedByteBuffer, level: StorageLevel) =>
+          putBytesMethod.invoke(SparkEnv.get.blockManager,
+            blockId, bytes, level, JBoolean.TRUE, JBoolean.FALSE, null)
     }
   }
 
