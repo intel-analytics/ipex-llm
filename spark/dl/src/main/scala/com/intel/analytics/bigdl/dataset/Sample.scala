@@ -143,6 +143,12 @@ class TensorSample[T: ClassTag](
   }
 }
 
+/**
+ * A kind of sample. Feature is a tensor, and label is a double/float.
+ * @param featureTensor feature tensor
+ * @param labelValue label
+ * @tparam T numeric type
+ */
 class TensorTSample[T: ClassTag](
     val featureTensor: Tensor[T],
     var labelValue: T) extends Sample[T]{
@@ -182,6 +188,12 @@ class TensorTSample[T: ClassTag](
   }
 }
 
+/**
+ * A kind of sample. Feature is an Array[Tensor], and label is a tensor too.
+ * @param features array of tensor
+ * @param labels label tensor
+ * @tparam T numeric type
+ */
 class ArrayTensorSample[T: ClassTag](
     val features: Array[Tensor[T]],
     val labels: Tensor[T]) extends Sample[T] {
@@ -211,6 +223,11 @@ class ArrayTensorSample[T: ClassTag](
   def numLabel(): Int = 1
 }
 
+/**
+ * A kind of sample doesn't contain label. Feature is a Tensor.
+ * @param featureTensor feature tensor
+ * @tparam T numeric type
+ */
 class UnlabeledTensorSample[T: ClassTag](
       val featureTensor: Tensor[T]) extends Sample[T]{
   override def featureLength(): Int = {
@@ -245,6 +262,11 @@ class UnlabeledTensorSample[T: ClassTag](
   }
 }
 
+/**
+ * A kind of sample doesn't contain label. Feature is an Array[Tensor].
+ * @param features array of tensor
+ * @tparam T numeric type
+ */
 class UnlabeledArrayTensorSample[T: ClassTag](
       val features: Array[Tensor[T]]) extends Sample[T] {
   override def featureLength(): Int = {

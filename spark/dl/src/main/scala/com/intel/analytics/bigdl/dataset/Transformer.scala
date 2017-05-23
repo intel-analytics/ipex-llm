@@ -300,6 +300,19 @@ class SampleToBatch[T: ClassTag]
   }
 }
 
+/**
+ * Convert a sequence of [[Sample]] to a sequence of [[MiniBatch]] through function toMiniBatch.
+ *
+ * toMiniBatch is an function convert an Array[Sample] to a MiniBatch[T], defined as
+ * (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T]). The two array[Tensor]
+ * are input buffers and label buffers, their lengths equal to the Sample's featureLength and
+ * labelLength.
+ *
+ * @param totalBatch total batch size
+ * @param partitionNum partition number of dataset, default means partitionNum
+ *                     equals Engine.nodeNumber()
+ * @param toMiniBatch
+ */
 class SampleToMiniBatch[T: ClassTag](
     totalBatch: Int,
     partitionNum: Option[Int] = None,
@@ -346,6 +359,13 @@ class SampleToMiniBatch[T: ClassTag](
 }
 
 object SampleToMiniBatch {
+  /**
+   * Apply an SampleToMiniBatch transformer.
+   *
+   * @param batchSize total batch size
+   * @param toMiniBatch array[Sample] to MiniBatch function
+   * @return
+   */
   def apply[T: ClassTag](
         batchSize : Int,
         toMiniBatch : (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T]
@@ -353,6 +373,15 @@ object SampleToMiniBatch {
     new SampleToMiniBatch[T](batchSize, None, toMiniBatch)
   }
 
+  /**
+   * Apply an SampleToMiniBatch transformer.
+   *
+   * @param batchSize total batch size
+   * @param toMiniBatch array[Sample] to MiniBatch function
+   * @param partitionNum partition number of dataset, default means partitionNum
+   *                     equals Engine.nodeNumber()
+   * @return
+   */
   def apply[T: ClassTag](
       batchSize : Int,
       toMiniBatch : (Array[Sample[T]], Array[Tensor[T]], Array[Tensor[T]]) => MiniBatch[T],
@@ -361,6 +390,21 @@ object SampleToMiniBatch {
     new SampleToMiniBatch[T](batchSize, partitionNum, toMiniBatch)
   }
 
+  /**
+   * Apply an SampleToMiniBatch transformer.
+   *
+   * @param totalBatch total batch size
+   * @param featurePadding feature padding value on the first feature tensor
+   *                       (by default None, meaning no feature padding)
+   * @param labelPadding label padding value (by default None, meaning no label padding)
+   * @param fixedLength if padding, it specifies the second dimension of feature/label
+   *                    after padding. If has multi feature tensor, only pad the first one.
+   *                    (by default None, meaning the length after padding is set to the max
+   *                    length of feature/label in a mini-batch)
+   * @param partitionNum partition number of dataset, default means partitionNum
+   *                     equals Engine.nodeNumber()
+   * @return
+   */
   def apply[T: ClassTag](
         totalBatch : Int,
         featurePadding : Option[Tensor[T]] = None,
@@ -373,6 +417,52 @@ object SampleToMiniBatch {
     SampleToMiniBatch(totalBatch, toMiniBatch, partitionNum)
   }
 
+  /**
+   * Convert a Array[Sample] to MiniBatch. This is the default toMiniBatch
+   *
+   * For example, we have 3 sample tensors, and convert them to a MiniBatch.
+   * Sample1's feature is a 2*3 tensor {1, 2, 3,
+   *                                    4, 5, 6}
+   *
+   * Sample2's feature is a 1*3 tensor {7, 8, 9}
+   *
+   * Sample3's feature is a 3*3 tensor {10, 11, 12,
+   *                                    13, 14, 15,
+   *                                    16, 17, 18}
+   *
+   * And the featurePadding is {0, 0, 0}, fixedLength is 4, the MiniBatch will be
+   * a tensor of 3*4*3:
+   * {1, 2, 3,
+   *  4, 5, 6,
+   *  0, 0, 0
+   *  0, 0, 0,
+   *
+   *  7, 8, 9,
+   *  0, 0, 0,
+   *  0, 0, 0,
+   *  0, 0, 0,
+   *
+   *  10, 11, 12,
+   *  13, 14, 15,
+   *  16, 17, 18
+   *  0, 0, 0}
+   *
+   *  Notice: If the sample has multi feature tensor, this function only pad the first one.
+   *
+   * @param samples inputs, a array of Sample
+   * @param buf1 input buffer, cache the data for input in MiniBatch.
+   * @param buf2 target buffer, cache the data for target in MiniBatch
+   * @param featurePadding feature padding value on the first feature tensor
+   *                       (by default None, meaning no feature padding)
+   * @param labelPadding label padding value (by default None, meaning no label padding)
+   * @param fixedLength if padding, it specifies the second dimension of feature/label
+   *                    after padding. If has multi feature tensor, only pad the first one.
+   *                    (by default None, meaning the length after padding is set to the max
+   *                    length of feature/label in a mini-batch)
+   * @param ev numeric operator
+   * @tparam T numeric type
+   * @return MiniBatch
+   */
   def samplesToMiniBatch[T: ClassTag](
         samples: Array[Sample[T]],
         buf1: Array[Tensor[T]],
@@ -404,6 +494,9 @@ object SampleToMiniBatch {
     }
   }
 
+  /**
+   * Find Sample in Array[Sample] who has the biggest featureLength
+   */
   private def findLongestFeature[T: ClassTag](
         samples: Array[Sample[T]])(implicit ev: TensorNumeric[T]): Int = {
     var featureIndex = 0
@@ -417,6 +510,9 @@ object SampleToMiniBatch {
     featureIndex
   }
 
+  /**
+   * Find Sample in Array[Sample] who has the biggest labelLength
+   */
   private def findLongestLabel[T: ClassTag](
         samples: Array[Sample[T]])(implicit ev: TensorNumeric[T]): Int = {
     var labelIndex = 0
@@ -430,7 +526,10 @@ object SampleToMiniBatch {
     labelIndex
   }
 
-  def tensorSampleToMiniBatch[T: ClassTag](
+  /**
+   *  Convert an Array[TensorSample] to MiniBatch.
+   */
+  private def tensorSampleToMiniBatch[T: ClassTag](
         samples: Array[TensorSample[T]],
         buf1: Array[Tensor[T]],
         buf2: Array[Tensor[T]],
@@ -446,8 +545,9 @@ object SampleToMiniBatch {
     val inputSize = Array(samples.length) ++ samples(featureIndex).featureTensor.size()
     val targetSize = Array(samples.length) ++ samples(labelIndex).labelTensor.size()
     if (fixedLength.isDefined) {
-      require(fixedLength.get >= inputSize(2), "FixedLength is smaller than feature length")
-      inputSize(1) = fixedLength.get
+      require(fixedLength.get >= inputSize(1), "FixedLength is smaller than feature length")
+      if (featurePadding.isDefined) inputSize(1) = fixedLength.get
+      if (labelPadding.isDefined) targetSize(1) = fixedLength.get
     }
 
     // Resize the input and target to right size.
@@ -492,7 +592,10 @@ object SampleToMiniBatch {
     MiniBatch(input, target)
   }
 
-  def tensorTSampleToMiniBatch[T: ClassTag](
+  /**
+   *  Convert an Array[TensorTSample] to MiniBatch.
+   */
+  private def tensorTSampleToMiniBatch[T: ClassTag](
         samples: Array[TensorTSample[T]],
         buf1: Array[Tensor[T]],
         buf2: Array[Tensor[T]],
@@ -506,7 +609,7 @@ object SampleToMiniBatch {
     val inputSize = Array(samples.length) ++ samples(featureIndex).featureTensor.size()
     val targetSize = Array(samples.length)
     if (fixedLength.isDefined) {
-      require(fixedLength.get >= inputSize(2), "FixedLength is smaller than feature length")
+      require(fixedLength.get >= inputSize(1), "FixedLength is smaller than feature length")
       inputSize(1) = fixedLength.get
     }
 
@@ -540,6 +643,9 @@ object SampleToMiniBatch {
     MiniBatch(input, target)
   }
 
+  /**
+   *  Convert an Array[ArrayTensorSample] to MiniBatch.
+   */
   def arrayTensorSampleToMiniBatch[T: ClassTag](
         samples: Array[ArrayTensorSample[T]],
         buf1: Array[Tensor[T]],
@@ -557,7 +663,8 @@ object SampleToMiniBatch {
     val targetSize = Array(samples.length) ++ samples(labelIndex).labels.size()
     if (fixedLength.isDefined) {
       require(fixedLength.get >= input1Size(2), "FixedLength is smaller than feature length")
-      input1Size(1) = fixedLength.get
+      if (featurePadding.isDefined) input1Size(1) = fixedLength.get
+      if (labelPadding.isDefined) targetSize(1) = fixedLength.get
     }
 
     // Resize the input and target to right size.
@@ -621,6 +728,9 @@ object SampleToMiniBatch {
     MiniBatch(input, target)
   }
 
+  /**
+   *  Convert an Array[UnlabeledArrayTensorSample] to MiniBatch.
+   */
   def unlabeledArrayTensorSampleToMiniBatch[T: ClassTag](
         samples: Array[UnlabeledArrayTensorSample[T]],
         buf1: Array[Tensor[T]],
@@ -683,6 +793,9 @@ object SampleToMiniBatch {
     MiniBatch(input)
   }
 
+  /**
+   *  Convert an Array[UnlabeledTensorSample] to MiniBatch.
+   */
   def unlabeledTensorSampleToMiniBatch[T: ClassTag](
         samples: Array[UnlabeledTensorSample[T]],
         buf1: Array[Tensor[T]],
@@ -694,7 +807,7 @@ object SampleToMiniBatch {
     // Compute the input's Size
     val inputSize = Array(samples.length) ++ samples(featureIndex).featureTensor.size()
     if (fixedLength.isDefined) {
-      require(fixedLength.get >= inputSize(2), "FixedLength is smaller than feature length")
+      require(fixedLength.get >= inputSize(1), "FixedLength is smaller than feature length")
       inputSize(1) = fixedLength.get
     }
 
@@ -725,22 +838,28 @@ object SampleToMiniBatch {
     MiniBatch(input)
   }
 
+  /**
+   * Copy tensor src to tensor dest.
+   */
   private def copy[T: ClassTag](
         src: Tensor[T],
         dest: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
     require(src.isContiguous() && dest.isContiguous(), "src and dest should be contiguous")
-    copy(src.storage.array(),
+    arrayCopy(src.storage.array(),
       src.storageOffset() - 1,
       dest.storage().array(),
       dest.storageOffset() - 1,
       src.nElement())
   }
 
+  /**
+   * Copy tensor src to tensor dest with a padding tensor.
+   */
   private def copyWithPadding[T: ClassTag](
         src: Tensor[T],
         dest: Tensor[T],
         paddingTensor: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
-    copy(src.storage.array(),
+    arrayCopy(src.storage.array(),
       src.storageOffset() - 1,
       dest.storage().array(),
       dest.storageOffset() - 1,
@@ -752,7 +871,10 @@ object SampleToMiniBatch {
     }
   }
 
-  private def copy[T: ClassTag](
+  /**
+   * A wrapper for System.arraycopy
+   */
+  private def arrayCopy[T: ClassTag](
         src: AnyRef,
         srcPos: Int,
         dest: AnyRef,

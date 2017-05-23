@@ -101,8 +101,8 @@ class TensorMiniBatch[T](
 
 /**
  * A MiniBatch with [[com.intel.analytics.bigdl.utils.Table]] input and [[Tensor]] target.
- * The size of first dimension in input and target should be the mini-batch size.
- *b
+ * The size of first dimension in input's first tensor and target is the mini-batch size.
+ *
  * @param input input Table
  * @param target target Tensor
  * @tparam T Numeric type
@@ -134,6 +134,11 @@ class ArrayTensorMiniBatch[T](
   }
 }
 
+/**
+ * TensorMiniBatch without target.
+ * @param input input tensor of this MiniBatch
+ * @tparam T Numeric type
+ */
 class UnlabeledTensorMiniBatch[T](
       val input: Tensor[T]) extends MiniBatch[T]{
 
@@ -154,6 +159,11 @@ class UnlabeledTensorMiniBatch[T](
   }
 }
 
+/**
+ * ArrayTensorMiniBatch without target.
+ * @param input input table of this MiniBatch
+ * @tparam T Numeric type
+ */
 class UnlabeledArrayTensorMiniBatch[T](
       val input: Table) extends MiniBatch[T]{
 
