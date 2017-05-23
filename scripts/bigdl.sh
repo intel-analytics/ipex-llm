@@ -42,7 +42,6 @@ set_mkl_blas() {
     export OMP_NUM_THREADS=1
     export KMP_BLOCKTIME=0
     export OMP_WAIT_POLICY=passive
-    export DL_ENGINE_TYPE=mklblas
     export MKL_DISABLE_FAST_MM=1
 }
 
