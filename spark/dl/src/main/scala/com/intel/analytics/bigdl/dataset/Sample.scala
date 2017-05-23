@@ -221,6 +221,21 @@ class ArrayTensorSample[T: ClassTag](
   def numFeature(): Int = features.length
 
   def numLabel(): Int = 1
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[ArrayTensorSample[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: ArrayTensorSample[T] =>
+      (that canEqual this) &&
+        features == that.features &&
+        labels == that.labels
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(features, labels)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 /**
@@ -291,6 +306,20 @@ class UnlabeledArrayTensorSample[T: ClassTag](
   def numFeature(): Int = features.length
 
   def numLabel(): Int = 0
+
+  def canEqual(other: Any): Boolean = other.isInstanceOf[UnlabeledArrayTensorSample[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: UnlabeledArrayTensorSample[T] =>
+      (that canEqual this) &&
+        features == that.features
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    val state = Seq(features)
+    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+  }
 }
 
 object Sample {

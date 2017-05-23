@@ -925,6 +925,138 @@ class TransformersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     batch2.target should be (batch2Label)
   }
 
+  "SampleToMiniBatchSpec" should "be good with TensorBatch1 Double" in {
+    Engine.setNodeAndCore(1, 1)
+    val tensorInput1 = Tensor[Double](Storage(
+      Array(0.0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
+    val tensorInput2 = Tensor[Double](Storage(
+      Array(0.0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0)), 1, Array(3, 5))
+    val tensorInput3 = Tensor[Double](Storage(
+      Array(1.0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)), 1, Array(3, 5))
+    val tensorTarget1 = Tensor[Double](Storage(
+      Array(3.0, 4, 5)), 1, Array(3))
+    val tensorTarget2 = Tensor[Double](Storage(
+      Array(2.0, 1, 5)), 1, Array(3))
+    val tensorTarget3 = Tensor[Double](Storage(
+      Array(5.0, 2, 1)), 1, Array(3))
+    val sample1 = Sample[Double](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Double](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Double](tensorInput3, tensorTarget3)
+
+    val dataSet = new LocalArrayDataSet[Sample[Double]](Array(sample1,
+      sample2, sample3))
+    val sampleToBatch = SampleToMiniBatch[Double](2)
+    val sampleDataSet = dataSet -> sampleToBatch
+    val iter = sampleDataSet.toLocal().data(train = false)
+
+    val batch1 = iter.next().asInstanceOf[TensorMiniBatch[Float]]
+
+    val batch1Data = Tensor[Double](Array(2, 3, 5))
+    batch1Data(1).resizeAs(tensorInput1).copy(tensorInput1)
+    batch1Data(2).resizeAs(tensorInput2).copy(tensorInput2)
+    val batch1Label = Tensor[Double](Array(2, 3))
+    batch1Label(1).resizeAs(tensorTarget1).copy(tensorTarget1)
+    batch1Label(2).resizeAs(tensorTarget2).copy(tensorTarget2)
+    batch1.input should be (batch1Data)
+    batch1.target should be (batch1Label)
+
+    val batch2 = iter.next().asInstanceOf[TensorMiniBatch[Float]]
+    val batch2Data = Tensor[Double](Array(1, 3, 5))
+    batch2Data(1).resizeAs(tensorInput3).copy(tensorInput3)
+    val batch2Label = Tensor[Double](Array(1, 3))
+    batch2Label(1).resizeAs(tensorTarget3).copy(tensorTarget3)
+    batch2.input should be (batch2Data)
+    batch2.target should be (batch2Label)
+  }
+  "SampleToMiniBatchSpec" should "be good with TensorBatch1" in {
+    Engine.setNodeAndCore(1, 1)
+    val tensorInput1 = Tensor[Float](Storage(
+      Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
+    val tensorInput2 = Tensor[Float](Storage(
+      Array(0.0f, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0)), 1, Array(3, 5))
+    val tensorInput3 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)), 1, Array(3, 5))
+    val tensorTarget1 = Tensor[Float](Storage(
+      Array(3.0f, 4, 5)), 1, Array(3))
+    val tensorTarget2 = Tensor[Float](Storage(
+      Array(2.0f, 1, 5)), 1, Array(3))
+    val tensorTarget3 = Tensor[Float](Storage(
+      Array(5.0f, 2, 1)), 1, Array(3))
+    val sample1 = Sample[Float](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Float](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Float](tensorInput3, tensorTarget3)
+
+    val dataSet = new LocalArrayDataSet[Sample[Float]](Array(sample1,
+      sample2, sample3))
+    val sampleToBatch = SampleToMiniBatch[Float](2)
+    val sampleDataSet = dataSet -> sampleToBatch
+    val iter = sampleDataSet.toLocal().data(train = false)
+
+    val batch1 = iter.next().asInstanceOf[TensorMiniBatch[Float]]
+
+    val batch1Data = Tensor[Float](Array(2, 3, 5))
+    batch1Data(1).resizeAs(tensorInput1).copy(tensorInput1)
+    batch1Data(2).resizeAs(tensorInput2).copy(tensorInput2)
+    val batch1Label = Tensor[Float](Array(2, 3))
+    batch1Label(1).resizeAs(tensorTarget1).copy(tensorTarget1)
+    batch1Label(2).resizeAs(tensorTarget2).copy(tensorTarget2)
+    batch1.input should be (batch1Data)
+    batch1.target should be (batch1Label)
+
+    val batch2 = iter.next().asInstanceOf[TensorMiniBatch[Float]]
+    val batch2Data = Tensor[Float](Array(1, 3, 5))
+    batch2Data(1).resizeAs(tensorInput3).copy(tensorInput3)
+    val batch2Label = Tensor[Float](Array(1, 3))
+    batch2Label(1).resizeAs(tensorTarget3).copy(tensorTarget3)
+    batch2.input should be (batch2Data)
+    batch2.target should be (batch2Label)
+  }
+  "SampleToMiniBatchSpec" should "be good with TensorBatch2" in {
+    Engine.setNodeAndCore(1, 1)
+    val tensorInput1 = Tensor[Float](Storage(
+      Array(0.0f, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0)), 1, Array(3, 5))
+    val tensorInput2 = Tensor[Float](Storage(
+      Array(0.0f, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0)), 1, Array(3, 5))
+    val tensorInput3 = Tensor[Float](Storage(
+      Array(1.0f, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)), 1, Array(3, 5))
+    val tensorTarget1 = Tensor[Float](Storage(
+      Array(3.0f, 4, 5)), 1, Array(3))
+    val tensorTarget2 = Tensor[Float](Storage(
+      Array(2.0f, 1, 5)), 1, Array(3))
+    val tensorTarget3 = Tensor[Float](Storage(
+      Array(5.0f, 2, 1)), 1, Array(3))
+    val sample1 = Sample[Float](tensorInput1, tensorTarget1)
+    val sample2 = Sample[Float](tensorInput2, tensorTarget2)
+    val sample3 = Sample[Float](tensorInput3, tensorTarget3)
+
+    val dataSet = new LocalArrayDataSet[Sample[Float]](Array(sample1,
+      sample2, sample3))
+    val sampleToBatch = SampleToMiniBatch[Float](2)
+    val sampleDataSet = dataSet -> sampleToBatch
+    val iter = sampleDataSet.toLocal().data(train = true)
+
+    val batch1 = iter.next().asInstanceOf[TensorMiniBatch[Float]]
+
+    val batch1Data = Tensor[Float](Array(2, 3, 5))
+    batch1Data(1).resizeAs(tensorInput1).copy(tensorInput1)
+    batch1Data(2).resizeAs(tensorInput2).copy(tensorInput2)
+    val batch1Label = Tensor[Float](Array(2, 3))
+    batch1Label(1).resizeAs(tensorTarget1).copy(tensorTarget1)
+    batch1Label(2).resizeAs(tensorTarget2).copy(tensorTarget2)
+    batch1.input should be (batch1Data)
+    batch1.target should be (batch1Label)
+
+    val batch2 = iter.next().asInstanceOf[TensorMiniBatch[Float]]
+    val batch2Data = Tensor[Float](Array(2, 3, 5))
+    batch2Data(1).resizeAs(tensorInput3).copy(tensorInput3)
+    batch2Data(2).resizeAs(tensorInput1).copy(tensorInput1)
+    val batch2Label = Tensor[Float](Array(2, 3))
+    batch2Label(1).resizeAs(tensorTarget3).copy(tensorTarget3)
+    batch2Label(2).resizeAs(tensorTarget1).copy(tensorTarget1)
+    batch2.input should be (batch2Data)
+    batch2.target should be (batch2Label)
+  }
+
   "BRGImgToSample" should "be correct" in {
     RNG.setSeed(100)
     var data = new Array[Float](3 * 32 * 32)
