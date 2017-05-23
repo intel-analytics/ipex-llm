@@ -355,4 +355,51 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
     luaGradBias2 should be (layer.gradBias)
     luaGradWeight2 should be (layer.gradWeight)
   }
+
+  "SpatialDilatedConvolution with scaleW and scaleB" should "work properly" in {
+    val nInputPlane = 1
+    val nOutputPlane = 1
+    val kW = 2
+    val kH = 2
+    val dW = 1
+    val dH = 1
+    val padW = 0
+    val padH = 0
+
+    val inputData = Array(
+      1.0, 2, 3,
+      4, 5, 6,
+      7, 8, 9
+    )
+
+    val inputN = 5
+    val outputN = 2
+    val batchSize = 5
+
+    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
+
+    val m1 = SpatialDilatedConvolution[Double](nInputPlane, nOutputPlane,
+        kW, kH, dW, dH, padW, padH)
+    m1.reset()
+    val m2 = SpatialDilatedConvolution[Double](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH, scaleW = 2, scaleB = 3)
+
+    m2.weight.resizeAs(m1.weight).copy(m1.weight)
+    m2.bias.resizeAs(m1.bias).copy(m1.bias)
+
+    val out = m1.forward(input)
+    val out2 = m2.forward(input)
+
+    m1.backward(input, out)
+    m2.backward(input, out)
+
+    m1.gradWeight.map(m2.gradWeight, (a, b) => {
+      assert(Math.abs(a * 2 - b) < 1e-6); a
+    })
+
+    m1.gradBias.map(m2.gradBias, (a, b) => {
+      assert(Math.abs(a * 3 - b) < 1e-6); a
+    })
+
+  }
 }
