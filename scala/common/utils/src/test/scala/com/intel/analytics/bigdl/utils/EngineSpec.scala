@@ -16,19 +16,22 @@
 
 package com.intel.analytics.bigdl.utils
 
-import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
-  var sc : SparkContext = null
+
+  private var sc: SparkContext = _
+
   before {
+    sc = null
     Engine.reset
   }
 
   after {
-    Engine.reset
     if (sc != null) {
       sc.stop()
+      sc = null
     }
     Engine.reset
   }
@@ -39,100 +42,73 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     Engine.nodeNumber should be(1)
   }
 
-  "Engine" should "be inited correct under spark local environment" in {
-    TestUtils.sparkLocalEnv(core = 4) {
-      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
-      sc = new SparkContext(conf)
-      Engine.init
-      Engine.nodeNumber should be(1)
-      Engine.coreNumber should be(4)
-    }
+  it should "be inited correct under spark local environment" in {
+    val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
+    sc = SparkContext.getOrCreate(conf)
+    Engine.init
+    Engine.nodeNumber should be(1)
+    Engine.coreNumber should be(4)
   }
 
-  "Engine" should "be inited with correct value under spark local environment" in {
-    TestUtils.sparkLocalEnv(core = 4) {
-      Engine.init(1, 4, true)
-      Engine.nodeNumber should be(1)
-      Engine.coreNumber should be(4)
-    }
+  it should "be inited with correct value under spark local environment" in {
+    Engine.init(1, 4, true)
+    Engine.nodeNumber should be(1)
+    Engine.coreNumber should be(4)
   }
 
-  "Engine" should "be inited correct under spark standalone environment" in {
-    TestUtils.sparkStandaloneEnv(totalCore = 24, core = 4) {
-      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
-      sc = new SparkContext(conf)
-      Engine.init
-      Engine.nodeNumber should be(6)
-      Engine.coreNumber should be(4)
-    }
+  it should "parse nodes, executors correctly for Spark standalone" in {
+    val conf = Engine.createSparkConf().setAppName("EngineSpecTest").
+      setMaster("spark://localhost:1234").
+      set("spark.cores.max", "24").set("spark.executor.cores", "4")
+    Engine.parseExecutorAndCore(conf) should be(Some(6, 4))
   }
 
-  "Engine" should "be inited correct under spark standalone environment with single executor" in {
-    TestUtils.sparkStandaloneEnv(totalCore = 4, core = 4) {
-      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
-      sc = new SparkContext(conf)
-      Engine.init
-      Engine.nodeNumber should be(1)
-      Engine.coreNumber should be(4)
-    }
+  it should "parse nodes, executors correctly for Spark standalone with single executor" in {
+    val conf = Engine.createSparkConf().setAppName("EngineSpecTest").
+      setMaster("spark://localhost:1234").
+      set("spark.cores.max", "4").set("spark.executor.cores", "4")
+    Engine.parseExecutorAndCore(conf) should be(Some(1, 4))
   }
 
-  "Engine" should "be inited correct under spark yarn environment" in {
-    TestUtils.sparkYarnEnv(executors = 6, core = 4) {
-      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
-      sc = new SparkContext(conf)
-      Engine.init
-      Engine.nodeNumber should be(6)
-      Engine.coreNumber should be(4)
-    }
+  it should "parse nodes, executors correctly for Spark YARN" in {
+    val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("yarn").
+      set("spark.executor.instances", "6").set("spark.executor.cores", "4")
+    Engine.parseExecutorAndCore(conf) should be(Some(6, 4))
   }
 
-  "Engine" should "be inited correct under spark yarn environment with single executor" in {
-    TestUtils.sparkYarnEnv(executors = 1, core = 4) {
-      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
-      sc = new SparkContext(conf)
-      Engine.init
-      Engine.nodeNumber should be(1)
-      Engine.coreNumber should be(4)
-    }
+  it should "parse nodes, executors correctly for Spark YARN with single executor" in {
+    val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("yarn").
+      set("spark.executor.instances", "1").set("spark.executor.cores", "4")
+    Engine.parseExecutorAndCore(conf) should be(Some(1, 4))
   }
 
-  "Engine" should "be inited correct under spark mesos environment" in {
-    TestUtils.sparkMesosEnv(totalCore = 24, core = 4) {
-      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
-      sc = new SparkContext(conf)
-      Engine.init
-      Engine.nodeNumber should be(6)
-      Engine.coreNumber should be(4)
-    }
+  it should "parse nodes, executors correctly for Spark Mesos" in {
+    val conf = Engine.createSparkConf().setAppName("EngineSpecTest").
+      setMaster("mesos://localhost:1234").
+      set("spark.cores.max", "24").set("spark.executor.cores", "4")
+    Engine.parseExecutorAndCore(conf) should be(Some(6, 4))
   }
 
-  "Engine" should "be inited correct under spark mesos environment with single executor" in {
-    TestUtils.sparkMesosEnv(totalCore = 4, core = 4) {
-      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
-      sc = new SparkContext(conf)
-      Engine.init
-      Engine.nodeNumber should be(1)
-      Engine.coreNumber should be(4)
-    }
+  it should "parse nodes, executors correctly for Spark Mesos with single executor" in {
+    val conf = Engine.createSparkConf().setAppName("EngineSpecTest").
+      setMaster("mesos://localhost:1234").
+      set("spark.cores.max", "4").set("spark.executor.cores", "4")
+    Engine.parseExecutorAndCore(conf) should be(Some(1, 4))
   }
 
   "sparkExecutorAndCore" should "parse local[*]" in {
-    System.setProperty("spark.master", "local[*]")
-    val (nExecutor, executorCore) = Engine.sparkExecutorAndCore(true).get
+    val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[*]")
+    val (nExecutor, _) = Engine.parseExecutorAndCore(conf).get
     nExecutor should be(1)
-    System.clearProperty("spark.master")
   }
 
   "readConf" should "be right" in {
     val conf = Engine.readConf
     val target = Map(
-      "spark.executorEnv.DL_ENGINE_TYPE" -> "mklblas",
       "spark.executorEnv.MKL_DISABLE_FAST_MM" -> "1",
       "spark.executorEnv.KMP_BLOCKTIME" -> "0",
       "spark.executorEnv.OMP_WAIT_POLICY" -> "passive",
       "spark.executorEnv.OMP_NUM_THREADS" -> "1",
-      "spark.yarn.appMasterEnv.DL_ENGINE_TYPE" -> "mklblas",
       "spark.yarn.appMasterEnv.MKL_DISABLE_FAST_MM" -> "1",
       "spark.yarn.appMasterEnv.KMP_BLOCKTIME" -> "0",
       "spark.yarn.appMasterEnv.OMP_WAIT_POLICY" -> "passive",
@@ -161,33 +137,4 @@ class EngineSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  "LocalMode" should "be false under spark local environment" in {
-    TestUtils.sparkLocalEnv(core = 4) {
-      val conf = Engine.createSparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
-      sc = new SparkContext(conf)
-      intercept[IllegalArgumentException] {
-        Engine.localMode = true
-        Engine.init
-      }
-    }
-  }
-
-  "SparkContext" should "be inited when call Engine.init" in {
-    TestUtils.sparkLocalEnv(core = 4) {
-      intercept[IllegalArgumentException] {
-        Engine.init
-      }
-    }
-  }
-
-  "SparkConf" should "be right whenc all Engine.init" in {
-    TestUtils.sparkLocalEnv(core = 4) {
-      val conf = new SparkConf().setAppName("EngineSpecTest").setMaster("local[4]")
-      sc = new SparkContext(conf)
-      intercept[IllegalArgumentException] {
-        Engine.localMode = true
-        Engine.init
-      }
-    }
-  }
 }
