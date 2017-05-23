@@ -277,6 +277,7 @@ class SpatialDilatedConvolutionSpec extends TorchSpec {
 
   "A SpatialDilatedConvolution multiple forward backward" should
     "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
