@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import org.apache.log4j.Logger
 import org.apache.spark.{SparkConf, SparkContext}
+import org.apache.spark.scheduler.cluster.mesos.MesosResources
 
 /**
  * define engine type trait
@@ -78,6 +79,29 @@ object Engine {
     _conf
   }
 
+  def waitAllExecutorsStartedInMesos: Unit = {
+    if (System.getProperty("spark.master").toLowerCase.startsWith("mesos")) {
+      val sc = SparkContext.getOrCreate(new SparkConf()
+        .setAppName("set mesos backend for Engine check"))
+      require(sc.appName != "set mesos backend for Engine check",
+        s"Have you created the SparkContext?")
+
+      if (MesosResources.checkAllExecutorStarted(sc)) {
+        return
+      }
+
+      // loop until all executors are started.
+      while (!MesosResources.checkAllExecutorStarted(sc)) {
+        if (sc.isStopped) {
+          throw new IllegalStateException("Spark context stopped while waiting for all executors")
+        }
+        synchronized {
+          this.wait(100)
+        }
+      }
+    }
+  }
+
   /**
    * This method should be call before any BigDL procedure and after the Spark context is created.
    *
@@ -99,6 +123,7 @@ object Engine {
       logger.info(s"Executor number is $nExecutor and executor cores number is $executorCores")
       setNodeAndCore(nExecutor, executorCores)
       checkSparkContext
+      waitAllExecutorsStartedInMesos
     }
   }
 
