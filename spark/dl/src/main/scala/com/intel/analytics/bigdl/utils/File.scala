@@ -96,11 +96,8 @@ object File {
     val byteArrayOut = new ByteArrayOutputStream()
     val objFile = new ObjectOutputStream(byteArrayOut)
     objFile.writeObject(obj)
-    val byteArrayIn = new ByteArrayInputStream(byteArrayOut.toByteArray)
-    IOUtils.copyBytes(byteArrayIn, out, 1024, true)
+    IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
     objFile.close()
-    byteArrayIn.close()
-    byteArrayOut.close()
     out.close()
   }
 
@@ -111,12 +108,11 @@ object File {
    */
   def loadFromHdfs[T](fileName: String): T = {
     val byteArrayOut = readHdfsByte(fileName)
-    val is = new ByteArrayInputStream(byteArrayOut)
-    val objFile = new ObjectInputStream(is)
-    val result = objFile.readObject().asInstanceOf[T]
+
+    val objFile = new ObjectInputStream(new ByteArrayInputStream(byteArrayOut))
+    val result = objFile.readObject()
     objFile.close()
-    is.close()
-    result
+    result.asInstanceOf[T]
   }
 
   /**
@@ -149,7 +145,6 @@ object File {
     val in = fs.open(src)
     val byteArrayOut = new ByteArrayOutputStream()
     IOUtils.copyBytes(in, byteArrayOut, 1024, true)
-    byteArrayOut.close()
     in.close()
     byteArrayOut.toByteArray
   }
