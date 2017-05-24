@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.utils.caffe
 
-import java.io.{FileInputStream, FileOutputStream, InputStreamReader, OutputStreamWriter}
+import java.io._
 
 import scala.collection.JavaConverters._
 import caffe.Caffe.{LayerParameter, NetParameter, V1LayerParameter}
@@ -27,10 +27,13 @@ import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import caffe.Caffe
-import com.google.protobuf.{GeneratedMessage, TextFormat}
+import com.google.protobuf.{CodedOutputStream, GeneratedMessage, TextFormat}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.IOUtils
 import org.apache.log4j.Logger
 /**
  * An utility to convert BigDL model into caffe format
@@ -42,20 +45,21 @@ import org.apache.log4j.Logger
  */
 class CaffePersister[T: ClassTag](val prototxtPath: String,
       val modelPath: String, val module : Container[Activity, Activity, T],
-      useV2 : Boolean = true)(implicit ev: TensorNumeric[T]) {
+      useV2 : Boolean = true, overwrite : Boolean = false)(implicit ev: TensorNumeric[T]) {
 
-  val logger = Logger.getLogger(getClass)
+  private val logger = Logger.getLogger(getClass)
 
-  val v1Converter = new V1LayerConverter[T]()
-  val v2Converter = new LayerConverter[T]()
-  var v1Layers : ArrayBuffer[Node[V1LayerParameter]] = new ArrayBuffer[Node[V1LayerParameter]]()
-  var v2Layers : ArrayBuffer[Node[LayerParameter]] = new ArrayBuffer[Node[LayerParameter]]()
+  private val hdfsPrefix: String = "hdfs:"
+
+  private val v1Converter = new V1LayerConverter[T]()
+  private val v2Converter = new LayerConverter[T]()
 
   private var netparam: NetParameter.Builder = NetParameter.newBuilder
 
   def saveAsCaffe() : Unit = {
-    convertToCaffe()
-    save()
+    convertToCaffe
+    saveBinary
+    savePrototext
   }
 
   // Convert module container to unified Graph
@@ -63,23 +67,8 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
     if (module.isInstanceOf[Graph[T]]) {
       logger.info("model is graph")
       return module.asInstanceOf[Graph[T]]
-    } else if (module.isInstanceOf[Sequential[T]]) {
-      logger.info("model is sequential")
-      val modules = module.asInstanceOf[Sequential[T]].modules
-      val allNodes = new ArrayBuffer[ModuleNode[T]]()
-      val dummyNode = new ModuleNode[T](null)
-      allNodes.append(dummyNode)
-      var curr = dummyNode
-      modules.foreach(node => {
-        val nnode = new ModuleNode[T](node.asInstanceOf[AbstractModule[Activity, Tensor[T], T]])
-        allNodes.append(nnode)
-        curr -> nnode
-        curr = nnode
-      })
-      val input = allNodes.filter(_.element != null).filter(_.prevNodes.size == 0).toArray
-      val output = allNodes.filter(_.element != null).filter(_.prevNodes.size == 0).toArray
-      return Graph(input, output)
     }
+    // other containers/layers to be supported later
     throw  new UnsupportedOperationException(s"container $module is not supported!")
   }
   // create caffe layers graph based on BigDL execution plan
@@ -149,7 +138,6 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
             top2Layers(topList(i)) = nextModules(i).element.getName()
             i += 1
           }
-          v2Layers.append(caffeNode)
           layers(caffeLayer.getName) = caffeLayer
           netparam.addLayer(caffeLayer)
         } else {
@@ -161,7 +149,6 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
             top2Layers(topList(i)) = nextModules(i).element.getName()
             i += 1
           }
-          v1Layers.append(caffeNode)
           layers(caffeLayer.getName) = caffeLayer
           netparam.addLayers(caffeLayer)
         }
@@ -169,20 +156,42 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
     })
   }
 
-  private def save() : Unit = {
-
+  private def saveBinary() : Unit = {
     // save binary
-    val binaryFile = new java.io.File(modelPath)
-    val binaryWriter = new FileOutputStream(binaryFile)
-    binaryWriter.write(netparam.build.toByteArray)
-    binaryWriter.close
+    var binaryOutputStreamWriter : CodedOutputStream = null
+    if (prototxtPath.startsWith(hdfsPrefix)) {
+      val binaryFile = new Path(modelPath)
+      val fs = binaryFile.getFileSystem(new Configuration())
+      if (fs.exists(binaryFile)) {
+        if (overwrite) {
+          fs.delete(binaryFile, true)
+        } else {
+          throw new RuntimeException(s"file $modelPath already exists")
+        }
+      }
+      val out = fs.create(binaryFile)
+      val byteArrayOut = new ByteArrayOutputStream()
+      byteArrayOut.write(netparam.build.toByteArray)
+      IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
+    } else {
+      val binaryFile = new java.io.File(modelPath)
+      if (binaryFile.exists()) {
+        if (overwrite) {
+          binaryFile.delete()
+        } else {
+          throw new RuntimeException(s"file $modelPath already exists")
+        }
+      }
+      val binaryWriter = new FileOutputStream(binaryFile)
+      binaryWriter.write(netparam.build.toByteArray)
+      binaryWriter.close
+    }
+  }
+
+  private def savePrototext() : Unit = {
     // save prototxt
     val netParameterWithoutData = NetParameter.newBuilder
     netParameterWithoutData.setName(netparam.getName)
-    val prototxtFile = new java.io.File(prototxtPath)
-    val prototxtWriter = new OutputStreamWriter(new FileOutputStream(prototxtFile))
-
-
     if (useV2) {
       netparam.getLayerList.asScala.foreach(layer => {
         val v2Layer = LayerParameter.newBuilder
@@ -208,17 +217,42 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
         netParameterWithoutData.addLayers(v1Layer)
       })
     }
-    prototxtWriter.write(netParameterWithoutData.build.toString)
-    prototxtWriter.close
+    if (prototxtPath.startsWith(hdfsPrefix)) {
+      val prototxtFile = new Path(prototxtPath)
+      val fs = prototxtFile.getFileSystem(new Configuration())
+      if (fs.exists(prototxtFile)) {
+        if (overwrite) {
+          fs.delete(prototxtFile, true)
+        } else {
+          throw new RuntimeException(s"file $prototxtPath already exists")
+        }
+      }
+      val out = fs.create(prototxtFile)
+      val byteArrayOut = new ByteArrayOutputStream()
+      byteArrayOut.write(netParameterWithoutData.build().toString.getBytes)
+      IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
+    } else {
+      val prototxtFile = new java.io.File(prototxtPath)
+      if (prototxtFile.exists()) {
+        if (overwrite) {
+          prototxtFile.delete()
+        } else {
+          throw new RuntimeException(s"file $prototxtPath already exists")
+        }
+      }
+      val prototxtWriter = new OutputStreamWriter(new FileOutputStream(prototxtFile))
+      prototxtWriter.write(netParameterWithoutData.build.toString)
+      prototxtWriter.close
+    }
   }
-
 }
+
 
 object CaffePersister{
   def persist[T: ClassTag](prototxtPath: String,
                modelPath: String, module : Container[Activity, Activity, T],
-  useV2 : Boolean = true)(implicit ev: TensorNumeric[T]) : Unit = {
-    val caffePersist = new CaffePersister[T](prototxtPath, modelPath, module, useV2)
+  useV2 : Boolean = true, overwrite : Boolean = false)(implicit ev: TensorNumeric[T]) : Unit = {
+    val caffePersist = new CaffePersister[T](prototxtPath, modelPath, module, useV2, overwrite)
     caffePersist.saveAsCaffe()
   }
 }

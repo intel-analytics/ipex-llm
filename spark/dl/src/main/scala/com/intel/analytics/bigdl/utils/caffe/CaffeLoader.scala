@@ -47,7 +47,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   matchAll: Boolean = true
 )(implicit ev: TensorNumeric[T]) {
 
-  val hdfsPrefix: String = "hdfs:"
+  private val hdfsPrefix: String = "hdfs:"
 
   val logger = Logger.getLogger(getClass)
 

@@ -560,3 +560,11 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
   }
 
 }
+trait BigDLToCaffe {
+  def toCaffe[T](moduleNode : ModuleNode[T],
+                 bottoms : ArrayBuffer[String]) : Seq[GeneratedMessage]
+}
+
+trait CaffeToBigDL {
+  def toBigDL[T](layer : GeneratedMessage) : Seq[ModuleNode[T]]
+}
