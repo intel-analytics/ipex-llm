@@ -160,6 +160,15 @@ class ConcatTable[T : ClassTag]
     }
   }
 
+  override def clearState(): ConcatTable.this.type = {
+    super.clearState()
+    modules.foreach(_.clearState())
+    if (gradInput.isInstanceOf[Table]) {
+      gradInput.toTable.clear()
+    }
+    this
+  }
+
   override def toString(): String = {
     val tab = "\t"
     val line = "\n"
