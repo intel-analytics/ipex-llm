@@ -135,19 +135,13 @@ class Concat[T: ClassTag](val dimension: Int)(
       offset += currentOutput.size(dimension)
     }
     Engine.model.sync(results)
-    backwardTime += System.nanoTime() - before
 
-    this.gradInput.resizeAs(input)
-
-    offset = 1
     i = 0
+    offset = 1
     while (i < this.modules.length) {
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
       val currentGradInput = this.modules(i)
-        .updateGradInput(
-          input.asInstanceOf[Activity],
-          gradOutput.narrow(dimension, offset, currentOutput.size(dimension))
-            .asInstanceOf[Activity])
+        .updateGradInput(input.asInstanceOf[Activity], gradouts(i).asInstanceOf[Activity])
         .asInstanceOf[Tensor[T]]
 
       if (currentGradInput != null) {
