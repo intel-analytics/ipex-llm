@@ -16,11 +16,13 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -244,6 +246,21 @@ class ConcatTable[T : ClassTag]
     str = str + line + "}"
     str
   }
+
+  override def toGraphNodes(startEnd: (Array[ModuleNode[T]], Array[ModuleNode[T]])):
+  (Array[ModuleNode[T]], Array[ModuleNode[T]]) = {
+    val outputs = ArrayBuffer[ModuleNode[T]]()
+    var outputTuple: (Array[ModuleNode[T]], Array[ModuleNode[T]]) = null
+    var startNodes = startEnd._1
+    val endNodes = startEnd._2
+    for (i <- 0 to modules.size - 1) {
+      outputTuple = modules(i).toGraphNodes((startNodes, endNodes))
+      outputs ++= outputTuple._2
+    }
+    if (startNodes.isEmpty) startNodes = outputs.toArray
+    (startNodes, outputs.toArray)
+  }
+
 }
 
 object ConcatTable {
