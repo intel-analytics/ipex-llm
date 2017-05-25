@@ -1289,18 +1289,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }.asJava
   }
 
-  def predict(model: AbstractModule[Activity, Activity, T],
-              dataRdd: RDD[JSample[T]]): RDD[JSample[T]] = {
-    val modelBroadCast = dataRdd.sparkContext.broadcast(model.evaluate())
-    dataRdd.mapPartitions { partition =>
-      val localModel = modelBroadCast.value.cloneModule()
-      partition.map { sample =>
-        val output = localModel.forward(sample.feature()).toTensor[T]
-        JSample(sample.feature(), output)
-      }
-    }
-  }
-
   def createMaxEpoch(max: Int): Trigger = {
     Trigger.maxEpoch(max)
   }
