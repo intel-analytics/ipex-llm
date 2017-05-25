@@ -223,10 +223,6 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     (trainedModel.forward(pp.toSample(localData(75))
       .asInstanceOf[TensorSample[Float]].featureTensor))
 
-
-    val resultRDD = pp.predict(trainedModel, data.map(pp.toSample(_)))
-    val result = resultRDD.take(5)
-    println(result)
     // TODO: verify the parameters result
     val parameters = pp.modelGetParameters(trainedModel)
 //    println(parameters)
