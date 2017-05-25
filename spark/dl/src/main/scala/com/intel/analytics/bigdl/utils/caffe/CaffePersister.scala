@@ -36,12 +36,13 @@ import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.IOUtils
 import org.apache.log4j.Logger
 /**
- * An utility to convert BigDL model into caffe format
+ * An utility to convert BigDL model into caffe format and persist into local/hdfs file system
  *
  * @param prototxtPath  path to store model definition file
  * @param modelPath  path to store model weights and bias
  * @param module BigDL module to be converted
  * @param useV2  convert to V2 layer or not
+ * @param overwrite whether to overwirte existing caffe files
  */
 class CaffePersister[T: ClassTag](val prototxtPath: String,
       val modelPath: String, val module : Container[Activity, Activity, T],
@@ -62,7 +63,7 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
     savePrototext
   }
 
-  // Convert module container to unified Graph
+  // Convert module container to unified Graph, to be supported in module itselft in future
   private def toGraph() : Graph[T] = {
     if (module.isInstanceOf[Graph[T]]) {
       logger.info("model is graph")
@@ -130,27 +131,37 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
         })
         val nextModules = execution.nextNodes.filter(_.element != null)
         if (useV2) {
-          val caffeLayer = v2Converter.toCaffe(execution, bottomList).asInstanceOf[LayerParameter]
-          val caffeNode = new Node(caffeLayer)
-          val topList = caffeLayer.getTopList.asScala
+          val caffeLayers = v2Converter.toCaffe(execution.element, bottomList, nextModules.size)
+          var curr : LayerParameter = null
+          caffeLayers.foreach(layer => {
+            val caffeLayer = layer.asInstanceOf[LayerParameter]
+            curr = caffeLayer
+            layers(caffeLayer.getName) = caffeLayer
+            netparam.addLayer(caffeLayer)
+          })
+          // set last node's top list connecting to next nodes of current node
+          val topList = curr.getTopList.asScala
           var i = 0
           while (i < nextModules.size) {
             top2Layers(topList(i)) = nextModules(i).element.getName()
             i += 1
           }
-          layers(caffeLayer.getName) = caffeLayer
-          netparam.addLayer(caffeLayer)
+
         } else {
-          val caffeLayer = v1Converter.toCaffe(execution, bottomList).asInstanceOf[V1LayerParameter]
-          val caffeNode = new Node(caffeLayer)
-          val topList = caffeLayer.getTopList.asScala
+          val caffeLayers = v1Converter.toCaffe(execution.element, bottomList, nextModules.size)
+          var curr : V1LayerParameter = null
+          caffeLayers.foreach(layer => {
+            val caffeLayer = layer.asInstanceOf[V1LayerParameter]
+            curr = caffeLayer
+            layers(caffeLayer.getName) = caffeLayer
+            netparam.addLayers(caffeLayer)
+          })
+          val topList = curr.getTopList.asScala
           var i = 0
           while (i < nextModules.size) {
             top2Layers(topList(i)) = nextModules(i).element.getName()
             i += 1
           }
-          layers(caffeLayer.getName) = caffeLayer
-          netparam.addLayers(caffeLayer)
         }
       }
     })
@@ -158,7 +169,6 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
 
   private def saveBinary() : Unit = {
     // save binary
-    var binaryOutputStreamWriter : CodedOutputStream = null
     if (prototxtPath.startsWith(hdfsPrefix)) {
       val binaryFile = new Path(modelPath)
       val fs = binaryFile.getFileSystem(new Configuration())

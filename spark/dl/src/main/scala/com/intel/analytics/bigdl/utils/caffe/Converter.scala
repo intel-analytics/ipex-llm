@@ -32,32 +32,32 @@ import scala.reflect.ClassTag
 
 abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
-  private var customizedLayer : Map[String, AbstractModule[Activity, Activity, T]] = _
+  private var customizedLayer : Map[String, Seq[ModuleNode[T]]] = _
 
-  def setCustomizedLayer(map : Map[String, AbstractModule[Activity, Activity, T]]) : this.type = {
+  def setCustomizedLayer(map : Map[String, Seq[ModuleNode[T]]]) : this.type = {
     customizedLayer = map
     this
   }
   /**
     * Support customized layer mapping implemented by user for specific type
    */
-  private def fitCustomizedLayer(layerType : String, layerName : String) : ModuleNode[T] = {
+  private def fitCustomizedLayer(layerType : String, layerName : String) : Seq[ModuleNode[T]] = {
     if (customizedLayer !=null && customizedLayer.contains(layerType)) {
-      return customizedLayer(layerType).setName(layerName).apply()
+      return customizedLayer(layerType)
     }
     throw new Exception(s"$layerType is not supported in BigDL fow now")
   }
 
-  def convertLayerFromCaffe(layer : GeneratedMessage) : ModuleNode[T] = {
+  def convertLayerFromCaffe(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
     val layerType = getLayerType(layer).toUpperCase
-    val module = layerType match {
+    val moduleNodes : Seq[ModuleNode[T]] = layerType match {
       case "CONVOLUTION" => fromCaffeConvolution(layer)
+      case "INNERPRODUCT" => fromCaffeInnerProduct(layer)
+      case "INNER_PRODUCT" => fromCaffeInnerProduct(layer)
       case "RELU" => fromCaffeReLU(layer)
       case "LRN" => fromCaffeLRN(layer)
       case "POOLING" => fromCaffePooling(layer)
-      case "INNERPRODUCT" => fromCaffeInnerProduct(layer)
-      case "INNER_PRODUCT" => fromCaffeInnerProduct(layer)
       case "DROPOUT" => fromCaffeDropout(layer)
       case "SOFTMAX_LOSS" => fromCaffeSoftmax(layer)
       case "SOFTMAX" => fromCaffeSoftmax(layer)
@@ -86,25 +86,25 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       case "DATA" => null
       case _ => fitCustomizedLayer(layerType, layerName)
     }
-    module
+    moduleNodes
   }
 
-  protected def fromCaffeReLU(layer : GeneratedMessage) : ModuleNode[T] = {
+  protected def fromCaffeReLU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    new ReLU(true).setName(layerName).apply()
+    Seq(new ReLU(true).setName(layerName).apply())
   }
 
-  private def fromCaffeLRN(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeLRN(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
     val param = getLRNParam(layer).get
     val localSize = param.getLocalSize
     val alpha = param.getAlpha
     val belta = param.getBeta
     val k = param.getK
-    new SpatialCrossMapLRN[T](localSize, alpha, belta, k).setName(layerName).apply()
+    Seq(new SpatialCrossMapLRN[T](localSize, alpha, belta, k).setName(layerName).apply())
   }
 
-  private def fromCaffePooling(layer : GeneratedMessage): ModuleNode[T] = {
+  private def fromCaffePooling(layer : GeneratedMessage): Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
     val param = getPoolingParam(layer).get
     var kw = param.getKernelW
@@ -134,54 +134,54 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
         setName(layerName).apply()
       case _ => null
     }
-    pooling
+    Seq(pooling)
   }
 
-  private def fromCaffeDropout(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeDropout(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = getDropoutParam(layer).get
     val layerName = getLayerName(layer)
     val initP = param.getDropoutRatio
-    new Dropout[T](initP).setName(layerName).apply()
+    Seq(new Dropout[T](initP).setName(layerName).apply())
   }
 
-  private def fromCaffeSoftmax(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeSoftmax(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    new LogSoftMax().setName(layerName).apply()
+    Seq(new LogSoftMax().setName(layerName).apply())
   }
 
-  private def fromCaffeTanh(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeTanh(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    new Tanh[T]().setName(layerName).apply()
+    Seq(new Tanh[T]().setName(layerName).apply())
   }
 
-  private def fromCaffeSigmoid(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeSigmoid(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    new Sigmoid[T]().setName(layerName).apply()
+    Seq(new Sigmoid[T]().setName(layerName).apply())
   }
 
-  private def fromCaffeAbsVal(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeAbsVal(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    new Abs[T]().setName(layerName).apply()
+    Seq(new Abs[T]().setName(layerName).apply())
   }
 
-  private def fromCaffeConcat(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeConcat(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
     val param = getConcatParam(layer)
     val dim = param.get.getAxis
-    JoinTable[T](dim + 1, 0).setName(layerName).apply()
+    Seq(JoinTable[T](dim + 1, 0).setName(layerName).apply())
   }
 
-  private def fromCaffeFlatten(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeFlatten(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    FlattenTable[T].setName(layerName).apply()
+    Seq(FlattenTable[T].setName(layerName).apply())
   }
 
-  private def fromCaffeLog(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeLog(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Log[T]().setName(layerName).apply()
+    Seq(Log[T]().setName(layerName).apply())
   }
 
-  private def fromCaffePower(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffePower(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
     val param = getPowerParam(layer).get
     val power = param.getPower
@@ -189,41 +189,41 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     var shift = 0.0
     if (param.hasScale) scale = param.getScale
     if (param.hasShift) shift = param.getShift
-    Power[T](power, scale, shift).apply()
+    Seq(Power[T](power, scale, shift).setName(layerName).apply())
   }
 
-  private def fromCaffePreLU(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffePreLU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    PReLU[T]().setName(layerName).apply()
+    Seq(PReLU[T]().setName(layerName).apply())
   }
 
-  private def fromCaffeRecurrent(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeRecurrent(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Recurrent[T]().setName(layerName).apply()
+    Seq(Recurrent[T]().setName(layerName).apply())
   }
 
-  private def fromCaffeThreshold(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeThreshold(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = getThresholdParam(layer).get
     var threshold = 1e-6
     if (param.hasThreshold) {
       threshold = param.getThreshold
     }
-    Threshold[T](threshold).setName(getLayerName(layer)).apply()
+    Seq(Threshold[T](threshold).setName(getLayerName(layer)).apply())
   }
 
-  private def fromCaffeExp(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeExp(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Exp[T]().setName(layerName).apply()
+    Seq(Exp[T]().setName(layerName).apply())
   }
 
-  private def fromCaffeSlice(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeSlice(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = getSliceParam(layer)
     val layerName = getLayerName(layer)
     val axis = param.get.getAxis
-    SplitTable[T](axis).setName(layerName).apply()
+    Seq(SplitTable[T](axis).setName(layerName).apply())
   }
 
-  private def fromCaffeEltwise(layer : GeneratedMessage) : ModuleNode[T] = {
+  private def fromCaffeEltwise(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = getEltWiseParam(layer).get
     val layerName = getLayerName(layer)
     val opsType = param.getOperation
@@ -239,24 +239,24 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
         }
       case _ => null
     }
-    ops
+    Seq(ops)
   }
 
-  protected def fromCaffeBatchNormalization(layer : GeneratedMessage) : ModuleNode[T]
+  protected def fromCaffeBatchNormalization(layer : GeneratedMessage) : Seq[ModuleNode[T]]
 
-  protected def fromCaffeConvolution(layer : GeneratedMessage) : ModuleNode[T]
+  protected def fromCaffeConvolution(layer : GeneratedMessage) : Seq[ModuleNode[T]]
 
-  protected def fromCaffeInnerProduct(layer : GeneratedMessage) : ModuleNode[T]
+  protected def fromCaffeInnerProduct(layer : GeneratedMessage) : Seq[ModuleNode[T]]
 
-  protected def fromCaffeELU(layer : GeneratedMessage) : ModuleNode[T]
+  protected def fromCaffeELU(layer : GeneratedMessage) : Seq[ModuleNode[T]]
 
-  protected def fromCaffeReshape(layer : GeneratedMessage) : ModuleNode[T]
+  protected def fromCaffeReshape(layer : GeneratedMessage) : Seq[ModuleNode[T]]
 
-  protected def fromCaffeScale(layer : GeneratedMessage) : ModuleNode[T]
+  protected def fromCaffeScale(layer : GeneratedMessage) : Seq[ModuleNode[T]]
 
-  protected def fromCaffeBias(layer : GeneratedMessage) : ModuleNode[T]
+  protected def fromCaffeBias(layer : GeneratedMessage) : Seq[ModuleNode[T]]
 
-  protected def fromCaffeTile(layer : GeneratedMessage) : ModuleNode[T]
+  protected def fromCaffeTile(layer : GeneratedMessage) : Seq[ModuleNode[T]]
 
   protected def getLayerType(layer : GeneratedMessage) : String
 
@@ -282,130 +282,135 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   protected def getEltWiseParam(layer : GeneratedMessage): Option[EltwiseParameter]
 
-  def toCaffe(moduleNode : ModuleNode[T],
-              bottoms : ArrayBuffer[String]) : GeneratedMessage = {
-    val module = moduleNode.element.asInstanceOf[AbstractModule[_, _, _]]
-    val model = module match {
-      case convolution : SpatialConvolution[_] => toCaffeConvolution(moduleNode, bottoms)
-      case  relu : ReLU[_] => toCaffeRelu(moduleNode, bottoms)
-      case lrn : SpatialCrossMapLRN[_] => toCaffeLRN(moduleNode, bottoms)
-      case maxPooling : SpatialMaxPooling[_] => toCaffeMaxPooling(moduleNode, bottoms)
-      case avgPooling : SpatialAveragePooling[_] => toCaffeAvePooling(moduleNode, bottoms)
-      case linear : Linear[_] => toCaffeInnerProduct(moduleNode, bottoms)
-      case dropout : Dropout[_] => toCaffeDropOut(moduleNode, bottoms)
-      case logSoftMax : LogSoftMax[_] => toCaffeLogSoftMax(moduleNode, bottoms)
-      case tanh : Tanh[_] => toCaffeTanh(moduleNode, bottoms)
-      case sigmoid : Sigmoid[_] => toCaffeSigmoid(moduleNode, bottoms)
-      case abs : Abs[_] => toCaffeAbs(moduleNode, bottoms)
-      case bartchNorm : BatchNormalization[_] => toCaffeBatchNormalization(moduleNode, bottoms)
-      case joinTable : JoinTable[_] => toCaffeConcat(moduleNode, bottoms)
-      case elu : ELU[_] => toCaffeElu(moduleNode, bottoms)
-      case flatternTable : FlattenTable[_] => toCaffeFlattern(moduleNode, bottoms)
-      case log : Log[_] => toCaffeLog(moduleNode, bottoms)
-      case power : Power[_] => toCaffePower(moduleNode, bottoms)
-      case prelu : PReLU[_] => toCaffePReLu(moduleNode, bottoms)
-      case recurrent : Recurrent[_] => toCaffeRecurrent(moduleNode, bottoms)
-      case reshape : Reshape[_] => toCaffeReshape(moduleNode, bottoms)
-      case scale : Scale[_] => toCaffeScale(moduleNode, bottoms)
-      case add : Add[_] => toCaffeBias(moduleNode, bottoms)
-      case threshold : Threshold[_] => toCaffeThreshold(moduleNode, bottoms)
-      case exp : Exp[_] => toCaffeExp(moduleNode, bottoms)
-      case splitTable : SplitTable[_] => toCaffeSlice(moduleNode, bottoms)
-      case replicate : Replicate[_] => toCaffeTile(moduleNode, bottoms)
-      case cmax : CMaxTable[_] => toCaffeEltWiseMax(moduleNode, bottoms)
-      case cadd : CAdd[_] => toCaffeEltWiseAdd(moduleNode, bottoms)
-      case csub : CSubTable[_] => toCaffeEltWiseSub(moduleNode, bottoms)
-      case _ => throw  new UnsupportedOperationException(s"${moduleNode.element} is not supported")
+  def toCaffe(moduleNode : AbstractModule[Activity, Tensor[T], T],
+              bottoms : ArrayBuffer[String], nextSize : Int) : Seq[GeneratedMessage] = {
+    val module = moduleNode.asInstanceOf[AbstractModule[_, _, _]]
+    val model : Seq[GeneratedMessage] = module match {
+      case convolution : SpatialConvolution[_] => toCaffeConvolution(moduleNode, bottoms, nextSize)
+      case  relu : ReLU[_] => toCaffeRelu(moduleNode, bottoms, nextSize)
+      case lrn : SpatialCrossMapLRN[_] => toCaffeLRN(moduleNode, bottoms, nextSize)
+      case maxPooling : SpatialMaxPooling[_] => toCaffeMaxPooling(moduleNode, bottoms, nextSize)
+      case avgPooling : SpatialAveragePooling[_] => toCaffeAvePooling(moduleNode, bottoms, nextSize)
+      case linear : Linear[_] => toCaffeInnerProduct(moduleNode, bottoms, nextSize)
+      case dropout : Dropout[_] => toCaffeDropOut(moduleNode, bottoms, nextSize)
+      case logSoftMax : LogSoftMax[_] => toCaffeLogSoftMax(moduleNode, bottoms, nextSize)
+      case tanh : Tanh[_] => toCaffeTanh(moduleNode, bottoms, nextSize)
+      case sigmoid : Sigmoid[_] => toCaffeSigmoid(moduleNode, bottoms, nextSize)
+      case abs : Abs[_] => toCaffeAbs(moduleNode, bottoms, nextSize)
+      case bartchNorm : BatchNormalization[_] =>
+        toCaffeBatchNormalization(moduleNode, bottoms, nextSize)
+      case joinTable : JoinTable[_] => toCaffeConcat(moduleNode, bottoms, nextSize)
+      case elu : ELU[_] => toCaffeElu(moduleNode, bottoms, nextSize)
+      case flatternTable : FlattenTable[_] => toCaffeFlattern(moduleNode, bottoms, nextSize)
+      case log : Log[_] => toCaffeLog(moduleNode, bottoms, nextSize)
+      case power : Power[_] => toCaffePower(moduleNode, bottoms, nextSize)
+      case prelu : PReLU[_] => toCaffePReLu(moduleNode, bottoms, nextSize)
+      case recurrent : Recurrent[_] => toCaffeRecurrent(moduleNode, bottoms, nextSize)
+      case reshape : Reshape[_] => toCaffeReshape(moduleNode, bottoms, nextSize)
+      case scale : Scale[_] => toCaffeScale(moduleNode, bottoms, nextSize)
+      case add : Add[_] => toCaffeBias(moduleNode, bottoms, nextSize)
+      case threshold : Threshold[_] => toCaffeThreshold(moduleNode, bottoms, nextSize)
+      case exp : Exp[_] => toCaffeExp(moduleNode, bottoms, nextSize)
+      case splitTable : SplitTable[_] => toCaffeSlice(moduleNode, bottoms, nextSize)
+      case replicate : Replicate[_] => toCaffeTile(moduleNode, bottoms, nextSize)
+      case cmax : CMaxTable[_] => toCaffeEltWiseMax(moduleNode, bottoms, nextSize)
+      case cadd : CAdd[_] => toCaffeEltWiseAdd(moduleNode, bottoms, nextSize)
+      case csub : CSubTable[_] => toCaffeEltWiseSub(moduleNode, bottoms, nextSize)
+      case sequantial : Sequential[_] => toCaffeSequential(moduleNode, bottoms, nextSize)
+      case _ => throw  new UnsupportedOperationException(s"${moduleNode} is not supported")
     }
     model
   }
 
-  protected def toCaffeConvolution(moduleNode : ModuleNode[T],
-                                   bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeConvolution(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeRelu(moduleNode : ModuleNode[T],
-                            bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeRelu(module : AbstractModule[Activity, Tensor[T], T],
+                            bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeLRN(moduleNode : ModuleNode[T],
-                            bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeLRN(module : AbstractModule[Activity, Tensor[T], T],
+                            bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeMaxPooling(moduleNode : ModuleNode[T],
-                           bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeMaxPooling(module : AbstractModule[Activity, Tensor[T], T],
+                           bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeAvePooling(moduleNode : ModuleNode[T],
-                                  bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeAvePooling(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeInnerProduct(moduleNode : ModuleNode[T],
-                                  bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeInnerProduct(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeDropOut(moduleNode : ModuleNode[T],
-                                    bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeDropOut(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeLogSoftMax(moduleNode : ModuleNode[T],
-                               bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeLogSoftMax(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeTanh(moduleNode : ModuleNode[T],
-                                  bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeTanh(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeSigmoid(moduleNode : ModuleNode[T],
-                            bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeSigmoid(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeAbs(moduleNode : ModuleNode[T],
-                               bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeAbs(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeBatchNormalization(moduleNode : ModuleNode[T],
-                           bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeBatchNormalization(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeConcat(moduleNode : ModuleNode[T],
-                                          bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeConcat(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeElu(moduleNode : ModuleNode[T],
-                              bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeElu(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeFlattern(moduleNode : ModuleNode[T],
-                           bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeFlattern(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeLog(moduleNode : ModuleNode[T],
-                                bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeLog(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffePower(moduleNode : ModuleNode[T],
-                           bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffePower(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffePReLu(moduleNode : ModuleNode[T],
-                             bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffePReLu(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeRecurrent(moduleNode : ModuleNode[T],
-                             bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeRecurrent(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeReshape(moduleNode : ModuleNode[T],
-                                 bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeReshape(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeScale(moduleNode : ModuleNode[T],
-                               bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeScale(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeBias(moduleNode : ModuleNode[T],
-                             bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeBias(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeThreshold(moduleNode : ModuleNode[T],
-                            bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeThreshold(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeExp(moduleNode : ModuleNode[T],
-                                 bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeExp(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeSlice(moduleNode : ModuleNode[T],
-                           bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeSlice(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeTile(moduleNode : ModuleNode[T],
-                             bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeTile(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeEltWiseMax(moduleNode : ModuleNode[T],
-                            bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeEltWiseMax(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeEltWiseAdd(moduleNode : ModuleNode[T],
-                                  bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeEltWiseAdd(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
-  protected def toCaffeEltWiseSub(moduleNode : ModuleNode[T],
-                                  bottoms : ArrayBuffer[String]): GeneratedMessage
+  protected def toCaffeEltWiseSub(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
+
+  protected def toCaffeSequential(module : AbstractModule[Activity, Tensor[T], T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
   protected def toCaffeConvolutionParam(module : AbstractModule[Activity, Tensor[T], T])
     : mutable.HashMap[String, Int] = {
@@ -559,12 +564,4 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     tileParameter.build
   }
 
-}
-trait BigDLToCaffe {
-  def toCaffe[T](moduleNode : ModuleNode[T],
-                 bottoms : ArrayBuffer[String]) : Seq[GeneratedMessage]
-}
-
-trait CaffeToBigDL {
-  def toBigDL[T](layer : GeneratedMessage) : Seq[ModuleNode[T]]
 }

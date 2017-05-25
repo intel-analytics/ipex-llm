@@ -60,7 +60,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
   private var criterions = ParallelCriterion[T]()
 
-  def setCustomizedLayer(map : Map[String, AbstractModule[Activity, Activity, T]]) : Unit = {
+  def setCustomizedLayer(map : Map[String, Seq[ModuleNode[T]]]) : Unit = {
     layerConverter.setCustomizedLayer(map)
     v1layerConverter.setCustomizedLayer(map)
   }
@@ -238,20 +238,21 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       } else {
         val isCriterionLayerOnly : Boolean = tryAddCriterion(name, layerType)
         if (!isCriterionLayerOnly) {
-          var node = convertCaffeLayer(layer)
-          if (node != null) {
+          var nodes = convertCaffeLayer(layer)
+          if (nodes != null) {
+            var curr = nodes(0)
             bottomList.foreach(dependency => {
-              if (splitLayerMap.contains(dependency)) splitLayerMap(dependency) -> node
+              if (splitLayerMap.contains(dependency)) splitLayerMap(dependency) -> curr
               else if (top2LayerMap.contains(dependency)) {
-                layersMap(top2LayerMap(dependency)) -> node
+                layersMap(top2LayerMap(dependency)) -> curr
               }
             })
-            while (node.nextNodes.size != 0) {
-              layers.append(node)
-              node = node.nextNodes(0)
+            while (curr.nextNodes.size != 0) {
+              layers.append(curr)
+              curr = curr.nextNodes(0)
             }
-            layers.append(node)
-            layersMap(name) = node
+            layers.append(curr)
+            layersMap(name) = curr
             topList.foreach(output => {
               top2LayerMap(output) = name
             })
@@ -262,7 +263,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     return layers
   }
 
-  private def convertCaffeLayer(layer : GeneratedMessage): ModuleNode[T] = {
+  private def convertCaffeLayer(layer : GeneratedMessage): Seq[ModuleNode[T]] = {
     val node = if (layer.isInstanceOf[LayerParameter]) {
       layerConverter.convertLayerFromCaffe(layer)
     }
