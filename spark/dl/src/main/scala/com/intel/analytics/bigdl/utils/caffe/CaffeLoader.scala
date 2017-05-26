@@ -30,6 +30,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModul
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import org.apache.hadoop.fs.Path
 import org.apache.log4j.Logger
 
 import scala.collection.mutable
@@ -205,11 +206,35 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     val splitLayerMap = new mutable.HashMap[String, ModuleNode[T]]()
     val allLayers = ArrayBuffer[GeneratedMessage]()
     if (netparam.getLayersList.size > 0 ) {
-      netparam.getLayersList.asScala.foreach(layer => allLayers.append(layer))
+      // filter out those layers from prototxt but also occurs in binary
+      var localMap = new mutable.HashMap[String, Int]()
+      var i = 0
+      netparam.getLayersList.asScala.
+        foreach(layer => {
+          if (!localMap.contains(layer.getName)) {
+            allLayers.append(layer)
+            localMap(layer.getName) = i
+            i += 1
+            localMap
+          } else {
+            allLayers.update(localMap(layer.getName), layer)
+          }
+        })
     } else {
-      // filter is to filter out layers from prototxt, this happens in V2 layer
-      netparam.getLayerList.asScala.filter(layer => layer.getBlobsCount > 0)
-      .foreach(layer => allLayers.append(layer))
+      // filter out those layers from prototxt but also occurs in binary
+      var localMap = new mutable.HashMap[String, Int]()
+      var i = 0
+      netparam.getLayerList.asScala.
+        foreach(layer => {
+          if (!localMap.contains(layer.getName)) {
+            allLayers.append(layer)
+            localMap(layer.getName) = i
+            i += 1
+            localMap
+          } else {
+            allLayers.update(localMap(layer.getName), layer)
+          }
+        })
     }
     allLayers.foreach(layer => {
       var name : String = s""

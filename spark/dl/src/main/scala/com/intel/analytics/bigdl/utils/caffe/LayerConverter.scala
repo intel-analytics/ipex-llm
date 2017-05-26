@@ -592,7 +592,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     val name = module.getName
     if (module.getParametersTable != null) {
       val params = module.getParametersTable.get(name).get.asInstanceOf[Table]
-      if (params.contains("bias")) {
+      if (params.contains("weight")) {
         weightBlobBuilder = BlobProto.newBuilder()
         val weight = params[Tensor[T]]("weight")
         val weightData = weight.storage().array()
