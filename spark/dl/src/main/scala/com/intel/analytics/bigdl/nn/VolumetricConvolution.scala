@@ -189,7 +189,8 @@ class VolumetricConvolution[T: ClassTag](
 
     if (input.dim() == 4) {
       require(input.size(1) == nInputPlane, s"input.size(1) should be equal to nInputPlane. " +
-        s"But input.size(1) is: ${ input.size(1) } , nInputPlane is: ${ nInputPlane }")
+        s"But In ${this.getName()} : input.size(1) is: ${ input.size(1) } ," +
+        s" nInputPlane is: ${ nInputPlane }")
       fInput.resize(kT * kW * kH * nInputPlane, outputDepth * outputHeight * outputWidth)
       output.resize(nOutputPlane, outputDepth, outputHeight, outputWidth)
       updateOutputFrame(input, output, weightMM, bias, fInput, kT, kW, kH, dT, dW, dH,

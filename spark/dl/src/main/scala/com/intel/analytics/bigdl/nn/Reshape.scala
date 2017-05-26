@@ -53,7 +53,8 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
     if ((batchMode.nonEmpty && !batchMode.get) ||
           (input.nElement() == nElement && batchMode.isEmpty && input.size(1) != 1)) {
       require(input.nElement() == nElement, s"element number must match Reshape size. " +
-        s"But element number is: ${ input.nElement() } , reshape size is: ${nElement}")
+        s"But In ${this.getName()} : element number is: ${ input.nElement() } , " +
+        s"reshape size is: ${nElement}")
       if (input.isContiguous()) output =
         input.view(size)
       else output = input.contiguous().view(size)
@@ -61,7 +62,7 @@ class Reshape[@specialized(Float, Double) T: ClassTag](
     else {
       require(input.nElement() == nElement * input.size(1),
         s"element number must match Reshape size. " +
-          s"But element number is: ${ input.nElement() } , " +
+          s"But In ${this.getName()} : element number is: ${ input.nElement() } , " +
           s"reshape size is: ${ nElement * input.size(1) }")
       batchSize(0) = input.size(1)
       if (input.isContiguous()) {
