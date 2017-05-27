@@ -16,10 +16,10 @@
 
 package com.intel.analytics.bigdl.visualization.tensorboard
 
-import java.io.File
 import java.net.InetAddress
 import java.util.concurrent.{LinkedBlockingDeque, TimeUnit}
 
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.tensorflow.util.Event
 
 /**
@@ -28,12 +28,14 @@ import org.tensorflow.util.Event
  * @param logDir
  * @param flushMillis
  */
-private[bigdl] class EventWriter(logDir: String, flushMillis: Int = 1000) extends Runnable {
+private[bigdl] class EventWriter(logDir: String,
+                                 flushMillis: Int = 1000,
+                                 fs: FileSystem) extends Runnable {
   private val eventQueue = new LinkedBlockingDeque[Event]()
-  private val outputFile = new File(logDir +
+  private val outputFile = new Path(logDir +
     s"/bigdl.tfevents.${(System.currentTimeMillis() / 1e3).toInt}" +
     s".${InetAddress.getLocalHost().getHostName()}")
-  private val recordWriter = new RecordWriter(outputFile)
+  private val recordWriter = new RecordWriter(outputFile, fs)
   // Add an empty Event to the queue.
   eventQueue.add(Event.newBuilder().setWallTime(System.currentTimeMillis() / 1e3).build())
   @volatile private var running: Boolean = true

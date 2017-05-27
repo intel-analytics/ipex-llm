@@ -17,19 +17,25 @@
 package com.intel.analytics.bigdl.visualization.tensorboard
 
 import com.intel.analytics.bigdl.utils.Engine
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
 import org.tensorflow
 import org.tensorflow.util.Event
 
 /**
  * Writes Summary protocol buffers to event files.
- * @param logDirecotry
+ * @param logDirectory
  * @param flushMillis
  */
-class FileWriter(val logDirecotry : String, flushMillis: Int = 1000) {
-  private val logDir = new java.io.File(logDirecotry)
-  require(!logDir.exists() || logDir.isDirectory, s"FileWriter: can not create $logDir")
-  if (!logDir.exists()) logDir.mkdirs()
-  private val eventWriter = new EventWriter(logDirecotry, flushMillis)
+class FileWriter(val logDirectory : String, flushMillis: Int = 1000) {
+  val logPath = new Path(logDirectory)
+  // write to local disk by default
+  val fs = logPath.getFileSystem(new Configuration(false))
+
+  require(!fs.exists(logPath) || fs.isDirectory(logPath), s"FileWriter: can not create $logPath")
+  if (!fs.exists(logPath)) fs.mkdirs(logPath)
+
+  private val eventWriter = new EventWriter(logDirectory, flushMillis, fs)
   Engine.default.invoke(() => eventWriter.run())
 
   /**

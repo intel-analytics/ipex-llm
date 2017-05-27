@@ -16,18 +16,17 @@
 
 package com.intel.analytics.bigdl.visualization.tensorboard
 
-import java.io.{File, FileOutputStream}
-
 import com.google.common.primitives.{Ints, Longs}
 import netty.Crc32c
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.tensorflow.util.Event
 
 /**
  * A writer to write event protobuf to file by tensorboard's format.
  * @param file
  */
-private[bigdl] class RecordWriter(file: File) {
-  val outputStream = new FileOutputStream(file)
+private[bigdl] class RecordWriter(file: Path, fs: FileSystem) {
+  val outputStream = fs.create(file)
   val crc32 = new Crc32c()
   def write(event: Event): Unit = {
     val eventString = event.toByteArray
