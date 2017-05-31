@@ -81,7 +81,6 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
       val s = Summary.scalar("lr", i)
       writer.addSummary(s, i + 1)
     }
-    writer.close()
     Thread.sleep(1000) // Waiting for writer.
     val tbReader = FileReader.list(logdir)
     val result = FileReader.readScalar(tbReader(0), "lr")
