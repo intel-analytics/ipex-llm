@@ -70,7 +70,8 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
     val nClasses = input.size(input.dim())
     if (input.dim() == 1) {
       require(input.dim() == target.dim(),
-        "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget)
+        "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
+          s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))
       assert(curTarget >= 1 && curTarget <= nClasses)
       total_weight = if (weights != null) weights(Array(curTarget)) else ev.fromType[Int](1)
@@ -123,7 +124,8 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
 
     if (input.dim() == 1) {
       require(input.dim() == target.dim(),
-        "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget)
+        "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
+          s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))
       gradInput.setValue(curTarget, if (weights != null) ev.times(ev.fromType[Int](-1),
         weights.valueAt(curTarget))
