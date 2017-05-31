@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.python.api
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{Sample => JSample, Identity => DIdentity, _}
+import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample, _}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.numeric._
@@ -31,6 +31,9 @@ import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, Validatio
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
 import java.lang.{Integer, Boolean => JBoolean}
+
+import com.intel.analytics.bigdl.nn.Graph._
+
 import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect.ClassTag
@@ -1247,16 +1250,36 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def modelForward(model: AbstractModule[Activity, Activity, T],
                    input: JList[JTensor]): JList[JTensor] = {
-    val inputActivity = jTensorsToActivity(input)
-    val outputActivity = model.forward(inputActivity)
-    activityToJTensors(outputActivity)
+    forward(input, model.forward)
   }
 
   def modelBackward(model: AbstractModule[Activity, Activity, T],
                     input: JList[JTensor], gradOutput: JList[JTensor]): JList[JTensor] = {
+    backward(input, gradOutput, model.backward)
+  }
+
+
+  def graphForward(graph: Graph[T],
+                   input: JList[JTensor]): JList[JTensor] = {
+    forward(input, graph.forward)
+  }
+
+  def graphBackward(graph: Graph[T],
+                    input: JList[JTensor], gradOutput: JList[JTensor]): JList[JTensor] = {
+    backward(input, gradOutput, graph.backward)
+  }
+
+  private def forward(input: JList[JTensor], forward: (Activity) => Activity): JList[JTensor] = {
+    val inputActivity = jTensorsToActivity(input)
+    val outputActivity = forward(inputActivity)
+    activityToJTensors(outputActivity)
+  }
+
+  private def backward(input: JList[JTensor], gradOutput: JList[JTensor],
+                       backward: (Activity, Activity) => Activity): JList[JTensor] = {
     val inputActivity = jTensorsToActivity(input)
     val gradOutputActivity = jTensorsToActivity(gradOutput)
-    val outputActivity = model.backward(inputActivity, gradOutputActivity)
+    val outputActivity = backward(inputActivity, gradOutputActivity)
     activityToJTensors(outputActivity)
   }
 
@@ -1444,6 +1467,22 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new ValidationSummary(logDir, appName)
   }
 
+  def createGraph(input: JList[ModuleNode[T]], output: JList[ModuleNode[T]]): Graph[T] = {
+    Graph(input.asScala.toArray, output.asScala.toArray)
+  }
+
+  def createNode(module: AbstractModule[Activity, Activity, T],
+                 x: JList[ModuleNode[T]]): ModuleNode[T] = {
+    if (null == x || x.isEmpty) {
+      module.apply()
+    } else {
+      module.apply(x.asScala : _*)
+    }
+  }
+
+  def createInput(): ModuleNode[T] = {
+    Input()
+  }
 
   def initEngine(): Unit = {
     Engine.init
