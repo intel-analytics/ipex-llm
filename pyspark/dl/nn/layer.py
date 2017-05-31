@@ -20,6 +20,7 @@ from util.common import callBigDlFunc
 from util.common import JavaValue
 from util.common import JTensor
 from util.common import callJavaFunc
+from util.common import to_list
 from util.common import get_spark_context
 from pyspark import SparkContext
 import numpy as np
@@ -31,6 +32,23 @@ if sys.version >= '3':
 INTMAX = 2147483647
 INTMIN = -2147483648
 DOUBLEMAX = 1.7976931348623157E308
+
+
+class Node(JavaValue):
+    """
+    Represent a node in a graph. The connections between nodes are directed.
+    """
+    def __init__(self, jvalue, bigdl_type, *args):
+        self.value = jvalue if jvalue else callBigDlFunc(
+            bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+        self.bigdl_type = bigdl_type
+
+    @classmethod
+    def of(cls, jvalue, bigdl_type="float"):
+        return Node(jvalue, bigdl_type)
+
+    def element(self):
+        return Model.of(self.value.element())
 
 
 class Model(JavaValue):
@@ -53,6 +71,19 @@ class Model(JavaValue):
         SpatialConvolution[conv2](6 -> 12, 5 x 5, 1, 1, 0, 0)
         """
         return self.value.toString()
+
+    def __call__(self, x=None):
+        """
+        Some other modules point to current module
+        :param x: upstream module nodes. x is either a Node or list of Node.
+        :return: node containing current module
+        """
+
+        x = x if x else []
+        return Node.of(callBigDlFunc(self.bigdl_type,
+                                     "createNode",
+                                     self,
+                                     to_list(x)))
 
     @classmethod
     def of(cls, jmodel, bigdl_type="float"):
@@ -169,7 +200,6 @@ class Model(JavaValue):
 
         return {layer_name: to_ndarray(params) for layer_name, params in
                 name_to_params.items()}
-
 
     def predict(self, data_rdd):
         """
@@ -2912,8 +2942,12 @@ class Graph(Model):
     It is allowed that some successors of the inputs node are not connect to outputs.
     If so, these nodes will be excluded in the computation.
     '''
-    def __init__(self):
-        raise Exception('Graph model is not supported in python yet')
+
+    def __init__(self,
+                 input,
+                 output,
+                 bigdl_type="float"):
+        super(Graph, self).__init__(None, bigdl_type, input, output)
 
 class SpatialSubtractiveNormalization(Model):
     '''
