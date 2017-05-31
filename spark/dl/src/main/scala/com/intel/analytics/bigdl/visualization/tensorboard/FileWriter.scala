@@ -27,10 +27,10 @@ import org.tensorflow.util.Event
  * @param logDirectory
  * @param flushMillis
  */
-class FileWriter(val logDirectory : String, flushMillis: Int = 1000) {
-  val logPath = new Path(logDirectory)
+private[bigdl] class FileWriter(val logDirectory : String, flushMillis: Int = 1000) {
+  private val logPath = new Path(logDirectory)
   // write to local disk by default
-  val fs = logPath.getFileSystem(new Configuration(false))
+  private val fs = logPath.getFileSystem(new Configuration(false))
 
   require(!fs.exists(logPath) || fs.isDirectory(logPath), s"FileWriter: can not create $logPath")
   if (!fs.exists(logPath)) fs.mkdirs(logPath)

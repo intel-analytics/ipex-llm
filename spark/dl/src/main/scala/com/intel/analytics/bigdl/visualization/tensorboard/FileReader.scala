@@ -19,12 +19,14 @@ package com.intel.analytics.bigdl.visualization.tensorboard
 import java.io.{BufferedInputStream, File, FileInputStream}
 import java.nio.ByteBuffer
 
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.tensorflow.util.Event
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.matching.Regex
 
-object FileReader {
+private[bigdl] object FileReader {
   val fileNameRegex = """bigdl.tfevents.*""".r
 
   /**
@@ -33,10 +35,16 @@ object FileReader {
    * @param r
    * @return
    */
-  private def recursiveListFiles(f: File, r: Regex): Array[File] = {
-    val these = f.listFiles()
-    val good = these.filter(f => r.findFirstIn(f.getName).isDefined)
-    good ++ these.filter(_.isDirectory).flatMap(recursiveListFiles(_, r))
+  private def recursiveListFiles(f: Path, r: Regex, fs: FileSystem): Array[Path] = {
+    val buffer = new ArrayBuffer[Path]()
+    val files = fs.listFiles(f, true)
+    while (files.hasNext) {
+      val file = files.next().getPath
+      if (r.findFirstIn(file.getName).isDefined) {
+        buffer.append(file)
+      }
+    }
+    buffer.toArray
   }
 
   /**
@@ -44,10 +52,11 @@ object FileReader {
    * @param path should be a folder.
    * @return
    */
-  def listFiles(path: String): Array[File] = {
-    val dir = new java.io.File(path)
-    require(dir.isDirectory, s"FileReader: $path should be a directory")
-    FileReader.recursiveListFiles(dir, fileNameRegex)
+  def listFiles(path: String): Array[Path] = {
+    val logPath = new Path(path)
+    val fs = logPath.getFileSystem(new Configuration(false))
+    require(fs.isDirectory(logPath), s"FileReader: $path should be a directory")
+    FileReader.recursiveListFiles(logPath, fileNameRegex, fs)
   }
 
   /**
@@ -56,9 +65,10 @@ object FileReader {
    * @return
    */
   def list(path: String): Array[String] = {
-    val dir = new java.io.File(path)
-    require(dir.isDirectory, s"FileReader: $path should be a directory")
-    FileReader.recursiveListFiles(dir, fileNameRegex).map(_.getParent).distinct
+    val logPath = new Path(path)
+    val fs = logPath.getFileSystem(new Configuration(false))
+    require(fs.isDirectory(logPath), s"FileReader: $path should be a directory")
+    FileReader.recursiveListFiles(logPath, fileNameRegex, fs).map(_.getParent.toString).distinct
   }
 
   /**
@@ -68,11 +78,12 @@ object FileReader {
    * @return
    */
   def readScalar(path: String, tag: String): Array[(Long, Float, Double)] = {
-    val dir = new File(path)
-    require(dir.isDirectory, s"FileReader: $path should be a directory")
-    val files = dir.listFiles().filter(f => fileNameRegex.findFirstIn(f.getName()).isDefined)
+    val logPath = new Path(path)
+    val fs = logPath.getFileSystem(new Configuration(false))
+    require(fs.isDirectory(logPath), s"FileReader: $path should be a directory")
+    val files = FileReader.recursiveListFiles(logPath, fileNameRegex, fs)
     files.map{file =>
-      readScalar(file, tag)
+      readScalar(file, tag, fs)
     }.flatMap(_.toIterator).sortWith(_._1 < _._1)
   }
 
@@ -82,8 +93,8 @@ object FileReader {
    * @param tag
    * @return
    */
-  def readScalar(file: File, tag: String): Array[(Long, Float, Double)] = {
-    val bis = new BufferedInputStream(new FileInputStream(file))
+  def readScalar(file: Path, tag: String, fs: FileSystem): Array[(Long, Float, Double)] = {
+    val bis = new BufferedInputStream(fs.open(file))
     val longBuffer = new Array[Byte](8)
     val crcBuffer = new Array[Byte](4)
     val bf = new ArrayBuffer[(Long, Float, Double)]
