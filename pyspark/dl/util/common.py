@@ -259,6 +259,12 @@ def get_bigdl_conf():
     raise Exception("Cannot find spark-bigdl.conf.Pls add it to PYTHONPATH.")
 
 
+def to_list(a):
+    if type(a) is list:
+        return a
+    return [a]
+
+
 def create_spark_conf():
     bigdl_conf = get_bigdl_conf()
     sparkConf = SparkConf()
