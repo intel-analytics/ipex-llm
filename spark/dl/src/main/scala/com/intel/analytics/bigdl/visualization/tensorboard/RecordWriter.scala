@@ -35,6 +35,7 @@ private[bigdl] class RecordWriter(file: Path, fs: FileSystem) {
     outputStream.write(Ints.toByteArray(maskedCRC32(header).toInt).reverse)
     outputStream.write(eventString)
     outputStream.write(Ints.toByteArray(maskedCRC32(eventString).toInt).reverse)
+    outputStream.hflush()
   }
 
   def close(): Unit = {
