@@ -69,5 +69,6 @@ private[bigdl] class FileWriter(val logDirectory : String, flushMillis: Int = 10
    */
   def close(): Unit = {
     eventWriter.close()
+    fs.close()
   }
 }
