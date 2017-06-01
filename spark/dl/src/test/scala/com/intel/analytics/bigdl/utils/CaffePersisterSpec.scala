@@ -38,16 +38,6 @@ class CaffePersisterSpec extends FlatSpec with Matchers{
   val savedprototxt = Paths.get(resource.getPath(), "test_persist.prototxt").toString
   val savedmodelPath = Paths.get(resource.getPath(), "test_persist.caffemodel").toString
 
-  "Save sequantial module" should "Works properly" in {
-    val module = Sequential()
-      .add(Convolution(3, 4, 2, 2).setName("conv"))
-      .add(Convolution(4, 3, 2, 2).setName("conv2"))
-      .add(View(27)).setName("view")
-      .add(Linear(2, 27, withBias = false).setName("ip"))
-
-    CaffePersister.persist("/tmp/test.prototxt", "/tmp/test.caffemodel", module)
-
-  }
 
   "Save graph module" should "Works properly" in {
 
@@ -71,7 +61,7 @@ class CaffePersisterSpec extends FlatSpec with Matchers{
 
     val module = Graph(convolution1, ip)
 
-    CaffePersister.persist("/tmp/test.prototxt", "/tmp/test.caffemodel", module)
+    CaffePersister.persist("/tmp/test.prototxt", "/tmp/test.caffemodel", module, overwrite = true)
 
   }
 
@@ -90,6 +80,7 @@ class CaffePersisterSpec extends FlatSpec with Matchers{
     val savedResult = savedModule.forward(input2)
 
     preSavedResult should be (savedResult)
+
   }
 
 }

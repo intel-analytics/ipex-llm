@@ -40,3 +40,9 @@ layer {
     bias_term: false
   }
 }
+layer {
+  name: "loss"
+  type: "Softmax"
+  bottom: "ip0"
+  top: "loss0"
+}
