@@ -15,25 +15,19 @@
  */
 package com.intel.analytics.bigdl.example.MLPipeline
 
-import java.nio.file.Paths
-
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
-import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
-import com.intel.analytics.bigdl.models.lenet.{LeNet5, Utils}
-import com.intel.analytics.bigdl.models.lenet.Utils._
-import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.utils.LoggerFilter
-import org.apache.log4j.{Level, Logger}
-import org.apache.spark.ml.{DLClassifier, DLEstimator, Pipeline}
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, _}
-import com.intel.analytics.bigdl.example.imageclassification.MlUtils.{testMean => _, testStd => _, _}
+import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, _}
+import com.intel.analytics.bigdl.example.imageclassification.MlUtils.{testMean => _, testStd => _}
+import com.intel.analytics.bigdl.models.lenet.LeNet5
+import com.intel.analytics.bigdl.models.lenet.Utils._
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.ml.{DLClassifier, DLEstimator}
 import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -46,11 +40,12 @@ import scala.collection.mutable.ArrayBuffer
  */
 object DLEstimatorLeNet {
 
+  // TODO: this need to be updated for the new Estimator
   LoggerFilter.redirectSparkInfoLogs()
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
   def main(args: Array[String]): Unit = {
     val inputs = Array[String]("Feature data", "Label data")
-    trainParser.parse(args, new TrainParams()).map(param => {
+    trainParser.parse(args, new TrainParams()).foreach(param => {
       val conf = Engine.createSparkConf()
         .setAppName("MLPipeline Example")
         .set("spark.task.maxFailures", "1")
@@ -86,21 +81,15 @@ object DLEstimatorLeNet {
 
       val criterion = ClassNLLCriterion[Float]()
 
-      var batchShape = Array[Int](128, 28, 28)
+      var batchShape = Array(10, 28, 28)
 
-      var estimator = new DLEstimator[Float](model, criterion, batchShape).
+      var estimator = new DLEstimator[Float](model, criterion, batchShape, Array(10)).
         setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
-
-      val paramsTrans = ParamMap(
-        estimator.featureSize -> Array(10, 28, 28),
-        estimator.labelSize -> Array(10) )
-
-      estimator = estimator.copy(paramsTrans)
 
       val transformer = estimator.fit(trainingDF).asInstanceOf[DLClassifier[Float]]
 
-      transformer.setInputCol("features")
-        .setOutputCol("predict")
+      transformer.setFeaturesCol("features")
+        .setPredictionCol("predict")
 
       val rdd: RDD[DenseVectorData] = validationSet.
         asInstanceOf[DistributedDataSet[MiniBatch[Float]]].data(false).flatMap{batch => {
