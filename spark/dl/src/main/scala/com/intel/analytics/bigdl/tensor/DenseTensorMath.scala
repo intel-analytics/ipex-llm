@@ -608,8 +608,13 @@ object DenseTensorMath {
     }
 
     if (mat.stride(1) == 1) {
+      val lda = if (mat.size(2) == 1) {
+        mat.size(1)
+      } else {
+        mat.stride(2)
+      }
       ev.gemv('N', mat.size(1), mat.size(2), alpha, mat.storage().array(), mat.storageOffset() - 1,
-        mat.stride(2), vec.storage().array(), vec.storageOffset() - 1, vec.stride(1), beta,
+        lda, vec.storage().array(), vec.storageOffset() - 1, vec.stride(1), beta,
         r.storage().array(),
         r.storageOffset() - 1, r.stride(1))
     } else if (mat.stride(2) == 1) {

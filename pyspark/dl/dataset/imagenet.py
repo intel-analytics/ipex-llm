@@ -20,8 +20,8 @@ import numpy as np
 from os import listdir
 from os.path import join, basename
 import struct
-import cv2
-from util.common import Sample
+from scipy import misc
+from transformer import Resize
 
 
 def read_local_path(folder, has_label=True):
@@ -53,15 +53,12 @@ def read_local(sc, folder, normalize=255.0, has_label=True):
     image_paths = read_local_path(folder, has_label)
     # create rdd
     image_paths_rdd = sc.parallelize(image_paths)
-    samples = image_paths_rdd.map(lambda (path, label): (cv2.imread(path, 1), np.array(label))) \
-        .map(lambda (img, label):
-             (resize_image(img, 256, 256), label)) \
-        .map(lambda (features, label):
-             (((features & 0xff) / normalize), label)) \
-        .map(lambda (features, label):
-             Sample.from_ndarray(features, label))
-    return samples
-
+    feature_label_rdd = image_paths_rdd.map(lambda path_label: (misc.imread(path_label[0]), np.array(path_label[1]))) \
+        .map(lambda img_label:
+             (Resize(256, 256)(img_label[0]), img_label[1])) \
+        .map(lambda feature_label:
+             (((feature_label[0] & 0xff) / normalize).astype("float32"), feature_label[1]))
+    return feature_label_rdd
 
 def read_local_with_name(sc, folder, normalize=255.0, has_label=True):
     """
@@ -76,19 +73,12 @@ def read_local_with_name(sc, folder, normalize=255.0, has_label=True):
     image_paths = read_local_path(folder, has_label)
     # create rdd
     image_paths_rdd = sc.parallelize(image_paths)
-    samples = image_paths_rdd.map(lambda (path, label): (cv2.imread(path, 1), np.array(label), basename(path))) \
-        .map(lambda (img, label, name):
-             (resize_image(img, 256, 256), label, name)) \
-        .map(lambda (features, label, name):
-             (((features & 0xff) / normalize), label, name)) \
-        .map(lambda (features, label, name):
-            (Sample.from_ndarray(features, label), name))
-    return samples
-
-
-def resize_image(img, resize_width, resize_height):
-    return cv2.resize(img,(resize_width, resize_height), interpolation = cv2.INTER_AREA)
-
+    features_label_name_rdd = image_paths_rdd.map(lambda path_label: (misc.imread(path_label[0]), np.array(path_label[1]), basename(path_label[0]))) \
+        .map(lambda img_label_name:
+             (Resize(256, 256)(img_label_name[0]), img_label_name[1], img_label_name[2])) \
+        .map(lambda features_label_name:
+             (((features_label_name[0] & 0xff) / normalize).astype("float32"), features_label_name[1], features_label_name[2]))
+    return features_label_name_rdd
 
 def read_seq_file(sc, path, normalize=255.0, has_name=False):
     """
@@ -113,14 +103,12 @@ def read_seq_file(sc, path, normalize=255.0, has_name=False):
             key = data[0].split('\n')
             name = key[0]
             label = key[1]
-            sample = Sample(normalized_features, [int(label)], features_shape=(height, width, length / width / height),
-                            label_shape=[1])
-            return sample, name
+            features = np.array(normalized_features, dtype="float32").reshape((height, width, length / width / height))
+            return features, np.array(int(label)), name
         else:
             label = data[0]
-            sample = Sample(normalized_features, [int(label)], features_shape=(height, width, length / width / height),
-                            label_shape=[1])
-            return sample
+            features = np.array(normalized_features, dtype="float32").reshape((height, width, length / width / height))
+            return features, np.array(int(label))
     return raw.map(parse)
 
 

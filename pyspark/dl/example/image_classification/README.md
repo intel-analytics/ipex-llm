@@ -59,7 +59,6 @@ Command to run the example in Spark standalone mode:
              --modelPath ./resnet-18.t7 \
              --folder ./predict \
              --modelType torch \
-             --batchSizePerCore 16 \
              --isHdfs false
 ```
 
@@ -69,5 +68,4 @@ where
 * ```--folder``` is the folder of predict images.
 * ```--modelType``` is the type of model to load, it can be ```bigdl``` or ```torch```.
 * ```--showNum``` is the result number to show, default 100.
-* ```--batchSize``` is the batch size to use when do the prediction, default 32.
 * ```--isHdfs``` is the type of predict data. "true" means reading sequence file from hdfs, "false" means reading local images, default "false".

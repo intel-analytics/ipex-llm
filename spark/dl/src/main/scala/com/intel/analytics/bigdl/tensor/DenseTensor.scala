@@ -409,10 +409,7 @@ private[tensor] class DenseTensor[@specialized(Float, Double) T: ClassTag](
       s"out of range, ${_index}: 0 to ${this._size(0)}")
 
     if (this.nDimension == 1) {
-      val value = this._storage(this._storageOffset + _index * this._stride(0))
-      val result = new DenseTensor[T](1)
-      result.setValue(1, value)
-      result
+      this.narrow(1, index, 1)
     } else {
       val result = DenseTensor.newWithTensor(this)
       DenseTensor.select(result, null, 0, _index)

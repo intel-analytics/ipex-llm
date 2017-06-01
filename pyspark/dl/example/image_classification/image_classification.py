@@ -21,18 +21,18 @@ from optparse import OptionParser
 from distutils.util import strtobool
 
 from dataset import imagenet
+
 from dataset.transformer import *
 from nn.layer import *
 from util.common import *
 from pyspark.sql import *
 from ml.dl_classifier import *
-from pyspark.mllib.linalg import Vectors
+
 
 if __name__ == "__main__":
 
     parser = OptionParser()
     parser.add_option("--isHdfs", dest="hdfs", default=False)
-    parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default=32)
     parser.add_option("-f", "--folder", type=str, dest="folder", default="./")
     parser.add_option("--modelPath", type=str, dest="model_path", default="")
     parser.add_option("--modelType", type=str, dest="model_type", default="")
@@ -41,6 +41,7 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args(sys.argv)
     sc = SparkContext(appName="image_classification", conf=create_spark_conf())
+    version = str(sc.version)
     init_engine()
     image_size = 224
     ishdfs = strtobool(options.hdfs)
@@ -50,10 +51,18 @@ if __name__ == "__main__":
     else:
         data_rdd = imagenet.read_local_with_name(sc, options.folder, 255.0, False)
     # transform to vectors
-    val_rdd = data_rdd.map(lambda data: (crop(image_size, image_size, "random")(data[0]), data[1])).map(
-        lambda data: (channel_normalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225)(data[0]), data[1])).map(
-        lambda data: (transpose()(data[0]), data[1])).map(
-        lambda data: (Vectors.dense(data[0].features.ravel().tolist()), data[1]))
+    val_transformer = ImgTransformer([Crop(image_size, image_size, "random"),
+                                   ChannelNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+                                   TransposeToTensor()
+                                   ])
+    if version.startswith("1.5") or version.startswith("1.6"):
+        from pyspark.mllib.linalg import Vectors
+    else:
+        from pyspark.ml.linalg import Vectors
+
+    val_rdd = data_rdd.map(
+        lambda features_label_name: (val_transformer(features_label_name[0]), features_label_name[2])).map(
+        lambda features_name: (Vectors.dense(features_name[0].ravel().tolist()), features_name[1]))
     # create data frame
     sqlContext = SQLContext(sc)
     val_df = sqlContext.createDataFrame(val_rdd, ['features', 'image_name'])
@@ -67,13 +76,9 @@ if __name__ == "__main__":
         print("Unsupported model type")
         sys.exit(0)
     # get DL classifier
-    classifier = DLClassifier().set_input_col("features").set_output_col("predict")
-    # set paramsMap
-    paramMap = {"model_train": model,
-                "batch_shape": (options.batchSize, 3, image_size, image_size)
-                }
+    classifier = DLClassifier(model, (3, image_size, image_size)).setInputCol("features").setOutputCol("predict")
     # predict
-    classifier.transform(val_df, paramMap)\
+    classifier.transform(val_df)\
         .select("image_name", "predict") \
         .show(options.show_num, False)
     sc.stop()

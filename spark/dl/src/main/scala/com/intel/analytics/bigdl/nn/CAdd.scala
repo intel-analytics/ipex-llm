@@ -76,13 +76,14 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
   private def addOneDimBias(pivotDim: Int, expand: Tensor[T], output: Tensor[T]): Unit = {
     val (innerNum, outerNum) = Utils.getInnerOuterNum(pivotDim, output)
     val biasData = expand.storage().array()
+    val biasOffset = expand.storageOffset() - 1
     var outer = 0
     var offset = output.storageOffset() - 1
     var k = 0
     while (outer < outerNum) {
       k = 0
       while (k < expand.nElement()) {
-        ev.add(innerNum, output.storage().array(), offset, biasData(k), 1)
+        ev.add(innerNum, output.storage().array(), offset, biasData(k + biasOffset), 1)
         offset += innerNum
         k += 1
       }

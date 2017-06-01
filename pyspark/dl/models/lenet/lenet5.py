@@ -55,17 +55,18 @@ def get_minst(sc, data_type="train", location="/tmp/mnist"):
     images = sc.parallelize(images)
     labels = sc.parallelize(labels)
     # Target start from 1 in BigDL
-    record = images.zip(labels).map(lambda (features, label):
-                                    Sample.from_ndarray(features, label + 1))
+
+    # record = images.zip(labels).map(lambda features_label:
+    #                                 Sample.from_ndarray(features_label[0], features_label[1] + 1))
+    record = images.zip(labels)
     return record
 
 
 if __name__ == "__main__":
-
     parser = OptionParser()
     parser.add_option("-a", "--action", dest="action", default="train")
-    parser.add_option("-b", "--batchSize", dest="batchSize", default="128")
-    parser.add_option("--model", dest="model", default="")
+    parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="128")
+    parser.add_option("-m", "--modelPath", dest="modelPath", default="")
 
     (options, args) = parser.parse_args(sys.argv)
 
@@ -73,34 +74,41 @@ if __name__ == "__main__":
     init_engine()
 
     if options.action == "train":
+        transformer = ImgTransformer([Normalizer(mnist.TRAIN_MEAN, mnist.TRAIN_STD)])
         train_data = get_minst(sc, "train").map(
-            normalizer(mnist.TRAIN_MEAN, mnist.TRAIN_STD))
+            lambda features_label: (transformer(features_label[0]), features_label[1])).map(
+            lambda features_label: Sample.from_ndarray(features_label[0], features_label[1] + 1))
+
         test_data = get_minst(sc, "test").map(
-            normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
+            lambda features_label: (transformer(features_label[0]), features_label[1])).map(
+            lambda features_label: Sample.from_ndarray(features_label[0], features_label[1] + 1))
+
         state = {"learningRate": 0.01,
                  "learningRateDecay": 0.0002}
+
         optimizer = Optimizer(
             model=build_model(10),
             training_rdd=train_data,
             criterion=ClassNLLCriterion(),
-            optim_method="SGD",
-            state=state,
+            optim_method=SGD(learningrate=0.01, learningrate_decay=0.0002),
             end_trigger=MaxEpoch(20),
-            batch_size=int(options.batchSize))
-        optimizer.setvalidation(
-            batch_size=32,
+            batch_size=options.batchSize)
+        optimizer.set_validation(
+            batch_size=options.batchSize,
             val_rdd=test_data,
             trigger=EveryEpoch(),
             val_method=["Top1Accuracy"]
         )
-        optimizer.setcheckpoint(EveryEpoch(), "/tmp/lenet5/")
+        optimizer.set_checkpoint(EveryEpoch(), "/tmp/lenet5/")
         trained_model = optimizer.optimize()
         parameters = trained_model.parameters()
     elif options.action == "test":
         # Load a pre-trained model and then validate it through top1 accuracy.
+        transformer = ImgTransformer([Normalizer(mnist.TRAIN_MEAN, mnist.TRAIN_STD)])
         test_data = get_minst(sc, "test").map(
-            normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
-        model = Model.load(options.model)
-        results = model.test(test_data, 32, ["Top1Accuracy"])
+            lambda features_label: (transformer(features_label[0]), features_label[1])).map(
+            lambda features_label: Sample.from_ndarray(features_label[0], features_label[1] + 1))
+        model = Model.load(options.modelPath)
+        results = model.test(test_data, options.batchSize, ["Top1Accuracy"])
         for result in results:
-            print result
+            print(result)
