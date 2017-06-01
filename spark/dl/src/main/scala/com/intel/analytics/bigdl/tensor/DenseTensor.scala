@@ -2198,8 +2198,10 @@ object DenseTensor {
     }
 
     require(_dimension >= 0 && _dimension < src.nDimension(), "dimension out of range")
-    require(_firstIndex >= 0 && _firstIndex < src.size(_dimension + 1), "firstIndex out of range")
-    require(size > 0 && _firstIndex + size <= src.size(_dimension + 1), "size out of range")
+    require(_firstIndex >= 0 && _firstIndex < src.size(_dimension + 1),
+      s"firstIndex(${_firstIndex}) out of range [0, ${src.size(_dimension + 1)})")
+    require(size > 0 && _firstIndex + size <= src.size(_dimension + 1),
+      s"size out of range $size (0, ${src.size(_dimension + 1)} - ${_firstIndex}]")
 
     set(self, src)
 

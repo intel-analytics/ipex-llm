@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  * @param sizes sizes use for creates a new view
  */
 @SerialVersionUID(1238814703013238333L)
-class View[T: ClassTag](sizes: Array[Int])(
+class View[T: ClassTag](val sizes: Array[Int])(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   def getSize(): Array[Int] = {
