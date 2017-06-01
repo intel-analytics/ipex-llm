@@ -126,6 +126,7 @@ class SpatialConvolution[T: ClassTag](
       output.resize(Array(batchSize, nOutputPlane, outputHeight, outputWidth))
     }
 
+/*
     ev.getType() match {
       case FloatType =>
         FixPoint.FixConvOpSetupTargetBuffer(desc,
@@ -137,6 +138,15 @@ class SpatialConvolution[T: ClassTag](
       case _ => throw new UnsupportedOperationException(s"only support float")
     }
     FixPoint.FixConvOpExecute(desc, 0.5f)
+*/
+    ev.getType() match {
+      case FloatType =>
+        FixPoint.FixConvOpExecuteAll(desc, batchSize, input.size(dimChannel), input.size(dimHeight),
+          input.size(dimWidth), input.storage().array().asInstanceOf[Array[Float]],
+          input.storageOffset() - 1, 127.0f, output.storage().array().asInstanceOf[Array[Float]],
+          output.storageOffset() - 1, 0.5f)
+      case _ => throw new UnsupportedOperationException(s"only support float")
+    }
 
     output
   }
