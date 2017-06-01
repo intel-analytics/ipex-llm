@@ -215,7 +215,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
             allLayers.append(layer)
             localMap(layer.getName) = i
             i += 1
-            localMap
           } else {
             allLayers.update(localMap(layer.getName), layer)
           }
@@ -230,7 +229,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
             allLayers.append(layer)
             localMap(layer.getName) = i
             i += 1
-            localMap
           } else {
             allLayers.update(localMap(layer.getName), layer)
           }
@@ -261,7 +259,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
           }
         })
       } else {
-        val isCriterionLayerOnly : Boolean = tryAddCriterion(name, layerType)
+        val isCriterionLayerOnly : Boolean = tryAddCriterion(layerType, name)
         if (!isCriterionLayerOnly) {
           var nodes = convertCaffeLayer(layer)
           if (nodes != null) {
@@ -303,20 +301,20 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
  * if only test/model define prototxt file provided, there won't be criterion detected
  */
   private def tryAddCriterion(layerType : String, layerName: String = null) : Boolean = {
-    layerType match {
+    layerType.toUpperCase match {
       case "SOFTMAX_LOSS" => criterions.add(ClassNLLCriterion[T]())
         false
-      case "SoftmaxWithLoss" => criterions.add(ClassNLLCriterion[T]())
+      case "SOFTMAXWITHLOSS" => criterions.add(ClassNLLCriterion[T]())
         false
-      case "EuclideanLoss" => criterions.add(MSECriterion[T]())
+      case "EUCLIDEANLOSS" => criterions.add(MSECriterion[T]())
         true
-      case "HingeLoss" => criterions.add(HingeEmbeddingCriterion[T]())
+      case "HINGELOSS" => criterions.add(HingeEmbeddingCriterion[T]())
         true
-      case "SigmoidCrossEntropyLoss" => criterions.add(CrossEntropyCriterion[T]())
+      case "SIGMOIDCROSSENTROPYLOSS" => criterions.add(CrossEntropyCriterion[T]())
         false
-      case "InfogainLoss" => criterions.add(createInfoGainCriterion(layerName))
+      case "INFOGAINLOSS" => criterions.add(createInfoGainCriterion(layerName))
         true
-      case "ContrastiveLoss" => criterions.add(CosineEmbeddingCriterion[T]())
+      case "CONTRASTIVELOSS" => criterions.add(CosineEmbeddingCriterion[T]())
         true
       case _ => false
     }

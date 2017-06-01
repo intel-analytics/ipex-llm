@@ -61,6 +61,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       case "DROPOUT" => fromCaffeDropout(layer)
       case "SOFTMAX_LOSS" => fromCaffeSoftmax(layer)
       case "SOFTMAX" => fromCaffeSoftmax(layer)
+      case "SOFTMAXWITHLOSS" => fromCaffeSoftmax(layer)
       case "TANH" => fromCaffeTanh(layer)
       case "SIGMOID" => fromCaffeSigmoid(layer)
       case "SIGMOIDCROSSENTROPYLOSS" => fromCaffeSigmoid(layer)
