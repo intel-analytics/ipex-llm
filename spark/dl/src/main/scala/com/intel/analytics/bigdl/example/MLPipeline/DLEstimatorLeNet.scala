@@ -16,9 +16,8 @@
 package com.intel.analytics.bigdl.example.MLPipeline
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
+import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, _}
-import com.intel.analytics.bigdl.example.imageclassification.MlUtils.{testMean => _, testStd => _}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.lenet.Utils._
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
@@ -27,7 +26,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.{DLClassifier, DLEstimator}
+import org.apache.spark.ml.{DLEstimator, DLModel}
 import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -40,9 +39,9 @@ import scala.collection.mutable.ArrayBuffer
  */
 object DLEstimatorLeNet {
 
-  // TODO: this need to be updated for the new Estimator
   LoggerFilter.redirectSparkInfoLogs()
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
   def main(args: Array[String]): Unit = {
     val inputs = Array[String]("Feature data", "Label data")
     trainParser.parse(args, new TrainParams()).foreach(param => {
@@ -50,7 +49,7 @@ object DLEstimatorLeNet {
         .setAppName("MLPipeline Example")
         .set("spark.task.maxFailures", "1")
       val sc = new SparkContext(conf)
-      val sqLContext = new SQLContext(sc)
+      val sqLContext = SQLContext.getOrCreate(sc)
       Engine.init
 
       val trainData = param.folder + "/train-images-idx3-ubyte"
@@ -61,33 +60,30 @@ object DLEstimatorLeNet {
       val model = LeNet5(classNum = 10)
 
       val trainSet = DataSet.array(load(trainData, trainLabel), sc) ->
-        BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
-        param.batchSize)
+        BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd)
 
       val validationSet = DataSet.array(load(validationData, validationLabel), sc) ->
-        BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToBatch(
-        param.batchSize)
+        BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd)
 
       val dataFrameRDD : RDD[MinibatchData[Float]] = trainSet.
         asInstanceOf[DistributedDataSet[TensorMiniBatch[Float]]].data(false).map(batch => {
           val feature = batch.getInput.asInstanceOf[Tensor[Float]]
           val label = batch.getTarget.asInstanceOf[Tensor[Float]]
-          val estimatorData = MinibatchData[Float](feature.storage().array(),
-            label.storage().array())
-           estimatorData
+          MinibatchData[Float](feature.storage().array(), label.storage().array())
         })
 
       var trainingDF : DataFrame = sqLContext.createDataFrame(dataFrameRDD).toDF(inputs : _*)
 
       val criterion = ClassNLLCriterion[Float]()
 
-      var batchShape = Array(10, 28, 28)
+      var featureSize = Array(28, 28)
 
-      var estimator = new DLEstimator[Float](model, criterion, batchShape, Array(10)).
-        setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
+      var estimator = new DLEstimator[Float](model, criterion, featureSize, Array(1))
+        .setFeaturesCol(inputs(0))
+        .setLabelCol(inputs(1))
+        .setBatchSize(10)
 
-      val transformer = estimator.fit(trainingDF).asInstanceOf[DLClassifier[Float]]
-
+      val transformer = estimator.fit(trainingDF).asInstanceOf[DLModel[Float]]
       transformer.setFeaturesCol("features")
         .setPredictionCol("predict")
 
@@ -106,7 +102,7 @@ object DLEstimatorLeNet {
           buffer.iterator
           }
         }
-      var validationDF : DataFrame = sqLContext.createDataFrame(rdd).toDF("features")
+      val validationDF : DataFrame = sqLContext.createDataFrame(rdd).toDF("features")
       val transformed = transformer.transform(validationDF)
       transformed.select("features", "predict").collect()
         .foreach { case Row(data: DenseVector, predict: Int) =>
@@ -114,7 +110,6 @@ object DLEstimatorLeNet {
         }
       sc.stop()
     })
-
   }
 }
 
