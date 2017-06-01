@@ -56,7 +56,7 @@ class LinearSpec extends FlatSpec with Matchers {
     weights2.copy(weights1.clone())
     grad2.copy(grad1.clone())
 
-    
+
     val sgd = new SGD[Double]
 
     def feval1(x: Tensor[Double]): (Double, Tensor[Double]) = {
