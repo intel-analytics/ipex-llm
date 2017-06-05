@@ -269,7 +269,7 @@ object SGD {
   /**
    * A learning rate decay policy, where the effective learning rate
    * follows a polynomial decay, to be zero by the max_iteration.
-   * Calculation: base_lr (1 - iter/maxIteration) ^ (power)
+   * Calculation: base_lr (1 - iter/maxIteration) `^` (power)
    *
    * @param power coeffient of decay, refer to calculation formula
    * @param maxIteration max iteration when lr becomes zero
@@ -303,7 +303,7 @@ object SGD {
   }
   /**
    * A learning rate decay policy, where the effective learning rate
-   * is calculated as base_lr * gamma ^ (floor(iter / stepSize))
+   * is calculated as base_lr * gamma `^` (floor(iter / stepSize))
    *
    * @param stepSize the inteval for lr decay
    * @param gamma coefficient of decay, refer to calculation formula
@@ -427,6 +427,27 @@ object SGD {
         clr *= gamma
         i += 1
       }
+      currentRate = clr
+    }
+  }
+
+  /**
+   * [[NaturalExp]] is a learning rate schedule, which rescale the learning rate by
+   * exp ( -decay_rate * iter / decay_step )
+   * referring to tensorflow's learning rate decay # natural_exp_decay
+   *
+   * @param decay_step how often to apply decay
+   * @param gamma the decay rate. e.g. 0.96
+   */
+  case class NaturalExp(decay_step : Int, gamma : Double)
+    extends LearningRateSchedule {
+
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      val p = nevals / decay_step
+      optimMethod.state("evalCounter") = nevals + 1
+      val clr = -lr * math.exp(-gamma * p)
       currentRate = clr
     }
   }
