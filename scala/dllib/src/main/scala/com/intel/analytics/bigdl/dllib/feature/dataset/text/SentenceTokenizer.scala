@@ -17,12 +17,14 @@
 package com.intel.analytics.bigdl.dataset.text
 
 import java.io.FileInputStream
-import java.net.URL
+import java.net.{URI, URL}
 
 import com.intel.analytics.bigdl.dataset.Transformer
 
 import scala.collection.Iterator
 import opennlp.tools.tokenize.{SimpleTokenizer, Tokenizer, TokenizerME, TokenizerModel}
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 
 /**
  * Transformer that tokenizes a Document (article)
@@ -54,8 +56,10 @@ class SentenceTokenizer(tokenFile: Option[String] = None)
         if (!tokenFile.isDefined) {
           tokenizer = SimpleTokenizer.INSTANCE
         } else {
-          modelIn = new FileInputStream(tokenFile.getOrElse(""))
-          model = new TokenizerModel(modelIn)
+          val src: Path = new Path(tokenFile.get)
+          val fs = src.getFileSystem(new Configuration())
+          val in = fs.open(src)
+          model = new TokenizerModel(in)
           tokenizer = new TokenizerME(model)
         }
       }

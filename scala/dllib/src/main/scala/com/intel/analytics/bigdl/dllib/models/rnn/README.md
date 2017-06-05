@@ -41,11 +41,12 @@ The input text may look as follows:
 Example command:
 ```bash
 ./dist/bin/bigdl.sh -- \
-spark-submit --class com.intel.analytics.bigdl.models.rnn.Train \
+spark-submit \
+--master spark://... \
+--executor-cores cores_per_executor \
+--total-executor-cores total_cores_for_the_job \
+--class com.intel.analytics.bigdl.models.rnn.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---core core_number_per_node \
---node node_number \
---env spark \
 -f /path/inputdata/ -s /path/saveDict --checkpoint /path/model/ --batchSize 12
 ```
 
@@ -70,11 +71,12 @@ Each eye that saw him.
 Example command:
 ```bash
 ./dist/bin/bigdl.sh -- \
-spark-submit --class com.intel.analytics.bigdl.models.rnn.Test \
+spark-submit \
+--master spark://... \
+--executor-cores cores_per_executor \
+--total-executor-cores total_cores_for_the_job \
+--class com.intel.analytics.bigdl.models.rnn.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---core core_number_per_node \
---node node_number \
---env spark \
 -f /dictDirect --model /modeldirectory/model.iterationNumber --words 20
 ```
 
@@ -82,6 +84,21 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 
 The <code>SentenceSplitter</code>, <code>SentenceTokenizer</code> classes use [Apache OpenNLP library](https://opennlp.apache.org/).
 The trained model <code>en-token.bin</code> and <code>en-sent.bin</code> can be reached via [here](http://opennlp.sourceforge.net/models-1.5/).
+Please upload these two files onto HDFS and pass the host and path to the command line arguments.
+
+Example command:
+```bash
+./dist/bin/bigdl.sh -- \
+spark-submit \
+--master spark://... \
+--executor-cores cores_per_executor \
+--total-executor-cores total_cores_for_the_job \
+--class com.intel.analytics.bigdl.models.rnn.Train \
+dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
+-f /path/inputdata/ -s /path/saveDict --checkpoint /path/model/ --batchSize 12 \
+--sent hdfs://127.0.0.1:9001/tokenizer/en-sent.bin --token hdfs://127.0.0.1:9001/tokenizer/en-token.bin
+```
+
 The <code>Dictionary.scala</code> accepts an array of string indicating for tokenized sentences or a file directory storing all the vocabulary.
 It provides profuse API to reach the contents of dictionary. Such as <code>vocabSize()</code>, <code>word2Index()</code>, <code>vocabulary()</code>.
 The dictionary information will be saved to <code>/opt/save/dictionary.txt</code>.
