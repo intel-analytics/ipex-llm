@@ -18,19 +18,13 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.Cosine
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class CosineSpec extends FlatSpec with BeforeAndAfter with Matchers{
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A Cosine Module" should "generate correct output and grad in 2D" in {
+class CosineSpec extends TorchSpec {
+    "A Cosine Module" should "generate correct output and grad in 2D" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
     val module = new Cosine[Double](2, 3)
@@ -68,6 +62,7 @@ class CosineSpec extends FlatSpec with BeforeAndAfter with Matchers{
   }
 
   "A Cosine Module" should "generate correct output and grad in 1D" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

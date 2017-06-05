@@ -47,7 +47,7 @@ eval set -- "$options"
 while true; do
 	case $1 in
 		-p|--spark)
-			if [ "$2" == "spark_2.0" ]; then
+			if [ "$2" == "spark_2.x" ]; then
 				SPARK_DIR=$SPARK2_DIR
 				SPARK_LINK=$SPARK2_LINK
 				BIGDL_JAR=$BIGDL2_JAR

@@ -62,7 +62,8 @@ object DistriOptimizer {
     localStates: Array[Table],
     gradient: Tensor[T],
     var moduleTimeList: Array[Long] = null,
-    localMethods: Array[Option[Array[ValidationMethod[T]]]]
+    localMethods: Array[Option[Array[ValidationMethod[T]]]],
+    optimMethod: OptimMethod[T]
   )
 
   /**
@@ -107,8 +108,8 @@ object DistriOptimizer {
     val partitionNum = dataset.originRDD().partitions.length
     var wallClockTime = 0L
     var lastEpochTime = 0L
-    val driverState = T("epoch" -> state.get[Int]("epoch").getOrElse(1),
-      "neval" -> state.get[Int]("neval").getOrElse(1))
+    val driverState = T("epoch" -> optimMethod.state.get[Int]("epoch").getOrElse(1),
+      "neval" -> optimMethod.state.get[Int]("neval").getOrElse(1))
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException()
@@ -155,24 +156,21 @@ object DistriOptimizer {
           val cached = modelIter.next()
           val syWStart = System.nanoTime()
           val weightsResult = parameters.getWeights(cached.modelWeights.head)
-          val tensorBuffer = new Array[(Tensor[T], Tensor[T])](_subModelNumber)
+          val miniBatchBuffer = new Array[MiniBatch[T]](_subModelNumber)
+          val batch = data.next()
+          val stackSize = batch.size() / _subModelNumber
           tasks += Engine.default.invoke(() => {
-            val batch = data.next()
             var b = 0
-            require(batch.data.size(1) == batch.labels.size(1),
-              "data and label batch size not match")
-            require((batch.data.size(1) >= _subModelNumber) &&
-              (batch.data.size(1) % _subModelNumber == 0), "total batch size: " +
-              s"${batch.data.size(1)} should be divided by total core number: ${_subModelNumber}")
-            if (batch.data.size(1) < _subModelNumber * 2) {
+            require((batch.size() >= _subModelNumber) &&
+              (batch.size() % _subModelNumber == 0), "total batch size: " +
+              s"${batch.size()} should be divided by total core number: ${_subModelNumber}")
+            if (batch.size() < _subModelNumber * 2) {
               logger.warn("Warning: for better training speed, " +
                 "total batch size is recommended to be at least two times of core number" +
-                  s"${_subModelNumber}, please tune your batch size accordingly")
+                s"${_subModelNumber}, please tune your batch size accordingly")
             }
-            val stackSize = batch.data.size(1) / _subModelNumber
             while (b < _subModelNumber) {
-              tensorBuffer(b) = (batch.data.narrow(1, b * stackSize + 1, stackSize),
-                batch.labels.narrow(1, b * stackSize + 1, stackSize))
+              miniBatchBuffer(b) = batch.slice(b * stackSize + 1, stackSize)
               b += 1
             }
           })
@@ -195,7 +193,8 @@ object DistriOptimizer {
               val localModel = cached.localModels(i)
               localModel.training()
               val localCriterion = cached.localCriterions(i)
-              val (input, target) = tensorBuffer(i)
+              val input = miniBatchBuffer(i).getInput()
+              val target = miniBatchBuffer(i).getTarget()
               val output = localModel.forward(input)
               lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
               val errors = localCriterion.backward(output, target)
@@ -209,7 +208,7 @@ object DistriOptimizer {
           driverMetrics.add("computing time for each node", computingTime)
 
           val finishedThreads = trainingThreads.filter(!_.isCancelled).map(_.get())
-          recordsNum += finishedThreads.size * tensorBuffer.head._2.size(1)
+          recordsNum += finishedThreads.size * stackSize
           var i = 0
           while (i < finishedThreads.size) {
             lossSum += lossArray(finishedThreads(i))
@@ -261,10 +260,10 @@ object DistriOptimizer {
           val modelCache = modelIter.next()
           parameters.aggregrateGradientPartition()
           parameters.gradientPartition.div(ev.fromType(finishedModelNum))
-          modelCache.localStates.head("neval") = driverState[Int]("neval")
-          modelCache.localStates.head("epoch") = driverState[Int]("epoch")
-          optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
-            parameters.weightPartition, modelCache.localStates.head, modelCache.localStates.head)
+          modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
+          modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
+          modelCache.optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
+            parameters.weightPartition)
 
           parameters.sendWeightPartition()
           Iterator.empty
@@ -273,13 +272,15 @@ object DistriOptimizer {
         accumulateCount += recordsNum.value
         val end = System.nanoTime()
         wallClockTime += end - start
-        optimMethod.updateHyperParameter(state, driverState)
+        optimMethod.state.update("epoch", driverState[Int]("epoch"))
+        optimMethod.state.update("neval", driverState[Int]("neval"))
+        optimMethod.updateHyperParameter()
         driverState("Loss") = lossSum.value.toFloat / finishedModelNum
         driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
-        if (state.contains("clr")) driverState("LearningRate") = -state[Double]("clr").toFloat
+        driverState("LearningRate") = -optimMethod.getLearningRate().toFloat
         logger.info(s"${_header} Train ${recordsNum.value} in ${(end - start) / 1e9}seconds. " +
           s"Throughput is ${driverState("Throughput")} records/second. Loss is ${
-            driverState("Loss")}. ${optimMethod.getHyperParameter(state)}")
+            driverState("Loss")}. ${optimMethod.getHyperParameter()}")
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - finishedModelNum))
         lossArray = new Array[Double](_subModelNumber)
@@ -354,7 +355,8 @@ object DistriOptimizer {
           wallClockTime,
           models,
           driverState,
-          parameters
+          parameters,
+          optimMethod
         )
 
       } else {
@@ -382,7 +384,8 @@ object DistriOptimizer {
     wallClockTime: Long,
     models: RDD[Cache[T]],
     state: Table,
-    parameters: AllReduceParameter[T])
+    parameters: AllReduceParameter[T],
+    optimMethod: OptimMethod[T])
   : Unit = {
     if (cacheTrigger.isDefined) {
       val trigger = cacheTrigger.get
@@ -390,11 +393,10 @@ object DistriOptimizer {
         println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to ${cachePath.get}")
         saveModel(getModel(models, parameters), cachePath, isOverWrite,
           s".${state[Int]("neval")}")
-        val localState = models.map(_.localStates.head).first()
-        localState("neval") = state[Int]("neval")
-        localState("epoch") = state[Int]("epoch")
-        saveState(localState, cachePath, isOverWrite, s"" +
-          s".${state[Int]("neval")}")
+        optimMethod.state.update("epoch", state[Int]("epoch"))
+        optimMethod.state.update("neval", state[Int]("neval"))
+        saveOptimMethod(optimMethod, cachePath, isOverWrite, s".${state[Int]("neval")}")
+
       }
     }
   }
@@ -463,10 +465,11 @@ object DistriOptimizer {
     coresPerNode: Int,
     checkSingleton: Boolean,
     parameters: AllReduceParameter[T],
-    validationMethods: Option[Array[ValidationMethod[T]]]
+    validationMethods: Option[Array[ValidationMethod[T]]],
+    optimMethod: OptimMethod[T]
     )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
-    val broadcast = sc.broadcast((model, criterion, state, validationMethods))
+    val broadcast = sc.broadcast((model, criterion, state, validationMethods, optimMethod))
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException
@@ -481,7 +484,8 @@ object DistriOptimizer {
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
     val models = dataset.originRDD().mapPartitions(_ => {
-      val (broadcastModel, broadcastCriterion, broadcastState, broadcastMethod) = broadcast.value
+      val (broadcastModel, broadcastCriterion, broadcastState, broadcastMethod,
+      broadcastOptim) = broadcast.value
       if (!Engine.checkSingleton()) {
         if (checkSingleton) {
           require(Engine.checkSingleton(), "Partitions of the training data are not evenly" +
@@ -523,7 +527,8 @@ object DistriOptimizer {
         cached.map(_._5), // states
         cached.head._2.clone(), // a tensor buffer
         new Array[Long](_subModelNumber * computeThresholdbatchSize),
-        cached.map(_._6)
+        cached.map(_._6),
+        broadcastOptim.clone()
       ))
     }).persist()
     models.setName("Thread Model RDD")
@@ -577,17 +582,17 @@ object DistriOptimizer {
 
       workingModels.foreach(_.evaluate())
       dataIter.map(batch => {
-        require(batch.data.size(1) == batch.labels.size(1))
-        val stackSize = batch.data.size(1) / _subModelNumber
-        val extraSize = batch.data.size(1) % _subModelNumber
+        val stackSize = batch.size() / _subModelNumber
+        val extraSize = batch.size() % _subModelNumber
         val parallelism = if (stackSize == 0) extraSize else _subModelNumber
         Engine.default.invokeAndWait(
           (0 until parallelism).map(b =>
             () => {
-              val offset = b * stackSize + math.min(b, extraSize)
+              val offset = b * stackSize + math.min(b, extraSize) + 1
               val length = stackSize + (if (b < extraSize) 1 else 0)
-              val input = batch.data.narrow(1, offset + 1, length)
-              val target = batch.labels.narrow(1, offset + 1, length)
+              val miniBatch = batch.slice(offset, length)
+              val input = miniBatch.getInput()
+              val target = miniBatch.getTarget()
               val output = workingModels(b).forward(input)
               val validatMethods = vMethodsArr(b).get
               validatMethods.map(validation => {
@@ -662,17 +667,17 @@ object DistriOptimizer {
 /**
  * The optimizer run on a distributed cluster.
  *
- * @param model train model
+ * @param _model train model
  * @param dataset train dataset
  * @param criterion loss function
  */
 class DistriOptimizer[T: ClassTag] (
-  model: Module[T],
+  _model: Module[T],
   dataset: DistributedDataSet[MiniBatch[T]],
   criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
-    model, dataset, criterion) {
+    _model, dataset, criterion) {
   val metrics = new Metrics
 
   private var models: RDD[DistriOptimizer.Cache[T]] = null
@@ -691,8 +696,17 @@ class DistriOptimizer[T: ClassTag] (
     }).count()
   }
 
+  override def prepareInput(): Unit = {
+    import DistriOptimizer._
+    if (!dataset.isCached) {
+      logger.info("caching training rdd ...")
+      dataset.cache()
+    }
+  }
+
   override def optimize(): Module[T] = {
-    optimMethod.clearHistory(state)
+    optimMethod.clearHistory()
+    optimMethod.loadFromTable(state)
     state("dropPercentage") = dropPercentage
     state("warmupIterationNum") = warmupIterationNum
     state("computeThresholdbatchSize") = computeThresholdbatchSize
@@ -705,8 +719,10 @@ class DistriOptimizer[T: ClassTag] (
     val size = model.getParameters()._1.nElement()
     val parameters = AllReduceParameter.newParameter(partitionNum, size)
 
+    prepareInput()
+
     models = DistriOptimizer.initThreadModels(model, dataset, criterion, state,
-      nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods)
+      nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
 
     if (checkpointPath.isDefined) {
       val file = checkpointPath.get + "/" +
@@ -741,6 +757,8 @@ class DistriOptimizer[T: ClassTag] (
         )
         retryNum = Int.MaxValue
       } catch {
+        case e: IllegalArgumentException =>
+          throw e
         case t: Throwable =>
           DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           if (checkpointPath.isDefined) {
@@ -750,32 +768,33 @@ class DistriOptimizer[T: ClassTag] (
              */
             if (System.nanoTime() - lastFailureTimestamp < maxRetry * retryTimeInterval * 1e9) {
               retryNum += 1
+              if (retryNum == maxRetry) {
+                throw t
+              }
             } else {
               retryNum = 1
             }
             DistriOptimizer.logger.info(s"Retrying $retryNum times")
             lastFailureTimestamp = System.nanoTime()
-            val stateFile = getLatestFile(checkpointPath.get, "state")
+            val methodFile = getLatestFile(checkpointPath.get, "optimMethod")
             val modelFile = getLatestFile(checkpointPath.get, "model")
             clearState()
             models.unpersist()
 
             var newModel: Module[T] = null
-            if (stateFile != null && modelFile != null) {
+            if (methodFile != null && modelFile != null) {
               newModel = Module.load[T](modelFile)
-              state = T.load(stateFile)
+              optimMethod = OptimMethod.load[T](methodFile)
               DistriOptimizer.logger.info("Recover from last snapshot")
             } else {
               newModel = model
               DistriOptimizer.logger.info("Recover from origin model")
             }
-            optimMethod.clearHistory(state)
+            optimMethod.clearHistory()
             models = DistriOptimizer.initThreadModels(newModel, dataset, criterion, state,
-              nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods)
+              nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
           } else {
-            retryNum = Int.MaxValue
-            DistriOptimizer.logger.info("Failed to recover since no model snapshot" +
-              "checkpoint path is not set")
+            throw t
           }
       }
     }

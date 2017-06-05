@@ -66,10 +66,6 @@ class HardShrink[T: ClassTag](lambda: Double = 0.5)
     DenseTensorApply.apply3[T](gradInput, gradOutput, input, func)
     gradInput
   }
-
-  override def toString(): String = {
-    s"nn.HardShrink"
-  }
 }
 
 object HardShrink {

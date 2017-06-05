@@ -20,14 +20,14 @@ import gzip
 
 import numpy
 
-import base
+from dataset import base
 
 SOURCE_URL = 'http://yann.lecun.com/exdb/mnist/'
 
-TRAIN_MEAN = 0.13066047740239506
-TRAIN_STD = 0.3081078
-TEST_MEAN = 0.13251460696903547
-TEST_STD = 0.31048024
+TRAIN_MEAN = 0.13066047740239506 * 255
+TRAIN_STD = 0.3081078 * 255
+TEST_MEAN = 0.13251460696903547 * 255
+TEST_STD = 0.31048024 * 255
 
 
 def _read32(bytestream):
@@ -85,6 +85,10 @@ def read_data_sets(train_dir, data_type="train"):
     :param data_type: Reading training set or testing set.
            It can be either "train" or "test"
     :return: (ndarray, ndarray) representing (features, labels)
+            features is a 4D unit8 numpy array [index, y, x, depth]
+            representing each pixel valued from 0 to 255. labels
+            is 1D unit8 nunpy array representing the label valued
+             from 0 to 9.
     """
     TRAIN_IMAGES = 'train-images-idx3-ubyte.gz'
     TRAIN_LABELS = 'train-labels-idx1-ubyte.gz'
@@ -117,4 +121,9 @@ def read_data_sets(train_dir, data_type="train"):
 
 
 if __name__ == "__main__":
-    read_data_sets("/tmp/mnist/")
+    train, _ = read_data_sets("/tmp/mnist/", "train")
+    test, _ = read_data_sets("/tmp/mnist", "test")
+    assert numpy.abs(numpy.mean(train) - TRAIN_MEAN) / TRAIN_MEAN < 1e-7
+    assert numpy.abs(numpy.std(train) - TRAIN_STD) / TRAIN_STD < 1e-7
+    assert numpy.abs(numpy.mean(test) - TEST_MEAN) / TEST_MEAN < 1e-7
+    assert numpy.abs(numpy.std(test) - TEST_STD) / TEST_STD < 1e-7

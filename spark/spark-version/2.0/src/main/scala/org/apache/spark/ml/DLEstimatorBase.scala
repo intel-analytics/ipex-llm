@@ -17,21 +17,17 @@ package org.apache.spark.ml
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types.StructType
-
+import org.apache.spark.sql.Dataset
 /**
- * A wrapper for org.apache.spark.ml.Transformer.
- * Extends MlTransformer and override process to gain compatibility with
+ *A wrapper from org.apache.spark.ml.Estimator
+ * Extends MLEstimator and override process to gain compatibility with
  * both spark 1.5 and spark 2.0.
- */
-abstract class MlTransformer extends Transformer{
-
-  def process(dataset: DataFrame): DataFrame
-
-  override def transform(dataset: DataFrame): DataFrame = {
-    process(dataset)
+  */
+abstract class DLEstimatorBase extends Estimator[DLTransformer]{
+  protected def process(dataset: DataFrame): DLTransformer
+  override def fit(dataset: Dataset[_]): DLTransformer = {
+    process(dataset.toDF())
   }
-
   override def transformSchema(schema: StructType): StructType = schema
-
-  override def copy(extra: ParamMap): MlTransformer = defaultCopy(extra)
+  override def copy(extra: ParamMap): DLEstimatorBase = defaultCopy(extra)
 }

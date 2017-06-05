@@ -1,0 +1,17 @@
+language: java
+sudo: false
+before_install:
+ - export MAVEN_SKIP_RC="true" # lets us set MAVEN_OPTS
+ - export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m"
+install: mvn ${SPARK} -Dmaven.javadoc.skip=true -DskipTests=true -B -V install
+script: mvn ${SPARK} -Dmaven.javadoc.skip=true -B test
+matrix:
+ include:
+   # Covers Java 7, Spark 1.x
+   - jdk: openjdk7
+   # Covers Java 8, Spark 2.x
+   - jdk: oraclejdk8
+     env: SPARK=-Pspark_2.x
+cache:
+  directories:
+    - $HOME/.m2

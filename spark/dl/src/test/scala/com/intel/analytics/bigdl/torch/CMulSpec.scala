@@ -19,17 +19,11 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.CMul
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
-class CMulSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A CMul(5, 1)" should "generate correct output and grad" in {
+class CMulSpec extends TorchSpec {
+    "A CMul(5, 1)" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -67,6 +61,7 @@ class CMulSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A CMul(3)" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -104,6 +99,7 @@ class CMulSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A CMul(3, 4)" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -141,6 +137,7 @@ class CMulSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A CMul(1, 4, 1, 1)" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -178,6 +175,7 @@ class CMulSpec extends FlatSpec with BeforeAndAfter with Matchers {
   }
 
   "A CMul(1, 5, 1, 1)" should "generate correct output and grad" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

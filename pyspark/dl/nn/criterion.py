@@ -20,6 +20,7 @@ import sys
 from util.common import JavaValue
 from util.common import callBigDlFunc
 from util.common import JTensor
+from nn.layer import Model
 import numpy as np
 
 if sys.version >= '3':
@@ -36,6 +37,40 @@ class Criterion(JavaValue):
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, JavaValue.jvm_class_constructor(self), *args)
         self.bigdl_type = bigdl_type
+
+    def __str__(self):
+        return self.value.toString()
+
+    def forward(self, input, target):
+        """
+        NB: It's for debug only, please use optimizer.optimize() in production.
+        Takes an input object, and computes the corresponding loss of the criterion,
+        compared with `target`
+        :param input: ndarray or list of ndarray
+        :param target: ndarray or list of ndarray
+        :return: value of loss
+        """
+        output = callBigDlFunc(self.bigdl_type,
+                               "criterionForward",
+                               self.value,
+                               Model.check_input(input),
+                               Model.check_input(target))
+        return output
+
+    def backward(self, input, target):
+        """
+        NB: It's for debug only, please use optimizer.optimize() in production.
+        Performs a back-propagation step through the criterion, with respect to the given input.
+        :param input: ndarray or list of ndarray
+        :param target: ndarray or list of ndarray
+        :return: ndarray
+        """
+        output = callBigDlFunc(self.bigdl_type,
+                               "criterionBackward",
+                               self.value,
+                               Model.check_input(input),
+                               Model.check_input(target))
+        return Model.convert_output(output)
 
     @classmethod
     def of(cls, jcriterion, bigdl_type="float"):

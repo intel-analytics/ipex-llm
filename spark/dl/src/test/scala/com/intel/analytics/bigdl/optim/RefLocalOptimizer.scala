@@ -41,15 +41,15 @@ class RefLocalOptimizer[T: ClassTag](
     state("neval") = state.get[Int]("neval").getOrElse(1)
     while (!endWhen(state)) {
       val batch = data.next()
-      val input = batch.data
-      val target = batch.labels
+      val input = batch.getInput
+      val target = batch.getTarget
       model.training()
       model.zeroGradParameters()
       val output = model.forward(input).asInstanceOf[Tensor[T]]
       val loss = criterion.forward(output, target)
       model.backward(input, criterion.backward(output, target))
       optimMethod.optimize(_ => (loss, g), w, state)
-      count += input.size(1)
+      count += batch.size()
       state("neval") = state[Int]("neval") + 1
       println(s"loss is $loss")
       if (count >= dataset.size()) {

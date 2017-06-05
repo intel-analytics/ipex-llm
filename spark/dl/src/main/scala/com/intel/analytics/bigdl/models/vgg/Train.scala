@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
@@ -34,6 +34,8 @@ object Train {
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
       val conf = Engine.createSparkConf().setAppName("Train Vgg on Cifar10")
+        // Will throw exception without this config when has only one executor
+          .set("spark.rpc.message.maxSize", "200")
       val sc = new SparkContext(conf)
       Engine.init
 
@@ -47,16 +49,12 @@ object Train {
         VggForCifar10(classNum = 10)
       }
 
-      val state = if (param.stateSnapshot.isDefined) {
-        T.load(param.stateSnapshot.get)
+      val optimMethod = if (param.stateSnapshot.isDefined) {
+        OptimMethod.load[Float](param.stateSnapshot.get)
       } else {
-        T(
-          "learningRate" -> 0.01,
-          "weightDecay" -> 0.0005,
-          "momentum" -> 0.9,
-          "dampening" -> 0.0,
-          "learningRateSchedule" -> SGD.EpochStep(25, 0.5)
-        )
+        new SGD[Float](learningRate = 0.01, learningRateDecay = 0.0,
+          weightDecay = 0.0005, momentum = 0.9, dampening = 0.0, nesterov = false,
+          learningRateSchedule = SGD.EpochStep(25, 0.5))
       }
 
       val optimizer = Optimizer(
@@ -77,7 +75,7 @@ object Train {
       }
       optimizer
         .setValidation(Trigger.everyEpoch, validateSet, Array(new Top1Accuracy[Float]))
-        .setState(state)
+        .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()
 

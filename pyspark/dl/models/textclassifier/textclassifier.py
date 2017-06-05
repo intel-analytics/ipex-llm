@@ -35,10 +35,13 @@ def text_to_words(review_text):
 
 
 def analyze_texts(data_rdd):
-    return data_rdd.flatMap(lambda (text, label): text_to_words(text)) \
+    def index(w_c_i):
+        ((w, c), i) = w_c_i
+        return (w, (i + 1, c))
+    return data_rdd.flatMap(lambda text_label: text_to_words(text_label[0])) \
         .map(lambda word: (word, 1)).reduceByKey(lambda a, b: a + b) \
-        .sortBy(lambda (w, c): - c).zipWithIndex() \
-        .map(lambda ((w, c), i): (w, (i + 1, c))).collect()
+        .sortBy(lambda w_c: - w_c[1]).zipWithIndex() \
+        .map(lambda w_c_i: index(w_c_i)).collect()
 
 
 # pad([1, 2, 3, 4, 5], 0, 6)
@@ -114,23 +117,20 @@ def train(sc,
     filtered_w2v = {w: v for w, v in w2v.items() if w in word_to_ic}
     bfiltered_w2v = sc.broadcast(filtered_w2v)
 
-    tokens_rdd = data_rdd.map(lambda (text, label):
-                              ([w for w in text_to_words(text) if
-                                w in bword_to_ic.value], label))
+    tokens_rdd = data_rdd.map(lambda text_label:
+                              ([w for w in text_to_words(text_label[0]) if
+                                w in bword_to_ic.value], text_label[1]))
     padded_tokens_rdd = tokens_rdd.map(
-        lambda (tokens, label): (pad(tokens, "##", sequence_len), label))
-    vector_rdd = padded_tokens_rdd.map(lambda (tokens, label):
+        lambda tokens_label: (pad(tokens_label[0], "##", sequence_len), tokens_label[1]))
+    vector_rdd = padded_tokens_rdd.map(lambda tokens_label:
                                        ([to_vec(w, bfiltered_w2v.value,
                                                 embedding_dim) for w in
-                                         tokens], label))
+                                         tokens_label[0]], tokens_label[1]))
     sample_rdd = vector_rdd.map(
-        lambda (vectors, label): to_sample(vectors, label, embedding_dim))
+        lambda vectors_label: to_sample(vectors_label[0], vectors_label[1], embedding_dim))
 
     train_rdd, val_rdd = sample_rdd.randomSplit(
         [training_split, 1-training_split])
-
-    state = {"learningRate": 0.01,
-             "learningRateDecay": 0.0002}
 
     optimizer = Optimizer(
         model=build_model(news20.CLASS_NUM),
@@ -138,10 +138,9 @@ def train(sc,
         criterion=ClassNLLCriterion(),
         end_trigger=MaxEpoch(max_epoch),
         batch_size=batch_size,
-        optim_method="Adagrad",
-        state=state)
+        optim_method=Adagrad(learningrate=0.01, learningrate_decay=0.0002))
 
-    optimizer.setvalidation(
+    optimizer.set_validation(
         batch_size=batch_size,
         val_rdd=val_rdd,
         trigger=EveryEpoch(),

@@ -19,21 +19,15 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.optim.Adagrad
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
-class AdagradSpec extends FlatSpec with BeforeAndAfter with Matchers{
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "Adagrad with weightDecay" should "works fine" in {
+class AdagradSpec extends TorchSpec {
+    "Adagrad with weightDecay" should "works fine" in {
+    torchCheck()
     RandomGenerator.RNG.setSeed(10)
     val grad = Tensor[Float](10).rand()
     val param = Tensor[Float](10).rand()
-    val adagrad = new Adagrad[Float]()
+    val adagrad = new Adagrad[Float](0.1, 5e-7, 0.01)
 
     val config = T("learningRate" -> 0.1, "learningRateDecay" -> 5e-7,
       "weightDecay" -> 0.01)
@@ -52,7 +46,7 @@ class AdagradSpec extends FlatSpec with BeforeAndAfter with Matchers{
     val luaParam = torchResult("x").asInstanceOf[Tensor[Float]]
 
     for (i <- 1 to 5) {
-      adagrad.optimize(_ => (1f, grad), param, config)
+      adagrad.optimize(_ => (1f, grad), param)
     }
 
     luaParam should be (param)

@@ -172,7 +172,6 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
       preDataSet.originRDD().mapPartitions(_ => Iterator
         .single(broadcast.value.cloneTransformer())
       ).setName("Cached Transformer").persist()
-    cachedTransformer.count()
 
     new DistributedDataSet[C] {
       override def size(): Long = preDataSet.size()
@@ -184,6 +183,16 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
           (data, tran) => tran.next()(data))
 
       override def originRDD(): RDD[_] = preDataSet.originRDD()
+
+      override def cache(): Unit = {
+        cachedTransformer.count()
+        isCached = true
+      }
+
+      override def unpersist(): Unit = {
+        cachedTransformer.unpersist()
+        isCached = false
+      }
     }
   }
 
@@ -193,6 +202,31 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
    * @return
    */
   def originRDD(): RDD[_]
+
+  /**
+   * Trigger the computation of this dataset and cache it in memory.
+   */
+  def cache(): Unit = {
+    if (originRDD() != null) {
+      originRDD().count()
+    }
+    isCached = true
+  }
+
+  /**
+   * Unpersist rdd.
+   */
+  def unpersist(): Unit = {
+    if (originRDD() != null) {
+      originRDD().unpersist()
+      isCached = false
+    }
+  }
+
+  /**
+   * Check if rdd is cached.
+   */
+  var isCached = false
 }
 
 /**
@@ -265,6 +299,18 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
   }
 
   override def originRDD(): RDD[_] = buffer
+
+  override def cache(): Unit = {
+    buffer.count()
+    indexes.count()
+    isCached = true
+  }
+
+  override def unpersist(): Unit = {
+    buffer.unpersist()
+    indexes.unpersist()
+    isCached = false
+  }
 }
 
 /**
@@ -289,9 +335,8 @@ object DataSet {
    */
   def array[T: ClassTag](localData: Array[T], sc: SparkContext): DistributedDataSet[T] = {
     val nodeNumber = Engine.nodeNumber()
-    val coreNumber = Engine.coreNumber()
     new CachedDistriDataSet[T](
-      sc.parallelize(localData, nodeNumber * coreNumber)
+      sc.parallelize(localData, nodeNumber)
         // Keep this line, or the array will be send to worker every time
         .coalesce(nodeNumber, true)
         .mapPartitions(iter => {
@@ -348,7 +393,7 @@ object DataSet {
     if (isInOrder) {
       require(classTag[T] == classTag[Sample[_]],
         "DataSet.sortData: Only support sort for sample input")
-      data.sortBy(a => a.asInstanceOf[Sample[_]].feature().nElement())
+      data.sortBy(a => a.asInstanceOf[Sample[_]].featureLength())
     } else {
       data
     }
@@ -484,6 +529,23 @@ object DataSet {
       }).filter(_.label <= classNum)
 
       rdd[ByteRecord](rawData)
+    }
+
+    /**
+     * Extract hadoop sequence files from an HDFS path as RDD
+     * @param url sequence files folder path
+     * @param sc spark context
+     * @param classNum class number of data
+     * @param partitionNum partition number, default: Engine.nodeNumber() * Engine.coreNumber()
+     * @return
+     */
+    private[bigdl] def filesToRdd(url: String, sc: SparkContext,
+      classNum: Int, partitionNum: Option[Int] = None): RDD[ByteRecord] = {
+      val num = partitionNum.getOrElse(Engine.nodeNumber() * Engine.coreNumber())
+      val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text], num).map(image => {
+        ByteRecord(image._2.copyBytes(), readLabel(image._1).toFloat)
+      }).filter(_.label <= classNum)
+      rawData.coalesce(num, true)
     }
 
     private[bigdl] def findFiles(path: Path): Array[LocalSeqFilePath] = {

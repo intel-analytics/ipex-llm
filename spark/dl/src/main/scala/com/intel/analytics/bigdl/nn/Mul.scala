@@ -88,10 +88,6 @@ class Mul[T: ClassTag](implicit ev: TensorNumeric[T]) extends TensorModule[T] {
     val state = Seq(super.hashCode(), weight, gradWeight)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
-
-  override def toString(): String = {
-    s"nn.Mul"
-  }
 }
 
 object Mul {

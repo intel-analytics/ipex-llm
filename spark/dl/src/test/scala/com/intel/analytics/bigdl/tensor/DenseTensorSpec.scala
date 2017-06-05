@@ -733,4 +733,32 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     output.size() should be (Array(10))
     input should be (Tensor[Float](4, 10).fill(1.0f))
   }
+
+  "tensor apply on 1D tensor" should "work correctly" in {
+    val a = Tensor[Float](4)
+    a.rand()
+    val b = a(2)
+    b.storageOffset() should be (2)
+    b.size() should be (Array(1))
+    b.stride() should be (Array(1))
+    b.nElement() should be (1)
+
+    b.setValue(1, 0.01f)
+    b.valueAt(1) should be (0.01f)
+    a.valueAt(2) should be (0.01f)
+  }
+
+  "tensor apply on 2D tensor" should "work correctly" in {
+    val a = Tensor[Float](3, 4)
+    a.rand()
+    val b = a(2)
+    b.storageOffset() should be (5)
+    b.size() should be (Array(4))
+    b.stride() should be (Array(1))
+    b.nElement() should be (4)
+
+    b.setValue(3, 0.01f)
+    b.valueAt(3) should be (0.01f)
+    a.valueAt(2, 3) should be (0.01f)
+  }
 }

@@ -144,7 +144,7 @@ class SpatialSubtractiveNormalization[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"SpatialSubtractiveNormalization($nInputPlane, kernelTensor)"
+    s"${getPrintName}($nInputPlane, kernelTensor)"
   }
 
   override def canEqual(other: Any): Boolean = {

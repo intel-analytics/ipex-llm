@@ -20,6 +20,8 @@ from util.common import callBigDlFunc
 from util.common import JavaValue
 from util.common import JTensor
 from util.common import callJavaFunc
+from util.common import to_list
+from util.common import get_spark_context
 from pyspark import SparkContext
 import numpy as np
 
@@ -30,6 +32,23 @@ if sys.version >= '3':
 INTMAX = 2147483647
 INTMIN = -2147483648
 DOUBLEMAX = 1.7976931348623157E308
+
+
+class Node(JavaValue):
+    """
+    Represent a node in a graph. The connections between nodes are directed.
+    """
+    def __init__(self, jvalue, bigdl_type, *args):
+        self.value = jvalue if jvalue else callBigDlFunc(
+            bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+        self.bigdl_type = bigdl_type
+
+    @classmethod
+    def of(cls, jvalue, bigdl_type="float"):
+        return Node(jvalue, bigdl_type)
+
+    def element(self):
+        return Model.of(self.value.element())
 
 
 class Model(JavaValue):
@@ -43,6 +62,28 @@ class Model(JavaValue):
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, JavaValue.jvm_class_constructor(self), *args)
         self.bigdl_type = bigdl_type
+
+    def __str__(self):
+        """
+        >>> conv2 = SpatialConvolution(6, 12, 5, 5).set_name("conv2")
+        creating: createSpatialConvolution
+        >>> print(conv2)
+        SpatialConvolution[conv2](6 -> 12, 5 x 5, 1, 1, 0, 0)
+        """
+        return self.value.toString()
+
+    def __call__(self, x=None):
+        """
+        Some other modules point to current module
+        :param x: upstream module nodes. x is either a Node or list of Node.
+        :return: node containing current module
+        """
+
+        x = x if x else []
+        return Node.of(callBigDlFunc(self.bigdl_type,
+                                     "createNode",
+                                     self,
+                                     to_list(x)))
 
     @classmethod
     def of(cls, jmodel, bigdl_type="float"):
@@ -59,14 +100,14 @@ class Model(JavaValue):
         Give this model a name. There would be a generated name
         consist of class name and UUID if user doesn't set it.
         """
-        callJavaFunc(SparkContext.getOrCreate(), self.value.setName, name)
+        callJavaFunc(get_spark_context(), self.value.setName, name)
         return self
 
     def name(self):
         """
         Name of this layer
         """
-        return callJavaFunc(SparkContext.getOrCreate(), self.value.getName)
+        return callJavaFunc(get_spark_context(), self.value.getName)
 
     def set_seed(self, seed=123):
         """
@@ -82,12 +123,64 @@ class Model(JavaValue):
             return "float32"
         else:
             return "float64"
+    @staticmethod
+    def check_input(input):
+        if type(input) is list:
+            if len(input) == 0:
+                raise Exception('Error when checking: empty input')
+            if not hasattr(input[0], 'shape'):
+                raise Exception(
+                    'Error when checking: expecting list of ndarray')
+            return [JTensor.from_ndarray(i) for i in input]
+        else:
+            if not hasattr(input, 'shape'):
+                raise Exception(
+                    'Error when checking: expecting list of ndarray')
+            return [JTensor.from_ndarray(input)]
+
+    @staticmethod
+    def convert_output(output):
+        if type(output) is JTensor:
+            return output.to_ndarray()
+        else:
+            return [x.to_ndarray() for x in output]
+
+    def forward(self, input):
+        """
+        NB: It's for debug only, please use optimizer.optimize() in production.
+        Takes an input object, and computes the corresponding output of the module
+        :param input: ndarray or list of ndarray
+        :return: ndarray or list of ndarray
+        """
+        output = callBigDlFunc(self.bigdl_type,
+                               "modelForward",
+                               self.value,
+                               self.check_input(input))
+        return self.convert_output(output)
+
+    def backward(self, input, grad_output):
+        """
+        NB: It's for debug only, please use optimizer.optimize() in production.
+        Performs a back-propagation step through the module, with respect to the given input. In
+        general this method makes the assumption forward(input) has been called before, with the same
+        input. This is necessary for optimization reasons. If you do not respect this rule, backward()
+        will compute incorrect gradients.
+        :param input: ndarray or list of ndarray
+        :param grad_output: ndarray or list of ndarray
+        :return: ndarray or list of ndarray
+        """
+        output = callBigDlFunc(self.bigdl_type,
+                               "modelBackward",
+                               self.value,
+                               self.check_input(input),
+                               self.check_input(grad_output))
+        return self.convert_output(output)
 
     def reset(self):
         """
         Initialize the model weights.
         """
-        callJavaFunc(SparkContext.getOrCreate(), self.value.reset)
+        callJavaFunc(get_spark_context(), self.value.reset)
         return self
 
     def parameters(self):
@@ -103,10 +196,10 @@ class Model(JavaValue):
             return {
                 param_name: np.array(values[0],
                                      dtype=self.get_dtype()).reshape(
-                    values[1]) for param_name, values in params.iteritems()}
+                    values[1]) for param_name, values in params.items()}
 
         return {layer_name: to_ndarray(params) for layer_name, params in
-                name_to_params.iteritems()}
+                name_to_params.items()}
 
     def predict(self, data_rdd):
         """
@@ -133,6 +226,57 @@ class Model(JavaValue):
                              "modelTest",
                              self.value,
                              val_rdd, batch_size, val_methods)
+
+    def set_weights(self, weights):
+        """
+        Set weights for this layer
+        :param weights: a list of numpy arrays which represent weight and bias
+        :return:
+        >>> linear = Linear(3,2)
+        creating: createLinear
+        >>> linear.set_weights([np.array([[1,2,3],[4,5,6]]), np.array([7,8])])
+        >>> weights = linear.get_weights()
+        >>> weights[0].shape == (2,3)
+        True
+        >>> weights[0][0]
+        array([ 1.,  2.,  3.], dtype=float32)
+        >>> weights[1]
+        array([ 7.,  8.], dtype=float32)
+        >>> relu = ReLU()
+        creating: createReLU
+        >>> from py4j.protocol import Py4JJavaError
+        >>> try:
+        ...     relu.set_weights([np.array([[1,2,3],[4,5,6]]), np.array([7,8])])
+        ... except Py4JJavaError as err:
+        ...     print(err.java_exception)
+        ...
+        java.lang.IllegalArgumentException: requirement failed: this layer does not have weight/bias
+        >>> relu.get_weights()
+        The layer does not have weight/bias
+        >>> add = Add(2)
+        creating: createAdd
+        >>> try:
+        ...     add.set_weights([np.array([7,8]), np.array([1,2])])
+        ... except Py4JJavaError as err:
+        ...     print(err.java_exception)
+        ...
+        java.lang.IllegalArgumentException: requirement failed: the number of input weight/bias is not consistant with number of weight/bias of this layer
+        """
+        tensors = [JTensor.from_ndarray(param, self.bigdl_type) for param in weights]
+        callBigDlFunc(self.bigdl_type, "setWeights", self.value, tensors)
+
+    def get_weights(self):
+        """
+        Get weights for this layer
+        :return: list of numpy arrays which represent weight and bias
+        """
+        tensorWeights = callBigDlFunc(self.bigdl_type,
+                              "getWeights", self.value)
+        if tensorWeights is not None:
+            return [tensor.to_ndarray() for tensor in tensorWeights]
+        else:
+            print("The layer does not have weight/bias")
+            return None
 
     @staticmethod
     def load(path, bigdl_type="float"):
@@ -167,6 +311,21 @@ class Model(JavaValue):
         """
         jmodel = callBigDlFunc(bigdl_type, "loadCaffe", model, defPath, modelPath, match_all)
         return Model.of(jmodel)
+
+class Container(Model):
+    '''
+     [[Container]] is a sub-class of Model that declares methods defined in all containers. 
+     A container usually contain some other modules which can be added through the "add" method
+    '''
+
+    def __init__(self, jvalue, bigdl_type, *args):
+        super(Container, self).__init__(jvalue, bigdl_type, *args)
+
+    def add(self, model):
+        self.value.add(model.value)
+        return self
+
+
 
 
 class Linear(Model):
@@ -256,7 +415,7 @@ class LogSoftMax(Model):
         super(LogSoftMax, self).__init__(None, bigdl_type)
 
 
-class Sequential(Model):
+class Sequential(Container):
 
     '''
     Sequential provides a means to plug layers together
@@ -274,10 +433,6 @@ class Sequential(Model):
 
     def __init__(self, bigdl_type="float"):
         super(Sequential, self).__init__(None, bigdl_type)
-
-    def add(self, model):
-        self.value.add(model.value)
-        return self
 
 
 class SpatialConvolution(Model):
@@ -384,7 +539,7 @@ class Select(Model):
     def __init__(self, dim, index, bigdl_type="float"):
         super(Select, self).__init__(None, bigdl_type, dim, index)
 
-class Recurrent(Model):
+class Recurrent(Container):
     '''
     Recurrent module is a container of rnn cells
     Different types of rnn cells can be added using add() function
@@ -395,14 +550,6 @@ class Recurrent(Model):
 
     def __init__(self, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type)
-
-    '''
-    Add a recurrent kernel such as RnnCell, LSTM, GRU, etc.
-    to be a recurrent module
-    '''
-    def add(self, model):
-        self.value.add(model.value)
-        return self
 
 
 class LSTM(Model):
@@ -522,7 +669,7 @@ class TimeDistributed(Model):
         super(TimeDistributed, self).__init__(None, bigdl_type, model)
 
 
-class Concat(Model):
+class Concat(Container):
 
     '''
     Concat concatenates the output of one layer of "parallel"
@@ -829,7 +976,7 @@ class Bilinear(Model):
                                        bias_res)
 
 
-class Bottle(Model):
+class Bottle(Container):
 
     '''
     Bottle allows varying dimensionality input to be forwarded through any module
@@ -1059,6 +1206,27 @@ class CosineDistance(Model):
                  bigdl_type="float"):
         super(CosineDistance, self).__init__(None, bigdl_type)
 
+class DiceCoefficientCriterion(Model):
+
+    '''
+    The Dice-Coefficient criterion
+    input: Tensor, target: Tensor
+
+    return:      2 * (input intersection target)
+            1 - ----------------------------------
+                    input union target
+
+    >>> diceCoefficientCriterion = DiceCoefficientCriterion(size_average = True, epsilon = 1.0)
+    creating: createDiceCoefficientCriterion
+    '''
+
+    def __init__(self,
+                 size_average,
+                 epsilon,
+                 bigdl_type="float"):
+        super(DiceCoefficientCriterion, self).__init__(None, bigdl_type,
+                                                       size_average,
+                                                       epsilon)
 
 class DotProduct(Model):
 
@@ -1403,7 +1571,7 @@ class LookupTable(Model):
     def __init__(self,
                  n_index,
                  n_output,
-                 padding_value=0,
+                 padding_value=0.0,
                  max_norm=DOUBLEMAX,
                  norm_type=2.0,
                  should_scale_grad_by_freq=False,
@@ -1456,7 +1624,7 @@ class MV(Model):
                                  trans)
 
 
-class MapTable(Model):
+class MapTable(Container):
 
     '''
     This class is a container for a single module which will be applied
@@ -1764,7 +1932,7 @@ class PairwiseDistance(Model):
                                                norm)
 
 
-class ParallelTable(Model):
+class ParallelTable(Container):
 
     '''
     It is a container module that applies the i-th member module to the i-th
@@ -1942,7 +2110,7 @@ class Scale(Model):
                                     size)
 
 
-class SelectTable(Model):
+class SelectTable(Container):
 
     '''
     Creates a module that takes a table as input and outputs the element at index `index`
@@ -2285,6 +2453,51 @@ class VolumetricConvolution(Model):
                                                     with_bias,
                                                     init_method)
 
+
+class VolumetricMaxPooling(Model):
+
+    '''
+    Applies 3D max-pooling operation in kTxkWxkH regions by step size dTxdWxdH steps.
+    The number of output features is equal to the number of input planes / dT.
+    The input can optionally be padded with zeros. Padding should be smaller than
+    half of kernel size. That is, padT < kT/2, padW < kW/2 and padH < kH/2
+    :param k_t The kernel size
+    :param k_w The kernel width
+    :param k_h The kernel height
+    :param d_t The step in the time dimension
+    :param d_w The step in the width dimension
+    :param d_h The step in the height dimension
+    :param pad_t The padding in the time dimension
+    :param pad_w The padding in the width dimension
+    :param pad_h The padding in the height dimension
+
+    >>> volumetricMaxPooling = VolumetricMaxPooling(5, 5, 5, 1, 1, 1)
+    creating: createVolumetricMaxPooling
+    '''
+
+    def __init__(self,
+                 k_t,
+                 k_w,
+                 k_h,
+                 d_t,
+                 d_w,
+                 d_h,
+                 pad_t=0,
+                 pad_w=0,
+                 pad_h=0,
+                 bigdl_type="float"):
+        super(VolumetricMaxPooling, self).__init__(None, bigdl_type,
+                                                    k_t,
+                                                    k_w,
+                                                    k_h,
+                                                    d_t,
+                                                    d_w,
+                                                    d_h,
+                                                    pad_t,
+                                                    pad_w,
+                                                    pad_h)
+
+
 class SpatialZeroPadding(Model):
 
     '''
@@ -2504,20 +2717,26 @@ class Reshape(Model):
         super(Reshape, self).__init__(None, bigdl_type, size, batch_mode)
 
 
-class BiRecurrent(Model):
+class BiRecurrent(Container):
     '''
     Create a Bidirectional recurrent layer
 
+    :param merge: merge layer
+
+    >>> biRecurrent = BiRecurrent(CAddTable())
+    creating: createCAddTable
+    creating: createBiRecurrent
     >>> biRecurrent = BiRecurrent()
     creating: createBiRecurrent
     '''
 
     def __init__(self,
+                 merge=None,
                  bigdl_type="float"):
-        super(BiRecurrent, self).__init__(None, bigdl_type)
+        super(BiRecurrent, self).__init__(None, bigdl_type, merge)
 
 
-class ConcatTable(Model):
+class ConcatTable(Container):
     '''
     ConcateTable is a container module like Concate. Applies an input
     to each member module, input can be a tensor or a table.
@@ -2723,8 +2942,12 @@ class Graph(Model):
     It is allowed that some successors of the inputs node are not connect to outputs.
     If so, these nodes will be excluded in the computation.
     '''
-    def __init__(self):
-        raise Exception('Graph model is not supported in python yet')
+
+    def __init__(self,
+                 input,
+                 output,
+                 bigdl_type="float"):
+        super(Graph, self).__init__(None, bigdl_type, input, output)
 
 class SpatialSubtractiveNormalization(Model):
     '''

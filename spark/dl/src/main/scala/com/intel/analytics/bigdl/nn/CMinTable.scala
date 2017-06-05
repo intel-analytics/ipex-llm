@@ -93,11 +93,6 @@ class CMinTable[T: ClassTag](implicit ev: TensorNumeric[T])
     val state = Seq(super.hashCode())
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
-
-  override def toString() : String = {
-    "nn.CMinTable"
-  }
-
 }
 
 object CMinTable {

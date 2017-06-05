@@ -19,20 +19,14 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.{GradientChecker, SpatialCrossMapLRN}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl._
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
-class SpatialCrossMapLRNSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  "A SpatialCrossMapLRN Layer" should "generate correct output" in {
+class SpatialCrossMapLRNSpec extends TorchSpec {
+    "A SpatialCrossMapLRN Layer" should "generate correct output" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -51,6 +45,7 @@ class SpatialCrossMapLRNSpec extends FlatSpec with BeforeAndAfter with Matchers 
   }
 
   it should "generate correct output when feature map number is large" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -69,6 +64,7 @@ class SpatialCrossMapLRNSpec extends FlatSpec with BeforeAndAfter with Matchers 
   }
 
   it should "generate correct gradInput" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -91,6 +87,7 @@ class SpatialCrossMapLRNSpec extends FlatSpec with BeforeAndAfter with Matchers 
   }
 
   it should "generate correct gradInput when feature map number is large" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 
@@ -113,6 +110,7 @@ class SpatialCrossMapLRNSpec extends FlatSpec with BeforeAndAfter with Matchers 
   }
 
   "SpatialCrossMapLRN module" should "be good in gradient check for input" in {
+    torchCheck()
     val seed = 100
     RNG.setSeed(seed)
 

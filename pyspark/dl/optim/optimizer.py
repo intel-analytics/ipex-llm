@@ -15,16 +15,17 @@
 #
 
 
-from util.common import callBigDlFunc
-from util.common import JavaValue
-from util.common import callJavaFunc
-from pyspark import SparkContext
-import numpy as np
 import os
+import sys
 from distutils.dir_util import mkpath
 
+from nn.layer import DOUBLEMAX
+from util.common import JTensor
+from util.common import JavaValue
+from util.common import callBigDlFunc
+from util.common import callJavaFunc
+from util.common import get_spark_context
 
-import sys
 if sys.version >= '3':
     long = int
     unicode = str
@@ -140,6 +141,195 @@ class Step(JavaValue):
     def __init__(self, step_size, gamma, bigdl_type="float"):
             JavaValue.__init__(self, None, bigdl_type, step_size, gamma)
 
+class Default(JavaValue):
+    """
+    A learning rate decay policy, where the effective learning rate is
+    calculated as base_lr * gamma ^ (floor(iter / step_size))
+
+    :param step_size
+    :param gamma
+
+    >>> step = Default()
+    creating: createDefault
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
+class SGD(JavaValue):
+    """
+    A plain implementation of SGD
+
+    :param learningrate learning rate
+    :param learningrate_decay learning rate decay
+    :param weightdecay weight decay
+    :param momentum momentum
+    :param dampening dampening for momentum
+    :param nesterov enables Nesterov momentum
+    :param learningrates 1D tensor of individual learning rates
+    :param weightdecays 1D tensor of individual weight decays
+    >>> sgd = SGD()
+    creating: createDefault
+    creating: createSGD
+    """
+    def __init__(self,
+                 learningrate=1e-3,
+                 learningrate_decay=0.0,
+                 weightdecay=0.0,
+                 momentum=0.0,
+                 dampening=DOUBLEMAX,
+                 nesterov=False,
+                 leaningrate_schedule=None,
+                 learningrates=None,
+                 weightdecays=None,
+                 bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay, weightdecay,
+                           momentum, dampening, nesterov,
+                           leaningrate_schedule if (leaningrate_schedule) else Default(),
+                           JTensor.from_ndarray(learningrates), JTensor.from_ndarray(weightdecays))
+
+class Adagrad(JavaValue):
+    """
+    An implementation of Adagrad. See the original paper:
+    http://jmlr.org/papers/volume12/duchi11a/duchi11a.pdf
+
+    :param learningrate learning rate
+    :param learningrate_decay learning rate decay
+    :param weightdecay weight decay
+    >>> adagrad = Adagrad()
+    creating: createAdagrad
+    """
+    def __init__(self,
+                 learningrate=1e-3,
+                 learningrate_decay=0.0,
+                 weightdecay=0.0,
+                 bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay, weightdecay)
+
+class LBFGS(JavaValue):
+    """
+    This implementation of L-BFGS relies on a user-provided line
+    search function (state.lineSearch). If this function is not
+    provided, then a simple learningRate is used to produce fixed
+    size steps. Fixed size steps are much less costly than line
+    searches, and can be useful for stochastic problems.
+    The learning rate is used even when a line search is provided.
+    This is also useful for large-scale stochastic problems, where
+    opfunc is a noisy approximation of f(x). In that case, the learning
+    rate allows a reduction of confidence in the step size.
+
+    :param max_iter Maximum number of iterations allowed
+    :param max_eval Maximum number of function evaluations
+    :param tolfun Termination tolerance on the first-order optimality
+    :param tolx Termination tol on progress in terms of func/param changes
+    :param ncorrection
+    :param learningrate
+    :param verbose
+    :param linesearch A line search function
+    :param linesearch_options If no line search provided, then a fixed step size is used
+    >>> lbfgs = LBFGS()
+    creating: createLBFGS
+    """
+    def __init__(self,
+                 max_iter=20,
+                 max_eval=DOUBLEMAX,
+                 tolfun=1e-5,
+                 tolx=1e-9,
+                 ncorrection=100,
+                 learningrate=1.0,
+                 verbose=False,
+                 linesearch=None,
+                 linesearch_options=None,
+                 bigdl_type="float"):
+        if linesearch or linesearch_options:
+            raise ValueError('linesearch and linesearch_options must be None in LBFGS')
+        JavaValue.__init__(self, None, bigdl_type, max_iter, max_eval, tolfun, tolx,
+                           ncorrection, learningrate, verbose, linesearch, linesearch_options)
+
+class Adadelta(JavaValue):
+    """
+    Adadelta implementation for SGD: http://arxiv.org/abs/1212.5701
+
+    :param decayrate interpolation parameter rho
+    :param epsilon for numerical stability
+    >>> adagrad = Adadelta()
+    creating: createAdadelta
+    """
+    def __init__(self,
+                 decayrate = 0.9,
+                 epsilon = 1e-10,
+                 bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, decayrate, epsilon)
+
+class Adam(JavaValue):
+    """
+    An implementation of Adam http://arxiv.org/pdf/1412.6980.pdf
+    :param learningrate learning rate
+    :param learningrate_decay learning rate decay
+    :param beta1 first moment coefficient
+    :param beta2 second moment coefficient
+    :param epsilon for numerical stability
+    >>> adagrad = Adam()
+    creating: createAdam
+    """
+    def __init__(self,
+                 learningrate = 1e-3,
+                 learningrate_decay = 0.0,
+                 beta1 = 0.9,
+                 beta2 = 0.999,
+                 epsilon = 1e-8,
+                 bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay,
+                           beta1, beta2, epsilon)
+
+class Adamax(JavaValue):
+    """
+    An implementation of Adamax http://arxiv.org/pdf/1412.6980.pdf
+    :param learningrate learning rate
+    :param beta1 first moment coefficient
+    :param beta2 second moment coefficient
+    :param epsilon for numerical stability
+    >>> adagrad = Adamax()
+    creating: createAdamax
+    """
+    def __init__(self,
+                 learningrate = 0.002,
+                 beta1 = 0.9,
+                 beta2 = 0.999,
+                 epsilon = 1e-38,
+                 bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, learningrate, beta1, beta2, epsilon)
+
+class RMSprop(JavaValue):
+    """
+    An implementation of RMSprop
+    :param learningrate learning rate
+    :param learningrate_decay learning rate decay
+    :param decayrate decay rate, also called rho
+    :param epsilon for numerical stability
+    >>> adagrad = RMSprop()
+    creating: createRMSprop
+    """
+    def __init__(self,
+                 learningrate = 1e-2,
+                 learningrate_decay = 0.0,
+                 decayrate = 0.99,
+                 epsilon = 1e-8,
+                 bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, learningrate, learningrate_decay, decayrate, epsilon)
+
+class MultiStep(JavaValue):
+    """
+    similar to step but it allows non uniform steps defined by stepSizes
+
+    :param step_size the series of step sizes used for lr decay
+    :param gamma coefficient of decay
+
+    >>> step = MultiStep([2, 5], 0.3)
+    creating: createMultiStep
+    """
+    def __init__(self, step_sizes, gamma, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, step_sizes, gamma)
+
 
 class Optimizer(JavaValue):
     """
@@ -154,8 +344,7 @@ class Optimizer(JavaValue):
                  criterion,
                  end_trigger,
                  batch_size,
-                 optim_method="SGD",
-                 state={},
+                 optim_method=None,
                  bigdl_type="float"):
        """
        Create an optimizer.
@@ -164,18 +353,15 @@ class Optimizer(JavaValue):
        :param traiing_rdd: the training dataset 
        :param criterion: the loss function
        :param optim_method: the algorithm to use for optimization, 
-          e.g. SGD, Adagrad, etc.
-       :param state: a set of initial configurations for optimizer, 
-          provided as a dict e.g. configurable params include: 
-          learningRate, learningRateDecay,etc.  
+          e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
        :param end_trigger: when to end the optimization
        :param batch_size: training batch size
        """ 
        JavaValue.__init__(self, None, bigdl_type, model.value,
-                           training_rdd, criterion, optim_method,
-                           state, end_trigger, batch_size)
+                           training_rdd, criterion,
+                          optim_method if optim_method else SGD(), end_trigger, batch_size)
 
-    def setvalidation(self, batch_size, val_rdd, trigger, val_method=["Top1Accuracy"]):
+    def set_validation(self, batch_size, val_rdd, trigger, val_method=["Top1Accuracy"]):
         """
         Configure validation settings. 
 
@@ -188,7 +374,15 @@ class Optimizer(JavaValue):
         callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
                       trigger, val_rdd, val_method)
 
-    def setcheckpoint(self, checkpoint_trigger,
+    def set_model(self, model):
+        """
+        Set model. 
+
+        :param model: new model
+        """
+        self.value.setModel(model.value)
+
+    def set_checkpoint(self, checkpoint_trigger,
                       checkpoint_path, isOverWrite=True):
         """
         Configure checkpoint settings. 
@@ -208,7 +402,7 @@ class Optimizer(JavaValue):
         """
         Do an optimization. 
         """
-        jmodel = callJavaFunc(SparkContext.getOrCreate(), self.value.optimize)
+        jmodel = callJavaFunc(get_spark_context(), self.value.optimize)
         from nn.layer import Model
         return Model.of(jmodel)
 
@@ -238,6 +432,14 @@ class Optimizer(JavaValue):
         callBigDlFunc(self.bigdl_type, "setValSummary", self.value,
                       summary)
         return self
+
+    def prepare_input(self):
+        """
+        Load input. Notebook user can call this method to seprate load data and
+        create optimizer time 
+        """
+        print("Loading input ...")
+        self.value.prepareInput()
 
 
 class TrainSummary(JavaValue, ):

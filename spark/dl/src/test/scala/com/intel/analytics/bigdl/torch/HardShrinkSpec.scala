@@ -18,19 +18,13 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl.nn.HardShrink
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
-class HardShrinkSpec extends FlatSpec with BeforeAndAfter with Matchers {
-  before {
-    if (!TH.hasTorch()) {
-      cancel("Torch is not installed")
-    }
-  }
-
-  def randomn(): Double = RandomGenerator.RNG.normal(-10, 10)
+class HardShrinkSpec extends TorchSpec {
+    def randomn(): Double = RandomGenerator.RNG.normal(-10, 10)
 
   "An HardShrink" should "generate correct output and grad" in {
+    torchCheck()
     val layer = new HardShrink[Double](5)
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => randomn())

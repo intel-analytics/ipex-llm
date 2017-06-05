@@ -71,10 +71,6 @@ class LogSigmoid[T: ClassTag] (implicit ev: TensorNumeric[T])
 
     gradInput
   }
-
-  override def toString(): String = {
-    s"nn.LogSigmoid"
-  }
 }
 
 object LogSigmoid {

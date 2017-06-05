@@ -1,18 +1,18 @@
-#ResNet
+# ResNet
 This example demonstrates how to use BigDL to train and evaluate the [ResNet](https://arxiv.org/abs/1512.03385) architecture on CIFAR-10 data
 
-##DataSet
+## DataSet
 Support Cifar-10 dataset
 
 Users can download the Cifar-10 dataset from [here](https://www.cs.toronto.edu/~kriz/cifar.html)
 The dataset contains two sub-directories, namely, train and val. Users need to set this dataset directory behind the "-f" flag in command line.
 
 
-##Data Processing
+## Data Processing
 We use pipeline to process the input data.
 Input data are transformed by several pipeline classes, such as HFlip, BGRImgNormalizer, etc.
 
-##Model
+## Model
 ShortcutType is a unique feature defined in ResNet. ShortcutType-A is used for Cifar-10, ShortcutType-B is used for ImageNet.
 Model is implemented in <code>ResNet</code>
 
@@ -20,7 +20,7 @@ Model is implemented in <code>ResNet</code>
 You can build one by refer to the
 [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code.
 
-##Training
+## Training
 * bigdl.sh would setup the essential environment for you and it would accept a spark-submit command as an input parameter.
 
 * Spark local, example command
@@ -62,7 +62,7 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 
 We support Local and Spark versions of training. Users can define <code>env</code> as "Local" or "Spark" to set the training environment.
 
-##Parameters
+## Parameters
 ```
     --folder | -f   [the directory to reach the data]
     --optnet        [share variables in convolutional layers to save the memory usage, default false]

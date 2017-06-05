@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.models.inception
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
@@ -63,24 +63,17 @@ object TrainInceptionV1 {
         Inception_v1_NoAuxClassifier(classNum = param.classNumber)
       }
 
-      val state = if (param.stateSnapshot.isDefined) {
-        T.load(param.stateSnapshot.get)
+      val optimMethod = if (param.stateSnapshot.isDefined) {
+        OptimMethod.load[Float](param.stateSnapshot.get)
       } else if (param.maxEpoch.isDefined) {
-        T(
-          "learningRate" -> param.learningRate,
-          "weightDecay" -> param.weightDecay,
-          "momentum" -> 0.9,
-          "dampening" -> 0.0,
-          "learingRateSchedule" -> SGD.Poly(0.5, math.ceil(1281167.toDouble / param.batchSize).toInt
-            * param.maxEpoch.get))
+        new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
+          weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
+          learningRateSchedule =
+            SGD.Poly(0.5, math.ceil(1281167.toDouble / param.batchSize).toInt * param.maxEpoch.get))
       } else {
-        T(
-          "learningRate" -> param.learningRate,
-          "weightDecay" -> param.weightDecay,
-          "momentum" -> 0.9,
-          "dampening" -> 0.0,
-          "learningRateSchedule" -> SGD.Poly(0.5, param.maxIteration)
-        )
+        new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
+          weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
+          learningRateSchedule = SGD.Poly(0.5, param.maxIteration))
       }
 
       val optimizer = Optimizer(
@@ -108,7 +101,7 @@ object TrainInceptionV1 {
       }
 
       optimizer
-        .setState(state)
+        .setOptimMethod(optimMethod)
         .setValidation(testTrigger,
           valSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
         .setEndWhen(endTrigger)

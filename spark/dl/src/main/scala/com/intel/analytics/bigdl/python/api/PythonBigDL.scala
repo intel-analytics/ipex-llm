@@ -19,18 +19,21 @@ package com.intel.analytics.bigdl.python.api
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{Sample => JSample, Identity => DIdentity, _}
+import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample, _}
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorCriterion, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.utils.{Table, _}
 import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.rdd.RDD
 import java.lang.{Integer, Boolean => JBoolean}
+
+import com.intel.analytics.bigdl.nn.Graph._
+
 import scala.collection.JavaConverters._
 import scala.language.existentials
 import scala.reflect.ClassTag
@@ -61,13 +64,10 @@ case class TestResult(val result: Float, totalNum: Int, val method: String)
 
 
 object PythonBigDL {
-  val floatInstance = new PythonBigDL[Float]()
 
-  val doubleInstance = new PythonBigDL[Double]()
+  def ofFloat(): PythonBigDL[Float] = new PythonBigDL[Float]()
 
-  def ofFloat(): PythonBigDL[Float] = floatInstance
-
-  def ofDouble(): PythonBigDL[Double] = doubleInstance
+  def ofDouble(): PythonBigDL[Double] = new PythonBigDL[Double]()
 
   def getInitMethod(initMethod: String): InitializationMethod = {
     initMethod.toLowerCase() match {
@@ -87,6 +87,26 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   private val typeName = {
     val cls = implicitly[ClassTag[T]].runtimeClass
     cls.getSimpleName
+  }
+
+  def jTensorsToActivity(input: JList[JTensor]): Activity = {
+    val inputActivity = input.size() match {
+      case 0 => throw new IllegalArgumentException("Invalid input")
+      case 1 => toTensor(input.iterator().next())
+      case _ =>
+        input.asScala.foldLeft(new Table())((t, jtensor) => t.insert(toTensor(jtensor)))
+    }
+    inputActivity
+  }
+
+  def activityToJTensors(outputActivity: Activity): JList[JTensor] = {
+    if (outputActivity.isInstanceOf[Tensor[T]]) {
+      List(toJTensor(outputActivity.toTensor)).asJava
+    } else {
+      outputActivity.toTable.getState().toList.map {
+        pair => (pair._1.asInstanceOf[Int], toJTensor(pair._2.asInstanceOf[Tensor[T]]))
+      }.sortWith(_._1 < _._1).map(pair => pair._2).asJava
+    }
   }
 
 
@@ -141,17 +161,25 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
     val sample = this.typeName match {
       case "float" =>
-        JSample[Float]().set(
-          record.features.asInstanceOf[JList[Double]].asScala.map(_.toFloat).toArray[Float],
-          (record.label.asInstanceOf[JList[Double]]).asScala.map(_.toFloat).toArray[Float],
-          record.featuresShape.asScala.toArray[Int],
+        val feature = Tensor[Float](Storage[Float](
+          record.features.asInstanceOf[JList[Double]].asScala.map(_.toFloat).toArray[Float]),
+          1,
+          record.featuresShape.asScala.toArray[Int])
+        val label = Tensor[Float](
+          Storage(record.label.asInstanceOf[JList[Double]].asScala.map(_.toFloat).toArray[Float]),
+          1,
           record.labelShape.asScala.toArray[Int])
+        JSample[Float](feature, label)
       case "double" =>
-        JSample[Double]().set(
-          record.features.asInstanceOf[JList[Double]].asScala.toArray[Double],
-          (record.label.asInstanceOf[JList[Double]]).asScala.toArray[Double],
-          record.featuresShape.asScala.toArray[Int],
+        val feature = Tensor[Double](Storage[Double](
+          record.features.asInstanceOf[JList[Double]].asScala.toArray[Double]),
+          1,
+          record.featuresShape.asScala.toArray[Int])
+        val label = Tensor[Double](
+          Storage(record.label.asInstanceOf[JList[Double]].asScala.toArray[Double]),
+          1,
           record.labelShape.asScala.toArray[Int])
+        JSample[Double](feature, label)
       case t: String =>
         throw new IllegalArgumentException(s"Not supported type: ${t}")
     }
@@ -437,6 +465,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createCosineDistance()
   : CosineDistance[T] = {
     CosineDistance[T]()
+  }
+
+  def createDiceCoefficientCriterion(sizeAverage: Boolean = true,
+                                     epsilon: Float = 1.0f)
+  : DiceCoefficientCriterion[T] = {
+    DiceCoefficientCriterion[T](sizeAverage, epsilon)
   }
 
   def createDotProduct()
@@ -898,9 +932,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       sizeAverage)
   }
 
-  def createBiRecurrent()
+  def createBiRecurrent(merge: AbstractModule[Table, Tensor[T], T] = null)
   : BiRecurrent[T] = {
-    BiRecurrent[T]()
+    BiRecurrent[T](merge)
   }
 
   def createConcatTable()
@@ -1007,6 +1041,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       PythonBigDL.getInitMethod(initMethod))
   }
 
+  def createVolumetricMaxPooling(kT: Int,
+    kW: Int,
+    kH: Int,
+    dT: Int,
+    dW: Int,
+    dH: Int,
+    padT: Int = 0,
+    padW: Int = 0,
+    padH: Int = 0): VolumetricMaxPooling[T] = {
+    VolumetricMaxPooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH)
+  }
+
   def createSpatialDivisiveNormalization(nInputPlane: Int = 1,
                                          kernel: JTensor = null,
                                          threshold: Double = 1e-4,
@@ -1037,6 +1083,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createStep(stepSize: Int, gamma: Double): SGD.Step = {
     SGD.Step(stepSize, gamma)
+  }
+
+  def createMultiStep(stepSizes: JList[Int], gamma: Double): SGD.MultiStep = {
+    SGD.MultiStep(stepSizes.asScala.toArray, gamma)
+  }
+
+  def createDefault(): SGD.Default = {
+    SGD.Default()
   }
 
   def createClassNLLCriterion(weights: JTensor = null,
@@ -1158,8 +1212,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                 batchSize: Int,
                 valMethods: JList[String])
   : JList[TestResult] = {
-    val validator = Validator(model, batching(valRDD, batchSize))
-    val resultArray = validator.test(toValidationMethod(valMethods))
+    val resultArray = model.evaluate(valRDD.rdd.map(toSample(_)),
+      toValidationMethod(valMethods), Some(batchSize))
     val testResultArray = resultArray.map { result =>
       TestResult(result._1.result()._1, result._1.result()._2,
         validationMethodToStr(result._2))
@@ -1194,6 +1248,56 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new JavaRDD[JTensor](listRDD)
   }
 
+  def modelForward(model: AbstractModule[Activity, Activity, T],
+                   input: JList[JTensor]): JList[JTensor] = {
+    forward(input, model.forward)
+  }
+
+  def modelBackward(model: AbstractModule[Activity, Activity, T],
+                    input: JList[JTensor], gradOutput: JList[JTensor]): JList[JTensor] = {
+    backward(input, gradOutput, model.backward)
+  }
+
+
+  def graphForward(graph: Graph[T],
+                   input: JList[JTensor]): JList[JTensor] = {
+    forward(input, graph.forward)
+  }
+
+  def graphBackward(graph: Graph[T],
+                    input: JList[JTensor], gradOutput: JList[JTensor]): JList[JTensor] = {
+    backward(input, gradOutput, graph.backward)
+  }
+
+  private def forward(input: JList[JTensor], forward: (Activity) => Activity): JList[JTensor] = {
+    val inputActivity = jTensorsToActivity(input)
+    val outputActivity = forward(inputActivity)
+    activityToJTensors(outputActivity)
+  }
+
+  private def backward(input: JList[JTensor], gradOutput: JList[JTensor],
+                       backward: (Activity, Activity) => Activity): JList[JTensor] = {
+    val inputActivity = jTensorsToActivity(input)
+    val gradOutputActivity = jTensorsToActivity(gradOutput)
+    val outputActivity = backward(inputActivity, gradOutputActivity)
+    activityToJTensors(outputActivity)
+  }
+
+  def criterionForward(criterion: AbstractCriterion[Activity, Activity, T],
+                       input: JList[JTensor], target: JList[JTensor]): T = {
+    val inputActivity = jTensorsToActivity(input)
+    val targetActivity = jTensorsToActivity(target)
+    return criterion.forward(inputActivity, targetActivity)
+  }
+
+  def criterionBackward(criterion: AbstractCriterion[Activity, Activity, T],
+                        input: JList[JTensor], target: JList[JTensor]): JList[JTensor] = {
+    val inputActivity = jTensorsToActivity(input)
+    val targetActivity = jTensorsToActivity(target)
+    val outputActivity = criterion.backward(inputActivity, targetActivity)
+    activityToJTensors(outputActivity)
+  }
+
   def modelGetParameters(model: AbstractModule[Activity, Activity, T])
   : JMap[Any, JMap[Any, JList[JList[Any]]]] = {
     model.getParametersTable().getState().mapValues {
@@ -1206,18 +1310,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
             item
         }.asJava
     }.asJava
-  }
-
-  def predict(model: AbstractModule[Activity, Activity, T],
-              dataRdd: RDD[JSample[T]]): RDD[JSample[T]] = {
-    val modelBroadCast = dataRdd.sparkContext.broadcast(model.evaluate())
-    dataRdd.mapPartitions { partition =>
-      val localModel = modelBroadCast.value.cloneModule()
-      partition.map { sample =>
-        val output = localModel.forward(sample.feature()).toTensor[T]
-        JSample(sample.feature(), output)
-      }
-    }
   }
 
   def createMaxEpoch(max: Int): Trigger = {
@@ -1236,37 +1328,87 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Trigger.maxIteration(max)
   }
 
+  def createSGD(learningRate: Double = 1e-3,
+    learningRateDecay: Double = 0.0,
+    weightDecay: Double = 0.0,
+    momentum: Double = 0.0,
+    dampening: Double = Double.MaxValue,
+    nesterov: Boolean = false,
+    leaningRateSchedule: SGD.LearningRateSchedule = SGD.Default(),
+    learningRates: JTensor = null,
+    weightDecays: JTensor = null): SGD[T] = {
+    val p1 = if (learningRates == null) null else toTensor(learningRates)
+    val p2 = if (weightDecays == null) null else toTensor(weightDecays)
+    new SGD[T](learningRate, learningRateDecay, weightDecay, momentum, dampening,
+      nesterov, leaningRateSchedule, p1, p2)
+  }
+
+  def createAdagrad(learningRate: Double = 1e-3,
+    learningRateDecay: Double = 0.0,
+    weightDecay: Double = 0.0): Adagrad[T] = {
+    new Adagrad[T](learningRate, learningRateDecay, weightDecay)
+  }
+
+  def createLBFGS(maxIter: Int = 20,
+    maxEval: Double = Double.MaxValue,
+    tolFun: Double = 1e-5,
+    tolX: Double = 1e-9,
+    nCorrection: Int = 100,
+    learningRate: Double = 1.0,
+    verbose: Boolean = false,
+    lineSearch: LineSearch[T] = null,
+    lineSearchOptions: JMap[Any, Any] = null): LBFGS[T] = {
+    val p1 = if (lineSearch == null) None else Option(lineSearch)
+    val p2 = if (lineSearchOptions == null) None else Option(T(lineSearchOptions))
+    new LBFGS[T](maxIter, maxEval, tolFun, tolX, nCorrection, learningRate, verbose, p1, p2)
+  }
+
+  def createAdadelta(decayRate: Double = 0.9, Epsilon: Double = 1e-10): Adadelta[T] = {
+    new Adadelta[T](decayRate, Epsilon)
+  }
+
+  def createAdam(
+    learningRate: Double = 1e-3,
+    learningRateDecay: Double = 0.0,
+    beta1: Double = 0.9,
+    beta2: Double = 0.999,
+    Epsilon: Double = 1e-8): Adam[T] = {
+    new  Adam[T](learningRate, learningRateDecay, beta1, beta2, Epsilon)
+  }
+
+  def createAdamax(
+    learningRate: Double = 0.002,
+    beta1: Double = 0.9,
+    beta2: Double = 0.999,
+    Epsilon: Double = 1e-38): Adamax[T] = {
+    new Adamax(learningRate, beta1, beta2, Epsilon)
+  }
+
+  def createRMSprop(
+    learningRate: Double = 1e-2,
+    learningRateDecay: Double = 0.0,
+    decayRate: Double = 0.99,
+    Epsilon: Double = 1e-8): RMSprop[T] = {
+    new  RMSprop[T](learningRate, learningRateDecay, decayRate, Epsilon)
+  }
 
   def createOptimizer(model: AbstractModule[Activity, Activity, T],
                       trainingRdd: JavaRDD[Sample],
                       criterion: Criterion[T],
-                      optimMethod: String,
-                      state: JMap[Any, Any],
+                      optimMethod: OptimMethod[T],
                       endTrigger: Trigger,
                       batchSize: Int): Optimizer[T, MiniBatch[T]] = {
     val optimizer = new DistriOptimizer(
-      model = model,
+      _model = model,
       dataset = batching(trainingRdd, batchSize),
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
     // TODO: we should provide a more convenient way to create Table
-    val stateTable = new Table()
-    state.asScala.foreach { case (key, value) =>
-      stateTable.update(key, value)
-    }
-    optimizer.setState(stateTable)
 
     optimizer.setEndWhen(endTrigger)
 
-    optimMethod.toLowerCase() match {
-      case "sgd" =>
-        optimizer.setOptimMethod(new SGD())
-      case "adagrad" =>
-        optimizer.setOptimMethod(new Adagrad())
-      case "lbfgs" =>
-        optimizer.setOptimMethod(new LBFGS())
-      case n: String => throw new IllegalArgumentException(s"Not supported type: $n")
-    }
+    optimizer.setOptimMethod(optimMethod)
+
     // TODO: remove this
     optimizer.disableCheckSingleton()
 
@@ -1325,9 +1467,46 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new ValidationSummary(logDir, appName)
   }
 
+  def createGraph(input: JList[ModuleNode[T]], output: JList[ModuleNode[T]]): Graph[T] = {
+    Graph(input.asScala.toArray, output.asScala.toArray)
+  }
+
+  def createNode(module: AbstractModule[Activity, Activity, T],
+                 x: JList[ModuleNode[T]]): ModuleNode[T] = {
+    if (null == x || x.isEmpty) {
+      module.apply()
+    } else {
+      module.apply(x.asScala : _*)
+    }
+  }
+
+  def createInput(): ModuleNode[T] = {
+    Input()
+  }
 
   def initEngine(): Unit = {
     Engine.init
+  }
+
+
+  def setWeights(model: AbstractModule[Activity, Activity, T], weights: JList[JTensor]): Unit = {
+    val weightTensor = weights.asScala.toArray.map(toTensor(_))
+    model.setWeightsBias(weightTensor)
+  }
+
+  def getWeights(model: AbstractModule[Activity, Activity, T]): JList[JTensor] = {
+    val weights = model.getWeightsBias()
+    if (weights != null) {
+      weights.map(toJTensor(_)).toList.asJava
+    } else {
+      null
+    }
+  }
+
+  def uniform(a: Double, b: Double, size: JList[Int]): JTensor = {
+    val result = Tensor[T]().resize(size.asScala.toArray)
+    result.apply1(i => ev.fromType(RandomGenerator.RNG.uniform(a, b)))
+    toJTensor(result)
   }
 }
 

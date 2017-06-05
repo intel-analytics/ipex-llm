@@ -23,6 +23,7 @@ import java.util.concurrent.{Callable, Executors}
 import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import org.apache.hadoop.io.Text
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -275,7 +276,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
         -> BGRImgNormalizer((0.4, 0.5, 0.6), (0.1, 0.2, 0.3))
         -> BGRImgToBatch(1)
         ).toLocal().data(train = false)
-      val image1 = iter.next().data
+      val image1 = iter.next().getInput.toTensor[Float]
 
       val resourceTorch = getClass().getClassLoader().getResource("torch")
       val tensor1Path = Paths.get(processPath(resourceTorch.getPath()), tensorFile)
@@ -348,7 +349,7 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val rdd = dataSet.toDistributed().data(train = true)
     rdd.partitions.size should be (partitionNum)
     val rddData = rdd.mapPartitions(iter => {
-      Iterator.single(iter.next().labels)
+      Iterator.single(iter.next().getTarget.toTensor[Float])
     })
 
     i = 0
@@ -377,9 +378,46 @@ class DataSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     i = 0
     while (i < localData.length) {
-      localData(i).label() should be (data(i).label)
-      localData(i).feature() should be (data(i).feature())
+      localData(i) should be (data(i))
       i += 1
     }
+  }
+
+  "transformRDD" should "be correct" in {
+    val resource = getClass().getClassLoader().getResource("imagenet")
+    val tmpFile = java.io.File.createTempFile("UnitTest", System.nanoTime().toString)
+    require(tmpFile.delete())
+    require(tmpFile.mkdir())
+
+    // Convert the test imagenet files to seq files
+    val files = (DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
+      -> LocalImgReaderWithName(BGRImage.NO_SCALE)
+      -> BGRImgToLocalSeqFile(100, Paths.get(tmpFile.getAbsolutePath(), "imagenet"))
+      ).toLocal().data(train = false).map(s => {
+      println(s);
+      s
+    }).toArray
+
+    val partitionNum = Engine.nodeNumber() * Engine.coreNumber()
+    val rddData = sc.sequenceFile(tmpFile.getAbsolutePath(), classOf[Text],
+      classOf[Text], partitionNum).map(image => {
+        ByteRecord(image._2.copyBytes(), DataSet.SeqFileFolder.readLabel(image._1).toFloat)
+      })
+    val transformer = BytesToBGRImg()
+    val imageIter = transformer(rddData)
+
+    val result = imageIter.map(_.clone()).collect().sortBy(_.label())
+    result.length should be(11)
+    var img = result(0)
+    img.label() should be(1f)
+    img.content((100 + 100 * 213) * 3 + 2) should be(17 / 255f)
+    img.content((100 + 100 * 213) * 3 + 1) should be(27 / 255f)
+    img.content((100 + 100 * 213) * 3) should be(26 / 255f)
+
+    img = result(8)
+    img.label() should be(4f)
+    img.content((100 + 100 * 213) * 3 + 2) should be(35 / 255f)
+    img.content((100 + 100 * 213) * 3 + 1) should be(30 / 255f)
+    img.content((100 + 100 * 213) * 3) should be(36 / 255f)
   }
 }
