@@ -155,6 +155,17 @@ class Node[T](val element: T) {
   }
 
   /**
+    * Remove linkage with another node
+    * @param node another node
+    * @return current node
+    */
+  def delete(node: Node[T]): Node[T] = {
+    if (node.prevs.contains(this)) node.prevs.-=(this)
+    if (this.nexts.contains(node)) this.nexts.-=(node)
+    this
+  }
+
+  /**
    * Use current node as source to build a direct graph
    * @param reverse
    * @return

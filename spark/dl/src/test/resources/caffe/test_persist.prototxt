@@ -1,0 +1,48 @@
+name: "convolution"
+layer {
+  name: "conv"
+  type: "Convolution"
+  top: "conv0"
+  convolution_param {
+    num_output: 4
+    group: 1
+    pad_h: 0
+    pad_w: 0
+    kernel_h: 2
+    kernel_w: 2
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "conv2"
+  type: "Convolution"
+  bottom: "conv0"
+  top: "conv20"
+  convolution_param {
+    num_output: 3
+    group: 1
+    pad_h: 0
+    pad_w: 0
+    kernel_h: 2
+    kernel_w: 2
+    stride_h: 1
+    stride_w: 1
+  }
+}
+layer {
+  name: "ip"
+  type: "InnerProduct"
+  bottom: "conv20"
+  top: "ip0"
+  inner_product_param {
+    num_output: 2
+    bias_term: false
+  }
+}
+layer {
+  name: "loss"
+  type: "Softmax"
+  bottom: "ip0"
+  top: "loss0"
+}

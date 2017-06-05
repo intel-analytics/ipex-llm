@@ -50,3 +50,10 @@ layer {
     bias_term: false
   }
 }
+
+layer {
+  name: "loss"
+  type: "SoftmaxWithLoss"
+  bottom: "out"
+  top: "loss"
+}

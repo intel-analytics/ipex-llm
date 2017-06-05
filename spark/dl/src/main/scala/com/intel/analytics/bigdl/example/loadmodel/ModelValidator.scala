@@ -109,13 +109,12 @@ object ModelValidator {
         case CaffeModel =>
           param.modelName match {
             case "alexnet" =>
-              (Module.loadCaffe[Float](AlexNet(1000),
-                param.caffeDefPath.get, param.modelPath),
-                AlexNetPreprocessor.rdd(valPath, param.batchSize, param.meanFile.get, sc))
+              (Module.loadCaffeDynamic[Float](param.caffeDefPath.get, param.modelPath),
+                AlexNetPreprocessor(valPath, param.batchSize, param.meanFile.get, sc))
             case "inception" =>
-              (Module.loadCaffe[Float](Inception_v1_NoAuxClassifier(1000),
-                param.caffeDefPath.get, param.modelPath),
-                InceptionPreprocessor.rdd(valPath, param.batchSize, sc))
+              (Module.loadCaffeDynamic[Float](param.caffeDefPath.get, param.modelPath),
+                InceptionPreprocessor(valPath, param.batchSize, sc))
+
           }
 
         case TorchModel =>
