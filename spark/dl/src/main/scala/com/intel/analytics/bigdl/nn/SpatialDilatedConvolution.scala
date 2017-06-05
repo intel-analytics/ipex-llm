@@ -47,7 +47,6 @@ import scala.reflect.ClassTag
  * @param padH The additional zeros added per height to the input planes. Default is 0.
  * @param dilationW The number of pixels to skip. Default is 1.
  * @param dilationH The number of pixels to skip. Default is 1.
- * @param initMethod Init method, Default, Xavier.
  * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param bRegularizer: instance of [[Regularizer]]
@@ -66,7 +65,6 @@ class SpatialDilatedConvolution[T: ClassTag](
   val padH: Int = 0,
   val dilationW: Int = 1,
   val dilationH: Int = 1,
-  private var initMethod: InitializationMethod = Default,
   val wRegularizer: Regularizer[T] = null,
   val bRegularizer: Regularizer[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
@@ -79,6 +77,10 @@ class SpatialDilatedConvolution[T: ClassTag](
   @transient private var fInput: Tensor[T] = null
   @transient private var fGradInput: Tensor[T] = null
 
+  private val stdv = 1.0 / math.sqrt(kW * kH * nInputPlane)
+  private var weightInitMethod: InitializationMethod = RandomUniform(stdv)
+  private var biasInitMethod: InitializationMethod = RandomUniform(stdv)
+
   reset()
 
   private var im2colTime = 0L
@@ -88,26 +90,22 @@ class SpatialDilatedConvolution[T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
-    this.initMethod = initMethod
+  def setInitMethod(weightInitMethod: InitializationMethod = null,
+                    biasInitMethod: InitializationMethod = null): this.type = {
+    if (weightInitMethod != null) {
+      this.weightInitMethod = weightInitMethod
+    }
+
+    if (biasInitMethod != null) {
+      this.biasInitMethod = biasInitMethod
+    }
+    reset()
     this
   }
 
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        val stdv = 1.0 / math.sqrt(kW * kH * nInputPlane)
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-      case Xavier =>
-        val fanIn = nInputPlane * kH * kW
-        val fanOut = nOutputPlane * kH * kW
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-        bias.fill(ev.fromType(0))
-      case _ =>
-        throw new IllegalArgumentException(s"Unsupported initMethod type ${initMethod}")
-    }
+    weightInitMethod.init(weight)
+    biasInitMethod.init(bias)
     zeroGradParameters()
   }
 
@@ -566,12 +564,11 @@ object SpatialDilatedConvolution {
       padH: Int = 0,
       dilationW: Int = 1,
       dilationH: Int = 1,
-      initMethod: InitializationMethod = Default,
       wRegularizer: Regularizer[T] = null,
       bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]) : SpatialDilatedConvolution[T] = {
     new SpatialDilatedConvolution[T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH, dilationW, dilationH, initMethod,
+      padW, padH, dilationW, dilationH,
       wRegularizer, bRegularizer)
   }
 }

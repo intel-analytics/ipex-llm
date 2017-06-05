@@ -62,12 +62,14 @@ class Bilinear[T: ClassTag](
   val gradWeight: Tensor[T] = Tensor[T](outputSize, inputSize1, inputSize2)
   val gradBias: Tensor[T] = Tensor[T](outputSize)
 
+  private val stdv = 1.0 / math.sqrt(weight.size(2))
+  private var weightInitMethod: InitializationMethod = RandomUniform(stdv)
+  private var biasInitMethod: InitializationMethod = RandomUniform(stdv)
   reset()
 
   override def reset(): Unit = {
-    val stdv = 1.0 / math.sqrt(weight.size(2))
-    weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-    if (null != bias ) bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+    weightInitMethod.init(weight)
+    Option(bias).foreach(biasInitMethod.init(_))
     zeroGradParameters()
   }
 

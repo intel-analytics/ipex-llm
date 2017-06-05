@@ -59,7 +59,6 @@ import scala.reflect.ClassTag
  * @param adjH Extra height to add to the output image. Default is 0.
  * @param nGroup Kernel group number.
  * @param noBias If bias is needed.
- * @param initMethod Init method, Default, Xavier, Bilinear.
  * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param bRegularizer: instance of [[Regularizer]]
@@ -80,7 +79,6 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
   var adjH: Int = 0,
   val nGroup: Int = 1,
   val noBias: Boolean = false,
-  private var initMethod: InitializationMethod = Default,
   val wRegularizer: Regularizer[T] = null,
   val bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]) extends AbstractModule[A, Tensor[T], T]{
@@ -111,6 +109,10 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
     false
   }
 
+  private val stdv = 1.0 / math.sqrt(kW * kH * nInputPlane)
+  private var weightInitMethod: InitializationMethod = RandomUniform(stdv)
+  private var biasInitMethod: InitializationMethod = RandomUniform(stdv)
+
   reset()
 
   private var im2colTime = 0L
@@ -120,44 +122,22 @@ class SpatialFullConvolution[A <: Activity : ClassTag, T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
-    this.initMethod = initMethod
+  def setInitMethod(weightInitMethod: InitializationMethod = null,
+                    biasInitMethod: InitializationMethod = null): this.type = {
+    if (weightInitMethod != null) {
+      this.weightInitMethod = weightInitMethod
+    }
+
+    if (biasInitMethod != null) {
+      this.biasInitMethod = biasInitMethod
+    }
+    reset()
     this
   }
 
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        val stdv = 1.0 / math.sqrt(kW * kH * nInputPlane)
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        if (!noBias) {
-          bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        }
-      case Xavier =>
-        val fanIn = nInputPlane * kH * kW
-        val fanOut = nOutputPlane * kH * kW
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-        if (null != bias) {
-          bias.fill(ev.zero)
-        }
-      case BilinearFiller =>
-        require(weight.dim() == 5, s"SpatialFullConvolution: weight must be 5 dim, " +
-          s"but got ${weight.dim()}")
-        require(kH == kW, s"SpatialFullConvolution: Kernel $kH * $kW must be square")
-        val f = Math.ceil(kW / 2.0).toInt
-        val c = (2 * f - 1 - f % 2) / (2.0f * f)
-        val weightArray = weight.storage().array()
-        val weightOffset = weight.storageOffset() - 1
-        var i = 0
-        while(i < weight.nElement()) {
-          val x : Float = i % kW
-          val y : Float = (i / kW) % kH
-          weightArray(i + weightOffset) = ev.fromType[Float](
-            (1f - math.abs(x / f - c)) * (1f - math.abs(y / f - c)))
-          i += 1
-        }
-    }
+    weightInitMethod.init(weight, InputFirst)
+    Option(bias).foreach(biasInitMethod.init(_))
     zeroGradParameters()
   }
 
@@ -795,12 +775,11 @@ object SpatialFullConvolution {
       adjH: Int = 0,
       nGroup: Int = 1,
       noBias: Boolean = false,
-      initMethod: InitializationMethod = Default,
       wRegularizer: Regularizer[T] = null,
       bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]) : SpatialFullConvolution[A, T] = {
     new SpatialFullConvolution[A, T](nInputPlane, nOutputPlane, kW, kH, dW, dH,
-      padW, padH, adjW, adjH, nGroup, noBias, initMethod,
+      padW, padH, adjW, adjH, nGroup, noBias,
       wRegularizer, bRegularizer)
   }
 }

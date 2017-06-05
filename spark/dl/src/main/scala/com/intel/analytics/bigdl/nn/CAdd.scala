@@ -44,11 +44,12 @@ class CAdd[@specialized(Float, Double) T: ClassTag](
   val bias: Tensor[T] = Tensor[T](size)
   val gradBias : Tensor[T] = Tensor[T](size)
 
+  private val stdv = 1.0/math.sqrt(bias.nElement())
+  private var weightInitMethod: InitializationMethod = RandomUniform(stdv)
   reset()
 
   override def reset(): Unit = {
-    val stdv = 1.0/math.sqrt(bias.nElement())
-    bias.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+    weightInitMethod.init(bias)
     zeroGradParameters()
   }
 

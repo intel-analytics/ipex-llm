@@ -44,11 +44,12 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
   val divBuffer = Tensor[T]()
   val sumBuffer = Tensor[T]()
 
+  private var weightInitMethod: InitializationMethod = RandomUniform
   reset()
 
   override def reset(): Unit = {
-    val stdv = 1 / math.sqrt(weight.size(1))
-    weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
+    weightInitMethod.init(weight)
+    zeroGradParameters()
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
