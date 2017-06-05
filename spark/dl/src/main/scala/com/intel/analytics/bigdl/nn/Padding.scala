@@ -157,13 +157,13 @@ class Padding[T: ClassTag](
 
 object Padding {
   /**
-    * Padding information. It define which dimensions to add padding
-    * @param dim the index of the dimension to add padding, start from 1
-    * @param leftPadding left padding length
-    * @param leftStartIndex left padding start index
-    * @param rightPadding right padding length
-    * @param rightStartIndex right padding start index
-    */
+   * Padding information. It define which dimensions to add padding
+   * @param dim the index of the dimension to add padding, start from 1
+   * @param leftPadding left padding length
+   * @param leftStartIndex left padding start index
+   * @param rightPadding right padding length
+   * @param rightStartIndex right padding start index
+   */
   case class PaddingInfo(
     dim: Int,
     leftPadding: Int,

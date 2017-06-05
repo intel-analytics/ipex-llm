@@ -39,5 +39,4 @@ class ShapeSpec extends FlatSpec with Matchers {
       T(0.0f, 0.0f)
     )))
   }
-
 }
