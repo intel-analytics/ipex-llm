@@ -204,7 +204,7 @@ object SGD {
     def updateHyperParameter[T](optimMethod : SGD[T]) : Unit
 
     @deprecated("Please input SGD instead of Table", "0.2.0")
-    def updateHyperParameter(config : Table, state : Table) : Unit
+    def updateHyperParameter(config : Table, state : Table) : Unit = {}
 
     var currentRate : Double = 0.0
   }
