@@ -24,9 +24,9 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
-import util.control.Breaks._
+import scala.util.control.Breaks._
 
-class BinaryTreeLSTM[@specialized(Float, Double) T: ClassTag](
+class BinaryTreeLSTM[T: ClassTag](
   inputSize: Int,
   hiddenSize: Int,
   gateOutput: Boolean = true
@@ -41,13 +41,12 @@ class BinaryTreeLSTM[@specialized(Float, Double) T: ClassTag](
 
   def createLeafModule(): Module[T] = {
     val input = Identity().apply()
-    val c = Linear(inputSize, hiddenSize).apply()
-    var h: ModuleNode[T] = null
-    if (gateOutput) {
+    val c = Linear(inputSize, hiddenSize).apply(input)
+    val h: ModuleNode[T] = if (gateOutput) {
       val o = Sigmoid().apply(Linear(inputSize, hiddenSize).apply(input))
       CMulTable().apply(o, Tanh().apply(c))
     } else {
-      h = Tanh().apply(c)
+      Tanh().apply(c)
     }
 
     val leafModule = Graph(Array(input), Array(c, h))
@@ -87,7 +86,7 @@ class BinaryTreeLSTM[@specialized(Float, Double) T: ClassTag](
 
     val composer = Graph(Array(lc, lh, rc, rh), Array(c, h))
 
-    if (this.composers != null) {
+    if (this.composer != null) {
       shareParams(composer, this.composer)
     }
 
@@ -214,7 +213,7 @@ object BinaryTreeLSTM {
 }
 
 class TensorTree[T: ClassTag](val content: Tensor[T])
-  (implicit ev: TensorNumeric[T]) {
+  (implicit ev: TensorNumeric[T]) extends Serializable {
   def size: Array[Int] = content.size()
 
   def children(index: Int): Array[Int] =
