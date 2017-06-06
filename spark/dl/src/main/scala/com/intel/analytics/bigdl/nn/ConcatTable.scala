@@ -112,20 +112,24 @@ class ConcatTable[T : ClassTag]
     if (isInputTable) {
       var i = 0
       while (i < modules.length) {
-        val currentGradInput = modules(i).updateGradInput(input,
-          gradOutput.toTable(i + 1))
-        require(currentGradInput.isInstanceOf[Table],
-          "currentGradInput is not a table!")
-        if (i == 0) {
-          if (!wasGradInputTable ||
-            gradInput.toTable.length() != currentGradInput.toTable.length()) {
-            // We need deep copy here.
-            gradInput = cloneTable(currentGradInput)
-          } else {
-            copyTable(gradInput, currentGradInput)
+        if (gradOutput != null &&  gradOutput.toTable.contains(i + 1)) {
+          val currentGradInput = modules(i).updateGradInput(input,
+            gradOutput.toTable(i + 1))
+          if (currentGradInput != null) {
+            require(currentGradInput.isInstanceOf[Table],
+              "currentGradInput is not a table!")
+            if (i == 0) {
+              if (!wasGradInputTable ||
+                gradInput.toTable.length() != currentGradInput.toTable.length()) {
+                // We need deep copy here.
+                gradInput = cloneTable(currentGradInput)
+              } else {
+                copyTable(gradInput, currentGradInput)
+              }
+            } else {
+              addTable(gradInput, currentGradInput)
+            }
           }
-        } else {
-          addTable(gradInput, currentGradInput)
         }
         i += 1
       }
@@ -134,16 +138,18 @@ class ConcatTable[T : ClassTag]
       var i = 0
       while (i < modules.length) {
         val currentGradInput = modules(i).updateGradInput(input,
-          gradOutput.toTable(i + 1)).toTensor[T]
-        if (i == 0) {
-          if (wasGradInputTable) {
-            gradInput = currentGradInput.clone()
+          gradOutput.toTable(i + 1))
+        if (currentGradInput != null) {
+          if (i == 0) {
+            if (wasGradInputTable) {
+              gradInput = currentGradInput.toTensor[T].clone()
+            } else {
+              gradInput.toTensor[T].resizeAs(
+                currentGradInput.toTensor[T]).copy(currentGradInput.toTensor[T])
+            }
           } else {
-            gradInput.toTensor[T].resizeAs(
-              currentGradInput).copy(currentGradInput)
+            gradInput.toTensor[T].add(currentGradInput.toTensor[T])
           }
-        } else {
-          gradInput.toTensor[T].add(currentGradInput)
         }
         i += 1
       }
@@ -158,20 +164,24 @@ class ConcatTable[T : ClassTag]
     if (isInputTable) {
       var i = 0
       while (i < modules.length) {
-        val currentGradInput = modules(i).backward(input,
-          gradOutput.toTable(i + 1))
-        require(currentGradInput.isInstanceOf[Table],
-          "currentGradInput is not a table!")
-        if (i == 0) {
-          if (!wasGradInputTable ||
-            gradInput.toTable.length() != currentGradInput.toTable.length()) {
-            // We need deep copy here.
-            gradInput = cloneTable(currentGradInput)
-          } else {
-            copyTable(gradInput, currentGradInput)
+        if (gradOutput != null &&  gradOutput.toTable.contains(i + 1)) {
+          val currentGradInput = modules(i).backward(input,
+            gradOutput.toTable(i + 1))
+          if (currentGradInput != null) {
+            require(currentGradInput.isInstanceOf[Table],
+              "currentGradInput is not a table!")
+            if (i == 0) {
+              if (!wasGradInputTable ||
+                gradInput.toTable.length() != currentGradInput.toTable.length()) {
+                // We need deep copy here.
+                gradInput = cloneTable(currentGradInput)
+              } else {
+                copyTable(gradInput, currentGradInput)
+              }
+            } else {
+              addTable(gradInput, currentGradInput)
+            }
           }
-        } else {
-          addTable(gradInput, currentGradInput)
         }
         i += 1
       }
@@ -180,16 +190,19 @@ class ConcatTable[T : ClassTag]
       var i = 0
       while (i < modules.length) {
         val currentGradInput = modules(i).backward(input,
-          gradOutput.toTable(i + 1)).toTensor[T]
-        if (i == 0) {
-          if (wasGradInputTable) {
-            gradInput = currentGradInput.clone()
+          gradOutput.toTable(i + 1))
+
+        if (currentGradInput != null) {
+          if (i == 0) {
+            if (wasGradInputTable) {
+              gradInput = currentGradInput.toTensor[T].clone()
+            } else {
+              gradInput.toTensor[T].resizeAs(
+                currentGradInput.toTensor[T]).copy(currentGradInput.toTensor[T])
+            }
           } else {
-            gradInput.toTensor[T].resizeAs(
-              currentGradInput).copy(currentGradInput)
+            gradInput.toTensor[T].add(currentGradInput.toTensor[T])
           }
-        } else {
-          gradInput.toTensor[T].add(currentGradInput)
         }
         i += 1
       }
