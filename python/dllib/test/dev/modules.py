@@ -55,25 +55,25 @@ class Module(object):
 bigdl_layer = Module(
     name="bigdl_layer",
     python_test_goals=[
-        "nn.layer"
+        "bigdl.nn.layer"
     ])
 
 bigdl_layer = Module(
     name="bigdl_criterion",
     python_test_goals=[
-        "nn.criterion"
+        "bigdl.nn.criterion"
     ])
 
 bigdl_layer = Module(
     name="bigdl_common",
     python_test_goals=[
-        "util.common"
+        "bigdl.util.common"
     ])
 
 bigdl_optimizer = Module(
     name="bigdl_optimizer",
     python_test_goals=[
-        "optim.optimizer",
+        "bigdl.optim.optimizer",
     ]
 )
 
