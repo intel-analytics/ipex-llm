@@ -58,7 +58,7 @@ class RnnCell[T : ClassTag] (
     wRegularizer = uRegularizer)
   parallelTable.add(i2h)
   parallelTable.add(h2h)
-  val cAddTable = CAddTable[T]()
+  val cAddTable = CAddTable[T](true)
 
   override var cell: AbstractModule[Activity, Activity, T] =
     Sequential[T]()
