@@ -1,0 +1,21 @@
+package serialization;
+
+message BigDLModel
+{
+    optional string name = 1; //model name
+    repeated BigDLModel subModules = 2; // sub modules
+    optional BigDLTensor weight = 3; // double weight for each layer
+    optional BigDLTensor bias = 4; // double bias for each layer
+    repeated double moduleParams = 5; //module layer construct params
+    repeated string tops = 6; //module layer construct params
+    repeated string bottoms = 7; //module layer construct params
+    enum ModuleType {
+        LINEAR = 1;
+        SEQUENTIAL = 2;
+    }
+    required ModuleType moduleType = 8; //module type
+}
+message BigDLTensor{
+    repeated int32 size = 1; //size of tensor
+    repeated double data = 2; //tensor element
+}

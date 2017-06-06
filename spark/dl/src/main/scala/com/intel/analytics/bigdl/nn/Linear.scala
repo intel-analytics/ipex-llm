@@ -46,8 +46,8 @@ import com.intel.analytics.bigdl.optim.Regularizer
  */
 @SerialVersionUID( 359656776803598943L)
 class Linear[T: ClassTag](
-  inputSize: Int,
-  outputSize: Int,
+  val inputSize: Int,
+  val outputSize: Int,
   private var initMethod: InitializationMethod = Default,
   withBias: Boolean = true,
   wRegularizer: Regularizer[T] = null,
