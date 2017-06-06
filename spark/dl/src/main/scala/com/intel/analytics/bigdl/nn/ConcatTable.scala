@@ -197,11 +197,10 @@ class ConcatTable[T : ClassTag]
     gradInput
   }
 
-  override def accGradParameters(input: Activity, gradOutput: Table,
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Activity, gradOutput: Table): Unit = {
     var i = 0
     while (i < modules.length) {
-      modules(i).accGradParameters(input, gradOutput.toTable(i + 1), scale)
+      modules(i).accGradParameters(input, gradOutput.toTable(i + 1))
       i += 1
     }
   }

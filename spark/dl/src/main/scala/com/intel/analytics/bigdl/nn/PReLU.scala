@@ -208,8 +208,7 @@ class PReLU[T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-                                 scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(input.isContiguous(), "input must be contiguous")
     require(gradOutput.isContiguous(), "gradOuput must be contiguous")
     require(input.nElement() == gradOutput.nElement())
@@ -225,7 +224,7 @@ class PReLU[T: ClassTag](
         }
       }
       DenseTensorApply.apply2[T](input, gradOutput, func)
-      gradWeight.add(ev.times(ev.fromType[Double](scale), sum))
+      gradWeight.add(ev.times(ev.fromType[Double](scaleW), sum))
     } else {
       require(input.nDimension() <= 4, s"${input.nDimension()}D input not supported")
       require(input.size((input.nDimension() + 1) % 2 + 1) == nOutputPlane,
@@ -265,7 +264,7 @@ class PReLU[T: ClassTag](
               k += 1
             }
             gradWeightArray(gradWeightOffset + j) = ev.plus(gradWeightArray(gradWeightOffset + j),
-              ev.times(ev.fromType[Double](scale), sum))
+              ev.times(ev.fromType[Double](scaleW), sum))
             nInputOffset += ks
             nGradOutputOffset += ks
             j += 1

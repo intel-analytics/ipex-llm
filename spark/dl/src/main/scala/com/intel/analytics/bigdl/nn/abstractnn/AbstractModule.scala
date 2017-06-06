@@ -62,6 +62,27 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    */
   var gradInput: A = Activity[A, T]()
 
+  protected var scaleW: Double = 1.0
+  protected var scaleB: Double = 1.0
+
+  def getscaleW(): Double = {
+    scaleW
+  }
+
+  def getscaleB(): Double = {
+    scaleB
+  }
+
+  def setScaleW(w: Double): this.type = {
+    scaleW = w
+    this
+  }
+
+  def setScaleB(b: Double): this.type = {
+    scaleB = b
+    this
+  }
+
   /**
    * Copy the useful running status from src to this.
    *
@@ -217,9 +238,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
    *
    * @param input
    * @param gradOutput
-   * @param scale
    */
-  def accGradParameters(input: A, gradOutput: B, scale: Double = 1.0): Unit = {}
+  def accGradParameters(input: A, gradOutput: B): Unit = {}
 
   /**
    * If the module has parameters, this will zero the accumulation of the gradients with respect

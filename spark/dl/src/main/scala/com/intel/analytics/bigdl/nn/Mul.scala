@@ -57,9 +57,8 @@ class Mul[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-  scale: Double = 1.0): Unit = {
-    gradWeight.add(ev.times(input.dot(gradOutput), ev.fromType(scale)))
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
+    gradWeight.add(ev.times(input.dot(gradOutput), ev.fromType[Double](scaleW)))
   }
 
   override def zeroGradParameters(): Unit = {

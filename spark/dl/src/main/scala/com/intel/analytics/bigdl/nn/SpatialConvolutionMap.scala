@@ -198,8 +198,7 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     val dimw = if (input.dim() == 4) 4 else 3
     val dimh = if (input.dim() == 4) 3 else 2
     val nbatch = if (input.dim() == 4) input.size(1) else 1
@@ -235,7 +234,7 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
           while (n <= outputW) {
             gradOutputIndex(3) = n
             gradBias(gradBiasIndex) = ev.plus(gradBias(gradBiasIndex),
-              ev.times(ev.fromType[Double](scale), gradOutput(gradOutputIndex)))
+              ev.times(ev.fromType[Double](scaleB), gradOutput(gradOutputIndex)))
             n += 1
           }
           l += 1
@@ -259,7 +258,7 @@ class SpatialConvolutionMap[@specialized(Float, Double) T: ClassTag](
 
         DenseTensorConv.validXCorr2DRevptr(gradWeight.storage(),
           gradWeight.storageOffset() - 1 + (k - 1) * weightH * weightW,
-          ev.fromType[Double](scale), input.storage(),
+          ev.fromType[Double](scaleW), input.storage(),
           input.storageOffset() - 1 + (i - 1 + m * nInputPlane) * inputW * inputH,
           inputH, inputW, gradOutput.storage(),
           gradOutput.storageOffset() - 1 + (o - 1 + m * nOutputPlane) * outputW * outputH,

@@ -166,8 +166,7 @@ class Concat[T: ClassTag](val dimension: Int)(
     this.gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T],
-    scale: Double = 1.0): Unit = {
+  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     var offset = 1
     var i = 0
     while (i < this.modules.length) {
@@ -175,7 +174,7 @@ class Concat[T: ClassTag](val dimension: Int)(
       this.modules(i).accGradParameters(
         input.asInstanceOf[Activity],
         gradOutput.narrow(dimension, offset, currentOutput.size(dimension))
-          .asInstanceOf[Activity], scale)
+          .asInstanceOf[Activity])
 
       i += 1
       offset += currentOutput.size(dimension)
