@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
  * @param ev
  * @tparam T Numeric type. Only support float/double now
  */
-class Reverse[T: ClassTag](dim: Int = 1, isInplace: Boolean = true)
+class Reverse[T: ClassTag](dim: Int = 1, isInplace: Boolean = false)
   (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
 
@@ -117,7 +117,7 @@ class Reverse[T: ClassTag](dim: Int = 1, isInplace: Boolean = true)
 
 object Reverse {
   def apply[@specialized(Float, Double) T: ClassTag](
-    dimension: Int = 1, isInplace: Boolean = true)
+    dimension: Int = 1, isInplace: Boolean = false)
     (implicit ev: TensorNumeric[T]) : Reverse[T] = {
     new Reverse[T](dimension, isInplace)
   }
