@@ -111,7 +111,7 @@ class JTensor(object):
     A wrapper to easy our work when need to pass or return Tensor to/from Scala.
 
     >>> import numpy as np
-    >>> from util.common import JTensor
+    >>> from bigdl.util.common import JTensor
     >>> np.random.seed(123)
     >>>
     """
@@ -125,8 +125,8 @@ class JTensor(object):
         """
         Convert a ndarray to Tensor which would be used in Java side.
         >>> import numpy as np
-        >>> from util.common import JTensor
-        >>> from util.common import callBigDlFunc
+        >>> from bigdl.util.common import JTensor
+        >>> from bigdl.util.common import callBigDlFunc
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (2, 3)).astype("float32")
         >>> result = JTensor.from_ndarray(data)
@@ -154,7 +154,7 @@ class JTensor(object):
         """
         Utility method to flatten a ndarray
         :return (storage, shape)
-        >>> from util.common import JTensor
+        >>> from bigdl.util.common import JTensor
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (2, 3))
         >>> (storage, shape) = JTensor.flatten_ndarray(data)
@@ -376,7 +376,7 @@ def _py2java(sc, obj):
 def _test():
     import doctest
     from pyspark import SparkContext
-    from nn import layer
+    from bigdl.nn import layer
     globs = layer.__dict__.copy()
     sc = SparkContext(master="local[2]", appName="test common utility")
     globs['sc'] = sc

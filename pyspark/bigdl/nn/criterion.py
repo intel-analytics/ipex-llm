@@ -17,10 +17,10 @@
 
 import sys
 
-from util.common import JavaValue
-from util.common import callBigDlFunc
-from util.common import JTensor
-from nn.layer import Model
+from bigdl.util.common import JavaValue
+from bigdl.util.common import callBigDlFunc
+from bigdl.util.common import JTensor
+from bigdl.nn.layer import Model
 import numpy as np
 
 if sys.version >= '3':
@@ -586,9 +586,9 @@ class SoftMarginCriterion(Criterion):
 def _test():
     import doctest
     from pyspark import SparkContext
-    from nn import criterion
-    from util.common import init_engine
-    from util.common import create_spark_conf
+    from bigdl.nn import criterion
+    from bigdl.util.common import init_engine
+    from bigdl.util.common import create_spark_conf
     globs = criterion.__dict__.copy()
     sc = SparkContext(master="local[4]", appName="test criterion",
                       conf=create_spark_conf())

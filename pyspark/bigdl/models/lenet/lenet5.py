@@ -17,12 +17,12 @@
 
 from optparse import OptionParser
 
-from dataset import mnist
-from dataset.transformer import *
-from nn.layer import *
-from nn.criterion import *
-from optim.optimizer import *
-from util.common import *
+from bigdl.dataset import mnist
+from bigdl.dataset.transformer import *
+from bigdl.nn.layer import *
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
 
 
 def build_model(class_num):

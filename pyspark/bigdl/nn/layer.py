@@ -16,14 +16,15 @@
 
 
 import sys
-from util.common import callBigDlFunc
-from util.common import JavaValue
-from util.common import JTensor
-from util.common import callJavaFunc
-from util.common import to_list
-from util.common import get_spark_context
-from pyspark import SparkContext
+
 import numpy as np
+
+from bigdl.util.common import JTensor
+from bigdl.util.common import JavaValue
+from bigdl.util.common import callBigDlFunc
+from bigdl.util.common import callJavaFunc
+from bigdl.util.common import get_spark_context
+from bigdl.util.common import to_list
 
 if sys.version >= '3':
     long = int
@@ -2759,7 +2760,7 @@ class CriterionTable(Model):
 
     :param criterion Criterion module
 
-    >>> from nn.criterion import MSECriterion
+    >>> from bigdl.nn.criterion import MSECriterion
     >>> criterionTable = CriterionTable(MSECriterion())
     creating: createMSECriterion
     creating: createCriterionTable
@@ -2986,9 +2987,9 @@ class SpatialSubtractiveNormalization(Model):
 def _test():
     import doctest
     from pyspark import SparkContext
-    from nn import layer
-    from util.common import init_engine
-    from util.common import create_spark_conf
+    from bigdl.nn import layer
+    from bigdl.util.common import init_engine
+    from bigdl.util.common import create_spark_conf
     globs = layer.__dict__.copy()
     sc = SparkContext(master="local[4]", appName="test layer",
                       conf=create_spark_conf())
