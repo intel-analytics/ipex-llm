@@ -22,7 +22,7 @@ import re
 from os.path import isfile, join
 
 scala_nn_root = "./spark/dl/src/main/scala/com/intel/analytics/bigdl/nn/"
-python_nn_root = "./pyspark/dl/nn/"
+python_nn_root = "./pyspark/bigdl/nn/"
 
 
 def extract_scala_class(class_path):
