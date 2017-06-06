@@ -3023,7 +3023,7 @@ class SpatialSubtractiveNormalization(Model):
                                                               n_input_plane,
                                                               JTensor.from_ndarray(kernel))
 
-class PropagateBackSwitch(Model):
+class PropagateBackSwitch(Container):
     '''
     Support disable backpropagation, a gradInput of null is returned if isPropagateBack = false
     :param module the module you want to control the back-propagation
