@@ -135,7 +135,8 @@ class GRU[T : ClassTag] (
             bRegularizer = bRegularizer)))
         .add(Sequential()
           .add(Dropout(p))
-          .add(Linear(outputSize, outputSize, withBias = false))))
+          .add(Linear(outputSize, outputSize, withBias = false,
+            wRegularizer = uRegularizer))))
       .add(CAddTable(true))
       .add(Tanh())
 
