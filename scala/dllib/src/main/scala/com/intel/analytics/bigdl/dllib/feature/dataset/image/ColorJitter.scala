@@ -17,6 +17,8 @@
 package com.intel.analytics.bigdl.dataset.image
 
 import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
 import scala.collection.Iterator
@@ -34,6 +36,7 @@ object ColorJitter {
 class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
   // Todo: make the bcs parameter configurable
   private val bcsParameters = Map("brightness" -> 0.4f, "contrast" -> 0.4f, "saturation" -> 0.4f)
+  private var gs: Array[Float] = null
 
   private def grayScale(dst: Array[Float], img: Array[Float]): Array[Float] = {
     var i = 0
@@ -46,11 +49,17 @@ class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
     dst
   }
 
-  private def blend(img1: Array[Float], img2: Array[Float], alpha: Float): Unit =
-    (img1 zip img2) map {case (a, b) => a + (1-alpha)*b }
+  private def blend(img1: Array[Float], img2: Array[Float], alpha: Float): Array[Float] = {
+    var i = 0
+    while (i < img1.length) {
+      img1(i) = img1(i) * alpha + (1 - alpha) * img2(i)
+      i += 1
+    }
+    img1
+  }
 
   private def saturation(variance: Float)(input: Array[Float]): Array[Float] = {
-    val gs = new Array[Float](input.length)
+    if (gs == null || gs.length < input.length) gs = new Array[Float](input.length)
     grayScale(gs, input)
     val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
     blend(input, gs, alpha)
@@ -58,31 +67,38 @@ class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
   }
 
   private def brightness(variance: Float)(input: Array[Float]): Array[Float] = {
-    val gs = new Array[Float](input.length)
-    val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
+    if (gs == null || gs.length < input.length) gs = new Array[Float](input.length)
+    java.util.Arrays.fill(gs, 0, gs.length, 0.0f)
+     val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
     blend(input, gs, alpha)
     input
   }
 
   private def contrast(variance: Float)(input: Array[Float]): Array[Float] = {
-    val gs = new Array[Float](input.length)
+    if (gs == null || gs.length < input.length) gs = new Array[Float](input.length)
     grayScale(gs, input)
     val mean = gs.sum / gs.length
-    gs.foreach( _ => mean)
+    java.util.Arrays.fill(gs, 0, gs.length, mean)
     val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
     blend(input, gs, alpha)
     input
   }
 
   private val ts = Map(
-    "brightness" -> {brightness(bcsParameters.get("brightness").get)(_)},
-    "contrast" -> {contrast(bcsParameters.get("contrast").get)(_)},
-    "saturation" -> {saturation(bcsParameters.get("saturation").get)(_)}
+    1 -> {
+      brightness(bcsParameters.get("brightness").get)(_)},
+    2 -> {contrast(bcsParameters.get("contrast").get)(_)},
+    3 -> {saturation(bcsParameters.get("saturation").get)(_)}
   )
 
   private def randomOrder(input: Array[Float]): Unit = {
-    val randOrder = Random.shuffle(List("brightness", "contrast", "saturation"))
-    randOrder.map( x => ts(x))
+    val order = Tensor.randperm[Float](3)
+    var i = 1
+    while (i <= order.size(1)) {
+      val idx = order(i).valueAt(1).toInt
+      ts(idx)(input)
+      i += 1
+    }
   }
 
   override def apply(prev: Iterator[LabeledBGRImage]): Iterator[LabeledBGRImage] = {
