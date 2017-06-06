@@ -492,8 +492,10 @@ class SpatialMaxPooling(Model):
     The number of output features is equal to the number of input planes.
     If the input image is a 3D tensor nInputPlane x height x width,
     the output image size will be nOutputPlane x oheight x owidth where
+```
     owidth  = op((width  + 2*padW - kW) / dW + 1)
     oheight = op((height + 2*padH - kH) / dH + 1)
+```
     op is a rounding operator. By default, it is floor.
     It can be changed by calling :ceil() or :floor() methods.
     :param kW              kernel width
@@ -554,13 +556,13 @@ class Recurrent(Container):
 
 class LSTM(Model):
     '''
-    Long Short Term Memory architecture.
-    Ref.
-    A.: http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
-    B. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
-    C. http://arxiv.org/pdf/1503.04069v1.pdf
-    D. https://github.com/wojzaremba/lstm
-    E. https://github.com/Element-Research/rnn/blob/master/FastLSTM.lua
+|   Long Short Term Memory architecture.
+|   Ref.
+|   A.: http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
+|   B. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
+|   C. http://arxiv.org/pdf/1503.04069v1.pdf
+|   D. https://github.com/wojzaremba/lstm
+|   E. https://github.com/Element-Research/rnn/blob/master/FastLSTM.lua
 
     :param inputSize: the size of each input vector
     :param hiddenSize: Hidden unit size in the LSTM
@@ -581,12 +583,12 @@ class LSTM(Model):
 
 class LSTMPeephole(Model):
     '''
-    Long Short Term Memory architecture with peephole.
-    Ref. A.: http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
-    B. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
-    C. http://arxiv.org/pdf/1503.04069v1.pdf
-    D. https://github.com/wojzaremba/lstm
-    E. https://github.com/Element-Research/rnn/blob/master/LSTM.lua
+|   Long Short Term Memory architecture with peephole.
+|   Ref. A.: http://arxiv.org/pdf/1303.5778v1 (blueprint for this module)
+|   B. http://web.eecs.utk.edu/~itamar/courses/ECE-692/Bobby_paper1.pdf
+|   C. http://arxiv.org/pdf/1503.04069v1.pdf
+|   D. https://github.com/wojzaremba/lstm
+|   E. https://github.com/Element-Research/rnn/blob/master/LSTM.lua
 
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in the LSTM
@@ -610,9 +612,9 @@ class GRU(Model):
     Gated Recurrent Units architecture.
     The first input in sequence uses zero value for cell and hidden state
 
-    Ref.
-    http://www.wildml.com/2015/10/recurrent-neural-network-tutorial-part-4-implementing-a-grulstm-rnn-with-python-and-theano/
-    https://github.com/Element-Research/rnn/blob/master/GRU.lua
+|   Ref.
+|   http://www.wildml.com/2015/10/recurrent-neural-network-tutorial-part-4-implementing-a-grulstm-rnn-with-python-and-theano/
+|   https://github.com/Element-Research/rnn/blob/master/GRU.lua
 
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in GRU
@@ -675,6 +677,7 @@ class Concat(Container):
     Concat concatenates the output of one layer of "parallel"
     modules along the provided {@code dimension}: they take the
     same inputs, and their output is concatenated.
+```
                     +-----------+
                +---->  module1  -----+
                |    |           |    |
@@ -682,7 +685,7 @@ class Concat(Container):
                |    |           |    |
                +---->  module3  -----+
                     +-----------+
-
+```
     :param dimension: dimension
 
     >>> concat = Concat(2)
@@ -749,11 +752,11 @@ class SpatialBatchNormalization(Model):
     This implementation is useful for inputs coming from convolution layers.
     For non-convolutional layers, see [[BatchNormalization]]
     The operation implemented is:
-
+```
           ( x - mean(x) )
     y = -------------------- * gamma + beta
        standard-deviation(x)
-
+```
     where gamma and beta are learnable parameters.
     The learning of gamma and beta is optional.
 
@@ -779,10 +782,11 @@ class SpatialCrossMapLRN(Model):
     '''
     Applies Spatial Local Response Normalization between different feature maps.
     The operation implemented is:
+```
                                  x_f
     y_f =  -------------------------------------------------
             (k+(alpha/size)* sum_{l=l1 to l2} (x_l^2^))^beta^
-
+```
     where x_f is the input at spatial locations h,w (not shown for simplicity) and feature map f,
     l1 corresponds to max(0,f-ceil(size/2)) and l2 to min(F, f-ceil(size/2) + size).
     Here, F is the number of feature maps.
@@ -921,9 +925,11 @@ class BatchNormalization(Model):
     layers, use nn.SpatialBatchNormalization.
 
     The operation implemented is:
+```
                 ( x - mean(x) )
          y = -------------------- * gamma + beta
              standard-deviation(x)
+```
     where gamma and beta are learnable parameters.The learning of gamma and beta is optional.
 
     :param n_output: output feature map number
@@ -1346,10 +1352,11 @@ class HardShrink(Model):
     This is a transfer layer which applies the hard shrinkage function
     element-wise to the input Tensor. The parameter lambda is set to 0.5
     by default
+```
             x, if x >  lambda
     f(x) =  x, if x < -lambda
             0, otherwise
-
+```
    :param the_lambda: a threshold value whose default value is 0.5
 
     >>> hardShrink = HardShrink(1e-5)
@@ -1367,9 +1374,11 @@ class HardTanh(Model):
 
     '''
     Applies HardTanh to each element of input, HardTanh is defined:
+```
              |  maxValue, if x > maxValue
       f(x) = |  minValue, if x < minValue
              |  x, otherwise
+```    
     :param min_value minValue in f(x), default is -1.
     :param max_value maxValue in f(x), default is 1.
     :param inplace whether enable inplace model.
@@ -1548,8 +1557,9 @@ class LogSigmoid(Model):
 
     '''
     This class is a transform layer corresponding to the sigmoid function:
+```
     f(x) = Log(1 / (1 + e ^^ (-x)))
-
+```
     >>> logSigmoid = LogSigmoid()
     creating: createLogSigmoid
     '''
@@ -1977,8 +1987,9 @@ class RReLU(Model):
     Applies the randomized leaky rectified linear unit (RReLU) element-wise to the input Tensor,
     thus outputting a Tensor of the same dimension. Informally the RReLU is also known as
     'insanity' layer. RReLU is defined as:
+```
         f(x) = max(0,x) + a * min(0, x) where a ~ U(l, u).
-
+```
     In training mode negative inputs are multiplied by a factor a drawn from a uniform random
     distribution U(l, u).
 
@@ -2205,10 +2216,11 @@ class SoftShrink(Model):
     Apply the soft shrinkage function element-wise to the input Tensor
 
     SoftShrinkage operator:
+```
            | x - lambda, if x >  lambda
     f(x) = | x + lambda, if x < -lambda
            | 0, otherwise
-
+```
     :param the_lambda lambda, default is 0.5
 
     >>> softShrink = SoftShrink(1e-5)
@@ -2246,9 +2258,10 @@ class SpatialDilatedConvolution(Model):
     The input tensor is expected to be a 3D or 4D(with batch) tensor.
 
     If input is a 3D tensor nInputPlane x height x width,
+```
     owidth  = floor(width + 2 * padW - dilationW * (kW-1) - 1) / dW + 1
     oheight = floor(height + 2 * padH - dilationH * (kH-1) - 1) / dH + 1
-
+```
     Reference Paper: Yu F, Koltun V. Multi-scale context aggregation by dilated convolutions[J].
     arXiv preprint arXiv:1511.07122, 2015.
 
@@ -2306,9 +2319,10 @@ class SpatialFullConvolution(Model):
     parameter noBias = true while constructing the module.
 
     If input is a 3D tensor nInputPlane x height x width,
+```
     owidth  = (width  - 1) * dW - 2*padW + kW + adjW
     oheight = (height - 1) * dH - 2*padH + kH + adjH
-
+```
     Other frameworks call this operation "In-network Upsampling", "Fractionally-strided convolution",
     "Backwards Convolution," "Deconvolution", or "Upconvolution."
 
@@ -2641,8 +2655,9 @@ class TanhShrink(Model):
     '''
     A simple layer for each element of the input tensor, do the following operation
     during the forward process:
+```
     [f(x) = tanh(x) - 1]
-
+```
     >>> tanhShrink = TanhShrink()
     creating: createTanhShrink
     '''
