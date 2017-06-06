@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.utils.T
 
 import scala.sys.process._
 
-@com.intel.analytics.bigdl.tags.Parallel
+@com.intel.analytics.bigdl.tags.Serial
 class LSTMPeepholeSpec  extends TorchSpec {
   override def torchCheck(): Unit = {
     if (!TH.hasTorch()) {
