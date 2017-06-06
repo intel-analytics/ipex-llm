@@ -116,7 +116,7 @@ class ColorJitterSpec extends FlatSpec with BeforeAndAfter with Matchers {
         |function RandomOrder(ts)
         |   return function(input)
         |      local img = input.img or input
-        |      local order = torch.randperm(#ts)
+        |      -- local order = torch.randperm(#ts)
         |      local order = torch.Tensor{2, 1, 3}
         |      for i=1,#ts do
         |         img = ts[order[i]](img)

@@ -59,7 +59,7 @@ class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
   }
 
   private def saturation(variance: Float)(input: Array[Float]): Array[Float] = {
-    if (gs == null) gs = new Array[Float](input.length)
+    if (gs == null || gs.length < input.length) gs = new Array[Float](input.length)
     grayScale(gs, input)
     val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
     blend(input, gs, alpha)
@@ -67,7 +67,7 @@ class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
   }
 
   private def brightness(variance: Float)(input: Array[Float]): Array[Float] = {
-    if (gs == null) gs = new Array[Float](input.length)
+    if (gs == null || gs.length < input.length) gs = new Array[Float](input.length)
     java.util.Arrays.fill(gs, 0, gs.length, 0.0f)
      val alpha = 1.0f + RNG.uniform(-variance, variance).toFloat
     blend(input, gs, alpha)
@@ -75,7 +75,7 @@ class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
   }
 
   private def contrast(variance: Float)(input: Array[Float]): Array[Float] = {
-    if (gs == null) gs = new Array[Float](input.length)
+    if (gs == null || gs.length < input.length) gs = new Array[Float](input.length)
     grayScale(gs, input)
     val mean = gs.sum / gs.length
     java.util.Arrays.fill(gs, 0, gs.length, mean)
