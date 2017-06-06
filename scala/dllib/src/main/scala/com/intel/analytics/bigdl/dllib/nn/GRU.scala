@@ -103,7 +103,7 @@ class GRU[T : ClassTag] (
       .add(ParallelTable()
         .add(i2g)
         .add(h2g))
-      .add(CAddTable())
+      .add(CAddTable(true))
       .add(Reshape(Array(2, outputSize)))
       .add(SplitTable(1, 2))
       .add(ParallelTable()
@@ -137,7 +137,7 @@ class GRU[T : ClassTag] (
           .add(Dropout(p))
           .add(Linear(outputSize, outputSize, withBias = false,
             wRegularizer = uRegularizer))))
-      .add(CAddTable())
+      .add(CAddTable(true))
       .add(Tanh())
 
     gru
@@ -155,7 +155,7 @@ class GRU[T : ClassTag] (
             .add(SelectTable(2))
             .add(SelectTable(4)))
           .add(CMulTable())))
-      .add(CAddTable())
+      .add(CAddTable(true))
       .add(ConcatTable()
         .add(Identity[T]())
         .add(Identity[T]()))
