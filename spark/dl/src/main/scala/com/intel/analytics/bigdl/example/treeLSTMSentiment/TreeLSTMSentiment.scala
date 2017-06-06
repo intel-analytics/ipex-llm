@@ -34,7 +34,7 @@ import com.intel.analytics.bigdl.utils.LoggerFilter
 import org.apache.log4j.{Level => Levle4j, Logger => Logger4j}
 import org.slf4j.{Logger, LoggerFactory}
 import scopt.OptionParser
-import util.control.Breaks._
+import scala.util.control.Breaks._
 
 import scala.language.existentials
 
@@ -46,7 +46,6 @@ object TreeLSTMSentiment {
   def main(args: Array[String]): Unit = {
     val localParser = new OptionParser[TreeLSTMSentimentParam]("TreeLSTM Sentiment") {
       opt[String]('b', "baseDir")
-        .required()
         .text("Base dir containing the training and word2Vec data")
         .action((x, c) => c.copy(baseDir = x))
 //      opt[String]('p', "partitionNum")
@@ -87,7 +86,7 @@ object TreeLSTMSentiment {
 
   case class TreeLSTMSentimentParam (
     override val batchSize: Int = 25,
-    override val baseDir: String = "./",
+    override val baseDir: String = "/tmp/.bigdl/dataset/",
     hiddenSize: Int = 150,
     learningRate: Double = 0.05,
     embLearningRate: Double = 0.1,
@@ -97,11 +96,10 @@ object TreeLSTMSentiment {
   ) extends AbstractTextClassificationParams
 }
 
-class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable{
+class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable {
   import com.intel.analytics.bigdl.numeric.NumericFloat
   val log: Logger = LoggerFactory.getLogger(this.getClass)
-  val gloveDir = s"${param.baseDir}/glove.6B/"
-  val textDataDir = s"${param.baseDir}/20_newsgroup/"
+  val DATA_DIR = param.baseDir
   val classNum = if (param.fineGrained) 5 else 3
   val criterion = ClassNLLCriterion()
   val textClassifier = new TextClassifier(param)
@@ -127,7 +125,7 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable{
 
   }
 
-  def readTree(parents: Array[Int]): Tensor[Float] = {
+  val readTree = (parents: Array[Int]) => {
     val size = parents.length
     val maxNumChildren = parents
       .groupBy(x => x)
@@ -167,7 +165,6 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable{
     trees.content
   }
 
-
   def train(): Unit = {
     val conf = Engine.createSparkConf()
       .setAppName("Text classification")
@@ -192,7 +189,7 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable{
 //    val dataRdd = sc.parallelize(loadRawData(), param.partitionNum)
 //    val (word2Meta, wordVecMap) = textClassifier.analyzeTexts(dataRdd)
 
-    val filename = s"$gloveDir/glove.840B.300d.txt"
+    val filename = s"$DATA_DIR/sst/train/sents.txt"
 //    val gloveVocab = scala.collection.mutable.Map[String, Int]()
     val word2Vec = scala.collection.mutable.Map[String, Array[Float]]()
     for (line <- Source.fromFile(filename, "ISO-8859-1").getLines) {
@@ -233,7 +230,7 @@ class TreeLSTMSentiment(param: TreeLSTMSentimentParam) extends Serializable{
       .map { case ((input: Array[Int], label: Array[Float]), tree: Tensor[Float]) =>
       Sample(
         featureTensor =
-          Tensor(input.map(_.toFloat), Array(sequenceLen, embeddingDim))
+          Tensor(input.map(_.toFloat), Array(sequenceLen))
             .transpose(1, 2)
             .contiguous(),
         labelTensor =
