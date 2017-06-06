@@ -12,7 +12,7 @@
                 <include>**/*.py</include>
             </includes>
             <excludes>
-                <exclude>tests/**</exclude>
+                <exclude>test/**</exclude>
             </excludes>
             <outputDirectory>/..</outputDirectory>
             <directory>${project.build.directory}/../../../pyspark</directory>

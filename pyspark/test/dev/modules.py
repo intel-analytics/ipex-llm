@@ -80,13 +80,13 @@ bigdl_optimizer = Module(
 test_simple_integration_test = Module(
     name="simple_integration_test",
     python_test_goals=[
-        "tests.simple_integration_test"
+        "test.simple_integration_test"
     ]
 )
 
 test_load_caffe = Module(
     name="load_caffe_test",
     python_test_goals=[
-        "tests.load_caffe_test"
+        "test.load_caffe_test"
     ]
 )
