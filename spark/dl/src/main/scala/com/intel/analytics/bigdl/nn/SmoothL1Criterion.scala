@@ -48,12 +48,14 @@ class SmoothL1Criterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Bo
     buffer.resizeAs(input).copy(input)
     buffer.add(ev.fromType(-1), target).abs()
     val data = buffer.storage().array()
+    val offset = buffer.storageOffset() - 1
     var i = 0
     while (i < buffer.nElement()) {
-      if (ev.isGreater(ev.fromType(1), data(i))) {
-        data(i) = ev.times(ev.fromType[Double](0.5), ev.times(data(i), data(i)))
+      if (ev.isGreater(ev.fromType(1), data(i + offset))) {
+        data(i + offset) = ev.times(ev.fromType[Double](0.5),
+          ev.times(data(i + offset), data(i + offset)))
       } else {
-        data(i) = ev.minus(data(i), ev.fromType[Double](0.5))
+        data(i + offset) = ev.minus(data(i + offset), ev.fromType[Double](0.5))
       }
       i += 1
     }
@@ -77,7 +79,7 @@ class SmoothL1Criterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Bo
       if (ev.isGreater(ev.fromType(-1), data(i + offset))) {
         data(i + offset) = ev.negative(norm)
       }
-      else if (ev.isGreater(data(i + offset), ev.fromType(1))) {
+      else if (ev.isGreater(data(i + offset), ev.one)) {
         data(i + offset) = norm
       }
       else {
@@ -86,6 +88,11 @@ class SmoothL1Criterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Bo
       i += 1
     }
     gradInput
+  }
+
+  def clearState() : this.type = {
+    buffer.set()
+    this
   }
 }
 
