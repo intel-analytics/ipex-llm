@@ -61,9 +61,7 @@ class Sequential[T: ClassTag]
   }
 
   override def updateGradInput(input: Activity, nextError: Activity): Activity = {
-    if (evaluateOnly && isTraining()) {
-      gradInput = nextError
-    } else {
+    if (!evaluateOnly || !isTraining()) {
       var i = modules.length - 1
       var error = nextError.asInstanceOf[Activity]
       while (i > 0) {
@@ -74,6 +72,8 @@ class Sequential[T: ClassTag]
       error = modules(0).updateGradInput(input, error)
 
       this.gradInput = error
+    } else {
+      gradInput = nextError
     }
 
     gradInput
@@ -100,9 +100,7 @@ class Sequential[T: ClassTag]
   }
 
   override def backward(input: Activity, nextError: Activity): Activity = {
-    if (evaluateOnly && isTraining()) {
-      gradInput = nextError
-    } else {
+    if (!evaluateOnly || !isTraining()) {
       var i = modules.length - 1
       var error = nextError.asInstanceOf[Activity]
       while (i > 0) {
@@ -113,6 +111,8 @@ class Sequential[T: ClassTag]
       error = modules(0).backward(input, error)
 
       this.gradInput = error
+    } else {
+      gradInput = nextError
     }
 
     gradInput
