@@ -114,7 +114,7 @@ object Engine {
   private[bigdl] var localMode: Boolean = {
     System.getProperty("bigdl.localMode", "false").toLowerCase(Locale.ROOT) match {
       case "true" => true
-      case "fasle" => false
+      case "false" => false
       case option => throw new IllegalArgumentException(s"Unknown bigdl.localMode $option")
     }
   }
