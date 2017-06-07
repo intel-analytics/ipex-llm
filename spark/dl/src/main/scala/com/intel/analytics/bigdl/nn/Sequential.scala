@@ -30,29 +30,52 @@ import scala.reflect.ClassTag
 class Sequential[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
 
-  override def updateOutput(input: Activity): Activity = {
-    var i = 0
-    var result = input.asInstanceOf[Activity]
-    while (i < modules.length) {
-      result = modules(i).forward(result)
-      i += 1
-    }
+  private var evaluateOnly = false
 
-    this.output = result
+  /**
+   * If evaluateOnly = true, then this sequential only works in evaluate mode, and not work in
+   * training mode
+   * @param status contral evaluateOnly
+   * @return this
+   */
+  def setEvaluateOnly(status: Boolean): this.type = {
+    evaluateOnly = true
+    this
+  }
+
+  override def updateOutput(input: Activity): Activity = {
+    if (!evaluateOnly || !isTraining()) {
+      var i = 0
+      var result = input.asInstanceOf[Activity]
+      while (i < modules.length) {
+        result = modules(i).forward(result)
+        i += 1
+      }
+
+      this.output = result
+    } else {
+      // evaluateOnly == true and is in training mode
+      output = input
+    }
     output
   }
 
   override def updateGradInput(input: Activity, nextError: Activity): Activity = {
-    var i = modules.length - 1
-    var error = nextError.asInstanceOf[Activity]
-    while (i > 0) {
-      val input = modules(i - 1).output
-      error = modules(i).updateGradInput(input, error)
-      i -= 1
-    }
-    error = modules(0).updateGradInput(input, error)
+    if (evaluateOnly && isTraining()) {
+      gradInput = nextError
+    } else {
+      var i = modules.length - 1
+      var error = nextError.asInstanceOf[Activity]
+      while (i > 0) {
+        val input = modules(i - 1).output
+        error = modules(i).updateGradInput(input, error)
+        i -= 1
+      }
+      error = modules(0).updateGradInput(input, error)
 
-    this.gradInput = error
+      this.gradInput = error
+    }
+
     gradInput
   }
 
@@ -60,31 +83,38 @@ class Sequential[T: ClassTag]
     input: Activity,
     gradOutput: Activity,
     scale: Double = 1.0): Unit = {
-    var i = modules.length - 1
-    var currentModule = modules(i)
-    var currentGradOutput = gradOutput
-    while (i > 0) {
-      val previousModule = modules(i - 1)
-      currentModule.accGradParameters(previousModule.output, currentGradOutput, scale)
-      currentGradOutput = currentModule.gradInput
-      currentModule = previousModule
-      i -= 1
-    }
+    if (!evaluateOnly || !isTraining()) {
+      var i = modules.length - 1
+      var currentModule = modules(i)
+      var currentGradOutput = gradOutput
+      while (i > 0) {
+        val previousModule = modules(i - 1)
+        currentModule.accGradParameters(previousModule.output, currentGradOutput, scale)
+        currentGradOutput = currentModule.gradInput
+        currentModule = previousModule
+        i -= 1
+      }
 
-    currentModule.accGradParameters(input, currentGradOutput, scale)
+      currentModule.accGradParameters(input, currentGradOutput, scale)
+    }
   }
 
   override def backward(input: Activity, nextError: Activity): Activity = {
-    var i = modules.length - 1
-    var error = nextError.asInstanceOf[Activity]
-    while (i > 0) {
-      val input = modules(i - 1).output
-      error = modules(i).backward(input, error)
-      i -= 1
-    }
-    error = modules(0).backward(input, error)
+    if (evaluateOnly && isTraining()) {
+      gradInput = nextError
+    } else {
+      var i = modules.length - 1
+      var error = nextError.asInstanceOf[Activity]
+      while (i > 0) {
+        val input = modules(i - 1).output
+        error = modules(i).backward(input, error)
+        i -= 1
+      }
+      error = modules(0).backward(input, error)
 
-    this.gradInput = error
+      this.gradInput = error
+    }
+
     gradInput
   }
 

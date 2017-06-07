@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl.nn.{Linear, Sequential}
+import com.intel.analytics.bigdl.nn.{Linear, Reshape, Sequential, SoftMax}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
@@ -112,5 +112,43 @@ class SequentialSpec extends TorchSpec {
     })
 
     println("Test case : Sequential, Torch : " + luaTime + " s, Scala : " + scalaTime / 1e9 + " s")
+  }
+
+  "A Sequential with EvaluateOnly" should "work" in {
+    val l1 = Linear[Double](10, 25)
+    val l2 = Linear[Double](25, 10)
+    val module = Sequential[Double]()
+    module.add(l1.cloneModule())
+    module.add(l2.cloneModule())
+    module.add(Sequential[Double]().setEvaluateOnly(true).add(SoftMax()))
+
+    val forwardmodule = Sequential[Double]()
+    forwardmodule.add(l1.cloneModule())
+    forwardmodule.add(l2.cloneModule())
+    forwardmodule.add(SoftMax())
+
+
+    val backwardmodule = new Sequential[Double]()
+    backwardmodule.add(l1.cloneModule())
+    backwardmodule.add(l2.cloneModule())
+
+    val input = Tensor[Double](10).randn()
+    val gradOutput = Tensor[Double](10).randn()
+
+    module.evaluate()
+    module.forward(input)
+
+    forwardmodule.forward(input)
+
+
+    module.output should equal (forwardmodule.output)
+
+    module.training()
+
+    module.forward(input)
+    module.backward(input, gradOutput.clone())
+    backwardmodule.forward(input)
+    backwardmodule.backward(input, gradOutput.clone())
+    module.gradInput should equal(backwardmodule.gradInput)
   }
 }
