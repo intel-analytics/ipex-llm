@@ -616,16 +616,18 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
     throw new IllegalArgumentException("Tensor cannot be cast to Table")
 
   /**
-    * Return true because it's a Tensor implemented from [[Activity]]
-    * @return true
-    */
+   * Return true because it's a Tensor implemented from [[Activity]]
+   *
+   * @return true
+   */
   override def isTensor: Boolean = true
 
 
   /**
-    * Return false because it's not a Table
-    * @return
-    */
+   * Return false because it's not a Table
+   *
+   * @return false
+   */
   override def isTable: Boolean = false
 }
 
