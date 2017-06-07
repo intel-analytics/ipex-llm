@@ -18,15 +18,13 @@ package com.intel.analytics.bigdl.torch
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.BCECriterion
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator._
-
-import scala.util.Random
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Serial
-class BCECriterionSpec extends TorchSpec{
+class BCECriterionSpec extends FlatSpec with Matchers{
 
   "A BCECriterion " should "generate correct output and grad" in {
-    torchCheck()
+    if (!TH.hasTorch()) cancel("Torch is not installed")
     val criterion = new BCECriterion[Double]()
     val input = Tensor[Double](3, 1).rand()
     val target = Tensor[Double](3)
@@ -58,7 +56,7 @@ class BCECriterionSpec extends TorchSpec{
   }
 
   "A BCECriterion with weights" should "generate correct output and grad" in {
-    torchCheck()
+    if (!TH.hasTorch()) cancel("Torch is not installed")
     val weights = Tensor[Double](3).rand()
     val criterion = new BCECriterion[Double](weights)
     val input = Tensor[Double](3, 1).rand()
@@ -92,7 +90,7 @@ class BCECriterionSpec extends TorchSpec{
   }
 
   "A BCECriterion with sizeAverage" should "generate correct output and grad" in {
-    torchCheck()
+    if (!TH.hasTorch()) cancel("Torch is not installed")
     val weights = Tensor[Double](3).rand()
     val criterion = new BCECriterion[Double](weights, true)
     val input = Tensor[Double](3, 1).rand()
