@@ -73,7 +73,7 @@ class ModuleSpec extends FlatSpec with Matchers {
   "getParameter" should "behave correctly" in {
     val module = Sequential[Double]
     val subModule1 = Linear[Double](2, 3)
-    val subModule2 = Linear[Double](4, 5, Default, false)
+    val subModule2 = Linear[Double](4, 5, withBias = false)
     val subModule3 = BatchNormalization[Double](5)
     val subModule4 = BatchNormalization[Double](5, 1e-5, 0.1, false)
     val subModule5 = Bilinear[Double](1, 2, 3)

@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
@@ -50,10 +50,9 @@ class SpatialConvolution[T: ClassTag](
   val padH: Int = 0, // The additional zeros added per height to the input planes.
   val nGroup: Int = 1, // Kernel group number
   val propagateBack: Boolean = true, // propagate gradient back
-  private var initMethod: InitializationMethod = Default,
   val wRegularizer: Regularizer[T] = null,
   val bRegularizer: Regularizer[T] = null
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
@@ -82,7 +81,14 @@ class SpatialConvolution[T: ClassTag](
   } else {
     false
   }
-  reset()
+
+  {
+    val stdv = 1.0 / math.sqrt(kernelW * kernelH * nInputPlane)
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    val bInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    setInitMethod(wInit, bInit)
+  }
+
   protected var im2colTime = 0L
   protected var col2imTime = 0L
 
@@ -90,28 +96,12 @@ class SpatialConvolution[T: ClassTag](
 
   def getCol2ImgTime(): Double = col2imTime
 
-  def setInitMethod(initMethod: InitializationMethod): this.type = {
-    this.initMethod = initMethod
-    this
-  }
-
   @transient
   protected var results: Array[Future[Unit]] = null
 
   override def reset(): Unit = {
-    initMethod match {
-      case Default =>
-        val stdv = 1.0 / math.sqrt(kernelW * kernelH * nInputPlane)
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-        bias.apply1(_ => ev.fromType[Double](RNG.uniform(0, 1) * 2 * stdv - stdv))
-      case Xavier =>
-        val fanIn = nInputPlane * kernelH * kernelW
-        val fanOut = nOutputPlane * kernelH * kernelW
-        val stdv = math.sqrt(6.0 / (fanIn + fanOut))
-        weight.apply1(_ => ev.fromType[Double](RNG.uniform(-stdv, stdv)))
-        bias.fill(ev.fromType(0))
-      case _ => throw new IllegalArgumentException()
-    }
+    weightInitMethod.init(weight, VariableFormat.GP_OUT_IN_KW_KH)
+    biasInitMethod.init(bias, VariableFormat.ONE_D)
     zeroGradParameters()
   }
 
@@ -592,12 +582,11 @@ object SpatialConvolution {
       padH: Int = 0,
       nGroup: Int = 1,
       propagateBack: Boolean = true,
-      initMethod: InitializationMethod = Default,
       wRegularizer: Regularizer[T] = null,
       bRegularizer: Regularizer[T] = null
   )(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     new SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
-      strideW, strideH, padW, padH, nGroup, propagateBack, initMethod,
+      strideW, strideH, padW, padH, nGroup, propagateBack,
       wRegularizer, bRegularizer)
   }
 }
