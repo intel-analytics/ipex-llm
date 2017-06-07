@@ -52,10 +52,9 @@ class Add[T: ClassTag](val inputSize: Int
       output.add(bias)
     } else {
       val batchSize = input.size(1)
-      ones.resize(batchSize)
-      ones.fill(ev.fromType[Int](1))
+      ones.resize(batchSize).fill(ev.one)
       val biasLocal = bias.view(bias.size.product)
-      val outputLocal = output.view(batchSize, output.size.product)
+      val outputLocal = output.view(batchSize, output.size.product/batchSize)
       outputLocal.addr(ev.fromType[Int](1), ones, biasLocal)
     }
     output
@@ -76,7 +75,7 @@ class Add[T: ClassTag](val inputSize: Int
       if (input.isSameSizeAs(bias)) {
         gradBias.add(ev.fromType[Double](scale), gradOutput)
       } else {
-        val gradOutputLocal = gradOutput.view(input.size(1), gradOutput.size.product)
+        val gradOutputLocal = gradOutput.view(input.size(1), gradOutput.size.product/input.size(1))
         gradBias.view(gradBias.size().product).addmv(ev.fromType(scale), gradOutputLocal.t(), ones)
       }
     }
